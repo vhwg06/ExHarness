@@ -118,6 +118,29 @@ test("search health grounds plateau signals in persisted variation history", asy
   assert.equal(health.signals.some((signal) => signal.kind === SearchSignalKind.NO_CHANGE_STREAK), true);
 });
 
+test("completed no-op variation can trigger a persisted supervisor redirect", async () => {
+  const harness = makeHarness({ async run() { return "no-op"; } }, {
+    supervisionPolicy: { noChangeThreshold: 1 },
+    supervisor: {
+      async inspect({ context }) {
+        assert.equal(context.searchHealth.attentionSuggested, true);
+        return { reason: "plateau", guidance: "change search direction" };
+      }
+    }
+  });
+  await start(harness);
+
+  const result = await harness.vary("s1");
+  assert.equal(result.trajectoryReview.intervention.reason, "plateau");
+
+  const context = await harness.context("s1");
+  assert.equal(context.latestIntervention.reason, "plateau");
+  assert.equal(
+    harness.events().some((event) => event.type === "SUPERVISOR_REDIRECTED"),
+    true
+  );
+});
+
 test("supervision signal builder does not label a candidate change as a no-change plateau", () => {
   const health = buildSearchHealth({
     currentCandidate: { id: "candidate", version: "v2" },
