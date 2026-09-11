@@ -68,7 +68,7 @@ Typed relations:
 
 ## Correction semantics
 
-A new record may supersede an older record only at the same semantic scope.
+A new record may supersede an older record only at the same semantic scope, and every superseding record must carry evidence or a grounded `feedbackRef`. An ungrounded assertion is not allowed to erase active memory.
 
 - candidate-scoped corrections must target the same candidate;
 - session-scoped corrections remain session-scoped;
@@ -97,12 +97,13 @@ Manual vigilance must challenge at least:
 1. candidate-local knowledge leaking into a newer candidate;
 2. session/lineage knowledge disappearing after candidate or lineage advancement;
 3. a superseded record vanishing from history rather than only the active view;
-4. contradictory active records being silently resolved;
-5. knowledge citing nonexistent feedback;
-6. agent-returned text or knowledge being misclassified as grounded feedback;
-7. stale candidate feedback entering a current-candidate-only query;
-8. old pre-scope knowledge becoming invisible after upgrade;
-9. broad memory being dumped automatically into every variation context.
+4. an ungrounded assertion superseding a valid record;
+5. contradictory active records being silently resolved;
+6. knowledge citing nonexistent feedback;
+7. agent-returned text or knowledge being misclassified as grounded feedback;
+8. stale candidate feedback entering a current-candidate-only query;
+9. old pre-scope knowledge becoming invisible after upgrade;
+10. broad memory being dumped automatically into every variation context.
 
 Automated tests guard stable invariants. They are not the sole verification claim.
 
@@ -113,4 +114,6 @@ Automated tests guard stable invariants. They are not the sole verification clai
 - no provenance dependency graph beyond feedback refs and typed knowledge-to-knowledge relations;
 - no branch-aware lineage memory because parallel variations are not supported yet;
 - feedback ordering uses persisted timestamps plus stable IDs, not a dedicated global sequence number;
-- query defaults (`limit: 50`) are practical bounds, not benchmark-derived optimal context doses.
+- query defaults (`limit: 50`) are practical bounds, not benchmark-derived optimal context doses;
+- cross-record/link validation is provided by the AVO memory facade; low-level direct `createCoreHarness()` use remains an escape hatch;
+- the store has no CAS/revision semantics yet, so concurrent writes to one session remain out of scope until the consistency phase.
