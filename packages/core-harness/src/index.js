@@ -15,6 +15,7 @@ export {
   PredictValidationError,
   RecoveryRequiredError,
   SchemaUnsupportedError,
+  SearchInvestmentBoundaryError,
   StoreConflictError
 } from "./errors.js";
 export {
@@ -119,6 +120,17 @@ export {
   variationActivityDelta,
   variationActivitySnapshot
 } from "./variation.js";
+export {
+  SearchInvestmentAction,
+  SearchInvestmentState,
+  createMarginalImprovementPolicy,
+  createSearchInvestmentController,
+  defineSearchInvestmentPolicy,
+  isSearchInvestmentDecisionFresh,
+  searchInvestmentHistory,
+  searchInvestmentInputSnapshot,
+  validateSearchInvestmentDecision
+} from "./search-investment.js";
 export {
   SearchSignalKind,
   buildSearchHealth,
