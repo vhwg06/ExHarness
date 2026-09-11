@@ -14,7 +14,7 @@ import {
   defineResource,
   defineResourcePolicy
 } from "./resource.js";
-import { TraceSpanKind, createTraceRecorder } from "./tracing.js";
+import { TraceSpanKind, createNoopTracer } from "./tracing.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
 function clone(value) {
@@ -74,7 +74,7 @@ export function createAgentRuntime({
   resourceRegistry = null,
   resourcePolicy = {},
   resourceAuthorize = null,
-  tracer = createTraceRecorder()
+  tracer = createNoopTracer()
 }) {
   invariant(strategy && typeof strategy.run === "function", "agent runtime requires strategy.run()");
   invariant(agentEventStore && typeof agentEventStore.newCallId === "function", "agent runtime event store requires newCallId()");
