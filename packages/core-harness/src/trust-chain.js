@@ -1,14 +1,10 @@
 import { invariant, requireText } from "./contracts.js";
-import { evaluateAttestationTrust } from "./trust.js";
+import { evaluateTrustBoundary } from "./trust-boundary.js";
 
 export const TrustChainReasonCode = Object.freeze({
   UNTRUSTED_UPSTREAM_ATTESTATION: "UNTRUSTED_UPSTREAM_ATTESTATION",
   MISSING_UPSTREAM_BOUNDARY: "MISSING_UPSTREAM_BOUNDARY"
 });
-
-function refKey(ref) {
-  return `${ref.id}:${ref.digest}`;
-}
 
 export async function evaluateAttestationChainTrust({
   attestation,
@@ -18,7 +14,7 @@ export async function evaluateAttestationChainTrust({
 }) {
   invariant(attestation && typeof attestation === "object", "attestation is required");
   const requiredBoundaries = [...new Set(requiredUpstreamBoundaries.map((item) => requireText(item, "required upstream boundary")))];
-  const local = await evaluateAttestationTrust({
+  const local = await evaluateTrustBoundary({
     attestation,
     ...localTrustInput
   });
@@ -71,6 +67,7 @@ export async function evaluateAttestationChainTrust({
       id: attestation.id,
       digest: attestation.digest,
       boundary: attestation.boundary
-    })
+    }),
+    boundary: attestation.boundary
   });
 }
