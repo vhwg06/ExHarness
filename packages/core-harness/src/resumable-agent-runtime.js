@@ -116,6 +116,7 @@ export function createResumableAgentRuntime({
   invariant(typeof snapshotClock === "function", "runtime snapshot clock must be a function");
   invariant(agentEventStoreOptions && typeof agentEventStoreOptions === "object", "agentEventStoreOptions must be an object");
   invariant(!Object.prototype.hasOwnProperty.call(agentEventStoreOptions, "events"), "agentEventStoreOptions cannot override snapshot events");
+  const resolvedCompatibilityTag = requireText(runtimeCompatibilityTag, "runtime compatibility tag");
 
   const restoredSnapshot = snapshot == null ? null : normalizeRuntimeSnapshot(snapshot);
   const normalizedCapabilities = capabilities.map(defineCapability);
@@ -134,7 +135,7 @@ export function createResumableAgentRuntime({
   const runtimeModel = defineModelSelector(model, "runtime model");
 
   const configuration = createRuntimeConfigurationManifest({
-    compatibilityTag: runtimeCompatibilityTag,
+    compatibilityTag: resolvedCompatibilityTag,
     strategy: strategyDescriptor(strategy),
     capabilities: normalizedCapabilities,
     contextPolicy: normalizedContextPolicy,
