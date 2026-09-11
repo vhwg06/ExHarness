@@ -44,7 +44,11 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
     async run({
       input,
       context,
+      callContext = context,
+      promptContext = null,
       events = [],
+      agentEvents = [],
+      history = null,
       judgment = null,
       validateResult = null,
       recordAgentEvent = null
@@ -61,7 +65,11 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
           attempt,
           input: clone(input),
           context: clone(context),
+          callContext: clone(callContext),
+          promptContext: clone(promptContext),
           events: clone(events) ?? [],
+          agentEvents: clone(agentEvents) ?? [],
+          history: clone(history),
           judgment: judgment == null ? null : clone(judgment),
           validationFeedback: Object.freeze(clone(feedback))
         }));
