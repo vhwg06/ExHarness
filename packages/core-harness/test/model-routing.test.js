@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  EvaluationValidity,
+  EvaluationVerdict,
   ModelRouteScope,
   createAgentRuntime,
   createCodeActStrategy,
+  createHarness,
   createModelRegistry,
   createPredictStrategy
 } from "../src/index.js";
@@ -148,4 +151,35 @@ test("routing cannot be silently ignored by a strategy that does not opt in", as
 
   await assert.rejects(runtime.run(), /does not support model routing/);
   assert.equal(calls, 0);
+});
+
+test("production createHarness composes routed model provenance through a variation", async () => {
+  const loads = {};
+  const harness = createHarness({
+    strategy: createPredictStrategy({ maxAttempts: 1 }),
+    models: [lazyModel("runtime", "done", loads)],
+    model: "runtime",
+    environment: {
+      async observe({ request }) { return { request }; },
+      async act({ candidate }) { return { mutated: false, candidate, result: null }; }
+    },
+    objective: {
+      async evaluate() {
+        return { validity: EvaluationValidity.VALID, verdict: EvaluationVerdict.PASS };
+      }
+    }
+  });
+
+  await harness.start({
+    sessionId: "routing-facade",
+    work: { objective: "prove routing composition" },
+    seedCandidate: { id: "candidate", version: "v0" }
+  });
+  await harness.vary("routing-facade");
+
+  assert.equal(loads.runtime, 1);
+  assert.deepEqual(harness.modelRouting().default, { name: "runtime" });
+  const completed = harness.events().filter((event) => event.type === "AGENT_RUN_COMPLETED").at(-1);
+  assert.equal(completed.payload.modelRoute.scope, ModelRouteScope.RUNTIME);
+  assert.equal(completed.payload.modelRoute.adapter.name, "runtime");
 });
