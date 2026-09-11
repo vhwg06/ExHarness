@@ -19,6 +19,10 @@ export const KnowledgeRelationType = Object.freeze({
   SUPERSEDES: "SUPERSEDES"
 });
 
+function recordScope(record) {
+  return record.scope ?? KnowledgeScope.CANDIDATE;
+}
+
 function normalizeRelation(relation) {
   invariant(relation && typeof relation === "object", "knowledge relation is required");
   invariant(
@@ -36,7 +40,7 @@ export function normalizeKnowledgeDraft(record) {
   invariant(Object.values(KnowledgeKind).includes(record.kind), "knowledge kind is invalid");
 
   const statement = requireText(record.statement, "knowledge.statement");
-  const scope = record.scope ?? KnowledgeScope.CANDIDATE;
+  const scope = recordScope(record);
   invariant(Object.values(KnowledgeScope).includes(scope), "knowledge scope is invalid");
 
   const evidence = Object.freeze([...(record.evidence ?? [])]);
@@ -67,10 +71,12 @@ export function normalizeKnowledgeDraft(record) {
 }
 
 function sameScopeAnchor(left, right) {
-  if (left.scope !== right.scope) return false;
-  if (left.scope === KnowledgeScope.SESSION) return true;
-  if (left.scope === KnowledgeScope.LINEAGE) return true;
-  if (left.scope === KnowledgeScope.CANDIDATE) {
+  const leftScope = recordScope(left);
+  const rightScope = recordScope(right);
+  if (leftScope !== rightScope) return false;
+  if (leftScope === KnowledgeScope.SESSION) return true;
+  if (leftScope === KnowledgeScope.LINEAGE) return true;
+  if (leftScope === KnowledgeScope.CANDIDATE) {
     return sameCandidate(left.candidate, right.candidate);
   }
   return false;
@@ -98,12 +104,13 @@ export function validateKnowledgeLinks({ item, records, feedbackIds }) {
 }
 
 function scopeApplies(record, state) {
-  if (record.scope === KnowledgeScope.SESSION) return true;
-  if (record.scope === KnowledgeScope.CANDIDATE) {
+  const scope = recordScope(record);
+  if (scope === KnowledgeScope.SESSION) return true;
+  if (scope === KnowledgeScope.CANDIDATE) {
     return sameCandidate(record.candidate, state.currentCandidate);
   }
 
-  if (record.scope === KnowledgeScope.LINEAGE) {
+  if (scope === KnowledgeScope.LINEAGE) {
     if (record.lineageBase == null) return true;
     const key = candidateKey(record.lineageBase);
     return state.persistentMemory.lineage.some((entry) => candidateKey(entry.candidate) === key);
