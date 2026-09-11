@@ -2,6 +2,8 @@ export const ExHarnessErrorCode = Object.freeze({
   STORE_CONFLICT: "STORE_CONFLICT",
   SCHEMA_UNSUPPORTED: "SCHEMA_UNSUPPORTED",
   RECOVERY_REQUIRED: "RECOVERY_REQUIRED",
+  SEARCH_INVESTMENT_STOPPED: "SEARCH_INVESTMENT_STOPPED",
+  SEARCH_INVESTMENT_ESCALATION_REQUIRED: "SEARCH_INVESTMENT_ESCALATION_REQUIRED",
   EXECUTION_FAILED: "EXECUTION_FAILED",
   EXECUTION_TIMED_OUT: "EXECUTION_TIMED_OUT",
   EXECUTION_ABORTED: "EXECUTION_ABORTED",
@@ -48,6 +50,32 @@ export class RecoveryRequiredError extends ExHarnessError {
       { details: { sessionId, variationId, lastActivityAt } }
     );
     this.name = "RecoveryRequiredError";
+  }
+}
+
+export class SearchInvestmentBoundaryError extends ExHarnessError {
+  constructor({ sessionId, decision }) {
+    const escalation = decision?.action === "ESCALATE";
+    const code = escalation
+      ? ExHarnessErrorCode.SEARCH_INVESTMENT_ESCALATION_REQUIRED
+      : ExHarnessErrorCode.SEARCH_INVESTMENT_STOPPED;
+    super(
+      code,
+      escalation
+        ? "search investment policy requires escalation before another variation"
+        : "search investment policy stopped further variation",
+      {
+        details: {
+          sessionId,
+          decisionId: decision?.id ?? null,
+          state: decision?.state ?? null,
+          action: decision?.action ?? null,
+          rationale: decision?.rationale ?? null
+        }
+      }
+    );
+    this.name = "SearchInvestmentBoundaryError";
+    this.decision = decision == null ? null : structuredClone(decision);
   }
 }
 
