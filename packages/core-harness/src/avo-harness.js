@@ -1,4 +1,5 @@
 import { invariant, sameCandidate } from "./contracts.js";
+import { defineContextSelection } from "./context.js";
 import { createCoreHarness } from "./core-harness.js";
 import { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 import { assertEvaluationInputsFresh } from "./evaluation-freshness.js";
@@ -140,6 +141,9 @@ export function createAVOHarness({
   agent = null,
   strategy = null,
   capabilities = [],
+  contextBlocks = [],
+  contextPolicy = {},
+  contextSelection = {},
   verifiers = [],
   verificationPolicy = {},
   variationPolicy = {},
@@ -163,6 +167,7 @@ export function createAVOHarness({
 
   const normalizedVerificationPolicy = defineVerificationPolicy(verificationPolicy);
   const normalizedVariationPolicy = defineVariationPolicy(variationPolicy);
+  const resolvedContextSelection = defineContextSelection(contextSelection);
   const resolvedObjective = createVerificationAwareObjective({
     objective: baseObjective,
     policy: normalizedVerificationPolicy
@@ -175,7 +180,12 @@ export function createAVOHarness({
     verifierNames.add(verifier.name);
   }
 
-  const agentRuntime = agent ?? createAgentRuntime({ strategy, capabilities });
+  const agentRuntime = agent ?? createAgentRuntime({
+    strategy,
+    capabilities,
+    contextBlocks,
+    contextPolicy
+  });
   invariant(agentRuntime && typeof agentRuntime.run === "function", "AVO harness requires agent.run()");
   invariant(
     typeof agentRuntime.runWithReport === "function",
@@ -272,6 +282,7 @@ export function createAVOHarness({
             request: structuredClone(input)
           }),
           context,
+          contextSelection: resolvedContextSelection,
           capabilities: createSessionCapabilities(
             core,
             memory,
