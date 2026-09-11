@@ -1,9 +1,10 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-const root = resolve(new URL("..", import.meta.url).pathname);
+const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const temp = await mkdtemp(join(tmpdir(), "exharness-consumer-"));
 
 function run(command, args, options = {}) {
@@ -20,7 +21,7 @@ function run(command, args, options = {}) {
 }
 
 try {
-  const packOutput = run("npm", ["pack", "packages/core-harness", "--pack-destination", temp, "--json"]);
+  const packOutput = run("npm", ["pack", "./packages/core-harness", "--pack-destination", temp, "--json"]);
   const packed = JSON.parse(packOutput);
   const tarball = join(temp, packed[0].filename);
   await writeFile(join(temp, "package.json"), JSON.stringify({
