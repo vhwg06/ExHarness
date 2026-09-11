@@ -33,6 +33,8 @@ export function createInMemorySessionStore() {
 
       const next = normalizePersistentState(session);
       next.revision = expectedRevision + 1;
+      session.schemaVersion = next.schemaVersion;
+      session.revision = next.revision;
       sessions.set(session.id, clone(next));
       return Object.freeze({ revision: next.revision });
     }
