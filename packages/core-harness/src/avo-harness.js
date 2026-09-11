@@ -143,6 +143,7 @@ export function createAVOHarness({
   verifiers = [],
   verificationPolicy = {},
   variationPolicy = {},
+  searchInvestmentController = null,
   objective = null,
   evaluator = null,
   environment,
@@ -155,6 +156,10 @@ export function createAVOHarness({
 }) {
   const baseObjective = objective ?? evaluator;
   invariant(baseObjective && typeof baseObjective.evaluate === "function", "AVO harness requires objective.evaluate()");
+  if (searchInvestmentController != null) {
+    invariant(typeof searchInvestmentController.assertCanContinue === "function", "search investment controller requires assertCanContinue()");
+    invariant(typeof searchInvestmentController.assess === "function", "search investment controller requires assess()");
+  }
 
   const normalizedVerificationPolicy = defineVerificationPolicy(verificationPolicy);
   const normalizedVariationPolicy = defineVariationPolicy(variationPolicy);
@@ -213,7 +218,22 @@ export function createAVOHarness({
       return structuredClone(normalizedVariationPolicy);
     },
 
+    searchInvestmentPolicy() {
+      return structuredClone(searchInvestmentController?.policy ?? null);
+    },
+
+    async assessSearchInvestment(sessionId) {
+      return searchInvestmentController?.assess(sessionId) ?? null;
+    },
+
+    async searchInvestmentStatus(sessionId, options = {}) {
+      return searchInvestmentController?.current(sessionId, options) ?? null;
+    },
+
     async vary(sessionId, { problem = null, input = null } = {}) {
+      const priorSearchInvestment = searchInvestmentController
+        ? await searchInvestmentController.assertCanContinue(sessionId)
+        : null;
       const context = await core.context(sessionId, { problem });
       const lineageBefore = structuredClone(context.indexes.lineage.head);
       const variation = await core.beginVariation(sessionId, {
@@ -248,6 +268,7 @@ export function createAVOHarness({
             })),
             verificationPolicy: structuredClone(normalizedVerificationPolicy),
             variationPolicy: structuredClone(normalizedVariationPolicy),
+            searchInvestment: structuredClone(priorSearchInvestment),
             request: structuredClone(input)
           }),
           context,
@@ -291,6 +312,9 @@ export function createAVOHarness({
         capabilityCalls,
         failure
       });
+      const searchInvestment = searchInvestmentController
+        ? await searchInvestmentController.assess(sessionId)
+        : null;
       const after = await core.resume(sessionId);
       const lineageAfter = structuredClone(after.progress.lineage.head);
       const lineageAdvanced = Boolean(
@@ -310,6 +334,7 @@ export function createAVOHarness({
           advanced: lineageAdvanced
         }),
         lineageHead: lineageAfter,
+        searchInvestment: structuredClone(searchInvestment),
         result: structuredClone(result),
         failure: structuredClone(failure)
       });
