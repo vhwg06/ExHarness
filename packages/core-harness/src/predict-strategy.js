@@ -6,14 +6,23 @@ function clone(value) {
   return value == null ? value : structuredClone(value);
 }
 
+function safeClone(value) {
+  try {
+    return clone(value);
+  } catch {
+    return Object.freeze({ unavailable: true });
+  }
+}
+
 function normalizeAttempts(value) {
   invariant(Number.isInteger(value) && value > 0, "predict maxAttempts must be a positive integer");
   return value;
 }
 
-function validationFeedback(error, attempt) {
+function validationFeedback(error, attempt, rejectedOutput) {
   return Object.freeze({
     attempt,
+    rejectedOutput: safeClone(rejectedOutput),
     error: Object.freeze({
       name: error?.name ?? "Error",
       code: error?.code ?? null,
@@ -51,7 +60,7 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
           validateResult(candidate);
           return candidate;
         } catch (error) {
-          feedback.push(validationFeedback(error, attempt));
+          feedback.push(validationFeedback(error, attempt, candidate));
         }
       }
 
