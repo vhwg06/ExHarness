@@ -30,6 +30,11 @@ export {
   environmentActionKey
 } from "./environment.js";
 export {
+  assertEvaluationInputsFresh,
+  currentEvaluationForState,
+  evaluationInputState
+} from "./evaluation-freshness.js";
+export {
   FeedbackKind,
   collectFeedback,
   queryFeedback
@@ -78,6 +83,10 @@ export {
   subjectFromValue,
   validateTrustBundle
 } from "./trust.js";
+export {
+  TrustChainReasonCode,
+  evaluateAttestationChainTrust
+} from "./trust-chain.js";
 export {
   AgentRunErrorCode,
   CapabilityBudgetExceededError,
