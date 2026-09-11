@@ -165,7 +165,7 @@ async function traced(trace, kind, name, operation, options = {}) {
 }
 
 export function createCodeActStrategy({
-  model,
+  model = null,
   executor,
   executionPolicy = {},
   maxTurns = 16,
@@ -177,7 +177,7 @@ export function createCodeActStrategy({
   observeActionErrors = true,
   clock = () => Date.now()
 }) {
-  const resolvedModel = defineModelAdapter(model);
+  const fallbackModel = model == null ? null : defineModelAdapter(model);
   const resolvedExecutor = defineExecutor(executor);
   const resolvedExecutionPolicy = defineExecutionPolicy(executionPolicy);
   const resolvedMaxTurns = normalizePositiveInteger(maxTurns, "codeact maxTurns");
@@ -197,7 +197,8 @@ export function createCodeActStrategy({
 
   return Object.freeze({
     kind: "CODEACT",
-    model: modelAdapterView(resolvedModel),
+    acceptsRoutedModel: true,
+    model: fallbackModel == null ? null : modelAdapterView(fallbackModel),
     limits: Object.freeze({
       maxTurns: resolvedMaxTurns,
       maxActionCalls: resolvedMaxActionCalls,
@@ -222,7 +223,9 @@ export function createCodeActStrategy({
       invokeResource,
       validateResult = null,
       recordAgentEvent = null,
-      trace = null
+      trace = null,
+      model: routedModel = null,
+      modelRoute = null
     }) {
       invariant(typeof invoke === "function", "codeact requires runtime invoke()");
       invariant(typeof describeResource === "function", "codeact requires runtime describeResource()");
@@ -230,6 +233,10 @@ export function createCodeActStrategy({
       if (validateResult != null) invariant(typeof validateResult === "function", "codeact validateResult must be a function");
       if (recordAgentEvent != null) invariant(typeof recordAgentEvent === "function", "codeact recordAgentEvent must be a function");
 
+      const activeModel = routedModel == null ? fallbackModel : defineModelAdapter(routedModel);
+      invariant(activeModel, "codeact requires a routed model or constructor model");
+      const activeModelView = modelAdapterView(activeModel);
+      const routeView = modelRoute == null ? null : clone(modelRoute);
       const startedAt = clock();
       const observations = [];
       let actionCalls = 0;
@@ -318,6 +325,7 @@ export function createCodeActStrategy({
           agentEvents: clone(agentEvents) ?? [],
           history: clone(history),
           judgment: judgment == null ? null : clone(judgment),
+          modelRoute: routeView,
           capabilities: clone(capabilities) ?? [],
           resources: clone(resources) ?? [],
           observations: clone(observations),
@@ -326,16 +334,17 @@ export function createCodeActStrategy({
         const raw = await traced(
           trace,
           TraceSpanKind.MODEL,
-          resolvedModel.name ?? "model",
-          () => awaitWithinTime("model", () => resolvedModel.generate(request)),
-          { attributes: { mode: "CODEACT", turn } }
+          activeModel.name ?? "model",
+          () => awaitWithinTime("model", () => activeModel.generate(request)),
+          { attributes: { mode: "CODEACT", turn, model: activeModelView, modelRoute: routeView } }
         );
         assertWithinTime("after_model");
 
         recordAgentEvent?.(AgentEventKind.MODEL_OUTPUT, {
           turn,
           output: safeClone(raw),
-          model: modelAdapterView(resolvedModel)
+          model: activeModelView,
+          modelRoute: routeView
         });
 
         let normalized;
