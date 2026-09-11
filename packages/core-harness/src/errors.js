@@ -4,6 +4,7 @@ export const ExHarnessErrorCode = Object.freeze({
   RECOVERY_REQUIRED: "RECOVERY_REQUIRED",
   SEARCH_INVESTMENT_STOPPED: "SEARCH_INVESTMENT_STOPPED",
   SEARCH_INVESTMENT_ESCALATION_REQUIRED: "SEARCH_INVESTMENT_ESCALATION_REQUIRED",
+  CONTEXT_LIMIT_EXCEEDED: "CONTEXT_LIMIT_EXCEEDED",
   EXECUTION_FAILED: "EXECUTION_FAILED",
   EXECUTION_TIMED_OUT: "EXECUTION_TIMED_OUT",
   EXECUTION_ABORTED: "EXECUTION_ABORTED",
@@ -76,6 +77,17 @@ export class SearchInvestmentBoundaryError extends ExHarnessError {
     );
     this.name = "SearchInvestmentBoundaryError";
     this.decision = decision == null ? null : structuredClone(decision);
+  }
+}
+
+export class ContextLimitExceededError extends ExHarnessError {
+  constructor({ limit, maximum, actual }) {
+    super(
+      ExHarnessErrorCode.CONTEXT_LIMIT_EXCEEDED,
+      `context limit exceeded: ${limit}`,
+      { details: { limit, maximum, actual } }
+    );
+    this.name = "ContextLimitExceededError";
   }
 }
 

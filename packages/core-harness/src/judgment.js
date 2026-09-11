@@ -1,4 +1,5 @@
 import { invariant, requireText } from "./contracts.js";
+import { defineContextSelection } from "./context.js";
 
 function requireOptionalParser(parser, label) {
   if (parser == null) return null;
@@ -19,7 +20,8 @@ export function defineJudgment(definition) {
     description: definition.description ?? null,
     parseInput: requireOptionalParser(definition.parseInput, `judgment ${name} parseInput`),
     parseOutput: requireOptionalParser(definition.parseOutput, `judgment ${name} parseOutput`),
-    strategy
+    strategy,
+    context: defineContextSelection(definition.context ?? {})
   });
 }
 
