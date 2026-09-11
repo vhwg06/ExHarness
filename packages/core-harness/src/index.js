@@ -8,6 +8,18 @@ export {
   sameCandidate,
   validateDoseDecision
 } from "./contracts.js";
+export {
+  VerificationSourceKind,
+  VerificationStatus,
+  defineVerifier,
+  normalizeVerificationRecord,
+  verificationCapabilityName
+} from "./verification.js";
+export {
+  assessVerificationArtifacts,
+  createVerificationAwareObjective,
+  defineVerificationPolicy
+} from "./verification-assessment.js";
 export { createInMemorySessionStore } from "./store.js";
 export { validateCorePorts } from "./ports.js";
 export { createCoreHarness } from "./core-harness.js";

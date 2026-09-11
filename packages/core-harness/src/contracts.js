@@ -68,7 +68,8 @@ export function validateEvaluation(result) {
     validity: result.validity,
     verdict: result.verdict ?? null,
     findings: Object.freeze([...(result.findings ?? [])]),
-    evidence: Object.freeze([...(result.evidence ?? [])])
+    evidence: Object.freeze([...(result.evidence ?? [])]),
+    metadata: structuredClone(result.metadata ?? null)
   });
 }
 

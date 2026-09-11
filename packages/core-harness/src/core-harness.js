@@ -14,6 +14,7 @@ import {
   validateKnowledgeRecord,
   validateSupervisorIntervention
 } from "./contracts.js";
+import { normalizeVerificationRecord } from "./verification.js";
 import { validateCorePorts } from "./ports.js";
 import {
   createPersistentWorkState,
@@ -41,6 +42,7 @@ export function createCoreHarness({
     requireText(sessionId, "sessionId");
     const state = await sessionStore.load(sessionId);
     invariant(state, `session not found: ${sessionId}`);
+    state.persistentMemory.verifications ??= [];
     return state;
   }
 
@@ -66,6 +68,11 @@ export function createCoreHarness({
     return state.persistentMemory.observations.filter((item) => candidateKey(item.candidate) === key);
   }
 
+  function currentVerifications(state) {
+    const key = candidateKey(state.currentCandidate);
+    return state.persistentMemory.verifications.filter((item) => candidateKey(item.candidate) === key);
+  }
+
   function currentEvaluation(state) {
     const key = candidateKey(state.currentCandidate);
     return [...state.persistentMemory.evaluations]
@@ -89,11 +96,13 @@ export function createCoreHarness({
       sessionId: state.id,
       work: structuredClone(state.work),
       currentCandidate: structuredClone(state.currentCandidate),
+      latestVerification: structuredClone(currentVerifications(state).at(-1) ?? null),
       latestEvaluation: structuredClone(currentEvaluation(state)),
       lineageHead: structuredClone(lineageHead(state)),
       counts: Object.freeze({
         implementations: state.persistentMemory.implementations.length,
         observations: state.persistentMemory.observations.length,
+        verifications: state.persistentMemory.verifications.length,
         evaluations: state.persistentMemory.evaluations.length,
         knowledge: state.persistentMemory.knowledge.length,
         lineage: state.persistentMemory.lineage.length,
@@ -172,7 +181,9 @@ export function createCoreHarness({
   function contextIndexes(state) {
     return Object.freeze({
       currentObservations: Object.freeze({ count: currentObservations(state).length }),
+      currentVerifications: Object.freeze({ count: currentVerifications(state).length }),
       implementations: Object.freeze({ count: state.persistentMemory.implementations.length }),
+      verifications: Object.freeze({ count: state.persistentMemory.verifications.length }),
       evaluations: Object.freeze({ count: state.persistentMemory.evaluations.length }),
       knowledge: Object.freeze({ count: state.persistentMemory.knowledge.length }),
       lineage: Object.freeze({
@@ -234,6 +245,7 @@ export function createCoreHarness({
         sessionId: state.id,
         work: structuredClone(state.work),
         candidate: structuredClone(state.currentCandidate),
+        latestVerification: structuredClone(currentVerifications(state).at(-1) ?? null),
         latestEvaluation: structuredClone(currentEvaluation(state)),
         latestIntervention: structuredClone(state.supervision.interventions.at(-1) ?? null),
         projected: structuredClone(projected),
@@ -255,6 +267,11 @@ export function createCoreHarness({
     async observations(sessionId, { currentCandidateOnly = false } = {}) {
       const state = await load(sessionId);
       return structuredClone(currentCandidateOnly ? currentObservations(state) : state.persistentMemory.observations);
+    },
+
+    async verifications(sessionId, { currentCandidateOnly = false } = {}) {
+      const state = await load(sessionId);
+      return structuredClone(currentCandidateOnly ? currentVerifications(state) : state.persistentMemory.verifications);
     },
 
     async evaluations(sessionId) {
@@ -301,6 +318,31 @@ export function createCoreHarness({
       event(state, "OBSERVED", { observationId: observation.id });
       await save(state);
       return structuredClone(observation);
+    },
+
+    async recordVerification(sessionId, record) {
+      const state = await load(sessionId);
+      const normalized = normalizeVerificationRecord(record);
+      invariant(
+        sameCandidate(normalized.candidate, state.currentCandidate),
+        "verification artifact must target the current candidate"
+      );
+
+      const artifact = {
+        kind: "VERIFICATION",
+        id: idFactory(),
+        at: clock(),
+        ...structuredClone(normalized)
+      };
+      state.persistentMemory.verifications.push(artifact);
+      event(state, "VERIFIED", {
+        verificationId: artifact.id,
+        status: artifact.status,
+        claim: artifact.claim,
+        source: artifact.source
+      });
+      await save(state);
+      return structuredClone(artifact);
     },
 
     async act(sessionId, action) {
@@ -359,12 +401,14 @@ export function createCoreHarness({
       const state = await load(sessionId);
       const candidate = structuredClone(state.currentCandidate);
       const observations = structuredClone(currentObservations(state));
+      const verifications = structuredClone(currentVerifications(state));
 
       const raw = await evaluator.evaluate({
         sessionId: state.id,
         work: structuredClone(state.work),
         candidate,
         observations,
+        verifications,
         request: structuredClone(request)
       });
       const result = validateEvaluation(raw);
@@ -373,11 +417,13 @@ export function createCoreHarness({
         id: idFactory(),
         candidate,
         at: clock(),
+        verificationIds: Object.freeze(verifications.map((item) => item.id)),
         ...result
       };
       state.persistentMemory.evaluations.push(evaluation);
       const evaluationEvent = event(state, "EVALUATED", {
         evaluationId: evaluation.id,
+        verificationIds: evaluation.verificationIds,
         validity: evaluation.validity,
         verdict: evaluation.verdict
       });
@@ -429,12 +475,14 @@ export function createCoreHarness({
         parent: structuredClone(head.candidate),
         implementationParent: structuredClone(implementation.parent),
         evaluation: evaluation.id,
+        verificationIds: structuredClone(evaluation.verificationIds ?? []),
         committedAt,
         promotedAt: committedAt
       };
       state.persistentMemory.lineage.push(promotion);
       event(state, "PROMOTED", {
         evaluationId: evaluation.id,
+        verificationIds: promotion.verificationIds,
         parent: structuredClone(head.candidate)
       });
       await save(state);
