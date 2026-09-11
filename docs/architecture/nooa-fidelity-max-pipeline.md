@@ -70,46 +70,50 @@ Every implementation stage branches from the merged `main` of the prior stage. D
 ## Status
 
 ```text
-NOOA-F1 Agent-as-object runtime surface             NEXT
-NOOA-F2 Live object reference graph                 PENDING
+NOOA-F1 Agent-as-object runtime surface             DONE
+NOOA-F2 Live object reference graph                 NEXT
 NOOA-F3 Progressive doc()/surface discovery         PENDING
 NOOA-F4 Language-native JavaScript CodeAct session  PENDING
 NOOA-F5 Fidelity reference + adversarial evaluation PENDING
 ```
 
-Current checkpoint: `NOOA-F1 Agent-as-object runtime surface`.
+Current checkpoint: `NOOA-F2 Live object reference graph`.
+
+Branch-level `DONE` becomes canonical only after the exact final stage head and merged `main` both pass the full Node 20/22/24 gate.
+
+Completed F1 artifact: `docs/architecture/object-agent.md` (stage PR #26).
 
 ---
 
-## NOOA-F1 — Agent-as-object runtime surface
+## NOOA-F1 — Agent-as-object runtime surface — DONE
 
 ### Objective
 
 Make normal JavaScript objects/classes the ergonomic programming surface while reusing the existing AgentRuntime underneath.
 
-Target consumer shape:
+Proven consumer shape:
 
 ```js
-class InventoryAgent {
+class InventoryAgent extends Agent {
   stock(sku) {
     return this.inventory.get(sku) ?? 0;
   }
 
-  async answer(question) {
-    return this.agentic("answer", question);
-  }
+  answer = agenticMethod({
+    strategy,
+    parseInput,
+    parseOutput,
+    model
+  });
 }
 
-const agent = createObjectAgent(new InventoryAgent(...), {
-  judgments: {
-    answer: { strategy, parseInput, parseOutput, model }
-  }
-});
+const agent = createObjectAgent(new InventoryAgent(...));
 
+agent.stock("X");
 await agent.answer("Do we have X?");
 ```
 
-The exact API may improve during implementation, but callers must end up invoking ordinary methods on an object rather than invoking judgment names through a separate runtime facade.
+The returned agent is the exact original object identity. Deterministic public methods are backed by runtime capabilities without duplicate implementation bodies; agentic marker fields become ordinary awaited methods backed by typed Judgments.
 
 ### Required semantics
 
@@ -130,13 +134,21 @@ The exact API may improve during implementation, but callers must end up invokin
 
 ### Verification gate
 
+Proven before stage-status flip:
+
 - deterministic public method can be invoked by the runtime without a duplicate function body;
 - agentic method called as an ordinary object method receives typed validation/model routing/context/tracing;
 - hidden/private method is never auto-exposed;
 - two instances do not share mutable tool state;
-- method override/subclass dispatch uses the actual instance implementation;
-- public API remains usable from a packed blank consumer;
-- no reflection of framework internals or arbitrary inherited built-ins.
+- method override/subclass dispatch uses the actual attach-time instance implementation;
+- getters/accessors are not executed during reflection;
+- inherited platform/library methods are not reflected from arbitrary wrapped classes;
+- runtime capability implementation cannot be replaced by later application monkeypatching;
+- zero/multi-argument method calls have an explicit unambiguous bridge;
+- public `then()` is rejected unless hidden;
+- public API is proven through the packed blank consumer.
+
+Detailed findings and residual boundary: `docs/architecture/object-agent.md`.
 
 ---
 
