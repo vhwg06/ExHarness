@@ -9,6 +9,13 @@ import {
 } from "./context.js";
 import { defineJudgment, judgmentView } from "./judgment.js";
 import {
+  createModelRegistry,
+  defineModelSelector,
+  resolveModelRoute,
+  selectModelRoute,
+  ModelRouteScope
+} from "./model-routing.js";
+import {
   ResourceLifetime,
   createResourceRegistry,
   defineResource,
@@ -70,6 +77,9 @@ export function createAgentRuntime({
   agentEventStore = createAgentEventStore(),
   contextBlocks = [],
   contextPolicy = {},
+  models = [],
+  model = null,
+  modelRegistry = null,
   resources = [],
   resourceRegistry = null,
   resourcePolicy = {},
@@ -84,6 +94,12 @@ export function createAgentRuntime({
   invariant(typeof tracer.current === "function", "agent runtime tracer requires current()");
   invariant(typeof tracer.spans === "function", "agent runtime tracer requires spans()");
   invariant(typeof tracer.failures === "function", "agent runtime tracer requires failures()");
+
+  const runtimeModel = defineModelSelector(model, "runtime model");
+  const resolvedModelRegistry = modelRegistry ?? createModelRegistry({ models });
+  invariant(resolvedModelRegistry && typeof resolvedModelRegistry.resolve === "function", "agent runtime model registry requires resolve()");
+  invariant(typeof resolvedModelRegistry.registrations === "function", "agent runtime model registry requires registrations()");
+  invariant(typeof resolvedModelRegistry.loaded === "function", "agent runtime model registry requires loaded()");
 
   const traceSurface = Object.freeze({
     runSpan: tracer.runSpan,
@@ -180,6 +196,37 @@ export function createAgentRuntime({
     });
   }
 
+  async function resolveRunModel(selectedStrategy, invocationModel, judgmentModel) {
+    const route = selectModelRoute({
+      invocation: invocationModel,
+      judgment: judgmentModel,
+      runtime: runtimeModel
+    });
+
+    if (route != null) {
+      invariant(
+        selectedStrategy.acceptsRoutedModel === true,
+        `strategy ${selectedStrategy.kind ?? selectedStrategy.name ?? "strategy"} does not support model routing`
+      );
+      return resolveModelRoute(resolvedModelRegistry, route);
+    }
+
+    if (selectedStrategy.acceptsRoutedModel === true && selectedStrategy.model != null) {
+      return Object.freeze({
+        scope: ModelRouteScope.STRATEGY,
+        requested: null,
+        adapter: null,
+        provenance: Object.freeze({
+          scope: ModelRouteScope.STRATEGY,
+          requested: null,
+          adapter: clone(selectedStrategy.model)
+        })
+      });
+    }
+
+    return null;
+  }
+
   async function executeRunWithStrategy(selectedStrategy, {
     input = null,
     context = null,
@@ -187,6 +234,7 @@ export function createAgentRuntime({
     contextSelection = null,
     capabilities: scopedCapabilities = [],
     resources: scopedResources = [],
+    model: invocationModel = null,
     budget = null,
     onCapabilityInvoke = null
   } = {}, runtimeContract = {}) {
@@ -201,6 +249,7 @@ export function createAgentRuntime({
     const callId = requireText(runtimeContract.callId, "agent run callId");
     const priorAgentEvents = agentEventStore.events();
     const resolvedSelection = runtimeContract.contextSelection ?? defineContextSelection(contextSelection ?? {});
+    const resolvedModelRoute = await resolveRunModel(selectedStrategy, invocationModel, runtimeContract.model ?? null);
     const callResourceRefs = [];
 
     if (maxCapabilityCalls != null) {
@@ -328,6 +377,7 @@ export function createAgentRuntime({
         ...activeBaseResourceRefs(),
         ...callResourceRefs.map((ref) => clone(ref))
       ]);
+      const modelRouteView = resolvedModelRoute?.provenance ?? null;
 
       const strategyName = selectedStrategy.kind ?? selectedStrategy.name ?? "strategy";
       const result = await tracer.runSpan(
@@ -350,11 +400,13 @@ export function createAgentRuntime({
           invokeResource,
           judgment,
           validateResult: runtimeContract.validateResult ?? null,
+          model: resolvedModelRoute?.adapter ?? null,
+          modelRoute: modelRouteView,
           trace: traceSurface
         })),
         {
           callId,
-          attributes: { judgment: judgment?.name ?? null }
+          attributes: { judgment: judgment?.name ?? null, modelRoute: modelRouteView }
         }
       );
 
@@ -366,7 +418,8 @@ export function createAgentRuntime({
           budgetExhausted,
           maxCapabilityCalls
         }),
-        promptContext: clone(promptContext)
+        promptContext: clone(promptContext),
+        modelRoute: clone(modelRouteView)
       });
     } catch (error) {
       recordRuntimeEvent(AgentEventKind.ERROR, callId, judgment, { error: errorView(error) });
@@ -419,6 +472,7 @@ export function createAgentRuntime({
           {
             callId,
             judgment: judgmentView(judgment),
+            model: judgment.model,
             validateResult,
             contextSelection: judgment.context
           }
@@ -443,7 +497,8 @@ export function createAgentRuntime({
           callId: report.callId,
           usage: report.usage,
           judgment: judgmentView(judgment),
-          promptContext: clone(report.promptContext)
+          promptContext: clone(report.promptContext),
+          modelRoute: clone(report.modelRoute)
         });
       },
       { callId, attributes: { judgment: name } }
@@ -465,6 +520,14 @@ export function createAgentRuntime({
 
     contextPolicy() {
       return clone(resolvedContextPolicy);
+    },
+
+    modelRouting() {
+      return Object.freeze({
+        default: clone(runtimeModel),
+        registered: resolvedModelRegistry.registrations(),
+        loaded: resolvedModelRegistry.loaded()
+      });
     },
 
     resourceRefs() {
