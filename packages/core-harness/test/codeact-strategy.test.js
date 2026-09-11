@@ -99,34 +99,19 @@ test("CodeAct can invoke declared capabilities through runtime authority", async
 test("CodeAct resource access stays behind opaque ResourceRef operations", async () => {
   const requests = [];
   const live = { secret: "never serialize", files: new Map([["README.md", "hello"]]) };
+  let ref = null;
+  let turn = 0;
+  const model = {
+    name: "resource-model",
+    async generate(request) {
+      requests.push(request);
+      turn += 1;
+      if (turn === 1) return { type: "execute", target: "RESOURCE_DESCRIBE", ref };
+      if (turn === 2) return { type: "execute", target: "RESOURCE", ref, operation: "read", input: { path: "README.md" } };
+      return { type: "return_result", value: "hello" };
+    }
+  };
   const runtime = createAgentRuntime({
-    resources: [defineResource({
-      name: "repo",
-      lifetime: ResourceLifetime.AGENT,
-      value: live,
-      metadata: { kind: "repository" },
-      operations: [{
-        name: "read",
-        async execute(resource, input) {
-          return { content: resource.files.get(input.path) };
-        }
-      }]
-    })],
-    strategy: createCodeActStrategy({
-      model: sequenceModel([
-        ({ resources }) => resources,
-      ], requests),
-      executor: echoExecutor()
-    })
-  });
-
-  const ref = runtime.resourceRefs()[0];
-  const model = sequenceModel([
-    { type: "execute", target: "RESOURCE_DESCRIBE", ref },
-    { type: "execute", target: "RESOURCE", ref, operation: "read", input: { path: "README.md" } },
-    { type: "return_result", value: "hello" }
-  ], requests);
-  const actualRuntime = createAgentRuntime({
     resources: [defineResource({
       name: "repo",
       lifetime: ResourceLifetime.AGENT,
@@ -136,8 +121,9 @@ test("CodeAct resource access stays behind opaque ResourceRef operations", async
     })],
     strategy: createCodeActStrategy({ model, executor: echoExecutor() })
   });
+  ref = runtime.resourceRefs()[0];
 
-  assert.equal(await actualRuntime.run(), "hello");
+  assert.equal(await runtime.run(), "hello");
   const visible = JSON.stringify(requests);
   assert.equal(visible.includes("never serialize"), false);
   assert.equal(requests[1].observations[0].output.metadata.kind, "repository");
