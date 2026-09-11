@@ -87,6 +87,7 @@ export function createHarness({
   eventBus = null,
   eventSinks = [],
   strictObservability = false,
+  tracer = null,
   clock,
   idFactory,
   requireRevisionStore = true,
@@ -95,6 +96,7 @@ export function createHarness({
   invariant(strategy || agent, "createHarness requires strategy or agent");
   invariant(environment, "createHarness requires environment");
   invariant(objective || evaluator, "createHarness requires objective or evaluator");
+  invariant(agent == null || tracer == null, "createHarness tracer is owned by an internally composed agent runtime; custom agent must own its tracer");
 
   const now = clock ?? (() => new Date().toISOString());
   const newId = idFactory ?? (() => randomUUID());
@@ -135,7 +137,8 @@ export function createHarness({
     strategy,
     capabilities: instrumentCapabilities(capabilities, resolvedEventBus),
     contextBlocks,
-    contextPolicy
+    contextPolicy,
+    tracer: tracer ?? undefined
   });
   const observedAgent = instrumentAgentRuntime(baseAgent, resolvedEventBus);
 
@@ -418,6 +421,14 @@ export function createHarness({
 
     observabilityFailures() {
       return resolvedEventBus.failures();
+    },
+
+    traces() {
+      return observedAgent.traces?.() ?? Object.freeze([]);
+    },
+
+    traceFailures() {
+      return observedAgent.traceFailures?.() ?? Object.freeze([]);
     },
 
     policies() {
