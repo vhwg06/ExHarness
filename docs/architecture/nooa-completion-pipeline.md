@@ -44,50 +44,14 @@ Rules:
 - a stage is not DONE until the exact PR head passes its full verification gate and the merged `main` remains healthy;
 - if the architecture changes materially, patch this pipeline first before continuing implementation.
 
-## Cross-cutting dosage rule
-
-All stages also follow `docs/architecture/dosage-principle.md`.
-
-ExHarness does not encode:
-
-```text
-X is useful
-therefore
-more X is better
-```
-
-Instead:
-
-```text
-practice × context × dosage
-        ↓
-useful range or harmful range
-```
-
-For any mechanism whose amount materially changes behavior, the stage must reason about:
-
-```text
-UNDER-DOSE
-  what failure appears when there is too little?
-
-TARGET RANGE
-  what amount is intentionally useful for this context?
-
-OVER-DOSE
-  what new cost/failure appears when there is too much?
-```
-
-Where practical, verification should challenge both sides of the range. Where an optimum cannot yet be established, the stage must keep the default bounded, observable/configurable where useful, and explicitly avoid claiming it is optimal.
-
-This applies especially to context, history, tool/resource exposure, CodeAct autonomy, guardrails, supervision, tracing, review and verification depth.
-
 ## Status
 
 ```text
 NOOA-01 Typed Judgment                         DONE
 NOOA-02 Predict Strategy                       DONE
 NOOA-03 AgentEvent working history             DONE
-NOOA-04 Context blocks + history selection     NEXT
+AVO-R1  Adaptive useful-range gate             NEXT
+NOOA-04 Context blocks + history selection     BLOCKED_ON_AVO-R1
 NOOA-05 ResourceRef / live resource semantics  PENDING
 NOOA-06 CodeAct execution loop                 PENDING
 NOOA-07 Nested tracing                         PENDING
@@ -96,7 +60,9 @@ NOOA-09 Runtime snapshot / resume               PENDING
 NOOA-10 Reference substrate + adversarial eval PENDING
 ```
 
-Current checkpoint: `NOOA-04`.
+Current checkpoint: `AVO-R1`.
+
+`AVO-R1` is an intentional control-plane correction discovered before NOOA-04. It is not a NOOA substrate feature, but it blocks further substrate work until the long-horizon search budget semantics are explicit.
 
 ---
 
@@ -196,9 +162,78 @@ Merged through PR #13.
 
 ---
 
-## NOOA-04 — Context blocks + history selection — NEXT
+## AVO-R1 — Adaptive useful-range gate — NEXT
 
-Goal: distinguish deliberate current prompt context from chronological working events without assuming more context is always better.
+Goal: separate the hard safety ceiling from the dynamic question of whether additional long-horizon search is still worth paying for.
+
+Architecture authority: `docs/architecture/adaptive-useful-range.md`.
+
+Control flow:
+
+```text
+candidate
+   |
+   v
+objective.evaluate()
+   |
+   v
+append grounded evaluation / verification / cost artifacts
+   |
+   v
+adaptive useful-range gate
+   |
+   +---- CONTINUE
+   +---- STOP
+   `---- ESCALATE
+```
+
+Required semantics:
+
+- the gate lives in the AVO control plane, outside `strategy.run()`;
+- hard capability/time/execution budgets remain independent outer ceilings;
+- gate inputs come from grounded persisted artifacts, never agent self-reported progress;
+- the gate emits a search-investment decision, not a correctness verdict;
+- decisions are freshness-bound to the exact artifact snapshot consumed;
+- insufficient history produces explicit warm-up/insufficient-data behavior;
+- policy is pluggable rather than hard-coding one universal formula;
+- useful policies may use marginal improvement, cost-per-unit-quality, or trajectory/anomaly bands;
+- STOP cannot bypass recovery for interrupted variations;
+- CONTINUE cannot override hard safety ceilings;
+- ESCALATE may request stronger verification/supervision but cannot promote a candidate.
+
+Explicit non-goals:
+
+- replacing objective verification;
+- letting the model decide its own budget from prose self-assessment;
+- removing hard safety limits;
+- claiming one universal optimal threshold/window/sample count;
+- silently discarding persisted work or failed directions.
+
+Verification challenges:
+
+- agent says "progress" while grounded artifacts are unchanged -> range state does not move;
+- too few samples -> no fabricated trend;
+- new evaluation/verification/cost artifact -> previous range decision becomes stale;
+- diminishing returns -> search can STOP while objective verdict remains unchanged;
+- anomalously large positive movement -> may ESCALATE without self-promoting;
+- range STOP cannot skip explicit recovery;
+- range CONTINUE cannot exceed the outer hard budget;
+- missing metric inputs -> explicit insufficient-data result instead of invented quality/cost;
+- replacing range policy does not alter correctness semantics.
+
+Exit artifact:
+
+- first-class persisted search-investment/range decision with input provenance;
+- architecture tests for freshness, grounding, recovery separation and hard-cap precedence;
+- stage PR recording manual findings and residual threshold-policy gaps.
+
+Only after AVO-R1 merges and post-merge `main` is healthy does NOOA-04 resume.
+
+---
+
+## NOOA-04 — Context blocks + history selection — BLOCKED_ON_AVO-R1
+
+Goal: distinguish deliberate current prompt context from chronological working events.
 
 Required semantics:
 
@@ -209,15 +244,13 @@ Required semantics:
 - history selector/filter hook;
 - summarization/reduction hook without mutating authoritative history;
 - bounded rendering/dosage controls;
-- no automatic dump of full persistent engineering memory;
-- dosage policy is explicit enough to compare under-supply and over-supply of context.
+- no automatic dump of full persistent engineering memory.
 
 Explicit non-goals:
 
 - live resource handles;
 - CodeAct;
-- model routing;
-- universal or benchmark-free claim about an optimal context size.
+- model routing.
 
 Verification challenges:
 
@@ -225,36 +258,30 @@ Verification challenges:
 - excluded context/history never reaches strategy/model input;
 - dynamic blocks are re-evaluated at call time;
 - summarization cannot rewrite canonical event history;
-- dosage limits fail closed or truncate according to explicit policy;
-- too little context makes missing-input behavior observable rather than silently fabricating context;
-- a reasonable selected context can satisfy the reference judgment;
-- excessive/irrelevant context is bounded or measurably distinguishable from the selected-context path;
-- defaults are described as starting doses rather than optimums.
+- dosage limits fail closed or truncate according to explicit policy.
 
 ---
 
 ## NOOA-05 — ResourceRef / live resource semantics
 
-Goal: let an agent operate on live resources without serializing raw objects into model context, while controlling exposure dosage.
+Goal: let an agent operate on live resources without serializing raw objects into model context.
 
 Required semantics:
 
 - opaque `ResourceRef` / handle;
 - runtime registry resolving handle -> live resource;
 - explicit visible operations only;
-- raw resource value is never serialized into model context;
+- raw resource value is never serialized into prompt/model request;
 - per-run and/or per-agent lifetime semantics are explicit;
 - revoked/expired handles fail deterministically;
 - progressive discovery of resource metadata/operations;
-- resource authority remains constrained by execution/security policy;
-- operation disclosure can be selective rather than an eager dump of the full resource surface.
+- resource authority remains constrained by execution/security policy.
 
 Explicit non-goals:
 
 - general distributed object system;
 - arbitrary reflection over raw JS objects;
-- OS isolation implemented inside the resource abstraction;
-- assumption that maximal tool/resource exposure improves performance.
+- OS isolation implemented inside the resource abstraction.
 
 Verification challenges:
 
@@ -262,9 +289,7 @@ Verification challenges:
 - stale handles cannot invoke resources;
 - two handles cannot cross-resolve to the wrong resource;
 - only declared operations are callable;
-- model-visible descriptions stay bounded;
-- too little exposure blocks unavailable operations explicitly;
-- progressive disclosure and eager/high-dose disclosure can be distinguished in the reference workload.
+- model-visible descriptions stay bounded.
 
 ---
 
@@ -283,8 +308,7 @@ Required semantics:
 - text-only response recovery policy;
 - iteration/time/capability budgets;
 - executor/sandbox is injected and remains the real containment boundary;
-- terminal result closes further model/execution actions for that call;
-- budgets/guardrails are configurable bounded autonomy controls, not hard-coded claims of an optimal dose.
+- terminal result closes further model/execution actions for that call.
 
 Verification challenges:
 
@@ -293,16 +317,13 @@ Verification challenges:
 - invalid final result re-enters bounded correction instead of leaking;
 - plain-text turn follows configured recovery path;
 - terminal return cannot be followed by hidden tool/execution activity;
-- executor failure and model failure remain distinguishable;
-- under-sized autonomy budget fails explicitly/diagnostically;
-- high-dose autonomy remains bounded by hard safety/execution limits;
-- default budgets are not described as benchmark-derived optimums unless NOOA-10 later provides that evidence.
+- executor failure and model failure remain distinguishable.
 
 ---
 
 ## NOOA-07 — Nested tracing
 
-Goal: record the complete runtime call tree rather than only flat lifecycle telemetry, without assuming maximal telemetry volume is always useful.
+Goal: record the complete runtime call tree rather than only flat lifecycle telemetry.
 
 Required semantics:
 
@@ -311,17 +332,14 @@ Required semantics:
 - stable correlation IDs shared with AgentEvent calls where appropriate;
 - duration/status/error metadata;
 - tracing sinks remain observational and cannot silently change correctness behavior;
-- trace context propagates across nested runtime calls;
-- tracing detail/retention can be bounded or filtered above the correctness path.
+- trace context propagates across nested runtime calls.
 
 Verification challenges:
 
 - nested calls form one valid tree, not disconnected flat events;
 - sibling spans do not share parent/child identity accidentally;
 - tracing sink failure follows explicit strict/non-strict policy;
-- trace instrumentation preserves runtime public APIs;
-- disabling/reducing optional tracing does not change agent correctness semantics;
-- high-volume tracing does not gain correctness authority merely by producing more data.
+- trace instrumentation preserves runtime public APIs.
 
 ---
 
@@ -355,8 +373,7 @@ Verification challenges:
 - one invocation override does not mutate defaults;
 - unused adapters are not eagerly instantiated;
 - routing provenance identifies the actually used model/adapter;
-- same strategy can run against different routed models;
-- a more expensive/powerful model is not automatically treated as the preferred route without an explicit routing policy/objective.
+- same strategy can run against different routed models.
 
 ---
 
@@ -372,8 +389,7 @@ Required semantics:
 - restore into a compatible fresh runtime instance;
 - transient live resources/execution sessions are not fabricated on restore;
 - resource restoration requires explicit adapter/rebinding policy;
-- snapshot/resume remains distinct from long-term semantic K;
-- snapshot contents are bounded by explicit restoration needs rather than `serialize everything`.
+- snapshot/resume remains distinct from long-term semantic K.
 
 Verification challenges:
 
@@ -381,14 +397,13 @@ Verification challenges:
 - incompatible future/unknown schema fails closed;
 - secrets/transient handles are not serialized accidentally;
 - resume cannot silently re-open an expired execution session;
-- AVO persistent memory and runtime snapshot can evolve independently;
-- minimal/selected snapshots restore required behavior without turning every runtime field into permanent state.
+- AVO persistent memory and runtime snapshot can evolve independently.
 
 ---
 
 ## NOOA-10 — Reference substrate + adversarial evaluation
 
-Goal: prove the completed substrate works as a reusable consumer-facing runtime rather than a collection of isolated APIs, and establish dosage-sensitive baselines instead of universal best-practice claims.
+Goal: prove the completed substrate works as a reusable consumer-facing runtime rather than a collection of isolated APIs.
 
 Reference scenario must demonstrate:
 
@@ -406,11 +421,9 @@ Reference scenario must demonstrate:
 Evaluation / ablation targets:
 
 - Predict vs CodeAct for simple typed judgments;
-- insufficient vs selected vs excessive history/context;
+- full history vs selected/summarized history;
 - raw-context pressure vs bounded context blocks;
-- minimal/selective vs eager ResourceRef/tool disclosure;
-- low/target/high CodeAct iteration and capability budgets within safe hard bounds;
-- supervision/guardrail dose where the reference workload exposes a useful trade-off;
+- ResourceRef progressive disclosure vs eager tool-surface dump;
 - different model-routing policies;
 - resume on/off;
 - malformed model actions;
@@ -426,12 +439,10 @@ Metrics should include at minimum:
 - model calls;
 - execution/capability calls;
 - prompt/context size where observable;
-- cost/latency proxies where observable;
 - false-success / unsafe-accept rate for the reference workload;
-- resume fidelity;
-- marginal gain/loss across dosage points when an ablation is performed.
+- resume fidelity.
 
-This stage does not claim universal model quality or one universal optimal dose. It validates substrate contracts and provides a reproducible baseline from which consumer harnesses can tune their own useful ranges.
+This stage does not claim universal model quality. It validates the substrate contracts and provides a reproducible baseline for consumer harnesses.
 
 ---
 
@@ -457,8 +468,6 @@ snapshot/resume runtime state
         v
 run under the existing AVO long-horizon control plane
 ```
-
-Completion also requires that the kernel expose enough policy/measurement surface to tune workload-sensitive dosage without baking `more = better` assumptions into reusable defaults.
 
 The final architecture remains:
 

@@ -113,6 +113,10 @@ ExHarness currently enforces the following base semantics:
 - execution adapters receive timeout/abort/constraint envelopes;
 - observability is separate from correctness state.
 
+The current variation budget is a **hard containment ceiling**, not a claim that a fixed number of calls/iterations is the economically useful amount of search. The next AVO control-plane patch introduces an adaptive useful-range gate driven by grounded evaluation/cost history. Until that stage merges, ExHarness does not claim dynamic diminishing-return termination.
+
+See `docs/architecture/adaptive-useful-range.md` for the control-plane contract.
+
 ## Infrastructure extension points
 
 ### Capabilities
