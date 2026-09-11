@@ -7,7 +7,8 @@ import {
   createHarness,
   createAttestationIssuer,
   defineTrustPolicy,
-  evaluateAttestationTrust
+  evaluateTrustBoundary,
+  evaluateAttestationChainTrust
 } from "exharness";
 ```
 
@@ -21,8 +22,12 @@ EvidenceArtifact
   -> boundary accept/reject
 ```
 
-Attestations are subject-, policy-, environment- and issuer-bound. They may reference upstream attestations to form verification -> coordination -> release-build -> acceptance trust lineage.
+`evaluateTrustBoundary()` is the authorization-oriented trust API. It verifies attestation provenance and can require independent authentication of the decision evaluator and evidence producers/environments. Declared identity fields alone are not authority proof.
 
-Domain workflows and concrete model/tool/sandbox/store/signature/key-management adapters are intentionally injected by consuming projects rather than embedded in the kernel.
+`evaluateAttestationChainTrust()` additionally requires exact referenced upstream attestations to have trusted boundary results, enabling verification -> coordination -> release-build -> acceptance trust lineage without treating a digest link as proof.
+
+Attestations are subject-, policy-, environment- and issuer-bound. `attestCurrentEvaluation()` also refuses to attest stale evaluation inputs and can resolve evidence environment provenance separately for each verification artifact.
+
+Domain workflows and concrete model/tool/sandbox/store/signature/key-management/authority-verification adapters are intentionally injected by consuming projects rather than embedded in the kernel.
 
 See `docs/architecture/kernel-completion.md` and `docs/architecture/trust-pipeline.md` in the repository for the architecture contracts.
