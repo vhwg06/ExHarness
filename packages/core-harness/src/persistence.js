@@ -1,7 +1,7 @@
 import { invariant } from "./contracts.js";
 import { SchemaUnsupportedError } from "./errors.js";
 
-export const CURRENT_STATE_SCHEMA_VERSION = 1;
+export const CURRENT_STATE_SCHEMA_VERSION = 2;
 
 function requireVersion(value, label) {
   invariant(Number.isInteger(value) && value > 0, `${label} must be a positive integer`);
@@ -18,13 +18,28 @@ export function defineStateMigration({ fromVersion, migrate }) {
   });
 }
 
+export const BUILT_IN_STATE_MIGRATIONS = Object.freeze([
+  defineStateMigration({
+    fromVersion: 1,
+    migrate(state) {
+      const next = structuredClone(state);
+      next.schemaVersion = 2;
+      next.persistentMemory ??= {};
+      next.persistentMemory.evidenceArtifacts ??= [];
+      next.persistentMemory.decisionArtifacts ??= [];
+      next.persistentMemory.attestations ??= [];
+      return next;
+    }
+  })
+]);
+
 export function createStateMigrator({
   targetVersion = CURRENT_STATE_SCHEMA_VERSION,
   migrations = []
 } = {}) {
   const target = requireVersion(targetVersion, "migration targetVersion");
   const byVersion = new Map();
-  for (const definition of migrations) {
+  for (const definition of [...BUILT_IN_STATE_MIGRATIONS, ...migrations]) {
     const migration = defineStateMigration(definition);
     invariant(!byVersion.has(migration.fromVersion), `duplicate migration from version ${migration.fromVersion}`);
     byVersion.set(migration.fromVersion, migration);
@@ -35,7 +50,7 @@ export function createStateMigrator({
 
     async migrate(state) {
       invariant(state && typeof state === "object", "persistent state is required");
-      const initialVersion = state.schemaVersion ?? CURRENT_STATE_SCHEMA_VERSION;
+      const initialVersion = state.schemaVersion ?? 1;
       requireVersion(initialVersion, "state schemaVersion");
       if (initialVersion > target) {
         throw new SchemaUnsupportedError({
@@ -65,7 +80,7 @@ export function createStateMigrator({
 
 export function normalizePersistentState(state) {
   invariant(state && typeof state === "object", "persistent state is required");
-  const schemaVersion = state.schemaVersion ?? CURRENT_STATE_SCHEMA_VERSION;
+  const schemaVersion = state.schemaVersion ?? 1;
   const revision = state.revision ?? 0;
 
   if (schemaVersion > CURRENT_STATE_SCHEMA_VERSION) {
@@ -90,6 +105,9 @@ export function normalizePersistentState(state) {
   normalized.persistentMemory.knowledge ??= [];
   normalized.persistentMemory.lineage ??= [];
   normalized.persistentMemory.variations ??= [];
+  normalized.persistentMemory.evidenceArtifacts ??= [];
+  normalized.persistentMemory.decisionArtifacts ??= [];
+  normalized.persistentMemory.attestations ??= [];
   normalized.trajectory ??= [];
   normalized.supervision ??= {
     inspections: 0,
