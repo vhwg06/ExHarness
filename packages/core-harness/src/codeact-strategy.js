@@ -11,6 +11,7 @@ import {
   executeWithPolicy
 } from "./execution.js";
 import { defineModelAdapter, modelAdapterView } from "./model.js";
+import { TraceSpanKind } from "./tracing.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
 export const CodeActActionType = Object.freeze({
@@ -157,6 +158,12 @@ function observationView(observation) {
   return Object.freeze(normalizeTransportData(observation, "codeact observation"));
 }
 
+async function traced(trace, kind, name, operation, options = {}) {
+  return trace && typeof trace.runSpan === "function"
+    ? trace.runSpan(kind, name, operation, options)
+    : operation();
+}
+
 export function createCodeActStrategy({
   model,
   executor,
@@ -214,7 +221,8 @@ export function createCodeActStrategy({
       describeResource,
       invokeResource,
       validateResult = null,
-      recordAgentEvent = null
+      recordAgentEvent = null,
+      trace = null
     }) {
       invariant(typeof invoke === "function", "codeact requires runtime invoke()");
       invariant(typeof describeResource === "function", "codeact requires runtime describeResource()");
@@ -315,7 +323,13 @@ export function createCodeActStrategy({
           observations: clone(observations),
           protocol
         });
-        const raw = await awaitWithinTime("model", () => resolvedModel.generate(request));
+        const raw = await traced(
+          trace,
+          TraceSpanKind.MODEL,
+          resolvedModel.name ?? "model",
+          () => awaitWithinTime("model", () => resolvedModel.generate(request)),
+          { attributes: { mode: "CODEACT", turn } }
+        );
         assertWithinTime("after_model");
 
         recordAgentEvent?.(AgentEventKind.MODEL_OUTPUT, {
@@ -384,23 +398,37 @@ export function createCodeActStrategy({
         assertWithinTime("before_action");
 
         try {
-          let output;
-          if (action.target === CodeActExecutionTarget.EXECUTOR) {
-            output = await awaitWithinTime("executor_action", () => executeWithPolicy(
-              resolvedExecutor,
-              { mode: "CODEACT", turn, request: clone(action.request) },
-              { policy: resolvedExecutionPolicy }
-            ));
-          } else if (action.target === CodeActExecutionTarget.CAPABILITY) {
-            output = await awaitWithinTime("capability_action", () => invoke(action.name, clone(action.input)));
-          } else if (action.target === CodeActExecutionTarget.RESOURCE) {
-            output = await awaitWithinTime(
-              "resource_action",
-              () => invokeResource(clone(action.ref), action.operation, clone(action.input))
-            );
-          } else {
-            output = await awaitWithinTime("resource_describe", () => describeResource(clone(action.ref)));
-          }
+          const output = await traced(
+            trace,
+            TraceSpanKind.ACTION,
+            `codeact.${action.target.toLowerCase()}`,
+            async () => {
+              if (action.target === CodeActExecutionTarget.EXECUTOR) {
+                return traced(
+                  trace,
+                  TraceSpanKind.EXECUTION,
+                  "executor.execute",
+                  () => awaitWithinTime("executor_action", () => executeWithPolicy(
+                    resolvedExecutor,
+                    { mode: "CODEACT", turn, request: clone(action.request) },
+                    { policy: resolvedExecutionPolicy }
+                  )),
+                  { attributes: { turn } }
+                );
+              }
+              if (action.target === CodeActExecutionTarget.CAPABILITY) {
+                return awaitWithinTime("capability_action", () => invoke(action.name, clone(action.input)));
+              }
+              if (action.target === CodeActExecutionTarget.RESOURCE) {
+                return awaitWithinTime(
+                  "resource_action",
+                  () => invokeResource(clone(action.ref), action.operation, clone(action.input))
+                );
+              }
+              return awaitWithinTime("resource_describe", () => describeResource(clone(action.ref)));
+            },
+            { attributes: { turn, target: action.target } }
+          );
 
           assertWithinTime("after_action");
           const transportOutput = normalizeTransportData(output, "codeact action output");
@@ -413,7 +441,11 @@ export function createCodeActStrategy({
           });
           recordAgentEvent?.(AgentEventKind.ACTION_OUTPUT, observation);
         } catch (error) {
-          if (error instanceof CapabilityBudgetExceededError || error instanceof CodeActBoundaryError) {
+          if (
+            error instanceof CapabilityBudgetExceededError ||
+            error instanceof CodeActBoundaryError ||
+            error?.code === ExHarnessErrorCode.TRACE_SINK_FAILED
+          ) {
             recordAgentEvent?.(AgentEventKind.ACTION_ERROR, {
               turn,
               kind: "BOUNDARY_ERROR",
