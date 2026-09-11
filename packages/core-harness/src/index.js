@@ -14,6 +14,7 @@ export {
   ExHarnessError,
   ExHarnessErrorCode,
   ExecutionError,
+  ModelRouteError,
   PredictValidationError,
   RecoveryRequiredError,
   ResourceAccessError,

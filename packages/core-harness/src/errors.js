@@ -68,6 +68,13 @@ export class RuntimeSnapshotError extends ExHarnessError {
   }
 }
 
+export class ModelRouteError extends ExHarnessError {
+  constructor(message, details = null, cause = null) {
+    super(ExHarnessErrorCode.CONTRACT_VIOLATION, message, { details, cause });
+    this.name = "ModelRouteError";
+  }
+}
+
 export class RecoveryRequiredError extends ExHarnessError {
   constructor({ sessionId, variationId, lastActivityAt }) {
     super(

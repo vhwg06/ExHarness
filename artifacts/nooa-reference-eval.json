@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "reference": "nooa-substrate-v1",
+  "source": "packed-blank-consumer",
+  "metrics": {
+    "taskSuccess": 1,
+    "modelCalls": 13,
+    "modelCallsByName": {
+      "predict": 7,
+      "predict-alt": 1,
+      "codeact": 3,
+      "malformed": 1,
+      "pressure": 1
+    },
+    "modelLoadsByName": {
+      "predict": 3,
+      "predict-alt": 1,
+      "route-only": 1,
+      "codeact": 1,
+      "malformed": 1,
+      "pressure": 1
+    },
+    "invalidOutputs": 5,
+    "invalidOutputRate": 0.38461538461538464,
+    "correctionRetryCount": 5,
+    "validationErrorEvents": 3,
+    "modelOutputEvents": 12,
+    "capabilityCallsInVariation": 3,
+    "resourceInvocations": 1,
+    "executorCalls": 1,
+    "promptContext": {
+      "noHistoryEvents": 0,
+      "selectedHistoryEvents": 2,
+      "noHistoryChars": 223,
+      "selectedHistoryChars": 1155
+    },
+    "nestedSpanCount": 37,
+    "traceFailureCount": 47,
+    "observabilityFailureCount": 14,
+    "falseSuccessCount": 0,
+    "unsafeAcceptCount": 0,
+    "resumeFidelity": 1,
+    "snapshotRedactions": {
+      "resourceRefs": 3,
+      "omittedPayloads": 0
+    },
+    "adversarialPasses": 8,
+    "adversarialChecks": 8
+  },
+  "provenance": {
+    "predictRoute": {
+      "scope": "JUDGMENT",
+      "requested": { "name": "predict" },
+      "adapter": { "name": "predict", "version": "reference-v1" }
+    },
+    "predictUsage": {
+      "adapter": { "name": "predict", "version": "reference-v1" },
+      "calls": 2
+    },
+    "invocationOverrideRoute": {
+      "scope": "INVOCATION",
+      "requested": { "name": "predict-alt" },
+      "adapter": { "name": "predict-alt", "version": "reference-v1" }
+    },
+    "invocationOverrideUsage": {
+      "adapter": { "name": "predict-alt", "version": "reference-v1" },
+      "calls": 1
+    },
+    "routeOnlyRoute": {
+      "scope": "JUDGMENT",
+      "requested": { "name": "route-only" },
+      "adapter": { "name": "route-only", "version": "reference-v1" }
+    },
+    "routeOnlyUsage": {
+      "adapter": { "name": "route-only", "version": "reference-v1" },
+      "calls": 0
+    },
+    "evaluationVerdict": "PASS",
+    "lineageAdvanced": true
+  },
+  "excludedDynamicFields": [
+    "provenance.snapshotDigest",
+    "provenance.evaluationId"
+  ]
+}
