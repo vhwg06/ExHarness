@@ -17,6 +17,7 @@ export {
   StoreConflictError
 } from "./errors.js";
 export {
+  BUILT_IN_STATE_MIGRATIONS,
   CURRENT_STATE_SCHEMA_VERSION,
   assertPersistedRevision,
   createStateMigrator,
@@ -54,6 +55,29 @@ export {
   createVerificationAwareObjective,
   defineVerificationPolicy
 } from "./verification-assessment.js";
+export {
+  ClaimStatus,
+  TrustBoundary,
+  TrustReasonCode,
+  attestationRef,
+  canonicalize,
+  createAttestationIssuer,
+  createDecisionArtifact,
+  createEvidenceArtifact,
+  decisionFromEvaluation,
+  defineAuthority,
+  defineEnvironmentRef,
+  definePolicyRef,
+  defineSubject,
+  defineTrustPolicy,
+  digestValue,
+  environmentRefFromValue,
+  evaluateAttestationTrust,
+  evidenceFromVerificationArtifact,
+  policyRefFromValue,
+  subjectFromValue,
+  validateTrustBundle
+} from "./trust.js";
 export {
   AgentRunErrorCode,
   CapabilityBudgetExceededError,
