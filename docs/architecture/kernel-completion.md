@@ -59,9 +59,43 @@ Persistent work state has an explicit `schemaVersion` and monotonic `revision`.
 
 Production `createHarness()` requires a revision-aware store. A store must reject a stale write instead of silently applying last-writer-wins. The bundled in-memory store is the reference semantics, not the production persistence recommendation.
 
-The testing SDK exports `verifySessionStoreContract()` so a project-specific Postgres, SQLite, Redis, object-store, or remote implementation can prove the same behavior.
+The testing SDK exports `verifySessionStoreContract()` so a project-specific Postgres, SQLite, Redis, object-store, or remote implementation can prove the same behavior. A revision-aware store must return the revision it actually persisted; merely advertising revision support is insufficient.
 
 Future schema versions must be rejected before they enter kernel state. Older compatible state is normalized at the persistence boundary; future-state guessing is forbidden.
+
+Schema evolution is explicit and sequential:
+
+```text
+v1 -- migration 1->2 --> v2 -- migration 2->3 --> v3
+```
+
+`defineStateMigration()` and `createStateMigrator()` require every intermediate transition. Missing migration steps fail rather than silently coercing persistent engineering memory.
+
+## External mutation consistency
+
+No generic kernel can atomically commit arbitrary external side effects and its own state store. A process can crash after an external mutation succeeds but before the new candidate is persisted.
+
+ExHarness therefore does not claim distributed rollback. The production facade gives every `environment.act()` call a deterministic `actionKey` derived from:
+
+```text
+session + current candidate + semantic action
+```
+
+A retry of the same semantic action from the same candidate receives the same key. Environment/executor adapters use that key to deduplicate or reconcile an uncertain prior attempt.
+
+```text
+external mutation succeeds
+        |
+process crashes before state save
+        |
+explicit recovery / retry
+        |
+identical actionKey
+        |
+consumer adapter deduplicates or reconciles
+```
+
+This is an idempotency/reconciliation protocol, not a fake transaction guarantee. Consumers whose external systems cannot provide idempotent or reconcilable mutation semantics must surface that limitation in their workload harness.
 
 ## Interrupted work and recovery
 
@@ -137,7 +171,7 @@ The kernel ships deterministic utilities for clocks, IDs, fake environments/exec
 Repository verification has four independent surfaces:
 
 ```text
-kernel invariant tests
+kernel invariant + adversarial tests
         +
 reference harness
         +
@@ -146,7 +180,11 @@ blank-consumer packed-package smoke
 deterministic control-plane benchmark
 ```
 
+The blank-consumer smoke installs the actual packed tarball and imports both `exharness` and `exharness/testing`; it is deliberately separate from source-relative tests.
+
 The benchmark measures kernel plumbing/invariants only. It deliberately does not claim model or domain quality. Backend/frontend/QA/research harnesses must add their own workload benchmarks and objective verification artifacts.
+
+The CI compatibility gate runs the complete verification command on Node 20, 22, and 24.
 
 ## Completion gate
 
@@ -157,11 +195,13 @@ The base kernel is considered complete when all of the following hold:
 3. candidate lineage, verification freshness, persistent K, bounded variation, promotion, and feedback remain enforced by deterministic core semantics;
 4. interrupted work is detectable and explicitly recoverable;
 5. stale persistence writes conflict instead of silently overwriting progress;
-6. supervisor redirects can survive context/process boundaries without gaining correctness or mutation authority;
-7. execution is routed through an explicit adapter boundary with timeout/abort/constraints;
-8. run/capability lifecycle is observable without making telemetry the source of truth;
-9. custom store/executor adapters have reusable contract verification;
-10. tests, reference example, package smoke, benchmark, and npm pack gates are green.
+6. schema evolution has an explicit sequential migration contract;
+7. external mutation retries have a stable idempotency/reconciliation key;
+8. supervisor redirects can survive context/process boundaries without gaining correctness or mutation authority;
+9. execution is routed through an explicit adapter boundary with timeout/abort/constraints;
+10. run/capability lifecycle is observable without making telemetry the source of truth;
+11. custom store/executor adapters have reusable contract verification;
+12. tests, reference example, package smoke, benchmark, npm pack, and supported-runtime matrix are green.
 
 ## Explicit non-goals of the kernel
 
@@ -172,6 +212,7 @@ The completed kernel does not contain:
 - a concrete model provider;
 - a concrete shell/container/browser sandbox;
 - automatic semantic truth resolution for conflicting knowledge;
+- distributed transactions over consumer side effects;
 - benchmark-derived optimal context/supervision doses;
 - parallel AVO branches.
 
