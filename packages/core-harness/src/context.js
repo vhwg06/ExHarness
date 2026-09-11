@@ -29,9 +29,46 @@ function assertCloneable(value, label) {
   }
 }
 
+function validatePromptData(value, label, seen = new WeakSet()) {
+  if (value == null) return;
+  const type = typeof value;
+  if (type === "string" || type === "boolean") return;
+  if (type === "number") {
+    invariant(Number.isFinite(value), `${label} numbers must be finite`);
+    return;
+  }
+  invariant(type === "object", `${label} must contain only JSON-compatible prompt data`);
+  invariant(!seen.has(value), `${label} cannot contain cycles`);
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => validatePromptData(item, `${label}[${index}]`, seen));
+    seen.delete(value);
+    return;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  invariant(prototype === Object.prototype || prototype === null, `${label} must contain only plain objects and arrays`);
+  invariant(Object.getOwnPropertySymbols(value).length === 0, `${label} cannot contain symbol keys`);
+  for (const [key, child] of Object.entries(value)) {
+    validatePromptData(child, `${label}.${key}`, seen);
+  }
+  seen.delete(value);
+}
+
+function normalizePromptData(value, label) {
+  const cloned = assertCloneable(value, label);
+  validatePromptData(cloned, label);
+  return cloned;
+}
+
 function serializedChars(value) {
-  const serialized = JSON.stringify(value);
-  return serialized == null ? 0 : serialized.length;
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized == null ? 0 : serialized.length;
+  } catch (error) {
+    throw new TypeError("rendered prompt context must be JSON-serializable", { cause: error });
+  }
 }
 
 function normalizeNames(values, label) {
@@ -57,7 +94,7 @@ export function defineContextBlock(definition = {}) {
   invariant(fixed !== dynamic, `context block ${resolvedName} requires exactly one of value or resolve()`);
   if (dynamic) invariant(typeof resolve === "function", `context block ${resolvedName} resolve must be a function`);
 
-  const fixedValue = fixed ? assertCloneable(value, `context block ${resolvedName} value`) : undefined;
+  const fixedValue = fixed ? normalizePromptData(value, `context block ${resolvedName} value`) : undefined;
 
   return Object.freeze({
     name: resolvedName,
@@ -112,9 +149,22 @@ export function defineContextSelection({
   });
 }
 
-function normalizeSelectedEvents(value) {
-  invariant(Array.isArray(value), "context history selector must return an array");
-  return clone(value);
+function selectCanonicalEvents(canonicalEvents, selectedEvents) {
+  invariant(Array.isArray(selectedEvents), "context history selector must return an array");
+  const byId = new Map(canonicalEvents.map((event) => [event.id, event]));
+  const seen = new Set();
+  const selected = [];
+
+  for (const event of selectedEvents) {
+    invariant(event && typeof event === "object", "context history selector entries must be events");
+    const id = requireText(event.id, "context history selected event id");
+    invariant(byId.has(id), `context history selector cannot fabricate event: ${id}`);
+    invariant(!seen.has(id), `context history selector cannot duplicate event: ${id}`);
+    seen.add(id);
+    selected.push(clone(byId.get(id)));
+  }
+
+  return normalizePromptData(selected, "context history events");
 }
 
 function enforceHistoryCount(events, policy) {
@@ -126,6 +176,7 @@ function enforceHistoryCount(events, policy) {
       actual: events.length
     });
   }
+  if (policy.maxHistoryEvents === 0) return [];
   return events.slice(-policy.maxHistoryEvents);
 }
 
@@ -199,7 +250,7 @@ export async function renderAgentContext({
       name: block.name,
       description: block.description ?? null,
       trust: block.trust,
-      value: assertCloneable(resolvedValue, `context block ${block.name} resolved value`)
+      value: normalizePromptData(resolvedValue, `context block ${block.name} resolved value`)
     });
   }
 
@@ -212,18 +263,22 @@ export async function renderAgentContext({
   };
 
   if (resolvedSelection.history) {
-    let selected = clone(canonicalEvents);
+    const canonicalSnapshot = clone(canonicalEvents);
+    let selected;
     if (resolvedSelection.selectHistory) {
-      selected = normalizeSelectedEvents(await resolvedSelection.selectHistory(clone(selected), Object.freeze({
+      const requested = await resolvedSelection.selectHistory(clone(canonicalSnapshot), Object.freeze({
         callId: callId ?? null,
         judgment: judgment == null ? null : clone(judgment)
-      })));
+      }));
+      selected = selectCanonicalEvents(canonicalSnapshot, requested);
+    } else {
+      selected = normalizePromptData(canonicalSnapshot, "context history events");
     }
     selected = enforceHistoryCount(selected, resolvedPolicy);
 
     if (resolvedSelection.reduceHistory) {
       const sourceEventIds = selected.map((event) => event.id);
-      const summary = assertCloneable(
+      const summary = normalizePromptData(
         await resolvedSelection.reduceHistory(clone(selected), Object.freeze({
           callId: callId ?? null,
           judgment: judgment == null ? null : clone(judgment)
