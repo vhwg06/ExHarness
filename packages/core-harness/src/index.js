@@ -153,6 +153,7 @@ export {
 export { createInMemorySessionStore } from "./store.js";
 export { validateCorePorts } from "./ports.js";
 export { createCoreHarness } from "./core-harness.js";
+export { defineJudgment } from "./judgment.js";
 export { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 export { AVOCapability, createAVOHarness } from "./avo-harness.js";
 export { createHarness } from "./harness.js";
