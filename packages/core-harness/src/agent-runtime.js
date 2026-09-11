@@ -1,4 +1,5 @@
 import { invariant, requireText } from "./contracts.js";
+import { createAgentEventLog, errorEvent, resultEvent, taskEvent } from "./agent-events.js";
 import { defineJudgment, judgmentView } from "./judgment.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
@@ -81,7 +82,7 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     const resolved = resolveCapabilities(scopedCapabilities);
     const runInput = clone(input);
     const runContext = clone(context);
-    const runEvents = clone(events) ?? [];
+    const eventLog = createAgentEventLog(events ?? []);
     const maxCapabilityCalls = budget?.maxCapabilityCalls ?? null;
 
     if (maxCapabilityCalls != null) {
@@ -96,6 +97,11 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     if (runtimeContract.validateResult != null) {
       invariant(typeof runtimeContract.validateResult === "function", "runtime validateResult must be a function");
     }
+
+    eventLog.append(taskEvent({
+      input: runInput,
+      judgment: runtimeContract.judgment ?? null
+    }));
 
     let capabilityCalls = 0;
     let budgetExhausted = false;
@@ -134,24 +140,35 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
       return capability.parseOutput ? capability.parseOutput(output) : output;
     }
 
-    const result = await selectedStrategy.run(Object.freeze({
-      input: runInput,
-      context: runContext,
-      events: runEvents,
-      capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
-      invoke,
-      judgment: runtimeContract.judgment ?? null,
-      validateResult: runtimeContract.validateResult ?? null
-    }));
+    try {
+      const result = await selectedStrategy.run(Object.freeze({
+        input: runInput,
+        context: runContext,
+        events: eventLog.snapshot(),
+        capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
+        invoke,
+        emitEvent(event) {
+          return eventLog.append(event);
+        },
+        judgment: runtimeContract.judgment ?? null,
+        validateResult: runtimeContract.validateResult ?? null
+      }));
 
-    return Object.freeze({
-      result,
-      usage: Object.freeze({
-        capabilityCalls,
-        budgetExhausted,
-        maxCapabilityCalls
-      })
-    });
+      eventLog.append(resultEvent(result));
+
+      return Object.freeze({
+        result,
+        events: eventLog.snapshot(),
+        usage: Object.freeze({
+          capabilityCalls,
+          budgetExhausted,
+          maxCapabilityCalls
+        })
+      });
+    } catch (error) {
+      eventLog.append(errorEvent(error));
+      throw error;
+    }
   }
 
   async function executeRun(options = {}) {
@@ -193,6 +210,7 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
 
     return Object.freeze({
       result: parsedOutput,
+      events: report.events,
       usage: report.usage,
       judgment: judgmentView(judgment)
     });
