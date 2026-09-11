@@ -51,8 +51,8 @@ NOOA-01 Typed Judgment                         DONE
 NOOA-02 Predict Strategy                       DONE
 NOOA-03 AgentEvent working history             DONE
 AVO-R1  Adaptive useful-range gate             DONE
-NOOA-04 Context blocks + history selection     NEXT
-NOOA-05 ResourceRef / live resource semantics  PENDING
+NOOA-04 Context blocks + history selection     DONE
+NOOA-05 ResourceRef / live resource semantics  NEXT
 NOOA-06 CodeAct execution loop                 PENDING
 NOOA-07 Nested tracing                         PENDING
 NOOA-08 Model routing / scoped overrides       PENDING
@@ -60,7 +60,7 @@ NOOA-09 Runtime snapshot / resume               PENDING
 NOOA-10 Reference substrate + adversarial eval PENDING
 ```
 
-Current checkpoint: `NOOA-04`.
+Current checkpoint: `NOOA-05`.
 
 ---
 
@@ -228,38 +228,72 @@ Merged through PR #16.
 
 ---
 
-## NOOA-04 — Context blocks + history selection — NEXT
+## NOOA-04 — Context blocks + history selection — DONE
 
-Goal: distinguish deliberate current prompt context from chronological working events.
+Goal: distinguish deliberate current prompt context from chronological working events without collapsing invocation data into trusted instruction channels.
 
-Required semantics:
+Architecture authority: `docs/architecture/context-history.md`.
 
-- named fixed context blocks;
-- named dynamic/expression-backed context blocks;
-- trusted instruction/context channel distinct from call data;
-- per-judgment context selection;
-- history selector/filter hook;
-- summarization/reduction hook without mutating authoritative history;
-- bounded rendering/dosage controls;
-- no automatic dump of full persistent engineering memory.
+Implemented semantics:
 
-Explicit non-goals:
+- named fixed and dynamic context blocks;
+- explicit trusted/untrusted authority classification;
+- dynamic blocks re-evaluated at invocation time;
+- dynamic resolvers do not receive invocation input/context implicitly;
+- per-judgment block selection with empty-by-default prompt context;
+- canonical AgentEvent journal remains authoritative and separate from prompt history;
+- selector is subset-only: no fabricated/duplicate IDs, no event-body replacement, canonical chronological order preserved;
+- optional reducer/summarizer receives cloned selected history and cannot rewrite canonical events;
+- reduced history keeps source-event provenance while omitting raw events from prompt context;
+- `maxBlocks`, `maxHistoryEvents`, and `maxSerializedChars` enforce deterministic bounds;
+- `maxHistoryEvents: 0` means exactly zero history;
+- history can fail closed or truncate oldest selected events;
+- trusted blocks/reduced summaries are never silently truncated to satisfy size limits;
+- prompt-visible values are restricted to stable JSON-style data;
+- Predict receives `callContext`, selected `promptContext`, selected raw `agentEvents`, and history metadata as separate channels;
+- observability instrumentation preserves context introspection APIs;
+- NOOA-01 public judgment metadata remains backward compatible.
 
-- live resource handles;
-- CodeAct;
-- model routing.
+Manual/adversarial findings that changed implementation:
 
-Verification challenges:
+1. Dynamic block normalization was not idempotent because a normalized dynamic definition looked like it also contained a fixed value; normalized block shape was corrected.
+2. Shallow freezing left nested trusted values mutable inside a strategy call; rendered prompt context is now deep-frozen.
+3. Exposing context details through `judgments()` broke the previously verified NOOA-01 public metadata contract; context selection remains internal.
+4. `maxHistoryEvents: 0` hit JavaScript `slice(-0)` semantics and retained all history; zero now projects no events.
+5. A selector could fabricate/tamper event objects while appearing to preserve provenance; it now selects canonical IDs and the runtime restores canonical bodies.
+6. Structured-cloneable data was broader than stable model/prompt data; prompt-visible blocks/history/summary now require JSON-style values.
+7. Selectors could reorder the working journal; selected output now preserves canonical chronology.
+8. Model-visible block descriptions are normalized to text/null.
 
-- untrusted call data cannot be promoted into trusted instruction blocks implicitly;
-- excluded context/history never reaches strategy/model input;
-- dynamic blocks are re-evaluated at call time;
-- summarization cannot rewrite canonical event history;
-- dosage limits fail closed or truncate according to explicit policy.
+Verification challenges covered:
+
+- malicious invocation data cannot shadow selected trusted blocks;
+- registered but unselected blocks/history do not reach strategy/model input;
+- dynamic blocks are fresh per call and not given call input implicitly;
+- selector/reducer mutation cannot rewrite canonical AgentEvent history;
+- selector cannot fabricate provenance or reorder chronology;
+- zero-history and bounded-history semantics are deterministic;
+- strict overflow emits stable `CONTEXT_LIMIT_EXCEEDED` and an ERROR AgentEvent;
+- oversized trusted blocks fail closed instead of being silently truncated;
+- non-JSON prompt values such as `BigInt`/`Map` are rejected;
+- Predict receives only selected prompt surfaces;
+- instrumentation cannot hide context APIs;
+- prior typed-judgment API behavior remains intact.
+
+Residual limits:
+
+- `TRUSTED` is consumer-declared authority, not cryptographic proof or prompt-injection sanitization;
+- a custom downstream strategy/model adapter can still deliberately merge `callContext` back into trusted prompt channels;
+- consumer reducers may create semantically poor summaries even though canonical history remains protected;
+- default bounds are containment defaults, not benchmark-derived optima;
+- resolver closures inherit whatever authority the consumer gives them;
+- context/runtime snapshot persistence remains NOOA-09.
+
+Stage PR: #17.
 
 ---
 
-## NOOA-05 — ResourceRef / live resource semantics
+## NOOA-05 — ResourceRef / live resource semantics — NEXT
 
 Goal: let an agent operate on live resources without serializing raw objects into model context.
 
