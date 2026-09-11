@@ -174,16 +174,18 @@ function resourceDescription(record, registryId) {
 export function createResourceRegistry({
   idFactory = () => randomUUID(),
   registryId = randomUUID(),
-  policy = defineResourcePolicy()
+  policy = defineResourcePolicy(),
+  authorize = null
 } = {}) {
   invariant(typeof idFactory === "function", "resource registry idFactory must be a function");
+  if (authorize != null) invariant(typeof authorize === "function", "resource registry authorize must be a function");
   const resolvedRegistryId = requireText(registryId, "resource registry id");
   const resolvedPolicy = defineResourcePolicy(policy);
   const records = new Map();
   const names = new Map();
 
   function activeCount() {
-    return [...records.values()].filter((record) => !record.revoked).length;
+    return [...records.values()].filter((record) => !record.revoked && !record.expired).length;
   }
 
   function resolveRef(ref, { callId = null } = {}) {
@@ -194,13 +196,30 @@ export function createResourceRegistry({
     if (!record || record.resource.name !== ref.name || record.resource.lifetime !== ref.lifetime) {
       throw new ResourceAccessError(ExHarnessErrorCode.RESOURCE_REF_INVALID, "resource ref does not resolve", { resourceRefId: ref.id ?? null });
     }
+    if (record.expired || (record.resource.lifetime === ResourceLifetime.CALL && record.callId !== callId)) {
+      throw new ResourceAccessError(ExHarnessErrorCode.RESOURCE_EXPIRED, `resource ref is outside its call lifetime: ${record.resource.name}`, { resource: record.resource.name, resourceRefId: record.id });
+    }
     if (record.revoked) {
       throw new ResourceAccessError(ExHarnessErrorCode.RESOURCE_REVOKED, `resource ref is revoked: ${record.resource.name}`, { resource: record.resource.name, resourceRefId: record.id });
     }
-    if (record.resource.lifetime === ResourceLifetime.CALL && record.callId !== callId) {
-      throw new ResourceAccessError(ExHarnessErrorCode.RESOURCE_EXPIRED, `resource ref is outside its call lifetime: ${record.resource.name}`, { resource: record.resource.name, resourceRefId: record.id });
-    }
     return record;
+  }
+
+  async function assertAuthorized(action, record, { callId = null, operation = null } = {}) {
+    if (!authorize) return;
+    const allowed = await authorize(Object.freeze({
+      action,
+      ref: refView(record, resolvedRegistryId),
+      operation: operation == null ? null : operationView(operation),
+      callId
+    }));
+    if (allowed !== true) {
+      throw new ResourceAccessError(
+        ExHarnessErrorCode.RESOURCE_ACCESS_DENIED,
+        `resource access denied: ${record.resource.name}${operation ? `.${operation.name}` : ""}`,
+        { resource: record.resource.name, operation: operation?.name ?? null, action }
+      );
+    }
   }
 
   return Object.freeze({
@@ -225,7 +244,7 @@ export function createResourceRegistry({
       }
       const id = requireText(idFactory(), "resource ref id");
       invariant(!records.has(id), `duplicate resource ref id: ${id}`);
-      const record = { id, resource, callId, revoked: false };
+      const record = { id, resource, callId, revoked: false, expired: false };
       records.set(id, record);
       names.set(resource.name, id);
       return refView(record, resolvedRegistryId);
@@ -234,16 +253,19 @@ export function createResourceRegistry({
     refs({ lifetime = null } = {}) {
       if (lifetime != null) invariant(Object.values(ResourceLifetime).includes(lifetime), "resource lifetime filter is invalid");
       return Object.freeze([...records.values()]
-        .filter((record) => !record.revoked && (lifetime == null || record.resource.lifetime === lifetime))
+        .filter((record) => !record.revoked && !record.expired && (lifetime == null || record.resource.lifetime === lifetime))
         .map((record) => refView(record, resolvedRegistryId)));
     },
 
-    describe(ref, { callId = null } = {}) {
-      return resourceDescription(resolveRef(ref, { callId }), resolvedRegistryId);
+    async describe(ref, { callId = null } = {}) {
+      const record = resolveRef(ref, { callId });
+      await assertAuthorized("DESCRIBE", record, { callId });
+      return resourceDescription(record, resolvedRegistryId);
     },
 
     async invoke(ref, operationName, payload = null, runtime = {}) {
-      const record = resolveRef(ref, { callId: runtime.callId ?? null });
+      const callId = runtime.callId ?? null;
+      const record = resolveRef(ref, { callId });
       const name = requireText(operationName, "resource operation name");
       const operation = record.resource.operations.find((candidate) => candidate.name === name);
       if (!operation) {
@@ -253,10 +275,11 @@ export function createResourceRegistry({
           { resource: record.resource.name, operation: name }
         );
       }
+      await assertAuthorized("INVOKE", record, { callId, operation });
       const transportInput = normalizeTransportData(payload, `resource operation ${record.resource.name}.${name} input`);
       const parsedInput = operation.parseInput ? operation.parseInput(clone(transportInput)) : transportInput;
       const output = await operation.execute(record.resource.value, parsedInput, Object.freeze({
-        callId: runtime.callId ?? null,
+        callId,
         input: clone(runtime.input ?? null),
         context: clone(runtime.context ?? null),
         ref: refView(record, resolvedRegistryId)
@@ -275,8 +298,8 @@ export function createResourceRegistry({
     closeCall(callId) {
       requireText(callId, "resource callId");
       for (const record of records.values()) {
-        if (record.resource.lifetime === ResourceLifetime.CALL && record.callId === callId && !record.revoked) {
-          record.revoked = true;
+        if (record.resource.lifetime === ResourceLifetime.CALL && record.callId === callId && !record.revoked && !record.expired) {
+          record.expired = true;
           names.delete(record.resource.name);
         }
       }
