@@ -46,12 +46,12 @@ NOOA-04 Context blocks + history selection     DONE
 NOOA-05 ResourceRef / live resource semantics  DONE
 NOOA-06 CodeAct execution loop                 DONE
 NOOA-07 Nested tracing                         DONE
-NOOA-08 Model routing / scoped overrides       NEXT
-NOOA-09 Runtime snapshot / resume              PENDING
+NOOA-08 Model routing / scoped overrides       DONE
+NOOA-09 Runtime snapshot / resume              NEXT
 NOOA-10 Reference substrate + adversarial eval PENDING
 ```
 
-Current checkpoint: `NOOA-08`.
+Current checkpoint: `NOOA-09`.
 
 ---
 
@@ -135,13 +135,11 @@ Key contract:
 - trace shape has no correctness authority.
 
 Architecture: `docs/architecture/nested-tracing.md`.
-Stage PR: #21.
+PR #21.
 
----
+### NOOA-08 — Model routing / scoped overrides
 
-## NOOA-08 — Model routing / scoped overrides — NEXT
-
-Goal: separate interaction strategy from model selection and resolve model configuration by scope.
+Separates strategy behavior from scoped model selection.
 
 Resolution precedence:
 
@@ -150,46 +148,31 @@ invocation override
         >
 judgment override
         >
-runtime / agent default
+runtime default
+        >
+legacy strategy-bound fallback
 ```
 
-Required semantics:
+Key contract:
 
-- runtime default model;
-- judgment-local model override;
-- invocation model override;
-- lazy adapter resolution;
-- strategy choice remains independent from model choice;
-- the actually resolved model/adapter provenance is inspectable;
-- routing does not mutate lower-precedence defaults;
-- ordinary domain method contracts do not expose routing unless consumer intentionally requests that surface.
+- lazy, single-flight model adapter registry;
+- invocation overrides do not mutate judgment/runtime defaults;
+- Predict and CodeAct consume a runtime-routed adapter per call;
+- custom strategies must explicitly opt into routed models;
+- unknown or mismatched routes fail closed;
+- route/load failures remain inside canonical `TASK → ERROR` working history;
+- `modelRoute` records resolution provenance;
+- `modelUsage` separately records actual runtime-wrapped adapter `generate()` calls;
+- route resolution is never treated as proof that the model was actually invoked;
+- legacy strategy-bound fallback keeps compatibility but has no fabricated runtime-owned usage proof;
+- routing provenance is observable input, not correctness authority.
 
-Explicit non-goals:
-
-- provider-specific retry/load-balancing policy;
-- runtime snapshot/resume;
-- model quality ranking;
-- turning model identity into correctness authority.
-
-Verification gate:
-
-- precedence is deterministic;
-- invocation override affects one invocation only;
-- judgment override does not mutate runtime default;
-- unused adapters are not eagerly instantiated;
-- same strategy can execute against different resolved models;
-- trace/AgentEvent provenance identifies the model actually used;
-- unknown/invalid model routes fail closed;
-- custom strategy behavior remains independent from router implementation.
-
-Exit artifact:
-
-- architecture note for scope resolution and provenance;
-- stage PR with manual/adversarial findings and residual gaps.
+Architecture: `docs/architecture/model-routing.md`.
+Stage PR: #22.
 
 ---
 
-## NOOA-09 — Runtime snapshot / resume
+## NOOA-09 — Runtime snapshot / resume — NEXT
 
 Goal: make NOOA agent runtime working state resumable without conflating it with AVO persistent engineering memory.
 
