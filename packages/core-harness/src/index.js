@@ -144,6 +144,14 @@ export {
   instrumentCapabilities
 } from "./observability.js";
 export {
+  AgentEventKind,
+  createAgentEventLog,
+  defineAgentEvent,
+  errorEvent,
+  resultEvent,
+  taskEvent
+} from "./agent-events.js";
+export {
   createDeterministicClock,
   createDeterministicIdFactory,
   createFakeEnvironment,
