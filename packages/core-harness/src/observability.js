@@ -168,6 +168,12 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
   if (typeof agentRuntime.revokeResource === "function") {
     instrumented.revokeResource = (ref) => agentRuntime.revokeResource(ref);
   }
+  if (typeof agentRuntime.traces === "function") {
+    instrumented.traces = () => agentRuntime.traces();
+  }
+  if (typeof agentRuntime.traceFailures === "function") {
+    instrumented.traceFailures = () => agentRuntime.traceFailures();
+  }
   if (typeof agentRuntime.invokeJudgment === "function") {
     instrumented.invokeJudgment = (name, input, options = {}) => agentRuntime.invokeJudgment(name, input, options);
   }
