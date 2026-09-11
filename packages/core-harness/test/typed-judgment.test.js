@@ -3,7 +3,9 @@ import test from "node:test";
 
 import {
   createAgentRuntime,
-  defineJudgment
+  createEventBus,
+  defineJudgment,
+  instrumentAgentRuntime
 } from "../src/index.js";
 
 function textInput(value) {
@@ -163,4 +165,27 @@ test("judgment report preserves generic run usage semantics", async () => {
   assert.equal(report.usage.capabilityCalls, 1);
   assert.equal(report.usage.maxCapabilityCalls, 2);
   assert.equal(report.judgment.name, "echo-judgment");
+});
+
+test("observability instrumentation preserves the typed judgment surface", async () => {
+  const runtime = createAgentRuntime({
+    strategy: {
+      async run({ input }) {
+        return { category: input === "alpha" ? "A" : "B" };
+      }
+    },
+    judgments: [
+      defineJudgment({
+        name: "classify",
+        parseInput: textInput,
+        parseOutput: categoryOutput
+      })
+    ]
+  });
+  const instrumented = instrumentAgentRuntime(runtime, createEventBus());
+
+  assert.equal(typeof instrumented.invokeJudgment, "function");
+  assert.equal(typeof instrumented.invokeJudgmentWithReport, "function");
+  assert.deepEqual(instrumented.judgments(), runtime.judgments());
+  assert.deepEqual(await instrumented.invokeJudgment("classify", "alpha"), { category: "A" });
 });
