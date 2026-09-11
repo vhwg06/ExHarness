@@ -96,19 +96,37 @@ export function selectModelRoute({ invocation = null, judgment = null, runtime =
 export async function resolveModelRoute(registry, route) {
   if (route == null) return null;
   invariant(registry && typeof registry.resolve === "function", "model route requires registry.resolve()");
-  const adapter = defineModelAdapter(await registry.resolve(route.selector));
+  const resolvedAdapter = defineModelAdapter(await registry.resolve(route.selector));
   invariant(
-    adapter.name === route.selector.name,
-    `model route ${route.selector.name} resolved adapter ${adapter.name}`
+    resolvedAdapter.name === route.selector.name,
+    `model route ${route.selector.name} resolved adapter ${resolvedAdapter.name}`
   );
+
+  let generateCalls = 0;
+  const adapter = defineModelAdapter({
+    name: resolvedAdapter.name,
+    version: resolvedAdapter.version,
+    async generate(request) {
+      generateCalls += 1;
+      return resolvedAdapter.generate(request);
+    }
+  });
+  const provenance = Object.freeze({
+    scope: route.scope,
+    requested: Object.freeze({ ...route.selector }),
+    adapter: modelAdapterView(adapter)
+  });
+
   return Object.freeze({
     scope: route.scope,
     requested: Object.freeze({ ...route.selector }),
     adapter,
-    provenance: Object.freeze({
-      scope: route.scope,
-      requested: Object.freeze({ ...route.selector }),
-      adapter: modelAdapterView(adapter)
-    })
+    provenance,
+    usage() {
+      return Object.freeze({
+        adapter: modelAdapterView(adapter),
+        calls: generateCalls
+      });
+    }
   });
 }
