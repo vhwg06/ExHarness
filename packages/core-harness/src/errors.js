@@ -5,6 +5,7 @@ export const ExHarnessErrorCode = Object.freeze({
   EXECUTION_FAILED: "EXECUTION_FAILED",
   EXECUTION_TIMED_OUT: "EXECUTION_TIMED_OUT",
   EXECUTION_ABORTED: "EXECUTION_ABORTED",
+  PREDICT_VALIDATION_EXHAUSTED: "PREDICT_VALIDATION_EXHAUSTED",
   CONTRACT_VIOLATION: "CONTRACT_VIOLATION"
 });
 
@@ -54,5 +55,16 @@ export class ExecutionError extends ExHarnessError {
   constructor(code, message, details = null, cause = null) {
     super(code, message, { details, cause });
     this.name = "ExecutionError";
+  }
+}
+
+export class PredictValidationError extends ExHarnessError {
+  constructor({ attempts, lastValidationError = null }) {
+    super(
+      ExHarnessErrorCode.PREDICT_VALIDATION_EXHAUSTED,
+      `predict output failed validation after ${attempts} attempt${attempts === 1 ? "" : "s"}`,
+      { details: { attempts, lastValidationError } }
+    );
+    this.name = "PredictValidationError";
   }
 }
