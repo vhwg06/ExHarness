@@ -19,9 +19,15 @@ export {
 export {
   CURRENT_STATE_SCHEMA_VERSION,
   assertPersistedRevision,
+  createStateMigrator,
   createValidatedSessionStore,
+  defineStateMigration,
   normalizePersistentState
 } from "./persistence.js";
+export {
+  createIdempotentEnvironment,
+  environmentActionKey
+} from "./environment.js";
 export {
   FeedbackKind,
   collectFeedback,
