@@ -8,7 +8,7 @@ export const VariationStatus = Object.freeze({
 export const VariationOutcome = Object.freeze({
   COMMITTED: "COMMITTED",
   CANDIDATE_CHANGED: "CANDIDATE_CHANGED",
-  EVIDENCE_ADDED: "EVIDENCE_ADDED",
+  SEARCH_STATE_CHANGED: "SEARCH_STATE_CHANGED",
   NO_CHANGE: "NO_CHANGE"
 });
 
@@ -87,12 +87,12 @@ export function classifyVariationOutcome(activity) {
   if (activity.lineageAdvanced) return VariationOutcome.COMMITTED;
   if (activity.candidateChanged) return VariationOutcome.CANDIDATE_CHANGED;
 
-  const evidenceAdded =
+  const searchStateChanged =
     activity.observationsAdded > 0 ||
     activity.verificationsAdded > 0 ||
     activity.evaluationsAdded > 0 ||
     activity.knowledgeAdded > 0 ||
     activity.supervisorInterventionsAdded > 0;
 
-  return evidenceAdded ? VariationOutcome.EVIDENCE_ADDED : VariationOutcome.NO_CHANGE;
+  return searchStateChanged ? VariationOutcome.SEARCH_STATE_CHANGED : VariationOutcome.NO_CHANGE;
 }
