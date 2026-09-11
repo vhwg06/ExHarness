@@ -164,6 +164,7 @@ export function createCodeActStrategy({
   maxTurns = 16,
   maxActionCalls = 32,
   maxDurationMs = 120_000,
+  maxObservationChars = 64_000,
   textResponseRecovery = CodeActRecovery.RETRY,
   malformedActionRecovery = CodeActRecovery.RETRY,
   observeActionErrors = true,
@@ -175,6 +176,7 @@ export function createCodeActStrategy({
   const resolvedMaxTurns = normalizePositiveInteger(maxTurns, "codeact maxTurns");
   const resolvedMaxActionCalls = normalizePositiveInteger(maxActionCalls, "codeact maxActionCalls");
   const resolvedMaxDurationMs = normalizeDuration(maxDurationMs);
+  const resolvedMaxObservationChars = normalizePositiveInteger(maxObservationChars, "codeact maxObservationChars");
   const resolvedTextRecovery = normalizeRecovery(textResponseRecovery, "codeact textResponseRecovery");
   const resolvedMalformedRecovery = normalizeRecovery(malformedActionRecovery, "codeact malformedActionRecovery");
   invariant(typeof observeActionErrors === "boolean", "codeact observeActionErrors must be boolean");
@@ -192,7 +194,8 @@ export function createCodeActStrategy({
     limits: Object.freeze({
       maxTurns: resolvedMaxTurns,
       maxActionCalls: resolvedMaxActionCalls,
-      maxDurationMs: resolvedMaxDurationMs
+      maxDurationMs: resolvedMaxDurationMs,
+      maxObservationChars: resolvedMaxObservationChars
     }),
     protocol,
 
@@ -224,15 +227,43 @@ export function createCodeActStrategy({
       let actionCalls = 0;
       let lastValidationError = null;
 
+      function timeBudgetError(stage) {
+        return new CodeActBoundaryError(
+          ExHarnessErrorCode.CODEACT_TIME_BUDGET_EXCEEDED,
+          "codeact time budget exhausted",
+          {
+            stage,
+            maxDurationMs: resolvedMaxDurationMs,
+            elapsedMs: Math.max(0, clock() - startedAt)
+          }
+        );
+      }
+
+      function remainingTime(stage) {
+        if (resolvedMaxDurationMs == null) return null;
+        const remainingMs = resolvedMaxDurationMs - (clock() - startedAt);
+        if (remainingMs <= 0) throw timeBudgetError(stage);
+        return remainingMs;
+      }
+
       function assertWithinTime(stage) {
-        if (resolvedMaxDurationMs == null) return;
-        const elapsedMs = clock() - startedAt;
-        if (elapsedMs >= resolvedMaxDurationMs) {
-          throw new CodeActBoundaryError(
-            ExHarnessErrorCode.CODEACT_TIME_BUDGET_EXCEEDED,
-            "codeact time budget exhausted",
-            { stage, maxDurationMs: resolvedMaxDurationMs, elapsedMs }
-          );
+        remainingTime(stage);
+      }
+
+      async function awaitWithinTime(stage, operation) {
+        const remainingMs = remainingTime(stage);
+        if (remainingMs == null) return operation();
+
+        let timer = null;
+        try {
+          return await Promise.race([
+            Promise.resolve().then(operation),
+            new Promise((_, reject) => {
+              timer = setTimeout(() => reject(timeBudgetError(stage)), remainingMs);
+            })
+          ]);
+        } finally {
+          if (timer != null) clearTimeout(timer);
         }
       }
 
@@ -249,13 +280,26 @@ export function createCodeActStrategy({
 
       function appendObservation(observation) {
         const normalized = observationView(observation);
+        const candidate = [...observations, normalized];
+        const serializedChars = JSON.stringify(candidate).length;
+        if (serializedChars > resolvedMaxObservationChars) {
+          throw new CodeActBoundaryError(
+            ExHarnessErrorCode.CODEACT_OBSERVATION_LIMIT_EXCEEDED,
+            "codeact observation buffer exceeded its serialized bound",
+            {
+              maxObservationChars: resolvedMaxObservationChars,
+              serializedChars,
+              observationCount: candidate.length
+            }
+          );
+        }
         observations.push(normalized);
         return normalized;
       }
 
       for (let turn = 1; turn <= resolvedMaxTurns; turn += 1) {
         assertWithinTime("before_model");
-        const raw = await resolvedModel.generate(Object.freeze({
+        const request = Object.freeze({
           mode: "CODEACT",
           turn,
           input: clone(input),
@@ -270,7 +314,8 @@ export function createCodeActStrategy({
           resources: clone(resources) ?? [],
           observations: clone(observations),
           protocol
-        }));
+        });
+        const raw = await awaitWithinTime("model", () => resolvedModel.generate(request));
         assertWithinTime("after_model");
 
         recordAgentEvent?.(AgentEventKind.MODEL_OUTPUT, {
@@ -341,17 +386,20 @@ export function createCodeActStrategy({
         try {
           let output;
           if (action.target === CodeActExecutionTarget.EXECUTOR) {
-            output = await executeWithPolicy(
+            output = await awaitWithinTime("executor_action", () => executeWithPolicy(
               resolvedExecutor,
               { mode: "CODEACT", turn, request: clone(action.request) },
               { policy: resolvedExecutionPolicy }
-            );
+            ));
           } else if (action.target === CodeActExecutionTarget.CAPABILITY) {
-            output = await invoke(action.name, clone(action.input));
+            output = await awaitWithinTime("capability_action", () => invoke(action.name, clone(action.input)));
           } else if (action.target === CodeActExecutionTarget.RESOURCE) {
-            output = await invokeResource(clone(action.ref), action.operation, clone(action.input));
+            output = await awaitWithinTime(
+              "resource_action",
+              () => invokeResource(clone(action.ref), action.operation, clone(action.input))
+            );
           } else {
-            output = await describeResource(clone(action.ref));
+            output = await awaitWithinTime("resource_describe", () => describeResource(clone(action.ref)));
           }
 
           assertWithinTime("after_action");
@@ -365,6 +413,17 @@ export function createCodeActStrategy({
           });
           recordAgentEvent?.(AgentEventKind.ACTION_OUTPUT, observation);
         } catch (error) {
+          if (error instanceof CapabilityBudgetExceededError || error instanceof CodeActBoundaryError) {
+            recordAgentEvent?.(AgentEventKind.ACTION_ERROR, {
+              turn,
+              kind: "BOUNDARY_ERROR",
+              status: "ERROR",
+              target: action.target,
+              error: errorView(error)
+            });
+            throw error;
+          }
+
           const observation = appendObservation({
             turn,
             kind: "ACTION_RESULT",
@@ -374,8 +433,6 @@ export function createCodeActStrategy({
           });
           recordAgentEvent?.(AgentEventKind.ACTION_ERROR, observation);
 
-          if (error instanceof CapabilityBudgetExceededError) throw error;
-          if (error instanceof CodeActBoundaryError) throw error;
           if (error instanceof ExecutionError && observeActionErrors) continue;
           if (observeActionErrors) continue;
           throw error;
