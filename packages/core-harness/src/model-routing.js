@@ -1,4 +1,5 @@
 import { invariant, requireText } from "./contracts.js";
+import { ModelRouteError } from "./errors.js";
 import { defineModelAdapter, modelAdapterView } from "./model.js";
 
 export const ModelRouteScope = Object.freeze({
@@ -50,19 +51,39 @@ export function createModelRegistry({ models = [] } = {}) {
     if (pending.has(normalized.name)) return pending.get(normalized.name);
 
     const registration = registrations.get(normalized.name);
-    invariant(registration, `model not registered: ${normalized.name}`);
+    if (!registration) {
+      throw new ModelRouteError(
+        `model not registered: ${normalized.name}`,
+        { requestedModel: normalized.name }
+      );
+    }
+
     const loading = Promise.resolve()
       .then(() => registration.load())
       .then((candidate) => {
-        const adapter = defineModelAdapter(candidate);
-        invariant(adapter.name === normalized.name, `model loader ${normalized.name} returned adapter ${adapter.name}`);
+        let adapter;
+        try {
+          adapter = defineModelAdapter(candidate);
+        } catch (error) {
+          throw new ModelRouteError(
+            `model loader ${normalized.name} returned an invalid adapter`,
+            { requestedModel: normalized.name },
+            error
+          );
+        }
+        if (adapter.name !== normalized.name) {
+          throw new ModelRouteError(
+            `model loader ${normalized.name} returned adapter ${adapter.name}`,
+            { requestedModel: normalized.name, resolvedModel: adapter.name }
+          );
+        }
         resolved.set(normalized.name, adapter);
-        pending.delete(normalized.name);
         return adapter;
-      }, (error) => {
+      })
+      .finally(() => {
         pending.delete(normalized.name);
-        throw error;
       });
+
     pending.set(normalized.name, loading);
     return loading;
   }
@@ -96,11 +117,23 @@ export function selectModelRoute({ invocation = null, judgment = null, runtime =
 export async function resolveModelRoute(registry, route) {
   if (route == null) return null;
   invariant(registry && typeof registry.resolve === "function", "model route requires registry.resolve()");
-  const resolvedAdapter = defineModelAdapter(await registry.resolve(route.selector));
-  invariant(
-    resolvedAdapter.name === route.selector.name,
-    `model route ${route.selector.name} resolved adapter ${resolvedAdapter.name}`
-  );
+  let resolvedAdapter;
+  try {
+    resolvedAdapter = defineModelAdapter(await registry.resolve(route.selector));
+  } catch (error) {
+    if (error instanceof ModelRouteError) throw error;
+    throw new ModelRouteError(
+      `model route ${route.selector.name} did not resolve a valid adapter`,
+      { requestedModel: route.selector.name },
+      error
+    );
+  }
+  if (resolvedAdapter.name !== route.selector.name) {
+    throw new ModelRouteError(
+      `model route ${route.selector.name} resolved adapter ${resolvedAdapter.name}`,
+      { requestedModel: route.selector.name, resolvedModel: resolvedAdapter.name }
+    );
+  }
 
   let generateCalls = 0;
   const adapter = defineModelAdapter({
