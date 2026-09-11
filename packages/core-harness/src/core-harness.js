@@ -15,6 +15,13 @@ import {
   validateSupervisorIntervention
 } from "./contracts.js";
 import { normalizeVerificationRecord } from "./verification.js";
+import {
+  VariationStatus,
+  VariationTermination,
+  classifyVariationOutcome,
+  variationActivityDelta,
+  variationActivitySnapshot
+} from "./variation.js";
 import { validateCorePorts } from "./ports.js";
 import {
   createPersistentWorkState,
@@ -43,6 +50,7 @@ export function createCoreHarness({
     const state = await sessionStore.load(sessionId);
     invariant(state, `session not found: ${sessionId}`);
     state.persistentMemory.verifications ??= [];
+    state.persistentMemory.variations ??= [];
     return state;
   }
 
@@ -92,12 +100,15 @@ export function createCoreHarness({
   }
 
   function controlView(state) {
+    const latestVariation = state.persistentMemory.variations.at(-1) ?? null;
+
     return Object.freeze({
       sessionId: state.id,
       work: structuredClone(state.work),
       currentCandidate: structuredClone(state.currentCandidate),
       latestVerification: structuredClone(currentVerifications(state).at(-1) ?? null),
       latestEvaluation: structuredClone(currentEvaluation(state)),
+      latestVariation: structuredClone(latestVariation),
       lineageHead: structuredClone(lineageHead(state)),
       counts: Object.freeze({
         implementations: state.persistentMemory.implementations.length,
@@ -105,6 +116,7 @@ export function createCoreHarness({
         verifications: state.persistentMemory.verifications.length,
         evaluations: state.persistentMemory.evaluations.length,
         knowledge: state.persistentMemory.knowledge.length,
+        variations: state.persistentMemory.variations.length,
         lineage: state.persistentMemory.lineage.length,
         trajectoryEvents: state.trajectory.length
       }),
@@ -186,6 +198,10 @@ export function createCoreHarness({
       verifications: Object.freeze({ count: state.persistentMemory.verifications.length }),
       evaluations: Object.freeze({ count: state.persistentMemory.evaluations.length }),
       knowledge: Object.freeze({ count: state.persistentMemory.knowledge.length }),
+      variations: Object.freeze({
+        count: state.persistentMemory.variations.length,
+        latest: structuredClone(state.persistentMemory.variations.at(-1) ?? null)
+      }),
       lineage: Object.freeze({
         count: state.persistentMemory.lineage.length,
         head: structuredClone(lineageHead(state))
@@ -247,6 +263,7 @@ export function createCoreHarness({
         candidate: structuredClone(state.currentCandidate),
         latestVerification: structuredClone(currentVerifications(state).at(-1) ?? null),
         latestEvaluation: structuredClone(currentEvaluation(state)),
+        latestVariation: structuredClone(state.persistentMemory.variations.at(-1) ?? null),
         latestIntervention: structuredClone(state.supervision.interventions.at(-1) ?? null),
         projected: structuredClone(projected),
         dosage: Object.freeze({ contextProjection: decision }),
@@ -282,6 +299,84 @@ export function createCoreHarness({
     async knowledge(sessionId) {
       const state = await load(sessionId);
       return structuredClone(state.persistentMemory.knowledge);
+    },
+
+    async variations(sessionId) {
+      const state = await load(sessionId);
+      return structuredClone(state.persistentMemory.variations);
+    },
+
+    async beginVariation(sessionId, { problem = null, request = null, policy = null } = {}) {
+      const state = await load(sessionId);
+      const running = state.persistentMemory.variations.find((item) => item.status === VariationStatus.RUNNING);
+      invariant(!running, `variation already running: ${running?.id ?? "unknown"}`);
+
+      const record = {
+        id: idFactory(),
+        status: VariationStatus.RUNNING,
+        outcome: null,
+        termination: null,
+        startedAt: clock(),
+        completedAt: null,
+        baseCandidate: structuredClone(state.currentCandidate),
+        lineageBase: structuredClone(lineageHead(state)?.candidate ?? null),
+        problem: structuredClone(problem),
+        request: structuredClone(request),
+        policy: structuredClone(policy),
+        startSnapshot: null,
+        endSnapshot: null,
+        activity: null,
+        capabilityCalls: 0,
+        failure: null
+      };
+
+      state.persistentMemory.variations.push(record);
+      event(state, "VARIATION_STARTED", {
+        variationId: record.id,
+        baseCandidate: record.baseCandidate,
+        lineageBase: record.lineageBase
+      });
+      record.startSnapshot = structuredClone(variationActivitySnapshot(state));
+      await save(state);
+      return structuredClone(record);
+    },
+
+    async completeVariation(sessionId, variationId, {
+      termination = VariationTermination.RETURNED,
+      capabilityCalls = 0,
+      failure = null
+    } = {}) {
+      requireText(variationId, "variationId");
+      invariant(Object.values(VariationTermination).includes(termination), "variation termination is invalid");
+      invariant(Number.isInteger(capabilityCalls) && capabilityCalls >= 0, "variation capabilityCalls must be a non-negative integer");
+
+      const state = await load(sessionId);
+      const record = state.persistentMemory.variations.find((item) => item.id === variationId);
+      invariant(record, `variation not found: ${variationId}`);
+      invariant(record.status === VariationStatus.RUNNING, `variation is not running: ${variationId}`);
+
+      const endSnapshot = variationActivitySnapshot(state);
+      const activity = variationActivityDelta(record.startSnapshot, endSnapshot);
+      const outcome = classifyVariationOutcome(activity);
+
+      record.status = VariationStatus.COMPLETED;
+      record.outcome = outcome;
+      record.termination = termination;
+      record.completedAt = clock();
+      record.endSnapshot = structuredClone(endSnapshot);
+      record.activity = structuredClone(activity);
+      record.capabilityCalls = capabilityCalls;
+      record.failure = structuredClone(failure);
+
+      event(state, "VARIATION_COMPLETED", {
+        variationId: record.id,
+        outcome,
+        termination,
+        capabilityCalls,
+        activity
+      });
+      await save(state);
+      return structuredClone(record);
     },
 
     async lineage(sessionId) {

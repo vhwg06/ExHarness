@@ -20,6 +20,18 @@ export {
   createVerificationAwareObjective,
   defineVerificationPolicy
 } from "./verification-assessment.js";
+export {
+  AgentRunErrorCode,
+  CapabilityBudgetExceededError,
+  VariationClosedAfterCommitError,
+  VariationOutcome,
+  VariationStatus,
+  VariationTermination,
+  classifyVariationOutcome,
+  defineVariationPolicy,
+  variationActivityDelta,
+  variationActivitySnapshot
+} from "./variation.js";
 export { createInMemorySessionStore } from "./store.js";
 export { validateCorePorts } from "./ports.js";
 export { createCoreHarness } from "./core-harness.js";
