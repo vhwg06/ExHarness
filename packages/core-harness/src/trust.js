@@ -21,6 +21,12 @@ export const TrustReasonCode = Object.freeze({
   UNTRUSTED_ISSUER: "UNTRUSTED_ISSUER",
   MISSING_ISSUER_ROLE: "MISSING_ISSUER_ROLE",
   AUTHORITY_NOT_INDEPENDENT: "AUTHORITY_NOT_INDEPENDENT",
+  UNTRUSTED_EVALUATOR: "UNTRUSTED_EVALUATOR",
+  MISSING_EVALUATOR_ROLE: "MISSING_EVALUATOR_ROLE",
+  UNTRUSTED_EVIDENCE_PRODUCER: "UNTRUSTED_EVIDENCE_PRODUCER",
+  UNTRUSTED_EVIDENCE_ENVIRONMENT: "UNTRUSTED_EVIDENCE_ENVIRONMENT",
+  MISSING_EVIDENCE_PRODUCER_ROLE: "MISSING_EVIDENCE_PRODUCER_ROLE",
+  EVIDENCE_AUTHORITY_NOT_INDEPENDENT: "EVIDENCE_AUTHORITY_NOT_INDEPENDENT",
   MISSING_CLAIM: "MISSING_CLAIM",
   UNSATISFIED_CLAIM: "UNSATISFIED_CLAIM",
   INVALID_SIGNATURE: "INVALID_SIGNATURE",
@@ -66,6 +72,10 @@ export function digestValue(value) {
 function normalizeRoles(roles = []) {
   invariant(Array.isArray(roles), "authority roles must be an array");
   return Object.freeze([...new Set(roles.map((role) => requireText(role, "authority role")))].sort());
+}
+
+function normalizeTextSet(items, label) {
+  return Object.freeze([...new Set(items.map((item) => requireText(item, label)))]);
 }
 
 export function defineAuthority({ identity, version = null, roles = [] }) {
@@ -316,26 +326,38 @@ export function defineTrustPolicy({
   acceptedPolicyDigests = [],
   acceptedEnvironmentDigests = [],
   requiredIssuerRoles = [],
+  acceptedEvaluators = [],
+  requiredEvaluatorRoles = [],
+  acceptedEvidenceProducers = [],
+  acceptedEvidenceEnvironmentDigests = [],
+  requiredEvidenceProducerRoles = [],
   requiredClaims = [],
   requireSignature = true,
   requireEvidenceArtifacts = true,
   requireDecisionArtifact = true,
   requireIndependentIssuer = false,
+  requireIndependentEvidenceProducers = false,
   maxAgeMs = null
 } = {}) {
   if (boundary != null) invariant(Object.values(TrustBoundary).includes(boundary), "trust policy boundary is invalid");
   if (maxAgeMs != null) invariant(Number.isFinite(maxAgeMs) && maxAgeMs >= 0, "trust policy maxAgeMs must be non-negative");
   return Object.freeze({
     boundary,
-    acceptedIssuers: Object.freeze([...new Set(acceptedIssuers.map((item) => requireText(item, "accepted issuer")))]),
-    acceptedPolicyDigests: Object.freeze([...new Set(acceptedPolicyDigests.map((item) => requireText(item, "accepted policy digest")))]),
-    acceptedEnvironmentDigests: Object.freeze([...new Set(acceptedEnvironmentDigests.map((item) => requireText(item, "accepted environment digest")))]),
+    acceptedIssuers: normalizeTextSet(acceptedIssuers, "accepted issuer"),
+    acceptedPolicyDigests: normalizeTextSet(acceptedPolicyDigests, "accepted policy digest"),
+    acceptedEnvironmentDigests: normalizeTextSet(acceptedEnvironmentDigests, "accepted environment digest"),
     requiredIssuerRoles: normalizeRoles(requiredIssuerRoles),
-    requiredClaims: Object.freeze([...new Set(requiredClaims.map((item) => requireText(item, "required claim")))]),
+    acceptedEvaluators: normalizeTextSet(acceptedEvaluators, "accepted evaluator"),
+    requiredEvaluatorRoles: normalizeRoles(requiredEvaluatorRoles),
+    acceptedEvidenceProducers: normalizeTextSet(acceptedEvidenceProducers, "accepted evidence producer"),
+    acceptedEvidenceEnvironmentDigests: normalizeTextSet(acceptedEvidenceEnvironmentDigests, "accepted evidence environment digest"),
+    requiredEvidenceProducerRoles: normalizeRoles(requiredEvidenceProducerRoles),
+    requiredClaims: normalizeTextSet(requiredClaims, "required claim"),
     requireSignature: requireSignature !== false,
     requireEvidenceArtifacts: requireEvidenceArtifacts !== false,
     requireDecisionArtifact: requireDecisionArtifact !== false,
     requireIndependentIssuer: requireIndependentIssuer === true,
+    requireIndependentEvidenceProducers: requireIndependentEvidenceProducers === true,
     maxAgeMs
   });
 }
@@ -360,6 +382,13 @@ function sameDecisionSummary(attestation, decision) {
     attestation.decision?.digest === decision.digest &&
     attestation.decision?.verdict === decision.verdict &&
     digestValue(attestation.decision?.claims ?? []) === digestValue(decision.claims ?? []);
+}
+
+function checkAuthorityRoles(reasons, authority, requiredRoles, code) {
+  const roles = new Set(authority?.roles ?? []);
+  for (const role of requiredRoles) {
+    if (!roles.has(role)) reasons.push(Object.freeze({ code, role, identity: authority?.identity ?? null }));
+  }
 }
 
 export async function evaluateAttestationTrust({
@@ -401,10 +430,7 @@ export async function evaluateAttestationTrust({
   if (resolvedPolicy.acceptedIssuers.length > 0 && !resolvedPolicy.acceptedIssuers.includes(attestation.issuer?.identity)) {
     reasons.push(Object.freeze({ code: TrustReasonCode.UNTRUSTED_ISSUER, issuer: attestation.issuer?.identity ?? null }));
   }
-  const issuerRoles = new Set(attestation.issuer?.roles ?? []);
-  for (const role of resolvedPolicy.requiredIssuerRoles) {
-    if (!issuerRoles.has(role)) reasons.push(Object.freeze({ code: TrustReasonCode.MISSING_ISSUER_ROLE, role }));
-  }
+  checkAuthorityRoles(reasons, attestation.issuer, resolvedPolicy.requiredIssuerRoles, TrustReasonCode.MISSING_ISSUER_ROLE);
   if (resolvedPolicy.requireIndependentIssuer) {
     const producer = normalizedCurrentSubject.producer?.identity ?? null;
     if (producer == null || producer === attestation.issuer?.identity) {
@@ -433,6 +459,32 @@ export async function evaluateAttestationTrust({
     if (!validateEvidenceManifest(attestation, evidence)) {
       reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "evidence manifest mismatch" }));
     }
+    const subjectProducer = normalizedCurrentSubject.producer?.identity ?? null;
+    for (const artifact of evidence) {
+      const producer = artifact.producer?.identity ?? null;
+      if (resolvedPolicy.acceptedEvidenceProducers.length > 0 && !resolvedPolicy.acceptedEvidenceProducers.includes(producer)) {
+        reasons.push(Object.freeze({ code: TrustReasonCode.UNTRUSTED_EVIDENCE_PRODUCER, producer }));
+      }
+      if (
+        resolvedPolicy.acceptedEvidenceEnvironmentDigests.length > 0 &&
+        !resolvedPolicy.acceptedEvidenceEnvironmentDigests.includes(artifact.environment?.digest)
+      ) {
+        reasons.push(Object.freeze({
+          code: TrustReasonCode.UNTRUSTED_EVIDENCE_ENVIRONMENT,
+          producer,
+          digest: artifact.environment?.digest ?? null
+        }));
+      }
+      checkAuthorityRoles(reasons, artifact.producer, resolvedPolicy.requiredEvidenceProducerRoles, TrustReasonCode.MISSING_EVIDENCE_PRODUCER_ROLE);
+      if (resolvedPolicy.requireIndependentEvidenceProducers && (subjectProducer == null || producer === subjectProducer)) {
+        reasons.push(Object.freeze({
+          code: TrustReasonCode.EVIDENCE_AUTHORITY_NOT_INDEPENDENT,
+          producer,
+          subjectProducer,
+          detail: subjectProducer == null ? "subject producer authority is unknown" : "evidence producer equals subject producer"
+        }));
+      }
+    }
   }
 
   if (resolvedPolicy.requireDecisionArtifact) {
@@ -448,6 +500,10 @@ export async function evaluateAttestationTrust({
       if (decision.policy?.digest !== attestation.policy?.digest || decision.evidenceManifest?.digest !== attestation.evidenceManifest?.digest) {
         reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "decision provenance mismatch" }));
       }
+      if (resolvedPolicy.acceptedEvaluators.length > 0 && !resolvedPolicy.acceptedEvaluators.includes(decision.evaluator?.identity)) {
+        reasons.push(Object.freeze({ code: TrustReasonCode.UNTRUSTED_EVALUATOR, evaluator: decision.evaluator?.identity ?? null }));
+      }
+      checkAuthorityRoles(reasons, decision.evaluator, resolvedPolicy.requiredEvaluatorRoles, TrustReasonCode.MISSING_EVALUATOR_ROLE);
     }
   }
 
