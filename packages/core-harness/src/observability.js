@@ -130,7 +130,7 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
     }
   }
 
-  return Object.freeze({
+  const instrumented = {
     capabilities() {
       return agentRuntime.capabilities?.() ?? Object.freeze([]);
     },
@@ -138,5 +138,17 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
       return (await runWithReport(options)).result;
     },
     runWithReport
-  });
+  };
+
+  if (typeof agentRuntime.judgments === "function") {
+    instrumented.judgments = () => agentRuntime.judgments();
+  }
+  if (typeof agentRuntime.invokeJudgment === "function") {
+    instrumented.invokeJudgment = (name, input, options = {}) => agentRuntime.invokeJudgment(name, input, options);
+  }
+  if (typeof agentRuntime.invokeJudgmentWithReport === "function") {
+    instrumented.invokeJudgmentWithReport = (name, input, options = {}) => agentRuntime.invokeJudgmentWithReport(name, input, options);
+  }
+
+  return Object.freeze(instrumented);
 }
