@@ -128,13 +128,14 @@ test("lineage knowledge can be corrected after a commit without erasing history"
   });
 
   await harness.act("s1", { nextVersion: "v1" });
-  await harness.evaluate("s1");
+  const evaluation = await harness.evaluate("s1");
   await harness.promote("s1");
 
   const corrected = await harness.recordKnowledge("s1", {
     kind: KnowledgeKind.DECISION,
     statement: "direction A should be abandoned after the committed result",
     scope: KnowledgeScope.LINEAGE,
+    feedbackRefs: [`evaluation:${evaluation.id}`],
     relations: [{ type: KnowledgeRelationType.SUPERSEDES, targetId: original.id }],
     tags: ["direction-a"]
   });
@@ -145,6 +146,30 @@ test("lineage knowledge can be corrected after a commit without erasing history"
   assert.equal(history.length, 2);
   assert.deepEqual(view.active.map((item) => item.id), [corrected.id]);
   assert.equal(view.counts.superseded, 1);
+});
+
+test("ungrounded assertions cannot supersede active knowledge", async () => {
+  const harness = createHarness();
+  await start(harness);
+
+  const original = await harness.recordKnowledge("s1", {
+    kind: KnowledgeKind.HYPOTHESIS,
+    statement: "retain until corrected with evidence",
+    scope: KnowledgeScope.SESSION
+  });
+
+  await assert.rejects(
+    () => harness.recordKnowledge("s1", {
+      kind: KnowledgeKind.DECISION,
+      statement: "erase the old claim",
+      scope: KnowledgeScope.SESSION,
+      relations: [{ type: KnowledgeRelationType.SUPERSEDES, targetId: original.id }]
+    }),
+    /superseding knowledge requires evidence or feedbackRefs/
+  );
+
+  const view = await harness.knowledgeView("s1");
+  assert.deepEqual(view.active.map((item) => item.id), [original.id]);
 });
 
 test("contradictory active knowledge is surfaced instead of choosing a winner", async () => {
