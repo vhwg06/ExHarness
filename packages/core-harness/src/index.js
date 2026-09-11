@@ -162,6 +162,7 @@ export {
 export {
   TraceSpanKind,
   TraceSpanStatus,
+  createNoopTracer,
   createTraceRecorder
 } from "./tracing.js";
 export {
