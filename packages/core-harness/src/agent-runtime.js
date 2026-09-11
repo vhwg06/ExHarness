@@ -69,14 +69,14 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     return resolved;
   }
 
-  async function executeRun({
+  async function executeRunWithStrategy(selectedStrategy, {
     input = null,
     context = null,
     events = [],
     capabilities: scopedCapabilities = [],
     budget = null,
     onCapabilityInvoke = null
-  } = {}, selectedStrategy = strategy) {
+  } = {}) {
     invariant(selectedStrategy && typeof selectedStrategy.run === "function", "agent run strategy requires run()");
     const resolved = resolveCapabilities(scopedCapabilities);
     const runInput = clone(input);
@@ -149,6 +149,10 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     });
   }
 
+  async function executeRun(options = {}) {
+    return executeRunWithStrategy(strategy, options);
+  }
+
   async function executeJudgment(name, input, options = {}) {
     requireText(name, "judgment name");
     const judgment = baseJudgments.get(name);
@@ -158,9 +162,9 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
       ? judgment.parseInput(clone(input))
       : clone(input);
 
-    const report = await executeRun(
-      { ...options, input: parsedInput },
-      judgment.strategy ?? strategy
+    const report = await executeRunWithStrategy(
+      judgment.strategy ?? strategy,
+      { ...options, input: parsedInput }
     );
 
     const parsedOutput = judgment.parseOutput
