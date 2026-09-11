@@ -63,7 +63,7 @@ function sameArtifactSnapshot(evaluatedIds, currentIds) {
   return evaluatedIds.every((id, index) => id === currentIds[index]);
 }
 
-async function promoteWithFreshVerification(core, sessionId) {
+async function promoteWithFreshEvaluationInputs(core, sessionId) {
   const state = await core.workState(sessionId);
   const key = candidateKey(state.currentCandidate);
   const evaluation = [...state.persistentMemory.evaluations]
@@ -72,13 +72,23 @@ async function promoteWithFreshVerification(core, sessionId) {
 
   invariant(evaluation, "current candidate has not been evaluated");
 
+  const inputSnapshot = evaluation.metadata?.inputSnapshot ?? {
+    observationIds: [],
+    verificationIds: evaluation.verificationIds ?? []
+  };
+  const currentObservationIds = state.persistentMemory.observations
+    .filter((item) => candidateKey(item.candidate) === key)
+    .map((item) => item.id);
   const currentVerificationIds = state.persistentMemory.verifications
     .filter((item) => candidateKey(item.candidate) === key)
     .map((item) => item.id);
-  const evaluatedVerificationIds = [...(evaluation.verificationIds ?? [])];
 
   invariant(
-    sameArtifactSnapshot(evaluatedVerificationIds, currentVerificationIds),
+    sameArtifactSnapshot([...(inputSnapshot.observationIds ?? [])], currentObservationIds),
+    "observations changed since evaluation; re-evaluate before promotion"
+  );
+  invariant(
+    sameArtifactSnapshot([...(inputSnapshot.verificationIds ?? [])], currentVerificationIds),
     "verification artifacts changed since evaluation; re-evaluate before promotion"
   );
 
@@ -113,7 +123,7 @@ function createSessionCapabilities(core, sessionId, verifiers, promote) {
     }),
     defineCapability({
       name: AVOCapability.PROMOTE,
-      description: "Commit the current candidate to lineage. Core invariants require a fresh valid PASS evaluation over the current verification snapshot.",
+      description: "Commit the current candidate to lineage. Core invariants require a fresh valid PASS evaluation over the current observation and verification snapshot.",
       mutatesCandidate: false,
       execute: () => promote(sessionId)
     }),
@@ -166,7 +176,7 @@ export function createAVOHarness({
     clock,
     idFactory
   });
-  const promote = (sessionId) => promoteWithFreshVerification(core, sessionId);
+  const promote = (sessionId) => promoteWithFreshEvaluationInputs(core, sessionId);
 
   return Object.freeze({
     ...core,
