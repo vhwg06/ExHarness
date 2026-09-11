@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { CorePractice, invariant, validateSupervisorIntervention } from "./contracts.js";
 import { createAgentRuntime } from "./agent-runtime.js";
 import { createAVOHarness } from "./avo-harness.js";
+import { createIdempotentEnvironment } from "./environment.js";
 import { RecoveryRequiredError } from "./errors.js";
 import { createEventBus, instrumentAgentRuntime, instrumentCapabilities } from "./observability.js";
 import { createValidatedSessionStore } from "./persistence.js";
@@ -64,7 +65,8 @@ export function createHarness({
   strictObservability = false,
   clock,
   idFactory,
-  requireRevisionStore = true
+  requireRevisionStore = true,
+  idempotentActions = true
 }) {
   invariant(strategy || agent, "createHarness requires strategy or agent");
   invariant(environment, "createHarness requires environment");
@@ -80,6 +82,9 @@ export function createHarness({
     );
   }
   const resolvedStore = createValidatedSessionStore(rawStore);
+  const resolvedEnvironment = idempotentActions
+    ? createIdempotentEnvironment(environment)
+    : environment;
 
   const resolvedEventBus = eventBus ?? createEventBus({
     sinks: eventSinks,
@@ -109,7 +114,7 @@ export function createHarness({
     variationPolicy,
     objective,
     evaluator,
-    environment,
+    environment: resolvedEnvironment,
     sessionStore: resolvedStore,
     supervisor: resolvedSupervisor,
     contextProjector: resolvedProjector,
@@ -281,7 +286,8 @@ export function createHarness({
         variation: core.variationPolicy(),
         verification: core.verificationPolicy(),
         supervision: structuredClone(resolvedSupervisionPolicy),
-        recovery: structuredClone(resolvedRecoveryPolicy)
+        recovery: structuredClone(resolvedRecoveryPolicy),
+        idempotentActions
       });
     }
   });
