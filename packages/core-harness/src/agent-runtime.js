@@ -220,7 +220,8 @@ export function createAgentRuntime({
           scope: ModelRouteScope.STRATEGY,
           requested: null,
           adapter: clone(selectedStrategy.model)
-        })
+        }),
+        usage: null
       });
     }
 
@@ -410,6 +411,9 @@ export function createAgentRuntime({
           attributes: { judgment: judgment?.name ?? null, modelRoute: modelRouteView }
         }
       );
+      const modelUsage = typeof resolvedModelRoute?.usage === "function"
+        ? resolvedModelRoute.usage()
+        : null;
 
       return Object.freeze({
         result,
@@ -420,7 +424,8 @@ export function createAgentRuntime({
           maxCapabilityCalls
         }),
         promptContext: clone(promptContext),
-        modelRoute: clone(modelRouteView)
+        modelRoute: clone(modelRouteView),
+        modelUsage: clone(modelUsage)
       });
     } catch (error) {
       recordRuntimeEvent(AgentEventKind.ERROR, callId, judgment, { error: errorView(error) });
@@ -499,7 +504,8 @@ export function createAgentRuntime({
           usage: report.usage,
           judgment: judgmentView(judgment),
           promptContext: clone(report.promptContext),
-          modelRoute: clone(report.modelRoute)
+          modelRoute: clone(report.modelRoute),
+          modelUsage: clone(report.modelUsage)
         });
       },
       { callId, attributes: { judgment: name } }
