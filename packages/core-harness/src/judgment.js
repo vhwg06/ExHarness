@@ -31,12 +31,6 @@ export function judgmentView(judgment) {
     description: judgment.description,
     typedInput: judgment.parseInput != null,
     typedOutput: judgment.parseOutput != null,
-    strategyOverride: judgment.strategy != null,
-    context: Object.freeze({
-      blocks: Object.freeze([...judgment.context.blocks]),
-      history: judgment.context.history,
-      historySelector: judgment.context.selectHistory != null,
-      historyReducer: judgment.context.reduceHistory != null
-    })
+    strategyOverride: judgment.strategy != null
   });
 }
