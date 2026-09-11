@@ -39,6 +39,27 @@ function normalizeAttributes(attributes) {
   return attributes == null ? null : clone(attributes);
 }
 
+export function createNoopTracer() {
+  return Object.freeze({
+    async runSpan(_kind, _name, operation) {
+      invariant(typeof operation === "function", "trace span requires operation()");
+      return operation();
+    },
+
+    current() {
+      return null;
+    },
+
+    spans() {
+      return Object.freeze([]);
+    },
+
+    failures() {
+      return Object.freeze([]);
+    }
+  });
+}
+
 export function createTraceRecorder({
   sinks = [],
   strict = false,
