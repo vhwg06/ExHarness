@@ -123,7 +123,7 @@ test("capability budget stops an unbounded harness-mediated loop and persists th
   const result = await harness.vary("s1");
 
   assert.equal(result.variation.termination, VariationTermination.BUDGET_EXHAUSTED);
-  assert.equal(result.variation.outcome, VariationOutcome.EVIDENCE_ADDED);
+  assert.equal(result.variation.outcome, VariationOutcome.SEARCH_STATE_CHANGED);
   assert.equal(result.variation.capabilityCalls, 2);
   assert.equal(result.variation.activity.observationsAdded, 2);
   assert.equal(result.failure.code, AgentRunErrorCode.CAPABILITY_BUDGET_EXHAUSTED);
@@ -178,7 +178,7 @@ test("commit is terminal for variation capability activity", async () => {
   assert.equal(observations.length, 0);
 });
 
-test("failed directions remain grounded activity rather than being mislabeled as candidate progress", async () => {
+test("failed directions remain grounded search state rather than being mislabeled as candidate progress", async () => {
   const harness = createHarness({
     async run({ invoke }) {
       await invoke(AVOCapability.RECORD_KNOWLEDGE, {
@@ -198,7 +198,7 @@ test("failed directions remain grounded activity rather than being mislabeled as
 
   const result = await harness.vary("s1");
 
-  assert.equal(result.variation.outcome, VariationOutcome.EVIDENCE_ADDED);
+  assert.equal(result.variation.outcome, VariationOutcome.SEARCH_STATE_CHANGED);
   assert.equal(result.variation.activity.failedDirectionsAdded, 2);
   assert.equal(result.variation.activity.candidateChanged, false);
   assert.equal(result.variation.activity.lineageAdvanced, false);
