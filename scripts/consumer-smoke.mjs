@@ -34,10 +34,20 @@ try {
   const consumer = `
 import {
   AVOCapability,
+  ClaimStatus,
   EvaluationValidity,
   EvaluationVerdict,
+  TrustBoundary,
+  createAttestationIssuer,
+  createDecisionArtifact,
+  createEvidenceArtifact,
   createHarness,
-  createInMemorySessionStore
+  createInMemorySessionStore,
+  defineSubject,
+  defineTrustPolicy,
+  environmentRefFromValue,
+  evaluateTrustBoundary,
+  policyRefFromValue
 } from "exharness";
 import { verifySessionStoreContract } from "exharness/testing";
 
@@ -71,6 +81,62 @@ await harness.start({
 });
 const result = await harness.vary("consumer");
 if (!result.lineage.advanced) throw new Error("consumer harness did not promote");
+
+const subject = defineSubject({
+  type: "git-commit",
+  digest: "abc123",
+  producer: { identity: "change-author", roles: ["author"] }
+});
+const evidenceEnvironment = environmentRefFromValue({ image: "verify@sha256:1" }, { name: "verify" });
+const attestationEnvironment = environmentRefFromValue({ image: "attest@sha256:2" }, { name: "attest" });
+const evidence = [createEvidenceArtifact({
+  subject,
+  kind: "SMOKE",
+  producer: { identity: "consumer-verifier", roles: ["verifier"] },
+  environment: evidenceEnvironment,
+  generatedAt: "2026-09-11T00:00:00.000Z",
+  content: { ok: true }
+})];
+const policy = policyRefFromValue("consumer-policy", { required: ["smoke"] });
+const decision = createDecisionArtifact({
+  subject,
+  boundary: TrustBoundary.VERIFICATION,
+  policy,
+  evaluator: { identity: "consumer-evaluator", roles: ["evaluator"] },
+  evidence,
+  claims: [{ name: "smoke", status: ClaimStatus.SATISFIED }],
+  verdict: "READY",
+  generatedAt: "2026-09-11T00:00:01.000Z"
+});
+const issuer = createAttestationIssuer({
+  identity: "consumer-attestor",
+  roles: ["attestor"],
+  async sign({ payloadDigest }) { return { value: payloadDigest }; }
+});
+const attestation = await issuer.issue({
+  decision,
+  environment: attestationEnvironment,
+  issuedAt: "2026-09-11T00:00:02.000Z"
+});
+const trust = await evaluateTrustBoundary({
+  attestation,
+  decision,
+  currentSubject: subject,
+  evidence,
+  policy: defineTrustPolicy({
+    acceptedIssuers: ["consumer-attestor"],
+    acceptedPolicyDigests: [policy.digest],
+    acceptedEvaluators: ["consumer-evaluator"],
+    acceptedEvidenceProducers: ["consumer-verifier"],
+    requiredClaims: ["smoke"],
+    requireIndependentIssuer: true,
+    requireIndependentEvidenceProducers: true
+  }),
+  verifySignature: ({ payloadDigest, signature }) => signature.value === payloadDigest,
+  verifyEvaluatorAuthority: ({ evaluator }) => evaluator.identity === "consumer-evaluator",
+  verifyEvidenceAuthority: ({ producer }) => producer.identity === "consumer-verifier"
+});
+if (!trust.trusted) throw new Error(JSON.stringify(trust.reasons));
 console.log("consumer-smoke:ok");
 `;
   await writeFile(join(temp, "consumer.mjs"), consumer);

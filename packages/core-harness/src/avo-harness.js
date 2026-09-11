@@ -1,6 +1,7 @@
-import { candidateKey, invariant, sameCandidate } from "./contracts.js";
+import { invariant, sameCandidate } from "./contracts.js";
 import { createCoreHarness } from "./core-harness.js";
 import { createAgentRuntime, defineCapability } from "./agent-runtime.js";
+import { assertEvaluationInputsFresh } from "./evaluation-freshness.js";
 import { createMemoryFacade } from "./memory.js";
 import {
   VerificationSourceKind,
@@ -67,40 +68,9 @@ function createVerificationCapabilities(core, sessionId, verifiers) {
   });
 }
 
-function sameArtifactSnapshot(evaluatedIds, currentIds) {
-  if (evaluatedIds.length !== currentIds.length) return false;
-  return evaluatedIds.every((id, index) => id === currentIds[index]);
-}
-
 async function promoteWithFreshEvaluationInputs(core, sessionId) {
   const state = await core.workState(sessionId);
-  const key = candidateKey(state.currentCandidate);
-  const evaluation = [...state.persistentMemory.evaluations]
-    .reverse()
-    .find((item) => candidateKey(item.candidate) === key) ?? null;
-
-  invariant(evaluation, "current candidate has not been evaluated");
-
-  const inputSnapshot = evaluation.metadata?.inputSnapshot ?? {
-    observationIds: [],
-    verificationIds: evaluation.verificationIds ?? []
-  };
-  const currentObservationIds = state.persistentMemory.observations
-    .filter((item) => candidateKey(item.candidate) === key)
-    .map((item) => item.id);
-  const currentVerificationIds = state.persistentMemory.verifications
-    .filter((item) => candidateKey(item.candidate) === key)
-    .map((item) => item.id);
-
-  invariant(
-    sameArtifactSnapshot([...(inputSnapshot.observationIds ?? [])], currentObservationIds),
-    "observations changed since evaluation; re-evaluate before promotion"
-  );
-  invariant(
-    sameArtifactSnapshot([...(inputSnapshot.verificationIds ?? [])], currentVerificationIds),
-    "verification artifacts changed since evaluation; re-evaluate before promotion"
-  );
-
+  assertEvaluationInputsFresh(state);
   return core.promote(sessionId);
 }
 

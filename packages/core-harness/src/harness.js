@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { CorePractice, invariant, validateSupervisorIntervention } from "./contracts.js";
+import { CorePractice, invariant, sameCandidate, validateSupervisorIntervention } from "./contracts.js";
 import { createAgentRuntime } from "./agent-runtime.js";
 import { createAVOHarness } from "./avo-harness.js";
 import { createIdempotentEnvironment } from "./environment.js";
+import { assertEvaluationInputsFresh } from "./evaluation-freshness.js";
 import { RecoveryRequiredError } from "./errors.js";
 import { createEventBus, instrumentAgentRuntime, instrumentCapabilities } from "./observability.js";
 import { createValidatedSessionStore } from "./persistence.js";
@@ -13,6 +14,14 @@ import {
   createTrajectoryContextProjector,
   defineSupervisionPolicy
 } from "./supervision.js";
+import {
+  TrustBoundary,
+  decisionFromEvaluation,
+  evidenceFromVerificationArtifact,
+  policyRefFromValue,
+  subjectFromValue,
+  validateTrustBundle
+} from "./trust.js";
 
 function createDefaultDosagePolicy({ hasSupervisor }) {
   return Object.freeze({
@@ -44,6 +53,15 @@ function createNoopSupervisor() {
   });
 }
 
+function pushUniqueByDigest(target, artifacts) {
+  const existing = new Set(target.map((item) => item.digest));
+  for (const artifact of artifacts) {
+    if (existing.has(artifact.digest)) continue;
+    target.push(structuredClone(artifact));
+    existing.add(artifact.digest);
+  }
+}
+
 export function createHarness({
   agent = null,
   strategy = null,
@@ -60,6 +78,7 @@ export function createHarness({
   variationPolicy = {},
   supervisionPolicy = {},
   recoveryPolicy = {},
+  attestationIssuer = null,
   eventBus = null,
   eventSinks = [],
   strictObservability = false,
@@ -208,6 +227,90 @@ export function createHarness({
     });
   }
 
+  async function attestCurrentEvaluation(sessionId, {
+    subject = null,
+    policy = null,
+    evidenceEnvironment,
+    attestationEnvironment,
+    evaluator: decisionEvaluator,
+    boundary = TrustBoundary.VERIFICATION,
+    claims = null,
+    unresolved = [],
+    verdict = null,
+    upstreamAttestations = []
+  } = {}) {
+    invariant(attestationIssuer && typeof attestationIssuer.issue === "function", "attestCurrentEvaluation requires attestationIssuer");
+    invariant(evidenceEnvironment, "attestCurrentEvaluation requires evidenceEnvironment or an evidenceEnvironment resolver");
+    invariant(attestationEnvironment, "attestCurrentEvaluation requires attestationEnvironment");
+    invariant(decisionEvaluator, "attestCurrentEvaluation requires evaluator authority");
+
+    const state = await core.workState(sessionId);
+    const candidate = structuredClone(state.currentCandidate);
+    const evaluation = assertEvaluationInputsFresh(state);
+    const currentVerifications = state.persistentMemory.verifications.filter((item) => sameCandidate(item.candidate, candidate));
+
+    const resolvedSubject = subject ?? subjectFromValue(candidate, { type: "candidate" });
+    const resolvedPolicy = policy ?? policyRefFromValue("verification-policy", core.verificationPolicy());
+    const evidence = [];
+    for (const verification of currentVerifications) {
+      const resolvedEvidenceEnvironment = typeof evidenceEnvironment === "function"
+        ? await evidenceEnvironment(structuredClone(verification))
+        : evidenceEnvironment;
+      invariant(resolvedEvidenceEnvironment, `evidence environment is required for verification ${verification.id ?? "unknown"}`);
+      evidence.push(evidenceFromVerificationArtifact(verification, {
+        subject: resolvedSubject,
+        environment: resolvedEvidenceEnvironment,
+        generatedAt: verification.at
+      }));
+    }
+    const decision = decisionFromEvaluation(evaluation, {
+      subject: resolvedSubject,
+      boundary,
+      policy: resolvedPolicy,
+      evaluator: decisionEvaluator,
+      evidence,
+      claims,
+      unresolved,
+      verdict: verdict ?? evaluation.verdict,
+      generatedAt: evaluation.at
+    });
+    const attestation = await attestationIssuer.issue({
+      decision,
+      environment: attestationEnvironment,
+      upstreamAttestations,
+      issuedAt: now()
+    });
+    const bundle = validateTrustBundle({ evidence, decision, attestation });
+
+    state.persistentMemory.evidenceArtifacts ??= [];
+    state.persistentMemory.decisionArtifacts ??= [];
+    state.persistentMemory.attestations ??= [];
+    pushUniqueByDigest(state.persistentMemory.evidenceArtifacts, bundle.evidence);
+    pushUniqueByDigest(state.persistentMemory.decisionArtifacts, [bundle.decision]);
+    pushUniqueByDigest(state.persistentMemory.attestations, [bundle.attestation]);
+    state.trajectory.push({
+      id: newId(),
+      type: "TRUST_ATTESTED",
+      at: now(),
+      candidate,
+      boundary,
+      subject: structuredClone(resolvedSubject),
+      decisionId: decision.id,
+      attestationId: attestation.id,
+      policyDigest: decision.policy.digest
+    });
+    await resolvedStore.save(state);
+    await resolvedEventBus.emit("HARNESS_TRUST_ATTESTED", {
+      sessionId,
+      boundary,
+      subject: resolvedSubject,
+      decisionId: decision.id,
+      attestationId: attestation.id,
+      policyDigest: decision.policy.digest
+    });
+    return bundle;
+  }
+
   return Object.freeze({
     ...core,
 
@@ -263,6 +366,17 @@ export function createHarness({
       });
       const trajectoryReview = await reviewCompletedVariation(sessionId, result);
       return Object.freeze({ ...result, trajectoryReview });
+    },
+
+    attestCurrentEvaluation,
+
+    async trustArtifacts(sessionId) {
+      const state = await core.workState(sessionId);
+      return Object.freeze({
+        evidence: Object.freeze(structuredClone(state.persistentMemory.evidenceArtifacts ?? [])),
+        decisions: Object.freeze(structuredClone(state.persistentMemory.decisionArtifacts ?? [])),
+        attestations: Object.freeze(structuredClone(state.persistentMemory.attestations ?? []))
+      });
     },
 
     async searchHealth(sessionId) {
