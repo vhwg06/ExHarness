@@ -9,8 +9,12 @@ export const VariationOutcome = Object.freeze({
   COMMITTED: "COMMITTED",
   CANDIDATE_CHANGED: "CANDIDATE_CHANGED",
   EVIDENCE_ADDED: "EVIDENCE_ADDED",
-  NO_CHANGE: "NO_CHANGE",
-  EXHAUSTED: "EXHAUSTED",
+  NO_CHANGE: "NO_CHANGE"
+});
+
+export const VariationTermination = Object.freeze({
+  RETURNED: "RETURNED",
+  BUDGET_EXHAUSTED: "BUDGET_EXHAUSTED",
   FAILED: "FAILED"
 });
 
@@ -69,9 +73,7 @@ export function variationActivityDelta(before, after) {
   });
 }
 
-export function classifyVariationOutcome({ activity, exhausted = false, failed = false }) {
-  if (failed) return VariationOutcome.FAILED;
-  if (exhausted) return VariationOutcome.EXHAUSTED;
+export function classifyVariationOutcome(activity) {
   if (activity.lineageAdvanced) return VariationOutcome.COMMITTED;
   if (activity.candidateChanged) return VariationOutcome.CANDIDATE_CHANGED;
 
