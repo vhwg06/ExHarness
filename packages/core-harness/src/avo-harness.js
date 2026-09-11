@@ -1,4 +1,4 @@
-import { invariant, sameCandidate } from "./contracts.js";
+import { candidateKey, invariant, sameCandidate } from "./contracts.js";
 import { createCoreHarness } from "./core-harness.js";
 import { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 import {
@@ -58,7 +58,34 @@ function createVerificationCapabilities(core, sessionId, verifiers) {
   });
 }
 
-function createSessionCapabilities(core, sessionId, verifiers) {
+function sameArtifactSnapshot(evaluatedIds, currentIds) {
+  if (evaluatedIds.length !== currentIds.length) return false;
+  return evaluatedIds.every((id, index) => id === currentIds[index]);
+}
+
+async function promoteWithFreshVerification(core, sessionId) {
+  const state = await core.workState(sessionId);
+  const key = candidateKey(state.currentCandidate);
+  const evaluation = [...state.persistentMemory.evaluations]
+    .reverse()
+    .find((item) => candidateKey(item.candidate) === key) ?? null;
+
+  invariant(evaluation, "current candidate has not been evaluated");
+
+  const currentVerificationIds = state.persistentMemory.verifications
+    .filter((item) => candidateKey(item.candidate) === key)
+    .map((item) => item.id);
+  const evaluatedVerificationIds = [...(evaluation.verificationIds ?? [])];
+
+  invariant(
+    sameArtifactSnapshot(evaluatedVerificationIds, currentVerificationIds),
+    "verification artifacts changed since evaluation; re-evaluate before promotion"
+  );
+
+  return core.promote(sessionId);
+}
+
+function createSessionCapabilities(core, sessionId, verifiers, promote) {
   return Object.freeze([
     defineCapability({
       name: AVOCapability.OBSERVE,
@@ -86,9 +113,9 @@ function createSessionCapabilities(core, sessionId, verifiers) {
     }),
     defineCapability({
       name: AVOCapability.PROMOTE,
-      description: "Commit the current candidate to lineage. Core invariants require a fresh valid PASS evaluation.",
+      description: "Commit the current candidate to lineage. Core invariants require a fresh valid PASS evaluation over the current verification snapshot.",
       mutatesCandidate: false,
-      execute: () => core.promote(sessionId)
+      execute: () => promote(sessionId)
     }),
     ...createVerificationCapabilities(core, sessionId, verifiers)
   ]);
@@ -139,9 +166,11 @@ export function createAVOHarness({
     clock,
     idFactory
   });
+  const promote = (sessionId) => promoteWithFreshVerification(core, sessionId);
 
   return Object.freeze({
     ...core,
+    promote,
 
     verifiers() {
       return Object.freeze(normalizedVerifiers.map((verifier) => Object.freeze({
@@ -174,7 +203,7 @@ export function createAVOHarness({
           request: structuredClone(input)
         }),
         context,
-        capabilities: createSessionCapabilities(core, sessionId, normalizedVerifiers)
+        capabilities: createSessionCapabilities(core, sessionId, normalizedVerifiers, promote)
       });
 
       const after = await core.resume(sessionId);
