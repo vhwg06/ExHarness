@@ -12,7 +12,7 @@ ExHarness does not contain backend, frontend, QA, Figma, repository, or product 
 ```text
 Application / domain harness
         |
-        | supplies objective, environment, verifiers, capabilities, policies
+        | supplies objective, environment, capabilities, policies
         v
 +-------------------------------+
 |          AVO Harness          |
@@ -20,7 +20,6 @@ Application / domain harness
 | candidate + lineage           |
 | persistent engineering state  |
 | variation                     |
-| verification artifacts        |
 | objective feedback            |
 | supervision                   |
 | promotion invariants          |
@@ -34,7 +33,6 @@ Application / domain harness
 |                               |
 | strategy                      |
 | capabilities                  |
-| verification capabilities     |
 | input/output validation       |
 | scoped context                |
 +---------------+---------------+
@@ -50,75 +48,7 @@ AVO = what the harness does over time
 NOOA = how an agent reasons and acts inside a variation
 ```
 
-The agent owns local search judgment. The deterministic AVO core owns lifecycle invariants such as candidate identity, verification freshness, evaluation validity, and promotion authority.
-
-## Verification progression
-
-ExHarness treats tests as one possible verifier implementation, not as the verification architecture.
-
-The intended progression is:
-
-```text
-manual vigilance
-      |
-      v
-codify a verification artifact
-      |
-      v
-automate the same check as a harness capability
-```
-
-A verification artifact is candidate-bound, persisted, and provenance-bearing. It states what was checked and what evidence supports the result.
-
-```js
-{
-  kind: "VERIFICATION",
-  candidate: { id: "candidate", version: "v7" },
-  claim: "the candidate satisfies invariant X",
-  status: "PASS",
-  evidence: [{ kind: "measurement", ref: "artifact-42" }],
-  source: {
-    kind: "CAPABILITY",
-    name: "verify.invariant-x"
-  }
-}
-```
-
-Manual checks can first be externalized through `recordVerification()`. Once a check is codified, consumers can automate it with `defineVerifier()`; ExHarness exposes each verifier to the variation agent as `verify.<name>`.
-
-```js
-const invariantVerifier = defineVerifier({
-  name: "invariant-x",
-  async verify({ candidate }) {
-    const result = await checkInvariant(candidate);
-    return {
-      claim: "the candidate satisfies invariant X",
-      status: result.pass ? "PASS" : "FAIL",
-      evidence: result.evidence
-    };
-  }
-});
-```
-
-The final objective evaluator receives the current candidate's verification artifacts:
-
-```text
-verify.* capabilities
-        |
-        v
-VerificationArtifact[]
-        |
-        v
-objective.evaluate(..., verifications)
-        |
-        v
-AVO evaluation / feedback
-        |
-        v
-continue search OR promote
-```
-
-Artifacts from older candidates remain historical memory but are not supplied as current verification after a mutation. A verification result that finishes after the candidate has changed is rejected instead of being attached to the new candidate.
+The agent owns local search judgment. The deterministic AVO core owns lifecycle invariants such as candidate identity, evaluation validity, and promotion authority.
 
 ## Candidate and lineage semantics
 
@@ -143,22 +73,68 @@ A promoted lineage entry records:
 - `parent`: the previous committed candidate (`P_t`);
 - `implementationParent`: the immediate working parent used during local repair;
 - the evaluation that authorized the commit;
-- the verification artifact IDs used by that evaluation;
 - `committedAt`.
 
 This lets the kernel distinguish local repair ancestry from the AVO transition `P_t -> P_t+1`. A working candidate cannot be promoted if it was derived from a stale committed lineage head.
+
+## Objective verification
+
+ExHarness treats verification as a progression, not as a synonym for tests:
+
+```text
+manual vigilance
+      ↓
+codify VerificationArtifact
+      ↓
+automate stable checks as verify.<name> capabilities
+      ↓
+objective.evaluate(candidate, verifications)
+      ↓
+AVO feedback / promotion
+```
+
+A verification artifact is candidate-bound and provenance-bearing. Historical artifacts remain useful engineering memory, but only artifacts for the current candidate are supplied to the current objective evaluation.
+
+Tests can produce verification evidence, but `tests green` is not the entire verification model by default.
+
+## Development loop
+
+ExHarness itself follows the same principle during implementation. Non-trivial changes fork into two tracks:
+
+```text
+                 CHANGE OBJECTIVE
+                       |
+             +---------+---------+
+             |                   |
+             v                   v
+      IMPLEMENTATION TRACK   VERIFICATION TRACK
+             |                   |
+      design / mutate        manual vigilance
+             |                   |
+      candidate change       verification artifacts
+             |                   |
+             |             automate when useful
+             +---------+---------+
+                       |
+                       v
+                OBJECTIVE REVIEW
+                       |
+                 GAP / PASS
+```
+
+See `docs/development/implementation-verification-loop.md` for the development contract. The pull request template requires both tracks to remain visible.
 
 ## Current public surface
 
 ```js
 import {
   AVOCapability,
+  VerificationSourceKind,
   VerificationStatus,
   createAVOHarness,
   createAgentRuntime,
   defineCapability,
-  defineVerifier,
-  verificationCapabilityName
+  defineVerifier
 } from "exharness";
 ```
 
@@ -186,16 +162,37 @@ const agent = createAgentRuntime({
 
 Capabilities may define `parseInput` and `parseOutput` validators. This keeps contract validation at the runtime boundary without binding ExHarness to a particular schema library.
 
+### Automated verifiers
+
+Stable verification work can be exposed to the variation agent as a harness capability:
+
+```js
+const verifier = defineVerifier({
+  name: "objective-x",
+  async verify({ candidate }) {
+    return {
+      claim: "candidate satisfies objective X",
+      status: VerificationStatus.PASS,
+      evidence: { candidate }
+    };
+  }
+});
+```
+
+The AVO harness exposes that verifier as `verify.objective-x`. Invoking it records a candidate-bound `VerificationArtifact` in persistent engineering memory.
+
+Manual verification can be externalized through `recordVerification()` using the same artifact contract, so automation is a later stage of the same concept rather than a separate verification model.
+
 ### AVO harness
 
-`createAVOHarness` composes an agent runtime with the persistent AVO lifecycle.
+`createAVOHarness` composes an agent runtime with the existing persistent AVO lifecycle.
 
 ```js
 const harness = createAVOHarness({
   agent,
   objective,
-  verifiers: [invariantVerifier],
   environment,
+  verifiers: [verifier],
   sessionStore,
   contextProjector,
   supervisor,
@@ -220,9 +217,9 @@ During `vary`, the agent receives session-scoped AVO capabilities:
 - `avo.evaluate`
 - `avo.recordKnowledge`
 - `avo.promote`
-- `verify.<name>` for every configured verifier
+- configured `verify.<name>` capabilities
 
-The agent may choose when and how often to run verifiers. `avo.evaluate` receives only verification artifacts bound to the current candidate. Promotion remains deterministic: `avo.promote` fails unless the current candidate has a fresh valid `PASS` evaluation.
+The agent may choose when and how often to use them. Promotion still remains deterministic: `avo.promote` fails unless the current candidate has a fresh valid `PASS` evaluation.
 
 A variation also reports its committed-lineage transition:
 
@@ -234,7 +231,7 @@ variation.lineage = {
 };
 ```
 
-The strategy also receives the current committed `lineageHead` and configured verifier capability names in its input so local search can be grounded without exposing mutable core state.
+The strategy also receives the current committed `lineageHead` in its input so local search can be grounded in the current AVO base without exposing mutable core state.
 
 ## Design constraints
 
@@ -245,8 +242,7 @@ The kernel should also preserve these boundaries:
 - persistent engineering state is not raw conversation history;
 - projected context is a selective view of persistent state;
 - working candidate ancestry is distinct from committed AVO lineage;
-- verification is explicit data, not an implicit assumption that a test suite is the source of truth;
-- verification artifacts are candidate-bound and provenance-bearing;
+- objective verification is externalized as candidate-bound artifacts rather than implicit vigilance;
 - supervisors may redirect search but cannot mutate candidates or issue correctness verdicts;
 - model judgment is flexible, while lifecycle and safety invariants remain deterministic;
 - generated-code containment must ultimately be enforced by an external sandbox/runtime boundary, not prompt instructions.
@@ -258,8 +254,6 @@ Requires Node.js 20 or newer.
 ```bash
 npm test
 ```
-
-Tests guard kernel invariants and compatibility. They are not treated as the harness's verification source of truth; consuming harnesses decide which verification capabilities and evidence are meaningful for their domain.
 
 The repository currently contains one publishable package under `packages/core-harness`. The root workspace remains private so future optional adapters can be added without expanding the public kernel surface prematurely.
 
