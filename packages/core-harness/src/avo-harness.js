@@ -6,6 +6,10 @@ import {
   defineVerifier,
   verificationCapabilityName
 } from "./verification.js";
+import {
+  createVerificationAwareObjective,
+  defineVerificationPolicy
+} from "./verification-assessment.js";
 
 export const AVOCapability = Object.freeze({
   OBSERVE: "avo.observe",
@@ -95,6 +99,7 @@ export function createAVOHarness({
   strategy = null,
   capabilities = [],
   verifiers = [],
+  verificationPolicy = {},
   objective = null,
   evaluator = null,
   environment,
@@ -105,8 +110,14 @@ export function createAVOHarness({
   clock,
   idFactory
 }) {
-  const resolvedObjective = objective ?? evaluator;
-  invariant(resolvedObjective && typeof resolvedObjective.evaluate === "function", "AVO harness requires objective.evaluate()");
+  const baseObjective = objective ?? evaluator;
+  invariant(baseObjective && typeof baseObjective.evaluate === "function", "AVO harness requires objective.evaluate()");
+
+  const normalizedVerificationPolicy = defineVerificationPolicy(verificationPolicy);
+  const resolvedObjective = createVerificationAwareObjective({
+    objective: baseObjective,
+    policy: normalizedVerificationPolicy
+  });
 
   const normalizedVerifiers = verifiers.map(defineVerifier);
   const verifierNames = new Set();
@@ -140,6 +151,10 @@ export function createAVOHarness({
       })));
     },
 
+    verificationPolicy() {
+      return structuredClone(normalizedVerificationPolicy);
+    },
+
     async vary(sessionId, { problem = null, input = null } = {}) {
       const context = await core.context(sessionId, { problem });
       const before = structuredClone(context.candidate);
@@ -155,6 +170,7 @@ export function createAVOHarness({
             name: verifier.name,
             capability: verificationCapabilityName(verifier.name)
           })),
+          verificationPolicy: structuredClone(normalizedVerificationPolicy),
           request: structuredClone(input)
         }),
         context,
