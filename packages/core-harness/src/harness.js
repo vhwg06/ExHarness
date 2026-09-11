@@ -1,4 +1,5 @@
-import { CorePractice, invariant } from "./contracts.js";
+import { randomUUID } from "node:crypto";
+import { CorePractice, invariant, validateSupervisorIntervention } from "./contracts.js";
 import { createAgentRuntime } from "./agent-runtime.js";
 import { createAVOHarness } from "./avo-harness.js";
 import { RecoveryRequiredError } from "./errors.js";
@@ -69,6 +70,8 @@ export function createHarness({
   invariant(environment, "createHarness requires environment");
   invariant(objective || evaluator, "createHarness requires objective or evaluator");
 
+  const now = clock ?? (() => new Date().toISOString());
+  const newId = idFactory ?? (() => randomUUID());
   const rawStore = sessionStore ?? createInMemorySessionStore();
   if (requireRevisionStore) {
     invariant(
@@ -81,8 +84,8 @@ export function createHarness({
   const resolvedEventBus = eventBus ?? createEventBus({
     sinks: eventSinks,
     strict: strictObservability,
-    clock,
-    idFactory
+    clock: now,
+    idFactory: newId
   });
   const resolvedSupervisionPolicy = defineSupervisionPolicy(supervisionPolicy);
   const resolvedRecoveryPolicy = defineRecoveryPolicy(recoveryPolicy);
@@ -111,14 +114,14 @@ export function createHarness({
     supervisor: resolvedSupervisor,
     contextProjector: resolvedProjector,
     dosagePolicy: resolvedDosage,
-    clock,
-    idFactory
+    clock: now,
+    idFactory: newId
   });
 
   async function recoveryAssessment(sessionId) {
     return assessRecovery(await core.workState(sessionId), {
       policy: resolvedRecoveryPolicy,
-      now: clock ?? (() => new Date().toISOString())
+      now
     });
   }
 
@@ -127,6 +130,76 @@ export function createHarness({
       sessionId,
       variationId: recovery.variation.id,
       lastActivityAt: recovery.lastActivityAt
+    });
+  }
+
+  async function reviewCompletedVariation(sessionId, variationResult) {
+    const state = await core.workState(sessionId);
+    const searchHealth = buildSearchHealth(state, resolvedSupervisionPolicy);
+    if (supervisor == null || !searchHealth.attentionSuggested) {
+      return Object.freeze({ searchHealth, intervention: null });
+    }
+
+    const dose = { maxRecent: resolvedSupervisionPolicy.variationWindow };
+    const projected = await resolvedProjector.project({
+      consumer: "SUPERVISOR",
+      problem: "review completed variation trajectory for search stagnation or repeated failure",
+      progress: state,
+      dose
+    });
+    const raw = await resolvedSupervisor.inspect({
+      trigger: {
+        eventId: null,
+        type: "VARIATION_COMPLETED",
+        variationId: variationResult.variation.id
+      },
+      context: structuredClone(projected),
+      dose: structuredClone(dose)
+    });
+    const intervention = validateSupervisorIntervention(raw);
+    if (!intervention) {
+      return Object.freeze({ searchHealth, intervention: null });
+    }
+
+    const at = now();
+    const interventionRecord = {
+      id: newId(),
+      at,
+      candidate: structuredClone(state.currentCandidate),
+      ...structuredClone(intervention)
+    };
+    const trajectoryEvent = {
+      id: newId(),
+      type: "SUPERVISOR_REDIRECTED",
+      at,
+      candidate: structuredClone(state.currentCandidate),
+      interventionId: interventionRecord.id,
+      reason: interventionRecord.reason,
+      triggerVariationId: variationResult.variation.id
+    };
+    state.supervision.inspections += 1;
+    state.supervision.lastInspectedEventId = trajectoryEvent.id;
+    state.supervision.lastDecision = {
+      eventId: trajectoryEvent.id,
+      practice: CorePractice.SUPERVISION,
+      enabled: true,
+      dose: structuredClone(dose),
+      reason: "trajectory health requested supervisor review"
+    };
+    state.supervision.interventions.push(interventionRecord);
+    state.trajectory.push(trajectoryEvent);
+    await resolvedStore.save(state);
+    await resolvedEventBus.emit("SUPERVISOR_REDIRECTED", {
+      sessionId,
+      variationId: variationResult.variation.id,
+      interventionId: interventionRecord.id,
+      reason: interventionRecord.reason,
+      searchHealth
+    });
+
+    return Object.freeze({
+      searchHealth,
+      intervention: structuredClone(interventionRecord)
     });
   }
 
@@ -158,7 +231,7 @@ export function createHarness({
     async recover(sessionId, options = {}) {
       const result = await recoverInterruptedVariation(core, sessionId, {
         policy: resolvedRecoveryPolicy,
-        now: clock ?? (() => new Date().toISOString()),
+        now,
         ...options
       });
       if (result.recovered) {
@@ -183,7 +256,8 @@ export function createHarness({
         termination: result.variation.termination,
         lineageAdvanced: result.lineage.advanced
       });
-      return result;
+      const trajectoryReview = await reviewCompletedVariation(sessionId, result);
+      return Object.freeze({ ...result, trajectoryReview });
     },
 
     async searchHealth(sessionId) {
