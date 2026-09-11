@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { candidateKey, invariant } from "./contracts.js";
+import { candidateKey, invariant, requireText } from "./contracts.js";
 
 function stableValue(value) {
   if (value === null || typeof value === "string" || typeof value === "boolean") return value;
@@ -8,7 +8,14 @@ function stableValue(value) {
     return value;
   }
   if (Array.isArray(value)) return value.map(stableValue);
+
   invariant(value && typeof value === "object", "environment action must be structured serializable data");
+  const prototype = Object.getPrototypeOf(value);
+  invariant(
+    prototype === Object.prototype || prototype === null,
+    "environment action objects must be plain objects"
+  );
+
   const output = {};
   for (const key of Object.keys(value).sort()) {
     invariant(value[key] !== undefined, "environment action must not contain undefined values");
@@ -19,7 +26,7 @@ function stableValue(value) {
 
 export function environmentActionKey({ sessionId, candidate, action }) {
   const canonical = JSON.stringify({
-    sessionId,
+    sessionId: requireText(sessionId, "environment action sessionId"),
     candidate: candidateKey(candidate),
     action: stableValue(action)
   });
