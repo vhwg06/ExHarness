@@ -31,7 +31,7 @@ export function evaluationInputState(state) {
 export function assertEvaluationInputsFresh(
   state,
   evaluation = currentEvaluationForState(state),
-  { purpose = "relying on evaluation" } = {}
+  { purpose = "promotion" } = {}
 ) {
   invariant(evaluation, "current candidate has not been evaluated");
   const evaluated = evaluation.metadata?.inputSnapshot ?? {
