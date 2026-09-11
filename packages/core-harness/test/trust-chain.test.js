@@ -16,7 +16,7 @@ import {
   defineTrustPolicy,
   environmentRefFromValue,
   evaluateAttestationChainTrust,
-  evaluateAttestationTrust,
+  evaluateTrustBoundary,
   policyRefFromValue
 } from "../src/index.js";
 
@@ -113,7 +113,7 @@ async function createVerificationTrust() {
     environment: env,
     issuedAt: "2026-09-11T05:02:00.000Z"
   });
-  const trust = await evaluateAttestationTrust({
+  const trust = await evaluateTrustBoundary({
     attestation,
     decision,
     currentSubject: subject,
@@ -128,7 +128,9 @@ async function createVerificationTrust() {
       requireIndependentIssuer: true,
       requireIndependentEvidenceProducers: true
     }),
-    verifySignature: verifier("verification-attestor")
+    verifySignature: verifier("verification-attestor"),
+    verifyEvaluatorAuthority: ({ evaluator }) => evaluator.identity === "verification-evaluator",
+    verifyEvidenceAuthority: ({ producer }) => producer.identity === "verification-worker"
   });
   assert.equal(trust.trusted, true);
   return { attestation, trust };
@@ -157,10 +159,8 @@ async function createCoordinationAttestation(upstreamAttestation) {
   return { subject, policy, decision, attestor, attestation };
 }
 
-test("coordination trust fails when upstream verification attestation is only referenced but not trusted", async () => {
-  const upstream = await createVerificationTrust();
-  const coordination = await createCoordinationAttestation(upstream.attestation);
-  const result = await evaluateAttestationChainTrust({
+function coordinationInput(coordination) {
+  return {
     attestation: coordination.attestation,
     decision: coordination.decision,
     currentSubject: coordination.subject,
@@ -173,8 +173,15 @@ test("coordination trust fails when upstream verification attestation is only re
       requiredClaims: ["integration-safe"]
     }),
     verifySignature: verifier("coordination-attestor"),
+    verifyEvaluatorAuthority: ({ evaluator }) => evaluator.identity === "coordination-evaluator",
     requiredUpstreamBoundaries: [TrustBoundary.VERIFICATION]
-  });
+  };
+}
+
+test("coordination trust fails when upstream verification attestation is only referenced but not trusted", async () => {
+  const upstream = await createVerificationTrust();
+  const coordination = await createCoordinationAttestation(upstream.attestation);
+  const result = await evaluateAttestationChainTrust(coordinationInput(coordination));
 
   assert.equal(result.trusted, false);
   const codes = new Set(result.reasons.map((reason) => reason.code));
@@ -182,31 +189,15 @@ test("coordination trust fails when upstream verification attestation is only re
   assert.equal(codes.has(TrustChainReasonCode.MISSING_UPSTREAM_BOUNDARY), true);
 });
 
-test("coordination trust accepts exact upstream ref only after the upstream verification attestation is trusted", async () => {
+test("coordination trust accepts exact upstream ref only after upstream verification boundary trust passes", async () => {
   const upstream = await createVerificationTrust();
   const coordination = await createCoordinationAttestation(upstream.attestation);
   const result = await evaluateAttestationChainTrust({
-    attestation: coordination.attestation,
-    decision: coordination.decision,
-    currentSubject: coordination.subject,
-    evidence: [],
-    policy: defineTrustPolicy({
-      boundary: TrustBoundary.COORDINATION,
-      acceptedIssuers: ["coordination-attestor"],
-      acceptedPolicyDigests: [coordination.policy.digest],
-      acceptedEvaluators: ["coordination-evaluator"],
-      requiredClaims: ["integration-safe"]
-    }),
-    verifySignature: verifier("coordination-attestor"),
-    requiredUpstreamBoundaries: [TrustBoundary.VERIFICATION],
+    ...coordinationInput(coordination),
     async verifyUpstream(ref) {
       assert.equal(ref.id, upstream.attestation.id);
       assert.equal(ref.digest, upstream.attestation.digest);
-      return {
-        ...upstream.trust,
-        boundary: TrustBoundary.VERIFICATION,
-        attestation: upstream.attestation
-      };
+      return upstream.trust;
     }
   });
 
