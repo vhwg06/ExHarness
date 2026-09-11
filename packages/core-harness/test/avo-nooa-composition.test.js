@@ -7,6 +7,7 @@ import {
   EvaluationVerdict,
   createAVOHarness,
   createAgentRuntime,
+  createHarness,
   createInMemorySessionStore,
   defineCapability
 } from "../src/index.js";
@@ -190,4 +191,106 @@ test("AVO facade keeps core promotion authority outside the agent strategy", asy
   const variation = await harness.vary("authority-1");
   assert.equal(variation.after.version, "v1");
   assert.equal((await harness.lineage("authority-1")).length, 1);
+});
+
+test("production harness preserves NOOA dynamic prompt context across AVO variations", async () => {
+  let resolved = 0;
+  const seen = [];
+  const harness = createHarness({
+    strategy: {
+      async run({ promptContext }) {
+        seen.push(structuredClone(promptContext));
+        return { status: "CONTEXT_SEEN" };
+      }
+    },
+    contextBlocks: [
+      {
+        name: "live-state",
+        async resolve() {
+          resolved += 1;
+          return { revision: resolved };
+        }
+      }
+    ],
+    contextSelection: { blocks: ["live-state"] },
+    contextPolicy: {
+      maxBlocks: 1,
+      maxHistoryEvents: 0,
+      maxSerializedChars: 1024
+    },
+    environment: {
+      async observe() {
+        return null;
+      },
+      async act() {
+        return { mutated: false, result: null };
+      }
+    },
+    objective: {
+      async evaluate() {
+        return { validity: EvaluationValidity.VALID, verdict: EvaluationVerdict.GAP };
+      }
+    }
+  });
+
+  await harness.start({
+    sessionId: "context-integration",
+    work: { objective: "preserve runtime context composition" },
+    seedCandidate: { id: "candidate", version: "v0" }
+  });
+
+  const first = await harness.vary("context-integration");
+  const second = await harness.vary("context-integration");
+
+  assert.equal(first.result.status, "CONTEXT_SEEN");
+  assert.equal(second.result.status, "CONTEXT_SEEN");
+  assert.deepEqual(
+    seen.map((context) => context.blocks[0].value.revision),
+    [1, 2]
+  );
+  assert.deepEqual(seen.map((context) => context.history.mode), ["NONE", "NONE"]);
+});
+
+test("AVO variations enforce NOOA prompt-context bounds", async () => {
+  const harness = createHarness({
+    strategy: {
+      async run() {
+        return { status: "SHOULD_NOT_RUN" };
+      }
+    },
+    contextBlocks: [
+      { name: "one", value: "one" },
+      { name: "two", value: "two" }
+    ],
+    contextSelection: { blocks: ["one", "two"] },
+    contextPolicy: {
+      maxBlocks: 1,
+      maxHistoryEvents: 0,
+      maxSerializedChars: 1024
+    },
+    environment: {
+      async observe() {
+        return null;
+      },
+      async act() {
+        return { mutated: false, result: null };
+      }
+    },
+    objective: {
+      async evaluate() {
+        return { validity: EvaluationValidity.VALID, verdict: EvaluationVerdict.GAP };
+      }
+    }
+  });
+
+  await harness.start({
+    sessionId: "context-limit",
+    work: { objective: "enforce bounded runtime context" },
+    seedCandidate: { id: "candidate", version: "v0" }
+  });
+
+  const variation = await harness.vary("context-limit");
+  assert.equal(variation.result, null);
+  assert.equal(variation.failure.code, "CONTEXT_LIMIT_EXCEEDED");
+  assert.match(variation.failure.message, /maxBlocks/);
 });
