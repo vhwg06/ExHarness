@@ -1,8 +1,17 @@
 {
-  "name": "@grip/core-harness",
-  "private": true,
+  "name": "exharness",
+  "version": "0.1.0",
+  "description": "AVO-style long-horizon harness kernel with NOOA-style agent runtime primitives.",
   "type": "module",
-  "exports": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "node --test test/*.test.js"
   }
