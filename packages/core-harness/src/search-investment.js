@@ -34,6 +34,20 @@ function completedVariations(state) {
   return state.persistentMemory.variations.filter((item) => item.status === "COMPLETED");
 }
 
+function policyRef(policy) {
+  if (!policy) return null;
+  return Object.freeze({
+    name: policy.name,
+    revision: policy.revision,
+    minEvaluations: policy.minEvaluations,
+    configuration: structuredClone(policy.configuration ?? null)
+  });
+}
+
+function policyRefsEqual(left, right) {
+  return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+}
+
 export function searchInvestmentInputSnapshot(state) {
   return Object.freeze({
     candidateKey: candidateKey(state.currentCandidate),
@@ -80,8 +94,9 @@ function snapshotsEqual(left, right) {
   return true;
 }
 
-export function isSearchInvestmentDecisionFresh(state, decision) {
-  return Boolean(decision && snapshotsEqual(decision.inputSnapshot, searchInvestmentInputSnapshot(state)));
+export function isSearchInvestmentDecisionFresh(state, decision, policy = null) {
+  if (!decision || !snapshotsEqual(decision.inputSnapshot, searchInvestmentInputSnapshot(state))) return false;
+  return policy == null || policyRefsEqual(decision.policy, policyRef(policy));
 }
 
 export function validateSearchInvestmentDecision(value) {
@@ -98,17 +113,27 @@ export function validateSearchInvestmentDecision(value) {
 
 export function defineSearchInvestmentPolicy({
   name = "custom",
+  revision = "1",
+  configuration = null,
   minEvaluations = 3,
   decide
 } = {}) {
   requireText(name, "search investment policy name");
+  requireText(revision, "search investment policy revision");
   invariant(Number.isInteger(minEvaluations) && minEvaluations > 0, "search investment policy minEvaluations must be a positive integer");
   invariant(typeof decide === "function", "search investment policy requires decide()");
-  return Object.freeze({ name, minEvaluations, decide });
+  return Object.freeze({
+    name,
+    revision,
+    configuration: structuredClone(configuration),
+    minEvaluations,
+    decide
+  });
 }
 
 export function createMarginalImprovementPolicy({
   name = "marginal-improvement",
+  revision = "1",
   selectQuality,
   minEvaluations = 3,
   window = 2,
@@ -122,7 +147,14 @@ export function createMarginalImprovementPolicy({
 
   return defineSearchInvestmentPolicy({
     name,
+    revision,
     minEvaluations: Math.max(minEvaluations, window + 1),
+    configuration: {
+      kind: "MARGINAL_IMPROVEMENT",
+      window,
+      minimumImprovement,
+      anomalyImprovement
+    },
     async decide({ history }) {
       const samples = [];
       for (const evaluation of history.evaluations) {
@@ -183,6 +215,7 @@ export function createSearchInvestmentController({
   invariant(sessionStore && typeof sessionStore.load === "function" && typeof sessionStore.save === "function", "search investment controller requires sessionStore load/save");
   invariant(typeof idFactory === "function", "search investment controller requires idFactory()");
   const resolvedPolicy = policy == null ? null : defineSearchInvestmentPolicy(policy);
+  const resolvedPolicyRef = policyRef(resolvedPolicy);
 
   async function load(sessionId) {
     const state = await sessionStore.load(sessionId);
@@ -198,10 +231,7 @@ export function createSearchInvestmentController({
       at: clock(),
       candidate: structuredClone(state.currentCandidate),
       lineageHead: structuredClone(currentLineageHead(state)?.candidate ?? null),
-      policy: Object.freeze({
-        name: resolvedPolicy.name,
-        minEvaluations: resolvedPolicy.minEvaluations
-      }),
+      policy: resolvedPolicyRef,
       inputSnapshot,
       ...normalized
     });
@@ -215,7 +245,7 @@ export function createSearchInvestmentController({
       decisionId: decision.id,
       state: decision.state,
       action: decision.action,
-      policy: decision.policy.name
+      policy: structuredClone(decision.policy)
     });
     await sessionStore.save(state);
     return decision;
@@ -265,7 +295,7 @@ export function createSearchInvestmentController({
     if (!resolvedPolicy) return null;
     const state = await load(sessionId);
     const latest = state.persistentMemory.searchInvestmentDecisions.at(-1) ?? null;
-    if (latest && isSearchInvestmentDecisionFresh(state, latest)) return freezeClone(latest);
+    if (latest && isSearchInvestmentDecisionFresh(state, latest, resolvedPolicy)) return freezeClone(latest);
     if (!refreshIfStale) return null;
     return assess(sessionId);
   }
@@ -275,7 +305,7 @@ export function createSearchInvestmentController({
     const state = await load(sessionId);
     const latest = state.persistentMemory.searchInvestmentDecisions.at(-1) ?? null;
     if (!latest) return null;
-    const decision = isSearchInvestmentDecisionFresh(state, latest)
+    const decision = isSearchInvestmentDecisionFresh(state, latest, resolvedPolicy)
       ? freezeClone(latest)
       : await assess(sessionId);
     if (decision.action === SearchInvestmentAction.CONTINUE) return decision;
@@ -284,9 +314,7 @@ export function createSearchInvestmentController({
 
   return Object.freeze({
     enabled: resolvedPolicy != null,
-    policy: resolvedPolicy
-      ? Object.freeze({ name: resolvedPolicy.name, minEvaluations: resolvedPolicy.minEvaluations })
-      : null,
+    policy: resolvedPolicyRef,
     assess,
     current,
     assertCanContinue
