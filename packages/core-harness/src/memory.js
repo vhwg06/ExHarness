@@ -2,8 +2,8 @@ import { invariant, sameCandidate } from "./contracts.js";
 import { collectFeedback, queryFeedback } from "./feedback.js";
 import {
   KnowledgeScope,
-  buildKnowledgeView,
   normalizeKnowledgeDraft,
+  queryKnowledge,
   validateKnowledgeLinks
 } from "./knowledge.js";
 
@@ -30,9 +30,9 @@ export function createMemoryFacade(core) {
       return queryFeedback(state, query);
     },
 
-    async knowledgeView(sessionId) {
+    async knowledgeView(sessionId, query = {}) {
       const state = await core.workState(sessionId);
-      return buildKnowledgeView(state);
+      return queryKnowledge(state, query);
     },
 
     async recordKnowledge(sessionId, record) {
