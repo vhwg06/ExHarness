@@ -55,7 +55,8 @@ export function agenticMethod(definition = {}) {
  *
  * A scalar capability payload remains ergonomic for one-argument methods;
  * objectMethodCall() removes the otherwise-unsolvable ambiguity between
- * "one array argument" and "many arguments".
+ * "one array argument" and "many arguments". Passing no arguments preserves
+ * a true zero-argument JavaScript call.
  */
 export function objectMethodCall(...args) {
   return Object.freeze({
@@ -154,7 +155,8 @@ function collectDeterministicMethods(instance, {
       name,
       owner: instance,
       own: true,
-      hidden: memberHidden(name, hidden, metadata)
+      hidden: memberHidden(name, hidden, metadata),
+      implementation: descriptor.value
     }));
   }
 
@@ -173,7 +175,8 @@ function collectDeterministicMethods(instance, {
         name,
         owner: proto,
         own: false,
-        hidden: memberHidden(name, hidden, metadata)
+        hidden: memberHidden(name, hidden, metadata),
+        implementation: descriptor.value
       }));
     }
     proto = Object.getPrototypeOf(proto);
@@ -310,9 +313,11 @@ export function createObjectAgent(instance, {
         },
         parseOutput: metadata.parseOutput,
         async execute(args) {
-          const fn = Reflect.get(instance, method.name);
-          invariant(typeof fn === "function", `object agent method is no longer callable: ${method.name}`);
-          return Reflect.apply(fn, instance, args);
+          // Capability authority is bound to the implementation selected when
+          // the object is attached. A later application-side monkeypatch may
+          // change direct caller behavior, but it cannot silently replace the
+          // model-authorized capability body under unchanged metadata/policy.
+          return Reflect.apply(method.implementation, instance, args);
         }
       });
     });
