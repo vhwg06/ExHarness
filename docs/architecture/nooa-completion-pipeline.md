@@ -52,10 +52,12 @@ NOOA-06 CodeAct execution loop                 DONE
 NOOA-07 Nested tracing                         DONE
 NOOA-08 Model routing / scoped overrides       DONE
 NOOA-09 Runtime snapshot / resume              DONE
-NOOA-10 Reference substrate + adversarial eval NEXT
+NOOA-10 Reference substrate + adversarial eval DONE
 ```
 
-Current checkpoint: `NOOA-10`.
+Current checkpoint: `NOOA substrate completion`.
+
+A branch-level DONE entry becomes canonical only after its exact final head and merged `main` pass the full integration gate defined above.
 
 ---
 
@@ -73,84 +75,69 @@ Current checkpoint: `NOOA-10`.
 | NOOA-07 Nested tracing | `docs/architecture/nested-tracing.md` | #21 |
 | NOOA-08 Model routing | `docs/architecture/model-routing.md` | #22 |
 | NOOA-09 Runtime snapshot / resume | `docs/architecture/runtime-snapshot.md` | #23 |
-
-The pipeline status above means implementation has reached each stage's branch-level exit contract. A stage becomes canonical only after its PR and post-merge `main` integration gate succeed.
+| NOOA-10 Reference substrate + adversarial evaluation | `docs/architecture/reference-substrate-evaluation.md` + `artifacts/nooa-reference-eval.json` | #24 |
 
 ---
 
-## NOOA-10 — Reference substrate + adversarial evaluation — NEXT
+## NOOA-10 — Reference substrate + adversarial evaluation — DONE
 
-### Goal
+### Proven consumer path
 
-Prove the completed substrate works as a reusable consumer-facing runtime rather than as isolated APIs.
+The completion gate executes through the packed public package rather than source-relative imports:
 
-The reference workload must consume ExHarness through public package/runtime surfaces and must not require kernel source changes or special-case hooks.
+```text
+npm pack ./packages/core-harness
+        ↓
+blank temporary consumer
+        ↓
+install packed exharness tarball
+        ↓
+run reference substrate workload
+        ↓
+validate adversarial invariants
+        ↓
+deep-compare stable measured artifact
+```
 
-### Reference scenario requirements
-
-The scenario must exercise, together:
+The reference workload composes, without kernel source special cases:
 
 - typed judgments;
-- Predict;
+- Predict with bounded validation repair;
 - AgentEvent working history;
 - explicit context selection/history projection;
-- bounded live `ResourceRef` access;
+- bounded live `ResourceRef` access and progressive disclosure;
 - CodeAct;
 - nested tracing;
 - scoped model routing and actual model-usage provenance;
-- runtime snapshot/resume with safe resource rebinding;
-- an AVO variation above the NOOA substrate without kernel special cases.
+- runtime snapshot/resume with explicit resource rebinding;
+- an AVO variation above the restored NOOA runtime.
 
-### Adversarial/evaluation matrix
+### Measured stable baseline
 
-At minimum challenge:
+The checked-in reference artifact records stable measurements rather than prose-only claims. The completion candidate establishes:
 
-- Predict vs CodeAct on simple typed judgments;
-- full vs selected history;
-- progressive `ResourceRef` disclosure vs eager exposure;
-- model-routing precedence and invalid routes;
-- route resolution vs actual model usage;
-- resume on/off and compatibility mismatch;
-- malformed model actions;
-- stale/cross-runtime resource refs;
-- context poisoning/common-context pressure;
-- oversized observation pressure;
-- telemetry/tracing sink failures;
-- false success / unsafe acceptance.
+```text
+task success             1
+model calls             13
+invalid outputs          5
+correction/retry         5
+resource invocations     1
+executor calls           1
+resume fidelity          1
+false success            0
+unsafe accept            0
+adversarial checks       8/8
+```
 
-### Metrics
+Dynamic run identities such as snapshot digests and evaluation UUIDs remain provenance but are intentionally excluded from brittle baseline comparison.
 
-Capture at minimum:
+### Material finding from evaluation
 
-- task success;
-- invalid output rate;
-- correction/retry count;
-- model calls;
-- execution/capability/resource calls;
-- prompt/context size where observable;
-- false-success / unsafe-accept rate for the reference workload;
-- resume fidelity;
-- verification/evaluation outcome provenance.
+The first packed-consumer run exposed that an unknown model route failed closed but surfaced only as an unclassified plain `Error`. N10 repaired that boundary so invalid routes now fail as a stable `ModelRouteError` under `CONTRACT_VIOLATION`, with focused regression coverage. The reference gate was retained rather than weakened.
 
-### Verification gate
+### Claim boundary
 
-N10 is PASS only when:
-
-1. a blank consumer path imports the packaged/public ExHarness surface;
-2. the reference workload demonstrates all required substrate capabilities without kernel source modification;
-3. adversarial cases produce expected fail-closed behavior;
-4. measured outputs are inspectable artifacts rather than prose-only claims;
-5. the existing package/consumer/example/benchmark gates remain green on Node 20/22/24;
-6. exact final PR head passes the full gate;
-7. merged `main` passes the post-merge integration gate.
-
-### Non-goals
-
-- claiming universal model quality;
-- adding workload-specific backend/frontend/QA semantics to the kernel;
-- provider-specific SDK policy;
-- inventing benchmark optima from one reference workload;
-- broadening N10 into new substrate features unless evaluation exposes a contract bug.
+This stage proves reusable substrate contracts and fail-closed behavior for the deterministic reference workload. It does **not** claim universal model quality, optimal context dosage, provider-specific reliability, or workload-domain correctness.
 
 ---
 
