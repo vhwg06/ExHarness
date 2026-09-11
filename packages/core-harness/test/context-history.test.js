@@ -147,6 +147,42 @@ test("history selector and reducer operate on clones and cannot rewrite canonica
   assert.equal(canonicalFirstResult.payload.result, "first", "reducer mutation must not touch authoritative history");
 });
 
+test("history selectors may choose canonical events but cannot fabricate provenance", async () => {
+  const runtime = createAgentRuntime({
+    judgments: [
+      defineJudgment({
+        name: "strict-selector",
+        context: {
+          history: true,
+          selectHistory(events) {
+            return events.length === 0
+              ? []
+              : [{ ...events[0], id: "fabricated-event" }];
+          }
+        }
+      })
+    ],
+    strategy: {
+      async run({ input, recordAgentEvent }) {
+        recordAgentEvent(AgentEventKind.MODEL_OUTPUT, { output: input });
+        return input;
+      }
+    }
+  });
+
+  await runtime.invokeJudgment("strict-selector", "first");
+  const canonicalBefore = runtime.agentEvents();
+
+  await assert.rejects(
+    () => runtime.invokeJudgment("strict-selector", "second"),
+    /context history selector cannot fabricate event: fabricated-event/
+  );
+
+  const canonicalAfter = runtime.agentEvents();
+  assert.deepEqual(canonicalAfter.slice(0, canonicalBefore.length), canonicalBefore);
+  assert.equal(canonicalAfter.at(-1).type, AgentEventKind.ERROR);
+});
+
 test("working history is not dumped into a judgment unless that judgment explicitly selects it", async () => {
   const observed = [];
   const runtime = createAgentRuntime({
@@ -201,6 +237,31 @@ test("bounded history can deterministically truncate oldest events", async () =>
   );
 });
 
+test("zero history dose really projects zero prior events", async () => {
+  const observed = [];
+  const runtime = createAgentRuntime({
+    contextPolicy: {
+      maxHistoryEvents: 0,
+      historyOverflow: ContextHistoryOverflow.TRUNCATE_OLDEST
+    },
+    judgments: [defineJudgment({ name: "zero-history", context: { history: true } })],
+    strategy: {
+      async run({ input, promptContext, recordAgentEvent }) {
+        observed.push(promptContext.history);
+        recordAgentEvent(AgentEventKind.MODEL_OUTPUT, { output: input });
+        return input;
+      }
+    }
+  });
+
+  await runtime.invokeJudgment("zero-history", "first");
+  await runtime.invokeJudgment("zero-history", "second");
+
+  assert.equal(observed[1].mode, "EVENTS");
+  assert.deepEqual(observed[1].events, []);
+  assert.deepEqual(observed[1].sourceEventIds, []);
+});
+
 test("history overflow can fail closed with a stable operational error", async () => {
   const runtime = createAgentRuntime({
     contextPolicy: {
@@ -230,6 +291,17 @@ test("history overflow can fail closed with a stable operational error", async (
   const finalEvents = runtime.agentEvents();
   assert.equal(finalEvents.at(-1).type, AgentEventKind.ERROR);
   assert.equal(finalEvents.at(-1).payload.error.code, ExHarnessErrorCode.CONTEXT_LIMIT_EXCEEDED);
+});
+
+test("prompt-visible context rejects structured-cloneable values that are not stable JSON prompt data", () => {
+  assert.throws(
+    () => trusted("bad-context", { value: 1n }),
+    /must contain only JSON-compatible prompt data/
+  );
+  assert.throws(
+    () => trusted("bad-map", { value: new Map([["a", 1]]) }),
+    /must contain only plain objects and arrays/
+  );
 });
 
 test("Predict receives only the selected prompt context and selected history surface", async () => {
