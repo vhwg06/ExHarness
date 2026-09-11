@@ -19,6 +19,7 @@ export {
 export {
   CURRENT_STATE_SCHEMA_VERSION,
   assertPersistedRevision,
+  createValidatedSessionStore,
   normalizePersistentState
 } from "./persistence.js";
 export {
@@ -83,6 +84,14 @@ export {
   instrumentAgentRuntime,
   instrumentCapabilities
 } from "./observability.js";
+export {
+  createDeterministicClock,
+  createDeterministicIdFactory,
+  createFakeEnvironment,
+  createFakeExecutor,
+  verifyExecutorContract,
+  verifySessionStoreContract
+} from "./testing.js";
 export { createInMemorySessionStore } from "./store.js";
 export { validateCorePorts } from "./ports.js";
 export { createCoreHarness } from "./core-harness.js";
