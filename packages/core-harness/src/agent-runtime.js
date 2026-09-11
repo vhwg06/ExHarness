@@ -276,7 +276,7 @@ export function createAgentRuntime({
             type === AgentEventKind.VALIDATION_ERROR ||
             type === AgentEventKind.ACTION_OUTPUT ||
             type === AgentEventKind.ACTION_ERROR,
-          "strategy may only record MODEL_OUTPUT, VALIDATION_ERROR, ACTION_OUTPUT, or ACTION_ERROR working events"
+          "strategy may only record MODEL_OUTPUT or VALIDATION_ERROR working events; CodeAct may additionally record ACTION_OUTPUT or ACTION_ERROR"
         );
         return recordRuntimeEvent(type, callId, judgment, payload);
       }
