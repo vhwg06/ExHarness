@@ -32,6 +32,9 @@ export function createPersistentWorkState({ id, work, seedCandidate, now }) {
       evaluations: [],
       knowledge: [],
       variations: [],
+      evidenceArtifacts: [],
+      decisionArtifacts: [],
+      attestations: [],
       lineage: [
         {
           kind: "BASELINE",
@@ -81,6 +84,11 @@ export function publicSnapshot(state) {
       observations: state.persistentMemory.observations.length,
       knowledge: state.persistentMemory.knowledge.length,
       variations: state.persistentMemory.variations?.length ?? 0,
+      trust: {
+        evidence: state.persistentMemory.evidenceArtifacts?.length ?? 0,
+        decisions: state.persistentMemory.decisionArtifacts?.length ?? 0,
+        attestations: state.persistentMemory.attestations?.length ?? 0
+      },
       lineage: {
         count: state.persistentMemory.lineage.length,
         head: lineageHead(state)
