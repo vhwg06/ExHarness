@@ -50,3 +50,27 @@ export function assertPersistedRevision(result, expectedRevision) {
   );
   return result.revision;
 }
+
+export function createValidatedSessionStore(store) {
+  invariant(store && typeof store.load === "function", "session store requires load()");
+  invariant(store && typeof store.save === "function", "session store requires save()");
+
+  return Object.freeze({
+    supportsRevisions: store.supportsRevisions === true,
+
+    async load(sessionId) {
+      const state = await store.load(sessionId);
+      return state == null ? null : normalizePersistentState(state);
+    },
+
+    async save(session, options = undefined) {
+      const normalized = normalizePersistentState(session);
+      const expectedRevision = normalized.revision;
+      const result = await store.save(normalized, options ?? { expectedRevision });
+      const persistedRevision = assertPersistedRevision(result, expectedRevision);
+      session.schemaVersion = normalized.schemaVersion;
+      session.revision = persistedRevision;
+      return Object.freeze({ revision: persistedRevision });
+    }
+  });
+}
