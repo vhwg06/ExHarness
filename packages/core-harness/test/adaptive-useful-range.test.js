@@ -122,7 +122,7 @@ test("diminishing grounded improvement stops the next variation without changing
   assert.equal(variations.length, 3, "STOP must gate before a fourth variation is opened");
 });
 
-test("new grounded artifacts stale the old range decision and force recomputation", async () => {
+test("new grounded artifacts stale the range decision until objective evaluation is refreshed", async () => {
   const policy = defineSearchInvestmentPolicy({
     minEvaluations: 1,
     async decide({ history }) {
@@ -130,7 +130,7 @@ test("new grounded artifacts stale the old range decision and force recomputatio
         ? {
             state: SearchInvestmentState.IN_RANGE,
             action: SearchInvestmentAction.CONTINUE,
-            rationale: "independent verification changed the investment picture"
+            rationale: "fresh evaluation plus independent verification changed the investment picture"
           }
         : {
             state: SearchInvestmentState.DIMINISHING_RETURNS,
@@ -146,7 +146,7 @@ test("new grounded artifacts stale the old range decision and force recomputatio
       }
     },
     environment: baseEnvironment(),
-    objective: qualityObjective([0.1]),
+    objective: qualityObjective([0.1, 0.2]),
     searchInvestmentPolicy: policy
   });
   await start(harness);
@@ -164,8 +164,15 @@ test("new grounded artifacts stale the old range decision and force recomputatio
     source: { kind: VerificationSourceKind.CAPABILITY, name: "verify.independent" }
   });
 
+  const staleEvaluationDecision = await harness.searchInvestmentStatus("s1");
+  assert.notEqual(staleEvaluationDecision.id, oldDecisionId);
+  assert.equal(staleEvaluationDecision.state, SearchInvestmentState.INSUFFICIENT_DATA);
+  assert.equal(staleEvaluationDecision.action, SearchInvestmentAction.CONTINUE);
+  assert.match(staleEvaluationDecision.metrics.evaluationFreshnessError, /re-evaluate before search investment/);
+
+  await harness.evaluate("s1");
   const refreshed = await harness.searchInvestmentStatus("s1");
-  assert.notEqual(refreshed.id, oldDecisionId);
+  assert.notEqual(refreshed.id, staleEvaluationDecision.id);
   assert.equal(refreshed.action, SearchInvestmentAction.CONTINUE);
   assert.equal(refreshed.inputSnapshot.verificationIds.length, 1);
 });
