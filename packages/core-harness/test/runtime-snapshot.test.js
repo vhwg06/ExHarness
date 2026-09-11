@@ -11,6 +11,8 @@ import {
   normalizeRuntimeSnapshot
 } from "../src/index.js";
 
+const COMPATIBILITY_TAG = "runtime-snapshot-test-v1";
+
 function simpleStrategy(result = "ok") {
   return {
     kind: "SNAPSHOT_TEST",
@@ -18,6 +20,13 @@ function simpleStrategy(result = "ok") {
       return result;
     }
   };
+}
+
+function resumable(options = {}) {
+  return createResumableAgentRuntime({
+    runtimeCompatibilityTag: COMPATIBILITY_TAG,
+    ...options
+  });
 }
 
 function resourceDefinition({ execute = async () => "ok" } = {}) {
@@ -35,8 +44,15 @@ function resourceDefinition({ execute = async () => "ok" } = {}) {
   };
 }
 
+test("resumable runtime requires an explicit compatibility tag", () => {
+  assert.throws(
+    () => createResumableAgentRuntime({ strategy: simpleStrategy() }),
+    /runtime compatibility tag/
+  );
+});
+
 test("runtime snapshot preserves event chronology while omitting payloads by default", async () => {
-  const runtime = createResumableAgentRuntime({ strategy: simpleStrategy("done") });
+  const runtime = resumable({ strategy: simpleStrategy("done") });
   assert.equal(await runtime.run({ input: { secret: "not-for-snapshot" } }), "done");
 
   const before = runtime.agentEvents();
@@ -53,7 +69,7 @@ test("runtime snapshot preserves event chronology while omitting payloads by def
   ));
   assert.equal(JSON.stringify(snapshot).includes("not-for-snapshot"), false);
 
-  const restored = createResumableAgentRuntime({
+  const restored = resumable({
     strategy: simpleStrategy("after-restore"),
     snapshot
   });
@@ -70,8 +86,8 @@ test("runtime snapshot preserves event chronology while omitting payloads by def
   );
 });
 
-test("SANITIZE payload mode cannot serialize ResourceRef authority", async () => {
-  const runtime = createResumableAgentRuntime({
+test("SANITIZE payload mode never exposes raw ResourceRef authority to the sanitizer", async () => {
+  const runtime = resumable({
     strategy: {
       kind: "RESOURCE_SNAPSHOT_TEST",
       async run({ resources, recordAgentEvent }) {
@@ -90,6 +106,13 @@ test("SANITIZE payload mode cannot serialize ResourceRef authority", async () =>
   const snapshot = runtime.snapshot({
     payloadMode: RuntimeSnapshotPayloadMode.SANITIZE,
     sanitizeEventPayload(payload) {
+      if (payload?.ref) {
+        return {
+          ...payload,
+          attemptedRegistryLeak: payload.ref.registryId ?? null,
+          attemptedIdLeak: payload.ref.id ?? null
+        };
+      }
       return payload;
     }
   });
@@ -98,6 +121,8 @@ test("SANITIZE payload mode cannot serialize ResourceRef authority", async () =>
   assert.equal(modelEvent.payload.note, "safe-note");
   assert.equal(modelEvent.payload.ref.kind, RuntimeSnapshotRedactionKind.RESOURCE_REF);
   assert.equal(modelEvent.payload.ref.name, "repo");
+  assert.equal(modelEvent.payload.attemptedRegistryLeak, null);
+  assert.equal(modelEvent.payload.attemptedIdLeak, null);
   assert.equal(snapshot.redactions.resourceRefs, 1);
 
   const serialized = JSON.stringify(snapshot);
@@ -108,7 +133,7 @@ test("SANITIZE payload mode cannot serialize ResourceRef authority", async () =>
 test("snapshot refuses both active agent calls and active direct resource operations", async () => {
   let finishRun;
   const runGate = new Promise((resolve) => { finishRun = resolve; });
-  const running = createResumableAgentRuntime({
+  const running = resumable({
     strategy: {
       kind: "BLOCKING_RUN",
       async run() {
@@ -128,7 +153,7 @@ test("snapshot refuses both active agent calls and active direct resource operat
 
   let finishResource;
   const resourceGate = new Promise((resolve) => { finishResource = resolve; });
-  const withResource = createResumableAgentRuntime({
+  const withResource = resumable({
     strategy: simpleStrategy(),
     resources: [resourceDefinition({
       async execute() {
@@ -148,10 +173,7 @@ test("snapshot refuses both active agent calls and active direct resource operat
 });
 
 test("future schema, tampered digest, and incompatible configuration fail closed", async () => {
-  const runtime = createResumableAgentRuntime({
-    strategy: simpleStrategy(),
-    runtimeCompatibilityTag: "runtime-v1"
-  });
+  const runtime = resumable({ strategy: simpleStrategy() });
   await runtime.run();
   const snapshot = runtime.snapshot();
 
@@ -166,7 +188,7 @@ test("future schema, tampered digest, and incompatible configuration fail closed
   assert.throws(
     () => createResumableAgentRuntime({
       strategy: simpleStrategy(),
-      runtimeCompatibilityTag: "runtime-v2",
+      runtimeCompatibilityTag: "runtime-snapshot-test-v2",
       snapshot
     }),
     (error) => error.code === ExHarnessErrorCode.RUNTIME_SNAPSHOT_INCOMPATIBLE
@@ -174,7 +196,7 @@ test("future schema, tampered digest, and incompatible configuration fail closed
 });
 
 test("active resources require explicit rebinding and restore with fresh authority refs", async () => {
-  const original = createResumableAgentRuntime({
+  const original = resumable({
     strategy: simpleStrategy(),
     resources: [resourceDefinition()]
   });
@@ -182,7 +204,7 @@ test("active resources require explicit rebinding and restore with fresh authori
   const snapshot = original.snapshot();
 
   assert.throws(
-    () => createResumableAgentRuntime({
+    () => resumable({
       strategy: simpleStrategy(),
       resources: [resourceDefinition()],
       snapshot
@@ -191,7 +213,7 @@ test("active resources require explicit rebinding and restore with fresh authori
   );
 
   const rebound = [];
-  const restored = createResumableAgentRuntime({
+  const restored = resumable({
     strategy: simpleStrategy(),
     resources: [resourceDefinition()],
     snapshot,
@@ -213,7 +235,7 @@ test("active resources require explicit rebinding and restore with fresh authori
 });
 
 test("revoked resources stay revoked after restore and do not require rebinding", () => {
-  const original = createResumableAgentRuntime({
+  const original = resumable({
     strategy: simpleStrategy(),
     resources: [resourceDefinition()]
   });
@@ -221,7 +243,7 @@ test("revoked resources stay revoked after restore and do not require rebinding"
   const snapshot = original.snapshot();
   assert.deepEqual(snapshot.state.agentResources, [{ name: "repo", active: false }]);
 
-  const restored = createResumableAgentRuntime({
+  const restored = resumable({
     strategy: simpleStrategy(),
     resources: [resourceDefinition()],
     snapshot
