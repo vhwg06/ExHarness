@@ -92,6 +92,21 @@ export {
   evaluateAttestationChainTrust
 } from "./trust-chain.js";
 export {
+  ControlInputKind,
+  ProcessTrustReasonCode,
+  VerificationDomainDimension,
+  assessVerificationIndependence,
+  controlInputFromValue,
+  createControlInputManifest,
+  createProcessAttestationIssuer,
+  createVerificationDomainManifest,
+  defineControlInput,
+  defineIndependencePolicy,
+  defineProcessTrustPolicy,
+  defineVerificationDomain,
+  evaluateProcessAttestationTrust
+} from "./process-trust.js";
+export {
   AgentRunErrorCode,
   CapabilityBudgetExceededError,
   VariationClosedAfterCommitError,
