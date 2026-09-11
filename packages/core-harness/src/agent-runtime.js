@@ -8,6 +8,12 @@ import {
   renderAgentContext
 } from "./context.js";
 import { defineJudgment, judgmentView } from "./judgment.js";
+import {
+  ResourceLifetime,
+  createResourceRegistry,
+  defineResource,
+  defineResourcePolicy
+} from "./resource.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
 function clone(value) {
@@ -62,12 +68,39 @@ export function createAgentRuntime({
   judgments = [],
   agentEventStore = createAgentEventStore(),
   contextBlocks = [],
-  contextPolicy = {}
+  contextPolicy = {},
+  resources = [],
+  resourceRegistry = null,
+  resourcePolicy = {},
+  resourceAuthorize = null
 }) {
   invariant(strategy && typeof strategy.run === "function", "agent runtime requires strategy.run()");
   invariant(agentEventStore && typeof agentEventStore.newCallId === "function", "agent runtime event store requires newCallId()");
   invariant(typeof agentEventStore.record === "function", "agent runtime event store requires record()");
   invariant(typeof agentEventStore.events === "function", "agent runtime event store requires events()");
+
+  const resolvedResourceRegistry = resourceRegistry ?? createResourceRegistry({
+    policy: defineResourcePolicy(resourcePolicy),
+    authorize: resourceAuthorize
+  });
+  invariant(resolvedResourceRegistry && typeof resolvedResourceRegistry.register === "function", "agent runtime resource registry requires register()");
+  invariant(typeof resolvedResourceRegistry.refs === "function", "agent runtime resource registry requires refs()");
+  invariant(typeof resolvedResourceRegistry.describe === "function", "agent runtime resource registry requires describe()");
+  invariant(typeof resolvedResourceRegistry.invoke === "function", "agent runtime resource registry requires invoke()");
+  invariant(typeof resolvedResourceRegistry.revoke === "function", "agent runtime resource registry requires revoke()");
+  invariant(typeof resolvedResourceRegistry.closeCall === "function", "agent runtime resource registry requires closeCall()");
+  invariant(typeof resolvedResourceRegistry.policy === "function", "agent runtime resource registry requires policy()");
+
+  const baseResourceRefs = new Map();
+  const baseResourceNames = new Set();
+  for (const definition of resources) {
+    const resource = defineResource(definition);
+    invariant(resource.lifetime === ResourceLifetime.AGENT, `runtime resource ${resource.name} must use AGENT lifetime`);
+    invariant(!baseResourceNames.has(resource.name), `duplicate resource: ${resource.name}`);
+    const ref = resolvedResourceRegistry.register(resource);
+    baseResourceNames.add(resource.name);
+    baseResourceRefs.set(ref.id, ref);
+  }
 
   const resolvedContextPolicy = defineContextPolicy(contextPolicy);
   const baseContextBlocks = new Map();
@@ -94,6 +127,15 @@ export function createAgentRuntime({
     baseJudgments.set(judgment.name, judgment);
   }
 
+  function activeBaseResourceRefs() {
+    const activeIds = new Set(
+      resolvedResourceRegistry.refs({ lifetime: ResourceLifetime.AGENT }).map((ref) => ref.id)
+    );
+    return Object.freeze([...baseResourceRefs.values()]
+      .filter((ref) => activeIds.has(ref.id))
+      .map((ref) => clone(ref)));
+  }
+
   function resolveCapabilities(scopedCapabilities = []) {
     const resolved = new Map(baseCapabilities);
 
@@ -104,6 +146,19 @@ export function createAgentRuntime({
     }
 
     return resolved;
+  }
+
+  function normalizeCallResources(scopedResources = []) {
+    invariant(Array.isArray(scopedResources), "agent run resources must be an array");
+    const names = new Set();
+    return scopedResources.map((definition) => {
+      const resource = defineResource(definition);
+      invariant(resource.lifetime === ResourceLifetime.CALL, `scoped resource ${resource.name} must use CALL lifetime`);
+      invariant(!baseResourceNames.has(resource.name), `scoped resource cannot shadow runtime resource: ${resource.name}`);
+      invariant(!names.has(resource.name), `duplicate scoped resource: ${resource.name}`);
+      names.add(resource.name);
+      return resource;
+    });
   }
 
   function recordRuntimeEvent(type, callId, judgment, payload) {
@@ -120,11 +175,13 @@ export function createAgentRuntime({
     events = [],
     contextSelection = null,
     capabilities: scopedCapabilities = [],
+    resources: scopedResources = [],
     budget = null,
     onCapabilityInvoke = null
   } = {}, runtimeContract = {}) {
     invariant(selectedStrategy && typeof selectedStrategy.run === "function", "agent run strategy requires run()");
     const resolved = resolveCapabilities(scopedCapabilities);
+    const resolvedCallResources = normalizeCallResources(scopedResources);
     const runInput = clone(input);
     const runContext = clone(context);
     const runEvents = clone(events) ?? [];
@@ -133,6 +190,7 @@ export function createAgentRuntime({
     const callId = agentEventStore.newCallId();
     const priorAgentEvents = agentEventStore.events();
     const resolvedSelection = runtimeContract.contextSelection ?? defineContextSelection(contextSelection ?? {});
+    const callResourceRefs = [];
 
     if (maxCapabilityCalls != null) {
       invariant(
@@ -153,6 +211,10 @@ export function createAgentRuntime({
     recordRuntimeEvent(AgentEventKind.TASK, callId, judgment, { input: runInput });
 
     try {
+      for (const resource of resolvedCallResources) {
+        callResourceRefs.push(resolvedResourceRegistry.register(resource, { callId }));
+      }
+
       const promptContext = await renderAgentContext({
         blocks: [...baseContextBlocks.values()],
         selection: resolvedSelection,
@@ -196,6 +258,18 @@ export function createAgentRuntime({
         return capability.parseOutput ? capability.parseOutput(output) : output;
       }
 
+      async function describeResource(ref) {
+        return resolvedResourceRegistry.describe(ref, { callId });
+      }
+
+      async function invokeResource(ref, operationName, payload = null) {
+        return resolvedResourceRegistry.invoke(ref, operationName, payload, {
+          callId,
+          input: runInput,
+          context: runContext
+        });
+      }
+
       function recordAgentEvent(type, payload = null) {
         invariant(
           type === AgentEventKind.MODEL_OUTPUT || type === AgentEventKind.VALIDATION_ERROR,
@@ -207,6 +281,10 @@ export function createAgentRuntime({
       const selectedAgentEvents = promptContext.history.mode === "EVENTS"
         ? promptContext.history.events
         : Object.freeze([]);
+      const visibleResourceRefs = Object.freeze([
+        ...activeBaseResourceRefs(),
+        ...callResourceRefs.map((ref) => clone(ref))
+      ]);
 
       const result = await selectedStrategy.run(Object.freeze({
         input: runInput,
@@ -220,6 +298,9 @@ export function createAgentRuntime({
         recordAgentEvent,
         capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
         invoke,
+        resources: visibleResourceRefs,
+        describeResource,
+        invokeResource,
         judgment,
         validateResult: runtimeContract.validateResult ?? null
       }));
@@ -237,6 +318,8 @@ export function createAgentRuntime({
     } catch (error) {
       recordRuntimeEvent(AgentEventKind.ERROR, callId, judgment, { error: errorView(error) });
       throw error;
+    } finally {
+      resolvedResourceRegistry.closeCall(callId);
     }
   }
 
@@ -312,6 +395,26 @@ export function createAgentRuntime({
 
     contextPolicy() {
       return clone(resolvedContextPolicy);
+    },
+
+    resourceRefs() {
+      return activeBaseResourceRefs();
+    },
+
+    resourcePolicy() {
+      return clone(resolvedResourceRegistry.policy());
+    },
+
+    describeResource(ref) {
+      return resolvedResourceRegistry.describe(ref);
+    },
+
+    invokeResource(ref, operationName, payload = null) {
+      return resolvedResourceRegistry.invoke(ref, operationName, payload);
+    },
+
+    revokeResource(ref) {
+      return resolvedResourceRegistry.revoke(ref);
     },
 
     agentEvents() {
