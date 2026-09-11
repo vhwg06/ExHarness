@@ -19,7 +19,8 @@ export const VariationTermination = Object.freeze({
 });
 
 export const AgentRunErrorCode = Object.freeze({
-  CAPABILITY_BUDGET_EXHAUSTED: "CAPABILITY_BUDGET_EXHAUSTED"
+  CAPABILITY_BUDGET_EXHAUSTED: "CAPABILITY_BUDGET_EXHAUSTED",
+  VARIATION_CLOSED_AFTER_COMMIT: "VARIATION_CLOSED_AFTER_COMMIT"
 });
 
 export class CapabilityBudgetExceededError extends Error {
@@ -28,6 +29,15 @@ export class CapabilityBudgetExceededError extends Error {
     this.name = "CapabilityBudgetExceededError";
     this.code = AgentRunErrorCode.CAPABILITY_BUDGET_EXHAUSTED;
     this.maxCapabilityCalls = maxCapabilityCalls;
+    this.attemptedCapability = attemptedCapability ?? null;
+  }
+}
+
+export class VariationClosedAfterCommitError extends Error {
+  constructor({ attemptedCapability }) {
+    super("variation already committed; no further capability calls are allowed");
+    this.name = "VariationClosedAfterCommitError";
+    this.code = AgentRunErrorCode.VARIATION_CLOSED_AFTER_COMMIT;
     this.attemptedCapability = attemptedCapability ?? null;
   }
 }
