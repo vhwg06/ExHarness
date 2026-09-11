@@ -2,7 +2,7 @@
 
 ExHarness is a reusable long-horizon harness kernel that combines two NVIDIA-inspired ideas at different layers:
 
-- **AVO** is the control/search spine: candidate variation, committed lineage, persistent progress, objective feedback, accumulated knowledge, supervision, and recovery.
+- **AVO** is the control/search spine: candidate variation, committed lineage, persistent progress, objective feedback, accumulated knowledge, supervision, recovery, and adaptive search investment.
 - **NOOA-style runtime primitives** are the agent substrate: explicit context, programmable strategy, typed capabilities, validation boundaries, and observable invocation.
 
 ExHarness intentionally contains no backend, frontend, QA, Figma, repository, or product semantics. A consuming project imports the kernel and injects those concerns.
@@ -55,7 +55,7 @@ await harness.start({
 const result = await harness.vary("work-1");
 ```
 
-A real project normally adds domain capabilities, objective verifiers, a durable revision-aware store, model-backed strategy, executor/sandbox adapters, and optional supervisor policies. None require editing ExHarness.
+A real project normally adds domain capabilities, objective verifiers, a durable revision-aware store, model-backed strategy, executor/sandbox adapters, optional supervisor policies, and—when the workload has a meaningful quality/cost signal—an adaptive search-investment policy. None require editing ExHarness.
 
 ## Architecture
 
@@ -71,6 +71,7 @@ consumer harness
 | candidate + committed lineage                  |
 | variation + objective verification             |
 | grounded feedback + persistent K               |
+| adaptive search investment                     |
 | supervision + recovery                         |
 |                                                |
 | NOOA-style substrate                           |
@@ -105,6 +106,10 @@ ExHarness currently enforces the following base semantics:
 - knowledge is append-only, scoped, provenance-aware, and can expose unresolved contradictions;
 - variation outcomes come from persisted state changes, not model claims;
 - variation capability budget is owned outside strategy exception handling;
+- adaptive search-investment decisions are grounded in persisted artifacts, never model self-reported progress;
+- search-investment decisions are freshness-bound to both the consumed artifact snapshot and policy revision/configuration;
+- search investment controls whether another variation may start, never objective correctness or promotion;
+- hard variation budgets remain authoritative even when search investment says CONTINUE;
 - promotion closes variation capability activity;
 - supervisor can redirect search but cannot mutate candidates or issue correctness verdicts;
 - persistent work state has schema/revision identity;
@@ -113,7 +118,54 @@ ExHarness currently enforces the following base semantics:
 - execution adapters receive timeout/abort/constraint envelopes;
 - observability is separate from correctness state.
 
-The current variation budget is a **hard containment ceiling**, not a claim that a fixed number of calls/iterations is the economically useful amount of search. The next AVO control-plane patch introduces an adaptive useful-range gate driven by grounded evaluation/cost history. Until that stage merges, ExHarness does not claim dynamic diminishing-return termination.
+## Adaptive search investment
+
+A hard variation budget and an adaptive useful range answer different questions:
+
+```text
+maxCapabilityCalls
+= how much work one variation is allowed to spend at most
+
+SearchInvestmentDecision
+= given grounded history, is another variation still worth opening?
+```
+
+Configure a policy only when the consumer has a meaningful grounded signal. The kernel does not invent a universal quality function.
+
+```js
+import {
+  createHarness,
+  createMarginalImprovementPolicy
+} from "exharness";
+
+const harness = createHarness({
+  // ...strategy/environment/objective...
+  variationPolicy: {
+    maxCapabilityCalls: 64 // hard containment ceiling
+  },
+  searchInvestmentPolicy: createMarginalImprovementPolicy({
+    revision: "quality-v1",
+    minEvaluations: 3,
+    window: 2,
+    minimumImprovement: 0.01,
+    anomalyImprovement: 0.5,
+    selectQuality(evaluation) {
+      return evaluation.metadata?.quality;
+    }
+  })
+});
+```
+
+After each completed variation, the controller persists a `SearchInvestmentDecision`:
+
+```text
+WARMUP / IN_RANGE / DIMINISHING_RETURNS / ANOMALOUS / INSUFFICIENT_DATA
+                           |
+                           v
+              CONTINUE / STOP / ESCALATE
+```
+
+`STOP` or `ESCALATE` gates the next variation before strategy execution. A fresh correctness PASS can still be promoted; the range gate is not a correctness oracle. New observations/verifications/evaluations/trajectory artifacts or a policy revision/configuration change make an older range decision stale and force recomputation. Recovery remains a separate, higher-priority lifecycle concern.
 
 See `docs/architecture/adaptive-useful-range.md` for the control-plane contract.
 

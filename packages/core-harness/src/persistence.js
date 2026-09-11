@@ -28,6 +28,7 @@ export const BUILT_IN_STATE_MIGRATIONS = Object.freeze([
       next.persistentMemory.evidenceArtifacts ??= [];
       next.persistentMemory.decisionArtifacts ??= [];
       next.persistentMemory.attestations ??= [];
+      next.persistentMemory.searchInvestmentDecisions ??= [];
       return next;
     }
   })
@@ -107,6 +108,7 @@ export function normalizePersistentState(state) {
   normalized.persistentMemory.knowledge ??= [];
   normalized.persistentMemory.lineage ??= [];
   normalized.persistentMemory.variations ??= [];
+  normalized.persistentMemory.searchInvestmentDecisions ??= [];
   normalized.persistentMemory.evidenceArtifacts ??= [];
   normalized.persistentMemory.decisionArtifacts ??= [];
   normalized.persistentMemory.attestations ??= [];
