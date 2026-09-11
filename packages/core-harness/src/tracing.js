@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { randomUUID } from "node:crypto";
 import { invariant, requireText } from "./contracts.js";
+import { TraceSinkError } from "./errors.js";
 
 export const TraceSpanKind = Object.freeze({
   AGENT_RUN: "AGENT_RUN",
@@ -64,7 +65,13 @@ export function createTraceRecorder({
           sink: sink.name ?? null,
           message: error?.message ?? String(error)
         }));
-        if (strict && primaryError == null && strictFailure == null) strictFailure = error;
+        if (strict && primaryError == null && strictFailure == null) {
+          strictFailure = new TraceSinkError({
+            spanId: span.spanId,
+            sink: sink.name ?? null,
+            cause: error
+          });
+        }
       }
     }
     if (strictFailure) throw strictFailure;
@@ -112,11 +119,7 @@ export function createTraceRecorder({
     });
     spans.push(span);
 
-    try {
-      await writeSpan(span, primaryError);
-    } catch (sinkError) {
-      throw sinkError;
-    }
+    await writeSpan(span, primaryError);
 
     if (primaryError != null) throw primaryError;
     return result;
