@@ -3,6 +3,7 @@ import { CorePractice, invariant, sameCandidate, validateSupervisorIntervention 
 import { createAgentRuntime } from "./agent-runtime.js";
 import { createAVOHarness } from "./avo-harness.js";
 import { createIdempotentEnvironment } from "./environment.js";
+import { assertEvaluationInputsFresh } from "./evaluation-freshness.js";
 import { RecoveryRequiredError } from "./errors.js";
 import { createEventBus, instrumentAgentRuntime, instrumentCapabilities } from "./observability.js";
 import { createValidatedSessionStore } from "./persistence.js";
@@ -245,11 +246,8 @@ export function createHarness({
 
     const state = await core.workState(sessionId);
     const candidate = structuredClone(state.currentCandidate);
+    const evaluation = assertEvaluationInputsFresh(state);
     const currentVerifications = state.persistentMemory.verifications.filter((item) => sameCandidate(item.candidate, candidate));
-    const evaluation = [...state.persistentMemory.evaluations]
-      .reverse()
-      .find((item) => sameCandidate(item.candidate, candidate)) ?? null;
-    invariant(evaluation, "current candidate has no evaluation to attest");
 
     const resolvedSubject = subject ?? subjectFromValue(candidate, { type: "candidate" });
     const resolvedPolicy = policy ?? policyRefFromValue("verification-policy", core.verificationPolicy());
