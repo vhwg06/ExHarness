@@ -88,6 +88,9 @@ export function defineContextBlock(definition = {}) {
     resolve
   } = definition;
   const resolvedName = requireText(name, "context block name");
+  const resolvedDescription = description == null
+    ? null
+    : requireText(description, `context block ${resolvedName} description`);
   invariant(Object.values(ContextBlockTrust).includes(trust), `context block ${resolvedName} trust is invalid`);
   const dynamic = resolve != null;
   const fixed = !dynamic && Object.prototype.hasOwnProperty.call(definition, "value");
@@ -98,7 +101,7 @@ export function defineContextBlock(definition = {}) {
 
   return Object.freeze({
     name: resolvedName,
-    description,
+    description: resolvedDescription,
     trust,
     dynamic,
     ...(fixed ? { value: fixedValue } : {}),
@@ -152,18 +155,19 @@ export function defineContextSelection({
 function selectCanonicalEvents(canonicalEvents, selectedEvents) {
   invariant(Array.isArray(selectedEvents), "context history selector must return an array");
   const byId = new Map(canonicalEvents.map((event) => [event.id, event]));
-  const seen = new Set();
-  const selected = [];
+  const selectedIds = new Set();
 
   for (const event of selectedEvents) {
     invariant(event && typeof event === "object", "context history selector entries must be events");
     const id = requireText(event.id, "context history selected event id");
     invariant(byId.has(id), `context history selector cannot fabricate event: ${id}`);
-    invariant(!seen.has(id), `context history selector cannot duplicate event: ${id}`);
-    seen.add(id);
-    selected.push(clone(byId.get(id)));
+    invariant(!selectedIds.has(id), `context history selector cannot duplicate event: ${id}`);
+    selectedIds.add(id);
   }
 
+  const selected = canonicalEvents
+    .filter((event) => selectedIds.has(event.id))
+    .map((event) => clone(event));
   return normalizePromptData(selected, "context history events");
 }
 
