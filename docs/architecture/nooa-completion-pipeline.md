@@ -50,8 +50,8 @@ Rules:
 NOOA-01 Typed Judgment                         DONE
 NOOA-02 Predict Strategy                       DONE
 NOOA-03 AgentEvent working history             DONE
-AVO-R1  Adaptive useful-range gate             NEXT
-NOOA-04 Context blocks + history selection     BLOCKED_ON_AVO-R1
+AVO-R1  Adaptive useful-range gate             DONE
+NOOA-04 Context blocks + history selection     NEXT
 NOOA-05 ResourceRef / live resource semantics  PENDING
 NOOA-06 CodeAct execution loop                 PENDING
 NOOA-07 Nested tracing                         PENDING
@@ -60,9 +60,7 @@ NOOA-09 Runtime snapshot / resume               PENDING
 NOOA-10 Reference substrate + adversarial eval PENDING
 ```
 
-Current checkpoint: `AVO-R1`.
-
-`AVO-R1` is an intentional control-plane correction discovered before NOOA-04. It is not a NOOA substrate feature, but it blocks further substrate work until the long-horizon search budget semantics are explicit.
+Current checkpoint: `NOOA-04`.
 
 ---
 
@@ -162,76 +160,75 @@ Merged through PR #13.
 
 ---
 
-## AVO-R1 — Adaptive useful-range gate — NEXT
+## AVO-R1 — Adaptive useful-range gate — DONE
 
 Goal: separate the hard safety ceiling from the dynamic question of whether additional long-horizon search is still worth paying for.
 
 Architecture authority: `docs/architecture/adaptive-useful-range.md`.
 
-Control flow:
+Implemented control flow:
 
 ```text
-candidate
+completed variation
    |
    v
-objective.evaluate()
+persist grounded evaluations / verifications / activity / capability-call cost proxy
    |
    v
-append grounded evaluation / verification / cost artifacts
+SearchInvestmentDecision
    |
-   v
-adaptive useful-range gate
-   |
-   +---- CONTINUE
-   +---- STOP
-   `---- ESCALATE
+   +---- CONTINUE -> next variation may open
+   +---- STOP     -> next variation is gated before strategy execution
+   `---- ESCALATE -> stronger external verification/supervision is required before search resumes
 ```
 
-Required semantics:
+Required semantics now enforced:
 
 - the gate lives in the AVO control plane, outside `strategy.run()`;
 - hard capability/time/execution budgets remain independent outer ceilings;
 - gate inputs come from grounded persisted artifacts, never agent self-reported progress;
 - the gate emits a search-investment decision, not a correctness verdict;
 - decisions are freshness-bound to the exact artifact snapshot consumed;
-- insufficient history produces explicit warm-up/insufficient-data behavior;
+- decision freshness is also bound to explicit policy revision/configuration;
+- insufficient history produces explicit warm-up behavior;
+- stale/missing current objective evaluation produces explicit insufficient-data behavior;
 - policy is pluggable rather than hard-coding one universal formula;
-- useful policies may use marginal improvement, cost-per-unit-quality, or trajectory/anomaly bands;
+- the kernel ships one reference marginal-improvement policy, while cost-per-unit-quality and other policies can use the same grounded history contract;
 - STOP cannot bypass recovery for interrupted variations;
 - CONTINUE cannot override hard safety ceilings;
-- ESCALATE may request stronger verification/supervision but cannot promote a candidate.
+- ESCALATE cannot promote a candidate or fabricate correctness.
 
-Explicit non-goals:
+Manual/adversarial findings that changed implementation:
 
-- replacing objective verification;
-- letting the model decide its own budget from prose self-assessment;
-- removing hard safety limits;
-- claiming one universal optimal threshold/window/sample count;
-- silently discarding persisted work or failed directions.
+1. Pre-first-variation gating initially would have persisted a meaningless WARMUP decision. The final controller does not create a decision until grounded work exists or status is explicitly requested.
+2. A new verification/observation initially could have recomputed ROI using a stale objective score. The final gate refuses trend-based control until the current evaluation is fresh again.
+3. Artifact freshness alone was insufficient: a policy threshold/implementation revision could change while history stayed identical. Decisions now bind to policy revision/configuration and are recomputed when that control input changes.
 
-Verification challenges:
+Verification challenges covered by the stage:
 
-- agent says "progress" while grounded artifacts are unchanged -> range state does not move;
-- too few samples -> no fabricated trend;
-- new evaluation/verification/cost artifact -> previous range decision becomes stale;
-- diminishing returns -> search can STOP while objective verdict remains unchanged;
-- anomalously large positive movement -> may ESCALATE without self-promoting;
+- agent says "progress" while grounded artifacts are unchanged -> no grounded range sample is fabricated;
+- too few evaluations -> WARMUP rather than invented trend;
+- new relevant artifacts -> old decision becomes stale;
+- stale current evaluation -> INSUFFICIENT_DATA until re-evaluated;
+- diminishing returns -> search STOP while objective verdict remains GAP;
+- anomalously large positive movement -> ESCALATE without self-promotion;
 - range STOP cannot skip explicit recovery;
-- range CONTINUE cannot exceed the outer hard budget;
-- missing metric inputs -> explicit insufficient-data result instead of invented quality/cost;
-- replacing range policy does not alter correctness semantics.
+- range CONTINUE cannot exceed the hard capability budget;
+- missing quality metrics -> explicit insufficient-data result;
+- policy revision change -> otherwise artifact-fresh decision becomes stale.
 
-Exit artifact:
+Residual gaps remain explicit:
 
-- first-class persisted search-investment/range decision with input provenance;
-- architecture tests for freshness, grounding, recovery separation and hard-cap precedence;
-- stage PR recording manual findings and residual threshold-policy gaps.
+- ExHarness does not claim one universal quality/cost metric;
+- the reference marginal-improvement helper is not a benchmark-derived optimal policy;
+- richer cost-per-unit-quality or statistical control policies belong above the same pluggable contract and require workload evidence;
+- token/provider cost is only available when the consumer records it as grounded evaluation/usage metadata; completed variations always expose deterministic capability-call counts.
 
-Only after AVO-R1 merges and post-merge `main` is healthy does NOOA-04 resume.
+Merged through PR #16.
 
 ---
 
-## NOOA-04 — Context blocks + history selection — BLOCKED_ON_AVO-R1
+## NOOA-04 — Context blocks + history selection — NEXT
 
 Goal: distinguish deliberate current prompt context from chronological working events.
 
