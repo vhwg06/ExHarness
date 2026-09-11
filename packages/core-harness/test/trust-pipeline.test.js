@@ -50,9 +50,7 @@ function trustFixture({ subjectProducer = "implementation-agent", issuerIdentity
     digest: "abc123",
     producer: subjectProducer == null ? null : { identity: subjectProducer, roles: ["change-author"] }
   });
-  const policy = policyRefFromValue("verification-policy", {
-    required: ["correctness", "architecture"]
-  });
+  const policy = policyRefFromValue("verification-policy", { required: ["correctness", "architecture"] });
   const evidenceEnvironment = environmentRefFromValue({ image: "verify@sha256:111", node: 22 }, { name: "verification-env" });
   const attestationEnvironment = environmentRefFromValue({ service: "attestor", image: "attestor@sha256:222" }, { name: "attestation-env" });
   const evidence = [
@@ -87,50 +85,48 @@ function trustFixture({ subjectProducer = "implementation-agent", issuerIdentity
     verdict: "READY_FOR_INTEGRATION",
     generatedAt: "2026-09-11T04:02:00.000Z"
   });
-  const signing = signingFixture(issuerIdentity);
-  return { subject, policy, evidenceEnvironment, attestationEnvironment, evidence, decision, ...signing };
+  return { subject, policy, evidenceEnvironment, attestationEnvironment, evidence, decision, ...signingFixture(issuerIdentity) };
 }
 
-test("signed verification attestation is trusted only for exact subject, policy, environment, claims and issuer authority", async () => {
-  const fixture = trustFixture();
-  const attestation = await fixture.issuer.issue({
+async function issue(fixture) {
+  return fixture.issuer.issue({
     decision: fixture.decision,
     environment: fixture.attestationEnvironment,
     issuedAt: "2026-09-11T04:03:00.000Z"
   });
-  const trustPolicy = defineTrustPolicy({
-    boundary: TrustBoundary.VERIFICATION,
-    acceptedIssuers: [fixture.issuer.issuer.identity],
-    acceptedPolicyDigests: [fixture.policy.digest],
-    acceptedEnvironmentDigests: [fixture.attestationEnvironment.digest],
-    requiredIssuerRoles: ["verification-attestor"],
-    requiredClaims: ["correctness", "architecture"],
-    requireIndependentIssuer: true,
-    maxAgeMs: 60_000
-  });
+}
 
+test("signed verification attestation is trusted only for exact subject, policy, environment, claims and issuer authority", async () => {
+  const fixture = trustFixture();
+  const attestation = await issue(fixture);
   const result = await evaluateAttestationTrust({
     attestation,
+    decision: fixture.decision,
     currentSubject: fixture.subject,
-    policy: trustPolicy,
+    policy: defineTrustPolicy({
+      boundary: TrustBoundary.VERIFICATION,
+      acceptedIssuers: [fixture.issuer.issuer.identity],
+      acceptedPolicyDigests: [fixture.policy.digest],
+      acceptedEnvironmentDigests: [fixture.attestationEnvironment.digest],
+      requiredIssuerRoles: ["verification-attestor"],
+      requiredClaims: ["correctness", "architecture"],
+      requireIndependentIssuer: true,
+      maxAgeMs: 60_000
+    }),
     evidence: fixture.evidence,
     verifySignature: fixture.verifySignature,
     now: () => "2026-09-11T04:03:30.000Z"
   });
-
   assert.equal(result.trusted, true);
   assert.deepEqual(result.reasons, []);
 });
 
 test("subject or policy change makes an otherwise valid attestation stale", async () => {
   const fixture = trustFixture();
-  const attestation = await fixture.issuer.issue({
-    decision: fixture.decision,
-    environment: fixture.attestationEnvironment,
-    issuedAt: "2026-09-11T04:03:00.000Z"
-  });
+  const attestation = await issue(fixture);
   const result = await evaluateAttestationTrust({
     attestation,
+    decision: fixture.decision,
     currentSubject: defineSubject({ type: "git-commit", digest: "def456", producer: { identity: "implementation-agent" } }),
     policy: defineTrustPolicy({
       acceptedIssuers: [fixture.issuer.issuer.identity],
@@ -140,7 +136,6 @@ test("subject or policy change makes an otherwise valid attestation stale", asyn
     evidence: [],
     verifySignature: fixture.verifySignature
   });
-
   const codes = new Set(result.reasons.map((reason) => reason.code));
   assert.equal(codes.has(TrustReasonCode.STALE_SUBJECT), true);
   assert.equal(codes.has(TrustReasonCode.STALE_POLICY), true);
@@ -148,15 +143,11 @@ test("subject or policy change makes an otherwise valid attestation stale", asyn
 
 test("forged signature and missing required claim are independently visible trust failures", async () => {
   const fixture = trustFixture();
-  const attestation = structuredClone(await fixture.issuer.issue({
-    decision: fixture.decision,
-    environment: fixture.attestationEnvironment,
-    issuedAt: "2026-09-11T04:03:00.000Z"
-  }));
+  const attestation = structuredClone(await issue(fixture));
   attestation.signature.value = Buffer.from("forged").toString("base64");
-
   const result = await evaluateAttestationTrust({
     attestation,
+    decision: fixture.decision,
     currentSubject: fixture.subject,
     policy: defineTrustPolicy({
       acceptedIssuers: [fixture.issuer.issuer.identity],
@@ -173,16 +164,12 @@ test("forged signature and missing required claim are independently visible trus
 
 test("tampered evidence body cannot pass by retaining the original digest field", async () => {
   const fixture = trustFixture();
-  const attestation = await fixture.issuer.issue({
-    decision: fixture.decision,
-    environment: fixture.attestationEnvironment,
-    issuedAt: "2026-09-11T04:03:00.000Z"
-  });
+  const attestation = await issue(fixture);
   const evidence = structuredClone(fixture.evidence);
   evidence[0].content.failed = 999;
-
   const result = await evaluateAttestationTrust({
     attestation,
+    decision: fixture.decision,
     currentSubject: fixture.subject,
     policy: defineTrustPolicy({
       acceptedIssuers: [fixture.issuer.issuer.identity],
@@ -198,13 +185,10 @@ test("tampered evidence body cannot pass by retaining the original digest field"
 test("independent-issuer policy fails closed when subject producer authority is unknown or identical", async () => {
   for (const subjectProducer of [null, "verification-service"]) {
     const fixture = trustFixture({ subjectProducer, issuerIdentity: "verification-service" });
-    const attestation = await fixture.issuer.issue({
-      decision: fixture.decision,
-      environment: fixture.attestationEnvironment,
-      issuedAt: "2026-09-11T04:03:00.000Z"
-    });
+    const attestation = await issue(fixture);
     const result = await evaluateAttestationTrust({
       attestation,
+      decision: fixture.decision,
       currentSubject: fixture.subject,
       policy: defineTrustPolicy({
         acceptedIssuers: [fixture.issuer.issuer.identity],
@@ -221,31 +205,24 @@ test("independent-issuer policy fails closed when subject producer authority is 
 
 test("attestation lineage can bind a coordination decision to upstream verification attestations", async () => {
   const fixture = trustFixture();
-  const verificationAttestation = await fixture.issuer.issue({
-    decision: fixture.decision,
-    environment: fixture.attestationEnvironment,
-    issuedAt: "2026-09-11T04:03:00.000Z"
-  });
+  const verificationAttestation = await issue(fixture);
   const integrationSubject = defineSubject({ type: "git-tree", digest: "integration-head" });
-  const coordinationPolicy = policyRefFromValue("coordination-policy", { mergeQueue: true });
   const coordinationDecision = createDecisionArtifact({
     subject: integrationSubject,
     boundary: TrustBoundary.COORDINATION,
-    policy: coordinationPolicy,
+    policy: policyRefFromValue("coordination-policy", { mergeQueue: true }),
     evaluator: { identity: "coordination-engine", roles: ["evaluator"] },
     evidence: [],
     claims: [{ name: "integration-safe", status: ClaimStatus.SATISFIED }],
     verdict: "MERGEABLE",
     generatedAt: "2026-09-11T04:04:00.000Z"
   });
-  const coordinationIssuer = signingFixture("coordination-service").issuer;
-  const coordination = await coordinationIssuer.issue({
+  const coordination = await signingFixture("coordination-service").issuer.issue({
     decision: coordinationDecision,
     environment: fixture.attestationEnvironment,
     upstreamAttestations: [verificationAttestation],
     issuedAt: "2026-09-11T04:05:00.000Z"
   });
-
   assert.equal(coordination.boundary, TrustBoundary.COORDINATION);
   assert.equal(coordination.upstreamAttestations.length, 1);
   assert.equal(coordination.upstreamAttestations[0].digest, verificationAttestation.digest);
@@ -280,17 +257,14 @@ test("production facade materializes and persists verification evidence, decisio
   });
   await harness.evaluate("trust-session");
 
-  const subject = defineSubject({
-    type: "git-commit",
-    digest: "abc123",
-    producer: { identity: "implementation-agent", roles: ["change-author"] }
-  });
-  const evidenceEnvironment = environmentRefFromValue({ runner: "verify-1" }, { name: "verify" });
-  const attestationEnvironment = environmentRefFromValue({ runner: "attest-1" }, { name: "attest" });
   const bundle = await harness.attestCurrentEvaluation("trust-session", {
-    subject,
-    evidenceEnvironment,
-    attestationEnvironment,
+    subject: defineSubject({
+      type: "git-commit",
+      digest: "abc123",
+      producer: { identity: "implementation-agent", roles: ["change-author"] }
+    }),
+    evidenceEnvironment: environmentRefFromValue({ runner: "verify-1" }, { name: "verify" }),
+    attestationEnvironment: environmentRefFromValue({ runner: "attest-1" }, { name: "attest" }),
     evaluator: { identity: "objective-engine", roles: ["evaluator"] },
     verdict: "READY_FOR_INTEGRATION"
   });
@@ -318,7 +292,6 @@ test("built-in persistence migration upgrades v1 sessions to trust-capable v2 st
     trajectory: [],
     supervision: { inspections: 0, skipped: 0, interventions: [], lastInspectedEventId: null, lastDecision: null }
   });
-
   assert.equal(migrated.schemaVersion, 2);
   assert.deepEqual(migrated.persistentMemory.evidenceArtifacts, []);
   assert.deepEqual(migrated.persistentMemory.decisionArtifacts, []);
