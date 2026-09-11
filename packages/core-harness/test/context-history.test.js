@@ -183,6 +183,37 @@ test("history selectors may choose canonical events but cannot fabricate provena
   assert.equal(canonicalAfter.at(-1).type, AgentEventKind.ERROR);
 });
 
+test("history selector cannot reorder the canonical chronology", async () => {
+  const observed = [];
+  const runtime = createAgentRuntime({
+    judgments: [
+      defineJudgment({
+        name: "chronological",
+        context: {
+          history: true,
+          selectHistory(events) {
+            return [...events].reverse();
+          }
+        }
+      })
+    ],
+    strategy: {
+      async run({ input, promptContext, recordAgentEvent }) {
+        observed.push(promptContext.history);
+        recordAgentEvent(AgentEventKind.MODEL_OUTPUT, { output: input });
+        return input;
+      }
+    }
+  });
+
+  await runtime.invokeJudgment("chronological", "first");
+  const beforeSecond = runtime.agentEvents();
+  await runtime.invokeJudgment("chronological", "second");
+
+  assert.deepEqual(observed[1].sourceEventIds, beforeSecond.map((event) => event.id));
+  assert.deepEqual(observed[1].events.map((event) => event.id), beforeSecond.map((event) => event.id));
+});
+
 test("working history is not dumped into a judgment unless that judgment explicitly selects it", async () => {
   const observed = [];
   const runtime = createAgentRuntime({
@@ -291,6 +322,24 @@ test("history overflow can fail closed with a stable operational error", async (
   const finalEvents = runtime.agentEvents();
   assert.equal(finalEvents.at(-1).type, AgentEventKind.ERROR);
   assert.equal(finalEvents.at(-1).payload.error.code, ExHarnessErrorCode.CONTEXT_LIMIT_EXCEEDED);
+});
+
+test("trusted blocks are never silently truncated to fit the serialized context bound", async () => {
+  const runtime = createAgentRuntime({
+    contextBlocks: [trusted("large-policy", "x".repeat(1_000))],
+    contextPolicy: {
+      maxSerializedChars: 128,
+      historyOverflow: ContextHistoryOverflow.TRUNCATE_OLDEST
+    },
+    judgments: [defineJudgment({ name: "large", context: { blocks: ["large-policy"] } })],
+    strategy: { async run() { return "unreachable"; } }
+  });
+
+  await assert.rejects(
+    () => runtime.invokeJudgment("large", null),
+    (error) => error.code === ExHarnessErrorCode.CONTEXT_LIMIT_EXCEEDED && error.details.limit === "maxSerializedChars"
+  );
+  assert.equal(runtime.agentEvents().at(-1).type, AgentEventKind.ERROR);
 });
 
 test("prompt-visible context rejects structured-cloneable values that are not stable JSON prompt data", () => {
