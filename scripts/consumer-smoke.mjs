@@ -91,7 +91,7 @@ if (await objectAgent.answer(2) !== 2) throw new Error("object agent method did 
 if (await objectAgent.answer(3) !== 5) throw new Error("object agent state did not stay live");
 const objectCapabilities = getObjectAgentRuntime(objectAgent).capabilities().map((item) => item.name);
 if (JSON.stringify(objectCapabilities) !== JSON.stringify(["increment"])) {
-  throw new Error(`unexpected object capabilities: ${JSON.stringify(objectCapabilities)}`);
+  throw new Error("unexpected object capabilities: " + JSON.stringify(objectCapabilities));
 }
 const objectSurface = objectAgentSurface(objectAgent);
 if (!objectSurface.members.some((item) => item.name === "increment" && item.kind === ObjectAgentMemberKind.DETERMINISTIC)) {
