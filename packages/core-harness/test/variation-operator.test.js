@@ -154,20 +154,25 @@ test("strategy cannot hide budget exhaustion by catching the budget error", asyn
   assert.equal(result.variation.activity.observationsAdded, 1);
 });
 
-test("commit is terminal for variation capability activity", async () => {
+test("commit is terminal even when strategy catches the post-commit violation", async () => {
   const harness = createHarness({
     async run({ invoke }) {
       await invoke(AVOCapability.ACT, { nextVersion: "v1" });
       await invoke(AVOCapability.EVALUATE);
       await invoke(AVOCapability.PROMOTE);
-      await invoke(AVOCapability.OBSERVE, { shouldNotRun: true });
-      return "unreachable";
+      try {
+        await invoke(AVOCapability.OBSERVE, { shouldNotRun: true });
+      } catch {
+        return "caught-post-commit-error";
+      }
+      return "unexpected";
     }
   });
   await start(harness);
 
   const result = await harness.vary("s1");
 
+  assert.equal(result.result, "caught-post-commit-error");
   assert.equal(result.variation.outcome, VariationOutcome.COMMITTED);
   assert.equal(result.variation.termination, VariationTermination.FAILED);
   assert.equal(result.failure.code, AgentRunErrorCode.VARIATION_CLOSED_AFTER_COMMIT);
