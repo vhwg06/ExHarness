@@ -15,7 +15,12 @@ import {
   validateSupervisorIntervention
 } from "./contracts.js";
 import { validateCorePorts } from "./ports.js";
-import { createPersistentWorkState, findImplementation, publicSnapshot } from "./state.js";
+import {
+  createPersistentWorkState,
+  findImplementation,
+  lineageHead,
+  publicSnapshot
+} from "./state.js";
 
 const defaultClock = () => new Date().toISOString();
 const defaultId = () => randomUUID();
@@ -85,7 +90,7 @@ export function createCoreHarness({
       work: structuredClone(state.work),
       currentCandidate: structuredClone(state.currentCandidate),
       latestEvaluation: structuredClone(currentEvaluation(state)),
-      lineageHead: structuredClone(state.persistentMemory.lineage.at(-1) ?? null),
+      lineageHead: structuredClone(lineageHead(state)),
       counts: Object.freeze({
         implementations: state.persistentMemory.implementations.length,
         observations: state.persistentMemory.observations.length,
@@ -172,7 +177,7 @@ export function createCoreHarness({
       knowledge: Object.freeze({ count: state.persistentMemory.knowledge.length }),
       lineage: Object.freeze({
         count: state.persistentMemory.lineage.length,
-        head: structuredClone(state.persistentMemory.lineage.at(-1) ?? null)
+        head: structuredClone(lineageHead(state))
       }),
       supervision: Object.freeze({
         inspections: state.supervision.inspections,
@@ -184,6 +189,11 @@ export function createCoreHarness({
         lastEventId: state.trajectory.at(-1)?.id ?? null
       })
     });
+  }
+
+  async function candidateHistory(sessionId) {
+    const state = await load(sessionId);
+    return structuredClone(state.persistentMemory.implementations);
   }
 
   return Object.freeze({
@@ -236,9 +246,10 @@ export function createCoreHarness({
       return structuredClone(await load(sessionId));
     },
 
+    candidateHistory,
+
     async implementationHistory(sessionId) {
-      const state = await load(sessionId);
-      return structuredClone(state.persistentMemory.implementations);
+      return candidateHistory(sessionId);
     },
 
     async observations(sessionId, { currentCandidateOnly = false } = {}) {
@@ -295,6 +306,7 @@ export function createCoreHarness({
     async act(sessionId, action) {
       const state = await load(sessionId);
       const before = structuredClone(state.currentCandidate);
+      const committedBase = lineageHead(state);
       const result = await environment.act({
         sessionId: state.id,
         work: structuredClone(state.work),
@@ -314,6 +326,7 @@ export function createCoreHarness({
         state.persistentMemory.implementations.push({
           candidate: after,
           parent: before,
+          lineageBase: structuredClone(committedBase?.candidate ?? null),
           status: ImplementationStatus.WORKING,
           createdAt: clock(),
           promotedAt: null
@@ -326,6 +339,7 @@ export function createCoreHarness({
         mutated,
         before,
         after,
+        lineageBase: structuredClone(committedBase?.candidate ?? null),
         result: structuredClone(result.result ?? null)
       });
       const supervision = await inspectProgress(state, actionEvent);
@@ -335,6 +349,7 @@ export function createCoreHarness({
         eventId: actionEvent.id,
         mutated,
         candidate: structuredClone(after),
+        lineageBase: structuredClone(committedBase?.candidate ?? null),
         result: structuredClone(result.result ?? null),
         supervision: structuredClone(supervision)
       });
@@ -393,22 +408,35 @@ export function createCoreHarness({
       invariant(evaluation.validity === EvaluationValidity.VALID, "current evaluation is not valid");
       invariant(evaluation.verdict === EvaluationVerdict.PASS, "current candidate did not pass evaluation");
 
-      const head = state.persistentMemory.lineage.at(-1);
+      const head = lineageHead(state);
+      invariant(head, "committed lineage is missing a baseline");
       invariant(!sameCandidate(head.candidate, state.currentCandidate), "current candidate is already committed to lineage");
 
       const implementation = findImplementation(state, state.currentCandidate);
       invariant(implementation, "current candidate is missing from implementation history");
+      invariant(
+        implementation.lineageBase == null || sameCandidate(implementation.lineageBase, head.candidate),
+        "current candidate was not derived from the current committed lineage head"
+      );
+
+      const committedAt = clock();
       implementation.status = ImplementationStatus.PROMOTED;
-      implementation.promotedAt = clock();
+      implementation.promotedAt = committedAt;
 
       const promotion = {
         kind: "PROMOTED",
         candidate: structuredClone(state.currentCandidate),
+        parent: structuredClone(head.candidate),
+        implementationParent: structuredClone(implementation.parent),
         evaluation: evaluation.id,
-        promotedAt: implementation.promotedAt
+        committedAt,
+        promotedAt: committedAt
       };
       state.persistentMemory.lineage.push(promotion);
-      event(state, "PROMOTED", { evaluationId: evaluation.id });
+      event(state, "PROMOTED", {
+        evaluationId: evaluation.id,
+        parent: structuredClone(head.candidate)
+      });
       await save(state);
       return structuredClone(promotion);
     }

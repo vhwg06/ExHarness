@@ -1,4 +1,4 @@
-import { invariant } from "./contracts.js";
+import { invariant, sameCandidate } from "./contracts.js";
 import { createCoreHarness } from "./core-harness.js";
 import { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 
@@ -82,12 +82,14 @@ export function createAVOHarness({
     async vary(sessionId, { problem = null, input = null } = {}) {
       const context = await core.context(sessionId, { problem });
       const before = structuredClone(context.candidate);
+      const lineageBefore = structuredClone(context.indexes.lineage.head);
 
       const result = await agentRuntime.run({
         input: Object.freeze({
           sessionId,
           work: structuredClone(context.work),
           candidate: structuredClone(before),
+          lineageHead: structuredClone(lineageBefore),
           request: structuredClone(input)
         }),
         context,
@@ -95,12 +97,23 @@ export function createAVOHarness({
       });
 
       const after = await core.resume(sessionId);
+      const lineageAfter = structuredClone(after.progress.lineage.head);
+      const lineageAdvanced = Boolean(
+        lineageBefore &&
+        lineageAfter &&
+        !sameCandidate(lineageBefore.candidate, lineageAfter.candidate)
+      );
 
       return Object.freeze({
         sessionId,
         before,
         after: structuredClone(after.candidate),
-        lineageHead: structuredClone(after.progress.lineage.head),
+        lineage: Object.freeze({
+          before: lineageBefore,
+          after: lineageAfter,
+          advanced: lineageAdvanced
+        }),
+        lineageHead: lineageAfter,
         result: structuredClone(result)
       });
     }
