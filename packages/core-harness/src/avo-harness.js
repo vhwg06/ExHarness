@@ -10,6 +10,12 @@ import {
   createVerificationAwareObjective,
   defineVerificationPolicy
 } from "./verification-assessment.js";
+import {
+  AgentRunErrorCode,
+  VariationClosedAfterCommitError,
+  VariationTermination,
+  defineVariationPolicy
+} from "./variation.js";
 
 export const AVOCapability = Object.freeze({
   OBSERVE: "avo.observe",
@@ -95,7 +101,7 @@ async function promoteWithFreshEvaluationInputs(core, sessionId) {
   return core.promote(sessionId);
 }
 
-function createSessionCapabilities(core, sessionId, verifiers, promote) {
+function createSessionCapabilities(core, sessionId, verifiers, promote, onPromoted) {
   return Object.freeze([
     defineCapability({
       name: AVOCapability.OBSERVE,
@@ -123,12 +129,26 @@ function createSessionCapabilities(core, sessionId, verifiers, promote) {
     }),
     defineCapability({
       name: AVOCapability.PROMOTE,
-      description: "Commit the current candidate to lineage. Core invariants require a fresh valid PASS evaluation over the current observation and verification snapshot.",
+      description: "Commit the current candidate to lineage and terminate variation capability activity. Core invariants require a fresh valid PASS evaluation over the current observation and verification snapshot.",
       mutatesCandidate: false,
-      execute: () => promote(sessionId)
+      async execute() {
+        const promotion = await promote(sessionId);
+        onPromoted(promotion);
+        return promotion;
+      }
     }),
     ...createVerificationCapabilities(core, sessionId, verifiers)
   ]);
+}
+
+function serializeFailure(error) {
+  if (!error) return null;
+  return Object.freeze({
+    name: error.name ?? "Error",
+    message: error.message ?? String(error),
+    code: error.code ?? null,
+    attemptedCapability: error.attemptedCapability ?? null
+  });
 }
 
 export function createAVOHarness({
@@ -137,6 +157,7 @@ export function createAVOHarness({
   capabilities = [],
   verifiers = [],
   verificationPolicy = {},
+  variationPolicy = {},
   objective = null,
   evaluator = null,
   environment,
@@ -151,6 +172,7 @@ export function createAVOHarness({
   invariant(baseObjective && typeof baseObjective.evaluate === "function", "AVO harness requires objective.evaluate()");
 
   const normalizedVerificationPolicy = defineVerificationPolicy(verificationPolicy);
+  const normalizedVariationPolicy = defineVariationPolicy(variationPolicy);
   const resolvedObjective = createVerificationAwareObjective({
     objective: baseObjective,
     policy: normalizedVerificationPolicy
@@ -165,6 +187,10 @@ export function createAVOHarness({
 
   const agentRuntime = agent ?? createAgentRuntime({ strategy, capabilities });
   invariant(agentRuntime && typeof agentRuntime.run === "function", "AVO harness requires agent.run()");
+  invariant(
+    typeof agentRuntime.runWithReport === "function",
+    "AVO variation semantics require agent.runWithReport() for bounded capability accounting"
+  );
 
   const core = createCoreHarness({
     environment,
@@ -194,28 +220,75 @@ export function createAVOHarness({
       return structuredClone(normalizedVerificationPolicy);
     },
 
+    variationPolicy() {
+      return structuredClone(normalizedVariationPolicy);
+    },
+
     async vary(sessionId, { problem = null, input = null } = {}) {
       const context = await core.context(sessionId, { problem });
-      const before = structuredClone(context.candidate);
       const lineageBefore = structuredClone(context.indexes.lineage.head);
-
-      const result = await agentRuntime.run({
-        input: Object.freeze({
-          sessionId,
-          work: structuredClone(context.work),
-          candidate: structuredClone(before),
-          lineageHead: structuredClone(lineageBefore),
-          verifiers: normalizedVerifiers.map((verifier) => Object.freeze({
-            name: verifier.name,
-            capability: verificationCapabilityName(verifier.name)
-          })),
-          verificationPolicy: structuredClone(normalizedVerificationPolicy),
-          request: structuredClone(input)
-        }),
-        context,
-        capabilities: createSessionCapabilities(core, sessionId, normalizedVerifiers, promote)
+      const variation = await core.beginVariation(sessionId, {
+        problem,
+        request: input,
+        policy: normalizedVariationPolicy
       });
 
+      let capabilityCalls = 0;
+      let committed = false;
+      let result = null;
+      let failure = null;
+      let termination = VariationTermination.RETURNED;
+
+      try {
+        const report = await agentRuntime.runWithReport({
+          input: Object.freeze({
+            sessionId,
+            variationId: variation.id,
+            work: structuredClone(context.work),
+            candidate: structuredClone(variation.baseCandidate),
+            lineageHead: structuredClone(lineageBefore),
+            verifiers: normalizedVerifiers.map((verifier) => Object.freeze({
+              name: verifier.name,
+              capability: verificationCapabilityName(verifier.name)
+            })),
+            verificationPolicy: structuredClone(normalizedVerificationPolicy),
+            variationPolicy: structuredClone(normalizedVariationPolicy),
+            request: structuredClone(input)
+          }),
+          context,
+          capabilities: createSessionCapabilities(
+            core,
+            sessionId,
+            normalizedVerifiers,
+            promote,
+            () => { committed = true; }
+          ),
+          budget: normalizedVariationPolicy,
+          async onCapabilityInvoke(call) {
+            capabilityCalls = call.index;
+            if (committed) {
+              throw new VariationClosedAfterCommitError({ attemptedCapability: call.name });
+            }
+          }
+        });
+
+        result = report.result;
+        capabilityCalls = report.usage.capabilityCalls;
+        if (report.usage.budgetExhausted) {
+          termination = VariationTermination.BUDGET_EXHAUSTED;
+        }
+      } catch (error) {
+        failure = serializeFailure(error);
+        termination = error?.code === AgentRunErrorCode.CAPABILITY_BUDGET_EXHAUSTED
+          ? VariationTermination.BUDGET_EXHAUSTED
+          : VariationTermination.FAILED;
+      }
+
+      const completedVariation = await core.completeVariation(sessionId, variation.id, {
+        termination,
+        capabilityCalls,
+        failure
+      });
       const after = await core.resume(sessionId);
       const lineageAfter = structuredClone(after.progress.lineage.head);
       const lineageAdvanced = Boolean(
@@ -226,7 +299,8 @@ export function createAVOHarness({
 
       return Object.freeze({
         sessionId,
-        before,
+        variation: completedVariation,
+        before: structuredClone(variation.baseCandidate),
         after: structuredClone(after.candidate),
         lineage: Object.freeze({
           before: lineageBefore,
@@ -234,7 +308,8 @@ export function createAVOHarness({
           advanced: lineageAdvanced
         }),
         lineageHead: lineageAfter,
-        result: structuredClone(result)
+        result: structuredClone(result),
+        failure: structuredClone(failure)
       });
     }
   });
