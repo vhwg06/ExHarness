@@ -39,13 +39,14 @@ async function traced(trace, kind, name, operation, options = {}) {
     : operation();
 }
 
-export function createPredictStrategy({ model, maxAttempts = 3 }) {
-  const resolvedModel = defineModelAdapter(model);
+export function createPredictStrategy({ model = null, maxAttempts = 3 } = {}) {
+  const fallbackModel = model == null ? null : defineModelAdapter(model);
   const resolvedMaxAttempts = normalizeAttempts(maxAttempts);
 
   return Object.freeze({
     kind: "PREDICT",
-    model: modelAdapterView(resolvedModel),
+    acceptsRoutedModel: true,
+    model: fallbackModel == null ? null : modelAdapterView(fallbackModel),
     maxAttempts: resolvedMaxAttempts,
 
     async run({
@@ -59,12 +60,18 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
       judgment = null,
       validateResult = null,
       recordAgentEvent = null,
-      trace = null
+      trace = null,
+      model: routedModel = null,
+      modelRoute = null
     }) {
       if (recordAgentEvent != null) {
         invariant(typeof recordAgentEvent === "function", "recordAgentEvent must be a function");
       }
 
+      const activeModel = routedModel == null ? fallbackModel : defineModelAdapter(routedModel);
+      invariant(activeModel, "predict requires a routed model or constructor model");
+      const activeModelView = modelAdapterView(activeModel);
+      const routeView = modelRoute == null ? null : clone(modelRoute);
       const feedback = [];
 
       for (let attempt = 1; attempt <= resolvedMaxAttempts; attempt += 1) {
@@ -76,8 +83,8 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
             const candidate = await traced(
               trace,
               TraceSpanKind.MODEL,
-              resolvedModel.name ?? "model",
-              () => resolvedModel.generate(Object.freeze({
+              activeModel.name ?? "model",
+              () => activeModel.generate(Object.freeze({
                 mode: "PREDICT",
                 attempt,
                 input: clone(input),
@@ -88,15 +95,17 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
                 agentEvents: clone(agentEvents) ?? [],
                 history: clone(history),
                 judgment: judgment == null ? null : clone(judgment),
+                modelRoute: routeView,
                 validationFeedback: Object.freeze(clone(feedback))
               })),
-              { attributes: { mode: "PREDICT", attempt } }
+              { attributes: { mode: "PREDICT", attempt, model: activeModelView, modelRoute: routeView } }
             );
 
             recordAgentEvent?.(AgentEventKind.MODEL_OUTPUT, {
               attempt,
               output: safeClone(candidate),
-              model: modelAdapterView(resolvedModel)
+              model: activeModelView,
+              modelRoute: routeView
             });
 
             if (typeof validateResult !== "function") {
