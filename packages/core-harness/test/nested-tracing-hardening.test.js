@@ -8,7 +8,7 @@ import {
   defineResource
 } from "../src/index.js";
 
-test("adding tracing does not turn direct ResourceRef describe into an async API", () => {
+test("adding tracing preserves the direct ResourceRef describe API shape", async () => {
   const runtime = createAgentRuntime({
     strategy: { async run() { return null; } },
     resources: [defineResource({
@@ -21,8 +21,9 @@ test("adding tracing does not turn direct ResourceRef describe into an async API
   });
 
   const ref = runtime.resourceRefs()[0];
-  const description = runtime.describeResource(ref);
-  assert.equal(typeof description?.then, "undefined");
+  const descriptionPromise = runtime.describeResource(ref);
+  assert.equal(typeof descriptionPromise?.then, "function");
+  const description = await descriptionPromise;
   assert.equal(description.metadata.kind, "repository");
 });
 
