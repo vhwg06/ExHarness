@@ -34,6 +34,8 @@ Agent instructions, reviewer/evaluator prompts, verification policies, skill bun
 
 `evaluateProcessAttestationTrust()` detects stale control-plane inputs and evaluates common-mode independence across threat-model dimensions such as model, context, instruction manifest, evidence source, execution environment and runtime. Multiple agent identities do not count as independent verification when they share a required fault domain.
 
+Process attestations do not turn assumptions into proof. They expose assumptions such as verifier-runtime correctness, sandbox integrity and policy quality so the consuming boundary can see what remains trusted rather than independently verified.
+
 Attestations are subject-, policy-, environment- and issuer-bound. `attestCurrentEvaluation()` also refuses to attest stale evaluation inputs and can resolve evidence environment provenance separately for each verification artifact.
 
 Domain workflows and concrete model/tool/sandbox/store/signature/key-management/authority-verification adapters are intentionally injected by consuming projects rather than embedded in the kernel.
