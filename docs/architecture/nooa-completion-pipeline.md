@@ -57,7 +57,24 @@ NOOA-10 Reference substrate + adversarial eval DONE
 
 Current checkpoint: `NOOA substrate completion`.
 
-A branch-level DONE entry becomes canonical only after its exact final head and merged `main` pass the full integration gate defined above.
+The substrate completion claim is canonical after the exact final NOOA-10 head and merged `main` passed the full Node 20/22/24 integration gate.
+
+## Follow-on fidelity expansion
+
+The completed substrate intentionally stopped short of copying NOOA's identity-defining object-native ergonomics and language-native CodeAct. The follow-on execution authority is:
+
+`docs/architecture/nooa-fidelity-max-pipeline.md`
+
+That pipeline pushes four areas further without weakening existing explicit authority/trust boundaries:
+
+```text
+agent-as-object ergonomics
+live object reference graph
+progressive doc()/surface discovery
+language-native JavaScript CodeAct
+```
+
+The completion status in this file remains DONE; the fidelity pipeline is an expansion above this baseline, not a retroactive reopening of NOOA-01..10.
 
 ---
 
