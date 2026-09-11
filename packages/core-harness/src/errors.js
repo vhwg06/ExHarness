@@ -22,6 +22,11 @@ export const ExHarnessErrorCode = Object.freeze({
   CODEACT_TIME_BUDGET_EXCEEDED: "CODEACT_TIME_BUDGET_EXCEEDED",
   CODEACT_OBSERVATION_LIMIT_EXCEEDED: "CODEACT_OBSERVATION_LIMIT_EXCEEDED",
   TRACE_SINK_FAILED: "TRACE_SINK_FAILED",
+  RUNTIME_SNAPSHOT_SCHEMA_UNSUPPORTED: "RUNTIME_SNAPSHOT_SCHEMA_UNSUPPORTED",
+  RUNTIME_SNAPSHOT_INVALID: "RUNTIME_SNAPSHOT_INVALID",
+  RUNTIME_SNAPSHOT_INCOMPATIBLE: "RUNTIME_SNAPSHOT_INCOMPATIBLE",
+  RUNTIME_SNAPSHOT_ACTIVE_CALL: "RUNTIME_SNAPSHOT_ACTIVE_CALL",
+  RUNTIME_SNAPSHOT_RESOURCE_REBIND_REQUIRED: "RUNTIME_SNAPSHOT_RESOURCE_REBIND_REQUIRED",
   CONTRACT_VIOLATION: "CONTRACT_VIOLATION"
 });
 
@@ -53,6 +58,13 @@ export class SchemaUnsupportedError extends ExHarnessError {
       { details: { sessionId, schemaVersion, supportedVersion } }
     );
     this.name = "SchemaUnsupportedError";
+  }
+}
+
+export class RuntimeSnapshotError extends ExHarnessError {
+  constructor(code, message, details = null, cause = null) {
+    super(code, message, { details, cause });
+    this.name = "RuntimeSnapshotError";
   }
 }
 
