@@ -11,6 +11,7 @@
     "example": "node examples/reference-harness.mjs",
     "benchmark": "node benchmarks/kernel-benchmark.mjs",
     "verify:package": "npm pack --dry-run --workspace packages/core-harness",
-    "verify": "npm test && npm run example && npm run benchmark && npm run verify:package"
+    "verify:consumer": "node scripts/consumer-smoke.mjs",
+    "verify": "npm test && npm run example && npm run benchmark && npm run verify:package && npm run verify:consumer"
   }
 }
