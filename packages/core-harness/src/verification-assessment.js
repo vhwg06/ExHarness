@@ -14,6 +14,13 @@ function normalizeRequirement(requirement) {
   return Object.freeze({ claim, minSources });
 }
 
+function evaluationInputSnapshot(input) {
+  return Object.freeze({
+    observationIds: Object.freeze((input.observations ?? []).map((item) => item.id).filter(Boolean)),
+    verificationIds: Object.freeze((input.verifications ?? []).map((item) => item.id).filter(Boolean))
+  });
+}
+
 export function defineVerificationPolicy({
   requirements = [],
   rejectFailures = true,
@@ -123,6 +130,7 @@ export function createVerificationAwareObjective({ objective, policy = defineVer
         artifacts: input.verifications ?? [],
         policy: resolvedPolicy
       });
+      const inputSnapshot = evaluationInputSnapshot(input);
 
       if (!verificationAssessment.ready) {
         return {
@@ -130,7 +138,7 @@ export function createVerificationAwareObjective({ objective, policy = defineVer
           verdict: "GAP",
           findings: verificationAssessment.reasons,
           evidence: (input.verifications ?? []).map((artifact) => artifact.id).filter(Boolean),
-          metadata: { verificationAssessment }
+          metadata: { verificationAssessment, inputSnapshot }
         };
       }
 
@@ -144,7 +152,8 @@ export function createVerificationAwareObjective({ objective, policy = defineVer
         ...result,
         metadata: {
           ...(result.metadata ?? {}),
-          verificationAssessment
+          verificationAssessment,
+          inputSnapshot
         }
       };
     }
