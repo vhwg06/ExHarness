@@ -94,12 +94,14 @@ export function validateKnowledgeRecord(record) {
     });
   });
   const tags = [...new Set((record.tags ?? []).map((value) => requireText(value, "knowledge tag")))];
+  const grounded = evidence.length > 0 || feedbackRefs.length > 0;
 
   if (record.kind === KnowledgeKind.FINDING || record.kind === KnowledgeKind.FAILED_DIRECTION) {
-    invariant(
-      evidence.length > 0 || feedbackRefs.length > 0,
-      `${record.kind.toLowerCase()} requires evidence or feedbackRefs`
-    );
+    invariant(grounded, `${record.kind.toLowerCase()} requires evidence or feedbackRefs`);
+  }
+
+  if (relations.some((relation) => relation.type === "SUPERSEDES")) {
+    invariant(grounded, "superseding knowledge requires evidence or feedbackRefs");
   }
 
   return Object.freeze({
