@@ -116,7 +116,8 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
       await eventBus.emit("AGENT_RUN_COMPLETED", {
         runEventId: started.id,
         usage: safeClone(report.usage),
-        modelRoute: safeClone(report.modelRoute ?? null)
+        modelRoute: safeClone(report.modelRoute ?? null),
+        modelUsage: safeClone(report.modelUsage ?? null)
       });
       return report;
     } catch (error) {
