@@ -51,16 +51,16 @@ function stableValue(value, label = "value") {
   return output;
 }
 
+function freezeStructured(value) {
+  return Object.freeze(structuredClone(value));
+}
+
 export function canonicalize(value) {
   return JSON.stringify(stableValue(value));
 }
 
 export function digestValue(value) {
   return `sha256:${createHash("sha256").update(canonicalize(value)).digest("hex")}`;
-}
-
-function freezeStructured(value) {
-  return Object.freeze(structuredClone(value));
 }
 
 function normalizeRoles(roles = []) {
@@ -121,6 +121,27 @@ function artifactRef(artifact, label) {
   });
 }
 
+function evidenceBody(artifact) {
+  return {
+    type: artifact.type,
+    subject: artifact.subject,
+    kind: artifact.kind,
+    producer: artifact.producer,
+    environment: artifact.environment,
+    contentDigest: artifact.contentDigest,
+    uri: artifact.uri ?? null,
+    metadata: artifact.metadata ?? null,
+    generatedAt: artifact.generatedAt
+  };
+}
+
+function evidenceIntegrity(artifact) {
+  if (!artifact || artifact.type !== "EVIDENCE") return false;
+  if (artifact.content != null && digestValue(stableValue(artifact.content, "evidence.content")) !== artifact.contentDigest) return false;
+  const digest = digestValue(evidenceBody(artifact));
+  return digest === artifact.digest && artifact.id === `evidence:${digest}`;
+}
+
 export function createEvidenceArtifact({
   subject,
   kind,
@@ -132,19 +153,15 @@ export function createEvidenceArtifact({
   metadata = null,
   generatedAt
 }) {
-  const normalizedSubject = defineSubject(subject);
-  const normalizedProducer = defineAuthority(producer);
-  const normalizedEnvironment = defineEnvironmentRef(environment);
   const resolvedContentDigest = contentDigest == null
     ? digestValue(stableValue(content, "evidence.content"))
     : requireText(contentDigest, "evidence.contentDigest");
-
   const body = {
     type: "EVIDENCE",
-    subject: normalizedSubject,
+    subject: defineSubject(subject),
     kind: requireText(kind, "evidence.kind"),
-    producer: normalizedProducer,
-    environment: normalizedEnvironment,
+    producer: defineAuthority(producer),
+    environment: defineEnvironmentRef(environment),
     contentDigest: resolvedContentDigest,
     uri: uri == null ? null : requireText(uri, "evidence.uri"),
     metadata: metadata == null ? null : stableValue(metadata, "evidence.metadata"),
@@ -161,11 +178,10 @@ export function createEvidenceArtifact({
 
 function normalizeClaim(claim) {
   invariant(claim && typeof claim === "object", "decision claim is required");
-  const status = claim.status;
-  invariant(Object.values(ClaimStatus).includes(status), "decision claim status is invalid");
+  invariant(Object.values(ClaimStatus).includes(claim.status), "decision claim status is invalid");
   return Object.freeze({
     name: requireText(claim.name, "decision claim name"),
-    status,
+    status: claim.status,
     details: claim.details == null ? null : freezeStructured(stableValue(claim.details, "decision claim details"))
   });
 }
@@ -173,10 +189,29 @@ function normalizeClaim(claim) {
 function evidenceManifest(evidence) {
   const refs = evidence.map((artifact) => artifactRef(artifact, "evidence artifact"));
   refs.sort((left, right) => `${left.id}:${left.digest}`.localeCompare(`${right.id}:${right.digest}`));
-  return Object.freeze({
-    refs: Object.freeze(refs),
-    digest: digestValue(refs)
-  });
+  return Object.freeze({ refs: Object.freeze(refs), digest: digestValue(refs) });
+}
+
+function decisionBody(decision) {
+  return {
+    type: decision.type,
+    subject: decision.subject,
+    boundary: decision.boundary,
+    policy: decision.policy,
+    evaluator: decision.evaluator,
+    evidenceManifest: decision.evidenceManifest,
+    claims: decision.claims,
+    unresolved: decision.unresolved,
+    verdict: decision.verdict,
+    generatedAt: decision.generatedAt,
+    metadata: decision.metadata ?? null
+  };
+}
+
+function decisionIntegrity(decision) {
+  if (!decision || decision.type !== "DECISION") return false;
+  const digest = digestValue(decisionBody(decision));
+  return digest === decision.digest && decision.id === `decision:${digest}`;
 }
 
 export function createDecisionArtifact({
@@ -198,14 +233,13 @@ export function createDecisionArtifact({
     invariant(!names.has(claim.name), `duplicate decision claim: ${claim.name}`);
     names.add(claim.name);
   }
-  const manifest = evidenceManifest(evidence);
   const body = {
     type: "DECISION",
     subject: defineSubject(subject),
     boundary,
     policy: definePolicyRef(policy),
     evaluator: defineAuthority(evaluator),
-    evidenceManifest: manifest,
+    evidenceManifest: evidenceManifest(evidence),
     claims: normalizedClaims,
     unresolved: stableValue(unresolved, "decision.unresolved"),
     verdict: requireText(verdict, "decision.verdict"),
@@ -226,25 +260,33 @@ function normalizeUpstream(upstream = []) {
   return Object.freeze(refs);
 }
 
+function attestationPayload(attestation) {
+  return {
+    type: attestation.type,
+    boundary: attestation.boundary,
+    subject: attestation.subject,
+    decision: attestation.decision,
+    policy: attestation.policy,
+    issuer: attestation.issuer,
+    environment: attestation.environment,
+    evidenceManifest: attestation.evidenceManifest,
+    upstreamAttestations: attestation.upstreamAttestations,
+    issuedAt: attestation.issuedAt
+  };
+}
+
 export function createAttestationIssuer({ identity, version = null, roles = [], sign }) {
   invariant(typeof sign === "function", "attestation issuer requires sign()");
   const issuer = defineAuthority({ identity, version, roles });
-
   return Object.freeze({
     issuer,
-
     async issue({ decision, environment, upstreamAttestations = [], issuedAt }) {
-      invariant(decision && decision.type === "DECISION", "attestation requires a decision artifact");
+      invariant(decisionIntegrity(decision), "attestation requires an intact decision artifact");
       const payload = {
         type: "ATTESTATION",
         boundary: decision.boundary,
         subject: defineSubject(decision.subject),
-        decision: Object.freeze({
-          id: decision.id,
-          digest: decision.digest,
-          verdict: decision.verdict,
-          claims: decision.claims
-        }),
+        decision: Object.freeze({ id: decision.id, digest: decision.digest, verdict: decision.verdict, claims: decision.claims }),
         policy: definePolicyRef(decision.policy),
         issuer,
         environment: defineEnvironmentRef(environment),
@@ -255,13 +297,14 @@ export function createAttestationIssuer({ identity, version = null, roles = [], 
       const payloadDigest = digestValue(payload);
       const signature = await sign({ payloadDigest, payload: freezeStructured(payload), issuer });
       invariant(signature != null, "attestation issuer sign() must return a signature");
-      const envelopeDigest = digestValue({ payloadDigest, signature: stableValue(signature, "attestation.signature") });
+      const normalizedSignature = stableValue(signature, "attestation.signature");
+      const digest = digestValue({ payloadDigest, signature: normalizedSignature });
       return Object.freeze({
-        id: `attestation:${envelopeDigest}`,
-        digest: envelopeDigest,
+        id: `attestation:${digest}`,
+        digest,
         payloadDigest,
         ...freezeStructured(payload),
-        signature: freezeStructured(stableValue(signature, "attestation.signature"))
+        signature: freezeStructured(normalizedSignature)
       });
     }
   });
@@ -276,6 +319,7 @@ export function defineTrustPolicy({
   requiredClaims = [],
   requireSignature = true,
   requireEvidenceArtifacts = true,
+  requireDecisionArtifact = true,
   requireIndependentIssuer = false,
   maxAgeMs = null
 } = {}) {
@@ -290,21 +334,32 @@ export function defineTrustPolicy({
     requiredClaims: Object.freeze([...new Set(requiredClaims.map((item) => requireText(item, "required claim")))]),
     requireSignature: requireSignature !== false,
     requireEvidenceArtifacts: requireEvidenceArtifacts !== false,
+    requireDecisionArtifact: requireDecisionArtifact !== false,
     requireIndependentIssuer: requireIndependentIssuer === true,
     maxAgeMs
   });
 }
 
-function refSet(evidence) {
-  return new Set(evidence.map((item) => `${item.id}:${item.digest}`));
+function refSet(items) {
+  return new Set(items.map((item) => `${item.id}:${item.digest}`));
 }
 
 function validateEvidenceManifest(attestation, evidence) {
   const provided = evidenceManifest(evidence);
+  const expectedRefs = attestation.evidenceManifest?.refs ?? [];
+  const providedSet = refSet(provided.refs);
+  const expectedSet = refSet(expectedRefs);
   return provided.digest === attestation.evidenceManifest?.digest &&
-    provided.refs.length === (attestation.evidenceManifest?.refs?.length ?? -1) &&
-    refSet(provided.refs).size === refSet(attestation.evidenceManifest.refs).size &&
-    [...refSet(provided.refs)].every((ref) => refSet(attestation.evidenceManifest.refs).has(ref));
+    provided.refs.length === expectedRefs.length &&
+    providedSet.size === expectedSet.size &&
+    [...providedSet].every((ref) => expectedSet.has(ref));
+}
+
+function sameDecisionSummary(attestation, decision) {
+  return attestation.decision?.id === decision.id &&
+    attestation.decision?.digest === decision.digest &&
+    attestation.decision?.verdict === decision.verdict &&
+    digestValue(attestation.decision?.claims ?? []) === digestValue(decision.claims ?? []);
 }
 
 export async function evaluateAttestationTrust({
@@ -312,6 +367,7 @@ export async function evaluateAttestationTrust({
   currentSubject,
   policy = defineTrustPolicy(),
   evidence = [],
+  decision = null,
   verifySignature = null,
   now = () => new Date().toISOString()
 }) {
@@ -319,20 +375,13 @@ export async function evaluateAttestationTrust({
   const resolvedPolicy = defineTrustPolicy(policy);
   const reasons = [];
 
-  const recomputedPayloadDigest = digestValue({
-    type: attestation.type,
-    boundary: attestation.boundary,
-    subject: attestation.subject,
-    decision: attestation.decision,
-    policy: attestation.policy,
-    issuer: attestation.issuer,
-    environment: attestation.environment,
-    evidenceManifest: attestation.evidenceManifest,
-    upstreamAttestations: attestation.upstreamAttestations,
-    issuedAt: attestation.issuedAt
-  });
+  const recomputedPayloadDigest = digestValue(attestationPayload(attestation));
   const recomputedEnvelopeDigest = digestValue({ payloadDigest: recomputedPayloadDigest, signature: attestation.signature });
-  if (recomputedPayloadDigest !== attestation.payloadDigest || recomputedEnvelopeDigest !== attestation.digest) {
+  if (
+    recomputedPayloadDigest !== attestation.payloadDigest ||
+    recomputedEnvelopeDigest !== attestation.digest ||
+    attestation.id !== `attestation:${recomputedEnvelopeDigest}`
+  ) {
     reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "attestation digest mismatch" }));
   }
 
@@ -356,12 +405,16 @@ export async function evaluateAttestationTrust({
   for (const role of resolvedPolicy.requiredIssuerRoles) {
     if (!issuerRoles.has(role)) reasons.push(Object.freeze({ code: TrustReasonCode.MISSING_ISSUER_ROLE, role }));
   }
-  if (
-    resolvedPolicy.requireIndependentIssuer &&
-    normalizedCurrentSubject.producer?.identity &&
-    normalizedCurrentSubject.producer.identity === attestation.issuer?.identity
-  ) {
-    reasons.push(Object.freeze({ code: TrustReasonCode.AUTHORITY_NOT_INDEPENDENT, issuer: attestation.issuer.identity }));
+  if (resolvedPolicy.requireIndependentIssuer) {
+    const producer = normalizedCurrentSubject.producer?.identity ?? null;
+    if (producer == null || producer === attestation.issuer?.identity) {
+      reasons.push(Object.freeze({
+        code: TrustReasonCode.AUTHORITY_NOT_INDEPENDENT,
+        issuer: attestation.issuer?.identity ?? null,
+        producer,
+        detail: producer == null ? "subject producer authority is unknown" : "subject producer equals attestation issuer"
+      }));
+    }
   }
 
   const claims = new Map((attestation.decision?.claims ?? []).map((claim) => [claim.name, claim]));
@@ -373,14 +426,35 @@ export async function evaluateAttestationTrust({
     }
   }
 
-  if (resolvedPolicy.requireEvidenceArtifacts && !validateEvidenceManifest(attestation, evidence)) {
-    reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "evidence manifest mismatch" }));
+  if (resolvedPolicy.requireEvidenceArtifacts) {
+    if (evidence.some((artifact) => !evidenceIntegrity(artifact))) {
+      reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "evidence artifact integrity failure" }));
+    }
+    if (!validateEvidenceManifest(attestation, evidence)) {
+      reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "evidence manifest mismatch" }));
+    }
+  }
+
+  if (resolvedPolicy.requireDecisionArtifact) {
+    if (!decisionIntegrity(decision)) {
+      reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "decision artifact missing or invalid" }));
+    } else {
+      if (!sameDecisionSummary(attestation, decision)) {
+        reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "attestation decision reference mismatch" }));
+      }
+      if (decision.subject?.type !== attestation.subject?.type || decision.subject?.digest !== attestation.subject?.digest) {
+        reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "decision subject mismatch" }));
+      }
+      if (decision.policy?.digest !== attestation.policy?.digest || decision.evidenceManifest?.digest !== attestation.evidenceManifest?.digest) {
+        reasons.push(Object.freeze({ code: TrustReasonCode.INVALID_PROVENANCE, detail: "decision provenance mismatch" }));
+      }
+    }
   }
 
   if (resolvedPolicy.maxAgeMs != null) {
     const issued = Date.parse(attestation.issuedAt);
     const current = Date.parse(now());
-    if (!Number.isFinite(issued) || !Number.isFinite(current) || current - issued > resolvedPolicy.maxAgeMs) {
+    if (!Number.isFinite(issued) || !Number.isFinite(current) || issued > current || current - issued > resolvedPolicy.maxAgeMs) {
       reasons.push(Object.freeze({ code: TrustReasonCode.EXPIRED }));
     }
   }
@@ -488,12 +562,20 @@ export function decisionFromEvaluation(evaluation, {
 }
 
 export function validateTrustBundle({ evidence = [], decision, attestation }) {
-  invariant(decision && decision.type === "DECISION", "trust bundle requires decision artifact");
+  invariant(evidence.every(evidenceIntegrity), "trust bundle contains invalid evidence artifact");
+  invariant(decisionIntegrity(decision), "trust bundle requires intact decision artifact");
   invariant(attestation && attestation.type === "ATTESTATION", "trust bundle requires attestation");
   invariant(decision.digest === attestation.decision?.digest, "attestation decision digest does not match decision artifact");
   invariant(decision.id === attestation.decision?.id, "attestation decision id does not match decision artifact");
   invariant(decision.subject.type === attestation.subject?.type && decision.subject.digest === attestation.subject?.digest, "attestation subject does not match decision subject");
   invariant(decision.policy.digest === attestation.policy?.digest, "attestation policy does not match decision policy");
   invariant(validateEvidenceManifest(attestation, evidence), "attestation evidence manifest does not match evidence artifacts");
-  return Object.freeze({ evidence: Object.freeze(evidence.map((item) => freezeStructured(item))), decision: freezeStructured(decision), attestation: freezeStructured(attestation) });
+  const payloadDigest = digestValue(attestationPayload(attestation));
+  invariant(payloadDigest === attestation.payloadDigest, "attestation payload digest is invalid");
+  invariant(digestValue({ payloadDigest, signature: attestation.signature }) === attestation.digest, "attestation envelope digest is invalid");
+  return Object.freeze({
+    evidence: Object.freeze(evidence.map((item) => freezeStructured(item))),
+    decision: freezeStructured(decision),
+    attestation: freezeStructured(attestation)
+  });
 }
