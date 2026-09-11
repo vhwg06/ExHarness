@@ -476,21 +476,11 @@ export function createAgentRuntime({
     },
 
     describeResource(ref) {
-      return tracer.runSpan(
-        TraceSpanKind.RESOURCE_DESCRIBE,
-        ref?.name ?? "resource.describe",
-        () => resolvedResourceRegistry.describe(ref),
-        { attributes: { resourceId: ref?.id ?? null } }
-      );
+      return resolvedResourceRegistry.describe(ref);
     },
 
     invokeResource(ref, operationName, payload = null) {
-      return tracer.runSpan(
-        TraceSpanKind.RESOURCE,
-        `${ref?.name ?? "resource"}.${operationName}`,
-        () => resolvedResourceRegistry.invoke(ref, operationName, payload),
-        { attributes: { resourceId: ref?.id ?? null, operation: operationName } }
-      );
+      return resolvedResourceRegistry.invoke(ref, operationName, payload);
     },
 
     revokeResource(ref) {
