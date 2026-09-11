@@ -1,5 +1,6 @@
 import { invariant, requireText } from "./contracts.js";
 import { defineContextSelection } from "./context.js";
+import { defineModelSelector } from "./model-routing.js";
 
 function requireOptionalParser(parser, label) {
   if (parser == null) return null;
@@ -21,6 +22,7 @@ export function defineJudgment(definition) {
     parseInput: requireOptionalParser(definition.parseInput, `judgment ${name} parseInput`),
     parseOutput: requireOptionalParser(definition.parseOutput, `judgment ${name} parseOutput`),
     strategy,
+    model: defineModelSelector(definition.model ?? null, `judgment ${name} model`),
     context: defineContextSelection(definition.context ?? {})
   });
 }

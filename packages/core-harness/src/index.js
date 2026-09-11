@@ -195,7 +195,14 @@ export {
   defineResourcePolicy
 } from "./resource.js";
 export { defineJudgment } from "./judgment.js";
-export { defineModelAdapter } from "./model.js";
+export { defineModelAdapter, modelAdapterView } from "./model.js";
+export {
+  ModelRouteScope,
+  createModelRegistry,
+  defineModelSelector,
+  resolveModelRoute,
+  selectModelRoute
+} from "./model-routing.js";
 export { createPredictStrategy } from "./predict-strategy.js";
 export {
   CodeActActionType,

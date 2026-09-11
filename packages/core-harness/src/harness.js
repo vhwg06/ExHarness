@@ -70,6 +70,9 @@ export function createHarness({
   contextBlocks = [],
   contextPolicy = {},
   contextSelection = {},
+  models = [],
+  model = null,
+  modelRegistry = null,
   environment,
   objective = null,
   evaluator = null,
@@ -97,6 +100,10 @@ export function createHarness({
   invariant(environment, "createHarness requires environment");
   invariant(objective || evaluator, "createHarness requires objective or evaluator");
   invariant(agent == null || tracer == null, "createHarness tracer is owned by an internally composed agent runtime; custom agent must own its tracer");
+  invariant(
+    agent == null || (models.length === 0 && model == null && modelRegistry == null),
+    "createHarness model routing is owned by an internally composed agent runtime; custom agent must own its model routing"
+  );
 
   const now = clock ?? (() => new Date().toISOString());
   const newId = idFactory ?? (() => randomUUID());
@@ -138,6 +145,9 @@ export function createHarness({
     capabilities: instrumentCapabilities(capabilities, resolvedEventBus),
     contextBlocks,
     contextPolicy,
+    models,
+    model,
+    modelRegistry,
     tracer: tracer ?? undefined
   });
   const observedAgent = instrumentAgentRuntime(baseAgent, resolvedEventBus);
@@ -421,6 +431,10 @@ export function createHarness({
 
     observabilityFailures() {
       return resolvedEventBus.failures();
+    },
+
+    modelRouting() {
+      return observedAgent.modelRouting?.() ?? null;
     },
 
     traces() {
