@@ -115,7 +115,8 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
       });
       await eventBus.emit("AGENT_RUN_COMPLETED", {
         runEventId: started.id,
-        usage: safeClone(report.usage)
+        usage: safeClone(report.usage),
+        modelRoute: safeClone(report.modelRoute ?? null)
       });
       return report;
     } catch (error) {
@@ -152,6 +153,9 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
   }
   if (typeof agentRuntime.contextPolicy === "function") {
     instrumented.contextPolicy = () => agentRuntime.contextPolicy();
+  }
+  if (typeof agentRuntime.modelRouting === "function") {
+    instrumented.modelRouting = () => agentRuntime.modelRouting();
   }
   if (typeof agentRuntime.resourceRefs === "function") {
     instrumented.resourceRefs = () => agentRuntime.resourceRefs();
