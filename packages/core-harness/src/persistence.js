@@ -35,11 +35,13 @@ export const BUILT_IN_STATE_MIGRATIONS = Object.freeze([
 
 export function createStateMigrator({
   targetVersion = CURRENT_STATE_SCHEMA_VERSION,
-  migrations = []
+  migrations = null
 } = {}) {
   const target = requireVersion(targetVersion, "migration targetVersion");
+  const definitions = migrations == null ? BUILT_IN_STATE_MIGRATIONS : migrations;
+  invariant(Array.isArray(definitions), "state migrations must be an array");
   const byVersion = new Map();
-  for (const definition of [...BUILT_IN_STATE_MIGRATIONS, ...migrations]) {
+  for (const definition of definitions) {
     const migration = defineStateMigration(definition);
     invariant(!byVersion.has(migration.fromVersion), `duplicate migration from version ${migration.fromVersion}`);
     byVersion.set(migration.fromVersion, migration);
