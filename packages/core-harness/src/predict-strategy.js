@@ -1,3 +1,4 @@
+import { AgentEventKind, defineAgentEvent } from "./agent-events.js";
 import { invariant } from "./contracts.js";
 import { PredictValidationError } from "./errors.js";
 import { defineModelAdapter, modelAdapterView } from "./model.js";
@@ -40,8 +41,16 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
     model: modelAdapterView(resolvedModel),
     maxAttempts: resolvedMaxAttempts,
 
-    async run({ input, context, events = [], judgment = null, validateResult = null }) {
+    async run({ input, context, events = [], judgment = null, validateResult = null, emitEvent = null }) {
       const feedback = [];
+      const workingEvents = [...events];
+
+      function record(event) {
+        const normalized = defineAgentEvent(event);
+        const recorded = typeof emitEvent === "function" ? emitEvent(normalized) : normalized;
+        workingEvents.push(recorded);
+        return recorded;
+      }
 
       for (let attempt = 1; attempt <= resolvedMaxAttempts; attempt += 1) {
         const candidate = await resolvedModel.generate(Object.freeze({
@@ -49,10 +58,16 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
           attempt,
           input: clone(input),
           context: clone(context),
-          events: clone(events) ?? [],
+          events: clone(workingEvents),
           judgment: judgment == null ? null : clone(judgment),
           validationFeedback: Object.freeze(clone(feedback))
         }));
+
+        record({
+          kind: AgentEventKind.MODEL,
+          content: safeClone(candidate),
+          metadata: { strategy: "PREDICT", attempt }
+        });
 
         if (typeof validateResult !== "function") return candidate;
 
@@ -60,7 +75,13 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
           validateResult(candidate);
           return candidate;
         } catch (error) {
-          feedback.push(validationFeedback(error, attempt, candidate));
+          const item = validationFeedback(error, attempt, candidate);
+          feedback.push(item);
+          record({
+            kind: AgentEventKind.FEEDBACK,
+            content: item,
+            metadata: { strategy: "PREDICT", attempt, reason: "OUTPUT_VALIDATION" }
+          });
         }
       }
 
