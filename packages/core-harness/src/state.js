@@ -32,6 +32,7 @@ export function createPersistentWorkState({ id, work, seedCandidate, now }) {
       evaluations: [],
       knowledge: [],
       variations: [],
+      searchInvestmentDecisions: [],
       evidenceArtifacts: [],
       decisionArtifacts: [],
       attestations: [],
@@ -84,6 +85,7 @@ export function publicSnapshot(state) {
       observations: state.persistentMemory.observations.length,
       knowledge: state.persistentMemory.knowledge.length,
       variations: state.persistentMemory.variations?.length ?? 0,
+      searchInvestmentDecisions: state.persistentMemory.searchInvestmentDecisions?.length ?? 0,
       trust: {
         evidence: state.persistentMemory.evidenceArtifacts?.length ?? 0,
         decisions: state.persistentMemory.decisionArtifacts?.length ?? 0,
