@@ -67,6 +67,9 @@ export function createHarness({
   agent = null,
   strategy = null,
   capabilities = [],
+  contextBlocks = [],
+  contextPolicy = {},
+  contextSelection = {},
   environment,
   objective = null,
   evaluator = null,
@@ -130,12 +133,15 @@ export function createHarness({
 
   const baseAgent = agent ?? createAgentRuntime({
     strategy,
-    capabilities: instrumentCapabilities(capabilities, resolvedEventBus)
+    capabilities: instrumentCapabilities(capabilities, resolvedEventBus),
+    contextBlocks,
+    contextPolicy
   });
   const observedAgent = instrumentAgentRuntime(baseAgent, resolvedEventBus);
 
   const core = createAVOHarness({
     agent: observedAgent,
+    contextSelection,
     verifiers,
     verificationPolicy,
     variationPolicy,
