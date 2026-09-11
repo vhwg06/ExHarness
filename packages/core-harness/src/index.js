@@ -17,6 +17,7 @@ export {
   PredictValidationError,
   RecoveryRequiredError,
   ResourceAccessError,
+  RuntimeSnapshotError,
   SchemaUnsupportedError,
   SearchInvestmentBoundaryError,
   StoreConflictError,
@@ -203,6 +204,17 @@ export {
   resolveModelRoute,
   selectModelRoute
 } from "./model-routing.js";
+export {
+  CURRENT_RUNTIME_SNAPSHOT_SCHEMA_VERSION,
+  RuntimeSnapshotPayloadMode,
+  RuntimeSnapshotRedactionKind,
+  RuntimeSnapshotType,
+  assertRuntimeSnapshotCompatible,
+  createRuntimeConfigurationManifest,
+  createRuntimeSnapshot,
+  normalizeRuntimeSnapshot
+} from "./runtime-snapshot.js";
+export { createResumableAgentRuntime } from "./resumable-agent-runtime.js";
 export { createPredictStrategy } from "./predict-strategy.js";
 export {
   CodeActActionType,

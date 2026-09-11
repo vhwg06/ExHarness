@@ -2,7 +2,7 @@
 
 This document is the execution authority for completing the NOOA-style programmable-agent substrate in ExHarness.
 
-Detailed semantics and historical findings live in stage architecture artifacts and PRs. This file owns stage order, checkpoint, scope and exit gates.
+Detailed semantics, findings and residual boundaries live in stage architecture artifacts and PRs. This file owns stage order, checkpoint, scope and exit gates.
 
 ## Execution rule
 
@@ -19,7 +19,11 @@ stage N objective + non-goals + verification gate
         ↓
 PASS / GAP
    ├─ GAP  → repair same stage
-   └─ PASS → merge stage PR to main
+   └─ PASS → exact-head full gate
+                  ↓
+               merge to main
+                  ↓
+          post-merge integration gate
                   ↓
                stage N+1
 ```
@@ -47,198 +51,106 @@ NOOA-05 ResourceRef / live resource semantics  DONE
 NOOA-06 CodeAct execution loop                 DONE
 NOOA-07 Nested tracing                         DONE
 NOOA-08 Model routing / scoped overrides       DONE
-NOOA-09 Runtime snapshot / resume              NEXT
-NOOA-10 Reference substrate + adversarial eval PENDING
+NOOA-09 Runtime snapshot / resume              DONE
+NOOA-10 Reference substrate + adversarial eval NEXT
 ```
 
-Current checkpoint: `NOOA-09`.
+Current checkpoint: `NOOA-10`.
 
 ---
 
-## Completed stage contracts
+## Completed stage artifacts
 
-### NOOA-01 — Typed Judgment
+| Stage | Architecture artifact | Stage PR |
+|---|---|---:|
+| NOOA-01 Typed Judgment | typed judgment contract in runtime/tests | #10 |
+| NOOA-02 Predict Strategy | Predict strategy contract in runtime/tests | #11 |
+| NOOA-03 AgentEvent working history | `docs/architecture/agent-events.md` | #13 |
+| AVO-R1 Adaptive useful-range gate | `docs/architecture/adaptive-useful-range.md` | #16 |
+| NOOA-04 Context blocks + history selection | `docs/architecture/context-history.md` | #17 |
+| NOOA-05 ResourceRef / live resources | `docs/architecture/resource-ref.md` | #18 |
+| NOOA-06 CodeAct | `docs/architecture/codeact.md` | #19 |
+| NOOA-07 Nested tracing | `docs/architecture/nested-tracing.md` | #21 |
+| NOOA-08 Model routing | `docs/architecture/model-routing.md` | #22 |
+| NOOA-09 Runtime snapshot / resume | `docs/architecture/runtime-snapshot.md` | #23 |
 
-Typed input/output judgment boundary, judgment-local strategy override, invalid data blocked before caller/strategy escape.
-
-PR #10.
-
-### NOOA-02 — Predict Strategy
-
-Provider-neutral focused model judgment, bounded validation repair, provider failure distinct from validation failure, no tool authority leakage.
-
-PR #11.
-
-### NOOA-03 — AgentEvent working history
-
-Canonical chronological model working journal separated from telemetry; runtime owns terminal lifecycle authority.
-
-Architecture: `docs/architecture/agent-events.md`.
-PR #13.
-
-### AVO-R1 — Adaptive useful-range gate
-
-Grounded search-investment control (`CONTINUE / STOP / ESCALATE`) separated from correctness, recovery and hard safety ceilings.
-
-Architecture: `docs/architecture/adaptive-useful-range.md`.
-PR #16.
-
-### NOOA-04 — Context blocks + history selection
-
-Named context blocks, explicit per-judgment selection, canonical subset history projection and deterministic prompt bounds.
-
-Architecture: `docs/architecture/context-history.md`.
-PR #17.
-
-### NOOA-05 — ResourceRef / live resource semantics
-
-Opaque runtime-scoped live-resource handles with explicit operations, lifetimes, authorization, bounded discovery and stable transport boundaries.
-
-Architecture: `docs/architecture/resource-ref.md`.
-PR #18.
-
-### NOOA-06 — CodeAct execution loop
-
-Bounded model → action → observation → typed terminal loop over existing executor/capability/resource authority.
-
-Independent bounds:
-
-- `maxTurns`;
-- `maxActionCalls`;
-- caller-visible `maxDurationMs`;
-- `maxObservationChars`;
-- existing runtime capability and executor limits remain authoritative.
-
-Architecture: `docs/architecture/codeact.md`.
-PR #19.
-
-### NOOA-07 — Nested tracing
-
-Causal runtime trees without collapsing working history or flat lifecycle telemetry:
-
-```text
-AgentEvent = model working history
-EventBus   = flat lifecycle telemetry
-TraceSpan  = causal runtime tree
-```
-
-Key contract:
-
-- explicit `traceId / spanId / parentSpanId / callId`;
-- judgment/strategy/model/action/execution/capability/resource nesting;
-- async parent propagation and concurrent-call isolation;
-- status/error/duration metadata;
-- non-strict sinks observational by default;
-- strict sink loss is explicit operational failure and cannot become model-recoverable CodeAct feedback;
-- default runtime tracer is no-op, so tracing adds no hidden retained span history;
-- production facade accepts explicit tracer injection and exposes trace inspection;
-- trace shape has no correctness authority.
-
-Architecture: `docs/architecture/nested-tracing.md`.
-PR #21.
-
-### NOOA-08 — Model routing / scoped overrides
-
-Separates strategy behavior from scoped model selection.
-
-Resolution precedence:
-
-```text
-invocation override
-        >
-judgment override
-        >
-runtime default
-        >
-legacy strategy-bound fallback
-```
-
-Key contract:
-
-- lazy, single-flight model adapter registry;
-- invocation overrides do not mutate judgment/runtime defaults;
-- Predict and CodeAct consume a runtime-routed adapter per call;
-- custom strategies must explicitly opt into routed models;
-- unknown or mismatched routes fail closed;
-- route/load failures remain inside canonical `TASK → ERROR` working history;
-- `modelRoute` records resolution provenance;
-- `modelUsage` separately records actual runtime-wrapped adapter `generate()` calls;
-- route resolution is never treated as proof that the model was actually invoked;
-- legacy strategy-bound fallback keeps compatibility but has no fabricated runtime-owned usage proof;
-- routing provenance is observable input, not correctness authority.
-
-Architecture: `docs/architecture/model-routing.md`.
-Stage PR: #22.
+The pipeline status above means implementation has reached each stage's branch-level exit contract. A stage becomes canonical only after its PR and post-merge `main` integration gate succeed.
 
 ---
 
-## NOOA-09 — Runtime snapshot / resume — NEXT
+## NOOA-10 — Reference substrate + adversarial evaluation — NEXT
 
-Goal: make NOOA agent runtime working state resumable without conflating it with AVO persistent engineering memory.
+### Goal
 
-Required semantics:
+Prove the completed substrate works as a reusable consumer-facing runtime rather than as isolated APIs.
 
-- versioned runtime snapshot schema;
-- snapshotable AgentEvent working history;
-- snapshotable safe context/runtime configuration;
-- restore into a compatible fresh runtime;
-- transient live resources/execution sessions are never fabricated;
-- resource restoration requires explicit rebinding policy;
-- runtime snapshot remains distinct from long-term semantic K and AVO work state.
+The reference workload must consume ExHarness through public package/runtime surfaces and must not require kernel source changes or special-case hooks.
 
-Verification gate:
+### Reference scenario requirements
 
-- restored working history preserves chronology;
-- incompatible future/unknown schema fails closed;
-- secrets/transient handles are not serialized accidentally;
-- resume cannot silently reopen expired execution sessions;
-- model routing/context configuration restore only under explicit compatible schema;
-- AVO persistent state and runtime snapshot evolve independently.
-
----
-
-## NOOA-10 — Reference substrate + adversarial evaluation
-
-Goal: prove the completed substrate works as a reusable consumer-facing runtime rather than isolated APIs.
-
-Reference scenario must demonstrate:
+The scenario must exercise, together:
 
 - typed judgments;
 - Predict;
 - AgentEvent working history;
-- context selection;
-- bounded live ResourceRefs;
+- explicit context selection/history projection;
+- bounded live `ResourceRef` access;
 - CodeAct;
 - nested tracing;
-- scoped model routing;
-- runtime snapshot/resume;
-- AVO variation above the substrate without kernel special cases.
+- scoped model routing and actual model-usage provenance;
+- runtime snapshot/resume with safe resource rebinding;
+- an AVO variation above the NOOA substrate without kernel special cases.
 
-Adversarial/evaluation targets include:
+### Adversarial/evaluation matrix
+
+At minimum challenge:
 
 - Predict vs CodeAct on simple typed judgments;
 - full vs selected history;
-- progressive ResourceRef disclosure vs eager exposure;
-- routing precedence and invalid routes;
-- resume on/off;
+- progressive `ResourceRef` disclosure vs eager exposure;
+- model-routing precedence and invalid routes;
+- route resolution vs actual model usage;
+- resume on/off and compatibility mismatch;
 - malformed model actions;
-- stale resource refs;
-- context poisoning;
-- observation pressure;
-- telemetry/tracing sink failures.
+- stale/cross-runtime resource refs;
+- context poisoning/common-context pressure;
+- oversized observation pressure;
+- telemetry/tracing sink failures;
+- false success / unsafe acceptance.
 
-Metrics include at minimum:
+### Metrics
+
+Capture at minimum:
 
 - task success;
 - invalid output rate;
 - correction/retry count;
 - model calls;
-- execution/capability calls;
+- execution/capability/resource calls;
 - prompt/context size where observable;
 - false-success / unsafe-accept rate for the reference workload;
-- resume fidelity.
+- resume fidelity;
+- verification/evaluation outcome provenance.
 
-This stage validates substrate contracts; it does not claim universal model quality.
+### Verification gate
+
+N10 is PASS only when:
+
+1. a blank consumer path imports the packaged/public ExHarness surface;
+2. the reference workload demonstrates all required substrate capabilities without kernel source modification;
+3. adversarial cases produce expected fail-closed behavior;
+4. measured outputs are inspectable artifacts rather than prose-only claims;
+5. the existing package/consumer/example/benchmark gates remain green on Node 20/22/24;
+6. exact final PR head passes the full gate;
+7. merged `main` passes the post-merge integration gate.
+
+### Non-goals
+
+- claiming universal model quality;
+- adding workload-specific backend/frontend/QA semantics to the kernel;
+- provider-specific SDK policy;
+- inventing benchmark optima from one reference workload;
+- broadening N10 into new substrate features unless evaluation exposes a contract bug.
 
 ---
 
@@ -259,9 +171,11 @@ route models by scope
         +
 inspect nested traces
         +
-snapshot/resume runtime state
+snapshot/resume runtime working state
         ↓
 run under the existing AVO long-horizon control plane
+        ↓
+produce inspectable reference/adversarial evaluation artifacts
 ```
 
 Final layering:
