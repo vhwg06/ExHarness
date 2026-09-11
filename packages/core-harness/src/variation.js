@@ -15,12 +15,14 @@ export const VariationOutcome = Object.freeze({
 export const VariationTermination = Object.freeze({
   RETURNED: "RETURNED",
   BUDGET_EXHAUSTED: "BUDGET_EXHAUSTED",
+  INTERRUPTED: "INTERRUPTED",
   FAILED: "FAILED"
 });
 
 export const AgentRunErrorCode = Object.freeze({
   CAPABILITY_BUDGET_EXHAUSTED: "CAPABILITY_BUDGET_EXHAUSTED",
-  VARIATION_CLOSED_AFTER_COMMIT: "VARIATION_CLOSED_AFTER_COMMIT"
+  VARIATION_CLOSED_AFTER_COMMIT: "VARIATION_CLOSED_AFTER_COMMIT",
+  VARIATION_INTERRUPTED: "VARIATION_INTERRUPTED"
 });
 
 export class CapabilityBudgetExceededError extends Error {
