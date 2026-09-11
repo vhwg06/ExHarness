@@ -11,3 +11,5 @@ export {
 export { createInMemorySessionStore } from "./store.js";
 export { validateCorePorts } from "./ports.js";
 export { createCoreHarness } from "./core-harness.js";
+export { createAgentRuntime, defineCapability } from "./agent-runtime.js";
+export { AVOCapability, createAVOHarness } from "./avo-harness.js";

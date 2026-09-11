@@ -1,8 +1,12 @@
 {
-  "name": "@grip/agentic",
+  "name": "exharness-workspace",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
+    "test": "node --test packages/core-harness/test/*.test.js",
     "test:core": "node --test packages/core-harness/test/*.test.js"
   }
 }
