@@ -96,7 +96,11 @@ export function selectModelRoute({ invocation = null, judgment = null, runtime =
 export async function resolveModelRoute(registry, route) {
   if (route == null) return null;
   invariant(registry && typeof registry.resolve === "function", "model route requires registry.resolve()");
-  const adapter = await registry.resolve(route.selector);
+  const adapter = defineModelAdapter(await registry.resolve(route.selector));
+  invariant(
+    adapter.name === route.selector.name,
+    `model route ${route.selector.name} resolved adapter ${adapter.name}`
+  );
   return Object.freeze({
     scope: route.scope,
     requested: Object.freeze({ ...route.selector }),
