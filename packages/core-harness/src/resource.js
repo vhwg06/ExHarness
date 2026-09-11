@@ -171,6 +171,12 @@ function resourceDescription(record, registryId) {
   });
 }
 
+function resourceNameKey(resource, callId) {
+  return resource.lifetime === ResourceLifetime.AGENT
+    ? `${ResourceLifetime.AGENT}:${resource.name}`
+    : `${ResourceLifetime.CALL}:${callId}:${resource.name}`;
+}
+
 export function createResourceRegistry({
   idFactory = () => randomUUID(),
   registryId = randomUUID(),
@@ -234,7 +240,8 @@ export function createResourceRegistry({
       enforceDefinitionPolicy(resource, resolvedPolicy);
       if (resource.lifetime === ResourceLifetime.CALL) requireText(callId, `resource ${resource.name} callId`);
       if (resource.lifetime === ResourceLifetime.AGENT) invariant(callId == null, `agent resource ${resource.name} cannot bind to a callId`);
-      invariant(!names.has(resource.name), `duplicate resource: ${resource.name}`);
+      const nameKey = resourceNameKey(resource, callId);
+      invariant(!names.has(nameKey), `duplicate resource: ${resource.name}`);
       if (activeCount() >= resolvedPolicy.maxResources) {
         throw new ResourceAccessError(
           ExHarnessErrorCode.RESOURCE_LIMIT_EXCEEDED,
@@ -244,9 +251,9 @@ export function createResourceRegistry({
       }
       const id = requireText(idFactory(), "resource ref id");
       invariant(!records.has(id), `duplicate resource ref id: ${id}`);
-      const record = { id, resource, callId, revoked: false, expired: false };
+      const record = { id, resource, callId, nameKey, revoked: false, expired: false };
       records.set(id, record);
-      names.set(resource.name, id);
+      names.set(nameKey, id);
       return refView(record, resolvedRegistryId);
     },
 
@@ -291,7 +298,7 @@ export function createResourceRegistry({
     revoke(ref) {
       const record = resolveRef(ref, { callId: ref?.lifetime === ResourceLifetime.CALL ? records.get(ref?.id)?.callId ?? null : null });
       record.revoked = true;
-      names.delete(record.resource.name);
+      names.delete(record.nameKey);
       return true;
     },
 
@@ -300,7 +307,7 @@ export function createResourceRegistry({
       for (const record of records.values()) {
         if (record.resource.lifetime === ResourceLifetime.CALL && record.callId === callId && !record.revoked && !record.expired) {
           record.expired = true;
-          names.delete(record.resource.name);
+          names.delete(record.nameKey);
         }
       }
     }
