@@ -19,7 +19,8 @@ export {
   ResourceAccessError,
   SchemaUnsupportedError,
   SearchInvestmentBoundaryError,
-  StoreConflictError
+  StoreConflictError,
+  TraceSinkError
 } from "./errors.js";
 export {
   BUILT_IN_STATE_MIGRATIONS,
@@ -158,6 +159,12 @@ export {
   instrumentAgentRuntime,
   instrumentCapabilities
 } from "./observability.js";
+export {
+  TraceSpanKind,
+  TraceSpanStatus,
+  createNoopTracer,
+  createTraceRecorder
+} from "./tracing.js";
 export {
   createDeterministicClock,
   createDeterministicIdFactory,

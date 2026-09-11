@@ -14,6 +14,7 @@ import {
   defineResource,
   defineResourcePolicy
 } from "./resource.js";
+import { TraceSpanKind, createNoopTracer } from "./tracing.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
 function clone(value) {
@@ -72,12 +73,22 @@ export function createAgentRuntime({
   resources = [],
   resourceRegistry = null,
   resourcePolicy = {},
-  resourceAuthorize = null
+  resourceAuthorize = null,
+  tracer = createNoopTracer()
 }) {
   invariant(strategy && typeof strategy.run === "function", "agent runtime requires strategy.run()");
   invariant(agentEventStore && typeof agentEventStore.newCallId === "function", "agent runtime event store requires newCallId()");
   invariant(typeof agentEventStore.record === "function", "agent runtime event store requires record()");
   invariant(typeof agentEventStore.events === "function", "agent runtime event store requires events()");
+  invariant(tracer && typeof tracer.runSpan === "function", "agent runtime tracer requires runSpan()");
+  invariant(typeof tracer.current === "function", "agent runtime tracer requires current()");
+  invariant(typeof tracer.spans === "function", "agent runtime tracer requires spans()");
+  invariant(typeof tracer.failures === "function", "agent runtime tracer requires failures()");
+
+  const traceSurface = Object.freeze({
+    runSpan: tracer.runSpan,
+    current: tracer.current
+  });
 
   const resolvedResourceRegistry = resourceRegistry ?? createResourceRegistry({
     policy: defineResourcePolicy(resourcePolicy),
@@ -187,7 +198,7 @@ export function createAgentRuntime({
     const runEvents = clone(events) ?? [];
     const maxCapabilityCalls = budget?.maxCapabilityCalls ?? null;
     const judgment = runtimeContract.judgment ?? null;
-    const callId = agentEventStore.newCallId();
+    const callId = requireText(runtimeContract.callId, "agent run callId");
     const priorAgentEvents = agentEventStore.events();
     const resolvedSelection = runtimeContract.contextSelection ?? defineContextSelection(contextSelection ?? {});
     const callResourceRefs = [];
@@ -246,28 +257,57 @@ export function createAgentRuntime({
           }));
         }
 
-        const parsedInput = capability.parseInput
-          ? capability.parseInput(clone(payload))
-          : clone(payload);
+        return tracer.runSpan(
+          TraceSpanKind.CAPABILITY,
+          capability.name,
+          async () => {
+            const parsedInput = capability.parseInput
+              ? capability.parseInput(clone(payload))
+              : clone(payload);
 
-        const output = await capability.execute(parsedInput, Object.freeze({
-          input: clone(runInput),
-          context: clone(runContext)
-        }));
+            const output = await capability.execute(parsedInput, Object.freeze({
+              input: clone(runInput),
+              context: clone(runContext)
+            }));
 
-        return capability.parseOutput ? capability.parseOutput(output) : output;
+            return capability.parseOutput ? capability.parseOutput(output) : output;
+          },
+          {
+            callId,
+            attributes: {
+              index: capabilityCalls,
+              mutatesCandidate: capability.mutatesCandidate
+            }
+          }
+        );
       }
 
       async function describeResource(ref) {
-        return resolvedResourceRegistry.describe(ref, { callId });
+        return tracer.runSpan(
+          TraceSpanKind.RESOURCE_DESCRIBE,
+          ref?.name ?? "resource.describe",
+          () => resolvedResourceRegistry.describe(ref, { callId }),
+          { callId, attributes: { resourceId: ref?.id ?? null } }
+        );
       }
 
       async function invokeResource(ref, operationName, payload = null) {
-        return resolvedResourceRegistry.invoke(ref, operationName, payload, {
-          callId,
-          input: runInput,
-          context: runContext
-        });
+        return tracer.runSpan(
+          TraceSpanKind.RESOURCE,
+          `${ref?.name ?? "resource"}.${operationName}`,
+          () => resolvedResourceRegistry.invoke(ref, operationName, payload, {
+            callId,
+            input: runInput,
+            context: runContext
+          }),
+          {
+            callId,
+            attributes: {
+              resourceId: ref?.id ?? null,
+              operation: operationName
+            }
+          }
+        );
       }
 
       function recordAgentEvent(type, payload = null) {
@@ -289,24 +329,34 @@ export function createAgentRuntime({
         ...callResourceRefs.map((ref) => clone(ref))
       ]);
 
-      const result = await selectedStrategy.run(Object.freeze({
-        input: runInput,
-        context: runContext,
-        callContext: runContext,
-        promptContext,
-        events: runEvents,
-        agentEvents: selectedAgentEvents,
-        history: promptContext.history,
-        callId,
-        recordAgentEvent,
-        capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
-        invoke,
-        resources: visibleResourceRefs,
-        describeResource,
-        invokeResource,
-        judgment,
-        validateResult: runtimeContract.validateResult ?? null
-      }));
+      const strategyName = selectedStrategy.kind ?? selectedStrategy.name ?? "strategy";
+      const result = await tracer.runSpan(
+        TraceSpanKind.STRATEGY,
+        strategyName,
+        () => selectedStrategy.run(Object.freeze({
+          input: runInput,
+          context: runContext,
+          callContext: runContext,
+          promptContext,
+          events: runEvents,
+          agentEvents: selectedAgentEvents,
+          history: promptContext.history,
+          callId,
+          recordAgentEvent,
+          capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
+          invoke,
+          resources: visibleResourceRefs,
+          describeResource,
+          invokeResource,
+          judgment,
+          validateResult: runtimeContract.validateResult ?? null,
+          trace: traceSurface
+        })),
+        {
+          callId,
+          attributes: { judgment: judgment?.name ?? null }
+        }
+      );
 
       return Object.freeze({
         result,
@@ -327,60 +377,77 @@ export function createAgentRuntime({
   }
 
   async function executeRun(options = {}) {
-    const report = await executeRunWithStrategy(strategy, options);
-    recordRuntimeEvent(AgentEventKind.RESULT, report.callId, null, { result: report.result });
-    return report;
+    const callId = agentEventStore.newCallId();
+    return tracer.runSpan(
+      TraceSpanKind.AGENT_RUN,
+      "agent.run",
+      async () => {
+        const report = await executeRunWithStrategy(strategy, options, { callId });
+        recordRuntimeEvent(AgentEventKind.RESULT, report.callId, null, { result: report.result });
+        return report;
+      },
+      { callId }
+    );
   }
 
   async function executeJudgment(name, input, options = {}) {
     requireText(name, "judgment name");
     const judgment = baseJudgments.get(name);
     invariant(judgment, `judgment not found: ${name}`);
+    const callId = agentEventStore.newCallId();
 
-    const parsedInput = judgment.parseInput
-      ? judgment.parseInput(clone(input))
-      : clone(input);
+    return tracer.runSpan(
+      TraceSpanKind.JUDGMENT,
+      name,
+      async () => {
+        const parsedInput = judgment.parseInput
+          ? judgment.parseInput(clone(input))
+          : clone(input);
 
-    let accepted = null;
-    const validateResult = judgment.parseOutput
-      ? (value) => {
-          const parsed = judgment.parseOutput(value);
-          accepted = { raw: value, parsed };
-          return parsed;
+        let accepted = null;
+        const validateResult = judgment.parseOutput
+          ? (value) => {
+              const parsed = judgment.parseOutput(value);
+              accepted = { raw: value, parsed };
+              return parsed;
+            }
+          : null;
+
+        const report = await executeRunWithStrategy(
+          judgment.strategy ?? strategy,
+          { ...options, input: parsedInput },
+          {
+            callId,
+            judgment: judgmentView(judgment),
+            validateResult,
+            contextSelection: judgment.context
+          }
+        );
+
+        let parsedOutput;
+        try {
+          parsedOutput = judgment.parseOutput
+            ? accepted && Object.is(report.result, accepted.raw)
+              ? accepted.parsed
+              : judgment.parseOutput(report.result)
+            : report.result;
+        } catch (error) {
+          recordRuntimeEvent(AgentEventKind.ERROR, report.callId, judgmentView(judgment), { error: errorView(error) });
+          throw error;
         }
-      : null;
 
-    const report = await executeRunWithStrategy(
-      judgment.strategy ?? strategy,
-      { ...options, input: parsedInput },
-      {
-        judgment: judgmentView(judgment),
-        validateResult,
-        contextSelection: judgment.context
-      }
+        recordRuntimeEvent(AgentEventKind.RESULT, report.callId, judgmentView(judgment), { result: parsedOutput });
+
+        return Object.freeze({
+          result: parsedOutput,
+          callId: report.callId,
+          usage: report.usage,
+          judgment: judgmentView(judgment),
+          promptContext: clone(report.promptContext)
+        });
+      },
+      { callId, attributes: { judgment: name } }
     );
-
-    let parsedOutput;
-    try {
-      parsedOutput = judgment.parseOutput
-        ? accepted && Object.is(report.result, accepted.raw)
-          ? accepted.parsed
-          : judgment.parseOutput(report.result)
-        : report.result;
-    } catch (error) {
-      recordRuntimeEvent(AgentEventKind.ERROR, report.callId, judgmentView(judgment), { error: errorView(error) });
-      throw error;
-    }
-
-    recordRuntimeEvent(AgentEventKind.RESULT, report.callId, judgmentView(judgment), { result: parsedOutput });
-
-    return Object.freeze({
-      result: parsedOutput,
-      callId: report.callId,
-      usage: report.usage,
-      judgment: judgmentView(judgment),
-      promptContext: clone(report.promptContext)
-    });
   }
 
   return Object.freeze({
@@ -422,6 +489,14 @@ export function createAgentRuntime({
 
     agentEvents() {
       return agentEventStore.events();
+    },
+
+    traces() {
+      return tracer.spans();
+    },
+
+    traceFailures() {
+      return tracer.failures();
     },
 
     async run(options = {}) {

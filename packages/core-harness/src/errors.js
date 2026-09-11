@@ -21,6 +21,7 @@ export const ExHarnessErrorCode = Object.freeze({
   CODEACT_ACTION_BUDGET_EXCEEDED: "CODEACT_ACTION_BUDGET_EXCEEDED",
   CODEACT_TIME_BUDGET_EXCEEDED: "CODEACT_TIME_BUDGET_EXCEEDED",
   CODEACT_OBSERVATION_LIMIT_EXCEEDED: "CODEACT_OBSERVATION_LIMIT_EXCEEDED",
+  TRACE_SINK_FAILED: "TRACE_SINK_FAILED",
   CONTRACT_VIOLATION: "CONTRACT_VIOLATION"
 });
 
@@ -125,6 +126,17 @@ export class PredictValidationError extends ExHarnessError {
       { details: { attempts, lastValidationError } }
     );
     this.name = "PredictValidationError";
+  }
+}
+
+export class TraceSinkError extends ExHarnessError {
+  constructor({ spanId, sink = null, cause = null }) {
+    super(
+      ExHarnessErrorCode.TRACE_SINK_FAILED,
+      "strict trace sink failed",
+      { details: { spanId, sink }, cause }
+    );
+    this.name = "TraceSinkError";
   }
 }
 
