@@ -1,4 +1,5 @@
 import { ImplementationStatus, candidateKey, normalizeCandidate, requireText } from "./contracts.js";
+import { CURRENT_STATE_SCHEMA_VERSION } from "./persistence.js";
 
 export function lineageHead(state) {
   return state.persistentMemory.lineage.at(-1) ?? null;
@@ -10,6 +11,8 @@ export function createPersistentWorkState({ id, work, seedCandidate, now }) {
   const createdAt = now();
 
   return {
+    schemaVersion: CURRENT_STATE_SCHEMA_VERSION,
+    revision: 0,
     id,
     work: structuredClone(work),
     currentCandidate: candidate,
@@ -66,6 +69,8 @@ export function findLineageEntry(state, candidate) {
 
 export function publicSnapshot(state) {
   return structuredClone({
+    schemaVersion: state.schemaVersion,
+    revision: state.revision,
     id: state.id,
     work: state.work,
     candidate: state.currentCandidate,
