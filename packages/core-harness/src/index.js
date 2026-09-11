@@ -224,5 +224,16 @@ export {
   createCodeActStrategy
 } from "./codeact-strategy.js";
 export { createAgentRuntime, defineCapability } from "./agent-runtime.js";
+export {
+  Agent,
+  ObjectAgent,
+  ObjectAgentMemberKind,
+  ObjectMethodCallKind,
+  agenticMethod,
+  createObjectAgent,
+  getObjectAgentRuntime,
+  objectAgentSurface,
+  objectMethodCall
+} from "./object-agent.js";
 export { AVOCapability, createAVOHarness } from "./avo-harness.js";
 export { createHarness } from "./harness.js";
