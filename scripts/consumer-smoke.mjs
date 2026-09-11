@@ -46,7 +46,7 @@ import {
   defineSubject,
   defineTrustPolicy,
   environmentRefFromValue,
-  evaluateAttestationTrust,
+  evaluateTrustBoundary,
   policyRefFromValue
 } from "exharness";
 import { verifySessionStoreContract } from "exharness/testing";
@@ -118,7 +118,7 @@ const attestation = await issuer.issue({
   environment: attestationEnvironment,
   issuedAt: "2026-09-11T00:00:02.000Z"
 });
-const trust = await evaluateAttestationTrust({
+const trust = await evaluateTrustBoundary({
   attestation,
   decision,
   currentSubject: subject,
@@ -132,7 +132,9 @@ const trust = await evaluateAttestationTrust({
     requireIndependentIssuer: true,
     requireIndependentEvidenceProducers: true
   }),
-  verifySignature: ({ payloadDigest, signature }) => signature.value === payloadDigest
+  verifySignature: ({ payloadDigest, signature }) => signature.value === payloadDigest,
+  verifyEvaluatorAuthority: ({ evaluator }) => evaluator.identity === "consumer-evaluator",
+  verifyEvidenceAuthority: ({ producer }) => producer.identity === "consumer-verifier"
 });
 if (!trust.trusted) throw new Error(JSON.stringify(trust.reasons));
 console.log("consumer-smoke:ok");
