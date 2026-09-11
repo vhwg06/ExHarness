@@ -5,7 +5,6 @@ export const ExHarnessErrorCode = Object.freeze({
   SEARCH_INVESTMENT_STOPPED: "SEARCH_INVESTMENT_STOPPED",
   SEARCH_INVESTMENT_ESCALATION_REQUIRED: "SEARCH_INVESTMENT_ESCALATION_REQUIRED",
   CONTEXT_LIMIT_EXCEEDED: "CONTEXT_LIMIT_EXCEEDED",
-  MODEL_ROUTE_INVALID: "MODEL_ROUTE_INVALID",
   RESOURCE_REF_INVALID: "RESOURCE_REF_INVALID",
   RESOURCE_REVOKED: "RESOURCE_REVOKED",
   RESOURCE_EXPIRED: "RESOURCE_EXPIRED",
@@ -71,7 +70,7 @@ export class RuntimeSnapshotError extends ExHarnessError {
 
 export class ModelRouteError extends ExHarnessError {
   constructor(message, details = null, cause = null) {
-    super(ExHarnessErrorCode.MODEL_ROUTE_INVALID, message, { details, cause });
+    super(ExHarnessErrorCode.CONTRACT_VIOLATION, message, { details, cause });
     this.name = "ModelRouteError";
   }
 }
