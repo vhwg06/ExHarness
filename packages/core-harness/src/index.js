@@ -12,6 +12,7 @@ export {
   ExHarnessError,
   ExHarnessErrorCode,
   ExecutionError,
+  PredictValidationError,
   RecoveryRequiredError,
   SchemaUnsupportedError,
   StoreConflictError
@@ -154,6 +155,8 @@ export { createInMemorySessionStore } from "./store.js";
 export { validateCorePorts } from "./ports.js";
 export { createCoreHarness } from "./core-harness.js";
 export { defineJudgment } from "./judgment.js";
+export { defineModelAdapter } from "./model.js";
+export { createPredictStrategy } from "./predict-strategy.js";
 export { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 export { AVOCapability, createAVOHarness } from "./avo-harness.js";
 export { createHarness } from "./harness.js";
