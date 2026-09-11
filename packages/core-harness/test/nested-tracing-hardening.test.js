@@ -2,8 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  EvaluationValidity,
+  EvaluationVerdict,
   ResourceLifetime,
+  TraceSpanKind,
   createAgentRuntime,
+  createHarness,
   createTraceRecorder,
   defineResource
 } from "../src/index.js";
@@ -53,4 +57,63 @@ test("strict trace sink failure never replaces an already-existing engineering e
 
   await assert.rejects(runtime.run(), /engineering failure/);
   assert(runtime.traceFailures().length > 0);
+});
+
+test("production facade composes an injected tracer and exposes causal runtime spans", async () => {
+  const tracer = createTraceRecorder();
+  const harness = createHarness({
+    tracer,
+    strategy: { async run() { return { finished: true }; } },
+    environment: {
+      async observe({ request }) {
+        return { request };
+      },
+      async act({ candidate }) {
+        return { mutated: false, candidate, result: null };
+      }
+    },
+    objective: {
+      async evaluate() {
+        return {
+          validity: EvaluationValidity.VALID,
+          verdict: EvaluationVerdict.FAIL
+        };
+      }
+    }
+  });
+
+  await harness.start({
+    sessionId: "trace-facade",
+    work: { objective: "prove trace composition" },
+    seedCandidate: { id: "candidate", version: "v0" }
+  });
+  await harness.vary("trace-facade");
+
+  const spans = harness.traces();
+  assert(spans.some((span) => span.kind === TraceSpanKind.AGENT_RUN));
+  assert(spans.some((span) => span.kind === TraceSpanKind.STRATEGY));
+  assert.equal(harness.traceFailures().length, 0);
+});
+
+test("production facade refuses to silently ignore tracer when a custom agent owns runtime observability", () => {
+  const tracer = createTraceRecorder();
+  assert.throws(
+    () => createHarness({
+      tracer,
+      agent: {},
+      environment: {
+        async observe() { return {}; },
+        async act({ candidate }) { return { mutated: false, candidate, result: null }; }
+      },
+      objective: {
+        async evaluate() {
+          return {
+            validity: EvaluationValidity.VALID,
+            verdict: EvaluationVerdict.FAIL
+          };
+        }
+      }
+    }),
+    /custom agent must own its tracer/
+  );
 });
