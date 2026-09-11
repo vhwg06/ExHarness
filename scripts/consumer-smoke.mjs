@@ -36,8 +36,12 @@ import {
   AVOCapability,
   EvaluationValidity,
   EvaluationVerdict,
-  createHarness
+  createHarness,
+  createInMemorySessionStore
 } from "exharness";
+import { verifySessionStoreContract } from "exharness/testing";
+
+await verifySessionStoreContract(() => createInMemorySessionStore());
 
 const harness = createHarness({
   strategy: {
@@ -49,7 +53,8 @@ const harness = createHarness({
   },
   environment: {
     async observe() { return null; },
-    async act({ candidate, action }) {
+    async act({ candidate, action, actionKey }) {
+      if (typeof actionKey !== "string") throw new Error("missing action idempotency key");
       return { mutated: true, candidate: { id: candidate.id, version: action.nextVersion } };
     }
   },
