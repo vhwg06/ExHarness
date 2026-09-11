@@ -1,9 +1,18 @@
 import { invariant, requireText } from "./contracts.js";
+import { AgentEventKind, createAgentEventStore } from "./agent-events.js";
 import { defineJudgment, judgmentView } from "./judgment.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
 function clone(value) {
   return value == null ? value : structuredClone(value);
+}
+
+function errorView(error) {
+  return Object.freeze({
+    name: error?.name ?? "Error",
+    code: error?.code ?? null,
+    message: error?.message ?? String(error)
+  });
 }
 
 function normalizeCapability(definition) {
@@ -40,8 +49,16 @@ export function defineCapability(definition) {
   return normalizeCapability(definition);
 }
 
-export function createAgentRuntime({ strategy, capabilities = [], judgments = [] }) {
+export function createAgentRuntime({
+  strategy,
+  capabilities = [],
+  judgments = [],
+  agentEventStore = createAgentEventStore()
+}) {
   invariant(strategy && typeof strategy.run === "function", "agent runtime requires strategy.run()");
+  invariant(agentEventStore && typeof agentEventStore.newCallId === "function", "agent runtime event store requires newCallId()");
+  invariant(typeof agentEventStore.record === "function", "agent runtime event store requires record()");
+  invariant(typeof agentEventStore.events === "function", "agent runtime event store requires events()");
 
   const baseCapabilities = new Map();
   for (const definition of capabilities) {
@@ -69,6 +86,14 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     return resolved;
   }
 
+  function recordRuntimeEvent(type, callId, judgment, payload) {
+    return agentEventStore.record(type, {
+      callId,
+      judgment,
+      payload
+    });
+  }
+
   async function executeRunWithStrategy(selectedStrategy, {
     input = null,
     context = null,
@@ -83,6 +108,8 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     const runContext = clone(context);
     const runEvents = clone(events) ?? [];
     const maxCapabilityCalls = budget?.maxCapabilityCalls ?? null;
+    const judgment = runtimeContract.judgment ?? null;
+    const callId = agentEventStore.newCallId();
 
     if (maxCapabilityCalls != null) {
       invariant(
@@ -99,6 +126,8 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
 
     let capabilityCalls = 0;
     let budgetExhausted = false;
+
+    recordRuntimeEvent(AgentEventKind.TASK, callId, judgment, { input: runInput });
 
     async function invoke(name, payload = null) {
       requireText(name, "capability name");
@@ -134,28 +163,47 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
       return capability.parseOutput ? capability.parseOutput(output) : output;
     }
 
-    const result = await selectedStrategy.run(Object.freeze({
-      input: runInput,
-      context: runContext,
-      events: runEvents,
-      capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
-      invoke,
-      judgment: runtimeContract.judgment ?? null,
-      validateResult: runtimeContract.validateResult ?? null
-    }));
+    function recordAgentEvent(type, payload = null) {
+      invariant(
+        type === AgentEventKind.MODEL_OUTPUT || type === AgentEventKind.VALIDATION_ERROR,
+        "strategy may only record MODEL_OUTPUT or VALIDATION_ERROR working events"
+      );
+      return recordRuntimeEvent(type, callId, judgment, payload);
+    }
 
-    return Object.freeze({
-      result,
-      usage: Object.freeze({
-        capabilityCalls,
-        budgetExhausted,
-        maxCapabilityCalls
-      })
-    });
+    try {
+      const result = await selectedStrategy.run(Object.freeze({
+        input: runInput,
+        context: runContext,
+        events: runEvents,
+        agentEvents: agentEventStore.events(),
+        callId,
+        recordAgentEvent,
+        capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
+        invoke,
+        judgment,
+        validateResult: runtimeContract.validateResult ?? null
+      }));
+
+      return Object.freeze({
+        result,
+        callId,
+        usage: Object.freeze({
+          capabilityCalls,
+          budgetExhausted,
+          maxCapabilityCalls
+        })
+      });
+    } catch (error) {
+      recordRuntimeEvent(AgentEventKind.ERROR, callId, judgment, { error: errorView(error) });
+      throw error;
+    }
   }
 
   async function executeRun(options = {}) {
-    return executeRunWithStrategy(strategy, options);
+    const report = await executeRunWithStrategy(strategy, options);
+    recordRuntimeEvent(AgentEventKind.RESULT, report.callId, null, { result: report.result });
+    return report;
   }
 
   async function executeJudgment(name, input, options = {}) {
@@ -185,14 +233,23 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
       }
     );
 
-    const parsedOutput = judgment.parseOutput
-      ? accepted && Object.is(report.result, accepted.raw)
-        ? accepted.parsed
-        : judgment.parseOutput(report.result)
-      : report.result;
+    let parsedOutput;
+    try {
+      parsedOutput = judgment.parseOutput
+        ? accepted && Object.is(report.result, accepted.raw)
+          ? accepted.parsed
+          : judgment.parseOutput(report.result)
+        : report.result;
+    } catch (error) {
+      recordRuntimeEvent(AgentEventKind.ERROR, report.callId, judgmentView(judgment), { error: errorView(error) });
+      throw error;
+    }
+
+    recordRuntimeEvent(AgentEventKind.RESULT, report.callId, judgmentView(judgment), { result: parsedOutput });
 
     return Object.freeze({
       result: parsedOutput,
+      callId: report.callId,
       usage: report.usage,
       judgment: judgmentView(judgment)
     });
@@ -205,6 +262,10 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
 
     judgments() {
       return Object.freeze([...baseJudgments.values()].map(judgmentView));
+    },
+
+    agentEvents() {
+      return agentEventStore.events();
     },
 
     async run(options = {}) {

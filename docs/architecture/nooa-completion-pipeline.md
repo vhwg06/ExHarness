@@ -49,8 +49,8 @@ Rules:
 ```text
 NOOA-01 Typed Judgment                         DONE
 NOOA-02 Predict Strategy                       DONE
-NOOA-03 AgentEvent working history             NEXT
-NOOA-04 Context blocks + history selection     PENDING
+NOOA-03 AgentEvent working history             DONE
+NOOA-04 Context blocks + history selection     NEXT
 NOOA-05 ResourceRef / live resource semantics  PENDING
 NOOA-06 CodeAct execution loop                 PENDING
 NOOA-07 Nested tracing                         PENDING
@@ -59,7 +59,7 @@ NOOA-09 Runtime snapshot / resume               PENDING
 NOOA-10 Reference substrate + adversarial eval PENDING
 ```
 
-Current checkpoint: `NOOA-03`.
+Current checkpoint: `NOOA-04`.
 
 ---
 
@@ -117,7 +117,7 @@ Merged through PR #11.
 
 ---
 
-## NOOA-03 — AgentEvent working history — NEXT
+## NOOA-03 — AgentEvent working history — DONE
 
 Goal: separate chronological model working history from runtime telemetry.
 
@@ -157,7 +157,7 @@ Exit artifact:
 
 ---
 
-## NOOA-04 — Context blocks + history selection
+## NOOA-04 — Context blocks + history selection — NEXT
 
 Goal: distinguish deliberate current prompt context from chronological working events.
 
