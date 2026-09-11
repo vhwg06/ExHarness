@@ -5,6 +5,12 @@ export const ExHarnessErrorCode = Object.freeze({
   SEARCH_INVESTMENT_STOPPED: "SEARCH_INVESTMENT_STOPPED",
   SEARCH_INVESTMENT_ESCALATION_REQUIRED: "SEARCH_INVESTMENT_ESCALATION_REQUIRED",
   CONTEXT_LIMIT_EXCEEDED: "CONTEXT_LIMIT_EXCEEDED",
+  RESOURCE_REF_INVALID: "RESOURCE_REF_INVALID",
+  RESOURCE_REVOKED: "RESOURCE_REVOKED",
+  RESOURCE_EXPIRED: "RESOURCE_EXPIRED",
+  RESOURCE_ACCESS_DENIED: "RESOURCE_ACCESS_DENIED",
+  RESOURCE_OPERATION_NOT_ALLOWED: "RESOURCE_OPERATION_NOT_ALLOWED",
+  RESOURCE_LIMIT_EXCEEDED: "RESOURCE_LIMIT_EXCEEDED",
   EXECUTION_FAILED: "EXECUTION_FAILED",
   EXECUTION_TIMED_OUT: "EXECUTION_TIMED_OUT",
   EXECUTION_ABORTED: "EXECUTION_ABORTED",
@@ -88,6 +94,13 @@ export class ContextLimitExceededError extends ExHarnessError {
       { details: { limit, maximum, actual } }
     );
     this.name = "ContextLimitExceededError";
+  }
+}
+
+export class ResourceAccessError extends ExHarnessError {
+  constructor(code, message, details = null) {
+    super(code, message, { details });
+    this.name = "ResourceAccessError";
   }
 }
 
