@@ -34,24 +34,72 @@ try {
   const consumer = `
 import {
   AVOCapability,
+  Agent,
   ClaimStatus,
   EvaluationValidity,
   EvaluationVerdict,
+  ObjectAgentMemberKind,
   TrustBoundary,
+  agenticMethod,
   createAttestationIssuer,
   createDecisionArtifact,
   createEvidenceArtifact,
   createHarness,
   createInMemorySessionStore,
+  createObjectAgent,
   defineSubject,
   defineTrustPolicy,
   environmentRefFromValue,
   evaluateTrustBoundary,
+  getObjectAgentRuntime,
+  objectAgentSurface,
   policyRefFromValue
 } from "exharness";
 import { verifySessionStoreContract } from "exharness/testing";
 
 await verifySessionStoreContract(() => createInMemorySessionStore());
+
+class PackagedObjectAgent extends Agent {
+  constructor() {
+    super();
+    this.count = 0;
+  }
+
+  increment(delta) {
+    this.count += delta;
+    return this.count;
+  }
+
+  answer = agenticMethod({
+    strategy: {
+      kind: "PACKAGED_OBJECT_AGENT",
+      async run({ input, invoke }) {
+        return invoke("increment", input);
+      }
+    },
+    parseOutput(value) {
+      if (!Number.isInteger(value)) throw new TypeError("integer result required");
+      return value;
+    }
+  });
+}
+
+const rawObjectAgent = new PackagedObjectAgent();
+const objectAgent = createObjectAgent(rawObjectAgent);
+if (objectAgent !== rawObjectAgent) throw new Error("object agent identity changed");
+if (await objectAgent.answer(2) !== 2) throw new Error("object agent method did not execute");
+if (await objectAgent.answer(3) !== 5) throw new Error("object agent state did not stay live");
+const objectCapabilities = getObjectAgentRuntime(objectAgent).capabilities().map((item) => item.name);
+if (JSON.stringify(objectCapabilities) !== JSON.stringify(["increment"])) {
+  throw new Error(`unexpected object capabilities: ${JSON.stringify(objectCapabilities)}`);
+}
+const objectSurface = objectAgentSurface(objectAgent);
+if (!objectSurface.members.some((item) => item.name === "increment" && item.kind === ObjectAgentMemberKind.DETERMINISTIC)) {
+  throw new Error("deterministic object method missing from packaged surface");
+}
+if (!objectSurface.members.some((item) => item.name === "answer" && item.kind === ObjectAgentMemberKind.AGENTIC)) {
+  throw new Error("agentic object method missing from packaged surface");
+}
 
 const harness = createHarness({
   strategy: {
