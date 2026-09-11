@@ -54,6 +54,29 @@ The same source repeated multiple times counts once. This prevents repeated exec
 
 PASS and FAIL for the same claim remain visible as a conflict. Missing PASS source diversity remains visible as incompleteness. With the default policy, any observed FAIL or PASS/FAIL conflict blocks readiness.
 
+## Evaluation input freshness
+
+A PASS only certifies the exact observation and verification snapshot seen by that evaluation.
+
+```text
+observations O_t + verifications V_t
+              |
+              v
+          evaluation PASS
+              |
+       new O or new V arrives
+              |
+              v
+        previous PASS stale
+              |
+              v
+          re-evaluate
+```
+
+The evaluation metadata persists `inputSnapshot.observationIds` and `inputSnapshot.verificationIds`. Promotion compares those IDs with the current candidate-bound inputs. If either set changed after evaluation, promotion is rejected until the candidate is evaluated again.
+
+This invariant was added after manual verification found a failure mode where a later contradictory verification artifact could arrive after PASS while promotion still used the older evaluation.
+
 ## Important limitation
 
 Distinct source identity is **not proof of semantic independence**. Two differently named verifiers may still share implementation, assumptions, data, or failure modes. ExHarness therefore calls this source diversity, not independent verification.
@@ -68,6 +91,8 @@ Manual vigilance should challenge at least these cases:
 2. create PASS and FAIL artifacts for the same claim and confirm the conflict blocks readiness;
 3. omit a required claim/source and confirm the domain objective is not called;
 4. satisfy source diversity and confirm the objective receives the assessment before promotion;
-5. confirm candidate freshness still applies, so stale artifacts never enter the current assessment.
+5. confirm candidate freshness still applies, so stale artifacts never enter the current assessment;
+6. add verification evidence after PASS and confirm promotion requires re-evaluation;
+7. add an observation after PASS and confirm promotion requires re-evaluation.
 
 Automated tests guard these cases, but test success is only one verification artifact for the implementation objective.
