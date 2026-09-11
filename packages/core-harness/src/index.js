@@ -84,6 +84,10 @@ export {
   validateTrustBundle
 } from "./trust.js";
 export {
+  BoundaryTrustReasonCode,
+  evaluateTrustBoundary
+} from "./trust-boundary.js";
+export {
   TrustChainReasonCode,
   evaluateAttestationChainTrust
 } from "./trust-chain.js";
