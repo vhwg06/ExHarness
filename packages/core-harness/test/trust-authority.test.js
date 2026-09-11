@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  BoundaryTrustReasonCode,
   ClaimStatus,
   EvaluationValidity,
   EvaluationVerdict,
@@ -15,7 +16,7 @@ import {
   defineSubject,
   defineTrustPolicy,
   environmentRefFromValue,
-  evaluateAttestationTrust,
+  evaluateTrustBoundary,
   policyRefFromValue
 } from "../src/index.js";
 
@@ -84,69 +85,114 @@ async function attest(values) {
   return { attestor, attestation };
 }
 
-test("trusted attestor cannot launder an untrusted evaluator", async () => {
-  const values = fixture({ evaluatorIdentity: "untrusted-evaluator" });
+function fullPolicy(values, attestor, overrides = {}) {
+  return defineTrustPolicy({
+    acceptedIssuers: [attestor.issuer.identity],
+    acceptedPolicyDigests: [values.policy.digest],
+    acceptedEvaluators: ["trusted-evaluator"],
+    requiredEvaluatorRoles: ["evaluator"],
+    acceptedEvidenceProducers: ["trusted-verifier"],
+    acceptedEvidenceEnvironmentDigests: [values.verificationEnv.digest],
+    requiredEvidenceProducerRoles: ["verifier"],
+    requireIndependentIssuer: true,
+    requireIndependentEvidenceProducers: true,
+    ...overrides
+  });
+}
+
+function trustedEvaluator({ evaluator }) {
+  return evaluator?.identity === "trusted-evaluator" && evaluator.roles.includes("evaluator");
+}
+
+function trustedEvidence({ producer, environment }) {
+  return producer?.identity === "trusted-verifier" && environment?.name === "verification-env";
+}
+
+test("declared trusted identities are insufficient without independent authority verification", async () => {
+  const values = fixture();
   const { attestor, attestation } = await attest(values);
-  const result = await evaluateAttestationTrust({
+  const result = await evaluateTrustBoundary({
     attestation,
     decision: values.decision,
     currentSubject: values.subject,
     evidence: values.evidence,
-    policy: defineTrustPolicy({
-      acceptedIssuers: [attestor.issuer.identity],
-      acceptedPolicyDigests: [values.policy.digest],
-      acceptedEvaluators: ["trusted-evaluator"],
-      requiredEvaluatorRoles: ["evaluator"]
-    }),
+    policy: fullPolicy(values, attestor),
     verifySignature: verifyTestSignature
   });
 
-  assert.equal(result.trusted, false);
-  assert.equal(
-    result.reasons.some((reason) => reason.code === TrustReasonCode.UNTRUSTED_EVALUATOR),
-    true
-  );
+  const codes = new Set(result.reasons.map((reason) => reason.code));
+  assert.equal(codes.has(BoundaryTrustReasonCode.UNVERIFIED_EVALUATOR_AUTHORITY), true);
+  assert.equal(codes.has(BoundaryTrustReasonCode.UNVERIFIED_EVIDENCE_AUTHORITY), true);
+});
+
+test("full authority chain is trusted only when issuer, evaluator and evidence authority verify independently", async () => {
+  const values = fixture();
+  const { attestor, attestation } = await attest(values);
+  const result = await evaluateTrustBoundary({
+    attestation,
+    decision: values.decision,
+    currentSubject: values.subject,
+    evidence: values.evidence,
+    policy: fullPolicy(values, attestor),
+    verifySignature: verifyTestSignature,
+    verifyEvaluatorAuthority: trustedEvaluator,
+    verifyEvidenceAuthority: trustedEvidence
+  });
+
+  assert.equal(result.trusted, true);
+  assert.deepEqual(result.reasons, []);
+});
+
+test("trusted attestor cannot launder an untrusted evaluator", async () => {
+  const values = fixture({ evaluatorIdentity: "untrusted-evaluator" });
+  const { attestor, attestation } = await attest(values);
+  const result = await evaluateTrustBoundary({
+    attestation,
+    decision: values.decision,
+    currentSubject: values.subject,
+    evidence: values.evidence,
+    policy: fullPolicy(values, attestor),
+    verifySignature: verifyTestSignature,
+    verifyEvaluatorAuthority: trustedEvaluator,
+    verifyEvidenceAuthority: trustedEvidence
+  });
+
+  const codes = new Set(result.reasons.map((reason) => reason.code));
+  assert.equal(codes.has(TrustReasonCode.UNTRUSTED_EVALUATOR), true);
+  assert.equal(codes.has(BoundaryTrustReasonCode.UNVERIFIED_EVALUATOR_AUTHORITY), true);
 });
 
 test("trusted attestor and evaluator cannot launder an untrusted evidence producer or environment", async () => {
   const values = fixture({ evidenceProducer: "unknown-verifier" });
   const { attestor, attestation } = await attest(values);
-  const result = await evaluateAttestationTrust({
+  const result = await evaluateTrustBoundary({
     attestation,
     decision: values.decision,
     currentSubject: values.subject,
     evidence: values.evidence,
-    policy: defineTrustPolicy({
-      acceptedIssuers: [attestor.issuer.identity],
-      acceptedPolicyDigests: [values.policy.digest],
-      acceptedEvaluators: ["trusted-evaluator"],
-      acceptedEvidenceProducers: ["trusted-verifier"],
-      acceptedEvidenceEnvironmentDigests: ["sha256:not-the-verification-environment"],
-      requiredEvidenceProducerRoles: ["verifier"]
-    }),
-    verifySignature: verifyTestSignature
+    policy: fullPolicy(values, attestor),
+    verifySignature: verifyTestSignature,
+    verifyEvaluatorAuthority: trustedEvaluator,
+    verifyEvidenceAuthority: trustedEvidence
   });
 
   const codes = new Set(result.reasons.map((reason) => reason.code));
   assert.equal(codes.has(TrustReasonCode.UNTRUSTED_EVIDENCE_PRODUCER), true);
-  assert.equal(codes.has(TrustReasonCode.UNTRUSTED_EVIDENCE_ENVIRONMENT), true);
+  assert.equal(codes.has(BoundaryTrustReasonCode.UNVERIFIED_EVIDENCE_AUTHORITY), true);
 });
 
 test("evidence independence fails closed when verifier is the subject producer", async () => {
   const values = fixture({ evidenceProducer: "implementation-agent" });
   const { attestor, attestation } = await attest(values);
-  const result = await evaluateAttestationTrust({
+  const result = await evaluateTrustBoundary({
     attestation,
     decision: values.decision,
     currentSubject: values.subject,
     evidence: values.evidence,
-    policy: defineTrustPolicy({
-      acceptedIssuers: [attestor.issuer.identity],
-      acceptedPolicyDigests: [values.policy.digest],
-      acceptedEvidenceProducers: ["implementation-agent"],
-      requireIndependentEvidenceProducers: true
-    }),
-    verifySignature: verifyTestSignature
+    policy: fullPolicy(values, attestor, { acceptedEvidenceProducers: ["implementation-agent"] }),
+    verifySignature: verifyTestSignature,
+    verifyEvaluatorAuthority: trustedEvaluator,
+    verifyEvidenceAuthority: () => true
   });
 
   assert.equal(result.trusted, false);
