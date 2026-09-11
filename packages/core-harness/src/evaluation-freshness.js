@@ -28,7 +28,11 @@ export function evaluationInputState(state) {
   });
 }
 
-export function assertEvaluationInputsFresh(state, evaluation = currentEvaluationForState(state)) {
+export function assertEvaluationInputsFresh(
+  state,
+  evaluation = currentEvaluationForState(state),
+  { purpose = "relying on evaluation" } = {}
+) {
   invariant(evaluation, "current candidate has not been evaluated");
   const evaluated = evaluation.metadata?.inputSnapshot ?? {
     observationIds: [],
@@ -38,11 +42,11 @@ export function assertEvaluationInputsFresh(state, evaluation = currentEvaluatio
 
   invariant(
     sameArtifactSnapshot([...(evaluated.observationIds ?? [])], current.observationIds),
-    "observations changed since evaluation; re-evaluate before relying on evaluation"
+    `observations changed since evaluation; re-evaluate before ${purpose}`
   );
   invariant(
     sameArtifactSnapshot([...(evaluated.verificationIds ?? [])], current.verificationIds),
-    "verification artifacts changed since evaluation; re-evaluate before relying on evaluation"
+    `verification artifacts changed since evaluation; re-evaluate before ${purpose}`
   );
   return evaluation;
 }
