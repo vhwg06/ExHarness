@@ -15,6 +15,11 @@ export const ExHarnessErrorCode = Object.freeze({
   EXECUTION_TIMED_OUT: "EXECUTION_TIMED_OUT",
   EXECUTION_ABORTED: "EXECUTION_ABORTED",
   PREDICT_VALIDATION_EXHAUSTED: "PREDICT_VALIDATION_EXHAUSTED",
+  CODEACT_PROTOCOL_ERROR: "CODEACT_PROTOCOL_ERROR",
+  CODEACT_TEXT_RESPONSE: "CODEACT_TEXT_RESPONSE",
+  CODEACT_TURN_LIMIT_EXCEEDED: "CODEACT_TURN_LIMIT_EXCEEDED",
+  CODEACT_ACTION_BUDGET_EXCEEDED: "CODEACT_ACTION_BUDGET_EXCEEDED",
+  CODEACT_TIME_BUDGET_EXCEEDED: "CODEACT_TIME_BUDGET_EXCEEDED",
   CONTRACT_VIOLATION: "CONTRACT_VIOLATION"
 });
 
@@ -119,5 +124,12 @@ export class PredictValidationError extends ExHarnessError {
       { details: { attempts, lastValidationError } }
     );
     this.name = "PredictValidationError";
+  }
+}
+
+export class CodeActBoundaryError extends ExHarnessError {
+  constructor(code, message, details = null, cause = null) {
+    super(code, message, { details, cause });
+    this.name = "CodeActBoundaryError";
   }
 }
