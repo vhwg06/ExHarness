@@ -231,7 +231,7 @@ test("active resources require explicit rebinding and restore with fresh authori
     restored.describeResource(oldRef),
     (error) => error.code === ExHarnessErrorCode.RESOURCE_REF_INVALID
   );
-  assert.equal((await restored.describeResource(freshRef)).name, "repo");
+  assert.deepEqual((await restored.describeResource(freshRef)).ref, freshRef);
 });
 
 test("revoked resources stay revoked after restore and do not require rebinding", () => {
