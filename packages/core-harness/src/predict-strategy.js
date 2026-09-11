@@ -2,6 +2,7 @@ import { invariant } from "./contracts.js";
 import { AgentEventKind } from "./agent-events.js";
 import { PredictValidationError } from "./errors.js";
 import { defineModelAdapter, modelAdapterView } from "./model.js";
+import { TraceSpanKind } from "./tracing.js";
 
 function clone(value) {
   return value == null ? value : structuredClone(value);
@@ -32,6 +33,12 @@ function validationFeedback(error, attempt, rejectedOutput) {
   });
 }
 
+async function traced(trace, kind, name, operation, options = {}) {
+  return trace && typeof trace.runSpan === "function"
+    ? trace.runSpan(kind, name, operation, options)
+    : operation();
+}
+
 export function createPredictStrategy({ model, maxAttempts = 3 }) {
   const resolvedModel = defineModelAdapter(model);
   const resolvedMaxAttempts = normalizeAttempts(maxAttempts);
@@ -51,7 +58,8 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
       history = null,
       judgment = null,
       validateResult = null,
-      recordAgentEvent = null
+      recordAgentEvent = null,
+      trace = null
     }) {
       if (recordAgentEvent != null) {
         invariant(typeof recordAgentEvent === "function", "recordAgentEvent must be a function");
@@ -60,36 +68,55 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
       const feedback = [];
 
       for (let attempt = 1; attempt <= resolvedMaxAttempts; attempt += 1) {
-        const candidate = await resolvedModel.generate(Object.freeze({
-          mode: "PREDICT",
-          attempt,
-          input: clone(input),
-          context: clone(context),
-          callContext: clone(callContext),
-          promptContext: clone(promptContext),
-          events: clone(events) ?? [],
-          agentEvents: clone(agentEvents) ?? [],
-          history: clone(history),
-          judgment: judgment == null ? null : clone(judgment),
-          validationFeedback: Object.freeze(clone(feedback))
-        }));
+        const outcome = await traced(
+          trace,
+          TraceSpanKind.PREDICT_ATTEMPT,
+          `predict.attempt.${attempt}`,
+          async () => {
+            const candidate = await traced(
+              trace,
+              TraceSpanKind.MODEL,
+              resolvedModel.name ?? "model",
+              () => resolvedModel.generate(Object.freeze({
+                mode: "PREDICT",
+                attempt,
+                input: clone(input),
+                context: clone(context),
+                callContext: clone(callContext),
+                promptContext: clone(promptContext),
+                events: clone(events) ?? [],
+                agentEvents: clone(agentEvents) ?? [],
+                history: clone(history),
+                judgment: judgment == null ? null : clone(judgment),
+                validationFeedback: Object.freeze(clone(feedback))
+              })),
+              { attributes: { mode: "PREDICT", attempt } }
+            );
 
-        recordAgentEvent?.(AgentEventKind.MODEL_OUTPUT, {
-          attempt,
-          output: safeClone(candidate),
-          model: modelAdapterView(resolvedModel)
-        });
+            recordAgentEvent?.(AgentEventKind.MODEL_OUTPUT, {
+              attempt,
+              output: safeClone(candidate),
+              model: modelAdapterView(resolvedModel)
+            });
 
-        if (typeof validateResult !== "function") return candidate;
+            if (typeof validateResult !== "function") {
+              return Object.freeze({ accepted: true, candidate });
+            }
 
-        try {
-          validateResult(candidate);
-          return candidate;
-        } catch (error) {
-          const rejected = validationFeedback(error, attempt, candidate);
-          feedback.push(rejected);
-          recordAgentEvent?.(AgentEventKind.VALIDATION_ERROR, rejected);
-        }
+            try {
+              validateResult(candidate);
+              return Object.freeze({ accepted: true, candidate });
+            } catch (error) {
+              const rejected = validationFeedback(error, attempt, candidate);
+              feedback.push(rejected);
+              recordAgentEvent?.(AgentEventKind.VALIDATION_ERROR, rejected);
+              return Object.freeze({ accepted: false, candidate: null });
+            }
+          },
+          { attributes: { attempt } }
+        );
+
+        if (outcome.accepted) return outcome.candidate;
       }
 
       throw new PredictValidationError({
