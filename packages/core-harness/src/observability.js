@@ -143,6 +143,9 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
   if (typeof agentRuntime.judgments === "function") {
     instrumented.judgments = () => agentRuntime.judgments();
   }
+  if (typeof agentRuntime.agentEvents === "function") {
+    instrumented.agentEvents = () => agentRuntime.agentEvents();
+  }
   if (typeof agentRuntime.invokeJudgment === "function") {
     instrumented.invokeJudgment = (name, input, options = {}) => agentRuntime.invokeJudgment(name, input, options);
   }
