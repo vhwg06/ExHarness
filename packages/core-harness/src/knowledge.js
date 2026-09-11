@@ -69,13 +69,11 @@ export function normalizeKnowledgeDraft(record) {
 function sameScopeAnchor(left, right) {
   if (left.scope !== right.scope) return false;
   if (left.scope === KnowledgeScope.SESSION) return true;
+  if (left.scope === KnowledgeScope.LINEAGE) return true;
   if (left.scope === KnowledgeScope.CANDIDATE) {
     return sameCandidate(left.candidate, right.candidate);
   }
-  if (left.lineageBase == null || right.lineageBase == null) {
-    return left.lineageBase == null && right.lineageBase == null;
-  }
-  return sameCandidate(left.lineageBase, right.lineageBase);
+  return false;
 }
 
 export function validateKnowledgeLinks({ item, records, feedbackIds }) {
@@ -93,7 +91,7 @@ export function validateKnowledgeLinks({ item, records, feedbackIds }) {
     if (relation.type === KnowledgeRelationType.SUPERSEDES) {
       invariant(
         sameScopeAnchor(item, target),
-        "superseding knowledge must use the same scope anchor as its target"
+        "superseding knowledge must use the same scope as its target"
       );
     }
   }
