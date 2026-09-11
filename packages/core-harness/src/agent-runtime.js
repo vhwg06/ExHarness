@@ -272,8 +272,11 @@ export function createAgentRuntime({
 
       function recordAgentEvent(type, payload = null) {
         invariant(
-          type === AgentEventKind.MODEL_OUTPUT || type === AgentEventKind.VALIDATION_ERROR,
-          "strategy may only record MODEL_OUTPUT or VALIDATION_ERROR working events"
+          type === AgentEventKind.MODEL_OUTPUT ||
+            type === AgentEventKind.VALIDATION_ERROR ||
+            type === AgentEventKind.ACTION_OUTPUT ||
+            type === AgentEventKind.ACTION_ERROR,
+          "strategy may only record MODEL_OUTPUT, VALIDATION_ERROR, ACTION_OUTPUT, or ACTION_ERROR working events"
         );
         return recordRuntimeEvent(type, callId, judgment, payload);
       }
