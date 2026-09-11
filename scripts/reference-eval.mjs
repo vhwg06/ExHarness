@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { copyFile, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -60,6 +60,29 @@ function validate(result) {
   assert.equal(result.provenance.lineageAdvanced, true);
 }
 
+function stableArtifact(result) {
+  return {
+    schemaVersion: result.schemaVersion,
+    reference: result.reference,
+    source: "packed-blank-consumer",
+    metrics: result.metrics,
+    provenance: {
+      predictRoute: result.provenance.predictRoute,
+      predictUsage: result.provenance.predictUsage,
+      invocationOverrideRoute: result.provenance.invocationOverrideRoute,
+      invocationOverrideUsage: result.provenance.invocationOverrideUsage,
+      routeOnlyRoute: result.provenance.routeOnlyRoute,
+      routeOnlyUsage: result.provenance.routeOnlyUsage,
+      evaluationVerdict: result.provenance.evaluationVerdict,
+      lineageAdvanced: result.provenance.lineageAdvanced
+    },
+    excludedDynamicFields: [
+      "provenance.snapshotDigest",
+      "provenance.evaluationId"
+    ]
+  };
+}
+
 try {
   const packOutput = run("npm", ["pack", "./packages/core-harness", "--pack-destination", temp, "--json"]);
   const packed = JSON.parse(packOutput);
@@ -79,6 +102,16 @@ try {
   const lines = output.split(/\r?\n/).filter(Boolean);
   const result = JSON.parse(lines.at(-1));
   validate(result);
+
+  const expected = JSON.parse(await readFile(
+    join(root, "artifacts", "nooa-reference-eval.json"),
+    "utf8"
+  ));
+  assert.deepEqual(
+    stableArtifact(result),
+    expected,
+    "reference evaluation drifted from its measured stable artifact"
+  );
 
   console.log(`reference-eval:${JSON.stringify(result)}`);
 } finally {
