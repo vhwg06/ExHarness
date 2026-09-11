@@ -76,7 +76,7 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     capabilities: scopedCapabilities = [],
     budget = null,
     onCapabilityInvoke = null
-  } = {}) {
+  } = {}, runtimeContract = {}) {
     invariant(selectedStrategy && typeof selectedStrategy.run === "function", "agent run strategy requires run()");
     const resolved = resolveCapabilities(scopedCapabilities);
     const runInput = clone(input);
@@ -92,6 +92,9 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     }
     if (onCapabilityInvoke != null) {
       invariant(typeof onCapabilityInvoke === "function", "onCapabilityInvoke must be a function");
+    }
+    if (runtimeContract.validateResult != null) {
+      invariant(typeof runtimeContract.validateResult === "function", "runtime validateResult must be a function");
     }
 
     let capabilityCalls = 0;
@@ -136,7 +139,9 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
       context: runContext,
       events: runEvents,
       capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
-      invoke
+      invoke,
+      judgment: runtimeContract.judgment ?? null,
+      validateResult: runtimeContract.validateResult ?? null
     }));
 
     return Object.freeze({
@@ -162,13 +167,28 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
       ? judgment.parseInput(clone(input))
       : clone(input);
 
+    let accepted = null;
+    const validateResult = judgment.parseOutput
+      ? (value) => {
+          const parsed = judgment.parseOutput(value);
+          accepted = { raw: value, parsed };
+          return parsed;
+        }
+      : null;
+
     const report = await executeRunWithStrategy(
       judgment.strategy ?? strategy,
-      { ...options, input: parsedInput }
+      { ...options, input: parsedInput },
+      {
+        judgment: judgmentView(judgment),
+        validateResult
+      }
     );
 
     const parsedOutput = judgment.parseOutput
-      ? judgment.parseOutput(report.result)
+      ? accepted && Object.is(report.result, accepted.raw)
+        ? accepted.parsed
+        : judgment.parseOutput(report.result)
       : report.result;
 
     return Object.freeze({
