@@ -8,6 +8,7 @@ import { RecoveryRequiredError } from "./errors.js";
 import { createEventBus, instrumentAgentRuntime, instrumentCapabilities } from "./observability.js";
 import { createValidatedSessionStore } from "./persistence.js";
 import { assessRecovery, defineRecoveryPolicy, recoverInterruptedVariation } from "./recovery.js";
+import { createSearchInvestmentController } from "./search-investment.js";
 import { createInMemorySessionStore } from "./store.js";
 import {
   buildSearchHealth,
@@ -76,6 +77,7 @@ export function createHarness({
   verifiers = [],
   verificationPolicy = {},
   variationPolicy = {},
+  searchInvestmentPolicy = null,
   supervisionPolicy = {},
   recoveryPolicy = {},
   attestationIssuer = null,
@@ -119,6 +121,12 @@ export function createHarness({
   });
   const resolvedSupervisor = supervisor ?? createNoopSupervisor();
   const resolvedDosage = dosagePolicy ?? createDefaultDosagePolicy({ hasSupervisor: supervisor != null });
+  const resolvedSearchInvestment = createSearchInvestmentController({
+    policy: searchInvestmentPolicy,
+    sessionStore: resolvedStore,
+    clock: now,
+    idFactory: newId
+  });
 
   const baseAgent = agent ?? createAgentRuntime({
     strategy,
@@ -131,6 +139,7 @@ export function createHarness({
     verifiers,
     verificationPolicy,
     variationPolicy,
+    searchInvestmentController: resolvedSearchInvestment,
     objective,
     evaluator,
     environment: resolvedEnvironment,
@@ -355,6 +364,7 @@ export function createHarness({
     async vary(sessionId, options = {}) {
       const recovery = await recoveryAssessment(sessionId);
       if (recovery.required) throwRecoveryRequired(sessionId, recovery);
+      await resolvedSearchInvestment.assertCanContinue(sessionId);
       await resolvedEventBus.emit("HARNESS_VARIATION_STARTED", { sessionId });
       const result = await core.vary(sessionId, options);
       await resolvedEventBus.emit("HARNESS_VARIATION_COMPLETED", {
@@ -364,6 +374,15 @@ export function createHarness({
         termination: result.variation.termination,
         lineageAdvanced: result.lineage.advanced
       });
+      if (result.searchInvestment) {
+        await resolvedEventBus.emit("HARNESS_SEARCH_INVESTMENT_DECIDED", {
+          sessionId,
+          variationId: result.variation.id,
+          decisionId: result.searchInvestment.id,
+          state: result.searchInvestment.state,
+          action: result.searchInvestment.action
+        });
+      }
       const trajectoryReview = await reviewCompletedVariation(sessionId, result);
       return Object.freeze({ ...result, trajectoryReview });
     },
@@ -399,6 +418,7 @@ export function createHarness({
       return Object.freeze({
         variation: core.variationPolicy(),
         verification: core.verificationPolicy(),
+        searchInvestment: core.searchInvestmentPolicy(),
         supervision: structuredClone(resolvedSupervisionPolicy),
         recovery: structuredClone(resolvedRecoveryPolicy),
         idempotentActions
