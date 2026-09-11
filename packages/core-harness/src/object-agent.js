@@ -126,6 +126,10 @@ function resolvePrototypeBoundary(instance, explicitBoundary) {
   return immediate == null ? null : Object.getPrototypeOf(immediate);
 }
 
+function memberHidden(name, hidden, metadata) {
+  return !publicByConvention(name) || hidden.has(name) || metadata.get(name)?.hidden === true;
+}
+
 function collectDeterministicMethods(instance, {
   hidden,
   metadata,
@@ -135,8 +139,9 @@ function collectDeterministicMethods(instance, {
   const methods = new Map();
   const seen = new Set();
 
-  // Public function-valued instance fields are normal JavaScript methods in
-  // many codebases (arrow-function class fields). Treat them like methods.
+  // Function-valued instance fields are normal JavaScript methods in many
+  // codebases (arrow-function class fields). Keep hidden members in the model
+  // for diagnostics/future doc rendering, but never turn them into capabilities.
   for (const name of Object.getOwnPropertyNames(instance)) {
     if (agenticNames.has(name)) {
       seen.add(name);
@@ -145,8 +150,12 @@ function collectDeterministicMethods(instance, {
     const descriptor = Object.getOwnPropertyDescriptor(instance, name);
     seen.add(name);
     if (!descriptor || !("value" in descriptor) || typeof descriptor.value !== "function") continue;
-    if (!publicByConvention(name) || hidden.has(name) || metadata.get(name)?.hidden === true) continue;
-    methods.set(name, Object.freeze({ name, owner: instance, own: true }));
+    methods.set(name, Object.freeze({
+      name,
+      owner: instance,
+      own: true,
+      hidden: memberHidden(name, hidden, metadata)
+    }));
   }
 
   const boundary = resolvePrototypeBoundary(instance, prototypeBoundary);
@@ -157,11 +166,15 @@ function collectDeterministicMethods(instance, {
       // Mark every shadowing descriptor as seen. A non-function/private
       // subclass member must not accidentally reveal a same-named base method.
       seen.add(name);
-      if (agenticNames.has(name)) continue;
+      if (agenticNames.has(name) || name === "constructor") continue;
       const descriptor = Object.getOwnPropertyDescriptor(proto, name);
       if (!descriptor || typeof descriptor.value !== "function") continue;
-      if (!publicByConvention(name) || hidden.has(name) || metadata.get(name)?.hidden === true) continue;
-      methods.set(name, Object.freeze({ name, owner: proto, own: false }));
+      methods.set(name, Object.freeze({
+        name,
+        owner: proto,
+        own: false,
+        hidden: memberHidden(name, hidden, metadata)
+      }));
     }
     proto = Object.getPrototypeOf(proto);
   }
@@ -247,6 +260,7 @@ export function createObjectAgent(instance, {
   const agenticNames = new Set(agentic.keys());
 
   for (const [name, record] of agentic) {
+    invariant(record.descriptor.configurable !== false, `agentic method field must be configurable: ${name}`);
     if (record.definition.strategy == null && strategy == null) {
       invariant(false, `agentic method ${name} requires its own strategy or createObjectAgent({ strategy })`);
     }
@@ -269,34 +283,39 @@ export function createObjectAgent(instance, {
   // A public `then()` makes arbitrary objects Promise-like and causes await /
   // Promise resolution to invoke application code unexpectedly. Require it to
   // be explicitly hidden rather than silently changing JavaScript semantics.
-  invariant(!deterministic.has("then"), "object agent public method 'then' must be hidden");
+  invariant(
+    !deterministic.has("then") || deterministic.get("then").hidden,
+    "object agent public method 'then' must be hidden"
+  );
 
-  const autoCapabilities = [...deterministic.values()].map((method) => {
-    const metadata = methodMetadata.get(method.name) ?? Object.freeze({
-      description: null,
-      hidden: false,
-      mutatesCandidate: false,
-      parseArgs: null,
-      parseOutput: null
+  const autoCapabilities = [...deterministic.values()]
+    .filter((method) => !method.hidden)
+    .map((method) => {
+      const metadata = methodMetadata.get(method.name) ?? Object.freeze({
+        description: null,
+        hidden: false,
+        mutatesCandidate: false,
+        parseArgs: null,
+        parseOutput: null
+      });
+      return Object.freeze({
+        name: method.name,
+        description: metadata.description,
+        mutatesCandidate: metadata.mutatesCandidate,
+        parseInput(payload) {
+          const args = deterministicArgs(payload);
+          const parsed = metadata.parseArgs == null ? args : metadata.parseArgs(Object.freeze([...args]));
+          invariant(Array.isArray(parsed), `object agent method ${method.name} parseArgs must return an array`);
+          return [...parsed];
+        },
+        parseOutput: metadata.parseOutput,
+        async execute(args) {
+          const fn = Reflect.get(instance, method.name);
+          invariant(typeof fn === "function", `object agent method is no longer callable: ${method.name}`);
+          return Reflect.apply(fn, instance, args);
+        }
+      });
     });
-    return Object.freeze({
-      name: method.name,
-      description: metadata.description,
-      mutatesCandidate: metadata.mutatesCandidate,
-      parseInput(payload) {
-        const args = deterministicArgs(payload);
-        const parsed = metadata.parseArgs == null ? args : metadata.parseArgs(Object.freeze([...args]));
-        invariant(Array.isArray(parsed), `object agent method ${method.name} parseArgs must return an array`);
-        return [...parsed];
-      },
-      parseOutput: metadata.parseOutput,
-      async execute(args) {
-        const fn = Reflect.get(instance, method.name);
-        invariant(typeof fn === "function", `object agent method is no longer callable: ${method.name}`);
-        return Reflect.apply(fn, instance, args);
-      }
-    });
-  });
 
   const autoJudgments = [...agentic.values()].map(judgmentDefinition);
   const runtime = createAgentRuntime({
@@ -306,21 +325,9 @@ export function createObjectAgent(instance, {
     judgments: [...autoJudgments, ...judgments]
   });
 
-  const record = Object.freeze({
-    instance,
-    runtime,
-    deterministic,
-    agentic,
-    hidden: hiddenNames,
-    metadata: methodMetadata
-  });
-  objectAgentRecords.set(instance, record);
-
   // Replace only explicit agentic markers. No proxy/wrapper object is created:
   // callers retain identity, instanceof behavior, fields, and subclass dispatch.
   for (const [name, method] of agentic) {
-    const descriptor = method.descriptor;
-    invariant(descriptor.configurable !== false, `agentic method field must be configurable: ${name}`);
     const invoke = async (...args) => runtime.invokeJudgment(
       name,
       defaultAgenticInput(args, method.definition)
@@ -352,6 +359,16 @@ export function createObjectAgent(instance, {
     });
   }
 
+  const record = Object.freeze({
+    instance,
+    runtime,
+    deterministic,
+    agentic,
+    hidden: hiddenNames,
+    metadata: methodMetadata
+  });
+  objectAgentRecords.set(instance, record);
+
   return instance;
 }
 
@@ -367,15 +384,14 @@ export function objectAgentSurface(agent, { includeHidden = false } = {}) {
   const record = requireObjectAgentRecord(agent);
   const members = [];
 
-  for (const [name] of record.deterministic) {
+  for (const [name, method] of record.deterministic) {
+    if (method.hidden && !includeHidden) continue;
     const metadata = record.metadata.get(name);
-    const hidden = record.hidden.has(name) || metadata?.hidden === true || !publicByConvention(name);
-    if (hidden && !includeHidden) continue;
     members.push(Object.freeze({
       name,
       kind: ObjectAgentMemberKind.DETERMINISTIC,
       description: metadata?.description ?? null,
-      hidden,
+      hidden: method.hidden,
       mutatesCandidate: metadata?.mutatesCandidate === true,
       typedInput: metadata?.parseArgs != null,
       typedOutput: metadata?.parseOutput != null
