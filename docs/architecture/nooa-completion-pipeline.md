@@ -52,15 +52,15 @@ NOOA-02 Predict Strategy                       DONE
 NOOA-03 AgentEvent working history             DONE
 AVO-R1  Adaptive useful-range gate             DONE
 NOOA-04 Context blocks + history selection     DONE
-NOOA-05 ResourceRef / live resource semantics  NEXT
-NOOA-06 CodeAct execution loop                 PENDING
+NOOA-05 ResourceRef / live resource semantics  DONE
+NOOA-06 CodeAct execution loop                 NEXT
 NOOA-07 Nested tracing                         PENDING
 NOOA-08 Model routing / scoped overrides       PENDING
 NOOA-09 Runtime snapshot / resume               PENDING
 NOOA-10 Reference substrate + adversarial eval PENDING
 ```
 
-Current checkpoint: `NOOA-05`.
+Current checkpoint: `NOOA-06`.
 
 ---
 
@@ -293,38 +293,68 @@ Stage PR: #17.
 
 ---
 
-## NOOA-05 — ResourceRef / live resource semantics — NEXT
+## NOOA-05 — ResourceRef / live resource semantics — DONE
 
 Goal: let an agent operate on live resources without serializing raw objects into model context.
 
-Required semantics:
+Architecture authority: `docs/architecture/resource-ref.md`.
 
-- opaque `ResourceRef` / handle;
-- runtime registry resolving handle -> live resource;
-- explicit visible operations only;
-- raw resource value is never serialized into prompt/model request;
-- per-run and/or per-agent lifetime semantics are explicit;
-- revoked/expired handles fail deterministically;
-- progressive discovery of resource metadata/operations;
-- resource authority remains constrained by execution/security policy.
+Implemented semantics:
 
-Explicit non-goals:
+- opaque `ResourceRef` identity tied to one runtime registry;
+- registry resolves refs to live resource values without serializing those values into strategy/model data;
+- AGENT resources remain live for the runtime lifetime until revoked;
+- CALL resources are bound to one `callId` and expire deterministically in `finally`;
+- stale/foreign/tampered/revoked/expired refs fail with distinct stable resource errors;
+- explicit operation allowlists prevent reflection over undeclared live methods or fields;
+- progressive discovery keeps initial refs minimal; metadata and operation catalogs require explicit `describeResource()`;
+- resource descriptions, metadata and operation counts are bounded by policy;
+- resource operation input/output crosses a JSON-style transport boundary;
+- consumer authorization can deny declared operations, including mutation-sensitive policies;
+- concurrent CALL scopes may reuse a resource name without cross-resolution;
+- CALL resources cannot shadow AGENT resources;
+- Predict does not automatically forward ResourceRefs or resource invocation authority to the model adapter;
+- observability instrumentation preserves resource APIs without exposing raw live values.
 
-- general distributed object system;
-- arbitrary reflection over raw JS objects;
-- OS isolation implemented inside the resource abstraction.
+Manual/adversarial findings that changed implementation:
 
-Verification challenges:
+1. Expired CALL handles and revoked AGENT handles initially collapsed into one stale-handle state; the final contract distinguishes `RESOURCE_EXPIRED` and `RESOURCE_REVOKED`.
+2. Resource authorization was initially implicit in the declared operation surface; an explicit consumer authorization callback was added so the registry can deny describe/invoke authority independently of operation existence.
+3. Resource-name uniqueness initially ignored lifetime scope and would make concurrent CALL resources collide; uniqueness is now keyed by lifetime/call identity while runtime-level CALL resources are still prevented from shadowing AGENT names.
+4. Runtime instrumentation initially risked dropping the new resource surface; the observability wrapper now preserves resource refs/policy/describe/invoke/revoke APIs without unwrapping live values.
+5. Progressive disclosure is explicit: initial refs contain no operation catalog or metadata, so registering a live resource does not become an eager prompt/tool-surface dump.
+6. Operation outputs are re-validated at the JSON transport boundary, preventing a declared operation from accidentally returning a raw `Map`, class instance or other live object representation.
 
-- secret/private resource fields never leak through metadata rendering;
-- stale handles cannot invoke resources;
-- two handles cannot cross-resolve to the wrong resource;
-- only declared operations are callable;
-- model-visible descriptions stay bounded.
+Verification challenges covered:
+
+- private fields/secrets and undeclared prototype methods never appear in refs or resource descriptions;
+- undeclared operations fail with `RESOURCE_OPERATION_NOT_ALLOWED`;
+- CALL handles expire after success/failure paths;
+- revoked AGENT handles fail deterministically;
+- refs cannot cross registry/runtime boundaries even when names match;
+- concurrent CALL resources with identical names remain isolated by call;
+- scoped resources cannot shadow AGENT resources;
+- consumer authorization can reject mutation operations;
+- descriptions/metadata are bounded by resource policy;
+- non-JSON resource outputs fail closed;
+- Predict does not leak ResourceRef/invocation authority into model requests;
+- instrumentation preserves public resource APIs without leaking live values.
+
+Residual limits:
+
+- `ResourceRef` is a runtime authority handle, not cryptographic proof;
+- consumers can still define an unsafe operation or explicitly return sensitive data through an allowed operation;
+- the authorization callback is an optional coarse operation boundary; payload-specific policy can live in operation validation/implementation and broader execution policy is handled by NOOA-06;
+- ResourceRef does not provide OS/process/container isolation;
+- model-driven repeated resource-call budgets and execution sessions belong to CodeAct in NOOA-06;
+- live-resource snapshot/rebinding remains NOOA-09;
+- nested per-resource tracing remains NOOA-07.
+
+Stage PR: #18.
 
 ---
 
-## NOOA-06 — CodeAct execution loop
+## NOOA-06 — CodeAct execution loop — NEXT
 
 Goal: provide a bounded inspect/execute/observe/return strategy over ExHarness execution boundaries.
 

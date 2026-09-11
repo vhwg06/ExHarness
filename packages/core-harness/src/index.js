@@ -15,6 +15,7 @@ export {
   ExecutionError,
   PredictValidationError,
   RecoveryRequiredError,
+  ResourceAccessError,
   SchemaUnsupportedError,
   SearchInvestmentBoundaryError,
   StoreConflictError
@@ -177,6 +178,14 @@ export {
   defineContextSelection,
   renderAgentContext
 } from "./context.js";
+export {
+  ResourceLifetime,
+  ResourceRefKind,
+  createResourceRegistry,
+  defineResource,
+  defineResourceOperation,
+  defineResourcePolicy
+} from "./resource.js";
 export { defineJudgment } from "./judgment.js";
 export { defineModelAdapter } from "./model.js";
 export { createPredictStrategy } from "./predict-strategy.js";

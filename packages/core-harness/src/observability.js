@@ -98,7 +98,8 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
 
   async function runWithReport(options = {}) {
     const started = await eventBus.emit("AGENT_RUN_STARTED", {
-      scopedCapabilityCount: options.capabilities?.length ?? 0
+      scopedCapabilityCount: options.capabilities?.length ?? 0,
+      scopedResourceCount: options.resources?.length ?? 0
     });
     const originalInvoke = options.onCapabilityInvoke;
     const wrappedCapabilities = instrumentCapabilities(options.capabilities ?? [], eventBus);
@@ -151,6 +152,21 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
   }
   if (typeof agentRuntime.contextPolicy === "function") {
     instrumented.contextPolicy = () => agentRuntime.contextPolicy();
+  }
+  if (typeof agentRuntime.resourceRefs === "function") {
+    instrumented.resourceRefs = () => agentRuntime.resourceRefs();
+  }
+  if (typeof agentRuntime.resourcePolicy === "function") {
+    instrumented.resourcePolicy = () => agentRuntime.resourcePolicy();
+  }
+  if (typeof agentRuntime.describeResource === "function") {
+    instrumented.describeResource = (ref) => agentRuntime.describeResource(ref);
+  }
+  if (typeof agentRuntime.invokeResource === "function") {
+    instrumented.invokeResource = (ref, operationName, payload = null) => agentRuntime.invokeResource(ref, operationName, payload);
+  }
+  if (typeof agentRuntime.revokeResource === "function") {
+    instrumented.revokeResource = (ref) => agentRuntime.revokeResource(ref);
   }
   if (typeof agentRuntime.invokeJudgment === "function") {
     instrumented.invokeJudgment = (name, input, options = {}) => agentRuntime.invokeJudgment(name, input, options);
