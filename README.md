@@ -1,188 +1,232 @@
 # ExHarness
 
-ExHarness is a reusable long-horizon agent harness kernel that combines two NVIDIA ideas at different layers:
+ExHarness is a reusable long-horizon harness kernel that combines two NVIDIA-inspired ideas at different layers:
 
-- **AVO** provides the control/search spine: candidate variation, persistent progress, evaluation feedback, committed lineage, and supervision for long-horizon work.
-- **NOOA** provides the agent-facing execution substrate: explicit state/context, programmable strategies, model-visible capabilities, typed/validated boundaries, and event-oriented execution.
+- **AVO** is the control/search spine: candidate variation, committed lineage, persistent progress, objective feedback, accumulated knowledge, supervision, and recovery.
+- **NOOA-style runtime primitives** are the agent substrate: explicit context, programmable strategy, typed capabilities, validation boundaries, and observable invocation.
 
-ExHarness does not contain backend, frontend, QA, Figma, repository, or product semantics. Those belong to consuming harnesses.
+ExHarness intentionally contains no backend, frontend, QA, Figma, repository, or product semantics. A consuming project imports the kernel and injects those concerns.
 
-## Architecture
-
-```text
-Application / domain harness
-        |
-        | supplies objective, environment, capabilities, policies
-        v
-+-------------------------------+
-|          AVO Harness          |
-|                               |
-| candidate + lineage           |
-| persistent engineering state  |
-| variation                     |
-| objective feedback            |
-| supervision                   |
-| promotion invariants          |
-+---------------+---------------+
-                |
-                | runs autonomous variation
-                v
-+-------------------------------+
-|       Agent Runtime           |
-|       (NOOA-inspired)         |
-|                               |
-| strategy                      |
-| capabilities                  |
-| input/output validation       |
-| scoped context                |
-+---------------+---------------+
-                |
-                v
-        model / tools / runtime
-```
-
-The layering rule is deliberate:
-
-```text
-AVO = what the harness does over time
-NOOA = how an agent reasons and acts inside a variation
-```
-
-The agent owns local search judgment. The deterministic AVO core owns lifecycle invariants such as candidate identity, evaluation validity, and promotion authority.
-
-## Candidate and lineage semantics
-
-ExHarness keeps two histories separate because they answer different questions.
-
-```text
-Working candidate ancestry
-v0 -> v1 -> v2
-      repair  repair
-
-Committed AVO lineage
-P0(v0) --------> P1(v2)
-```
-
-Each working candidate records:
-
-- `parent`: the candidate immediately mutated to create it;
-- `lineageBase`: the committed lineage head from which that search branch began.
-
-A promoted lineage entry records:
-
-- `parent`: the previous committed candidate (`P_t`);
-- `implementationParent`: the immediate working parent used during local repair;
-- the evaluation that authorized the commit;
-- `committedAt`.
-
-This lets the kernel distinguish local repair ancestry from the AVO transition `P_t -> P_t+1`. A working candidate cannot be promoted if it was derived from a stale committed lineage head.
-
-## Current public surface
+## Consumer API
 
 ```js
 import {
   AVOCapability,
-  createAVOHarness,
-  createAgentRuntime,
-  defineCapability
+  EvaluationValidity,
+  EvaluationVerdict,
+  createHarness
 } from "exharness";
-```
 
-### Agent runtime
-
-A strategy receives visible capabilities and an `invoke` function. The strategy may be a simple deterministic strategy, a model-backed tool loop, or a future CodeAct-style runtime.
-
-```js
-const agent = createAgentRuntime({
-  capabilities: [
-    defineCapability({
-      name: "domain.inspect",
-      async execute(input) {
-        return inspectDomain(input);
-      }
-    })
-  ],
+const harness = createHarness({
   strategy: {
     async run({ invoke }) {
-      return invoke("domain.inspect", { target: "candidate" });
+      await invoke(AVOCapability.ACT, { nextVersion: "v1" });
+      await invoke(AVOCapability.EVALUATE);
+      await invoke(AVOCapability.PROMOTE);
+    }
+  },
+
+  environment: {
+    async observe({ candidate, request }) {
+      return inspect(candidate, request);
+    },
+
+    async act({ candidate, action }) {
+      return applyAction(candidate, action);
+    }
+  },
+
+  objective: {
+    async evaluate({ candidate, observations, verifications }) {
+      return {
+        validity: EvaluationValidity.VALID,
+        verdict: EvaluationVerdict.PASS
+      };
+    }
+  }
+});
+
+await harness.start({
+  sessionId: "work-1",
+  work: { objective: "improve the candidate" },
+  seedCandidate: { id: "candidate", version: "v0" }
+});
+
+const result = await harness.vary("work-1");
+```
+
+A real project normally adds domain capabilities, objective verifiers, a durable revision-aware store, model-backed strategy, executor/sandbox adapters, and optional supervisor policies. None require editing ExHarness.
+
+## Architecture
+
+```text
+consumer harness
+  domain objective / environment / policies / adapters
+                    |
+                    v
++------------------------------------------------+
+|                 ExHarness                      |
+|                                                |
+| AVO control plane                              |
+| candidate + committed lineage                  |
+| variation + objective verification             |
+| grounded feedback + persistent K               |
+| supervision + recovery                         |
+|                                                |
+| NOOA-style substrate                           |
+| strategy + context + typed capabilities        |
+| programmable invocation + runtime events       |
++--------------------------+---------------------+
+                           |
+                           v
+              injected infrastructure
+           model / tools / executor / store
+```
+
+The layering rule is:
+
+```text
+AVO  = what autonomous search does over time
+NOOA = how the agent can programmatically act inside a variation
+```
+
+The agent owns local search judgment. Deterministic kernel code owns lifecycle invariants.
+
+## Kernel invariants
+
+ExHarness currently enforces the following base semantics:
+
+- working candidate ancestry is distinct from committed AVO lineage;
+- a candidate derived from a stale lineage head cannot be promoted;
+- stale observations/verifications cannot certify a mutated candidate;
+- evaluation snapshots become stale when their candidate evidence changes;
+- verification conflicts/incompleteness are visible before objective PASS;
+- persistent feedback is grounded in execution/evaluation state rather than agent prose;
+- knowledge is append-only, scoped, provenance-aware, and can expose unresolved contradictions;
+- variation outcomes come from persisted state changes, not model claims;
+- variation capability budget is owned outside strategy exception handling;
+- promotion closes variation capability activity;
+- supervisor can redirect search but cannot mutate candidates or issue correctness verdicts;
+- persistent work state has schema/revision identity;
+- revision-aware stores reject stale writes;
+- interrupted RUNNING variations require explicit recovery;
+- execution adapters receive timeout/abort/constraint envelopes;
+- observability is separate from correctness state.
+
+## Infrastructure extension points
+
+### Capabilities
+
+```js
+import { defineCapability } from "exharness";
+
+const inspect = defineCapability({
+  name: "domain.inspect",
+  async execute(input) {
+    return inspectDomain(input);
+  }
+});
+```
+
+Capabilities can define `parseInput` / `parseOutput` without binding the kernel to a schema library.
+
+### Executor boundary
+
+```js
+import { createExecutorCapability } from "exharness";
+
+const runSomething = createExecutorCapability({
+  name: "domain.run",
+  executor,
+  executionPolicy: {
+    timeoutMs: 30_000,
+    constraints: {
+      network: "deny",
+      workspace: "/work"
     }
   }
 });
 ```
 
-Capabilities may define `parseInput` and `parseOutput` validators. This keeps contract validation at the runtime boundary without binding ExHarness to a particular schema library.
+The kernel carries the execution policy and bounds the caller. The injected executor/sandbox must enforce real filesystem, network, credential, process, and resource isolation.
 
-### AVO harness
+### Persistent store
 
-`createAVOHarness` composes an agent runtime with the existing persistent AVO lifecycle.
-
-```js
-const harness = createAVOHarness({
-  agent,
-  objective,
-  environment,
-  sessionStore,
-  contextProjector,
-  supervisor,
-  dosagePolicy
-});
-
-await harness.start({
-  sessionId: "work-1",
-  work,
-  seedCandidate
-});
-
-const variation = await harness.vary("work-1", {
-  problem: "improve the current candidate"
-});
-```
-
-During `vary`, the agent receives session-scoped AVO capabilities:
-
-- `avo.observe`
-- `avo.act`
-- `avo.evaluate`
-- `avo.recordKnowledge`
-- `avo.promote`
-
-The agent may choose when and how often to use them. Promotion still remains deterministic: `avo.promote` fails unless the current candidate has a fresh valid `PASS` evaluation.
-
-A variation also reports its committed-lineage transition:
+Production composition requires a revision-aware store. The bundled in-memory store is a reference implementation.
 
 ```js
-variation.lineage = {
-  before,   // P_t
-  after,    // P_t or P_t+1
-  advanced  // true only when the variation committed a new lineage head
-};
+import { verifySessionStoreContract } from "exharness/testing";
+
+await verifySessionStoreContract(() => myStore());
 ```
 
-The strategy also receives the current committed `lineageHead` in its input so local search can be grounded in the current AVO base without exposing mutable core state.
+### Recovery
 
-## Design constraints
+A persisted `RUNNING` variation is never silently erased.
 
-The kernel should remain domain agnostic. A feature belongs in ExHarness core only when it maps to the AVO control model or the NOOA-style execution substrate.
+```js
+await harness.resume(id);       // throws RECOVERY_REQUIRED when needed
+await harness.recover(id);      // stale-only by policy
+await harness.recover(id, { force: true });
+```
 
-The kernel should also preserve these boundaries:
+Recovery marks the interrupted run explicitly and preserves already-persisted engineering state.
 
-- persistent engineering state is not raw conversation history;
-- projected context is a selective view of persistent state;
-- working candidate ancestry is distinct from committed AVO lineage;
-- supervisors may redirect search but cannot mutate candidates or issue correctness verdicts;
-- model judgment is flexible, while lifecycle and safety invariants remain deterministic;
-- generated-code containment must ultimately be enforced by an external sandbox/runtime boundary, not prompt instructions.
+## Objective verification during development
 
-## Development
+ExHarness itself is developed with two tracks:
+
+```text
+implementation candidate
+        |
+        +--------------------+
+        |                    |
+        v                    v
+ implementation       verification track
+                      manual vigilance
+                      codified artifacts
+                      adversarial checks
+                      automation where stable
+        |                    |
+        +---------+----------+
+                  v
+              PASS / GAP
+```
+
+Tests are regression guards, not the whole verification strategy.
+
+## Verification commands
 
 Requires Node.js 20 or newer.
 
 ```bash
-npm test
+npm run verify
 ```
 
-The repository currently contains one publishable package under `packages/core-harness`. The root workspace remains private so future optional adapters can be added without expanding the public kernel surface prematurely.
+The full gate runs:
 
-## Status
+```text
+kernel test suite
+reference harness
+kernel benchmark
+npm package dry-run
+blank-consumer packed-package import smoke
+```
 
-ExHarness is currently an early kernel implementation. The immediate direction is to complete the AVO + NOOA substrate before adding any workload-specific harnesses.
+Individual commands:
+
+```bash
+npm test
+npm run example
+npm run benchmark
+npm run verify:package
+npm run verify:consumer
+```
+
+See `docs/architecture/kernel-completion.md` for the completion contract and explicit non-goals.
+
+## Package status
+
+`packages/core-harness` is the publishable `exharness` package. The workspace root remains private so optional adapters can evolve without expanding the kernel surface.
+
+Low-level `createAVOHarness()` and `createCoreHarness()` remain exported for kernel development and custom composition; normal consumers should start with `createHarness()`.
