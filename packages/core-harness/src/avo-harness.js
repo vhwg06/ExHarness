@@ -1,6 +1,11 @@
 import { invariant, sameCandidate } from "./contracts.js";
 import { createCoreHarness } from "./core-harness.js";
 import { createAgentRuntime, defineCapability } from "./agent-runtime.js";
+import {
+  VerificationSourceKind,
+  defineVerifier,
+  verificationCapabilityName
+} from "./verification.js";
 
 export const AVOCapability = Object.freeze({
   OBSERVE: "avo.observe",
@@ -10,7 +15,46 @@ export const AVOCapability = Object.freeze({
   PROMOTE: "avo.promote"
 });
 
-function createSessionCapabilities(core, sessionId) {
+function createVerificationCapabilities(core, sessionId, verifiers) {
+  return verifiers.map((verifier) => {
+    const capabilityName = verificationCapabilityName(verifier.name);
+
+    return defineCapability({
+      name: capabilityName,
+      description: verifier.description ?? `Run objective verification: ${verifier.name}`,
+      mutatesCandidate: false,
+      async execute(request) {
+        const state = await core.workState(sessionId);
+        const candidate = structuredClone(state.currentCandidate);
+        const observations = await core.observations(sessionId, { currentCandidateOnly: true });
+        const previousVerifications = await core.verifications(sessionId, { currentCandidateOnly: true });
+
+        const raw = await verifier.verify({
+          sessionId,
+          work: structuredClone(state.work),
+          candidate: structuredClone(candidate),
+          observations,
+          previousVerifications,
+          request: structuredClone(request)
+        });
+
+        invariant(raw && typeof raw === "object", `verifier ${verifier.name} must return a verification result`);
+
+        return core.recordVerification(sessionId, {
+          ...structuredClone(raw),
+          candidate,
+          request: structuredClone(request),
+          source: {
+            kind: VerificationSourceKind.CAPABILITY,
+            name: capabilityName
+          }
+        });
+      }
+    });
+  });
+}
+
+function createSessionCapabilities(core, sessionId, verifiers) {
   return Object.freeze([
     defineCapability({
       name: AVOCapability.OBSERVE,
@@ -26,7 +70,7 @@ function createSessionCapabilities(core, sessionId) {
     }),
     defineCapability({
       name: AVOCapability.EVALUATE,
-      description: "Evaluate the current candidate against the injected objective.",
+      description: "Judge the current candidate against the objective using current observations and verification artifacts.",
       mutatesCandidate: false,
       execute: (request) => core.evaluate(sessionId, request)
     }),
@@ -38,10 +82,11 @@ function createSessionCapabilities(core, sessionId) {
     }),
     defineCapability({
       name: AVOCapability.PROMOTE,
-      description: "Commit the current candidate to lineage. Core invariants require a fresh valid PASS.",
+      description: "Commit the current candidate to lineage. Core invariants require a fresh valid PASS evaluation.",
       mutatesCandidate: false,
       execute: () => core.promote(sessionId)
-    })
+    }),
+    ...createVerificationCapabilities(core, sessionId, verifiers)
   ]);
 }
 
@@ -49,6 +94,7 @@ export function createAVOHarness({
   agent = null,
   strategy = null,
   capabilities = [],
+  verifiers = [],
   objective = null,
   evaluator = null,
   environment,
@@ -61,6 +107,13 @@ export function createAVOHarness({
 }) {
   const resolvedObjective = objective ?? evaluator;
   invariant(resolvedObjective && typeof resolvedObjective.evaluate === "function", "AVO harness requires objective.evaluate()");
+
+  const normalizedVerifiers = verifiers.map(defineVerifier);
+  const verifierNames = new Set();
+  for (const verifier of normalizedVerifiers) {
+    invariant(!verifierNames.has(verifier.name), `duplicate verifier: ${verifier.name}`);
+    verifierNames.add(verifier.name);
+  }
 
   const agentRuntime = agent ?? createAgentRuntime({ strategy, capabilities });
   invariant(agentRuntime && typeof agentRuntime.run === "function", "AVO harness requires agent.run()");
@@ -79,6 +132,14 @@ export function createAVOHarness({
   return Object.freeze({
     ...core,
 
+    verifiers() {
+      return Object.freeze(normalizedVerifiers.map((verifier) => Object.freeze({
+        name: verifier.name,
+        description: verifier.description,
+        capability: verificationCapabilityName(verifier.name)
+      })));
+    },
+
     async vary(sessionId, { problem = null, input = null } = {}) {
       const context = await core.context(sessionId, { problem });
       const before = structuredClone(context.candidate);
@@ -90,10 +151,14 @@ export function createAVOHarness({
           work: structuredClone(context.work),
           candidate: structuredClone(before),
           lineageHead: structuredClone(lineageBefore),
+          verifiers: normalizedVerifiers.map((verifier) => Object.freeze({
+            name: verifier.name,
+            capability: verificationCapabilityName(verifier.name)
+          })),
           request: structuredClone(input)
         }),
         context,
-        capabilities: createSessionCapabilities(core, sessionId)
+        capabilities: createSessionCapabilities(core, sessionId, normalizedVerifiers)
       });
 
       const after = await core.resume(sessionId);

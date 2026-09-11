@@ -25,6 +25,7 @@ export function createPersistentWorkState({ id, work, seedCandidate, now }) {
         }
       ],
       observations: [],
+      verifications: [],
       evaluations: [],
       knowledge: [],
       lineage: [
@@ -69,6 +70,7 @@ export function publicSnapshot(state) {
     candidate: state.currentCandidate,
     progress: {
       implementations: state.persistentMemory.implementations.length,
+      verifications: state.persistentMemory.verifications.length,
       evaluations: state.persistentMemory.evaluations.length,
       observations: state.persistentMemory.observations.length,
       knowledge: state.persistentMemory.knowledge.length,
