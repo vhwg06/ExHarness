@@ -9,6 +9,7 @@ export {
   validateDoseDecision
 } from "./contracts.js";
 export {
+  CodeActBoundaryError,
   ContextLimitExceededError,
   ExHarnessError,
   ExHarnessErrorCode,
@@ -189,6 +190,12 @@ export {
 export { defineJudgment } from "./judgment.js";
 export { defineModelAdapter } from "./model.js";
 export { createPredictStrategy } from "./predict-strategy.js";
+export {
+  CodeActActionType,
+  CodeActExecutionTarget,
+  CodeActRecovery,
+  createCodeActStrategy
+} from "./codeact-strategy.js";
 export { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 export { AVOCapability, createAVOHarness } from "./avo-harness.js";
 export { createHarness } from "./harness.js";
