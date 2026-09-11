@@ -1,4 +1,5 @@
 import { invariant, requireText } from "./contracts.js";
+import { defineContextSelection } from "./context.js";
 
 function requireOptionalParser(parser, label) {
   if (parser == null) return null;
@@ -19,7 +20,8 @@ export function defineJudgment(definition) {
     description: definition.description ?? null,
     parseInput: requireOptionalParser(definition.parseInput, `judgment ${name} parseInput`),
     parseOutput: requireOptionalParser(definition.parseOutput, `judgment ${name} parseOutput`),
-    strategy
+    strategy,
+    context: defineContextSelection(definition.context ?? {})
   });
 }
 
@@ -29,6 +31,12 @@ export function judgmentView(judgment) {
     description: judgment.description,
     typedInput: judgment.parseInput != null,
     typedOutput: judgment.parseOutput != null,
-    strategyOverride: judgment.strategy != null
+    strategyOverride: judgment.strategy != null,
+    context: Object.freeze({
+      blocks: Object.freeze([...judgment.context.blocks]),
+      history: judgment.context.history,
+      historySelector: judgment.context.selectHistory != null,
+      historyReducer: judgment.context.reduceHistory != null
+    })
   });
 }
