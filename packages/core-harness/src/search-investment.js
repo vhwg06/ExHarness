@@ -1,4 +1,5 @@
 import { candidateKey, invariant, requireText } from "./contracts.js";
+import { assertEvaluationInputsFresh } from "./evaluation-freshness.js";
 import { SearchInvestmentBoundaryError } from "./errors.js";
 
 export const SearchInvestmentAction = Object.freeze({
@@ -190,34 +191,7 @@ export function createSearchInvestmentController({
     return state;
   }
 
-  async function assess(sessionId) {
-    if (!resolvedPolicy) return null;
-    const state = await load(sessionId);
-    const history = searchInvestmentHistory(state);
-    const inputSnapshot = searchInvestmentInputSnapshot(state);
-    let raw;
-
-    if (history.evaluations.length < resolvedPolicy.minEvaluations) {
-      raw = {
-        state: SearchInvestmentState.WARMUP,
-        action: SearchInvestmentAction.CONTINUE,
-        rationale: `need ${resolvedPolicy.minEvaluations} grounded evaluations before trend-based search control`,
-        metrics: {
-          observedEvaluations: history.evaluations.length,
-          minEvaluations: resolvedPolicy.minEvaluations
-        }
-      };
-    } else {
-      raw = await resolvedPolicy.decide({
-        sessionId: state.id,
-        work: structuredClone(state.work),
-        candidate: structuredClone(state.currentCandidate),
-        lineageHead: structuredClone(currentLineageHead(state)),
-        history,
-        inputSnapshot: structuredClone(inputSnapshot)
-      });
-    }
-
+  async function persistDecision(state, raw, inputSnapshot) {
     const normalized = validateSearchInvestmentDecision(raw);
     const decision = Object.freeze({
       id: idFactory(),
@@ -247,6 +221,46 @@ export function createSearchInvestmentController({
     return decision;
   }
 
+  async function assess(sessionId) {
+    if (!resolvedPolicy) return null;
+    const state = await load(sessionId);
+    const history = searchInvestmentHistory(state);
+    const inputSnapshot = searchInvestmentInputSnapshot(state);
+
+    if (history.evaluations.length < resolvedPolicy.minEvaluations) {
+      return persistDecision(state, {
+        state: SearchInvestmentState.WARMUP,
+        action: SearchInvestmentAction.CONTINUE,
+        rationale: `need ${resolvedPolicy.minEvaluations} grounded evaluations before trend-based search control`,
+        metrics: {
+          observedEvaluations: history.evaluations.length,
+          minEvaluations: resolvedPolicy.minEvaluations
+        }
+      }, inputSnapshot);
+    }
+
+    try {
+      assertEvaluationInputsFresh(state, undefined, { purpose: "search investment" });
+    } catch (error) {
+      return persistDecision(state, {
+        state: SearchInvestmentState.INSUFFICIENT_DATA,
+        action: SearchInvestmentAction.CONTINUE,
+        rationale: "current objective evaluation is missing or stale; re-evaluate before using trend-based search control",
+        metrics: { evaluationFreshnessError: error.message }
+      }, inputSnapshot);
+    }
+
+    const raw = await resolvedPolicy.decide({
+      sessionId: state.id,
+      work: structuredClone(state.work),
+      candidate: structuredClone(state.currentCandidate),
+      lineageHead: structuredClone(currentLineageHead(state)),
+      history,
+      inputSnapshot: structuredClone(inputSnapshot)
+    });
+    return persistDecision(state, raw, inputSnapshot);
+  }
+
   async function current(sessionId, { refreshIfStale = true } = {}) {
     if (!resolvedPolicy) return null;
     const state = await load(sessionId);
@@ -257,8 +271,14 @@ export function createSearchInvestmentController({
   }
 
   async function assertCanContinue(sessionId) {
-    const decision = await current(sessionId);
-    if (!decision || decision.action === SearchInvestmentAction.CONTINUE) return decision;
+    if (!resolvedPolicy) return null;
+    const state = await load(sessionId);
+    const latest = state.persistentMemory.searchInvestmentDecisions.at(-1) ?? null;
+    if (!latest) return null;
+    const decision = isSearchInvestmentDecisionFresh(state, latest)
+      ? freezeClone(latest)
+      : await assess(sessionId);
+    if (decision.action === SearchInvestmentAction.CONTINUE) return decision;
     throw new SearchInvestmentBoundaryError({ sessionId, decision });
   }
 
