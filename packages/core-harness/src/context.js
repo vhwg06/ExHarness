@@ -15,6 +15,12 @@ function clone(value) {
   return value == null ? value : structuredClone(value);
 }
 
+function deepFreeze(value) {
+  if (value == null || typeof value !== "object" || Object.isFrozen(value)) return value;
+  for (const child of Object.values(value)) deepFreeze(child);
+  return Object.freeze(value);
+}
+
 function assertCloneable(value, label) {
   try {
     return clone(value);
@@ -35,17 +41,19 @@ function normalizeNames(values, label) {
   return Object.freeze(result);
 }
 
-export function defineContextBlock({
-  name,
-  description = null,
-  trust = ContextBlockTrust.TRUSTED,
-  value,
-  resolve
-} = {}) {
+export function defineContextBlock(definition = {}) {
+  invariant(definition && typeof definition === "object", "context block definition is required");
+  const {
+    name,
+    description = null,
+    trust = ContextBlockTrust.TRUSTED,
+    value,
+    resolve
+  } = definition;
   const resolvedName = requireText(name, "context block name");
   invariant(Object.values(ContextBlockTrust).includes(trust), `context block ${resolvedName} trust is invalid`);
-  const fixed = Object.prototype.hasOwnProperty.call(arguments[0] ?? {}, "value");
   const dynamic = resolve != null;
+  const fixed = !dynamic && Object.prototype.hasOwnProperty.call(definition, "value");
   invariant(fixed !== dynamic, `context block ${resolvedName} requires exactly one of value or resolve()`);
   if (dynamic) invariant(typeof resolve === "function", `context block ${resolvedName} resolve must be a function`);
 
@@ -56,7 +64,7 @@ export function defineContextBlock({
     description,
     trust,
     dynamic,
-    value: fixed ? fixedValue : undefined,
+    ...(fixed ? { value: fixedValue } : {}),
     resolve: dynamic ? resolve : null
   });
 }
@@ -169,10 +177,13 @@ export async function renderAgentContext({
     registry.set(block.name, block);
   }
 
-  invariant(
-    resolvedSelection.blocks.length <= resolvedPolicy.maxBlocks,
-    `context selection exceeds maxBlocks ${resolvedPolicy.maxBlocks}`
-  );
+  if (resolvedSelection.blocks.length > resolvedPolicy.maxBlocks) {
+    throw new ContextLimitExceededError({
+      limit: "maxBlocks",
+      maximum: resolvedPolicy.maxBlocks,
+      actual: resolvedSelection.blocks.length
+    });
+  }
 
   const renderedBlocks = [];
   for (const name of resolvedSelection.blocks) {
@@ -184,21 +195,21 @@ export async function renderAgentContext({
           judgment: judgment == null ? null : clone(judgment)
         }))
       : block.value;
-    renderedBlocks.push(Object.freeze({
+    renderedBlocks.push({
       name: block.name,
       description: block.description ?? null,
       trust: block.trust,
       value: assertCloneable(resolvedValue, `context block ${block.name} resolved value`)
-    }));
+    });
   }
 
-  let history = Object.freeze({
+  let history = {
     enabled: false,
     mode: "NONE",
-    sourceEventIds: Object.freeze([]),
-    events: Object.freeze([]),
+    sourceEventIds: [],
+    events: [],
     summary: null
-  });
+  };
 
   if (resolvedSelection.history) {
     let selected = clone(canonicalEvents);
@@ -211,7 +222,7 @@ export async function renderAgentContext({
     selected = enforceHistoryCount(selected, resolvedPolicy);
 
     if (resolvedSelection.reduceHistory) {
-      const sourceEventIds = Object.freeze(selected.map((event) => event.id));
+      const sourceEventIds = selected.map((event) => event.id);
       const summary = assertCloneable(
         await resolvedSelection.reduceHistory(clone(selected), Object.freeze({
           callId: callId ?? null,
@@ -219,21 +230,21 @@ export async function renderAgentContext({
         })),
         "context history summary"
       );
-      history = Object.freeze({
+      history = {
         enabled: true,
         mode: "REDUCED",
         sourceEventIds,
-        events: Object.freeze([]),
+        events: [],
         summary
-      });
+      };
     } else {
-      history = Object.freeze({
+      history = {
         enabled: true,
         mode: "EVENTS",
-        sourceEventIds: Object.freeze(selected.map((event) => event.id)),
-        events: Object.freeze(clone(selected)),
+        sourceEventIds: selected.map((event) => event.id),
+        events: clone(selected),
         summary: null
-      });
+      };
     }
   }
 
@@ -242,5 +253,5 @@ export async function renderAgentContext({
     history
   }, resolvedPolicy);
 
-  return Object.freeze(clone(rendered));
+  return deepFreeze(clone(rendered));
 }
