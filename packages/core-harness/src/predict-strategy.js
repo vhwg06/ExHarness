@@ -1,3 +1,4 @@
+import { AgentEventKind } from "./agent-events.js";
 import { invariant } from "./contracts.js";
 import { PredictValidationError } from "./errors.js";
 import { defineModelAdapter, modelAdapterView } from "./model.js";
@@ -40,7 +41,15 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
     model: modelAdapterView(resolvedModel),
     maxAttempts: resolvedMaxAttempts,
 
-    async run({ input, context, events = [], judgment = null, validateResult = null }) {
+    async run({
+      input,
+      context,
+      events = [],
+      agentEvents = [],
+      judgment = null,
+      validateResult = null,
+      recordAgentEvent = null
+    }) {
       const feedback = [];
 
       for (let attempt = 1; attempt <= resolvedMaxAttempts; attempt += 1) {
@@ -50,9 +59,17 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
           input: clone(input),
           context: clone(context),
           events: clone(events) ?? [],
+          agentEvents: clone(agentEvents) ?? [],
           judgment: judgment == null ? null : clone(judgment),
           validationFeedback: Object.freeze(clone(feedback))
         }));
+
+        if (recordAgentEvent) {
+          recordAgentEvent(AgentEventKind.MODEL_OUTPUT, {
+            attempt,
+            output: safeClone(candidate)
+          });
+        }
 
         if (typeof validateResult !== "function") return candidate;
 
@@ -60,7 +77,11 @@ export function createPredictStrategy({ model, maxAttempts = 3 }) {
           validateResult(candidate);
           return candidate;
         } catch (error) {
-          feedback.push(validationFeedback(error, attempt, candidate));
+          const nextFeedback = validationFeedback(error, attempt, candidate);
+          feedback.push(nextFeedback);
+          if (recordAgentEvent) {
+            recordAgentEvent(AgentEventKind.VALIDATION_ERROR, nextFeedback);
+          }
         }
       }
 
