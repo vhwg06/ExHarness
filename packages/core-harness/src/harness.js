@@ -239,7 +239,7 @@ export function createHarness({
     upstreamAttestations = []
   } = {}) {
     invariant(attestationIssuer && typeof attestationIssuer.issue === "function", "attestCurrentEvaluation requires attestationIssuer");
-    invariant(evidenceEnvironment, "attestCurrentEvaluation requires evidenceEnvironment");
+    invariant(evidenceEnvironment, "attestCurrentEvaluation requires evidenceEnvironment or an evidenceEnvironment resolver");
     invariant(attestationEnvironment, "attestCurrentEvaluation requires attestationEnvironment");
     invariant(decisionEvaluator, "attestCurrentEvaluation requires evaluator authority");
 
@@ -253,11 +253,18 @@ export function createHarness({
 
     const resolvedSubject = subject ?? subjectFromValue(candidate, { type: "candidate" });
     const resolvedPolicy = policy ?? policyRefFromValue("verification-policy", core.verificationPolicy());
-    const evidence = currentVerifications.map((verification) => evidenceFromVerificationArtifact(verification, {
-      subject: resolvedSubject,
-      environment: evidenceEnvironment,
-      generatedAt: verification.at
-    }));
+    const evidence = [];
+    for (const verification of currentVerifications) {
+      const resolvedEvidenceEnvironment = typeof evidenceEnvironment === "function"
+        ? await evidenceEnvironment(structuredClone(verification))
+        : evidenceEnvironment;
+      invariant(resolvedEvidenceEnvironment, `evidence environment is required for verification ${verification.id ?? "unknown"}`);
+      evidence.push(evidenceFromVerificationArtifact(verification, {
+        subject: resolvedSubject,
+        environment: resolvedEvidenceEnvironment,
+        generatedAt: verification.at
+      }));
+    }
     const decision = decisionFromEvaluation(evaluation, {
       subject: resolvedSubject,
       boundary,
