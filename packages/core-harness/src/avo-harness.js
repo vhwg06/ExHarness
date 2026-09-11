@@ -235,6 +235,7 @@ export function createAVOHarness({
 
       let capabilityCalls = 0;
       let committed = false;
+      let protocolViolation = null;
       let result = null;
       let failure = null;
       let termination = VariationTermination.RETURNED;
@@ -267,18 +268,24 @@ export function createAVOHarness({
           async onCapabilityInvoke(call) {
             capabilityCalls = call.index;
             if (committed) {
-              throw new VariationClosedAfterCommitError({ attemptedCapability: call.name });
+              const error = new VariationClosedAfterCommitError({ attemptedCapability: call.name });
+              protocolViolation = serializeFailure(error);
+              throw error;
             }
           }
         });
 
         result = report.result;
         capabilityCalls = report.usage.capabilityCalls;
-        if (report.usage.budgetExhausted) {
+
+        if (protocolViolation) {
+          failure = protocolViolation;
+          termination = VariationTermination.FAILED;
+        } else if (report.usage.budgetExhausted) {
           termination = VariationTermination.BUDGET_EXHAUSTED;
         }
       } catch (error) {
-        failure = serializeFailure(error);
+        failure = protocolViolation ?? serializeFailure(error);
         termination = error?.code === AgentRunErrorCode.CAPABILITY_BUDGET_EXHAUSTED
           ? VariationTermination.BUDGET_EXHAUSTED
           : VariationTermination.FAILED;
