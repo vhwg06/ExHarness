@@ -1,9 +1,26 @@
 import { invariant, requireText } from "./contracts.js";
+import { AgentEventKind, createAgentEventStore } from "./agent-events.js";
 import { defineJudgment, judgmentView } from "./judgment.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
 function clone(value) {
   return value == null ? value : structuredClone(value);
+}
+
+function safeClone(value) {
+  try {
+    return clone(value);
+  } catch {
+    return value == null ? null : { unavailable: true, type: typeof value };
+  }
+}
+
+function errorPayload(error) {
+  return Object.freeze({
+    name: error?.name ?? "Error",
+    code: error?.code ?? null,
+    message: error?.message ?? String(error)
+  });
 }
 
 function normalizeCapability(definition) {
@@ -40,8 +57,21 @@ export function defineCapability(definition) {
   return normalizeCapability(definition);
 }
 
-export function createAgentRuntime({ strategy, capabilities = [], judgments = [] }) {
+export function createAgentRuntime({
+  strategy,
+  capabilities = [],
+  judgments = [],
+  agentEventStore = null,
+  clock,
+  idFactory
+}) {
   invariant(strategy && typeof strategy.run === "function", "agent runtime requires strategy.run()");
+  if (agentEventStore != null) {
+    invariant(typeof agentEventStore.newCallId === "function", "agentEventStore requires newCallId()");
+    invariant(typeof agentEventStore.record === "function", "agentEventStore requires record()");
+    invariant(typeof agentEventStore.events === "function", "agentEventStore requires events()");
+  }
+  const workingHistory = agentEventStore ?? createAgentEventStore({ clock, idFactory });
 
   const baseCapabilities = new Map();
   for (const definition of capabilities) {
@@ -82,7 +112,18 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     const runInput = clone(input);
     const runContext = clone(context);
     const runEvents = clone(events) ?? [];
+    const judgment = runtimeContract.judgment ?? null;
     const maxCapabilityCalls = budget?.maxCapabilityCalls ?? null;
+    const callId = workingHistory.newCallId();
+
+    workingHistory.record(AgentEventKind.TASK, {
+      callId,
+      judgment,
+      payload: {
+        input: safeClone(runInput),
+        externalEventCount: runEvents.length
+      }
+    });
 
     if (maxCapabilityCalls != null) {
       invariant(
@@ -134,24 +175,50 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
       return capability.parseOutput ? capability.parseOutput(output) : output;
     }
 
-    const result = await selectedStrategy.run(Object.freeze({
-      input: runInput,
-      context: runContext,
-      events: runEvents,
-      capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
-      invoke,
-      judgment: runtimeContract.judgment ?? null,
-      validateResult: runtimeContract.validateResult ?? null
-    }));
+    function recordAgentEvent(type, payload = null) {
+      return workingHistory.record(type, { callId, judgment, payload });
+    }
 
-    return Object.freeze({
-      result,
-      usage: Object.freeze({
-        capabilityCalls,
-        budgetExhausted,
-        maxCapabilityCalls
-      })
-    });
+    try {
+      const rawResult = await selectedStrategy.run(Object.freeze({
+        input: runInput,
+        context: runContext,
+        events: runEvents,
+        agentEvents: workingHistory.events(),
+        capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
+        invoke,
+        judgment,
+        validateResult: runtimeContract.validateResult ?? null,
+        recordAgentEvent
+      }));
+
+      let result = rawResult;
+      if (runtimeContract.validateResult) {
+        try {
+          result = runtimeContract.validateResult(rawResult);
+        } catch (error) {
+          recordAgentEvent(AgentEventKind.VALIDATION_ERROR, {
+            rejectedOutput: safeClone(rawResult),
+            error: errorPayload(error)
+          });
+          throw error;
+        }
+      }
+
+      recordAgentEvent(AgentEventKind.RESULT, { result: safeClone(result) });
+      return Object.freeze({
+        result,
+        callId,
+        usage: Object.freeze({
+          capabilityCalls,
+          budgetExhausted,
+          maxCapabilityCalls
+        })
+      });
+    } catch (error) {
+      recordAgentEvent(AgentEventKind.ERROR, { error: errorPayload(error) });
+      throw error;
+    }
   }
 
   async function executeRun(options = {}) {
@@ -170,6 +237,7 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
     let accepted = null;
     const validateResult = judgment.parseOutput
       ? (value) => {
+          if (accepted && Object.is(value, accepted.raw)) return accepted.parsed;
           const parsed = judgment.parseOutput(value);
           accepted = { raw: value, parsed };
           return parsed;
@@ -185,14 +253,9 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
       }
     );
 
-    const parsedOutput = judgment.parseOutput
-      ? accepted && Object.is(report.result, accepted.raw)
-        ? accepted.parsed
-        : judgment.parseOutput(report.result)
-      : report.result;
-
     return Object.freeze({
-      result: parsedOutput,
+      result: report.result,
+      callId: report.callId,
       usage: report.usage,
       judgment: judgmentView(judgment)
     });
@@ -205,6 +268,10 @@ export function createAgentRuntime({ strategy, capabilities = [], judgments = []
 
     judgments() {
       return Object.freeze([...baseJudgments.values()].map(judgmentView));
+    },
+
+    agentEvents() {
+      return workingHistory.events();
     },
 
     async run(options = {}) {
