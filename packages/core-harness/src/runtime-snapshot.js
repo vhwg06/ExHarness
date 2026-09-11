@@ -184,7 +184,12 @@ function snapshotEvent(event, { payloadMode, sanitizeEventPayload, redactions })
     payload = Object.freeze({ kind: RuntimeSnapshotRedactionKind.PAYLOAD_OMITTED });
   } else {
     invariant(typeof sanitizeEventPayload === "function", "SANITIZE snapshot payload mode requires sanitizeEventPayload()");
-    const sanitized = sanitizeEventPayload(clone(event.payload ?? null), Object.freeze({
+    const authoritySafePayload = normalizeSnapshotData(
+      event.payload ?? null,
+      `runtime snapshot event ${event.id} raw payload`,
+      redactions
+    );
+    const sanitized = sanitizeEventPayload(clone(authoritySafePayload), Object.freeze({
       id: event.id,
       type: event.type,
       at: event.at,
