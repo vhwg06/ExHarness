@@ -53,6 +53,7 @@ test("Predict retries validation failures and feeds the failure back to the mode
   assert.deepEqual(requests[0].validationFeedback, []);
   assert.equal(requests[1].attempt, 2);
   assert.equal(requests[1].validationFeedback.length, 1);
+  assert.deepEqual(requests[1].validationFeedback[0].rejectedOutput, { category: "INVALID" });
   assert.equal(requests[1].validationFeedback[0].error.message, "category must be A or B");
   assert.equal(requests[1].judgment.name, "classify");
 });
