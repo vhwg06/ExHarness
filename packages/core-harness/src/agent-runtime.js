@@ -1,4 +1,5 @@
 import { invariant, requireText } from "./contracts.js";
+import { defineJudgment, judgmentView } from "./judgment.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
 function clone(value) {
@@ -39,7 +40,7 @@ export function defineCapability(definition) {
   return normalizeCapability(definition);
 }
 
-export function createAgentRuntime({ strategy, capabilities = [] }) {
+export function createAgentRuntime({ strategy, capabilities = [], judgments = [] }) {
   invariant(strategy && typeof strategy.run === "function", "agent runtime requires strategy.run()");
 
   const baseCapabilities = new Map();
@@ -47,6 +48,13 @@ export function createAgentRuntime({ strategy, capabilities = [] }) {
     const capability = normalizeCapability(definition);
     invariant(!baseCapabilities.has(capability.name), `duplicate capability: ${capability.name}`);
     baseCapabilities.set(capability.name, capability);
+  }
+
+  const baseJudgments = new Map();
+  for (const definition of judgments) {
+    const judgment = defineJudgment(definition);
+    invariant(!baseJudgments.has(judgment.name), `duplicate judgment: ${judgment.name}`);
+    baseJudgments.set(judgment.name, judgment);
   }
 
   function resolveCapabilities(scopedCapabilities = []) {
@@ -68,7 +76,8 @@ export function createAgentRuntime({ strategy, capabilities = [] }) {
     capabilities: scopedCapabilities = [],
     budget = null,
     onCapabilityInvoke = null
-  } = {}) {
+  } = {}, selectedStrategy = strategy) {
+    invariant(selectedStrategy && typeof selectedStrategy.run === "function", "agent run strategy requires run()");
     const resolved = resolveCapabilities(scopedCapabilities);
     const runInput = clone(input);
     const runContext = clone(context);
@@ -122,7 +131,7 @@ export function createAgentRuntime({ strategy, capabilities = [] }) {
       return capability.parseOutput ? capability.parseOutput(output) : output;
     }
 
-    const result = await strategy.run(Object.freeze({
+    const result = await selectedStrategy.run(Object.freeze({
       input: runInput,
       context: runContext,
       events: runEvents,
@@ -140,15 +149,50 @@ export function createAgentRuntime({ strategy, capabilities = [] }) {
     });
   }
 
+  async function executeJudgment(name, input, options = {}) {
+    requireText(name, "judgment name");
+    const judgment = baseJudgments.get(name);
+    invariant(judgment, `judgment not found: ${name}`);
+
+    const parsedInput = judgment.parseInput
+      ? judgment.parseInput(clone(input))
+      : clone(input);
+
+    const report = await executeRun(
+      { ...options, input: parsedInput },
+      judgment.strategy ?? strategy
+    );
+
+    const parsedOutput = judgment.parseOutput
+      ? judgment.parseOutput(report.result)
+      : report.result;
+
+    return Object.freeze({
+      result: parsedOutput,
+      usage: report.usage,
+      judgment: judgmentView(judgment)
+    });
+  }
+
   return Object.freeze({
     capabilities() {
       return Object.freeze([...baseCapabilities.values()].map(capabilityView));
+    },
+
+    judgments() {
+      return Object.freeze([...baseJudgments.values()].map(judgmentView));
     },
 
     async run(options = {}) {
       return (await executeRun(options)).result;
     },
 
-    runWithReport: executeRun
+    runWithReport: executeRun,
+
+    async invokeJudgment(name, input, options = {}) {
+      return (await executeJudgment(name, input, options)).result;
+    },
+
+    invokeJudgmentWithReport: executeJudgment
   });
 }
