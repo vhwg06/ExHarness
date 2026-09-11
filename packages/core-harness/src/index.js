@@ -154,6 +154,7 @@ export {
 export { createInMemorySessionStore } from "./store.js";
 export { validateCorePorts } from "./ports.js";
 export { createCoreHarness } from "./core-harness.js";
+export { AgentEventKind, createAgentEventStore } from "./agent-events.js";
 export { defineJudgment } from "./judgment.js";
 export { defineModelAdapter } from "./model.js";
 export { createPredictStrategy } from "./predict-strategy.js";

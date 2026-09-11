@@ -140,6 +140,9 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
     runWithReport
   };
 
+  if (typeof agentRuntime.agentEvents === "function") {
+    instrumented.agentEvents = () => agentRuntime.agentEvents();
+  }
   if (typeof agentRuntime.judgments === "function") {
     instrumented.judgments = () => agentRuntime.judgments();
   }
