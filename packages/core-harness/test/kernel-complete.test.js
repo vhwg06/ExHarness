@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   AVOCapability,
+  CURRENT_STATE_SCHEMA_VERSION,
   EvaluationValidity,
   EvaluationVerdict,
   ExHarnessErrorCode,
@@ -71,7 +72,7 @@ test("production facade composes AVO + NOOA and emits observable lifecycle", asy
   });
 
   const snapshot = await start(harness);
-  assert.equal(snapshot.schemaVersion, 1);
+  assert.equal(snapshot.schemaVersion, CURRENT_STATE_SCHEMA_VERSION);
   assert.equal(snapshot.revision, 1);
 
   const result = await harness.vary("s1");
