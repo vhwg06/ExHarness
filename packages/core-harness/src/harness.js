@@ -1,7 +1,9 @@
 import { CorePractice, invariant } from "./contracts.js";
 import { createAgentRuntime } from "./agent-runtime.js";
 import { createAVOHarness } from "./avo-harness.js";
+import { RecoveryRequiredError } from "./errors.js";
 import { createEventBus, instrumentAgentRuntime, instrumentCapabilities } from "./observability.js";
+import { createValidatedSessionStore } from "./persistence.js";
 import { assessRecovery, defineRecoveryPolicy, recoverInterruptedVariation } from "./recovery.js";
 import { createInMemorySessionStore } from "./store.js";
 import {
@@ -67,13 +69,14 @@ export function createHarness({
   invariant(environment, "createHarness requires environment");
   invariant(objective || evaluator, "createHarness requires objective or evaluator");
 
-  const resolvedStore = sessionStore ?? createInMemorySessionStore();
+  const rawStore = sessionStore ?? createInMemorySessionStore();
   if (requireRevisionStore) {
     invariant(
-      resolvedStore.supportsRevisions === true,
+      rawStore.supportsRevisions === true,
       "createHarness requires a revision-aware session store; run the store contract kit or use createInMemorySessionStore()"
     );
   }
+  const resolvedStore = createValidatedSessionStore(rawStore);
 
   const resolvedEventBus = eventBus ?? createEventBus({
     sinks: eventSinks,
@@ -119,6 +122,14 @@ export function createHarness({
     });
   }
 
+  function throwRecoveryRequired(sessionId, recovery) {
+    throw new RecoveryRequiredError({
+      sessionId,
+      variationId: recovery.variation.id,
+      lastActivityAt: recovery.lastActivityAt
+    });
+  }
+
   return Object.freeze({
     ...core,
 
@@ -134,14 +145,7 @@ export function createHarness({
 
     async resume(sessionId) {
       const recovery = await recoveryAssessment(sessionId);
-      if (recovery.required) {
-        const { RecoveryRequiredError } = await import("./errors.js");
-        throw new RecoveryRequiredError({
-          sessionId,
-          variationId: recovery.variation.id,
-          lastActivityAt: recovery.lastActivityAt
-        });
-      }
+      if (recovery.required) throwRecoveryRequired(sessionId, recovery);
       const snapshot = await core.resume(sessionId);
       await resolvedEventBus.emit("HARNESS_SESSION_RESUMED", {
         sessionId,
@@ -169,14 +173,7 @@ export function createHarness({
 
     async vary(sessionId, options = {}) {
       const recovery = await recoveryAssessment(sessionId);
-      if (recovery.required) {
-        const { RecoveryRequiredError } = await import("./errors.js");
-        throw new RecoveryRequiredError({
-          sessionId,
-          variationId: recovery.variation.id,
-          lastActivityAt: recovery.lastActivityAt
-        });
-      }
+      if (recovery.required) throwRecoveryRequired(sessionId, recovery);
       await resolvedEventBus.emit("HARNESS_VARIATION_STARTED", { sessionId });
       const result = await core.vary(sessionId, options);
       await resolvedEventBus.emit("HARNESS_VARIATION_COMPLETED", {
