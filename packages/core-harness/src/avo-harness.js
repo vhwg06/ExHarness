@@ -1,6 +1,7 @@
 import { candidateKey, invariant, sameCandidate } from "./contracts.js";
 import { createCoreHarness } from "./core-harness.js";
 import { createAgentRuntime, defineCapability } from "./agent-runtime.js";
+import { createMemoryFacade } from "./memory.js";
 import {
   VerificationSourceKind,
   defineVerifier,
@@ -21,6 +22,8 @@ export const AVOCapability = Object.freeze({
   OBSERVE: "avo.observe",
   ACT: "avo.act",
   EVALUATE: "avo.evaluate",
+  QUERY_FEEDBACK: "avo.queryFeedback",
+  QUERY_KNOWLEDGE: "avo.queryKnowledge",
   RECORD_KNOWLEDGE: "avo.recordKnowledge",
   PROMOTE: "avo.promote"
 });
@@ -101,7 +104,7 @@ async function promoteWithFreshEvaluationInputs(core, sessionId) {
   return core.promote(sessionId);
 }
 
-function createSessionCapabilities(core, sessionId, verifiers, promote, onPromoted) {
+function createSessionCapabilities(core, memory, sessionId, verifiers, promote, onPromoted) {
   return Object.freeze([
     defineCapability({
       name: AVOCapability.OBSERVE,
@@ -122,10 +125,22 @@ function createSessionCapabilities(core, sessionId, verifiers, promote, onPromot
       execute: (request) => core.evaluate(sessionId, request)
     }),
     defineCapability({
-      name: AVOCapability.RECORD_KNOWLEDGE,
-      description: "Persist an explicit hypothesis, finding, failed direction, or decision.",
+      name: AVOCapability.QUERY_FEEDBACK,
+      description: "Query grounded execution and evaluation feedback projected from persistent state.",
       mutatesCandidate: false,
-      execute: (record) => core.recordKnowledge(sessionId, record)
+      execute: (query) => memory.feedback(sessionId, query ?? {})
+    }),
+    defineCapability({
+      name: AVOCapability.QUERY_KNOWLEDGE,
+      description: "Query active curated knowledge without dumping the full memory history into context.",
+      mutatesCandidate: false,
+      execute: (query) => memory.knowledgeView(sessionId, query ?? {})
+    }),
+    defineCapability({
+      name: AVOCapability.RECORD_KNOWLEDGE,
+      description: "Persist curated knowledge with explicit scope, provenance references, and typed relations.",
+      mutatesCandidate: false,
+      execute: (record) => memory.recordKnowledge(sessionId, record)
     }),
     defineCapability({
       name: AVOCapability.PROMOTE,
@@ -202,11 +217,15 @@ export function createAVOHarness({
     clock,
     idFactory
   });
+  const memory = createMemoryFacade(core);
   const promote = (sessionId) => promoteWithFreshEvaluationInputs(core, sessionId);
 
   return Object.freeze({
     ...core,
     promote,
+    recordKnowledge: memory.recordKnowledge,
+    knowledgeView: memory.knowledgeView,
+    feedback: memory.feedback,
 
     verifiers() {
       return Object.freeze(normalizedVerifiers.map((verifier) => Object.freeze({
@@ -248,6 +267,11 @@ export function createAVOHarness({
             work: structuredClone(context.work),
             candidate: structuredClone(variation.baseCandidate),
             lineageHead: structuredClone(lineageBefore),
+            memory: Object.freeze({
+              feedbackCapability: AVOCapability.QUERY_FEEDBACK,
+              knowledgeCapability: AVOCapability.QUERY_KNOWLEDGE,
+              recordKnowledgeCapability: AVOCapability.RECORD_KNOWLEDGE
+            }),
             verifiers: normalizedVerifiers.map((verifier) => Object.freeze({
               name: verifier.name,
               capability: verificationCapabilityName(verifier.name)
@@ -259,6 +283,7 @@ export function createAVOHarness({
           context,
           capabilities: createSessionCapabilities(
             core,
+            memory,
             sessionId,
             normalizedVerifiers,
             promote,

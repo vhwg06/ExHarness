@@ -9,6 +9,20 @@ export {
   validateDoseDecision
 } from "./contracts.js";
 export {
+  FeedbackKind,
+  collectFeedback,
+  queryFeedback
+} from "./feedback.js";
+export {
+  KnowledgeRelationType,
+  KnowledgeScope,
+  buildKnowledgeView,
+  normalizeKnowledgeDraft,
+  queryKnowledge,
+  validateKnowledgeLinks
+} from "./knowledge.js";
+export { createMemoryFacade } from "./memory.js";
+export {
   VerificationSourceKind,
   VerificationStatus,
   defineVerifier,

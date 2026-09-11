@@ -77,17 +77,42 @@ export function validateKnowledgeRecord(record) {
   invariant(record && typeof record === "object", "knowledge record is required");
   invariant(Object.values(KnowledgeKind).includes(record.kind), "knowledge kind is invalid");
   const statement = requireText(record.statement, "knowledge.statement");
+  const scope = record.scope ?? "CANDIDATE";
+  invariant(["CANDIDATE", "LINEAGE", "SESSION"].includes(scope), "knowledge scope is invalid");
+
   const evidence = [...(record.evidence ?? [])];
+  const feedbackRefs = [...(record.feedbackRefs ?? [])].map((value) => requireText(value, "knowledge feedbackRef"));
+  const relations = [...(record.relations ?? [])].map((relation) => {
+    invariant(relation && typeof relation === "object", "knowledge relation is required");
+    invariant(
+      ["SUPPORTS", "CONTRADICTS", "DERIVED_FROM", "SUPERSEDES"].includes(relation.type),
+      "knowledge relation type is invalid"
+    );
+    return Object.freeze({
+      type: relation.type,
+      targetId: requireText(relation.targetId, "knowledge relation targetId")
+    });
+  });
+  const tags = [...new Set((record.tags ?? []).map((value) => requireText(value, "knowledge tag")))];
+  const grounded = evidence.length > 0 || feedbackRefs.length > 0;
 
   if (record.kind === KnowledgeKind.FINDING || record.kind === KnowledgeKind.FAILED_DIRECTION) {
-    invariant(evidence.length > 0, `${record.kind.toLowerCase()} requires evidence`);
+    invariant(grounded, `${record.kind.toLowerCase()} requires evidence or feedbackRefs`);
+  }
+
+  if (relations.some((relation) => relation.type === "SUPERSEDES")) {
+    invariant(grounded, "superseding knowledge requires evidence or feedbackRefs");
   }
 
   return Object.freeze({
     kind: record.kind,
     statement,
     evidence: Object.freeze(evidence),
-    scope: record.scope ?? null
+    feedbackRefs: Object.freeze(feedbackRefs),
+    relations: Object.freeze(relations),
+    tags: Object.freeze(tags),
+    scope,
+    lineageBase: structuredClone(record.lineageBase ?? null)
   });
 }
 
