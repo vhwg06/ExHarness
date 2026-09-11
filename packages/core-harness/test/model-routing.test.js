@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  AgentEventKind,
   EvaluationValidity,
   EvaluationVerdict,
   ModelRouteScope,
@@ -151,6 +152,19 @@ test("routing cannot be silently ignored by a strategy that does not opt in", as
 
   await assert.rejects(runtime.run(), /does not support model routing/);
   assert.equal(calls, 0);
+});
+
+test("model resolution failure is journaled as TASK then ERROR", async () => {
+  const runtime = createAgentRuntime({
+    strategy: createPredictStrategy({ maxAttempts: 1 }),
+    model: "missing"
+  });
+
+  await assert.rejects(runtime.run(), /model not registered: missing/);
+  assert.deepEqual(runtime.agentEvents().map((event) => event.type), [
+    AgentEventKind.TASK,
+    AgentEventKind.ERROR
+  ]);
 });
 
 test("production createHarness composes routed model provenance through a variation", async () => {
