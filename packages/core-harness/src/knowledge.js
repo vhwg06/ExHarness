@@ -157,3 +157,42 @@ export function buildKnowledgeView(state) {
     })
   });
 }
+
+export function queryKnowledge(state, {
+  kinds = null,
+  tags = null,
+  limit = 50
+} = {}) {
+  invariant(Number.isInteger(limit) && limit > 0, "knowledge limit must be a positive integer");
+  const view = buildKnowledgeView(state);
+  const allowedKinds = kinds == null
+    ? null
+    : new Set(kinds.map((kind) => {
+        invariant(Object.values(KnowledgeKind).includes(kind), `knowledge kind is invalid: ${kind}`);
+        return kind;
+      }));
+  const requiredTags = tags == null
+    ? null
+    : new Set(tags.map((tag) => requireText(tag, "knowledge query tag")));
+
+  let active = [...view.active];
+  if (allowedKinds) active = active.filter((record) => allowedKinds.has(record.kind));
+  if (requiredTags) {
+    active = active.filter((record) => {
+      const recordTags = new Set(record.tags ?? []);
+      return [...requiredTags].every((tag) => recordTags.has(tag));
+    });
+  }
+  if (active.length > limit) active = active.slice(active.length - limit);
+
+  const visibleIds = new Set(active.map((record) => record.id));
+  const conflicts = view.conflicts.filter(
+    (conflict) => visibleIds.has(conflict.leftId) && visibleIds.has(conflict.rightId)
+  );
+
+  return Object.freeze({
+    active: Object.freeze(structuredClone(active)),
+    conflicts: Object.freeze(structuredClone(conflicts)),
+    counts: view.counts
+  });
+}
