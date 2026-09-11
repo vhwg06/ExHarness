@@ -9,6 +9,19 @@ export {
   validateDoseDecision
 } from "./contracts.js";
 export {
+  ExHarnessError,
+  ExHarnessErrorCode,
+  ExecutionError,
+  RecoveryRequiredError,
+  SchemaUnsupportedError,
+  StoreConflictError
+} from "./errors.js";
+export {
+  CURRENT_STATE_SCHEMA_VERSION,
+  assertPersistedRevision,
+  normalizePersistentState
+} from "./persistence.js";
+export {
   FeedbackKind,
   collectFeedback,
   queryFeedback
@@ -46,8 +59,33 @@ export {
   variationActivityDelta,
   variationActivitySnapshot
 } from "./variation.js";
+export {
+  SearchSignalKind,
+  buildSearchHealth,
+  createTrajectoryContextProjector,
+  defineSupervisionPolicy
+} from "./supervision.js";
+export {
+  assessRecovery,
+  defineRecoveryPolicy,
+  findRunningVariation,
+  recoverInterruptedVariation
+} from "./recovery.js";
+export {
+  ExecutionStatus,
+  createExecutorCapability,
+  defineExecutionPolicy,
+  defineExecutor,
+  executeWithPolicy
+} from "./execution.js";
+export {
+  createEventBus,
+  instrumentAgentRuntime,
+  instrumentCapabilities
+} from "./observability.js";
 export { createInMemorySessionStore } from "./store.js";
 export { validateCorePorts } from "./ports.js";
 export { createCoreHarness } from "./core-harness.js";
 export { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 export { AVOCapability, createAVOHarness } from "./avo-harness.js";
+export { createHarness } from "./harness.js";
