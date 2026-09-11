@@ -146,6 +146,12 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
   if (typeof agentRuntime.judgments === "function") {
     instrumented.judgments = () => agentRuntime.judgments();
   }
+  if (typeof agentRuntime.contextBlocks === "function") {
+    instrumented.contextBlocks = () => agentRuntime.contextBlocks();
+  }
+  if (typeof agentRuntime.contextPolicy === "function") {
+    instrumented.contextPolicy = () => agentRuntime.contextPolicy();
+  }
   if (typeof agentRuntime.invokeJudgment === "function") {
     instrumented.invokeJudgment = (name, input, options = {}) => agentRuntime.invokeJudgment(name, input, options);
   }
