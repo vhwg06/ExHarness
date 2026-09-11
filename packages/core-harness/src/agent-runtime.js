@@ -249,7 +249,7 @@ export function createAgentRuntime({
     const callId = requireText(runtimeContract.callId, "agent run callId");
     const priorAgentEvents = agentEventStore.events();
     const resolvedSelection = runtimeContract.contextSelection ?? defineContextSelection(contextSelection ?? {});
-    const resolvedModelRoute = await resolveRunModel(selectedStrategy, invocationModel, runtimeContract.model ?? null);
+    let resolvedModelRoute = null;
     const callResourceRefs = [];
 
     if (maxCapabilityCalls != null) {
@@ -271,6 +271,7 @@ export function createAgentRuntime({
     recordRuntimeEvent(AgentEventKind.TASK, callId, judgment, { input: runInput });
 
     try {
+      resolvedModelRoute = await resolveRunModel(selectedStrategy, invocationModel, runtimeContract.model ?? null);
       for (const resource of resolvedCallResources) {
         callResourceRefs.push(resolvedResourceRegistry.register(resource, { callId }));
       }
