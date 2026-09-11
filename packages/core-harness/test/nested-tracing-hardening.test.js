@@ -8,7 +8,7 @@ import {
   defineResource
 } from "../src/index.js";
 
-test("adding tracing preserves the direct ResourceRef describe API shape", async () => {
+test("N7 preserves the pre-existing direct ResourceRef describe API shape", async () => {
   const runtime = createAgentRuntime({
     strategy: { async run() { return null; } },
     resources: [defineResource({
@@ -25,6 +25,16 @@ test("adding tracing preserves the direct ResourceRef describe API shape", async
   assert.equal(typeof descriptionPromise?.then, "function");
   const description = await descriptionPromise;
   assert.equal(description.metadata.kind, "repository");
+});
+
+test("default runtime does not retain hidden trace history when tracing is not configured", async () => {
+  const runtime = createAgentRuntime({
+    strategy: { async run() { return "ok"; } }
+  });
+
+  assert.equal(await runtime.run(), "ok");
+  assert.deepEqual(runtime.traces(), []);
+  assert.deepEqual(runtime.traceFailures(), []);
 });
 
 test("strict trace sink failure never replaces an already-existing engineering error", async () => {
