@@ -1,5 +1,9 @@
 import { ImplementationStatus, candidateKey, normalizeCandidate, requireText } from "./contracts.js";
 
+export function lineageHead(state) {
+  return state.persistentMemory.lineage.at(-1) ?? null;
+}
+
 export function createPersistentWorkState({ id, work, seedCandidate, now }) {
   requireText(id, "session.id");
   const candidate = normalizeCandidate(seedCandidate);
@@ -14,6 +18,7 @@ export function createPersistentWorkState({ id, work, seedCandidate, now }) {
         {
           candidate,
           parent: null,
+          lineageBase: null,
           status: ImplementationStatus.BASELINE,
           createdAt,
           promotedAt: createdAt
@@ -26,7 +31,10 @@ export function createPersistentWorkState({ id, work, seedCandidate, now }) {
         {
           kind: "BASELINE",
           candidate,
+          parent: null,
+          implementationParent: null,
           evaluation: null,
+          committedAt: createdAt,
           promotedAt: createdAt
         }
       ]
@@ -49,6 +57,11 @@ export function findImplementation(state, candidate) {
   return state.persistentMemory.implementations.find((item) => candidateKey(item.candidate) === key) ?? null;
 }
 
+export function findLineageEntry(state, candidate) {
+  const key = candidateKey(candidate);
+  return state.persistentMemory.lineage.find((item) => candidateKey(item.candidate) === key) ?? null;
+}
+
 export function publicSnapshot(state) {
   return structuredClone({
     id: state.id,
@@ -61,7 +74,7 @@ export function publicSnapshot(state) {
       knowledge: state.persistentMemory.knowledge.length,
       lineage: {
         count: state.persistentMemory.lineage.length,
-        head: state.persistentMemory.lineage.at(-1) ?? null
+        head: lineageHead(state)
       },
       supervision: {
         inspections: state.supervision.inspections,
