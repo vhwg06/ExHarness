@@ -10,8 +10,9 @@
     "test:core": "node --test packages/core-harness/test/*.test.js",
     "example": "node examples/reference-harness.mjs",
     "benchmark": "node benchmarks/kernel-benchmark.mjs",
+    "eval:reference": "node scripts/reference-eval.mjs",
     "verify:package": "npm pack --dry-run --workspace packages/core-harness",
     "verify:consumer": "node scripts/consumer-smoke.mjs",
-    "verify": "npm test && npm run example && npm run benchmark && npm run verify:package && npm run verify:consumer"
+    "verify": "npm test && npm run example && npm run benchmark && npm run eval:reference && npm run verify:package && npm run verify:consumer"
   }
 }
