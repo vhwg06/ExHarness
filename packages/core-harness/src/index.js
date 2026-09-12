@@ -74,6 +74,14 @@ export {
   defineSemanticMemoryRetriever
 } from "./semantic-memory-retrieval.js";
 export {
+  SemanticMemoryContextBlockName,
+  SpontaneousRecallCadence,
+  createSpontaneousRecallContextBlock,
+  createSpontaneousRecallController,
+  defineSpontaneousRecall,
+  defineSpontaneousRecallPolicy
+} from "./spontaneous-recall.js";
+export {
   VerificationSourceKind,
   VerificationStatus,
   defineVerifier,

@@ -29,12 +29,12 @@ NOOA-G1 Turn lifecycle                         DONE
 NOOA-G2 Turn-aware context refresh             DONE
 NOOA-G3 Safe history evolution                 DONE
 NOOA-G4 Semantic memory port                   DONE
-NOOA-G5 Associative recall contract            DONE on PR candidate
-NOOA-G6 Spontaneous recall                     NEXT after G5 merge
-NOOA-G7 Integrated/adversarial evaluation      PENDING
+NOOA-G5 Associative recall contract            DONE
+NOOA-G6 Spontaneous recall                     DONE on PR candidate
+NOOA-G7 Integrated/adversarial evaluation      NEXT after G6 merge
 ```
 
-Current checkpoint: `G5 exact-head verification pending`.
+Current checkpoint: `G6 exact-head verification pending`.
 
 ---
 
@@ -86,8 +86,7 @@ model generation
 - Predict and both CodeAct paths consume the same `prepareTurn()` projection seam;
 - single-turn built-ins avoid an extra eager context resolution;
 - JavaScript CodeAct `doc(self)` follows the latest turn projection;
-- context render failure closes the prepared turn before model generation;
-- G2 deliberately keeps history sourced from the pre-invocation canonical snapshot.
+- context render failure closes the prepared turn before model generation.
 
 Artifact: `docs/architecture/turn-context-refresh.md`.
 
@@ -118,14 +117,9 @@ next-turn prompt history
 - the next turn sees completed MODEL_OUTPUT / ACTION_OUTPUT / ACTION_ERROR / VALIDATION_ERROR records from the previous turn;
 - the current invocation TASK is excluded so call input is not duplicated into prompt history;
 - prior-call canonical history remains eligible exactly as before when history is selected;
-- `selectHistory` remains subset-only and canonical-order preserving;
-- `reduceHistory` stays a lossy projection and cannot mutate canonical events;
-- reduced history retains exact `sourceEventIds` provenance;
-- fabricated provenance fails closed before the next model generation;
-- history/context bounds are re-enforced at each turn;
-- G1 lifecycle and G2 dynamic-context refresh semantics are unchanged.
-
-The measured packed-consumer reference artifact changes only where G3 intentionally changes prompt projection size. All correctness, false-success, unsafe-accept, authority and adversarial metrics remain unchanged.
+- selectors cannot fabricate/reorder canonical provenance;
+- reducers stay lossy projections and cannot mutate canonical events;
+- history/context bounds are re-enforced at each turn.
 
 Artifact: `docs/architecture/turn-history-evolution.md`.
 
@@ -156,12 +150,9 @@ ARCHIVED, retained for explicit inspection
 - semantic memory is not AVO `KnowledgeKind` state and is not candidate/lineage scoped;
 - semantic memory is not canonical AgentEvent history;
 - every create/update/archive operation carries explicit provenance;
-- provenance preserves optional call/turn identity without asserting truth;
 - updates and archives use optimistic revision checks and stale writers fail closed;
 - provider return values cross clone boundaries so persistence identity cannot leak to callers;
-- archived records are hidden by default but remain explicitly inspectable;
-- provider implementation owns bytes/storage and may later own indexes;
-- G4 intentionally exposes no semantic `recall()` / `search()` / ranking surface.
+- archived records are hidden by default but remain explicitly inspectable.
 
 Artifact: `docs/architecture/semantic-memory-port.md`.
 
@@ -193,12 +184,9 @@ RELEVANCE_ONLY RecallResult
 - unknown or duplicate memory IDs fail closed;
 - stale indexes cannot resurrect archived records;
 - caller tag constraints are rechecked against authoritative memory metadata;
-- provider ordering becomes explicit `rank` provenance;
+- provider ordering becomes explicit rank provenance;
 - score/reasons explain ranking only;
-- caller item limits cannot exceed the kernel policy ceiling;
-- serialized-character bounds preserve a deterministic ranking prefix;
-- RECALL and SEARCH are explicit modes over one replaceable provider contract;
-- retrieval output is labeled `RELEVANCE_ONLY` and contains no truth, trust or verdict authority;
+- retrieval output is `RELEVANCE_ONLY` and contains no truth, trust or verdict authority;
 - G5 performs no prompt injection.
 
 Artifact: `docs/architecture/associative-recall.md`.
@@ -207,7 +195,43 @@ Artifact: `docs/architecture/associative-recall.md`.
 
 ## G6 — Spontaneous recall
 
-Use the G1/G2 turn boundary for `SELF_GATED`, `PER_TASK` and `EVERY_TURN` recall policies. Inject recalled memory through the existing context plane as bounded data, never implicit trusted instruction.
+### Objective
+
+Use G2 per-turn dynamic-context resolution to apply explicit semantic-memory recall cadence without creating a second prompt plane or weakening context authority.
+
+### Proven semantics
+
+```text
+judgment explicitly selects __semantic_memory__
+        ↓
+BEFORE_TURN
+        ↓
+dynamic context resolve
+        ↓
+SELF_GATED | PER_TASK | EVERY_TURN
+        ↓
+G5 recall or cached reuse
+        ↓
+UNTRUSTED semantic-memory block
+        ↓
+existing context hard bounds
+        ↓
+model
+```
+
+- memory remains invisible to judgments that do not select the reserved block;
+- spontaneous memory can never become a TRUSTED context block;
+- `SELF_GATED` deterministically recalls again only when `deriveQuery()` changes;
+- `PER_TASK` recalls once per runtime call and reuses later turns;
+- `EVERY_TURN` performs recall at each selected model turn;
+- no extra model call is spent deciding whether memory is needed;
+- query derivation is consumer-owned and can observe live application/Oracle state through closure while resolver metadata itself stays limited to safe `callId/judgment/turn`;
+- G5 remains the only ranking/materialization authority;
+- existing `maxBlocks` and `maxSerializedChars` remain the final model-facing budget;
+- retrieval/context failures happen before model generation;
+- per-call cadence caches are isolated by call ID and bounded by deterministic LRU rather than retained without limit.
+
+Artifact: `docs/architecture/spontaneous-recall.md`.
 
 ---
 
