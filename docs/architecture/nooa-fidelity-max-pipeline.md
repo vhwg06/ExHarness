@@ -71,17 +71,18 @@ Every implementation stage branches from the merged `main` of the prior stage. D
 
 ```text
 NOOA-F1 Agent-as-object runtime surface             DONE
-NOOA-F2 Live object reference graph                 NEXT
-NOOA-F3 Progressive doc()/surface discovery         PENDING
+NOOA-F2 Live object reference graph                 DONE
+NOOA-F3 Progressive doc()/surface discovery         NEXT
 NOOA-F4 Language-native JavaScript CodeAct session  PENDING
 NOOA-F5 Fidelity reference + adversarial evaluation PENDING
 ```
 
-Current checkpoint: `NOOA-F2 Live object reference graph`.
+Current checkpoint: `NOOA-F3 Progressive doc()/surface discovery`.
 
 Branch-level `DONE` becomes canonical only after the exact final stage head and merged `main` both pass the full Node 20/22/24 gate.
 
 Completed F1 artifact: `docs/architecture/object-agent.md` (stage PR #26).
+Completed F2 artifact: `docs/architecture/live-object-reference-graph.md` (stage PR #27).
 
 ---
 
@@ -152,7 +153,7 @@ Detailed findings and residual boundary: `docs/architecture/object-agent.md`.
 
 ---
 
-## NOOA-F2 — Live object reference graph
+## NOOA-F2 — Live object reference graph — DONE
 
 ### Objective
 
@@ -178,7 +179,23 @@ Extend `ResourceRef` from named registered resources into a safe graph of live o
 
 ### Verification gate
 
-Adversarial tests must cover identity, mutation visibility, cycles, nested returns, stale/cross-runtime refs, revoked refs, hidden members, confused-deputy calls, oversized discovery metadata, and snapshot/rebind freshness.
+Proven before stage-status flip:
+
+- same object + same authority/lifetime scope reuses one handle;
+- different authority surface on the same object receives a different handle;
+- nested/cyclic graphs preserve handle identity without serialization;
+- authorized mutation is visible through later reads of the original object;
+- undeclared/reflected members remain unavailable and accessors are not executed during binding;
+- live refs cannot cross ordinary result transport or become method arguments without explicit authority;
+- call-scoped nested handles expire with the invocation; revoked/expired refs remain deterministic tombstones;
+- cross-registry refs fail closed and surface aliases/conflicting definitions are rejected;
+- discovery metadata/handle counts are bounded by policy;
+- tracing and observability wrappers preserve live-object operations;
+- snapshots redact transient live authority, require explicit active-root rebind, and create fresh handles;
+- no-live-object snapshot/configuration shape remains backward compatible;
+- packed blank consumer proves a cyclic graph, mutation+reread, and exact root identity recovery.
+
+Detailed findings and residual boundary: `docs/architecture/live-object-reference-graph.md`.
 
 ---
 

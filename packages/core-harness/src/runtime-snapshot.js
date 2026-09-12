@@ -1,5 +1,6 @@
 import { invariant, requireText } from "./contracts.js";
 import { ExHarnessErrorCode, RuntimeSnapshotError } from "./errors.js";
+import { LiveObjectRefKind, liveObjectSurfaceView } from "./live-object.js";
 import { ResourceRefKind } from "./resource.js";
 import { digestValue } from "./trust.js";
 
@@ -13,6 +14,7 @@ export const RuntimeSnapshotPayloadMode = Object.freeze({
 
 export const RuntimeSnapshotRedactionKind = Object.freeze({
   RESOURCE_REF: "RESOURCE_REF_REDACTED",
+  LIVE_OBJECT_REF: "LIVE_OBJECT_REF_REDACTED",
   PAYLOAD_OMITTED: "PAYLOAD_OMITTED"
 });
 
@@ -48,6 +50,17 @@ function normalizeSnapshotData(value, label, redactions, seen = new WeakSet()) {
       kind: RuntimeSnapshotRedactionKind.RESOURCE_REF,
       name: value.name == null ? null : requireText(value.name, `${label} resource name`),
       lifetime: value.lifetime == null ? null : requireText(value.lifetime, `${label} resource lifetime`)
+    });
+  }
+
+  if (value.kind === LiveObjectRefKind) {
+    redactions.liveObjectRefs += 1;
+    seen.delete(value);
+    return Object.freeze({
+      kind: RuntimeSnapshotRedactionKind.LIVE_OBJECT_REF,
+      surfaceId: value.surfaceId == null ? null : requireText(value.surfaceId, `${label} live object surface id`),
+      type: value.type == null ? null : requireText(value.type, `${label} live object type`),
+      lifetime: value.lifetime == null ? null : requireText(value.lifetime, `${label} live object lifetime`)
     });
   }
 
@@ -137,6 +150,16 @@ function resourceManifest(resource) {
   });
 }
 
+function liveObjectManifest(liveObject) {
+  const surface = liveObjectSurfaceView(liveObject.surface);
+  return Object.freeze({
+    name: liveObject.name,
+    lifetime: liveObject.lifetime,
+    surface,
+    definitionDigest: digestValue(surface)
+  });
+}
+
 function sortedByName(values) {
   return [...values].sort((left, right) => left.name.localeCompare(right.name));
 }
@@ -150,9 +173,11 @@ export function createRuntimeConfigurationManifest({
   judgments = [],
   modelRouting = null,
   resourcePolicy = null,
-  resources = []
+  resources = [],
+  liveObjectPolicy = undefined,
+  liveObjects = undefined
 } = {}) {
-  const body = Object.freeze({
+  const body = {
     compatibilityTag: normalizeOptionalText(compatibilityTag, "runtime compatibility tag"),
     strategy: strategyManifest(strategy),
     capabilities: Object.freeze(sortedByName(capabilities.map(capabilityManifest))),
@@ -167,12 +192,21 @@ export function createRuntimeConfigurationManifest({
         }),
     resourcePolicy: resourcePolicy == null ? null : clone(resourcePolicy),
     resources: Object.freeze(sortedByName(resources.map(resourceManifest)))
-  });
+  };
 
+  // Keep the pre-F2 manifest byte-for-byte semantic shape when no live-object
+  // authority is configured. Old N9 snapshots therefore keep their digest.
+  if (liveObjects !== undefined || liveObjectPolicy !== undefined) {
+    invariant(Array.isArray(liveObjects ?? []), "runtime configuration liveObjects must be an array");
+    body.liveObjectPolicy = liveObjectPolicy == null ? null : clone(liveObjectPolicy);
+    body.liveObjects = Object.freeze(sortedByName((liveObjects ?? []).map(liveObjectManifest)));
+  }
+
+  const frozenBody = Object.freeze(body);
   return Object.freeze({
     type: "RUNTIME_CONFIGURATION_MANIFEST",
-    body,
-    digest: digestValue(body)
+    body: frozenBody,
+    digest: digestValue(frozenBody)
   });
 }
 
@@ -216,22 +250,29 @@ function snapshotBody({
   configuration,
   agentEvents,
   agentResources,
+  agentLiveObjects,
   redactions
 }) {
+  const state = {
+    agentEvents: Object.freeze(agentEvents),
+    agentResources: Object.freeze(agentResources)
+  };
+  if (agentLiveObjects != null) state.agentLiveObjects = Object.freeze(agentLiveObjects);
+
+  const redactionView = {
+    resourceRefs: redactions.resourceRefs,
+    omittedPayloads: redactions.omittedPayloads
+  };
+  if (redactions.liveObjectRefs > 0) redactionView.liveObjectRefs = redactions.liveObjectRefs;
+
   return Object.freeze({
     type: RuntimeSnapshotType,
     schemaVersion: CURRENT_RUNTIME_SNAPSHOT_SCHEMA_VERSION,
     createdAt: requireText(createdAt, "runtime snapshot createdAt"),
     payloadMode,
     configuration,
-    state: Object.freeze({
-      agentEvents: Object.freeze(agentEvents),
-      agentResources: Object.freeze(agentResources)
-    }),
-    redactions: Object.freeze({
-      resourceRefs: redactions.resourceRefs,
-      omittedPayloads: redactions.omittedPayloads
-    })
+    state: Object.freeze(state),
+    redactions: Object.freeze(redactionView)
   });
 }
 
@@ -241,18 +282,20 @@ export function createRuntimeSnapshot({
   sanitizeEventPayload = null,
   configuration,
   agentEvents = [],
-  agentResources = []
+  agentResources = [],
+  agentLiveObjects = null
 } = {}) {
   const resolvedPayloadMode = normalizePayloadMode(payloadMode);
   invariant(configuration?.type === "RUNTIME_CONFIGURATION_MANIFEST", "runtime snapshot requires configuration manifest");
   invariant(configuration.digest === digestValue(configuration.body), "runtime configuration manifest digest is invalid");
   invariant(Array.isArray(agentEvents), "runtime snapshot agentEvents must be an array");
   invariant(Array.isArray(agentResources), "runtime snapshot agentResources must be an array");
+  invariant(agentLiveObjects == null || Array.isArray(agentLiveObjects), "runtime snapshot agentLiveObjects must be an array or null");
   if (resolvedPayloadMode === RuntimeSnapshotPayloadMode.SANITIZE) {
     invariant(typeof sanitizeEventPayload === "function", "SANITIZE snapshot payload mode requires sanitizeEventPayload()");
   }
 
-  const redactions = { resourceRefs: 0, omittedPayloads: 0 };
+  const redactions = { resourceRefs: 0, liveObjectRefs: 0, omittedPayloads: 0 };
   const events = agentEvents.map((event) => snapshotEvent(event, {
     payloadMode: resolvedPayloadMode,
     sanitizeEventPayload,
@@ -264,12 +307,23 @@ export function createRuntimeSnapshot({
   }));
   invariant(new Set(resources.map((item) => item.name)).size === resources.length, "runtime snapshot resource names must be unique");
 
+  const liveObjects = agentLiveObjects == null
+    ? null
+    : agentLiveObjects.map((item) => Object.freeze({
+        name: requireText(item.name, "runtime snapshot agent live object name"),
+        active: item.active === true
+      }));
+  if (liveObjects != null) {
+    invariant(new Set(liveObjects.map((item) => item.name)).size === liveObjects.length, "runtime snapshot live object names must be unique");
+  }
+
   const body = snapshotBody({
     createdAt,
     payloadMode: resolvedPayloadMode,
     configuration: clone(configuration),
     agentEvents: events,
     agentResources: resources,
+    agentLiveObjects: liveObjects,
     redactions
   });
   return Object.freeze({ ...body, digest: digestValue(body) });
@@ -320,6 +374,9 @@ export function normalizeRuntimeSnapshot(snapshot) {
   }
   invariant(Array.isArray(body.state?.agentEvents), "runtime snapshot agentEvents must be an array");
   invariant(Array.isArray(body.state?.agentResources), "runtime snapshot agentResources must be an array");
+  if (body.state?.agentLiveObjects != null) {
+    invariant(Array.isArray(body.state.agentLiveObjects), "runtime snapshot agentLiveObjects must be an array");
+  }
   normalizePayloadMode(body.payloadMode);
 
   return Object.freeze(copied);

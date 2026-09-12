@@ -14,6 +14,7 @@ export {
   ExHarnessError,
   ExHarnessErrorCode,
   ExecutionError,
+  LiveObjectAccessError,
   ModelRouteError,
   PredictValidationError,
   RecoveryRequiredError,
@@ -196,6 +197,17 @@ export {
   defineResourceOperation,
   defineResourcePolicy
 } from "./resource.js";
+export {
+  LiveObjectMemberKind,
+  LiveObjectRefKind,
+  createLiveObjectRegistry,
+  defineLiveObject,
+  defineLiveObjectMethod,
+  defineLiveObjectPolicy,
+  defineLiveObjectProperty,
+  defineLiveObjectSurface,
+  liveObjectSurfaceView
+} from "./live-object.js";
 export { defineJudgment } from "./judgment.js";
 export { defineModelAdapter, modelAdapterView } from "./model.js";
 export {

@@ -38,15 +38,18 @@ import {
   ClaimStatus,
   EvaluationValidity,
   EvaluationVerdict,
+  LiveObjectRefKind,
   ObjectAgentMemberKind,
   TrustBoundary,
   agenticMethod,
+  createAgentRuntime,
   createAttestationIssuer,
   createDecisionArtifact,
   createEvidenceArtifact,
   createHarness,
   createInMemorySessionStore,
   createObjectAgent,
+  defineLiveObjectSurface,
   defineSubject,
   defineTrustPolicy,
   environmentRefFromValue,
@@ -100,6 +103,56 @@ if (!objectSurface.members.some((item) => item.name === "increment" && item.kind
 if (!objectSurface.members.some((item) => item.name === "answer" && item.kind === ObjectAgentMemberKind.AGENTIC)) {
   throw new Error("agentic object method missing from packaged surface");
 }
+
+class PackagedLiveNode {
+  constructor(name) {
+    this.name = name;
+    this.childNode = null;
+    this.parentNode = null;
+  }
+
+  child() { return this.childNode; }
+  parent() { return this.parentNode; }
+  rename(name) { this.name = name; return this.name; }
+}
+
+let packagedNodeSurface;
+packagedNodeSurface = defineLiveObjectSurface({
+  id: "packaged.live-node",
+  type: "PackagedLiveNode",
+  methods: [
+    { name: "child", resultSurface: () => packagedNodeSurface },
+    { name: "parent", resultSurface: () => packagedNodeSurface },
+    { name: "rename", mutates: true }
+  ],
+  properties: [{ name: "name", read: (node) => node.name }]
+});
+
+const packagedRoot = new PackagedLiveNode("root");
+const packagedChild = new PackagedLiveNode("child");
+packagedRoot.childNode = packagedChild;
+packagedChild.parentNode = packagedRoot;
+const liveRuntime = createAgentRuntime({
+  liveObjects: [{ name: "root", value: packagedRoot, surface: packagedNodeSurface }],
+  strategy: {
+    kind: "PACKAGED_LIVE_GRAPH",
+    async run({ liveObjects, invokeLiveObject, readLiveObject }) {
+      const rootRef = liveObjects[0].ref;
+      const childRef = await invokeLiveObject(rootRef, "child", []);
+      if (childRef.kind !== LiveObjectRefKind) throw new Error("nested result is not a live handle");
+      await invokeLiveObject(childRef, "rename", ["renamed-child"]);
+      const parentRef = await invokeLiveObject(childRef, "parent", []);
+      return {
+        parentMatchesRoot: parentRef.id === rootRef.id,
+        childName: await readLiveObject(childRef, "name")
+      };
+    }
+  }
+});
+const liveGraphResult = await liveRuntime.run();
+if (!liveGraphResult.parentMatchesRoot) throw new Error("live graph cycle did not preserve root identity");
+if (liveGraphResult.childName !== "renamed-child") throw new Error("live graph reread missed mutation");
+if (packagedChild.name !== "renamed-child") throw new Error("live graph mutated a clone instead of the original object");
 
 const harness = createHarness({
   strategy: {
