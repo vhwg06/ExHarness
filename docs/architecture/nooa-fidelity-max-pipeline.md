@@ -69,11 +69,11 @@ Every implementation stage branches from merged `main` of the prior stage. Do no
 NOOA-F1 Agent-as-object runtime surface             DONE
 NOOA-F2 Live object reference graph                 DONE
 NOOA-F3 Progressive doc()/surface discovery         DONE
-NOOA-F4 Language-native JavaScript CodeAct session  NEXT
-NOOA-F5 Fidelity reference + adversarial evaluation PENDING
+NOOA-F4 Language-native JavaScript CodeAct session  DONE
+NOOA-F5 Fidelity reference + adversarial evaluation NEXT
 ```
 
-Current checkpoint: `NOOA-F4 Language-native JavaScript CodeAct session`.
+Current checkpoint: `NOOA-F5 Fidelity reference + adversarial evaluation`.
 
 Branch-level `DONE` becomes canonical only after the exact final stage head and merged `main` both pass the full Node 20/22/24 gate.
 
@@ -82,6 +82,7 @@ Completed artifacts:
 - F1: `docs/architecture/object-agent.md` — PR #26.
 - F2: `docs/architecture/live-object-reference-graph.md` — PR #27.
 - F3: `docs/architecture/progressive-discovery.md` — PR #28.
+- F4: `docs/architecture/javascript-codeact-session.md` — PR #29.
 
 ---
 
@@ -147,52 +148,46 @@ Detailed artifact: `docs/architecture/progressive-discovery.md`.
 
 ---
 
-## NOOA-F4 — Language-native JavaScript CodeAct session
+## NOOA-F4 — Language-native JavaScript CodeAct session — DONE
 
 ### Objective
 
 Add a CodeAct mode where the model writes JavaScript cells against a persistent per-call execution session, analogous to NOOA's Python REPL, while authority remains mediated by an injected sandbox/executor.
 
-### Target model loop
+### Proven semantics
+
+- generated JavaScript source is a first-class model action;
+- one persistent per-call execution session preserves locals across cells;
+- `self`, nested live objects and `doc()` stay behind kernel-owned host authority;
+- typed `return_result(value)` terminates through an explicit `CELL_ABORT` executor handshake;
+- generated-code failures become bounded observations while executor/infrastructure failures propagate;
+- model turns, code cells, host calls, wall-clock and output bounds remain runtime-owned;
+- finite action-protocol CodeAct remains supported;
+- packed child-process reference execution proves real JavaScript looping, persistent locals, nested discovery, mutation/reread, terminal abort and infinite-loop containment.
+
+Detailed artifact: `docs/architecture/javascript-codeact-session.md`.
+
+### Measured packed reference path
 
 ```text
-model
-  ↓
-execute_javascript(code)
-  ↓
-injected sandbox session
-  ├─ persistent locals across cells
-  ├─ self = live remote agent proxy
-  ├─ doc(obj)
-  ├─ stdout/stderr/result observation
-  └─ return_result(value)
-  ↓
-next model turn or typed terminal result
+JavaScript cells          2
+host calls                8
+execution errors          0
+worker opens/closes       1 / 1
+result.total              12
+nested discovered members 3
+live mutation             before → after
+infinite loop contained   true
+forced process kills      1
 ```
 
-### Required semantics
+### Material findings repaired during verification
 
-- generated source code is a first-class model action;
-- per-call locals persist across cells;
-- prior cell outputs are addressable in-session;
-- `self` and discovered objects are live proxies/handles, not serialized clones;
-- deterministic public methods can be called naturally through the host bridge;
-- `doc()` works inside the execution session;
-- `return_result(value)` terminates from generated code;
-- stdout/stderr/execution errors become bounded observations;
-- typed final validation can feed correction back into the loop;
-- executor/session lifecycle is explicit open/execute/close;
-- host calls are budgeted separately from cells;
-- wall-clock/cell/output/host-call limits remain runtime-owned;
-- sandbox/process cancellation semantics are explicit and never overstated.
+- executor/process abort was initially laundered into recoverable JavaScript feedback;
+- `return_result()` initially did not stop pure JavaScript statements later in the same cell;
+- the process reference bridge initially revived a nested live ref twice and lost proxy identity.
 
-### Backward compatibility
-
-The finite action-protocol CodeAct remains supported. Language-native CodeAct is an additional strategy/mode.
-
-### Verification gate
-
-Reference tasks must require real glue code: loop/branch/local reuse, two or more live-object calls, nested discovery, mutation+reread, and in-cell `return_result`. Adversarial cases: infinite-loop containment, forbidden host method, stale handle, huge stdout, syntax/runtime errors, sandbox crash, host-call budget exhaustion, and terminal-action smuggling.
+The stage retained the packed real-language gate that exposed those failures.
 
 ---
 

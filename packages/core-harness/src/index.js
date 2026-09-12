@@ -242,6 +242,13 @@ export {
   CodeActRecovery,
   createCodeActStrategy
 } from "./codeact-strategy.js";
+export {
+  JavaScriptCodeActActionType,
+  JavaScriptHostRequestType,
+  JavaScriptSessionFeature,
+  createJavaScriptCodeActStrategy,
+  isJavaScriptTerminalInterrupt
+} from "./javascript-codeact-strategy.js";
 export { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 export {
   Agent,
