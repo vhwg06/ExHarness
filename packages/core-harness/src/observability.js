@@ -147,6 +147,9 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
   if (typeof agentRuntime.agentEvents === "function") {
     instrumented.agentEvents = () => agentRuntime.agentEvents();
   }
+  if (typeof agentRuntime.turnEvents === "function") {
+    instrumented.turnEvents = () => agentRuntime.turnEvents();
+  }
   if (typeof agentRuntime.judgments === "function") {
     instrumented.judgments = () => agentRuntime.judgments();
   }
