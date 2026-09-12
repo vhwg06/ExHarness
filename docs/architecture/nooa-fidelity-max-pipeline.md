@@ -70,12 +70,12 @@ NOOA-F1 Agent-as-object runtime surface             DONE
 NOOA-F2 Live object reference graph                 DONE
 NOOA-F3 Progressive doc()/surface discovery         DONE
 NOOA-F4 Language-native JavaScript CodeAct session  DONE
-NOOA-F5 Fidelity reference + adversarial evaluation NEXT
+NOOA-F5 Fidelity reference + adversarial evaluation DONE
 ```
 
-Current checkpoint: `NOOA-F5 Fidelity reference + adversarial evaluation`.
+Current checkpoint: `NOOA fidelity expansion complete`.
 
-Branch-level `DONE` becomes canonical only after the exact final stage head and merged `main` both pass the full Node 20/22/24 gate.
+The completion claim becomes canonical only after the exact final F5 head and merged `main` both pass the full Node 20/22/24 gate.
 
 Completed artifacts:
 
@@ -83,6 +83,7 @@ Completed artifacts:
 - F2: `docs/architecture/live-object-reference-graph.md` — PR #27.
 - F3: `docs/architecture/progressive-discovery.md` — PR #28.
 - F4: `docs/architecture/javascript-codeact-session.md` — PR #29.
+- F5: `docs/architecture/fidelity-reference-evaluation.md` + `artifacts/nooa-fidelity-eval.json` — PR #30.
 
 ---
 
@@ -191,36 +192,81 @@ The stage retained the packed real-language gate that exposed those failures.
 
 ---
 
-## NOOA-F5 — Fidelity reference + adversarial evaluation
+## NOOA-F5 — Fidelity reference + adversarial evaluation — DONE
 
 ### Objective
 
 Prove F1-F4 through the packed public package and compare with the existing explicit runtime/action-protocol baseline.
 
-### Required scenarios
+### Proven packed scenarios
 
 1. ordinary object ergonomics;
-2. live identity + mutation;
+2. live identity, cycles and mutation;
 3. progressive discovery;
-4. generated JavaScript with persistent locals/live proxies;
-5. AVO composition above the resulting runtime.
+4. generated JavaScript with persistent locals and live proxies;
+5. AVO composition above JavaScript CodeAct;
+6. trace correlation and snapshot/rebind authority freshness;
+7. adversarial authority, terminal and containment failures.
 
-### Measurements
+Detailed artifact: `docs/architecture/fidelity-reference-evaluation.md`.
+Stable measurement artifact: `artifacts/nooa-fidelity-eval.json`.
 
-At minimum record task success, false-success/unsafe-accept, model turns, code cells, host/live calls, corrections, initial/discovered context size, handle/stale rejection counts, sandbox failures, trace correlation, snapshot/rebind fidelity, and packed-consumer success.
-
-### Completion target
+### Measured same-task comparison
 
 ```text
-Agent-as-object ergonomics   >= 90% semantic target
-Live object semantics       >= 90% semantic target
-Progressive discovery       >= 90% semantic target
-CodeAct fidelity            >= 90% semantic target
+explicit action-protocol baseline
+  model turns       6
+  capability calls  5
+  final result      { total: 12, name: "after" }
+
+JavaScript fidelity path
+  model turns       2
+  JavaScript cells  2
+  host calls         8
+  final result      { total: 12, name: "after" }
+
+reference-task model-turn reduction  66.67%
 ```
 
-These percentages are explicit capability-rubric labels, not scientific benchmark scores.
+The reduction is specific to the deterministic reference task; it is not a universal latency/token/cost claim.
 
-## Final identity if complete
+### Fidelity measurements
+
+```text
+initial/full discovery chars  242 / 688
+initial/full ratio             35.17%
+typed corrections              1
+handle rejections              3
+sandbox failures observed      2
+trace correlation              PASS (13 correlated spans)
+snapshot/rebind fidelity       PASS
+AVO composition                PASS
+packed consumer                PASS
+false success                  0
+unsafe accept                  0
+adversarial checks             8 / 8
+```
+
+### Capability rubric
+
+```text
+Agent-as-object ergonomics   100 (10/10)
+Live object semantics        100 (10/10)
+Progressive discovery        100 (10/10)
+CodeAct fidelity             100 (10/10)
+```
+
+These are explicit capability-coverage labels for the declared semantic target, not scientific benchmark scores.
+
+### Material finding repaired during verification
+
+The first packed F5 candidate declared `rename/getName` on a live surface while its root fixture implemented only `child()`. The runtime failed closed at authority binding. F5 repaired the fixture to match its declared surface; it did not weaken the runtime, rubric or verification gate.
+
+---
+
+## Final identity and claim boundary
+
+Within the deterministic reference-workload boundary, the fidelity pipeline establishes:
 
 ```text
 ExHarness
@@ -229,3 +275,5 @@ ExHarness
   + explicit authority / trust / verification boundaries
   + injected sandbox and infrastructure
 ```
+
+Completion does not claim universal model quality, scientific equivalence with every NOOA detail, provider reliability, production security of the reference child-process/`vm` worker, or universal token/latency/cost improvement.
