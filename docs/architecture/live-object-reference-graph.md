@@ -174,6 +174,12 @@ The F2 implementation + verification tracks materially changed the candidate:
 5. **Snapshot authority freshness.** Live IDs/registry IDs are redacted rather than persisted. Active roots require explicit fresh rebinding; changed surfaces fail compatibility; revoked roots remain revoked.
 6. **Packed public-package graph proof.** The blank consumer creates a cyclic root/child graph, mutates the child through a nested handle, returns to the exact root handle through the cycle, and observes the mutation on the original object rather than a clone.
 
+## Residual boundary
+
+F2 deliberately keeps lightweight revoked/expired tombstone metadata for deterministic stale-ref classification. Raw objects and bound closures are released, so tombstones do not retain live authority, but the metadata set is not yet compacted by a bounded-retention policy.
+
+That matters for future high-churn execution sessions. F4 must either use a session lifecycle that disposes call-local registries/handles or introduce an explicit bounded tombstone-retention contract without permitting stale-handle authority resurrection. F2 does not claim zero metadata growth under unbounded handle churn.
+
 ## Claim boundary
 
 F2 proves explicit live object identity/graph semantics and safe host-mediated operations. It does not yet claim:
@@ -182,6 +188,7 @@ F2 proves explicit live object identity/graph semantics and safe host-mediated o
 - model-visible transitive reflection;
 - persistent JavaScript CodeAct locals;
 - language-native generated JavaScript proxies/host bridge;
-- cross-process JavaScript identity without an explicit bridge.
+- cross-process JavaScript identity without an explicit bridge;
+- bounded tombstone metadata under unbounded handle churn.
 
 Those are owned by F3 and F4. In particular, F2 is the host-side live-authority substrate that F4 can expose through sandbox proxies; it is not itself a JavaScript REPL or sandbox.
