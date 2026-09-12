@@ -33,6 +33,10 @@ function validateTransportData(value, label, seen = new WeakSet()) {
     return;
   }
   invariant(type === "object", `${label} must contain only JSON-compatible data`);
+  invariant(
+    value.kind !== LiveObjectRefKind,
+    `${label} cannot contain live object refs without an explicit resultSurface`
+  );
   invariant(!seen.has(value), `${label} cannot contain cycles`);
   seen.add(value);
 
@@ -418,6 +422,16 @@ export function createLiveObjectRegistry({
     if (byAuthority.get(key) === record.id) byAuthority.delete(key);
   }
 
+  function retire(record, state) {
+    removeIdentity(record);
+    if (state === "REVOKED") record.revoked = true;
+    if (state === "EXPIRED") record.expired = true;
+    // Keep only tombstone metadata needed for deterministic stale-ref errors.
+    // Raw live values and bound closures must not be retained after authority dies.
+    record.value = null;
+    record.boundMethods = null;
+  }
+
   function expose(value, surface, { lifetime = ResourceLifetime.AGENT, callId = null } = {}) {
     invariant(isLiveValue(value), "live object exposure requires an object or function value");
     invariant(Object.values(ResourceLifetime).includes(lifetime), "live object exposure lifetime is invalid");
@@ -628,8 +642,7 @@ export function createLiveObjectRegistry({
 
     revoke(ref, { callId = null } = {}) {
       const record = resolveRef(ref, { callId });
-      record.revoked = true;
-      removeIdentity(record);
+      retire(record, "REVOKED");
       return true;
     },
 
@@ -637,8 +650,7 @@ export function createLiveObjectRegistry({
       requireText(callId, "live object callId");
       for (const record of records.values()) {
         if (record.lifetime === ResourceLifetime.CALL && record.callId === callId && !record.revoked && !record.expired) {
-          record.expired = true;
-          removeIdentity(record);
+          retire(record, "EXPIRED");
         }
       }
     }
