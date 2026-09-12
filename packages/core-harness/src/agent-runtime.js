@@ -27,6 +27,7 @@ import {
   defineLiveObjectPolicy
 } from "./live-object.js";
 import { TraceSpanKind, createNoopTracer } from "./tracing.js";
+import { TurnOutcome, createTurnEventStore } from "./turn-events.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
 function clone(value) {
@@ -80,6 +81,7 @@ export function createAgentRuntime({
   capabilities = [],
   judgments = [],
   agentEventStore = createAgentEventStore(),
+  turnEventStore = createTurnEventStore(),
   contextBlocks = [],
   contextPolicy = {},
   models = [],
@@ -99,6 +101,10 @@ export function createAgentRuntime({
   invariant(agentEventStore && typeof agentEventStore.newCallId === "function", "agent runtime event store requires newCallId()");
   invariant(typeof agentEventStore.record === "function", "agent runtime event store requires record()");
   invariant(typeof agentEventStore.events === "function", "agent runtime event store requires events()");
+  invariant(turnEventStore && typeof turnEventStore.begin === "function", "agent runtime turn event store requires begin()");
+  invariant(typeof turnEventStore.end === "function", "agent runtime turn event store requires end()");
+  invariant(typeof turnEventStore.hasActive === "function", "agent runtime turn event store requires hasActive()");
+  invariant(typeof turnEventStore.events === "function", "agent runtime turn event store requires events()");
   invariant(tracer && typeof tracer.runSpan === "function", "agent runtime tracer requires runSpan()");
   invariant(typeof tracer.current === "function", "agent runtime tracer requires current()");
   invariant(typeof tracer.spans === "function", "agent runtime tracer requires spans()");
@@ -109,11 +115,6 @@ export function createAgentRuntime({
   invariant(resolvedModelRegistry && typeof resolvedModelRegistry.resolve === "function", "agent runtime model registry requires resolve()");
   invariant(typeof resolvedModelRegistry.registrations === "function", "agent runtime model registry requires registrations()");
   invariant(typeof resolvedModelRegistry.loaded === "function", "agent runtime model registry requires loaded()");
-
-  const traceSurface = Object.freeze({
-    runSpan: tracer.runSpan,
-    current: tracer.current
-  });
 
   const resolvedResourceRegistry = resourceRegistry ?? createResourceRegistry({
     policy: defineResourcePolicy(resourcePolicy),
@@ -508,36 +509,94 @@ export function createAgentRuntime({
         ...callLiveObjectEntries.map((entry) => Object.freeze({ name: entry.name, ref: clone(entry.ref) }))
       ]);
       const modelRouteView = resolvedModelRoute?.provenance ?? null;
-
       const strategyName = selectedStrategy.kind ?? selectedStrategy.name ?? "strategy";
+      let modelInFlight = false;
+
+      function closeActiveTurn(outcome, final, error = null, payload = null) {
+        if (!turnEventStore.hasActive(callId)) return null;
+        return turnEventStore.end({
+          callId,
+          judgment,
+          outcome,
+          final,
+          error,
+          payload: {
+            strategy: strategyName,
+            ...(payload == null ? {} : payload)
+          }
+        });
+      }
+
+      const turnTraceSurface = Object.freeze({
+        current: tracer.current,
+        async runSpan(kind, name, operation, options = {}) {
+          if (kind !== TraceSpanKind.MODEL) {
+            return tracer.runSpan(kind, name, operation, options);
+          }
+
+          invariant(!modelInFlight, "concurrent model turns are not supported in one agent invocation");
+          closeActiveTurn(TurnOutcome.CONTINUE, false, null, { nextModel: name });
+
+          const attributes = options?.attributes ?? null;
+          turnEventStore.begin({
+            callId,
+            judgment,
+            payload: {
+              strategy: strategyName,
+              model: attributes?.model ?? modelRouteView?.adapter ?? { name, version: null },
+              reportedTurn: attributes?.turn ?? attributes?.attempt ?? null
+            }
+          });
+
+          modelInFlight = true;
+          try {
+            return await tracer.runSpan(kind, name, operation, options);
+          } catch (error) {
+            closeActiveTurn(TurnOutcome.ERROR, true, errorView(error), { model: name });
+            throw error;
+          } finally {
+            modelInFlight = false;
+          }
+        }
+      });
+
       const result = await tracer.runSpan(
         TraceSpanKind.STRATEGY,
         strategyName,
-        () => selectedStrategy.run(Object.freeze({
-          input: runInput,
-          context: runContext,
-          callContext: runContext,
-          promptContext,
-          events: runEvents,
-          agentEvents: selectedAgentEvents,
-          history: promptContext.history,
-          callId,
-          recordAgentEvent,
-          capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
-          invoke,
-          resources: visibleResourceRefs,
-          describeResource,
-          invokeResource,
-          liveObjects: visibleLiveObjects,
-          describeLiveObject,
-          invokeLiveObject,
-          readLiveObject,
-          judgment,
-          validateResult: runtimeContract.validateResult ?? null,
-          model: resolvedModelRoute?.adapter ?? null,
-          modelRoute: modelRouteView,
-          trace: traceSurface
-        })),
+        async () => {
+          try {
+            const value = await selectedStrategy.run(Object.freeze({
+              input: runInput,
+              context: runContext,
+              callContext: runContext,
+              promptContext,
+              events: runEvents,
+              agentEvents: selectedAgentEvents,
+              history: promptContext.history,
+              callId,
+              recordAgentEvent,
+              capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
+              invoke,
+              resources: visibleResourceRefs,
+              describeResource,
+              invokeResource,
+              liveObjects: visibleLiveObjects,
+              describeLiveObject,
+              invokeLiveObject,
+              readLiveObject,
+              judgment,
+              validateResult: runtimeContract.validateResult ?? null,
+              model: resolvedModelRoute?.adapter ?? null,
+              modelRoute: modelRouteView,
+              trace: turnTraceSurface
+            }));
+            closeActiveTurn(TurnOutcome.RESULT, true, null, { result: true });
+            return value;
+          } catch (error) {
+            closeActiveTurn(TurnOutcome.ERROR, true, errorView(error));
+            throw error;
+          }
+        },
         {
           callId,
           attributes: { judgment: judgment?.name ?? null, modelRoute: modelRouteView }
@@ -716,6 +775,10 @@ export function createAgentRuntime({
 
     agentEvents() {
       return agentEventStore.events();
+    },
+
+    turnEvents() {
+      return turnEventStore.events();
     },
 
     traces() {
