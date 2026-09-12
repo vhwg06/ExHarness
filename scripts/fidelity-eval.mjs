@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { copyFile, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -54,6 +54,19 @@ function validate(result) {
   assert.equal(result.adversarial.outputTruncated, true);
 }
 
+function stableArtifact(result) {
+  return {
+    schemaVersion: result.schemaVersion,
+    reference: result.reference,
+    source: "packed-blank-consumer",
+    baseline: result.baseline,
+    fidelity: result.fidelity,
+    comparison: result.comparison,
+    rubric: result.rubric,
+    adversarial: result.adversarial
+  };
+}
+
 try {
   const packed = JSON.parse(run("npm", [
     "pack",
@@ -77,6 +90,17 @@ try {
   const output = run("node", ["fidelity-reference-consumer.mjs"], { cwd: temp });
   const result = JSON.parse(output.split(/\r?\n/).filter(Boolean).at(-1));
   validate(result);
+
+  const expected = JSON.parse(await readFile(
+    join(root, "artifacts", "nooa-fidelity-eval.json"),
+    "utf8"
+  ));
+  assert.deepEqual(
+    stableArtifact(result),
+    expected,
+    "NOOA fidelity evaluation drifted from its measured stable artifact"
+  );
+
   console.log(`fidelity-eval:${JSON.stringify(result)}`);
 } finally {
   await rm(temp, { recursive: true, force: true });
