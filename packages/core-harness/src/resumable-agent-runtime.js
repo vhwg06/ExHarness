@@ -4,6 +4,7 @@ import { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 import { defineContextBlock, defineContextPolicy } from "./context.js";
 import { ExHarnessErrorCode, RuntimeSnapshotError } from "./errors.js";
 import { defineJudgment } from "./judgment.js";
+import { defineLiveObject, defineLiveObjectPolicy } from "./live-object.js";
 import { createModelRegistry, defineModelSelector } from "./model-routing.js";
 import { defineResource, defineResourcePolicy, ResourceLifetime } from "./resource.js";
 import {
@@ -49,6 +50,14 @@ function resourceState(resources, runtime) {
   }));
 }
 
+function liveObjectState(liveObjects, runtime) {
+  const activeNames = new Set(runtime.liveObjects().map((entry) => entry.name));
+  return liveObjects.map((liveObject) => Object.freeze({
+    name: liveObject.name,
+    active: activeNames.has(liveObject.name)
+  }));
+}
+
 function assertResourceStateNames(snapshot, resources) {
   const expected = [...resources.map((resource) => resource.name)].sort();
   const actual = [...snapshot.state.agentResources.map((item) => item.name)].sort();
@@ -56,6 +65,19 @@ function assertResourceStateNames(snapshot, resources) {
     throw new RuntimeSnapshotError(
       ExHarnessErrorCode.RUNTIME_SNAPSHOT_INCOMPATIBLE,
       "runtime snapshot resource state does not match configured resources",
+      { expected, actual }
+    );
+  }
+}
+
+function assertLiveObjectStateNames(snapshot, liveObjects) {
+  const expected = [...liveObjects.map((liveObject) => liveObject.name)].sort();
+  const state = snapshot.state.agentLiveObjects ?? [];
+  const actual = [...state.map((item) => item.name)].sort();
+  if (expected.length !== actual.length || expected.some((name, index) => name !== actual[index])) {
+    throw new RuntimeSnapshotError(
+      ExHarnessErrorCode.RUNTIME_SNAPSHOT_INCOMPATIBLE,
+      "runtime snapshot live object state does not match configured live objects",
       { expected, actual }
     );
   }
@@ -92,10 +114,42 @@ function applyResourceRestore(runtime, snapshot, resourceRebind) {
   }
 }
 
+function applyLiveObjectRestore(runtime, snapshot, liveObjectRebind) {
+  const current = new Map(runtime.liveObjects().map((entry) => [entry.name, entry.ref]));
+  for (const state of snapshot.state.agentLiveObjects ?? []) {
+    const ref = current.get(state.name) ?? null;
+    invariant(ref, `restored runtime live object ref is missing: ${state.name}`);
+    if (!state.active) {
+      runtime.revokeLiveObject(ref);
+      continue;
+    }
+    if (typeof liveObjectRebind !== "function") {
+      throw new RuntimeSnapshotError(
+        ExHarnessErrorCode.RUNTIME_SNAPSHOT_LIVE_OBJECT_REBIND_REQUIRED,
+        `runtime snapshot requires explicit live object rebinding: ${state.name}`,
+        { liveObject: state.name }
+      );
+    }
+    const approved = liveObjectRebind(Object.freeze({
+      name: state.name,
+      ref: clone(ref),
+      snapshotState: Object.freeze({ active: true })
+    }));
+    if (approved !== true) {
+      throw new RuntimeSnapshotError(
+        ExHarnessErrorCode.RUNTIME_SNAPSHOT_LIVE_OBJECT_REBIND_REQUIRED,
+        `runtime snapshot live object rebinding was not approved: ${state.name}`,
+        { liveObject: state.name }
+      );
+    }
+  }
+}
+
 export function createResumableAgentRuntime({
   snapshot = null,
   runtimeCompatibilityTag = null,
   resourceRebind = null,
+  liveObjectRebind = null,
   snapshotClock = () => new Date().toISOString(),
   agentEventStoreOptions = {},
   strategy,
@@ -110,6 +164,10 @@ export function createResumableAgentRuntime({
   resourceRegistry = null,
   resourcePolicy = {},
   resourceAuthorize = null,
+  liveObjects = [],
+  liveObjectRegistry = null,
+  liveObjectPolicy = {},
+  liveObjectAuthorize = null,
   tracer
 } = {}) {
   invariant(strategy && typeof strategy.run === "function", "resumable agent runtime requires strategy.run()");
@@ -128,6 +186,11 @@ export function createResumableAgentRuntime({
     invariant(resource.lifetime === ResourceLifetime.AGENT, `resumable runtime resource ${resource.name} must use AGENT lifetime`);
   }
   const normalizedResourcePolicy = defineResourcePolicy(resourcePolicy);
+  const normalizedLiveObjects = liveObjects.map(defineLiveObject);
+  for (const liveObject of normalizedLiveObjects) {
+    invariant(liveObject.lifetime === ResourceLifetime.AGENT, `resumable runtime live object ${liveObject.name} must use AGENT lifetime`);
+  }
+  const normalizedLiveObjectPolicy = defineLiveObjectPolicy(liveObjectPolicy);
   const resolvedModelRegistry = modelRegistry ?? createModelRegistry({ models });
   invariant(resolvedModelRegistry && typeof resolvedModelRegistry.resolve === "function", "resumable runtime model registry requires resolve()");
   invariant(typeof resolvedModelRegistry.registrations === "function", "resumable runtime model registry requires registrations()");
@@ -146,12 +209,19 @@ export function createResumableAgentRuntime({
       registered: resolvedModelRegistry.registrations()
     },
     resourcePolicy: normalizedResourcePolicy,
-    resources: normalizedResources
+    resources: normalizedResources,
+    ...(normalizedLiveObjects.length === 0
+      ? {}
+      : {
+          liveObjectPolicy: normalizedLiveObjectPolicy,
+          liveObjects: normalizedLiveObjects
+        })
   });
 
   if (restoredSnapshot != null) {
     assertRuntimeSnapshotCompatible(restoredSnapshot, configuration);
     assertResourceStateNames(restoredSnapshot, normalizedResources);
+    assertLiveObjectStateNames(restoredSnapshot, normalizedLiveObjects);
   }
 
   const agentEventStore = createAgentEventStore({
@@ -168,15 +238,22 @@ export function createResumableAgentRuntime({
     models: [],
     model,
     modelRegistry: resolvedModelRegistry,
-    resources,
+    resources: normalizedResources,
     resourceRegistry,
-    resourcePolicy,
+    resourcePolicy: normalizedResourcePolicy,
     resourceAuthorize,
+    liveObjects: normalizedLiveObjects,
+    liveObjectRegistry,
+    liveObjectPolicy: normalizedLiveObjectPolicy,
+    liveObjectAuthorize,
     ...(tracer == null ? {} : { tracer })
   });
 
   if (restoredSnapshot != null && normalizedResources.length > 0) {
     applyResourceRestore(runtime, restoredSnapshot, resourceRebind);
+  }
+  if (restoredSnapshot != null && normalizedLiveObjects.length > 0) {
+    applyLiveObjectRestore(runtime, restoredSnapshot, liveObjectRebind);
   }
 
   let activeCalls = 0;
@@ -209,6 +286,12 @@ export function createResumableAgentRuntime({
     describeResource: (ref) => track(() => runtime.describeResource(ref)),
     invokeResource: (ref, operationName, payload = null) => track(() => runtime.invokeResource(ref, operationName, payload)),
     revokeResource: (ref) => runtime.revokeResource(ref),
+    liveObjects: () => runtime.liveObjects(),
+    liveObjectPolicy: () => runtime.liveObjectPolicy(),
+    describeLiveObject: (ref) => track(() => runtime.describeLiveObject(ref)),
+    invokeLiveObject: (ref, methodName, args = []) => track(() => runtime.invokeLiveObject(ref, methodName, args)),
+    readLiveObject: (ref, propertyName) => track(() => runtime.readLiveObject(ref, propertyName)),
+    revokeLiveObject: (ref) => runtime.revokeLiveObject(ref),
     agentEvents: () => runtime.agentEvents(),
     traces: () => runtime.traces(),
     traceFailures: () => runtime.traceFailures(),
@@ -249,7 +332,10 @@ export function createResumableAgentRuntime({
         sanitizeEventPayload,
         configuration,
         agentEvents: runtime.agentEvents(),
-        agentResources: resourceState(normalizedResources, runtime)
+        agentResources: resourceState(normalizedResources, runtime),
+        agentLiveObjects: normalizedLiveObjects.length === 0
+          ? null
+          : liveObjectState(normalizedLiveObjects, runtime)
       });
     },
 
