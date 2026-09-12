@@ -202,7 +202,10 @@ rl.on("line", async (line) => {
     const pending = pendingHost.get(message.id);
     if (!pending) return;
     pendingHost.delete(message.id);
-    if (message.ok) pending.resolve(revive(message.value));
+    // Keep the RPC layer transport-neutral. The call site owns exactly one
+    // revival step so a LIVE_OBJECT_REF becomes one stable proxy rather than
+    // being revived twice and accidentally collapsed into a plain object.
+    if (message.ok) pending.resolve(message.value);
     else pending.reject(reviveHostError(message.error));
     return;
   }
