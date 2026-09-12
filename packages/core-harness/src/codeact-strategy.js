@@ -198,6 +198,7 @@ export function createCodeActStrategy({
   return Object.freeze({
     kind: "CODEACT",
     acceptsRoutedModel: true,
+    turnAwareContext: true,
     model: fallbackModel == null ? null : modelAdapterView(fallbackModel),
     limits: Object.freeze({
       maxTurns: resolvedMaxTurns,
@@ -223,6 +224,7 @@ export function createCodeActStrategy({
       invokeResource,
       validateResult = null,
       recordAgentEvent = null,
+      prepareTurn = null,
       trace = null,
       model: routedModel = null,
       modelRoute = null
@@ -232,6 +234,7 @@ export function createCodeActStrategy({
       invariant(typeof invokeResource === "function", "codeact requires runtime invokeResource()");
       if (validateResult != null) invariant(typeof validateResult === "function", "codeact validateResult must be a function");
       if (recordAgentEvent != null) invariant(typeof recordAgentEvent === "function", "codeact recordAgentEvent must be a function");
+      if (prepareTurn != null) invariant(typeof prepareTurn === "function", "prepareTurn must be a function");
 
       const activeModel = routedModel == null ? fallbackModel : defineModelAdapter(routedModel);
       invariant(activeModel, "codeact requires a routed model or constructor model");
@@ -314,16 +317,19 @@ export function createCodeActStrategy({
 
       for (let turn = 1; turn <= resolvedMaxTurns; turn += 1) {
         assertWithinTime("before_model");
+        const turnContext = prepareTurn == null
+          ? Object.freeze({ promptContext, agentEvents, history })
+          : await prepareTurn({ reportedTurn: turn, model: activeModelView });
         const request = Object.freeze({
           mode: "CODEACT",
           turn,
           input: clone(input),
           context: clone(context),
           callContext: clone(callContext),
-          promptContext: clone(promptContext),
+          promptContext: clone(turnContext.promptContext),
           events: clone(events) ?? [],
-          agentEvents: clone(agentEvents) ?? [],
-          history: clone(history),
+          agentEvents: clone(turnContext.agentEvents) ?? [],
+          history: clone(turnContext.history),
           judgment: judgment == null ? null : clone(judgment),
           modelRoute: routeView,
           capabilities: clone(capabilities) ?? [],
