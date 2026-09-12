@@ -99,7 +99,8 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
   async function runWithReport(options = {}) {
     const started = await eventBus.emit("AGENT_RUN_STARTED", {
       scopedCapabilityCount: options.capabilities?.length ?? 0,
-      scopedResourceCount: options.resources?.length ?? 0
+      scopedResourceCount: options.resources?.length ?? 0,
+      scopedLiveObjectCount: options.liveObjects?.length ?? 0
     });
     const originalInvoke = options.onCapabilityInvoke;
     const wrappedCapabilities = instrumentCapabilities(options.capabilities ?? [], eventBus);
@@ -172,6 +173,24 @@ export function instrumentAgentRuntime(agentRuntime, eventBus) {
   }
   if (typeof agentRuntime.revokeResource === "function") {
     instrumented.revokeResource = (ref) => agentRuntime.revokeResource(ref);
+  }
+  if (typeof agentRuntime.liveObjects === "function") {
+    instrumented.liveObjects = () => agentRuntime.liveObjects();
+  }
+  if (typeof agentRuntime.liveObjectPolicy === "function") {
+    instrumented.liveObjectPolicy = () => agentRuntime.liveObjectPolicy();
+  }
+  if (typeof agentRuntime.describeLiveObject === "function") {
+    instrumented.describeLiveObject = (ref) => agentRuntime.describeLiveObject(ref);
+  }
+  if (typeof agentRuntime.invokeLiveObject === "function") {
+    instrumented.invokeLiveObject = (ref, methodName, args = []) => agentRuntime.invokeLiveObject(ref, methodName, args);
+  }
+  if (typeof agentRuntime.readLiveObject === "function") {
+    instrumented.readLiveObject = (ref, propertyName) => agentRuntime.readLiveObject(ref, propertyName);
+  }
+  if (typeof agentRuntime.revokeLiveObject === "function") {
+    instrumented.revokeLiveObject = (ref) => agentRuntime.revokeLiveObject(ref);
   }
   if (typeof agentRuntime.traces === "function") {
     instrumented.traces = () => agentRuntime.traces();
