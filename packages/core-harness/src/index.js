@@ -58,6 +58,15 @@ export {
 } from "./knowledge.js";
 export { createMemoryFacade } from "./memory.js";
 export {
+  SemanticMemoryChangeKind,
+  SemanticMemoryConflictError,
+  SemanticMemoryStatus,
+  createInMemorySemanticMemoryProvider,
+  createSemanticMemoryPort,
+  defineSemanticMemoryDraft,
+  defineSemanticMemoryProvenance
+} from "./semantic-memory.js";
+export {
   VerificationSourceKind,
   VerificationStatus,
   defineVerifier,

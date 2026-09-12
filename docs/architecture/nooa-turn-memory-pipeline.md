@@ -20,21 +20,21 @@ post-merge Node 20/22/24
 next stage branches from merged main
 ```
 
-Do not stack G2 on an unmerged G1 branch, G3 on an unmerged G2 branch, or G4 on an unmerged G3 branch.
+Do not stack a stage on an unmerged predecessor.
 
 ## Status
 
 ```text
 NOOA-G1 Turn lifecycle                         DONE
 NOOA-G2 Turn-aware context refresh             DONE
-NOOA-G3 Safe history evolution                 DONE on PR candidate
-NOOA-G4 Semantic memory port                   NEXT after G3 merge
-NOOA-G5 Associative recall contract            PENDING
+NOOA-G3 Safe history evolution                 DONE
+NOOA-G4 Semantic memory port                   DONE on PR candidate
+NOOA-G5 Associative recall contract            NEXT after G4 merge
 NOOA-G6 Spontaneous recall                     PENDING
 NOOA-G7 Integrated/adversarial evaluation      PENDING
 ```
 
-Current checkpoint: `G3 exact-head verification pending after measured reference-artifact update`.
+Current checkpoint: `G4 exact-head verification pending`.
 
 ---
 
@@ -133,9 +133,37 @@ Artifact: `docs/architecture/turn-history-evolution.md`.
 
 ## G4 — Semantic memory port
 
-Separate associative memory from AVO persistent knowledge and AgentEvent history.
+### Objective
 
-Kernel owns contracts, provenance and lifecycle; providers own embeddings, lexical search, vector indexes, graph spread and physical persistence.
+Separate associative memory from AVO persistent knowledge and AgentEvent history while giving the kernel a provider-neutral lifecycle/provenance contract.
+
+### Proven semantics
+
+```text
+remember
+  ↓
+ACTIVE record revision 1
+  ↓
+update (CAS)
+  ↓
+revision N + append-only provenance
+  ↓
+archive (CAS)
+  ↓
+ARCHIVED, retained for explicit inspection
+```
+
+- semantic memory is not AVO `KnowledgeKind` state and is not candidate/lineage scoped;
+- semantic memory is not canonical AgentEvent history;
+- every create/update/archive operation carries explicit provenance;
+- provenance preserves optional call/turn identity without asserting truth;
+- updates and archives use optimistic revision checks and stale writers fail closed;
+- provider return values cross clone boundaries so persistence identity cannot leak to callers;
+- archived records are hidden by default but remain explicitly inspectable;
+- provider implementation owns bytes/storage and may later own indexes;
+- G4 intentionally exposes no semantic `recall()` / `search()` / ranking surface.
+
+Artifact: `docs/architecture/semantic-memory-port.md`.
 
 ---
 
