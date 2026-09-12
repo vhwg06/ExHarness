@@ -20,21 +20,21 @@ post-merge Node 20/22/24
 next stage branches from merged main
 ```
 
-Do not stack G2 on an unmerged G1 branch or G3 on an unmerged G2 branch.
+Do not stack G2 on an unmerged G1 branch, G3 on an unmerged G2 branch, or G4 on an unmerged G3 branch.
 
 ## Status
 
 ```text
 NOOA-G1 Turn lifecycle                         DONE
-NOOA-G2 Turn-aware context refresh             DONE on PR candidate
-NOOA-G3 Safe history evolution                 NEXT after G2 merge
-NOOA-G4 Semantic memory port                   PENDING
+NOOA-G2 Turn-aware context refresh             DONE
+NOOA-G3 Safe history evolution                 DONE on PR candidate
+NOOA-G4 Semantic memory port                   NEXT after G3 merge
 NOOA-G5 Associative recall contract            PENDING
 NOOA-G6 Spontaneous recall                     PENDING
 NOOA-G7 Integrated/adversarial evaluation      PENDING
 ```
 
-Current checkpoint: `G2 exact-head verification pending after final docs commit`.
+Current checkpoint: `G3 exact-head verification pending after measured reference-artifact update`.
 
 ---
 
@@ -44,7 +44,7 @@ Current checkpoint: `G2 exact-head verification pending after final docs commit`
 
 Introduce first-class `BEFORE_TURN` / `AFTER_TURN` runtime boundaries for every built-in model generation while keeping lifecycle events outside canonical `AgentEvent` history.
 
-### Required semantics
+### Proven semantics
 
 - monotonic runtime-owned turn identity per call;
 - exactly one active turn at a time;
@@ -99,17 +99,35 @@ Artifact: `docs/architecture/turn-context-refresh.md`.
 
 Make selected/reduced prompt history evolve at turn boundaries while canonical `AgentEvent` remains authoritative.
 
-### Required semantics
+### Proven semantics
 
-- `AFTER_TURN` observes a completed turn, including action/validation effects;
-- next `BEFORE_TURN` projects from the then-current canonical journal;
+```text
+current canonical AgentEvent journal
+        ↓
+exclude current invocation TASK
+        ↓
+selectHistory (subset only)
+        ↓
+maxHistoryEvents / serialized bounds
+        ↓
+reduceHistory (optional, clone only)
+        ↓
+next-turn prompt history
+```
+
+- the next turn sees completed MODEL_OUTPUT / ACTION_OUTPUT / ACTION_ERROR / VALIDATION_ERROR records from the previous turn;
+- the current invocation TASK is excluded so call input is not duplicated into prompt history;
+- prior-call canonical history remains eligible exactly as before when history is selected;
 - `selectHistory` remains subset-only and canonical-order preserving;
-- `reduceHistory` stays lossy projection, never authoritative replacement;
-- source event provenance remains explicit;
-- bounded history/context failure remains fail-closed;
-- no reducer may rewrite canonical events.
+- `reduceHistory` stays a lossy projection and cannot mutate canonical events;
+- reduced history retains exact `sourceEventIds` provenance;
+- fabricated provenance fails closed before the next model generation;
+- history/context bounds are re-enforced at each turn;
+- G1 lifecycle and G2 dynamic-context refresh semantics are unchanged.
 
-G3 should reuse the existing selector/reducer machinery rather than invent a second summary store unless real workload evidence requires one.
+The measured packed-consumer reference artifact changes only where G3 intentionally changes prompt projection size. All correctness, false-success, unsafe-accept, authority and adversarial metrics remain unchanged.
+
+Artifact: `docs/architecture/turn-history-evolution.md`.
 
 ---
 
