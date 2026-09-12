@@ -190,6 +190,13 @@ export {
   renderAgentContext
 } from "./context.js";
 export {
+  DiscoveryMode,
+  defineDiscoveryPolicy,
+  docLiveObject,
+  renderLiveObjectDoc,
+  renderObjectAgentDoc
+} from "./discovery.js";
+export {
   ResourceLifetime,
   ResourceRefKind,
   createResourceRegistry,
@@ -243,6 +250,7 @@ export {
   ObjectMethodCallKind,
   agenticMethod,
   createObjectAgent,
+  docObjectAgent,
   getObjectAgentRuntime,
   objectAgentSurface,
   objectMethodCall
