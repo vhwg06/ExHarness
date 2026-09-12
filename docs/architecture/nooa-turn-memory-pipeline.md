@@ -25,16 +25,16 @@ Do not stack G2 on an unmerged G1 branch or G3 on an unmerged G2 branch.
 ## Status
 
 ```text
-NOOA-G1 Turn lifecycle                         DONE on PR candidate
-NOOA-G2 Turn-aware context refresh             NEXT after G1 merge
-NOOA-G3 Safe history evolution                 PENDING
+NOOA-G1 Turn lifecycle                         DONE
+NOOA-G2 Turn-aware context refresh             DONE on PR candidate
+NOOA-G3 Safe history evolution                 NEXT after G2 merge
 NOOA-G4 Semantic memory port                   PENDING
 NOOA-G5 Associative recall contract            PENDING
 NOOA-G6 Spontaneous recall                     PENDING
 NOOA-G7 Integrated/adversarial evaluation      PENDING
 ```
 
-Current checkpoint: `G1 exact-head verification pending after final docs commit`.
+Current checkpoint: `G2 exact-head verification pending after final docs commit`.
 
 ---
 
@@ -65,24 +65,31 @@ Artifact: `docs/architecture/turn-lifecycle.md`.
 
 Rebuild the model-facing prompt projection at every `BEFORE_TURN` rather than once per AgentRuntime invocation.
 
-### Required semantics
+### Proven semantics
 
 ```text
-canonical context sources
+previous turn closes
         ↓
 BEFORE_TURN
         ↓
-renderAgentContext()
+renderAgentContext(turn=N)
         ↓
-fresh promptContext for this model request
+fresh promptContext
+        ↓
+model generation
 ```
 
-- dynamic blocks re-resolve per turn;
-- context selection and hard bounds remain unchanged;
+- dynamic blocks re-resolve once per turn;
+- runtime-owned `turn` joins `callId` / `judgment` resolver metadata;
+- context selection and hard bounds remain unchanged and are re-enforced every turn;
 - call input cannot promote itself into trusted blocks;
-- freshness does not mutate canonical AgentEvent history;
-- Predict and both CodeAct paths consume the same turn projection mechanism;
-- initial invocation context behavior remains backward compatible where there is only one model turn.
+- Predict and both CodeAct paths consume the same `prepareTurn()` projection seam;
+- single-turn built-ins avoid an extra eager context resolution;
+- JavaScript CodeAct `doc(self)` follows the latest turn projection;
+- context render failure closes the prepared turn before model generation;
+- G2 deliberately keeps history sourced from the pre-invocation canonical snapshot.
+
+Artifact: `docs/architecture/turn-context-refresh.md`.
 
 ---
 
