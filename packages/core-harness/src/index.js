@@ -245,7 +245,9 @@ export {
 export {
   JavaScriptCodeActActionType,
   JavaScriptHostRequestType,
-  createJavaScriptCodeActStrategy
+  JavaScriptSessionFeature,
+  createJavaScriptCodeActStrategy,
+  isJavaScriptTerminalInterrupt
 } from "./javascript-codeact-strategy.js";
 export { createAgentRuntime, defineCapability } from "./agent-runtime.js";
 export {
