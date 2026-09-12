@@ -511,6 +511,12 @@ export function createAgentRuntime({
         });
       }
 
+      function currentTurnHistoryEvents() {
+        return agentEventStore.events().filter((event) => !(
+          event.callId === callId && event.type === AgentEventKind.TASK
+        ));
+      }
+
       const initialProjection = latestPromptContext == null
         ? Object.freeze({ promptContext: null, agentEvents: Object.freeze([]), history: null })
         : contextProjection(latestPromptContext);
@@ -569,7 +575,7 @@ export function createAgentRuntime({
             blocks: [...baseContextBlocks.values()],
             selection: resolvedSelection,
             policy: resolvedContextPolicy,
-            canonicalEvents: priorAgentEvents,
+            canonicalEvents: currentTurnHistoryEvents(),
             callId,
             judgment,
             turn: before.turn
