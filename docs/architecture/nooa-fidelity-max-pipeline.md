@@ -2,11 +2,9 @@
 
 This document is the execution authority for pushing the NOOA-inspired ExHarness runtime toward the identity-defining semantics that NOOA does especially well: agent-as-object ergonomics, live object semantics, progressive discovery, and language-native CodeAct.
 
-The completed NOOA substrate pipeline remains valid. This pipeline is a fidelity expansion above that baseline; it must not weaken the existing AVO, ResourceRef, trust, verification, or containment boundaries merely to resemble NOOA syntax.
+The completed NOOA substrate pipeline remains valid. This pipeline is a fidelity expansion above that baseline; it must not weaken existing AVO, ResourceRef, trust, verification, or containment boundaries merely to resemble NOOA syntax.
 
 ## Semantic target
-
-The target is not Python syntax parity. The target is this user/programming model:
 
 ```text
 ordinary agent object
@@ -28,18 +26,16 @@ persistent per-call locals + live-object proxies
 return_result(value) terminates through typed validation
 ```
 
-NOOA is the semantic reference for this pipeline. ExHarness remains explicit where JavaScript lacks Python runtime type metadata and where explicit authority improves security.
-
 ## Non-negotiable invariants
 
-1. **Containment remains external to generated code.** Generated JavaScript is never treated as safely contained by parser checks or Node `vm`; an injected executor/sandbox is the real containment boundary.
-2. **Live object does not mean serialized object.** Object identity and mutations must be preserved without dumping raw objects into model context or persistence.
-3. **Discovery does not imply authority.** Seeing a method/property description does not grant invocation authority beyond runtime policy.
-4. **Public-by-default is scoped to an agent object surface, not arbitrary transitive reflection.** Private/internal/framework members remain hidden and nested objects require deliberate discovery.
-5. **Agentic methods cannot self-certify correctness.** Existing typed output, objective, verification, and AVO promotion authority remain unchanged.
-6. **CodeAct budgets stay outside model control.** Turns/cells, action/host calls, wall clock, output/context bounds, and sandbox policy remain runtime-owned.
-7. **Snapshot/resume never resurrects transient object authority.** Any new live-object handles must obey the existing fresh-rebind model.
-8. **Backward compatibility is preserved unless a breaking change is explicitly justified and versioned.** Existing `defineJudgment`, `defineCapability`, `ResourceRef`, and action-protocol CodeAct remain supported.
+1. Generated JavaScript is never treated as contained by parser checks or Node `vm`; an injected executor/sandbox is the real containment boundary.
+2. Live object does not mean serialized object.
+3. Discovery does not imply authority.
+4. Public-by-default is scoped to an agent surface, not arbitrary transitive reflection.
+5. Agentic methods cannot self-certify correctness.
+6. CodeAct budgets stay outside model control.
+7. Snapshot/resume never resurrects transient object authority.
+8. Existing explicit runtime APIs and action-protocol CodeAct remain backward compatible.
 
 ## Execution rule
 
@@ -65,24 +61,27 @@ PASS / GAP
                next stage
 ```
 
-Every implementation stage branches from the merged `main` of the prior stage. Do not stack downstream implementation branches.
+Every implementation stage branches from merged `main` of the prior stage. Do not stack downstream implementation branches.
 
 ## Status
 
 ```text
 NOOA-F1 Agent-as-object runtime surface             DONE
 NOOA-F2 Live object reference graph                 DONE
-NOOA-F3 Progressive doc()/surface discovery         NEXT
-NOOA-F4 Language-native JavaScript CodeAct session  PENDING
+NOOA-F3 Progressive doc()/surface discovery         DONE
+NOOA-F4 Language-native JavaScript CodeAct session  NEXT
 NOOA-F5 Fidelity reference + adversarial evaluation PENDING
 ```
 
-Current checkpoint: `NOOA-F3 Progressive doc()/surface discovery`.
+Current checkpoint: `NOOA-F4 Language-native JavaScript CodeAct session`.
 
 Branch-level `DONE` becomes canonical only after the exact final stage head and merged `main` both pass the full Node 20/22/24 gate.
 
-Completed F1 artifact: `docs/architecture/object-agent.md` (stage PR #26).
-Completed F2 artifact: `docs/architecture/live-object-reference-graph.md` (stage PR #27).
+Completed artifacts:
+
+- F1: `docs/architecture/object-agent.md` — PR #26.
+- F2: `docs/architecture/live-object-reference-graph.md` — PR #27.
+- F3: `docs/architecture/progressive-discovery.md` — PR #28.
 
 ---
 
@@ -90,66 +89,19 @@ Completed F2 artifact: `docs/architecture/live-object-reference-graph.md` (stage
 
 ### Objective
 
-Make normal JavaScript objects/classes the ergonomic programming surface while reusing the existing AgentRuntime underneath.
+Make normal JavaScript objects/classes the ergonomic ExHarness programming surface while reusing AgentRuntime as execution authority.
 
-Proven consumer shape:
+### Proven semantics
 
-```js
-class InventoryAgent extends Agent {
-  stock(sku) {
-    return this.inventory.get(sku) ?? 0;
-  }
+- exact object identity / `instanceof` / normal `this` dispatch;
+- ordinary public methods become deterministic runtime capabilities without duplicate bodies;
+- agentic marker methods remain ordinary awaited methods backed by typed Judgments;
+- hidden/private/platform methods are excluded;
+- attach-time implementation binding prevents monkeypatch authority laundering;
+- zero/multi-argument calls have explicit bridges;
+- packed consumer proves the public package path.
 
-  answer = agenticMethod({
-    strategy,
-    parseInput,
-    parseOutput,
-    model
-  });
-}
-
-const agent = createObjectAgent(new InventoryAgent(...));
-
-agent.stock("X");
-await agent.answer("Do we have X?");
-```
-
-The returned agent is the exact original object identity. Deterministic public methods are backed by runtime capabilities without duplicate implementation bodies; agentic marker fields become ordinary awaited methods backed by typed Judgments.
-
-### Required semantics
-
-- object identity is stable for the lifetime of the runtime;
-- ordinary public prototype methods can become deterministic capabilities without duplicate implementation registration;
-- agentic methods delegate through typed Judgment/runtime semantics but remain ordinary awaited methods to callers;
-- private/internal names are hidden by convention and explicit metadata;
-- per-instance fields/helper objects remain per-instance, never class-shared by framework magic;
-- model routing/context/events/tracing still correlate to the same underlying invocation;
-- existing explicit runtime APIs remain available.
-
-### Non-goals
-
-- language-native code execution;
-- transitive live object proxying;
-- full `doc(obj)` rendering;
-- decorators requiring syntax/runtime support unavailable in the supported Node matrix.
-
-### Verification gate
-
-Proven before stage-status flip:
-
-- deterministic public method can be invoked by the runtime without a duplicate function body;
-- agentic method called as an ordinary object method receives typed validation/model routing/context/tracing;
-- hidden/private method is never auto-exposed;
-- two instances do not share mutable tool state;
-- method override/subclass dispatch uses the actual attach-time instance implementation;
-- getters/accessors are not executed during reflection;
-- inherited platform/library methods are not reflected from arbitrary wrapped classes;
-- runtime capability implementation cannot be replaced by later application monkeypatching;
-- zero/multi-argument method calls have an explicit unambiguous bridge;
-- public `then()` is rejected unless hidden;
-- public API is proven through the packed blank consumer.
-
-Detailed findings and residual boundary: `docs/architecture/object-agent.md`.
+Detailed artifact: `docs/architecture/object-agent.md`.
 
 ---
 
@@ -157,69 +109,41 @@ Detailed findings and residual boundary: `docs/architecture/object-agent.md`.
 
 ### Objective
 
-Extend `ResourceRef` from named registered resources into a safe graph of live object identities that can be returned, stored in a per-call execution session, and re-used without JSON serialization.
+Preserve live object identity, mutation and cycles behind explicit authority handles without serializing object graphs.
 
-### Required semantics
-
-- stable handle identity: the same live object maps to the same handle within its authority/lifetime scope;
-- nested returned objects may become handles instead of forced JSON values;
-- mutations through permitted methods are visible through later reads of the same object;
-- method/property authority is policy-scoped and does not expose arbitrary reflection;
-- graph handles are registry/runtime scoped and fail cross-runtime;
-- revoked/expired handles fail deterministically;
-- cycles in live object graphs do not require serialization;
-- snapshot persists requirements/metadata only, never transient IDs or raw live values;
-- rebind after restore creates fresh handles.
-
-### Non-goals
-
-- unrestricted object reflection;
-- proxying secrets/private fields merely because they are present on a JavaScript object;
-- process-boundary transport pretending to preserve JavaScript identity without an explicit host bridge.
-
-### Verification gate
-
-Proven before stage-status flip:
+### Proven semantics
 
 - same object + same authority/lifetime scope reuses one handle;
-- different authority surface on the same object receives a different handle;
-- nested/cyclic graphs preserve handle identity without serialization;
-- authorized mutation is visible through later reads of the original object;
-- undeclared/reflected members remain unavailable and accessors are not executed during binding;
-- live refs cannot cross ordinary result transport or become method arguments without explicit authority;
-- call-scoped nested handles expire with the invocation; revoked/expired refs remain deterministic tombstones;
-- cross-registry refs fail closed and surface aliases/conflicting definitions are rejected;
-- discovery metadata/handle counts are bounded by policy;
-- tracing and observability wrappers preserve live-object operations;
-- snapshots redact transient live authority, require explicit active-root rebind, and create fresh handles;
-- no-live-object snapshot/configuration shape remains backward compatible;
-- packed blank consumer proves a cyclic graph, mutation+reread, and exact root identity recovery.
+- different authority surface gets a different handle;
+- nested/cyclic results preserve identity;
+- mutation is visible on the original object;
+- undeclared/reflected members remain unavailable;
+- live refs cannot escape ordinary transport or become arguments without opt-in;
+- call-scoped handles expire; stale refs fail deterministically;
+- tracing/observability/snapshot/rebind preserve authority boundaries;
+- packed consumer proves cyclic identity and mutation/reread.
 
-Detailed findings and residual boundary: `docs/architecture/live-object-reference-graph.md`.
+Detailed artifact: `docs/architecture/live-object-reference-graph.md`.
 
 ---
 
-## NOOA-F3 — Progressive `doc()` / surface discovery
+## NOOA-F3 — Progressive `doc()` / surface discovery — DONE
 
 ### Objective
 
-Give the model NOOA-style progressive discovery: a small initial `self` contract and an on-demand `doc(obj)` capability for live handles and agent/tool objects.
+Give the model NOOA-style progressive discovery: a small initial `self` contract and on-demand docs for object-agent and live-object surfaces.
 
-### Required semantics
+### Proven semantics
 
-- initial model context contains a bounded concise description of the current agent surface rather than all nested tool schemas;
-- `doc(self)` exposes public deterministic/agentic methods and explicitly visible fields;
-- `doc(handle)` resolves the current live object surface on demand;
-- concise/full modes are supported;
-- method descriptions carry name, description, mutation/side-effect signal where known, and argument/result contract metadata where available;
-- dynamic current values may be shown only through bounded safe renderers;
-- private/framework fields stay hidden;
-- discovering a nested object does not eagerly dump its transitive graph;
-- discovery output has explicit size/depth/member budgets and deterministic overflow behavior.
+- every object-agent agentic judgment gets a bounded `CONCISE` self document through the existing trusted N4 context plane;
+- `docObjectAgent()` supports concise/full modes without hidden members;
+- `docLiveObject()` resolves F2 handles through DESCRIBE authority before rendering;
+- discovery never grants invoke/read authority;
+- member count, serialized chars and descriptions are bounded with explicit truncation metadata;
+- no transitive graph dump occurs;
+- packed consumer measured `236` concise chars vs `725` full chars (32.6% initial/full) while task completion remained PASS.
 
-### Verification gate
-
-Compare eager disclosure vs progressive disclosure on a reference object graph. Measure initial prompt surface, total discovered surface, successful task completion, and accidental authority exposure. Progressive mode must materially reduce initial disclosure while preserving task completion.
+Detailed artifact: `docs/architecture/progressive-discovery.md`.
 
 ---
 
@@ -252,23 +176,23 @@ next model turn or typed terminal result
 - per-call locals persist across cells;
 - prior cell outputs are addressable in-session;
 - `self` and discovered objects are live proxies/handles, not serialized clones;
-- deterministic public methods can be called naturally from generated code through the host bridge;
+- deterministic public methods can be called naturally through the host bridge;
 - `doc()` works inside the execution session;
-- `return_result(value)` terminates even when invoked inside generated code;
-- stdout/stderr/execution errors become bounded model-visible observations;
+- `return_result(value)` terminates from generated code;
+- stdout/stderr/execution errors become bounded observations;
 - typed final validation can feed correction back into the loop;
 - executor/session lifecycle is explicit open/execute/close;
-- host calls are counted/budgeted separately from generated-code cells;
+- host calls are budgeted separately from cells;
 - wall-clock/cell/output/host-call limits remain runtime-owned;
 - sandbox/process cancellation semantics are explicit and never overstated.
 
 ### Backward compatibility
 
-The current finite action-protocol CodeAct remains supported. Language-native CodeAct is an additional mode/strategy until evidence justifies making it the preferred default.
+The finite action-protocol CodeAct remains supported. Language-native CodeAct is an additional strategy/mode.
 
 ### Verification gate
 
-Reference tasks must require real glue code: loop/branch/local variable reuse, two or more live object calls, nested object discovery, mutation then reread, and in-cell `return_result`. Adversarial cases include infinite loop containment, forbidden host method, stale handle, huge stdout, code syntax/runtime errors, sandbox crash, host-call budget exhaustion, and terminal-action smuggling.
+Reference tasks must require real glue code: loop/branch/local reuse, two or more live-object calls, nested discovery, mutation+reread, and in-cell `return_result`. Adversarial cases: infinite-loop containment, forbidden host method, stale handle, huge stdout, syntax/runtime errors, sandbox crash, host-call budget exhaustion, and terminal-action smuggling.
 
 ---
 
@@ -276,37 +200,21 @@ Reference tasks must require real glue code: loop/branch/local variable reuse, t
 
 ### Objective
 
-Prove the four identity features through the packed public package and compare them with the existing explicit runtime/action-protocol baseline.
+Prove F1-F4 through the packed public package and compare with the existing explicit runtime/action-protocol baseline.
 
-### Required reference scenarios
+### Required scenarios
 
-1. **Object ergonomics** — caller uses ordinary object methods; no separate judgment/capability invocation in application code.
-2. **Live identity** — helper object mutation is observed later without serialize/reload.
-3. **Progressive discovery** — nested API is unavailable initially and discovered only when needed.
-4. **Code-native action** — model-generated JavaScript performs nontrivial glue logic with persistent locals and live proxies.
-5. **AVO composition** — the resulting object agent still runs under existing long-horizon candidate/evaluation/promotion control.
+1. ordinary object ergonomics;
+2. live identity + mutation;
+3. progressive discovery;
+4. generated JavaScript with persistent locals/live proxies;
+5. AVO composition above the resulting runtime.
 
 ### Measurements
 
-At minimum record:
-
-- task success;
-- false-success / unsafe-accept count;
-- model turns;
-- generated code cells;
-- host/live-object calls;
-- correction count;
-- initial prompt/context chars;
-- discovered API chars/members;
-- live-handle count and stale-handle rejections;
-- executor/sandbox failures;
-- trace correlation completeness;
-- snapshot/rebind fidelity;
-- packed-consumer success.
+At minimum record task success, false-success/unsafe-accept, model turns, code cells, host/live calls, corrections, initial/discovered context size, handle/stale rejection counts, sandbox failures, trace correlation, snapshot/rebind fidelity, and packed-consumer success.
 
 ### Completion target
-
-The pipeline may claim high NOOA semantic fidelity only when all four identity dimensions are proven through packed-consumer artifacts:
 
 ```text
 Agent-as-object ergonomics   >= 90% semantic target
@@ -315,7 +223,7 @@ Progressive discovery       >= 90% semantic target
 CodeAct fidelity            >= 90% semantic target
 ```
 
-These percentages are rubric labels, not scientific benchmark scores. F5 must replace subjective confidence with explicit capability checks and measurements. A dimension cannot receive `>= 90%` merely because an API exists.
+These percentages are explicit capability-rubric labels, not scientific benchmark scores.
 
 ## Final identity if complete
 
