@@ -220,7 +220,7 @@ const rootNode = {
   getName() { return "root"; }
 };
 
-const executor = createProcessExecutor(new URL("./worker.mjs", import.meta.url));
+const executor = createProcessExecutor("./worker.mjs");
 const strategy = createJavaScriptCodeActStrategy({
   model: sequenceModel([
     {
@@ -258,7 +258,7 @@ if (result.total !== 12 || result.name !== "after") throw new Error("real JavaSc
 if (child.name !== "after") throw new Error("live object mutation hit a clone");
 if (executor.metrics.cells !== 2) throw new Error("expected two real JavaScript cells");
 
-const loopingExecutor = createProcessExecutor(new URL("./worker.mjs", import.meta.url));
+const loopingExecutor = createProcessExecutor("./worker.mjs");
 const loopingRuntime = createAgentRuntime({
   strategy: createJavaScriptCodeActStrategy({
     model: sequenceModel([{ type: "execute_javascript", code: "while (true) {}" }]),
