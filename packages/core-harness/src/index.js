@@ -67,6 +67,13 @@ export {
   defineSemanticMemoryProvenance
 } from "./semantic-memory.js";
 export {
+  SemanticMemoryRetrievalMode,
+  SemanticMemoryRetrievalSemantics,
+  createSemanticMemoryRetrievalPort,
+  defineSemanticMemoryRetrievalPolicy,
+  defineSemanticMemoryRetriever
+} from "./semantic-memory-retrieval.js";
+export {
   VerificationSourceKind,
   VerificationStatus,
   defineVerifier,
