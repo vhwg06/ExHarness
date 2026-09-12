@@ -28,13 +28,13 @@ Do not stack a stage on an unmerged predecessor.
 NOOA-G1 Turn lifecycle                         DONE
 NOOA-G2 Turn-aware context refresh             DONE
 NOOA-G3 Safe history evolution                 DONE
-NOOA-G4 Semantic memory port                   DONE on PR candidate
-NOOA-G5 Associative recall contract            NEXT after G4 merge
-NOOA-G6 Spontaneous recall                     PENDING
+NOOA-G4 Semantic memory port                   DONE
+NOOA-G5 Associative recall contract            DONE on PR candidate
+NOOA-G6 Spontaneous recall                     NEXT after G5 merge
 NOOA-G7 Integrated/adversarial evaluation      PENDING
 ```
 
-Current checkpoint: `G4 exact-head verification pending`.
+Current checkpoint: `G5 exact-head verification pending`.
 
 ---
 
@@ -169,9 +169,39 @@ Artifact: `docs/architecture/semantic-memory-port.md`.
 
 ## G5 — Associative recall
 
-Provide bounded recall/search results with ranking provenance and replaceable provider implementation.
+### Objective
 
-Retrieval result is relevant context, not truth or correctness evidence.
+Provide bounded recall/search results with ranking provenance while keeping authoritative memory content in the G4 lifecycle store.
+
+### Proven semantics
+
+```text
+retriever
+  ↓
+memoryId + score + reasons
+  ↓
+kernel re-reads authoritative record
+  ↓
+drop archived / tag mismatch
+  ↓
+maxItems + maxSerializedChars
+  ↓
+RELEVANCE_ONLY RecallResult
+```
+
+- retrievers cannot supply or override memory content;
+- unknown or duplicate memory IDs fail closed;
+- stale indexes cannot resurrect archived records;
+- caller tag constraints are rechecked against authoritative memory metadata;
+- provider ordering becomes explicit `rank` provenance;
+- score/reasons explain ranking only;
+- caller item limits cannot exceed the kernel policy ceiling;
+- serialized-character bounds preserve a deterministic ranking prefix;
+- RECALL and SEARCH are explicit modes over one replaceable provider contract;
+- retrieval output is labeled `RELEVANCE_ONLY` and contains no truth, trust or verdict authority;
+- G5 performs no prompt injection.
+
+Artifact: `docs/architecture/associative-recall.md`.
 
 ---
 
