@@ -244,6 +244,7 @@ export function createJavaScriptCodeActStrategy({
   return Object.freeze({
     kind: "JAVASCRIPT_CODEACT",
     acceptsRoutedModel: true,
+    turnAwareContext: true,
     model: fallbackModel == null ? null : modelAdapterView(fallbackModel),
     protocol,
     limits: Object.freeze({
@@ -272,6 +273,7 @@ export function createJavaScriptCodeActStrategy({
       readLiveObject,
       validateResult = null,
       recordAgentEvent = null,
+      prepareTurn = null,
       trace = null,
       model: routedModel = null,
       modelRoute = null,
@@ -286,6 +288,9 @@ export function createJavaScriptCodeActStrategy({
       }
       if (recordAgentEvent != null) {
         invariant(typeof recordAgentEvent === "function", "javascript codeact recordAgentEvent must be a function");
+      }
+      if (prepareTurn != null) {
+        invariant(typeof prepareTurn === "function", "prepareTurn must be a function");
       }
 
       const activeModel = routedModel == null ? fallbackModel : defineModelAdapter(routedModel);
@@ -303,6 +308,7 @@ export function createJavaScriptCodeActStrategy({
       let closed = false;
       let lastValidationError = null;
       let primaryError = null;
+      let currentPromptContext = promptContext;
 
       function timeError(stage) {
         return boundary(
@@ -392,7 +398,7 @@ export function createJavaScriptCodeActStrategy({
             );
           }
           if (type === JavaScriptHostRequestType.DOC_SELF) {
-            return transport(selfDocument(promptContext), "host self document");
+            return transport(selfDocument(currentPromptContext), "host self document");
           }
           if (type === JavaScriptHostRequestType.DOC_LIVE) {
             invariant(request.ref && typeof request.ref === "object", "DOC_LIVE requires ref");
@@ -461,16 +467,20 @@ export function createJavaScriptCodeActStrategy({
         }
 
         for (let turn = 1; turn <= resolvedMaxTurns; turn += 1) {
+          const turnContext = prepareTurn == null
+            ? Object.freeze({ promptContext, agentEvents, history })
+            : await prepareTurn({ reportedTurn: turn, model: activeModelView });
+          currentPromptContext = turnContext.promptContext;
           const request = Object.freeze({
             mode: "JAVASCRIPT_CODEACT",
             turn,
             input: clone(input),
             context: clone(context),
             callContext: clone(callContext),
-            promptContext: clone(promptContext),
+            promptContext: clone(turnContext.promptContext),
             events: clone(events) ?? [],
-            agentEvents: clone(agentEvents) ?? [],
-            history: clone(history),
+            agentEvents: clone(turnContext.agentEvents) ?? [],
+            history: clone(turnContext.history),
             judgment: judgment == null ? null : clone(judgment),
             modelRoute: routeView,
             capabilities: clone(capabilities) ?? [],

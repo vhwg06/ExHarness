@@ -46,6 +46,7 @@ export function createPredictStrategy({ model = null, maxAttempts = 3 } = {}) {
   return Object.freeze({
     kind: "PREDICT",
     acceptsRoutedModel: true,
+    turnAwareContext: true,
     model: fallbackModel == null ? null : modelAdapterView(fallbackModel),
     maxAttempts: resolvedMaxAttempts,
 
@@ -60,12 +61,16 @@ export function createPredictStrategy({ model = null, maxAttempts = 3 } = {}) {
       judgment = null,
       validateResult = null,
       recordAgentEvent = null,
+      prepareTurn = null,
       trace = null,
       model: routedModel = null,
       modelRoute = null
     }) {
       if (recordAgentEvent != null) {
         invariant(typeof recordAgentEvent === "function", "recordAgentEvent must be a function");
+      }
+      if (prepareTurn != null) {
+        invariant(typeof prepareTurn === "function", "prepareTurn must be a function");
       }
 
       const activeModel = routedModel == null ? fallbackModel : defineModelAdapter(routedModel);
@@ -80,6 +85,9 @@ export function createPredictStrategy({ model = null, maxAttempts = 3 } = {}) {
           TraceSpanKind.PREDICT_ATTEMPT,
           `predict.attempt.${attempt}`,
           async () => {
+            const turnContext = prepareTurn == null
+              ? Object.freeze({ promptContext, agentEvents, history })
+              : await prepareTurn({ reportedTurn: attempt, model: activeModelView });
             const candidate = await traced(
               trace,
               TraceSpanKind.MODEL,
@@ -90,10 +98,10 @@ export function createPredictStrategy({ model = null, maxAttempts = 3 } = {}) {
                 input: clone(input),
                 context: clone(context),
                 callContext: clone(callContext),
-                promptContext: clone(promptContext),
+                promptContext: clone(turnContext.promptContext),
                 events: clone(events) ?? [],
-                agentEvents: clone(agentEvents) ?? [],
-                history: clone(history),
+                agentEvents: clone(turnContext.agentEvents) ?? [],
+                history: clone(turnContext.history),
                 judgment: judgment == null ? null : clone(judgment),
                 modelRoute: routeView,
                 validationFeedback: Object.freeze(clone(feedback))

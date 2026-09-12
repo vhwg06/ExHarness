@@ -78,6 +78,15 @@ function normalizeNames(values, label) {
   return Object.freeze(result);
 }
 
+function contextMetadata(callId, judgment, turn) {
+  invariant(turn == null || (Number.isInteger(turn) && turn > 0), "context turn must be null or a positive integer");
+  return Object.freeze({
+    callId: callId ?? null,
+    judgment: judgment == null ? null : clone(judgment),
+    turn: turn ?? null
+  });
+}
+
 export function defineContextBlock(definition = {}) {
   invariant(definition && typeof definition === "object", "context block definition is required");
   const {
@@ -221,10 +230,12 @@ export async function renderAgentContext({
   policy = defineContextPolicy(),
   canonicalEvents = [],
   callId,
-  judgment = null
+  judgment = null,
+  turn = null
 } = {}) {
   const resolvedSelection = defineContextSelection(selection);
   const resolvedPolicy = defineContextPolicy(policy);
+  const metadata = contextMetadata(callId, judgment, turn);
   const registry = new Map();
   for (const definition of blocks) {
     const block = defineContextBlock(definition);
@@ -245,10 +256,7 @@ export async function renderAgentContext({
     const block = registry.get(name);
     invariant(block, `context block not found: ${name}`);
     const resolvedValue = block.dynamic
-      ? await block.resolve(Object.freeze({
-          callId: callId ?? null,
-          judgment: judgment == null ? null : clone(judgment)
-        }))
+      ? await block.resolve(metadata)
       : block.value;
     renderedBlocks.push({
       name: block.name,
@@ -270,10 +278,7 @@ export async function renderAgentContext({
     const canonicalSnapshot = clone(canonicalEvents);
     let selected;
     if (resolvedSelection.selectHistory) {
-      const requested = await resolvedSelection.selectHistory(clone(canonicalSnapshot), Object.freeze({
-        callId: callId ?? null,
-        judgment: judgment == null ? null : clone(judgment)
-      }));
+      const requested = await resolvedSelection.selectHistory(clone(canonicalSnapshot), metadata);
       selected = selectCanonicalEvents(canonicalSnapshot, requested);
     } else {
       selected = normalizePromptData(canonicalSnapshot, "context history events");
@@ -283,10 +288,7 @@ export async function renderAgentContext({
     if (resolvedSelection.reduceHistory) {
       const sourceEventIds = selected.map((event) => event.id);
       const summary = normalizePromptData(
-        await resolvedSelection.reduceHistory(clone(selected), Object.freeze({
-          callId: callId ?? null,
-          judgment: judgment == null ? null : clone(judgment)
-        })),
+        await resolvedSelection.reduceHistory(clone(selected), metadata),
         "context history summary"
       );
       history = {
