@@ -43,6 +43,7 @@ try {
   const consumer = `
 import {
   ExHarnessErrorCode,
+  JavaScriptSessionFeature,
   createAgentRuntime,
   createJavaScriptCodeActStrategy,
   defineCapability,
@@ -89,7 +90,8 @@ const rootNode = {
 };
 
 const executor = createReferenceJavaScriptExecutor("./worker.mjs", {
-  abortedCode: ExHarnessErrorCode.EXECUTION_ABORTED
+  abortedCode: ExHarnessErrorCode.EXECUTION_ABORTED,
+  terminalFeature: JavaScriptSessionFeature.CELL_ABORT
 });
 const runtime = createAgentRuntime({
   strategy: createJavaScriptCodeActStrategy({
@@ -130,7 +132,8 @@ if (child.name !== "after") throw new Error("live object mutation hit a clone");
 if (executor.metrics.cells !== 2) throw new Error("expected two real JavaScript cells");
 
 const loopingExecutor = createReferenceJavaScriptExecutor("./worker.mjs", {
-  abortedCode: ExHarnessErrorCode.EXECUTION_ABORTED
+  abortedCode: ExHarnessErrorCode.EXECUTION_ABORTED,
+  terminalFeature: JavaScriptSessionFeature.CELL_ABORT
 });
 const loopingRuntime = createAgentRuntime({
   strategy: createJavaScriptCodeActStrategy({
@@ -156,6 +159,7 @@ if (loopingExecutor.metrics.forcedKills < 1) throw new Error("hung worker proces
 
 console.log(JSON.stringify({
   packed: true,
+  terminalFeature: JavaScriptSessionFeature.CELL_ABORT,
   result,
   cells: executor.metrics.cells,
   hostCalls: executor.metrics.hostCalls,
@@ -172,7 +176,11 @@ console.log(JSON.stringify({
   await writeFile(join(temp, "consumer.mjs"), consumer);
   const output = run("node", ["consumer.mjs"], { cwd: temp });
   const metrics = JSON.parse(output.split("\n").at(-1));
-  if (metrics.packed !== true || metrics.infiniteLoopContained !== true) {
+  if (
+    metrics.packed !== true ||
+    metrics.infiniteLoopContained !== true ||
+    metrics.terminalFeature !== "CELL_ABORT"
+  ) {
     throw new Error("packed JavaScript CodeAct consumer did not pass");
   }
   console.log(JSON.stringify(metrics));
