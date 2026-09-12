@@ -17,7 +17,8 @@ function errorFrom(raw) {
 }
 
 export function createReferenceJavaScriptExecutor(workerPath, {
-  abortedCode = "EXECUTION_ABORTED"
+  abortedCode = "EXECUTION_ABORTED",
+  terminalFeature = "CELL_ABORT"
 } = {}) {
   const metrics = {
     opens: 0,
@@ -105,7 +106,7 @@ export function createReferenceJavaScriptExecutor(workerPath, {
       await request("init", { bindings });
 
       return {
-        features: ["CELL_ABORT"],
+        features: [terminalFeature],
         async execute(cell, { signal } = {}) {
           metrics.cells += 1;
           const operation = request("execute", { code: cell.code });
