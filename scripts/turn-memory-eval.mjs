@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { copyFile, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -93,6 +93,16 @@ try {
   const lines = output.split(/\r?\n/).filter(Boolean);
   const result = JSON.parse(lines.at(-1));
   validate(result);
+
+  const expected = JSON.parse(await readFile(
+    join(root, "artifacts", "nooa-turn-memory-eval.json"),
+    "utf8"
+  ));
+  assert.deepEqual(
+    result,
+    expected,
+    "turn-memory evaluation drifted from its measured stable artifact"
+  );
 
   console.log(`turn-memory-eval:${JSON.stringify(result)}`);
 } finally {
