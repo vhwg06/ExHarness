@@ -11,6 +11,10 @@ import {
   createTraceRecorder,
   defineLiveObjectSurface
 } from "../src/index.js";
+import {
+  JavaScriptSessionFeature,
+  isJavaScriptTerminalInterrupt
+} from "../src/javascript-codeact-strategy.js";
 
 function sequenceModel(outputs) {
   let index = 0;
@@ -24,21 +28,45 @@ function sequenceModel(outputs) {
   };
 }
 
-function scriptedExecutor(handlers) {
-  const metrics = { opens: 0, closes: 0, executes: 0, codes: [], locals: new Map() };
+function scriptedExecutor(handlers, {
+  features = [JavaScriptSessionFeature.CELL_ABORT]
+} = {}) {
+  const metrics = {
+    opens: 0,
+    closes: 0,
+    executes: 0,
+    codes: [],
+    locals: new Map(),
+    openArgs: null,
+    signals: []
+  };
   return {
     metrics,
-    async open({ host }) {
+    async open(args) {
+      const { host } = args;
       metrics.opens += 1;
+      metrics.openArgs = args;
       return {
-        async execute(request) {
+        features,
+        async execute(request, { signal = null } = {}) {
           metrics.executes += 1;
           metrics.codes.push(request.code);
+          metrics.signals.push(signal);
           const handler = handlers[request.code];
           if (!handler) throw new SyntaxError(`unknown fake cell: ${request.code}`);
-          return handler({ host, locals: metrics.locals, request });
+          try {
+            return await handler({ host, locals: metrics.locals, request, signal });
+          } catch (error) {
+            if (isJavaScriptTerminalInterrupt(error)) {
+              assert.equal(signal?.aborted, true);
+              return { stdout: "", stderr: "", value: null, terminated: true };
+            }
+            throw error;
+          }
         },
-        async close() { metrics.closes += 1; }
+        async close() {
+          metrics.closes += 1;
+        }
       };
     }
   };
@@ -54,19 +82,42 @@ function nodeSurface() {
 }
 
 test("JavaScript CodeAct keeps one persistent session and terminates only through in-session return_result", async () => {
-  const node = { name: "before", rename(name) { this.name = name; return this.name; } };
+  const node = {
+    name: "before",
+    rename(name) {
+      this.name = name;
+      return this.name;
+    }
+  };
+  let afterTerminal = false;
   const executor = scriptedExecutor({
     "cell-one": async ({ host, locals }) => {
       const ref = locals.get("root");
-      const doc = await host.request({ type: JavaScriptHostRequestType.DOC_LIVE, ref, mode: "FULL" });
+      const doc = await host.request({
+        type: JavaScriptHostRequestType.DOC_LIVE,
+        ref,
+        mode: "FULL"
+      });
       assert.ok(doc.document.members.some((member) => member.name === "rename"));
-      await host.request({ type: JavaScriptHostRequestType.INVOKE_LIVE, ref, name: "rename", args: ["after"] });
-      locals.set("observed", await host.request({ type: JavaScriptHostRequestType.READ_LIVE, ref, name: "name" }));
+      await host.request({
+        type: JavaScriptHostRequestType.INVOKE_LIVE,
+        ref,
+        name: "rename",
+        args: ["after"]
+      });
+      locals.set(
+        "observed",
+        await host.request({ type: JavaScriptHostRequestType.READ_LIVE, ref, name: "name" })
+      );
       return { stdout: "first", stderr: "", value: null };
     },
     "cell-two": async ({ host, locals }) => {
       assert.equal(locals.get("observed"), "after");
-      await host.request({ type: JavaScriptHostRequestType.RETURN_RESULT, value: locals.get("observed") });
+      await host.request({
+        type: JavaScriptHostRequestType.RETURN_RESULT,
+        value: locals.get("observed")
+      });
+      afterTerminal = true;
       return { stdout: "second", stderr: "", value: 2 };
     }
   });
@@ -85,20 +136,23 @@ test("JavaScript CodeAct keeps one persistent session and terminates only throug
 
   assert.equal(await runtime.run(), "after");
   assert.equal(node.name, "after");
+  assert.equal(afterTerminal, false);
   assert.deepEqual(executor.metrics.codes, ["cell-one", "cell-two"]);
   assert.equal(executor.metrics.opens, 1);
   assert.equal(executor.metrics.closes, 1);
+  assert.ok(executor.metrics.openArgs.protocol.requiredSessionFeatures.includes(JavaScriptSessionFeature.CELL_ABORT));
+  assert.equal(executor.metrics.openArgs.bindings.liveObjects[0].name, "root");
 });
 
 test("typed terminal validation feeds correction back into the bounded JavaScript loop", async () => {
   const executor = scriptedExecutor({
     invalid: async ({ host }) => {
       await host.request({ type: JavaScriptHostRequestType.RETURN_RESULT, value: "bad" });
-      return { stdout: "", stderr: "", value: null };
+      throw new Error("unreachable");
     },
     valid: async ({ host }) => {
       await host.request({ type: JavaScriptHostRequestType.RETURN_RESULT, value: 7 });
-      return { stdout: "", stderr: "", value: null };
+      throw new Error("unreachable");
     }
   });
   const strategy = createJavaScriptCodeActStrategy({
@@ -121,7 +175,10 @@ test("typed terminal validation feeds correction back into the bounded JavaScrip
   });
 
   assert.equal(await runtime.invokeJudgment("answer", null), 7);
-  assert.equal(runtime.agentEvents().filter((event) => event.type === AgentEventKind.VALIDATION_ERROR).length, 1);
+  assert.equal(
+    runtime.agentEvents().filter((event) => event.type === AgentEventKind.VALIDATION_ERROR).length,
+    1
+  );
   assert.equal(executor.metrics.executes, 2);
 });
 
@@ -141,8 +198,27 @@ test("direct model terminal actions are protocol errors and never bypass the Jav
   assert.equal(executor.metrics.closes, 1);
 });
 
+test("strong terminal semantics fail closed when the injected session cannot abort a cell", async () => {
+  const executor = scriptedExecutor({}, { features: [] });
+  const runtime = createAgentRuntime({
+    strategy: createJavaScriptCodeActStrategy({
+      model: sequenceModel([{ type: "execute_javascript", code: "unused" }]),
+      executor
+    })
+  });
+  await assert.rejects(
+    runtime.run(),
+    (error) => error.code === ExHarnessErrorCode.CODEACT_PROTOCOL_ERROR
+  );
+  assert.equal(executor.metrics.executes, 0);
+  assert.equal(executor.metrics.closes, 1);
+});
+
 test("host bridge preserves live-object authority and lets execution recover from forbidden calls", async () => {
-  const target = { safe() { return "safe"; }, forbidden() { return "bad"; } };
+  const target = {
+    safe() { return "safe"; },
+    forbidden() { return "bad"; }
+  };
   const surface = defineLiveObjectSurface({
     id: "js-codeact.authority",
     methods: [{ name: "safe" }]
@@ -150,13 +226,23 @@ test("host bridge preserves live-object authority and lets execution recover fro
   let ref;
   const executor = scriptedExecutor({
     forbidden: async ({ host }) => {
-      await host.request({ type: JavaScriptHostRequestType.INVOKE_LIVE, ref, name: "forbidden", args: [] });
+      await host.request({
+        type: JavaScriptHostRequestType.INVOKE_LIVE,
+        ref,
+        name: "forbidden",
+        args: []
+      });
       return { stdout: "", stderr: "", value: null };
     },
     recover: async ({ host }) => {
-      const value = await host.request({ type: JavaScriptHostRequestType.INVOKE_LIVE, ref, name: "safe", args: [] });
+      const value = await host.request({
+        type: JavaScriptHostRequestType.INVOKE_LIVE,
+        ref,
+        name: "safe",
+        args: []
+      });
       await host.request({ type: JavaScriptHostRequestType.RETURN_RESULT, value });
-      return { stdout: "", stderr: "", value: null };
+      throw new Error("unreachable");
     }
   });
   const strategy = createJavaScriptCodeActStrategy({
@@ -173,27 +259,38 @@ test("host bridge preserves live-object authority and lets execution recover fro
   ref = runtime.liveObjects()[0].ref;
 
   assert.equal(await runtime.run(), "safe");
-  const actionErrors = runtime.agentEvents().filter((event) => event.type === AgentEventKind.ACTION_ERROR);
+  const actionErrors = runtime.agentEvents().filter(
+    (event) => event.type === AgentEventKind.ACTION_ERROR
+  );
   assert.equal(actionErrors.length, 1);
-  assert.equal(actionErrors[0].payload.error.code, ExHarnessErrorCode.LIVE_OBJECT_MEMBER_NOT_ALLOWED);
+  assert.equal(
+    actionErrors[0].payload.error.code,
+    ExHarnessErrorCode.LIVE_OBJECT_MEMBER_NOT_ALLOWED
+  );
 });
 
 test("stdout is deterministically bounded before becoming a model-visible observation", async () => {
   const executor = scriptedExecutor({
-    loud: async ({ host }) => {
+    loud: async () => ({ stdout: "x".repeat(100), stderr: "", value: null }),
+    finish: async ({ host }) => {
       await host.request({ type: JavaScriptHostRequestType.RETURN_RESULT, value: "ok" });
-      return { stdout: "x".repeat(100), stderr: "", value: null };
+      throw new Error("unreachable");
     }
   });
   const runtime = createAgentRuntime({
     strategy: createJavaScriptCodeActStrategy({
-      model: sequenceModel([{ type: "execute_javascript", code: "loud" }]),
+      model: sequenceModel([
+        { type: "execute_javascript", code: "loud" },
+        { type: "execute_javascript", code: "finish" }
+      ]),
       executor,
       maxOutputChars: 8
     })
   });
   assert.equal(await runtime.run(), "ok");
-  const action = runtime.agentEvents().find((event) => event.type === AgentEventKind.ACTION_OUTPUT);
+  const action = runtime.agentEvents().find(
+    (event) => event.type === AgentEventKind.ACTION_OUTPUT && event.payload.stdoutTruncated
+  );
   assert.equal(action.payload.stdout, "xxxxxxxx");
   assert.equal(action.payload.stdoutTruncated, true);
 });
@@ -203,7 +300,7 @@ test("recoverable JavaScript execution errors remain observations while sandbox 
     broken: async () => { throw new SyntaxError("bad syntax"); },
     finish: async ({ host }) => {
       await host.request({ type: JavaScriptHostRequestType.RETURN_RESULT, value: true });
-      return { stdout: "", stderr: "", value: null };
+      throw new Error("unreachable");
     }
   });
   const runtime = createAgentRuntime({
@@ -216,7 +313,10 @@ test("recoverable JavaScript execution errors remain observations while sandbox 
     })
   });
   assert.equal(await runtime.run(), true);
-  assert.equal(runtime.agentEvents().filter((event) => event.type === AgentEventKind.ACTION_ERROR).length, 1);
+  assert.equal(
+    runtime.agentEvents().filter((event) => event.type === AgentEventKind.ACTION_ERROR).length,
+    1
+  );
 
   const crashing = scriptedExecutor({
     crash: async () => {
@@ -231,18 +331,34 @@ test("recoverable JavaScript execution errors remain observations while sandbox 
       executor: crashing
     })
   });
-  await assert.rejects(crashed.run(), (error) => error.code === ExHarnessErrorCode.EXECUTION_ABORTED);
+  await assert.rejects(
+    crashed.run(),
+    (error) => error.code === ExHarnessErrorCode.EXECUTION_ABORTED
+  );
   assert.equal(crashing.metrics.closes, 1);
 });
 
-test("host-call budget is kernel-owned and terminal closes host authority within the same cell", async () => {
+test("host-call budget is kernel-owned and return_result stops the rest of the cell", async () => {
   let ref;
   const target = { read() { return 1; } };
-  const surface = defineLiveObjectSurface({ id: "js-codeact.budget", methods: [{ name: "read" }] });
+  const surface = defineLiveObjectSurface({
+    id: "js-codeact.budget",
+    methods: [{ name: "read" }]
+  });
   const executor = scriptedExecutor({
     over: async ({ host }) => {
-      await host.request({ type: JavaScriptHostRequestType.INVOKE_LIVE, ref, name: "read", args: [] });
-      await host.request({ type: JavaScriptHostRequestType.INVOKE_LIVE, ref, name: "read", args: [] });
+      await host.request({
+        type: JavaScriptHostRequestType.INVOKE_LIVE,
+        ref,
+        name: "read",
+        args: []
+      });
+      await host.request({
+        type: JavaScriptHostRequestType.INVOKE_LIVE,
+        ref,
+        name: "read",
+        args: []
+      });
       return { stdout: "", stderr: "", value: null };
     }
   });
@@ -255,12 +371,16 @@ test("host-call budget is kernel-owned and terminal closes host authority within
     liveObjects: [{ name: "target", value: target, surface }]
   });
   ref = runtime.liveObjects()[0].ref;
-  await assert.rejects(runtime.run(), (error) => error.code === ExHarnessErrorCode.CODEACT_ACTION_BUDGET_EXCEEDED);
+  await assert.rejects(
+    runtime.run(),
+    (error) => error.code === ExHarnessErrorCode.CODEACT_ACTION_BUDGET_EXCEEDED
+  );
 
+  let postTerminalSideEffect = 0;
   const terminalExecutor = scriptedExecutor({
     terminal: async ({ host }) => {
       await host.request({ type: JavaScriptHostRequestType.RETURN_RESULT, value: "done" });
-      await host.request({ type: JavaScriptHostRequestType.CALL_CAPABILITY, name: "never", input: null });
+      postTerminalSideEffect += 1;
       return { stdout: "", stderr: "", value: null };
     }
   });
@@ -271,7 +391,8 @@ test("host-call budget is kernel-owned and terminal closes host authority within
       maxTurns: 1
     })
   });
-  await assert.rejects(terminalRuntime.run(), (error) => error.code === ExHarnessErrorCode.CODEACT_TURN_LIMIT_EXCEEDED);
+  assert.equal(await terminalRuntime.run(), "done");
+  assert.equal(postTerminalSideEffect, 0);
 });
 
 test("session execution participates in the existing causal trace tree", async () => {
@@ -279,7 +400,7 @@ test("session execution participates in the existing causal trace tree", async (
   const executor = scriptedExecutor({
     finish: async ({ host }) => {
       await host.request({ type: JavaScriptHostRequestType.RETURN_RESULT, value: true });
-      return { stdout: "", stderr: "", value: null };
+      throw new Error("unreachable");
     }
   });
   const runtime = createAgentRuntime({
@@ -292,5 +413,9 @@ test("session execution participates in the existing causal trace tree", async (
   assert.equal(await runtime.run(), true);
   const spans = runtime.traces();
   assert.ok(spans.some((span) => span.kind === TraceSpanKind.MODEL));
-  assert.ok(spans.some((span) => span.kind === TraceSpanKind.EXECUTION && span.name === "javascript.session.execute"));
+  assert.ok(
+    spans.some(
+      (span) => span.kind === TraceSpanKind.EXECUTION && span.name === "javascript.session.execute"
+    )
+  );
 });
