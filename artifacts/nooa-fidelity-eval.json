@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "reference": "nooa-fidelity-v1",
+  "source": "packed-blank-consumer",
+  "baseline": {
+    "taskSuccess": 1,
+    "modelTurns": 6,
+    "actionCalls": 5,
+    "codeCells": 0,
+    "finalResult": {
+      "total": 12,
+      "name": "after"
+    }
+  },
+  "fidelity": {
+    "taskSuccess": 1,
+    "modelTurns": 2,
+    "codeCells": 2,
+    "hostCalls": 8,
+    "liveMutation": "after",
+    "finalResult": {
+      "total": 12,
+      "name": "after",
+      "discoveredMembers": 3
+    },
+    "corrections": 1,
+    "initialContextChars": 242,
+    "discoveredContextChars": 688,
+    "progressiveDisclosureRatio": 0.35174418604651164,
+    "handleRejections": 3,
+    "sandboxFailuresObserved": 2,
+    "traceCorrelation": 1,
+    "correlatedSpanCount": 13,
+    "snapshotRebindFidelity": 1,
+    "avoComposition": 1,
+    "packedConsumerSuccess": 1,
+    "falseSuccessCount": 0,
+    "unsafeAcceptCount": 0
+  },
+  "comparison": {
+    "modelTurnReduction": 0.6666666666666667,
+    "sameTaskResult": true
+  },
+  "rubric": {
+    "agentAsObject": {
+      "score": 100,
+      "passed": 10,
+      "total": 10,
+      "checks": {
+        "identityPreserved": true,
+        "instanceofPreserved": true,
+        "ordinaryAgenticCall": true,
+        "statePersists": true,
+        "deterministicMethodAutoCapability": true,
+        "multiArgumentCallPreserved": true,
+        "hiddenMethodExcluded": true,
+        "deterministicSurfaceTyped": true,
+        "agenticSurfaceTyped": true,
+        "automaticConciseSelfContext": true
+      }
+    },
+    "liveObjectSemantics": {
+      "score": 100,
+      "passed": 10,
+      "total": 10,
+      "checks": {
+        "nestedHandleProduced": true,
+        "cyclePreservesRootIdentity": true,
+        "mutationHitsOriginal": true,
+        "rereadSeesMutation": true,
+        "sameObjectDifferentAuthorityGetsDifferentHandle": true,
+        "undeclaredMethodRejected": true,
+        "revokedHandleRejected": true,
+        "fullDocUsesDeclaredSurface": true,
+        "hiddenLiveMethodNotDiscovered": true,
+        "noSerializedCloneForMutation": true
+      }
+    },
+    "progressiveDiscovery": {
+      "score": 100,
+      "passed": 10,
+      "total": 10,
+      "checks": {
+        "conciseSmallerThanFull": true,
+        "conciseModeExplicit": true,
+        "fullModeExplicit": true,
+        "hiddenObjectMemberAbsent": true,
+        "liveDocAvailableOnDemand": true,
+        "hiddenLiveMemberAbsent": true,
+        "memberBoundEnforced": true,
+        "descriptionBoundEnforced": true,
+        "automaticSelfDocIsConcise": true,
+        "discoveryDoesNotGrantInvokeAuthority": true
+      }
+    },
+    "codeActFidelity": {
+      "score": 100,
+      "passed": 10,
+      "total": 10,
+      "checks": {
+        "realJavaScriptCellsExecuted": true,
+        "persistentLocalsAcrossCells": true,
+        "selfCapabilityCallsWork": true,
+        "nestedLiveProxyWorks": true,
+        "docWorksInsideSession": true,
+        "typedReturnResultTerminates": true,
+        "typedCorrectionWorks": true,
+        "directTerminalSmugglingRejected": true,
+        "infiniteLoopContained": true,
+        "avoCompositionWorks": true
+      }
+    }
+  },
+  "adversarial": {
+    "passes": 8,
+    "checks": 8,
+    "results": {
+      "forbiddenLiveMemberRejected": true,
+      "staleLiveHandleRejected": true,
+      "typedTerminalCorrection": true,
+      "directTerminalSmugglingRejected": true,
+      "infiniteLoopContained": true,
+      "infrastructureCrashPropagated": true,
+      "stdoutBounded": true,
+      "snapshotUsesFreshAuthority": true
+    },
+    "forbiddenMemberCode": "LIVE_OBJECT_MEMBER_NOT_ALLOWED",
+    "staleHandleCode": "LIVE_OBJECT_REVOKED",
+    "infiniteLoopCode": "CODEACT_TIME_BUDGET_EXCEEDED",
+    "forcedProcessKills": 1,
+    "outputTruncated": true
+  }
+}
