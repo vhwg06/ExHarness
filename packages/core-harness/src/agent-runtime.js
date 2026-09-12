@@ -127,10 +127,13 @@ export function createAgentRuntime({
   invariant(typeof resolvedResourceRegistry.closeCall === "function", "agent runtime resource registry requires closeCall()");
   invariant(typeof resolvedResourceRegistry.policy === "function", "agent runtime resource registry requires policy()");
 
+  const sharedRegistryId = typeof resolvedResourceRegistry.registryId === "string" && resolvedResourceRegistry.registryId.length > 0
+    ? resolvedResourceRegistry.registryId
+    : null;
   const resolvedLiveObjectRegistry = liveObjectRegistry ?? createLiveObjectRegistry({
-    registryId: resolvedResourceRegistry.registryId,
+    ...(sharedRegistryId == null ? {} : { registryId: sharedRegistryId }),
     policy: defineLiveObjectPolicy(liveObjectPolicy),
-    authorize: liveObjectAuthorize ?? resourceAuthorize
+    authorize: liveObjectAuthorize
   });
   invariant(resolvedLiveObjectRegistry && typeof resolvedLiveObjectRegistry.expose === "function", "agent runtime live object registry requires expose()");
   invariant(typeof resolvedLiveObjectRegistry.refs === "function", "agent runtime live object registry requires refs()");
@@ -140,10 +143,12 @@ export function createAgentRuntime({
   invariant(typeof resolvedLiveObjectRegistry.revoke === "function", "agent runtime live object registry requires revoke()");
   invariant(typeof resolvedLiveObjectRegistry.closeCall === "function", "agent runtime live object registry requires closeCall()");
   invariant(typeof resolvedLiveObjectRegistry.policy === "function", "agent runtime live object registry requires policy()");
-  invariant(
-    resolvedLiveObjectRegistry.registryId === resolvedResourceRegistry.registryId,
-    "agent runtime live object registry must share the resource registryId authority domain"
-  );
+  if (sharedRegistryId != null && resolvedLiveObjectRegistry.registryId != null) {
+    invariant(
+      resolvedLiveObjectRegistry.registryId === sharedRegistryId,
+      "agent runtime live object registry must share the declared resource registryId authority domain"
+    );
+  }
 
   const baseResourceRefs = new Map();
   const baseResourceNames = new Set();
