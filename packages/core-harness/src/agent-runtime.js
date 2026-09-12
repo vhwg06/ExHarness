@@ -21,6 +21,11 @@ import {
   defineResource,
   defineResourcePolicy
 } from "./resource.js";
+import {
+  createLiveObjectRegistry,
+  defineLiveObject,
+  defineLiveObjectPolicy
+} from "./live-object.js";
 import { TraceSpanKind, createNoopTracer } from "./tracing.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
@@ -84,6 +89,10 @@ export function createAgentRuntime({
   resourceRegistry = null,
   resourcePolicy = {},
   resourceAuthorize = null,
+  liveObjects = [],
+  liveObjectRegistry = null,
+  liveObjectPolicy = {},
+  liveObjectAuthorize = null,
   tracer = createNoopTracer()
 }) {
   invariant(strategy && typeof strategy.run === "function", "agent runtime requires strategy.run()");
@@ -118,6 +127,24 @@ export function createAgentRuntime({
   invariant(typeof resolvedResourceRegistry.closeCall === "function", "agent runtime resource registry requires closeCall()");
   invariant(typeof resolvedResourceRegistry.policy === "function", "agent runtime resource registry requires policy()");
 
+  const resolvedLiveObjectRegistry = liveObjectRegistry ?? createLiveObjectRegistry({
+    registryId: resolvedResourceRegistry.registryId,
+    policy: defineLiveObjectPolicy(liveObjectPolicy),
+    authorize: liveObjectAuthorize ?? resourceAuthorize
+  });
+  invariant(resolvedLiveObjectRegistry && typeof resolvedLiveObjectRegistry.expose === "function", "agent runtime live object registry requires expose()");
+  invariant(typeof resolvedLiveObjectRegistry.refs === "function", "agent runtime live object registry requires refs()");
+  invariant(typeof resolvedLiveObjectRegistry.describe === "function", "agent runtime live object registry requires describe()");
+  invariant(typeof resolvedLiveObjectRegistry.invoke === "function", "agent runtime live object registry requires invoke()");
+  invariant(typeof resolvedLiveObjectRegistry.read === "function", "agent runtime live object registry requires read()");
+  invariant(typeof resolvedLiveObjectRegistry.revoke === "function", "agent runtime live object registry requires revoke()");
+  invariant(typeof resolvedLiveObjectRegistry.closeCall === "function", "agent runtime live object registry requires closeCall()");
+  invariant(typeof resolvedLiveObjectRegistry.policy === "function", "agent runtime live object registry requires policy()");
+  invariant(
+    resolvedLiveObjectRegistry.registryId === resolvedResourceRegistry.registryId,
+    "agent runtime live object registry must share the resource registryId authority domain"
+  );
+
   const baseResourceRefs = new Map();
   const baseResourceNames = new Set();
   for (const definition of resources) {
@@ -127,6 +154,15 @@ export function createAgentRuntime({
     const ref = resolvedResourceRegistry.register(resource);
     baseResourceNames.add(resource.name);
     baseResourceRefs.set(ref.id, ref);
+  }
+
+  const baseLiveObjects = new Map();
+  for (const definition of liveObjects) {
+    const liveObject = defineLiveObject(definition);
+    invariant(liveObject.lifetime === ResourceLifetime.AGENT, `runtime live object ${liveObject.name} must use AGENT lifetime`);
+    invariant(!baseLiveObjects.has(liveObject.name), `duplicate live object: ${liveObject.name}`);
+    const ref = resolvedLiveObjectRegistry.expose(liveObject.value, liveObject.surface);
+    baseLiveObjects.set(liveObject.name, Object.freeze({ name: liveObject.name, ref }));
   }
 
   const resolvedContextPolicy = defineContextPolicy(contextPolicy);
@@ -163,6 +199,15 @@ export function createAgentRuntime({
       .map((ref) => clone(ref)));
   }
 
+  function activeBaseLiveObjects() {
+    const activeIds = new Set(
+      resolvedLiveObjectRegistry.refs({ lifetime: ResourceLifetime.AGENT }).map((ref) => ref.id)
+    );
+    return Object.freeze([...baseLiveObjects.values()]
+      .filter((entry) => activeIds.has(entry.ref.id))
+      .map((entry) => Object.freeze({ name: entry.name, ref: clone(entry.ref) })));
+  }
+
   function resolveCapabilities(scopedCapabilities = []) {
     const resolved = new Map(baseCapabilities);
 
@@ -185,6 +230,19 @@ export function createAgentRuntime({
       invariant(!names.has(resource.name), `duplicate scoped resource: ${resource.name}`);
       names.add(resource.name);
       return resource;
+    });
+  }
+
+  function normalizeCallLiveObjects(scopedLiveObjects = []) {
+    invariant(Array.isArray(scopedLiveObjects), "agent run liveObjects must be an array");
+    const names = new Set();
+    return scopedLiveObjects.map((definition) => {
+      const liveObject = defineLiveObject(definition);
+      invariant(liveObject.lifetime === ResourceLifetime.CALL, `scoped live object ${liveObject.name} must use CALL lifetime`);
+      invariant(!baseLiveObjects.has(liveObject.name), `scoped live object cannot shadow runtime live object: ${liveObject.name}`);
+      invariant(!names.has(liveObject.name), `duplicate scoped live object: ${liveObject.name}`);
+      names.add(liveObject.name);
+      return liveObject;
     });
   }
 
@@ -235,6 +293,7 @@ export function createAgentRuntime({
     contextSelection = null,
     capabilities: scopedCapabilities = [],
     resources: scopedResources = [],
+    liveObjects: scopedLiveObjects = [],
     model: invocationModel = null,
     budget = null,
     onCapabilityInvoke = null
@@ -242,6 +301,7 @@ export function createAgentRuntime({
     invariant(selectedStrategy && typeof selectedStrategy.run === "function", "agent run strategy requires run()");
     const resolved = resolveCapabilities(scopedCapabilities);
     const resolvedCallResources = normalizeCallResources(scopedResources);
+    const resolvedCallLiveObjects = normalizeCallLiveObjects(scopedLiveObjects);
     const runInput = clone(input);
     const runContext = clone(context);
     const runEvents = clone(events) ?? [];
@@ -252,6 +312,7 @@ export function createAgentRuntime({
     const resolvedSelection = runtimeContract.contextSelection ?? defineContextSelection(contextSelection ?? {});
     let resolvedModelRoute = null;
     const callResourceRefs = [];
+    const callLiveObjectEntries = [];
 
     if (maxCapabilityCalls != null) {
       invariant(
@@ -275,6 +336,13 @@ export function createAgentRuntime({
       resolvedModelRoute = await resolveRunModel(selectedStrategy, invocationModel, runtimeContract.model ?? null);
       for (const resource of resolvedCallResources) {
         callResourceRefs.push(resolvedResourceRegistry.register(resource, { callId }));
+      }
+      for (const liveObject of resolvedCallLiveObjects) {
+        const ref = resolvedLiveObjectRegistry.expose(liveObject.value, liveObject.surface, {
+          lifetime: ResourceLifetime.CALL,
+          callId
+        });
+        callLiveObjectEntries.push(Object.freeze({ name: liveObject.name, ref }));
       }
 
       const promptContext = await renderAgentContext({
@@ -361,6 +429,57 @@ export function createAgentRuntime({
         );
       }
 
+      async function describeLiveObject(ref) {
+        return tracer.runSpan(
+          TraceSpanKind.LIVE_OBJECT_DESCRIBE,
+          ref?.surfaceId ?? "live-object.describe",
+          () => resolvedLiveObjectRegistry.describe(ref, { callId }),
+          { callId, attributes: { liveObjectRefId: ref?.id ?? null, surfaceId: ref?.surfaceId ?? null } }
+        );
+      }
+
+      async function invokeLiveObject(ref, methodName, args = []) {
+        return tracer.runSpan(
+          TraceSpanKind.LIVE_OBJECT,
+          `${ref?.surfaceId ?? "live-object"}.${methodName}`,
+          () => resolvedLiveObjectRegistry.invoke(ref, methodName, args, {
+            callId,
+            input: runInput,
+            context: runContext
+          }),
+          {
+            callId,
+            attributes: {
+              liveObjectRefId: ref?.id ?? null,
+              surfaceId: ref?.surfaceId ?? null,
+              member: methodName,
+              action: "INVOKE"
+            }
+          }
+        );
+      }
+
+      async function readLiveObject(ref, propertyName) {
+        return tracer.runSpan(
+          TraceSpanKind.LIVE_OBJECT,
+          `${ref?.surfaceId ?? "live-object"}.${propertyName}`,
+          () => resolvedLiveObjectRegistry.read(ref, propertyName, {
+            callId,
+            input: runInput,
+            context: runContext
+          }),
+          {
+            callId,
+            attributes: {
+              liveObjectRefId: ref?.id ?? null,
+              surfaceId: ref?.surfaceId ?? null,
+              member: propertyName,
+              action: "READ"
+            }
+          }
+        );
+      }
+
       function recordAgentEvent(type, payload = null) {
         invariant(
           type === AgentEventKind.MODEL_OUTPUT ||
@@ -378,6 +497,10 @@ export function createAgentRuntime({
       const visibleResourceRefs = Object.freeze([
         ...activeBaseResourceRefs(),
         ...callResourceRefs.map((ref) => clone(ref))
+      ]);
+      const visibleLiveObjects = Object.freeze([
+        ...activeBaseLiveObjects(),
+        ...callLiveObjectEntries.map((entry) => Object.freeze({ name: entry.name, ref: clone(entry.ref) }))
       ]);
       const modelRouteView = resolvedModelRoute?.provenance ?? null;
 
@@ -400,6 +523,10 @@ export function createAgentRuntime({
           resources: visibleResourceRefs,
           describeResource,
           invokeResource,
+          liveObjects: visibleLiveObjects,
+          describeLiveObject,
+          invokeLiveObject,
+          readLiveObject,
           judgment,
           validateResult: runtimeContract.validateResult ?? null,
           model: resolvedModelRoute?.adapter ?? null,
@@ -432,6 +559,7 @@ export function createAgentRuntime({
       throw error;
     } finally {
       resolvedResourceRegistry.closeCall(callId);
+      resolvedLiveObjectRegistry.closeCall(callId);
     }
   }
 
@@ -555,6 +683,30 @@ export function createAgentRuntime({
 
     revokeResource(ref) {
       return resolvedResourceRegistry.revoke(ref);
+    },
+
+    liveObjects() {
+      return activeBaseLiveObjects();
+    },
+
+    liveObjectPolicy() {
+      return clone(resolvedLiveObjectRegistry.policy());
+    },
+
+    describeLiveObject(ref) {
+      return resolvedLiveObjectRegistry.describe(ref);
+    },
+
+    invokeLiveObject(ref, methodName, args = []) {
+      return resolvedLiveObjectRegistry.invoke(ref, methodName, args);
+    },
+
+    readLiveObject(ref, propertyName) {
+      return resolvedLiveObjectRegistry.read(ref, propertyName);
+    },
+
+    revokeLiveObject(ref) {
+      return resolvedLiveObjectRegistry.revoke(ref);
     },
 
     agentEvents() {
