@@ -52,6 +52,10 @@ function validateTransportData(value, label, seen = new WeakSet()) {
 }
 
 function normalizeTransportData(value, label) {
+  // Validate the original object graph before structuredClone can erase custom
+  // prototypes. A live/custom object must cross through an explicit
+  // resultSurface instead of being silently laundered into plain transport data.
+  validateTransportData(value, label);
   let copied;
   try {
     copied = clone(value);
