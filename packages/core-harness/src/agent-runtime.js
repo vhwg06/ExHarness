@@ -316,7 +316,9 @@ export function createAgentRuntime({
     const callId = requireText(runtimeContract.callId, "agent run callId");
     const priorAgentEvents = agentEventStore.events();
     const resolvedSelection = runtimeContract.contextSelection ?? defineContextSelection(contextSelection ?? {});
+    const turnAwareContext = selectedStrategy.turnAwareContext === true;
     let resolvedModelRoute = null;
+    let latestPromptContext = null;
     const callResourceRefs = [];
     const callLiveObjectEntries = [];
 
@@ -351,14 +353,16 @@ export function createAgentRuntime({
         callLiveObjectEntries.push(Object.freeze({ name: liveObject.name, ref }));
       }
 
-      const promptContext = await renderAgentContext({
-        blocks: [...baseContextBlocks.values()],
-        selection: resolvedSelection,
-        policy: resolvedContextPolicy,
-        canonicalEvents: priorAgentEvents,
-        callId,
-        judgment
-      });
+      if (!turnAwareContext) {
+        latestPromptContext = await renderAgentContext({
+          blocks: [...baseContextBlocks.values()],
+          selection: resolvedSelection,
+          policy: resolvedContextPolicy,
+          canonicalEvents: priorAgentEvents,
+          callId,
+          judgment
+        });
+      }
 
       async function invoke(name, payload = null) {
         requireText(name, "capability name");
@@ -497,9 +501,19 @@ export function createAgentRuntime({
         return recordRuntimeEvent(type, callId, judgment, payload);
       }
 
-      const selectedAgentEvents = promptContext.history.mode === "EVENTS"
-        ? promptContext.history.events
-        : Object.freeze([]);
+      function contextProjection(promptContext) {
+        return Object.freeze({
+          promptContext,
+          agentEvents: promptContext?.history?.mode === "EVENTS"
+            ? promptContext.history.events
+            : Object.freeze([]),
+          history: promptContext?.history ?? null
+        });
+      }
+
+      const initialProjection = latestPromptContext == null
+        ? Object.freeze({ promptContext: null, agentEvents: Object.freeze([]), history: null })
+        : contextProjection(latestPromptContext);
       const visibleResourceRefs = Object.freeze([
         ...activeBaseResourceRefs(),
         ...callResourceRefs.map((ref) => clone(ref))
@@ -511,9 +525,11 @@ export function createAgentRuntime({
       const modelRouteView = resolvedModelRoute?.provenance ?? null;
       const strategyName = selectedStrategy.kind ?? selectedStrategy.name ?? "strategy";
       let modelInFlight = false;
+      let preparedForModel = false;
 
       function closeActiveTurn(outcome, final, error = null, payload = null) {
         if (!turnEventStore.hasActive(callId)) return null;
+        preparedForModel = false;
         return turnEventStore.end({
           callId,
           judgment,
@@ -527,6 +543,46 @@ export function createAgentRuntime({
         });
       }
 
+      function beginTurn({ reportedTurn = null, model = null } = {}) {
+        invariant(!modelInFlight, "cannot prepare a turn while a model generation is active");
+        invariant(!preparedForModel, "a model turn is already prepared for this invocation");
+        closeActiveTurn(TurnOutcome.CONTINUE, false, null, {
+          nextModel: model?.name ?? null
+        });
+        const before = turnEventStore.begin({
+          callId,
+          judgment,
+          payload: {
+            strategy: strategyName,
+            model: model ?? modelRouteView?.adapter ?? null,
+            reportedTurn
+          }
+        });
+        preparedForModel = true;
+        return before;
+      }
+
+      async function prepareTurn({ reportedTurn = null, model = null } = {}) {
+        const before = beginTurn({ reportedTurn, model });
+        try {
+          latestPromptContext = await renderAgentContext({
+            blocks: [...baseContextBlocks.values()],
+            selection: resolvedSelection,
+            policy: resolvedContextPolicy,
+            canonicalEvents: priorAgentEvents,
+            callId,
+            judgment,
+            turn: before.turn
+          });
+          return contextProjection(latestPromptContext);
+        } catch (error) {
+          closeActiveTurn(TurnOutcome.ERROR, true, errorView(error), {
+            stage: "CONTEXT_RENDER"
+          });
+          throw error;
+        }
+      }
+
       const turnTraceSurface = Object.freeze({
         current: tracer.current,
         async runSpan(kind, name, operation, options = {}) {
@@ -535,18 +591,15 @@ export function createAgentRuntime({
           }
 
           invariant(!modelInFlight, "concurrent model turns are not supported in one agent invocation");
-          closeActiveTurn(TurnOutcome.CONTINUE, false, null, { nextModel: name });
-
           const attributes = options?.attributes ?? null;
-          turnEventStore.begin({
-            callId,
-            judgment,
-            payload: {
-              strategy: strategyName,
-              model: attributes?.model ?? modelRouteView?.adapter ?? { name, version: null },
-              reportedTurn: attributes?.turn ?? attributes?.attempt ?? null
-            }
-          });
+          if (!preparedForModel) {
+            beginTurn({
+              reportedTurn: attributes?.turn ?? attributes?.attempt ?? null,
+              model: attributes?.model ?? modelRouteView?.adapter ?? { name, version: null }
+            });
+          }
+          invariant(turnEventStore.hasActive(callId), "model generation requires an active turn");
+          preparedForModel = false;
 
           modelInFlight = true;
           try {
@@ -569,12 +622,13 @@ export function createAgentRuntime({
               input: runInput,
               context: runContext,
               callContext: runContext,
-              promptContext,
+              promptContext: initialProjection.promptContext,
               events: runEvents,
-              agentEvents: selectedAgentEvents,
-              history: promptContext.history,
+              agentEvents: initialProjection.agentEvents,
+              history: initialProjection.history,
               callId,
               recordAgentEvent,
+              prepareTurn: turnAwareContext ? prepareTurn : null,
               capabilities: Object.freeze([...resolved.values()].map(capabilityView)),
               invoke,
               resources: visibleResourceRefs,
@@ -614,7 +668,7 @@ export function createAgentRuntime({
           budgetExhausted,
           maxCapabilityCalls
         }),
-        promptContext: clone(promptContext),
+        promptContext: clone(latestPromptContext),
         modelRoute: clone(modelRouteView),
         modelUsage: clone(modelUsage)
       });
