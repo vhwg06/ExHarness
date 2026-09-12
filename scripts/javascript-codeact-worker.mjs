@@ -1,5 +1,6 @@
 import vm from "node:vm";
 import readline from "node:readline";
+import { isJavaScriptTerminalInterrupt } from "exharness";
 
 const rl = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
 const pendingHost = new Map();
@@ -125,7 +126,7 @@ async function returnResult(value) {
   try {
     await hostCall({ type: "RETURN_RESULT", value: dehydrate(value) });
   } catch (error) {
-    if (error?.code === "EXHARNESS_JAVASCRIPT_TERMINAL_INTERRUPT") throw new TerminalSignal();
+    if (isJavaScriptTerminalInterrupt(error)) throw new TerminalSignal();
     throw error;
   }
   throw new TerminalSignal();
