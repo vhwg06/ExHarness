@@ -1,4 +1,5 @@
 import { invariant, requireText } from "./contracts.js";
+import { SemanticMemoryKind } from "./semantic-memory.js";
 import { SemanticMemoryRelationDirection } from "./semantic-memory-graph.js";
 import { SemanticMemoryRetrievalSemantics } from "./semantic-memory-retrieval.js";
 
@@ -19,6 +20,21 @@ function clone(value) {
 function normalizeWeight(value, label) {
   invariant(Number.isFinite(value) && value >= 0, `${label} must be a non-negative finite number`);
   return value;
+}
+
+function normalizeTags(tags = []) {
+  invariant(Array.isArray(tags), "semantic memory intelligence tags must be an array");
+  return Object.freeze([...new Set(tags.map((tag) => requireText(tag, "semantic memory intelligence tag")))]);
+}
+
+function normalizeKinds(kinds) {
+  if (kinds == null) return null;
+  invariant(Array.isArray(kinds), "semantic memory intelligence kinds must be an array");
+  const result = kinds.map((kind) => {
+    invariant(Object.values(SemanticMemoryKind).includes(kind), "semantic memory intelligence kind is invalid");
+    return kind;
+  });
+  return new Set(result);
 }
 
 export function defineSemanticMemoryIntelligencePolicy({
@@ -87,6 +103,19 @@ function activeAt(record, atMs) {
   return (from == null || from <= atMs) && (to == null || atMs <= to);
 }
 
+function matchesTags(record, tags) {
+  if (tags.length === 0) return true;
+  const present = new Set(record.tags ?? []);
+  return tags.every((tag) => present.has(tag));
+}
+
+function admitted(record, { atMs, tags, kindSet }) {
+  return record != null &&
+    activeAt(record, atMs) &&
+    matchesTags(record, tags) &&
+    (!kindSet || kindSet.has(record.kind));
+}
+
 function fuse(signals, weights) {
   const entries = [
     [SemanticMemoryRankingSignal.PROVIDER, signals.provider, weights.provider],
@@ -126,9 +155,11 @@ export function createSemanticMemoryIntelligencePort({
 
   async function rank(mode, { query, tags = [], kinds = null, validAt = null } = {}) {
     const normalizedQuery = requireText(query, "semantic memory intelligence query");
+    const normalizedTags = normalizeTags(tags);
+    const kindSet = normalizeKinds(kinds);
     const raw = await retrieval[mode]({
       query: normalizedQuery,
-      tags,
+      tags: normalizedTags,
       limit: resolvedPolicy.candidateLimit
     });
     invariant(raw?.semantics === SemanticMemoryRetrievalSemantics, "semantic memory intelligence requires relevance-only retrieval input");
@@ -137,16 +168,13 @@ export function createSemanticMemoryIntelligencePort({
     const nowText = validAt ?? clock();
     const nowMs = Date.parse(requireText(nowText, "semantic memory intelligence ranking time"));
     invariant(Number.isFinite(nowMs), "semantic memory intelligence ranking time must be a valid timestamp");
-    const kindSet = kinds == null ? null : new Set((() => {
-      invariant(Array.isArray(kinds), "semantic memory intelligence kinds must be an array");
-      return kinds;
-    })());
+    const admission = { atMs: nowMs, tags: normalizedTags, kindSet };
     const providerScores = minMaxScores(raw.hits);
     const candidates = new Map();
 
     for (const hit of raw.hits) {
       const record = await memory.get(hit.memory.id);
-      if (record == null || !activeAt(record, nowMs) || (kindSet && !kindSet.has(record.kind))) continue;
+      if (!admitted(record, admission)) continue;
       candidates.set(record.id, {
         memory: clone(record),
         provider: providerScores.get(record.id) ?? null,
@@ -174,11 +202,12 @@ export function createSemanticMemoryIntelligencePort({
             : relation.fromMemoryId;
           const strength = current.strength * resolvedPolicy.graphDecay;
           const existing = candidates.get(neighborId);
+          let neighborAdmitted = existing != null;
           if (existing) {
             existing.graph = Math.max(existing.graph ?? 0, strength);
           } else {
             const record = await memory.get(neighborId);
-            if (record != null && activeAt(record, nowMs) && (!kindSet || kindSet.has(record.kind))) {
+            if (admitted(record, admission)) {
               candidates.set(neighborId, {
                 memory: clone(record),
                 provider: null,
@@ -187,9 +216,10 @@ export function createSemanticMemoryIntelligencePort({
                 source: "GRAPH"
               });
               graphCandidates += 1;
+              neighborAdmitted = true;
             }
           }
-          if (!visited.has(neighborId)) {
+          if (neighborAdmitted && !visited.has(neighborId)) {
             visited.add(neighborId);
             frontier.push({ memoryId: neighborId, depth: current.depth + 1, strength });
           }
@@ -245,7 +275,7 @@ export function createSemanticMemoryIntelligencePort({
       rankingModel: SemanticMemoryRankingModel,
       mode: mode.toUpperCase(),
       query: normalizedQuery,
-      tags: clone(tags),
+      tags: clone(normalizedTags),
       hits: Object.freeze(clone(hits)),
       ranking: Object.freeze({
         retrievalCandidates: raw.hits.length,
