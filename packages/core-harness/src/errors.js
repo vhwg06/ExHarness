@@ -2,6 +2,7 @@ export const ExHarnessErrorCode = Object.freeze({
   STORE_CONFLICT: "STORE_CONFLICT",
   SEMANTIC_MEMORY_CONFLICT: "SEMANTIC_MEMORY_CONFLICT",
   SEMANTIC_MEMORY_RELATION_CONFLICT: "SEMANTIC_MEMORY_RELATION_CONFLICT",
+  SEMANTIC_MEMORY_EVOLUTION_PARTIAL: "SEMANTIC_MEMORY_EVOLUTION_PARTIAL",
   SCHEMA_UNSUPPORTED: "SCHEMA_UNSUPPORTED",
   RECOVERY_REQUIRED: "RECOVERY_REQUIRED",
   SEARCH_INVESTMENT_STOPPED: "SEARCH_INVESTMENT_STOPPED",
@@ -68,6 +69,17 @@ export class SemanticMemoryRelationConflictError extends ExHarnessError {
       { details: { relationId, expectedRevision, actualRevision } }
     );
     this.name = "SemanticMemoryRelationConflictError";
+  }
+}
+
+export class SemanticMemoryEvolutionPartialCommitError extends ExHarnessError {
+  constructor({ proposalId, appliedSteps, cause = null }) {
+    super(
+      ExHarnessErrorCode.SEMANTIC_MEMORY_EVOLUTION_PARTIAL,
+      `semantic memory evolution partially committed: ${proposalId}`,
+      { details: { proposalId, appliedSteps }, cause }
+    );
+    this.name = "SemanticMemoryEvolutionPartialCommitError";
   }
 }
 
