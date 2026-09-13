@@ -27,6 +27,7 @@ import {
   defineLiveObjectPolicy
 } from "./live-object.js";
 import { TraceSpanKind, createNoopTracer } from "./tracing.js";
+import { defineRuntimeExecution } from "./runtime-execution.js";
 import { TurnOutcome, createTurnEventStore } from "./turn-events.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
@@ -364,6 +365,8 @@ export function createAgentRuntime({
         });
       }
 
+      let activeTurn = null;
+
       async function invoke(name, payload = null) {
         requireText(name, "capability name");
         const capability = resolved.get(name);
@@ -393,11 +396,23 @@ export function createAgentRuntime({
             const parsedInput = capability.parseInput
               ? capability.parseInput(clone(payload))
               : clone(payload);
-
-            const output = await capability.execute(parsedInput, Object.freeze({
+            const trace = tracer.current();
+            const runtimeExecution = defineRuntimeExecution({
+              callId,
+              turn: activeTurn,
+              trace: trace == null
+                ? null
+                : { traceId: trace.traceId, spanId: trace.spanId }
+            });
+            const runtime = Object.freeze({
               input: clone(runInput),
-              context: clone(runContext)
-            }));
+              context: clone(runContext),
+              callId: runtimeExecution.callId,
+              turn: runtimeExecution.turn,
+              trace: clone(runtimeExecution.trace)
+            });
+
+            const output = await capability.execute(parsedInput, runtime);
 
             return capability.parseOutput ? capability.parseOutput(output) : output;
           },
@@ -536,7 +551,7 @@ export function createAgentRuntime({
       function closeActiveTurn(outcome, final, error = null, payload = null) {
         if (!turnEventStore.hasActive(callId)) return null;
         preparedForModel = false;
-        return turnEventStore.end({
+        const ended = turnEventStore.end({
           callId,
           judgment,
           outcome,
@@ -547,6 +562,8 @@ export function createAgentRuntime({
             ...(payload == null ? {} : payload)
           }
         });
+        activeTurn = null;
+        return ended;
       }
 
       function beginTurn({ reportedTurn = null, model = null } = {}) {
@@ -564,6 +581,7 @@ export function createAgentRuntime({
             reportedTurn
           }
         });
+        activeTurn = before.turn;
         preparedForModel = true;
         return before;
       }

@@ -81,7 +81,7 @@ function createSessionCapabilities(core, memory, sessionId, verifiers, promote, 
       name: AVOCapability.OBSERVE,
       description: "Inspect the current candidate or environment without mutating candidate state.",
       mutatesCandidate: false,
-      execute: (request) => core.observe(sessionId, request)
+      execute: (request, runtime) => core.observe(sessionId, request, { runtime })
     }),
     defineCapability({
       name: AVOCapability.ACT,
