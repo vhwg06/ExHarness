@@ -31,10 +31,10 @@ NOOA-G3 Safe history evolution                 DONE
 NOOA-G4 Semantic memory port                   DONE
 NOOA-G5 Associative recall contract            DONE
 NOOA-G6 Spontaneous recall                     DONE
-NOOA-G7 Integrated/adversarial evaluation      DONE on PR candidate
+NOOA-G7 Integrated/adversarial evaluation      DONE
 ```
 
-Current checkpoint: `G7 final exact-head Node 20/22/24 verification pending`.
+Current checkpoint: `G1-G7 canonical DONE; G7 exact-head and post-merge Node 20/22/24 green`.
 
 ---
 
@@ -291,9 +291,11 @@ The eval keeps semantic assertions and also deep-compares the full deterministic
 
 Artifact: `docs/architecture/turn-memory-reference-evaluation.md` + `artifacts/nooa-turn-memory-eval.json`.
 
+G7 merge commit `6a63a6a675577ada713d326a6fd11ad42e5a5af6` passed the post-merge Node 20/22/24 matrix.
+
 ## Claim boundary after G7
 
-When G7 merges and the post-merge matrix is green, the repository may claim **NOOA-grade turn lifecycle + semantic-memory semantics for the declared ExHarness deterministic target/reference workload**.
+G7 is merged and its post-merge matrix is green. The repository may claim **NOOA-grade turn lifecycle + semantic-memory semantics for the declared ExHarness deterministic target/reference workload**.
 
 It does not prove:
 
