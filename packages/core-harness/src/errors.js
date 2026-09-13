@@ -1,6 +1,7 @@
 export const ExHarnessErrorCode = Object.freeze({
   STORE_CONFLICT: "STORE_CONFLICT",
   SEMANTIC_MEMORY_CONFLICT: "SEMANTIC_MEMORY_CONFLICT",
+  SEMANTIC_MEMORY_RELATION_CONFLICT: "SEMANTIC_MEMORY_RELATION_CONFLICT",
   SCHEMA_UNSUPPORTED: "SCHEMA_UNSUPPORTED",
   RECOVERY_REQUIRED: "RECOVERY_REQUIRED",
   SEARCH_INVESTMENT_STOPPED: "SEARCH_INVESTMENT_STOPPED",
@@ -56,6 +57,17 @@ export class StoreConflictError extends ExHarnessError {
       { details: { sessionId, expectedRevision, actualRevision } }
     );
     this.name = "StoreConflictError";
+  }
+}
+
+export class SemanticMemoryRelationConflictError extends ExHarnessError {
+  constructor({ relationId, expectedRevision, actualRevision }) {
+    super(
+      ExHarnessErrorCode.SEMANTIC_MEMORY_RELATION_CONFLICT,
+      `semantic memory relation revision conflict: ${relationId}`,
+      { details: { relationId, expectedRevision, actualRevision } }
+    );
+    this.name = "SemanticMemoryRelationConflictError";
   }
 }
 
