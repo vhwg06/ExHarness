@@ -1,12 +1,4 @@
-import { AsyncLocalStorage } from "node:async_hooks";
-
 import { invariant, requireText } from "./contracts.js";
-
-const storage = new AsyncLocalStorage();
-
-function clone(value) {
-  return value == null ? value : structuredClone(value);
-}
 
 function normalizeTurn(turn) {
   if (turn == null) return null;
@@ -30,14 +22,4 @@ export function defineRuntimeExecution(metadata) {
     turn: normalizeTurn(metadata.turn),
     trace: normalizeTrace(metadata.trace)
   });
-}
-
-export function runWithRuntimeExecution(metadata, operation) {
-  invariant(typeof operation === "function", "runtime execution requires operation()");
-  return storage.run(defineRuntimeExecution(metadata), operation);
-}
-
-export function currentRuntimeExecution() {
-  const current = storage.getStore();
-  return current == null ? null : Object.freeze(clone(current));
 }
