@@ -22,6 +22,7 @@ export {
   RuntimeSnapshotError,
   SchemaUnsupportedError,
   SearchInvestmentBoundaryError,
+  SemanticMemoryRelationConflictError,
   StoreConflictError,
   TraceSinkError
 } from "./errors.js";
@@ -69,6 +70,15 @@ export {
   defineSemanticMemoryDraft,
   defineSemanticMemoryProvenance
 } from "./semantic-memory.js";
+export {
+  SemanticMemoryRelationChangeKind,
+  SemanticMemoryRelationDirection,
+  SemanticMemoryRelationStatus,
+  SemanticMemoryRelationType,
+  createInMemorySemanticMemoryRelationProvider,
+  createSemanticMemoryGraph,
+  defineSemanticMemoryRelationDraft
+} from "./semantic-memory-graph.js";
 export {
   SemanticMemoryRetrievalMode,
   SemanticMemoryRetrievalSemantics,
