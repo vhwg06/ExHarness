@@ -37,6 +37,11 @@ function nullProjector() {
 
 function createHarnessOptions(overrides = {}) {
   return {
+    strategy: {
+      async run() {
+        return null;
+      }
+    },
     environment: {
       async observe({ candidate, request }) {
         return { candidate: candidate.version, request };
