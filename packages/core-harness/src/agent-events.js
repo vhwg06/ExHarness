@@ -11,6 +11,14 @@ export const AgentEventKind = Object.freeze({
   ERROR: "ERROR"
 });
 
+export const AgentEventRefKind = Object.freeze({
+  AGENT_EVENT: "AGENT_EVENT"
+});
+
+export const AgentEventLinkKind = Object.freeze({
+  PRODUCED_ARTIFACT: "PRODUCED_ARTIFACT"
+});
+
 function safeClone(value) {
   try {
     return value == null ? value : structuredClone(value);
@@ -19,16 +27,67 @@ function safeClone(value) {
   }
 }
 
+function defineEventRef(id) {
+  return Object.freeze({
+    kind: AgentEventRefKind.AGENT_EVENT,
+    id: requireText(id, "agent event ref id")
+  });
+}
+
+function defineArtifactRef(ref) {
+  invariant(ref && typeof ref === "object" && !Array.isArray(ref), "agent event artifact ref must be an object");
+  return Object.freeze({
+    kind: requireText(ref.kind, "agent event artifact ref kind"),
+    id: requireText(ref.id, "agent event artifact ref id")
+  });
+}
+
+function deriveLinks(type, payload, callId) {
+  if (type !== AgentEventKind.ACTION_OUTPUT) return Object.freeze([]);
+
+  const artifact = payload?.output;
+  if (artifact?.artifactRef == null) return Object.freeze([]);
+
+  const runtimeCallId = artifact?.provenance?.runtime?.callId ?? null;
+  if (runtimeCallId != null) {
+    invariant(runtimeCallId === callId, "agent event cannot link an artifact from another runtime call");
+  }
+
+  return Object.freeze([
+    Object.freeze({
+      kind: AgentEventLinkKind.PRODUCED_ARTIFACT,
+      target: defineArtifactRef(artifact.artifactRef)
+    })
+  ]);
+}
+
+function normalizeLinks(type, event, callId) {
+  if (event.links == null) return deriveLinks(type, event.payload, callId);
+  invariant(Array.isArray(event.links), "agent event links must be an array");
+  return Object.freeze(event.links.map((link) => {
+    invariant(link && typeof link === "object" && !Array.isArray(link), "agent event link must be an object");
+    invariant(Object.values(AgentEventLinkKind).includes(link.kind), "agent event link kind is invalid");
+    return Object.freeze({
+      kind: link.kind,
+      target: defineArtifactRef(link.target)
+    });
+  }));
+}
+
 function normalizeSeedEvent(event) {
   invariant(event && typeof event === "object", "agent event is required");
   invariant(Object.values(AgentEventKind).includes(event.type), "agent event type is invalid");
+  const id = requireText(event.id, "agent event id");
+  const callId = requireText(event.callId, "agent event callId");
   return Object.freeze({
-    id: requireText(event.id, "agent event id"),
+    id,
+    eventRef: event.eventRef == null ? defineEventRef(id) : defineEventRef(event.eventRef.id),
     type: event.type,
     at: requireText(event.at, "agent event at"),
-    callId: requireText(event.callId, "agent event callId"),
+    callId,
     judgment: event.judgment == null ? null : safeClone(event.judgment),
-    payload: safeClone(event.payload ?? null)
+    payload: safeClone(event.payload ?? null),
+    links: normalizeLinks(event.type, event, callId)
   });
 }
 
@@ -50,13 +109,18 @@ export function createAgentEventStore({
 
     record(type, { callId, judgment = null, payload = null } = {}) {
       invariant(Object.values(AgentEventKind).includes(type), `unknown agent event type: ${type}`);
+      const id = requireText(idFactory(), "agent event id");
+      const resolvedCallId = requireText(callId, "agent event callId");
+      const clonedPayload = safeClone(payload);
       const event = Object.freeze({
-        id: requireText(idFactory(), "agent event id"),
+        id,
+        eventRef: defineEventRef(id),
         type,
         at: requireText(clock(), "agent event at"),
-        callId: requireText(callId, "agent event callId"),
+        callId: resolvedCallId,
         judgment: judgment == null ? null : safeClone(judgment),
-        payload: safeClone(payload)
+        payload: clonedPayload,
+        links: deriveLinks(type, clonedPayload, resolvedCallId)
       });
       history.push(event);
       return event;
