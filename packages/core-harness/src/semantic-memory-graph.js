@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 
 import { invariant, requireText } from "./contracts.js";
-import { SemanticMemoryConflictError, defineSemanticMemoryProvenance } from "./semantic-memory.js";
+import { SemanticMemoryRelationConflictError } from "./errors.js";
+import { defineSemanticMemoryProvenance } from "./semantic-memory.js";
 
 export const SemanticMemoryRelationType = Object.freeze({
   DERIVED_FROM: "DERIVED_FROM",
@@ -47,6 +48,7 @@ function relationKey({ fromMemoryId, type, toMemoryId }) {
 
 function lifecycleEntry({ kind, provenance, revision, at }) {
   invariant(Object.values(SemanticMemoryRelationChangeKind).includes(kind), "semantic memory relation change kind is invalid");
+  invariant(Number.isInteger(revision) && revision > 0, "semantic memory relation lifecycle revision must be positive");
   return Object.freeze({
     kind,
     revision,
@@ -134,8 +136,8 @@ export function createInMemorySemanticMemoryRelationProvider({ relations = [] } 
       const current = stored.get(next.id) ?? null;
       const actualRevision = current?.revision ?? null;
       if (actualRevision !== expectedRevision) {
-        throw new SemanticMemoryConflictError({
-          memoryId: `relation:${next.id}`,
+        throw new SemanticMemoryRelationConflictError({
+          relationId: next.id,
           expectedRevision,
           actualRevision
         });
@@ -263,8 +265,8 @@ export function createSemanticMemoryGraph({
       const expected = expectedRevision ?? current.revision;
       invariant(Number.isInteger(expected) && expected > 0, "semantic memory relation expectedRevision must be positive");
       if (expected !== current.revision) {
-        throw new SemanticMemoryConflictError({
-          memoryId: `relation:${current.id}`,
+        throw new SemanticMemoryRelationConflictError({
+          relationId: current.id,
           expectedRevision: expected,
           actualRevision: current.revision
         });
