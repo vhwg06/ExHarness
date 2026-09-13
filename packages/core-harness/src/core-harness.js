@@ -15,7 +15,6 @@ import {
   validateSupervisorIntervention
 } from "./contracts.js";
 import { defineObservationArtifact } from "./observation.js";
-import { currentRuntimeExecution } from "./runtime-execution.js";
 import { normalizeVerificationRecord } from "./verification.js";
 import {
   VariationStatus,
@@ -395,7 +394,7 @@ export function createCoreHarness({
       return structuredClone(state.trajectory.slice(index + 1));
     },
 
-    async observe(sessionId, request) {
+    async observe(sessionId, request, { runtime = null } = {}) {
       const state = await load(sessionId);
       const result = await environment.observe({
         sessionId: state.id,
@@ -406,7 +405,6 @@ export function createCoreHarness({
       const runningVariation = state.persistentMemory.variations.find(
         (item) => item.status === VariationStatus.RUNNING
       ) ?? null;
-      const runtime = currentRuntimeExecution();
       const observation = defineObservationArtifact({
         id: idFactory(),
         candidate: state.currentCandidate,
