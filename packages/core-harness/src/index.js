@@ -60,6 +60,9 @@ export { createMemoryFacade } from "./memory.js";
 export {
   SemanticMemoryChangeKind,
   SemanticMemoryConflictError,
+  SemanticMemoryKind,
+  SemanticMemoryKindSemantics,
+  SemanticMemorySourceRefKind,
   SemanticMemoryStatus,
   createInMemorySemanticMemoryProvider,
   createSemanticMemoryPort,
@@ -203,7 +206,12 @@ export {
 export { createInMemorySessionStore } from "./store.js";
 export { validateCorePorts } from "./ports.js";
 export { createCoreHarness } from "./core-harness.js";
-export { AgentEventKind, createAgentEventStore } from "./agent-events.js";
+export {
+  AgentEventKind,
+  AgentEventLinkKind,
+  AgentEventRefKind,
+  createAgentEventStore
+} from "./agent-events.js";
 export { TurnEventKind, TurnOutcome, createTurnEventStore } from "./turn-events.js";
 export {
   ContextBlockTrust,

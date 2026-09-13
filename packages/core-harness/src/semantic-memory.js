@@ -8,6 +8,31 @@ export const SemanticMemoryStatus = Object.freeze({
   ARCHIVED: "ARCHIVED"
 });
 
+export const SemanticMemoryKind = Object.freeze({
+  EPISODIC: "EPISODIC",
+  SEMANTIC: "SEMANTIC",
+  PROCEDURAL: "PROCEDURAL",
+  REFLECTION: "REFLECTION",
+  INTENT: "INTENT"
+});
+
+export const SemanticMemorySourceRefKind = Object.freeze({
+  MEMORY: "MEMORY",
+  OBSERVATION: "OBSERVATION",
+  AGENT_EVENT: "AGENT_EVENT",
+  VERIFICATION: "VERIFICATION",
+  EVALUATION: "EVALUATION",
+  EXTERNAL: "EXTERNAL"
+});
+
+export const SemanticMemoryKindSemantics = Object.freeze({
+  [SemanticMemoryKind.EPISODIC]: Object.freeze({ role: "EXPERIENCE", evolution: "RECONSOLIDATABLE" }),
+  [SemanticMemoryKind.SEMANTIC]: Object.freeze({ role: "KNOWLEDGE", evolution: "REVISIONED" }),
+  [SemanticMemoryKind.PROCEDURAL]: Object.freeze({ role: "PROCEDURE", evolution: "REVISIONED" }),
+  [SemanticMemoryKind.REFLECTION]: Object.freeze({ role: "DERIVED", evolution: "REVISIONED" }),
+  [SemanticMemoryKind.INTENT]: Object.freeze({ role: "GOAL", evolution: "REVISIONED" })
+});
+
 export const SemanticMemoryChangeKind = Object.freeze({
   CREATED: "CREATED",
   UPDATED: "UPDATED",
@@ -40,6 +65,52 @@ function normalizeImportance(value = 0.5) {
   return value;
 }
 
+function normalizeConfidence(value = null) {
+  if (value == null) return null;
+  invariant(Number.isFinite(value), "semantic memory confidence must be finite or null");
+  invariant(value >= 0 && value <= 1, "semantic memory confidence must be between 0 and 1");
+  return value;
+}
+
+function normalizeKind(value = SemanticMemoryKind.SEMANTIC) {
+  invariant(Object.values(SemanticMemoryKind).includes(value), "semantic memory kind is invalid");
+  return value;
+}
+
+function normalizeTimestamp(value, label) {
+  if (value == null) return null;
+  const text = requireText(value, label);
+  invariant(Number.isFinite(Date.parse(text)), `${label} must be a valid timestamp`);
+  return text;
+}
+
+function normalizeTemporal(temporal = {}) {
+  invariant(temporal && typeof temporal === "object" && !Array.isArray(temporal), "semantic memory temporal validity must be an object");
+  const validFrom = normalizeTimestamp(temporal.validFrom ?? null, "semantic memory validFrom");
+  const validTo = normalizeTimestamp(temporal.validTo ?? null, "semantic memory validTo");
+  if (validFrom != null && validTo != null) {
+    invariant(Date.parse(validFrom) <= Date.parse(validTo), "semantic memory validFrom must not be after validTo");
+  }
+  return Object.freeze({ validFrom, validTo });
+}
+
+function normalizeSourceRefs(sourceRefs = []) {
+  invariant(Array.isArray(sourceRefs), "semantic memory sourceRefs must be an array");
+  const seen = new Set();
+  return Object.freeze(sourceRefs.map((ref) => {
+    invariant(ref && typeof ref === "object" && !Array.isArray(ref), "semantic memory source ref must be an object");
+    invariant(Object.values(SemanticMemorySourceRefKind).includes(ref.kind), "semantic memory source ref kind is invalid");
+    const normalized = Object.freeze({
+      kind: ref.kind,
+      id: requireText(ref.id, "semantic memory source ref id")
+    });
+    const key = `${normalized.kind}:${normalized.id}`;
+    invariant(!seen.has(key), `duplicate semantic memory source ref: ${key}`);
+    seen.add(key);
+    return normalized;
+  }));
+}
+
 function normalizeTurn(turn) {
   if (turn == null) return null;
   invariant(Number.isInteger(turn) && turn > 0, "semantic memory provenance turn must be a positive integer");
@@ -63,9 +134,13 @@ export function defineSemanticMemoryProvenance(provenance) {
 export function defineSemanticMemoryDraft(draft) {
   invariant(draft && typeof draft === "object", "semantic memory draft is required");
   return Object.freeze({
+    kind: normalizeKind(draft.kind),
     content: requireText(draft.content, "semantic memory content"),
     tags: normalizeTags(draft.tags),
     importance: normalizeImportance(draft.importance),
+    confidence: normalizeConfidence(draft.confidence),
+    temporal: normalizeTemporal(draft.temporal),
+    sourceRefs: normalizeSourceRefs(draft.sourceRefs),
     provenance: defineSemanticMemoryProvenance(draft.provenance)
   });
 }
@@ -80,18 +155,38 @@ function lifecycleEntry({ kind, provenance, revision, at }) {
   });
 }
 
-function validateStoredRecord(record) {
+function normalizeStoredRecord(record) {
   invariant(record && typeof record === "object", "semantic memory record is required");
-  requireText(record.id, "semantic memory id");
-  requireText(record.content, "semantic memory content");
+  const normalized = {
+    ...clone(record),
+    id: requireText(record.id, "semantic memory id"),
+    kind: normalizeKind(record.kind),
+    content: requireText(record.content, "semantic memory content"),
+    tags: normalizeTags(record.tags),
+    importance: normalizeImportance(record.importance),
+    confidence: normalizeConfidence(record.confidence),
+    temporal: normalizeTemporal(record.temporal),
+    sourceRefs: normalizeSourceRefs(record.sourceRefs)
+  };
   invariant(Object.values(SemanticMemoryStatus).includes(record.status), "semantic memory status is invalid");
   invariant(Number.isInteger(record.revision) && record.revision > 0, "semantic memory revision must be positive");
-  requireText(record.createdAt, "semantic memory createdAt");
-  requireText(record.updatedAt, "semantic memory updatedAt");
-  normalizeTags(record.tags);
-  normalizeImportance(record.importance);
+  normalized.status = record.status;
+  normalized.revision = record.revision;
+  normalized.createdAt = requireText(record.createdAt, "semantic memory createdAt");
+  normalized.updatedAt = requireText(record.updatedAt, "semantic memory updatedAt");
   invariant(Array.isArray(record.provenance) && record.provenance.length > 0, "semantic memory provenance history is required");
-  return record;
+  normalized.provenance = Object.freeze(record.provenance.map((entry) => {
+    invariant(entry && typeof entry === "object", "semantic memory provenance entry is required");
+    invariant(Object.values(SemanticMemoryChangeKind).includes(entry.kind), "semantic memory change kind is invalid");
+    invariant(Number.isInteger(entry.revision) && entry.revision > 0, "semantic memory provenance revision must be positive");
+    return lifecycleEntry({
+      kind: entry.kind,
+      revision: entry.revision,
+      at: requireText(entry.at, "semantic memory provenance at"),
+      provenance: entry
+    });
+  }));
+  return Object.freeze(normalized);
 }
 
 function validateProvider(provider) {
@@ -106,14 +201,14 @@ export function createInMemorySemanticMemoryProvider({ records = [] } = {}) {
   const stored = new Map();
 
   for (const record of records) {
-    const normalized = clone(validateStoredRecord(record));
+    const normalized = clone(normalizeStoredRecord(record));
     invariant(!stored.has(normalized.id), `duplicate semantic memory id: ${normalized.id}`);
     stored.set(normalized.id, normalized);
   }
 
   return Object.freeze({
     async create(record) {
-      const next = clone(validateStoredRecord(record));
+      const next = clone(normalizeStoredRecord(record));
       invariant(!stored.has(next.id), `semantic memory already exists: ${next.id}`);
       stored.set(next.id, next);
       return clone(next);
@@ -125,7 +220,7 @@ export function createInMemorySemanticMemoryProvider({ records = [] } = {}) {
     },
 
     async replace(record, { expectedRevision } = {}) {
-      const next = clone(validateStoredRecord(record));
+      const next = clone(normalizeStoredRecord(record));
       invariant(Number.isInteger(expectedRevision) && expectedRevision > 0, "semantic memory expectedRevision must be positive");
       const current = stored.get(next.id) ?? null;
       const actualRevision = current?.revision ?? null;
@@ -158,7 +253,7 @@ export function createSemanticMemoryPort({
   async function requireRecord(id) {
     const record = await resolvedProvider.read(requireText(id, "semantic memory id"));
     invariant(record, `semantic memory not found: ${id}`);
-    return validateStoredRecord(record);
+    return normalizeStoredRecord(record);
   }
 
   return Object.freeze({
@@ -168,9 +263,13 @@ export function createSemanticMemoryPort({
       const at = requireText(clock(), "semantic memory clock value");
       const record = Object.freeze({
         id,
+        kind: draft.kind,
         content: draft.content,
         tags: draft.tags,
         importance: draft.importance,
+        confidence: draft.confidence,
+        temporal: draft.temporal,
+        sourceRefs: draft.sourceRefs,
         status: SemanticMemoryStatus.ACTIVE,
         revision: 1,
         createdAt: at,
@@ -191,23 +290,39 @@ export function createSemanticMemoryPort({
       invariant(typeof includeArchived === "boolean", "semantic memory includeArchived must be boolean");
       const record = await resolvedProvider.read(requireText(id, "semantic memory id"));
       if (record == null) return null;
-      validateStoredRecord(record);
-      if (!includeArchived && record.status === SemanticMemoryStatus.ARCHIVED) return null;
-      return clone(record);
+      const normalized = normalizeStoredRecord(record);
+      if (!includeArchived && normalized.status === SemanticMemoryStatus.ARCHIVED) return null;
+      return clone(normalized);
     },
 
-    async list({ includeArchived = false, tags = null, limit = 100 } = {}) {
+    async list({ includeArchived = false, tags = null, kinds = null, validAt = null, limit = 100 } = {}) {
       invariant(typeof includeArchived === "boolean", "semantic memory includeArchived must be boolean");
       invariant(Number.isInteger(limit) && limit > 0, "semantic memory list limit must be positive");
       const requiredTags = tags == null ? null : new Set(normalizeTags(tags));
+      const requiredKinds = kinds == null
+        ? null
+        : new Set((() => {
+          invariant(Array.isArray(kinds), "semantic memory list kinds must be an array");
+          return kinds.map(normalizeKind);
+        })());
+      const validAtText = normalizeTimestamp(validAt, "semantic memory list validAt");
+      const validAtMillis = validAtText == null ? null : Date.parse(validAtText);
       let records = await resolvedProvider.list();
       invariant(Array.isArray(records), "semantic memory provider list() must return an array");
-      records = records.map((record) => clone(validateStoredRecord(record)));
+      records = records.map((record) => clone(normalizeStoredRecord(record)));
       if (!includeArchived) records = records.filter((record) => record.status === SemanticMemoryStatus.ACTIVE);
       if (requiredTags) {
         records = records.filter((record) => {
           const recordTags = new Set(record.tags);
           return [...requiredTags].every((tag) => recordTags.has(tag));
+        });
+      }
+      if (requiredKinds) records = records.filter((record) => requiredKinds.has(record.kind));
+      if (validAtMillis != null) {
+        records = records.filter((record) => {
+          const from = record.temporal.validFrom == null ? null : Date.parse(record.temporal.validFrom);
+          const to = record.temporal.validTo == null ? null : Date.parse(record.temporal.validTo);
+          return (from == null || from <= validAtMillis) && (to == null || validAtMillis <= to);
         });
       }
       records.sort((left, right) => {
@@ -222,6 +337,8 @@ export function createSemanticMemoryPort({
       invariant(patch && typeof patch === "object", "semantic memory update patch is required");
       const current = await requireRecord(id);
       invariant(current.status === SemanticMemoryStatus.ACTIVE, "archived semantic memory cannot be updated");
+      invariant(patch.kind == null || patch.kind === current.kind, "semantic memory kind is immutable after creation");
+      invariant(patch.sourceRefs == null, "semantic memory sourceRefs are immutable after creation; create a derived memory instead");
       const expectedRevision = patch.expectedRevision ?? current.revision;
       invariant(Number.isInteger(expectedRevision) && expectedRevision > 0, "semantic memory expectedRevision must be positive");
       if (expectedRevision !== current.revision) {
@@ -239,6 +356,8 @@ export function createSemanticMemoryPort({
         content: patch.content == null ? current.content : requireText(patch.content, "semantic memory content"),
         tags: patch.tags == null ? Object.freeze(clone(current.tags)) : normalizeTags(patch.tags),
         importance: patch.importance == null ? current.importance : normalizeImportance(patch.importance),
+        confidence: patch.confidence === undefined ? current.confidence : normalizeConfidence(patch.confidence),
+        temporal: patch.temporal == null ? Object.freeze(clone(current.temporal)) : normalizeTemporal(patch.temporal),
         revision: nextRevision,
         updatedAt: at,
         provenance: Object.freeze([
