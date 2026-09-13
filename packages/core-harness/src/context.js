@@ -87,6 +87,17 @@ function contextMetadata(callId, judgment, turn) {
   });
 }
 
+function promptEventView(event) {
+  return Object.freeze({
+    id: event.id,
+    type: event.type,
+    at: event.at,
+    callId: event.callId,
+    judgment: event.judgment == null ? null : clone(event.judgment),
+    payload: clone(event.payload ?? null)
+  });
+}
+
 export function defineContextBlock(definition = {}) {
   invariant(definition && typeof definition === "object", "context block definition is required");
   const {
@@ -176,7 +187,7 @@ function selectCanonicalEvents(canonicalEvents, selectedEvents) {
 
   const selected = canonicalEvents
     .filter((event) => selectedIds.has(event.id))
-    .map((event) => clone(event));
+    .map(promptEventView);
   return normalizePromptData(selected, "context history events");
 }
 
@@ -281,7 +292,10 @@ export async function renderAgentContext({
       const requested = await resolvedSelection.selectHistory(clone(canonicalSnapshot), metadata);
       selected = selectCanonicalEvents(canonicalSnapshot, requested);
     } else {
-      selected = normalizePromptData(canonicalSnapshot, "context history events");
+      selected = normalizePromptData(
+        canonicalSnapshot.map(promptEventView),
+        "context history events"
+      );
     }
     selected = enforceHistoryCount(selected, resolvedPolicy);
 
