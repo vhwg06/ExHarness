@@ -119,19 +119,19 @@ test("context, recall and evolution compose into one causal trace tree", async (
   assert(root);
   const context = spans.find((span) => span.kind === TraceSpanKind.CONTEXT_RESOLVE);
   const recall = spans.find((span) => span.kind === TraceSpanKind.MEMORY_RECALL && span.attributes?.source === "INTELLIGENCE");
-  const evolution = spans.find((span) => span.kind === TraceSpanKind.MEMORY_EVOLUTION && span.attributes?.operation === "EXECUTE");
+  const evolutionSpan = spans.find((span) => span.kind === TraceSpanKind.MEMORY_EVOLUTION && span.attributes?.operation === "EXECUTE");
   assert(context);
   assert(recall);
-  assert(evolution);
+  assert(evolutionSpan);
   assert.equal(context.traceId, root.traceId);
   assert.equal(recall.traceId, root.traceId);
-  assert.equal(evolution.traceId, root.traceId);
+  assert.equal(evolutionSpan.traceId, root.traceId);
   assert.equal(context.callId, "call-1");
   assert.equal(recall.callId, "call-1");
-  assert.equal(evolution.callId, "call-1");
+  assert.equal(evolutionSpan.callId, "call-1");
 
   const evolutionResult = spans.find(
-    (span) => span.kind === TraceSpanKind.MEMORY_RESULT && span.parentSpanId === evolution.spanId
+    (span) => span.kind === TraceSpanKind.MEMORY_RESULT && span.parentSpanId === evolutionSpan.spanId
   );
   assert(evolutionResult);
   assert.equal(evolutionResult.attributes.evolutionKind, SemanticMemoryEvolutionKind.ABSTRACT);
