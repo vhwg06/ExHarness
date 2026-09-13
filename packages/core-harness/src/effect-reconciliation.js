@@ -103,6 +103,20 @@ export function createInMemoryEffectJournal() {
         error: error == null ? null : errorView(error)
       });
     },
+    async prepareRetry(operationId, { evidence = null } = {}) {
+      const current = await get(operationId);
+      invariant(current, `effect operation not found: ${operationId}`);
+      invariant(
+        current.status === EffectOperationStatus.UNKNOWN || current.status === EffectOperationStatus.DISPATCHED,
+        `effect operation cannot retry from ${current.status}`
+      );
+      return put({
+        ...current,
+        status: EffectOperationStatus.INTENDED,
+        error: null,
+        evidence: clone(evidence ?? current.evidence)
+      });
+    },
     async list() {
       return [...records.values()].map(clone);
     }
@@ -151,16 +165,16 @@ export function defineEffectCapability(definition, { journal } = {}) {
         await effect.operationKey({ input: clone(input), runtime: clone(runtime) }),
         `capability ${name} effect operationId`
       );
-      const existing = await journal.get(operationId);
+      let operation = await journal.get(operationId);
 
-      if (existing?.status === EffectOperationStatus.CONFIRMED) {
-        return clone(existing.result);
+      if (operation?.status === EffectOperationStatus.CONFIRMED) {
+        return clone(operation.result);
       }
-      if (existing != null) {
+      if (operation != null && operation.status !== EffectOperationStatus.INTENDED) {
         throw new EffectRecoveryRequiredError({
           operationId,
           capability: name,
-          status: existing.status
+          status: operation.status
         });
       }
 
@@ -168,15 +182,19 @@ export function defineEffectCapability(definition, { journal } = {}) {
         ? await effect.desiredEffect({ input: clone(input), runtime: clone(runtime) })
         : clone(effect.desiredEffect);
 
-      await journal.intend({
-        operationId,
-        capability: name,
-        replayPolicy: effect.replayPolicy,
-        desiredEffect: clone(desiredEffect),
-        input: clone(input),
-        callId: runtime?.callId ?? null,
-        turn: clone(runtime?.turn ?? null)
-      });
+      if (operation == null) {
+        operation = await journal.intend({
+          operationId,
+          capability: name,
+          replayPolicy: effect.replayPolicy,
+          desiredEffect: clone(desiredEffect),
+          input: clone(input),
+          callId: runtime?.callId ?? null,
+          turn: clone(runtime?.turn ?? null)
+        });
+      }
+
+      invariant(operation.replayPolicy === effect.replayPolicy, `effect replayPolicy changed for operation ${operationId}`);
       await journal.markDispatched(operationId);
 
       try {
@@ -185,7 +203,7 @@ export function defineEffectCapability(definition, { journal } = {}) {
           effect: Object.freeze({
             operationId,
             replayPolicy: effect.replayPolicy,
-            desiredEffect: clone(desiredEffect)
+            desiredEffect: clone(operation.desiredEffect)
           })
         }));
         await journal.markConfirmed(operationId, { result });
@@ -202,6 +220,7 @@ export async function reconcileEffectOperation({ capability, journal, operationI
   invariant(capability && typeof capability === "object", "effect reconciliation requires capability");
   invariant(capability.effect && typeof capability.effect === "object", "effect reconciliation requires capability.effect");
   invariant(journal && typeof journal.get === "function", "effect reconciliation requires journal.get()");
+  invariant(typeof journal.prepareRetry === "function", "effect reconciliation requires journal.prepareRetry()");
   const id = requireText(operationId, "effect operationId");
   const record = await journal.get(id);
   invariant(record, `effect operation not found: ${id}`);
@@ -212,8 +231,12 @@ export async function reconcileEffectOperation({ capability, journal, operationI
 
   switch (record.replayPolicy) {
     case EffectReplayPolicy.PURE:
-    case EffectReplayPolicy.IDEMPOTENT:
-      return Object.freeze({ action: EffectRecoveryAction.RETRY, operation: record });
+    case EffectReplayPolicy.IDEMPOTENT: {
+      const retryable = record.status === EffectOperationStatus.INTENDED
+        ? record
+        : await journal.prepareRetry(id);
+      return Object.freeze({ action: EffectRecoveryAction.RETRY, operation: retryable });
+    }
 
     case EffectReplayPolicy.OBSERVABLE: {
       const observation = await capability.effect.observe({ operation: clone(record) });
@@ -228,9 +251,12 @@ export async function reconcileEffectOperation({ capability, journal, operationI
         return Object.freeze({ action: EffectRecoveryAction.CONTINUE, operation: confirmed });
       }
 
+      const retryable = record.status === EffectOperationStatus.INTENDED
+        ? record
+        : await journal.prepareRetry(id, { evidence: observation.evidence ?? null });
       return Object.freeze({
         action: EffectRecoveryAction.RETRY,
-        operation: record,
+        operation: retryable,
         evidence: clone(observation.evidence ?? null)
       });
     }
