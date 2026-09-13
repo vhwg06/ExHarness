@@ -27,7 +27,7 @@ import {
   defineLiveObjectPolicy
 } from "./live-object.js";
 import { TraceSpanKind, createNoopTracer } from "./tracing.js";
-import { runWithRuntimeExecution } from "./runtime-execution.js";
+import { defineRuntimeExecution } from "./runtime-execution.js";
 import { TurnOutcome, createTurnEventStore } from "./turn-events.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
@@ -397,25 +397,22 @@ export function createAgentRuntime({
               ? capability.parseInput(clone(payload))
               : clone(payload);
             const trace = tracer.current();
-            const runtimeExecution = Object.freeze({
+            const runtimeExecution = defineRuntimeExecution({
               callId,
               turn: activeTurn,
               trace: trace == null
                 ? null
-                : Object.freeze({ traceId: trace.traceId, spanId: trace.spanId })
+                : { traceId: trace.traceId, spanId: trace.spanId }
             });
             const runtime = Object.freeze({
               input: clone(runInput),
               context: clone(runContext),
-              callId,
-              turn: activeTurn,
+              callId: runtimeExecution.callId,
+              turn: runtimeExecution.turn,
               trace: clone(runtimeExecution.trace)
             });
 
-            const output = await runWithRuntimeExecution(
-              runtimeExecution,
-              () => capability.execute(parsedInput, runtime)
-            );
+            const output = await capability.execute(parsedInput, runtime);
 
             return capability.parseOutput ? capability.parseOutput(output) : output;
           },
