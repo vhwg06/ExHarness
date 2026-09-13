@@ -30,11 +30,11 @@ NOOA-G2 Turn-aware context refresh             DONE
 NOOA-G3 Safe history evolution                 DONE
 NOOA-G4 Semantic memory port                   DONE
 NOOA-G5 Associative recall contract            DONE
-NOOA-G6 Spontaneous recall                     DONE on PR candidate
-NOOA-G7 Integrated/adversarial evaluation      NEXT after G6 merge
+NOOA-G6 Spontaneous recall                     DONE
+NOOA-G7 Integrated/adversarial evaluation      DONE on PR candidate
 ```
 
-Current checkpoint: `G6 exact-head verification pending`.
+Current checkpoint: `G7 final exact-head Node 20/22/24 verification pending`.
 
 ---
 
@@ -235,15 +235,72 @@ Artifact: `docs/architecture/spontaneous-recall.md`.
 
 ---
 
-## G7 — Integrated evaluation
+## G7 — Integrated/adversarial evaluation
 
-Exercise a long multi-turn CodeAct workload where:
+### Objective
 
-- dynamic context changes during execution;
-- history must evolve without losing canonical provenance;
-- a later turn depends on semantic recall;
-- stale/poisoned memory is adversarially present;
-- AVO remains above the runtime;
-- false success / unsafe accept remain zero under the declared reference workload.
+Prove G1-G6 together through the packed consumer boundary under one deterministic multi-turn JavaScript CodeAct workload with AVO still owning promotion correctness.
 
-Only after G7 may the repository claim NOOA-grade turn lifecycle + semantic-memory semantics for the declared ExHarness target.
+### Reference workload
+
+```text
+turn 1
+  recalled memory includes active poison
+  archived stale memory is filtered
+  model tries PROMOTE before evaluation -> rejected
+  ACT mutates candidate v0 -> v1
+
+turn 2
+  fresh phase = mutated
+  history contains turn-1 model/action records
+  SELF_GATED query changes -> recall again
+  OBSERVE confirms v1
+
+turn 3
+  phase remains mutated
+  history grows again
+  stable query -> reuse prior recall
+  EVALUATE -> PASS
+  PROMOTE -> committed lineage v1
+```
+
+### Stable measured artifact
+
+`artifacts/nooa-turn-memory-eval.json` is produced through the packed blank-consumer path and matched identically on Node 20, 22 and 24 during the G7 measurement run.
+
+```text
+modelTurns              3
+javascriptCells         3
+hostCalls               6
+retrievalCalls          2
+recallQueries           duplicate-delivery -> post-mutation-check
+phaseByTurn             initial -> mutated -> mutated
+historyEventsByTurn     0 -> 2 -> 4
+memoryTrustViolations   0
+archivedMemoryLeaks     0
+poisonMemoryVisible     1
+earlyPromoteRejected    1
+evaluationPass          1
+lineageAdvanced         1
+falseSuccessCount       0
+unsafeAcceptCount       0
+BEFORE_TURN / AFTER     3 / 3
+```
+
+The eval keeps semantic assertions and also deep-compares the full deterministic result against the checked-in artifact. Metric drift therefore fails CI rather than silently redefining the reference target.
+
+Artifact: `docs/architecture/turn-memory-reference-evaluation.md` + `artifacts/nooa-turn-memory-eval.json`.
+
+## Claim boundary after G7
+
+When G7 merges and the post-merge matrix is green, the repository may claim **NOOA-grade turn lifecycle + semantic-memory semantics for the declared ExHarness deterministic target/reference workload**.
+
+It does not prove:
+
+- universal or scientific equivalence to every NOOA behavior;
+- semantic retrieval quality across arbitrary providers/models/workloads;
+- production sandbox containment;
+- production operational maturity;
+- superiority on real engineering workloads.
+
+The next evidence-bearing step is real workload evaluation, not further NOOA capability chasing by default.
