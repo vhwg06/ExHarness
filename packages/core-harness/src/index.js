@@ -220,6 +220,13 @@ export {
   createTraceRecorder
 } from "./tracing.js";
 export {
+  createTracedSemanticMemoryEvolutionPort,
+  createTracedSemanticMemoryIntelligencePort,
+  createTracedSemanticMemoryPort,
+  createTracedSemanticMemoryRetrievalPort,
+  instrumentCognitionContextBlocks
+} from "./cognition-tracing.js";
+export {
   createDeterministicClock,
   createDeterministicIdFactory,
   createFakeEnvironment,
