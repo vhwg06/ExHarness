@@ -14,6 +14,8 @@ import {
   validateKnowledgeRecord,
   validateSupervisorIntervention
 } from "./contracts.js";
+import { defineObservationArtifact } from "./observation.js";
+import { currentRuntimeExecution } from "./runtime-execution.js";
 import { normalizeVerificationRecord } from "./verification.js";
 import {
   VariationStatus,
@@ -401,16 +403,27 @@ export function createCoreHarness({
         candidate: structuredClone(state.currentCandidate),
         request: structuredClone(request)
       });
-
-      const observation = {
+      const runningVariation = state.persistentMemory.variations.find(
+        (item) => item.status === VariationStatus.RUNNING
+      ) ?? null;
+      const runtime = currentRuntimeExecution();
+      const observation = defineObservationArtifact({
         id: idFactory(),
-        candidate: structuredClone(state.currentCandidate),
+        candidate: state.currentCandidate,
         at: clock(),
-        request: structuredClone(request),
-        value: structuredClone(result)
-      };
-      state.persistentMemory.observations.push(observation);
-      event(state, "OBSERVED", { observationId: observation.id });
+        request,
+        value: result,
+        provenance: {
+          sessionId: state.id,
+          variationId: runningVariation?.id ?? null,
+          runtime
+        }
+      });
+      state.persistentMemory.observations.push(structuredClone(observation));
+      event(state, "OBSERVED", {
+        observationId: observation.id,
+        artifactRef: observation.artifactRef
+      });
       await save(state);
       return structuredClone(observation);
     },
