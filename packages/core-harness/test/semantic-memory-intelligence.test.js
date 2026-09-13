@@ -65,7 +65,7 @@ test("intelligence reranks authoritative retrieval candidates with explicit rele
   const { memory, intelligence } = fixture({
     retrievalHits: () => hits,
     policy: {
-      weights: { provider: 0.5, importance: 0.3, confidence: 0.2, recency: 0, graph: 0 }
+      weights: { provider: 0.4, importance: 0.4, confidence: 0.2, recency: 0, graph: 0 }
     }
   });
   const lowProviderHighQuality = await remember(memory, "high-quality", { importance: 1, confidence: 1 });
@@ -80,6 +80,7 @@ test("intelligence reranks authoritative retrieval candidates with explicit rele
   assert.equal(result.semantics, SemanticMemoryRetrievalSemantics);
   assert.equal(result.rankingModel, SemanticMemoryRankingModel);
   assert.deepEqual(result.hits.map((hit) => hit.memory.id), [lowProviderHighQuality.id, highProviderLowQuality.id]);
+  assert.equal(result.hits[0].relevance.score > result.hits[1].relevance.score, true);
   assert.equal(result.hits[0].relevance.model, SemanticMemoryRankingModel);
   assert.equal(result.hits[0].relevance.signals.some((signal) => signal.kind === SemanticMemoryRankingSignal.IMPORTANCE), true);
   assert.equal("verdict" in result.hits[0].relevance, false);
