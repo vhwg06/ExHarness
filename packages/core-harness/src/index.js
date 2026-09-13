@@ -80,6 +80,12 @@ export {
   defineSemanticMemoryRelationDraft
 } from "./semantic-memory-graph.js";
 export {
+  SemanticMemoryRankingModel,
+  SemanticMemoryRankingSignal,
+  createSemanticMemoryIntelligencePort,
+  defineSemanticMemoryIntelligencePolicy
+} from "./semantic-memory-intelligence.js";
+export {
   SemanticMemoryRetrievalMode,
   SemanticMemoryRetrievalSemantics,
   createSemanticMemoryRetrievalPort,
