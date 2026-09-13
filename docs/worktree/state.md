@@ -1,19 +1,27 @@
 # Repository state
 
-Semantic working-memory root for ExHarness. Read this first; load child projections only when relevant.
+Living delivery projection for ExHarness. Read this first; load engineering children only when the task needs them.
 
 ## PROJECT
 
-ExHarness is an autonomous-agent harness kernel combining long-horizon AVO control with a NOOA-style programmable agent runtime, evidence/evaluation, semantic memory, persistence and recovery primitives.
+ExHarness is the publishable `exharness` kernel: AVO long-horizon control above a NOOA-style programmable agent runtime, with explicit evidence, trust, persistence, recovery and cognition boundaries.
 
-## CONTEXT
+## DELIVERED
 
-- Engineering state -> `engineering/state.md`
+- AVO variation, lineage, verification/evaluation, supervision and adaptive search investment.
+- NOOA-style typed judgments, Predict/CodeAct, object agents, live objects, progressive discovery, model routing and tracing.
+- Revision-aware persistent work state plus explicit interrupted-variation recovery.
+- Runtime snapshot/resume with compatibility checks and explicit resource/live-object rebinding.
+- Semantic memory, graph/evolution/intelligence ports, spontaneous recall, and a separate NOOA-style retrieval adapter.
+- Trust evidence/decision/attestation primitives and promotion freshness gates.
+- Effect intent/replay/reconciliation primitives exposed separately from the normal AVO action path.
 
-## ACTIVE
+## ACTIVE ENGINEERING
 
-Engineering: complete the executable workflow/pipeline lifecycle without weakening existing authority boundaries.
+- `engineering/state.md`
+
+Current continuation target: compose recovery/effect semantics into a coherent workflow lifecycle without collapsing existing authority boundaries.
 
 ## RECONCILE
 
-Source code is implementation authority. When source changes a projected semantic, reconcile the affected worktree state in the same change. Do not reconstruct repo state from historical docs when a worktree projection exists.
+Source and public exports are implementation authority. When mapped semantics change, reconcile this projection and the affected engineering child in the same change. Git/history keeps the past; worktree keeps current delivery truth.
