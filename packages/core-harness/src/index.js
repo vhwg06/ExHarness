@@ -22,6 +22,7 @@ export {
   RuntimeSnapshotError,
   SchemaUnsupportedError,
   SearchInvestmentBoundaryError,
+  SemanticMemoryEvolutionPartialCommitError,
   SemanticMemoryRelationConflictError,
   StoreConflictError,
   TraceSinkError
@@ -70,6 +71,13 @@ export {
   defineSemanticMemoryDraft,
   defineSemanticMemoryProvenance
 } from "./semantic-memory.js";
+export {
+  SemanticMemoryEvolutionAtomicity,
+  SemanticMemoryEvolutionKind,
+  SemanticMemoryEvolutionStatus,
+  createSemanticMemoryEvolutionPort,
+  defineSemanticMemoryEvolutionProposal
+} from "./semantic-memory-evolution.js";
 export {
   SemanticMemoryRelationChangeKind,
   SemanticMemoryRelationDirection,
