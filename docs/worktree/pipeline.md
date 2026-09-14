@@ -1,6 +1,6 @@
 # Agentic System current delivered pipeline
 
-This document describes the execution/verification pipeline that exists in source today. It is not the roadmap. Open stages and future work live only in `../living/blackboard.md`.
+This document describes execution/verification pipelines that exist in source today. It is not the roadmap. Open stages and future work live only in `../living/blackboard.md`.
 
 ## Backend path
 
@@ -44,12 +44,61 @@ accepted Backend completion
 
 QA is dispatched only after Backend `ACCEPT`. QA issues produce deterministic remediation/continuation behavior rather than borrowing Backend mutation semantics.
 
+## Durable Blackboard path
+
+```text
+READY / REOPENED
+ -> ApplicationOrchestrator.claim(...)
+ -> CLAIMED
+ -> bounded Worker submission
+    -> optional WORKER-sourced review requests
+    -> optional explicit resolvedWork claims for previously reopened obligations
+ -> ApplicationOrchestrator.submit(...)
+ -> PENDING_REVIEW
+
+PM project obligation
+ -> ApplicationOrchestrator.requireReview(...)
+    source must be PM
+
+PENDING_REVIEW
+ -> beginReview(key, reviewer)
+ -> REVIEWING
+ -> recordAssessment(...)
+      +-> REJECTED / INCONCLUSIVE -> REOPENED + remaining work
+      +-> ACCEPTED + other review remains -> PENDING_REVIEW
+      +-> ACCEPTED + no review remains + remaining work exists -> REOPENED
+      +-> ACCEPTED + no review remains + no remaining work -> DONE
+```
+
+Worker review request and PM review requirement are separate source paths. Reviewer assessment is explicit. A Worker submission cannot take a Board item directly to `DONE`.
+
+A reopened item can be claimed again and a later submission can identify exact outstanding `resolvedWork`; that assertion still cannot close the work without its required reviews accepting the new submission.
+
+## Grounded follow-up reconciliation
+
+```text
+finding(summary + sourceRef)
+ -> CURRENT_WORK   -> remaining work + evidence provenance + REOPENED
+ -> EXISTING_WORK  -> link existing Board item + evidence provenance
+ -> NEW_WORK       -> create child with parent/finding/source provenance
+ -> NON_ACTIONABLE -> no new Board work
+```
+
+This prevents review failure from being hidden behind a replacement ticket when the original acceptance obligation is still unmet.
+
+## Persistence
+
+`createJsonBlackboardStore(...)` validates the Board snapshot and persists via temporary-file write + rename. Submitted refs, review requirements and `PENDING_REVIEW` state survive reconstruction through a new Orchestrator instance.
+
+The direct Backend -> QA execution path is not yet integrated with durable Blackboard dispatch/recovery; current source therefore contains two concrete application pipelines rather than claiming a unified workflow that does not yet exist.
+
 ## Current extraction result
 
 Repeated source-backed shapes:
 
 - `ApplicationArtifactRef`;
-- evidence-artifact integrity / required-claim state plumbing.
+- evidence-artifact integrity / required-claim state plumbing;
+- durable Blackboard work/review/follow-up state.
 
 Not implemented as generic abstractions:
 
@@ -57,6 +106,7 @@ Not implemented as generic abstractions:
 - generic Advisor;
 - role registry;
 - workflow graph/DSL;
-- generic Orchestrator.
+- Teacher/Reviewer registry;
+- generic workflow Orchestrator.
 
-The absence of those abstractions is part of current implementation, not an open gap in this document.
+The concrete `ApplicationOrchestrator` owns application Blackboard transitions; it is not a generic orchestration framework or second agent runtime.
