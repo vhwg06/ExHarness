@@ -1,107 +1,108 @@
 # Agentic Application gaps
 
-Only unresolved seams that matter to the current desired application layer.
+Only unresolved seams that matter to the current application layer. Implementation ordering is owned by `../pipeline.md`.
 
-## FIRST VERTICAL SLICE
+## FIRST BACKEND VERTICAL SLICE
 
 Current:
 
 - architecture/semantics are defined;
-- no application package or generic contracts exist yet;
-- exact specialist schemas are intentionally not frozen.
+- no Agentic Application package exists yet;
+- no concrete Backend application slice exists yet;
+- earlier generic contract sketches are no longer implementation targets.
 
-Desired exit condition:
+Desired Wave-A exit:
 
 ```text
-Objective
- -> Orchestrator
- -> WorkOrder<C,R>
- -> Oracle context resolve
- -> one specialist Worker through ExHarness
- -> WorkResult<R>
- -> deterministic completion/next-step decision
+BackendObjective
+ -> concrete Backend order
+ -> concrete Backend context resolution through Oracle
+ -> BackendWorker through ExHarness
+ -> BackendWorkResult
+ -> concrete deterministic Backend completion/next-step decision
 ```
 
-The first slice should prove the boundaries before introducing registries, graph DSLs or dynamic routing.
+The entire S1-S4 path is one continuous implementation wave with one review after it works end-to-end.
 
-## OBJECTIVE / APPLICATION STATE
+## BACKEND OBJECTIVE / ORDER / CONTEXT / RESULT
 
-Open:
+Open until the concrete slice supplies evidence:
 
-- minimum Objective contract;
-- minimum application workflow state required across multiple WorkOrders;
-- whether application-state persistence is required in the first slice or only when long-running outer workflows demand it.
+- exact Backend objective fields;
+- exact Backend order fields;
+- whether context need is role-level, order-level or represented another way;
+- exact Backend context schema;
+- exact Backend result statuses, artifacts, gaps/blockers and evidence references.
 
-Constraint: application workflow state must remain distinct from ExHarness runtime/persistent work state.
+Constraint: do not introduce generic `<C,R>` contracts to answer these questions before the concrete slice runs.
 
-## WORK ORDER / WORK RESULT
-
-Open:
-
-- exact required fields;
-- status/gap/blocker vocabulary;
-- artifact/evidence references;
-- dependency representation;
-- mutation/verification metadata required by downstream orchestration.
-
-Exit condition: Orchestrator can make the next decision without parsing unstructured worker prose.
-
-## WORKER SPECIALIZATIONS
+## BACKEND COMPLETION
 
 Open:
 
-- which specialist role should be implemented first;
-- exact context/output schema for BackendWorker, FrontendWorker, QAWorker and DesignerWorker;
-- which role capabilities belong to application semantics versus ExHarness/infrastructure injection.
+- exact evidence required to ACCEPT a Backend result;
+- which verification comes from ExHarness versus application-specific policy;
+- how mutation/build/typecheck/tests/artifacts are represented for the real Backend use case.
 
-Do not define all roles up front. Generalize only after concrete slices expose common structure.
+Constraint: Backend completion/evidence semantics are role-specific in S5 and must not become a universal application evidence standard before another role proves common structure.
 
 ## ADVISOR
 
 Open:
 
-- exact plan/assess/replan schemas;
-- trigger conditions for invoking Advisor versus deterministic Orchestrator logic;
-- how Advisor proposals reference current application state/evidence;
-- whether one Advisor abstraction is sufficient or domain-specific advisors emerge from use cases.
+- first real judgment gap that requires Advisor instead of deterministic code;
+- exact plan/assess/replan proposal shape needed by that gap;
+- trigger policy for Advisor invocation.
 
 Constraint: Advisor never becomes implicit dispatch/control authority.
 
-## ORCHESTRATION
+## SECOND ROLE / COMMON ABSTRACTIONS
 
-Open:
+Open until S7:
 
-- dependency graph representation if multiple WorkOrders exist;
-- retry/escalation policy location;
-- deterministic join semantics for independent parallel work;
-- final result aggregation contract.
+- which second role best pressure-tests the Backend slice (Frontend or QA are likely candidates);
+- what role/dependency semantics actually repeat;
+- whether a common Worker/WorkOrder/WorkResult abstraction is justified;
+- whether generic orchestration is justified.
 
-Do not introduce a generic workflow/graph engine until these needs are demonstrated by application flows.
+Constraint: the second slice is the extraction point. There is no generic Orchestrator before it.
 
-## ORACLE BINDING
+## ARTIFACT HANDOFF / INTERNAL SOURCES
 
-Open:
+Open until S8:
 
-- exact application-facing ContextResolver interface after Oracle desired-state implementation converges;
-- how context-resolution failures map into application WorkResult/gap semantics;
-- first concrete role ContextRequirement schema.
+- application artifact reference shape;
+- storage/lookup boundary for application-produced artifacts;
+- how prior WorkResult/artifact references become inputs to a later role's context need;
+- provenance required when Oracle dereferences internal application-produced sources.
 
-Constraint: context resolution remains one explicit step before each WorkOrder execution; no hidden refresh/provider lifecycle.
+Constraint:
 
-## EXHARNESS BINDING
+```text
+Oracle performs IO/dereference/adaptation.
+Serializer performs no IO; it only renders resolved context.
+```
 
-Open:
+External source adapters and internal application-artifact adapters remain semantically distinguishable even though both live behind Oracle's resolution boundary.
 
-- minimal adapter/composition that turns a Worker/Advisor contract into ExHarness execution;
-- which ExHarness evidence/trust outputs become application-level evidence references;
-- how application cancellation/escalation maps to ExHarness boundaries without duplicating lifecycle semantics.
+## APPLICATION STATE / RESILIENCE
+
+Open until multiple work items exist:
+
+- minimum durable application workflow state;
+- retry/cancel/block/resume semantics;
+- dependency/join state that actually needs persistence;
+- mapping into ExHarness recovery/effect boundaries.
+
+Constraint: application workflow state remains distinct from ExHarness persistent/runtime state and artifact storage.
 
 ## NON-GOALS UNTIL PROVEN
 
 - group-chat architecture;
 - shared global conversation state;
-- model-selected worker handoff;
+- model-selected Worker handoff;
 - generic Crew/Team framework;
 - dynamic role registry;
 - workflow graph DSL;
+- generic Worker/WorkOrder contracts before the second slice;
 - application-owned model/session/runtime loop.

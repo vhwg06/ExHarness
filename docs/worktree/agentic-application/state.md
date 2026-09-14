@@ -1,12 +1,10 @@
 # Agentic Application state
 
-Desired-state projection for the outer application layer that composes ExHarness into domain-specific agentic systems.
+Desired-state projection for the application layer above ExHarness Core and beside Oracle infrastructure.
 
 ## PURPOSE
 
-The Agentic Application Layer owns application semantics above ExHarness Core and above infrastructure adapters.
-
-It defines what work exists, how work is decomposed, which specialist role should execute it, what context that role requires, what output is expected, and when application-level work is complete.
+The Agentic Application Layer owns what work exists, how work is decomposed, which specialist role executes it, what semantic context that role requires, what structured result is expected and when application work is complete.
 
 ## DESIRED SHAPE
 
@@ -15,56 +13,61 @@ Objective
    |
    v
 Orchestrator --------> Advisor
-   |                    plan / assess / replan
+   |                    bounded plan / assess / replan
    |
    v
-WorkOrder<C, R>
+concrete specialist work
    |
-   +--> ContextRequirement<C> --> Oracle --> resolved C
+   +--> application-owned context need --> Oracle --> resolved context
    |
    v
-Worker<C, R>
+specialist Worker
    |
    v
 ExHarness execution
    |
    v
-WorkResult<R>
+structured role-specific WorkResult
    |
    +------------------> Orchestrator
 ```
 
 ## OWNERSHIP
 
-- Application owns Objective, WorkOrder, Worker role semantics, ContextRequirement, expected output and completion semantics.
-- Orchestrator owns deterministic control flow, dispatch and application workflow state.
-- Advisor provides bounded judgment such as plan, assess and replan; it does not own dispatch or correctness authority.
-- Worker owns one specialist execution contract and returns a bounded WorkResult.
-- Oracle resolves application-defined context requirements from external sources; it does not invent application semantics.
-- ExHarness owns agent/runtime execution mechanics, lifecycle/authority primitives, cognition, evidence/trust and execution substrate concerns.
+- Application owns Objective, role/work semantics, required semantic context, result/completion semantics and deterministic workflow control.
+- Orchestrator owns dispatch/application workflow state and remains deterministic where next actions are known.
+- Advisor supplies bounded judgment only where planning/assessment/replanning is genuinely needed.
+- Worker owns one specialist execution responsibility and returns machine-inspectable role-specific result state.
+- Oracle resolves/dereferences application-defined context; it does not decide what context a role should need.
+- ExHarness owns agent/runtime execution mechanics, cognition, evidence/trust and recovery/lifecycle primitives.
 
-## ACTIVE TARGET
+## CURRENT ACTIVE TARGET
 
-Define the minimum generic contracts and one vertical slice that proves:
+Implementation follows `../pipeline.md`.
+
+Wave A is deliberately concrete-first:
 
 ```text
-Objective
- -> deterministic Orchestrator
- -> typed WorkOrder
- -> resolve context once through Oracle
- -> specialist Worker executed through ExHarness
- -> typed WorkResult
- -> Orchestrator decides done / next work / bounded Advisor request
+BackendObjective
+ -> BackendWorkOrder
+ -> resolveBackendContext(...)
+ -> BackendWorker
+ -> ExHarness
+ -> BackendWorkResult
+ -> concrete deterministic Backend decision
 ```
 
-Exact Backend/Frontend/QA/Designer context and result schemas remain application-owned and intentionally unresolved until their first concrete vertical slices.
+Do not create generic `Worker<C,R>`, generic `WorkOrder<C,R>`, generic orchestration or a dynamic role registry in Wave A.
+
+Common abstractions may be extracted only when a second real role in S7 demonstrates the same semantic shape.
 
 ## ROUTING
 
-- semantics and role meaning -> `semantics.md`
-- layer/component architecture -> `architecture.md`
-- authority/dependency boundaries -> `boundaries.md`
-- execution/composition path -> `workflow.md`
-- generic contract shapes -> `contracts.md`
-- constraints that must shape implementation -> `decisions.md`
+- semantic meaning of roles/control -> `semantics.md`
+- layer/component boundaries -> `architecture.md`
+- authority/dependency bounds -> `boundaries.md`
+- semantic execution topology -> `workflow.md`
+- concrete-first contract/extraction policy -> `contracts.md`
+- active constraints -> `decisions.md`
 - unresolved application seams -> `gaps.md`
+- implementation order -> `../pipeline.md`
