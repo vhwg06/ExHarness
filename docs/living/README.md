@@ -1,72 +1,76 @@
-# Living knowledge router
+# Living docs router
 
-This directory defines how ExHarness turns ongoing work into durable knowledge without treating every draft as desired state.
+`docs/living/` is the shared external state for ExHarness long-horizon work.
+
+It contains both the **active Blackboard** and the **durable knowledge that may eventually be promoted**. Do not treat these as the same lifecycle.
 
 The governing decision is `decisions/D001-living-docs-authority.md`.
 
-## Three planes
+## Start every non-trivial session here
+
+1. Read `blackboard.md`.
+2. Select only eligible unresolved work.
+3. Claim it on the Blackboard before execution.
+4. Perform the work.
+5. Write the result, artifact/evidence refs, blockers and newly discovered work back to the Blackboard.
+6. Promote durable conclusions only through the knowledge lifecycle.
+
+The Blackboard is therefore not a future component. It is the current coordination protocol.
+
+## Surfaces
 
 ```text
-BLACKBOARD                     LIVING KNOWLEDGE                 ARTIFACT PLANE
-operational work state         durable accepted meaning         what actually exists
+BLACKBOARD                     LIVING KNOWLEDGE                 ARTIFACT REALITY
+active shared work state       durable meaning                  what exists/happened
 
-work items                     architecture.md                  source code
-claims                         pipelines.md                     tests
-progress                       contracts.md                     configs
-dependencies                   knowledge/state.md              runtime outputs
-discoveries                    knowledge/evidence.md           produced artifacts
-signals                        knowledge/judgment.md
-blockers                       knowledge/audit.md
-                               decisions/
+blackboard.md                  architecture.md                  source code
+                               pipelines.md                     tests
+work/questions                 contracts.md                     configs
+claims                         knowledge/state.md               runtime outputs
+progress                       knowledge/evidence.md            produced artifacts
+dependencies                   knowledge/judgment.md
+discoveries                    knowledge/audit.md
+blockers                       decisions/
+results / refs
 ```
 
-The planes are linked but do not share one lifecycle.
-
-- Blackboard answers: **what is happening now?**
-- Living knowledge answers: **what do we currently know, accept, or require?**
+- Blackboard answers: **what can/should a worker do next, and what is already taken/resolved?**
+- Living knowledge answers: **what do we currently know, conclude, accept or require?**
 - Artifacts answer: **what actually exists or happened?**
 
 There is no single repository-wide source of truth. Authority is typed by question.
 
 ## Read route
 
-Need the accepted system model?
+Need to know what work is available now?
+
+- `blackboard.md` — always first for non-trivial work.
+
+Need accepted architecture?
 
 - `architecture.md`
 
-Need accepted lifecycle or delivery semantics?
+Need accepted lifecycle/delivery semantics?
 
 - `pipelines.md`
 
-Need invariants and mutation/promotion rules?
+Need invariants?
 
 - `contracts.md`
 
-Need the current durable knowledge snapshot?
+Need durable evidence/judgment/audit?
 
-- `knowledge/state.md`
+- `knowledge/`
 
-Need observations and provenance?
-
-- `knowledge/evidence.md`
-
-Need current conclusions, confidence, alternatives or contradictions?
-
-- `knowledge/judgment.md`
-
-Need independent challenge?
-
-- `knowledge/audit.md`
-
-Need accepted choices and why they were promoted?
+Need accepted choices?
 
 - `decisions/`
 
-Need active implementation exploration, candidate designs or unresolved layer work?
+Need candidate design details while executing a board item?
 
 - `../worktree/`
 
-Need deeper historical/reference design material?
+Need deeper historical/reference material?
 
 - `../architecture/`
 
@@ -75,10 +79,11 @@ Need deeper historical/reference design material?
 ```text
 Question                              Authority
 ────────────────────────────────────────────────────────────────────────
-What work is active right now?        Blackboard / coordination plane
-Who currently owns/claims work?       Blackboard / coordination plane
+What work exists / is eligible now?   blackboard.md
+Who owns current work?                blackboard.md
+What work is already resolved?        blackboard.md + result/artifact refs
 What is implemented?                  Source/public exports
-What behavior actually occurred?      Runtime observation / executable evidence
+What behavior occurred?               Runtime observation / executable evidence
 What observations are durable?        knowledge/evidence.md
 What conclusion is currently held?    knowledge/judgment.md
 What was independently challenged?    knowledge/audit.md
@@ -89,11 +94,22 @@ What invariant must be preserved?     contracts.md
 What is still being explored?         ../worktree/
 ```
 
-A path does not grant authority by itself. Status, provenance and promotion do.
+## Two different lifecycles
 
-## Knowledge lifecycle
+### Work lifecycle
 
-A new idea starts as a candidate. It does not become desired state because one session wrote it down.
+```text
+READY -> CLAIMED -> DONE
+          |   |
+          |   +-> BLOCKED
+          +------> READY
+
+DONE -> REOPENED only with explicit reopening evidence
+```
+
+This lifecycle narrows the next worker's action space.
+
+### Knowledge lifecycle
 
 ```text
 DRAFT
@@ -104,24 +120,12 @@ DRAFT
   -> PROMOTED
 ```
 
-Side exits:
+Finishing a work item does not automatically promote the design discovered while doing it.
+
+## Promotion flow
 
 ```text
-PROPOSED  -> REJECTED
-SUPPORTED -> CONTRADICTED
-ACCEPTED  -> SUPERSEDED
-```
-
-Promotion is evidence-driven, not session-count-driven. One session can be enough when evidence and acceptance are strong; many sessions can still leave a proposal unresolved.
-
-`PROMOTED` means the accepted result has been materialized into the relevant durable authority surface such as `architecture.md`, `pipelines.md` or `contracts.md`.
-
-## Mutation rule
-
-Do not mutate durable authority directly from a new insight.
-
-```text
-candidate / discovery
+Blackboard result / discovery
     -> evidence
     -> judgment
     -> audit/challenge when material
@@ -130,16 +134,21 @@ candidate / discovery
     -> architecture / pipeline / contract
 ```
 
-Implementation reality can also force reconciliation: when executable evidence contradicts durable docs, record the contradiction and reconcile the promoted view rather than pretending the document is automatically correct.
+## Worktree relationship
 
-## Coordination is not Git
+`../worktree/` is supporting convergence/context material. It is not the active board.
 
-High-frequency coordination must not depend on high-frequency commits.
+The practical distinction is simple:
 
 ```text
-coordination lifecycle != source-control lifecycle
+blackboard.md says WHAT IS LEFT / WHO IS DOING WHAT / WHAT WAS RESOLVED
+worktree/* helps a claimed worker reason about HOW a particular unresolved area currently looks
 ```
 
-The Blackboard is the architectural coordination plane. This documentation decision intentionally does **not** choose its storage engine, lease mechanism, event model, claim schema or runtime implementation yet. Those are candidate components until later work earns them.
+A worker must not skip the Blackboard and independently choose work from the worktree.
 
-`../worktree/` is durable convergence material in Git; it is not the runtime Blackboard.
+## Storage
+
+The canonical Blackboard is currently Git-backed through `docs/living/blackboard.md` because ExHarness needs the coordination semantics now.
+
+If real concurrency later proves this transport insufficient, storage can be replaced without changing the board protocol. Storage is an implementation detail; the Blackboard is not.

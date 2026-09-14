@@ -1,103 +1,96 @@
 # Documentation router
 
-Use this file to choose the smallest authority surface for the question at hand. Do not load every documentation tree by default.
+Use this file to choose the smallest context/authority surface for the question at hand. Do not load every documentation tree by default.
 
 ## Start here
 
-Read `living/README.md` first for the authority model and promotion lifecycle.
+For every non-trivial shared work session:
 
-Then route by question:
+1. `living/blackboard.md` — read current work state and claim an eligible item.
+2. `living/README.md` — authority/promotion rules when needed.
+3. Load only the context required for the claimed board item.
+4. Write the operational result back to the Blackboard before leaving.
 
-- `living/architecture.md` — current **promoted** documentation/knowledge architecture.
-- `living/pipelines.md` — promoted knowledge/promotion lifecycle and link to the active product delivery pipeline.
-- `living/contracts.md` — authority, evidence, promotion and coordination invariants.
-- `living/knowledge/state.md` — current durable knowledge snapshot.
+Do not choose work directly from `worktree/` while bypassing the Blackboard.
+
+## Living surfaces
+
+- `living/blackboard.md` — active questions/work, claims, dependencies, blockers, results and refs.
+- `living/architecture.md` — promoted accepted architecture.
+- `living/pipelines.md` — board/session lifecycle plus knowledge-promotion lifecycle.
+- `living/contracts.md` — coordination, authority, evidence and promotion invariants.
+- `living/knowledge/state.md` — durable knowledge snapshot.
 - `living/knowledge/evidence.md` — observation/provenance ledger.
 - `living/knowledge/judgment.md` — evidence-derived conclusions and uncertainty.
 - `living/knowledge/audit.md` — independent challenge.
 - `living/decisions/` — accepted/promoted choices.
 
-## Active convergence material
+## Supporting convergence material
 
-`worktree/` contains current Agentic System design/delivery convergence material:
+`worktree/` contains design/delivery context used after work has been claimed:
 
-- `worktree/state.md` — top-level convergence router and delivered checkpoint.
-- `worktree/pipeline.md` — accepted current 10-stage delivery ordering; stage-local component sketches remain candidates unless separately promoted.
+- `worktree/state.md` — top-level convergence and delivered checkpoint.
+- `worktree/pipeline.md` — larger delivery ordering.
 - `worktree/agentic-application/` — application-layer convergence material.
 - `worktree/oracle/` — Oracle convergence material.
 - `worktree/core-harness/` — Core continuation material.
 
-Read `worktree/README.md` before treating any worktree statement as authoritative. Historical wording such as `desired`, `target` or `next` does not itself promote a claim.
-
-## Deeper references
-
-- `architecture/` — deeper implemented/Core design records and historical/reference architecture material.
-- `development/` — repository development and verification process.
-
-These are supporting references. They do not silently override promoted living knowledge or executable implementation evidence.
+Historical wording such as `desired`, `target` or `next` does not itself promote a claim.
 
 ## Routing rules
 
 ```text
-Question about accepted knowledge/documentation architecture?
-    -> living/architecture.md
+What can I work on now?
+    -> living/blackboard.md
 
-Question about promotion / convergence lifecycle?
-    -> living/pipelines.md
-    -> living/contracts.md
+I claimed an application item; what context do I need?
+    -> worktree/agentic-application/*
+    -> relevant living promoted docs
+    -> source/tests as needed
 
-Question about why something is believed?
+I claimed an Oracle/context item?
+    -> worktree/oracle/*
+
+I claimed a Core/runtime item?
+    -> worktree/core-harness/*
+
+Why is something believed?
     -> living/knowledge/evidence.md
     -> living/knowledge/judgment.md
     -> relevant living/decisions/*
 
-Question about project delivery / what next?
-    -> worktree/README.md
-    -> worktree/state.md
-    -> worktree/pipeline.md
+What architecture/pipeline/contract is accepted?
+    -> living/architecture.md | living/pipelines.md | living/contracts.md
 
-Question about candidate application semantics?
-    -> worktree/agentic-application/state.md
-    -> smallest relevant child
-
-Question about candidate Oracle semantics?
-    -> worktree/oracle/state.md
-    -> smallest relevant child
-
-Question about Core continuation?
-    -> worktree/core-harness/state.md
-    -> source/public exports for implemented truth
-
-Question about historical/deeper implementation design?
-    -> architecture/
-
-Question about implementation/verification process?
-    -> development/
+What is actually implemented/observed?
+    -> source/public exports | runtime/executable evidence
 ```
 
 ## Typed authority
 
 ```text
-source/public exports
-    = what is implemented now
+living/blackboard.md
+    = operational authority for current work selection/ownership/status
 
-runtime observation / executable evidence
-    = what behavior actually occurred
+source/public exports
+    = implemented behavior now
+
+runtime/executable evidence
+    = observed behavior
 
 living/architecture.md
 living/pipelines.md
 living/contracts.md
-    = promoted accepted views for their respective questions
+    = promoted accepted views
 
 living/knowledge/*
-    = durable observations, conclusions and challenge by type
+    = durable observations/conclusions/challenge by type
 
 living/decisions/*
     = accepted/promoted choices
 
 worktree/*
-    = convergence/candidate material plus delivered checkpoints;
-      not automatic desired-state authority
+    = supporting convergence/candidate material for claimed work
 ```
 
-There is no single global source of truth. Authority is typed by question, evidence and promotion state.
+There is no single global source of truth. The Blackboard is nevertheless mandatory for operational coordination: work selection begins there.
