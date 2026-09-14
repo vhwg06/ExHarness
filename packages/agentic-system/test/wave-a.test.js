@@ -134,6 +134,20 @@ test("S2 resolution failure names the declared file and source boundary", async 
   );
 });
 
+test("S3 rejects context that does not exactly satisfy the concrete order", async () => {
+  const order = makeBackendWorkOrder(objective());
+  const context = await resolveBackendContext(order, { repositoryReader: repositoryReader() });
+  const worker = createBackendWorker({ strategy: appliedStrategy(), workspace: workspace() });
+
+  await assert.rejects(
+    () => worker.execute(order, {
+      ...context,
+      files: context.files.slice(0, 1)
+    }),
+    /BackendContext files must exactly match BackendWorkOrder\.requiredFiles/
+  );
+});
+
 test("S3 BackendWorker executes the concrete work through ExHarness and requires promotion for APPLIED", async () => {
   const order = makeBackendWorkOrder(objective());
   const context = await resolveBackendContext(order, { repositoryReader: repositoryReader() });

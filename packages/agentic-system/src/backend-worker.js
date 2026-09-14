@@ -14,6 +14,20 @@ function invariant(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function assertContextMatchesOrder(order, context) {
+  invariant(
+    context.repository.ref === order.repositoryRef && context.repository.revision === order.revision,
+    "BackendContext repository must match BackendWorkOrder source revision"
+  );
+
+  const resolvedPaths = context.files.map((file) => file.path);
+  invariant(
+    resolvedPaths.length === order.requiredFiles.length &&
+      resolvedPaths.every((path, index) => path === order.requiredFiles[index]),
+    "BackendContext files must exactly match BackendWorkOrder.requiredFiles"
+  );
+}
+
 export function createBackendWorker({ strategy, workspace }) {
   invariant(strategy && typeof strategy.run === "function", "BackendWorker requires strategy.run()");
   invariant(workspace && typeof workspace.act === "function", "BackendWorker requires workspace.act()");
@@ -22,10 +36,7 @@ export function createBackendWorker({ strategy, workspace }) {
     async execute(rawOrder, rawContext) {
       const order = parseBackendWorkOrder(rawOrder);
       const context = BackendContextSchema.parse(rawContext);
-      invariant(
-        context.repository.ref === order.repositoryRef && context.repository.revision === order.revision,
-        "BackendContext repository must match BackendWorkOrder source revision"
-      );
+      assertContextMatchesOrder(order, context);
 
       const environment = {
         async observe(args) {
