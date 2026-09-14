@@ -43,6 +43,15 @@ export {
   assessQaCompletion,
   defineQaCompletionPolicy
 } from "./qa-completion.js";
+export {
+  BlackboardStatus,
+  FollowUpDisposition,
+  ReviewRequirementSource,
+  ReviewVerdict,
+  createApplicationOrchestrator,
+  createJsonBlackboardStore,
+  defineBlackboardSnapshot
+} from "./blackboard-orchestrator.js";
 export { createQaWorker } from "./qa-worker.js";
 export {
   createQaHandoffFromBackendRun,
