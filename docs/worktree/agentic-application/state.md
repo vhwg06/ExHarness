@@ -24,16 +24,45 @@ Source-synchronized application-layer projection. All unresolved application wor
 - grounded evidence claims are `qa.behavior` and `qa.regression`;
 - QA issues deterministically request remediation/continuation.
 
+## Current orchestration state
+
+The package now exposes `createApplicationOrchestrator(...)` for durable Blackboard lifecycle control and `createJsonBlackboardStore(...)` for JSON persistence.
+
+Implemented Board semantics include:
+
+- only `READY`/`REOPENED` work is claimable and dependencies must already be `DONE`;
+- a claimed Worker owner may submit an immutable result payload and Worker-sourced review requests;
+- PM-sourced review requirements can be added separately from Worker requests;
+- submitted work becomes `PENDING_REVIEW`, never directly `DONE`;
+- one explicit reviewer assessment is active at a time;
+- all required reviews must be `ACCEPTED` and remaining work must be empty before `DONE` is derived;
+- `REJECTED`/`INCONCLUSIVE` review reopens the same item and narrows remaining work;
+- follow-up reconciliation distinguishes current obligation, existing work, genuine new work and non-actionable findings;
+- `PENDING_REVIEW` state/submission/review requirements survive reconstruction through the JSON store.
+
+The existing `runBackendThenQaObjective(...)` path is **not yet bound to this durable Orchestrator state**. Backend -> QA still composes directly, so one unified durable application dispatch/recovery path is not claimed.
+
 ## Current composition
 
-`runBackendThenQaObjective(...)` composes Backend -> QA directly. There is no generic orchestration framework.
+`runBackendThenQaObjective(...)` composes Backend -> QA directly.
 
-Shared shapes proven in source are narrow:
+Shared shapes proven in source remain deliberately narrow:
 
 - `ApplicationArtifactRef`;
-- evidence integrity / required-claim state plumbing.
+- evidence integrity / required-claim state plumbing;
+- Blackboard item/review/follow-up state required for durable orchestration.
 
-Backend and QA do not share one lifecycle/authority model, so no generic Worker/WorkOrder/Advisor/Orchestrator exists in the current implementation.
+There is still no generic Worker/WorkOrder/Advisor/role registry/workflow graph/Teacher registry/Reviewer registry.
+
+## Promoted but not yet source-implemented roles
+
+D003 promotes the responsibility split:
+
+- PM = horizontal project coordination/timeline/dependency/progress;
+- SA = horizontal architecture only;
+- remaining execution/review = vertical and context-bound.
+
+Concrete PM context/role execution, SA context/role execution and vertical Reviewer implementations are not present in source yet. They remain implementation pressure on the Blackboard rather than current-state claims.
 
 ## Routing
 
