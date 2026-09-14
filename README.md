@@ -1,13 +1,88 @@
 # ExHarness
 
-ExHarness is a reusable long-horizon harness kernel that combines two NVIDIA-inspired ideas at different layers:
+ExHarness is a reusable autonomous-agent harness kernel with two complementary layers:
 
-- **AVO** is the control/search spine: candidate variation, committed lineage, persistent progress, objective feedback, accumulated knowledge, supervision, recovery, and adaptive search investment.
-- **NOOA-style runtime primitives** are the agent substrate: explicit context, programmable strategy, typed capabilities, validation boundaries, and observable invocation.
+- **AVO control plane** — long-horizon variation, candidate/lineage state, verification/evaluation, supervision, recovery and adaptive search investment.
+- **NOOA-style agent substrate** — typed judgments, Predict/CodeAct, object agents, live-object authority, progressive discovery, bounded context/history, model routing, tracing and resumable runtime state.
 
-ExHarness intentionally contains no backend, frontend, QA, Figma, repository, or product semantics. A consuming project imports the kernel and injects those concerns.
+The kernel intentionally contains no backend, frontend, QA, design-system or product semantics. Consumers inject domain objectives, environment/effect semantics, models, executors, stores, verifiers and trust authorities.
 
-## Consumer API
+## Architecture
+
+```text
+consumer/domain semantics
+        ↓
+createHarness()
+  persistence + recovery gates + supervision
+  search investment + observability + trust
+        ↓
+AVO control plane
+  candidate / variation / evidence / lineage
+        ↓
+AgentRuntime / ObjectAgent
+  judgments + capabilities + context + events
+  Predict / CodeAct / JavaScript CodeAct
+  resources + live objects + discovery + routing
+        ↓
+injected infrastructure
+  model / environment / executor / durable store / tracer / authorities
+```
+
+The layering rule is:
+
+```text
+AVO  = what autonomous search does over time
+NOOA = how the agent acts programmatically inside a variation
+```
+
+Deterministic kernel code owns lifecycle and authority invariants. Models own bounded local judgment, never correctness authority by self-report.
+
+## What is delivered
+
+### Long-horizon control
+
+- persistent candidate ancestry and committed lineage;
+- explicit variation lifecycle and capability budgets;
+- observations, objective verifications and evaluations;
+- evaluation-freshness checks before promotion;
+- trajectory-aware supervision;
+- adaptive search-investment decisions for CONTINUE / STOP / ESCALATE;
+- explicit interrupted-variation recovery.
+
+### Agent runtime
+
+- typed judgments and capability contracts;
+- Predict and finite action-protocol CodeAct;
+- language-native JavaScript CodeAct sessions with persistent per-call locals;
+- agent-as-object ergonomics;
+- live object identity, mutation and bounded authority surfaces;
+- progressive `doc()` / surface discovery;
+- bounded context blocks and canonical event-history selection;
+- nested tracing and observable runtime events;
+- scoped model routing;
+- runtime snapshot/resume with compatibility checks and explicit resource/live-object rebinding.
+
+### Cognition and memory
+
+ExHarness separates semantic memory from correctness state.
+
+The core package exposes semantic-memory storage, relations/graph, evolution, ranking/intelligence, spontaneous recall and a retrieval authority boundary. `createSemanticMemoryRetrievalPort()` re-reads canonical records, rejects archived records, enforces tags and context budgets, and treats provider ranking as non-authoritative.
+
+A NOOA-style associative retrieval adapter is exposed separately through:
+
+```js
+import { createNooaMemoryRetriever } from "exharness/memory-retrieval";
+```
+
+The adapter provides hybrid dense/sparse candidate generation, ACT-R-like recency, importance weighting and bounded graph spread. It is a ranking adapter, not correctness authority and not automatically wired into every memory/context path.
+
+### Trust and evidence
+
+The kernel exposes evidence, decision and attestation primitives, including process-trust and verification-independence semantics. Trust artifacts remain distinct from model traces, semantic memory and evaluation state.
+
+## Consumer entry point
+
+Normal consumers should start with `createHarness()`:
 
 ```js
 import {
@@ -30,14 +105,13 @@ const harness = createHarness({
     async observe({ candidate, request }) {
       return inspect(candidate, request);
     },
-
     async act({ candidate, action }) {
       return applyAction(candidate, action);
     }
   },
 
   objective: {
-    async evaluate({ candidate, observations, verifications }) {
+    async evaluate() {
       return {
         validity: EvaluationValidity.VALID,
         verdict: EvaluationVerdict.PASS
@@ -52,163 +126,53 @@ await harness.start({
   seedCandidate: { id: "candidate", version: "v0" }
 });
 
-const result = await harness.vary("work-1");
+await harness.vary("work-1");
 ```
 
-A real project normally adds domain capabilities, objective verifiers, a durable revision-aware store, model-backed strategy, executor/sandbox adapters, optional supervisor policies, and—when the workload has a meaningful quality/cost signal—an adaptive search-investment policy. None require editing ExHarness.
+Low-level `createAVOHarness()`, `createCoreHarness()` and `createAgentRuntime()` remain exported for custom composition.
 
-## Architecture
+## State and authority boundaries
+
+Important invariants include:
 
 ```text
-consumer harness
-  domain objective / environment / policies / adapters
-                    |
-                    v
-+------------------------------------------------+
-|                 ExHarness                      |
-|                                                |
-| AVO control plane                              |
-| candidate + committed lineage                  |
-| variation + objective verification             |
-| grounded feedback + persistent K               |
-| adaptive search investment                     |
-| supervision + recovery                         |
-|                                                |
-| NOOA-style substrate                           |
-| strategy + context + typed capabilities        |
-| programmable invocation + runtime events       |
-+--------------------------+---------------------+
-                           |
-                           v
-              injected infrastructure
-           model / tools / executor / store
+working candidate ancestry != committed lineage
+Observation != SemanticMemory != Evaluation
+AgentEvent != TurnEvent != TraceSpan != EffectJournal
+retrieval/ranking != correctness authority
+candidate state != proof of external side effect
+search investment != promotion correctness
+supervision != correctness verdict
 ```
 
-The layering rule is:
+Promotion requires a fresh evaluation over the exact current observation and verification artifact snapshots.
 
-```text
-AVO  = what autonomous search does over time
-NOOA = how the agent can programmatically act inside a variation
-```
+Context is a bounded projection of canonical history/state; selectors cannot fabricate canonical runtime events. Live resources and live objects carry explicit authority and are not silently resurrected by snapshot restore.
 
-The agent owns local search judgment. Deterministic kernel code owns lifecycle invariants.
+## Recovery semantics
 
-## Kernel invariants
+ExHarness currently has three distinct recovery mechanisms:
 
-ExHarness currently enforces the following base semantics:
+1. **AVO interrupted-variation recovery** — a persisted `RUNNING` variation causes `resume()` / `vary()` to fail closed until the variation is explicitly recovered and closed as interrupted.
+2. **AgentRuntime snapshot/resume** — restores compatible runtime configuration and `AgentEvent` state; active resources/live objects require explicit rebinding.
+3. **Effect-operation reconciliation** — effectful capabilities can journal operation intent before dispatch and reconcile `PURE`, `IDEMPOTENT`, `OBSERVABLE` or `NON_RECONCILABLE` operations.
 
-- working candidate ancestry is distinct from committed AVO lineage;
-- a candidate derived from a stale lineage head cannot be promoted;
-- stale observations/verifications cannot certify a mutated candidate;
-- evaluation snapshots become stale when their candidate evidence changes;
-- verification conflicts/incompleteness are visible before objective PASS;
-- persistent feedback is grounded in execution/evaluation state rather than agent prose;
-- knowledge is append-only, scoped, provenance-aware, and can expose unresolved contradictions;
-- variation outcomes come from persisted state changes, not model claims;
-- variation capability budget is owned outside strategy exception handling;
-- adaptive search-investment decisions are grounded in persisted artifacts, never model self-reported progress;
-- search-investment decisions are freshness-bound to both the consumed artifact snapshot and policy revision/configuration;
-- search investment controls whether another variation may start, never objective correctness or promotion;
-- hard variation budgets remain authoritative even when search investment says CONTINUE;
-- promotion closes variation capability activity;
-- supervisor can redirect search but cannot mutate candidates or issue correctness verdicts;
-- persistent work state has schema/revision identity;
-- revision-aware stores reject stale writes;
-- interrupted RUNNING variations require explicit recovery;
-- execution adapters receive timeout/abort/constraint envelopes;
-- observability is separate from correctness state.
-
-## Adaptive search investment
-
-A hard variation budget and an adaptive useful range answer different questions:
-
-```text
-maxCapabilityCalls
-= how much work one variation is allowed to spend at most
-
-SearchInvestmentDecision
-= given grounded history, is another variation still worth opening?
-```
-
-Configure a policy only when the consumer has a meaningful grounded signal. The kernel does not invent a universal quality function.
+Effect semantics are exposed through:
 
 ```js
 import {
-  createHarness,
-  createMarginalImprovementPolicy
-} from "exharness";
-
-const harness = createHarness({
-  // ...strategy/environment/objective...
-  variationPolicy: {
-    maxCapabilityCalls: 64 // hard containment ceiling
-  },
-  searchInvestmentPolicy: createMarginalImprovementPolicy({
-    revision: "quality-v1",
-    minEvaluations: 3,
-    window: 2,
-    minimumImprovement: 0.01,
-    anomalyImprovement: 0.5,
-    selectQuality(evaluation) {
-      return evaluation.metadata?.quality;
-    }
-  })
-});
+  EffectReplayPolicy,
+  createInMemoryEffectJournal,
+  defineEffectCapability,
+  reconcileEffectOperation
+} from "exharness/effects";
 ```
 
-After each completed variation, the controller persists a `SearchInvestmentDecision`:
+These mechanisms are intentionally not presented as one completed recovery workflow yet. In the built-in AVO path, `avo.act` still delegates to `core.act()`, which calls `environment.act()` before resulting candidate/event state is persisted. Consumers with externally visible effects must not infer effect completion from candidate or trace state alone.
 
-```text
-WARMUP / IN_RANGE / DIMINISHING_RETURNS / ANOMALOUS / INSUFFICIENT_DATA
-                           |
-                           v
-              CONTINUE / STOP / ESCALATE
-```
+## Persistence and infrastructure
 
-`STOP` or `ESCALATE` gates the next variation before strategy execution. A fresh correctness PASS can still be promoted; the range gate is not a correctness oracle. New observations/verifications/evaluations/trajectory artifacts or a policy revision/configuration change make an older range decision stale and force recomputation. Recovery remains a separate, higher-priority lifecycle concern.
-
-See `docs/architecture/adaptive-useful-range.md` for the control-plane contract.
-
-## Infrastructure extension points
-
-### Capabilities
-
-```js
-import { defineCapability } from "exharness";
-
-const inspect = defineCapability({
-  name: "domain.inspect",
-  async execute(input) {
-    return inspectDomain(input);
-  }
-});
-```
-
-Capabilities can define `parseInput` / `parseOutput` without binding the kernel to a schema library.
-
-### Executor boundary
-
-```js
-import { createExecutorCapability } from "exharness";
-
-const runSomething = createExecutorCapability({
-  name: "domain.run",
-  executor,
-  executionPolicy: {
-    timeoutMs: 30_000,
-    constraints: {
-      network: "deny",
-      workspace: "/work"
-    }
-  }
-});
-```
-
-The kernel carries the execution policy and bounds the caller. The injected executor/sandbox must enforce real filesystem, network, credential, process, and resource isolation.
-
-### Persistent store
-
-Production composition requires a revision-aware store. The bundled in-memory store is a reference implementation.
+Production use should provide a revision-aware durable session store. The bundled in-memory implementations are references/test utilities, not production durability.
 
 ```js
 import { verifySessionStoreContract } from "exharness/testing";
@@ -216,42 +180,28 @@ import { verifySessionStoreContract } from "exharness/testing";
 await verifySessionStoreContract(() => myStore());
 ```
 
-### Recovery
+Executors/sandboxes remain injected infrastructure. ExHarness can carry timeout/abort/constraint envelopes, but actual filesystem, process, network, credential and resource isolation must be enforced by the executor boundary.
 
-A persisted `RUNNING` variation is never silently erased.
+## Living repository state
 
-```js
-await harness.resume(id);       // throws RECOVERY_REQUIRED when needed
-await harness.recover(id);      // stale-only by policy
-await harness.recover(id, { force: true });
-```
-
-Recovery marks the interrupted run explicitly and preserves already-persisted engineering state.
-
-## Objective verification during development
-
-ExHarness itself is developed with two tracks:
+Current delivery truth for repository continuation lives under:
 
 ```text
-implementation candidate
-        |
-        +--------------------+
-        |                    |
-        v                    v
- implementation       verification track
-                      manual vigilance
-                      codified artifacts
-                      adversarial checks
-                      automation where stable
-        |                    |
-        +---------+----------+
-                  v
-              PASS / GAP
+docs/worktree/
+├── state.md
+└── engineering/
+    ├── state.md
+    ├── architecture.md
+    ├── workflow.md
+    ├── gaps.md
+    └── decisions.md
 ```
 
-Tests are regression guards, not the whole verification strategy.
+`docs/worktree/state.md` is the repository delivery projection. Engineering children contain bounded current state only. Historical stage detail stays in Git and `docs/architecture/`.
 
-## Verification commands
+Source/public exports remain implementation authority; worktree projections must be reconciled when those semantics change.
+
+## Verification
 
 Requires Node.js 20 or newer.
 
@@ -259,30 +209,19 @@ Requires Node.js 20 or newer.
 npm run verify
 ```
 
-The full gate runs:
+The repository verification gate includes the kernel suite, reference workloads/benchmarks, package dry-run and packed blank-consumer smoke tests. Fidelity/reference artifacts are checked in under `artifacts/`.
+
+## Package
+
+`packages/core-harness` publishes `exharness`.
+
+Public package subpaths currently include:
 
 ```text
-kernel test suite
-reference harness
-kernel benchmark
-npm package dry-run
-blank-consumer packed-package import smoke
+exharness
+exharness/testing
+exharness/effects
+exharness/memory-retrieval
 ```
 
-Individual commands:
-
-```bash
-npm test
-npm run example
-npm run benchmark
-npm run verify:package
-npm run verify:consumer
-```
-
-See `docs/architecture/kernel-completion.md` for the completion contract and explicit non-goals.
-
-## Package status
-
-`packages/core-harness` is the publishable `exharness` package. The workspace root remains private so optional adapters can evolve without expanding the kernel surface.
-
-Low-level `createAVOHarness()` and `createCoreHarness()` remain exported for kernel development and custom composition; normal consumers should start with `createHarness()`.
+The workspace root remains private so adapters and repository tooling can evolve without expanding the kernel package surface.
