@@ -1,12 +1,10 @@
-# Oracle desired state
+# Oracle convergence state
 
-Living desired-state projection for the Oracle boundary. Read this first for Oracle work; load child files only when the task needs them.
+Durable convergence material for the Oracle boundary. This subtree preserves previously agreed direction plus unresolved implementation choices; its path does not automatically make every target detail desired-state authority.
 
-## STATUS
+Read `../README.md` and `../../living/contracts.md` before promotion.
 
-Oracle semantics and architecture are agreed. Implementation is not yet authority.
-
-## PURPOSE
+## ACCEPTED PURPOSE
 
 Oracle is an infrastructure bridge for explicit context feeding into the Agentic Application Layer.
 
@@ -32,18 +30,19 @@ Agentic Application Layer
             Worker
 ```
 
-## TARGET SEMANTICS
+## ACCEPTED SEMANTIC DIRECTION
 
 - application decides what context is needed, why it is needed and what shape it must have;
 - Oracle decides where that data lives and how to retrieve/adapt it;
-- context resolution is single-pass and explicit: resolve once before the Worker executes;
+- context resolution is single-pass and explicit: resolve before Worker execution;
 - Oracle does not own a run loop, session lifecycle, provider state or before/after hooks;
-- context contracts are typed and runtime-validatable; initial implementation target is Zod-compatible schemas;
-- direct source access is the default implementation;
-- specialized infrastructure such as MCP or retrieval/RAG is used only when a concrete source requirement needs that capability;
 - Oracle must satisfy the application requirement, not invent broader relevance semantics or silently expand scope.
 
-## TARGET FLOW
+## CANDIDATE / IMPLEMENTATION-SENSITIVE DETAILS
+
+Concrete schema library, source-adapter composition, direct-vs-specialized source access and future retrieval/MCP boundaries must be validated by real source requirements. Historical worktree wording that names a preferred implementation is not enough to promote it.
+
+Current candidate flow remains:
 
 ```text
 application-owned requirement
@@ -58,14 +57,14 @@ application-owned requirement
 
 ## CHILDREN
 
-- `semantics.md` — ownership and semantic invariants.
+- `semantics.md` — prior semantic invariants and candidate details.
 - `architecture.md` — layer placement and dependency direction.
-- `workflow.md` — single-pass resolution path.
-- `decisions.md` — constraints that implementation must preserve.
+- `workflow.md` — current resolution-flow candidate.
+- `decisions.md` — previously accepted/working constraints; reconcile against promoted living decisions when conflicts appear.
 - `gaps.md` — unresolved implementation choices and exit conditions.
 
 ## NOT ORACLE
 
 Oracle is not an agent, advisor, orchestrator, worker, semantic-memory system, runtime context lifecycle, generic RAG platform or correctness authority.
 
-It does not choose the Worker context contract. It does not participate in Worker reasoning after the resolved context has been handed off.
+It does not choose the Worker context contract. It does not participate in Worker reasoning after resolved context has been handed off.

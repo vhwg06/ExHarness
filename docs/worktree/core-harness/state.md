@@ -1,8 +1,10 @@
-# Core Harness state
+# Core Harness convergence state
 
-Current ExHarness Core continuation state. Route from here only when the task is about kernel/runtime behavior rather than Agentic Application or Oracle semantics.
+Current ExHarness Core checkpoint plus candidate continuation work. Route from here only when the task is about kernel/runtime behavior rather than Agentic Application or Oracle semantics.
 
-## CURRENT
+Implemented claims must be checked against source/public exports. Continuation ideas remain candidates until evidence/decision/promotion.
+
+## OBSERVED / DELIVERED CURRENT
 
 - `createHarness()` composes validated persistence, idempotent environment actions, observability, supervision, recovery gating, search investment and `createAVOHarness()`.
 - `createAVOHarness()` composes AVO variation control with `AgentRuntime`; built-in `avo.act` still calls `core.act()` directly through a normal capability.
@@ -17,25 +19,30 @@ Current ExHarness Core continuation state. Route from here only when the task is
 - Semantic-memory retrieval remains `RELEVANCE_ONLY`. NOOA associative ranking and spontaneous recall are explicit opt-in composition surfaces; memory is not globally injected into every judgment.
 - Promotion requires a current evaluation over the exact current observation and verification ID snapshots.
 
-## ACTIVE CORE CONTINUATION
+Source/public exports are final authority for whether each item is still current.
 
-The remaining Core continuation is narrower than the stale pre-cognition roadmap:
+## CANDIDATE CORE CONTINUATION
+
+The remaining continuation currently being explored is narrower than the stale pre-cognition roadmap:
 
 1. close the built-in AVO external-effect crash window instead of treating candidate/trace state as proof of side-effect completion;
-2. compose interrupted-variation recovery, runtime snapshot/restore and pending-effect reconciliation into an explicit recovery lifecycle when a concrete Core consumer proves the required shape;
-3. expose a higher-level Core lifecycle surface only after that recovery composition is concrete, without absorbing Agentic Application orchestration.
+2. explore composition of interrupted-variation recovery, runtime snapshot/restore and pending-effect reconciliation when a concrete Core consumer proves the required shape;
+3. consider a higher-level Core lifecycle surface only after that recovery composition becomes concrete, without absorbing Agentic Application orchestration.
 
-No new default memory-ranking or hidden prompt-injection layer is required: explicit memory visibility is an intentional authority boundary, not an unresolved gap.
+These are convergence targets, not automatically promoted desired state. Concrete component/API shape must be earned by implementation and evidence.
+
+No new default memory-ranking or hidden prompt-injection layer is currently required: explicit memory visibility remains an accepted authority boundary unless later evidence reopens it.
 
 ## ROUTING
 
-- implemented Core structure -> `architecture.md`
+- implemented Core structure -> `architecture.md` plus source/public exports
 - execution/cognition/recovery loop -> `workflow.md`
-- unresolved Core seams / exit conditions -> `gaps.md`
-- active Core constraints -> `decisions.md`
+- unresolved Core seams / candidate exit conditions -> `gaps.md`
+- prior/current Core constraints -> `decisions.md`
 - system-level delivery order -> `../pipeline.md`
+- promotion/authority rules -> `../../living/README.md`
 
-## BOUNDARY
+## ACCEPTED BOUNDARY
 
 ```text
 Agentic Application
@@ -48,6 +55,4 @@ ExHarness Core
     -> owns agent execution mechanics / runtime authority / cognition / evidence / recovery primitives
 ```
 
-## AUTHORITY
-
-Source/public exports are implementation authority. This subtree is the desired continuation projection for ExHarness Core only. Resolved gaps must be removed from this projection when source lands; Git retains their history.
+This subtree is convergence material. It cannot override source/public exports or promoted living decisions by file location alone.
