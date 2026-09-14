@@ -334,6 +334,10 @@ function reviewSubject(item, key) {
   });
 }
 
+function sameSubject(left, right) {
+  return left?.type === right?.type && left?.digest === right?.digest;
+}
+
 function findingsFromDecision(decision) {
   return normalizeTextArray(decision?.metadata?.findings ?? [], "review decision findings");
 }
@@ -359,6 +363,9 @@ async function evaluateReviewBundle({ item, requirement, activeReview, bundle, r
   invariant(Object.values(ReviewVerdict).includes(validated.decision.verdict), "review decision verdict is invalid");
   invariant(validated.decision.evaluator?.identity === activeReview.reviewer, "review decision evaluator does not match scheduled reviewer");
   invariant(validated.decision.evaluator?.identity !== item.submittedBy, "review evaluator must be independent from submission producer");
+  for (const evidence of validated.evidence) {
+    invariant(sameSubject(evidence.subject, activeReview.subject), "review evidence subject does not match active review target");
+  }
 
   const findings = findingsFromDecision(validated.decision);
   if (validated.decision.verdict === ReviewVerdict.ACCEPTED) {
@@ -405,6 +412,12 @@ async function evaluateReviewBundle({ item, requirement, activeReview, bundle, r
     findings,
     trust
   });
+}
+
+function sameActiveReview(left, right) {
+  return left?.key === right?.key &&
+    left?.reviewer === right?.reviewer &&
+    sameSubject(left?.subject, right?.subject);
 }
 
 export function createApplicationOrchestrator({ store, reviewTrust }) {
@@ -517,20 +530,28 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     async recordAssessment({ itemId, key, bundle }) {
       requireText(itemId, "itemId");
       requireText(key, "key");
-      return mutate(async (snapshot) => {
-        const item = findItem(snapshot, itemId);
-        invariant(item.status === BlackboardStatus.REVIEWING, `Blackboard item ${itemId} is not REVIEWING`);
-        invariant(item.activeReview?.key === key, `Blackboard item ${itemId} active review does not match assessment`);
-        const requirement = requirementFor(item, key);
-        invariant(requirement, `Blackboard item ${itemId} does not require review ${key}`);
 
-        const assessment = await evaluateReviewBundle({
-          item,
-          requirement,
-          activeReview: item.activeReview,
-          bundle,
-          reviewTrust: trustedReview
-        });
+      const observedBoard = defineBlackboardSnapshot(await store.load());
+      const observedItem = findItem(observedBoard, itemId);
+      invariant(observedItem.status === BlackboardStatus.REVIEWING, `Blackboard item ${itemId} is not REVIEWING`);
+      invariant(observedItem.activeReview?.key === key, `Blackboard item ${itemId} active review does not match assessment`);
+      const observedRequirement = requirementFor(observedItem, key);
+      invariant(observedRequirement, `Blackboard item ${itemId} does not require review ${key}`);
+      const observedReview = freezeClone(observedItem.activeReview);
+
+      const assessment = await evaluateReviewBundle({
+        item: observedItem,
+        requirement: observedRequirement,
+        activeReview: observedReview,
+        bundle,
+        reviewTrust: trustedReview
+      });
+
+      return mutate((snapshot) => {
+        const item = findItem(snapshot, itemId);
+        invariant(item.status === BlackboardStatus.REVIEWING, `Blackboard item ${itemId} changed while assessment trust was evaluated`);
+        invariant(sameActiveReview(item.activeReview, observedReview), `Blackboard item ${itemId} review target changed while assessment trust was evaluated`);
+        invariant(requirementFor(item, key), `Blackboard item ${itemId} review requirement changed while assessment trust was evaluated`);
 
         item.reviews.push(normalizeReview({
           key,
