@@ -15,7 +15,7 @@ BackendObjective
   -> BackendWorkResult
 ```
 
-Wave B makes completion trustworthy and introduces bounded judgment:
+Wave B makes Backend completion trustworthy and introduces bounded judgment:
 
 ```text
 BackendWorkResult
@@ -27,11 +27,24 @@ BackendWorkResult
 all objective checks pass + unresolved semantic gaps
   -> BackendAdvisor
   -> RETRY_IMPLEMENTATION | REQUEST_CONTEXT | ESCALATE
-  -> application validates and maps the proposal
 ```
 
-Worker-returned prose is not completion authority. `BackendWorker` discards claimed evidence and rebuilds evidence from actual ExHarness lineage/verification state. `ACCEPT` is an application-owned decision represented with an ExHarness acceptance-boundary `DecisionArtifact`.
+Wave C adds a second real role and cross-work context chaining:
 
-Advisor is not correctness authority: it is never invoked for deterministic missing/failed evidence, cannot ACCEPT work, cannot dispatch another Worker, and must reference an existing unresolved gap.
+```text
+accepted BackendWorkResult
+  -> ref-only BackendQaHandoff
+  -> QaWorkOrder selects required artifact refs
+  -> resolveQaContext(...)
+     -> artifactReader.readArtifact(...)
+  -> QaWorker
+     -> non-mutating ExHarness verification
+  -> qa.behavior + qa.regression evidence
+  -> QaCompletionPolicy
+```
 
-The package still does not expose a generic Worker, WorkOrder, role registry, workflow graph, generic Advisor, or generic Orchestrator. Common abstractions remain deferred until a second real role demonstrates repeated semantics in Wave C.
+`QaWorker` cannot mutate or advance lineage. Worker-returned evidence and inspected-artifact claims are replaced with grounded ExHarness/runtime state.
+
+The two-role comparison did **not** justify a generic Worker, WorkOrder, role registry, workflow graph, generic Advisor, or generic Orchestrator. Backend is mutating/promoting work; QA is inspection of a fixed accepted revision. The repeated shapes extracted so far are deliberately narrow: application artifact references and evidence-integrity/claim-state plumbing.
+
+Oracle keeps external and internal sources explicit. Backend context uses `repositoryReader.readFile(...)`; QA context uses `artifactReader.readArtifact(...)` with `APPLICATION_ARTIFACT` provenance. Application handoff carries refs and acceptance-decision provenance, not copied artifact payloads.

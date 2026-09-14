@@ -19,62 +19,53 @@ Current accepted ownership direction:
 
 Names above describe accepted responsibilities. They do not imply that every future interface/service shape already exists or is promoted.
 
-## OBSERVED CHECKPOINT — WAVES A + B
+## OBSERVED CHECKPOINT — WAVES A + B + C
 
-The concrete Backend application in `packages/agentic-system/` now runs:
+The concrete application in `packages/agentic-system/` now includes two different specialist roles:
 
 ```text
 BackendObjective
  -> BackendWorkOrder
- -> resolveBackendContext(...)
- -> BackendWorker
- -> ExHarness
- -> grounded BackendWorkResult
- -> BackendCompletionPolicy
- -> deterministic completion
- -> bounded BackendAdvisor only for unresolved semantic gaps
+ -> BackendWorker (mutating)
+ -> grounded Backend completion
+ -> BackendQaHandoff refs
+ -> QaWorkOrder
+ -> QaWorker (non-mutating)
+ -> grounded QA completion
 ```
 
-Wave A established:
+Wave A established concrete Backend execution and direct deterministic composition. Wave B established Backend-specific evidence/completion and the narrow BackendAdvisor judgment boundary.
 
-- explicit Backend objective/order/context/result contracts;
-- resolve-once Oracle context loading;
-- ExHarness-backed Backend execution;
-- actual lineage promotion required for `APPLIED`;
-- direct concrete orchestration with no generic Worker/Orchestrator framework.
+Wave C established:
 
-Wave B established:
+- QA is the second real role and consumes only an accepted Backend revision;
+- QA has its own Objective/WorkOrder/Context/WorkResult/completion semantics;
+- QA cannot invoke environment mutation or advance lineage;
+- QA evidence is `qa.behavior` + `qa.regression`, not Backend mutation/typecheck/tests semantics;
+- QA issues deterministically produce `CONTINUE` for remediation rather than borrowing Backend completion behavior;
+- `ApplicationArtifactRef` is a proven common shape because Backend produces it and QA consumes/inspects it;
+- evidence artifact integrity and required-claim state are shared plumbing after appearing in both completion policies;
+- a generic Worker/WorkOrder/Orchestrator remains unjustified because Backend and QA lifecycle/authority differ materially;
+- concrete `runBackendThenQaObjective(...)` composes the two roles without a workflow framework;
+- QA is gated on accepted Backend completion.
 
-- mutation evidence is grounded in ExHarness lineage state;
-- typecheck/tests evidence is grounded in actual ExHarness verification artifacts;
-- evidence merely returned by Worker prose is discarded;
-- default Backend acceptance requires mutation + typecheck + tests + artifact presence;
-- application completion emits an ExHarness `DecisionArtifact` at `ACCEPTANCE` boundary;
-- missing/inconclusive/failed verification is handled deterministically;
-- the observed Advisor boundary is only `all required evidence passes + unresolved semantic gaps remain`;
-- BackendAdvisor can propose only `RETRY_IMPLEMENTATION`, `REQUEST_CONTEXT`, or `ESCALATE` and must reference existing gaps;
-- Advisor cannot ACCEPT, dispatch Workers, mutate workflow state directly, or become correctness authority.
+These are observed implementation facts. The broader judgment that no generic Worker should yet be promoted is recorded in living knowledge as `SUPPORTED`, not `ACCEPTED/PROMOTED` merely by this worktree update.
 
-No generic `Worker<C,R>`, generic `WorkOrder<C,R>`, generic Advisor, dynamic role registry or workflow graph has been introduced. Source/public exports remain authority for exact implementation.
-
-## ACTIVE CANDIDATE CONVERGENCE — WAVE C
+## ACTIVE CANDIDATE CONVERGENCE — WAVE D
 
 Implementation ordering follows `../pipeline.md`.
 
 ```text
-S7 add a second real role
-   -> compare concrete semantics
-   -> extract only repeated shapes if actually proven
+S9 multi-work application state
+   -> retry / block / resume / recovery pressure
+   -> compose with Core recovery/effect boundaries
 
-S8 prior WorkResult/artifact refs
-   -> Oracle dereference
-   -> resolved downstream context
-   -> no payload-copy orchestration state
+S10 evaluate Backend + QA + handoff
+   -> measure success / false completion / context cost / handoff correctness
+   -> generalize only repeated semantics supported by evidence
 ```
 
-S7 is the first allowed extraction point for common Worker/WorkOrder/orchestration semantics. If the second role does not demonstrate a strong common shape, keep concrete duplicated code.
-
-The delivery need/order is accepted; the exact second-role contracts, extracted common APIs and S8 handoff types remain candidates until implementation/evidence earns promotion.
+Do not introduce a generic workflow graph, role registry, claim manager or Blackboard runtime contract simply because two work items now exist. S9 must first expose the minimum durable application state actually required.
 
 ## ROUTING
 
