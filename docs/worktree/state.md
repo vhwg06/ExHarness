@@ -1,10 +1,12 @@
 # Repository state
 
-Living delivery projection for ExHarness. Read this first; load engineering children only when the task needs them.
+Living delivery projection for ExHarness. Read this first; load child trees only when the task needs them.
 
 ## PROJECT
 
 ExHarness is the publishable `exharness` kernel: AVO long-horizon control above a NOOA-style programmable agent runtime, with explicit evidence, trust, persistence, recovery and cognition boundaries.
+
+The repository also carries desired-state work for outer agentic layers that consume the kernel. Those concerns remain separate from kernel implementation authority.
 
 ## DELIVERED
 
@@ -20,7 +22,15 @@ ExHarness is the publishable `exharness` kernel: AVO long-horizon control above 
 
 - `engineering/state.md`
 
-Current desired delivery target: add an inspectable `deliberate -> act -> observe` step lifecycle and grounded `REFLECTION` / durable `INTENT` derivation from persisted evidence, then compose those boundaries with effect/recovery workflow semantics.
+Current kernel desired delivery target: add an inspectable `deliberate -> act -> observe` step lifecycle and grounded `REFLECTION` / durable `INTENT` derivation from persisted evidence, then compose those boundaries with effect/recovery workflow semantics.
+
+## ACTIVE ORACLE
+
+- `oracle/state.md`
+
+Current Oracle desired delivery target: provide a thin, single-pass infrastructure bridge that resolves application-owned context requirements once before Worker execution by pulling/adapting concrete external sources and validating the resulting application-shaped context.
+
+Oracle is tracked as a sibling worktree because its semantics belong to infrastructure around the Agentic Application Layer, not to ExHarness Core.
 
 ## RECONCILE
 
