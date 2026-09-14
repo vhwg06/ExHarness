@@ -13,6 +13,7 @@ import {
 import {
   SemanticMemoryKind,
   SemanticMemorySourceRefKind,
+  SemanticMemoryStatus,
   createInMemorySemanticMemoryProvider,
   createSemanticMemoryPort
 } from "../src/index.js";
@@ -98,6 +99,8 @@ test("reflection grounding contract requires a fresh persisted evaluation", asyn
   const result = await verifyReflectionGroundingContract();
   assert.equal(result.passed, true);
   assert.deepEqual(result.checks, [
+    "ungrounded-reflection-not-active",
+    "forged-activation-rejected",
     "missing-evaluation-rejected",
     "stale-evaluation-rejected",
     "fresh-evaluation-required",
@@ -140,6 +143,7 @@ test("grounded intent and post-evaluation reflection produce semantic divergence
     provenance: { source: "post-evaluation-reflection", sourceId: "reflection-1" }
   });
   assert.equal(reflectionResult.memory.kind, SemanticMemoryKind.REFLECTION);
+  assert.equal(reflectionResult.memory.status, SemanticMemoryStatus.ACTIVE);
   assert.ok(reflectionResult.memory.sourceRefs.some(
     (ref) => ref.kind === SemanticMemorySourceRefKind.EVALUATION && ref.id === "evaluation-1"
   ));
