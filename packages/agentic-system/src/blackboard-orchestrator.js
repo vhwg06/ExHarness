@@ -74,6 +74,14 @@ function normalizeReview(raw, index) {
   };
 }
 
+function normalizeFinding(raw) {
+  invariant(raw && typeof raw === "object" && !Array.isArray(raw), "finding must be an object");
+  return {
+    summary: requireText(raw.summary, "finding.summary"),
+    sourceRef: requireText(raw.sourceRef, "finding.sourceRef")
+  };
+}
+
 function normalizeItem(raw, index = 0) {
   invariant(raw && typeof raw === "object" && !Array.isArray(raw), `items[${index}] must be an object`);
   const status = raw.status ?? BlackboardStatus.READY;
@@ -181,6 +189,14 @@ function addUnique(target, values) {
   for (const value of values) if (!target.includes(value)) target.push(value);
 }
 
+function removeResolvedWork(item, resolvedWork) {
+  const resolved = normalizeTextArray(resolvedWork, "resolvedWork");
+  for (const work of resolved) {
+    invariant(item.remainingWork.includes(work), `resolvedWork is not an outstanding current obligation: ${work}`);
+  }
+  item.remainingWork = item.remainingWork.filter((work) => !resolved.includes(work));
+}
+
 export function createApplicationOrchestrator({ store }) {
   invariant(store && typeof store.load === "function" && typeof store.save === "function", "ApplicationOrchestrator requires a Blackboard store");
 
@@ -222,16 +238,19 @@ export function createApplicationOrchestrator({ store }) {
       });
     },
 
-    async submit({ itemId, owner, submission, reviewRequests = [] }) {
+    async submit({ itemId, owner, submission, reviewRequests = [], resolvedWork = [] }) {
       requireText(itemId, "itemId");
       requireText(owner, "owner");
       invariant(submission && typeof submission === "object" && !Array.isArray(submission), "submission must be an object");
       invariant(Array.isArray(reviewRequests), "reviewRequests must be an array");
+      invariant(Array.isArray(resolvedWork), "resolvedWork must be an array");
 
       return mutate((snapshot) => {
         const item = findItem(snapshot, itemId);
         invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${itemId} must be CLAIMED before submit`);
         invariant(item.owner === owner, `Blackboard item ${itemId} is claimed by another owner`);
+
+        removeResolvedWork(item, resolvedWork);
 
         for (const rawRequirement of reviewRequests) {
           const requirement = normalizeReviewRequirement(rawRequirement, item.reviewRequirements.length);
@@ -251,6 +270,7 @@ export function createApplicationOrchestrator({ store }) {
     async requireReview({ itemId, key, source, reason }) {
       requireText(itemId, "itemId");
       const requirement = normalizeReviewRequirement({ key, source, reason }, 0);
+      invariant(requirement.source === ReviewRequirementSource.PM, "requireReview must be PM-sourced");
       return mutate((snapshot) => {
         const item = findItem(snapshot, itemId);
         invariant(item.status !== BlackboardStatus.DONE && item.status !== BlackboardStatus.SUPERSEDED, `Blackboard item ${itemId} cannot add review from ${item.status}`);
@@ -293,8 +313,8 @@ export function createApplicationOrchestrator({ store }) {
         if (verdict !== ReviewVerdict.ACCEPTED) {
           addUnique(item.remainingWork, normalizedFindings.length > 0 ? normalizedFindings : [`Review ${key} did not accept the submission`]);
           item.status = BlackboardStatus.REOPENED;
-        } else if (!unresolvedReview(item) && item.remainingWork.length === 0) {
-          item.status = BlackboardStatus.DONE;
+        } else if (!unresolvedReview(item)) {
+          item.status = item.remainingWork.length === 0 ? BlackboardStatus.DONE : BlackboardStatus.REOPENED;
         } else {
           item.status = BlackboardStatus.PENDING_REVIEW;
         }
@@ -305,14 +325,15 @@ export function createApplicationOrchestrator({ store }) {
 
     async reconcileFinding({ itemId, finding, disposition, existingItemId = null, newItem = null }) {
       requireText(itemId, "itemId");
-      const summary = requireText(finding, "finding");
+      const normalizedFinding = normalizeFinding(finding);
       invariant(Object.values(FollowUpDisposition).includes(disposition), "follow-up disposition is invalid");
 
       return mutate((snapshot) => {
         const item = findItem(snapshot, itemId);
 
         if (disposition === FollowUpDisposition.CURRENT_WORK) {
-          addUnique(item.remainingWork, [summary]);
+          addUnique(item.remainingWork, [normalizedFinding.summary]);
+          addUnique(item.evidenceRefs, [normalizedFinding.sourceRef]);
           item.status = BlackboardStatus.REOPENED;
           return clone(item);
         }
@@ -321,6 +342,7 @@ export function createApplicationOrchestrator({ store }) {
           const targetId = requireText(existingItemId, "existingItemId");
           findItem(snapshot, targetId);
           addUnique(item.followUpRefs, [targetId]);
+          addUnique(item.evidenceRefs, [normalizedFinding.sourceRef]);
           return clone(item);
         }
 
@@ -329,15 +351,20 @@ export function createApplicationOrchestrator({ store }) {
           const child = normalizeItem({
             ...newItem,
             status: newItem.status ?? BlackboardStatus.READY,
-            origin: { parentItemId: itemId, finding: summary }
+            origin: {
+              parentItemId: itemId,
+              finding: normalizedFinding.summary,
+              sourceRef: normalizedFinding.sourceRef
+            }
           }, snapshot.items.length);
           invariant(!snapshot.items.some((candidate) => candidate.id === child.id), `Blackboard item already exists: ${child.id}`);
           snapshot.items.push(child);
           addUnique(item.followUpRefs, [child.id]);
+          addUnique(item.evidenceRefs, [normalizedFinding.sourceRef]);
           return clone(child);
         }
 
-        return Object.freeze({ disposition: FollowUpDisposition.NON_ACTIONABLE, finding: summary });
+        return freezeClone({ disposition: FollowUpDisposition.NON_ACTIONABLE, finding: normalizedFinding });
       });
     },
 
