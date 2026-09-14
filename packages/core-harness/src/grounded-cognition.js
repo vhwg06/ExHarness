@@ -8,6 +8,7 @@ import {
   SemanticMemoryKind,
   SemanticMemorySourceRefKind,
   SemanticMemoryStatus,
+  _createGroundedReflectionActivationPermit,
   defineSemanticMemoryDraft
 } from "./semantic-memory.js";
 import { digestValue } from "./trust.js";
@@ -277,7 +278,11 @@ export function createGroundedCognitionPort({
     });
 
     const before = await loadState(input.sessionId);
-    requireFreshEvaluationSources(before, sourceRefs, { required: kind === SemanticMemoryKind.REFLECTION });
+    const evaluationRefs = requireFreshEvaluationSources(
+      before,
+      sourceRefs,
+      { required: kind === SemanticMemoryKind.REFLECTION }
+    );
     const sourceSnapshots = await resolveSourceSnapshots(before, sourceRefs);
     const proposal = Object.freeze({
       sessionId: before.id,
@@ -332,12 +337,33 @@ export function createGroundedCognitionPort({
       kind: SemanticMemorySourceRefKind.EXTERNAL,
       id: groundingExternalId(groundingId)
     });
+    const finalSourceRefs = [...draft.sourceRefs, groundingRef];
     const remembered = await memory.remember({
       ...clone(draft),
-      sourceRefs: [...draft.sourceRefs, groundingRef],
+      sourceRefs: finalSourceRefs,
       provenance: draft.provenance
     });
-    return Object.freeze({ memory: clone(remembered), grounding: clone(grounding) });
+    let activeMemory = remembered;
+    if (kind === SemanticMemoryKind.REFLECTION) {
+      invariant(typeof memory.activateReflection === "function", "grounded reflection requires memory.activateReflection()");
+      const permit = _createGroundedReflectionActivationPermit({
+        content: draft.content,
+        sourceRefs: finalSourceRefs,
+        evaluationId: evaluationRefs[0].id,
+        groundingArtifactId: groundingId
+      });
+      activeMemory = await memory.activateReflection(remembered.id, {
+        permit,
+        expectedRevision: remembered.revision,
+        provenance: {
+          source: `grounding:${verifier.name}@${verifier.revision}`,
+          sourceId: groundingId,
+          callId: draft.provenance.callId,
+          turn: draft.provenance.turn
+        }
+      });
+    }
+    return Object.freeze({ memory: clone(activeMemory), grounding: clone(grounding) });
   }
 
   async function alignIntentReflection({ intentId, reflectionId } = {}) {
@@ -352,7 +378,10 @@ export function createGroundedCognitionPort({
     const groundingId = groundingArtifactIdFromMemory(reflection);
     invariant(groundingId, "reflection is missing its grounding artifact ref");
     const grounding = await artifacts.read(groundingId);
-    invariant(grounding?.kind === undefined || grounding?.artifactRef?.kind === GroundedCognitionArtifactKind.GROUNDING, "reflection grounding artifact is invalid");
+    invariant(
+      grounding?.artifactRef?.kind === GroundedCognitionArtifactKind.GROUNDING,
+      "reflection grounding artifact is invalid"
+    );
     invariant(grounding?.verdict === GroundingVerdict.GROUNDED, "reflection grounding artifact is not grounded");
 
     const intentSource = grounding.sourceSnapshots.find(
