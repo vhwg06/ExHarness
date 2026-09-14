@@ -8,7 +8,7 @@ import {
   SemanticMemoryKind,
   SemanticMemorySourceRefKind,
   SemanticMemoryStatus,
-  _createGroundedReflectionActivationPermit,
+  _createGroundedSemanticActivationPermit,
   defineSemanticMemoryDraft
 } from "./semantic-memory.js";
 import { digestValue } from "./trust.js";
@@ -343,26 +343,28 @@ export function createGroundedCognitionPort({
       sourceRefs: finalSourceRefs,
       provenance: draft.provenance
     });
-    let activeMemory = remembered;
-    if (kind === SemanticMemoryKind.REFLECTION) {
-      invariant(typeof memory.activateReflection === "function", "grounded reflection requires memory.activateReflection()");
-      const permit = _createGroundedReflectionActivationPermit({
-        content: draft.content,
-        sourceRefs: finalSourceRefs,
-        evaluationId: evaluationRefs[0].id,
-        groundingArtifactId: groundingId
-      });
-      activeMemory = await memory.activateReflection(remembered.id, {
-        permit,
-        expectedRevision: remembered.revision,
-        provenance: {
-          source: `grounding:${verifier.name}@${verifier.revision}`,
-          sourceId: groundingId,
-          callId: draft.provenance.callId,
-          turn: draft.provenance.turn
-        }
-      });
-    }
+    const activationMethod = kind === SemanticMemoryKind.REFLECTION ? "activateReflection" : "activateIntent";
+    invariant(
+      typeof memory[activationMethod] === "function",
+      `grounded ${kind.toLowerCase()} requires memory.${activationMethod}()`
+    );
+    const permit = _createGroundedSemanticActivationPermit({
+      kind,
+      content: draft.content,
+      sourceRefs: finalSourceRefs,
+      evaluationId: evaluationRefs[0]?.id ?? null,
+      groundingArtifactId: groundingId
+    });
+    const activeMemory = await memory[activationMethod](remembered.id, {
+      permit,
+      expectedRevision: remembered.revision,
+      provenance: {
+        source: `grounding:${verifier.name}@${verifier.revision}`,
+        sourceId: groundingId,
+        callId: draft.provenance.callId,
+        turn: draft.provenance.turn
+      }
+    });
     return Object.freeze({ memory: clone(activeMemory), grounding: clone(grounding) });
   }
 
