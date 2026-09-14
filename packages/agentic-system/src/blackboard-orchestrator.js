@@ -138,27 +138,107 @@ export function defineBlackboardSnapshot(raw = { version: 1, items: [] }) {
   return freezeClone({ version: 1, items });
 }
 
-export function createJsonBlackboardStore({ path, fs = nodeFs }) {
+export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 30_000 }) {
   requireText(path, "Blackboard store path");
-  invariant(fs && typeof fs.readFile === "function" && typeof fs.writeFile === "function", "Blackboard store requires fs read/write capability");
+  invariant(Number.isInteger(lockStaleMs) && lockStaleMs > 0, "Blackboard lockStaleMs must be a positive integer");
+  invariant(
+    fs &&
+      typeof fs.readFile === "function" &&
+      typeof fs.writeFile === "function" &&
+      typeof fs.mkdir === "function" &&
+      typeof fs.rename === "function" &&
+      typeof fs.open === "function" &&
+      typeof fs.unlink === "function",
+    "Blackboard store requires filesystem read/write/lock capability"
+  );
+
+  const lockPath = `${path}.lock`;
+
+  async function loadUnlocked() {
+    try {
+      const raw = JSON.parse(await fs.readFile(path, "utf8"));
+      return defineBlackboardSnapshot(raw);
+    } catch (error) {
+      if (error?.code === "ENOENT") return defineBlackboardSnapshot();
+      throw error;
+    }
+  }
+
+  async function saveUnlocked(rawSnapshot) {
+    const snapshot = defineBlackboardSnapshot(rawSnapshot);
+    await fs.mkdir(dirname(path), { recursive: true });
+    const tempPath = `${path}.tmp`;
+    await fs.writeFile(tempPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
+    await fs.rename(tempPath, path);
+    return snapshot;
+  }
+
+  async function openMutationLock() {
+    await fs.mkdir(dirname(path), { recursive: true });
+    try {
+      const handle = await fs.open(lockPath, "wx");
+      await handle.writeFile(`${JSON.stringify({ createdAt: Date.now() })}\n`, "utf8");
+      return handle;
+    } catch (error) {
+      if (error?.code !== "EEXIST") throw error;
+
+      let stale = false;
+      try {
+        const metadata = JSON.parse(await fs.readFile(lockPath, "utf8"));
+        stale = Number.isFinite(metadata.createdAt) && Date.now() - metadata.createdAt > lockStaleMs;
+      } catch {
+        stale = false;
+      }
+
+      if (!stale) throw new Error("Blackboard store mutation already in progress");
+
+      try {
+        await fs.unlink(lockPath);
+      } catch (unlinkError) {
+        if (unlinkError?.code !== "ENOENT") throw unlinkError;
+      }
+
+      try {
+        const handle = await fs.open(lockPath, "wx");
+        await handle.writeFile(`${JSON.stringify({ createdAt: Date.now() })}\n`, "utf8");
+        return handle;
+      } catch (retryError) {
+        if (retryError?.code === "EEXIST") throw new Error("Blackboard store mutation already in progress");
+        throw retryError;
+      }
+    }
+  }
+
+  async function withMutationLock(action) {
+    const handle = await openMutationLock();
+    try {
+      return await action();
+    } finally {
+      await handle.close();
+      try {
+        await fs.unlink(lockPath);
+      } catch (error) {
+        if (error?.code !== "ENOENT") throw error;
+      }
+    }
+  }
 
   return Object.freeze({
     async load() {
-      try {
-        const raw = JSON.parse(await fs.readFile(path, "utf8"));
-        return defineBlackboardSnapshot(raw);
-      } catch (error) {
-        if (error?.code === "ENOENT") return defineBlackboardSnapshot();
-        throw error;
-      }
+      return loadUnlocked();
     },
     async save(rawSnapshot) {
-      const snapshot = defineBlackboardSnapshot(rawSnapshot);
-      await fs.mkdir(dirname(path), { recursive: true });
-      const tempPath = `${path}.tmp`;
-      await fs.writeFile(tempPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
-      await fs.rename(tempPath, path);
-      return snapshot;
+      return withMutationLock(() => saveUnlocked(rawSnapshot));
+    },
+    async transact(mutator) {
+      invariant(typeof mutator === "function", "Blackboard store transact requires a mutator");
+      return withMutationLock(async () => {
+        const current = await loadUnlocked();
+        const next = clone(current);
+        const result = mutator(next);
+        const saved = await saveUnlocked(next);
+        return freezeClone({ snapshot: saved, result });
+      });
     }
   });
 }
@@ -198,14 +278,13 @@ function removeResolvedWork(item, resolvedWork) {
 }
 
 export function createApplicationOrchestrator({ store }) {
-  invariant(store && typeof store.load === "function" && typeof store.save === "function", "ApplicationOrchestrator requires a Blackboard store");
+  invariant(
+    store && typeof store.load === "function" && typeof store.transact === "function",
+    "ApplicationOrchestrator requires a transactional Blackboard store"
+  );
 
   async function mutate(mutator) {
-    const current = defineBlackboardSnapshot(await store.load());
-    const next = clone(current);
-    const result = mutator(next);
-    const saved = await store.save(next);
-    return freezeClone({ snapshot: saved, result });
+    return freezeClone(await store.transact(mutator));
   }
 
   return Object.freeze({
