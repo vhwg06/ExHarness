@@ -4,6 +4,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
+  ClaimStatus,
+  TrustBoundary,
+  createAttestationIssuer,
+  createDecisionArtifact,
+  createEvidenceArtifact,
+  environmentRefFromValue,
+  policyRefFromValue
+} from "../../core-harness/src/index.js";
+import {
   BlackboardStatus,
   FollowUpDisposition,
   ReviewRequirementSource,
@@ -12,12 +21,107 @@ import {
   createJsonBlackboardStore
 } from "../src/index.js";
 
+const REVIEW_POLICY = policyRefFromValue("blackboard-review-policy", {
+  required: ["review.acceptance"],
+  version: 1
+}, { version: "1" });
+
+const VERIFY_ENV = environmentRefFromValue(
+  { image: "review-verify@sha256:1" },
+  { name: "review-verification" }
+);
+
+const ATTEST_ENV = environmentRefFromValue(
+  { image: "review-attest@sha256:2" },
+  { name: "review-attestation" }
+);
+
+function reviewTrust() {
+  return {
+    trustPolicyFor() {
+      return {
+        acceptedIssuers: ["review-attestor"],
+        acceptedPolicyDigests: [REVIEW_POLICY.digest]
+      };
+    },
+    verifySignature({ payloadDigest, signature }) {
+      return signature?.value === `signed:${payloadDigest}`;
+    },
+    verifyEvaluatorAuthority({ evaluator, reviewer }) {
+      return evaluator?.identity === reviewer && evaluator.roles.includes("reviewer");
+    },
+    verifyEvidenceAuthority({ producer, environment }) {
+      return producer?.identity === "ci-verifier" &&
+        producer.roles.includes("verifier") &&
+        environment?.digest === VERIFY_ENV.digest;
+    }
+  };
+}
+
+async function reviewBundle({
+  subject,
+  reviewer,
+  verdict = ReviewVerdict.ACCEPTED,
+  findings = [],
+  evaluatorIdentity = reviewer,
+  evidenceProducer = "ci-verifier",
+  signingMode = "valid",
+  policy = REVIEW_POLICY
+}) {
+  const evidence = [createEvidenceArtifact({
+    subject,
+    kind: "BLACKBOARD_REVIEW",
+    producer: { identity: evidenceProducer, roles: ["verifier"] },
+    environment: VERIFY_ENV,
+    generatedAt: "2026-09-14T10:30:00.000Z",
+    metadata: { review: true },
+    content: { checked: true }
+  })];
+
+  const decision = createDecisionArtifact({
+    subject,
+    boundary: TrustBoundary.ACCEPTANCE,
+    policy,
+    evaluator: { identity: evaluatorIdentity, roles: ["reviewer"] },
+    evidence,
+    claims: [{
+      name: "review.acceptance",
+      status: verdict === ReviewVerdict.ACCEPTED ? ClaimStatus.SATISFIED : ClaimStatus.UNSATISFIED
+    }],
+    unresolved: verdict === ReviewVerdict.ACCEPTED
+      ? []
+      : findings.map((finding) => ({ type: "REVIEW_FINDING", finding })),
+    verdict,
+    generatedAt: "2026-09-14T10:31:00.000Z",
+    metadata: { findings }
+  });
+
+  const issuer = createAttestationIssuer({
+    identity: "review-attestor",
+    roles: ["attestor"],
+    async sign({ payloadDigest }) {
+      return {
+        algorithm: "test",
+        value: signingMode === "valid" ? `signed:${payloadDigest}` : `forged:${payloadDigest}`
+      };
+    }
+  });
+
+  const attestation = await issuer.issue({
+    decision,
+    environment: ATTEST_ENV,
+    issuedAt: "2026-09-14T10:32:00.000Z"
+  });
+
+  return { evidence, decision, attestation };
+}
+
 async function withOrchestrator(run) {
   const directory = await mkdtemp(join(tmpdir(), "exharness-blackboard-"));
   try {
     const path = join(directory, "blackboard.json");
     const store = createJsonBlackboardStore({ path });
-    const orchestrator = createApplicationOrchestrator({ store });
+    const orchestrator = createApplicationOrchestrator({ store, reviewTrust: reviewTrust() });
     await run({ path, store, orchestrator });
   } finally {
     await rm(directory, { recursive: true, force: true });
@@ -41,62 +145,110 @@ function workItem(overrides = {}) {
   };
 }
 
+async function submitForBackendReview(orchestrator, {
+  owner = "worker-session-1",
+  revision = "rev-2",
+  resolvedWork = []
+} = {}) {
+  await orchestrator.claim({ itemId: "BB-100", owner });
+  return orchestrator.submit({
+    itemId: "BB-100",
+    owner,
+    submission: { revision },
+    resolvedWork,
+    reviewRequests: [{
+      key: "BACKEND_REVIEW",
+      source: ReviewRequirementSource.WORKER,
+      reason: "Backend work requires vertical review."
+    }]
+  });
+}
+
+async function beginBackendReview(orchestrator, reviewer = "backend-reviewer-1") {
+  return orchestrator.beginReview({
+    itemId: "BB-100",
+    key: "BACKEND_REVIEW",
+    reviewer
+  });
+}
+
 test("Wave D prevents a worker submission from self-authorizing DONE", async () => {
   await withOrchestrator(async ({ orchestrator }) => {
     await orchestrator.seed([workItem()]);
-    await orchestrator.claim({ itemId: "BB-100", owner: "worker-session-1" });
-
-    const submitted = await orchestrator.submit({
-      itemId: "BB-100",
-      owner: "worker-session-1",
-      submission: {
-        revision: "rev-2",
-        artifactRefs: ["workspace://rev-2/src/orchestrator.js"]
-      },
-      reviewRequests: [{
-        key: "BACKEND_REVIEW",
-        source: ReviewRequirementSource.WORKER,
-        reason: "Implementation changed application workflow state."
-      }]
-    });
+    const submitted = await submitForBackendReview(orchestrator);
 
     assert.equal(submitted.result.status, BlackboardStatus.PENDING_REVIEW);
     assert.equal(submitted.result.owner, null);
+    assert.equal(submitted.result.submittedBy, "worker-session-1");
     assert.equal(submitted.result.reviews.length, 0);
   });
 });
 
-test("Wave D derives DONE only after the required review accepts the immutable submission", async () => {
+test("Wave D derives DONE only from a trusted assessment bound to the exact review target", async () => {
   await withOrchestrator(async ({ orchestrator }) => {
     await orchestrator.seed([workItem()]);
-    await orchestrator.claim({ itemId: "BB-100", owner: "worker-session-1" });
-    await orchestrator.submit({
-      itemId: "BB-100",
-      owner: "worker-session-1",
-      submission: { revision: "rev-2" },
-      reviewRequests: [{
-        key: "BACKEND_REVIEW",
-        source: ReviewRequirementSource.WORKER,
-        reason: "Backend work requires vertical review."
-      }]
-    });
-
-    await orchestrator.beginReview({
-      itemId: "BB-100",
-      key: "BACKEND_REVIEW",
+    await submitForBackendReview(orchestrator);
+    const review = await beginBackendReview(orchestrator);
+    const bundle = await reviewBundle({
+      subject: review.result.subject,
       reviewer: "backend-reviewer-1"
     });
 
     const assessed = await orchestrator.recordAssessment({
       itemId: "BB-100",
       key: "BACKEND_REVIEW",
-      reviewer: "backend-reviewer-1",
-      verdict: ReviewVerdict.ACCEPTED,
-      assessmentRef: "assessment://backend/1"
+      bundle
     });
 
     assert.equal(assessed.result.status, BlackboardStatus.DONE);
-    assert.equal(assessed.result.reviews[0].assessmentRef, "assessment://backend/1");
+    assert.equal(assessed.result.reviews[0].decisionRef, bundle.decision.id);
+    assert.equal(assessed.result.reviews[0].attestationRef, bundle.attestation.id);
+    assert.deepEqual(assessed.result.evidenceRefs, [bundle.decision.id, bundle.attestation.id]);
+  });
+});
+
+test("Wave D rejects fabricated, stale or unauthorized review authority", async () => {
+  await withOrchestrator(async ({ orchestrator }) => {
+    await orchestrator.seed([workItem()]);
+    await submitForBackendReview(orchestrator);
+    const review = await beginBackendReview(orchestrator);
+
+    const forged = await reviewBundle({
+      subject: review.result.subject,
+      reviewer: "backend-reviewer-1",
+      signingMode: "forged"
+    });
+    await assert.rejects(
+      () => orchestrator.recordAssessment({ itemId: "BB-100", key: "BACKEND_REVIEW", bundle: forged }),
+      /review trust rejected: INVALID_SIGNATURE/
+    );
+
+    const boardAfterForged = await orchestrator.readBlackboard();
+    assert.equal(boardAfterForged.items[0].status, BlackboardStatus.REVIEWING);
+    assert.equal(boardAfterForged.items[0].reviews.length, 0);
+
+    const staleSubject = {
+      ...review.result.subject,
+      digest: "sha256:stale-review-target"
+    };
+    const stale = await reviewBundle({
+      subject: staleSubject,
+      reviewer: "backend-reviewer-1"
+    });
+    await assert.rejects(
+      () => orchestrator.recordAssessment({ itemId: "BB-100", key: "BACKEND_REVIEW", bundle: stale }),
+      /review trust rejected: STALE_SUBJECT/
+    );
+
+    const unauthorized = await reviewBundle({
+      subject: review.result.subject,
+      reviewer: "backend-reviewer-1",
+      evaluatorIdentity: "rogue-reviewer"
+    });
+    await assert.rejects(
+      () => orchestrator.recordAssessment({ itemId: "BB-100", key: "BACKEND_REVIEW", bundle: unauthorized }),
+      /review decision evaluator does not match scheduled reviewer/
+    );
   });
 });
 
@@ -130,17 +282,19 @@ test("Wave D keeps Worker review request and PM review requirement as separate a
     assert.equal(required.result.reviewRequirements[0].source, ReviewRequirementSource.PM);
     assert.equal(required.result.status, BlackboardStatus.PENDING_REVIEW);
 
-    await orchestrator.beginReview({
+    const review = await orchestrator.beginReview({
       itemId: "BB-100",
       key: "SA_ARCHITECTURE_REVIEW",
+      reviewer: "solution-architect-1"
+    });
+    const bundle = await reviewBundle({
+      subject: review.result.subject,
       reviewer: "solution-architect-1"
     });
     const assessed = await orchestrator.recordAssessment({
       itemId: "BB-100",
       key: "SA_ARCHITECTURE_REVIEW",
-      reviewer: "solution-architect-1",
-      verdict: ReviewVerdict.ACCEPTED,
-      assessmentRef: "assessment://sa/1"
+      bundle
     });
 
     assert.equal(assessed.result.status, BlackboardStatus.DONE);
@@ -152,7 +306,8 @@ test("Wave D serializes concurrent claims so two sessions cannot own the same Bo
     await orchestrator.seed([workItem()]);
 
     const other = createApplicationOrchestrator({
-      store: createJsonBlackboardStore({ path })
+      store: createJsonBlackboardStore({ path }),
+      reviewTrust: reviewTrust()
     });
 
     const attempts = await Promise.allSettled([
@@ -172,25 +327,17 @@ test("Wave D serializes concurrent claims so two sessions cannot own the same Bo
 test("Wave D persists PENDING_REVIEW across orchestrator restart", async () => {
   await withOrchestrator(async ({ path, orchestrator }) => {
     await orchestrator.seed([workItem()]);
-    await orchestrator.claim({ itemId: "BB-100", owner: "worker-session-1" });
-    await orchestrator.submit({
-      itemId: "BB-100",
-      owner: "worker-session-1",
-      submission: { revision: "rev-2" },
-      reviewRequests: [{
-        key: "BACKEND_REVIEW",
-        source: ReviewRequirementSource.WORKER,
-        reason: "Review can happen in a later session."
-      }]
-    });
+    await submitForBackendReview(orchestrator);
 
     const restarted = createApplicationOrchestrator({
-      store: createJsonBlackboardStore({ path })
+      store: createJsonBlackboardStore({ path }),
+      reviewTrust: reviewTrust()
     });
     const restored = await restarted.readBlackboard();
 
     assert.equal(restored.items[0].status, BlackboardStatus.PENDING_REVIEW);
     assert.equal(restored.items[0].submission.revision, "rev-2");
+    assert.equal(restored.items[0].submittedBy, "worker-session-1");
     assert.equal(restored.items[0].reviewRequirements[0].key, "BACKEND_REVIEW");
   });
 });
@@ -199,26 +346,19 @@ test("Wave D rejected review reopens the same work and accepted resubmission can
   await withOrchestrator(async ({ orchestrator }) => {
     const finding = "Preserve accepted revision provenance across restart.";
     await orchestrator.seed([workItem()]);
-    await orchestrator.claim({ itemId: "BB-100", owner: "worker-session-1" });
-    await orchestrator.submit({
-      itemId: "BB-100",
-      owner: "worker-session-1",
-      submission: { revision: "rev-2" },
-      reviewRequests: [{
-        key: "BACKEND_REVIEW",
-        source: ReviewRequirementSource.WORKER,
-        reason: "Backend work requires vertical review."
-      }]
+    await submitForBackendReview(orchestrator);
+    const firstReview = await beginBackendReview(orchestrator, "backend-reviewer-1");
+    const rejectedBundle = await reviewBundle({
+      subject: firstReview.result.subject,
+      reviewer: "backend-reviewer-1",
+      verdict: ReviewVerdict.REJECTED,
+      findings: [finding]
     });
-    await orchestrator.beginReview({ itemId: "BB-100", key: "BACKEND_REVIEW", reviewer: "backend-reviewer-1" });
 
     const rejected = await orchestrator.recordAssessment({
       itemId: "BB-100",
       key: "BACKEND_REVIEW",
-      reviewer: "backend-reviewer-1",
-      verdict: ReviewVerdict.REJECTED,
-      assessmentRef: "assessment://backend/reject-1",
-      findings: [finding]
+      bundle: rejectedBundle
     });
 
     assert.equal(rejected.result.status, BlackboardStatus.REOPENED);
@@ -235,13 +375,15 @@ test("Wave D rejected review reopens the same work and accepted resubmission can
     assert.equal(resubmitted.result.status, BlackboardStatus.PENDING_REVIEW);
     assert.deepEqual(resubmitted.result.remainingWork, []);
 
-    await orchestrator.beginReview({ itemId: "BB-100", key: "BACKEND_REVIEW", reviewer: "backend-reviewer-2" });
+    const secondReview = await beginBackendReview(orchestrator, "backend-reviewer-2");
+    const acceptedBundle = await reviewBundle({
+      subject: secondReview.result.subject,
+      reviewer: "backend-reviewer-2"
+    });
     const accepted = await orchestrator.recordAssessment({
       itemId: "BB-100",
       key: "BACKEND_REVIEW",
-      reviewer: "backend-reviewer-2",
-      verdict: ReviewVerdict.ACCEPTED,
-      assessmentRef: "assessment://backend/accept-2"
+      bundle: acceptedBundle
     });
 
     assert.equal(accepted.result.status, BlackboardStatus.DONE);
@@ -251,25 +393,17 @@ test("Wave D rejected review reopens the same work and accepted resubmission can
 test("Wave D accepted review reopens instead of deadlocking when unrelated current work remains", async () => {
   await withOrchestrator(async ({ orchestrator }) => {
     await orchestrator.seed([workItem({ remainingWork: ["Resolve release dependency."] })]);
-    await orchestrator.claim({ itemId: "BB-100", owner: "worker-session-1" });
-    await orchestrator.submit({
-      itemId: "BB-100",
-      owner: "worker-session-1",
-      submission: { revision: "rev-2" },
-      reviewRequests: [{
-        key: "BACKEND_REVIEW",
-        source: ReviewRequirementSource.WORKER,
-        reason: "Backend work requires vertical review."
-      }]
+    await submitForBackendReview(orchestrator);
+    const review = await beginBackendReview(orchestrator);
+    const bundle = await reviewBundle({
+      subject: review.result.subject,
+      reviewer: "backend-reviewer-1"
     });
-    await orchestrator.beginReview({ itemId: "BB-100", key: "BACKEND_REVIEW", reviewer: "backend-reviewer-1" });
 
     const assessed = await orchestrator.recordAssessment({
       itemId: "BB-100",
       key: "BACKEND_REVIEW",
-      reviewer: "backend-reviewer-1",
-      verdict: ReviewVerdict.ACCEPTED,
-      assessmentRef: "assessment://backend/1"
+      bundle
     });
 
     assert.equal(assessed.result.status, BlackboardStatus.REOPENED);
@@ -297,19 +431,19 @@ test("Wave D follow-up reconciliation requires provenance and distinguishes curr
       itemId: "BB-100",
       finding: {
         summary: "Remove duplicated effect ownership.",
-        sourceRef: "assessment://sa/42"
+        sourceRef: "attestation://sa/42"
       },
       disposition: FollowUpDisposition.CURRENT_WORK
     });
     assert.equal(current.result.status, BlackboardStatus.REOPENED);
     assert.deepEqual(current.result.remainingWork, ["Remove duplicated effect ownership."]);
-    assert.deepEqual(current.result.evidenceRefs, ["assessment://sa/42"]);
+    assert.deepEqual(current.result.evidenceRefs, ["attestation://sa/42"]);
 
     const linked = await orchestrator.reconcileFinding({
       itemId: "BB-100",
       finding: {
         summary: "Storage retention is already tracked.",
-        sourceRef: "assessment://pm/9"
+        sourceRef: "attestation://pm/9"
       },
       disposition: FollowUpDisposition.EXISTING_WORK,
       existingItemId: "BB-101"
@@ -320,7 +454,7 @@ test("Wave D follow-up reconciliation requires provenance and distinguishes curr
       itemId: "BB-100",
       finding: {
         summary: "A separate release audit is required.",
-        sourceRef: "assessment://pm/10"
+        sourceRef: "attestation://pm/10"
       },
       disposition: FollowUpDisposition.NEW_WORK,
       newItem: {
@@ -334,7 +468,7 @@ test("Wave D follow-up reconciliation requires provenance and distinguishes curr
     assert.deepEqual(created.result.origin, {
       parentItemId: "BB-100",
       finding: "A separate release audit is required.",
-      sourceRef: "assessment://pm/10"
+      sourceRef: "attestation://pm/10"
     });
 
     const board = await orchestrator.readBlackboard();
