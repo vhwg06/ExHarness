@@ -2,6 +2,10 @@
 
 Status: **PROMOTED**
 
+Accepted at: 2026-09-14
+
+Acceptance boundary: repository owner explicitly corrected Blackboard completion/review semantics and the PM/SA/vertical role topology.
+
 ## Decision
 
 The Blackboard is shared operational state, not an actor and not correctness authority.
@@ -42,7 +46,7 @@ Examples:
 
 ```text
 Backend implementation context -> Backend Worker
-Backend review context         -> Backend Reviewer
+Backend review context          -> Backend Reviewer
 Frontend implementation context -> Frontend Worker
 Frontend review context         -> Frontend Reviewer
 QA context                       -> QA Worker/Reviewer semantics
@@ -76,7 +80,9 @@ The Orchestrator owns dispatch/scheduling and may execute review immediately in 
 
 Workers, reviewers, PM, SA and runtime/evidence may surface unresolved findings. They do not directly create canonical follow-up work by self-report.
 
-The Orchestrator reconciles findings into Blackboard state:
+A finding must carry provenance before it can mutate canonical Board work.
+
+The Orchestrator reconciles grounded findings into Blackboard state:
 
 ```text
 finding still belongs to current acceptance obligation
@@ -86,7 +92,7 @@ finding already represented by another unresolved item
  -> LINK existing work
 
 finding is genuinely independent actionable work
- -> CREATE new Board item with origin/dependency provenance
+ -> CREATE new Board item with origin/dependency/source provenance
 
 finding is merely non-actionable / speculative / no concrete pressure
  -> do not create Board work
@@ -97,6 +103,8 @@ Invariant:
 ```text
 Do not generate new work when the finding is evidence that the current work is not done.
 ```
+
+A reopened Worker may claim that specific remaining obligations were addressed in a new submission, but that claim is not closure authority; required review must accept the new submission before `DONE` can be derived.
 
 ## Completion authority
 
@@ -121,3 +129,14 @@ role completion != Blackboard problem completion
 Do not introduce a generic Teacher/Reviewer registry, workflow graph or universal review context merely because this decision names common semantics.
 
 Concrete PM, SA and vertical review contexts must be earned from real slices. Common abstractions may be extracted only after repeated source-backed semantics justify them.
+
+## Promotion targets
+
+- `../blackboard.md`
+- `../contracts.md`
+- `../../worktree/state.md`
+- `../../worktree/pipeline.md`
+- `../../worktree/agentic-application/architecture.md`
+- `../../worktree/agentic-application/state.md`
+- `../../worktree/agentic-application/workflow.md`
+- `../../../README.md`
