@@ -62,6 +62,7 @@ async function reviewBundle({
   subject,
   reviewer,
   verdict = ReviewVerdict.ACCEPTED,
+  blockingReasons = [],
   findings = [],
   evaluatorIdentity = reviewer,
   evidenceProducer = "ci-verifier",
@@ -88,9 +89,7 @@ async function reviewBundle({
       name: "review.acceptance",
       status: verdict === ReviewVerdict.ACCEPTED ? ClaimStatus.SATISFIED : ClaimStatus.UNSATISFIED
     }],
-    unresolved: verdict === ReviewVerdict.ACCEPTED
-      ? []
-      : findings.map((finding) => ({ type: "REVIEW_FINDING", finding })),
+    unresolved: blockingReasons.map((summary) => ({ type: "REVIEW_BLOCKER", summary })),
     verdict,
     generatedAt: "2026-09-14T10:31:00.000Z",
     metadata: { findings }
@@ -141,6 +140,7 @@ function workItem(overrides = {}) {
     followUpRefs: [],
     reviewRequirements: [],
     reviews: [],
+    findings: [],
     ...overrides
   };
 }
@@ -342,9 +342,9 @@ test("Wave D persists PENDING_REVIEW across orchestrator restart", async () => {
   });
 });
 
-test("Wave D rejected review reopens the same work and accepted resubmission can close it", async () => {
+test("Wave D rejected review reopens the same work from trusted unresolved blockers and accepted resubmission can close it", async () => {
   await withOrchestrator(async ({ orchestrator }) => {
-    const finding = "Preserve accepted revision provenance across restart.";
+    const blocker = "Preserve accepted revision provenance across restart.";
     await orchestrator.seed([workItem()]);
     await submitForBackendReview(orchestrator);
     const firstReview = await beginBackendReview(orchestrator, "backend-reviewer-1");
@@ -352,7 +352,7 @@ test("Wave D rejected review reopens the same work and accepted resubmission can
       subject: firstReview.result.subject,
       reviewer: "backend-reviewer-1",
       verdict: ReviewVerdict.REJECTED,
-      findings: [finding]
+      blockingReasons: [blocker]
     });
 
     const rejected = await orchestrator.recordAssessment({
@@ -362,15 +362,15 @@ test("Wave D rejected review reopens the same work and accepted resubmission can
     });
 
     assert.equal(rejected.result.status, BlackboardStatus.REOPENED);
-    assert.deepEqual(rejected.result.remainingWork, [finding]);
-    assert.deepEqual(rejected.result.followUpRefs, []);
+    assert.deepEqual(rejected.result.remainingWork, [blocker]);
+    assert.deepEqual(rejected.result.findings, []);
 
     await orchestrator.claim({ itemId: "BB-100", owner: "worker-session-2" });
     const resubmitted = await orchestrator.submit({
       itemId: "BB-100",
       owner: "worker-session-2",
       submission: { revision: "rev-3" },
-      resolvedWork: [finding]
+      resolvedWork: [blocker]
     });
     assert.equal(resubmitted.result.status, BlackboardStatus.PENDING_REVIEW);
     assert.deepEqual(resubmitted.result.remainingWork, []);
@@ -411,40 +411,47 @@ test("Wave D accepted review reopens instead of deadlocking when unrelated curre
   });
 });
 
-test("Wave D follow-up reconciliation requires provenance and distinguishes current, existing and new work", async () => {
+test("Wave D follow-up generation reconciles only findings grounded by a trusted review assessment", async () => {
   await withOrchestrator(async ({ orchestrator }) => {
     await orchestrator.seed([
       workItem(),
       workItem({ id: "BB-101", work: "Existing independent storage concern." })
     ]);
+    await submitForBackendReview(orchestrator);
+    const review = await beginBackendReview(orchestrator);
+    const bundle = await reviewBundle({
+      subject: review.result.subject,
+      reviewer: "backend-reviewer-1",
+      findings: [
+        "Remove duplicated effect ownership.",
+        "Storage retention is already tracked.",
+        "A separate release audit is required.",
+        "Interesting future cache optimization without concrete pressure."
+      ]
+    });
 
-    await assert.rejects(
-      () => orchestrator.reconcileFinding({
-        itemId: "BB-100",
-        finding: { summary: "Ungrounded finding." },
-        disposition: FollowUpDisposition.CURRENT_WORK
-      }),
-      /finding.sourceRef must be a non-empty string/
-    );
+    const assessed = await orchestrator.recordAssessment({
+      itemId: "BB-100",
+      key: "BACKEND_REVIEW",
+      bundle
+    });
+    assert.equal(assessed.result.status, BlackboardStatus.PENDING_RECONCILIATION);
+    assert.equal(assessed.result.findings.length, 4);
+    assert.ok(assessed.result.findings.every((finding) => finding.sourceRef === bundle.attestation.id));
+
+    const [currentFinding, existingFinding, newFinding, nonActionableFinding] = assessed.result.findings;
 
     const current = await orchestrator.reconcileFinding({
       itemId: "BB-100",
-      finding: {
-        summary: "Remove duplicated effect ownership.",
-        sourceRef: "attestation://sa/42"
-      },
+      findingId: currentFinding.id,
       disposition: FollowUpDisposition.CURRENT_WORK
     });
-    assert.equal(current.result.status, BlackboardStatus.REOPENED);
+    assert.equal(current.result.status, BlackboardStatus.PENDING_RECONCILIATION);
     assert.deepEqual(current.result.remainingWork, ["Remove duplicated effect ownership."]);
-    assert.deepEqual(current.result.evidenceRefs, ["attestation://sa/42"]);
 
     const linked = await orchestrator.reconcileFinding({
       itemId: "BB-100",
-      finding: {
-        summary: "Storage retention is already tracked.",
-        sourceRef: "attestation://pm/9"
-      },
+      findingId: existingFinding.id,
       disposition: FollowUpDisposition.EXISTING_WORK,
       existingItemId: "BB-101"
     });
@@ -452,10 +459,7 @@ test("Wave D follow-up reconciliation requires provenance and distinguishes curr
 
     const created = await orchestrator.reconcileFinding({
       itemId: "BB-100",
-      finding: {
-        summary: "A separate release audit is required.",
-        sourceRef: "attestation://pm/10"
-      },
+      findingId: newFinding.id,
       disposition: FollowUpDisposition.NEW_WORK,
       newItem: {
         id: "BB-102",
@@ -463,15 +467,30 @@ test("Wave D follow-up reconciliation requires provenance and distinguishes curr
         dependsOn: ["BB-100"]
       }
     });
-
     assert.equal(created.result.id, "BB-102");
     assert.deepEqual(created.result.origin, {
       parentItemId: "BB-100",
+      findingId: newFinding.id,
       finding: "A separate release audit is required.",
-      sourceRef: "attestation://pm/10"
+      sourceRef: bundle.attestation.id
+    });
+
+    await orchestrator.reconcileFinding({
+      itemId: "BB-100",
+      findingId: nonActionableFinding.id,
+      disposition: FollowUpDisposition.NON_ACTIONABLE
     });
 
     const board = await orchestrator.readBlackboard();
-    assert.deepEqual(board.items.find((item) => item.id === "BB-100").followUpRefs.sort(), ["BB-101", "BB-102"]);
+    const parent = board.items.find((item) => item.id === "BB-100");
+    assert.equal(parent.status, BlackboardStatus.REOPENED);
+    assert.deepEqual(parent.followUpRefs.sort(), ["BB-101", "BB-102"]);
+    assert.deepEqual(parent.remainingWork, ["Remove duplicated effect ownership."]);
+    assert.deepEqual(parent.findings.map((finding) => finding.disposition), [
+      FollowUpDisposition.CURRENT_WORK,
+      FollowUpDisposition.EXISTING_WORK,
+      FollowUpDisposition.NEW_WORK,
+      FollowUpDisposition.NON_ACTIONABLE
+    ]);
   });
 });
