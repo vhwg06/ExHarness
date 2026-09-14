@@ -3,7 +3,10 @@ import { randomUUID } from "node:crypto";
 import { invariant, requireText } from "./contracts.js";
 import { ExHarnessError, ExHarnessErrorCode } from "./errors.js";
 
+const ReflectionActivationPermitBrand = Symbol("exharness.reflection-grounding-permit");
+
 export const SemanticMemoryStatus = Object.freeze({
+  PENDING_GROUNDING: "PENDING_GROUNDING",
   ACTIVE: "ACTIVE",
   ARCHIVED: "ARCHIVED"
 });
@@ -35,6 +38,7 @@ export const SemanticMemoryKindSemantics = Object.freeze({
 
 export const SemanticMemoryChangeKind = Object.freeze({
   CREATED: "CREATED",
+  ACTIVATED: "ACTIVATED",
   UPDATED: "UPDATED",
   ARCHIVED: "ARCHIVED"
 });
@@ -109,6 +113,34 @@ function normalizeSourceRefs(sourceRefs = []) {
     seen.add(key);
     return normalized;
   }));
+}
+
+function sourceRefsKey(sourceRefs) {
+  return JSON.stringify(normalizeSourceRefs(sourceRefs));
+}
+
+export function _createGroundedReflectionActivationPermit({
+  content,
+  sourceRefs,
+  evaluationId,
+  groundingArtifactId
+} = {}) {
+  const normalizedRefs = normalizeSourceRefs(sourceRefs);
+  const resolvedEvaluationId = requireText(evaluationId, "reflection activation evaluationId");
+  invariant(
+    normalizedRefs.some(
+      (ref) => ref.kind === SemanticMemorySourceRefKind.EVALUATION && ref.id === resolvedEvaluationId
+    ),
+    "reflection activation permit requires its evaluation source ref"
+  );
+  return Object.freeze({
+    [ReflectionActivationPermitBrand]: true,
+    kind: SemanticMemoryKind.REFLECTION,
+    content: requireText(content, "reflection activation content"),
+    sourceRefsKey: sourceRefsKey(normalizedRefs),
+    evaluationId: resolvedEvaluationId,
+    groundingArtifactId: requireText(groundingArtifactId, "reflection activation groundingArtifactId")
+  });
 }
 
 function normalizeTurn(turn) {
@@ -249,6 +281,7 @@ export function createSemanticMemoryPort({
   const resolvedProvider = validateProvider(provider);
   invariant(typeof clock === "function", "semantic memory clock must be a function");
   invariant(typeof idFactory === "function", "semantic memory idFactory must be a function");
+  const consumedReflectionPermits = new WeakSet();
 
   async function requireRecord(id) {
     const record = await resolvedProvider.read(requireText(id, "semantic memory id"));
@@ -270,7 +303,9 @@ export function createSemanticMemoryPort({
         confidence: draft.confidence,
         temporal: draft.temporal,
         sourceRefs: draft.sourceRefs,
-        status: SemanticMemoryStatus.ACTIVE,
+        status: draft.kind === SemanticMemoryKind.REFLECTION
+          ? SemanticMemoryStatus.PENDING_GROUNDING
+          : SemanticMemoryStatus.ACTIVE,
         revision: 1,
         createdAt: at,
         updatedAt: at,
@@ -284,6 +319,58 @@ export function createSemanticMemoryPort({
         ])
       });
       return clone(await resolvedProvider.create(record));
+    },
+
+    async activateReflection(id, { permit, provenance, expectedRevision = null } = {}) {
+      const current = await requireRecord(id);
+      invariant(current.kind === SemanticMemoryKind.REFLECTION, "only reflection memory requires grounded activation");
+      invariant(current.status === SemanticMemoryStatus.PENDING_GROUNDING, "reflection memory is not pending grounding");
+      invariant(permit && permit[ReflectionActivationPermitBrand] === true, "reflection activation requires grounded cognition permit");
+      invariant(!consumedReflectionPermits.has(permit), "reflection grounding permit was already consumed");
+      invariant(permit.kind === current.kind, "reflection grounding permit kind mismatch");
+      invariant(permit.content === current.content, "reflection grounding permit content mismatch");
+      invariant(permit.sourceRefsKey === sourceRefsKey(current.sourceRefs), "reflection grounding permit source snapshot mismatch");
+      invariant(
+        current.sourceRefs.some(
+          (ref) => ref.kind === SemanticMemorySourceRefKind.EVALUATION && ref.id === permit.evaluationId
+        ),
+        "reflection activation requires the grounded evaluation source ref"
+      );
+      invariant(
+        current.sourceRefs.some(
+          (ref) => ref.kind === SemanticMemorySourceRefKind.EXTERNAL && ref.id === `grounding:${permit.groundingArtifactId}`
+        ),
+        "reflection activation requires the grounding artifact source ref"
+      );
+      const expected = expectedRevision ?? current.revision;
+      invariant(Number.isInteger(expected) && expected > 0, "semantic memory expectedRevision must be positive");
+      if (expected !== current.revision) {
+        throw new SemanticMemoryConflictError({
+          memoryId: current.id,
+          expectedRevision: expected,
+          actualRevision: current.revision
+        });
+      }
+      const normalizedProvenance = defineSemanticMemoryProvenance(provenance);
+      const nextRevision = current.revision + 1;
+      const at = requireText(clock(), "semantic memory clock value");
+      const next = Object.freeze({
+        ...clone(current),
+        status: SemanticMemoryStatus.ACTIVE,
+        revision: nextRevision,
+        updatedAt: at,
+        provenance: Object.freeze([
+          ...clone(current.provenance),
+          lifecycleEntry({
+            kind: SemanticMemoryChangeKind.ACTIVATED,
+            provenance: normalizedProvenance,
+            revision: nextRevision,
+            at
+          })
+        ])
+      });
+      consumedReflectionPermits.add(permit);
+      return clone(await resolvedProvider.replace(next, { expectedRevision: current.revision }));
     },
 
     async get(id, { includeArchived = false } = {}) {
@@ -336,7 +423,7 @@ export function createSemanticMemoryPort({
     async update(id, patch) {
       invariant(patch && typeof patch === "object", "semantic memory update patch is required");
       const current = await requireRecord(id);
-      invariant(current.status === SemanticMemoryStatus.ACTIVE, "archived semantic memory cannot be updated");
+      invariant(current.status !== SemanticMemoryStatus.ARCHIVED, "archived semantic memory cannot be updated");
       invariant(patch.kind == null || patch.kind === current.kind, "semantic memory kind is immutable after creation");
       invariant(patch.sourceRefs == null, "semantic memory sourceRefs are immutable after creation; create a derived memory instead");
       const expectedRevision = patch.expectedRevision ?? current.revision;
@@ -375,7 +462,7 @@ export function createSemanticMemoryPort({
 
     async archive(id, { provenance, expectedRevision = null } = {}) {
       const current = await requireRecord(id);
-      invariant(current.status === SemanticMemoryStatus.ACTIVE, "semantic memory is already archived");
+      invariant(current.status !== SemanticMemoryStatus.ARCHIVED, "semantic memory is already archived");
       const expected = expectedRevision ?? current.revision;
       invariant(Number.isInteger(expected) && expected > 0, "semantic memory expectedRevision must be positive");
       if (expected !== current.revision) {
