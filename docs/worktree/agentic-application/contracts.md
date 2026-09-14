@@ -1,112 +1,96 @@
-# Agentic Application contracts
+# Agentic Application contract policy
 
-Generic semantic contract shapes for the application layer. These examples are intentionally not final public APIs.
+This file defines how application contracts are discovered and promoted. It intentionally does **not** freeze generic Worker/WorkOrder APIs before concrete slices exist.
 
 ## PRINCIPLE
 
-Application contracts must be explicit, typed and runtime-validatable where external/model-produced data crosses a boundary.
+Application boundaries must become explicit, typed and runtime-validatable where external/model-produced data crosses a semantic boundary.
 
-Exact Backend/Frontend/QA/Designer schemas are not defined here. They belong to the application role that owns them.
+But abstraction follows evidence:
 
-## WORKER
+> No generic abstraction before at least two concrete slices prove the common shape.
 
-Conceptual shape:
+## WAVE A — CONCRETE CONTRACTS ONLY
 
-```ts
-interface Worker<C, R> {
-  execute(order: WorkOrder<C, R>, context: C): Promise<WorkResult<R>>;
-}
-```
-
-A Worker contract binds a specialist role to the exact context and result types that application semantics require.
-
-## WORK ORDER
-
-Conceptual shape:
-
-```ts
-type WorkOrder<C, R> = {
-  id: WorkOrderId;
-  objective: Objective;
-  worker: WorkerRef;
-  context: ContextRequirement<C>;
-  constraints: WorkConstraints;
-  expectedOutput: Schema<R>;
-  dependencies?: WorkDependency[];
-};
-```
-
-Fields may change during implementation. The invariant is that delegated work, required context, constraints, expected output and dependencies are explicit rather than hidden in a shared conversation.
-
-## CONTEXT REQUIREMENT
-
-Conceptual shape:
-
-```ts
-type ContextRequirement<C> = {
-  schema: Schema<C>;
-  selection: ApplicationContextSelection;
-};
-```
-
-The application owns both the output shape and selection semantics. Oracle owns only source resolution/adaptation.
-
-Context schemas should be expressible using the project-selected runtime validation mechanism; current desired implementation direction is Zod-compatible schemas rather than a custom schema system.
-
-## WORK RESULT
-
-Conceptual shape:
-
-```ts
-type WorkResult<R> = {
-  status: WorkStatus;
-  output?: R;
-  artifacts?: ArtifactRef[];
-  evidence?: EvidenceRef[];
-  gaps?: WorkGap[];
-};
-```
-
-This is a semantic sketch, not a frozen field list. The invariant is that the Orchestrator receives machine-inspectable result state rather than reconstructing progress from free-form worker prose.
-
-## ADVISOR
-
-Conceptual boundary:
-
-```ts
-interface Advisor {
-  plan(input: PlanningInput): Promise<PlanProposal>;
-  assess(input: ProgressInput): Promise<Assessment>;
-  replan(input: ReplanInput): Promise<PlanProposal>;
-}
-```
-
-Not every application must implement all operations. Advisor methods return proposals/assessment only; Orchestrator retains application control authority.
-
-## ORACLE PORT
-
-Application consumes an infrastructure port conceptually equivalent to:
-
-```ts
-interface ContextResolver {
-  resolve<C>(requirement: ContextRequirement<C>): Promise<C>;
-}
-```
-
-The exact Oracle API remains owned by Oracle implementation worktree. The application-level invariant is one explicit resolve step per WorkOrder before Worker execution.
-
-## EXHARNESS BINDING
-
-Worker/Advisor implementations may bind to ExHarness internally, but the generic application contracts do not expose ExHarness turn/session/model details.
+The first Backend slice should define only concrete application types/functions actually needed by that use case, for example:
 
 ```text
-Application contract
-      |
-      v
-Worker / Advisor implementation
-      |
-      v
-ExHarness
+BackendObjective
+BackendContext
+BackendContextSchema
+BackendWorkOrder
+BackendWorkResult
+BackendWorker
+resolveBackendContext(...)
+runBackendObjective(...)
+BackendCompletionPolicy
 ```
 
-This keeps application semantics stable if ExHarness runtime composition changes internally.
+Exact fields come from execution pressure, not from a pre-designed generic framework.
+
+Do not introduce these merely because they seem inevitable:
+
+```text
+Worker<C,R>
+WorkOrder<C,R>
+ContextRequirement<C>
+WorkResult<R>
+WorkerRegistry
+GenericOrchestrator
+WorkflowGraph
+```
+
+## CONTEXT CONTRACT
+
+The invariant is semantic ownership, not where a schema property is stored:
+
+```text
+Application decides WHAT context is required and its semantic shape.
+Oracle resolves/dereferences that context before execution.
+```
+
+Whether context requirements are role-level, order-level or represented another way must be learned from real slices. Do not encode one form in a generic API before a concrete need demonstrates it.
+
+Runtime validation should use a normal schema mechanism such as Zod-compatible schemas rather than a custom schema framework when validation is required.
+
+## RESULT / COMPLETION CONTRACT
+
+The first result contract is Backend-specific.
+
+It must expose enough machine-inspectable information that application code can decide completion/continuation/blockage without parsing Worker prose.
+
+Backend evidence such as tests, typecheck/build status, mutation state or Backend artifacts remains Backend-specific until another role proves a common evidence envelope.
+
+## SECOND SLICE — EXTRACTION POINT
+
+S7 introduces a second real role such as Frontend or QA.
+
+Only then compare concrete types:
+
+```text
+Backend* shapes
+vs
+Frontend/QA* shapes
+```
+
+A common `Worker`, `WorkOrder`, `WorkResult`, dependency or orchestration abstraction may be introduced only for semantics repeated across both slices.
+
+If the common shape is weak or accidental, keep concrete/duplicated application code.
+
+## ADVISOR CONTRACT
+
+Advisor is a later bounded judgment boundary, not a Wave-A generic dependency.
+
+When S6 demonstrates a real judgment gap, define the smallest structured proposal/assessment schema required by that gap. Advisor output remains proposal state; Orchestrator retains control authority.
+
+## ORACLE / EXHARNESS BINDING
+
+Application contracts must not expose Oracle connector implementation details or ExHarness model/session/runtime internals.
+
+```text
+Application semantic contract
+    -> Oracle resolves context
+    -> Worker binds execution to ExHarness
+```
+
+The application remains stable across infrastructure/runtime implementation changes while avoiding premature framework abstractions.
