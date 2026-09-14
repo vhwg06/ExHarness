@@ -1,12 +1,14 @@
-# Agentic Application state
+# Agentic Application convergence state
 
-Desired-state projection for the application layer above ExHarness Core and beside Oracle infrastructure.
+Durable convergence material for the application layer above ExHarness Core and beside Oracle infrastructure.
 
-## PURPOSE
+This subtree is **not automatic desired-state authority**. Read `../README.md` and `../../living/contracts.md` before treating future component shapes as accepted architecture.
+
+## ACCEPTED PURPOSE / OWNERSHIP
 
 The Agentic Application Layer owns what work exists, how work is decomposed, which specialist role executes it, what semantic context that role requires, what structured result is expected and when application work is complete.
 
-## OWNERSHIP
+Current accepted ownership direction:
 
 - Application owns Objective, role/work semantics, required semantic context, result/completion semantics and deterministic workflow control.
 - Orchestrator owns dispatch/application workflow state and remains deterministic where next actions are known.
@@ -15,7 +17,9 @@ The Agentic Application Layer owns what work exists, how work is decomposed, whi
 - Oracle resolves/dereferences application-defined context; it does not decide what context a role should need.
 - ExHarness owns agent/runtime execution mechanics, cognition, evidence/trust and recovery/lifecycle primitives.
 
-## IMPLEMENTED CHECKPOINT — WAVES A + B
+Names above describe accepted responsibilities. They do not imply that every future interface/service shape already exists or is promoted.
+
+## OBSERVED CHECKPOINT — WAVES A + B
 
 The concrete Backend application in `packages/agentic-system/` now runs:
 
@@ -51,11 +55,11 @@ Wave B established:
 - BackendAdvisor can propose only `RETRY_IMPLEMENTATION`, `REQUEST_CONTEXT`, or `ESCALATE` and must reference existing gaps;
 - Advisor cannot ACCEPT, dispatch Workers, mutate workflow state directly, or become correctness authority.
 
-No generic `Worker<C,R>`, generic `WorkOrder<C,R>`, generic Advisor, dynamic role registry or workflow graph has been introduced.
+No generic `Worker<C,R>`, generic `WorkOrder<C,R>`, generic Advisor, dynamic role registry or workflow graph has been introduced. Source/public exports remain authority for exact implementation.
 
-## CURRENT ACTIVE TARGET — WAVE C
+## ACTIVE CANDIDATE CONVERGENCE — WAVE C
 
-Implementation follows `../pipeline.md`.
+Implementation ordering follows `../pipeline.md`.
 
 ```text
 S7 add a second real role
@@ -70,13 +74,16 @@ S8 prior WorkResult/artifact refs
 
 S7 is the first allowed extraction point for common Worker/WorkOrder/orchestration semantics. If the second role does not demonstrate a strong common shape, keep concrete duplicated code.
 
+The delivery need/order is accepted; the exact second-role contracts, extracted common APIs and S8 handoff types remain candidates until implementation/evidence earns promotion.
+
 ## ROUTING
 
 - semantic meaning of roles/control -> `semantics.md`
-- layer/component boundaries -> `architecture.md`
+- candidate layer/component boundaries -> `architecture.md`
 - authority/dependency bounds -> `boundaries.md`
-- semantic execution topology -> `workflow.md`
-- concrete-first contract/extraction policy -> `contracts.md`
-- active constraints -> `decisions.md`
+- candidate execution topology -> `workflow.md`
+- concrete-first extraction policy -> `contracts.md`
+- prior accepted/working constraints -> `decisions.md`
 - unresolved application seams -> `gaps.md`
 - implementation order -> `../pipeline.md`
+- promotion rules -> `../../living/README.md`

@@ -1,45 +1,72 @@
 # Documentation router
 
-Use this file to choose the smallest authoritative document for the question at hand. Do not load every documentation tree by default.
+Use this file to choose the smallest authority surface for the question at hand. Do not load every documentation tree by default.
 
 ## Start here
 
-For current repository direction and active desired state:
+Read `living/README.md` first for the authority model and promotion lifecycle.
 
-- `worktree/state.md` — top-level Agentic System state/router.
-- `worktree/pipeline.md` — canonical active 10-stage delivery sequence.
+Then route by question:
 
-Then route by layer:
+- `living/architecture.md` — current **promoted** documentation/knowledge architecture.
+- `living/pipelines.md` — promoted knowledge/promotion lifecycle and link to the active product delivery pipeline.
+- `living/contracts.md` — authority, evidence, promotion and coordination invariants.
+- `living/knowledge/state.md` — current durable knowledge snapshot.
+- `living/knowledge/evidence.md` — observation/provenance ledger.
+- `living/knowledge/judgment.md` — evidence-derived conclusions and uncertainty.
+- `living/knowledge/audit.md` — independent challenge.
+- `living/decisions/` — accepted/promoted choices.
 
-- `worktree/agentic-application/state.md` — objectives, orchestration, Advisor, Workers, application completion and context requirements.
-- `worktree/oracle/state.md` — resolve-once context infrastructure, source adapters and dereference semantics.
-- `worktree/core-harness/state.md` — ExHarness Core/kernel continuation, cognition, evidence/trust, persistence and recovery semantics.
+## Active convergence material
+
+`worktree/` contains current Agentic System design/delivery convergence material:
+
+- `worktree/state.md` — top-level convergence router and delivered checkpoint.
+- `worktree/pipeline.md` — accepted current 10-stage delivery ordering; stage-local component sketches remain candidates unless separately promoted.
+- `worktree/agentic-application/` — application-layer convergence material.
+- `worktree/oracle/` — Oracle convergence material.
+- `worktree/core-harness/` — Core continuation material.
+
+Read `worktree/README.md` before treating any worktree statement as authoritative. Historical wording such as `desired`, `target` or `next` does not itself promote a claim.
 
 ## Deeper references
 
-- `architecture/` — deeper implementation/design records, primarily for the delivered ExHarness Core and historical/reference architecture decisions.
+- `architecture/` — deeper implemented/Core design records and historical/reference architecture material.
 - `development/` — repository development and verification process.
 
-These are supporting references. When they conflict with an active worktree decision, the current worktree projection wins for desired-state continuation; source/public exports remain authority for what is actually implemented.
+These are supporting references. They do not silently override promoted living knowledge or executable implementation evidence.
 
 ## Routing rules
 
 ```text
-Question about project target / what next?
+Question about accepted knowledge/documentation architecture?
+    -> living/architecture.md
+
+Question about promotion / convergence lifecycle?
+    -> living/pipelines.md
+    -> living/contracts.md
+
+Question about why something is believed?
+    -> living/knowledge/evidence.md
+    -> living/knowledge/judgment.md
+    -> relevant living/decisions/*
+
+Question about project delivery / what next?
+    -> worktree/README.md
     -> worktree/state.md
     -> worktree/pipeline.md
 
-Question about application work semantics?
+Question about candidate application semantics?
     -> worktree/agentic-application/state.md
-    -> smallest relevant child: semantics / architecture / boundaries / workflow / contracts / decisions / gaps
+    -> smallest relevant child
 
-Question about context feeding / source resolution / artifact dereference?
+Question about candidate Oracle semantics?
     -> worktree/oracle/state.md
-    -> smallest relevant Oracle child
+    -> smallest relevant child
 
-Question about ExHarness runtime/kernel semantics?
+Question about Core continuation?
     -> worktree/core-harness/state.md
-    -> smallest relevant Core child
+    -> source/public exports for implemented truth
 
 Question about historical/deeper implementation design?
     -> architecture/
@@ -48,20 +75,29 @@ Question about implementation/verification process?
     -> development/
 ```
 
-## Authority model
+## Typed authority
 
 ```text
 source/public exports
-    = implemented truth now
+    = what is implemented now
 
-worktree/state + routed child
-    = active desired delivery truth
+runtime observation / executable evidence
+    = what behavior actually occurred
 
-worktree/pipeline
-    = active implementation ordering / learning sequence
+living/architecture.md
+living/pipelines.md
+living/contracts.md
+    = promoted accepted views for their respective questions
 
-architecture/*
-    = deeper design/reference/history; not current delivery authority by default
+living/knowledge/*
+    = durable observations, conclusions and challenge by type
+
+living/decisions/*
+    = accepted/promoted choices
+
+worktree/*
+    = convergence/candidate material plus delivered checkpoints;
+      not automatic desired-state authority
 ```
 
-The worktree is a materialized engineering context tree, not a transcript. Keep current state, accepted decisions, gaps and desired convergence there; let Git retain superseded history.
+There is no single global source of truth. Authority is typed by question, evidence and promotion state.

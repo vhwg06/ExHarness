@@ -96,7 +96,7 @@ The first real Advisor boundary is narrower than completion: when required objec
 
 No generic `Worker<C,R>`, generic WorkOrder, generic Advisor, role registry, workflow graph or generic Orchestrator has been introduced. Wave C S7 is the first permitted extraction point because a second real role is required to prove common semantics.
 
-See `docs/worktree/pipeline.md` for the canonical sequence and `docs/worktree/state.md` for the current checkpoint.
+See `docs/worktree/pipeline.md` for the current delivery sequence and `docs/worktree/state.md` for the convergence checkpoint. Read `docs/living/README.md` for authority and promotion semantics before treating future worktree shapes as committed architecture.
 
 ## Context feeding
 
@@ -187,24 +187,53 @@ supervision != correctness verdict
 
 The larger Agentic Application and Oracle architecture remains intentionally incomplete. A second real role, cross-work artifact dereference, durable application workflow state and production generalization remain later-wave work.
 
-## Documentation routing
+`docs/worktree/` contains convergence/candidate material and delivered checkpoints; it no longer gains desired-state authority merely from its path. Promoted durable authority is routed through `docs/living/`, while source/public exports remain authority for what is actually delivered.
 
-Start at `docs/README.md`.
+## Living knowledge and documentation routing
+
+Start at `docs/README.md`, then `docs/living/README.md` for the authority model.
 
 ```text
 docs/
 ├── README.md                         # documentation router
+├── living/
+│   ├── README.md                     # typed authority + promotion router
+│   ├── architecture.md               # promoted accepted knowledge architecture
+│   ├── pipelines.md                  # promotion/reconciliation lifecycle
+│   ├── contracts.md                  # authority + mutation invariants
+│   ├── knowledge/
+│   │   ├── state.md                  # durable knowledge snapshot
+│   │   ├── evidence.md               # observations + provenance
+│   │   ├── judgment.md               # conclusions + uncertainty
+│   │   └── audit.md                  # independent challenge
+│   └── decisions/                    # accepted/promoted choices
 ├── worktree/
-│   ├── state.md                      # Agentic System current desired/delivered checkpoint
-│   ├── pipeline.md                   # canonical 10-stage / 4-wave delivery sequence
-│   ├── agentic-application/          # application semantics and boundaries
-│   ├── oracle/                       # context-resolution infrastructure
-│   └── core-harness/                 # ExHarness Core continuation state
-├── architecture/                     # deeper implemented/Core design records
+│   ├── README.md                     # convergence semantics; not Blackboard
+│   ├── state.md                      # Agentic System convergence router
+│   ├── pipeline.md                   # current accepted delivery order
+│   ├── agentic-application/          # application convergence material
+│   ├── oracle/                       # context-resolution convergence material
+│   └── core-harness/                 # Core continuation material
+├── architecture/                     # deeper implemented/reference/history records
 └── development/                      # implementation/verification process
 ```
 
-Source/public exports are authority for implemented behavior now. `docs/worktree/` is authority for accepted target semantics/current delivery projection. `docs/architecture/` does not silently override current worktree decisions.
+ExHarness intentionally separates three planes:
+
+```text
+Blackboard / coordination plane
+    = high-frequency operational work state
+
+Living knowledge plane
+    = evidence -> judgment -> audit -> decision -> promoted views
+
+Artifact plane
+    = source / tests / configs / runtime observations / produced artifacts
+```
+
+There is **no single global source of truth**. Authority is typed by the question being answered. A newly drafted component remains a candidate until evidence and an explicit acceptance boundary promote it; session count alone never makes it desired state.
+
+The runtime Blackboard is an architectural coordination boundary, not `docs/worktree/`, and its concrete storage/claim/lease/event semantics are deliberately not selected yet.
 
 ## Core package
 
@@ -235,4 +264,4 @@ Requires Node.js 20 or newer.
 npm run verify
 ```
 
-The repository verification gate covers ExHarness Core plus delivered Wave-A and Wave-B Agentic System behavior. Desired-state documentation does not imply implementation completeness for Wave C/D.
+The repository verification gate covers ExHarness Core plus delivered Wave-A and Wave-B Agentic System behavior. Candidate/convergence documentation does not imply implementation completeness or promoted architecture for Wave C/D.
