@@ -31,6 +31,9 @@ export const ExHarnessErrorCode = Object.freeze({
   CODEACT_ACTION_BUDGET_EXCEEDED: "CODEACT_ACTION_BUDGET_EXCEEDED",
   CODEACT_TIME_BUDGET_EXCEEDED: "CODEACT_TIME_BUDGET_EXCEEDED",
   CODEACT_OBSERVATION_LIMIT_EXCEEDED: "CODEACT_OBSERVATION_LIMIT_EXCEEDED",
+  ACTION_INTENT_REJECTED: "ACTION_INTENT_REJECTED",
+  GROUNDING_REQUIRED: "GROUNDING_REQUIRED",
+  GROUNDING_REJECTED: "GROUNDING_REJECTED",
   TRACE_SINK_FAILED: "TRACE_SINK_FAILED",
   RUNTIME_SNAPSHOT_SCHEMA_UNSUPPORTED: "RUNTIME_SNAPSHOT_SCHEMA_UNSUPPORTED",
   RUNTIME_SNAPSHOT_INVALID: "RUNTIME_SNAPSHOT_INVALID",
@@ -185,6 +188,20 @@ export class PredictValidationError extends ExHarnessError {
       { details: { attempts, lastValidationError } }
     );
     this.name = "PredictValidationError";
+  }
+}
+
+export class ActionIntentBoundaryError extends ExHarnessError {
+  constructor(message, details = null) {
+    super(ExHarnessErrorCode.ACTION_INTENT_REJECTED, message, { details });
+    this.name = "ActionIntentBoundaryError";
+  }
+}
+
+export class GroundingBoundaryError extends ExHarnessError {
+  constructor(code, message, details = null, cause = null) {
+    super(code, message, { details, cause });
+    this.name = "GroundingBoundaryError";
   }
 }
 
