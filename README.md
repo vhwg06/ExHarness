@@ -55,16 +55,16 @@ Infrastructure owns concrete IO, sandboxing, storage and source access.
 
 The system is developed **concrete-first**. Generic application abstractions are not introduced before multiple real slices prove a common shape.
 
-Current canonical delivery pipeline:
+Current delivery status:
 
 ```text
-WAVE A — prove one real Backend slice
-  S1 Concrete Backend semantics
-  S2 Concrete Backend context resolution
-  S3 BackendWorker × ExHarness execution
-  S4 Concrete deterministic Backend orchestration
+WAVE A — DONE
+  S1 Concrete Backend semantics                         DONE
+  S2 Concrete Backend context resolution               DONE
+  S3 BackendWorker × ExHarness execution               DONE
+  S4 Concrete deterministic Backend orchestration      DONE
 
-WAVE B — make success trustworthy
+WAVE B — ACTIVE / NEXT
   S5 Backend-specific completion/evidence semantics
   S6 Advisor judgment boundary
 
@@ -77,9 +77,9 @@ WAVE D — harden and generalize
   S10 Production evaluation + evidence-based generalization
 ```
 
-Stages are dependency/learning steps, not ten independent sign-off checkpoints. S1–S4 are one continuous vertical-slice wave with one review after Backend runs end-to-end.
+Wave A closed after one end-to-end Backend vertical-slice review. The implementation remained concrete throughout S1–S4 and did not introduce a generic Worker contract, role registry, workflow graph or generic Orchestrator.
 
-Core execution rule for Wave A:
+Delivered Wave-A execution path:
 
 ```text
 BackendObjective
@@ -88,12 +88,14 @@ BackendObjective
   -> BackendWorker
   -> ExHarness Core
   -> BackendWorkResult
-  -> concrete Backend completion decision
+  -> deterministic Backend run decision
 ```
 
-No generic `Worker<C,R>`, generic WorkOrder, role registry or generic Orchestrator is required in Wave A.
+The concrete checkpoint is implemented under `packages/agentic-system/`. Backend context is resolved once before Worker execution, and an `APPLIED` result is rejected unless ExHarness actually advances committed lineage to the reported revision.
 
-See `docs/worktree/pipeline.md` for the canonical desired delivery sequence.
+Wave B now focuses on trustworthiness rather than generalization: S5 must define Backend-specific completion/evidence semantics, then S6 introduces Advisor only where a real judgment gap requires bounded model judgment.
+
+See `docs/worktree/pipeline.md` for the canonical delivery sequence and `docs/worktree/state.md` for the current checkpoint.
 
 ## Context feeding
 
@@ -141,6 +143,8 @@ Worker execution
    -> ACCEPT | CONTINUE | BLOCK | FAIL
 ```
 
+Wave A proves the concrete execution path and requires real lineage promotion for an `APPLIED` result. That is still **not** sufficient Backend correctness. Wave B S5 owns the next step: determine which Backend-specific verification evidence is required before the application may ACCEPT work.
+
 Evidence semantics stay concrete first. Backend verification may involve tests/typecheck/mutation evidence; Frontend, QA or Design may require different evidence. Common evidence abstractions are extracted only after real slices demonstrate them.
 
 ## Current maturity
@@ -168,9 +172,17 @@ search investment != promotion correctness
 supervision != correctness verdict
 ```
 
-### Agentic Application + Oracle — desired state / active delivery
+### Agentic Application + Oracle — Wave A delivered, Wave B active
 
-Their architecture, semantics, boundaries and active gaps are materialized under `docs/worktree/`. They are not described as already-delivered runtime features until source implementation converges.
+`packages/agentic-system/` now contains the first delivered composition above Core:
+
+- concrete Backend objective/order/context/result contracts;
+- resolve-once Backend context loading through a repository-reader Oracle boundary;
+- `BackendWorker` execution through ExHarness Core;
+- deterministic Backend-specific orchestration;
+- Wave-A tests wired into the repository verification gate.
+
+The larger Agentic Application and Oracle architecture remains intentionally incomplete. `docs/worktree/` tracks the accepted desired state and active gaps; source implementation remains authority for what is actually delivered.
 
 ## Documentation routing
 
@@ -232,4 +244,4 @@ Requires Node.js 20 or newer.
 npm run verify
 ```
 
-The current verification gate covers implemented repository/Core behavior. Application and Oracle verification must be added concretely as each delivery slice lands; desired-state documentation alone does not imply implementation completeness.
+The repository verification gate now covers ExHarness Core plus the delivered Wave-A Agentic System slice. Desired-state documentation still does not imply implementation completeness for later waves.
