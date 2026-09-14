@@ -1,6 +1,6 @@
-# Engineering gaps
+# Core Harness gaps
 
-Only unresolved, source-backed seams that matter to current continuation. For active work, each gap also states the desired exit condition.
+Only unresolved, source-backed seams that matter to ExHarness Core continuation. Application/Oracle gaps belong in their own worktree subtrees.
 
 ## DELIBERATION BOUNDARY
 
@@ -95,8 +95,10 @@ Exit conditions:
 - `createSemanticMemoryRetrievalPort()` still exposes `RELEVANCE_ONLY` authority semantics and treats provider ranking as non-authoritative.
 - `createNooaMemoryRetriever()` supplies NOOA-style ranking separately; it is not default-wired into the semantic-memory port or spontaneous recall by the kernel.
 
-## WORKFLOW SURFACE
+## CORE WORKFLOW SURFACE
 
-- There is no consumer-facing workflow/pipeline declaration surface composing deliberation, action/effects, observations/verifications, grounded reflection/intent, semantic calibration, evaluation, promotion, recovery and search investment as one executable lifecycle.
+There is no Core-level composition surface that unifies deliberation, action/effects, observations/verifications, grounded reflection/intent, semantic calibration, evaluation, promotion, recovery and search investment as one executable lifecycle.
+
+This gap is about Core execution semantics. It must not become a generic Agentic Application workflow/orchestration engine.
 
 Resolved gaps must be removed or collapsed into delivered state when implementation lands; Git keeps the history.
