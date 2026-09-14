@@ -87,6 +87,10 @@ export function createDeliberationController({
       }
     },
 
+    complete(ref, options = {}) {
+      return store.complete(intentId(ref), options);
+    },
+
     linkOutcome(ref, outcomeRef) {
       return store.linkOutcome(intentId(ref), outcomeRef);
     },

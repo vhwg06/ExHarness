@@ -9,22 +9,23 @@ Current ExHarness Core continuation state. Route from here only when the task is
 - Persistent AVO work state tracks candidate history, observations, verifications, evaluations, knowledge, variations, search-investment decisions, trust artifacts, lineage, trajectory and supervision.
 - `createResumableAgentRuntime()` snapshots runtime configuration, `AgentEvent` history and agent-scoped resource/live-object activity; restore requires compatibility checks and explicit rebinding of live authority.
 - Interrupted AVO variations have explicit recovery through `recoverInterruptedVariation()`; this closes a running variation as `INTERRUPTED`, it does not reconcile external side effects.
-- Effect reconciliation is a separate primitive with operation identity, intent-before-dispatch journal state and replay policies.
-- Semantic-memory authority and ranking are separate: `createSemanticMemoryRetrievalPort()` re-reads canonical records and enforces ACTIVE/tag/budget boundaries; `createNooaMemoryRetriever()` is a ranking adapter, not correctness authority.
-- `REFLECTION` / `INTENT` exist as semantic-memory kinds, but there is no kernel-owned grounded producer that proves semantic output against persisted evidence.
-- `AgentRuntime` owns model turns, events, traces and capability execution, but not an inspectable deliberation/intention step between observation/context and action.
+- Effect reconciliation has explicit operation identity, intent-before-dispatch journal state and `PURE | IDEMPOTENT | OBSERVABLE | NON_RECONCILABLE` replay policies.
+- Deliberation and action intent are first-class bounded cognition artifacts with source/context refs and an authorization boundary.
+- Grounded cognition can activate durable `REFLECTION` / `INTENT` only through persisted source snapshots and grounding verification; reflection activation requires a fresh evaluation source.
+- Intent/reflection alignment produces a grounded semantic-divergence signal without becoming an evaluation or promotion verdict.
+- `createActionIntentEffectController()` composes capability-target ActionIntent with effect operations: the exact effect operation is linked as an outcome ref, ambiguous/pending effect state remains `AUTHORIZED`, and confirmation/reconciliation completes the intent.
+- Semantic-memory retrieval remains `RELEVANCE_ONLY`. NOOA associative ranking and spontaneous recall are explicit opt-in composition surfaces; memory is not globally injected into every judgment.
 - Promotion requires a current evaluation over the exact current observation and verification ID snapshots.
 
 ## ACTIVE CORE CONTINUATION
 
-Desired Core continuation remains:
+The remaining Core continuation is narrower than the stale pre-cognition roadmap:
 
-1. first-class inspectable `deliberate -> act -> observe` step lifecycle;
-2. grounded `REFLECTION` / durable `INTENT` derivation from persisted evidence;
-3. intent/reflection semantic calibration;
-4. composition with effect/recovery workflow boundaries.
+1. close the built-in AVO external-effect crash window instead of treating candidate/trace state as proof of side-effect completion;
+2. compose interrupted-variation recovery, runtime snapshot/restore and pending-effect reconciliation into an explicit recovery lifecycle when a concrete Core consumer proves the required shape;
+3. expose a higher-level Core lifecycle surface only after that recovery composition is concrete, without absorbing Agentic Application orchestration.
 
-These are Core concerns. They must not absorb Agentic Application orchestration or Oracle context-resolution semantics.
+No new default memory-ranking or hidden prompt-injection layer is required: explicit memory visibility is an intentional authority boundary, not an unresolved gap.
 
 ## ROUTING
 
@@ -49,4 +50,4 @@ ExHarness Core
 
 ## AUTHORITY
 
-Source/public exports are implementation authority. This subtree is the desired continuation projection for ExHarness Core only. Implementation is complete when source converges and this projection can be reconciled to delivered truth.
+Source/public exports are implementation authority. This subtree is the desired continuation projection for ExHarness Core only. Resolved gaps must be removed from this projection when source lands; Git retains their history.
