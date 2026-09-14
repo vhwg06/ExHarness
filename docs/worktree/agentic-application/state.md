@@ -6,32 +6,6 @@ Desired-state projection for the application layer above ExHarness Core and besi
 
 The Agentic Application Layer owns what work exists, how work is decomposed, which specialist role executes it, what semantic context that role requires, what structured result is expected and when application work is complete.
 
-## DESIRED SHAPE
-
-```text
-Objective
-   |
-   v
-Orchestrator --------> Advisor
-   |                    bounded plan / assess / replan
-   |
-   v
-concrete specialist work
-   |
-   +--> application-owned context need --> Oracle --> resolved context
-   |
-   v
-specialist Worker
-   |
-   v
-ExHarness execution
-   |
-   v
-structured role-specific WorkResult
-   |
-   +------------------> Orchestrator
-```
-
 ## OWNERSHIP
 
 - Application owns Objective, role/work semantics, required semantic context, result/completion semantics and deterministic workflow control.
@@ -41,9 +15,9 @@ structured role-specific WorkResult
 - Oracle resolves/dereferences application-defined context; it does not decide what context a role should need.
 - ExHarness owns agent/runtime execution mechanics, cognition, evidence/trust and recovery/lifecycle primitives.
 
-## IMPLEMENTED CHECKPOINT — WAVE A
+## IMPLEMENTED CHECKPOINT — WAVES A + B
 
-Wave A is implemented concretely in `packages/agentic-system/`:
+The concrete Backend application in `packages/agentic-system/` now runs:
 
 ```text
 BackendObjective
@@ -51,38 +25,50 @@ BackendObjective
  -> resolveBackendContext(...)
  -> BackendWorker
  -> ExHarness
- -> BackendWorkResult
- -> deterministic Backend run decision
+ -> grounded BackendWorkResult
+ -> BackendCompletionPolicy
+ -> deterministic completion
+ -> bounded BackendAdvisor only for unresolved semantic gaps
 ```
 
-The concrete slice established these current facts:
+Wave A established:
 
-- Backend context need is carried by the concrete order as explicit required repository files.
-- Oracle resolves those files once through a repository-reader source boundary and returns validated Backend context with source references.
-- BackendWorker receives resolved context and uses ExHarness for execution; it does not resolve external context or choose another Worker.
-- An `APPLIED` Backend result is rejected unless ExHarness actually advanced committed lineage to the reported revision.
-- S4 composition is a direct `runBackendObjective(...)` path, not a generic Orchestrator abstraction.
+- explicit Backend objective/order/context/result contracts;
+- resolve-once Oracle context loading;
+- ExHarness-backed Backend execution;
+- actual lineage promotion required for `APPLIED`;
+- direct concrete orchestration with no generic Worker/Orchestrator framework.
 
-No generic `Worker<C,R>`, generic `WorkOrder<C,R>`, dynamic role registry or workflow graph has been introduced. Common abstractions remain deferred until S7 demonstrates them with a second real role.
+Wave B established:
 
-## CURRENT ACTIVE TARGET — WAVE B
+- mutation evidence is grounded in ExHarness lineage state;
+- typecheck/tests evidence is grounded in actual ExHarness verification artifacts;
+- evidence merely returned by Worker prose is discarded;
+- default Backend acceptance requires mutation + typecheck + tests + artifact presence;
+- application completion emits an ExHarness `DecisionArtifact` at `ACCEPTANCE` boundary;
+- missing/inconclusive/failed verification is handled deterministically;
+- the observed Advisor boundary is only `all required evidence passes + unresolved semantic gaps remain`;
+- BackendAdvisor can propose only `RETRY_IMPLEMENTATION`, `REQUEST_CONTEXT`, or `ESCALATE` and must reference existing gaps;
+- Advisor cannot ACCEPT, dispatch Workers, mutate workflow state directly, or become correctness authority.
+
+No generic `Worker<C,R>`, generic `WorkOrder<C,R>`, generic Advisor, dynamic role registry or workflow graph has been introduced.
+
+## CURRENT ACTIVE TARGET — WAVE C
 
 Implementation follows `../pipeline.md`.
 
-Next is Backend-specific trustworthiness, not generalization:
-
 ```text
-S5 BackendWorkResult
-   -> BackendCompletionPolicy
-   -> ACCEPT | CONTINUE | BLOCK | FAIL
+S7 add a second real role
+   -> compare concrete semantics
+   -> extract only repeated shapes if actually proven
 
-S6 deterministic path known
-      -> application code
-   judgment gap observed
-      -> bounded Advisor proposal/assessment
+S8 prior WorkResult/artifact refs
+   -> Oracle dereference
+   -> resolved downstream context
+   -> no payload-copy orchestration state
 ```
 
-S5 must determine real Backend evidence requirements from the concrete Wave-A slice. S6 introduces Advisor only for an observed judgment gap; Advisor never becomes dispatch or correctness authority.
+S7 is the first allowed extraction point for common Worker/WorkOrder/orchestration semantics. If the second role does not demonstrate a strong common shape, keep concrete duplicated code.
 
 ## ROUTING
 

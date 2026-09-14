@@ -16,7 +16,7 @@ Objective
    v
 Agentic Application
   Orchestrator ----------------> Advisor
-      |                           plan / assess / replan
+      |                           bounded judgment only
       |
       v
   concrete WorkOrder / context need
@@ -24,12 +24,9 @@ Agentic Application
       +------> Oracle
       |          |
       |          +------> external sources
-      |          |        Git / docs / OpenAPI / Figma / ...
-      |          |
       |          +------> application-produced artifacts/state
       |          |
       |       resolved context
-      |          |
       v          v
   specialist Worker
       |
@@ -37,17 +34,17 @@ Agentic Application
   ExHarness Core
       |
       v
-  structured WorkResult + evidence/artifact refs
+  structured WorkResult + grounded evidence/artifact refs
       |
-      +------> Orchestrator
+      +------> application completion / next-step decision
 ```
 
 Ownership is intentionally split:
 
 ```text
-Application owns WHAT / WHY / semantic contracts.
+Application owns WHAT / WHY / semantic contracts / completion policy.
 Oracle owns WHERE / pull / dereference / adaptation.
-ExHarness Core owns agent execution mechanics and runtime authority.
+ExHarness Core owns agent execution mechanics and runtime/trust primitives.
 Infrastructure owns concrete IO, sandboxing, storage and source access.
 ```
 
@@ -64,12 +61,12 @@ WAVE A — DONE
   S3 BackendWorker × ExHarness execution               DONE
   S4 Concrete deterministic Backend orchestration      DONE
 
-WAVE B — ACTIVE / NEXT
-  S5 Backend-specific completion/evidence semantics
-  S6 Advisor judgment boundary
+WAVE B — DONE
+  S5 Backend-specific completion/evidence semantics    DONE
+  S6 Advisor judgment boundary                         DONE
 
-WAVE C — compose real application work
-  S7 Second real role + extract only proven common abstractions
+WAVE C — ACTIVE / NEXT
+  S7 Second real role + extract only proven abstractions
   S8 Artifact handoff / dereference / context chaining
 
 WAVE D — harden and generalize
@@ -77,9 +74,7 @@ WAVE D — harden and generalize
   S10 Production evaluation + evidence-based generalization
 ```
 
-Wave A closed after one end-to-end Backend vertical-slice review. The implementation remained concrete throughout S1–S4 and did not introduce a generic Worker contract, role registry, workflow graph or generic Orchestrator.
-
-Delivered Wave-A execution path:
+### Delivered Backend path
 
 ```text
 BackendObjective
@@ -88,14 +83,20 @@ BackendObjective
   -> BackendWorker
   -> ExHarness Core
   -> BackendWorkResult
-  -> deterministic Backend run decision
+  -> grounded mutation/typecheck/tests evidence
+  -> BackendCompletionPolicy
+  -> ACCEPT | CONTINUE | BLOCK | FAIL
 ```
 
-The concrete checkpoint is implemented under `packages/agentic-system/`. Backend context is resolved once before Worker execution, and an `APPLIED` result is rejected unless ExHarness actually advances committed lineage to the reported revision.
+Wave A proved execution without framework magic. Wave B makes the result trustworthy at the application boundary.
 
-Wave B now focuses on trustworthiness rather than generalization: S5 must define Backend-specific completion/evidence semantics, then S6 introduces Advisor only where a real judgment gap requires bounded model judgment.
+An `APPLIED` result must correspond to actual ExHarness lineage promotion, but promotion alone is not acceptance. `BackendWorker` discards evidence merely claimed in its returned payload and rebuilds completion evidence from actual ExHarness lineage/verification artifacts. Default Backend acceptance requires grounded mutation, typecheck and tests evidence plus artifact presence. Completion is materialized as an ExHarness `DecisionArtifact` at the `ACCEPTANCE` boundary.
 
-See `docs/worktree/pipeline.md` for the canonical delivery sequence and `docs/worktree/state.md` for the current checkpoint.
+The first real Advisor boundary is narrower than completion: when required objective evidence passes but unresolved semantic gaps remain. Missing, inconclusive or failed evidence stays deterministic application logic. `BackendAdvisor` may propose only retry implementation, request context or escalation; it cannot ACCEPT work, dispatch Workers or directly mutate workflow state.
+
+No generic `Worker<C,R>`, generic WorkOrder, generic Advisor, role registry, workflow graph or generic Orchestrator has been introduced. Wave C S7 is the first permitted extraction point because a second real role is required to prove common semantics.
+
+See `docs/worktree/pipeline.md` for the canonical sequence and `docs/worktree/state.md` for the current checkpoint.
 
 ## Context feeding
 
@@ -129,7 +130,7 @@ Application-produced sources
   prior WorkResult refs / artifact store / application state
 ```
 
-Both cross the Oracle boundary, but their adapters and source semantics remain distinct.
+Both cross the Oracle boundary, but their adapters and source semantics remain distinct. Wave C S8 is where internal artifact dereference becomes a real cross-work path.
 
 ## Completion and evidence
 
@@ -138,14 +139,14 @@ A Worker saying `done` is never sufficient application completion state.
 ```text
 Worker execution
    -> structured WorkResult
-   -> role-specific evidence / artifacts / gaps / blockers
+   -> grounded role-specific evidence / artifacts / gaps / blockers
    -> application completion policy
    -> ACCEPT | CONTINUE | BLOCK | FAIL
 ```
 
-Wave A proves the concrete execution path and requires real lineage promotion for an `APPLIED` result. That is still **not** sufficient Backend correctness. Wave B S5 owns the next step: determine which Backend-specific verification evidence is required before the application may ACCEPT work.
+For the current Backend slice, grounded claims are concrete: mutation, typecheck and tests. These are Backend semantics, not a universal evidence schema. Frontend, QA or Design may require different evidence; common structure is extracted only after real slices demonstrate it.
 
-Evidence semantics stay concrete first. Backend verification may involve tests/typecheck/mutation evidence; Frontend, QA or Design may require different evidence. Common evidence abstractions are extracted only after real slices demonstrate them.
+ExHarness trust primitives provide integrity/provenance artifacts; the Agentic Application still owns which evidence is sufficient for domain completion.
 
 ## Current maturity
 
@@ -172,17 +173,19 @@ search investment != promotion correctness
 supervision != correctness verdict
 ```
 
-### Agentic Application + Oracle — Wave A delivered, Wave B active
+### Agentic Application + Oracle — Waves A + B delivered, Wave C next
 
-`packages/agentic-system/` now contains the first delivered composition above Core:
+`packages/agentic-system/` currently delivers:
 
 - concrete Backend objective/order/context/result contracts;
 - resolve-once Backend context loading through a repository-reader Oracle boundary;
 - `BackendWorker` execution through ExHarness Core;
-- deterministic Backend-specific orchestration;
-- Wave-A tests wired into the repository verification gate.
+- grounded mutation + verification evidence assembly;
+- Backend-specific completion policy and acceptance decision artifact;
+- bounded BackendAdvisor only for unresolved semantic gaps;
+- tests wired into the repository verification gate.
 
-The larger Agentic Application and Oracle architecture remains intentionally incomplete. `docs/worktree/` tracks the accepted desired state and active gaps; source implementation remains authority for what is actually delivered.
+The larger Agentic Application and Oracle architecture remains intentionally incomplete. A second real role, cross-work artifact dereference, durable application workflow state and production generalization remain later-wave work.
 
 ## Documentation routing
 
@@ -192,8 +195,8 @@ Start at `docs/README.md`.
 docs/
 ├── README.md                         # documentation router
 ├── worktree/
-│   ├── state.md                      # Agentic System desired-state router
-│   ├── pipeline.md                   # active 10-stage / 4-wave delivery sequence
+│   ├── state.md                      # Agentic System current desired/delivered checkpoint
+│   ├── pipeline.md                   # canonical 10-stage / 4-wave delivery sequence
 │   ├── agentic-application/          # application semantics and boundaries
 │   ├── oracle/                       # context-resolution infrastructure
 │   └── core-harness/                 # ExHarness Core continuation state
@@ -201,19 +204,7 @@ docs/
 └── development/                      # implementation/verification process
 ```
 
-Routing authority:
-
-```text
-README.md
-   -> docs/README.md
-      -> docs/worktree/state.md
-         -> docs/worktree/pipeline.md        for delivery order
-         -> agentic-application/state.md     for application semantics
-         -> oracle/state.md                  for context infrastructure
-         -> core-harness/state.md            for Core continuation
-```
-
-Source/public exports are authority for what is implemented now. `docs/worktree/` is authority for active desired delivery state. `docs/architecture/` contains deeper design/history and must not silently override current worktree decisions.
+Source/public exports are authority for implemented behavior now. `docs/worktree/` is authority for accepted target semantics/current delivery projection. `docs/architecture/` does not silently override current worktree decisions.
 
 ## Core package
 
@@ -244,4 +235,4 @@ Requires Node.js 20 or newer.
 npm run verify
 ```
 
-The repository verification gate now covers ExHarness Core plus the delivered Wave-A Agentic System slice. Desired-state documentation still does not imply implementation completeness for later waves.
+The repository verification gate covers ExHarness Core plus delivered Wave-A and Wave-B Agentic System behavior. Desired-state documentation does not imply implementation completeness for Wave C/D.
