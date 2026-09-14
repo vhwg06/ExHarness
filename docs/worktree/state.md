@@ -42,24 +42,35 @@ structured result / evidence / artifacts
 
 ## CURRENT DELIVERY
 
-- `core-harness/` projects the delivered Core plus its active continuation gaps.
-- `oracle/` projects the agreed desired semantics/architecture for resolve-once context infrastructure; implementation is not implied by docs.
-- `agentic-application/` projects the agreed desired application semantics/architecture; implementation is not implied by docs.
+- `packages/core-harness/` is the delivered reusable Core.
+- `packages/agentic-system/` now contains the first concrete Agentic Application + Oracle composition proven by Wave A.
+- `oracle/` and `agentic-application/` remain the desired-state projections for the larger layers; source implementation is authoritative for what has actually landed.
 - `pipeline.md` is the canonical active delivery order that converges those layers into one system.
 
 ## CURRENT DELIVERY WAVE
 
-Wave A is next:
+Wave A is complete. The repository now has one concrete Backend vertical slice:
 
 ```text
-S1 Concrete Backend semantics
- -> S2 Concrete Backend context resolution
- -> S3 BackendWorker × ExHarness execution
- -> S4 Concrete deterministic Backend orchestration
- -> one Wave-A review
+BackendObjective
+ -> BackendWorkOrder
+ -> resolveBackendContext(...)
+ -> BackendWorker
+ -> ExHarness Core
+ -> BackendWorkResult
+ -> deterministic Backend run decision
 ```
 
-Wave A is intentionally concrete. Do not introduce generic `Worker<C,R>`, generic `WorkOrder<C,R>`, worker registries or generic orchestration before a second real slice demonstrates a common shape.
+Wave-A review result: the slice runs end-to-end without a generic Worker contract, role registry, workflow graph or generic Orchestrator. `APPLIED` results must correspond to an actual ExHarness lineage promotion rather than Worker prose alone.
+
+Wave B is next:
+
+```text
+S5 Backend-specific completion and evidence semantics
+ -> S6 Advisor judgment boundary
+```
+
+Do not generalize the concrete Backend shapes in Wave B. Common Worker/WorkOrder/orchestration abstractions remain deferred until the second real role in S7 proves repeated semantics.
 
 ## ROUTING
 
