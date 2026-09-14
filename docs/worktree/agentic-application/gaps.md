@@ -2,51 +2,42 @@
 
 Only unresolved seams that matter to the current application layer. Implementation ordering is owned by `../pipeline.md`.
 
-## FIRST BACKEND VERTICAL SLICE
+## WAVE-A CHECKPOINT — CLOSED
 
-Current:
-
-- architecture/semantics are defined;
-- no Agentic Application package exists yet;
-- no concrete Backend application slice exists yet;
-- earlier generic contract sketches are no longer implementation targets.
-
-Desired Wave-A exit:
+The first concrete Backend slice now exists in `packages/agentic-system/` and runs:
 
 ```text
 BackendObjective
- -> concrete Backend order
+ -> BackendWorkOrder
  -> concrete Backend context resolution through Oracle
  -> BackendWorker through ExHarness
  -> BackendWorkResult
- -> concrete deterministic Backend completion/next-step decision
+ -> deterministic Backend run decision
 ```
 
-The entire S1-S4 path is one continuous implementation wave with one review after it works end-to-end.
+Wave A resolved the initial contract uncertainty without introducing generic `<C,R>` application contracts. Current concrete choices are evidence from one Backend slice, not yet reusable system abstractions.
 
-## BACKEND OBJECTIVE / ORDER / CONTEXT / RESULT
+Observed concrete shape:
 
-Open until the concrete slice supplies evidence:
+- objective identifies the Backend task, repository revision, required files and constraints;
+- order makes the repository source and required files explicit before dispatch;
+- context contains the exact resolved files plus source references;
+- result exposes Backend status, summary, revision, artifact references and blockers;
+- `APPLIED` requires actual ExHarness lineage advancement to the reported revision;
+- orchestration remains a direct Backend-specific composition.
 
-- exact Backend objective fields;
-- exact Backend order fields;
-- whether context need is role-level, order-level or represented another way;
-- exact Backend context schema;
-- exact Backend result statuses, artifacts, gaps/blockers and evidence references.
-
-Constraint: do not introduce generic `<C,R>` contracts to answer these questions before the concrete slice runs.
-
-## BACKEND COMPLETION
+## BACKEND COMPLETION — S5
 
 Open:
 
 - exact evidence required to ACCEPT a Backend result;
 - which verification comes from ExHarness versus application-specific policy;
-- how mutation/build/typecheck/tests/artifacts are represented for the real Backend use case.
+- how mutation/build/typecheck/tests/artifacts are represented for the real Backend use case;
+- when a structurally valid and lineage-promoted result must still CONTINUE, BLOCK or FAIL.
 
-Constraint: Backend completion/evidence semantics are role-specific in S5 and must not become a universal application evidence standard before another role proves common structure.
+Constraint: Wave-A lineage promotion proves execution-state transition, not sufficient Backend correctness. Backend completion/evidence semantics remain role-specific in S5 and must not become a universal application evidence standard before another role proves common structure.
 
-## ADVISOR
+## ADVISOR — S6
 
 Open:
 
@@ -54,9 +45,9 @@ Open:
 - exact plan/assess/replan proposal shape needed by that gap;
 - trigger policy for Advisor invocation.
 
-Constraint: Advisor never becomes implicit dispatch/control authority.
+Constraint: Advisor never becomes implicit dispatch/control or correctness authority.
 
-## SECOND ROLE / COMMON ABSTRACTIONS
+## SECOND ROLE / COMMON ABSTRACTIONS — S7
 
 Open until S7:
 
@@ -67,11 +58,11 @@ Open until S7:
 
 Constraint: the second slice is the extraction point. There is no generic Orchestrator before it.
 
-## ARTIFACT HANDOFF / INTERNAL SOURCES
+## ARTIFACT HANDOFF / INTERNAL SOURCES — S8
 
 Open until S8:
 
-- application artifact reference shape;
+- application artifact reference shape beyond the concrete Backend refs;
 - storage/lookup boundary for application-produced artifacts;
 - how prior WorkResult/artifact references become inputs to a later role's context need;
 - provenance required when Oracle dereferences internal application-produced sources.
@@ -85,7 +76,7 @@ Serializer performs no IO; it only renders resolved context.
 
 External source adapters and internal application-artifact adapters remain semantically distinguishable even though both live behind Oracle's resolution boundary.
 
-## APPLICATION STATE / RESILIENCE
+## APPLICATION STATE / RESILIENCE — S9
 
 Open until multiple work items exist:
 
