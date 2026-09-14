@@ -15,6 +15,7 @@ Current constraints that must shape continuation. This is not an ADR archive.
 - `Observation != SemanticMemory != Evaluation`.
 - `AgentEvent != TurnEvent != TraceSpan != EffectJournal`.
 - `SemanticMemory.INTENT != ActionIntent`.
+- `IntentReflectionAlignment != Evaluation`.
 - candidate state and trace history do not prove an external side effect completed.
 - retrieval/ranking selects context; it is not correctness authority.
 - search investment and supervision control continuation, not promotion correctness.
@@ -30,8 +31,16 @@ Current constraints that must shape continuation. This is not an ADR archive.
 
 - `REFLECTION` and durable `INTENT` must be derived from persisted source snapshots, not accepted as truth because model prose supplied them.
 - Source linkage/provenance alone is insufficient; semantic derivation requires a grounding boundary that can reject unsupported or stale output.
+- Every active `REFLECTION` must retain an exact source ref to a persisted evaluation whose input snapshot remains fresh at activation time.
 - Grounded reflection/intent may inform later context and deliberation, but cannot self-certify evaluation correctness or external-effect completion.
 - Durable semantic intent expresses continuing goal state; per-step action/effect intent expresses one concrete intended operation.
+
+## SEMANTIC CALIBRATION
+
+- Intent/reflection comparison is a prediction-error signal: it measures mismatch between a grounded pre-action expectation and a grounded post-evaluation semantic outcome.
+- Alignment must bind exact intent/reflection memory IDs and revisions plus grounding/evaluation evidence; model self-report is not a valid alignment source by itself.
+- Divergence may become grounded search knowledge and influence adaptive search investment, but it is never a correctness verdict or promotion gate.
+- Search investment must only consume persisted alignment signals through a freshness-bound input path; later signals must invalidate older decisions.
 
 ## CONTEXT
 
