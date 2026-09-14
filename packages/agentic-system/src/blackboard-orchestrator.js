@@ -30,6 +30,7 @@ export const BlackboardStatus = Object.freeze({
   CLAIMED: "CLAIMED",
   PENDING_REVIEW: "PENDING_REVIEW",
   REVIEWING: "REVIEWING",
+  PENDING_RECONCILIATION: "PENDING_RECONCILIATION",
   REOPENED: "REOPENED",
   BLOCKED: "BLOCKED",
   DONE: "DONE",
@@ -78,15 +79,23 @@ function normalizeReview(raw, index) {
     verdict: raw.verdict,
     decisionRef: requireText(raw.decisionRef, `reviews[${index}].decisionRef`),
     attestationRef: requireText(raw.attestationRef, `reviews[${index}].attestationRef`),
-    findings: normalizeTextArray(raw.findings ?? [], `reviews[${index}].findings`)
+    findingRefs: normalizeTextArray(raw.findingRefs ?? [], `reviews[${index}].findingRefs`)
   };
 }
 
-function normalizeFinding(raw) {
-  invariant(raw && typeof raw === "object" && !Array.isArray(raw), "finding must be an object");
+function normalizeReviewFinding(raw, index) {
+  invariant(raw && typeof raw === "object" && !Array.isArray(raw), `findings[${index}] must be an object`);
+  const disposition = raw.disposition ?? null;
+  if (disposition != null) {
+    invariant(Object.values(FollowUpDisposition).includes(disposition), `findings[${index}].disposition is invalid`);
+  }
   return {
-    summary: requireText(raw.summary, "finding.summary"),
-    sourceRef: requireText(raw.sourceRef, "finding.sourceRef")
+    id: requireText(raw.id, `findings[${index}].id`),
+    summary: requireText(raw.summary, `findings[${index}].summary`),
+    sourceRef: requireText(raw.sourceRef, `findings[${index}].sourceRef`),
+    reviewKey: requireText(raw.reviewKey, `findings[${index}].reviewKey`),
+    disposition,
+    targetItemId: raw.targetItemId == null ? null : requireText(raw.targetItemId, `findings[${index}].targetItemId`)
   };
 }
 
@@ -119,6 +128,13 @@ function normalizeItem(raw, index = 0) {
     seenReviews.add(review.key);
   }
 
+  const findings = (raw.findings ?? []).map(normalizeReviewFinding);
+  const seenFindings = new Set();
+  for (const finding of findings) {
+    invariant(!seenFindings.has(finding.id), `items[${index}] has duplicate finding ${finding.id}`);
+    seenFindings.add(finding.id);
+  }
+
   return {
     id: requireText(raw.id, `items[${index}].id`),
     work: requireText(raw.work, `items[${index}].work`),
@@ -134,6 +150,7 @@ function normalizeItem(raw, index = 0) {
     submittedBy: raw.submittedBy == null ? null : requireText(raw.submittedBy, `items[${index}].submittedBy`),
     reviewRequirements,
     reviews,
+    findings,
     activeReview: raw.activeReview == null ? null : {
       key: requireText(raw.activeReview.key, `items[${index}].activeReview.key`),
       reviewer: requireText(raw.activeReview.reviewer, `items[${index}].activeReview.reviewer`),
@@ -294,12 +311,33 @@ function requirementFor(item, key) {
   return item.reviewRequirements.find((requirement) => requirement.key === key) ?? null;
 }
 
+function findingFor(item, findingId) {
+  const finding = item.findings.find((candidate) => candidate.id === findingId);
+  invariant(finding, `Blackboard finding not found: ${findingId}`);
+  return finding;
+}
+
 function canClaim(status) {
   return status === BlackboardStatus.READY || status === BlackboardStatus.REOPENED;
 }
 
 function unresolvedReview(item) {
   return item.reviewRequirements.some((requirement) => reviewFor(item, requirement.key)?.verdict !== ReviewVerdict.ACCEPTED);
+}
+
+function nonAcceptedReview(item) {
+  return item.reviews.some((review) => review.verdict !== ReviewVerdict.ACCEPTED);
+}
+
+function hasPendingFindings(item) {
+  return item.findings.some((finding) => finding.disposition == null);
+}
+
+function derivePostReviewStatus(item) {
+  if (hasPendingFindings(item)) return BlackboardStatus.PENDING_RECONCILIATION;
+  if (nonAcceptedReview(item) || item.remainingWork.length > 0) return BlackboardStatus.REOPENED;
+  if (unresolvedReview(item)) return BlackboardStatus.PENDING_REVIEW;
+  return BlackboardStatus.DONE;
 }
 
 function addUnique(target, values) {
@@ -342,6 +380,17 @@ function findingsFromDecision(decision) {
   return normalizeTextArray(decision?.metadata?.findings ?? [], "review decision findings");
 }
 
+function blockingReasonsFromDecision(decision) {
+  const unresolved = decision?.unresolved ?? [];
+  invariant(Array.isArray(unresolved), "review decision unresolved must be an array");
+  return unresolved.map((entry, index) => {
+    if (typeof entry === "string") return requireText(entry, `review decision unresolved[${index}]`);
+    invariant(entry && typeof entry === "object" && !Array.isArray(entry), `review decision unresolved[${index}] must be an object or string`);
+    const summary = entry.summary ?? entry.reason ?? entry.finding;
+    return requireText(summary, `review decision unresolved[${index}] summary`);
+  });
+}
+
 function reviewTrustConfig(reviewTrust) {
   invariant(reviewTrust && typeof reviewTrust === "object", "ApplicationOrchestrator requires reviewTrust");
   invariant(typeof reviewTrust.trustPolicyFor === "function", "reviewTrust.trustPolicyFor is required");
@@ -368,9 +417,11 @@ async function evaluateReviewBundle({ item, requirement, activeReview, bundle, r
   }
 
   const findings = findingsFromDecision(validated.decision);
+  const blockingReasons = blockingReasonsFromDecision(validated.decision);
   if (validated.decision.verdict === ReviewVerdict.ACCEPTED) {
-    invariant(findings.length === 0, "accepted review decision cannot contain unresolved findings");
-    invariant((validated.decision.unresolved ?? []).length === 0, "accepted review decision cannot contain unresolved claims");
+    invariant(blockingReasons.length === 0, "accepted review decision cannot contain unresolved claims");
+  } else {
+    invariant(blockingReasons.length > 0, "non-accepted review decision requires at least one unresolved blocking reason");
   }
 
   const declaredPolicy = await reviewTrust.trustPolicyFor({
@@ -410,6 +461,7 @@ async function evaluateReviewBundle({ item, requirement, activeReview, bundle, r
     decisionRef: validated.decision.id,
     attestationRef: validated.attestation.id,
     findings,
+    blockingReasons,
     trust
   });
 }
@@ -418,6 +470,10 @@ function sameActiveReview(left, right) {
   return left?.key === right?.key &&
     left?.reviewer === right?.reviewer &&
     sameSubject(left?.subject, right?.subject);
+}
+
+function reviewFindingId(decisionRef, index) {
+  return `${decisionRef}:finding:${index + 1}`;
 }
 
 export function createApplicationOrchestrator({ store, reviewTrust }) {
@@ -467,6 +523,10 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
       invariant(submission && typeof submission === "object" && !Array.isArray(submission), "submission must be an object");
       invariant(Array.isArray(reviewRequests), "reviewRequests must be an array");
       invariant(Array.isArray(resolvedWork), "resolvedWork must be an array");
+      subjectFromValue({ itemId, submission }, {
+        type: "blackboard-submission",
+        producer: { identity: owner, roles: ["producer"] }
+      });
 
       return mutate((snapshot) => {
         const item = findItem(snapshot, itemId);
@@ -486,6 +546,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         item.owner = null;
         item.activeReview = null;
         item.reviews = [];
+        item.findings = [];
         item.status = BlackboardStatus.PENDING_REVIEW;
         return clone(item);
       });
@@ -500,7 +561,12 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         invariant(item.status !== BlackboardStatus.DONE && item.status !== BlackboardStatus.SUPERSEDED, `Blackboard item ${itemId} cannot add review from ${item.status}`);
         invariant(!requirementFor(item, requirement.key), `Blackboard item ${itemId} already requires review ${requirement.key}`);
         item.reviewRequirements.push(requirement);
-        if (item.submission != null && item.status !== BlackboardStatus.CLAIMED) item.status = BlackboardStatus.PENDING_REVIEW;
+        if (
+          item.submission != null &&
+          ![BlackboardStatus.CLAIMED, BlackboardStatus.REVIEWING, BlackboardStatus.PENDING_RECONCILIATION].includes(item.status)
+        ) {
+          item.status = BlackboardStatus.PENDING_REVIEW;
+        }
         return clone(item);
       });
     },
@@ -512,7 +578,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
       return mutate((snapshot) => {
         const item = findItem(snapshot, itemId);
         invariant(item.submission != null, `Blackboard item ${itemId} has no submission to review`);
-        invariant(item.status === BlackboardStatus.PENDING_REVIEW || item.status === BlackboardStatus.REVIEWING, `Blackboard item ${itemId} is not reviewable from ${item.status}`);
+        invariant(item.status === BlackboardStatus.PENDING_REVIEW, `Blackboard item ${itemId} is not reviewable from ${item.status}`);
         invariant(requirementFor(item, key), `Blackboard item ${itemId} does not require review ${key}`);
         invariant(reviewFor(item, key) == null, `Blackboard item ${itemId} already has assessment for ${key}`);
         invariant(item.activeReview == null, `Blackboard item ${itemId} already has an active review`);
@@ -553,72 +619,80 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         invariant(sameActiveReview(item.activeReview, observedReview), `Blackboard item ${itemId} review target changed while assessment trust was evaluated`);
         invariant(requirementFor(item, key), `Blackboard item ${itemId} review requirement changed while assessment trust was evaluated`);
 
+        const findingRefs = assessment.findings.map((summary, index) => {
+          const finding = normalizeReviewFinding({
+            id: reviewFindingId(assessment.decisionRef, index),
+            summary,
+            sourceRef: assessment.attestationRef,
+            reviewKey: key,
+            disposition: null,
+            targetItemId: null
+          }, item.findings.length + index);
+          item.findings.push(finding);
+          return finding.id;
+        });
+
         item.reviews.push(normalizeReview({
           key,
           reviewer: assessment.reviewer,
           verdict: assessment.verdict,
           decisionRef: assessment.decisionRef,
           attestationRef: assessment.attestationRef,
-          findings: assessment.findings
+          findingRefs
         }, item.reviews.length));
         item.activeReview = null;
         addUnique(item.evidenceRefs, [assessment.decisionRef, assessment.attestationRef]);
-
-        if (assessment.verdict !== ReviewVerdict.ACCEPTED) {
-          addUnique(item.remainingWork, assessment.findings.length > 0 ? assessment.findings : [`Review ${key} did not accept the submission`]);
-          item.status = BlackboardStatus.REOPENED;
-        } else if (!unresolvedReview(item)) {
-          item.status = item.remainingWork.length === 0 ? BlackboardStatus.DONE : BlackboardStatus.REOPENED;
-        } else {
-          item.status = BlackboardStatus.PENDING_REVIEW;
-        }
+        addUnique(item.remainingWork, assessment.blockingReasons);
+        item.status = derivePostReviewStatus(item);
 
         return clone(item);
       });
     },
 
-    async reconcileFinding({ itemId, finding, disposition, existingItemId = null, newItem = null }) {
+    async reconcileFinding({ itemId, findingId, disposition, existingItemId = null, newItem = null }) {
       requireText(itemId, "itemId");
-      const normalizedFinding = normalizeFinding(finding);
+      requireText(findingId, "findingId");
       invariant(Object.values(FollowUpDisposition).includes(disposition), "follow-up disposition is invalid");
 
       return mutate((snapshot) => {
         const item = findItem(snapshot, itemId);
+        const finding = findingFor(item, findingId);
+        invariant(finding.disposition == null, `Blackboard finding already reconciled: ${findingId}`);
+
+        let result = item;
+        let targetItemId = null;
 
         if (disposition === FollowUpDisposition.CURRENT_WORK) {
-          addUnique(item.remainingWork, [normalizedFinding.summary]);
-          addUnique(item.evidenceRefs, [normalizedFinding.sourceRef]);
-          item.status = BlackboardStatus.REOPENED;
-          return clone(item);
-        }
-
-        if (disposition === FollowUpDisposition.EXISTING_WORK) {
+          addUnique(item.remainingWork, [finding.summary]);
+        } else if (disposition === FollowUpDisposition.EXISTING_WORK) {
           const targetId = requireText(existingItemId, "existingItemId");
+          invariant(targetId !== itemId, "existing follow-up target must differ from current item");
           findItem(snapshot, targetId);
           addUnique(item.followUpRefs, [targetId]);
-          addUnique(item.evidenceRefs, [normalizedFinding.sourceRef]);
-          return clone(item);
-        }
-
-        if (disposition === FollowUpDisposition.NEW_WORK) {
+          targetItemId = targetId;
+        } else if (disposition === FollowUpDisposition.NEW_WORK) {
           invariant(newItem && typeof newItem === "object" && !Array.isArray(newItem), "NEW_WORK disposition requires newItem");
           const child = normalizeItem({
             ...newItem,
             status: newItem.status ?? BlackboardStatus.READY,
             origin: {
               parentItemId: itemId,
-              finding: normalizedFinding.summary,
-              sourceRef: normalizedFinding.sourceRef
+              findingId: finding.id,
+              finding: finding.summary,
+              sourceRef: finding.sourceRef
             }
           }, snapshot.items.length);
           invariant(!snapshot.items.some((candidate) => candidate.id === child.id), `Blackboard item already exists: ${child.id}`);
           snapshot.items.push(child);
           addUnique(item.followUpRefs, [child.id]);
-          addUnique(item.evidenceRefs, [normalizedFinding.sourceRef]);
-          return clone(child);
+          targetItemId = child.id;
+          result = child;
         }
 
-        return freezeClone({ disposition: FollowUpDisposition.NON_ACTIONABLE, finding: normalizedFinding });
+        finding.disposition = disposition;
+        finding.targetItemId = targetItemId;
+        item.status = derivePostReviewStatus(item);
+        return clone(result);
       });
     },
 
