@@ -2,131 +2,58 @@
 
 Status: **ACTIVE COORDINATION SURFACE**
 
-The Blackboard is the first read/write surface for every non-trivial ExHarness work session.
+The Blackboard is the canonical home for every unresolved gap, problem, question, blocker and next piece of non-trivial shared work.
 
-It is not a future runtime component and it is not optional bookkeeping. It is the shared external work state that lets one session constrain what later sessions are allowed to pick up.
+Living system documents must describe current source-backed reality only. If a document discovers something that is not true yet, that item belongs here before another session can work on it.
 
-## Core rule
+## Session protocol
 
 ```text
 READ BOARD
-  -> choose only unresolved eligible work
-  -> CLAIM before doing it
-  -> perform work
-  -> WRITE BACK result / evidence / discoveries / blockers
-  -> mark DONE, BLOCKED or return to READY
+  -> choose only eligible unresolved work
+  -> CLAIM
+  -> execute / investigate
+  -> WRITE BACK result, artifacts, evidence, discoveries
+  -> DONE | BLOCKED | READY
+  -> reconcile living docs to source when source changed
 ```
 
-A session must not silently do work that is absent from the Blackboard when that work changes shared project state.
-
-## Board semantics
-
-Think of the board literally.
-
-```text
-Question A   READY
-Question B   READY
-Question C   READY
-```
-
-Session 1 claims and resolves Question A:
-
-```text
-Question A   DONE      result/evidence refs: ...
-Question B   READY
-Question C   READY
-```
-
-Session 2 now has only B or C as eligible choices. It must not independently redo A unless A is explicitly reopened because new evidence invalidated the prior result.
-
-The important property is not the file format. The important property is **shared visible state narrows the next agent's action space**.
+A later session must not redo `DONE` work unless new evidence explicitly reopens it.
 
 ## Work-item shape
 
-Use the smallest structure that preserves coordination:
-
 ```text
 id: BB-XXX
-question/work: <what must be resolved or produced>
+question/work: <gap/problem/work to resolve>
 status: READY | CLAIMED | BLOCKED | DONE | REOPENED | SUPERSEDED
-owner: <session/agent identity when claimed, otherwise empty>
+owner: <session/agent when claimed>
 depends-on: []
-result: <short outcome when resolved>
+result: <outcome when resolved>
 artifact-refs: []
 evidence-refs: []
 blockers: []
 open-followups: []
 ```
 
-Do not add leases, queues, event buses, role registries or workflow-engine semantics until real contention proves they are necessary.
+The Board is operational state, not a diary and not an architecture document.
 
-## Claim contract
+## Migration rule
 
-Only `READY` or `REOPENED` work whose dependencies are satisfied is eligible.
-
-Before execution:
+When reconciling an old/current document:
 
 ```text
-READY -> CLAIMED
-owner = current session/agent
+statement
+  -> true in source now?               -> living document
+  -> unresolved real gap/problem?      -> Blackboard
+  -> deliberately absent / no pressure -> living non-goal/constraint, not fake work
+  -> stale/resolved?                   -> remove or rewrite as current fact
 ```
 
-After execution:
+No `gaps.md`, `TODO`, `next`, `remaining`, candidate future API or unresolved design question may live in the source-synchronized `docs/worktree/` projection.
 
-```text
-CLAIMED -> DONE       when the board question/work is actually resolved
-CLAIMED -> BLOCKED    when external dependency/evidence is missing
-CLAIMED -> READY      when abandoned without resolution
-DONE    -> REOPENED   only when explicit new evidence invalidates/reopens it
-```
+# Current board
 
-A later session reads the board and must respect these transitions. `DONE` work is not eligible by default.
-
-## What every session writes back
-
-At minimum, when shared work was attempted:
-
-- status transition;
-- concise result or blocker;
-- artifact references produced/changed;
-- evidence references that matter;
-- discoveries that create new board questions;
-- follow-up work items when the result exposes unresolved work.
-
-Do not use the Blackboard as a prose diary. It records operational state needed by the next worker.
-
-## Relationship to living knowledge
-
-The Blackboard and promoted living knowledge are both under `docs/living/`, but they have different semantics:
-
-```text
-blackboard.md
-    = active operational coordination
-    = cheap/current/mutable
-
-knowledge/*
-    = durable evidence/judgment/audit
-
-architecture.md / pipelines.md / contracts.md / decisions/*
-    = promoted accepted knowledge
-```
-
-A Blackboard result can feed the knowledge lifecycle:
-
-```text
-work result / discovery
-  -> evidence
-  -> judgment
-  -> audit/challenge when needed
-  -> decision
-  -> promoted architecture/pipeline/contract
-```
-
-But finishing a board item does not automatically promote its design conclusion.
-
-## Current board
-
-The repository checkpoint has Waves A, B and C complete in source/tests. Wave D is next.
+## Delivered history
 
 ```text
 BB-001
@@ -143,32 +70,143 @@ BB-003
 question/work: Add second real role and ref-only Backend -> QA artifact handoff (Wave C)
 status: DONE
 result: delivered by PR #67
+```
 
+## Agentic Application
+
+```text
 BB-004
-question/work: Pressure-test and define minimal durable application workflow state through real persistence/resilience/recovery behavior (Wave D / S9)
+question/work: Pressure-test and implement the minimal durable application workflow state for Backend accepted -> QA pending/running/completed, including restart/recovery behavior.
 status: READY
 owner:
 depends-on: [BB-003]
 artifact-refs: []
 evidence-refs: []
 blockers: []
-open-followups: []
+open-followups:
+  - determine which objective/result/artifact/acceptance-decision refs survive restart
+  - define retry semantics when QA reports issues after accepted Backend work
+  - define block/cancel/resume semantics across Backend -> QA
+  - compose application state with ExHarness interrupted-variation/effect recovery without duplicating Core authority
+  - define artifact lookup failure/retry behavior at the application boundary
+```
 
+```text
 BB-005
-question/work: Run production evaluation across the concrete Backend + QA system and promote only evidence-supported generalizations (Wave D / S10)
+question/work: Production-evaluate the concrete Backend -> QA system and generalize only evidence-supported repeated semantics.
 status: BLOCKED
 owner:
 depends-on: [BB-004]
 artifact-refs: []
 evidence-refs: []
-blockers: [BB-004 must produce the durable/recovery behavior to evaluate]
-open-followups: []
+blockers:
+  - BB-004 must produce real durable/recovery behavior to evaluate
+open-followups:
+  - task success across Backend -> QA
+  - false-completion rate at both role boundaries
+  - artifact handoff correctness
+  - context precision/cost for repository vs internal artifacts
+  - QA issue/remediation rate
+  - Advisor invocation/value-add
+  - recovery correctness
+  - re-test whether generic Worker/WorkOrder/context/orchestration abstractions are justified
 ```
 
-Any new non-trivial work discovered while doing BB-004/BB-005 must be added to this board before another session can pick it up.
+## ExHarness Core
 
-## Storage note
+Migrated from the former Core `gaps.md`; delivered facts remain in Core living docs.
 
-Today the canonical Blackboard is this living document because it gives sessions a shared durable surface immediately.
+```text
+BB-006
+question/work: Close the built-in external-effect/persistence crash window so candidate/trace/variation state can never be mistaken for proof that an externally visible action completed.
+status: READY
+owner:
+depends-on: []
+artifact-refs: []
+evidence-refs: []
+blockers: []
+open-followups:
+  - decide how built-in avo.act crosses the effect-aware action-intent boundary
+  - ensure core.act persistence ordering does not infer completion from pre-persistence runtime state
+  - preserve separation between effect state, evaluation, semantic memory and application completion
+```
 
-The storage/transport mechanism may later change if concurrency or write frequency proves Git-backed coordination insufficient. Such a migration must preserve the Blackboard semantics above; it does not justify ignoring the board until then.
+```text
+BB-007
+question/work: Compose deterministic restore -> pending-effect reconciliation -> evidence restoration -> explicit resume for a concrete recovery consumer.
+status: BLOCKED
+owner:
+depends-on: [BB-004, BB-006]
+artifact-refs: []
+evidence-refs: []
+blockers:
+  - requires real application recovery pressure from BB-004
+  - external-effect boundary from BB-006 must be trustworthy
+open-followups:
+  - order interrupted-variation recovery, AgentRuntime snapshot/restore and effect reconciliation
+  - keep safe replay/observation machine-first
+  - fail closed or escalate NON_RECONCILABLE ambiguity
+```
+
+```text
+BB-008
+question/work: Determine whether a higher-level executable Core lifecycle surface is justified after recovery composition is concrete.
+status: BLOCKED
+owner:
+depends-on: [BB-007]
+artifact-refs: []
+evidence-refs: []
+blockers:
+  - do not invent a lifecycle facade before BB-007 demonstrates required sequencing
+open-followups:
+  - if justified, compose existing deliberation/action/effect/observe/verify/evaluate/cognition/promotion boundaries without absorbing Agentic Application orchestration
+```
+
+## Oracle
+
+Migrated from the former Oracle `gaps.md` after source reconciliation.
+
+Resolved during Waves A/C and therefore **not open work**:
+
+- first concrete Backend context slice exists;
+- internal application-artifact context slice exists for QA;
+- stable `sourceRef` is carried by resolved Backend/QA context;
+- internal artifact provenance carries `APPLICATION_ARTIFACT`, producer work-order id and acceptance-decision provenance;
+- failures already identify the concrete repository vs application-artifact source boundary.
+
+Current unresolved questions:
+
+```text
+BB-009
+question/work: Determine whether Oracle needs a common resolver contract beyond the two current concrete functions/adapters.
+status: BLOCKED
+owner:
+depends-on: []
+artifact-refs: []
+evidence-refs: []
+blockers:
+  - two current source classes still have materially different lifecycle/provenance semantics
+  - no repeated pressure yet justifies Resolver<I,O>, registry or provider lifecycle
+open-followups:
+  - reopen when a third real source or repeated adapter boilerplate demonstrates a common contract
+```
+
+```text
+BB-010
+question/work: Determine whether callers need structured Oracle resolution diagnostics beyond the current boundary-specific errors.
+status: BLOCKED
+owner:
+depends-on: []
+artifact-refs: []
+evidence-refs: []
+blockers:
+  - current Backend/QA callers do not yet demonstrate a machine-readable diagnostic requirement
+open-followups:
+  - if pressure appears, distinguish source unavailable/auth/not-found/adaptation/schema/optional absence without fabricating required context
+```
+
+Caching/freshness, MCP-first integration and semantic retrieval are not Board gaps merely because they are absent. They become Board work only when a concrete source demonstrates latency/cost/freshness or discovery pressure.
+
+## Storage
+
+Today this file is the canonical Board. Storage/transport can change later, but any replacement must preserve the read -> claim -> work -> write-back semantics and the reduced action space seen by later sessions.

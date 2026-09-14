@@ -1,41 +1,32 @@
 # Current knowledge state
 
-This is a durable knowledge snapshot, not an execution-progress transcript.
+Durable knowledge snapshot; operational open work lives in `../blackboard.md`.
 
-## Question
+## Accepted documentation model
 
-How should ExHarness preserve evolving architecture and project knowledge across sessions without forcing early drafts to masquerade as desired state?
-
-## Requirement
-
-CLEAR
-
-## Accepted
-
-- ExHarness uses a three-plane knowledge model: coordination Blackboard, living knowledge, and actual artifacts.
-- Authority is typed; there is no single universal source of truth.
-- New components/designs begin as candidates and earn promotion through evidence, judgment, challenge and acceptance.
-- Session count does not promote knowledge.
-- Git/source-control lifecycle is not the runtime coordination lifecycle.
-- `docs/living/` is the promoted durable knowledge authority surface.
-- `docs/worktree/` is convergence material and must not claim authority merely by location/name.
+- source/public exports and executable behavior are implementation authority;
+- `docs/worktree/*` is the source-synchronized current-system projection;
+- `docs/living/blackboard.md` is the canonical home for all actionable gaps/problems/questions/blockers/next work;
+- evidence, judgment, audit and decision remain separate from Board work status;
+- session count does not promote knowledge;
+- a completed Board item does not automatically promote an architectural conclusion.
 
 ## Current repository checkpoint
 
-- Existing Agentic System delivery remains concrete-first.
-- Waves A and B are delivered.
-- Wave C is the active next delivery wave according to `../../worktree/pipeline.md`.
-- Backend completion now uses grounded mutation/typecheck/tests evidence and an acceptance-boundary decision artifact; bounded BackendAdvisor judgment is limited to unresolved semantic gaps after required evidence passes.
-- Existing worktree documents are retained for their domain knowledge, but their authority is interpreted through the living-knowledge contracts.
+- Waves A, B and C are delivered in source/tests.
+- Backend is a mutating/promoting role with grounded mutation/typecheck/tests completion evidence.
+- QA is a non-mutating role over an accepted Backend revision with grounded behavior/regression evidence.
+- Backend -> QA uses ref-only application-artifact handoff with acceptance-decision provenance.
+- Oracle has distinct repositoryReader and artifactReader source boundaries.
+- two real roles still do not justify a generic Worker/WorkOrder/Orchestrator; the narrow shared shapes currently proven are application artifact refs and evidence-integrity/claim-state plumbing.
 
-## Active unknowns
+## Documentation migration checkpoint
 
-The runtime Blackboard implementation remains unresolved, including storage, ownership/claim semantics, leases, staleness, eventing, conflict resolution, retention and persistence boundaries.
+The former worktree gap files have been reconciled:
 
-Wave C will also provide new evidence about multi-role coordination and cross-work artifact flow. That evidence may influence which Blackboard primitives are actually necessary.
+- resolved Oracle items became current source-backed facts;
+- real Agentic/Core/Oracle open seams moved to the Blackboard;
+- deliberate non-goals such as cache/MCP/RAG without concrete pressure were not converted into fake work;
+- worktree docs no longer own future roadmap/gap state.
 
-These unknowns must stay candidate until implementation/evidence earns promotion.
-
-## Next evidence needed
-
-Evidence from real multi-session/multi-worker and second-role ExHarness usage should determine which Blackboard primitives are actually necessary before a runtime coordination API is promoted.
+For current unresolved work, read `../blackboard.md`.

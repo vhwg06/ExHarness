@@ -1,77 +1,51 @@
-# Oracle convergence state
+# Oracle current state
 
-Durable convergence material for the Oracle boundary. This subtree preserves previously agreed direction plus unresolved implementation choices; its path does not automatically make every target detail desired-state authority.
+Source-synchronized Oracle projection. Open Oracle questions live only in `../../living/blackboard.md`.
 
-Read `../README.md` and `../../living/contracts.md` before promotion.
+## Current implemented boundary
 
-## ACCEPTED PURPOSE
-
-Oracle is an infrastructure bridge for explicit context feeding into the Agentic Application Layer.
-
-The application owns the semantic context requirement. Oracle satisfies that requirement by pulling from external/infrastructure sources or application-produced sources, adapting the result and returning an application-shaped context object.
-
-## ACCEPTED SEMANTIC DIRECTION
-
-- application decides what context is needed, why it is needed and what shape it must have;
-- Oracle decides where that data lives and how to retrieve/adapt it;
-- context resolution is single-pass and explicit: resolve before Worker execution;
-- Oracle does not own a run loop, session lifecycle, provider state or before/after hooks;
-- Oracle must satisfy the application requirement, not invent broader relevance semantics or silently expand scope.
-
-## OBSERVED IMPLEMENTATION — WAVES A + C
-
-Two real source classes now cross the Oracle boundary through distinct concrete adapters:
+`packages/agentic-system/src/oracle.js` exposes two concrete resolution functions:
 
 ```text
-EXTERNAL SOURCE
+resolveBackendContext(order, { repositoryReader })
+resolveQaContext(order, { artifactReader })
+```
+
+### External repository source
+
+```text
 BackendWorkOrder.requiredFiles
- -> repositoryReader.readFile(...)
- -> BackendContext files + sourceRef
-
-INTERNAL APPLICATION-PRODUCED SOURCE
-BackendQaHandoff artifact refs
- -> QaWorkOrder.requiredArtifacts
- -> artifactReader.readArtifact(...)
- -> QaContext artifacts + sourceRef + APPLICATION_ARTIFACT provenance
+ -> repositoryReader.readFile({ repositoryRef, revision, path })
+ -> { content, sourceRef }
+ -> BackendContextSchema.parse(...)
 ```
 
-Observed invariants:
-
-- Backend external context is still resolved only for declared repository files;
-- QA internal context is resolved only for artifact refs selected by its declared required artifact paths;
-- Backend -> QA application handoff carries refs and Backend acceptance-decision provenance, not copied artifact contents;
-- internal artifact provenance records the producer work-order id and acceptance decision;
-- resolution failures name the concrete source boundary (`repository` vs `application artifact store`);
-- there is still no generic source registry, retrieval framework, MCP-first adapter layer or serializer IO.
-
-The fact that both adapters perform pull/adapt/validate does not yet justify erasing their lifecycle/provenance differences behind a generic source abstraction.
-
-## CANDIDATE / IMPLEMENTATION-SENSITIVE DETAILS
-
-Concrete artifact-store persistence, caching, source retries, multiple internal artifact producers, future Figma/OpenAPI/CI adapters and retrieval/MCP boundaries must be validated by real source requirements. Historical worktree wording that names a preferred implementation is not enough to promote it.
-
-Current concrete pattern is:
+### Internal application-artifact source
 
 ```text
-application-owned requirement
-        -> select declared source refs/fields
-        -> pull from concrete adapter
-        -> adapt/normalize with source provenance
-        -> validate application-owned context schema
-        -> explicit context feed
-        -> Worker.execute(...)
+QaWorkOrder.requiredArtifacts
+ -> artifactReader.readArtifact({ ref, path, producerWorkOrderId, revision, acceptanceDecision })
+ -> { content, sourceRef }
+ -> APPLICATION_ARTIFACT provenance
+ -> QaContextSchema.parse(...)
 ```
 
-## CHILDREN
+## Current semantics
 
-- `semantics.md` — prior semantic invariants and candidate details.
-- `architecture.md` — layer placement and dependency direction.
-- `workflow.md` — current resolution-flow candidate.
-- `decisions.md` — previously accepted/working constraints; reconcile against promoted living decisions when conflicts appear.
-- `gaps.md` — unresolved implementation choices and exit conditions.
+- application contracts decide which context is required;
+- Oracle pulls only declared files/artifacts;
+- resolution happens explicitly before Worker execution;
+- external repository IO and internal application-artifact IO remain distinct adapters;
+- context carries stable source refs; internal artifacts also carry producer/acceptance provenance;
+- source errors are wrapped with the concrete failing boundary and requested ref/path;
+- Oracle has no agent loop, session lifecycle, generic resolver registry, MCP-first layer, retrieval framework or cache lifecycle in current source.
 
-## NOT ORACLE
+Caching/MCP/RAG are not missing features merely because they are absent. If concrete pressure makes them necessary, that work must first appear on the Blackboard.
 
-Oracle is not an agent, advisor, orchestrator, worker, semantic-memory system, runtime context lifecycle, generic RAG platform or correctness authority.
+## Routing
 
-It does not choose the Worker context contract. It does not participate in Worker reasoning after resolved context has been handed off.
+- current semantic meaning -> `semantics.md`
+- current dependency placement -> `architecture.md`
+- current concrete resolution flow -> `workflow.md`
+- current invariants -> `decisions.md`
+- all open Oracle questions -> `../../living/blackboard.md`

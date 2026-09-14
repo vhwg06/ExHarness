@@ -1,96 +1,48 @@
 # Documentation router
 
-Use this file to choose the smallest context/authority surface for the question at hand. Do not load every documentation tree by default.
+## Work selection
 
-## Start here
+For every non-trivial session, start at:
 
-For every non-trivial shared work session:
+- `living/blackboard.md` — canonical gaps/problems/open-work surface.
 
-1. `living/blackboard.md` — read current work state and claim an eligible item.
-2. `living/README.md` — authority/promotion rules when needed.
-3. Load only the context required for the claimed board item.
-4. Write the operational result back to the Blackboard before leaving.
+Claim eligible work there before execution.
 
-Do not choose work directly from `worktree/` while bypassing the Blackboard.
+## Current system documentation
 
-## Living surfaces
+After claiming work, load the smallest relevant current-state document:
 
-- `living/blackboard.md` — active questions/work, claims, dependencies, blockers, results and refs.
-- `living/architecture.md` — promoted accepted architecture.
-- `living/pipelines.md` — board/session lifecycle plus knowledge-promotion lifecycle.
-- `living/contracts.md` — coordination, authority, evidence and promotion invariants.
-- `living/knowledge/state.md` — durable knowledge snapshot.
-- `living/knowledge/evidence.md` — observation/provenance ledger.
-- `living/knowledge/judgment.md` — evidence-derived conclusions and uncertainty.
-- `living/knowledge/audit.md` — independent challenge.
-- `living/decisions/` — accepted/promoted choices.
+- `worktree/state.md` — current system checkpoint.
+- `worktree/pipeline.md` — current delivered Backend -> QA pipeline.
+- `worktree/agentic-application/` — current application architecture/semantics/contracts/workflow.
+- `worktree/oracle/` — current source-resolution boundary.
+- `worktree/core-harness/` — current Core boundary.
 
-## Supporting convergence material
+`docs/worktree/` is source-synchronized living documentation despite its legacy directory name. It contains no open gaps/backlog by contract.
 
-`worktree/` contains design/delivery context used after work has been claimed:
+## Durable knowledge
 
-- `worktree/state.md` — top-level convergence and delivered checkpoint.
-- `worktree/pipeline.md` — larger delivery ordering.
-- `worktree/agentic-application/` — application-layer convergence material.
-- `worktree/oracle/` — Oracle convergence material.
-- `worktree/core-harness/` — Core continuation material.
+- `living/knowledge/evidence.md`
+- `living/knowledge/judgment.md`
+- `living/knowledge/audit.md`
+- `living/decisions/`
+- `living/architecture.md`
+- `living/contracts.md`
+- `living/pipelines.md`
 
-Historical wording such as `desired`, `target` or `next` does not itself promote a claim.
+## Deeper references
 
-## Routing rules
+- `architecture/` — deeper historical/reference implementation records.
+- `development/` — development/verification process.
+
+## Authority
 
 ```text
-What can I work on now?
-    -> living/blackboard.md
-
-I claimed an application item; what context do I need?
-    -> worktree/agentic-application/*
-    -> relevant living promoted docs
-    -> source/tests as needed
-
-I claimed an Oracle/context item?
-    -> worktree/oracle/*
-
-I claimed a Core/runtime item?
-    -> worktree/core-harness/*
-
-Why is something believed?
-    -> living/knowledge/evidence.md
-    -> living/knowledge/judgment.md
-    -> relevant living/decisions/*
-
-What architecture/pipeline/contract is accepted?
-    -> living/architecture.md | living/pipelines.md | living/contracts.md
-
-What is actually implemented/observed?
-    -> source/public exports | runtime/executable evidence
+implemented behavior       -> source/public exports + executable tests/runtime
+current documented system  -> worktree/* reconciled to source
+open gap/problem/next work -> living/blackboard.md
+knowledge provenance       -> living/knowledge/*
+accepted doc invariants    -> living/decisions + living/contracts
 ```
 
-## Typed authority
-
-```text
-living/blackboard.md
-    = operational authority for current work selection/ownership/status
-
-source/public exports
-    = implemented behavior now
-
-runtime/executable evidence
-    = observed behavior
-
-living/architecture.md
-living/pipelines.md
-living/contracts.md
-    = promoted accepted views
-
-living/knowledge/*
-    = durable observations/conclusions/challenge by type
-
-living/decisions/*
-    = accepted/promoted choices
-
-worktree/*
-    = supporting convergence/candidate material for claimed work
-```
-
-There is no single global source of truth. The Blackboard is nevertheless mandatory for operational coordination: work selection begins there.
+If `worktree/*` and source disagree, source wins and the living document must be reconciled. If an unresolved problem appears in `worktree/*`, migrate it to the Blackboard.
