@@ -1,45 +1,33 @@
-# Worktree — convergence material
+# Worktree — source-synchronized living system docs
 
-`docs/worktree/` is retained as durable domain/design convergence material for the Agentic System.
+`docs/worktree/` is the current materialized documentation of the Agentic System **as implemented now**.
 
-It is **not** the runtime Blackboard and it is **not** automatically desired-state authority.
+Despite the legacy directory name, it is not a backlog, planning tree or candidate-design area.
 
-Read `../living/README.md` and `../living/contracts.md` before using this tree as context.
-
-## Default interpretation
-
-Unless a statement is explicitly grounded by implementation evidence or linked to a promoted decision:
-
-- future component shapes are candidates;
-- unresolved gaps remain unknowns;
-- examples are examples, not commitments;
-- `desired`, `target`, `next` or similar historical wording does not by itself promote a claim;
-- implemented checkpoints should be checked against source/public exports when correctness matters.
-
-## What belongs here
-
-- candidate architecture and boundaries;
-- active design exploration;
-- unresolved gaps and alternatives;
-- current layer-specific convergence state;
-- accepted delivery ordering that still contains stage-local hypotheses;
-- material that may later produce evidence/judgment/decisions.
-
-## What does not belong here
-
-- high-frequency work claims/progress intended to act as a coordination event stream;
-- promoted system-wide architecture/invariant authority;
-- claims that runtime behavior occurred without executable evidence.
-
-## Promotion
+## Invariant
 
 ```text
-worktree candidate
-  -> living/knowledge/evidence.md
-  -> living/knowledge/judgment.md
-  -> living/knowledge/audit.md when material
-  -> living/decisions/
-  -> living/architecture.md | living/pipelines.md | living/contracts.md
+worktree/*
+    = current source-backed state / architecture / semantics / contracts / workflow
+
+../living/blackboard.md
+    = unresolved gaps / problems / questions / blockers / next work
 ```
 
-Promotion is evidence-driven, not session-count-driven.
+A worktree document must be reconciled when source changes. It must not contain future desired APIs, open gaps, next-stage plans or speculative abstractions.
+
+If a source-backed fact exposes a problem, write the fact here and create/update the corresponding Blackboard item. Do not leave the problem embedded in this tree.
+
+## Routing
+
+- system checkpoint -> `state.md`
+- current delivered execution topology -> `pipeline.md`
+- current application layer -> `agentic-application/`
+- current Oracle boundary -> `oracle/`
+- current Core boundary -> `core-harness/`
+
+For any question of **what remains to do**, read `../living/blackboard.md`, not this tree.
+
+## Source authority
+
+Source/public exports and executable tests are authority for implemented behavior. These documents are living projections of that source and should be corrected when they drift.

@@ -1,98 +1,40 @@
-# Agentic Application workflow
+# Agentic Application current workflow
 
-Desired application-level coordination flow. This does not replace ExHarness internal execution lifecycle.
-
-## PRIMARY PATH
+## Backend
 
 ```text
-Objective
-   |
-   v
-Orchestrator inspects application state
-   |
-   +--> deterministic next step known?
-   |       |
-   |       +--> yes: create WorkOrder
-   |       |
-   |       +--> no: request bounded Advisor judgment
-   |                    |
-   |                    v
-   |               plan / assess / replan proposal
-   |                    |
-   +--------------------+
-   |
-   v
-create typed WorkOrder<C,R>
-   |
-   v
-resolve ContextRequirement<C> once through Oracle
-   |
-   v
-validate resolved context C
-   |
-   v
-Worker<C,R>.execute(order, context)
-   |
-   v
-ExHarness performs bounded specialist execution
-   |
-   v
-WorkResult<R>
-   |
-   v
-Orchestrator updates application workflow state
-   |
-   +--> complete
-   +--> dispatch next accepted WorkOrder
-   +--> request Advisor assessment/replan
-   +--> stop/escalate through explicit application policy
+parse objective
+ -> make BackendWorkOrder
+ -> resolve declared repository files once
+ -> execute BackendWorker through ExHarness
+ -> ground result/evidence from committed lineage + verification artifacts
+ -> BackendCompletionPolicy
 ```
 
-## CONTEXT FEEDING
+Deterministic evidence failure/missing/inconclusive paths stay in application code. `BackendAdvisor` is invoked only for the source-implemented semantic-gap condition after required objective checks pass.
 
-Context resolution is explicit and single-pass per WorkOrder:
+## Accepted Backend -> QA
 
 ```text
-WorkOrder
-   -> ContextRequirement
-   -> Oracle.resolve(...)
-   -> application-shaped validated context
-   -> Worker.execute(...)
+Backend ACCEPT
+ -> create ref-only BackendQaHandoff
+ -> create QaWorkOrder selecting required artifact paths
+ -> resolve declared application artifacts once
+ -> execute non-mutating QaWorker through ExHarness
+ -> ground behavior/regression evidence
+ -> QaCompletionPolicy
 ```
 
-There is no default provider lifecycle, automatic refresh, hidden pre-run hook or shared mutable context session.
+If Backend is not accepted, QA is not dispatched.
 
-If required context cannot be satisfied, execution must fail/return an explicit context gap according to the application contract. Oracle must not silently invent missing semantic content or widen scope without an application-defined rule.
+## Context rules
 
-A later WorkOrder may request newly resolved context explicitly. That is a new application decision, not an implicit refresh of an existing Worker execution.
+- repository and application-artifact context are resolved explicitly before execution;
+- source payload is not hidden in a provider/session lifecycle;
+- Oracle does not widen semantic scope;
+- source refs/provenance survive into validated context;
+- serializer/dereference responsibilities remain separate.
 
-## ADVISOR PATH
+## Completion rules
 
-Advisor is invoked only where judgment is useful:
-
-```text
-application state + accepted evidence/progress
-        -> Advisor
-        -> structured proposal / assessment
-        -> Orchestrator validates/applies/rejects
-```
-
-Advisor output never directly mutates workflow state or dispatches a Worker.
-
-## PARALLELISM
-
-Parallel Worker execution is permitted only when the application dependency model establishes independence.
-
-```text
-WorkOrder A ----\
-                +--> deterministic join --> Orchestrator
-WorkOrder B ----/
-```
-
-Concurrency is an Orchestrator decision, not an emergent group-chat behavior.
-
-## COMPLETION
-
-Application completion is decided from typed WorkResults plus application policy/accepted evidence. A Worker saying "done" in prose is not sufficient application state.
-
-The application may use ExHarness verification/trust primitives when correctness evidence is required, but the application retains responsibility for defining what evidence/result contract is required for its domain workflow.
+Worker prose is not completion authority. Completion is derived from structured results plus grounded role-specific evidence and application policy.
