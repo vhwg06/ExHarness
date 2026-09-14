@@ -1,0 +1,31 @@
+{
+  "name": "exharness-oracle",
+  "version": "0.1.0",
+  "description": "Read-only pull bridge for exposing ExHarness state to infrastructure consumers.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./mcp": "./src/mcp.js"
+  },
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@modelcontextprotocol/server": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}
