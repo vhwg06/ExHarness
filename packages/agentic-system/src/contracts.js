@@ -1,3 +1,5 @@
+import { parseApplicationArtifactRef } from "./artifact-ref.js";
+
 function invariant(condition, message) {
   if (!condition) throw new TypeError(message);
 }
@@ -128,12 +130,7 @@ export const BackendContextSchema = Object.freeze({
 });
 
 function parseBackendArtifact(raw, index) {
-  const artifact = requireRecord(raw, `BackendWorkResult.artifacts[${index}]`);
-  const parsed = {
-    ref: requireText(artifact.ref, `BackendWorkResult.artifacts[${index}].ref`)
-  };
-  if (artifact.path != null) parsed.path = requireText(artifact.path, `BackendWorkResult.artifacts[${index}].path`);
-  return parsed;
+  return parseApplicationArtifactRef(raw, `BackendWorkResult.artifacts[${index}]`);
 }
 
 function parseBackendGap(raw, index) {

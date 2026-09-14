@@ -49,48 +49,51 @@ These ownership boundaries do not imply that every future API/service shape alre
 ## OBSERVED DELIVERY CHECKPOINT
 
 - `packages/core-harness/` is the delivered reusable Core.
-- `packages/agentic-system/` contains the concrete Backend Application + Oracle composition delivered through Waves A and B.
+- `packages/agentic-system/` contains concrete Backend + QA application slices and Oracle composition delivered through Waves A, B and C.
 - `pipeline.md` remains the accepted active delivery order.
 
-Waves A and B are complete.
+Waves A, B and C are complete in source/tests.
 
-Delivered Backend path:
+Delivered multi-work path:
 
 ```text
 BackendObjective
  -> BackendWorkOrder
- -> resolveBackendContext(...)
- -> BackendWorker
- -> ExHarness Core
- -> grounded BackendWorkResult
- -> BackendCompletionPolicy
- -> ACCEPT | CONTINUE | BLOCK | FAIL
+ -> repositoryReader / BackendContext
+ -> BackendWorker / ExHarness
+ -> grounded Backend completion
+ -> ref-only BackendQaHandoff
+ -> QaWorkOrder
+ -> artifactReader / QaContext
+ -> non-mutating QaWorker / ExHarness
+ -> grounded QA completion
 ```
 
-Current delivered completion facts:
+Observed Wave-C facts:
 
-- `APPLIED` requires actual ExHarness lineage promotion.
-- Worker-returned evidence is not trusted as completion evidence.
-- Backend completion requires grounded mutation, typecheck and tests evidence plus artifact presence.
-- completion produces an ExHarness acceptance-boundary `DecisionArtifact`.
-- missing/inconclusive/failed evidence is deterministic application logic and does not invoke Advisor.
-- Advisor is invoked only after objective evidence passes but unresolved semantic gaps remain.
-- BackendAdvisor may propose only retry implementation, request context, or escalation; application code validates the proposal and Advisor cannot ACCEPT work.
+- Backend and QA do not share one execution lifecycle: Backend mutates/promotes lineage; QA rejects mutation and verifies a fixed accepted Backend revision.
+- no generic Worker, generic WorkOrder or generic Orchestrator was extracted after the second role because the common semantics remain too weak;
+- `ApplicationArtifactRef` is now shared across Backend-produced artifacts and QA-required/inspected artifacts;
+- evidence integrity + claim-state plumbing is shared while required evidence claims remain role-specific;
+- Backend -> QA application state carries artifact refs plus Backend acceptance-decision provenance, not artifact payloads;
+- Oracle keeps external repository reads and internal application-artifact lookup as distinct source boundaries;
+- QA resolves only declared artifact needs and preserves `APPLICATION_ARTIFACT` provenance/source refs;
+- QA is not dispatched unless Backend completion is `ACCEPT`.
 
-Source/public exports remain authority for the exact implementation checkpoint.
+Source/public exports and executable tests remain authority for the exact implementation checkpoint. Related living-knowledge judgments are recorded as supported, not silently promoted architecture.
 
-## ACTIVE DELIVERY — WAVE C
+## ACTIVE DELIVERY — WAVE D
 
-Wave C is the accepted next delivery sequence:
+Wave D is next:
 
 ```text
-S7 Second real role + extract only proven common abstractions
- -> S8 Artifact handoff / dereference / context chaining
+S9 Persistence / resilience / recovery composition
+ -> S10 Production evaluation + evidence-based generalization
 ```
 
-The delivery order is accepted. Concrete second-role shapes, cross-work contracts and any resulting common abstractions are candidates until real implementation/evidence supports them.
+S9 now has real multi-work behavior to pressure-test durable application state. Keep application workflow state distinct from ExHarness runtime persistence and artifact storage. Do not invent a generic workflow engine, Blackboard schema or claim/lease service before concrete recovery/state pressure requires it.
 
-Do not generalize Backend Worker/WorkOrder/completion/Advisor shapes before the second real role demonstrates common semantics. Do not introduce a Claim Manager, Blackboard schema, lease protocol or coordination service merely because the living-doc architecture names a coordination plane.
+S10 must evaluate the two real roles and artifact handoff before promoting broader Worker/WorkResult/context/orchestration APIs.
 
 ## ROUTING
 

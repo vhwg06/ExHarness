@@ -65,11 +65,11 @@ WAVE B — DONE
   S5 Backend-specific completion/evidence semantics    DONE
   S6 Advisor judgment boundary                         DONE
 
-WAVE C — ACTIVE / NEXT
-  S7 Second real role + extract only proven abstractions
-  S8 Artifact handoff / dereference / context chaining
+WAVE C — DONE
+  S7 Second real role + extract only proven abstractions   DONE
+  S8 Artifact handoff / dereference / context chaining     DONE
 
-WAVE D — harden and generalize
+WAVE D — ACTIVE / NEXT
   S9 Persistence / resilience / recovery composition
   S10 Production evaluation + evidence-based generalization
 ```
@@ -94,7 +94,24 @@ An `APPLIED` result must correspond to actual ExHarness lineage promotion, but p
 
 The first real Advisor boundary is narrower than completion: when required objective evidence passes but unresolved semantic gaps remain. Missing, inconclusive or failed evidence stays deterministic application logic. `BackendAdvisor` may propose only retry implementation, request context or escalation; it cannot ACCEPT work, dispatch Workers or directly mutate workflow state.
 
-No generic `Worker<C,R>`, generic WorkOrder, generic Advisor, role registry, workflow graph or generic Orchestrator has been introduced. Wave C S7 is the first permitted extraction point because a second real role is required to prove common semantics.
+### Delivered Backend -> QA path
+
+```text
+accepted Backend completion
+  -> BackendQaHandoff
+     artifact refs + accepted revision + decision provenance
+  -> QaWorkOrder selects required artifact paths
+  -> resolveQaContext
+     -> artifactReader.readArtifact(...)
+  -> QaWorker
+     non-mutating ExHarness execution
+  -> qa.behavior + qa.regression evidence
+  -> QaCompletionPolicy
+```
+
+Wave C adds QA as the second real role and makes cross-work context flow explicit. QA inspects a fixed accepted Backend revision: environment mutation is forbidden and lineage must not advance. Worker-returned evidence/inspected-artifact claims are replaced by grounded ExHarness/context state.
+
+The S7 comparison produced a deliberate **negative generalization result**: Backend mutates/promotes lineage while QA verifies without mutation, so no generic Worker/WorkOrder/Orchestrator was extracted. The common shapes actually proven are narrow: `ApplicationArtifactRef` and evidence-integrity/claim-state plumbing. This conclusion is recorded as a `SUPPORTED` living-knowledge judgment, not silently promoted architecture.
 
 See `docs/worktree/pipeline.md` for the current delivery sequence and `docs/worktree/state.md` for the convergence checkpoint. Read `docs/living/README.md` for authority and promotion semantics before treating future worktree shapes as committed architecture.
 
@@ -120,17 +137,20 @@ Worker / ExHarness Core
 
 The serializer performs **no IO**. Dereferencing belongs to Oracle.
 
-Oracle may resolve two distinct source classes:
+Oracle now has two concrete source classes in delivered code:
 
 ```text
-External sources
-  Git / Figma / docs / OpenAPI / APIs / ...
+External repository source
+  Backend required file
+  -> repositoryReader.readFile(...)
 
-Application-produced sources
-  prior WorkResult refs / artifact store / application state
+Internal application-produced source
+  Backend artifact ref
+  -> artifactReader.readArtifact(...)
+  -> APPLICATION_ARTIFACT provenance
 ```
 
-Both cross the Oracle boundary, but their adapters and source semantics remain distinct. Wave C S8 is where internal artifact dereference becomes a real cross-work path.
+Backend -> QA handoff carries references and Backend acceptance-decision provenance rather than copying artifact payloads through application state. External repository access and internal artifact lookup remain distinct adapters/source semantics rather than being collapsed into a generic retrieval framework.
 
 ## Completion and evidence
 
@@ -144,9 +164,20 @@ Worker execution
    -> ACCEPT | CONTINUE | BLOCK | FAIL
 ```
 
-For the current Backend slice, grounded claims are concrete: mutation, typecheck and tests. These are Backend semantics, not a universal evidence schema. Frontend, QA or Design may require different evidence; common structure is extracted only after real slices demonstrate it.
+Role-specific evidence remains intentionally different:
 
-ExHarness trust primitives provide integrity/provenance artifacts; the Agentic Application still owns which evidence is sufficient for domain completion.
+```text
+Backend
+  backend.mutation
+  backend.typecheck
+  backend.tests
+
+QA
+  qa.behavior
+  qa.regression
+```
+
+ExHarness trust primitives provide integrity/provenance artifacts; the Agentic Application still owns which evidence is sufficient for domain completion. Shared evidence plumbing does not imply shared role correctness semantics.
 
 ## Current maturity
 
@@ -173,19 +204,24 @@ search investment != promotion correctness
 supervision != correctness verdict
 ```
 
-### Agentic Application + Oracle — Waves A + B delivered, Wave C next
+### Agentic Application + Oracle — Waves A + B + C delivered, Wave D next
 
 `packages/agentic-system/` currently delivers:
 
 - concrete Backend objective/order/context/result contracts;
 - resolve-once Backend context loading through a repository-reader Oracle boundary;
 - `BackendWorker` execution through ExHarness Core;
-- grounded mutation + verification evidence assembly;
-- Backend-specific completion policy and acceptance decision artifact;
-- bounded BackendAdvisor only for unresolved semantic gaps;
-- tests wired into the repository verification gate.
+- grounded Backend mutation + verification evidence assembly;
+- Backend-specific completion policy and bounded BackendAdvisor;
+- concrete QA objective/order/context/result/completion contracts;
+- non-mutating `QaWorker` with grounded behavior/regression verification;
+- shared application artifact-reference shape where the two roles actually repeat semantics;
+- ref-only Backend -> QA handoff with acceptance-decision provenance;
+- internal application-artifact dereference through `artifactReader`;
+- direct `runBackendThenQaObjective(...)` composition gated on Backend acceptance;
+- Wave A-C tests wired into the repository verification gate.
 
-The larger Agentic Application and Oracle architecture remains intentionally incomplete. A second real role, cross-work artifact dereference, durable application workflow state and production generalization remain later-wave work.
+The larger Agentic Application remains intentionally incomplete. Durable multi-work application state, retry/resume/recovery composition and production evaluation/generalization are Wave D work.
 
 `docs/worktree/` contains convergence/candidate material and delivered checkpoints; it no longer gains desired-state authority merely from its path. Promoted durable authority is routed through `docs/living/`, while source/public exports remain authority for what is actually delivered.
 
@@ -264,4 +300,4 @@ Requires Node.js 20 or newer.
 npm run verify
 ```
 
-The repository verification gate covers ExHarness Core plus delivered Wave-A and Wave-B Agentic System behavior. Candidate/convergence documentation does not imply implementation completeness or promoted architecture for Wave C/D.
+The repository verification gate covers ExHarness Core plus delivered Wave-A, Wave-B and Wave-C Agentic System behavior. Candidate/convergence documentation does not imply promoted architecture for Wave D.

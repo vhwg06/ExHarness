@@ -8,27 +8,7 @@ Read `../README.md` and `../../living/contracts.md` before promotion.
 
 Oracle is an infrastructure bridge for explicit context feeding into the Agentic Application Layer.
 
-The application owns the semantic context requirement. Oracle satisfies that requirement by pulling from external/infrastructure sources, adapting the result and returning an application-shaped context object.
-
-```text
-Agentic Application Layer
-    owns ContextRequirement / ContextContract
-              |
-              | resolve once
-              v
-            Oracle
-      infrastructure boundary
-              |
-              | pull + adapt
-              v
- repo / files / docs / OpenAPI / Figma / CI / other sources
-              |
-              v
-      validated Context
-              |
-              v
-            Worker
-```
+The application owns the semantic context requirement. Oracle satisfies that requirement by pulling from external/infrastructure sources or application-produced sources, adapting the result and returning an application-shaped context object.
 
 ## ACCEPTED SEMANTIC DIRECTION
 
@@ -38,19 +18,46 @@ Agentic Application Layer
 - Oracle does not own a run loop, session lifecycle, provider state or before/after hooks;
 - Oracle must satisfy the application requirement, not invent broader relevance semantics or silently expand scope.
 
+## OBSERVED IMPLEMENTATION — WAVES A + C
+
+Two real source classes now cross the Oracle boundary through distinct concrete adapters:
+
+```text
+EXTERNAL SOURCE
+BackendWorkOrder.requiredFiles
+ -> repositoryReader.readFile(...)
+ -> BackendContext files + sourceRef
+
+INTERNAL APPLICATION-PRODUCED SOURCE
+BackendQaHandoff artifact refs
+ -> QaWorkOrder.requiredArtifacts
+ -> artifactReader.readArtifact(...)
+ -> QaContext artifacts + sourceRef + APPLICATION_ARTIFACT provenance
+```
+
+Observed invariants:
+
+- Backend external context is still resolved only for declared repository files;
+- QA internal context is resolved only for artifact refs selected by its declared required artifact paths;
+- Backend -> QA application handoff carries refs and Backend acceptance-decision provenance, not copied artifact contents;
+- internal artifact provenance records the producer work-order id and acceptance decision;
+- resolution failures name the concrete source boundary (`repository` vs `application artifact store`);
+- there is still no generic source registry, retrieval framework, MCP-first adapter layer or serializer IO.
+
+The fact that both adapters perform pull/adapt/validate does not yet justify erasing their lifecycle/provenance differences behind a generic source abstraction.
+
 ## CANDIDATE / IMPLEMENTATION-SENSITIVE DETAILS
 
-Concrete schema library, source-adapter composition, direct-vs-specialized source access and future retrieval/MCP boundaries must be validated by real source requirements. Historical worktree wording that names a preferred implementation is not enough to promote it.
+Concrete artifact-store persistence, caching, source retries, multiple internal artifact producers, future Figma/OpenAPI/CI adapters and retrieval/MCP boundaries must be validated by real source requirements. Historical worktree wording that names a preferred implementation is not enough to promote it.
 
-Current candidate flow remains:
+Current concrete pattern is:
 
 ```text
 application-owned requirement
-        -> resolve fields
-        -> pull from concrete sources
-        -> adapt/normalize
-        -> assemble
-        -> validate application-owned schema
+        -> select declared source refs/fields
+        -> pull from concrete adapter
+        -> adapt/normalize with source provenance
+        -> validate application-owned context schema
         -> explicit context feed
         -> Worker.execute(...)
 ```

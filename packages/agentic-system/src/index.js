@@ -1,4 +1,8 @@
 export {
+  ApplicationArtifactRefSchema,
+  parseApplicationArtifactRef
+} from "./artifact-ref.js";
+export {
   BackendContextSchema,
   BackendEvidenceClaim,
   BackendObjectiveSchema,
@@ -21,6 +25,33 @@ export {
   assessBackendContinuation,
   createBackendAdvisor
 } from "./backend-advisor.js";
-export { resolveBackendContext } from "./oracle.js";
+export {
+  BackendQaHandoffSchema,
+  QaContextSchema,
+  QaEvidenceClaim,
+  QaObjectiveSchema,
+  QaRunAction,
+  QaWorkResultSchema,
+  QaWorkStatus,
+  defineQaObjective,
+  makeQaWorkOrder,
+  parseQaWorkOrder
+} from "./qa-contracts.js";
+export {
+  QaCompletionAction,
+  QaCompletionReason,
+  assessQaCompletion,
+  defineQaCompletionPolicy
+} from "./qa-completion.js";
+export { createQaWorker } from "./qa-worker.js";
+export {
+  createQaHandoffFromBackendRun,
+  runQaObjective
+} from "./qa-application.js";
+export {
+  resolveBackendContext,
+  resolveQaContext
+} from "./oracle.js";
 export { createBackendWorker } from "./backend-worker.js";
 export { runBackendObjective } from "./backend-application.js";
+export { runBackendThenQaObjective } from "./composition.js";
