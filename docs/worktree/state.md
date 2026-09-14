@@ -24,6 +24,14 @@ The repository also carries desired-state work for outer agentic layers that con
 
 Current kernel desired delivery target: add an inspectable `deliberate -> act -> observe` step lifecycle and grounded `REFLECTION` / durable `INTENT` derivation from persisted evidence, then compose those boundaries with effect/recovery workflow semantics.
 
+## ACTIVE AGENTIC APPLICATION
+
+- `agentic-application/state.md`
+
+Current Agentic Application desired delivery target: provide typed application semantics around deterministic Orchestrator control, bounded Advisor judgment, specialist Worker contracts, explicit WorkOrders/WorkResults, application-owned context requirements, Oracle context resolution and ExHarness-backed execution.
+
+The Agentic Application Layer owns task/role/workflow semantics; it does not recreate ExHarness runtime mechanics or infrastructure source resolution.
+
 ## ACTIVE ORACLE
 
 - `oracle/state.md`
