@@ -1,12 +1,68 @@
-# Accepted knowledge pipelines
+# Accepted living pipelines
 
 Status: **PROMOTED**
 
 Decision: `decisions/D001-living-docs-authority.md`
 
-This document owns accepted knowledge-lifecycle semantics. Product delivery sequencing remains in `../worktree/pipeline.md` until a later migration changes that structure.
+This document owns the accepted work-coordination and knowledge-promotion lifecycles.
+
+## Session work pipeline
+
+Every non-trivial session follows:
+
+```text
+READ docs/living/blackboard.md
+  -> identify eligible READY/REOPENED work
+  -> CLAIM one item
+  -> load only the context needed for that item
+  -> execute
+  -> verify/evaluate
+  -> WRITE BACK result + refs + blockers + discoveries
+  -> DONE | BLOCKED | READY
+  -> create new board items for newly exposed work
+```
+
+The next session starts from the updated board, not from an unconstrained fresh plan.
+
+Example:
+
+```text
+A READY
+B READY
+C READY
+
+session-1 claims A
+A CLAIMED
+B READY
+C READY
+
+session-1 resolves A
+A DONE
+B READY
+C READY
+
+session-2 may choose B or C; A is no longer eligible.
+```
+
+This is the core Blackboard coordination property.
+
+## Board transitions
+
+```text
+READY    -> CLAIMED
+REOPENED -> CLAIMED
+CLAIMED  -> DONE
+CLAIMED  -> BLOCKED
+CLAIMED  -> READY
+BLOCKED  -> READY      when blocker is resolved
+DONE     -> REOPENED   only with explicit reopening evidence
+```
+
+Dependency eligibility is evaluated from board state. A worker must not claim an item whose required dependencies are unresolved.
 
 ## Candidate-to-promotion lifecycle
+
+Work completion and knowledge promotion are different.
 
 ```text
 DRAFT
@@ -17,46 +73,40 @@ DRAFT
   -> PROMOTED
 ```
 
-A session boundary does not advance this state machine by itself.
+A session boundary does not advance this lifecycle by itself.
 
 ### DRAFT
-
 Private or rough working material. No authority.
 
 ### PROPOSED
-
-Explicit candidate with motivation, assumptions, unknowns and scope. Still no desired-state authority.
+Explicit candidate with motivation, assumptions, unknowns and scope.
 
 ### SUPPORTED
-
 Material evidence supports the candidate, but contradiction/alternatives may remain.
 
 ### AUDITED
-
-The candidate/judgment has received independent challenge appropriate to its impact. `AUDITED` does not mean correct.
+Independent challenge appropriate to impact has been applied. `AUDITED` does not mean correct.
 
 ### ACCEPTED
-
-A decision boundary has accepted the conclusion/choice. It may now guide work.
+A decision boundary has accepted the conclusion/choice.
 
 ### PROMOTED
-
-The accepted choice has been materialized into the relevant durable authority surface.
+The accepted choice has been materialized into the relevant authority surface.
 
 ## Side transitions
 
 ```text
 PROPOSED  -> REJECTED
 SUPPORTED -> CONTRADICTED
-AUDITED   -> PROPOSED       when challenge requires redesign
-ACCEPTED  -> SUPERSEDED     when later evidence/decision replaces it
-PROMOTED  -> SUPERSEDED     followed by reconciliation of materialized views
+AUDITED   -> PROPOSED
+ACCEPTED  -> SUPERSEDED
+PROMOTED  -> SUPERSEDED -> reconciliation
 ```
 
-## Evidence flow
+## Evidence and promotion flow
 
 ```text
-observation
+Blackboard work result / discovery
   -> evidence record
   -> judgment
   -> audit/challenge
@@ -68,31 +118,17 @@ A judgment may remain unresolved for any number of sessions. Convergence is meas
 
 ## Reconciliation flow
 
-Promoted docs are current accepted models, not immutable truth.
-
 ```text
 runtime/source evidence contradicts promoted view
   -> evidence: CONTRADICTED
   -> judgment reopened
+  -> affected DONE board item may become REOPENED when necessary
   -> audit/decision as needed
   -> promoted view corrected or superseded
 ```
 
-## Coordination flow
-
-The runtime coordination plane is intentionally separate:
-
-```text
-agent/session
-  -> observe relevant Blackboard state
-  -> claim/execute according to the eventual coordination contract
-  -> emit progress/discovery/artifact refs
-  -> evaluation/reflection produces candidate durable knowledge
-  -> promote only through the knowledge lifecycle above
-```
-
-The exact Blackboard runtime contract is not yet promoted.
-
 ## Product delivery pipeline
 
-`../worktree/pipeline.md` remains the accepted current delivery ordering for Agentic Application + Oracle + ExHarness Core work. Its order can guide implementation without making every stage-local design sketch an accepted architecture component.
+`../worktree/pipeline.md` records the larger Agentic System delivery ordering. `blackboard.md` is the operational projection that tells the next worker which concrete pieces of that pipeline are already resolved, active, blocked or eligible.
+
+The worker reads the Blackboard first, then uses the worktree pipeline as supporting context for the claimed item.

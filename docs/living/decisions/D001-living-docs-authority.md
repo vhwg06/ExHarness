@@ -1,73 +1,113 @@
-# D001 — Living docs use typed authority and evidence-driven promotion
+# D001 — Blackboard-first living docs with typed authority
 
 Status: **PROMOTED**
 
 Accepted at: 2026-09-14
 
-Acceptance boundary: repository owner explicitly selected this architecture for ExHarness living documentation.
+Acceptance boundary: repository owner explicitly selected and corrected this architecture for ExHarness living documentation.
 
 ## Context
 
-The previous worktree model treated `docs/worktree/` as active desired-state authority. That made it too easy for a newly drafted component or architecture sketch to become apparent truth simply because a session wrote it into the desired-state tree.
+The old worktree model made newly drafted target shapes look like desired state too early.
 
-Long-horizon agentic work needs persistent external state, but operational coordination, durable knowledge and actual implementation have different lifecycles and authority semantics.
+The first revision of D001 overcorrected in the other direction: it described Blackboard as an architectural coordination plane while deferring the actual Blackboard surface. That fails the intended shared-work semantics because a session could still choose and perform work without first changing shared coordination state.
+
+The required model is literal Blackboard coordination: shared questions/work are visible; a worker claims one; when it resolves that item the board changes; the next worker sees a smaller eligible set.
 
 ## Decision
 
-ExHarness documentation uses three distinct planes:
+`docs/living/blackboard.md` is the canonical active coordination surface now.
 
-1. **Blackboard / coordination plane** — high-frequency operational work state shared across agents/sessions.
-2. **Living knowledge plane** — durable evidence, judgments, audits, decisions and promoted materialized views.
-3. **Artifact plane** — source, tests, configs, runtime observations and produced artifacts.
+Every non-trivial shared work session must:
 
-There is no single global source of truth. Authority is typed by the question being answered.
+```text
+read board
+  -> choose eligible unresolved item
+  -> claim item
+  -> execute
+  -> write result / refs / blockers / discoveries
+  -> resolve, block or release item
+```
 
-New design does not become desired state when drafted. It progresses through:
+A later session selects from the updated board rather than replanning the whole project independently.
+
+Example:
+
+```text
+A READY
+B READY
+C READY
+
+session-1 resolves A
+
+A DONE
+B READY
+C READY
+
+session-2 may choose B or C, not A
+```
+
+This operational lifecycle is distinct from knowledge promotion.
+
+ExHarness living docs therefore contain:
+
+1. **Blackboard** — current operational coordination and shared work state.
+2. **Living knowledge** — evidence, judgments, audits, decisions and promoted views.
+3. **Artifact reality** — source, tests, configs, runtime observations and produced artifacts.
+
+There is no single global source of truth. Authority remains typed by question.
+
+New design conclusions still progress independently through:
 
 ```text
 DRAFT -> PROPOSED -> SUPPORTED -> AUDITED -> ACCEPTED -> PROMOTED
 ```
 
-Promotion depends on evidence and an acceptance boundary, not a fixed number of sessions.
+A board item becoming `DONE` does not automatically make its design conclusion desired state.
 
-`architecture.md`, `pipelines.md` and `contracts.md` are materialized promoted views. Candidate design belongs outside those authority surfaces until promoted.
+`architecture.md`, `pipelines.md` and `contracts.md` remain promoted views. `docs/worktree/` remains supporting convergence/context material for claimed work and does not grant authority by path.
 
-`docs/worktree/` is retained as durable convergence material, but its location no longer grants desired-state authority.
+## Current storage choice
 
-Coordination lifecycle must remain independent from Git/source-control lifecycle.
+The Blackboard is currently Git-backed as `docs/living/blackboard.md` because ExHarness needs persistent shared coordination now.
+
+This decision promotes the Blackboard **semantics and current canonical surface**, not a generalized coordination subsystem.
+
+If later multi-agent concurrency or write frequency proves Git-backed coordination insufficient, the storage/transport may be migrated while preserving the same board lifecycle.
 
 ## Deliberately not decided
 
-This decision does not select the runtime Blackboard implementation. In particular it does not yet commit to:
+D001 does not yet introduce:
 
-- a Claim Manager component;
-- lease semantics;
-- a WorkItem schema;
-- event bus or subscription mechanism;
-- database/file/tuple-space storage;
-- conflict-resolution rules;
-- stale-state thresholds;
-- retention/compaction strategy.
+- a generic Claim Manager service;
+- leases/timeouts;
+- event bus/subscription infrastructure;
+- database/tuple-space storage;
+- workflow DSL/engine;
+- generalized conflict resolution;
+- automatic stale-claim recovery.
 
-Those details require real ExHarness usage and evidence before promotion.
+Those require real contention/recovery evidence.
 
 ## Consequences
 
-- documentation routing starts from `docs/living/`;
-- worktree content must be interpreted as candidate/convergence material unless explicitly linked to a promoted decision;
-- existing implemented facts remain grounded by source/public exports;
-- existing accepted delivery ordering can remain active without promoting every stage-local design sketch;
-- future sessions can accumulate evidence and refine candidates without pretending they are already the final architecture.
+- `docs/living/blackboard.md` is read before work selection;
+- all non-trivial shared work is added/claimed/updated there;
+- resolving one item constrains later sessions and prevents accidental duplicate work;
+- discoveries create/update board items before another session acts on them;
+- worktree material is loaded only after a board item is claimed;
+- evidence/judgment/promotion remain separate from board completion;
+- source/public exports remain authority for implemented facts.
 
 ## Promotion targets
 
 This decision is materialized in:
 
-- `../architecture.md`
+- `../blackboard.md`
+- `../README.md`
 - `../pipelines.md`
 - `../contracts.md`
-- `../README.md`
 
 ## Reopen when
 
-Reopen this decision if real use shows that the separation prevents necessary coordination, creates unmanageable knowledge duplication, or cannot be enforced without making the documentation lifecycle more expensive than the value it provides.
+Reopen this decision if real use shows the Blackboard lifecycle itself is insufficient. Storage migration alone does not reopen the coordination semantics.
