@@ -1,17 +1,18 @@
-# Active engineering decisions
+# Active Core Harness decisions
 
-Current constraints that must shape continuation. This is not an ADR archive.
+Current constraints that must shape ExHarness Core continuation. This is not an ADR archive and it does not define Agentic Application/Oracle semantics.
 
 ## LAYERING
 
 - AVO owns long-horizon search/control semantics; NOOA-style runtime owns how an agent acts inside a variation.
-- Consumers inject domain semantics, infrastructure and correctness authorities; the kernel stays backend/frontend/QA/product agnostic.
-- Deterministic kernel lifecycle rules outrank model self-reported state.
-- Strategy owns reasoning policy; kernel owns inspectable lifecycle/authority boundaries around the resulting steps.
+- Agentic Application owns domain/work orchestration above Core; Oracle owns source-resolution infrastructure around that application boundary.
+- Core remains backend/frontend/QA/product agnostic.
+- Deterministic Core lifecycle rules outrank model self-reported state.
+- Strategy owns reasoning policy; Core owns inspectable lifecycle/authority boundaries around the resulting steps.
 
 ## AUTHORITY
 
-- Source/public exports are implementation authority; worktree is the desired delivery projection for active engineering.
+- Source/public exports are implementation authority; this subtree is the desired delivery projection for active Core continuation.
 - `Observation != SemanticMemory != Evaluation`.
 - `AgentEvent != TurnEvent != TraceSpan != EffectJournal`.
 - `SemanticMemory.INTENT != ActionIntent`.
@@ -44,7 +45,7 @@ Current constraints that must shape continuation. This is not an ADR archive.
 
 ## CONTEXT
 
-- Context is a bounded projection of canonical state/history, not a dump of repository/runtime history.
+- Core context is a bounded projection of canonical runtime state/history, not an Oracle replacement and not a repository dump.
 - Context selection cannot fabricate canonical runtime events; summaries/reductions retain source-event identity.
 - Live resources and live objects carry explicit authority; snapshot/resume requires explicit rebinding rather than resurrecting transient authority.
 
@@ -54,4 +55,4 @@ Current constraints that must shape continuation. This is not an ADR archive.
 - Model/operator judgment is fallback for residual ambiguity, not the default mechanism for reconstructing state from logs/traces.
 - Effect identity and recovery state must remain separate from semantic memory and evaluation state.
 
-Remove or replace a decision here when the desired/implemented authority changes it.
+Remove or replace a decision here when the desired/implemented Core authority changes it.

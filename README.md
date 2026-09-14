@@ -1,139 +1,162 @@
-# ExHarness
+# ExHarness — Agentic System
 
-ExHarness is a reusable autonomous-agent harness kernel with two complementary layers:
+ExHarness is an **agentic system** for building bounded, evidence-aware software engineering agents from three explicit layers:
 
-- **AVO control plane** — long-horizon variation, candidate/lineage state, verification/evaluation, supervision, recovery and adaptive search investment.
-- **NOOA-style agent substrate** — typed judgments, Predict/CodeAct, object agents, live-object authority, progressive discovery, bounded context/history, model routing, tracing and resumable runtime state.
+- **Agentic Application** — owns objectives, work decomposition, deterministic orchestration, bounded Advisor judgment, specialist Worker semantics, context requirements and application completion policy.
+- **Oracle** — infrastructure that resolves application-owned context requirements by pulling/dereferencing concrete sources and adapting them into application-shaped context before Worker execution.
+- **ExHarness Core** — the reusable execution kernel providing long-horizon control, agent runtime, cognition, evidence/trust, persistence, recovery and authority boundaries.
 
-The kernel intentionally contains no backend, frontend, QA, design-system or product semantics. Consumers inject domain objectives, environment/effect semantics, models, executors, stores, verifiers and trust authorities.
+The repository is organized around the composed **Agentic System**. The published `exharness` package is the reusable Core layer inside that system.
 
-## Architecture
-
-```text
-consumer/domain semantics
-        ↓
-createHarness()
-  persistence + recovery gates + supervision
-  search investment + observability + trust
-        ↓
-AVO control plane
-  candidate / variation / evidence / lineage
-        ↓
-AgentRuntime / ObjectAgent
-  judgments + capabilities + context + events
-  Predict / CodeAct / JavaScript CodeAct
-  resources + live objects + discovery + routing
-        ↓
-injected infrastructure
-  model / environment / executor / durable store / tracer / authorities
-```
-
-The layering rule is:
+## System architecture
 
 ```text
-AVO  = what autonomous search does over time
-NOOA = how the agent acts programmatically inside a variation
+Objective
+   |
+   v
+Agentic Application
+  Orchestrator ----------------> Advisor
+      |                           plan / assess / replan
+      |
+      v
+  concrete WorkOrder / context need
+      |
+      +------> Oracle
+      |          |
+      |          +------> external sources
+      |          |        Git / docs / OpenAPI / Figma / ...
+      |          |
+      |          +------> application-produced artifacts/state
+      |          |
+      |       resolved context
+      |          |
+      v          v
+  specialist Worker
+      |
+      v
+  ExHarness Core
+      |
+      v
+  structured WorkResult + evidence/artifact refs
+      |
+      +------> Orchestrator
 ```
 
-Deterministic kernel code owns lifecycle and authority invariants. Models own bounded local judgment, never correctness authority by self-report.
+Ownership is intentionally split:
 
-## What is delivered
-
-### Long-horizon control
-
-- persistent candidate ancestry and committed lineage;
-- explicit variation lifecycle and capability budgets;
-- observations, objective verifications and evaluations;
-- evaluation-freshness checks before promotion;
-- trajectory-aware supervision;
-- adaptive search-investment decisions for CONTINUE / STOP / ESCALATE;
-- explicit interrupted-variation recovery.
-
-### Agent runtime
-
-- typed judgments and capability contracts;
-- Predict and finite action-protocol CodeAct;
-- language-native JavaScript CodeAct sessions with persistent per-call locals;
-- agent-as-object ergonomics;
-- live object identity, mutation and bounded authority surfaces;
-- progressive `doc()` / surface discovery;
-- bounded context blocks and canonical event-history selection;
-- nested tracing and observable runtime events;
-- scoped model routing;
-- runtime snapshot/resume with compatibility checks and explicit resource/live-object rebinding.
-
-### Cognition and memory
-
-ExHarness separates semantic memory from correctness state.
-
-The core package exposes semantic-memory storage, relations/graph, evolution, ranking/intelligence, spontaneous recall and a retrieval authority boundary. `createSemanticMemoryRetrievalPort()` re-reads canonical records, rejects archived records, enforces tags and context budgets, and treats provider ranking as non-authoritative.
-
-A NOOA-style associative retrieval adapter is exposed separately through:
-
-```js
-import { createNooaMemoryRetriever } from "exharness/memory-retrieval";
+```text
+Application owns WHAT / WHY / semantic contracts.
+Oracle owns WHERE / pull / dereference / adaptation.
+ExHarness Core owns agent execution mechanics and runtime authority.
+Infrastructure owns concrete IO, sandboxing, storage and source access.
 ```
 
-The adapter provides hybrid dense/sparse candidate generation, ACT-R-like recency, importance weighting and bounded graph spread. It is a ranking adapter, not correctness authority and not automatically wired into every memory/context path.
+## Delivery model
 
-### Trust and evidence
+The system is developed **concrete-first**. Generic application abstractions are not introduced before multiple real slices prove a common shape.
 
-The kernel exposes evidence, decision and attestation primitives, including process-trust and verification-independence semantics. Trust artifacts remain distinct from model traces, semantic memory and evaluation state.
+Current canonical delivery pipeline:
 
-## Consumer entry point
+```text
+WAVE A — prove one real Backend slice
+  S1 Concrete Backend semantics
+  S2 Concrete Backend context resolution
+  S3 BackendWorker × ExHarness execution
+  S4 Concrete deterministic Backend orchestration
 
-Normal consumers should start with `createHarness()`:
+WAVE B — make success trustworthy
+  S5 Backend-specific completion/evidence semantics
+  S6 Advisor judgment boundary
 
-```js
-import {
-  AVOCapability,
-  EvaluationValidity,
-  EvaluationVerdict,
-  createHarness
-} from "exharness";
+WAVE C — compose real application work
+  S7 Second real role + extract only proven common abstractions
+  S8 Artifact handoff / dereference / context chaining
 
-const harness = createHarness({
-  strategy: {
-    async run({ invoke }) {
-      await invoke(AVOCapability.ACT, { nextVersion: "v1" });
-      await invoke(AVOCapability.EVALUATE);
-      await invoke(AVOCapability.PROMOTE);
-    }
-  },
-
-  environment: {
-    async observe({ candidate, request }) {
-      return inspect(candidate, request);
-    },
-    async act({ candidate, action }) {
-      return applyAction(candidate, action);
-    }
-  },
-
-  objective: {
-    async evaluate() {
-      return {
-        validity: EvaluationValidity.VALID,
-        verdict: EvaluationVerdict.PASS
-      };
-    }
-  }
-});
-
-await harness.start({
-  sessionId: "work-1",
-  work: { objective: "improve the candidate" },
-  seedCandidate: { id: "candidate", version: "v0" }
-});
-
-await harness.vary("work-1");
+WAVE D — harden and generalize
+  S9 Persistence / resilience / recovery composition
+  S10 Production evaluation + evidence-based generalization
 ```
 
-Low-level `createAVOHarness()`, `createCoreHarness()` and `createAgentRuntime()` remain exported for custom composition.
+Stages are dependency/learning steps, not ten independent sign-off checkpoints. S1–S4 are one continuous vertical-slice wave with one review after Backend runs end-to-end.
 
-## State and authority boundaries
+Core execution rule for Wave A:
 
-Important invariants include:
+```text
+BackendObjective
+  -> BackendWorkOrder
+  -> resolveBackendContext
+  -> BackendWorker
+  -> ExHarness Core
+  -> BackendWorkResult
+  -> concrete Backend completion decision
+```
+
+No generic `Worker<C,R>`, generic WorkOrder, role registry or generic Orchestrator is required in Wave A.
+
+See `docs/worktree/pipeline.md` for the canonical desired delivery sequence.
+
+## Context feeding
+
+Context semantics belong to the Agentic Application. Oracle only satisfies those semantics.
+
+```text
+Application declares required semantic context
+        |
+        v
+Oracle pulls / dereferences / adapts sources
+        |
+        v
+validated application-shaped context
+        |
+        v
+Serializer renders context for execution
+        |
+        v
+Worker / ExHarness Core
+```
+
+The serializer performs **no IO**. Dereferencing belongs to Oracle.
+
+Oracle may resolve two distinct source classes:
+
+```text
+External sources
+  Git / Figma / docs / OpenAPI / APIs / ...
+
+Application-produced sources
+  prior WorkResult refs / artifact store / application state
+```
+
+Both cross the Oracle boundary, but their adapters and source semantics remain distinct.
+
+## Completion and evidence
+
+A Worker saying `done` is never sufficient application completion state.
+
+```text
+Worker execution
+   -> structured WorkResult
+   -> role-specific evidence / artifacts / gaps / blockers
+   -> application completion policy
+   -> ACCEPT | CONTINUE | BLOCK | FAIL
+```
+
+Evidence semantics stay concrete first. Backend verification may involve tests/typecheck/mutation evidence; Frontend, QA or Design may require different evidence. Common evidence abstractions are extracted only after real slices demonstrate them.
+
+## Current maturity
+
+### ExHarness Core — delivered
+
+`packages/core-harness` publishes `exharness` and currently provides:
+
+- AVO variation, lineage, verification/evaluation, supervision and adaptive search investment;
+- typed judgments, Predict/CodeAct, object agents, live objects and progressive discovery;
+- bounded context/history, model routing, tracing and runtime snapshot/resume;
+- semantic memory and separate NOOA-style retrieval/ranking;
+- evidence/decision/attestation trust primitives;
+- interrupted-variation recovery and separate effect reconciliation primitives.
+
+Important Core invariants include:
 
 ```text
 working candidate ancestry != committed lineage
@@ -145,61 +168,61 @@ search investment != promotion correctness
 supervision != correctness verdict
 ```
 
-Promotion requires a fresh evaluation over the exact current observation and verification artifact snapshots.
+### Agentic Application + Oracle — desired state / active delivery
 
-Context is a bounded projection of canonical history/state; selectors cannot fabricate canonical runtime events. Live resources and live objects carry explicit authority and are not silently resurrected by snapshot restore.
+Their architecture, semantics, boundaries and active gaps are materialized under `docs/worktree/`. They are not described as already-delivered runtime features until source implementation converges.
 
-## Recovery semantics
+## Documentation routing
 
-ExHarness currently has three distinct recovery mechanisms:
-
-1. **AVO interrupted-variation recovery** — a persisted `RUNNING` variation causes `resume()` / `vary()` to fail closed until the variation is explicitly recovered and closed as interrupted.
-2. **AgentRuntime snapshot/resume** — restores compatible runtime configuration and `AgentEvent` state; active resources/live objects require explicit rebinding.
-3. **Effect-operation reconciliation** — effectful capabilities can journal operation intent before dispatch and reconcile `PURE`, `IDEMPOTENT`, `OBSERVABLE` or `NON_RECONCILABLE` operations.
-
-Effect semantics are exposed through:
-
-```js
-import {
-  EffectReplayPolicy,
-  createInMemoryEffectJournal,
-  defineEffectCapability,
-  reconcileEffectOperation
-} from "exharness/effects";
-```
-
-These mechanisms are intentionally not presented as one completed recovery workflow yet. In the built-in AVO path, `avo.act` still delegates to `core.act()`, which calls `environment.act()` before resulting candidate/event state is persisted. Consumers with externally visible effects must not infer effect completion from candidate or trace state alone.
-
-## Persistence and infrastructure
-
-Production use should provide a revision-aware durable session store. The bundled in-memory implementations are references/test utilities, not production durability.
-
-```js
-import { verifySessionStoreContract } from "exharness/testing";
-
-await verifySessionStoreContract(() => myStore());
-```
-
-Executors/sandboxes remain injected infrastructure. ExHarness can carry timeout/abort/constraint envelopes, but actual filesystem, process, network, credential and resource isolation must be enforced by the executor boundary.
-
-## Living repository state
-
-Current delivery truth for repository continuation lives under:
+Start at `docs/README.md`.
 
 ```text
-docs/worktree/
-├── state.md
-└── engineering/
-    ├── state.md
-    ├── architecture.md
-    ├── workflow.md
-    ├── gaps.md
-    └── decisions.md
+docs/
+├── README.md                         # documentation router
+├── worktree/
+│   ├── state.md                      # Agentic System desired-state router
+│   ├── pipeline.md                   # active 10-stage / 4-wave delivery sequence
+│   ├── agentic-application/          # application semantics and boundaries
+│   ├── oracle/                       # context-resolution infrastructure
+│   └── core-harness/                 # ExHarness Core continuation state
+├── architecture/                     # deeper implemented/Core design records
+└── development/                      # implementation/verification process
 ```
 
-`docs/worktree/state.md` is the repository delivery projection. Engineering children contain bounded current state only. Historical stage detail stays in Git and `docs/architecture/`.
+Routing authority:
 
-Source/public exports remain implementation authority; worktree projections must be reconciled when those semantics change.
+```text
+README.md
+   -> docs/README.md
+      -> docs/worktree/state.md
+         -> docs/worktree/pipeline.md        for delivery order
+         -> agentic-application/state.md     for application semantics
+         -> oracle/state.md                  for context infrastructure
+         -> core-harness/state.md            for Core continuation
+```
+
+Source/public exports are authority for what is implemented now. `docs/worktree/` is authority for active desired delivery state. `docs/architecture/` contains deeper design/history and must not silently override current worktree decisions.
+
+## Core package
+
+The published Core remains independently reusable:
+
+```js
+import { createHarness } from "exharness";
+```
+
+Low-level `createAVOHarness()`, `createCoreHarness()` and `createAgentRuntime()` remain available for custom Core composition.
+
+Current package subpaths include:
+
+```text
+exharness
+exharness/testing
+exharness/effects
+exharness/memory-retrieval
+```
+
+The workspace root remains private so Agentic Application, Oracle and repository-level composition can evolve without prematurely expanding the Core package surface.
 
 ## Verification
 
@@ -209,19 +232,4 @@ Requires Node.js 20 or newer.
 npm run verify
 ```
 
-The repository verification gate includes the kernel suite, reference workloads/benchmarks, package dry-run and packed blank-consumer smoke tests. Fidelity/reference artifacts are checked in under `artifacts/`.
-
-## Package
-
-`packages/core-harness` publishes `exharness`.
-
-Public package subpaths currently include:
-
-```text
-exharness
-exharness/testing
-exharness/effects
-exharness/memory-retrieval
-```
-
-The workspace root remains private so adapters and repository tooling can evolve without expanding the kernel package surface.
+The current verification gate covers implemented repository/Core behavior. Application and Oracle verification must be added concretely as each delivery slice lands; desired-state documentation alone does not imply implementation completeness.
