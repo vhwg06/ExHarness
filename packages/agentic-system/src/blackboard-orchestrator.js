@@ -1,5 +1,12 @@
 import { dirname } from "node:path";
 import { promises as nodeFs } from "node:fs";
+import {
+  TrustBoundary,
+  defineTrustPolicy,
+  evaluateTrustBoundary,
+  subjectFromValue,
+  validateTrustBundle
+} from "../../core-harness/src/index.js";
 
 function invariant(condition, message) {
   if (!condition) throw new TypeError(message);
@@ -69,7 +76,8 @@ function normalizeReview(raw, index) {
     key: requireText(raw.key, `reviews[${index}].key`),
     reviewer: requireText(raw.reviewer, `reviews[${index}].reviewer`),
     verdict: raw.verdict,
-    assessmentRef: requireText(raw.assessmentRef, `reviews[${index}].assessmentRef`),
+    decisionRef: requireText(raw.decisionRef, `reviews[${index}].decisionRef`),
+    attestationRef: requireText(raw.attestationRef, `reviews[${index}].attestationRef`),
     findings: normalizeTextArray(raw.findings ?? [], `reviews[${index}].findings`)
   };
 }
@@ -80,6 +88,16 @@ function normalizeFinding(raw) {
     summary: requireText(raw.summary, "finding.summary"),
     sourceRef: requireText(raw.sourceRef, "finding.sourceRef")
   };
+}
+
+function normalizeReviewSubject(raw, name) {
+  invariant(raw && typeof raw === "object" && !Array.isArray(raw), `${name} must be an object`);
+  return freezeClone({
+    type: requireText(raw.type, `${name}.type`),
+    digest: requireText(raw.digest, `${name}.digest`),
+    producer: raw.producer == null ? null : clone(raw.producer),
+    metadata: raw.metadata == null ? null : clone(raw.metadata)
+  });
 }
 
 function normalizeItem(raw, index = 0) {
@@ -113,11 +131,13 @@ function normalizeItem(raw, index = 0) {
     evidenceRefs: normalizeTextArray(raw.evidenceRefs ?? [], `items[${index}].evidenceRefs`),
     followUpRefs: normalizeTextArray(raw.followUpRefs ?? [], `items[${index}].followUpRefs`),
     submission: raw.submission == null ? null : clone(raw.submission),
+    submittedBy: raw.submittedBy == null ? null : requireText(raw.submittedBy, `items[${index}].submittedBy`),
     reviewRequirements,
     reviews,
     activeReview: raw.activeReview == null ? null : {
       key: requireText(raw.activeReview.key, `items[${index}].activeReview.key`),
-      reviewer: requireText(raw.activeReview.reviewer, `items[${index}].activeReview.reviewer`)
+      reviewer: requireText(raw.activeReview.reviewer, `items[${index}].activeReview.reviewer`),
+      subject: normalizeReviewSubject(raw.activeReview.subject, `items[${index}].activeReview.subject`)
     },
     origin: raw.origin == null ? null : clone(raw.origin)
   };
@@ -138,7 +158,7 @@ export function defineBlackboardSnapshot(raw = { version: 1, items: [] }) {
   return freezeClone({ version: 1, items });
 }
 
-export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 30_000 }) {
+export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300_000 }) {
   requireText(path, "Blackboard store path");
   invariant(Number.isInteger(lockStaleMs) && lockStaleMs > 0, "Blackboard lockStaleMs must be a positive integer");
   invariant(
@@ -148,7 +168,8 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 30_
       typeof fs.mkdir === "function" &&
       typeof fs.rename === "function" &&
       typeof fs.open === "function" &&
-      typeof fs.unlink === "function",
+      typeof fs.unlink === "function" &&
+      typeof fs.stat === "function",
     "Blackboard store requires filesystem read/write/lock capability"
   );
 
@@ -173,24 +194,45 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 30_
     return snapshot;
   }
 
-  async function openMutationLock() {
-    await fs.mkdir(dirname(path), { recursive: true });
+  async function createLockHandle() {
+    const handle = await fs.open(lockPath, "wx");
     try {
-      const handle = await fs.open(lockPath, "wx");
       await handle.writeFile(`${JSON.stringify({ createdAt: Date.now() })}\n`, "utf8");
       return handle;
     } catch (error) {
-      if (error?.code !== "EEXIST") throw error;
-
-      let stale = false;
+      await handle.close();
       try {
-        const metadata = JSON.parse(await fs.readFile(lockPath, "utf8"));
-        stale = Number.isFinite(metadata.createdAt) && Date.now() - metadata.createdAt > lockStaleMs;
-      } catch {
-        stale = false;
+        await fs.unlink(lockPath);
+      } catch (unlinkError) {
+        if (unlinkError?.code !== "ENOENT") throw unlinkError;
       }
+      throw error;
+    }
+  }
 
-      if (!stale) throw new Error("Blackboard store mutation already in progress");
+  async function lockIsStale() {
+    try {
+      const metadata = JSON.parse(await fs.readFile(lockPath, "utf8"));
+      if (Number.isFinite(metadata.createdAt)) return Date.now() - metadata.createdAt > lockStaleMs;
+    } catch {
+      // Fall back to filesystem mtime for a crashed/partial lock write.
+    }
+    try {
+      const stat = await fs.stat(lockPath);
+      return Date.now() - stat.mtimeMs > lockStaleMs;
+    } catch (error) {
+      if (error?.code === "ENOENT") return false;
+      throw error;
+    }
+  }
+
+  async function openMutationLock() {
+    await fs.mkdir(dirname(path), { recursive: true });
+    try {
+      return await createLockHandle();
+    } catch (error) {
+      if (error?.code !== "EEXIST") throw error;
+      if (!(await lockIsStale())) throw new Error("Blackboard store mutation already in progress");
 
       try {
         await fs.unlink(lockPath);
@@ -199,9 +241,7 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 30_
       }
 
       try {
-        const handle = await fs.open(lockPath, "wx");
-        await handle.writeFile(`${JSON.stringify({ createdAt: Date.now() })}\n`, "utf8");
-        return handle;
+        return await createLockHandle();
       } catch (retryError) {
         if (retryError?.code === "EEXIST") throw new Error("Blackboard store mutation already in progress");
         throw retryError;
@@ -227,15 +267,12 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 30_
     async load() {
       return loadUnlocked();
     },
-    async save(rawSnapshot) {
-      return withMutationLock(() => saveUnlocked(rawSnapshot));
-    },
     async transact(mutator) {
       invariant(typeof mutator === "function", "Blackboard store transact requires a mutator");
       return withMutationLock(async () => {
         const current = await loadUnlocked();
         const next = clone(current);
-        const result = mutator(next);
+        const result = await mutator(next);
         const saved = await saveUnlocked(next);
         return freezeClone({ snapshot: saved, result });
       });
@@ -277,11 +314,105 @@ function removeResolvedWork(item, resolvedWork) {
   item.remainingWork = item.remainingWork.filter((work) => !resolved.includes(work));
 }
 
-export function createApplicationOrchestrator({ store }) {
+function reviewSubject(item, key) {
+  invariant(item.submission != null, `Blackboard item ${item.id} has no submission`);
+  invariant(item.submittedBy != null, `Blackboard item ${item.id} has no submission producer`);
+  return subjectFromValue({
+    itemId: item.id,
+    reviewKey: key,
+    submission: item.submission
+  }, {
+    type: "blackboard-review-target",
+    producer: {
+      identity: item.submittedBy,
+      roles: ["producer"]
+    },
+    metadata: {
+      itemId: item.id,
+      reviewKey: key
+    }
+  });
+}
+
+function findingsFromDecision(decision) {
+  return normalizeTextArray(decision?.metadata?.findings ?? [], "review decision findings");
+}
+
+function reviewTrustConfig(reviewTrust) {
+  invariant(reviewTrust && typeof reviewTrust === "object", "ApplicationOrchestrator requires reviewTrust");
+  invariant(typeof reviewTrust.trustPolicyFor === "function", "reviewTrust.trustPolicyFor is required");
+  invariant(typeof reviewTrust.verifySignature === "function", "reviewTrust.verifySignature is required");
+  invariant(typeof reviewTrust.verifyEvaluatorAuthority === "function", "reviewTrust.verifyEvaluatorAuthority is required");
+  invariant(typeof reviewTrust.verifyEvidenceAuthority === "function", "reviewTrust.verifyEvidenceAuthority is required");
+  return reviewTrust;
+}
+
+async function evaluateReviewBundle({ item, requirement, activeReview, bundle, reviewTrust }) {
+  invariant(bundle && typeof bundle === "object" && !Array.isArray(bundle), "review trust bundle is required");
+  invariant(Array.isArray(bundle.evidence) && bundle.evidence.length > 0, "review trust bundle requires grounded evidence artifacts");
+
+  const validated = validateTrustBundle({
+    evidence: bundle.evidence,
+    decision: bundle.decision,
+    attestation: bundle.attestation
+  });
+  invariant(Object.values(ReviewVerdict).includes(validated.decision.verdict), "review decision verdict is invalid");
+  invariant(validated.decision.evaluator?.identity === activeReview.reviewer, "review decision evaluator does not match scheduled reviewer");
+  invariant(validated.decision.evaluator?.identity !== item.submittedBy, "review evaluator must be independent from submission producer");
+
+  const findings = findingsFromDecision(validated.decision);
+  if (validated.decision.verdict === ReviewVerdict.ACCEPTED) {
+    invariant(findings.length === 0, "accepted review decision cannot contain unresolved findings");
+    invariant((validated.decision.unresolved ?? []).length === 0, "accepted review decision cannot contain unresolved claims");
+  }
+
+  const declaredPolicy = await reviewTrust.trustPolicyFor({
+    item: freezeClone(item),
+    requirement: freezeClone(requirement),
+    reviewer: activeReview.reviewer,
+    subject: freezeClone(activeReview.subject)
+  });
+  const trustPolicy = defineTrustPolicy({
+    ...declaredPolicy,
+    boundary: TrustBoundary.ACCEPTANCE,
+    requiredIssuerRoles: [...new Set([...(declaredPolicy?.requiredIssuerRoles ?? []), "attestor"])],
+    requiredEvaluatorRoles: [...new Set([...(declaredPolicy?.requiredEvaluatorRoles ?? []), "reviewer"])],
+    requiredEvidenceProducerRoles: [...new Set([...(declaredPolicy?.requiredEvidenceProducerRoles ?? []), "verifier"])],
+    requireSignature: true,
+    requireEvidenceArtifacts: true,
+    requireDecisionArtifact: true,
+    requireIndependentIssuer: true,
+    requireIndependentEvidenceProducers: true
+  });
+
+  const trust = await evaluateTrustBoundary({
+    attestation: validated.attestation,
+    decision: validated.decision,
+    evidence: validated.evidence,
+    currentSubject: activeReview.subject,
+    policy: trustPolicy,
+    verifySignature: (input) => reviewTrust.verifySignature({ ...input, item, requirement, reviewer: activeReview.reviewer }),
+    verifyEvaluatorAuthority: (input) => reviewTrust.verifyEvaluatorAuthority({ ...input, item, requirement, reviewer: activeReview.reviewer }),
+    verifyEvidenceAuthority: (input) => reviewTrust.verifyEvidenceAuthority({ ...input, item, requirement, reviewer: activeReview.reviewer })
+  });
+
+  invariant(trust.trusted, `review trust rejected: ${trust.reasons.map((reason) => reason.code).join(", ")}`);
+  return freezeClone({
+    verdict: validated.decision.verdict,
+    reviewer: activeReview.reviewer,
+    decisionRef: validated.decision.id,
+    attestationRef: validated.attestation.id,
+    findings,
+    trust
+  });
+}
+
+export function createApplicationOrchestrator({ store, reviewTrust }) {
   invariant(
     store && typeof store.load === "function" && typeof store.transact === "function",
     "ApplicationOrchestrator requires a transactional Blackboard store"
   );
+  const trustedReview = reviewTrustConfig(reviewTrust);
 
   async function mutate(mutator) {
     return freezeClone(await store.transact(mutator));
@@ -338,6 +469,7 @@ export function createApplicationOrchestrator({ store }) {
         }
 
         item.submission = clone(submission);
+        item.submittedBy = owner;
         item.owner = null;
         item.activeReview = null;
         item.reviews = [];
@@ -371,26 +503,48 @@ export function createApplicationOrchestrator({ store }) {
         invariant(requirementFor(item, key), `Blackboard item ${itemId} does not require review ${key}`);
         invariant(reviewFor(item, key) == null, `Blackboard item ${itemId} already has assessment for ${key}`);
         invariant(item.activeReview == null, `Blackboard item ${itemId} already has an active review`);
-        item.activeReview = { key, reviewer };
+        invariant(reviewer !== item.submittedBy, "reviewer must be independent from submission producer");
+        item.activeReview = {
+          key,
+          reviewer,
+          subject: reviewSubject(item, key)
+        };
         item.status = BlackboardStatus.REVIEWING;
-        return clone(item);
+        return clone(item.activeReview);
       });
     },
 
-    async recordAssessment({ itemId, key, reviewer, verdict, assessmentRef, findings = [] }) {
+    async recordAssessment({ itemId, key, bundle }) {
       requireText(itemId, "itemId");
-      invariant(Object.values(ReviewVerdict).includes(verdict), "review verdict is invalid");
-      const normalizedFindings = normalizeTextArray(findings, "findings");
-      return mutate((snapshot) => {
+      requireText(key, "key");
+      return mutate(async (snapshot) => {
         const item = findItem(snapshot, itemId);
         invariant(item.status === BlackboardStatus.REVIEWING, `Blackboard item ${itemId} is not REVIEWING`);
-        invariant(item.activeReview?.key === key && item.activeReview?.reviewer === reviewer, `Blackboard item ${itemId} active review does not match assessment`);
+        invariant(item.activeReview?.key === key, `Blackboard item ${itemId} active review does not match assessment`);
+        const requirement = requirementFor(item, key);
+        invariant(requirement, `Blackboard item ${itemId} does not require review ${key}`);
 
-        item.reviews.push(normalizeReview({ key, reviewer, verdict, assessmentRef, findings: normalizedFindings }, item.reviews.length));
+        const assessment = await evaluateReviewBundle({
+          item,
+          requirement,
+          activeReview: item.activeReview,
+          bundle,
+          reviewTrust: trustedReview
+        });
+
+        item.reviews.push(normalizeReview({
+          key,
+          reviewer: assessment.reviewer,
+          verdict: assessment.verdict,
+          decisionRef: assessment.decisionRef,
+          attestationRef: assessment.attestationRef,
+          findings: assessment.findings
+        }, item.reviews.length));
         item.activeReview = null;
+        addUnique(item.evidenceRefs, [assessment.decisionRef, assessment.attestationRef]);
 
-        if (verdict !== ReviewVerdict.ACCEPTED) {
-          addUnique(item.remainingWork, normalizedFindings.length > 0 ? normalizedFindings : [`Review ${key} did not accept the submission`]);
+        if (assessment.verdict !== ReviewVerdict.ACCEPTED) {
+          addUnique(item.remainingWork, assessment.findings.length > 0 ? assessment.findings : [`Review ${key} did not accept the submission`]);
           item.status = BlackboardStatus.REOPENED;
         } else if (!unresolvedReview(item)) {
           item.status = item.remainingWork.length === 0 ? BlackboardStatus.DONE : BlackboardStatus.REOPENED;
