@@ -3,7 +3,10 @@ import { randomUUID } from "node:crypto";
 import { invariant, requireText } from "./contracts.js";
 import { ExHarnessError, ExHarnessErrorCode } from "./errors.js";
 
+const GroundedSemanticActivationPermitBrand = Symbol("exharness.grounded-semantic-activation-permit");
+
 export const SemanticMemoryStatus = Object.freeze({
+  PENDING_GROUNDING: "PENDING_GROUNDING",
   ACTIVE: "ACTIVE",
   ARCHIVED: "ARCHIVED"
 });
@@ -35,6 +38,7 @@ export const SemanticMemoryKindSemantics = Object.freeze({
 
 export const SemanticMemoryChangeKind = Object.freeze({
   CREATED: "CREATED",
+  ACTIVATED: "ACTIVATED",
   UPDATED: "UPDATED",
   ARCHIVED: "ARCHIVED"
 });
@@ -109,6 +113,51 @@ function normalizeSourceRefs(sourceRefs = []) {
     seen.add(key);
     return normalized;
   }));
+}
+
+function sourceRefsKey(sourceRefs) {
+  return JSON.stringify(normalizeSourceRefs(sourceRefs));
+}
+
+export function _createGroundedSemanticActivationPermit({
+  kind,
+  content,
+  sourceRefs,
+  evaluationId = null,
+  groundingArtifactId
+} = {}) {
+  const resolvedKind = normalizeKind(kind);
+  invariant(
+    resolvedKind === SemanticMemoryKind.REFLECTION || resolvedKind === SemanticMemoryKind.INTENT,
+    "grounded semantic activation permit only supports REFLECTION or INTENT"
+  );
+  const normalizedRefs = normalizeSourceRefs(sourceRefs);
+  let resolvedEvaluationId = null;
+  if (resolvedKind === SemanticMemoryKind.REFLECTION) {
+    resolvedEvaluationId = requireText(evaluationId, "reflection activation evaluationId");
+    invariant(
+      normalizedRefs.some(
+        (ref) => ref.kind === SemanticMemorySourceRefKind.EVALUATION && ref.id === resolvedEvaluationId
+      ),
+      "reflection activation permit requires its evaluation source ref"
+    );
+  } else if (evaluationId != null) {
+    resolvedEvaluationId = requireText(evaluationId, "intent activation evaluationId");
+    invariant(
+      normalizedRefs.some(
+        (ref) => ref.kind === SemanticMemorySourceRefKind.EVALUATION && ref.id === resolvedEvaluationId
+      ),
+      "intent activation evaluationId must reference an intent source"
+    );
+  }
+  return Object.freeze({
+    [GroundedSemanticActivationPermitBrand]: true,
+    kind: resolvedKind,
+    content: requireText(content, "grounded semantic activation content"),
+    sourceRefsKey: sourceRefsKey(normalizedRefs),
+    evaluationId: resolvedEvaluationId,
+    groundingArtifactId: requireText(groundingArtifactId, "grounded semantic activation groundingArtifactId")
+  });
 }
 
 function normalizeTurn(turn) {
@@ -241,6 +290,10 @@ export function createInMemorySemanticMemoryProvider({ records = [] } = {}) {
   });
 }
 
+function requiresGroundedActivation(kind) {
+  return kind === SemanticMemoryKind.REFLECTION || kind === SemanticMemoryKind.INTENT;
+}
+
 export function createSemanticMemoryPort({
   provider,
   clock = () => new Date().toISOString(),
@@ -249,11 +302,70 @@ export function createSemanticMemoryPort({
   const resolvedProvider = validateProvider(provider);
   invariant(typeof clock === "function", "semantic memory clock must be a function");
   invariant(typeof idFactory === "function", "semantic memory idFactory must be a function");
+  const consumedGroundingPermits = new WeakSet();
 
   async function requireRecord(id) {
     const record = await resolvedProvider.read(requireText(id, "semantic memory id"));
     invariant(record, `semantic memory not found: ${id}`);
     return normalizeStoredRecord(record);
+  }
+
+  async function activateGroundedMemory(id, { permit, provenance, expectedRevision = null } = {}) {
+    const current = await requireRecord(id);
+    invariant(requiresGroundedActivation(current.kind), "semantic memory kind does not require grounded activation");
+    invariant(current.status === SemanticMemoryStatus.PENDING_GROUNDING, "semantic memory is not pending grounding");
+    invariant(
+      permit && permit[GroundedSemanticActivationPermitBrand] === true,
+      "semantic memory activation requires grounded cognition permit"
+    );
+    invariant(!consumedGroundingPermits.has(permit), "semantic grounding permit was already consumed");
+    invariant(permit.kind === current.kind, "semantic grounding permit kind mismatch");
+    invariant(permit.content === current.content, "semantic grounding permit content mismatch");
+    invariant(permit.sourceRefsKey === sourceRefsKey(current.sourceRefs), "semantic grounding permit source snapshot mismatch");
+    invariant(
+      current.sourceRefs.some(
+        (ref) => ref.kind === SemanticMemorySourceRefKind.EXTERNAL && ref.id === `grounding:${permit.groundingArtifactId}`
+      ),
+      "semantic activation requires the grounding artifact source ref"
+    );
+    if (current.kind === SemanticMemoryKind.REFLECTION) {
+      invariant(permit.evaluationId != null, "reflection activation requires grounded evaluation identity");
+      invariant(
+        current.sourceRefs.some(
+          (ref) => ref.kind === SemanticMemorySourceRefKind.EVALUATION && ref.id === permit.evaluationId
+        ),
+        "reflection activation requires the grounded evaluation source ref"
+      );
+    }
+    const expected = expectedRevision ?? current.revision;
+    invariant(Number.isInteger(expected) && expected > 0, "semantic memory expectedRevision must be positive");
+    if (expected !== current.revision) {
+      throw new SemanticMemoryConflictError({
+        memoryId: current.id,
+        expectedRevision: expected,
+        actualRevision: current.revision
+      });
+    }
+    const normalizedProvenance = defineSemanticMemoryProvenance(provenance);
+    const nextRevision = current.revision + 1;
+    const at = requireText(clock(), "semantic memory clock value");
+    const next = Object.freeze({
+      ...clone(current),
+      status: SemanticMemoryStatus.ACTIVE,
+      revision: nextRevision,
+      updatedAt: at,
+      provenance: Object.freeze([
+        ...clone(current.provenance),
+        lifecycleEntry({
+          kind: SemanticMemoryChangeKind.ACTIVATED,
+          provenance: normalizedProvenance,
+          revision: nextRevision,
+          at
+        })
+      ])
+    });
+    consumedGroundingPermits.add(permit);
+    return clone(await resolvedProvider.replace(next, { expectedRevision: current.revision }));
   }
 
   return Object.freeze({
@@ -270,7 +382,9 @@ export function createSemanticMemoryPort({
         confidence: draft.confidence,
         temporal: draft.temporal,
         sourceRefs: draft.sourceRefs,
-        status: SemanticMemoryStatus.ACTIVE,
+        status: requiresGroundedActivation(draft.kind)
+          ? SemanticMemoryStatus.PENDING_GROUNDING
+          : SemanticMemoryStatus.ACTIVE,
         revision: 1,
         createdAt: at,
         updatedAt: at,
@@ -284,6 +398,20 @@ export function createSemanticMemoryPort({
         ])
       });
       return clone(await resolvedProvider.create(record));
+    },
+
+    activateGrounded: activateGroundedMemory,
+
+    async activateReflection(id, options = {}) {
+      const current = await requireRecord(id);
+      invariant(current.kind === SemanticMemoryKind.REFLECTION, "activateReflection requires REFLECTION memory");
+      return activateGroundedMemory(id, options);
+    },
+
+    async activateIntent(id, options = {}) {
+      const current = await requireRecord(id);
+      invariant(current.kind === SemanticMemoryKind.INTENT, "activateIntent requires INTENT memory");
+      return activateGroundedMemory(id, options);
     },
 
     async get(id, { includeArchived = false } = {}) {
@@ -336,7 +464,7 @@ export function createSemanticMemoryPort({
     async update(id, patch) {
       invariant(patch && typeof patch === "object", "semantic memory update patch is required");
       const current = await requireRecord(id);
-      invariant(current.status === SemanticMemoryStatus.ACTIVE, "archived semantic memory cannot be updated");
+      invariant(current.status !== SemanticMemoryStatus.ARCHIVED, "archived semantic memory cannot be updated");
       invariant(patch.kind == null || patch.kind === current.kind, "semantic memory kind is immutable after creation");
       invariant(patch.sourceRefs == null, "semantic memory sourceRefs are immutable after creation; create a derived memory instead");
       const expectedRevision = patch.expectedRevision ?? current.revision;
@@ -375,7 +503,7 @@ export function createSemanticMemoryPort({
 
     async archive(id, { provenance, expectedRevision = null } = {}) {
       const current = await requireRecord(id);
-      invariant(current.status === SemanticMemoryStatus.ACTIVE, "semantic memory is already archived");
+      invariant(current.status !== SemanticMemoryStatus.ARCHIVED, "semantic memory is already archived");
       const expected = expectedRevision ?? current.revision;
       invariant(Number.isInteger(expected) && expected > 0, "semantic memory expectedRevision must be positive");
       if (expected !== current.revision) {

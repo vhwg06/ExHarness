@@ -232,27 +232,35 @@ test("metadata listing supports typed kind and temporal filters without pretendi
     provenance: provenance("agent")
   });
   await memory.remember({
-    kind: SemanticMemoryKind.INTENT,
+    kind: SemanticMemoryKind.PROCEDURAL,
     content: "two",
     tags: ["a", "b"],
     temporal: { validFrom: "2026-09-13T00:00:00Z", validTo: "2026-09-14T00:00:00Z" },
     provenance: provenance("agent")
   });
   await memory.remember({
-    kind: SemanticMemoryKind.INTENT,
+    kind: SemanticMemoryKind.PROCEDURAL,
     content: "three",
     tags: ["b"],
     temporal: { validTo: "2026-09-11T00:00:00Z" },
     provenance: provenance("agent")
   });
+  const pendingIntent = await memory.remember({
+    kind: SemanticMemoryKind.INTENT,
+    content: "pending goal",
+    tags: ["b"],
+    provenance: provenance("agent")
+  });
 
   const filtered = await memory.list({
     tags: ["b"],
-    kinds: [SemanticMemoryKind.INTENT],
+    kinds: [SemanticMemoryKind.PROCEDURAL],
     validAt: "2026-09-13T12:00:00Z",
     limit: 10
   });
   assert.deepEqual(filtered.map((record) => record.content), ["two"]);
+  assert.equal(pendingIntent.status, SemanticMemoryStatus.PENDING_GROUNDING);
+  assert.deepEqual(await memory.list({ kinds: [SemanticMemoryKind.INTENT] }), []);
   assert.equal("recall" in memory, false, "H3 must not consume H5 associative retrieval scope");
   assert.equal("search" in memory, false, "H3 must not consume H5 search/ranking scope");
 });

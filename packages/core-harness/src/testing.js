@@ -1,7 +1,19 @@
 import { invariant } from "./contracts.js";
 import { ExHarnessErrorCode } from "./errors.js";
 import { ExecutionStatus, defineExecutor } from "./execution.js";
+import {
+  GroundingVerdict,
+  createGroundedCognitionPort,
+  defineGroundingVerifier
+} from "./grounded-cognition.js";
 import { CURRENT_STATE_SCHEMA_VERSION } from "./persistence.js";
+import {
+  SemanticMemoryKind,
+  SemanticMemorySourceRefKind,
+  SemanticMemoryStatus,
+  createInMemorySemanticMemoryProvider,
+  createSemanticMemoryPort
+} from "./semantic-memory.js";
 
 export function createDeterministicClock({
   start = "2026-01-01T00:00:00.000Z",
@@ -115,4 +127,175 @@ export async function verifyExecutorContract(executor, {
   invariant(Object.values(ExecutionStatus).includes(result.status), "executor contract returned invalid status");
   invariant(result.status === expectedStatus, `executor contract expected ${expectedStatus} but received ${result.status}`);
   return Object.freeze({ passed: true, status: result.status });
+}
+
+export async function verifyReflectionGroundingContract(createPort = (options) => createGroundedCognitionPort(options)) {
+  invariant(typeof createPort === "function", "reflection grounding contract requires a port factory");
+  const candidate = Object.freeze({ id: "candidate", version: "v1" });
+  const observation = Object.freeze({ id: "observation-1", candidate });
+  const verification = Object.freeze({ id: "verification-1", candidate });
+  const evaluation = Object.freeze({
+    id: "evaluation-1",
+    candidate,
+    metadata: Object.freeze({
+      inputSnapshot: Object.freeze({
+        observationIds: Object.freeze([observation.id]),
+        verificationIds: Object.freeze([verification.id])
+      })
+    })
+  });
+  let state = {
+    id: "grounding-contract",
+    revision: 1,
+    currentCandidate: candidate,
+    persistentMemory: {
+      observations: [observation],
+      verifications: [verification],
+      evaluations: [evaluation]
+    }
+  };
+  const sessionStore = Object.freeze({
+    async load(id) {
+      return id === state.id ? structuredClone(state) : null;
+    }
+  });
+  const memory = createSemanticMemoryPort({
+    provider: createInMemorySemanticMemoryProvider(),
+    idFactory: createDeterministicIdFactory("contract-memory"),
+    clock: createDeterministicClock()
+  });
+  const groundingVerifier = defineGroundingVerifier({
+    name: "contract-grounder",
+    revision: "1",
+    async verify() {
+      return {
+        verdict: GroundingVerdict.GROUNDED,
+        reason: "contract verifier accepts semantically supported fixture",
+        confidence: 1
+      };
+    }
+  });
+  const port = await createPort({
+    memory,
+    sessionStore,
+    groundingVerifier,
+    idFactory: createDeterministicIdFactory("contract-cognition"),
+    clock: createDeterministicClock({ start: "2026-01-02T00:00:00.000Z" })
+  });
+  invariant(port && typeof port.deriveReflection === "function", "reflection grounding port requires deriveReflection()");
+
+  const base = {
+    sessionId: state.id,
+    content: "grounded contract reflection",
+    tags: ["contract"],
+    importance: 0.5,
+    confidence: 1,
+    provenance: { source: "reflection-grounding-contract", sourceId: "contract" }
+  };
+
+  const rawReflection = await memory.remember({
+    kind: SemanticMemoryKind.REFLECTION,
+    content: "raw reflection must not be authoritative",
+    tags: ["contract", "raw"],
+    importance: 0.5,
+    confidence: 1,
+    sourceRefs: [{ kind: SemanticMemorySourceRefKind.EVALUATION, id: evaluation.id }],
+    provenance: { source: "raw-memory-api", sourceId: "bypass-probe" }
+  });
+  invariant(
+    rawReflection.status === SemanticMemoryStatus.PENDING_GROUNDING,
+    "raw reflection must enter PENDING_GROUNDING instead of ACTIVE"
+  );
+  invariant(
+    !(await memory.list({ kinds: [SemanticMemoryKind.REFLECTION] })).some((item) => item.id === rawReflection.id),
+    "pending reflection must not appear in the active semantic-memory view"
+  );
+  let forgedActivationError = null;
+  try {
+    await memory.activateReflection(rawReflection.id, {
+      permit: {
+        kind: SemanticMemoryKind.REFLECTION,
+        content: rawReflection.content,
+        evaluationId: evaluation.id,
+        groundingArtifactId: "forged"
+      },
+      provenance: { source: "forged-grounding", sourceId: "forged" }
+    });
+  } catch (error) {
+    forgedActivationError = error;
+  }
+  invariant(forgedActivationError, "forged reflection activation permit must be rejected");
+  invariant(
+    (await memory.get(rawReflection.id, { includeArchived: true })).status === SemanticMemoryStatus.PENDING_GROUNDING,
+    "forged activation must not change reflection authority state"
+  );
+
+  let missingEvaluationError = null;
+  try {
+    await port.deriveReflection({
+      ...base,
+      sourceRefs: [{ kind: SemanticMemorySourceRefKind.OBSERVATION, id: observation.id }]
+    });
+  } catch (error) {
+    missingEvaluationError = error;
+  }
+  invariant(
+    missingEvaluationError?.code === ExHarnessErrorCode.GROUNDING_REQUIRED,
+    "reflection without evaluation source must fail with GROUNDING_REQUIRED"
+  );
+
+  state = structuredClone(state);
+  state.revision += 1;
+  state.persistentMemory.observations.push({ id: "observation-2", candidate });
+  let staleEvaluationError = null;
+  try {
+    await port.deriveReflection({
+      ...base,
+      sourceRefs: [{ kind: SemanticMemorySourceRefKind.EVALUATION, id: evaluation.id }]
+    });
+  } catch (error) {
+    staleEvaluationError = error;
+  }
+  invariant(
+    staleEvaluationError?.code === ExHarnessErrorCode.GROUNDING_REQUIRED,
+    "reflection with stale evaluation source must fail with GROUNDING_REQUIRED"
+  );
+
+  state = structuredClone(state);
+  state.revision += 1;
+  const freshEvaluation = {
+    id: "evaluation-2",
+    candidate,
+    metadata: {
+      inputSnapshot: {
+        observationIds: state.persistentMemory.observations.map((item) => item.id),
+        verificationIds: [verification.id]
+      }
+    }
+  };
+  state.persistentMemory.evaluations.push(freshEvaluation);
+  const derived = await port.deriveReflection({
+    ...base,
+    sourceRefs: [{ kind: SemanticMemorySourceRefKind.EVALUATION, id: freshEvaluation.id }]
+  });
+  invariant(derived?.memory?.kind === SemanticMemoryKind.REFLECTION, "fresh grounded reflection must be created");
+  invariant(derived.memory.status === SemanticMemoryStatus.ACTIVE, "grounded reflection must activate only after verification");
+  invariant(
+    derived.memory.sourceRefs.some(
+      (ref) => ref.kind === SemanticMemorySourceRefKind.EVALUATION && ref.id === freshEvaluation.id
+    ),
+    "grounded reflection must retain exact evaluation source ref"
+  );
+
+  return Object.freeze({
+    passed: true,
+    checks: Object.freeze([
+      "ungrounded-reflection-not-active",
+      "forged-activation-rejected",
+      "missing-evaluation-rejected",
+      "stale-evaluation-rejected",
+      "fresh-evaluation-required",
+      "evaluation-source-retained"
+    ])
+  });
 }
