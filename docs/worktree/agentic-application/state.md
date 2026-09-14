@@ -62,7 +62,8 @@ Exact Backend/Frontend/QA/Designer context and result schemas remain application
 ## ROUTING
 
 - semantics and role meaning -> `semantics.md`
-- layer/component boundaries -> `architecture.md`
+- layer/component architecture -> `architecture.md`
+- authority/dependency boundaries -> `boundaries.md`
 - execution/composition path -> `workflow.md`
 - generic contract shapes -> `contracts.md`
 - constraints that must shape implementation -> `decisions.md`
