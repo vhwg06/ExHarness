@@ -20,8 +20,8 @@ ExHarness is the publishable `exharness` kernel: AVO long-horizon control above 
 
 - `engineering/state.md`
 
-Current continuation target: compose recovery/effect semantics into a coherent workflow lifecycle without collapsing existing authority boundaries.
+Current desired delivery target: add an inspectable `deliberate -> act -> observe` step lifecycle and grounded `REFLECTION` / durable `INTENT` derivation from persisted evidence, then compose those boundaries with effect/recovery workflow semantics.
 
 ## RECONCILE
 
-Source and public exports are implementation authority. When mapped semantics change, reconcile this projection and the affected engineering child in the same change. Git/history keeps the past; worktree keeps current delivery truth.
+Source/public exports are authority for what is implemented now. Worktree is authority for the active desired delivery state. Implementation is complete when source converges to the desired semantics and the projections can be reconciled back to current delivered truth. Git/history keeps the past.

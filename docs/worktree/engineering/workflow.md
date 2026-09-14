@@ -1,8 +1,8 @@
 # Workflow state
 
-Current execution/recovery projection. Load for pipeline, resume, crash-recovery or effect work.
+Current execution/recovery projection plus desired cognition loop for the next implementation stage.
 
-## RUNNING PATH
+## CURRENT RUNNING PATH
 
 ```text
 createHarness.vary()
@@ -12,26 +12,54 @@ createHarness.vary()
        -> project bounded AVO context
        -> begin persisted variation
        -> AgentRuntime.runWithReport()
-            -> observe / act / verify / evaluate / memory / promote capabilities
+            -> strategy.run(...)
+            -> observe / act / verify / evaluate / memory / promote
        -> complete persisted variation
        -> assess search investment
        -> resume public AVO snapshot
   -> optional supervisor trajectory review
 ```
 
+`strategy.run(...)` currently owns arbitrary inner-loop control. Turn/events/traces make execution inspectable, but there is no kernel-owned semantic boundary between observation/context and the action chosen from it.
+
 `avo.act` currently delegates to `core.act()`. `core.act()` calls `environment.act()` before the resulting candidate mutation/event is persisted, so external-effect completion is not proven by AVO state alone.
 
-## RECOVERY PATHS
+## DESIRED COGNITION LOOP
 
-Three mechanisms exist and are intentionally distinct:
+```text
+persisted evidence + bounded context
+        -> DELIBERATION
+             structured, inspectable, no raw CoT
+        -> ACTION INTENT
+             exact deliberation/source refs
+        -> pre-action policy / verification
+        -> EFFECT / ACTION
+        -> persisted OBSERVATION
+        -> grounded REFLECTION / durable INTENT derivation
+        -> grounding check against exact persisted sources
+        -> next bounded context
+        -> DELIBERATION
+```
 
-1. **AVO variation recovery** — detects a persisted `RUNNING` variation and explicitly closes it as `INTERRUPTED`; `resume()`/`vary()` fail closed until recovery.
-2. **AgentRuntime snapshot/resume** — restores runtime event/configuration state; agent-scoped resources/live objects require explicit rebinding and are not silently resurrected.
-3. **Effect reconciliation** — `defineEffectCapability()` journals `INTENDED -> DISPATCHED -> CONFIRMED/UNKNOWN`; `reconcileEffectOperation()` returns `CONTINUE`, `RETRY` or `ESCALATE` from replay policy and external observation.
+Kernel owns step identity, causal links, lifecycle and authority boundaries. Strategy/model owns how a deliberation proposal is produced inside those bounds.
 
-These mechanisms are not yet one lifecycle.
+Desired causal chain:
 
-## CORRECTNESS PATH
+```text
+source evidence snapshot
+   -> DeliberationArtifact
+   -> ActionIntent
+   -> EffectOperation / action
+   -> Observation
+   -> GroundingArtifact
+   -> REFLECTION / SemanticMemory.INTENT
+```
+
+A `SemanticMemory.INTENT` is durable goal/continuation state. It is not the same object as the concrete `ActionIntent` used for one step/effect.
+
+## CORRECTNESS / GROUNDING
+
+Existing correctness path remains:
 
 ```text
 current candidate
@@ -41,23 +69,47 @@ current candidate
   -> promotion to committed lineage
 ```
 
-Search investment and supervisor intervention may control continuation, but neither certifies correctness.
+Grounded cognition adds a parallel semantic-authority path:
 
-## TARGET
+```text
+persisted source artifacts / memories
+  -> semantic derivation proposal
+  -> exact source snapshot + provenance
+  -> independent grounding validation
+  -> ACTIVE REFLECTION / durable INTENT
+```
 
-Machine-first recovery should compose the existing mechanisms as:
+Source linkage alone is not sufficient grounding. Model-authored semantic output must be rejectable before activation.
+
+## RECOVERY PATHS
+
+Three mechanisms exist and remain distinct:
+
+1. **AVO variation recovery** — closes persisted interrupted work explicitly.
+2. **AgentRuntime snapshot/resume** — restores compatible runtime state with explicit live-authority rebinding.
+3. **Effect reconciliation** — reconciles journaled operations through replay policy/external observation.
+
+Desired composition after the cognition boundaries exist:
 
 ```text
 restore persisted work/runtime state
-  -> identify unresolved effect operations
-  -> reconcile by replay/idempotency/external observation
-  -> escalate only residual ambiguity
-  -> project bounded current context
-  -> resume or open the next variation
+  -> reconcile pending effect operations deterministically
+  -> restore exact observation/evidence state
+  -> project grounded reflection/intent + bounded context
+  -> continue from an explicit deliberation boundary
 ```
 
-Do not use tracing or semantic memory as recovery authority.
+Tracing and semantic memory are context/evidence inputs, never recovery authority by themselves.
+
+## IMPLEMENTATION ORDER
+
+```text
+1. deliberation + action-intent step contract
+2. grounded reflection / durable intent producer + grounding boundary
+3. compose action intent with effect reconciliation
+4. expose higher-level workflow/pipeline composition only after these boundaries are stable
+```
 
 ## SOURCE
 
-`harness.js`, `avo-harness.js`, `core-harness.js`, `recovery.js`, `resumable-agent-runtime.js`, `effect-reconciliation.js`, `evaluation-freshness.js`.
+Current implementation authority: `agent-runtime.js`, `turn-events.js`, `codeact-strategy.js`, `avo-harness.js`, `core-harness.js`, `semantic-memory.js`, `semantic-memory-evolution.js`, `effect-reconciliation.js`, `evaluation-freshness.js`.
