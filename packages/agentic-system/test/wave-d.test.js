@@ -147,6 +147,28 @@ test("Wave D keeps Worker review request and PM review requirement as separate a
   });
 });
 
+test("Wave D serializes concurrent claims so two sessions cannot own the same Board item", async () => {
+  await withOrchestrator(async ({ path, orchestrator }) => {
+    await orchestrator.seed([workItem()]);
+
+    const other = createApplicationOrchestrator({
+      store: createJsonBlackboardStore({ path })
+    });
+
+    const attempts = await Promise.allSettled([
+      orchestrator.claim({ itemId: "BB-100", owner: "worker-session-1" }),
+      other.claim({ itemId: "BB-100", owner: "worker-session-2" })
+    ]);
+
+    assert.equal(attempts.filter((attempt) => attempt.status === "fulfilled").length, 1);
+    assert.equal(attempts.filter((attempt) => attempt.status === "rejected").length, 1);
+
+    const restored = await orchestrator.readBlackboard();
+    assert.equal(restored.items[0].status, BlackboardStatus.CLAIMED);
+    assert.ok(["worker-session-1", "worker-session-2"].includes(restored.items[0].owner));
+  });
+});
+
 test("Wave D persists PENDING_REVIEW across orchestrator restart", async () => {
   await withOrchestrator(async ({ path, orchestrator }) => {
     await orchestrator.seed([workItem()]);
