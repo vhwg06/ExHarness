@@ -1,8 +1,8 @@
 # Workflow state
 
-Current execution/recovery projection plus desired cognition loop for the next implementation stage.
+Current Core execution/cognition/recovery projection. This file does not define Agentic Application orchestration or Oracle source resolution.
 
-## CURRENT RUNNING PATH
+## CURRENT AVO RUNNING PATH
 
 ```text
 createHarness.vary()
@@ -20,49 +20,70 @@ createHarness.vary()
   -> optional supervisor trajectory review
 ```
 
-`strategy.run(...)` currently owns arbitrary inner-loop control. Turn/events/traces make execution inspectable, but there is no kernel-owned semantic boundary between observation/context and the action chosen from it.
+`avo.act` still delegates to `core.act()`. `core.act()` calls `environment.act()` before the resulting candidate mutation/event is persisted, so externally visible effect completion is not proven by AVO state alone.
 
-`avo.act` currently delegates to `core.act()`. `core.act()` calls `environment.act()` before the resulting candidate mutation/event is persisted, so external-effect completion is not proven by AVO state alone.
+## DELIVERED COGNITION BOUNDARIES
 
-## DESIRED COGNITION LOOP
+Core now has an explicit structured cognition path:
 
 ```text
 persisted evidence + bounded context
-        -> DELIBERATION
-             structured, inspectable, no raw CoT
-        -> ACTION INTENT
-             exact deliberation/source refs
-        -> pre-action policy / verification
-        -> EFFECT / ACTION
-        -> persisted OBSERVATION
-        -> EVALUATION
-        -> grounded REFLECTION / durable INTENT derivation
-        -> grounding check against exact persisted sources
-        -> semantic calibration
-        -> next bounded context
-        -> DELIBERATION
+        -> DeliberationArtifact
+        -> ActionIntent
+        -> authorization policy
+        -> action/effect boundary
+        -> outcome refs
+        -> observation / evaluation
+        -> grounded REFLECTION / durable INTENT
+        -> intent/reflection alignment
 ```
 
-Kernel owns step identity, causal links, lifecycle and authority boundaries. Strategy/model owns how a deliberation proposal is produced inside those bounds.
+The deliberation artifact is bounded structured state, never raw chain-of-thought. `ActionIntent` is a per-step concrete operation intent; `SemanticMemory.INTENT` remains durable goal/continuation state.
 
-Desired causal chain:
+Grounded cognition is separate from correctness authority:
 
 ```text
-source evidence snapshot
-   -> DeliberationArtifact
-   -> ActionIntent
-   -> EffectOperation / action
-   -> Observation
-   -> Evaluation
-   -> GroundingArtifact
-   -> REFLECTION / SemanticMemory.INTENT
+persisted source snapshots
+  -> semantic derivation proposal
+  -> grounding verifier
+  -> ACTIVE REFLECTION / durable INTENT
 ```
 
-A `SemanticMemory.INTENT` is durable goal/continuation state. It is not the same object as the concrete `ActionIntent` used for one step/effect.
+Every activated reflection must retain a fresh persisted evaluation source. Intent/reflection alignment can produce semantic-divergence knowledge for later search policy, but it is not an evaluation or promotion verdict.
 
-## CORRECTNESS / GROUNDING
+## ACTION INTENT + EFFECT COMPOSITION
 
-Existing correctness path remains:
+`createActionIntentEffectController()` now composes capability-target ActionIntent with the existing effect journal:
+
+```text
+AUTHORIZED ActionIntent
+        -> exact intended capability + input
+        -> effect operationKey
+        -> journal INTENDED
+        -> dispatch
+        -> CONFIRMED
+             -> link EFFECT_OPERATION ref
+             -> ActionIntent EXECUTED
+```
+
+Ambiguous effect state does not become false failure:
+
+```text
+dispatch boundary error
+        -> journal UNKNOWN / pending
+        -> link exact EFFECT_OPERATION ref
+        -> ActionIntent remains AUTHORIZED
+        -> reconcile
+             PURE/IDEMPOTENT -> RETRY
+             OBSERVABLE      -> observe -> CONTINUE or RETRY
+             NON_RECONCILABLE-> ESCALATE
+```
+
+If observation confirms the effect, reconciliation completes the ActionIntent without replaying the side effect. A retryable effect remains authorized until the retry actually confirms.
+
+## CORRECTNESS PATH
+
+Existing correctness authority remains independent:
 
 ```text
 current candidate
@@ -72,73 +93,54 @@ current candidate
   -> promotion to committed lineage
 ```
 
-Grounded cognition adds a parallel semantic-authority path:
+Effect confirmation does not imply evaluation success, and grounded semantic memory does not imply effect completion.
+
+## MEMORY VISIBILITY
+
+Semantic retrieval and spontaneous recall are already composable, but visibility is deliberately explicit:
 
 ```text
-persisted source artifacts / memories
-  -> semantic derivation proposal
-  -> exact source snapshot + provenance
-  -> independent grounding validation
-  -> ACTIVE REFLECTION / durable INTENT
+semantic memory
+  -> retrieval port (RELEVANCE_ONLY)
+  -> optional NOOA ranking adapter
+  -> explicitly selected __semantic_memory__ context block
+  -> UNTRUSTED bounded context
 ```
 
-Every activated `REFLECTION` must include an exact source ref to a persisted evaluation whose observation/verification input snapshot is still fresh. Source linkage alone is not sufficient grounding; model-authored semantic output must be rejectable before activation.
-
-The package contract `verifyReflectionGroundingContract` must prove that a reflection cannot be activated without that fresh evaluation source.
-
-## INTENT / REFLECTION CALIBRATION
-
-A durable intent records the predicted semantic outcome before action. A grounded reflection records what persisted evaluation evidence supports afterwards.
-
-```text
-INTENT:     expected semantic outcome
-     \      exact memory id/revision
-      \
-       -> ALIGNMENT -> semantic divergence
-      /
-     /
-REFLECTION: grounded observed outcome
-```
-
-The alignment result is an anti-hallucination/search-quality signal:
-
-```text
-low divergence  -> intent and grounded outcome agree
-high divergence -> agent expectation materially missed grounded outcome
-```
-
-It does not replace evaluation correctness. A validated alignment can be persisted as grounded knowledge with exact intent/reflection/evaluation evidence refs. `searchInvestmentInputSnapshot()` already freshness-binds grounded knowledge IDs, so a new alignment signal invalidates an older search-investment decision and allows a custom/adaptive policy to reduce investment in repeatedly divergent directions.
+There is no desired hidden global memory injection. Ranking selects context; it never becomes correctness authority.
 
 ## RECOVERY PATHS
 
-Three mechanisms exist and remain distinct:
+Three mechanisms still exist and remain distinct:
 
 1. **AVO variation recovery** — closes persisted interrupted work explicitly.
 2. **AgentRuntime snapshot/resume** — restores compatible runtime state with explicit live-authority rebinding.
 3. **Effect reconciliation** — reconciles journaled operations through replay policy/external observation.
 
-Desired composition after the cognition boundaries exist:
+The remaining recovery target is composition, not another recovery mechanism:
 
 ```text
 restore persisted work/runtime state
   -> reconcile pending effect operations deterministically
   -> restore exact observation/evidence state
-  -> project grounded reflection/intent + bounded context
-  -> continue from an explicit deliberation boundary
+  -> project grounded memory + bounded context
+  -> continue from an explicit cognition boundary
 ```
 
 Tracing and semantic memory are context/evidence inputs, never recovery authority by themselves.
 
-## IMPLEMENTATION ORDER
+## NEXT CORE DELIVERY
+
+Do not generalize a Core workflow surface yet. The next source-backed continuation is:
 
 ```text
-1. deliberation + action-intent step contract
-2. grounded reflection / durable intent producer + grounding boundary
-3. intent/reflection alignment + grounded search signal
-4. compose action intent with effect reconciliation
-5. expose higher-level workflow/pipeline composition only after these boundaries are stable
+1. harden built-in AVO external-effect semantics
+2. prove restore -> reconcile effects -> resume with a concrete Core recovery consumer
+3. only then extract a higher-level Core lifecycle composition surface
 ```
+
+This work can proceed independently from Agentic Application Wave A only where it stays inside Core authority. Application WorkOrder/Worker/Advisor/completion abstractions remain governed by `../pipeline.md` and must preserve concrete-first sequencing.
 
 ## SOURCE
 
-Current implementation authority: `agent-runtime.js`, `turn-events.js`, `codeact-strategy.js`, `avo-harness.js`, `core-harness.js`, `semantic-memory.js`, `semantic-memory-evolution.js`, `search-investment.js`, `effect-reconciliation.js`, `evaluation-freshness.js`.
+Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`.
