@@ -237,7 +237,7 @@ test("Wave D rejects fabricated, stale or unauthorized review authority", async 
     });
     await assert.rejects(
       () => orchestrator.recordAssessment({ itemId: "BB-100", key: "BACKEND_REVIEW", bundle: stale }),
-      /review trust rejected: STALE_SUBJECT/
+      /review evidence subject does not match active review target/
     );
 
     const unauthorized = await reviewBundle({
@@ -276,7 +276,7 @@ test("Wave D keeps Worker review request and PM review requirement as separate a
       itemId: "BB-100",
       key: "SA_ARCHITECTURE_REVIEW",
       source: ReviewRequirementSource.PM,
-      reason: "The submitted work crosses an application\/Core authority boundary."
+      reason: "The submitted work crosses an application/Core authority boundary."
     });
 
     assert.equal(required.result.reviewRequirements[0].source, ReviewRequirementSource.PM);
