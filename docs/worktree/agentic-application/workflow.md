@@ -39,33 +39,43 @@ READY / REOPENED
  -> Orchestrator.submit(...)
  -> PENDING_REVIEW
  -> Orchestrator.beginReview(...)
+      -> freeze exact review target subject
  -> REVIEWING
- -> Orchestrator.recordAssessment(...)
+ -> reviewer produces grounded Core trust bundle
+      EvidenceArtifact[] + DecisionArtifact + Attestation
+ -> Orchestrator verifies bundle outside Board transaction
+ -> transaction re-checks same active review target
+ -> apply trusted decision verdict
       |
       +-> all required ACCEPTED + no remaining work -> DONE
-      |
       +-> REJECTED / INCONCLUSIVE -> REOPENED
-      |
+      +-> ACCEPTED but remaining current work -> REOPENED
       +-> other required review remains -> PENDING_REVIEW
 ```
 
-Review requirements may be Worker-requested at submit time or PM-required separately. The Orchestrator owns scheduling/transition semantics; the current source does not yet implement concrete PM/SA role execution or vertical reviewer workers.
+The Orchestrator does not accept a naked caller-provided review verdict. Review decision/evidence/signature/authority must pass the application-provided trust policy over the exact active review target.
+
+Review requirements may be Worker-requested at submit time or PM-required separately. The Orchestrator owns scheduling/transition semantics; current source does not yet implement concrete PM/SA role execution or vertical reviewer Workers.
 
 ## Follow-up reconciliation
 
 ```text
-unresolved finding
+grounded finding(summary + sourceRef)
  -> CURRENT_WORK   -> reopen/narrow current item
  -> EXISTING_WORK  -> link existing Board item
- -> NEW_WORK       -> create child with parent/finding provenance
- -> NON_ACTIONABLE -> no Board mutation beyond returned disposition
+ -> NEW_WORK       -> create child with parent/finding/source provenance
+ -> NON_ACTIONABLE -> no Board work
 ```
 
 Review failure that proves the current obligation is still unresolved does not create a replacement item.
 
-## Persistence
+## Persistence and concurrency
 
-`createJsonBlackboardStore(...)` persists the full Board snapshot through temp-file write + rename. A new `ApplicationOrchestrator` instance can restore submissions, pending reviews and requirements from that file.
+`createJsonBlackboardStore(...)` exposes read + transaction, serializes mutations through a filesystem lock and persists snapshots through temp-file write + rename.
+
+A new `ApplicationOrchestrator` instance can restore submissions, pending reviews and requirements from that file. Concurrent local claims cannot both acquire the same Board item.
+
+Async review trust verification happens outside the mutation lock; the later commit fails closed if the active review target changed meanwhile.
 
 ## Context rules
 
