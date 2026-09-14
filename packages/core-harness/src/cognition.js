@@ -11,6 +11,11 @@ export {
 } from "./deliberation.js";
 export { createDeliberationController } from "./deliberation-controller.js";
 export {
+  EffectOperationArtifactKind,
+  createActionIntentEffectController,
+  effectOperationRef
+} from "./action-effect.js";
+export {
   GroundedCognitionArtifactKind,
   GroundingVerdict,
   IntentReflectionAlignmentStatus,
