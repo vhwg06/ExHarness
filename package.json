@@ -6,8 +6,9 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "node --test packages/core-harness/test/*.test.js",
+    "test": "npm run test:core && npm run test:agentic",
     "test:core": "node --test packages/core-harness/test/*.test.js",
+    "test:agentic": "node --test packages/agentic-system/test/*.test.js",
     "example": "node examples/reference-harness.mjs",
     "benchmark": "node benchmarks/kernel-benchmark.mjs",
     "eval:reference": "node scripts/reference-eval.mjs",
