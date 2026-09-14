@@ -2,7 +2,9 @@
 
 Concrete agentic application slices built above ExHarness Core.
 
-Wave A intentionally contains one Backend vertical slice only:
+## Delivered checkpoint
+
+Wave A proves one real Backend vertical slice:
 
 ```text
 BackendObjective
@@ -11,7 +13,25 @@ BackendObjective
   -> BackendWorker
   -> ExHarness Core
   -> BackendWorkResult
-  -> deterministic Backend run decision
 ```
 
-The package does not expose a generic Worker, WorkOrder, role registry, workflow graph, or generic Orchestrator. Common abstractions are deferred until a second real role demonstrates repeated semantics.
+Wave B makes completion trustworthy and introduces bounded judgment:
+
+```text
+BackendWorkResult
+  -> grounded ExHarness evidence
+     mutation + typecheck + tests
+  -> BackendCompletionPolicy
+  -> ACCEPT | CONTINUE | BLOCK | FAIL
+
+all objective checks pass + unresolved semantic gaps
+  -> BackendAdvisor
+  -> RETRY_IMPLEMENTATION | REQUEST_CONTEXT | ESCALATE
+  -> application validates and maps the proposal
+```
+
+Worker-returned prose is not completion authority. `BackendWorker` discards claimed evidence and rebuilds evidence from actual ExHarness lineage/verification state. `ACCEPT` is an application-owned decision represented with an ExHarness acceptance-boundary `DecisionArtifact`.
+
+Advisor is not correctness authority: it is never invoked for deterministic missing/failed evidence, cannot ACCEPT work, cannot dispatch another Worker, and must reference an existing unresolved gap.
+
+The package still does not expose a generic Worker, WorkOrder, role registry, workflow graph, generic Advisor, or generic Orchestrator. Common abstractions remain deferred until a second real role demonstrates repeated semantics in Wave C.

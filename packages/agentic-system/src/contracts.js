@@ -28,10 +28,20 @@ export const BackendWorkStatus = Object.freeze({
   FAILED: "FAILED"
 });
 
+export const BackendEvidenceClaim = Object.freeze({
+  MUTATION: "backend.mutation",
+  TYPECHECK: "backend.typecheck",
+  TESTS: "backend.tests"
+});
+
 export const BackendRunAction = Object.freeze({
   RETURN: "RETURN",
+  CONTINUE: "CONTINUE",
   BLOCK: "BLOCK",
-  FAIL: "FAIL"
+  FAIL: "FAIL",
+  RETRY: "RETRY",
+  REQUEST_CONTEXT: "REQUEST_CONTEXT",
+  ESCALATE: "ESCALATE"
 });
 
 function parseBackendObjective(raw) {
@@ -126,10 +136,21 @@ function parseBackendArtifact(raw, index) {
   return parsed;
 }
 
+function parseBackendGap(raw, index) {
+  const gap = requireRecord(raw, `BackendWorkResult.gaps[${index}]`);
+  return {
+    id: requireText(gap.id, `BackendWorkResult.gaps[${index}].id`),
+    summary: requireText(gap.summary, `BackendWorkResult.gaps[${index}].summary`),
+    details: gap.details == null ? null : structuredClone(gap.details)
+  };
+}
+
 function parseBackendWorkResult(raw) {
   const value = requireRecord(raw, "BackendWorkResult");
   invariant(Object.values(BackendWorkStatus).includes(value.status), "BackendWorkResult.status is invalid");
   invariant(Array.isArray(value.artifacts ?? []), "BackendWorkResult.artifacts must be an array");
+  invariant(Array.isArray(value.evidence ?? []), "BackendWorkResult.evidence must be an array");
+  invariant(Array.isArray(value.gaps ?? []), "BackendWorkResult.gaps must be an array");
 
   const blockers = value.blockers == null
     ? []
@@ -152,6 +173,8 @@ function parseBackendWorkResult(raw) {
     summary: requireText(value.summary, "BackendWorkResult.summary"),
     revision,
     artifacts: (value.artifacts ?? []).map(parseBackendArtifact),
+    evidence: (value.evidence ?? []).map((artifact, index) => structuredClone(requireRecord(artifact, `BackendWorkResult.evidence[${index}]`))),
+    gaps: (value.gaps ?? []).map(parseBackendGap),
     blockers
   });
 }

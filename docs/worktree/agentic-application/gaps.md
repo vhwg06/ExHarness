@@ -2,58 +2,50 @@
 
 Only unresolved seams that matter to the current application layer. Implementation ordering is owned by `../pipeline.md`.
 
-## WAVE-A CHECKPOINT — CLOSED
+## WAVES A + B CHECKPOINT — CLOSED
 
-The first concrete Backend slice now exists in `packages/agentic-system/` and runs:
+The concrete Backend slice now proves execution plus trustworthy application completion:
 
 ```text
 BackendObjective
  -> BackendWorkOrder
- -> concrete Backend context resolution through Oracle
+ -> Oracle-resolved BackendContext
  -> BackendWorker through ExHarness
- -> BackendWorkResult
- -> deterministic Backend run decision
+ -> grounded mutation/verification evidence
+ -> BackendCompletionPolicy
+ -> ACCEPT | CONTINUE | BLOCK | FAIL
 ```
 
-Wave A resolved the initial contract uncertainty without introducing generic `<C,R>` application contracts. Current concrete choices are evidence from one Backend slice, not yet reusable system abstractions.
+Closed S5 decisions:
 
-Observed concrete shape:
+- `APPLIED`/lineage promotion is necessary but not sufficient for Backend acceptance;
+- grounded Backend evidence comes from actual ExHarness lineage + verification artifacts, not Worker-returned evidence claims;
+- default required claims are `backend.mutation`, `backend.typecheck`, and `backend.tests`;
+- artifact presence is part of Backend completion;
+- invalid/failed evidence -> FAIL;
+- missing/inconclusive evidence or missing artifacts -> CONTINUE;
+- blocked/failed work remains deterministic BLOCK/FAIL;
+- successful acceptance is materialized as an ExHarness acceptance-boundary decision artifact.
 
-- objective identifies the Backend task, repository revision, required files and constraints;
-- order makes the repository source and required files explicit before dispatch;
-- context contains the exact resolved files plus source references;
-- result exposes Backend status, summary, revision, artifact references and blockers;
-- `APPLIED` requires actual ExHarness lineage advancement to the reported revision;
-- orchestration remains a direct Backend-specific composition.
+Closed S6 decisions:
 
-## BACKEND COMPLETION — S5
+- missing/failed evidence is not an Advisor problem because the next state is deterministic;
+- the first observed judgment gap is unresolved semantic gaps remaining after required Backend evidence passes;
+- BackendAdvisor is bounded to `RETRY_IMPLEMENTATION | REQUEST_CONTEXT | ESCALATE`;
+- proposals must reference existing gaps;
+- Advisor cannot ACCEPT work, dispatch Workers or become correctness authority.
 
-Open:
-
-- exact evidence required to ACCEPT a Backend result;
-- which verification comes from ExHarness versus application-specific policy;
-- how mutation/build/typecheck/tests/artifacts are represented for the real Backend use case;
-- when a structurally valid and lineage-promoted result must still CONTINUE, BLOCK or FAIL.
-
-Constraint: Wave-A lineage promotion proves execution-state transition, not sufficient Backend correctness. Backend completion/evidence semantics remain role-specific in S5 and must not become a universal application evidence standard before another role proves common structure.
-
-## ADVISOR — S6
-
-Open:
-
-- first real judgment gap that requires Advisor instead of deterministic code;
-- exact plan/assess/replan proposal shape needed by that gap;
-- trigger policy for Advisor invocation.
-
-Constraint: Advisor never becomes implicit dispatch/control or correctness authority.
+These are Backend-specific facts from one role. They are not yet universal application contracts.
 
 ## SECOND ROLE / COMMON ABSTRACTIONS — S7
 
 Open until S7:
 
 - which second role best pressure-tests the Backend slice (Frontend or QA are likely candidates);
-- what role/dependency semantics actually repeat;
+- which objective/order/context/result fields genuinely repeat;
+- whether evidence/completion semantics repeat or remain role-specific;
 - whether a common Worker/WorkOrder/WorkResult abstraction is justified;
+- whether Advisor proposal structure repeats;
 - whether generic orchestration is justified.
 
 Constraint: the second slice is the extraction point. There is no generic Orchestrator before it.
@@ -95,5 +87,5 @@ Constraint: application workflow state remains distinct from ExHarness persisten
 - generic Crew/Team framework;
 - dynamic role registry;
 - workflow graph DSL;
-- generic Worker/WorkOrder contracts before the second slice;
+- generic Worker/WorkOrder/Advisor contracts before the second slice;
 - application-owned model/session/runtime loop.

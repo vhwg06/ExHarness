@@ -5,6 +5,8 @@ import {
   EvaluationVerdict
 } from "../../core-harness/src/index.js";
 import {
+  BackendCompletionAction,
+  BackendEvidenceClaim,
   BackendRunAction,
   BackendWorkStatus,
   createBackendWorker,
@@ -186,7 +188,7 @@ test("S3 rejects an APPLIED result that did not advance ExHarness lineage", asyn
   );
 });
 
-test("S4 runs one Backend objective end-to-end with concrete deterministic composition", async () => {
+test("S4 runs one Backend objective end-to-end while Wave-B completion refuses unsupported acceptance", async () => {
   const backendWorker = createBackendWorker({ strategy: appliedStrategy(), workspace: workspace() });
 
   const run = await runBackendObjective(objective(), {
@@ -197,8 +199,10 @@ test("S4 runs one Backend objective end-to-end with concrete deterministic compo
   assert.equal(run.objectiveId, "health-endpoint");
   assert.equal(run.order.id, "health-endpoint:backend");
   assert.equal(run.result.status, BackendWorkStatus.APPLIED);
-  assert.deepEqual(run.decision, {
-    action: BackendRunAction.RETURN,
-    reason: "backend change applied"
-  });
+  assert.equal(run.completion.action, BackendCompletionAction.CONTINUE);
+  assert.deepEqual(run.completion.missingEvidenceClaims, [
+    BackendEvidenceClaim.TYPECHECK,
+    BackendEvidenceClaim.TESTS
+  ]);
+  assert.equal(run.decision.action, BackendRunAction.CONTINUE);
 });

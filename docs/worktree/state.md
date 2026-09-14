@@ -43,13 +43,15 @@ structured result / evidence / artifacts
 ## CURRENT DELIVERY
 
 - `packages/core-harness/` is the delivered reusable Core.
-- `packages/agentic-system/` now contains the first concrete Agentic Application + Oracle composition proven by Wave A.
-- `oracle/` and `agentic-application/` remain the desired-state projections for the larger layers; source implementation is authoritative for what has actually landed.
-- `pipeline.md` is the canonical active delivery order that converges those layers into one system.
+- `packages/agentic-system/` contains the concrete Backend Application + Oracle composition delivered through Waves A and B.
+- `oracle/` and `agentic-application/` remain desired-state projections for the larger layers; source implementation is authority for what has actually landed.
+- `pipeline.md` remains the canonical delivery order.
 
 ## CURRENT DELIVERY WAVE
 
-Wave A is complete. The repository now has one concrete Backend vertical slice:
+Wave A and Wave B are complete.
+
+Delivered Backend path:
 
 ```text
 BackendObjective
@@ -57,20 +59,29 @@ BackendObjective
  -> resolveBackendContext(...)
  -> BackendWorker
  -> ExHarness Core
- -> BackendWorkResult
- -> deterministic Backend run decision
+ -> grounded BackendWorkResult
+ -> BackendCompletionPolicy
+ -> ACCEPT | CONTINUE | BLOCK | FAIL
 ```
 
-Wave-A review result: the slice runs end-to-end without a generic Worker contract, role registry, workflow graph or generic Orchestrator. `APPLIED` results must correspond to an actual ExHarness lineage promotion rather than Worker prose alone.
+Current completion facts:
 
-Wave B is next:
+- `APPLIED` still requires actual ExHarness lineage promotion.
+- Worker-returned evidence is not trusted as completion evidence.
+- Backend completion requires grounded mutation, typecheck and tests evidence plus artifact presence.
+- completion produces an ExHarness acceptance-boundary `DecisionArtifact`.
+- missing/inconclusive/failed evidence is deterministic application logic and does not invoke Advisor.
+- Advisor is invoked only after objective evidence passes but unresolved semantic gaps remain.
+- BackendAdvisor may propose only retry implementation, request context, or escalation; application code validates the proposal and Advisor cannot ACCEPT work.
+
+Wave C is next:
 
 ```text
-S5 Backend-specific completion and evidence semantics
- -> S6 Advisor judgment boundary
+S7 Second real role + extract only proven common abstractions
+ -> S8 Artifact handoff / dereference / context chaining
 ```
 
-Do not generalize the concrete Backend shapes in Wave B. Common Worker/WorkOrder/orchestration abstractions remain deferred until the second real role in S7 proves repeated semantics.
+Do not generalize Backend Worker/WorkOrder/completion/Advisor shapes before the second real role demonstrates common semantics.
 
 ## ROUTING
 
