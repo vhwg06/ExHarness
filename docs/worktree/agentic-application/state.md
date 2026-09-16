@@ -71,6 +71,16 @@ The older `runBackendThenQaObjective(...)` direct composition remains available 
 
 Application checkpoints do not prove whether an external side effect completed across a crash window. Core effect/persistence authority remains separate and is handled by the implemented Core effect reconciliation and recovery composition, which can confirm, safely replay, observe, or escalate ambiguous effects; application stage state must not be used to infer effect completion.
 
+## Current evaluation gate
+
+The repository now runs a deterministic application reference evaluation through `npm run eval:agentic` and includes it in root `npm run verify`.
+
+The gate executes the concrete durable Backend -> QA workflow across happy-path, restart, QA-remediation, artifact-source block/resume and cancellation scenarios, then deep-compares measured output with `artifacts/agentic-backend-qa-reference-eval.json`.
+
+The checked result is explicitly classified as `DETERMINISTIC_REFERENCE` with `productionEvidence: false`. It measures false completion, handoff/ref integrity, source reads/context size, remediation/recovery and review-gate behavior, but does not claim real-repository effectiveness, external-provider quality, production latency/cost, Advisor value-add or justification for generic abstractions.
+
+See `evaluation.md` for the current executable evaluation surface and limitations.
+
 ## Current composition
 
 Shared shapes proven in source remain deliberately narrow:
@@ -100,4 +110,5 @@ Concrete PM context/role execution, SA context/role execution and vertical Revie
 - current workflow -> `workflow.md`
 - current contracts -> `contracts.md`
 - current decisions/invariants -> `decisions.md`
+- current application evaluation -> `evaluation.md`
 - all open application gaps/problems -> `../../living/blackboard.md`
