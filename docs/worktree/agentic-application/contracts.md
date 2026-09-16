@@ -168,7 +168,9 @@ This is a concrete local durable store. It requires same-filesystem hard-link su
 
 ## Backend Core-session persistence contract
 
-`createJsonBackendSessionStore(...)` is a concrete revision-aware local SessionStore for the Backend vertical. It persists Core session state and the AVO action-effect journal used by the same deterministic Backend session id, using local filesystem locking and revision conflict checks.
+`createJsonBackendSessionStore(...)` is a concrete revision-aware local SessionStore for the Backend vertical. It persists Core session state and the AVO action-effect journal used by the same deterministic Backend session id.
+
+Persistence authority is fenced by an immutable single-successor chain per session revision. A save is bound to the exact `expectedRevision`; publication uses same-filesystem hard-link no-overwrite semantics so only one successor may be committed for a given base revision. Concurrent or stale writers fail explicitly with `StoreConflictError` and cannot replace a newer durable Core/effect state. Legacy lock files are not recovery authority and elapsed time does not grant takeover rights.
 
 It explicitly declares `supportsDurableRecovery: true`. Absence of persisted Core state is usable as recovery evidence only when the configured store declares that durable-recovery authority. The default in-memory store does not, so an empty volatile store fails closed rather than being interpreted as proof that no interrupted external effect occurred.
 
@@ -256,43 +258,9 @@ NON_ACTIONABLE
 
 A finding that proves the current acceptance obligation remains unmet reopens/narrows that same item instead of manufacturing replacement work.
 
-## Bounded horizontal PM / SA coordination contract
+## Horizontal role decision vs current implementation
 
-D003 remains the semantic authority split: PM coordinates project obligations; SA assesses architecture. BB-021 implements only a concrete application-local slice of those horizontal semantics.
-
-`createPmSaCoordinationController(...)` consumes the project-bound session handoff and a concrete PM/SA coordination artifact store. PM and SA receive separate bounded context projections rather than one universal role context.
-
-SA assessment is evidence-bound judgment state:
-
-- it binds one project, durable root intent, target item/work and one or more current target evidence refs;
-- SA context construction rejects evidence refs that are not currently linked to the target, and persistence rechecks the same grounding;
-- it may state whether architecture review is required and record the architecture finding;
-- it cannot carry dependency, priority, timeline, lifecycle, completion or review-verdict authority;
-- project/root/work/evidence drift fails before the assessment becomes applicable coordination input;
-- PM context cannot reuse an SA assessment that targets different work.
-
-PM proposal is bounded coordination proposal state:
-
-- it binds the exact current target lifecycle tuple `{itemId, status, claimGeneration, reviewGeneration}`;
-- it may propose fresh prerequisite work, dependency edges for the current target/new work, blockers and PM-sourced review requirements;
-- review requirements that claim architecture need must reference a durable current SA assessment that actually requires architecture review;
-- duplicate PM review requirement keys are rejected;
-- it cannot rewrite user intent or carry architecture/completion/review verdict authority;
-- even an empty/no-op proposal must still match the current target state before returning non-mutating fallback, and a no-op proposal does not publish a proposal artifact.
-
-Roles do not mutate Blackboard directly. Controller-side validation is bounded preparation only; canonical authority remains in `ApplicationOrchestrator`.
-
-`extendWorkGraph(...)` is the concrete Orchestrator-owned atomic mutation primitive used by this slice. It requires an `expectedTarget` exact lifecycle tuple and rechecks that tuple **inside the Blackboard transaction** before publishing any coordination effect. In the same transaction it may add fresh READY work, bounded dependency edges, artifact/evidence refs, blockers and PM-sourced review requirements. It permits dependency extension only for the target or work created in the same call, validates the full dependency graph before persistence and rejects terminal/active target states that are not coordinatable.
-
-Adding a PM review requirement never clears an existing blocker. A target that is already `BLOCKED` remains `BLOCKED` until an explicit lifecycle transition resolves/resumes it, even when it already has a submission that will later need review.
-
-Fresh work cannot carry prior lifecycle authority/history: it must start unclaimed with zero claim/review generations, no checkpoint/submission/active review, no blocker/follow-up/review/finding history and explicit origin provenance. Identical already-created fresh work is idempotent; conflicting duplicate definitions fail the transaction.
-
-For a mutating PM proposal, the content-addressed proposal artifact may be written before canonical application, but the proposal ref is linked to the target in the **same atomic Blackboard transaction** as its graph/ref/blocker/review-requirement effects. If that transaction fails, the orphan artifact has no lifecycle authority. If a later retry sees the exact proposal ref already canonically linked to that target, it treats the previous atomic application as complete (`replayed: true`) rather than trying to replay the proposal's now-stale target tuple.
-
-`recoverCoordination()` reconstructs the project handoff and dereferences only linked coordination artifact refs. Artifact existence alone is not project lifecycle truth.
-
-This implementation is not a generic PM/SA agent runtime, role registry, horizontal-role framework, workflow DSL or vertical reviewer implementation.
+D003 promotes PM as horizontal project coordination and SA as horizontal architecture only. Concrete PM context/role execution, SA context/role execution and vertical reviewer Workers are not implemented yet and are not current-source contracts here.
 
 ## Advisor contract
 

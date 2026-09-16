@@ -108,7 +108,10 @@ export {
   createBackendWorker
 } from "./backend-worker.js";
 export {
+  prepareBackendObjective,
   recoverBackendObjective,
-  runBackendObjective
+  recoverPreparedBackendObjective,
+  runBackendObjective,
+  runPreparedBackendObjective
 } from "./backend-application.js";
 export { runBackendThenQaObjective } from "./composition.js";
