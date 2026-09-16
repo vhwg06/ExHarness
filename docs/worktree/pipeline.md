@@ -107,6 +107,23 @@ npm run eval:agentic
 
 The gate verifies regression-level application behavior including ref-only handoff integrity, false-completion avoidance, repository/application-artifact source reads, remediation/recovery and review-gate behavior. Its checked artifact declares `evidenceClass: DETERMINISTIC_REFERENCE` and `productionEvidence: false`; it is not a production workload benchmark and does not establish Advisor value-add or justify generic abstractions.
 
+## Workflow policy replay evaluation
+
+Root `npm run verify` also runs a bounded deterministic policy-replay evaluation:
+
+```text
+npm run eval:workflow-replay
+ -> scripts/workflow-policy-replay-eval.mjs
+ -> fixed artifact-outage / cancellation / retry / review-delay schedules
+ -> same recorded observable events under baseline and candidate policy identities
+ -> reproduce the BB-024 late-reconciliation cancellation divergence
+ -> assert unrelated schedules remain behaviorally unchanged
+ -> assert historical mutating-effect observations cause zero external dispatches
+ -> deep compare with artifacts/bb038-workflow-replay-eval.json
+```
+
+This replay surface is evaluation/regression tooling only. It consumes recorded fixture events and adapter outcomes; it does not replay model/provider calls, reconstruct live runtime authority, reproduce real concurrent timing, or dispatch historical external mutations. Its checked artifact declares `evidenceClass: DETERMINISTIC_POLICY_REPLAY_FIXTURE` and `productionEvidence: false`. A replay divergence identifies a policy/decision difference under fixed fixture inputs; it does not establish causal certainty when live model, environment, timing or authority inputs differ.
+
 ## Current extraction result
 
 Repeated source-backed shapes:
