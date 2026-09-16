@@ -402,7 +402,7 @@ artifact-refs:
   - docs/worktree/core-harness/workflow.md
 evidence-refs:
   - BB-007 concrete recovery-reference consumer in packages/core-harness/test/recovery-composition.test.js
-  - repository usage assessment found no second real consumer repeating the full recovery sequence
+  - repository usage assessment found no second real caller repeating the full recovery sequence
   - final exact-head CI run #1149
   - merge commit 1a506dce1e1f19f604ba47382e55c191d3c9152d
 blockers: []
@@ -804,22 +804,31 @@ BB-023
 question/work: Prevent expired-lock takeover from allowing a live stale transaction to overwrite newer committed Blackboard state.
 kind: FIX
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: []
-remaining-work:
-  - define safe lock ownership/takeover and commit validation for the concrete local store
-  - prevent an old writer from publishing a stale snapshot or deleting a replacement owner's lock
-  - cover concurrent stale-lock contenders and failed-save cleanup
+remaining-work: []
 acceptance-criteria:
   - the R1 interleaving cannot lose a committed item; conflicting old writes fail explicitly
   - lock cleanup verifies ownership and cannot remove a newer lock
   - tests cover paused live owners, abandoned locks and competing recovery attempts
 submission:
+  - PR #84
 review-requirements: [persistence/concurrency review, application/code review]
-reviews: []
-artifact-refs: []
-evidence-refs: [docs/living/knowledge/project-review-2026-09-16.md (R1)]
+reviews:
+  - persistence/concurrency + application/code review passed exact head baf175809c45b25b2bbee9e7a234aef7a0e0f9e6
+a rtifact-refs:
+  - packages/agentic-system/src/blackboard-store.js
+  - packages/agentic-system/test/blackboard-store.test.js
+  - docs/living/knowledge/bb023-blackboard-commit-fencing.md
+  - docs/living/decisions/D011-blackboard-commit-fencing.md
+  - docs/worktree/agentic-application/contracts.md
+  - docs/worktree/agentic-application/workflow.md
+  - docs/worktree/agentic-application/decisions.md
+evidence-refs:
+  - docs/living/knowledge/project-review-2026-09-16.md (R1)
+  - exact-head CI #1344 green on living-doc-impact and Node 20/22/24 before decision/Board promotion
+  - paused stale writer, competing recovery writer, legacy-lock, failed-publication, projection-authority, projection-failure and repeated-state regression contracts
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; grounded follow-up from current project review, store exclusion distinct from BB-016 work ownership
