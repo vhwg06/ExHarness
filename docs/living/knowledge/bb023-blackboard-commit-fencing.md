@@ -13,7 +13,7 @@ Elapsed time therefore does not establish that the previous writer is dead, and 
 The BB-023 branch removes timeout-based `.lock` takeover from the public store correctness boundary and uses an append-only, single-successor revision chain:
 
 ```text
-root snapshot
+immutable root snapshot
   -> commit(root) -> revision r1
   -> commit(r1)   -> revision r2
   -> commit(r2)   -> revision r3
@@ -23,12 +23,17 @@ Each transaction resolves the exact current revision, executes its mutator again
 
 A commit record carries an opaque base revision token, digest of the exact base snapshot, a fresh opaque next revision token, and the complete validated next snapshot. Snapshot digests validate content but are not revision identity, so legitimate repeated values such as A -> B -> A do not reconnect to old history.
 
+The caller-selected JSON path is retained as a compatibility/inspection projection because existing application contracts inspect that file directly. It is no longer persistence authority after the immutable root exists. The committed chain lives under `<path>.root` plus immutable successor records; projection refresh occurs only after successor publication. A tampered, missing or stale projection therefore cannot roll back the authoritative chain.
+
+For migration, a legacy JSON snapshot at `<path>` is used only when atomically initializing a missing immutable root. Once that root exists, future loads do not derive authority from the projection.
+
 ## Expected consequences under test
 
 - a paused old writer cannot publish after a newer writer commits from the same base;
 - concurrent recovery attempts from one base have one commit winner and explicit conflicts for losers;
 - legacy `.lock` files are neither trusted nor deleted by the new public store;
-- crash after successor publication does not lose the successor because the immutable record is authoritative;
+- compatibility JSON still exposes committed state for existing inspection contracts but cannot override chain authority;
+- crash/projection failure after successor publication does not lose the successor because the immutable record is authoritative;
 - commit records remain as fencing/history state; BB-023 does not introduce compaction;
 - the local store requires same-filesystem hard-link support;
 - `lockStaleMs` remains accepted only for call compatibility and does not grant mutation authority.
@@ -39,6 +44,8 @@ A commit record carries an opaque base revision token, digest of the exact base 
 - competing writers from one base produce one winner and one explicit conflict;
 - abandoned/replacement legacy lock remains untouched;
 - failed publication cleans temp state and leaves committed state unchanged;
+- compatibility projection reflects ordinary successful commits but tampering cannot change authoritative load;
+- committed successor survives projection refresh failure;
 - repeated snapshot values preserve correct revision identity;
 - existing Agentic Application restart/persistence contracts remain green.
 
