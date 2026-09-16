@@ -1,8 +1,8 @@
 # D005 — Do not extract a Core lifecycle facade yet
 
-Status: **PROMOTED**
+Status: **PROPOSED**
 
-Accepted: 2026-09-16
+Proposed: 2026-09-16
 
 ## Question
 
@@ -20,7 +20,7 @@ Current source has distinct public mechanisms for:
 
 BB-007 adds one concrete recovery-reference consumer proving the required ordering across those mechanisms. Repository search does not show a second production/application consumer repeating that full sequence. Existing `actionEffects()` / `reconcileActionEffect()` usage is still confined to Core effect/recovery contracts rather than repeated application orchestration.
 
-## Decision
+## Proposed decision
 
 Do **not** introduce a generic executable Core lifecycle facade now.
 
@@ -46,9 +46,9 @@ Reassess only when at least one additional concrete consumer demonstrates repeat
 
 If that pressure appears, extraction must preserve BB-007 ordering and must not absorb Agentic Application WorkOrder/Worker/PM/SA/completion semantics.
 
-## Consequences
+## Consequences if accepted
 
 - no `LifecycleEngine`, generic `RecoveryCoordinator`, registry or workflow DSL is added by BB-008;
 - current Core primitives remain independently usable and testable;
 - BB-007 remains the concrete executable contract evidence;
-- absence of a facade is a deliberate current architecture constraint, not an unresolved implementation gap.
+- absence of a facade becomes a deliberate current architecture constraint rather than an unresolved implementation gap.
