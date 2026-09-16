@@ -81,6 +81,16 @@ export {
   requirePmSaCoordinationArtifactStore
 } from "./pm-sa-coordination-store.js";
 export {
+  WorkContinuationAction,
+  WorkSelectionEvidenceState,
+  WorkSelectionReason,
+  WorkSelectionSignalSource,
+  createBoundedProjectWorkSelector,
+  createJsonWorkSelectionDecisionStore,
+  decideProjectWorkContinuation,
+  defineBoundedWorkSelectionPolicy
+} from "./work-selection.js";
+export {
   BackendQaWorkflowStage,
   createDurableBackendQaWorkflow
 } from "./durable-backend-qa.js";
