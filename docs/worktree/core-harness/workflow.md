@@ -20,7 +20,7 @@ createHarness.vary()
   -> optional supervisor trajectory review
 ```
 
-Public built-in `avo.act` now crosses a durable effect boundary before `core.act()` derives/persists candidate state:
+Public built-in `avo.act` crosses a durable effect boundary before `core.act()` derives/persists candidate state:
 
 ```text
 semantic action + current candidate
@@ -52,7 +52,7 @@ Built-in action-effect journal state remains separate from candidate lineage, tr
 
 ## DELIVERED COGNITION BOUNDARIES
 
-Core now has an explicit structured cognition path:
+Core has an explicit structured cognition path:
 
 ```text
 persisted evidence + bounded context
@@ -127,7 +127,7 @@ Effect confirmation does not imply evaluation success, and grounded semantic mem
 
 ## MEMORY VISIBILITY
 
-Semantic retrieval and spontaneous recall are already composable, but visibility is deliberately explicit:
+Semantic retrieval and spontaneous recall are composable, but visibility is deliberately explicit:
 
 ```text
 semantic memory
@@ -147,29 +147,45 @@ Three mechanisms exist and remain distinct:
 2. **AgentRuntime snapshot/resume** — restores compatible runtime state with explicit live-authority rebinding.
 3. **Effect reconciliation** — reconciles journaled operations through replay policy/external observation, including built-in AVO action effects.
 
-The remaining recovery target is composition, not another recovery mechanism:
+The concrete recovery-reference consumer in `test/recovery-composition.test.js` proves these mechanisms can be ordered without inventing another recovery authority:
 
 ```text
-restore persisted work/runtime state
-  -> reconcile pending effect operations deterministically
-  -> restore exact observation/evidence state
-  -> project grounded memory + bounded context
-  -> continue from an explicit cognition boundary
+restore compatible AgentRuntime authority
+  -> load persisted Core work + exact observation/verification evidence
+  -> inspect built-in AVO effect operations
+  -> reconcile effect truth first
+       CONFIRMED
+         -> if Core is still at effect base, consume confirmed result through avo.act
+            without external redispatch
+         -> if Core already reflects result, continue
+         -> if Core diverged, escalate
+       PURE / IDEMPOTENT
+         -> machine-first RETRY under declared semantics
+       OBSERVABLE
+         -> machine-first observation -> CONTINUE or RETRY
+       NON_RECONCILABLE
+         -> ESCALATE and leave interrupted work unresolved
+  -> only after effect reconciliation succeeds:
+       close RUNNING variation as INTERRUPTED
+  -> assert persisted observation/verification ids are unchanged
+  -> explicit harness.resume()
+  -> continue with a new variation from recovered candidate state
 ```
+
+The proof deliberately restores the last safe runtime snapshot rather than pretending to resume an in-flight JavaScript call stack. Persisted Core observation/verification artifacts survive independently and are not reconstructed from traces or model prose.
+
+A confirmed mutating effect may therefore be ahead of Core candidate persistence after a crash. Recovery is allowed to consume that confirmed result only while the current Core candidate still matches the effect's recorded base candidate. Candidate divergence is an escalation condition, not a replay guess.
 
 Tracing and semantic memory are context/evidence inputs, never recovery authority by themselves.
 
+This recovery ordering is currently a **concrete contract proof**, not a public generic lifecycle facade. The reusable abstraction question remains separate.
+
 ## NEXT CORE DELIVERY
 
-Do not generalize a Core workflow surface yet. The next source-backed continuation is:
-
-```text
-1. prove restore -> reconcile effects -> resume with a concrete recovery consumer
-2. only then assess whether a higher-level Core lifecycle composition surface is justified
-```
+The concrete sequencing pressure required to assess a higher-level Core lifecycle surface now exists. Any extraction must preserve the proven ordering and must not absorb Agentic Application orchestration or merge effect/evidence/completion authority.
 
 Application WorkOrder/Worker/Advisor/completion abstractions remain owned by Agentic Application and must preserve concrete-first sequencing.
 
 ## SOURCE
 
-Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `effect-aware-harness.js`, `avo-action-effect.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`.
+Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `effect-aware-harness.js`, `avo-action-effect.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`. Concrete recovery-composition contract evidence lives in `test/recovery-composition.test.js`.
