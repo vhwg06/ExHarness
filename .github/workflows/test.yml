@@ -5,6 +5,50 @@ on:
   pull_request:
 
 jobs:
+  living-doc-impact:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    name: living-doc-impact
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify living-doc impact contract
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          body="$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")"
+          classification="$(printf '%s\n' "$body" | sed -n 's/^\*\*Classification:\*\*[[:space:]]*\(CURRENT_SYSTEM_CHANGED\|CURRENT_SYSTEM_NOT_CHANGED\)[[:space:]]*$/\1/p' | head -n 1)"
+
+          if [ -z "$classification" ]; then
+            echo "PR body must declare exactly one living-doc impact classification on the **Classification:** line."
+            echo "Allowed values: CURRENT_SYSTEM_CHANGED | CURRENT_SYSTEM_NOT_CHANGED"
+            exit 1
+          fi
+
+          count="$(printf '%s\n' "$body" | sed -n 's/^\*\*Classification:\*\*[[:space:]]*\(CURRENT_SYSTEM_CHANGED\|CURRENT_SYSTEM_NOT_CHANGED\)[[:space:]]*$/\1/p' | wc -l | tr -d ' ')"
+          if [ "$count" != "1" ]; then
+            echo "PR body must contain exactly one living-doc impact classification; found $count."
+            exit 1
+          fi
+
+          echo "living-doc impact: $classification"
+
+          if [ "$classification" = "CURRENT_SYSTEM_CHANGED" ]; then
+            git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA"
+            changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+            printf '%s\n' "$changed"
+            if ! printf '%s\n' "$changed" | grep -q '^docs/worktree/'; then
+              echo "CURRENT_SYSTEM_CHANGED requires affected docs/worktree/* updates in the same PR."
+              exit 1
+            fi
+          fi
+
+          echo "Living-doc impact declaration gate passed. Semantic truth of the classification remains a review responsibility."
+
   kernel:
     runs-on: ubuntu-latest
     strategy:
