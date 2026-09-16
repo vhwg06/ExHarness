@@ -118,6 +118,7 @@ test("failed commit publication cleans its temp file and leaves prior state unch
       readFile: nodeFs.readFile,
       writeFile: nodeFs.writeFile,
       mkdir: nodeFs.mkdir,
+      rename: nodeFs.rename,
       unlink: nodeFs.unlink,
       async link() {
         const error = new Error("injected link failure");
@@ -137,6 +138,43 @@ test("failed commit publication cleans its temp file and leaves prior state unch
     const files = await readdir(directory);
     assert.equal(files.some((name) => name.endsWith(".tmp")), false);
     assert.deepEqual((await createJsonBlackboardStore({ path }).load()).items, []);
+  });
+});
+
+test("compatibility JSON projection exposes the latest committed snapshot without becoming authority", async () => {
+  await withStore(async ({ path }) => {
+    const store = createJsonBlackboardStore({ path });
+    await store.transact((snapshot) => addItem(snapshot, "visible"));
+
+    const projected = JSON.parse(await readFile(path, "utf8"));
+    assert.deepEqual(projected.items.map((item) => item.id), ["visible"]);
+
+    projected.items = [];
+    await writeFile(path, `${JSON.stringify(projected, null, 2)}\n`, "utf8");
+    assert.deepEqual((await store.load()).items.map((item) => item.id), ["visible"]);
+  });
+});
+
+test("committed successor survives compatibility projection failure", async () => {
+  await withStore(async ({ path }) => {
+    const projectionFailingFs = {
+      readFile: nodeFs.readFile,
+      writeFile: nodeFs.writeFile,
+      mkdir: nodeFs.mkdir,
+      link: nodeFs.link,
+      unlink: nodeFs.unlink,
+      async rename() {
+        const error = new Error("injected projection failure");
+        error.code = "EIO";
+        throw error;
+      }
+    };
+    const store = createJsonBlackboardStore({ path, fs: projectionFailingFs });
+    const committed = await store.transact((snapshot) => addItem(snapshot, "durable"));
+    assert.deepEqual(committed.snapshot.items.map((item) => item.id), ["durable"]);
+
+    const recovered = await createJsonBlackboardStore({ path }).load();
+    assert.deepEqual(recovered.items.map((item) => item.id), ["durable"]);
   });
 });
 
