@@ -829,9 +829,9 @@ origin: INTENT-exharness-agentic-system; tooling child of BB-005, which retains 
 
 ## Additional findings and stateful research roadmap
 
-Review evidence: `knowledge/project-review-2026-09-16.md`, inspected revision `ad61a2b037b99384e16fdd5245ee04f43dc36083`. R1-R4 were reproduced with isolated adapters; they do not assert production incidents. BB-023/024/025 address newly grounded defects without erasing delivered history. R4 was closed by the delivered BB-016/017 recovery track. BB-026/027 define a research consumer before choosing an abstraction.
+Review evidence: `knowledge/project-review-2026-09-16.md`, inspected revision `ad61a2b037b99384e16fdd5245ee04f43dc36083`. R1-R4 were reproduced with isolated adapters; they do not assert production incidents. BB-023/024/025 address grounded defects without erasing delivered history. R4 was closed by the delivered BB-016/017 recovery track. BB-026/027 define a research consumer before choosing an abstraction.
 
-Current sequence: BB-023 and BB-016/017 are delivered. BB-024 and BB-025 have merged implementations and passing targeted regression tests; their Board acceptance awaits review-evidence reconciliation. Continue the bounded research/delivery backlog without reimplementing those fixes. BB-014/015/018/019/022 remain delivered; BB-005 still requires representative production evidence.
+BB-023/024/025 and BB-016/017 are delivered. BB-026 is accepted and BB-027 is now eligible. The bounded research/delivery backlog continues without reimplementing delivered fixes. BB-014/015/018/019/022 remain delivered; BB-005 still requires representative production evidence.
 
 ```text
 BB-023
@@ -873,11 +873,10 @@ BB-024
 question/work: Preserve SUPERSEDED cancellation when delayed finding reconciliation arrives.
 kind: FIX
 priority: P1
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: []
-remaining-work:
-  - reconcile required review and CI evidence for merged PR #85 before marking DONE
+remaining-work: []
 acceptance-criteria:
   - cancel followed by NON_ACTIONABLE or CURRENT_WORK reconciliation cannot become DONE or REOPENED
   - late NEW_WORK reconciliation cannot create child work after cancellation
@@ -885,13 +884,16 @@ acceptance-criteria:
 submission:
   - merged PR #85 at dfc5249073ebfb1722047a3e4ac851caaee41d19
 review-requirements: [workflow/acceptance review, application/code review]
-reviews: []
-artifact-refs:
+reviews:
+  - workflow/acceptance review PASS on exact implementation head 2809dd0354379f596c91d3cea23efe414d568e82
+  - application/code review PASS on the same exact head
+a rtifact-refs:
   - packages/agentic-system/src/application-orchestrator.js
   - packages/agentic-system/test/bb024-cancellation-reconciliation.test.js
 evidence-refs:
   - docs/living/knowledge/project-review-2026-09-16.md (R2)
-  - targeted BB-024 regression passed at 8125bef297973c7e4ff24540875589beca303a18
+  - exact-head CI #1492 green on living-doc-impact and Node 20/22/24
+  - merge commit dfc5249073ebfb1722047a3e4ac851caaee41d19
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; reproduced cancellation-to-DONE transition through reconcileFinding
@@ -902,11 +904,10 @@ BB-025
 question/work: Validate Blackboard dependency graph integrity and diagnose stored graphs that cannot progress.
 kind: FIX
 priority: P1
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: []
-remaining-work:
-  - reconcile required review and CI evidence for merged PR #87 before marking DONE
+remaining-work: []
 acceptance-criteria:
   - R3 dangling and cyclic inputs fail with actionable item/edge diagnostics before persistence
   - valid unordered DAGs and durable intent-root dependencies remain accepted
@@ -914,13 +915,16 @@ acceptance-criteria:
 submission:
   - merged PR #87 at 8125bef297973c7e4ff24540875589beca303a18
 review-requirements: [state/schema review, application/code review]
-reviews: []
+reviews:
+  - state/schema review PASS on exact implementation head 0cdc4f7ad57a697cb6e183dcb4403b677d3c9736
+  - application/code review PASS on the same exact head
 artifact-refs:
   - packages/agentic-system/src/blackboard-graph.js
   - packages/agentic-system/test/blackboard-graph.test.js
 evidence-refs:
   - docs/living/knowledge/project-review-2026-09-16.md (R3)
-  - targeted BB-025 regression passed at 8125bef297973c7e4ff24540875589beca303a18
+  - exact-head CI #1515 green on living-doc-impact and Node 20/22/24
+  - merge commit 8125bef297973c7e4ff24540875589beca303a18
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; reproduced acceptance of unresolvable dependency graphs
@@ -931,28 +935,31 @@ BB-026
 question/work: Research a concrete stateful investigation pipeline that preserves hypotheses, experiments and evidence validity across sessions.
 kind: RESEARCH
 priority: P2
-status: READY
+status: DONE
 owner:
 depends-on: [BB-012, BB-015, BB-022]
-remaining-work:
-  - use BB-016 failure-boundary research as the concrete pilot rather than repeat its recovery-design scope
-  - compare existing generic checkpoints plus referenced artifacts with a minimal research-specific contract
-  - define durable question/hypothesis/experiment/result/decision lineage and unresolved continuation state
-  - evaluate evidence invalidation when implementation, configuration, source or policy revisions change
-  - keep observations, derived judgments, independent audit and promoted decisions distinct
+remaining-work: []
 acceptance-criteria:
   - a second fresh session identifies completed experiments, contradictory evidence and the next unresolved experiment without prior chat
   - a changed source/policy revision flags affected conclusions for reassessment without deleting historical results
   - report records costs and limitations of both approaches and may conclude no new runtime API is needed
   - accepted recommendation specifies artifact/provenance boundaries and a bounded implementation only if demonstrated
 submission:
+  - PR #97
 review-requirements: [research-method review, architecture-boundary review]
-reviews: []
-artifact-refs: []
+reviews:
+  - research-method review PASS on exact research head 9576718d4f9cf9ef0f275bcc27f252232ebb3245
+  - architecture-boundary review PASS on the same exact head
+artifact-refs:
+  - docs/living/knowledge/bb026-stateful-research-continuation.md
+  - docs/living/knowledge/bb026-stateful-research-probe.mjs
+  - artifacts/bb026-stateful-research-probe.json
 evidence-refs:
   - docs/living/knowledge/project-review-2026-09-16.md (research opportunity)
   - docs/living/knowledge/bb022-agentic-evaluation-protocol.md
   - packages/agentic-system/src/session-handoff.js
+  - exact-head CI #1590 green on living-doc-impact and Node 20/22/24
+  - merge commit 8eb55bf3eb31b599e85a47d03b28893f69066281
 blockers: []
 follow-up-refs: [BB-027]
 origin: INTENT-exharness-agentic-system; direct user request for stateful research and high-impact architecture upgrades, grounded in existing research backlog
@@ -963,7 +970,7 @@ BB-027
 question/work: Deliver the accepted research-continuation workflow from BB-026 using existing artifacts/checkpoints or its demonstrated minimal extension.
 kind: IMPLEMENTATION
 priority: P2
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-026]
 remaining-work:
@@ -979,8 +986,10 @@ submission:
 review-requirements: [research-workflow review, application/code review if runtime changes]
 reviews: []
 artifact-refs: []
-evidence-refs: [BB-026]
-blockers: [BB-026 must deliver an accepted evidence-backed continuation contract; supersede if no implementation work is justified]
+evidence-refs:
+  - BB-026
+  - docs/living/knowledge/bb026-stateful-research-continuation.md
+blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional implementation follow-up to BB-026
 ```
@@ -998,35 +1007,42 @@ Here, a decision chain means explicit hypotheses, concise rationales, artifact p
 | Architecture composition from existing primitives | BB-032 | BB-033 | P2 |
 | Evidence-gated self-upgrade loop | BB-034 | BB-035 | P1 |
 
-BB-023/024/025 remain the immediate correctness priorities. BB-028/030/032/034 can be researched against existing source. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. These new tracks consume those results without duplicating their scope. BB-035 additionally waits for BB-027 and the concrete independent review pipeline BB-019 before an application-level upgrade pilot is delivered.
+BB-023/024/025 are delivered. BB-028/030/032 research boundaries are accepted and their bounded delivery children are eligible; BB-033 is already occupied by active PR #107. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. BB-034 remains under remediation in PR #105, and BB-035 additionally waits for BB-027 before an application-level upgrade pilot can proceed.
 
 ```text
 BB-028
 question/work: Research a concrete decision-to-outcome chain for Backend/QA remediation using existing deliberation, ActionIntent and grounded reflection.
 kind: RESEARCH
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: []
-remaining-work:
-  - Map user objective -> explicit hypothesis/options -> concise decision rationale -> authorized action -> verification -> outcome -> grounded reflection.
-  - Compare existing artifact links with a minimal application correlation contract on one Backend/QA remediation task.
-  - Measure review effort, incorrect conclusions and context size with and without the decision summary; preserve counterevidence and uncertainty.
+remaining-work: []
 acceptance-criteria:
   - A fresh reviewer can recover the chosen action, alternatives, supporting evidence and observed outcome through bounded artifact summaries.
   - The design records explicit decision summaries, not raw/private chain-of-thought; rationale is never correctness evidence by itself.
   - Missing, stale or contradictory evidence stays visible and no explanation can bypass action authorization or independent acceptance.
 submission:
+  - PR #88
 review-requirements: [architecture-boundary review, evaluation-method review]
-reviews: []
-artifact-refs: []
+reviews:
+  - architecture-boundary review PASS on exact research head 5e4e3dd1e1afa82c30c5de8857c6712b61b86731
+  - evaluation-method review PASS on the same exact head
+artifact-refs:
+  - docs/living/knowledge/bb028-decision-outcome-chain.md
+  - docs/living/knowledge/bb028-decision-outcome-probe.mjs
+  - artifacts/bb028-decision-outcome-probe.json
+  - docs/living/decisions/D013-bounded-decision-outcome-summary.md
 evidence-refs:
   - packages/core-harness/src/deliberation-controller.js
   - packages/core-harness/src/grounded-cognition.js
   - docs/worktree/core-harness/workflow.md
+  - exact-head CI #1597 green on living-doc-impact and Node 20/22/24
+  - D013 accepted after the required reviews
+  - merge commit 50dfb3696609abb11ae79091372581ad706cc1dd
 blockers: []
 follow-up-refs: [BB-029]
-origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Core already has bounded deliberation, action authorization, effect refs and grounded reflection; their usefulness as one application-level explanation and continuation path has not been demonstrated.
+origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Core already has bounded deliberation, action authorization, effect refs and grounded reflection; their usefulness as one application-level explanation and continuation path has now been bounded by BB-028.
 ```
 
 ```text
@@ -1034,7 +1050,7 @@ BB-029
 question/work: Deliver the accepted decision-to-outcome artifact composition for one concrete Backend/QA remediation workflow.
 kind: IMPLEMENTATION
 priority: P1
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-028]
 remaining-work:
@@ -1049,9 +1065,10 @@ submission:
 review-requirements: [application/code review, independent outcome/authority review]
 reviews: []
 artifact-refs: []
-evidence-refs: [BB-028]
-blockers:
-  - BB-028 must produce an accepted scope and evidence-backed evaluation contract
+evidence-refs:
+  - BB-028
+  - docs/living/decisions/D013-bounded-decision-outcome-summary.md
+blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-028
 ```
@@ -1061,28 +1078,35 @@ BB-030
 question/work: Research application-level work prioritization and stopping rules based on measured outcomes and explicit user priorities.
 kind: RESEARCH
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: []
-remaining-work:
-  - Define impact using user acceptance goals, dependency unblocking, defect severity, evidence confidence and measured cost; distinguish estimates from observations.
-  - Compare the current deterministic queue with one bounded prioritization policy on recorded scenarios and controlled task runs.
-  - Specify budgets, retry ceilings, plateau/stop/escalation rules and checks against starvation or repeatedly selecting cheap low-value tasks.
+remaining-work: []
 acceptance-criteria:
   - A replayable comparison reports outcome quality, blocked-work reduction, cost and uncertainty rather than only completed-item counts.
   - Safety/correctness obligations and user constraints cannot be traded away for aggregate score; missing measurements cannot be invented.
   - The proposal preserves PM coordination and Orchestrator transition authority, and distinguishes application scheduling from Core promotion.
 submission:
+  - PR #94
 review-requirements: [architecture-boundary review, evaluation-method review]
-reviews: []
-artifact-refs: []
+reviews:
+  - architecture-boundary review PASS on exact research head d103d4547181a3d166a0c2f1f0a1c29d4af3289c
+  - evaluation-method review PASS on the same exact head
+artifact-refs:
+  - docs/living/knowledge/bb030-work-prioritization.md
+  - docs/living/knowledge/bb030-work-prioritization-probe.mjs
+  - artifacts/bb030-work-prioritization-probe.json
+  - docs/living/decisions/D015-bounded-project-work-selection.md
 evidence-refs:
   - packages/core-harness/src/search-investment.js
   - scripts/agentic-backend-qa-eval.mjs
   - docs/living/knowledge/bb022-agentic-evaluation-protocol.md
+  - exact-head CI #1614 green on living-doc-impact and Node 20/22/24
+  - D015 accepted after the required reviews
+  - merge commit a4dead599ccbaac72995bb01e5bb4bc874f48dda
 blockers: []
 follow-up-refs: [BB-031]
-origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Core search-investment controls variation continuation; BB-022 measures application fixtures. Neither establishes a project-level policy for ranking work by expected user impact.
+origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Core search-investment controls variation continuation; BB-022 measures application fixtures. BB-030 accepted only a bounded opt-in project-level pilot.
 ```
 
 ```text
@@ -1090,7 +1114,7 @@ BB-031
 question/work: Implement the accepted bounded application scheduling/investment pilot over existing Blackboard work.
 kind: IMPLEMENTATION
 priority: P1
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-030]
 remaining-work:
@@ -1105,9 +1129,10 @@ submission:
 review-requirements: [application/code review, independent outcome/authority review]
 reviews: []
 artifact-refs: []
-evidence-refs: [BB-030]
-blockers:
-  - BB-030 must produce an accepted scope and evidence-backed evaluation contract
+evidence-refs:
+  - BB-030
+  - docs/living/decisions/D015-bounded-project-work-selection.md
+blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-030
 ```
@@ -1117,28 +1142,32 @@ BB-032
 question/work: Research a minimal concrete composition boundary across application workflow, Core cognition/recovery and Oracle context.
 kind: RESEARCH
 priority: P2
-status: READY
+status: DONE
 owner:
 depends-on: []
-remaining-work:
-  - Map actual call/data ownership for dispatch, context, persistent state, effects, evidence and completion using existing source consumers.
-  - Identify duplicated sequencing, missing links and incompatible assumptions using concrete failure scenarios, including delivered BB-016/017 findings.
-  - Compare explicit composition with a narrow adapter/facade; document a no-extraction outcome when repetition is insufficient.
+remaining-work: []
 acceptance-criteria:
   - The architecture proposal includes executable scenario evidence, dependency direction and named owners for each state/decision boundary.
   - Any shared interface is justified by real consumers and has compatibility/migration tests; no registry or workflow DSL is inferred from a diagram.
   - D005 is preserved unless explicit new evidence supports a separately reviewed superseding decision.
 submission:
+  - PR #101
 review-requirements: [architecture-boundary review, evaluation-method review]
-reviews: []
-artifact-refs: []
+reviews:
+  - architecture-boundary review PASS on exact research head 8b174a4ddddcf63adb69ab7523d22332bb370c5e
+  - evaluation-method review PASS on the same exact head
+artifact-refs:
+  - docs/living/knowledge/bb032-composition-boundary.md
+  - packages/agentic-system/test/bb032-composition-boundary-research.test.js
 evidence-refs:
   - packages/agentic-system/src/durable-backend-qa.js
   - packages/core-harness/test/recovery-composition.test.js
   - docs/living/decisions/D005-no-core-lifecycle-facade-yet.md
+  - exact-head CI #1624 green on living-doc-impact and Node 20/22/24
+  - merge commit 0f2b6f7b876943f3c669337bb0905f6f600d7dca
 blockers: []
 follow-up-refs: [BB-033]
-origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Existing capabilities span distinct authority planes; the current Backend/QA consumer and recovery-reference consumer expose different compositions. D005 requires repeated evidence before a general lifecycle facade.
+origin: INTENT-exharness-agentic-system; accepted narrow Backend preparation boundary preserves D005 and existing authority planes.
 ```
 
 ```text
@@ -1146,7 +1175,7 @@ BB-033
 question/work: Implement only the concrete composition improvement accepted by BB-032.
 kind: IMPLEMENTATION
 priority: P2
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-032]
 remaining-work:
@@ -1161,11 +1190,12 @@ submission:
 review-requirements: [application/code review, independent outcome/authority review]
 reviews: []
 artifact-refs: []
-evidence-refs: [BB-032]
-blockers:
-  - BB-032 must produce an accepted scope and evidence-backed evaluation contract
+evidence-refs:
+  - BB-032
+  - docs/living/knowledge/bb032-composition-boundary.md
+blockers: []
 follow-up-refs: []
-origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-032
+origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-032; active branch/PR ownership must be checked before claim.
 ```
 
 ```text
@@ -1177,23 +1207,29 @@ status: READY
 owner:
 depends-on: []
 remaining-work:
-  - Define observed failure -> grounded reflection -> improvement hypothesis -> isolated candidate -> controlled experiment -> independent acceptance -> rollout/rollback artifact.
-  - Choose one reversible pilot, such as context selection or remediation policy, with a fixed baseline, held-out scenarios and measured resource budget.
-  - Specify candidate scope, provenance, stale-evidence rejection, experiment continuation and a stop rule when improvement is absent; reuse BB-026 research-continuation findings.
+  - remediate review blockers on experiment grounding, ActionIntent authority enforcement, persisted CUSTOM payload protocol and budget/held-out claims
+  - rerun architecture-boundary and evaluation-method review on the remediated exact head
 acceptance-criteria:
   - Baseline and candidate are compared under recorded conditions with held-out outcomes; the candidate cannot rewrite its own evaluator or acceptance thresholds.
   - A reflection proposes an experiment but cannot accept, deploy, merge or grant new authority; approved lifecycle transitions remain with application orchestration.
   - The report includes negative results, regression checks, cost and rollback criteria; fixture success alone does not justify production rollout.
 submission:
+  - merged research PR #95; acceptance withheld pending remediation PR #105
 review-requirements: [architecture-boundary review, evaluation-method review]
 reviews: []
-artifact-refs: []
+artifact-refs:
+  - docs/living/knowledge/bb034-self-upgrade-loop.md
+  - docs/living/knowledge/bb034-self-upgrade-loop-probe.mjs
+  - artifacts/bb034-self-upgrade-loop-probe.json
+  - docs/living/decisions/D016-evidence-gated-self-upgrade-proposal-boundary.md
 evidence-refs:
   - packages/core-harness/src/grounded-cognition.js
   - packages/core-harness/src/semantic-memory-evolution.js
   - packages/core-harness/src/search-investment.js
   - scripts/agentic-backend-qa-eval.mjs
-blockers: []
+  - open remediation PR #105 owns the current acceptance blockers
+blockers:
+  - exact remediation head must satisfy both required reviews before D016/BB-034 acceptance
 follow-up-refs: [BB-035]
 origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Grounded cognition, semantic-memory evolution, candidate evaluation and application reference runs exist; they do not establish a validated autonomous upgrade process for the project itself.
 ```
@@ -1221,7 +1257,7 @@ artifact-refs: []
 evidence-refs: [BB-034]
 blockers:
   - BB-034 must produce an accepted scope and evidence-backed evaluation contract
-  - BB-027 and BB-019 must supply durable research continuation and independent application review
+  - BB-027 must supply durable research continuation
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-034
 ```
@@ -1236,7 +1272,7 @@ A useful research result must include runnable prototype evidence and a reviewab
 
 ## Research addons: measured value before adoption
 
-These are candidate research addons grounded in existing extension points, subject to the implementable-value gate above. Each must deliver a runnable experiment and implementation handoff for its named consumer. Their absence is not a defect. Existing correctness fixes BB-023/024/025 remain higher urgency than optional addons.
+These are candidate research addons grounded in existing extension points, subject to the implementable-value gate above. Each must deliver a runnable experiment and implementation handoff for its named consumer. Their absence is not a defect. Correctness fixes BB-023/024/025 are delivered; addon work remains evidence-gated rather than urgent by default.
 
 | Research | Candidate addon | First value to measure |
 | --- | --- | --- |
@@ -1246,7 +1282,7 @@ These are candidate research addons grounded in existing extension points, subje
 | BB-039 | Artifact manifest/retention | Reliable, verifiable ref-only session continuation |
 | BB-040 | Measured model routing | Verified quality versus observed cost and latency |
 
-For comparisons, fix the task set and policy versions, keep held-out scenarios, record failed/inconclusive runs and declare the evidence class. Predeclare experiment budgets and decision criteria before observing candidate results. Improvements on deterministic fixtures do not establish production effectiveness. Start with BB-038 and BB-039 for continuation reliability; BB-036 provides a separate context-efficiency experiment. BB-037 and BB-040 need evidence that their added runtime cost is worthwhile.
+For comparisons, fix the task set and policy versions, keep held-out scenarios, record failed/inconclusive runs and declare the evidence class. Predeclare experiment budgets and decision criteria before observing candidate results. Improvements on deterministic fixtures do not establish production effectiveness. BB-036/037/038/039 now have bounded research results; BB-040 remains blocked on representative provider/task evidence.
 
 ```text
 BB-036
@@ -1295,7 +1331,7 @@ BB-037
 question/work: Research whether existing semantic memory can reuse verified task experience across runs without transferring stale or unrelated project knowledge.
 kind: RESEARCH
 priority: P2
-status: READY
+status: DONE
 owner:
 depends-on: []
 research-hypothesis: Selective recall of grounded prior failures and successful repairs may reduce repeated remediation work.
@@ -1303,25 +1339,31 @@ target-consumer: Backend remediation context for recurring verified failure case
 implementation-output: An opt-in adapter using the existing memory retrieval port to supply bounded, source-linked repair experience before a remediation run
 value-gate: Reduce repeat failures or repair attempts on held-out recurring-failure tasks versus no-memory runs, within a predeclared overhead budget and without worse final correctness or cross-project leakage
 scope-boundary: BB-026 owns research continuation and BB-034 owns self-upgrade candidates. This item measures the incremental value and risks of memory reuse.
-remaining-work:
-  - Compare no memory, lexical recall and existing associative ranking with identical task inputs and a fixed context budget.
-  - Partition records by project, repository revision, task family and evaluation policy; distinguish transferable technique from revision-specific facts.
-  - Exercise contradictory repairs, archived records, stale evidence and unrelated projects; separate training experience from held-out evaluation tasks.
+remaining-work: []
 acceptance-criteria:
   - Measure repeat-failure rate, repair attempts, final correctness, retrieval overhead and inappropriate cross-project recall.
   - A replayable negative-transfer scenario demonstrates that irrelevant/stale memories cannot become acceptance evidence.
   - Recommend an opt-in composition or no addon; preserve RELEVANCE_ONLY semantics and explicit memory visibility.
 submission:
+  - PR #96
 review-requirements: [research-method review, application/architecture-boundary review]
-reviews: []
-artifact-refs: []
+reviews:
+  - research-method review PASS on exact research head 30a27c0de1e014a6389611f8a84f377ecaca461b
+  - application/architecture-boundary review PASS on the same exact head
+artifact-refs:
+  - docs/living/knowledge/bb037-grounded-experience-reuse.md
+  - scripts/semantic-memory-reuse-eval.mjs
+  - artifacts/bb037-grounded-experience-reuse-eval.json
 evidence-refs:
   - packages/core-harness/src/semantic-memory-retrieval.js
   - packages/core-harness/src/semantic-memory-intelligence.js
   - packages/core-harness/src/semantic-memory-evolution.js
   - packages/core-harness/src/grounded-cognition.js
+  - exact-head CI #1576 green on living-doc-impact and Node 20/22/24
+  - merge commit ff94451d4bbd552834576d3ca5b3b57a1864a098
+  - research result: NARROW; productionEvidence=false and no runtime default authorized
 blockers: []
-follow-up-refs: []
+follow-up-refs: [BB-005]
 origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
 ```
 
@@ -1330,7 +1372,7 @@ BB-038
 question/work: Research a replay and fault-injection addon for comparing workflow policies against recorded observable events.
 kind: RESEARCH
 priority: P1
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: []
 research-hypothesis: Controlled replay may reveal regressions and distinguish which workflow decision caused an outcome before a policy is adopted.
@@ -1338,30 +1380,31 @@ target-consumer: Agentic evaluation and regression verification for BB-023/024 p
 implementation-output: A runnable fault-schedule/replay helper integrated with the existing application evaluation or focused regression tests
 value-gate: Reproduce at least one documented current lifecycle/persistence failure and distinguish the faulty implementation from its fix under the same schedule, with no real external mutation
 scope-boundary: BB-022 remains the reference evaluation gate; delivered BB-016/017 and BB-023/024 own their recovery/defect boundaries. This research evaluates reusable experimental tooling, not their implementation.
-remaining-work:
-  - Review the fixture-level replay result, runtime cancellation calibration, unsupported schedules and authority boundary.
+remaining-work: []
 acceptance-criteria:
   - A reviewer can reproduce a baseline/candidate divergence and identify the changed decision plus downstream outcome refs.
   - Replays isolate external effects and never reissue a historical mutation merely because it appears in a trace.
   - Report replay fidelity, uncovered failures, storage cost and unsupported cases; avoid claiming causal certainty when model/environment inputs differ.
 submission:
-  - docs/living/knowledge/bb038-workflow-policy-replay.md
-  - scripts/workflow-policy-replay-eval.mjs
-  - docs/living/knowledge/bb038-runtime-calibration.mjs
+  - PR #93
 review-requirements: [research-method review, application/architecture-boundary review]
-reviews: []
+reviews:
+  - research-method review PASS on exact research head 8f39fa3320bd701204eafbf8ddaf308343fa101a
+  - application/architecture-boundary review PASS on the same exact head
 artifact-refs:
   - docs/living/knowledge/bb038-workflow-policy-replay.md
   - docs/living/knowledge/bb038-runtime-calibration.mjs
   - artifacts/bb038-workflow-replay-eval.json
+  - docs/living/decisions/D012-recorded-policy-replay-is-evaluation-only.md
 evidence-refs:
   - packages/agentic-system/src/durable-backend-qa.js
   - packages/agentic-system/src/blackboard-orchestrator.js
   - packages/core-harness/src/runtime-snapshot.js
   - scripts/agentic-backend-qa-eval.mjs
-  - npm run eval:workflow-replay is integrated in the root verification script; direct Node evaluation passes the checked artifact
+  - exact-head CI #1452 green on living-doc-impact and Node 20/22/24
   - actual JSON-store cancellation calibration: base REOPENED, public SUPERSEDED, normal control REOPENED
   - research result: NARROW to fixture-level policy replay; productionEvidence=false
+  - merge commit b5c80e408b23baf2ed799c3a908dd6e2a6007c53
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
@@ -1372,7 +1415,7 @@ BB-039
 question/work: Research an artifact-manifest and retention addon that makes ref-only continuation verifiable across project sessions.
 kind: RESEARCH
 priority: P1
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: []
 research-hypothesis: A minimal manifest linking immutable content identity and producer evidence may make ref-only handoff more dependable under source changes or loss.
@@ -1380,28 +1423,32 @@ target-consumer: One concrete artifactReader used by durable Backend -> QA conti
 implementation-output: A compatible artifact-manifest adapter validating content identity and producer revision before returning QA context, with explicit unavailable-content behavior
 value-gate: Reject changed/mismatched content and diagnose unavailable content in controlled restart scenarios while still accepting unchanged valid artifacts; demonstrate a concrete improvement over that adapter's baseline
 scope-boundary: BB-014/015 settled project-state authority, not artifact storage guarantees. This item does not reopen their accepted project boundaries.
-remaining-work:
-  - Review the bounded adapter experiment, integrity assumptions, retention proposal and implementation handoff.
+remaining-work: []
 acceptance-criteria:
   - A fresh session can distinguish missing, changed and verified content before using it as evidence; observed behavior is reported without presuming all adapters are defective.
   - A retention proposal names which pending work/review refs pin artifacts and how historical evidence remains inspectable.
   - The recommendation bounds storage cost and compatibility; it does not copy full payloads into Blackboard or treat availability as correctness.
 submission:
-  - docs/living/knowledge/bb039-artifact-manifest-research.md
-  - docs/living/knowledge/bb039-artifact-manifest-probe.mjs
+  - PR #90
 review-requirements: [research-method review, application/architecture-boundary review]
-reviews: []
+reviews:
+  - research-method review PASS on exact research head 5da76553060bb72ff0a69de971f665bd8131fe10
+  - application/architecture-boundary review PASS on the same exact head
 artifact-refs:
-  - docs/living/knowledge/bb039-artifact-manifest-research.md
-  - docs/living/knowledge/bb039-artifact-manifest-probe.mjs
+  - docs/living/knowledge/bb039-artifact-manifest-retention.md
+  - docs/living/knowledge/bb039-artifact-manifest-retention-probe.mjs
+  - artifacts/bb039-artifact-manifest-probe.json
+  - docs/living/decisions/D014-application-artifact-manifest-adapter.md
 evidence-refs:
   - packages/agentic-system/src/artifact-ref.js
   - packages/agentic-system/src/oracle.js
   - packages/agentic-system/src/session-handoff.js
   - packages/agentic-system/src/qa-contracts.js
   - packages/agentic-system/src/durable-backend-qa.js
+  - exact-head CI #1603 green on living-doc-impact and Node 20/22/24
   - measured fixture: baseline passes 2 identity violations; manifest reader rejects both; valid and missing behavior unchanged
-  - research result: NARROW to one opt-in adapter; productionEvidence=false
+  - D014 accepted after required reviews; runtime adapter remains undelivered
+  - merge commit 48165251181dff3fecd9af29b8eef55007a2212b
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
@@ -1444,7 +1491,7 @@ origin: INTENT-exharness-agentic-system; explicit user request for useful resear
 
 ## Value-backed continuation fixes
 
-The runnable probes in `knowledge/value-probes-2026-09-16.mjs` and analysis in `knowledge/value-research-2026-09-16.md` establish concrete implementation opportunities. These are fixes with measurable value, not additional open-ended research topics. Existing persistence/cancellation fixes BB-023/024 remain urgent. BB-041 protects generic durable payloads; BB-042 preserves existing Advisor decisions through durable workflow coordination.
+The runnable probes in `knowledge/value-probes-2026-09-16.mjs` and analysis in `knowledge/value-research-2026-09-16.md` establish concrete implementation opportunities. These are fixes with measurable value, not additional open-ended research topics. BB-041 protects generic durable payloads; BB-042 preserves existing Advisor decisions through durable workflow coordination. Both currently have active implementation branches and must not be double-claimed.
 
 ```text
 BB-041
