@@ -16,6 +16,7 @@ import {
   BlackboardStatus,
   QaEvidenceClaim,
   QaWorkStatus,
+  ReviewRequirementSource,
   createApplicationOrchestrator,
   createBackendWorker,
   createDurableBackendQaWorkflow,
@@ -273,7 +274,16 @@ test("BB-004 persists accepted Backend provenance so a fresh session can continu
     assert.equal(qa.item.checkpoint, null);
     assert.equal(qa.item.submission.stage, "QA_COMPLETED");
     assert.equal(qa.item.submission.acceptedRevision, "rev-2");
-    assert.equal(qa.item.reviewRequirements[0].key, "BACKEND_QA_APPLICATION_ACCEPTANCE");
+    assert.deepEqual(qa.item.reviewRequirements, []);
+
+    const projectReview = await sessionBOrchestrator.requireReview({
+      itemId: "BB-300",
+      key: "BACKEND_QA_APPLICATION_ACCEPTANCE",
+      source: ReviewRequirementSource.PM,
+      reason: "Project completion requires independent application acceptance."
+    });
+    assert.equal(projectReview.result.reviewRequirements[0].source, ReviewRequirementSource.PM);
+    assert.equal(projectReview.result.status, BlackboardStatus.PENDING_REVIEW);
 
     const persisted = JSON.parse(await (await import("node:fs/promises")).readFile(path, "utf8"));
     assert.ok(persisted.items.some((item) => item.id === "BB-300" && item.status === BlackboardStatus.PENDING_REVIEW));
@@ -369,5 +379,31 @@ test("BB-004 cancel supersedes unfinished workflow and prevents later execution"
 
     const after = await workflow.advance({ itemId: "BB-300", owner: "session-2" });
     assert.equal(after.stage, BackendQaWorkflowStage.CANCELED);
+  });
+});
+
+test("BB-004 refuses to overwrite an existing durable workflow checkpoint", async () => {
+  await withBoard(async ({ orchestrator }) => {
+    const workflow = makeWorkflow({
+      orchestrator,
+      repo: repositoryReader(),
+      artifacts: artifactReader()
+    });
+    await workflow.initialize({
+      itemId: "BB-300",
+      owner: "session-1",
+      backendObjective: backendObjective(),
+      qaObjective: qaObjective()
+    });
+
+    await assert.rejects(
+      () => workflow.initialize({
+        itemId: "BB-300",
+        owner: "session-2",
+        backendObjective: backendObjective(),
+        qaObjective: qaObjective()
+      }),
+      /initialize requires READY item; found REOPENED/
+    );
   });
 });
