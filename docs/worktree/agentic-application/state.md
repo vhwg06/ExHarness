@@ -65,7 +65,7 @@ Current state transitions are:
 - QA issues persist as `BACKEND_REMEDIATION_PENDING`; remediation uses the last accepted Backend revision as its new repository base;
 - artifact/context lookup failure blocks while preserving the exact `QA_PENDING` checkpoint; resume retries from that checkpoint;
 - QA acceptance clears the partial checkpoint and creates a final Blackboard submission with Backend/QA decision refs and artifact refs;
-- final application submission requests independent acceptance and therefore remains `PENDING_REVIEW` rather than self-authorizing `DONE`.
+- final submission becomes `PENDING_REVIEW` but does not fabricate a Worker-sourced application review request; project/PM review requirements remain a separate authority path.
 
 The older `runBackendThenQaObjective(...)` direct composition remains available as an in-session path. It is not the durable cross-session workflow surface.
 
@@ -91,7 +91,7 @@ D003 promotes the responsibility split:
 - SA = horizontal architecture only;
 - remaining execution/review = vertical and context-bound.
 
-Concrete PM context/role execution, SA context/role execution and vertical Reviewer implementations are not present in source yet. They remain implementation pressure on the Blackboard rather than current-state claims.
+Concrete PM context/role execution, SA context/role execution and vertical Reviewer implementations are not present in source yet. `requireReview(... source: PM ...)` is an authority boundary available to project coordination, not evidence that a concrete PM runtime role already exists.
 
 ## Routing
 
