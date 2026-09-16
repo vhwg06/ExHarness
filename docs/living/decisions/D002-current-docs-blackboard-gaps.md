@@ -6,6 +6,8 @@ Accepted at: 2026-09-14
 
 Acceptance boundary: repository owner explicitly corrected the previous partition.
 
+Strengthened by: `D007-continuous-living-doc-projection.md`, which makes synchronization continuous at every durable/reviewable implementation checkpoint rather than an end-of-work reconciliation step.
+
 ## Decision
 
 ExHarness uses this documentation split:
@@ -34,7 +36,7 @@ For every old gap/candidate statement:
 
 - `worktree/*` may never be used as hidden backlog;
 - project work selection begins with the Blackboard;
-- living docs are reconciled after implementation changes;
+- living docs are reconciled as implementation state changes, with D007 requiring same-change synchronization before durable handoff/review/merge when current-system semantics change;
 - Blackboard completion reduces the later session's eligible action space;
 - durable knowledge/evidence/promotion remains separate from operational work completion.
 
