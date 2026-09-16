@@ -46,11 +46,18 @@ Implemented Board semantics include:
 The package also exposes a concrete session-handoff surface:
 
 - `defineUserIntent(...)` validates the durable user-owned objective, bullets and constraints;
-- `createSessionHandoffSurface(...).initialize(...)` seeds one durable intent root plus initial work traceable to that root;
-- `createSessionHandoffSurface(...).read()` projects the current Board into fresh-session lifecycle buckets;
+- `createSessionHandoffSurface({ orchestrator, projectId })` can bind a handoff-safe surface to an explicit stable project identity;
+- project identity is stored on the durable `USER_INTENT_ROOT`, is separate from store path/session/work/user-intent ids and is exposed as `handoff.projectId`;
+- a fresh project-bound surface must supply the same expected project id; a mismatched id fails closed;
+- an unbound legacy surface cannot silently open a project-bound Board, and a project-bound surface cannot silently upgrade a legacy Board that has no project identity;
+- legacy unbound Boards remain available for low-level compatibility but are not project-identity handoff-safe;
+- `initialize(...)` seeds one durable intent root plus initial work traceable to that root;
+- `read()` projects the current Board into fresh-session lifecycle buckets;
 - the projection includes current work checkpoints plus eligible/claimed/pending-review/reviewing/pending-reconciliation/blocked/done/superseded work and artifact/evidence refs with item provenance;
 - a Board without exactly one durable user-intent root fails closed as not handoff-safe;
 - work that cannot trace directly or transitively to the durable user intent is rejected by the handoff projection.
+
+Project identity belongs to the Board/root boundary rather than being copied into every work-item origin. Work provenance continues to express intent/parent/finding lineage independently.
 
 ## Durable Backend -> QA application path
 
@@ -88,10 +95,10 @@ Shared shapes proven in source remain deliberately narrow:
 - `ApplicationArtifactRef`;
 - evidence integrity / required-claim state plumbing;
 - Blackboard item/review/follow-up/checkpoint state required for durable orchestration;
-- durable `UserIntent` plus read-only session-handoff projection over Blackboard state;
+- durable `UserIntent` plus optional project-bound read-only session-handoff projection over Blackboard state;
 - concrete Backend -> QA workflow checkpoint semantics earned by the existing Backend and QA slices.
 
-There is still no generic Worker/WorkOrder/Advisor/role registry/workflow graph/Teacher registry/Reviewer registry.
+There is still no generic Worker/WorkOrder/Advisor/role registry/workflow graph/Teacher registry/Reviewer registry or project-state registry.
 
 ## Promoted but not yet source-implemented roles
 

@@ -1,10 +1,10 @@
 # D008 — Blackboard authority is scoped by explicit project identity
 
-Status: **ACCEPTED**
+Status: **PROMOTED**
 
-Accepted: 2026-09-16
+Promoted: 2026-09-16
 
-Acceptance boundary: BB-014 architecture/session-handoff review accepted the explicit-project boundary after source inspection and exact-head CI. This decision constrains BB-015; it does not claim project identity is implemented yet.
+Promotion boundary: BB-015 implemented project-bound session handoff on PR #80 and exact-head application/session-handoff review plus CI confirmed the boundary. Promotion does not claim Markdown/JSON convergence, distributed coordination or repository self-hosting.
 
 ## Question
 
@@ -30,7 +30,7 @@ Do not synchronize these surfaces merely because both use the word Blackboard.
 
 ## Runtime project identity
 
-A handoff-safe runtime Board must carry a stable project identity separate from filesystem path, session identity and user-intent content.
+A handoff-safe runtime Board carries a stable project identity separate from filesystem path, session identity and user-intent content.
 
 ```text
 project id
@@ -40,13 +40,17 @@ project id
 != user-intent id
 ```
 
-The session-handoff path must expose that identity and fail closed when a caller expects another project.
+The project-bound session-handoff path persists this identity on the durable `USER_INTENT_ROOT`, exposes it in the handoff projection and fails closed when a caller expects another project.
+
+An unbound legacy reader cannot silently open a project-bound Board, and a project-bound reader cannot silently upgrade a legacy Board that has no project identity.
 
 User intent remains the durable objective root **inside** the project; it does not replace project identity.
 
 ## Legacy boundary
 
-Low-level/legacy Board snapshots may remain usable where handoff safety is not claimed. They must not be silently upgraded by guessing project identity from path, task text or user intent.
+Low-level/legacy Board snapshots remain usable where project-identity handoff safety is not claimed. They are not silently upgraded by guessing project identity from path, task text or user intent.
+
+Project identity belongs to Board/root authority. It is not copied into every work-item origin; work provenance continues to describe root-intent, parent and finding lineage independently.
 
 ## Repository projection
 
@@ -64,19 +68,24 @@ Bidirectional writable Markdown↔JSON synchronization is not acceptable.
 
 ## Consequences
 
-- BB-015 can implement project identity without premature storage migration;
-- a fresh session can verify it opened the intended runtime project before continuing work;
+- a fresh project-bound session can verify it opened the intended runtime project before continuing work;
+- legacy unbound compatibility remains explicitly outside project-identity handoff safety;
 - current repository coordination remains source-backed truth rather than being retroactively labeled a projection of a JSON file that does not exist;
-- later self-hosting has an explicit migration trigger instead of accidental dual authority.
+- later self-hosting has an explicit migration trigger instead of accidental dual authority;
+- no project-state registry or Markdown/JSON synchronization is introduced by this decision.
 
 ## Evidence
 
-- `packages/agentic-system/src/blackboard-orchestrator.js`
-- `packages/agentic-system/src/session-handoff.js`
+- `packages/agentic-system/src/session-handoff.js` project-bound root/read semantics;
+- `packages/agentic-system/test/project-identity.test.js` same-project resume and fail-closed mismatch/legacy contracts;
+- `docs/worktree/agentic-application/state.md` current source projection;
+- `docs/worktree/agentic-application/contracts.md` current contract projection;
+- `docs/worktree/agentic-application/decisions.md` promoted current decision;
+- `packages/agentic-system/src/blackboard-orchestrator.js` durable Board/store semantics;
 - current in-repository JSON-store usage in application tests/evaluation uses caller-selected temporary paths;
-- `docs/living/blackboard.md` current Storage boundary;
 - BB-014 research artifact `../knowledge/bb014-project-state-authority.md`;
-- PR #78 post-merge Markdown lifecycle lag as evidence of manual repository reconciliation pressure, not JSON/Markdown divergence.
+- PR #78 post-merge Markdown lifecycle lag as evidence of manual repository reconciliation pressure, not JSON/Markdown divergence;
+- PR #80 exact-head CI including Node 20/22/24 and living-doc-impact gate.
 
 ## What would change this decision
 

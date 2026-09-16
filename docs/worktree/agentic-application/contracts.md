@@ -102,6 +102,35 @@ Mutations are serialized with a filesystem lock and snapshots are persisted by t
 
 This is a concrete local durable store, not a claim of distributed coordination semantics.
 
+## Project-bound session-handoff contract
+
+`createSessionHandoffSurface({ orchestrator, projectId })` can bind a runtime handoff surface to one explicit project identity.
+
+The identity is persisted on the durable `USER_INTENT_ROOT` and is intentionally distinct from:
+
+```text
+store path
+session / owner identity
+WorkOrder or Blackboard item id
+user-intent id
+```
+
+For a project-bound Board:
+
+- the handoff projection exposes the stored `projectId`;
+- a fresh session must provide the same expected project id;
+- another project id is rejected rather than treated as a valid continuation;
+- an unbound legacy reader is rejected rather than silently dropping the project boundary.
+
+For a legacy Board with no project identity:
+
+- unbound low-level compatibility reads remain possible;
+- a project-bound reader rejects it instead of inferring identity from path, task text or user intent.
+
+Project identity is Board/root authority. It is not copied into every work-item origin; work provenance remains responsible for root-intent/parent/finding lineage.
+
+This contract does not introduce a project registry, distributed store identity, Markdown/JSON synchronization or self-hosting migration.
+
 ## Follow-up contract
 
 A finding requires a provenance `sourceRef` before it can mutate canonical Board work.

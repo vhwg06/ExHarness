@@ -45,7 +45,7 @@ function intentRootId(intent) {
   return `INTENT:${intent.id}`;
 }
 
-function intentRootItem(intent) {
+function intentRootItem(intent, projectId) {
   return {
     id: intentRootId(intent),
     work: intent.objective,
@@ -62,6 +62,7 @@ function intentRootItem(intent) {
     findings: [],
     origin: {
       kind: SessionHandoffRootKind.USER_INTENT,
+      ...(projectId == null ? {} : { projectId }),
       userIntent: intent
     }
   };
@@ -82,14 +83,30 @@ function initialWorkItem(raw, intent) {
   };
 }
 
-function rootFromBoard(board) {
+function normalizeExpectedProjectId(projectId) {
+  return projectId == null ? null : requireText(projectId, "projectId");
+}
+
+function rootFromBoard(board, expectedProjectId) {
   const roots = board.items.filter((item) => item.origin?.kind === SessionHandoffRootKind.USER_INTENT);
   invariant(roots.length === 1, `session handoff requires exactly one durable user-intent root; found ${roots.length}`);
   const root = roots[0];
+  const storedProjectId = root.origin?.projectId ?? null;
+
+  if (expectedProjectId == null) {
+    invariant(storedProjectId == null, "session handoff project-bound Board requires expected projectId");
+  } else {
+    const projectId = requireText(storedProjectId, "user-intent root projectId");
+    invariant(
+      projectId === expectedProjectId,
+      `session handoff project mismatch: expected ${expectedProjectId}; found ${projectId}`
+    );
+  }
+
   const intent = defineUserIntent(root.origin.userIntent);
   invariant(root.id === intentRootId(intent), "user-intent root id does not match its durable intent");
   invariant(root.status === "DONE", "user-intent root must remain established as DONE input state");
-  return { root, intent };
+  return { root, intent, projectId: storedProjectId };
 }
 
 function tracesToIntent(item, byId, root, intent, visiting = new Set()) {
@@ -164,9 +181,10 @@ function collectReferences(items, field, submissionField) {
   return Object.freeze(refs);
 }
 
-export function sessionHandoffFromBlackboard(board) {
+export function sessionHandoffFromBlackboard(board, { projectId } = {}) {
   invariant(board && typeof board === "object" && Array.isArray(board.items), "Blackboard snapshot is required");
-  const { root, intent } = rootFromBoard(board);
+  const expectedProjectId = normalizeExpectedProjectId(projectId);
+  const { root, intent, projectId: storedProjectId } = rootFromBoard(board, expectedProjectId);
   const workItems = board.items.filter((item) => item.id !== root.id);
   const byId = new Map(board.items.map((item) => [item.id, item]));
 
@@ -191,6 +209,7 @@ export function sessionHandoffFromBlackboard(board) {
 
   return freezeClone({
     version: 1,
+    projectId: storedProjectId,
     intent,
     rootItemId: root.id,
     workGraph: summaries,
@@ -202,21 +221,27 @@ export function sessionHandoffFromBlackboard(board) {
   });
 }
 
-export function createSessionHandoffSurface({ orchestrator }) {
+export function createSessionHandoffSurface({ orchestrator, projectId = null }) {
   invariant(
     orchestrator && typeof orchestrator.seed === "function" && typeof orchestrator.readBlackboard === "function",
     "SessionHandoffSurface requires an ApplicationOrchestrator"
   );
+  const expectedProjectId = normalizeExpectedProjectId(projectId);
 
   async function read() {
-    return sessionHandoffFromBlackboard(await orchestrator.readBlackboard());
+    return sessionHandoffFromBlackboard(await orchestrator.readBlackboard(), {
+      ...(expectedProjectId == null ? {} : { projectId: expectedProjectId })
+    });
   }
 
   return Object.freeze({
     async initialize({ userIntent, items = [] }) {
       const intent = defineUserIntent(userIntent);
       invariant(Array.isArray(items), "items must be an array");
-      const seeded = [intentRootItem(intent), ...items.map((item) => initialWorkItem(item, intent))];
+      const seeded = [
+        intentRootItem(intent, expectedProjectId),
+        ...items.map((item) => initialWorkItem(item, intent))
+      ];
       await orchestrator.seed(seeded);
       return read();
     },
