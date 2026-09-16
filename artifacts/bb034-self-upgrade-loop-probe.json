@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "evidenceClass": "DETERMINISTIC_SELF_UPGRADE_RESEARCH_FIXTURE",
+  "productionEvidence": false,
+  "pilot": {
+    "observedFailure": "BB-024 delayed finding reconciliation can revive SUPERSEDED work",
+    "baselinePolicy": "bb024-baseline-late-reconciliation-v1",
+    "candidatePolicy": "bb024-terminal-cancellation-guard-v1",
+    "experimentRef": "artifacts/bb038-workflow-replay-eval.json",
+    "experimentBudget": {
+      "scenarios": 4,
+      "policyIdentities": 2,
+      "repeatPasses": 2,
+      "externalMutations": 0
+    },
+    "targetScenarioId": "cancellation-late-reconciliation",
+    "developmentControlScenarioIds": [
+      "artifact-outage",
+      "retry-recorded-effect"
+    ],
+    "heldOutScenarioIds": [
+      "review-delay"
+    ]
+  },
+  "grounding": {
+    "reflectionActivatedFromFreshEvaluation": true,
+    "staleEvaluationRejected": true
+  },
+  "proposal": {
+    "boundedDeliberationCreated": true,
+    "experimentActionExecuted": true,
+    "authorizedScope": "EXPERIMENT_ONLY",
+    "adoptionAuthorityGranted": false
+  },
+  "experiment": {
+    "accepted": true,
+    "developmentAccepted": true,
+    "targetFixed": true,
+    "developmentControlsStable": true,
+    "heldOutAccepted": true,
+    "heldOutStable": true,
+    "noExternalDispatch": true,
+    "budgetRespected": true,
+    "stopReason": "PROPOSE_FOR_REVIEW",
+    "negativeHeldOutControlRejected": true,
+    "negativeHeldOutStopReason": "KEEP_BASELINE",
+    "scenarioCount": 4,
+    "externalDispatchCount": 0,
+    "inputFixtureBytes": 1914,
+    "replayTraceBytes": 5508
+  },
+  "independentAcceptance": {
+    "trusted": true,
+    "boundary": "ACCEPTANCE",
+    "evaluator": "bb034-experiment-evaluator",
+    "evidenceProducer": "bb034-experiment-verifier",
+    "attestor": "bb034-experiment-attestor",
+    "proposalReadyForApplicationReview": true,
+    "adoptionAuthorized": false
+  },
+  "stopAndRollback": {
+    "pass": "PROPOSE_FOR_REVIEW",
+    "failOrInconclusive": "KEEP_BASELINE",
+    "heldOutFailure": "KEEP_BASELINE",
+    "selectedPolicyUntilApplicationAdoption": "bb024-baseline-late-reconciliation-v1",
+    "rollbackPolicy": "bb024-baseline-late-reconciliation-v1"
+  },
+  "limitations": {
+    "fixtureOnly": true,
+    "candidateAlreadyKnownFromBB024Research": true,
+    "heldOutIsDeterministicRecordedSchedule": true,
+    "candidateGenerationQualityMeasured": false,
+    "implementationDeliveryDeferredToBB035": true,
+    "productionRolloutJustified": false,
+    "selfModificationAuthority": false
+  }
+}
