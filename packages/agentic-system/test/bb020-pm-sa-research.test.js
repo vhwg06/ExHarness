@@ -146,20 +146,20 @@ function boundedPmProposal(context) {
   const blockers = [];
   const reviewRequirements = [];
 
-  if (context.coordination.schemaMigrationRequired) {
+  if (context.coordinationFacts.schemaMigrationRequired) {
     obligations.push("MIGRATION");
     dependencies.push(["MIGRATION", "BACKEND"]);
   }
 
   obligations.push("QA");
-  dependencies.push(["QA", context.coordination.schemaMigrationRequired ? "MIGRATION" : "BACKEND"]);
+  dependencies.push(["QA", context.coordinationFacts.schemaMigrationRequired ? "MIGRATION" : "BACKEND"]);
 
-  if (context.coordination.artifactUnavailable) {
+  if (context.coordinationFacts.artifactUnavailable) {
     obligations.push("ARTIFACT_RECOVERY_LINK");
     blockers.push({
       targetItemId: "delivery",
       reason: "Required artifact is unavailable",
-      existingWorkRef: context.coordination.recoveryWorkRef
+      existingWorkRef: context.coordinationFacts.recoveryWorkRef
     });
   }
 
