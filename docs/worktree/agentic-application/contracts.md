@@ -101,7 +101,7 @@ The public `createJsonBlackboardStore(...)` exposes read + transactional mutatio
 Mutation correctness is fenced by an immutable single-successor revision chain rather than by elapsed-time lock ownership:
 
 ```text
-root snapshot
+immutable root snapshot
   -> one successor for root
   -> one successor for revision r1
   -> one successor for revision r2
@@ -113,9 +113,13 @@ If another transaction already published a successor for the same base revision,
 
 Commit records also carry the digest of the exact base snapshot for mismatch/corruption detection. Snapshot value identity is not revision identity, so a later revision may legitimately contain the same logical snapshot value as an earlier one.
 
+`<path>.root` plus the immutable successor records are persistence authority. The caller-selected `<path>` JSON file remains a compatibility/inspection projection of the latest committed snapshot; it is refreshed only after commit publication and is never read as authority once the immutable root exists. Tampering with or losing that projection cannot roll back the committed chain.
+
+A legacy pre-BB-023 `<path>` snapshot is used only to initialize the immutable root when no root authority exists yet. Concurrent initialization publishes exactly one root through hard-link no-overwrite semantics.
+
 Legacy `.lock` files are not correctness authority and are neither trusted nor deleted by the public store. `lockStaleMs` remains accepted for compatibility but elapsed time does not grant takeover authority.
 
-The committed successor record itself is authoritative if a process dies after publication. Temporary pre-publication files are not completion evidence.
+The committed successor record itself is authoritative if a process dies after publication. Projection refresh failure cannot turn a committed transaction into an unknown outcome; a later store reconstruction still resolves the immutable chain. Temporary pre-publication files are not completion evidence.
 
 This is a concrete local durable store. It requires same-filesystem hard-link support and does not claim distributed coordination or automatic history-compaction semantics.
 
