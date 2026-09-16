@@ -38,11 +38,11 @@ BackendCompletionPolicy
         QaCompletionPolicy
 ```
 
-`runBackendThenQaObjective(...)` still composes this path directly.
+`runBackendThenQaObjective(...)` still composes this path directly for one-session execution.
 
 ## Orchestrator-owned Blackboard lifecycle
 
-The application now also has a concrete durable Blackboard-control slice:
+The application has a durable Blackboard-control slice:
 
 ```text
 createApplicationOrchestrator(...)
@@ -51,6 +51,11 @@ createApplicationOrchestrator(...)
 JSON-backed Blackboard store
         |
         +-> claim READY/REOPENED work
+        +-> checkpoint partial progress
+        |      +-> REOPENED for continuation
+        |      +-> BLOCKED with exact checkpoint retained
+        +-> resume BLOCKED -> REOPENED
+        +-> supersede unfinished work
         +-> submit immutable result refs
         +-> record Worker-requested or PM-required review obligations
         +-> begin one explicit review
@@ -65,9 +70,51 @@ JSON-backed Blackboard store
                +-> NON_ACTIONABLE -> no Board work
 ```
 
-`createJsonBlackboardStore(...)` persists Board state atomically through a temporary file + rename so `PENDING_REVIEW` and submitted refs survive a new Orchestrator instance/process session.
+`createJsonBlackboardStore(...)` serializes mutations and persists Board state through temp-file write + rename so checkpoints, pending review and submitted refs survive a new Orchestrator instance/process session.
 
-This slice establishes workflow-state authority and review gating. It does **not** yet replace `runBackendThenQaObjective(...)` with one durable dispatch path; that integration remains unresolved on the Blackboard.
+## Durable Backend -> QA composition
+
+`createDurableBackendQaWorkflow(...)` is the first concrete consumer of partial-work checkpoints.
+
+```text
+READY work item
+   |
+   v
+initialize persisted workflow spec
+   |
+   v
+BACKEND_PENDING
+   |
+   | Backend ACCEPT
+   v
+QA_PENDING
+  [ref-only BackendQaHandoff
+   + Backend acceptance decision]
+   |
+   +---- artifact/context unavailable ----> BLOCKED
+   |                                         |
+   |                                      resume
+   |                                         |
+   +<----------------------------------------+
+   |
+   | QA ISSUES_FOUND
+   v
+BACKEND_REMEDIATION_PENDING
+   |
+   | remediation runs from last accepted revision
+   +-------------------------------> QA_PENDING
+   |
+   | QA ACCEPT
+   v
+final submission
+   |
+   v
+PENDING_REVIEW
+```
+
+The workflow persists validated Backend and QA objectives before execution, so later sessions do not need previous conversation state to reconstruct the next application stage.
+
+Backend completion and QA completion remain role-local decisions. QA acceptance creates a final application submission but does not authorize Blackboard `DONE`; independent application acceptance remains a separate review boundary.
 
 ## Boundaries visible in source
 
@@ -78,8 +125,10 @@ This slice establishes workflow-state authority and review gating. It does **not
 - Backend -> QA carries artifact references and acceptance provenance, not copied artifact contents.
 - `BackendAdvisor` is a narrow bounded-judgment component; it is not dispatch or correctness authority.
 - `ApplicationOrchestrator` owns durable Blackboard lifecycle transitions; Worker submission alone cannot produce `DONE`.
+- partial checkpoints are continuation state, not acceptance state.
 - review requirements distinguish Worker request from PM requirement, while reviewer identity/assessment stays explicit.
 - rejected/inconclusive review reopens current work; follow-up creation is a separate reconciliation decision.
+- application checkpoint persistence does not prove external-effect completion; Core effect/recovery authority remains separate.
 
 ## Not yet implemented as current source roles
 
