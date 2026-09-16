@@ -63,6 +63,7 @@ export {
   BackendQaWorkflowStage,
   createDurableBackendQaWorkflow
 } from "./durable-backend-qa.js";
+export { createJsonBackendSessionStore } from "./backend-session-store.js";
 export { createQaWorker } from "./qa-worker.js";
 export {
   createQaHandoffFromBackendRun,
@@ -72,6 +73,12 @@ export {
   resolveBackendContext,
   resolveQaContext
 } from "./oracle.js";
-export { createBackendWorker } from "./backend-worker.js";
-export { runBackendObjective } from "./backend-application.js";
+export {
+  BackendRecoveryAction,
+  createBackendWorker
+} from "./backend-worker.js";
+export {
+  recoverBackendObjective,
+  runBackendObjective
+} from "./backend-application.js";
 export { runBackendThenQaObjective } from "./composition.js";

@@ -41,6 +41,7 @@ Current constraints that must shape Agentic Application implementation. This is 
 - A Worker saying “done” in prose is not application completion authority.
 - Completion is derived from structured role-specific result state plus application policy and accepted evidence.
 - Backend tests/typecheck/mutation/artifact semantics remain Backend-specific until another role proves common evidence semantics.
+- Interrupted recovery restores bounded execution authority only; it cannot manufacture a Worker result or bypass completion/evidence policy.
 
 ## ARTIFACT CHAINING
 
@@ -52,12 +53,13 @@ Current constraints that must shape Agentic Application implementation. This is 
 ## STATE
 
 - Application workflow state is distinct from ExHarness runtime/persistent state and from artifact storage.
-- Durable application persistence stores Blackboard checkpoints, submissions, review state and handoff references. It remains distinct from ExHarness runtime/effect state and from external artifact payloads.
+- Durable application persistence stores Blackboard checkpoints, attempt generations, submissions, review state and handoff references. It remains distinct from ExHarness runtime/effect state and from external artifact payloads.
 - Local Blackboard mutation correctness is fenced by immutable single-successor revisions, not by elapsed lock age.
 - `<path>.root` plus immutable successor records are Blackboard persistence authority; the caller-selected JSON `<path>` is a compatibility/inspection projection after root initialization.
 - A stale writer that no longer owns the current base revision fails explicitly rather than overwriting a newer committed snapshot.
 - Legacy `.lock` files and `lockStaleMs` do not grant takeover authority.
-- The local store currently requires same-filesystem hard-link semantics; distributed coordination and history compaction are not implied by this decision.
+- The local Blackboard store currently requires same-filesystem hard-link semantics; distributed coordination and history compaction are not implied by this decision.
+- Concrete Backend deployments that require process-crash recovery may additionally persist Core session/effect state through `createJsonBackendSessionStore(...)`; that state is effect/execution authority, not Blackboard state.
 
 ## PROJECT IDENTITY
 
@@ -68,5 +70,19 @@ Current constraints that must shape Agentic Application implementation. This is 
 - Project identity belongs to Board/root authority, not individual work-item provenance.
 - Legacy unbound Board/session-handoff compatibility remains available where project-identity handoff safety is not claimed.
 - This does not make JSON the canonical ExHarness repository Board, introduce a project registry, or synchronize Markdown and JSON representations.
+
+## INTERRUPTED RECOVERY
+
+- Execution and review attempts are fenced by monotonic generations independent from owner/reviewer identity.
+- Any execution mutation requires the exact active `{ owner, claimGeneration }`; takeover increments generation before replacement work can commit.
+- Review generation is part of the exact review subject; rescheduling changes the subject and makes abandoned evidence stale even when the same reviewer is reused.
+- Elapsed time, heartbeat loss or lease expiry is not correctness authority and does not prove an executor stopped or an external effect did not happen.
+- Mutating Backend recovery composes application generation fencing with durable Core session/effect reconciliation before redispatch is considered.
+- Absence of persisted Core state is retry authority only when the configured SessionStore explicitly declares durable recovery authority; empty default/in-memory state fails closed.
+- Confirmed Backend effects are consumed without external redispatch when the same strategy/action is replayed on the original Core candidate/session.
+- Ambiguous Backend effects may retry only when the existing Core replay policy authorizes it; NON_RECONCILABLE ambiguity blocks/escalates.
+- Candidate divergence, multiple persisted mutation effects or missing durable Worker semantic result after candidate advancement fail closed rather than inventing continuation state.
+- Non-mutating QA may rerun against the exact persisted accepted Backend target after the old application generation is invalidated.
+- Recovery does not authorize Backend acceptance, Board `DONE`, exactly-once external effects or a generic Core lifecycle/recovery facade.
 
 Remove or replace a decision when concrete slices invalidate it; do not preserve obsolete abstractions for compatibility with design-only code.
