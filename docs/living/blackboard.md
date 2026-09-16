@@ -936,6 +936,247 @@ follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional implementation follow-up to BB-026
 ```
 
+## Further architecture, decision and self-upgrade roadmap
+
+These items extend the user's request for high-impact upgrades from existing capabilities. They are research hypotheses and conditional delivery work, not confirmed defects or claims of implemented behavior. Research may conclude that composition conventions suffice. Implementation stays blocked until an accepted research result identifies a concrete benefit and scope.
+
+Here, a decision chain means explicit hypotheses, concise rationales, artifact provenance and observable action/outcome links. It does not require recording private model reasoning. Self-upgrade means proposing and evaluating bounded candidates under independent acceptance; this backlog does not authorize deployment, merging or changes to the evaluator's authority.
+
+| Track | Research | Delivery | Priority |
+| --- | --- | --- | --- |
+| Inspectable decision-to-outcome chain | BB-028 | BB-029 | P1 |
+| Outcome-driven workflow and investment | BB-030 | BB-031 | P1 |
+| Architecture composition from existing primitives | BB-032 | BB-033 | P2 |
+| Evidence-gated self-upgrade loop | BB-034 | BB-035 | P1 |
+
+BB-023/024/025 remain the immediate correctness priorities. BB-028/030/032/034 can be researched against existing source. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. These new tracks consume those results without duplicating their scope. BB-035 additionally waits for BB-027 and the concrete independent review pipeline BB-019 before an application-level upgrade pilot is delivered.
+
+```text
+BB-028
+question/work: Research a concrete decision-to-outcome chain for Backend/QA remediation using existing deliberation, ActionIntent and grounded reflection.
+kind: RESEARCH
+priority: P1
+status: READY
+owner:
+depends-on: []
+remaining-work:
+  - Map user objective -> explicit hypothesis/options -> concise decision rationale -> authorized action -> verification -> outcome -> grounded reflection.
+  - Compare existing artifact links with a minimal application correlation contract on one Backend/QA remediation task.
+  - Measure review effort, incorrect conclusions and context size with and without the decision summary; preserve counterevidence and uncertainty.
+acceptance-criteria:
+  - A fresh reviewer can recover the chosen action, alternatives, supporting evidence and observed outcome through bounded artifact summaries.
+  - The design records explicit decision summaries, not raw/private chain-of-thought; rationale is never correctness evidence by itself.
+  - Missing, stale or contradictory evidence stays visible and no explanation can bypass action authorization or independent acceptance.
+submission:
+review-requirements: [architecture-boundary review, evaluation-method review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/core-harness/src/deliberation-controller.js
+  - packages/core-harness/src/grounded-cognition.js
+  - docs/worktree/core-harness/workflow.md
+blockers: []
+follow-up-refs: [BB-029]
+origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Core already has bounded deliberation, action authorization, effect refs and grounded reflection; their usefulness as one application-level explanation and continuation path has not been demonstrated.
+```
+
+```text
+BB-029
+question/work: Deliver the accepted decision-to-outcome artifact composition for one concrete Backend/QA remediation workflow.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+depends-on: [BB-028]
+remaining-work:
+  - implement the accepted bounded pilot using existing primitives before introducing shared abstractions
+  - persist configuration, candidate/baseline revisions and evidence refs needed for reproduction and continuation
+  - reconcile current documentation only after the corresponding behavior is implemented and verified
+acceptance-criteria:
+  - Decision summaries link the exact objective, action, revision and outcome without fabricating intermediate reasoning.
+  - Fresh-session reconstruction and contradictory/stale evidence cases preserve the accepted contract.
+  - Measured comparison reports benefits, costs and failure cases; no blanket claim of improved model reasoning.
+submission:
+review-requirements: [application/code review, independent outcome/authority review]
+reviews: []
+artifact-refs: []
+evidence-refs: [BB-028]
+blockers:
+  - BB-028 must produce an accepted scope and evidence-backed evaluation contract
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-028
+```
+
+```text
+BB-030
+question/work: Research application-level work prioritization and stopping rules based on measured outcomes and explicit user priorities.
+kind: RESEARCH
+priority: P1
+status: READY
+owner:
+depends-on: []
+remaining-work:
+  - Define impact using user acceptance goals, dependency unblocking, defect severity, evidence confidence and measured cost; distinguish estimates from observations.
+  - Compare the current deterministic queue with one bounded prioritization policy on recorded scenarios and controlled task runs.
+  - Specify budgets, retry ceilings, plateau/stop/escalation rules and checks against starvation or repeatedly selecting cheap low-value tasks.
+acceptance-criteria:
+  - A replayable comparison reports outcome quality, blocked-work reduction, cost and uncertainty rather than only completed-item counts.
+  - Safety/correctness obligations and user constraints cannot be traded away for aggregate score; missing measurements cannot be invented.
+  - The proposal preserves PM coordination and Orchestrator transition authority, and distinguishes application scheduling from Core promotion.
+submission:
+review-requirements: [architecture-boundary review, evaluation-method review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/core-harness/src/search-investment.js
+  - scripts/agentic-backend-qa-eval.mjs
+  - docs/living/knowledge/bb022-agentic-evaluation-protocol.md
+blockers: []
+follow-up-refs: [BB-031]
+origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Core search-investment controls variation continuation; BB-022 measures application fixtures. Neither establishes a project-level policy for ranking work by expected user impact.
+```
+
+```text
+BB-031
+question/work: Implement the accepted bounded application scheduling/investment pilot over existing Blackboard work.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+depends-on: [BB-030]
+remaining-work:
+  - implement the accepted bounded pilot using existing primitives before introducing shared abstractions
+  - persist configuration, candidate/baseline revisions and evidence refs needed for reproduction and continuation
+  - reconcile current documentation only after the corresponding behavior is implemented and verified
+acceptance-criteria:
+  - Eligible dependencies and mandatory reviews remain gates regardless of ranking score.
+  - Priority decisions carry policy/input revisions, reasons and measured-versus-estimated fields in referenced artifacts.
+  - Stop, retry, starvation and cost-budget scenarios are reproducible; effectiveness claims use the declared evidence class.
+submission:
+review-requirements: [application/code review, independent outcome/authority review]
+reviews: []
+artifact-refs: []
+evidence-refs: [BB-030]
+blockers:
+  - BB-030 must produce an accepted scope and evidence-backed evaluation contract
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-030
+```
+
+```text
+BB-032
+question/work: Research a minimal concrete composition boundary across application workflow, Core cognition/recovery and Oracle context.
+kind: RESEARCH
+priority: P2
+status: READY
+owner:
+depends-on: []
+remaining-work:
+  - Map actual call/data ownership for dispatch, context, persistent state, effects, evidence and completion using existing source consumers.
+  - Identify duplicated sequencing, missing links and incompatible assumptions using concrete failure scenarios, including BB-016 findings when available.
+  - Compare explicit composition with a narrow adapter/facade; document a no-extraction outcome when repetition is insufficient.
+acceptance-criteria:
+  - The architecture proposal includes executable scenario evidence, dependency direction and named owners for each state/decision boundary.
+  - Any shared interface is justified by real consumers and has compatibility/migration tests; no registry or workflow DSL is inferred from a diagram.
+  - D005 is preserved unless explicit new evidence supports a separately reviewed superseding decision.
+submission:
+review-requirements: [architecture-boundary review, evaluation-method review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/core-harness/test/recovery-composition.test.js
+  - docs/living/decisions/D005-no-core-lifecycle-facade-yet.md
+blockers: []
+follow-up-refs: [BB-033]
+origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Existing capabilities span distinct authority planes; the current Backend/QA consumer and recovery-reference consumer expose different compositions. D005 requires repeated evidence before a general lifecycle facade.
+```
+
+```text
+BB-033
+question/work: Implement only the concrete composition improvement accepted by BB-032.
+kind: IMPLEMENTATION
+priority: P2
+status: BLOCKED
+owner:
+depends-on: [BB-032]
+remaining-work:
+  - implement the accepted bounded pilot using existing primitives before introducing shared abstractions
+  - persist configuration, candidate/baseline revisions and evidence refs needed for reproduction and continuation
+  - reconcile current documentation only after the corresponding behavior is implemented and verified
+acceptance-criteria:
+  - Selected consumers execute the same acceptance/recovery scenarios through the proposed composition without changing authority.
+  - Effect confirmation, role acceptance and Board DONE remain separate and invalid evidence fails closed.
+  - A no-change research conclusion supersedes this item with provenance instead of forcing an abstraction.
+submission:
+review-requirements: [application/code review, independent outcome/authority review]
+reviews: []
+artifact-refs: []
+evidence-refs: [BB-032]
+blockers:
+  - BB-032 must produce an accepted scope and evidence-backed evaluation contract
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-032
+```
+
+```text
+BB-034
+question/work: Research a bounded self-improvement loop that proposes and evaluates upgrades from observed project failures using existing Core primitives.
+kind: RESEARCH
+priority: P1
+status: READY
+owner:
+depends-on: []
+remaining-work:
+  - Define observed failure -> grounded reflection -> improvement hypothesis -> isolated candidate -> controlled experiment -> independent acceptance -> rollout/rollback artifact.
+  - Choose one reversible pilot, such as context selection or remediation policy, with a fixed baseline, held-out scenarios and measured resource budget.
+  - Specify candidate scope, provenance, stale-evidence rejection, experiment continuation and a stop rule when improvement is absent; reuse BB-026 research-continuation findings.
+acceptance-criteria:
+  - Baseline and candidate are compared under recorded conditions with held-out outcomes; the candidate cannot rewrite its own evaluator or acceptance thresholds.
+  - A reflection proposes an experiment but cannot accept, deploy, merge or grant new authority; approved lifecycle transitions remain with application orchestration.
+  - The report includes negative results, regression checks, cost and rollback criteria; fixture success alone does not justify production rollout.
+submission:
+review-requirements: [architecture-boundary review, evaluation-method review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/core-harness/src/grounded-cognition.js
+  - packages/core-harness/src/semantic-memory-evolution.js
+  - packages/core-harness/src/search-investment.js
+  - scripts/agentic-backend-qa-eval.mjs
+blockers: []
+follow-up-refs: [BB-035]
+origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Grounded cognition, semantic-memory evolution, candidate evaluation and application reference runs exist; they do not establish a validated autonomous upgrade process for the project itself.
+```
+
+```text
+BB-035
+question/work: Deliver one accepted self-upgrade experiment pipeline with isolated candidates, independent evaluation and explicit adoption control.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+depends-on: [BB-034, BB-027, BB-019]
+remaining-work:
+  - implement the accepted bounded pilot using existing primitives before introducing shared abstractions
+  - persist configuration, candidate/baseline revisions and evidence refs needed for reproduction and continuation
+  - reconcile current documentation only after the corresponding behavior is implemented and verified
+acceptance-criteria:
+  - A failing or inconclusive candidate leaves the baseline selected and preserves evidence for the next session.
+  - A successful candidate produces a reviewable proposal with exact revisions, evaluation refs and rollback information before adoption.
+  - Iterations obey experiment/resource limits and cannot change user objectives, review requirements or their own acceptance gates.
+submission:
+review-requirements: [application/code review, independent outcome/authority review]
+reviews: []
+artifact-refs: []
+evidence-refs: [BB-034]
+blockers:
+  - BB-034 must produce an accepted scope and evidence-backed evaluation contract
+  - BB-027 and BB-019 must supply durable research continuation and independent application review
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-034
+```
+
 ## Storage
 
 `docs/living/blackboard.md` remains the canonical coordination state for the ExHarness repository-development project today.
