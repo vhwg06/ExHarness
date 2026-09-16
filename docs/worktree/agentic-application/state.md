@@ -26,7 +26,7 @@ Source-synchronized application-layer projection. All unresolved application wor
 
 ## Current orchestration state
 
-The package now exposes `createApplicationOrchestrator(...)` for durable Blackboard lifecycle control and `createJsonBlackboardStore(...)` for JSON persistence.
+The package exposes `createApplicationOrchestrator(...)` for durable Blackboard lifecycle control and `createJsonBlackboardStore(...)` for JSON persistence.
 
 Implemented Board semantics include:
 
@@ -40,6 +40,15 @@ Implemented Board semantics include:
 - follow-up reconciliation distinguishes current obligation, existing work, genuine new work and non-actionable findings;
 - `PENDING_REVIEW` state/submission/review requirements survive reconstruction through the JSON store.
 
+The package also exposes a concrete session-handoff surface:
+
+- `defineUserIntent(...)` validates the durable user-owned objective, bullets and constraints;
+- `createSessionHandoffSurface(...).initialize(...)` seeds one durable intent root plus initial work traceable to that root;
+- `createSessionHandoffSurface(...).read()` projects the current Board into fresh-session lifecycle buckets;
+- the projection includes eligible/claimed/pending-review/reviewing/pending-reconciliation/blocked/done/superseded work plus artifact/evidence refs with item provenance;
+- a Board without exactly one durable user-intent root fails closed as not handoff-safe;
+- work that cannot trace directly or transitively to the durable user intent is rejected by the handoff projection.
+
 The existing `runBackendThenQaObjective(...)` path is **not yet bound to this durable Orchestrator state**. Backend -> QA still composes directly, so one unified durable application dispatch/recovery path is not claimed.
 
 ## Current composition
@@ -50,7 +59,8 @@ Shared shapes proven in source remain deliberately narrow:
 
 - `ApplicationArtifactRef`;
 - evidence integrity / required-claim state plumbing;
-- Blackboard item/review/follow-up state required for durable orchestration.
+- Blackboard item/review/follow-up state required for durable orchestration;
+- durable `UserIntent` plus read-only session-handoff projection over Blackboard state.
 
 There is still no generic Worker/WorkOrder/Advisor/role registry/workflow graph/Teacher registry/Reviewer registry.
 
