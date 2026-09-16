@@ -129,6 +129,14 @@ Normal public store reads and transactions validate the complete graph. Transact
 
 Previously accepted structurally valid but graph-invalid legacy state is not silently rewritten. `diagnoseDependencyGraph()` exposes offending item/edge information without admitting the Board for ordinary use. `repairDependencyGraph({ replacements })` requires explicit complete dependency replacements, executes through the fenced store transaction boundary, and must produce a valid complete graph before commit. Failed or incomplete repair leaves the prior committed state unchanged and never invents completed dependencies or silently drops edges.
 
+## Blackboard persisted-value contract
+
+The public Blackboard boundary accepts only values whose semantics survive JSON persistence without silent conversion. Raw snapshots are checked before structural normalization and normalized snapshots are checked again before acknowledgment.
+
+Unsupported persisted values include `Map`, `Set`, `Date`, `undefined`, non-finite numbers, negative zero, `BigInt`, symbol-keyed values, sparse/extended arrays, cycles and shared object identity. Rejection reports the field path and occurs before the fenced store publishes a successor, so failed checkpoint/submission/origin writes preserve the prior lifecycle state.
+
+The JSON-value contract wraps the dependency-graph store rather than replacing it. Graph diagnosis/repair remain available through the public store, and repaired snapshots are rechecked for persisted-value integrity before acknowledgment. Transaction results are clone-preflighted before commit so an uncloneable acknowledgment cannot turn a successful persistence write into a caller-visible post-commit failure.
+
 ## Durable Blackboard store contract
 
 The public `createJsonBlackboardStore(...)` exposes read + transactional mutation over a concrete local filesystem store.
