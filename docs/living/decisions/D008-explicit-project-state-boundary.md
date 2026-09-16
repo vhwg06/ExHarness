@@ -1,14 +1,16 @@
 # D008 — Blackboard authority is scoped by explicit project identity
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
 
-Proposed: 2026-09-16
+Accepted: 2026-09-16
+
+Acceptance boundary: BB-014 architecture/session-handoff review accepted the explicit-project boundary after source inspection and exact-head CI. This decision constrains BB-015; it does not claim project identity is implemented yet.
 
 ## Question
 
 Should ExHarness immediately converge the repository Markdown Blackboard and the JSON-backed runtime Blackboard into one stored representation, or first make their project authority explicit?
 
-## Proposed decision
+## Decision
 
 A Blackboard is canonical only within one explicit project identity.
 
@@ -60,7 +62,7 @@ If ExHarness later self-hosts its own repository project through `ApplicationOrc
 
 Bidirectional writable Markdown↔JSON synchronization is not acceptable.
 
-## Consequences if accepted
+## Consequences
 
 - BB-015 can implement project identity without premature storage migration;
 - a fresh session can verify it opened the intended runtime project before continuing work;
