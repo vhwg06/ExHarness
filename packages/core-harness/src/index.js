@@ -326,5 +326,8 @@ export {
   objectAgentSurface,
   objectMethodCall
 } from "./object-agent.js";
-export { AVOCapability, createAVOHarness } from "./avo-harness.js";
-export { createHarness } from "./harness.js";
+export { AVOCapability } from "./avo-harness.js";
+export {
+  createEffectAwareAVOHarness as createAVOHarness,
+  createEffectAwareHarness as createHarness
+} from "./effect-aware-harness.js";

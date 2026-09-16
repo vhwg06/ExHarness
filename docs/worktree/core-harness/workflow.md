@@ -20,7 +20,35 @@ createHarness.vary()
   -> optional supervisor trajectory review
 ```
 
-`avo.act` still delegates to `core.act()`. `core.act()` calls `environment.act()` before the resulting candidate mutation/event is persisted, so externally visible effect completion is not proven by AVO state alone.
+Public built-in `avo.act` now crosses a durable effect boundary before `core.act()` derives/persists candidate state:
+
+```text
+semantic action + current candidate
+        -> deterministic actionKey
+        -> effect journal INTENDED
+        -> effect journal DISPATCHED
+        -> environment.act(...)
+        -> effect journal CONFIRMED(result)
+        -> core.act applies result to candidate/event state
+        -> persist Core session state
+```
+
+If Core state persistence fails after `CONFIRMED`, a later identical action over the still-current candidate reuses the confirmed result and does not dispatch the external action again.
+
+If execution becomes ambiguous before confirmation:
+
+```text
+DISPATCHED / UNKNOWN
+        -> fail closed
+        -> reconcile by declared adapter replay policy
+             PURE / IDEMPOTENT -> RETRY
+             OBSERVABLE        -> observe -> CONTINUE or RETRY
+             NON_RECONCILABLE  -> ESCALATE
+```
+
+The default is `NON_RECONCILABLE`. Deterministic `actionKey` establishes identity; it does not by itself prove idempotency or effect completion.
+
+Built-in action-effect journal state remains separate from candidate lineage, trajectory, evaluation, semantic memory and application completion.
 
 ## DELIVERED COGNITION BOUNDARIES
 
@@ -53,7 +81,7 @@ Every activated reflection must retain a fresh persisted evaluation source. Inte
 
 ## ACTION INTENT + EFFECT COMPOSITION
 
-`createActionIntentEffectController()` now composes capability-target ActionIntent with the existing effect journal:
+`createActionIntentEffectController()` composes capability-target ActionIntent with the existing effect journal:
 
 ```text
 AUTHORIZED ActionIntent
@@ -80,6 +108,8 @@ dispatch boundary error
 ```
 
 If observation confirms the effect, reconciliation completes the ActionIntent without replaying the side effect. A retryable effect remains authorized until the retry actually confirms.
+
+Built-in AVO actions use the same replay-policy vocabulary but do not synthesize a model `ActionIntent`; ActionIntent and built-in AVO effect-operation state remain distinct artifacts.
 
 ## CORRECTNESS PATH
 
@@ -111,11 +141,11 @@ There is no desired hidden global memory injection. Ranking selects context; it 
 
 ## RECOVERY PATHS
 
-Three mechanisms still exist and remain distinct:
+Three mechanisms exist and remain distinct:
 
 1. **AVO variation recovery** — closes persisted interrupted work explicitly.
 2. **AgentRuntime snapshot/resume** — restores compatible runtime state with explicit live-authority rebinding.
-3. **Effect reconciliation** — reconciles journaled operations through replay policy/external observation.
+3. **Effect reconciliation** — reconciles journaled operations through replay policy/external observation, including built-in AVO action effects.
 
 The remaining recovery target is composition, not another recovery mechanism:
 
@@ -134,13 +164,12 @@ Tracing and semantic memory are context/evidence inputs, never recovery authorit
 Do not generalize a Core workflow surface yet. The next source-backed continuation is:
 
 ```text
-1. harden built-in AVO external-effect semantics
-2. prove restore -> reconcile effects -> resume with a concrete Core recovery consumer
-3. only then extract a higher-level Core lifecycle composition surface
+1. prove restore -> reconcile effects -> resume with a concrete recovery consumer
+2. only then assess whether a higher-level Core lifecycle composition surface is justified
 ```
 
-This work can proceed independently from Agentic Application Wave A only where it stays inside Core authority. Application WorkOrder/Worker/Advisor/completion abstractions remain governed by `../pipeline.md` and must preserve concrete-first sequencing.
+Application WorkOrder/Worker/Advisor/completion abstractions remain owned by Agentic Application and must preserve concrete-first sequencing.
 
 ## SOURCE
 
-Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`.
+Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `effect-aware-harness.js`, `avo-action-effect.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`.
