@@ -187,6 +187,10 @@ export function createDurableBackendQaWorkflow({
   async function initialize({ itemId, owner, backendObjective, qaObjective }) {
     requireText(itemId, "itemId");
     requireText(owner, "owner");
+    const existing = boardItem(await orchestrator.readBlackboard(), itemId);
+    invariant(existing.status === BlackboardStatus.READY, `Backend/QA workflow initialize requires READY item; found ${existing.status}`);
+    invariant(existing.checkpoint == null, `Backend/QA workflow item ${itemId} is already initialized`);
+    invariant(existing.submission == null, `Backend/QA workflow item ${itemId} already has a submission`);
     const checkpoint = initialCheckpoint(backendObjective, qaObjective);
     await orchestrator.claim({ itemId, owner });
     const persisted = await orchestrator.checkpoint({
@@ -221,7 +225,7 @@ export function createDurableBackendQaWorkflow({
       const persisted = await orchestrator.checkpoint({
         itemId,
         owner,
-        checkpoint: freezeClone({ ...checkpoint, spec: { ...checkpoint.spec, backendObjective: objective } }),
+        checkpoint,
         artifactRefs: backend.result.artifacts.map((artifact) => artifact.ref),
         evidenceRefs: [backend.completion.decision.id],
         status: blocked ? BlackboardStatus.BLOCKED : BlackboardStatus.REOPENED,
