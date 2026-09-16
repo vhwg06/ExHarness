@@ -456,9 +456,9 @@ export function createResearchContinuationController({
       changedSourceScopes,
       changedPolicyScopes
     });
-    invariant(!continuation.revisionChanged, "research continuation must persist the current source/policy revision before submission");
     invariant(continuation.resumeExperiment == null, "research continuation cannot submit while an experiment remains active");
     invariant(continuation.reassessmentEvidenceIds.length === 0, `research continuation cannot submit with evidence awaiting freshness reassessment: ${continuation.reassessmentEvidenceIds.join(", ")}`);
+    invariant(!continuation.revisionChanged, "research continuation must persist the current source/policy revision before submission");
 
     const normalizedResultRef = requireText(resultRef, "resultRef");
     const key = requireText(reviewKey, "reviewKey");
