@@ -679,25 +679,34 @@ BB-019
 question/work: Deliver the concrete review-to-completion pipeline specified by BB-018.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: [BB-018]
-remaining-work:
-  - implement the bounded reviewer and declared artifact/evidence context
-  - connect Orchestrator dispatch, durable review state, trusted assessment and finding reconciliation
-  - provide a runnable Backend -> QA -> review -> acceptance/remediation composition
+remaining-work: []
 acceptance-criteria:
   - a concrete submission reaches DONE only after its declared obligations pass trusted independent assessment
   - forged, stale or unauthorized review evidence is rejected
   - rejected current obligations reopen the same item and deferred review survives reconstruction
   - integration evidence uses a concrete verifier/trust configuration rather than only permissive test stubs
 submission:
+  - PR #103
 review-requirements: [application/code review, independent acceptance-boundary review]
-reviews: []
-artifact-refs: []
+reviews:
+  - application/code review passed exact head 88036fa2f07e91ca77a4c077852e18c3b0ebf4eb after remediation-obligation and accepted-finding integration hardening
+  - independent acceptance-boundary review passed exact head 88036fa2f07e91ca77a4c077852e18c3b0ebf4eb after crash-safe trust-artifact publication hardening
+artifact-refs:
+  - packages/agentic-system/src/backend-qa-project-acceptance.js
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/src/trust-artifact-store.js
+  - packages/agentic-system/test/bb019-project-acceptance.test.js
+  - packages/agentic-system/test/bb019-project-acceptance-findings.test.js
+  - packages/agentic-system/test/trust-artifact-store.test.js
+  - docs/worktree/agentic-application/project-acceptance.md
 evidence-refs:
   - BB-018
   - docs/living/decisions/D010-explicit-backend-qa-project-acceptance.md
+  - exact-head CI #1664 green on living-doc-impact and Node 20/22/24
+  - fresh-session acceptance/rejection/recovery/finding reconciliation and trust-store publication regression contracts in PR #103
 blockers: []
 follow-up-refs: [BB-021]
 origin: INTENT-exharness-agentic-system; implementation follow-up to BB-018
@@ -745,7 +754,7 @@ BB-021
 question/work: Implement the evidence-supported PM/SA coordination slice selected by BB-020 and connect it to concrete review dispatch.
 kind: IMPLEMENTATION
 priority: P2
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-019, BB-020]
 remaining-work:
@@ -761,8 +770,7 @@ review-requirements: [application/code review, PM/SA authority review]
 reviews: []
 artifact-refs: []
 evidence-refs: [BB-019, BB-020]
-blockers:
-  - BB-019 must deliver the review execution boundary used by coordination
+blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional implementation follow-up to BB-020
 ```
