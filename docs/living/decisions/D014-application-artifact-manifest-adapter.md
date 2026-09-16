@@ -4,15 +4,15 @@ Status: **ACCEPTED**
 
 Accepted: 2026-09-16
 
-Acceptance boundary: BB-039 research-method and application/architecture-boundary reviews passed exact head `5da76553060bb72ff0a69de971f665bd8131fe10`; Actions run #1603 was green and PR #90 merged as `48165251181dff3fecd9af29b8eef55007a2212b`.
+Acceptance boundary: BB-039 corrected fresh-session research evidence in PR #108 passed application/architecture-boundary and research-method review on exact research head `fcf5bbd5357543bf3308b668f499804937ed7e22`; exact-head Actions run #1753 was green. The corrected fixture closes the earlier same-process and missing provenance-negative coverage gaps. Acceptance remains a design boundary, not delivery of a runtime manifest adapter.
 
 ## Context
 
 Durable Backend -> QA continuation persists artifact refs plus upstream Backend work-order/revision/acceptance provenance. `resolveQaContext(...)` delegates artifact resolution to an injected `artifactReader` and currently relies on that adapter to honor revision/content identity.
 
-BB-039 reproduced a concrete adapter-level gap with a deterministic weak reader: changed bytes behind a stable ref and a producer-revision mismatch can be accepted when the source ignores those semantics. Deleted content is observable only through the source's generic failure shape.
+BB-039 reproduced a concrete adapter-level gap with a deterministic weak reader: changed bytes behind a stable ref and producer/provenance mismatches can be accepted when the source ignores those semantics. Deleted content is observable through the source's ordinary missing-artifact failure shape.
 
-The application already has a suitable injection boundary. No evidence requires copying payloads into Blackboard, changing Core, or introducing a global artifact registry.
+The corrected BB-039 fixture exercises the boundary after an actual fresh-session reconstruction using a JSON Blackboard plus separately reconstructed filesystem-backed artifact and manifest stores. The application already has a suitable injection boundary. No evidence requires copying payloads into Blackboard, changing Core, or introducing a global artifact registry.
 
 ## Decision
 
@@ -24,11 +24,13 @@ The first concrete manifest binds:
 ref/path
 + producer work-order id
 + producer revision
++ acceptance-decision id/digest
++ stored artifact revision
 + immutable content digest
 + retention/availability metadata
 ```
 
-The validating reader must fail closed when manifest identity is missing or mismatched, distinguish unavailable payloads from integrity mismatch, and return the existing ordinary artifact payload shape only after validation.
+The validating reader must fail closed when manifest identity is missing or mismatched, distinguish unavailable payloads from integrity/provenance mismatch, and return the existing ordinary artifact payload shape only after validation.
 
 ## Authority invariants
 
@@ -37,7 +39,7 @@ The validating reader must fail closed when manifest identity is missing or mism
 - Artifact availability is not correctness evidence.
 - Backend acceptance provenance remains owned by the existing completion/trust path.
 - QA still evaluates the resolved content independently.
-- Missing manifest, wrong producer/revision, unavailable content and digest mismatch remain distinct failures.
+- Missing manifest, wrong producer work order, wrong producer/revision, wrong acceptance-decision id/digest, unavailable content and digest mismatch remain distinct failures.
 - Enabling the manifest adapter must not silently fall back to unvalidated reads.
 
 ## Retention boundary
@@ -52,20 +54,21 @@ The first pilot should preserve `ApplicationArtifactRef`, `QaWorkOrder` and `QaC
 
 A generic artifact registry, global content-addressed store, Blackboard payload schema expansion or Core abstraction requires separate evidence.
 
-## Evidence
+## Corrected evidence
 
-- `docs/living/knowledge/bb039-artifact-manifest-retention.md`
-- `docs/living/knowledge/bb039-artifact-manifest-retention-probe.mjs`
-- `artifacts/bb039-artifact-manifest-probe.json`
-- `packages/agentic-system/src/artifact-ref.js`
-- `packages/agentic-system/src/oracle.js`
-- `packages/agentic-system/src/session-handoff.js`
-- `packages/agentic-system/src/qa-contracts.js`
-- PR #90 research-method review PASS on exact head `5da76553060bb72ff0a69de971f665bd8131fe10`;
-- PR #90 application/architecture-boundary review PASS on the same exact head;
-- exact-head Actions run #1603 green;
-- merge commit `48165251181dff3fecd9af29b8eef55007a2212b`.
+- `docs/living/knowledge/bb039-artifact-manifest-research.md`;
+- `docs/living/knowledge/bb039-artifact-manifest-probe.mjs`;
+- project-bound `SessionHandoffSurface` fresh-session reconstruction through a durable JSON Blackboard;
+- filesystem-backed artifact and manifest stores reconstructed independently from the producer session;
+- nine deterministic scenarios including changed bytes, wrong stored revision, missing/partial content, missing manifest, wrong producer work-order id, wrong acceptance-decision id and wrong acceptance-decision digest;
+- weak baseline accepts five identity/provenance violations while the manifest reader rejects all five;
+- evidence class `DETERMINISTIC_FRESH_SESSION_FIXTURE`, `productionEvidence=false`;
+- PR #108 application/architecture-boundary review PASS on exact head `fcf5bbd5357543bf3308b668f499804937ed7e22`;
+- PR #108 research-method review PASS on the same exact head;
+- exact-head Actions run #1753 green.
+
+Earlier PR #90 evidence remains historical precursor evidence but is no longer the sole acceptance basis for D014.
 
 ## Promotion boundary
 
-`ACCEPTED` approves the optional application adapter boundary and implementation handoff. It does **not** claim a manifest adapter is delivered runtime behavior. A later implementation must demonstrate unchanged-valid compatibility, changed-content rejection, producer/revision mismatch rejection, explicit unavailability, partial-set behavior and bounded lookup/hash/retention cost on the concrete Backend -> QA adapter before runtime promotion.
+`ACCEPTED` approves the optional application adapter boundary and implementation handoff. It does **not** claim a manifest adapter is delivered runtime behavior. A later implementation must demonstrate unchanged-valid compatibility, changed-content rejection, producer/revision/provenance mismatch rejection, explicit unavailability, partial-set behavior and bounded lookup/hash/retention cost on the concrete Backend -> QA adapter before runtime promotion.
