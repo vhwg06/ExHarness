@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "DETERMINISTIC_POLICY_REPLAY_FIXTURE",
+  "productionEvidence": false,
+  "policyPair": {
+    "baseline": {
+      "id": "bb024-baseline-late-reconciliation-v1",
+      "version": 1,
+      "terminalCancellationGuard": false
+    },
+    "candidate": {
+      "id": "bb024-terminal-cancellation-guard-v1",
+      "version": 1,
+      "terminalCancellationGuard": true
+    }
+  },
+  "inputContract": {
+    "required": [
+      "scenarioId",
+      "category",
+      "revision",
+      "initialState",
+      "ordered observable events",
+      "policy identity"
+    ],
+    "adapterResponsesAreRecorded": true,
+    "providerModelCallsAreReplayed": false,
+    "liveRuntimeAuthorityReconstructed": false
+  },
+  "metrics": {
+    "scenarioCount": 4,
+    "behavioralDivergenceCount": 1,
+    "cancellationRegressionReproduced": true,
+    "unaffectedScheduleCount": 3,
+    "deterministicRepeatPasses": 2,
+    "historicalExternalEffectsObserved": 2,
+    "externalDispatchCount": 0,
+    "inputFixtureBytes": 1914,
+    "replayTraceBytes": 5508
+  },
+  "comparison": [
+    {
+      "scenarioId": "artifact-outage",
+      "category": "ARTIFACT_OUTAGE",
+      "changed": false,
+      "changedEventId": null,
+      "baselineFinalStatus": "PENDING_REVIEW",
+      "candidateFinalStatus": "PENDING_REVIEW",
+      "baselineOutcomeRef": null,
+      "candidateOutcomeRef": null,
+      "externalDispatchCount": 0
+    },
+    {
+      "scenarioId": "cancellation-late-reconciliation",
+      "category": "CANCELLATION",
+      "changed": true,
+      "changedEventId": "cancel:late-finding",
+      "baselineFinalStatus": "REOPENED",
+      "candidateFinalStatus": "SUPERSEDED",
+      "baselineOutcomeRef": "outcome:bb024-baseline-reopened",
+      "candidateOutcomeRef": "outcome:bb024-candidate-superseded",
+      "externalDispatchCount": 0
+    },
+    {
+      "scenarioId": "retry-recorded-effect",
+      "category": "RETRY",
+      "changed": false,
+      "changedEventId": null,
+      "baselineFinalStatus": "REQUIRES_LIVE_AUTHORITY",
+      "candidateFinalStatus": "REQUIRES_LIVE_AUTHORITY",
+      "baselineOutcomeRef": null,
+      "candidateOutcomeRef": null,
+      "externalDispatchCount": 0
+    },
+    {
+      "scenarioId": "review-delay",
+      "category": "REVIEW_DELAY",
+      "changed": false,
+      "changedEventId": null,
+      "baselineFinalStatus": "DONE",
+      "candidateFinalStatus": "DONE",
+      "baselineOutcomeRef": null,
+      "candidateOutcomeRef": null,
+      "externalDispatchCount": 0
+    }
+  ],
+  "provenance": {
+    "reproducedDefect": "BB-024 delayed finding reconciliation can revive SUPERSEDED work",
+    "baselineEvidence": "packages/agentic-system/src/blackboard-orchestrator.js reconcileFinding + supersede semantics on main before BB-024 fix",
+    "candidateEvidence": "PR #85 terminal cancellation guard and bb024-cancellation-reconciliation.test.js",
+    "referenceEvaluation": "scripts/agentic-backend-qa-eval.mjs"
+  },
+  "limitations": {
+    "fixtureOnly": true,
+    "realConcurrentTiming": false,
+    "liveFilesystemAtomicity": false,
+    "liveExternalEffects": false,
+    "modelProviderNondeterminism": false,
+    "causalProofWhenInputsDiffer": false,
+    "runtimeAuthorityReconstruction": false
+  }
+}
