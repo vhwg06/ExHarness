@@ -123,16 +123,16 @@ function userIntent() {
   };
 }
 
-function deliveryItem(overrides = {}) {
+function workItem({ id, work, evidenceRefs = [], ...overrides }) {
   return {
-    id: ITEM_ID,
-    work: "Deliver the requested Backend change through QA.",
+    id,
+    work,
     status: BlackboardStatus.READY,
     dependsOn: [],
     remainingWork: [],
     blockers: [],
-    artifactRefs: ["artifact:delivery-spec"],
-    evidenceRefs: ["evidence:public-contract-diff"],
+    artifactRefs: [],
+    evidenceRefs,
     followUpRefs: [],
     reviewRequirements: [],
     reviews: [],
@@ -141,21 +141,29 @@ function deliveryItem(overrides = {}) {
   };
 }
 
+function deliveryItem(overrides = {}) {
+  return workItem({
+    id: ITEM_ID,
+    work: "Deliver the requested Backend change through QA.",
+    artifactRefs: ["artifact:delivery-spec"],
+    evidenceRefs: ["evidence:public-contract-diff"],
+    ...overrides
+  });
+}
+
 function recoveryItem() {
-  return {
+  return workItem({
     id: "artifact-recovery",
-    work: "Restore the unavailable application artifact source.",
-    status: BlackboardStatus.READY,
-    dependsOn: [],
-    remainingWork: [],
-    blockers: [],
-    artifactRefs: [],
-    evidenceRefs: [],
-    followUpRefs: [],
-    reviewRequirements: [],
-    reviews: [],
-    findings: []
-  };
+    work: "Restore the unavailable application artifact source."
+  });
+}
+
+function secondaryArchitectureItem() {
+  return workItem({
+    id: "secondary-architecture",
+    work: "Assess a separate architecture boundary.",
+    evidenceRefs: ["evidence:secondary-architecture"]
+  });
 }
 
 async function withProject(run, { items = [deliveryItem()] } = {}) {
@@ -241,6 +249,7 @@ test("BB-021 carries an evidence-bound SA assessment into PM-required review and
     });
     const applied = await controller.applyPmProposal(proposal);
     assert.equal(applied.applied, true);
+    assert.equal(applied.replayed, false);
     assert.equal(applied.item.reviewRequirements[0].reason, persistedAssessment.ref);
 
     let freshOrchestrator = makeOrchestrator();
@@ -285,7 +294,7 @@ test("BB-021 carries an evidence-bound SA assessment into PM-required review and
   });
 });
 
-test("BB-021 applies migration prerequisite work atomically and retries the same proposal idempotently", async () => {
+test("BB-021 applies migration prerequisite work atomically and retries the same proposal through its canonical proposal ref", async () => {
   await withProject(async ({ orchestrator, makeOrchestrator, makeArtifactStore }) => {
     const controller = createPmSaCoordinationController({
       orchestrator,
@@ -308,6 +317,8 @@ test("BB-021 applies migration prerequisite work atomically and retries the same
 
     const first = await controller.applyPmProposal(proposal);
     const second = await controller.applyPmProposal(proposal);
+    assert.equal(first.replayed, false);
+    assert.equal(second.replayed, true);
     assert.equal(first.proposalRef, second.proposalRef);
 
     const fresh = createSessionHandoffSurface({ orchestrator: makeOrchestrator(), projectId: PROJECT_ID });
@@ -317,6 +328,54 @@ test("BB-021 applies migration prerequisite work atomically and retries the same
     assert.equal(handoff.workGraph.filter((item) => item.id === "migration").length, 1);
     assert.ok(handoff.references.artifacts.some((entry) => entry.itemId === ITEM_ID && entry.ref === first.proposalRef));
   });
+});
+
+test("BB-021 atomically links blocker and architecture review, then replays the exact proposal after status changes", async () => {
+  await withProject(async ({ orchestrator, makeArtifactStore }) => {
+    const controller = createPmSaCoordinationController({
+      orchestrator,
+      projectId: PROJECT_ID,
+      artifactStore: makeArtifactStore()
+    });
+    const saContext = await controller.prepareSaContext({
+      targetItemId: ITEM_ID,
+      architectureFacts: { publicBoundaryChanged: true },
+      evidenceRefs: ["evidence:public-contract-diff"]
+    });
+    const assessment = await controller.persistSaAssessment(assessmentFromContext(saContext));
+    const pmContext = await controller.preparePmContext({
+      targetItemId: ITEM_ID,
+      coordinationFacts: { artifactUnavailable: true, architectureBoundaryChanged: true },
+      relevantItemIds: [ITEM_ID, "artifact-recovery"],
+      saAssessmentRef: assessment.ref
+    });
+    const proposal = proposalFromContext(pmContext, {
+      blockers: [{
+        targetItemId: ITEM_ID,
+        reason: "Required artifact is unavailable.",
+        existingWorkRef: "artifact-recovery"
+      }],
+      reviewRequirements: [{
+        targetItemId: ITEM_ID,
+        key: REVIEW_KEY,
+        source: ReviewRequirementSource.PM,
+        reasonRef: assessment.ref
+      }],
+      progress: { completed: 0, total: 2 }
+    });
+
+    const first = await controller.applyPmProposal(proposal);
+    assert.equal(first.replayed, false);
+    assert.equal(first.item.status, BlackboardStatus.BLOCKED);
+    assert.deepEqual(first.item.blockers, ["Required artifact is unavailable."]);
+    assert.equal(first.item.reviewRequirements[0].reason, assessment.ref);
+
+    const second = await controller.applyPmProposal(proposal);
+    assert.equal(second.replayed, true);
+    assert.equal(second.proposalRef, first.proposalRef);
+    assert.equal(second.item.status, BlackboardStatus.BLOCKED);
+    assert.equal(second.item.reviewRequirements.length, 1);
+  }, { items: [deliveryItem(), recoveryItem()] });
 });
 
 test("BB-021 links an existing recovery item and blocks the affected work instead of inventing replacement work", async () => {
@@ -352,6 +411,31 @@ test("BB-021 links an existing recovery item and blocks the affected work instea
   }, { items: [deliveryItem(), recoveryItem()] });
 });
 
+test("BB-021 rejects an SA assessment from different work when building PM context", async () => {
+  await withProject(async ({ orchestrator, makeArtifactStore }) => {
+    const controller = createPmSaCoordinationController({
+      orchestrator,
+      projectId: PROJECT_ID,
+      artifactStore: makeArtifactStore()
+    });
+    const secondaryContext = await controller.prepareSaContext({
+      targetItemId: "secondary-architecture",
+      architectureFacts: { boundary: "secondary" },
+      evidenceRefs: ["evidence:secondary-architecture"]
+    });
+    const assessment = await controller.persistSaAssessment(assessmentFromContext(secondaryContext));
+
+    await assert.rejects(
+      () => controller.preparePmContext({
+        targetItemId: ITEM_ID,
+        coordinationFacts: {},
+        saAssessmentRef: assessment.ref
+      }),
+      /targets different work/
+    );
+  }, { items: [deliveryItem(), secondaryArchitectureItem()] });
+});
+
 test("BB-021 fails closed on authority violations, stale state and stale evidence, while an empty proposal falls back without mutation", async () => {
   assert.throws(() => definePmCoordinationProposal({
     kind: PmSaCoordinationKind.PM_PROPOSAL,
@@ -368,6 +452,17 @@ test("BB-021 fails closed on authority violations, stale state and stale evidenc
     target: { itemId: ITEM_ID, status: BlackboardStatus.READY, claimGeneration: 0, reviewGeneration: 0 },
     architectureVerdict: "ACCEPTED"
   }), /architecture verdict authority/);
+
+  assert.throws(() => definePmCoordinationProposal({
+    kind: PmSaCoordinationKind.PM_PROPOSAL,
+    projectId: PROJECT_ID,
+    rootIntentId: "intent",
+    target: { itemId: ITEM_ID, status: BlackboardStatus.READY, claimGeneration: 0, reviewGeneration: 0 },
+    reviewRequirements: [
+      { targetItemId: ITEM_ID, key: REVIEW_KEY, source: ReviewRequirementSource.PM, reasonRef: "coordination:a" },
+      { targetItemId: ITEM_ID, key: REVIEW_KEY, source: ReviewRequirementSource.PM, reasonRef: "coordination:b" }
+    ]
+  }), /duplicate review requirement architecture/);
 
   assert.throws(() => defineSaArchitectureAssessment({
     kind: PmSaCoordinationKind.SA_ASSESSMENT,
@@ -387,13 +482,12 @@ test("BB-021 fails closed on authority violations, stale state and stale evidenc
       projectId: PROJECT_ID,
       artifactStore: makeArtifactStore()
     });
-    const context = await controller.prepareSaContext({
-      targetItemId: ITEM_ID,
-      architectureFacts: { publicBoundaryChanged: true },
-      evidenceRefs: ["evidence:not-current"]
-    });
     await assert.rejects(
-      () => controller.persistSaAssessment(assessmentFromContext(context)),
+      () => controller.prepareSaContext({
+        targetItemId: ITEM_ID,
+        architectureFacts: { publicBoundaryChanged: true },
+        evidenceRefs: ["evidence:not-current"]
+      }),
       /evidence is not current/
     );
 
@@ -404,6 +498,7 @@ test("BB-021 fails closed on authority violations, stale state and stale evidenc
     const empty = await controller.applyPmProposal(proposalFromContext(pmContext));
     assert.equal(empty.applied, false);
     assert.equal(empty.fallback, true);
+    assert.equal(empty.replayed, false);
     assert.equal(empty.proposalRef, null);
 
     const staleProposal = proposalFromContext(pmContext, {
