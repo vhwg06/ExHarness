@@ -231,26 +231,31 @@ fresh/current session
 
 SA path
  -> prepareSaContext(target, architectureFacts, evidenceRefs)
+      -> reject evidence not currently linked to target
  -> produce evidence-bound SA architecture assessment
  -> persist assessment artifact
  -> assessment is proposal/judgment state only
 
 PM path
  -> preparePmContext(target, coordinationFacts, relevant work, optional SA ref)
+      -> reject SA assessment for different work
  -> produce PM proposal bound to exact target lifecycle tuple
- -> validate project/root/target/evidence authority
- -> persist proposal artifact
- -> Orchestrator.extendWorkGraph(...)
- -> Orchestrator.requireReview(...) when grounded by SA assessment
+ -> validate project/root/target/evidence semantics
+ -> persist content-addressed proposal artifact
+ -> if proposalRef already linked on target: return completed replay
+ -> otherwise Orchestrator.extendWorkGraph(...)
+      -> re-check exact expected target inside transaction
+      -> atomically apply work/dependencies/refs/evidence/blockers/PM review requirements
+      -> validate complete dependency graph
 ```
 
-The PM proposal may add fresh prerequisite work and dependency edges only for the current target or work created by that proposal. A blocker may link existing unresolved work instead of inventing replacement work. The Orchestrator validates the complete graph before persistence; conflicting duplicate work, cycles and mutation from non-coordinatable target states fail closed.
+The PM proposal may add fresh prerequisite work and dependency edges only for the current target or work created by that proposal. Fresh work must start without prior claim/review/checkpoint/submission/follow-up history. A blocker may link existing unresolved work instead of inventing replacement work. PM review requirements are part of the same canonical transaction as the proposal's graph and blocker effects, so a process cannot publish the graph while losing the review obligation.
 
 PM cannot rewrite user intent or issue architecture/completion/review verdicts. SA cannot own dependency, priority, timeline or lifecycle mutation. Neither role writes Board state directly.
 
-SA assessments must reference evidence currently linked to the exact target. PM proposals bind `{itemId, status, claimGeneration, reviewGeneration}` so a delayed proposal cannot apply after the target lifecycle changes. A no-op proposal is still freshness-checked before returning fallback.
+SA assessments must reference evidence currently linked to the exact target. PM proposals bind `{itemId, status, claimGeneration, reviewGeneration}`. Controller-side validation narrows the proposal, but correctness fencing happens again inside the Orchestrator transaction: if the target changes between validation and mutation, the proposal fails before canonical state is published. A no-op proposal is also freshness-checked and does not publish a proposal artifact.
 
-The same graph extension is safe to retry when the proposed fresh work is identical. If a coordination artifact is written but the canonical Board mutation fails, that orphan artifact is not project lifecycle truth because no Blackboard ref points to it.
+For mutating proposals, the content-addressed proposal artifact can exist before canonical application. It becomes continuation-relevant only when its exact ref is linked to the target in the same atomic Blackboard transaction as all proposal effects. If that transaction fails, the artifact is orphaned and is not lifecycle truth. If an exact later retry observes the proposal ref already linked, it returns `replayed: true` rather than reapplying the original target tuple after status changed.
 
 Fresh-session coordination recovery reads the project handoff, collects only PM/SA artifact refs already linked from Blackboard and dereferences those refs through the concrete coordination artifact store. Conversation history is not required.
 
