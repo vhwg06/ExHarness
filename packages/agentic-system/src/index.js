@@ -47,11 +47,15 @@ export {
   BlackboardStatus,
   FollowUpDisposition,
   ReviewRequirementSource,
-  ReviewVerdict,
-  defineBlackboardSnapshot
+  ReviewVerdict
 } from "./blackboard-orchestrator.js";
 export { createApplicationOrchestrator } from "./application-orchestrator.js";
-export { createJsonBlackboardStore } from "./blackboard-store.js";
+export {
+  BlackboardDependencyIssueCode,
+  createJsonBlackboardStore,
+  defineBlackboardSnapshot,
+  diagnoseBlackboardDependencyGraph
+} from "./blackboard-graph.js";
 export {
   SessionHandoffRootKind,
   UserIntentSource,
