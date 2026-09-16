@@ -1,6 +1,10 @@
 # D015 — Bounded project work selection
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
+
+Accepted: 2026-09-16
+
+Acceptance boundary: BB-030 architecture-boundary and evaluation-method reviews passed exact head `d103d4547181a3d166a0c2f1f0a1c29d4af3289c`; Actions run #1614 was green and PR #94 merged as `a4dead599ccbaac72995bb01e5bb4bc874f48dda`.
 
 ## Context
 
@@ -10,9 +14,9 @@ BB-030 asks whether application-level work selection can use explicit user prior
 
 A deterministic reference probe shows one bounded policy can improve fixture outcome/dependency unblocking at equal cost while preserving hard correctness gates, starvation protection and explicit stop/escalation semantics. This remains fixture evidence, not production effectiveness.
 
-## Decision candidate
+## Decision
 
-If BB-030 is accepted, the first BB-031 pilot should use an **opt-in Agentic Application/PM work-selection policy above the existing Blackboard eligibility surface**.
+The first BB-031 pilot should use an **opt-in Agentic Application/PM work-selection policy above the existing Blackboard eligibility surface**.
 
 The policy may rank only already-eligible work. It may produce a referenced `WORK_SELECTION_DECISION` artifact, but it does not own Blackboard transitions.
 
@@ -48,7 +52,7 @@ It may not:
 
 The Orchestrator must re-check current Board eligibility before the ordinary claim transition. Stale selection artifacts must be recomputed against a fresh Board/input revision.
 
-## Stopping/fairness candidate
+## Stopping/fairness boundary
 
 The first pilot should expose explicit configuration for:
 
@@ -72,12 +76,24 @@ Application work selection
 
 They may reuse general vocabulary such as budget or plateau, but they must not share authority/state merely because the concepts look similar.
 
-## Adoption condition
+## Adoption boundary
 
-D015 must remain `PROPOSED` until architecture-boundary and evaluation-method review accept BB-030.
-
-Even after acceptance, BB-031 should be an opt-in bounded pilot with the existing explicit/manual selection path as fallback. Fixture improvements do not justify a production/default scheduler. A default recommendation requires representative measured project evidence with hard correctness gates still passing.
+BB-031 remains an opt-in bounded pilot with the existing explicit/manual selection path as fallback. Fixture improvements do not justify a production/default scheduler. A default recommendation requires representative measured project evidence with hard correctness gates still passing.
 
 ## Rollback
 
 Disable the opt-in policy and return to ordinary eligible-work selection. The first pilot should not require Blackboard schema migration or reinterpret historical lifecycle state.
+
+## Evidence
+
+- `docs/living/knowledge/bb030-work-prioritization.md`
+- `docs/living/knowledge/bb030-work-prioritization-probe.mjs`
+- `artifacts/bb030-work-prioritization-probe.json`
+- PR #94 architecture-boundary review PASS on exact head `d103d4547181a3d166a0c2f1f0a1c29d4af3289c`;
+- PR #94 evaluation-method review PASS on the same exact head;
+- exact-head Actions run #1614 green;
+- merge commit `a4dead599ccbaac72995bb01e5bb4bc874f48dda`.
+
+## Promotion boundary
+
+`ACCEPTED` approves the bounded BB-031 pilot contract only. It does **not** make project work selection a runtime default or production-proven scheduler. Runtime promotion requires implementation plus representative evidence beyond the deterministic fixture.
