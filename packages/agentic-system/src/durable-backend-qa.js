@@ -42,6 +42,10 @@ export const BackendQaWorkflowStage = Object.freeze({
   CANCELED: "CANCELED"
 });
 
+function remediationWork(issues) {
+  return `Remediate QA issues: ${issues.join(" | ")}`;
+}
+
 function workflowCheckpoint(raw) {
   invariant(raw && typeof raw === "object" && !Array.isArray(raw), "Backend/QA workflow checkpoint is required");
   invariant(raw.kind === WORKFLOW_KIND, `Backend/QA workflow checkpoint kind must be ${WORKFLOW_KIND}`);
@@ -56,6 +60,18 @@ function workflowCheckpoint(raw) {
   );
   const spec = raw.spec;
   invariant(spec && typeof spec === "object" && !Array.isArray(spec), "Backend/QA workflow checkpoint spec is required");
+  const qaIssues = Array.isArray(raw.qaIssues)
+    ? raw.qaIssues.map((issue, index) => requireText(issue, `qaIssues[${index}]`))
+    : [];
+  const remediationObligations = Array.isArray(raw.remediationObligations)
+    ? raw.remediationObligations.map((work, index) => requireText(work, `remediationObligations[${index}]`))
+    : raw.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING && qaIssues.length > 0
+      ? [remediationWork(qaIssues)]
+      : [];
+  if (raw.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING) {
+    invariant(qaIssues.length > 0, "Backend remediation checkpoint requires issues");
+    invariant(remediationObligations.length > 0, "Backend remediation checkpoint requires outstanding obligations");
+  }
   const parsed = {
     kind: WORKFLOW_KIND,
     version: WORKFLOW_VERSION,
@@ -72,9 +88,8 @@ function workflowCheckpoint(raw) {
         digest: requireText(raw.acceptedBackend.completionDecision?.digest, "acceptedBackend.completionDecision.digest")
       }
     }),
-    qaIssues: Array.isArray(raw.qaIssues)
-      ? raw.qaIssues.map((issue, index) => requireText(issue, `qaIssues[${index}]`))
-      : []
+    qaIssues,
+    remediationObligations
   };
   return freezeClone(parsed);
 }
@@ -90,7 +105,8 @@ function initialCheckpoint(backendObjective, qaObjective) {
     },
     attempt: 0,
     acceptedBackend: null,
-    qaIssues: []
+    qaIssues: [],
+    remediationObligations: []
   });
 }
 
@@ -98,10 +114,6 @@ function boardItem(board, itemId) {
   const item = board.items.find((candidate) => candidate.id === itemId);
   invariant(item, `Blackboard item not found: ${itemId}`);
   return item;
-}
-
-function remediationWork(issues) {
-  return `Remediate QA issues: ${issues.join(" | ")}`;
 }
 
 function deriveRemediationObjective(checkpoint) {
@@ -150,7 +162,8 @@ function backendCheckpointAfterAccept(checkpoint, handoff, completionDecision) {
         digest: completionDecision.digest
       }
     },
-    qaIssues: []
+    qaIssues: [],
+    remediationObligations: []
   });
 }
 
@@ -158,7 +171,27 @@ function remediationCheckpoint(checkpoint, issues) {
   return workflowCheckpoint({
     ...checkpoint,
     stage: BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING,
-    qaIssues: issues
+    qaIssues: issues,
+    remediationObligations: [remediationWork(issues)]
+  });
+}
+
+function reviewRemediationCheckpoint(item) {
+  const submission = item.submission;
+  invariant(submission?.kind === WORKFLOW_KIND && submission?.stage === "QA_COMPLETED", `Blackboard item ${item.id} has no resumable Backend/QA review submission`);
+  invariant(item.remainingWork.length > 0, `Blackboard item ${item.id} review remediation requires grounded remaining work`);
+  return workflowCheckpoint({
+    kind: WORKFLOW_KIND,
+    version: WORKFLOW_VERSION,
+    stage: BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING,
+    spec: submission.workflowSpec,
+    attempt: submission.workflowAttempt,
+    acceptedBackend: {
+      handoff: submission.acceptedBackendHandoff,
+      completionDecision: submission.backendAcceptanceDecision
+    },
+    qaIssues: item.remainingWork,
+    remediationObligations: item.remainingWork
   });
 }
 
@@ -172,6 +205,18 @@ function artifactRefsFromHandoff(handoff) {
   return handoff.artifacts.map((artifact) => artifact.ref);
 }
 
+function normalizeProjectAcceptance(projectAcceptance) {
+  if (projectAcceptance == null) return null;
+  invariant(
+    typeof projectAcceptance.persistRoleCompletion === "function" &&
+      typeof projectAcceptance.ensureRequirement === "function" &&
+      typeof projectAcceptance.review === "function" &&
+      typeof projectAcceptance.recoverReview === "function",
+    "projectAcceptance must be a Backend/QA project acceptance controller"
+  );
+  return projectAcceptance;
+}
+
 export function createDurableBackendQaWorkflow({
   orchestrator,
   repositoryReader,
@@ -180,7 +225,8 @@ export function createDurableBackendQaWorkflow({
   qaWorker,
   backendCompletionPolicy = null,
   backendAdvisor = null,
-  qaCompletionPolicy = null
+  qaCompletionPolicy = null,
+  projectAcceptance = null
 }) {
   invariant(
     orchestrator &&
@@ -193,6 +239,7 @@ export function createDurableBackendQaWorkflow({
       typeof orchestrator.supersede === "function",
     "Durable Backend/QA workflow requires recovery-capable ApplicationOrchestrator"
   );
+  const acceptance = normalizeProjectAcceptance(projectAcceptance);
 
   async function initialize({ itemId, owner, backendObjective, qaObjective }) {
     requireText(itemId, "itemId");
@@ -221,6 +268,14 @@ export function createDurableBackendQaWorkflow({
   async function persistBackendRun({ itemId, owner, generation, checkpoint, backend }) {
     const currentWork = backendWorkFor(checkpoint);
 
+    if (acceptance != null) {
+      await acceptance.persistRoleCompletion({
+        decision: backend.completion.decision,
+        evidence: backend.result.evidence,
+        label: "Backend"
+      });
+    }
+
     if (backend.completion.action !== BackendCompletionAction.ACCEPT) {
       const blocked = [BackendCompletionAction.BLOCK, BackendCompletionAction.FAIL].includes(backend.completion.action);
       const persisted = await orchestrator.checkpoint({
@@ -243,6 +298,9 @@ export function createDurableBackendQaWorkflow({
 
     const handoff = createQaHandoffFromBackendRun(backend);
     const nextCheckpoint = backendCheckpointAfterAccept(checkpoint, handoff, backend.completion.decision);
+    const resolvedWork = checkpoint.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
+      ? checkpoint.remediationObligations
+      : [currentWork];
     const persisted = await orchestrator.checkpoint({
       itemId,
       owner,
@@ -250,7 +308,7 @@ export function createDurableBackendQaWorkflow({
       checkpoint: nextCheckpoint,
       artifactRefs: artifactRefsFromHandoff(handoff),
       evidenceRefs: [backend.completion.decision.id],
-      resolvedWork: [currentWork],
+      resolvedWork,
       remainingWork: [QA_WORK]
     });
 
@@ -332,12 +390,21 @@ export function createDurableBackendQaWorkflow({
       });
     }
 
+    if (acceptance != null) {
+      await acceptance.persistRoleCompletion({
+        decision: qa.completion.decision,
+        evidence: qa.result.evidence,
+        label: "QA"
+      });
+    }
+
     if (qa.completion.action === QaCompletionAction.ACCEPT) {
       const artifactRefs = artifactRefsFromHandoff(handoff);
       const evidenceRefs = [
         checkpoint.acceptedBackend.completionDecision.id,
         qa.completion.decision.id
       ];
+      if (acceptance != null) await acceptance.ensureRequirement({ itemId });
       const submitted = await orchestrator.submit({
         itemId,
         owner,
@@ -348,6 +415,9 @@ export function createDurableBackendQaWorkflow({
           version: WORKFLOW_VERSION,
           stage: "QA_COMPLETED",
           acceptedRevision: handoff.revision,
+          workflowSpec: checkpoint.spec,
+          workflowAttempt: checkpoint.attempt,
+          acceptedBackendHandoff: handoff,
           backendAcceptanceDecision: checkpoint.acceptedBackend.completionDecision,
           qaAcceptanceDecision: {
             id: qa.completion.decision.id,
@@ -419,8 +489,9 @@ export function createDurableBackendQaWorkflow({
       return freezeClone({ stage: BackendQaWorkflowStage.AWAITING_REVIEW, item });
     }
 
-    invariant(item.checkpoint != null, `Blackboard item ${itemId} has no durable Backend/QA checkpoint; initialize it first`);
-    const checkpoint = workflowCheckpoint(item.checkpoint);
+    const checkpoint = item.checkpoint != null
+      ? workflowCheckpoint(item.checkpoint)
+      : reviewRemediationCheckpoint(item);
     const claimed = await orchestrator.claim({ itemId, owner });
     const generation = claimed.result.claimGeneration;
 
@@ -458,6 +529,28 @@ export function createDurableBackendQaWorkflow({
     });
   }
 
+  async function review({ itemId }) {
+    invariant(acceptance != null, "Backend/QA project acceptance is not configured");
+    const result = await acceptance.review({ itemId });
+    return freezeClone({
+      stage: result.item.status === BlackboardStatus.REOPENED
+        ? BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
+        : BackendQaWorkflowStage.AWAITING_REVIEW,
+      ...result
+    });
+  }
+
+  async function recoverReview({ itemId, reason }) {
+    invariant(acceptance != null, "Backend/QA project acceptance is not configured");
+    const result = await acceptance.recoverReview({ itemId, reason });
+    return freezeClone({
+      stage: result.item.status === BlackboardStatus.REOPENED
+        ? BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
+        : BackendQaWorkflowStage.AWAITING_REVIEW,
+      ...result
+    });
+  }
+
   async function resume({ itemId }) {
     const resumed = await orchestrator.resume({ itemId });
     return freezeClone({ item: resumed.result });
@@ -476,9 +569,12 @@ export function createDurableBackendQaWorkflow({
     if ([BlackboardStatus.PENDING_REVIEW, BlackboardStatus.REVIEWING, BlackboardStatus.PENDING_RECONCILIATION, BlackboardStatus.DONE].includes(item.status)) {
       return freezeClone({ stage: BackendQaWorkflowStage.AWAITING_REVIEW, item });
     }
+    if (item.checkpoint == null && item.status === BlackboardStatus.REOPENED && item.submission?.stage === "QA_COMPLETED") {
+      return freezeClone({ stage: BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING, item });
+    }
     invariant(item.checkpoint != null, `Blackboard item ${itemId} has no durable Backend/QA checkpoint`);
     return freezeClone({ stage: workflowCheckpoint(item.checkpoint).stage, item });
   }
 
-  return Object.freeze({ initialize, advance, recoverInterrupted, resume, cancel, current });
+  return Object.freeze({ initialize, advance, recoverInterrupted, review, recoverReview, resume, cancel, current });
 }

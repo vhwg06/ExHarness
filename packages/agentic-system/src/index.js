@@ -70,6 +70,15 @@ export {
   BackendQaWorkflowStage,
   createDurableBackendQaWorkflow
 } from "./durable-backend-qa.js";
+export {
+  BackendQaProjectAcceptanceReviewKey,
+  createBackendQaProjectAcceptanceController,
+  defineBackendQaProjectAcceptanceRequirement
+} from "./backend-qa-project-acceptance.js";
+export {
+  createJsonTrustArtifactStore,
+  requireTrustArtifactStore
+} from "./trust-artifact-store.js";
 export { createJsonBackendSessionStore } from "./backend-session-store.js";
 export { createQaWorker } from "./qa-worker.js";
 export {
