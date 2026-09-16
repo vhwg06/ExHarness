@@ -593,6 +593,7 @@ remaining-work:
   - distinguish lost claim ownership, lost review dispatch, Core effect ambiguity and completed-stage continuation
   - compare explicit takeover, ownership generations and lease policies without assuming elapsed time proves a Worker stopped
   - specify how the concrete application consumer resolves Core effect/evidence state before retrying a stage
+  - recover active review key, reviewer identity and exact subject from the handoff surface; current workSummary omits activeReview (review R4)
 acceptance-criteria:
   - failure matrix cites current claim/checkpoint/review behavior and executable reproduction scenarios
   - accepted design rejects stale owners and stale review results after takeover
@@ -606,6 +607,7 @@ evidence-refs:
   - packages/agentic-system/src/blackboard-orchestrator.js
   - packages/agentic-system/src/durable-backend-qa.js
   - packages/core-harness/test/recovery-composition.test.js
+  - docs/living/knowledge/project-review-2026-09-16.md (R4; active review projection omission)
 blockers: []
 follow-up-refs: [BB-017]
 origin: INTENT-exharness-agentic-system; current claim accepts only READY/REOPENED while interruption can leave CLAIMED/REVIEWING state
@@ -623,6 +625,7 @@ remaining-work:
   - implement explicit recovery transitions and stale-owner/reviewer protection from the accepted design
   - compose application continuation with existing Core effect recovery where the failure matrix requires it
   - expose the recovery obligation and required refs to a fresh session
+  - preserve active review identity/target in fresh-session continuation and verify it against current Board state
 acceptance-criteria:
   - process interruption at each accepted failure boundary can resume or explicitly block with durable reasons
   - confirmed effects are not dispatched again and ambiguous effects are not guessed complete
@@ -788,6 +791,149 @@ evidence-refs:
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; tooling child of BB-005, which retains ownership of production evaluation and abstraction conclusions
+```
+
+## Additional findings and stateful research roadmap
+
+Review evidence: `knowledge/project-review-2026-09-16.md`, inspected revision `ad61a2b037b99384e16fdd5245ee04f43dc36083`. R1-R4 were reproduced with isolated adapters; they do not assert production incidents. BB-023/024/025 address newly grounded defects without erasing delivered history. R4 extends BB-016/017. BB-026/027 define a research consumer before choosing an abstraction.
+
+Recommended next sequence: BB-023 and BB-024 (persistence and cancellation correctness), BB-025 (graph integrity), then continue BB-016/018 and the research pilot. These fixes can be investigated independently. BB-014/015/022 remain delivered; BB-005 still requires representative production evidence.
+
+```text
+BB-023
+question/work: Prevent expired-lock takeover from allowing a live stale transaction to overwrite newer committed Blackboard state.
+kind: FIX
+priority: P1
+status: READY
+owner:
+depends-on: []
+remaining-work:
+  - define safe lock ownership/takeover and commit validation for the concrete local store
+  - prevent an old writer from publishing a stale snapshot or deleting a replacement owner's lock
+  - cover concurrent stale-lock contenders and failed-save cleanup
+acceptance-criteria:
+  - the R1 interleaving cannot lose a committed item; conflicting old writes fail explicitly
+  - lock cleanup verifies ownership and cannot remove a newer lock
+  - tests cover paused live owners, abandoned locks and competing recovery attempts
+submission:
+review-requirements: [persistence/concurrency review, application/code review]
+reviews: []
+artifact-refs: []
+evidence-refs: [docs/living/knowledge/project-review-2026-09-16.md (R1)]
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; grounded follow-up from current project review, store exclusion distinct from BB-016 work ownership
+```
+
+```text
+BB-024
+question/work: Preserve SUPERSEDED cancellation when delayed finding reconciliation arrives.
+kind: FIX
+priority: P1
+status: READY
+owner:
+depends-on: []
+remaining-work:
+  - define legal reconciliation source states and preserve terminal cancellation
+  - reject stale reconciliation before changing findings, status or follow-up items
+  - retain canceled submission/evidence history for inspection
+acceptance-criteria:
+  - cancel followed by NON_ACTIONABLE or CURRENT_WORK reconciliation cannot become DONE or REOPENED
+  - late NEW_WORK reconciliation cannot create child work after cancellation
+  - normal pending-finding reconciliation still derives completion only after remaining obligations resolve
+submission:
+review-requirements: [workflow/acceptance review, application/code review]
+reviews: []
+artifact-refs: []
+evidence-refs: [docs/living/knowledge/project-review-2026-09-16.md (R2)]
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; reproduced cancellation-to-DONE transition through reconcileFinding
+```
+
+```text
+BB-025
+question/work: Validate Blackboard dependency graph integrity and diagnose stored graphs that cannot progress.
+kind: FIX
+priority: P1
+status: READY
+owner:
+depends-on: []
+remaining-work:
+  - reject dangling/self/cyclic dependencies at complete-snapshot admission and transactional writes
+  - check follow-up creation against the resulting complete graph rather than only the new item
+  - define explicit diagnostics and migration/repair for previously accepted invalid snapshots
+acceptance-criteria:
+  - R3 dangling and cyclic inputs fail with actionable item/edge diagnostics before persistence
+  - valid unordered DAGs and durable intent-root dependencies remain accepted
+  - invalid mutations leave the prior snapshot intact and repair never silently drops dependencies
+submission:
+review-requirements: [state/schema review, application/code review]
+reviews: []
+artifact-refs: []
+evidence-refs: [docs/living/knowledge/project-review-2026-09-16.md (R3)]
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; reproduced acceptance of unresolvable dependency graphs
+```
+
+```text
+BB-026
+question/work: Research a concrete stateful investigation pipeline that preserves hypotheses, experiments and evidence validity across sessions.
+kind: RESEARCH
+priority: P2
+status: READY
+owner:
+depends-on: [BB-012, BB-015, BB-022]
+remaining-work:
+  - use BB-016 failure-boundary research as the concrete pilot rather than repeat its recovery-design scope
+  - compare existing generic checkpoints plus referenced artifacts with a minimal research-specific contract
+  - define durable question/hypothesis/experiment/result/decision lineage and unresolved continuation state
+  - evaluate evidence invalidation when implementation, configuration, source or policy revisions change
+  - keep observations, derived judgments, independent audit and promoted decisions distinct
+acceptance-criteria:
+  - a second fresh session identifies completed experiments, contradictory evidence and the next unresolved experiment without prior chat
+  - a changed source/policy revision flags affected conclusions for reassessment without deleting historical results
+  - report records costs and limitations of both approaches and may conclude no new runtime API is needed
+  - accepted recommendation specifies artifact/provenance boundaries and a bounded implementation only if demonstrated
+submission:
+review-requirements: [research-method review, architecture-boundary review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - docs/living/knowledge/project-review-2026-09-16.md (research opportunity)
+  - docs/living/knowledge/bb022-agentic-evaluation-protocol.md
+  - packages/agentic-system/src/session-handoff.js
+blockers: []
+follow-up-refs: [BB-027]
+origin: INTENT-exharness-agentic-system; direct user request for stateful research and high-impact architecture upgrades, grounded in existing research backlog
+```
+
+```text
+BB-027
+question/work: Deliver the accepted research-continuation workflow from BB-026 using existing artifacts/checkpoints or its demonstrated minimal extension.
+kind: IMPLEMENTATION
+priority: P2
+status: BLOCKED
+owner:
+depends-on: [BB-026]
+remaining-work:
+  - implement the accepted concrete artifact/checkpoint convention and any justified runtime integration
+  - expose resumable experiment state and evidence-validity decisions with provenance
+  - exercise the research pilot across interruption and source-revision changes
+acceptance-criteria:
+  - completed valid experiments are not silently repeated and interrupted experiments are not treated as completed evidence
+  - stale and contradictory findings remain inspectable and cannot silently become accepted architecture
+  - work products stay in referenced artifacts; Board holds lifecycle and continuation refs
+  - research completion cannot bypass independent acceptance or promote its own conclusions
+submission:
+review-requirements: [research-workflow review, application/code review if runtime changes]
+reviews: []
+artifact-refs: []
+evidence-refs: [BB-026]
+blockers: [BB-026 must deliver an accepted evidence-backed continuation contract; supersede if no implementation work is justified]
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; conditional implementation follow-up to BB-026
 ```
 
 ## Storage
