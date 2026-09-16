@@ -1,6 +1,10 @@
 # D013 — Bounded application decision/outcome summary
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
+
+Accepted: 2026-09-16
+
+Acceptance boundary: BB-028 architecture-boundary and evaluation-method reviews passed exact head `5e4e3dd1e1afa82c30c5de8857c6712b61b86731`; Actions run #1597 was green and PR #88 merged as `50dfb3696609abb11ae79091372581ad706cc1dd`.
 
 ## Context
 
@@ -14,7 +18,7 @@ BB-028 deterministic fixture evidence shows three current/proposed review modes:
 
 The evidence is synthetic/replayable and explicitly not production-effectiveness evidence.
 
-## Proposed decision
+## Decision
 
 For the first Backend/QA remediation pilot, introduce one immutable **application-level** artifact per completed remediation attempt:
 
@@ -70,7 +74,7 @@ Implement the first pilot in Agentic Application. Do not add a generic Core `Dec
 
 `DeliberationArtifact.judgment` may carry the bounded structured hypothesis/options/rationale input for the pilot; no raw/private chain-of-thought representation is introduced.
 
-## Consequences if accepted
+## Consequences
 
 BB-029 may implement one Backend/QA remediation composition that materializes the summary only after post-action evaluation and grounded reflection/alignment exist, attaches the summary ref to the application review/continuation surface, and verifies fresh-session reconstruction plus stale/missing/contradictory evidence cases.
 
@@ -86,7 +90,11 @@ The pilot must rerun the BB-028 deterministic comparison and keep fixture metric
 - `packages/core-harness/src/action-effect.js`
 - `packages/core-harness/src/grounded-cognition.js`
 - `packages/agentic-system/src/durable-backend-qa.js`
+- PR #88 architecture-boundary review PASS on exact head `5e4e3dd1e1afa82c30c5de8857c6712b61b86731`;
+- PR #88 evaluation-method review PASS on the same exact head;
+- exact-head Actions run #1597 green;
+- merge commit `50dfb3696609abb11ae79091372581ad706cc1dd`.
 
-## Promotion gate
+## Promotion boundary
 
-Remain `PROPOSED` until BB-028 architecture-boundary and evaluation-method review accept the application boundary, authority invariants and evidence interpretation.
+`ACCEPTED` means the application boundary and authority invariants are approved for the bounded BB-029 pilot. It does **not** mean `DECISION_OUTCOME_SUMMARY v1` is delivered runtime behavior or a production default. Runtime promotion requires BB-029 implementation and verification.
