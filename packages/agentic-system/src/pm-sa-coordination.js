@@ -168,6 +168,12 @@ function handoffWork(session, itemId) {
   return item;
 }
 
+function boardItem(board, itemId) {
+  const item = board.items.find((candidate) => candidate.id === itemId);
+  invariant(item, `PM/SA coordination target not found in Blackboard: ${itemId}`);
+  return item;
+}
+
 function targetState(item) {
   return freezeClone({
     itemId: item.id,
@@ -182,6 +188,15 @@ function sameTargetState(expected, current) {
     expected.status === current.status &&
     expected.claimGeneration === current.claimGeneration &&
     expected.reviewGeneration === current.reviewGeneration;
+}
+
+function referenceValue(value) {
+  if (typeof value === "string") return value;
+  return value && typeof value === "object" && !Array.isArray(value) ? value.ref ?? null : null;
+}
+
+function directReferenceLinked(item, field, ref) {
+  return (item[field] ?? []).some((value) => referenceValue(value) === ref);
 }
 
 function currentEvidenceRefsFor(session, itemId) {
@@ -310,8 +325,8 @@ function requirementFor(item, key) {
   return item.reviewRequirements.find((requirement) => requirement.key === key) ?? null;
 }
 
-function proposalLinked(session, itemId, proposalRef) {
-  return session.references.artifacts.some((entry) => entry.itemId === itemId && entry.ref === proposalRef);
+function proposalLinked(board, itemId, proposalRef) {
+  return directReferenceLinked(boardItem(board, itemId), "artifactRefs", proposalRef);
 }
 
 export function createPmSaCoordinationController({
@@ -323,8 +338,14 @@ export function createPmSaCoordinationController({
   const store = requirePmSaCoordinationArtifactStore(artifactStore);
   const expectedProjectId = requireText(projectId, "projectId");
 
+  async function readProjectState() {
+    const board = await app.readBlackboard();
+    const session = sessionHandoffFromBlackboard(board, { projectId: expectedProjectId });
+    return { board, session };
+  }
+
   async function readSession() {
-    return sessionHandoffFromBlackboard(await app.readBlackboard(), { projectId: expectedProjectId });
+    return (await readProjectState()).session;
   }
 
   async function prepareSaContext(input) {
@@ -407,9 +428,76 @@ export function createPmSaCoordinationController({
     return { target, newIds, assessments };
   }
 
+  async function assertProposalReplayEstablished(proposal, proposalRef, board, session) {
+    const target = handoffWork(session, proposal.target.itemId);
+    const rawTarget = boardItem(board, target.id);
+    invariant(
+      directReferenceLinked(rawTarget, "artifactRefs", proposalRef),
+      `PM proposal replay marker is not canonically linked on target ${target.id}`
+    );
+
+    for (const work of proposal.newWork) {
+      const current = handoffWork(session, work.id);
+      const rawCurrent = boardItem(board, work.id);
+      invariant(current.work === work.work, `PM proposal replay work changed: ${work.id}`);
+      invariant(current.origin?.rootIntentId === session.intent.id, `PM proposal replay work lost root intent provenance: ${work.id}`);
+      invariant(current.origin?.rootItemId === session.rootItemId, `PM proposal replay work lost root item provenance: ${work.id}`);
+      invariant(current.origin?.parentItemId === target.id, `PM proposal replay work changed parent: ${work.id}`);
+      invariant(current.origin?.coordinationProposalRef === proposalRef, `PM proposal replay work is not owned by proposal: ${work.id}`);
+      invariant(
+        directReferenceLinked(rawCurrent, "artifactRefs", proposalRef),
+        `PM proposal replay work is missing canonical proposal ref: ${work.id}`
+      );
+    }
+
+    const expectedEdges = [
+      ...proposal.dependencyEdges,
+      ...proposal.blockers
+        .filter((blocker) => blocker.existingWorkRef != null)
+        .map((blocker) => ({ itemId: target.id, dependencyId: blocker.existingWorkRef }))
+    ];
+    for (const edge of expectedEdges) {
+      const current = handoffWork(session, edge.itemId);
+      invariant(
+        current.dependsOn.includes(edge.dependencyId),
+        `PM proposal replay dependency effect is not established: ${edge.itemId} -> ${edge.dependencyId}`
+      );
+    }
+
+    for (const blocker of proposal.blockers) {
+      invariant(
+        target.blockers.includes(blocker.reason),
+        `PM proposal replay blocker effect is not established on target ${target.id}: ${blocker.reason}`
+      );
+    }
+
+    for (const requirement of proposal.reviewRequirements) {
+      const current = requirementFor(target, requirement.key);
+      invariant(current != null, `PM proposal replay review requirement is missing: ${requirement.key}`);
+      invariant(current.source === ReviewRequirementSource.PM, `PM proposal replay review requirement changed source: ${requirement.key}`);
+      invariant(current.reason === requirement.reasonRef, `PM proposal replay review requirement changed reason: ${requirement.key}`);
+      const assessment = defineSaArchitectureAssessment(await store.readSaAssessment(requirement.reasonRef));
+      assertAssessmentCurrent(assessment, session);
+      invariant(assessment.targetItemId === target.id, "PM proposal replay SA assessment targets different work");
+      invariant(assessment.requiresArchitectureReview, "PM proposal replay SA assessment no longer requires architecture review");
+      invariant(
+        directReferenceLinked(rawTarget, "artifactRefs", requirement.reasonRef),
+        `PM proposal replay target is missing SA assessment ref: ${requirement.reasonRef}`
+      );
+      for (const evidenceRef of assessment.evidenceRefs) {
+        invariant(
+          directReferenceLinked(rawTarget, "evidenceRefs", evidenceRef),
+          `PM proposal replay target is missing SA evidence ref: ${evidenceRef}`
+        );
+      }
+    }
+
+    return target;
+  }
+
   async function applyPmProposal(rawProposal) {
     const proposal = definePmCoordinationProposal(rawProposal);
-    const session = await readSession();
+    const { board, session } = await readProjectState();
     invariant(proposal.projectId === session.projectId, "PM proposal project identity is stale or mismatched");
     invariant(proposal.rootIntentId === session.intent.id, "PM proposal root intent is stale or mismatched");
 
@@ -425,14 +513,15 @@ export function createPmSaCoordinationController({
     }
 
     const proposalRef = await store.putPmProposal(proposal);
-    if (proposalLinked(session, proposal.target.itemId, proposalRef)) {
+    if (proposalLinked(board, proposal.target.itemId, proposalRef)) {
+      const item = await assertProposalReplayEstablished(proposal, proposalRef, board, session);
       return freezeClone({
         applied: true,
         fallback: false,
         replayed: true,
         proposalRef,
-        item: handoffWork(session, proposal.target.itemId),
-        createdItemIds: proposal.newWork.map((item) => item.id)
+        item,
+        createdItemIds: proposal.newWork.map((work) => work.id)
       });
     }
 
@@ -508,10 +597,12 @@ export function createPmSaCoordinationController({
   }
 
   async function recoverCoordination() {
-    const session = await readSession();
-    const refs = [...new Set(session.references.artifacts
-      .map((entry) => entry.ref)
-      .filter(isPmSaCoordinationArtifactRef))];
+    const { board, session } = await readProjectState();
+    const refs = [...new Set(board.items.flatMap((item) =>
+      (item.artifactRefs ?? [])
+        .map(referenceValue)
+        .filter((ref) => ref != null && isPmSaCoordinationArtifactRef(ref))
+    ))];
     const artifacts = [];
     for (const ref of refs) artifacts.push(await store.readArtifact(ref));
     return freezeClone({ session, artifacts });
