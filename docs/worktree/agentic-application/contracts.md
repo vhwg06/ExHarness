@@ -146,7 +146,9 @@ This is a concrete local durable store. It requires same-filesystem hard-link su
 
 ## Backend Core-session persistence contract
 
-`createJsonBackendSessionStore(...)` is a concrete revision-aware local SessionStore for the Backend vertical. It persists Core session state and the AVO action-effect journal used by the same deterministic Backend session id, using local filesystem locking and revision conflict checks.
+`createJsonBackendSessionStore(...)` is a concrete revision-aware local SessionStore for the Backend vertical. It persists Core session state and the AVO action-effect journal used by the same deterministic Backend session id.
+
+Persistence authority is fenced by an immutable single-successor chain per session revision. A save is bound to the exact `expectedRevision`; publication uses same-filesystem hard-link no-overwrite semantics so only one successor may be committed for a given base revision. Concurrent or stale writers fail explicitly with `StoreConflictError` and cannot replace a newer durable Core/effect state. Legacy lock files are not recovery authority and elapsed time does not grant takeover rights.
 
 It explicitly declares `supportsDurableRecovery: true`. Absence of persisted Core state is usable as recovery evidence only when the configured store declares that durable-recovery authority. The default in-memory store does not, so an empty volatile store fails closed rather than being interpreted as proof that no interrupted external effect occurred.
 
