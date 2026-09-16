@@ -6,7 +6,7 @@ ExHarness is an **agentic system** composed from three explicit boundaries:
 - **Oracle** — resolves application-declared context through concrete external/internal source adapters before Worker execution.
 - **ExHarness Core** — reusable execution kernel for agent/runtime mechanics, cognition, evidence/trust, persistence, recovery and authority boundaries.
 
-The published `exharness` package is the reusable Core. `packages/agentic-system/` contains the current concrete Backend + QA application composition plus the first durable Blackboard orchestration slice.
+The published `exharness` package is the reusable Core. `packages/agentic-system/` contains the current concrete Backend + QA application composition, durable Blackboard orchestration and the durable Backend -> QA workflow.
 
 ## Current delivered system
 
@@ -34,7 +34,7 @@ Backend ACCEPT
   -> QaCompletionPolicy
 ```
 
-The durable application coordination slice is separate today:
+The durable application coordination layer is implemented through `ApplicationOrchestrator` and its JSON-backed Blackboard store:
 
 ```text
 ApplicationOrchestrator
@@ -50,7 +50,7 @@ ApplicationOrchestrator
       -> CURRENT_WORK / EXISTING_WORK / NEW_WORK / NON_ACTIONABLE
 ```
 
-The direct Backend -> QA execution path is not yet wired into this durable Board lifecycle; that integration remains open Board work.
+The concrete `createDurableBackendQaWorkflow(...)` binds the accepted Backend -> QA path to this durable lifecycle. It persists the validated workflow specification, resumes QA from a ref-only Backend handoff, records remediation and blocked checkpoints, and submits accepted QA for the separate review/acceptance path. The older `runBackendThenQaObjective(...)` composition remains available for one-session execution.
 
 Current implementation facts:
 
@@ -58,6 +58,7 @@ Current implementation facts:
 - Worker-returned evidence is not completion authority; completion is grounded from ExHarness/runtime state.
 - QA cannot mutate or advance lineage and is dispatched only after Backend acceptance.
 - Backend -> QA handoff carries references and acceptance-decision provenance, not copied artifact payloads.
+- durable Backend -> QA execution survives a new Orchestrator/process session through persisted checkpoints, including QA remediation, blocked artifact lookup and explicit resume.
 - Oracle keeps external repository reads and internal application-artifact reads as distinct source boundaries.
 - Worker submission cannot self-authorize Blackboard `DONE`; required review state survives Orchestrator reconstruction through the JSON store.
 - Worker review request and PM review requirement are separate authority paths.

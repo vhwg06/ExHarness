@@ -90,7 +90,7 @@ This prevents review failure from being hidden behind a replacement ticket when 
 
 `createJsonBlackboardStore(...)` validates the Board snapshot and persists via temporary-file write + rename. Submitted refs, review requirements and `PENDING_REVIEW` state survive reconstruction through a new Orchestrator instance.
 
-The direct Backend -> QA execution path is not yet integrated with durable Blackboard dispatch/recovery; current source therefore contains two concrete application pipelines rather than claiming a unified workflow that does not yet exist.
+The durable `createDurableBackendQaWorkflow(...)` composition binds the concrete Backend -> QA stages to Blackboard dispatch and recovery. It persists the workflow specification and stage checkpoint, resumes QA from a ref-only accepted Backend handoff, routes QA issues to Backend remediation, preserves blocked source-lookup checkpoints for explicit resume, and submits accepted QA as `PENDING_REVIEW`. The direct `runBackendThenQaObjective(...)` composition remains available for one-session execution.
 
 ## Current extraction result
 

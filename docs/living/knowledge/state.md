@@ -13,12 +13,14 @@ Durable knowledge snapshot; operational open work lives in `../blackboard.md`.
 
 ## Current repository checkpoint
 
-- Waves A, B and C are delivered in source/tests.
 - Backend is a mutating/promoting role with grounded mutation/typecheck/tests completion evidence.
 - QA is a non-mutating role over an accepted Backend revision with grounded behavior/regression evidence.
-- Backend -> QA uses ref-only application-artifact handoff with acceptance-decision provenance.
-- Oracle has distinct repositoryReader and artifactReader source boundaries.
-- two real roles still do not justify a generic Worker/WorkOrder/Orchestrator; the narrow shared shapes currently proven are application artifact refs and evidence-integrity/claim-state plumbing.
+- Backend -> QA uses a ref-only application-artifact handoff with acceptance-decision provenance.
+- `createDurableBackendQaWorkflow(...)` persists validated Backend/QA objectives and stage checkpoints, supports QA remediation and blocked artifact lookup recovery, and submits accepted QA to the Blackboard review path.
+- `createApplicationOrchestrator(...)` and `createJsonBlackboardStore(...)` persist claims, checkpoints, submissions, review requirements, trusted assessments and follow-up reconciliation state; `createSessionHandoffSurface(...)` projects that state with the durable user-intent root for a fresh session.
+- Core effect journaling, explicit replay/reconciliation policy and the restore -> effect reconciliation -> variation recovery -> evidence restoration -> resume composition are implemented as separate Core mechanisms under BB-006/BB-007.
+- Oracle has distinct `repositoryReader` and `artifactReader` source boundaries.
+- Backend and QA remain materially different roles, so the narrow shared shapes currently proven are application artifact refs, evidence-integrity/claim-state plumbing and durable Board state; no generic Worker/WorkOrder/Orchestrator is implemented.
 
 ## Documentation migration checkpoint
 

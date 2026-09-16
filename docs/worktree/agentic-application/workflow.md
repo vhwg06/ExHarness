@@ -186,7 +186,7 @@ A new `ApplicationOrchestrator` instance can restore checkpoints, submissions, p
 
 Async review trust verification happens outside the mutation lock; the later commit fails closed if the active review target changed meanwhile.
 
-Application checkpoint persistence is not external-effect reconciliation. A crash between an external effect and durable Core proof remains a Core recovery concern and must not be inferred from application stage alone.
+Application checkpoint persistence is not external-effect reconciliation. A crash between an external effect and durable Core proof is handled through the Core effect reconciliation and recovery primitives, which can confirm, safely replay, observe, or escalate ambiguous effects; application stage alone must not be used to infer effect completion.
 
 ## Context rules
 

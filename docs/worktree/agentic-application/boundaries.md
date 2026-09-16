@@ -1,6 +1,6 @@
 # Agentic Application boundaries
 
-Authority and dependency boundaries for the desired application layer.
+Authority and dependency boundaries for the current application layer and its accepted role constraints.
 
 ## OWNERSHIP MATRIX
 
@@ -13,7 +13,8 @@ Authority and dependency boundaries for the desired application layer.
 | WorkOrder / WorkResult contracts | Agentic Application |
 | Required context semantics/shape | Agentic Application |
 | Context source resolution/adaptation | Oracle / infrastructure |
-| Planning/progress judgment | Advisor |
+| Planning/progress proposal | Bounded Advisor |
+| Project coordination / sequencing / dependency / timeline / progress authority | PM (accepted responsibility; concrete runtime slice not implemented) |
 | Application workflow control/state | Orchestrator |
 | Agent/model execution mechanics | ExHarness |
 | Turn/runtime lifecycle | ExHarness |

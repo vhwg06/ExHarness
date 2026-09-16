@@ -309,7 +309,8 @@ reviews: []
 artifact-refs: []
 evidence-refs: []
 blockers: []
-follow-up-refs: []
+follow-up-refs: [BB-022]
+origin: INTENT-exharness-agentic-system; evaluation of the delivered BB-004 workflow
 ```
 
 The promoted PM/SA topology in D003 is not yet claimed as a concrete source role implementation. Concrete PM context, SA context and vertical reviewer slices must be added only when their real WorkOrder/context/result pressure is implemented and tested; they must not be fabricated into current-state docs.
@@ -485,6 +486,286 @@ origin: direct user architectural pressure after reviewing MCP 2026-07-28 statel
 BB-013 concludes that MCP is a conditional source/capability adapter and source-call continuation boundary. It is **not** promoted as an MCP-first Oracle layer, a project lifecycle authority or a source class by itself. BB-009/BB-010 remain blocked until a concrete MCP-backed source demonstrates real source/diagnostic pressure.
 
 Caching/freshness and semantic retrieval are not Board gaps merely because they are absent.
+
+## High-impact upgrade roadmap
+
+This roadmap records the user's request to define future workflow, architecture and pipeline upgrades. These are open work, not claims about current implementation or promoted architecture decisions. Every item below traces to `INTENT-exharness-agentic-system` through this request and its cited source pressure.
+
+Research must produce a durable comparison, evidence, recommended boundary and acceptance scenarios. A research item can conclude that an upgrade is not justified. Its implementation item then remains blocked or is explicitly superseded with that reason; research completion alone does not authorize implementation or promote a decision.
+
+Priority expresses impact and ordering, not a new runtime lifecycle state. `kind`, `priority` and `acceptance-criteria` below are Markdown planning metadata. Implementation items remain `BLOCKED` until their dependencies and stated decision gates are satisfied. No item here reopens delivered BB-004/006/007/008/012/013.
+
+| Track | Research | Implementation | Priority | Project impact |
+| --- | --- | --- | --- | --- |
+| Canonical project state | BB-014 | BB-015 | P1 | Fresh sessions and executable orchestration use consistent intent, work and evidence state. |
+| Interrupted execution/review | BB-016 | BB-017 | P1 | Work can continue after a session dies inside a stage, with effect truth checked before redispatch. |
+| Review-to-completion pipeline | BB-018 | BB-019 | P1 | Backend/QA results can reach independently grounded project acceptance. |
+| PM/SA architecture and coordination | BB-020 | BB-021 | P2 | User intent drives bounded decomposition, sequencing and architecture review. |
+| Evaluation and evidence pipeline | existing BB-005 | BB-022 | P1 | Upgrade decisions use reproducible task, quality, cost and recovery evidence. |
+
+Research BB-014/016/018/020 and evaluation tooling BB-022 can start from current source. Their findings should inform one another without creating artificial dependency cycles. Delivery order favors project-state consistency, interrupted-work recovery and concrete review before broader role orchestration. BB-009/010 retain their existing evidence gates; MCP support by itself does not unblock them.
+
+```text
+BB-014
+question/work: Research the authority and synchronization boundary between repository Markdown coordination and executable JSON Blackboard state.
+kind: RESEARCH
+priority: P1
+status: READY
+owner:
+depends-on: [BB-012]
+remaining-work:
+  - map which project each Board represents, who writes it, and how a fresh session locates the authoritative state
+  - compare explicit separate-project boundaries, generated projections and migration to one durable lifecycle source
+  - define identity, user-intent provenance, revision/conflict handling and preservation of review/checkpoint/artifact refs
+  - recommend the smallest justified architecture and a migration/compatibility plan
+acceptance-criteria:
+  - referenced research artifact distinguishes observed divergence risks from confirmed runtime defects
+  - accepted decision identifies the authority for each project and eliminates ambiguous dual writers
+  - migration and fresh-session scenarios preserve intent, IDs, dependencies, review state and evidence refs
+submission:
+review-requirements: [architecture-boundary review, session-handoff review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - docs/living/blackboard.md (Storage)
+  - packages/agentic-system/src/blackboard-orchestrator.js
+  - packages/agentic-system/src/session-handoff.js
+blockers: []
+follow-up-refs: [BB-015]
+origin: INTENT-exharness-agentic-system; user-requested architecture roadmap grounded in the two current Board surfaces
+```
+
+```text
+BB-015
+question/work: Implement the accepted project-state authority/projection contract from BB-014.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+depends-on: [BB-014]
+remaining-work:
+  - implement the chosen canonical-state lookup and projection or explicit project boundary
+  - provide migration and conflict handling where required by the accepted design
+  - reconcile current documentation and continuation entrypoints to the delivered behavior
+acceptance-criteria:
+  - a fresh session identifies the correct project and recovers the same lifecycle state as its Orchestrator
+  - stale projections or conflicting writes are detected rather than silently overwriting newer work
+  - existing IDs, intent provenance, checkpoints, submissions and review/artifact refs survive migration
+submission:
+review-requirements: [application/code review, state-migration review]
+reviews: []
+artifact-refs: []
+evidence-refs: [BB-014]
+blockers: [BB-014 must provide an accepted architecture and applicable migration contract]
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; implementation follow-up to BB-014
+```
+
+```text
+BB-016
+question/work: Research safe continuation after interruption inside claimed execution or active review, across Application and Core recovery boundaries.
+kind: RESEARCH
+priority: P1
+status: READY
+owner:
+depends-on: [BB-004, BB-007, BB-012]
+remaining-work:
+  - map crashes after claim, during Backend/QA execution, after an external effect, before checkpoint and during review
+  - distinguish lost claim ownership, lost review dispatch, Core effect ambiguity and completed-stage continuation
+  - compare explicit takeover, ownership generations and lease policies without assuming elapsed time proves a Worker stopped
+  - specify how the concrete application consumer resolves Core effect/evidence state before retrying a stage
+acceptance-criteria:
+  - failure matrix cites current claim/checkpoint/review behavior and executable reproduction scenarios
+  - accepted design rejects stale owners and stale review results after takeover
+  - unknown effect outcomes require reconciliation or escalation before redispatch
+  - design preserves D005 unless new consumer evidence justifies reopening the facade decision
+submission:
+review-requirements: [application recovery review, Core effect-boundary review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/agentic-system/src/blackboard-orchestrator.js
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/core-harness/test/recovery-composition.test.js
+blockers: []
+follow-up-refs: [BB-017]
+origin: INTENT-exharness-agentic-system; current claim accepts only READY/REOPENED while interruption can leave CLAIMED/REVIEWING state
+```
+
+```text
+BB-017
+question/work: Implement the accepted interrupted-work and review recovery path for the concrete Backend -> QA application.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+depends-on: [BB-016]
+remaining-work:
+  - implement explicit recovery transitions and stale-owner/reviewer protection from the accepted design
+  - compose application continuation with existing Core effect recovery where the failure matrix requires it
+  - expose the recovery obligation and required refs to a fresh session
+acceptance-criteria:
+  - process interruption at each accepted failure boundary can resume or explicitly block with durable reasons
+  - confirmed effects are not dispatched again and ambiguous effects are not guessed complete
+  - old owners and superseded review targets cannot mutate resumed work
+  - existing successful-stage handoff, remediation and review authority contracts remain valid
+submission:
+review-requirements: [application/code review, crash-recovery review]
+reviews: []
+artifact-refs: []
+evidence-refs: [BB-016]
+blockers: [BB-016 must establish an accepted recovery protocol and failure scenarios]
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; implementation follow-up to BB-016
+```
+
+```text
+BB-018
+question/work: Research a concrete Backend/QA review pipeline from final submission to project acceptance.
+kind: RESEARCH
+priority: P1
+status: READY
+owner:
+depends-on: [BB-004, BB-011]
+remaining-work:
+  - identify acceptance obligations left after Backend/QA role completion
+  - specify bounded reviewer context, artifact/evidence resolution and independent assessment production
+  - map Worker requests, PM requirements, Orchestrator dispatch and trusted acceptance as separate steps
+  - define missing-evidence, rejection, deferred-review and no-declared-review-obligation behavior
+acceptance-criteria:
+  - concrete review contract names inputs, outputs, trust authorities and failure transitions
+  - evidence producer/evaluator/attestor assumptions are explicit and cannot be replaced by reviewer prose
+  - proposed pipeline uses existing trust primitives and preserves current-work versus independent-follow-up semantics
+submission:
+review-requirements: [application architecture review, acceptance/trust review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/src/blackboard-orchestrator.js
+  - packages/agentic-system/test/wave-d.test.js
+blockers: []
+follow-up-refs: [BB-019]
+origin: INTENT-exharness-agentic-system; durable QA completion submits PENDING_REVIEW while concrete reviewer execution is not yet delivered
+```
+
+```text
+BB-019
+question/work: Deliver the concrete review-to-completion pipeline specified by BB-018.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+depends-on: [BB-018]
+remaining-work:
+  - implement the bounded reviewer and declared artifact/evidence context
+  - connect Orchestrator dispatch, durable review state, trusted assessment and finding reconciliation
+  - provide a runnable Backend -> QA -> review -> acceptance/remediation composition
+acceptance-criteria:
+  - a concrete submission reaches DONE only after its declared obligations pass trusted independent assessment
+  - forged, stale or unauthorized review evidence is rejected
+  - rejected current obligations reopen the same item and deferred review survives reconstruction
+  - integration evidence uses a concrete verifier/trust configuration rather than only permissive test stubs
+submission:
+review-requirements: [application/code review, independent acceptance-boundary review]
+reviews: []
+artifact-refs: []
+evidence-refs: [BB-018]
+blockers: [BB-018 must define the accepted concrete review and trust contract]
+follow-up-refs: [BB-021]
+origin: INTENT-exharness-agentic-system; implementation follow-up to BB-018
+```
+
+```text
+BB-020
+question/work: Research concrete PM/SA context and project workflow architecture against the delivered Backend/QA lifecycle.
+kind: RESEARCH
+priority: P2
+status: READY
+owner:
+depends-on: [BB-004, BB-012]
+remaining-work:
+  - model one user objective through bounded work decomposition, dependencies, blockers, reviews and progress
+  - define separate PM coordination context and SA architecture context with their allowed proposals
+  - identify Orchestrator validation required before proposals change canonical work
+  - compare deterministic coordination with bounded judgment and state where a concrete role adds measurable value
+  - specify decision/artifact handoff and re-planning behavior without changing user intent implicitly
+acceptance-criteria:
+  - research includes a concrete project scenario and explicit role input/output/authority contracts
+  - accepted recommendation preserves PM/SA separation and Orchestrator lifecycle authority from D003
+  - implementation is justified by scenario evidence; generic registries or workflow DSLs require separate repeated-use evidence
+submission:
+review-requirements: [project-workflow review, architecture-boundary review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - docs/living/decisions/D003-orchestrator-blackboard-review-authority.md
+  - docs/living/decisions/D004-blackboard-session-handoff.md
+  - packages/agentic-system/src/session-handoff.js
+blockers: []
+follow-up-refs: [BB-021]
+origin: INTENT-exharness-agentic-system; user-requested workflow/architecture research beyond current concrete Backend/QA roles
+```
+
+```text
+BB-021
+question/work: Implement the evidence-supported PM/SA coordination slice selected by BB-020 and connect it to concrete review dispatch.
+kind: IMPLEMENTATION
+priority: P2
+status: BLOCKED
+owner:
+depends-on: [BB-019, BB-020]
+remaining-work:
+  - implement only the concrete role contexts and proposal contracts accepted by BB-020
+  - validate dependency/review/re-planning proposals through application orchestration
+  - persist coordination decisions and required artifact refs for fresh-session continuation
+acceptance-criteria:
+  - one user-rooted project progresses through coordination, execution and required review across sessions
+  - PM cannot invent or overwrite user intent and SA cannot assume project-management authority
+  - role proposals cannot bypass claim, review, completion or follow-up reconciliation rules
+submission:
+review-requirements: [application/code review, PM/SA authority review]
+reviews: []
+artifact-refs: []
+evidence-refs: [BB-019, BB-020]
+blockers:
+  - BB-020 must justify and specify the concrete role slice
+  - BB-019 must deliver the review execution boundary used by coordination
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; conditional implementation follow-up to BB-020
+```
+
+```text
+BB-022
+question/work: Build a reproducible application evaluation and evidence-report pipeline supporting BB-005.
+kind: IMPLEMENTATION
+priority: P1
+status: READY
+owner:
+depends-on: [BB-004, BB-011, BB-012]
+remaining-work:
+  - define versioned task/scenario inputs and a runnable Backend/QA evaluation entrypoint
+  - measure task outcomes, false completion, handoff integrity, remediation, context cost and Advisor use
+  - include restart, unavailable-artifact and review/recovery scenarios supported by the current implementation
+  - persist run configuration, implementation revision, artifact/evidence refs and comparable outcome reports
+  - distinguish deterministic contract fixtures from real-provider/project evaluation and record missing infrastructure explicitly
+acceptance-criteria:
+  - another session can reproduce fixture runs from durable inputs and inspect why each outcome was assigned
+  - reports separate role acceptance from Board completion and missing/inconclusive evidence from success
+  - baseline comparisons identify regressions without inventing production effectiveness from fixture scores
+  - real-task evaluation protocol and baseline-derived acceptance thresholds are documented for BB-005
+submission:
+review-requirements: [evaluation-method review, application/code review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - package.json
+  - packages/agentic-system/test/durable-backend-qa.test.js
+  - packages/agentic-system/test/wave-d.test.js
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; tooling child of BB-005, which retains ownership of production evaluation and abstraction conclusions
+```
 
 ## Storage
 

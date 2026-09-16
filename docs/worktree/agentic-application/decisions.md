@@ -11,10 +11,9 @@ Current constraints that must shape Agentic Application implementation. This is 
 
 ## CONCRETE-FIRST DELIVERY
 
-- Wave A is Backend-specific end-to-end implementation, not a generic framework milestone.
+- Backend and QA are concrete end-to-end role slices, not a generic framework milestone.
 - `runBackendObjective(...)` may call `BackendWorker` directly; a generic Worker interface is not required.
-- No generic `Worker<C,R>`, `WorkOrder<C,R>`, `ContextRequirement<C>`, Worker registry or generic Orchestrator before a second real role demonstrates common semantics.
-- S7 is the first legitimate extraction point for common Worker/WorkOrder/result/orchestration abstractions.
+- No generic `Worker<C,R>`, `WorkOrder<C,R>`, `ContextRequirement<C>`, Worker registry or generic Orchestrator is justified until repeated roles demonstrate common semantics. Backend and QA currently have materially different mutation, evidence and completion rules.
 - Duplicate concrete code is preferable to a guessed abstraction before repeated structure exists.
 
 ## ORCHESTRATION
@@ -53,6 +52,6 @@ Current constraints that must shape Agentic Application implementation. This is 
 ## STATE
 
 - Application workflow state is distinct from ExHarness runtime/persistent state and from artifact storage.
-- Do not add application persistence until multi-work/resilience requirements demonstrate what must actually survive.
+- Durable application persistence now stores Blackboard checkpoints, submissions, review state and handoff references. It remains distinct from ExHarness runtime/effect state and from external artifact payloads.
 
 Remove or replace a decision when concrete slices invalidate it; do not preserve obsolete abstractions for compatibility with design-only code.

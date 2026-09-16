@@ -69,7 +69,7 @@ Current state transitions are:
 
 The older `runBackendThenQaObjective(...)` direct composition remains available as an in-session path. It is not the durable cross-session workflow surface.
 
-Application checkpoints do not prove whether an external side effect completed across a crash window. Core effect/persistence authority remains separate and unresolved under the Core recovery work.
+Application checkpoints do not prove whether an external side effect completed across a crash window. Core effect/persistence authority remains separate and is handled by the implemented Core effect reconciliation and recovery composition, which can confirm, safely replay, observe, or escalate ambiguous effects; application stage state must not be used to infer effect completion.
 
 ## Current composition
 

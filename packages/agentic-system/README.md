@@ -2,7 +2,7 @@
 
 Concrete agentic application slices built above ExHarness Core.
 
-## Delivered checkpoint
+## Delivery history
 
 Wave A proves one real Backend vertical slice:
 
@@ -45,7 +45,7 @@ accepted BackendWorkResult
 
 `QaWorker` cannot mutate or advance lineage. Worker-returned evidence and inspected-artifact claims are replaced with grounded ExHarness/runtime state.
 
-Wave D adds the first durable Agentic Application orchestration state:
+Wave D added the durable Agentic Application orchestration state:
 
 ```text
 ApplicationOrchestrator
@@ -61,7 +61,24 @@ ApplicationOrchestrator
 
 `createJsonBlackboardStore(...)` persists the Board snapshot so pending submissions/reviews survive a new Orchestrator instance. Worker submission cannot transition directly to `DONE`.
 
-This slice does **not** yet bind the direct Backend -> QA execution path to durable Blackboard dispatch/recovery. It also does not fabricate concrete PM, SA or global Reviewer runtime roles. D003 promotes PM as horizontal project coordination, SA as horizontal architecture only, and other execution/review as vertical/context-bound; those concrete role contexts remain to be earned in source.
+## Current checkpoint
+
+The durable composition now binds the concrete Backend -> QA path to Blackboard checkpoints:
+
+```text
+createDurableBackendQaWorkflow(...)
+  -> initialize validated Backend + QA objectives
+  -> BACKEND_PENDING
+  -> accepted Backend ref-only handoff
+  -> QA_PENDING
+  -> QA issues -> BACKEND_REMEDIATION_PENDING -> QA_PENDING
+  -> blocked source lookup -> BLOCKED -> explicit resume
+  -> accepted QA -> PENDING_REVIEW
+```
+
+The workflow survives a new Orchestrator/process session by persisting the stage, validated workflow specification, accepted revision and evidence/artifact references. QA acceptance creates a final application submission; project/PM review requirements remain a separate authority path before Blackboard `DONE`. The older `runBackendThenQaObjective(...)` composition remains available for one-session execution.
+
+It also does not fabricate concrete PM, SA or global Reviewer runtime roles. D003 promotes PM as horizontal project coordination, SA as horizontal architecture only, and other execution/review as vertical/context-bound; those concrete role contexts remain to be earned in source.
 
 The role comparison still does **not** justify a generic Worker, WorkOrder, role registry, workflow graph, generic Advisor, Teacher registry or Reviewer registry. `ApplicationOrchestrator` is concrete Blackboard/workflow control, not a generic workflow DSL or second runtime.
 

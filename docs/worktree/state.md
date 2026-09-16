@@ -31,7 +31,7 @@ ApplicationOrchestrator
  -> grounded follow-up reconciliation
 ```
 
-The two paths are not yet integrated into one durable Backend -> QA dispatch/recovery lifecycle.
+The concrete `createDurableBackendQaWorkflow(...)` path binds Backend -> QA execution to the durable Blackboard lifecycle. It persists validated workflow objectives and stage checkpoints, carries accepted Backend handoffs by reference, supports QA remediation and blocked-source resume, and submits accepted QA to the separate review/acceptance path. The older `runBackendThenQaObjective(...)` path remains a direct one-session composition.
 
 ## Current ownership boundaries
 
@@ -49,6 +49,8 @@ The two paths are not yet integrated into one durable Backend -> QA dispatch/rec
 - QA grounds behavior/regression evidence and cannot advance lineage.
 - `ApplicationArtifactRef` is shared across Backend-produced and QA-consumed artifacts.
 - Backend -> QA state carries refs plus Backend acceptance-decision provenance, not copied artifact payloads.
+- durable Backend -> QA execution persists `BACKEND_PENDING`, `QA_PENDING`, `BACKEND_REMEDIATION_PENDING` and blocked checkpoints through the JSON store.
+- a fresh Orchestrator can resume the same QA checkpoint after artifact lookup failure, and QA acceptance produces a final `PENDING_REVIEW` submission.
 - Oracle keeps external repository reads and internal application-artifact reads distinct.
 - Worker submission cannot directly authorize Board `DONE`.
 - Review request and PM review requirement are separate paths; explicit reviewer assessment is required before review-gated completion.
