@@ -57,6 +57,51 @@ The Orchestrator does not accept a naked caller-provided review verdict. Review 
 
 Review requirements may be Worker-requested at submit time or PM-required separately. The Orchestrator owns scheduling/transition semantics; current source does not yet implement concrete PM/SA role execution or vertical reviewer Workers.
 
+## Fresh-session handoff
+
+Canonical handoff-safe bootstrap is:
+
+```text
+user-defined idea / objective / bullets / constraints
+ -> defineUserIntent(...)
+ -> createSessionHandoffSurface(...).initialize(...)
+ -> durable intent root + initial Blackboard work
+```
+
+A later session does not need prior conversation state:
+
+```text
+fresh session
+ -> reconstruct ApplicationOrchestrator from the durable Board store
+ -> createSessionHandoffSurface(...).read()
+ -> recover user intent
+ -> recover work graph and current lifecycle buckets
+ -> recover artifact/evidence refs with item provenance
+ -> resolve only the refs needed for the next work context
+ -> continue
+```
+
+The handoff projection exposes:
+
+```text
+intent
+workGraph
+lifecycle.eligibleWork
+lifecycle.claimedWork
+lifecycle.pendingReview
+lifecycle.reviewing
+lifecycle.pendingReconciliation
+lifecycle.blocked
+lifecycle.done
+lifecycle.superseded
+references.artifacts
+references.evidence
+```
+
+The intent root is excluded from ordinary work buckets. A Board with no durable intent root, multiple intent roots or untraceable work fails closed as not handoff-safe.
+
+Legacy `orchestrator.seed(...)` remains available for existing tests/low-level Board construction; it does not by itself establish session-handoff safety.
+
 ## Follow-up reconciliation
 
 ```text
@@ -83,7 +128,9 @@ Async review trust verification happens outside the mutation lock; the later com
 - source payload is not hidden in a provider/session lifecycle;
 - Oracle does not widen semantic scope;
 - source refs/provenance survive into validated context;
-- serializer/dereference responsibilities remain separate.
+- serializer/dereference responsibilities remain separate;
+- conversation history is not project lifecycle state;
+- Blackboard tracks lifecycle and refs, while actual work products remain external artifacts.
 
 ## Completion rules
 
