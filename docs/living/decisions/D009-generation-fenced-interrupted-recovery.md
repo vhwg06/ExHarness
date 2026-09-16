@@ -1,14 +1,16 @@
 # D009 — Interrupted recovery requires generation fencing plus effect reconciliation
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
 
-Proposed: 2026-09-16
+Accepted: 2026-09-16
+
+Acceptance boundary: BB-016 application-recovery/Core-effect review accepted the source-backed failure matrix and recovery split on PR #82. This decision is not promoted into `docs/worktree/*` because BB-017 has not implemented it yet.
 
 ## Question
 
 How should ExHarness recover a Blackboard item stranded in `CLAIMED` or `REVIEWING` after a process/session interruption without accepting stale results or blindly replaying external effects?
 
-## Proposed decision
+## Decision
 
 Interrupted Application work is recovered through **explicit recovery**, not automatic time-based reclaim.
 
@@ -112,7 +114,8 @@ This decision does not introduce:
 - `packages/agentic-system/src/backend-worker.js`: current per-execution Core harness with default in-memory session state;
 - `packages/agentic-system/src/qa-worker.js`: non-mutating QA environment boundary;
 - `packages/core-harness/test/recovery-composition.test.js`: confirmed-effect consumption, fail-closed ambiguity and idempotent retry/reference recovery composition;
-- BB-016 research artifact `../knowledge/bb016-interrupted-work-recovery.md`.
+- BB-016 research artifact `../knowledge/bb016-interrupted-work-recovery.md`;
+- PR #82 application-recovery/Core-effect review and CI.
 
 ## What would change this decision
 
