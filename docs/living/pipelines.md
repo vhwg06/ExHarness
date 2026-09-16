@@ -13,14 +13,57 @@ Blackboard
   -> load smallest relevant worktree current-state docs
   -> inspect source/tests
   -> execute/investigate
-  -> verify
-  -> update source if applicable
-  -> reconcile worktree living docs to source
+  -> whenever implementation state materially changes:
+       -> reconcile affected worktree docs immediately
+       -> verify current source + docs still describe the same system
+  -> verify implementation checkpoint
   -> write result/evidence/artifact refs to Blackboard
   -> DONE | BLOCKED | READY
 ```
 
 The Blackboard is the roadmap/work queue. `docs/worktree/pipeline.md` describes only the execution pipeline that currently exists in source.
+
+Living-doc reconciliation is **not** an end-of-work cleanup step. It happens at the same checkpoint that makes new behavior/architecture/contracts/workflow current.
+
+## Continuous synchronization pipeline
+
+```text
+source/test/runtime state S0
+        |
+        | implementation changes current semantics
+        v
+source/test/runtime state S1
+        |
+        +--> update affected docs/worktree/* to projection(S1)
+        |
+        +--> verify no desired/future state leaked into worktree
+        |
+        v
+checkpoint may enter review/acceptance
+```
+
+Invariant:
+
+```text
+accepted checkpoint
+  => docs/worktree/* is the closest source-backed semantic projection
+     of the system that exists at that checkpoint
+```
+
+A Blackboard item does not need to be `DONE` for this to apply. If only half of a larger objective is implemented, worktree docs describe the half that exists now and Blackboard tracks the half that remains.
+
+A change is not review-complete when it materially changes current system semantics but leaves the affected worktree projection stale.
+
+For every material change, review classifies living-doc impact:
+
+```text
+CURRENT_SYSTEM_CHANGED
+  -> affected worktree docs changed in the same PR/change
+
+CURRENT_SYSTEM_NOT_CHANGED
+  -> no worktree rewrite required
+  -> reviewer confirms the change is documentation-neutral
+```
 
 ## Gap migration pipeline
 
@@ -60,9 +103,9 @@ A Board item becoming `DONE` means the operational question/work was resolved. I
 ```text
 source/test/runtime change
   -> detect affected living docs
-  -> rewrite current-state projection
+  -> rewrite current-state projection in the same implementation change
   -> remove resolved problem from current docs
-  -> close/update Board item
+  -> keep unresolved remainder on Blackboard
 ```
 
-If source and living docs disagree, source wins.
+If source and living docs disagree, source wins **and the docs are stale until reconciled**. Staleness is not deferred documentation debt; it blocks claiming that implementation checkpoint as fully reviewed/current.
