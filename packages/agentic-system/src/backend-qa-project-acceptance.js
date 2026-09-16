@@ -169,6 +169,8 @@ export function createBackendQaProjectAcceptanceController({
   invariant(typeof now === "function", "project acceptance now must be a function");
 
   async function persistRoleCompletion({ decision, evidence, label = "role" }) {
+    invariant(decision && typeof decision === "object", `${label} completion decision is required`);
+    if (decision.verdict !== "ACCEPT") return null;
     return persistCompletionArtifacts(store, { decision, evidence, label });
   }
 
