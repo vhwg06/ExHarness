@@ -65,6 +65,7 @@ Session is not project lifecycle. No project-critical continuation state may exi
 A handoff-safe project must expose enough durable state for a fresh session to answer:
 
 ```text
+what project did I open?
 what is the user's objective?
 what work exists?
 what can run now?
@@ -77,7 +78,9 @@ which artifact/evidence refs must be resolved to continue?
 
 The Agentic Application session-handoff surface uses one durable user-intent root and rejects work that cannot trace directly or transitively to that root.
 
-Legacy Board construction without a durable intent root may still exist for tests/low-level compatibility, but it is not session-handoff safe and must not infer intent from task descriptions.
+For project-identity handoff safety, `createSessionHandoffSurface({ orchestrator, projectId })` persists the stable project id on the durable user-intent root, exposes it in the handoff projection and fails closed when a fresh session expects another project. Project identity is distinct from store path, session/owner identity, work id and user-intent id.
+
+An unbound legacy reader cannot silently open a project-bound Board. A project-bound reader cannot silently assign identity to a legacy Board. Legacy unbound Boards remain available only for low-level compatibility where project-identity handoff safety is not claimed.
 
 ## Review initiation
 
@@ -291,26 +294,32 @@ BB-004 deliberately does not claim external-effect exactly-once/reconciliation s
 ```text
 BB-005
 question/work: Production-evaluate the concrete Backend -> QA system and generalize only evidence-supported repeated semantics.
-status: READY
+status: BLOCKED
 owner:
 depends-on: [BB-004]
 remaining-work:
-  - task success across Backend -> QA
-  - false-completion rate at role and Board boundaries
-  - artifact handoff correctness
-  - context precision/cost for repository vs internal artifacts
-  - QA issue/remediation rate
-  - Advisor invocation/value-add
-  - recovery correctness
+  - run a versioned representative real-repository/provider task corpus
+  - measure production task success across Backend -> QA
+  - measure false-completion rate at role and Board boundaries
+  - measure artifact handoff correctness under real task execution
+  - measure context precision/cost for repository vs internal artifacts
+  - measure QA issue/remediation rate
+  - measure Advisor invocation/value-add or explicitly retain UNEVALUATED with reason
+  - measure recovery correctness under representative interruptions
   - re-test whether generic Worker/WorkOrder/context/review abstractions are justified
 submission:
 review-requirements: []
 reviews: []
-artifact-refs: []
-evidence-refs: []
-blockers: []
+artifact-refs:
+  - docs/living/knowledge/bb022-agentic-evaluation-protocol.md
+  - artifacts/agentic-backend-qa-reference-eval.json
+evidence-refs:
+  - BB-022
+  - deterministic reference evidence declares productionEvidence=false
+blockers:
+  - no versioned representative real-repository/provider workload corpus is currently available in the project; deterministic BB-022 fixture evidence cannot be promoted to production effectiveness
 follow-up-refs: [BB-022]
-origin: INTENT-exharness-agentic-system; evaluation of the delivered BB-004 workflow
+origin: INTENT-exharness-agentic-system; production evaluation of the delivered BB-004 workflow
 ```
 
 The promoted PM/SA topology in D003 is not yet claimed as a concrete source role implementation. Concrete PM context, SA context and vertical reviewer slices must be added only when their real WorkOrder/context/result pressure is implemented and tested; they must not be fabricated into current-state docs.
@@ -489,47 +498,49 @@ Caching/freshness and semantic retrieval are not Board gaps merely because they 
 
 ## High-impact upgrade roadmap
 
-This roadmap records the user's request to define future workflow, architecture and pipeline upgrades. These are open work, not claims about current implementation or promoted architecture decisions. Every item below traces to `INTENT-exharness-agentic-system` through this request and its cited source pressure.
+This roadmap records the user's request to define future workflow, architecture and pipeline upgrades. Every item traces to `INTENT-exharness-agentic-system` through this request and its cited source pressure.
 
 Research must produce a durable comparison, evidence, recommended boundary and acceptance scenarios. A research item can conclude that an upgrade is not justified. Its implementation item then remains blocked or is explicitly superseded with that reason; research completion alone does not authorize implementation or promote a decision.
 
-Priority expresses impact and ordering, not a new runtime lifecycle state. `kind`, `priority` and `acceptance-criteria` below are Markdown planning metadata. Implementation items remain `BLOCKED` until their dependencies and stated decision gates are satisfied. No item here reopens delivered BB-004/006/007/008/012/013.
+Priority expresses impact and ordering, not a new runtime lifecycle state. `kind`, `priority` and `acceptance-criteria` below are Markdown planning metadata. Delivered items retain their accepted evidence below; unresolved implementation items remain blocked until dependencies and decision gates are satisfied.
 
 | Track | Research | Implementation | Priority | Project impact |
 | --- | --- | --- | --- | --- |
-| Canonical project state | BB-014 | BB-015 | P1 | Fresh sessions and executable orchestration use consistent intent, work and evidence state. |
+| Canonical project state | BB-014 | BB-015 | P1 | Fresh sessions and executable orchestration use consistent project identity, intent, work and evidence state. |
 | Interrupted execution/review | BB-016 | BB-017 | P1 | Work can continue after a session dies inside a stage, with effect truth checked before redispatch. |
 | Review-to-completion pipeline | BB-018 | BB-019 | P1 | Backend/QA results can reach independently grounded project acceptance. |
 | PM/SA architecture and coordination | BB-020 | BB-021 | P2 | User intent drives bounded decomposition, sequencing and architecture review. |
 | Evaluation and evidence pipeline | existing BB-005 | BB-022 | P1 | Upgrade decisions use reproducible task, quality, cost and recovery evidence. |
 
-Research BB-014/016/018/020 and evaluation tooling BB-022 can start from current source. Their findings should inform one another without creating artificial dependency cycles. Delivery order favors project-state consistency, interrupted-work recovery and concrete review before broader role orchestration. BB-009/010 retain their existing evidence gates; MCP support by itself does not unblock them.
+BB-014/015 and BB-022 are delivered. BB-005 is blocked on representative production evidence. The next eligible P1 research tracks are BB-016 and BB-018; delivery order continues to favor interrupted-work recovery and concrete review before broader role orchestration. BB-009/010 retain their existing evidence gates; MCP support by itself does not unblock them.
 
 ```text
 BB-014
 question/work: Research the authority and synchronization boundary between repository Markdown coordination and executable JSON Blackboard state.
 kind: RESEARCH
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: [BB-012]
-remaining-work:
-  - map which project each Board represents, who writes it, and how a fresh session locates the authoritative state
-  - compare explicit separate-project boundaries, generated projections and migration to one durable lifecycle source
-  - define identity, user-intent provenance, revision/conflict handling and preservation of review/checkpoint/artifact refs
-  - recommend the smallest justified architecture and a migration/compatibility plan
+remaining-work: []
 acceptance-criteria:
   - referenced research artifact distinguishes observed divergence risks from confirmed runtime defects
   - accepted decision identifies the authority for each project and eliminates ambiguous dual writers
   - migration and fresh-session scenarios preserve intent, IDs, dependencies, review state and evidence refs
 submission:
+  - PR #79
 review-requirements: [architecture-boundary review, session-handoff review]
-reviews: []
-artifact-refs: []
+reviews:
+  - architecture/session-handoff review accepted explicit project identity boundary without claiming same-project JSON/Markdown dual writers
+artifact-refs:
+  - docs/living/knowledge/bb014-project-state-authority.md
+  - docs/living/decisions/D008-explicit-project-state-boundary.md
 evidence-refs:
   - docs/living/blackboard.md (Storage)
   - packages/agentic-system/src/blackboard-orchestrator.js
   - packages/agentic-system/src/session-handoff.js
+  - exact-head CI #1228 green on living-doc-impact and Node 20/22/24
+  - merge commit b5c71feb731c3228dbc18ec6db9212f7e1c55f59
 blockers: []
 follow-up-refs: [BB-015]
 origin: INTENT-exharness-agentic-system; user-requested architecture roadmap grounded in the two current Board surfaces
@@ -540,23 +551,31 @@ BB-015
 question/work: Implement the accepted project-state authority/projection contract from BB-014.
 kind: IMPLEMENTATION
 priority: P1
-status: BLOCKED
+status: DONE
 owner:
 depends-on: [BB-014]
-remaining-work:
-  - implement the chosen canonical-state lookup and projection or explicit project boundary
-  - provide migration and conflict handling where required by the accepted design
-  - reconcile current documentation and continuation entrypoints to the delivered behavior
+remaining-work: []
 acceptance-criteria:
   - a fresh session identifies the correct project and recovers the same lifecycle state as its Orchestrator
-  - stale projections or conflicting writes are detected rather than silently overwriting newer work
-  - existing IDs, intent provenance, checkpoints, submissions and review/artifact refs survive migration
+  - stale or wrong-project continuation is rejected rather than silently accepted
+  - existing intent/work/checkpoint/submission/review/artifact semantics remain compatible
 submission:
-review-requirements: [application/code review, state-migration review]
-reviews: []
-artifact-refs: []
-evidence-refs: [BB-014]
-blockers: [BB-014 must provide an accepted architecture and applicable migration contract]
+  - PR #80
+review-requirements: [application/code review, session-handoff/project-state review]
+reviews:
+  - application/session-handoff review passed exact head 0c4daa4249d7f7bb2b122ec501f2c9a41d35162c
+artifact-refs:
+  - packages/agentic-system/src/session-handoff.js
+  - packages/agentic-system/test/project-identity.test.js
+  - docs/worktree/agentic-application/state.md
+  - docs/worktree/agentic-application/contracts.md
+  - docs/worktree/agentic-application/decisions.md
+  - docs/living/decisions/D008-explicit-project-state-boundary.md
+evidence-refs:
+  - wrong-project, unbound-reader and legacy-upgrade fail-closed contract tests
+  - exact-head CI #1240 green on living-doc-impact and Node 20/22/24
+  - merge commit 81ae7562e8809f0647520c3fc13a53fca7cecd05
+blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; implementation follow-up to BB-014
 ```
@@ -740,7 +759,7 @@ BB-022
 question/work: Build a reproducible application evaluation and evidence-report pipeline supporting BB-005.
 kind: IMPLEMENTATION
 priority: P1
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: [BB-004, BB-011, BB-012]
 remaining-work: []
@@ -752,7 +771,8 @@ acceptance-criteria:
 submission:
   - PR #78
 review-requirements: [evaluation-method review, application/code review]
-reviews: []
+reviews:
+  - evaluation-method/application review passed deterministic reference boundary without promoting fixture scores to production evidence
 artifact-refs:
   - scripts/agentic-backend-qa-eval.mjs
   - artifacts/agentic-backend-qa-reference-eval.json
@@ -762,8 +782,9 @@ evidence-refs:
   - package.json
   - packages/agentic-system/test/durable-backend-qa.test.js
   - packages/agentic-system/test/wave-d.test.js
-  - CI run #1215 green on living-doc-impact and Node 20/22/24
+  - exact-head CI #1217 green on living-doc-impact and Node 20/22/24
   - deterministic reference result declares productionEvidence=false
+  - merge commit a16328708e751740a3a1b74fe6a7a2dd74769568
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; tooling child of BB-005, which retains ownership of production evaluation and abstraction conclusions
@@ -771,8 +792,8 @@ origin: INTENT-exharness-agentic-system; tooling child of BB-005, which retains 
 
 ## Storage
 
-`docs/living/blackboard.md` remains the canonical repository coordination projection today.
+`docs/living/blackboard.md` remains the canonical coordination state for the ExHarness repository-development project today.
 
-The Agentic Application also has a JSON-backed durable Blackboard state primitive for executable orchestration. `createSessionHandoffSurface(...)` projects durable intent, work checkpoints, lifecycle buckets and artifact/evidence refs for fresh-session continuation.
+The Agentic Application also has a JSON-backed durable Blackboard primitive for runtime projects. A project-bound `createSessionHandoffSurface({ orchestrator, projectId })` exposes and verifies explicit project identity plus durable intent, work checkpoints, lifecycle buckets and artifact/evidence refs for fresh-session continuation.
 
-Replacing the Markdown coordination projection entirely is **not** claimed by this slice; any future convergence must preserve the same authority/state/handoff invariants and must not create two competing canonical Boards.
+D008 makes these project boundaries explicit; it does **not** claim the repository Markdown Board is currently a projection of a runtime JSON Board. If ExHarness later self-hosts this same repository project through `ApplicationOrchestrator`, one canonical writable representation plus conflict-safe projection/migration semantics must be designed before convergence.
