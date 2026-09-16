@@ -35,7 +35,7 @@ Worker prose is not completion authority.
 
 Backend completion requires grounded Backend evidence; QA completion requires grounded QA evidence. Both use ExHarness trust/decision primitives at the application acceptance boundary.
 
-Role-local completion remains distinct from Blackboard problem completion.
+Role-local completion remains distinct from Blackboard problem completion. Interrupted recovery is also not completion authority: a recovered Backend result must pass the same ordinary lineage/evidence/completion policy as a non-recovered result.
 
 ## Blackboard orchestration contract
 
@@ -60,6 +60,22 @@ PM     -> REQUIRE review from project obligations
 
 `REQUEST != REQUIRE != DISPATCH != ASSESS != ACCEPT`.
 
+## Execution-generation contract
+
+Every execution claim increments a monotonic `claimGeneration` independent from owner identity.
+
+```text
+claim
+  -> { owner, claimGeneration }
+
+checkpoint / submit / block
+  require exact current { owner, claimGeneration }
+```
+
+`recoverClaim(...)` is the explicit interrupted-work takeover transition. It is valid only from `CLAIMED`, increments the generation before replacement work can mutate canonical state and therefore fences the abandoned attempt even when the replacement reuses the same owner name.
+
+A stale generation cannot checkpoint, submit or block. Owner equality alone is insufficient authority. Elapsed time, heartbeat loss or lease expiry is not execution correctness authority and does not prove an external effect is safe to retry.
+
 ## Review target and trust contract
 
 `beginReview(...)` freezes an exact review target subject over:
@@ -69,7 +85,12 @@ Blackboard item id
 + review requirement key
 + exact submitted payload
 + submission producer identity
++ review generation
 ```
+
+Every review dispatch increments `reviewGeneration`.
+
+`recoverReview(...)` explicitly replaces an interrupted active review with a new generation and exact subject. Evidence/decision/attestation from the abandoned generation therefore fails exact-target binding even when the same reviewer is selected again.
 
 `recordAssessment(...)` does not accept a naked caller-provided verdict. It accepts a Core trust bundle:
 
@@ -82,7 +103,7 @@ Attestation
 The Orchestrator validates that:
 
 - the bundle is structurally/integrity valid;
-- evidence is bound to the active review target;
+- evidence is bound to the active review target, including the current review generation;
 - the decision evaluator is the scheduled reviewer and differs from the submission producer;
 - the decision/attestation is at `TrustBoundary.ACCEPTANCE`;
 - signature, evaluator authority and evidence authority pass application-provided trust verification;
@@ -92,9 +113,9 @@ The Orchestrator validates that:
 
 Only the trusted DecisionArtifact verdict is applied to Board state.
 
-Trust verification runs before the Board mutation transaction; the transaction re-checks that the active review target has not changed before committing the assessment.
+Trust verification runs before the Board mutation transaction; the transaction re-checks that the active review target/generation has not changed before committing the assessment.
 
-## Durable store contract
+## Durable Blackboard store contract
 
 The public `createJsonBlackboardStore(...)` exposes read + transactional mutation over a concrete local filesystem store.
 
@@ -113,15 +134,59 @@ If another transaction already published a successor for the same base revision,
 
 Commit records also carry the digest of the exact base snapshot for mismatch/corruption detection. Snapshot value identity is not revision identity, so a later revision may legitimately contain the same logical snapshot value as an earlier one.
 
-`<path>.root` plus the immutable successor records are persistence authority. The caller-selected `<path>` JSON file remains a compatibility/inspection projection of the latest committed snapshot; it is refreshed only after commit publication and is never read as authority once the immutable root exists. Tampering with or losing that projection cannot roll back the committed chain.
+`<path>.root` plus immutable successor records are persistence authority. The caller-selected `<path>` JSON file remains a compatibility/inspection projection of the latest committed snapshot; it is refreshed only after commit publication and is never read as authority once the immutable root exists. Tampering with or losing that projection cannot roll back the committed chain.
 
-A legacy pre-BB-023 `<path>` snapshot is used only to initialize the immutable root when no root authority exists yet. Concurrent initialization publishes exactly one root through hard-link no-overwrite semantics.
+A legacy pre-D011 `<path>` snapshot is used only to initialize the immutable root when no root authority exists yet. Concurrent initialization publishes exactly one root through hard-link no-overwrite semantics.
 
 Legacy `.lock` files are not correctness authority and are neither trusted nor deleted by the public store. `lockStaleMs` remains accepted for compatibility but elapsed time does not grant takeover authority.
 
 The committed successor record itself is authoritative if a process dies after publication. Projection refresh failure cannot turn a committed transaction into an unknown outcome; a later store reconstruction still resolves the immutable chain. Temporary pre-publication files are not completion evidence.
 
 This is a concrete local durable store. It requires same-filesystem hard-link support and does not claim distributed coordination or automatic history-compaction semantics.
+
+## Backend Core-session persistence contract
+
+`createJsonBackendSessionStore(...)` is a concrete revision-aware local SessionStore for the Backend vertical. It persists Core session state and the AVO action-effect journal used by the same deterministic Backend session id, using local filesystem locking and revision conflict checks.
+
+It explicitly declares `supportsDurableRecovery: true`. Absence of persisted Core state is usable as recovery evidence only when the configured store declares that durable-recovery authority. The default in-memory store does not, so an empty volatile store fails closed rather than being interpreted as proof that no interrupted external effect occurred.
+
+This store is not a generic Core recovery facade, project store, distributed lock/lease service or exactly-once effect mechanism.
+
+## Interrupted Backend recovery contract
+
+Backend is mutating, so Blackboard generation takeover alone cannot authorize redispatch.
+
+`BackendWorker.recover(...)` / `recoverBackendObjective(...)` recover the exact persisted Backend WorkOrder/Context and Core session/effect state before deciding whether execution can continue.
+
+```text
+no persisted Core session + durable-recovery store authority
+  -> normal fresh execution may start
+
+no persisted Core session + no durable-recovery authority
+  -> BLOCK; empty volatile state does not prove effect absence
+
+confirmed effect on original candidate
+  -> close interrupted Core variation
+  -> replay same strategy/session
+  -> effect journal returns confirmed result without external redispatch
+
+idempotent ambiguous effect
+  -> Core reconciliation prepares retry under existing replay policy/action key
+  -> ordinary Backend execution/completion continues
+
+non-reconcilable ambiguity
+  -> BLOCK; do not redispatch
+
+candidate divergence / multiple mutation effects /
+already-advanced candidate without durable Worker semantic result
+  -> BLOCK / require reassessment
+```
+
+A caller assertion, Blackboard checkpoint, owner identity or elapsed time cannot replace Core effect truth. A recovered result still must satisfy ordinary Backend lineage advancement, mutation/typecheck/test evidence, artifact and completion policy requirements.
+
+## Interrupted QA recovery contract
+
+QA is non-mutating at the application environment boundary. After `recoverClaim(...)` invalidates the abandoned execution generation, the durable workflow may rerun QA against the exact persisted accepted Backend revision/artifact handoff. The new generation still fences a late result from the abandoned attempt.
 
 ## Project-bound session-handoff contract
 
@@ -147,6 +212,8 @@ For a legacy Board with no project identity:
 
 - unbound low-level compatibility reads remain possible;
 - a project-bound reader rejects it instead of inferring identity from path, task text or user intent.
+
+The handoff work projection includes current `claimGeneration`, `reviewGeneration` and `activeReview` state so a fresh session can identify the durable execution/review attempt rather than relying on prior conversation context.
 
 Project identity is Board/root authority. It is not copied into every work-item origin; work provenance remains responsible for root-intent/parent/finding lineage.
 

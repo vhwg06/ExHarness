@@ -13,7 +13,9 @@ Source-synchronized application-layer projection. All unresolved application wor
 - completion evidence is grounded from ExHarness/runtime artifacts, not trusted from Worker prose;
 - default completion requires mutation + typecheck + tests + artifact presence;
 - completion emits an acceptance-boundary ExHarness decision artifact;
-- bounded `BackendAdvisor` is available only after required objective evidence passes and semantic gaps remain.
+- bounded `BackendAdvisor` is available only after required objective evidence passes and semantic gaps remain;
+- Backend execution can use a concrete durable JSON Core SessionStore so Core session state and AVO action-effect journal survive process reconstruction;
+- interrupted Backend recovery is exposed through `BackendWorker.recover(...)` / `recoverBackendObjective(...)` and never bypasses the ordinary Backend completion/evidence policy.
 
 ### QA
 
@@ -22,7 +24,8 @@ Source-synchronized application-layer projection. All unresolved application wor
 - context resolved through `artifactReader` before execution;
 - mutation and lineage advancement are forbidden;
 - grounded evidence claims are `qa.behavior` and `qa.regression`;
-- QA issues deterministically request remediation/continuation.
+- QA issues deterministically request remediation/continuation;
+- interrupted QA can be explicitly redispatched against the same accepted Backend target after the abandoned application execution generation is fenced out.
 
 ## Current orchestration state
 
@@ -30,18 +33,24 @@ The package exposes `createApplicationOrchestrator(...)` for durable Blackboard 
 
 Implemented Board semantics include:
 
-- only `READY`/`REOPENED` work is claimable and dependencies must already be `DONE`;
+- only `READY`/`REOPENED` work is normally claimable and dependencies must already be `DONE`;
+- each execution claim increments a monotonic `claimGeneration` independently from owner identity;
+- `checkpoint(...)`, `submit(...)` and `block(...)` require the exact current `{ owner, claimGeneration }`, so an abandoned executor cannot commit after takeover even if the same owner name is reused;
+- `recoverClaim(...)` is an explicit recovery transition from `CLAIMED` that increments the generation before replacement work can mutate Board state;
 - a claimed owner may persist a partial-work checkpoint before final submission;
 - checkpoints can release work as `REOPENED` or preserve exact continuation state while `BLOCKED`;
 - blocked work can be resumed to `REOPENED`; unfinished work can be superseded/canceled;
 - a claimed Worker owner may submit an immutable result payload and Worker-sourced review requests;
 - PM-sourced review requirements can be added separately from Worker requests;
 - submitted work becomes `PENDING_REVIEW`, never directly `DONE`;
-- one explicit reviewer assessment is active at a time;
+- each review dispatch increments a monotonic `reviewGeneration`; that generation is part of the exact review subject;
+- `recoverReview(...)` explicitly replaces an interrupted `REVIEWING` attempt with a new generation/subject, making evidence from the abandoned generation stale even when the same reviewer is reused;
 - all required reviews must be `ACCEPTED` and remaining work must be empty before `DONE` is derived;
 - `REJECTED`/`INCONCLUSIVE` review reopens the same item and narrows remaining work;
 - follow-up reconciliation distinguishes current obligation, existing work, genuine new work and non-actionable findings;
-- checkpoints, submissions and pending review state survive reconstruction through the JSON store.
+- checkpoints, submissions, generations, active review state and pending review state survive reconstruction through the JSON store.
+
+Generation is lifecycle fencing only. Elapsed time, heartbeat loss or lease expiry is not implemented as correctness authority and does not prove an interrupted effect is safe to retry.
 
 The package also exposes a concrete session-handoff surface:
 
@@ -53,7 +62,7 @@ The package also exposes a concrete session-handoff surface:
 - legacy unbound Boards remain available for low-level compatibility but are not project-identity handoff-safe;
 - `initialize(...)` seeds one durable intent root plus initial work traceable to that root;
 - `read()` projects the current Board into fresh-session lifecycle buckets;
-- the projection includes current work checkpoints plus eligible/claimed/pending-review/reviewing/pending-reconciliation/blocked/done/superseded work and artifact/evidence refs with item provenance;
+- the projection includes `claimGeneration`, `reviewGeneration`, `activeReview`, current work checkpoints, lifecycle buckets and artifact/evidence refs with item provenance;
 - a Board without exactly one durable user-intent root fails closed as not handoff-safe;
 - work that cannot trace directly or transitively to the durable user intent is rejected by the handoff projection.
 
@@ -72,19 +81,43 @@ Current state transitions are:
 - QA issues persist as `BACKEND_REMEDIATION_PENDING`; remediation uses the last accepted Backend revision as its new repository base;
 - artifact/context lookup failure blocks while preserving the exact `QA_PENDING` checkpoint; resume retries from that checkpoint;
 - QA acceptance clears the partial checkpoint and creates a final Blackboard submission with Backend/QA decision refs and artifact refs;
-- final submission becomes `PENDING_REVIEW` but does not fabricate a Worker-sourced application review request; project/PM review requirements remain a separate authority path.
+- final submission becomes `PENDING_REVIEW` but does not fabricate a Worker-sourced application review request; project/PM review requirements remain a separate authority path;
+- if a process dies while a stage is `CLAIMED`, `recoverInterrupted(...)` first increments the application claim generation to fence the abandoned attempt;
+- interrupted `QA_PENDING` recovery reruns the non-mutating QA stage against the exact persisted accepted Backend handoff;
+- interrupted Backend recovery restores the persisted Core session/effect journal through the concrete Backend session store before deciding whether strategy execution can continue.
+
+Concrete Backend recovery handles persisted effect truth as follows:
+
+- no persisted Core session in a store that declares `supportsDurableRecovery: true` -> the Backend stage may start normally because the durable recovery authority establishes absence of Core execution/effect state;
+- no persisted Core session in a non-durable/default in-memory store -> recovery blocks; empty volatile state is not proof that an interrupted external effect did not occur;
+- confirmed effect on the original candidate -> close the interrupted variation and replay the same strategy on the same session; the Core effect journal returns the confirmed action result without external redispatch;
+- idempotent ambiguous effect -> Core reconciliation prepares a retry using the same operation/action-key semantics before ordinary Backend completion runs;
+- non-reconcilable ambiguity -> recovery blocks rather than redispatching;
+- multiple persisted mutation effects, candidate divergence, or an already-advanced Core candidate without a durable Worker semantic result -> recovery blocks/requires reassessment instead of inventing a Backend result.
+
+A recovered Backend result still passes the ordinary lineage, evidence, completion and Advisor boundaries. Recovery state is not acceptance authority.
 
 The older `runBackendThenQaObjective(...)` direct composition remains available as an in-session path. It is not the durable cross-session workflow surface.
 
-Application checkpoints do not prove whether an external side effect completed across a crash window. Core effect/persistence authority remains separate and is handled by the implemented Core effect reconciliation and recovery composition, which can confirm, safely replay, observe, or escalate ambiguous effects; application stage state must not be used to infer effect completion.
+## Concrete Backend session persistence
+
+`createJsonBackendSessionStore(...)` is the current local durable SessionStore used when a Backend deployment needs process-crash recovery.
+
+It stores the Core session/effect journal in an immutable single-successor revision chain per encoded Backend session id. A save may publish exactly one successor for its expected base revision through same-filesystem hard-link no-overwrite semantics; concurrent or stale writers from that base fail explicitly with `StoreConflictError` rather than replacing newer recovery authority. Temporary pre-publication files are not completion evidence, and elapsed lock age is not takeover authority. `lockStaleMs` remains only a compatibility input.
+
+The store explicitly declares `supportsDurableRecovery: true`. That declaration is the concrete authority that permits recovery to interpret an absent persisted session as absent durable Core execution/effect state. A generic/default SessionStore without that declaration cannot make the same inference.
+
+It is application infrastructure for the concrete Backend vertical, not a new generic Core lifecycle facade, distributed lease service or exactly-once effect guarantee.
 
 ## Current evaluation gate
 
-The repository now runs a deterministic application reference evaluation through `npm run eval:agentic` and includes it in root `npm run verify`.
+The repository runs a deterministic application reference evaluation through `npm run eval:agentic` and includes it in root `npm run verify`.
 
 The gate executes the concrete durable Backend -> QA workflow across happy-path, restart, QA-remediation, artifact-source block/resume and cancellation scenarios, then deep-compares measured output with `artifacts/agentic-backend-qa-reference-eval.json`.
 
 The checked result is explicitly classified as `DETERMINISTIC_REFERENCE` with `productionEvidence: false`. It measures false completion, handoff/ref integrity, source reads/context size, remediation/recovery and review-gate behavior, but does not claim real-repository effectiveness, external-provider quality, production latency/cost, Advisor value-add or justification for generic abstractions.
+
+The interrupted-effect crash scenarios are enforced by application contract tests; they are not currently part of the deterministic `eval:agentic` reference corpus.
 
 See `evaluation.md` for the current executable evaluation surface and limitations.
 
@@ -94,11 +127,12 @@ Shared shapes proven in source remain deliberately narrow:
 
 - `ApplicationArtifactRef`;
 - evidence integrity / required-claim state plumbing;
-- Blackboard item/review/follow-up/checkpoint state required for durable orchestration;
+- Blackboard item/review/follow-up/checkpoint/generation state required for durable orchestration;
 - durable `UserIntent` plus optional project-bound read-only session-handoff projection over Blackboard state;
-- concrete Backend -> QA workflow checkpoint semantics earned by the existing Backend and QA slices.
+- concrete Backend -> QA workflow checkpoint semantics earned by the existing Backend and QA slices;
+- concrete Backend durable session/effect recovery composition, without a generic recovery registry/facade.
 
-There is still no generic Worker/WorkOrder/Advisor/role registry/workflow graph/Teacher registry/Reviewer registry or project-state registry.
+There is still no generic Worker/WorkOrder/Advisor/role registry/workflow graph/Teacher registry/Reviewer registry, project-state registry, lease service or recovery DSL.
 
 ## Promoted but not yet source-implemented roles
 

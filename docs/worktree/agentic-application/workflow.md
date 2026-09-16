@@ -13,6 +13,8 @@ parse objective
 
 Deterministic evidence failure/missing/inconclusive paths stay in application code. `BackendAdvisor` is invoked only for the source-implemented semantic-gap condition after required objective checks pass.
 
+When process-crash recovery is required, the concrete Backend Worker may use `createJsonBackendSessionStore(...)` so its Core session and AVO action-effect journal survive process reconstruction.
+
 ## Accepted Backend -> QA
 
 ```text
@@ -37,13 +39,16 @@ Canonical durable composition is:
 createDurableBackendQaWorkflow(...)
  -> initialize(itemId, owner, backendObjective, qaObjective)
       -> validate objectives
-      -> persist BACKEND_PENDING checkpoint
+      -> claim item and receive claimGeneration
+      -> persist BACKEND_PENDING checkpoint under exact {owner, generation}
       -> release claim as REOPENED
 
 fresh/current session
  -> advance(itemId, owner)
       -> claim exact item
+      -> receive next claimGeneration
       -> execute exactly one durable stage
+      -> checkpoint/submit only with exact {owner, generation}
 ```
 
 State transitions:
@@ -86,28 +91,121 @@ QA issues do not silently invalidate or rewrite the accepted revision. They crea
 
 Artifact/context lookup failure does not discard progress. The item becomes `BLOCKED` with its `QA_PENDING` checkpoint intact. `resume(...)` returns it to `REOPENED`, and a later session retries the same durable stage.
 
-`cancel(...)` supersedes unfinished work. Superseded work is not claimable.
+`cancel(...)` supersedes unfinished work. Superseding claimed work increments its generation so an abandoned executor cannot later commit against the superseded item.
 
 QA role acceptance is not Blackboard acceptance. Successful QA clears the partial checkpoint and creates a final submission with Backend/QA decision refs and artifact refs. It does **not** fabricate `source: WORKER` for application review. If project completion requires review, PM/project coordination must use the distinct PM review-requirement path.
+
+## Interrupted execution recovery
+
+A process dying after application claim leaves the item `CLAIMED` with its last durable workflow checkpoint and current claim generation.
+
+```text
+CLAIMED generation N
+ -> recoverInterrupted(itemId, owner)
+ -> Orchestrator.recoverClaim(...)
+ -> CLAIMED generation N+1
+ -> old attempt is fenced before replacement work continues
+```
+
+Generation takeover answers only **who may commit**. The current stage then decides whether execution itself is safe to continue.
+
+### Interrupted QA
+
+`QA_PENDING` is non-mutating at the application environment boundary:
+
+```text
+recover claim -> generation N+1
+ -> reuse exact persisted accepted Backend handoff
+ -> resolve declared QA artifacts
+ -> rerun QA
+ -> ordinary QA completion policy
+ -> checkpoint/submit under generation N+1
+```
+
+A late QA result from generation N cannot commit application state.
+
+### Interrupted Backend
+
+`BACKEND_PENDING` and `BACKEND_REMEDIATION_PENDING` are mutating and therefore compose application fencing with durable Core effect truth.
+
+```text
+recover claim -> generation N+1
+ -> resolve exact Backend WorkOrder + Context
+ -> load durable Backend Core session/effect journal
+ -> reconcile interrupted effect state
+ -> only then continue or block
+```
+
+Current recovery cases are:
+
+```text
+no persisted Core session + store supports durable recovery
+ -> normal fresh Backend execution
+
+no persisted Core session + volatile/unknown recovery authority
+ -> BLOCK
+ -> absence is not proof that an external effect did not happen
+
+confirmed effect + Core candidate still at effect base
+ -> close interrupted variation
+ -> replay same strategy on same session
+ -> same semantic action key
+ -> effect journal returns confirmed result
+ -> no external redispatch
+ -> ordinary lineage/evidence/completion policy
+
+ambiguous IDEMPOTENT effect
+ -> Core reconciliation prepares RETRY
+ -> same action key is reused
+ -> ordinary Backend completion continues after confirmed retry
+
+UNKNOWN / NON_RECONCILABLE effect
+ -> BLOCK
+ -> no blind redispatch
+
+multiple persisted mutation effects
+or candidate diverged from effect base
+or candidate already advanced but Worker semantic result was not durably committed
+ -> BLOCK / require reassessment
+ -> do not fabricate BackendWorkResult
+```
+
+Recovery success is not Backend acceptance. Any reconstructed normal Backend result still passes the same mutation/typecheck/tests/artifact evidence and completion policy.
 
 ## Durable Blackboard lifecycle
 
 ```text
 READY / REOPENED
  -> Orchestrator.claim(...)
- -> CLAIMED
- -> either checkpoint partial work
+ -> CLAIMED with claimGeneration N
+ -> either checkpoint partial work using N
       -> REOPENED | BLOCKED
-    or submit final work
+    or submit final work using N
       -> PENDING_REVIEW
+
+interrupted CLAIMED
+ -> Orchestrator.recoverClaim(...)
+ -> CLAIMED with claimGeneration N+1
+ -> stale N writes rejected
+
+PENDING_REVIEW
  -> project/PM may add required review
  -> Orchestrator.beginReview(...)
-      -> freeze exact review target subject
+      -> increment reviewGeneration
+      -> freeze exact review target subject including generation
  -> REVIEWING
+
+interrupted REVIEWING
+ -> Orchestrator.recoverReview(...)
+ -> increment reviewGeneration
+ -> freeze replacement exact target
+ -> abandoned review bundle becomes stale
+
+REVIEWING
  -> reviewer produces grounded Core trust bundle
       EvidenceArtifact[] + DecisionArtifact + Attestation
  -> Orchestrator verifies bundle outside Board transaction
- -> transaction re-checks same active review target
+ -> transaction re-checks same active review target/generation
  -> apply trusted decision verdict
       |
       +-> all required ACCEPTED + no remaining work -> DONE
@@ -119,6 +217,8 @@ READY / REOPENED
 The Orchestrator does not accept a naked caller-provided review verdict. Review decision/evidence/signature/authority must pass the application-provided trust policy over the exact active review target.
 
 Review requirements may be Worker-requested when a real Worker raises that need or PM-required separately. `createDurableBackendQaWorkflow(...)` does not impersonate either source after QA completion. Current source still does not implement concrete PM/SA role execution or vertical reviewer Workers.
+
+Elapsed time or a future lease/heartbeat signal may indicate suspected liveness failure, but current recovery requires an explicit transition. Time alone does not transfer correctness authority or prove effect outcome.
 
 ## Fresh-session handoff
 
@@ -138,8 +238,8 @@ fresh session
  -> reconstruct ApplicationOrchestrator from the durable Board store
  -> createSessionHandoffSurface(...).read()
  -> recover user intent
- -> recover work graph, current checkpoints and lifecycle buckets
- -> recover artifact/evidence refs with item provenance
+ -> recover work graph, generations, active review and current checkpoints
+ -> recover lifecycle buckets and artifact/evidence refs
  -> resolve only the refs needed for the next work context
  -> continue
 ```
@@ -148,6 +248,9 @@ The handoff projection exposes:
 
 ```text
 intent
+workGraph[*].claimGeneration
+workGraph[*].reviewGeneration
+workGraph[*].activeReview
 workGraph[*].checkpoint
 workGraph[*].checkpointedBy
 lifecycle.eligibleWork
@@ -192,19 +295,23 @@ resolve committed revision rN
       +-> successor already exists: explicit transaction conflict
 ```
 
-A new `ApplicationOrchestrator` instance resolves the same committed chain and restores checkpoints, submissions, pending reviews and requirements. Concurrent local writers from one base revision cannot both publish; one successor wins and stale writers fail before replacing committed state.
+A new `ApplicationOrchestrator` instance resolves the same committed chain and restores checkpoints, submissions, generations, active reviews and requirements. Concurrent local writers from one base revision cannot both publish; one successor wins and stale writers fail before replacing committed state.
 
 Opaque revision tokens identify chain positions. Snapshot digests validate the exact base content but do not define revision identity, so later state may legitimately repeat an earlier snapshot value.
 
 Legacy `.lock` age is not correctness authority. The public store does not trust or delete legacy lock files, and `lockStaleMs` does not authorize takeover. A successor record that was atomically published remains authoritative across process interruption even if the publishing call did not return.
 
-Async review trust verification still happens outside the Board mutation transaction; if another mutation wins before assessment commit, the later store publication fails on its stale base revision. The Orchestrator also re-checks the active review target inside its mutator before publication.
+Async review trust verification still happens outside the Board mutation transaction; if another mutation wins before assessment commit, the later store publication fails on its stale base revision. The Orchestrator also re-checks the active review target/generation inside its mutator before publication.
 
-Application checkpoint persistence is not external-effect reconciliation. A crash between an external effect and durable Core proof is handled through the Core effect reconciliation and recovery primitives, which can confirm, safely replay, observe, or escalate ambiguous effects; application stage alone must not be used to infer effect completion.
+`createJsonBackendSessionStore(...)` is separate concrete Backend execution/effect persistence. It is revision-aware and declares `supportsDurableRecovery: true`; that explicit authority is required before absence of a persisted Core session can authorize fresh Backend execution during recovery.
+
+Neither local JSON store is a distributed consensus/lease mechanism. The Backend store does not provide exactly-once effects; replay safety still comes from Core effect operation state and declared replay policy.
+
+Application checkpoint persistence is not external-effect reconciliation. A crash between an external effect and durable Core proof is handled through the concrete Backend composition over existing Core effect reconciliation primitives; application stage, claim generation or elapsed time alone must not be used to infer effect completion.
 
 ## Context rules
 
-- repository and application-artifact context are resolved explicitly before execution;
+- repository and application-artifact context are resolved explicitly before execution/recovery;
 - source payload is not hidden in a provider/session lifecycle;
 - Oracle does not widen semantic scope;
 - source refs/provenance survive into validated context;
@@ -217,5 +324,7 @@ Application checkpoint persistence is not external-effect reconciliation. A cras
 Worker prose is not completion authority. Role completion is derived from structured results plus grounded role-specific evidence and application policy.
 
 Backend acceptance authorizes creation of the QA handoff; QA acceptance authorizes a final application submission. Neither role-local decision directly authorizes Blackboard `DONE` or a fabricated review requirement.
+
+Interrupted recovery only restores bounded execution authority. It cannot promote a candidate, manufacture Worker semantic results, bypass role evidence or authorize Blackboard completion.
 
 Blackboard problem completion remains a separate boundary: required review/acceptance obligations and unresolved current-work findings must be reconciled first.

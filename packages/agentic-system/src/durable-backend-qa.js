@@ -1,5 +1,8 @@
 import { BackendCompletionAction } from "./backend-completion.js";
-import { runBackendObjective } from "./backend-application.js";
+import {
+  recoverBackendObjective,
+  runBackendObjective
+} from "./backend-application.js";
 import { BlackboardStatus } from "./blackboard-orchestrator.js";
 import { BackendObjectiveSchema } from "./contracts.js";
 import {
@@ -121,6 +124,18 @@ function deriveRemediationObjective(checkpoint) {
   });
 }
 
+function backendObjectiveFor(checkpoint) {
+  return checkpoint.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
+    ? deriveRemediationObjective(checkpoint)
+    : checkpoint.spec.backendObjective;
+}
+
+function backendWorkFor(checkpoint) {
+  return checkpoint.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
+    ? remediationWork(checkpoint.qaIssues)
+    : BACKEND_WORK;
+}
+
 function backendCheckpointAfterAccept(checkpoint, handoff, completionDecision) {
   return workflowCheckpoint({
     ...checkpoint,
@@ -171,11 +186,12 @@ export function createDurableBackendQaWorkflow({
     orchestrator &&
       typeof orchestrator.readBlackboard === "function" &&
       typeof orchestrator.claim === "function" &&
+      typeof orchestrator.recoverClaim === "function" &&
       typeof orchestrator.checkpoint === "function" &&
       typeof orchestrator.submit === "function" &&
       typeof orchestrator.resume === "function" &&
       typeof orchestrator.supersede === "function",
-    "Durable Backend/QA workflow requires checkpoint-capable ApplicationOrchestrator"
+    "Durable Backend/QA workflow requires recovery-capable ApplicationOrchestrator"
   );
 
   async function initialize({ itemId, owner, backendObjective, qaObjective }) {
@@ -186,10 +202,12 @@ export function createDurableBackendQaWorkflow({
     invariant(existing.checkpoint == null, `Backend/QA workflow item ${itemId} is already initialized`);
     invariant(existing.submission == null, `Backend/QA workflow item ${itemId} already has a submission`);
     const checkpoint = initialCheckpoint(backendObjective, qaObjective);
-    await orchestrator.claim({ itemId, owner });
+    const claimed = await orchestrator.claim({ itemId, owner });
+    const generation = claimed.result.claimGeneration;
     const persisted = await orchestrator.checkpoint({
       itemId,
       owner,
+      generation,
       checkpoint,
       remainingWork: [BACKEND_WORK]
     });
@@ -200,25 +218,15 @@ export function createDurableBackendQaWorkflow({
     });
   }
 
-  async function runBackendStage({ itemId, owner, checkpoint }) {
-    const isRemediation = checkpoint.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING;
-    const objective = isRemediation
-      ? deriveRemediationObjective(checkpoint)
-      : checkpoint.spec.backendObjective;
-    const currentWork = isRemediation ? remediationWork(checkpoint.qaIssues) : BACKEND_WORK;
-
-    const backend = await runBackendObjective(objective, {
-      repositoryReader,
-      backendWorker,
-      ...(backendCompletionPolicy == null ? {} : { completionPolicy: backendCompletionPolicy }),
-      backendAdvisor
-    });
+  async function persistBackendRun({ itemId, owner, generation, checkpoint, backend }) {
+    const currentWork = backendWorkFor(checkpoint);
 
     if (backend.completion.action !== BackendCompletionAction.ACCEPT) {
       const blocked = [BackendCompletionAction.BLOCK, BackendCompletionAction.FAIL].includes(backend.completion.action);
       const persisted = await orchestrator.checkpoint({
         itemId,
         owner,
+        generation,
         checkpoint,
         artifactRefs: backend.result.artifacts.map((artifact) => artifact.ref),
         evidenceRefs: [backend.completion.decision.id],
@@ -238,6 +246,7 @@ export function createDurableBackendQaWorkflow({
     const persisted = await orchestrator.checkpoint({
       itemId,
       owner,
+      generation,
       checkpoint: nextCheckpoint,
       artifactRefs: artifactRefsFromHandoff(handoff),
       evidenceRefs: [backend.completion.decision.id],
@@ -254,7 +263,47 @@ export function createDurableBackendQaWorkflow({
     });
   }
 
-  async function runQaStage({ itemId, owner, checkpoint }) {
+  async function runBackendStage({ itemId, owner, generation, checkpoint }) {
+    const backend = await runBackendObjective(backendObjectiveFor(checkpoint), {
+      repositoryReader,
+      backendWorker,
+      ...(backendCompletionPolicy == null ? {} : { completionPolicy: backendCompletionPolicy }),
+      backendAdvisor
+    });
+    return persistBackendRun({ itemId, owner, generation, checkpoint, backend });
+  }
+
+  async function recoverBackendStage({ itemId, owner, generation, checkpoint }) {
+    const backend = await recoverBackendObjective(backendObjectiveFor(checkpoint), {
+      repositoryReader,
+      backendWorker,
+      ...(backendCompletionPolicy == null ? {} : { completionPolicy: backendCompletionPolicy }),
+      backendAdvisor
+    });
+
+    if (backend.result == null) {
+      const persisted = await orchestrator.checkpoint({
+        itemId,
+        owner,
+        generation,
+        checkpoint,
+        status: BlackboardStatus.BLOCKED,
+        blockers: backend.recovery.blockers
+      });
+      return freezeClone({
+        stage: BackendQaWorkflowStage.BLOCKED,
+        backend,
+        qa: null,
+        recovery: backend.recovery,
+        item: persisted.result
+      });
+    }
+
+    const result = await persistBackendRun({ itemId, owner, generation, checkpoint, backend });
+    return freezeClone({ ...result, recovery: backend.recovery });
+  }
+
+  async function runQaStage({ itemId, owner, generation, checkpoint }) {
     invariant(checkpoint.acceptedBackend != null, "QA stage requires accepted Backend provenance");
     const handoff = checkpoint.acceptedBackend.handoff;
     let qa;
@@ -269,6 +318,7 @@ export function createDurableBackendQaWorkflow({
       const persisted = await orchestrator.checkpoint({
         itemId,
         owner,
+        generation,
         checkpoint,
         status: BlackboardStatus.BLOCKED,
         blockers: [`QA context/execution failed: ${error.message}`]
@@ -291,6 +341,7 @@ export function createDurableBackendQaWorkflow({
       const submitted = await orchestrator.submit({
         itemId,
         owner,
+        generation,
         resolvedWork: [QA_WORK],
         submission: {
           kind: WORKFLOW_KIND,
@@ -320,6 +371,7 @@ export function createDurableBackendQaWorkflow({
       const persisted = await orchestrator.checkpoint({
         itemId,
         owner,
+        generation,
         checkpoint: nextCheckpoint,
         evidenceRefs: [qa.completion.decision.id],
         resolvedWork: [QA_WORK],
@@ -337,6 +389,7 @@ export function createDurableBackendQaWorkflow({
     const persisted = await orchestrator.checkpoint({
       itemId,
       owner,
+      generation,
       checkpoint,
       evidenceRefs: [qa.completion.decision.id],
       status: hardBlocked ? BlackboardStatus.BLOCKED : BlackboardStatus.REOPENED,
@@ -368,12 +421,41 @@ export function createDurableBackendQaWorkflow({
 
     invariant(item.checkpoint != null, `Blackboard item ${itemId} has no durable Backend/QA checkpoint; initialize it first`);
     const checkpoint = workflowCheckpoint(item.checkpoint);
-    await orchestrator.claim({ itemId, owner });
+    const claimed = await orchestrator.claim({ itemId, owner });
+    const generation = claimed.result.claimGeneration;
 
     if ([BackendQaWorkflowStage.BACKEND_PENDING, BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING].includes(checkpoint.stage)) {
-      return runBackendStage({ itemId, owner, checkpoint });
+      return runBackendStage({ itemId, owner, generation, checkpoint });
     }
-    return runQaStage({ itemId, owner, checkpoint });
+    return runQaStage({ itemId, owner, generation, checkpoint });
+  }
+
+  async function recoverInterrupted({ itemId, owner }) {
+    requireText(itemId, "itemId");
+    requireText(owner, "owner");
+    const item = boardItem(await orchestrator.readBlackboard(), itemId);
+    invariant(item.status === BlackboardStatus.CLAIMED, `Backend/QA interrupted recovery requires CLAIMED item; found ${item.status}`);
+    invariant(item.checkpoint != null, `Blackboard item ${itemId} has no durable Backend/QA checkpoint`);
+    const checkpoint = workflowCheckpoint(item.checkpoint);
+
+    const recovered = await orchestrator.recoverClaim({
+      itemId,
+      owner,
+      reason: `Recover interrupted ${checkpoint.stage} execution from durable workflow state`
+    });
+    const generation = recovered.result.claimGeneration;
+
+    if ([BackendQaWorkflowStage.BACKEND_PENDING, BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING].includes(checkpoint.stage)) {
+      return recoverBackendStage({ itemId, owner, generation, checkpoint });
+    }
+
+    invariant(checkpoint.stage === BackendQaWorkflowStage.QA_PENDING, `Unsupported interrupted recovery stage: ${checkpoint.stage}`);
+    return runQaStage({
+      itemId,
+      owner,
+      generation,
+      checkpoint
+    });
   }
 
   async function resume({ itemId }) {
@@ -398,5 +480,5 @@ export function createDurableBackendQaWorkflow({
     return freezeClone({ stage: workflowCheckpoint(item.checkpoint).stage, item });
   }
 
-  return Object.freeze({ initialize, advance, resume, cancel, current });
+  return Object.freeze({ initialize, advance, recoverInterrupted, resume, cancel, current });
 }
