@@ -646,26 +646,29 @@ BB-018
 question/work: Research a concrete Backend/QA review pipeline from final submission to project acceptance.
 kind: RESEARCH
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: [BB-004, BB-011]
-remaining-work:
-  - identify acceptance obligations left after Backend/QA role completion
-  - specify bounded reviewer context, artifact/evidence resolution and independent assessment production
-  - map Worker requests, PM requirements, Orchestrator dispatch and trusted acceptance as separate steps
-  - define missing-evidence, rejection, deferred-review and no-declared-review-obligation behavior
+remaining-work: []
 acceptance-criteria:
   - concrete review contract names inputs, outputs, trust authorities and failure transitions
   - evidence producer/evaluator/attestor assumptions are explicit and cannot be replaced by reviewer prose
   - proposed pipeline uses existing trust primitives and preserves current-work versus independent-follow-up semantics
 submission:
+  - PR #86
 review-requirements: [application architecture review, acceptance/trust review]
-reviews: []
-artifact-refs: []
+reviews:
+  - application architecture review passed exact design head f8e97ccaac648dd2e6ef5ca9054c4bda53fb1fd9 after correcting PM-authority laundering and durable trust-artifact boundaries
+  - acceptance/trust review passed exact design head f8e97ccaac648dd2e6ef5ca9054c4bda53fb1fd9 with evidence producer/evaluator/attestor assumptions kept explicit
+artifact-refs:
+  - docs/living/knowledge/bb018-review-to-completion.md
+  - docs/living/decisions/D010-explicit-backend-qa-project-acceptance.md
 evidence-refs:
   - packages/agentic-system/src/durable-backend-qa.js
   - packages/agentic-system/src/blackboard-orchestrator.js
   - packages/agentic-system/test/wave-d.test.js
+  - exact final-head CI #1368 green on living-doc-impact and Node 20/22/24 at bcc0cbc9e7877b6a5fc12116679820aedc340f47
+  - merge commit a3bc6c086cb74584da5c7af7c327ec758ddf3351
 blockers: []
 follow-up-refs: [BB-019]
 origin: INTENT-exharness-agentic-system; durable QA completion submits PENDING_REVIEW while concrete reviewer execution is not yet delivered
@@ -676,7 +679,7 @@ BB-019
 question/work: Deliver the concrete review-to-completion pipeline specified by BB-018.
 kind: IMPLEMENTATION
 priority: P1
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-018]
 remaining-work:
@@ -692,8 +695,10 @@ submission:
 review-requirements: [application/code review, independent acceptance-boundary review]
 reviews: []
 artifact-refs: []
-evidence-refs: [BB-018]
-blockers: [BB-018 must define the accepted concrete review and trust contract]
+evidence-refs:
+  - BB-018
+  - docs/living/decisions/D010-explicit-backend-qa-project-acceptance.md
+blockers: []
 follow-up-refs: [BB-021]
 origin: INTENT-exharness-agentic-system; implementation follow-up to BB-018
 ```
