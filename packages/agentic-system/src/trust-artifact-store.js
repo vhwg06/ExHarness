@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { promises as nodeFs } from "node:fs";
 import { join } from "node:path";
 import {
@@ -109,29 +110,54 @@ export function createJsonTrustArtifactStore({ path, fs = nodeFs }) {
     fs &&
       typeof fs.mkdir === "function" &&
       typeof fs.open === "function" &&
-      typeof fs.readFile === "function",
-    "trustArtifactStore requires filesystem mkdir/open/read capability"
+      typeof fs.readFile === "function" &&
+      typeof fs.link === "function" &&
+      typeof fs.unlink === "function",
+    "trustArtifactStore requires filesystem mkdir/open/read/link/unlink capability"
   );
+
+  async function readExisting(filePath, artifact, type) {
+    const existing = JSON.parse(await fs.readFile(filePath, "utf8"));
+    invariant(
+      canonicalize(existing) === canonicalize(artifact),
+      `${type} trust artifact digest already exists with different content`
+    );
+  }
 
   async function persist(type, raw, validate) {
     const artifact = validate(raw);
     await fs.mkdir(path, { recursive: true });
-    const filePath = join(path, digestFileName(type, artifact.digest));
+    const fileName = digestFileName(type, artifact.digest);
+    const filePath = join(path, fileName);
+    const tempPath = join(path, `.${fileName}.${randomUUID()}.tmp`);
     const serialized = `${JSON.stringify(artifact, null, 2)}\n`;
-    let handle;
+    let handle = null;
+    let tempExists = false;
+
     try {
-      handle = await fs.open(filePath, "wx");
+      handle = await fs.open(tempPath, "wx");
+      tempExists = true;
       await handle.writeFile(serialized, "utf8");
-    } catch (error) {
-      if (error?.code !== "EEXIST") throw error;
-      const existing = JSON.parse(await fs.readFile(filePath, "utf8"));
-      invariant(
-        canonicalize(existing) === canonicalize(artifact),
-        `${type} trust artifact digest already exists with different content`
-      );
+      await handle.close();
+      handle = null;
+
+      try {
+        await fs.link(tempPath, filePath);
+      } catch (error) {
+        if (error?.code !== "EEXIST") throw error;
+        await readExisting(filePath, artifact, type);
+      }
     } finally {
       if (handle != null) await handle.close();
+      if (tempExists) {
+        try {
+          await fs.unlink(tempPath);
+        } catch (error) {
+          if (error?.code !== "ENOENT") throw error;
+        }
+      }
     }
+
     return artifactRef(artifact);
   }
 
