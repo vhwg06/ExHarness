@@ -1,6 +1,10 @@
 # D014 — Application artifact manifest adapter
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
+
+Accepted: 2026-09-16
+
+Acceptance boundary: BB-039 research-method and application/architecture-boundary reviews passed exact head `5da76553060bb72ff0a69de971f665bd8131fe10`; Actions run #1603 was green and PR #90 merged as `48165251181dff3fecd9af29b8eef55007a2212b`.
 
 ## Context
 
@@ -10,7 +14,7 @@ BB-039 reproduced a concrete adapter-level gap with a deterministic weak reader:
 
 The application already has a suitable injection boundary. No evidence requires copying payloads into Blackboard, changing Core, or introducing a global artifact registry.
 
-## Proposed decision
+## Decision
 
 For consumers that require restart-safe ref-only continuation across artifact-source changes/loss, use an **optional manifest-validating `artifactReader` adapter** at the Agentic Application artifact boundary.
 
@@ -57,9 +61,11 @@ A generic artifact registry, global content-addressed store, Blackboard payload 
 - `packages/agentic-system/src/oracle.js`
 - `packages/agentic-system/src/session-handoff.js`
 - `packages/agentic-system/src/qa-contracts.js`
+- PR #90 research-method review PASS on exact head `5da76553060bb72ff0a69de971f665bd8131fe10`;
+- PR #90 application/architecture-boundary review PASS on the same exact head;
+- exact-head Actions run #1603 green;
+- merge commit `48165251181dff3fecd9af29b8eef55007a2212b`.
 
-## Adoption gate
+## Promotion boundary
 
-This decision remains **PROPOSED** until research-method and application/architecture-boundary review accept the experiment and implementation handoff.
-
-A later implementation must demonstrate unchanged-valid compatibility, changed-content rejection, producer/revision mismatch rejection, explicit unavailability, partial-set behavior and bounded lookup/hash/retention cost on the concrete Backend -> QA adapter before promotion.
+`ACCEPTED` approves the optional application adapter boundary and implementation handoff. It does **not** claim a manifest adapter is delivered runtime behavior. A later implementation must demonstrate unchanged-valid compatibility, changed-content rejection, producer/revision mismatch rejection, explicit unavailability, partial-set behavior and bounded lookup/hash/retention cost on the concrete Backend -> QA adapter before runtime promotion.
