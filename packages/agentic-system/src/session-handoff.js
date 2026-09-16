@@ -120,6 +120,8 @@ function workSummary(item) {
     dependsOn: item.dependsOn ?? [],
     remainingWork: item.remainingWork ?? [],
     blockers: item.blockers ?? [],
+    checkpoint: item.checkpoint ?? null,
+    checkpointedBy: item.checkpointedBy ?? null,
     reviewRequirements: item.reviewRequirements ?? [],
     reviews: item.reviews ?? [],
     findings: item.findings ?? [],
