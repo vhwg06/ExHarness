@@ -12,7 +12,7 @@ Should ExHarness immediately converge the repository Markdown Blackboard and the
 
 A Blackboard is canonical only within one explicit project identity.
 
-Current ExHarness evidence does not show Markdown and JSON as two active writers of the same project. The repository Markdown Board coordinates development of ExHarness itself, while current JSON stores are caller-selected runtime project stores used by application tests/evaluation/consumers.
+Current ExHarness evidence does not show Markdown and JSON as two active writers of the same project. The repository Markdown Board coordinates development of ExHarness itself. Current in-repository JSON-store instantiations are tests/evaluation using caller-selected temporary paths; the public store API allows a caller-selected runtime path, but this repository does not yet demonstrate an external production consumer.
 
 Therefore the immediate architecture is:
 
@@ -71,7 +71,7 @@ Bidirectional writable Markdown↔JSON synchronization is not acceptable.
 
 - `packages/agentic-system/src/blackboard-orchestrator.js`
 - `packages/agentic-system/src/session-handoff.js`
-- current JSON-store usage in application tests/evaluation uses caller-selected temporary paths;
+- current in-repository JSON-store usage in application tests/evaluation uses caller-selected temporary paths;
 - `docs/living/blackboard.md` current Storage boundary;
 - BB-014 research artifact `../knowledge/bb014-project-state-authority.md`;
 - PR #78 post-merge Markdown lifecycle lag as evidence of manual repository reconciliation pressure, not JSON/Markdown divergence.
