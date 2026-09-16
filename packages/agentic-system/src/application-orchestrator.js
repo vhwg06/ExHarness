@@ -274,7 +274,13 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
       addUnique(target.evidenceRefs, normalizedEvidence);
       addReviewRequirements(target, normalizedRequirements);
 
-      if (normalizedRequirements.length > 0 && target.submission != null && normalizedBlockers.length === 0) {
+      if (
+        normalizedRequirements.length > 0 &&
+        target.submission != null &&
+        target.status !== BlackboardStatus.BLOCKED &&
+        target.blockers.length === 0 &&
+        normalizedBlockers.length === 0
+      ) {
         target.status = BlackboardStatus.PENDING_REVIEW;
       }
 
