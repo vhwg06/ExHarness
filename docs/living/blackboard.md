@@ -322,7 +322,7 @@ follow-up-refs: [BB-022]
 origin: INTENT-exharness-agentic-system; production evaluation of the delivered BB-004 workflow
 ```
 
-The promoted PM/SA topology in D003 is not yet claimed as a concrete source role implementation. Concrete PM context, SA context and vertical reviewer slices must be added only when their real WorkOrder/context/result pressure is implemented and tested; they must not be fabricated into current-state docs.
+The bounded PM/SA coordination slice selected by BB-020 is implemented through application-local PM/SA contexts, durable proposal/assessment refs and Orchestrator-owned graph/review mutation. This does not establish a generic role framework or a concrete vertical reviewer Worker beyond the delivered independent project-acceptance/review pipeline.
 
 ## ExHarness Core
 
@@ -512,7 +512,7 @@ Priority expresses impact and ordering, not a new runtime lifecycle state. `kind
 | PM/SA architecture and coordination | BB-020 | BB-021 | P2 | User intent drives bounded decomposition, sequencing and architecture review. |
 | Evaluation and evidence pipeline | existing BB-005 | BB-022 | P1 | Upgrade decisions use reproducible task, quality, cost and recovery evidence. |
 
-BB-014/015, BB-016/017, BB-018/019 and BB-022 are delivered. BB-005 is blocked on representative production evidence. BB-009/010 retain their existing evidence gates; MCP support by itself does not unblock them.
+BB-014/015, BB-016/017, BB-018/019, BB-020/021 and BB-022 are delivered. BB-005 is blocked on representative production evidence. BB-009/010 retain their existing evidence gates; MCP support by itself does not unblock them.
 
 ```text
 BB-014
@@ -770,22 +770,37 @@ BB-021
 question/work: Implement the evidence-supported PM/SA coordination slice selected by BB-020 and connect it to concrete review dispatch.
 kind: IMPLEMENTATION
 priority: P2
-status: READY
+status: DONE
 owner:
 depends-on: [BB-019, BB-020]
-remaining-work:
-  - implement only the concrete role contexts and proposal contracts accepted by BB-020
-  - validate dependency/review/re-planning proposals through application orchestration
-  - persist coordination decisions and required artifact refs for fresh-session continuation
+remaining-work: []
 acceptance-criteria:
   - one user-rooted project progresses through coordination, execution and required review across sessions
   - PM cannot invent or overwrite user intent and SA cannot assume project-management authority
   - role proposals cannot bypass claim, review, completion or follow-up reconciliation rules
 submission:
+  - PR #104
 review-requirements: [application/code review, PM/SA authority review]
-reviews: []
-artifact-refs: []
-evidence-refs: [BB-019, BB-020]
+reviews:
+  - application/code semantic review PASS on exact PR #104 head 80b9da99a416d6041ffb5f052a612dbde9460a59
+  - PM/SA authority semantic review PASS on exact PR #104 head 80b9da99a416d6041ffb5f052a612dbde9460a59
+artifact-refs:
+  - packages/agentic-system/src/application-orchestrator.js
+  - packages/agentic-system/src/pm-sa-coordination.js
+  - packages/agentic-system/src/pm-sa-coordination-store.js
+  - packages/agentic-system/test/bb021-pm-sa-coordination.test.js
+  - packages/agentic-system/test/bb021-work-graph-extension.test.js
+  - packages/agentic-system/test/bb021-replay-fencing.test.js
+  - docs/worktree/agentic-application/architecture.md
+  - docs/worktree/agentic-application/contracts.md
+  - docs/worktree/agentic-application/workflow.md
+evidence-refs:
+  - BB-019
+  - BB-020
+  - exact-head CI #1771 green on living-doc-impact and Node 20/22/24
+  - application/code semantic review record 5225715572 on PR #104
+  - PM/SA authority semantic review record 5225717627 on PR #104
+  - user-rooted fresh-session coordination/review integration and replay-fencing regressions in PR #104
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional implementation follow-up to BB-020
