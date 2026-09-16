@@ -28,6 +28,10 @@ function snapshotDigest(snapshot) {
   return createHash("sha256").update(serializeSnapshot(snapshot)).digest("hex");
 }
 
+function rootPath(path) {
+  return `${path}.root`;
+}
+
 function commitPath(path, baseToken) {
   return `${path}.commit-${baseToken}`;
 }
@@ -82,22 +86,52 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300
       typeof fs.writeFile === "function" &&
       typeof fs.mkdir === "function" &&
       typeof fs.link === "function" &&
+      typeof fs.rename === "function" &&
       typeof fs.unlink === "function",
     "Blackboard store requires filesystem read/write/hard-link capability"
   );
 
-  async function loadRoot() {
+  async function readLegacyProjectionOrEmpty() {
     try {
-      return freezeClone({
-        token: "root",
-        snapshot: parseSnapshot(await fs.readFile(path, "utf8"), path)
-      });
+      return parseSnapshot(await fs.readFile(path, "utf8"), path);
     } catch (error) {
-      if (error?.code === "ENOENT") {
-        return freezeClone({ token: "root", snapshot: defineBlackboardSnapshot() });
-      }
+      if (error?.code === "ENOENT") return defineBlackboardSnapshot();
       throw error;
     }
+  }
+
+  async function ensureRoot() {
+    const authorityPath = rootPath(path);
+    try {
+      return parseSnapshot(await fs.readFile(authorityPath, "utf8"), authorityPath);
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+    }
+
+    await fs.mkdir(dirname(path), { recursive: true });
+    const initial = await readLegacyProjectionOrEmpty();
+    const tempPath = `${authorityPath}.${randomUUID()}.tmp`;
+    await fs.writeFile(tempPath, serializeSnapshot(initial), "utf8");
+
+    try {
+      await fs.link(tempPath, authorityPath);
+    } catch (error) {
+      if (error?.code !== "EEXIST") throw error;
+    } finally {
+      try {
+        await fs.unlink(tempPath);
+      } catch (cleanupError) {
+        if (cleanupError?.code !== "ENOENT") {
+          // Root publication, when present, is authoritative. Temp cleanup failure must not rewrite authority.
+        }
+      }
+    }
+
+    return parseSnapshot(await fs.readFile(authorityPath, "utf8"), authorityPath);
+  }
+
+  async function loadRoot() {
+    return freezeClone({ token: "root", snapshot: await ensureRoot() });
   }
 
   async function readCommittedSuccessor(head) {
@@ -170,6 +204,29 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300
     return true;
   }
 
+  async function refreshCompatibilityProjection() {
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      const head = await loadCommittedHead();
+      const tempPath = `${path}.projection-${randomUUID()}.tmp`;
+      await fs.writeFile(tempPath, serializeSnapshot(head.snapshot), "utf8");
+      try {
+        await fs.rename(tempPath, path);
+      } finally {
+        try {
+          await fs.unlink(tempPath);
+        } catch (cleanupError) {
+          if (cleanupError?.code !== "ENOENT") {
+            // Projection cleanup has no authority over the immutable commit chain.
+          }
+        }
+      }
+
+      const after = await loadCommittedHead();
+      if (after.token === head.token) return true;
+    }
+    return false;
+  }
+
   return Object.freeze({
     async load() {
       const head = await loadCommittedHead();
@@ -182,7 +239,14 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300
       const next = clone(current.snapshot);
       const result = await mutator(next);
       const normalized = defineBlackboardSnapshot(next);
-      await publishSuccessor(current, normalized);
+      const committed = await publishSuccessor(current, normalized);
+      if (committed) {
+        try {
+          await refreshCompatibilityProjection();
+        } catch {
+          // The immutable successor chain is commit authority. Projection failure cannot turn a committed transaction into an unknown outcome.
+        }
+      }
       return freezeClone({ snapshot: normalized, result });
     }
   });
