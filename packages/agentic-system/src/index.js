@@ -49,9 +49,9 @@ export {
   ReviewRequirementSource,
   ReviewVerdict,
   createApplicationOrchestrator,
-  createJsonBlackboardStore,
   defineBlackboardSnapshot
 } from "./blackboard-orchestrator.js";
+export { createJsonBlackboardStore } from "./blackboard-store.js";
 export {
   SessionHandoffRootKind,
   UserIntentSource,
