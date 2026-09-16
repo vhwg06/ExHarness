@@ -8,7 +8,7 @@ Promoted: 2026-09-16
 
 Acceptance boundary: BB-016 application-recovery/Core-effect review accepted the source-backed failure matrix and recovery split on PR #82.
 
-Promotion boundary: BB-017 implements execution/review generation fencing, explicit takeover, concrete Backend Core session/effect recovery and non-mutating QA recovery on PR #83. Promotion is reflected in the Agentic Application worktree state/contracts/workflow/decisions; merge remains gated by exact-head CI and review.
+Promotion boundary: BB-017 implements execution/review generation fencing, explicit takeover, concrete Backend Core session/effect recovery and non-mutating QA recovery on PR #83. PR #83 was accepted after application/code and crash-recovery reviews were re-affirmed on exact head `ac86472a2f5e1362cc0c743833ed7e18d6fa0d99`, exact-head CI #1473 passed, and merge commit `d755605fe8b917c22d79b42073b18f0265ce8474` landed on `main`.
 
 ## Question
 
@@ -58,6 +58,8 @@ Backend is mutating. Before an interrupted Backend stage can be retried or conti
 The implemented BB-017 composition persists the Backend Core session plus AVO action-effect journal through the concrete `createJsonBackendSessionStore(...)` and then recovers the exact Backend WorkOrder/Context.
 
 An **absence** of persisted Core state is usable as recovery evidence only when the configured SessionStore explicitly declares durable recovery authority. `createJsonBackendSessionStore(...)` declares `supportsDurableRecovery: true`; the default in-memory store does not. Therefore an empty volatile store fails closed instead of being interpreted as proof that no interrupted external effect occurred.
+
+The concrete durable Backend SessionStore also fences stale writers by exact expected revision and immutable single-successor publication; elapsed-time lock takeover is not persistence authority.
 
 Outcomes:
 
@@ -146,19 +148,24 @@ Research/acceptance evidence:
 - `packages/agentic-system/src/durable-backend-qa.js`: claim-before-execute and durable stage checkpoints;
 - `packages/core-harness/test/recovery-composition.test.js`: confirmed-effect consumption, fail-closed ambiguity and idempotent retry/reference recovery composition;
 - BB-016 research artifact `../knowledge/bb016-interrupted-work-recovery.md`;
-- PR #82 application-recovery/Core-effect review and CI.
+- PR #82 application-recovery/Core-effect review on exact head `b3072f5a175631ea1063c38043f1fffbd64a7843`;
+- exact-head CI #1251;
+- merge commit `ad61a2b037b99384e16fdd5245ee04f43dc36083`.
 
 Implementation/promotion evidence:
 
 - `packages/agentic-system/src/blackboard-orchestrator.js`: claim/review generations plus explicit recovery transitions;
 - `packages/agentic-system/src/session-handoff.js`: attempt generation and active-review continuation projection;
-- `packages/agentic-system/src/backend-session-store.js`: concrete durable Backend Core/effect session store and explicit durable-recovery authority;
+- `packages/agentic-system/src/backend-session-store.js`: concrete durable Backend Core/effect session store, explicit durable-recovery authority and stale-writer fencing;
 - `packages/agentic-system/src/backend-worker.js`: effect-aware Backend recovery with fail-closed empty non-durable state;
 - `packages/agentic-system/src/backend-application.js`: recovered result composition through ordinary completion policy;
 - `packages/agentic-system/src/durable-backend-qa.js`: concrete Backend/QA interrupted-stage recovery;
+- `packages/agentic-system/test/backend-session-store.test.js`: concurrent/stale writer exclusion contracts;
 - `packages/agentic-system/test/wave-d.test.js`: stale execution/review generation fencing;
 - `packages/agentic-system/test/interrupted-recovery.test.js`: empty non-durable fail-closed, confirmed no-redispatch, same-key idempotent retry and non-reconcilable block contracts;
-- PR #83 Node 20/22/24 source/test matrix passed before current-doc promotion; final exact-head CI gates merge.
+- PR #83 application/code and crash-recovery reviews re-affirmed on exact head `ac86472a2f5e1362cc0c743833ed7e18d6fa0d99`;
+- exact-head CI #1473;
+- merge commit `d755605fe8b917c22d79b42073b18f0265ce8474`.
 
 ## What would change this decision
 

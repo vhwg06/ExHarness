@@ -512,7 +512,7 @@ Priority expresses impact and ordering, not a new runtime lifecycle state. `kind
 | PM/SA architecture and coordination | BB-020 | BB-021 | P2 | User intent drives bounded decomposition, sequencing and architecture review. |
 | Evaluation and evidence pipeline | existing BB-005 | BB-022 | P1 | Upgrade decisions use reproducible task, quality, cost and recovery evidence. |
 
-BB-014/015 and BB-022 are delivered. BB-005 is blocked on representative production evidence. The next eligible P1 research tracks are BB-016 and BB-018; delivery order continues to favor interrupted-work recovery and concrete review before broader role orchestration. BB-009/010 retain their existing evidence gates; MCP support by itself does not unblock them.
+BB-014/015, BB-016/017 and BB-022 are delivered. BB-005 is blocked on representative production evidence. The next eligible P1 research track is BB-018; delivery order continues to favor concrete review before broader role orchestration. BB-009/010 retain their existing evidence gates; MCP support by itself does not unblock them.
 
 ```text
 BB-014
@@ -585,29 +585,30 @@ BB-016
 question/work: Research safe continuation after interruption inside claimed execution or active review, across Application and Core recovery boundaries.
 kind: RESEARCH
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: [BB-004, BB-007, BB-012]
-remaining-work:
-  - map crashes after claim, during Backend/QA execution, after an external effect, before checkpoint and during review
-  - distinguish lost claim ownership, lost review dispatch, Core effect ambiguity and completed-stage continuation
-  - compare explicit takeover, ownership generations and lease policies without assuming elapsed time proves a Worker stopped
-  - specify how the concrete application consumer resolves Core effect/evidence state before retrying a stage
-  - recover active review key, reviewer identity and exact subject from the handoff surface; current workSummary omits activeReview (review R4)
+remaining-work: []
 acceptance-criteria:
   - failure matrix cites current claim/checkpoint/review behavior and executable reproduction scenarios
   - accepted design rejects stale owners and stale review results after takeover
   - unknown effect outcomes require reconciliation or escalation before redispatch
   - design preserves D005 unless new consumer evidence justifies reopening the facade decision
 submission:
+  - PR #82
 review-requirements: [application recovery review, Core effect-boundary review]
-reviews: []
-artifact-refs: []
+reviews:
+  - application-recovery/Core-effect review PASS on exact head b3072f5a175631ea1063c38043f1fffbd64a7843 and accepted D009
+artifact-refs:
+  - docs/living/knowledge/bb016-interrupted-work-recovery.md
+  - docs/living/decisions/D009-generation-fenced-interrupted-recovery.md
 evidence-refs:
   - packages/agentic-system/src/blackboard-orchestrator.js
   - packages/agentic-system/src/durable-backend-qa.js
   - packages/core-harness/test/recovery-composition.test.js
   - docs/living/knowledge/project-review-2026-09-16.md (R4; active review projection omission)
+  - exact-head CI #1251 green on living-doc-impact and Node 20/22/24
+  - merge commit ad61a2b037b99384e16fdd5245ee04f43dc36083
 blockers: []
 follow-up-refs: [BB-017]
 origin: INTENT-exharness-agentic-system; current claim accepts only READY/REOPENED while interruption can leave CLAIMED/REVIEWING state
@@ -618,26 +619,41 @@ BB-017
 question/work: Implement the accepted interrupted-work and review recovery path for the concrete Backend -> QA application.
 kind: IMPLEMENTATION
 priority: P1
-status: BLOCKED
+status: DONE
 owner:
 depends-on: [BB-016]
-remaining-work:
-  - implement explicit recovery transitions and stale-owner/reviewer protection from the accepted design
-  - compose application continuation with existing Core effect recovery where the failure matrix requires it
-  - expose the recovery obligation and required refs to a fresh session
-  - preserve active review identity/target in fresh-session continuation and verify it against current Board state
+remaining-work: []
 acceptance-criteria:
   - process interruption at each accepted failure boundary can resume or explicitly block with durable reasons
   - confirmed effects are not dispatched again and ambiguous effects are not guessed complete
   - old owners and superseded review targets cannot mutate resumed work
   - existing successful-stage handoff, remediation and review authority contracts remain valid
 submission:
+  - PR #83
 review-requirements: [application/code review, crash-recovery review]
-reviews: []
-artifact-refs: []
-evidence-refs: [BB-016]
-blockers: [BB-016 must establish an accepted recovery protocol and failure scenarios]
-follow-up-refs: []
+reviews:
+  - application/code review PASS on head cd79d42ba9c8579b9a90ce232453aabe4f83150d
+  - crash-recovery review PASS on head cd79d42ba9c8579b9a90ce232453aabe4f83150d
+  - both review conclusions re-affirmed on exact head ac86472a2f5e1362cc0c743833ed7e18d6fa0d99 after the final docs-only delta
+artifact-refs:
+  - packages/agentic-system/src/blackboard-orchestrator.js
+  - packages/agentic-system/src/session-handoff.js
+  - packages/agentic-system/src/backend-session-store.js
+  - packages/agentic-system/src/backend-worker.js
+  - packages/agentic-system/src/backend-application.js
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/test/backend-session-store.test.js
+  - packages/agentic-system/test/interrupted-recovery.test.js
+  - packages/agentic-system/test/wave-d.test.js
+  - docs/living/decisions/D009-generation-fenced-interrupted-recovery.md
+evidence-refs:
+  - generation-fencing contract tests for claim/checkpoint/submit/block and review subject replacement
+  - confirmed-effect no-redispatch, same-key idempotent retry, non-reconcilable fail-closed and empty non-durable fail-closed recovery contracts
+  - Backend SessionStore concurrent/stale writer exclusion contracts
+  - exact-head CI #1473 green on living-doc-impact and Node 20/22/24
+  - merge commit d755605fe8b917c22d79b42073b18f0265ce8474
+blockers: []
+follow-up-refs: [BB-018]
 origin: INTENT-exharness-agentic-system; implementation follow-up to BB-016
 ```
 
@@ -795,9 +811,9 @@ origin: INTENT-exharness-agentic-system; tooling child of BB-005, which retains 
 
 ## Additional findings and stateful research roadmap
 
-Review evidence: `knowledge/project-review-2026-09-16.md`, inspected revision `ad61a2b037b99384e16fdd5245ee04f43dc36083`. R1-R4 were reproduced with isolated adapters; they do not assert production incidents. BB-023/024/025 address newly grounded defects without erasing delivered history. R4 extends BB-016/017. BB-026/027 define a research consumer before choosing an abstraction.
+Review evidence: `knowledge/project-review-2026-09-16.md`, inspected revision `ad61a2b037b99384e16fdd5245ee04f43dc36083`. R1-R4 were reproduced with isolated adapters; they do not assert production incidents. BB-023/024/025 address newly grounded defects without erasing delivered history. R4 was closed by the delivered BB-016/017 recovery track. BB-026/027 define a research consumer before choosing an abstraction.
 
-Recommended next sequence: BB-023 and BB-024 (persistence and cancellation correctness), BB-025 (graph integrity), then continue BB-016/018 and the research pilot. These fixes can be investigated independently. BB-014/015/022 remain delivered; BB-005 still requires representative production evidence.
+Recommended next sequence: BB-024 (cancellation correctness), BB-025 (graph integrity), then BB-018 and the research pilot. BB-023 and BB-016/017 are delivered. BB-014/015/022 remain delivered; BB-005 still requires representative production evidence.
 
 ```text
 BB-023
@@ -1082,7 +1098,7 @@ owner:
 depends-on: []
 remaining-work:
   - Map actual call/data ownership for dispatch, context, persistent state, effects, evidence and completion using existing source consumers.
-  - Identify duplicated sequencing, missing links and incompatible assumptions using concrete failure scenarios, including BB-016 findings when available.
+  - Identify duplicated sequencing, missing links and incompatible assumptions using concrete failure scenarios, including delivered BB-016/017 findings.
   - Compare explicit composition with a narrow adapter/facade; document a no-extraction outcome when repetition is insufficient.
 acceptance-criteria:
   - The architecture proposal includes executable scenario evidence, dependency direction and named owners for each state/decision boundary.
@@ -1294,10 +1310,10 @@ status: READY
 owner:
 depends-on: []
 research-hypothesis: Controlled replay may reveal regressions and distinguish which workflow decision caused an outcome before a policy is adopted.
-target-consumer: Agentic evaluation and regression verification for BB-023/024 plus the BB-016 recovery investigation
+target-consumer: Agentic evaluation and regression verification for BB-023/024 plus the delivered BB-017 recovery regression contracts
 implementation-output: A runnable fault-schedule/replay helper integrated with the existing application evaluation or focused regression tests
 value-gate: Reproduce at least one documented current lifecycle/persistence failure and distinguish the faulty implementation from its fix under the same schedule, with no real external mutation
-scope-boundary: BB-022 remains the reference evaluation gate; BB-016 and BB-023/024 own recovery/defect fixes. This research evaluates reusable experimental tooling, not their implementation.
+scope-boundary: BB-022 remains the reference evaluation gate; delivered BB-016/017 and BB-023/024 own their recovery/defect boundaries. This research evaluates reusable experimental tooling, not their implementation.
 remaining-work:
   - Define the minimum recorded scenario inputs, adapter responses, revisions and policy identity needed for deterministic fixture replay.
   - Compare two policies under the same artifact outage, cancellation, retry and review-delay schedules; inject failures around durable boundaries.
