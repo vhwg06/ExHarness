@@ -54,4 +54,14 @@ Current constraints that must shape Agentic Application implementation. This is 
 - Application workflow state is distinct from ExHarness runtime/persistent state and from artifact storage.
 - Durable application persistence now stores Blackboard checkpoints, submissions, review state and handoff references. It remains distinct from ExHarness runtime/effect state and from external artifact payloads.
 
+## PROJECT IDENTITY
+
+- Blackboard canonical authority is scoped by explicit project identity rather than inferred from store path, user-intent id, work id or session/owner identity.
+- A project-bound session-handoff surface persists the stable `projectId` on the durable `USER_INTENT_ROOT` and exposes it in the handoff projection.
+- Fresh project-bound sessions fail closed when the expected project id differs from the stored project id.
+- An unbound legacy reader cannot silently open a project-bound Board; a project-bound reader cannot silently assign identity to a legacy Board.
+- Project identity belongs to Board/root authority, not individual work-item provenance.
+- Legacy unbound Board/session-handoff compatibility remains available where project-identity handoff safety is not claimed.
+- This does not make JSON the canonical ExHarness repository Board, introduce a project registry, or synchronize Markdown and JSON representations.
+
 Remove or replace a decision when concrete slices invalidate it; do not preserve obsolete abstractions for compatibility with design-only code.
