@@ -234,9 +234,44 @@ REVIEWING
 
 The Orchestrator does not accept a naked caller-provided review verdict. Review decision/evidence/signature/authority must pass the application-provided trust policy over the exact active review target.
 
-Review requirements may be Worker-requested when a real Worker raises that need or PM-required separately. `createDurableBackendQaWorkflow(...)` does not impersonate either source after QA completion. Current source still does not implement concrete PM/SA role execution or vertical reviewer Workers.
+Review requirements may be Worker-requested when a real Worker raises that need or PM-required separately. `createDurableBackendQaWorkflow(...)` does not impersonate either source after QA completion. Current source implements a bounded application-local PM/SA coordination slice for proposal/assessment/context/review-requirement handling, but still has no generic horizontal-role runtime or concrete vertical reviewer Worker implementation.
 
 Elapsed time or a future lease/heartbeat signal may indicate suspected liveness failure, but current recovery requires an explicit transition. Time alone does not transfer correctness authority or prove effect outcome.
+
+## Bounded PM / SA coordination workflow
+
+Horizontal coordination is opt-in and project-bound:
+
+```text
+fresh/current session
+ -> reconstruct ApplicationOrchestrator + session handoff
+ -> createPmSaCoordinationController(...)
+
+SA path
+ -> prepareSaContext(target, architectureFacts, evidenceRefs)
+ -> produce evidence-bound SA architecture assessment
+ -> persist assessment artifact
+ -> assessment is proposal/judgment state only
+
+PM path
+ -> preparePmContext(target, coordinationFacts, relevant work, optional SA ref)
+ -> produce PM proposal bound to exact target lifecycle tuple
+ -> validate project/root/target/evidence authority
+ -> persist proposal artifact
+ -> Orchestrator.extendWorkGraph(...)
+      -> recheck exact target inside same transaction
+      -> atomically apply graph/refs/blockers/PM review requirements
+```
+
+The PM proposal may add fresh prerequisite work and dependency edges only for the current target or work created by that proposal. A blocker may link existing unresolved work instead of inventing replacement work. The Orchestrator validates the complete graph before persistence; conflicting duplicate work, cycles and mutation from non-coordinatable target states fail closed.
+
+PM cannot rewrite user intent or issue architecture/completion/review verdicts. SA cannot own dependency, priority, timeline or lifecycle mutation. Neither role writes Board state directly.
+
+SA assessments must reference evidence currently linked to the exact target. PM proposals bind `{itemId, status, claimGeneration, reviewGeneration}` so a delayed proposal cannot apply after the target lifecycle changes. A no-op proposal is still freshness-checked before returning fallback.
+
+Reapplying the same proposal is safe once its canonical proposal ref is linked from Blackboard; replay does not duplicate fresh work or review requirements. If a coordination artifact is written but the canonical Board mutation fails, that orphan artifact is not project lifecycle truth because no Blackboard ref points to it. Adding a PM review requirement never clears an existing blocker; blocked work remains blocked until the ordinary resume/reopen lifecycle resolves that blocker.
+
+Fresh-session coordination recovery reads the project handoff, collects only PM/SA artifact refs already linked from Blackboard and dereferences those refs through the concrete coordination artifact store. Conversation history is not required.
 
 ## Fresh-session handoff
 
