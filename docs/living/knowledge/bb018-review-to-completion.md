@@ -4,13 +4,13 @@ Status: **EVIDENCE / JUDGMENT CANDIDATE**
 
 ## Question
 
-How should the delivered durable Backend -> QA workflow move from role-local acceptance to independently grounded project acceptance without inventing a generic Reviewer framework, laundering PM authority through configuration, or assuming durable evidence/decision artifacts can be dereferenced when current source does not provide that reader yet?
+How should the delivered durable Backend -> QA workflow move from role-local acceptance to independently grounded project acceptance without inventing a generic Reviewer framework, laundering PM authority through configuration, or assuming trust artifacts remain available across sessions when current source persists only their refs?
 
 ## Current source-backed boundaries
 
-### Backend and QA completion are role-local
+### Role completion is not project completion
 
-Backend completion establishes grounded implementation claims such as:
+Backend completion grounds implementation claims such as:
 
 ```text
 backend.mutation
@@ -18,21 +18,21 @@ backend.typecheck
 backend.tests
 ```
 
-QA completion separately establishes grounded verification claims such as:
+QA completion separately grounds verification claims such as:
 
 ```text
 qa.behavior
 qa.regression
 ```
 
-Both produce `DecisionArtifact`s at `TrustBoundary.ACCEPTANCE`, but those decisions belong to their concrete role-completion policies. They do not authorize the enclosing Blackboard item to become project `DONE`.
+Both produce `DecisionArtifact`s at `TrustBoundary.ACCEPTANCE`, but those decisions belong to their concrete role-completion policies.
 
 ```text
 role-local ACCEPT != project acceptance
 Worker submission != DONE authority
 ```
 
-### Durable Backend -> QA final submission
+### Durable final submission is ref-only
 
 When QA accepts, `createDurableBackendQaWorkflow(...)` submits:
 
@@ -46,26 +46,22 @@ artifactRefs[]
 evidenceRefs[]
 ```
 
-The workflow then reports `AWAITING_REVIEW`.
+The Blackboard therefore retains review lineage refs without carrying application/trust artifact payloads.
 
-This is a suitable project-review target because the Blackboard fixes the accepted revision and ref lineage without copying application-artifact payloads into coordination state.
-
-### The Orchestrator already owns trusted review lifecycle
+### Existing Orchestrator review lifecycle
 
 `ApplicationOrchestrator` already separates:
 
 ```text
 Worker REQUEST
 PM REQUIRE
-Orchestrator DISPATCH (`beginReview`)
+Orchestrator DISPATCH
 Reviewer/evaluator ASSESS
-Trust boundary validates evidence/decision/attestation
-Orchestrator RECONCILE findings
+Core trust validation
+Orchestrator RECONCILE
 ```
 
-`beginReview(...)` freezes an exact review subject over the item, requirement key and submission. The interrupted-review lane BB-016/017 additionally introduces review-generation fencing; BB-019 must compose that behavior when it is available rather than create another recovery mechanism.
-
-`recordAssessment(...)` accepts a Core trust bundle rather than a naked verdict:
+`recordAssessment(...)` consumes a Core bundle:
 
 ```text
 EvidenceArtifact[]
@@ -73,76 +69,121 @@ DecisionArtifact
 Attestation
 ```
 
-Current source requires the scheduled reviewer to differ from the submission producer, verifies reviewer/evaluator authority, verifies evidence-producer authority, requires verifier/reviewer/attestor roles, requires signature validation and enforces independent issuer/evidence-producer authority relative to the submission producer.
+Current source requires the scheduled reviewer to differ from the submission producer, verifies evaluator/evidence/issuer authority, requires reviewer/verifier/attestor roles, validates signatures, and enforces issuer/evidence-producer independence relative to the subject producer.
 
-Important precision:
+That is not the same as automatic pairwise independence among reviewer, verifier and attestor. A project policy may require distinct identities, but BB-018 must not claim the Core primitive enforces that by default.
 
-```text
-current independence guarantee
-!= automatic pairwise separation of reviewer, verifier and attestor
-```
+BB-016/017 separately owns review-attempt generation fencing and interruption recovery. BB-019 composes that behavior when available.
 
-A concrete project policy may require distinct identities, but that is policy-specific. BB-018 must not claim the Core primitive enforces a stronger separation than source implements.
+## Gap 1 — no declared final project review obligation
 
-## Gap 1 — final submission can be stranded with no review requirement
+`submit(...)` moves work to `PENDING_REVIEW` even when `reviewRequests` is empty.
 
-`submit(...)` transitions to `PENDING_REVIEW` even when `reviewRequests` is empty.
+`beginReview(...)` requires a persisted matching requirement.
 
-`beginReview(...)` requires a matching persisted review requirement.
-
-The durable Backend -> QA workflow currently calls `submit(...)` without a Worker review request. Therefore the final QA submission can legally persist as:
+The current durable Backend -> QA workflow can therefore end as:
 
 ```text
 PENDING_REVIEW
 reviewRequirements = []
 ```
 
-No `beginReview(...)` call is legal until a PM-sourced requirement exists.
+This must not become auto-acceptance. The concrete composition is missing a mandatory project acceptance obligation.
 
-This does **not** mean QA should auto-authorize project completion. It means the concrete composition is missing an explicit project acceptance obligation.
+## Gap 2 — PM authority cannot be invented by configuration
 
-## Gap 2 — Blackboard refs are not yet a durable trust-artifact resolver
+D003 says:
 
-The final submission persists Backend/QA decision ids/digests and other refs. The current application has an `artifactReader` for application artifacts, but no source-backed durable reader for project-review trust artifacts such as:
+```text
+PM/project coordination may REQUIRE review because of project obligations
+```
+
+A project configuration object may transport a PM-authored requirement, but:
+
+```text
+configuration exists
+!= PM authority proven
+```
+
+The current `requireReview(... source: PM ...)` API also does not cryptographically authenticate PM identity. BB-019 must expose that as an application authority assumption instead of pretending the config object itself is the authority.
+
+A Worker must not fabricate the final project review as a Worker request merely to make the item dispatchable.
+
+## Gap 3 — trust-artifact refs are not durable payload storage
+
+Backend/QA completion creates Decision/Evidence artifacts in process memory. The durable workflow then persists ids/digests into Blackboard state.
+
+Current Agentic Application source has an `artifactReader` for application artifacts but no durable trust-artifact payload store that guarantees a fresh session can resolve:
 
 ```text
 DecisionArtifact by { id, digest }
 EvidenceArtifact by { id, digest }
 ```
 
-A `DecisionArtifact` itself contains an evidence manifest of refs, not the durable evidence payload store.
-
-Therefore a fresh review session cannot infer:
+Therefore:
 
 ```text
-I have an id/digest
-=> I can dereference the original decision/evidence artifact
+Blackboard has ref
+!= payload was durably stored
+!= fresh session can dereference it
 ```
 
-without an explicit adapter/store provided by the application.
+A reader alone is insufficient if the artifact was never written durably.
 
-This is a concrete BB-019 implementation boundary. Blackboard remains ref-only coordination state; BB-019 must not solve this by copying full trust bundles into Blackboard.
+## Required trust-artifact storage invariant
 
-## Acceptance obligations after QA completion
+BB-019 needs one bounded application-provided durable `trustArtifactStore` or source-backed equivalent.
 
-The first project-level review should answer only the obligations not already owned by Backend/QA role completion.
+Minimum semantics:
 
-For the concrete Backend -> QA workflow, project acceptance must establish:
+```text
+putDecision(DecisionArtifact) -> { id, digest }
+putEvidence(EvidenceArtifact) -> { id, digest }
+readDecision({ id, digest }) -> DecisionArtifact
+readEvidence({ id, digest }) -> EvidenceArtifact
+```
 
-1. **submission lineage** — one exact accepted revision plus intact Backend/QA decision refs;
-2. **trust-artifact resolvability** — required prior decision/evidence refs can be resolved from declared durable sources and their digests validated;
-3. **declared application-artifact availability** — application refs required for project acceptance can be resolved through their declared adapter;
-4. **independent project evidence** — acceptance claims are produced by an authorized verifier and are bound to the exact active review subject;
-5. **acceptance-policy satisfaction** — all claims required by the concrete project acceptance policy are satisfied under configured trust rules;
-6. **no unresolved current-work blocker** — a trusted ACCEPTED decision contains no unresolved blockers and no unreconciled current-work finding remains.
+The store must validate artifact identity/digest on write and read.
 
-The reviewer does not repeat Backend or QA merely because their artifacts exist. Prior role decisions are lineage/evidence inputs only where the project policy explicitly requires them.
+The durability order is:
 
-## Concrete review contract
+```text
+persist immutable/content-addressed trust artifact
+-> confirm durable { id, digest }
+-> only then persist that ref into Blackboard checkpoint/submission
+```
 
-### Project review requirement
+A crash after artifact write but before the Blackboard ref may leave an orphaned immutable payload. That is acceptable cleanup pressure.
 
-Use one concrete project obligation, for example:
+The reverse order is not acceptable:
+
+```text
+Blackboard ref committed
+-> payload never became durable
+```
+
+because a later session would hold an authoritative lifecycle ref to unavailable trust evidence.
+
+The store owns payload durability/lookup only. Blackboard remains lifecycle authority; the store must not become a second work-status source of truth.
+
+This concrete store does not justify a universal Oracle provider framework or copying trust payloads into Blackboard.
+
+## Project acceptance obligations after QA
+
+The first project-level review must establish only obligations not already owned by Backend/QA role completion:
+
+1. **submission lineage** — one exact accepted revision and intact Backend/QA decision refs;
+2. **durable trust-artifact availability** — required prior decisions/evidence resolve from the declared store and match ids/digests;
+3. **declared application-artifact availability** — required application refs resolve through the existing application artifact boundary;
+4. **fresh project evidence** — project-acceptance claims are produced by authorized verifier(s) and bound to the exact active review subject;
+5. **policy satisfaction** — configured acceptance claims/trust constraints pass;
+6. **no unresolved current obligation** — accepted review has no blocking unresolved claim and no current-work finding remains unreconciled.
+
+Prior Backend/QA decisions are lineage/evidence inputs only where the project acceptance policy requires them. The project reviewer does not repeat the entire Backend/QA lifecycle by default.
+
+## Concrete review requirement
+
+Use one PM/project obligation, for example:
 
 ```text
 key: BACKEND_QA_PROJECT_ACCEPTANCE
@@ -150,182 +191,149 @@ source: PM
 reason: Final Backend/QA submission requires independent project acceptance.
 ```
 
-D003 is authoritative here:
+BB-019 may receive a PM-authorized requirement through project/application setup and persist it via the existing PM requirement path. That transport is not proof of PM identity; the assumption must remain explicit until a concrete PM authority implementation exists.
 
-```text
-PM/project coordination may REQUIRE review because of project obligations
-```
+## Bounded review preparation
 
-A Worker must not fabricate this as a Worker request merely to escape `PENDING_REVIEW`.
-
-A project-acceptance configuration object is also **not** authority by itself. BB-019 may receive configuration as data, but the requirement must enter through an explicitly PM/project-coordination-authorized application boundary.
-
-Because a concrete PM Worker is not implemented, BB-019 should make the authority assumption visible instead of pretending to verify more than current source can verify. For example, the concrete composition may receive a PM-authorized requirement from its caller/project setup and then persist it through the existing `requireReview(... source: PM ...)` path. That transport does not prove PM identity cryptographically.
-
-### Bounded review preparation
-
-A concrete review-preparation function receives:
+A concrete preparation function receives only:
 
 ```text
 ReviewTarget
-  - exact frozen Blackboard review subject
-  - review requirement key/reason
-  - submission producer identity
+  - exact active review subject
+  - requirement key/reason
+  - submission producer
 
 BackendQaFinalSubmission
   - acceptedRevision
-  - backendAcceptanceDecision ref + digest
-  - qaAcceptanceDecision ref + digest
-  - artifactRefs[]
-  - evidenceRefs[]
+  - Backend/QA decision refs
+  - declared application/trust refs
 
 ProjectAcceptancePolicy
-  - required project acceptance claims
-  - accepted trust-policy digest/config
-  - verifier/reviewer/attestor authority rules
-  - accepted verification environments
-  - freshness limits where configured
+  - required claims
+  - accepted trust policy
+  - evaluator/verifier/issuer authority rules
+  - accepted environments/freshness where configured
 
-Declared readers
+Declared sources
   - applicationArtifactReader
-  - trustArtifactReader
+  - trustArtifactStore
 ```
 
-The first concrete `trustArtifactReader` need not become a generic Oracle provider. Its minimum useful shape is bounded to project review, for example:
+Preparation resolves only exact declared refs and validates identity/digests. If project policy requires evidence from a prior decision's evidence manifest, only those exact evidence refs are read.
 
-```text
-readDecision({ id, digest }) -> DecisionArtifact
-readEvidence({ id, digest }) -> EvidenceArtifact
-```
+No implicit repository browsing or source-scope expansion is authorized by review.
 
-It must validate returned artifact identity/digest before the artifacts can become review evidence or lineage input.
+## Review output
 
-If a decision's evidence manifest is required by project policy, the reader resolves those exact evidence refs. It must not silently broaden source scope.
-
-### Reviewer output
-
-The executable review produces:
+The concrete review produces:
 
 ```text
 EvidenceArtifact[]
   subject = exact active review target
-  producer has authorized verifier role
-  environment is accepted by policy
+  authorized verifier producer/environment
 
 DecisionArtifact
   subject = exact active review target
   boundary = ACCEPTANCE
   evaluator = scheduled reviewer
-  evaluator has authorized reviewer role
   verdict = ACCEPTED | REJECTED | INCONCLUSIVE
-  claims = project-acceptance claims
-  unresolved = blocking obligations for non-accepted verdicts
-  metadata.findings = independently scoped observations when present
+  claims = project acceptance claims
+  unresolved = grounded blockers for non-accepted verdicts
+  metadata.findings = independently scoped findings when present
 
 Attestation
-  issuer has authorized attestor role
-  signed over the decision/trust payload
+  authorized attestor issuer
+  signed trust payload
 ```
 
-The Orchestrator remains the only component that applies the trusted assessment to canonical Blackboard lifecycle state.
+`ApplicationOrchestrator` remains the only component that mutates canonical Blackboard review/completion state.
 
 ## Authority split
 
 ```text
 submission producer
-  -> produces final Backend/QA submission
-  -> cannot review its own submission
+  -> final Backend/QA submission
+  -> cannot review own submission
 
-PM/project coordination authority
+PM/project coordination
   -> declares project review obligation
-  -> configuration transports that decision but is not authority itself
+  -> config may carry the decision but does not create authority
 
 reviewer/evaluator
-  -> evaluates exact frozen review target
-  -> cannot replace evidence with prose
+  -> evaluates exact review target
 
 verifier/evidence producer
   -> produces grounded review evidence
-  -> must satisfy configured evidence authority and independence policy
 
 attestor/issuer
-  -> signs the decision bundle
-  -> must satisfy configured issuer authority and independence policy
+  -> signs decision bundle
+
+trustArtifactStore
+  -> durable immutable trust-artifact payload storage/lookup only
 
 ApplicationOrchestrator
-  -> validates trust
-  -> commits review/finding transitions
-  -> derives DONE only after all current obligations are satisfied
+  -> lifecycle/trust application/reconciliation authority
 ```
 
-Roles may map to the same deployment process only if the declared project trust policy allows it and every enforced authority/independence rule still passes. BB-018 does not assume pairwise reviewer/verifier/attestor independence unless configured.
+Pairwise reviewer/verifier/attestor identity separation is policy-specific; current Core guarantees must not be overstated.
 
 ## Failure and transition semantics
 
 ### Deferred review
 
-If the requirement exists but no reviewer is dispatched yet:
+Requirement exists but reviewer not dispatched:
 
 ```text
 PENDING_REVIEW
 ```
 
-is valid durable state and survives restart.
+This is valid durable state and survives restart.
 
-### Missing review input before dispatch
+### Missing input before dispatch
 
-Resolve mandatory review inputs before `beginReview(...)` when possible.
+Preparation should resolve mandatory inputs before `beginReview(...)` when possible.
 
-If a required application/trust artifact is unavailable or fails digest validation:
+If a required artifact is unavailable or has a digest mismatch:
 
 ```text
-do not dispatch review
+do not dispatch
 do not fabricate verdict
-leave canonical item PENDING_REVIEW
-return an explicit preparation diagnostic
+leave item PENDING_REVIEW
+return explicit preparation diagnostic
 ```
 
-All continuation-critical refs remain on Blackboard, so a fresh session can retry preparation without hidden session state.
+Continuation-critical refs already remain durable on Blackboard. Current source has no canonical `PENDING_REVIEW` checkpoint/blocker mutation; BB-019 must not pretend otherwise. A durable diagnostic field requires separate concrete pressure.
 
-Current source does not expose a `PENDING_REVIEW` checkpoint/blocker mutation. BB-019 must not invent a claim that such a durable diagnostic already exists. If implementation pressure proves the diagnostic itself must survive as canonical state, that is a separate concrete lifecycle extension and must be justified explicitly.
+### Failure after dispatch
 
-### Failure after review dispatch
+Once a review attempt is active, interruption/abandonment belongs to BB-016/017 recovery/fencing when available.
 
-Once `beginReview(...)` has created an active attempt, interruption/abandonment belongs to the BB-016/017 recovery contract. When generation-fenced recovery is available, reschedule through that path so stale assessment evidence cannot commit.
+Infrastructure/source unavailability is not a trusted `REJECTED` product decision.
 
-Do not convert infrastructure/source unavailability into a trusted REJECTED product decision.
+### Invalid trust bundle
 
-### Invalid, stale or unauthorized trust bundle
+Stale/wrong subject, forged signature, unauthorized evaluator/evidence/issuer, wrong policy/boundary or violated configured independence constraints reject canonical assessment mutation.
 
-`recordAssessment(...)` rejects canonical mutation for cases such as:
+### Trusted non-acceptance
 
-- wrong/stale review subject or generation;
-- forged signature;
-- unauthorized evaluator/reviewer;
-- unauthorized evidence producer/environment;
-- wrong policy/boundary;
-- violated configured independence constraint.
-
-### Trusted REJECTED / INCONCLUSIVE
-
-A non-accepted decision requires at least one grounded unresolved blocking reason. Those blockers remain obligations of the same Blackboard item.
+`REJECTED` / `INCONCLUSIVE` require grounded unresolved blocking reasons and reopen the same current work after reconciliation as applicable.
 
 ```text
-review failure of current obligation
-!= automatic NEW_WORK
+current acceptance failed
+!= create replacement work automatically
 ```
 
-### Trusted ACCEPTED
+### Trusted acceptance
 
 `DONE` is derived only when:
 
 ```text
-all declared review requirements are ACCEPTED
-AND no pending findings remain
-AND no current remainingWork remains
+all review requirements ACCEPTED
+AND no pending findings
+AND no remaining current work
 ```
 
-Trusted findings enter existing reconciliation:
+Findings continue through:
 
 ```text
 CURRENT_WORK
@@ -336,43 +344,39 @@ NON_ACTIONABLE
 
 ## No declared review obligation
 
-Absence of a review requirement must not mean project acceptance.
+For BB-019, the PM-authorized project acceptance requirement is mandatory.
 
-For BB-019, a PM-authorized project acceptance requirement is mandatory input. If final Backend/QA submission is reached without that obligation, the concrete composition must fail closed rather than:
+If the workflow reaches final submission without it, fail closed rather than auto-accepting or silently leaving an undispatchable state.
 
-```text
-auto-DONE
-or
-silently leave an undispatchable PENDING_REVIEW state
-```
-
-If a future project genuinely permits no independent project review, that needs an explicit project-policy authority outcome. An empty array is not that outcome, and BB-018 does not require implementing that mode.
+A future no-review mode requires an explicit project-policy authority outcome. Empty review requirements are not that outcome.
 
 ## Proposed concrete pipeline
 
 ```text
 PM/project setup
-  -> authorizes BACKEND_QA_PROJECT_ACCEPTANCE requirement
+  -> authorize BACKEND_QA_PROJECT_ACCEPTANCE
 
-Backend role-local ACCEPT
-  -> durable QA handoff
+Backend role-local completion
+  -> persist required Decision/Evidence artifacts to trustArtifactStore
+  -> then checkpoint their refs
 
-QA role-local ACCEPT
-  -> final BackendQa submission
-  -> persist PM-authorized review requirement
+QA role-local completion
+  -> persist required Decision/Evidence artifacts to trustArtifactStore
+  -> then submit final BackendQa refs
+  -> ensure PM-authorized review requirement is persisted
 
-review preparation while PENDING_REVIEW
-  -> resolve exact decision refs through trustArtifactReader
-  -> resolve required prior evidence refs through trustArtifactReader
-  -> resolve declared application refs through applicationArtifactReader
-  -> validate identity/digests
-  -> preparation failure: remain PENDING_REVIEW, no verdict
+PENDING_REVIEW preparation
+  -> read exact trust refs from trustArtifactStore
+  -> read exact application refs from applicationArtifactReader
+  -> validate ids/digests
+  -> preparation failure stays PENDING_REVIEW
 
 Orchestrator.beginReview(...)
-  -> freezes exact active review subject/attempt
+  -> exact active subject/attempt
 
-independent verifier(s)
-  -> fresh EvidenceArtifact[] bound to review target
+project verifier(s)
+  -> fresh EvidenceArtifact[]
+  -> persist review evidence as required by the concrete store policy
 
 review evaluator
   -> DecisionArtifact @ ACCEPTANCE
@@ -381,8 +385,8 @@ attestor
   -> signed Attestation
 
 Orchestrator.recordAssessment(...)
-  -> trust invalid: no canonical assessment mutation
-  -> REJECTED/INCONCLUSIVE: current work REOPENED after reconciliation as applicable
+  -> invalid trust: no canonical mutation
+  -> REJECTED/INCONCLUSIVE: reopen same current work
   -> ACCEPTED + findings: PENDING_RECONCILIATION
   -> ACCEPTED + all obligations satisfied: DONE
 ```
@@ -393,14 +397,15 @@ Implement one concrete Backend/QA project-review composition, not a framework.
 
 Minimum delivery surface:
 
-1. a PM-authorized project-acceptance requirement input and policy contract; configuration must not be described as self-authorizing PM authority;
-2. a bounded `trustArtifactReader` (or source-backed equivalent) that can resolve and integrity-check required Decision/Evidence artifacts from durable refs;
-3. reuse the existing application `artifactReader` boundary for declared Backend/QA application artifacts rather than merging source classes;
-4. a bounded review-preparation function that resolves only exact declared refs before dispatch;
-5. one concrete verifier/reviewer/attestor composition producing `EvidenceArtifact[] + DecisionArtifact + Attestation`;
-6. orchestration through existing `requireReview -> beginReview -> recordAssessment -> reconcileFinding` semantics, composed with review-generation recovery when available;
-7. explicit fail-closed behavior for missing authority/config, unavailable refs, digest mismatch and invalid trust;
-8. end-to-end acceptance plus rejection/remediation/resubmission tests.
+1. PM-authorized project acceptance requirement input; configuration is transport, not self-authorizing PM authority;
+2. bounded durable `trustArtifactStore` (or equivalent) with write-before-ref and read/identity-validation semantics for required Decision/Evidence artifacts;
+3. integration of role-local trust artifact persistence before durable Blackboard refs are committed;
+4. reuse existing application `artifactReader` for declared Backend/QA application artifacts;
+5. bounded review preparation resolving only exact declared refs before dispatch;
+6. one concrete verifier/reviewer/attestor composition producing the existing Core trust bundle;
+7. orchestration through `requireReview -> beginReview -> recordAssessment -> reconcileFinding`, composing review-generation recovery when available;
+8. explicit fail-closed behavior for missing authority/config, unavailable refs, digest mismatch and invalid trust;
+9. end-to-end acceptance plus rejection/remediation/resubmission/restart tests.
 
 Do not add:
 
@@ -411,48 +416,39 @@ generic review workflow DSL
 new trust artifact types
 universal Oracle provider abstraction
 full trust-artifact payloads inside Blackboard
+second lifecycle authority in the trust artifact store
 ```
-
-unless later concrete pressure demonstrates repeated semantics.
 
 ## Required BB-019 scenarios
 
 1. QA ACCEPT receives a PM-authorized project acceptance requirement and is dispatchable;
-2. missing authority/config fails closed rather than auto-accepting or silently deadlocking;
-3. deferred review survives restart in `PENDING_REVIEW`;
-4. a fresh session resolves Backend/QA decision refs through the declared durable trust-artifact reader and validates their digests;
-5. missing or mismatched decision/evidence artifact leaves review undispatched and cannot fabricate acceptance;
-6. exact application refs are resolved only through the declared application reader;
-7. fresh independent verification produces EvidenceArtifact(s) bound to the exact active review target;
-8. trusted ACCEPTED with no remaining obligations derives `DONE`;
-9. forged/stale/unauthorized evidence, evaluator or attestation cannot mutate canonical state;
-10. trusted REJECTED/INCONCLUSIVE reopens the same work with grounded blockers;
-11. remediation resubmission creates a new exact review target, and stale prior assessment cannot authorize it;
-12. trusted findings preserve CURRENT_WORK versus independent follow-up reconciliation.
-
-## Relationship to BB-016/017
-
-BB-016/017 own interruption recovery and review-attempt fencing. BB-018 requires only this invariant:
-
-```text
-assessment authority is bound to the current exact review attempt/subject
-```
-
-BB-019 composes that implementation when available; it does not duplicate recovery state.
+2. missing PM authority/config fails closed;
+3. role-local trust artifacts are durably written before their refs become canonical Blackboard refs;
+4. crash after trust-artifact write but before Board ref does not create a dangling canonical ref;
+5. deferred review survives restart in `PENDING_REVIEW`;
+6. fresh session resolves Backend/QA decision refs from the durable trust store and validates digests;
+7. missing/mismatched trust artifact leaves review undispatched and cannot fabricate acceptance;
+8. exact application refs resolve only through declared application source;
+9. fresh project evidence binds to exact active review target;
+10. trusted ACCEPTED derives `DONE` only with no remaining obligations;
+11. forged/stale/unauthorized bundle cannot mutate canonical state;
+12. trusted REJECTED/INCONCLUSIVE reopens the same work;
+13. remediation resubmission creates a new exact review target and stale prior assessment cannot authorize it;
+14. trusted findings preserve CURRENT_WORK versus independent follow-up semantics.
 
 ## Judgment
 
 The missing capability is not a generic Reviewer abstraction. It is the concrete chain:
 
 ```text
-role-local accepted Backend/QA result
+role-local Backend/QA acceptance
++ durable write-before-ref trust artifacts
 + PM-authorized project review obligation
-+ durable trust-artifact dereference
-+ bounded declared application context
-+ fresh grounded review evidence
++ bounded declared review context
++ fresh grounded project evidence
 + trusted evaluator/attestor bundle
 + Orchestrator-owned reconciliation
 = project acceptance path
 ```
 
-Current Core trust and Blackboard lifecycle primitives provide most of the authority machinery. The missing application work is the explicit project obligation, durable trust-artifact resolution and concrete review composition that connect those primitives end to end.
+Current Core trust and Blackboard lifecycle primitives already provide most authority machinery. BB-019 must close the application-specific durable trust-artifact and project-review composition gaps without generalizing beyond the evidence.
