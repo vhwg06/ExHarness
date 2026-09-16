@@ -1,16 +1,16 @@
 # D007 — Living docs are a continuous current-system projection
 
-Status: **PROPOSED**
+Status: **PROMOTED**
 
-Proposed: 2026-09-16
+Accepted: 2026-09-16
 
-Acceptance boundary: repository owner explicitly requires living docs to be updated continuously so they describe the system as closely as possible at every implementation checkpoint.
+Acceptance boundary: repository owner explicitly requires living docs to be updated continuously so they describe the system as closely as possible at every implementation checkpoint; governance review on PR #77 accepted the same-change/durable-checkpoint enforcement boundary.
 
 ## Question
 
 Should `docs/worktree/*` be reconciled only after a work item/phase completes, or continuously as the implemented system changes?
 
-## Proposed decision
+## Decision
 
 `docs/worktree/*` is not an end-of-phase documentation task. It is the continuously maintained projection of the current implemented system.
 
@@ -95,7 +95,7 @@ Repository enforcement is deliberately two-layered:
 
 CI must not pretend that pathname checks prove semantic source↔documentation equivalence.
 
-## Consequences if accepted
+## Consequences
 
 - living docs evolve incrementally with implementation, not in cleanup batches;
 - fresh sessions see the closest available source-backed description of the system;
