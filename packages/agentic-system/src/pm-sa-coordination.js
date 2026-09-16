@@ -154,6 +154,11 @@ export function definePmCoordinationProposal(raw) {
     architectureVerdict: null
   };
   invariant(proposal.progress.completed <= proposal.progress.total, "PM coordination proposal progress.completed cannot exceed total");
+  const seenReviewKeys = new Set();
+  for (const requirement of proposal.reviewRequirements) {
+    invariant(!seenReviewKeys.has(requirement.key), `PM coordination proposal has duplicate review requirement ${requirement.key}`);
+    seenReviewKeys.add(requirement.key);
+  }
   return freezeClone(proposal);
 }
 
@@ -179,6 +184,21 @@ function sameTargetState(expected, current) {
     expected.reviewGeneration === current.reviewGeneration;
 }
 
+function currentEvidenceRefsFor(session, itemId) {
+  return new Set(
+    session.references.evidence
+      .filter((entry) => entry.itemId === itemId)
+      .map((entry) => entry.ref)
+  );
+}
+
+function assertEvidenceCurrent(evidenceRefs, session, target) {
+  const currentEvidence = currentEvidenceRefsFor(session, target.id);
+  for (const ref of evidenceRefs) {
+    invariant(currentEvidence.has(ref), `SA architecture context evidence is not current on target ${target.id}: ${ref}`);
+  }
+}
+
 export function buildSaArchitectureContext(session, {
   targetItemId,
   architectureFacts,
@@ -186,6 +206,8 @@ export function buildSaArchitectureContext(session, {
 }) {
   invariant(session && typeof session === "object", "SA architecture context requires project handoff");
   const target = handoffWork(session, requireText(targetItemId, "targetItemId"));
+  const boundedEvidenceRefs = textArray(evidenceRefs ?? [], "SA architecture context evidenceRefs");
+  assertEvidenceCurrent(boundedEvidenceRefs, session, target);
   return freezeClone({
     projectId: requireText(session.projectId, "session projectId"),
     intent: {
@@ -201,7 +223,7 @@ export function buildSaArchitectureContext(session, {
       reviewGeneration: target.reviewGeneration
     },
     architectureFacts: architectureFacts == null ? {} : structuredClone(record(architectureFacts, "architectureFacts")),
-    evidenceRefs: textArray(evidenceRefs ?? [], "SA architecture context evidenceRefs")
+    evidenceRefs: boundedEvidenceRefs
   });
 }
 
@@ -235,6 +257,7 @@ export function buildPmCoordinationContext(session, {
   if (saAssessment != null || saAssessmentRef != null) {
     invariant(saAssessment != null && saAssessmentRef != null, "PM context requires both SA assessment and assessment ref");
     const assessment = defineSaArchitectureAssessment(saAssessment);
+    invariant(assessment.targetItemId === target.id, "PM context SA assessment targets different work");
     boundedAssessment = {
       artifactRef: requireText(saAssessmentRef, "saAssessmentRef"),
       targetItemId: assessment.targetItemId,
@@ -258,19 +281,10 @@ function assertOrchestrator(orchestrator) {
     orchestrator &&
       typeof orchestrator.readBlackboard === "function" &&
       typeof orchestrator.extendWorkGraph === "function" &&
-      typeof orchestrator.requireReview === "function" &&
       typeof orchestrator.beginReview === "function",
     "PM/SA coordination requires graph/review-capable ApplicationOrchestrator"
   );
   return orchestrator;
-}
-
-function currentEvidenceRefsFor(session, itemId) {
-  return new Set(
-    session.references.evidence
-      .filter((entry) => entry.itemId === itemId)
-      .map((entry) => entry.ref)
-  );
 }
 
 function assertAssessmentCurrent(assessment, session) {
@@ -294,6 +308,10 @@ function proposalChangesCoordination(proposal) {
 
 function requirementFor(item, key) {
   return item.reviewRequirements.find((requirement) => requirement.key === key) ?? null;
+}
+
+function proposalLinked(session, itemId, proposalRef) {
+  return session.references.artifacts.some((entry) => entry.itemId === itemId && entry.ref === proposalRef);
 }
 
 export function createPmSaCoordinationController({
@@ -332,6 +350,7 @@ export function createPmSaCoordinationController({
     if (saAssessmentRef != null) {
       assessment = defineSaArchitectureAssessment(await store.readSaAssessment(saAssessmentRef));
       assertAssessmentCurrent(assessment, session);
+      invariant(assessment.targetItemId === targetItemId, "PM context SA assessment targets different work");
     }
     return buildPmCoordinationContext(session, {
       targetItemId,
@@ -391,18 +410,33 @@ export function createPmSaCoordinationController({
   async function applyPmProposal(rawProposal) {
     const proposal = definePmCoordinationProposal(rawProposal);
     const session = await readSession();
-    const validated = await validateProposalAgainstCurrent(proposal, session);
+    invariant(proposal.projectId === session.projectId, "PM proposal project identity is stale or mismatched");
+    invariant(proposal.rootIntentId === session.intent.id, "PM proposal root intent is stale or mismatched");
 
     if (!proposalChangesCoordination(proposal)) {
+      const validated = await validateProposalAgainstCurrent(proposal, session);
       return freezeClone({
         applied: false,
         fallback: true,
+        replayed: false,
         proposalRef: null,
         item: validated.target
       });
     }
 
     const proposalRef = await store.putPmProposal(proposal);
+    if (proposalLinked(session, proposal.target.itemId, proposalRef)) {
+      return freezeClone({
+        applied: true,
+        fallback: false,
+        replayed: true,
+        proposalRef,
+        item: handoffWork(session, proposal.target.itemId),
+        createdItemIds: proposal.newWork.map((item) => item.id)
+      });
+    }
+
+    const validated = await validateProposalAgainstCurrent(proposal, session);
     const blockerEdges = proposal.blockers
       .filter((blocker) => blocker.existingWorkRef != null)
       .map((blocker) => ({ itemId: validated.target.id, dependencyId: blocker.existingWorkRef }));
@@ -432,33 +466,24 @@ export function createPmSaCoordinationController({
 
     await app.extendWorkGraph({
       targetItemId: validated.target.id,
+      expectedTarget: proposal.target,
       newItems,
       dependencyEdges,
       artifactRefs: [proposalRef, ...assessmentRefs],
       evidenceRefs: assessmentEvidence,
-      blockers: proposal.blockers.map((blocker) => blocker.reason)
-    });
-
-    for (const requirement of proposal.reviewRequirements) {
-      const current = handoffWork(await readSession(), requirement.targetItemId);
-      const existing = requirementFor(current, requirement.key);
-      if (existing != null) {
-        invariant(existing.source === ReviewRequirementSource.PM, `review requirement ${requirement.key} changed source`);
-        invariant(existing.reason === requirement.reasonRef, `review requirement ${requirement.key} changed reason ref`);
-        continue;
-      }
-      await app.requireReview({
-        itemId: requirement.targetItemId,
+      blockers: proposal.blockers.map((blocker) => blocker.reason),
+      reviewRequirements: proposal.reviewRequirements.map((requirement) => ({
         key: requirement.key,
         source: ReviewRequirementSource.PM,
         reason: requirement.reasonRef
-      });
-    }
+      }))
+    });
 
     const current = handoffWork(await readSession(), validated.target.id);
     return freezeClone({
       applied: true,
       fallback: false,
+      replayed: false,
       proposalRef,
       item: current,
       createdItemIds: newItems.map((item) => item.id)
