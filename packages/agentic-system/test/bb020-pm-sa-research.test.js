@@ -222,6 +222,20 @@ function coverage(expected, actual) {
   return { matched, expected: expected.length, ratio: matched / expected.length };
 }
 
+function coordinationChanged(baseline, candidate) {
+  return JSON.stringify({
+    obligations: candidate.obligations,
+    dependencies: candidate.dependencies,
+    blockers: candidate.blockers,
+    reviewRequirements: candidate.reviewRequirements
+  }) !== JSON.stringify({
+    obligations: baseline.obligations,
+    dependencies: baseline.dependencies,
+    blockers: baseline.blockers,
+    reviewRequirements: baseline.reviewRequirements
+  });
+}
+
 const scenarios = [
   {
     id: "simple",
@@ -289,7 +303,7 @@ test("BB-020 separates PM coordination from SA architecture judgment and preserv
     baselineFalseObligations += baseline.obligations.filter((item) => !scenario.expectedObligations.includes(item)).length;
     boundedFalseObligations += candidate.obligations.filter((item) => !scenario.expectedObligations.includes(item)).length;
 
-    if (JSON.stringify(candidate) !== JSON.stringify(baseline)) pmReplans += 1;
+    if (coordinationChanged(baseline, candidate)) pmReplans += 1;
     const separated = chars(saInput) + chars(pmInput);
     const universal = chars(universalContext(session, scenario));
     separateContextChars += separated;
