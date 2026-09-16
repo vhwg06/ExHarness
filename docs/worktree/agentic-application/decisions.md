@@ -52,7 +52,12 @@ Current constraints that must shape Agentic Application implementation. This is 
 ## STATE
 
 - Application workflow state is distinct from ExHarness runtime/persistent state and from artifact storage.
-- Durable application persistence now stores Blackboard checkpoints, submissions, review state and handoff references. It remains distinct from ExHarness runtime/effect state and from external artifact payloads.
+- Durable application persistence stores Blackboard checkpoints, submissions, review state and handoff references. It remains distinct from ExHarness runtime/effect state and from external artifact payloads.
+- Local Blackboard mutation correctness is fenced by immutable single-successor revisions, not by elapsed lock age.
+- `<path>.root` plus immutable successor records are Blackboard persistence authority; the caller-selected JSON `<path>` is a compatibility/inspection projection after root initialization.
+- A stale writer that no longer owns the current base revision fails explicitly rather than overwriting a newer committed snapshot.
+- Legacy `.lock` files and `lockStaleMs` do not grant takeover authority.
+- The local store currently requires same-filesystem hard-link semantics; distributed coordination and history compaction are not implied by this decision.
 
 ## PROJECT IDENTITY
 
