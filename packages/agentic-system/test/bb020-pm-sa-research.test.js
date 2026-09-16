@@ -117,7 +117,7 @@ function universalContext(session, scenario) {
 }
 
 function saAssess(context) {
-  const changed = context.architecture.publicBoundaryChanged === true;
+  const changed = context.architectureFacts.publicBoundaryChanged === true;
   if (!changed) return null;
   assert.ok(context.evidenceRefs.length > 0, "architecture assessment requires exact evidence refs");
   return Object.freeze({
