@@ -4,7 +4,7 @@ import {
   runBackendObjective
 } from "./backend-application.js";
 import { BlackboardStatus } from "./blackboard-orchestrator.js";
-import { BackendObjectiveSchema } from "./contracts.js";
+import { BackendObjectiveSchema, BackendRunAction } from "./contracts.js";
 import {
   BackendQaHandoffSchema,
   QaObjectiveSchema
@@ -24,6 +24,13 @@ function requireText(value, name) {
   return value;
 }
 
+function textArray(value, name, { min = 0 } = {}) {
+  invariant(Array.isArray(value), `${name} must be an array`);
+  const normalized = [...new Set(value.map((entry, index) => requireText(entry, `${name}[${index}]`)))];
+  invariant(normalized.length >= min, `${name} must contain at least ${min} item(s)`);
+  return normalized;
+}
+
 function freezeClone(value) {
   return Object.freeze(structuredClone(value));
 }
@@ -35,12 +42,62 @@ const QA_WORK = "Run QA verification against the accepted Backend revision.";
 
 export const BackendQaWorkflowStage = Object.freeze({
   BACKEND_PENDING: "BACKEND_PENDING",
+  BACKEND_COORDINATION_PENDING: "BACKEND_COORDINATION_PENDING",
   QA_PENDING: "QA_PENDING",
   BACKEND_REMEDIATION_PENDING: "BACKEND_REMEDIATION_PENDING",
   AWAITING_REVIEW: "AWAITING_REVIEW",
   BLOCKED: "BLOCKED",
   CANCELED: "CANCELED"
 });
+
+function parseDecisionRef(raw, name) {
+  invariant(raw && typeof raw === "object" && !Array.isArray(raw), `${name} must be an object`);
+  return {
+    id: requireText(raw.id, `${name}.id`),
+    digest: requireText(raw.digest, `${name}.digest`)
+  };
+}
+
+function parseCoordinationRequirement(raw) {
+  invariant(raw && typeof raw === "object" && !Array.isArray(raw), "Backend coordination requirement must be an object");
+  invariant(
+    [BackendRunAction.REQUEST_CONTEXT, BackendRunAction.ESCALATE].includes(raw.action),
+    "Backend coordination requirement action is invalid"
+  );
+  invariant(
+    [BackendQaWorkflowStage.BACKEND_PENDING, BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING].includes(raw.resumeStage),
+    "Backend coordination requirement resumeStage is invalid"
+  );
+  const contextNeeds = textArray(raw.contextNeeds ?? [], "Backend coordination requirement.contextNeeds");
+  if (raw.action === BackendRunAction.REQUEST_CONTEXT) {
+    invariant(contextNeeds.length > 0, "REQUEST_CONTEXT coordination requires contextNeeds");
+  }
+  return freezeClone({
+    action: raw.action,
+    resumeStage: raw.resumeStage,
+    objectiveId: requireText(raw.objectiveId, "Backend coordination requirement.objectiveId"),
+    gapIds: textArray(raw.gapIds, "Backend coordination requirement.gapIds", { min: 1 }),
+    contextNeeds,
+    rationale: requireText(raw.rationale, "Backend coordination requirement.rationale"),
+    completionDecision: parseDecisionRef(raw.completionDecision, "Backend coordination requirement.completionDecision"),
+    attempt: Number.isInteger(raw.attempt) && raw.attempt >= 0 ? raw.attempt : 0
+  });
+}
+
+function parseCoordinationResolution(raw, index) {
+  invariant(raw && typeof raw === "object" && !Array.isArray(raw), `coordinationHistory[${index}] must be an object`);
+  invariant(
+    [BackendRunAction.REQUEST_CONTEXT, BackendRunAction.ESCALATE].includes(raw.action),
+    `coordinationHistory[${index}].action is invalid`
+  );
+  return freezeClone({
+    action: raw.action,
+    resolvedBy: requireText(raw.resolvedBy, `coordinationHistory[${index}].resolvedBy`),
+    rationale: requireText(raw.rationale, `coordinationHistory[${index}].rationale`),
+    addedRequiredFiles: textArray(raw.addedRequiredFiles ?? [], `coordinationHistory[${index}].addedRequiredFiles`),
+    completionDecision: parseDecisionRef(raw.completionDecision, `coordinationHistory[${index}].completionDecision`)
+  });
+}
 
 function workflowCheckpoint(raw) {
   invariant(raw && typeof raw === "object" && !Array.isArray(raw), "Backend/QA workflow checkpoint is required");
@@ -49,6 +106,7 @@ function workflowCheckpoint(raw) {
   invariant(
     [
       BackendQaWorkflowStage.BACKEND_PENDING,
+      BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING,
       BackendQaWorkflowStage.QA_PENDING,
       BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
     ].includes(raw.stage),
@@ -56,6 +114,15 @@ function workflowCheckpoint(raw) {
   );
   const spec = raw.spec;
   invariant(spec && typeof spec === "object" && !Array.isArray(spec), "Backend/QA workflow checkpoint spec is required");
+  const coordination = raw.coordination == null ? null : parseCoordinationRequirement(raw.coordination);
+  if (raw.stage === BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING) {
+    invariant(coordination != null, "BACKEND_COORDINATION_PENDING requires a coordination requirement");
+  } else {
+    invariant(coordination == null, `${raw.stage} cannot retain an unresolved coordination requirement`);
+  }
+  const coordinationHistory = Array.isArray(raw.coordinationHistory)
+    ? raw.coordinationHistory.map(parseCoordinationResolution)
+    : [];
   const parsed = {
     kind: WORKFLOW_KIND,
     version: WORKFLOW_VERSION,
@@ -67,15 +134,14 @@ function workflowCheckpoint(raw) {
     attempt: Number.isInteger(raw.attempt) && raw.attempt >= 0 ? raw.attempt : 0,
     acceptedBackend: raw.acceptedBackend == null ? null : freezeClone({
       handoff: BackendQaHandoffSchema.parse(raw.acceptedBackend.handoff),
-      completionDecision: {
-        id: requireText(raw.acceptedBackend.completionDecision?.id, "acceptedBackend.completionDecision.id"),
-        digest: requireText(raw.acceptedBackend.completionDecision?.digest, "acceptedBackend.completionDecision.digest")
-      }
+      completionDecision: parseDecisionRef(raw.acceptedBackend.completionDecision, "acceptedBackend.completionDecision")
     }),
     qaIssues: Array.isArray(raw.qaIssues)
       ? raw.qaIssues.map((issue, index) => requireText(issue, `qaIssues[${index}]`))
       : []
   };
+  if (coordination != null) parsed.coordination = coordination;
+  if (coordinationHistory.length > 0) parsed.coordinationHistory = coordinationHistory;
   return freezeClone(parsed);
 }
 
@@ -150,7 +216,8 @@ function backendCheckpointAfterAccept(checkpoint, handoff, completionDecision) {
         digest: completionDecision.digest
       }
     },
-    qaIssues: []
+    qaIssues: [],
+    coordination: null
   });
 }
 
@@ -158,7 +225,73 @@ function remediationCheckpoint(checkpoint, issues) {
   return workflowCheckpoint({
     ...checkpoint,
     stage: BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING,
-    qaIssues: issues
+    qaIssues: issues,
+    coordination: null
+  });
+}
+
+function coordinationCheckpoint(checkpoint, backend) {
+  invariant(backend.advisory != null, `${backend.decision.action} requires persisted Advisor provenance`);
+  return workflowCheckpoint({
+    ...checkpoint,
+    stage: BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING,
+    coordination: {
+      action: backend.decision.action,
+      resumeStage: checkpoint.stage,
+      objectiveId: backend.objectiveId,
+      gapIds: backend.advisory.gapIds,
+      contextNeeds: backend.advisory.contextNeeds,
+      rationale: backend.decision.reason,
+      completionDecision: {
+        id: backend.completion.decision.id,
+        digest: backend.completion.decision.digest
+      },
+      attempt: checkpoint.attempt
+    }
+  });
+}
+
+function coordinationBlocker(requirement) {
+  if (requirement.action === BackendRunAction.REQUEST_CONTEXT) {
+    return `Backend requires additional context before retry: ${requirement.contextNeeds.join(" | ")}`;
+  }
+  return `Backend escalation requires application resolution before retry: ${requirement.rationale}`;
+}
+
+function resolveCoordinationCheckpoint(checkpoint, { owner, rationale, additionalRequiredFiles }) {
+  const requirement = checkpoint.coordination ?? null;
+  invariant(requirement != null, "Backend coordination resolution requires an active requirement");
+  const addedRequiredFiles = textArray(additionalRequiredFiles ?? [], "additionalRequiredFiles");
+  if (requirement.action === BackendRunAction.REQUEST_CONTEXT) {
+    invariant(addedRequiredFiles.length > 0, "REQUEST_CONTEXT resolution requires additionalRequiredFiles");
+  }
+
+  const backendObjective = BackendObjectiveSchema.parse({
+    ...checkpoint.spec.backendObjective,
+    requiredFiles: [...new Set([
+      ...checkpoint.spec.backendObjective.requiredFiles,
+      ...addedRequiredFiles
+    ])]
+  });
+
+  return workflowCheckpoint({
+    ...checkpoint,
+    stage: requirement.resumeStage,
+    spec: {
+      ...checkpoint.spec,
+      backendObjective
+    },
+    coordination: null,
+    coordinationHistory: [
+      ...(checkpoint.coordinationHistory ?? []),
+      {
+        action: requirement.action,
+        resolvedBy: owner,
+        rationale,
+        addedRequiredFiles,
+        completionDecision: requirement.completionDecision
+      }
+    ]
   });
 }
 
@@ -170,6 +303,13 @@ function blockersFromRun(run, fallback) {
 
 function artifactRefsFromHandoff(handoff) {
   return handoff.artifacts.map((artifact) => artifact.ref);
+}
+
+function blockedWorkflowStage(checkpoint) {
+  if (checkpoint?.stage === BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING) {
+    return BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING;
+  }
+  return BackendQaWorkflowStage.BLOCKED;
 }
 
 export function createDurableBackendQaWorkflow({
@@ -188,6 +328,7 @@ export function createDurableBackendQaWorkflow({
       typeof orchestrator.claim === "function" &&
       typeof orchestrator.recoverClaim === "function" &&
       typeof orchestrator.checkpoint === "function" &&
+      typeof orchestrator.resolveBlockedCheckpoint === "function" &&
       typeof orchestrator.submit === "function" &&
       typeof orchestrator.resume === "function" &&
       typeof orchestrator.supersede === "function",
@@ -222,7 +363,29 @@ export function createDurableBackendQaWorkflow({
     const currentWork = backendWorkFor(checkpoint);
 
     if (backend.completion.action !== BackendCompletionAction.ACCEPT) {
-      const blocked = [BackendCompletionAction.BLOCK, BackendCompletionAction.FAIL].includes(backend.completion.action);
+      if ([BackendRunAction.REQUEST_CONTEXT, BackendRunAction.ESCALATE].includes(backend.decision.action)) {
+        const nextCheckpoint = coordinationCheckpoint(checkpoint, backend);
+        const persisted = await orchestrator.checkpoint({
+          itemId,
+          owner,
+          generation,
+          checkpoint: nextCheckpoint,
+          artifactRefs: backend.result.artifacts.map((artifact) => artifact.ref),
+          evidenceRefs: [backend.completion.decision.id],
+          status: BlackboardStatus.BLOCKED,
+          blockers: [coordinationBlocker(nextCheckpoint.coordination)]
+        });
+        return freezeClone({
+          stage: BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING,
+          backend,
+          coordination: nextCheckpoint.coordination,
+          qa: null,
+          item: persisted.result
+        });
+      }
+
+      const blocked = [BackendRunAction.BLOCK, BackendRunAction.FAIL].includes(backend.decision.action) ||
+        [BackendCompletionAction.BLOCK, BackendCompletionAction.FAIL].includes(backend.completion.action);
       const persisted = await orchestrator.checkpoint({
         itemId,
         owner,
@@ -241,6 +404,7 @@ export function createDurableBackendQaWorkflow({
       });
     }
 
+    invariant(backend.decision.action === BackendRunAction.RETURN, "Accepted Backend completion must return to the workflow");
     const handoff = createQaHandoffFromBackendRun(backend);
     const nextCheckpoint = backendCheckpointAfterAccept(checkpoint, handoff, backend.completion.decision);
     const persisted = await orchestrator.checkpoint({
@@ -406,12 +570,8 @@ export function createDurableBackendQaWorkflow({
   async function advance({ itemId, owner }) {
     requireText(itemId, "itemId");
     requireText(owner, "owner");
-    const board = await orchestrator.readBlackboard();
-    const item = boardItem(board, itemId);
+    const item = boardItem(await orchestrator.readBlackboard(), itemId);
 
-    if (item.status === BlackboardStatus.BLOCKED) {
-      return freezeClone({ stage: BackendQaWorkflowStage.BLOCKED, item });
-    }
     if (item.status === BlackboardStatus.SUPERSEDED) {
       return freezeClone({ stage: BackendQaWorkflowStage.CANCELED, item });
     }
@@ -421,6 +581,18 @@ export function createDurableBackendQaWorkflow({
 
     invariant(item.checkpoint != null, `Blackboard item ${itemId} has no durable Backend/QA checkpoint; initialize it first`);
     const checkpoint = workflowCheckpoint(item.checkpoint);
+    if (item.status === BlackboardStatus.BLOCKED) {
+      return freezeClone({
+        stage: blockedWorkflowStage(checkpoint),
+        coordination: checkpoint.coordination ?? null,
+        item
+      });
+    }
+    invariant(
+      checkpoint.stage !== BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING,
+      `Blackboard item ${itemId} has unresolved Backend coordination but is not BLOCKED`
+    );
+
     const claimed = await orchestrator.claim({ itemId, owner });
     const generation = claimed.result.claimGeneration;
 
@@ -437,6 +609,10 @@ export function createDurableBackendQaWorkflow({
     invariant(item.status === BlackboardStatus.CLAIMED, `Backend/QA interrupted recovery requires CLAIMED item; found ${item.status}`);
     invariant(item.checkpoint != null, `Blackboard item ${itemId} has no durable Backend/QA checkpoint`);
     const checkpoint = workflowCheckpoint(item.checkpoint);
+    invariant(
+      checkpoint.stage !== BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING,
+      "Blocked Backend coordination is not an interrupted execution attempt"
+    );
 
     const recovered = await orchestrator.recoverClaim({
       itemId,
@@ -450,15 +626,53 @@ export function createDurableBackendQaWorkflow({
     }
 
     invariant(checkpoint.stage === BackendQaWorkflowStage.QA_PENDING, `Unsupported interrupted recovery stage: ${checkpoint.stage}`);
-    return runQaStage({
-      itemId,
+    return runQaStage({ itemId, owner, generation, checkpoint });
+  }
+
+  async function resolveBackendCoordination({ itemId, owner, rationale, additionalRequiredFiles = [] }) {
+    requireText(itemId, "itemId");
+    requireText(owner, "owner");
+    requireText(rationale, "rationale");
+    const item = boardItem(await orchestrator.readBlackboard(), itemId);
+    invariant(item.status === BlackboardStatus.BLOCKED, `Backend coordination resolution requires BLOCKED item; found ${item.status}`);
+    invariant(item.checkpoint != null, `Blackboard item ${itemId} has no Backend/QA checkpoint`);
+    const checkpoint = workflowCheckpoint(item.checkpoint);
+    invariant(
+      checkpoint.stage === BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING,
+      `Backend coordination resolution requires ${BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING}; found ${checkpoint.stage}`
+    );
+    const requirement = checkpoint.coordination ?? null;
+    const nextCheckpoint = resolveCoordinationCheckpoint(checkpoint, {
       owner,
-      generation,
-      checkpoint
+      rationale,
+      additionalRequiredFiles
+    });
+
+    const persisted = await orchestrator.resolveBlockedCheckpoint({
+      itemId,
+      checkpointedBy: owner,
+      expectedCheckpoint: checkpoint,
+      checkpoint: nextCheckpoint
+    });
+    const resolution = nextCheckpoint.coordinationHistory[nextCheckpoint.coordinationHistory.length - 1];
+    return freezeClone({
+      stage: nextCheckpoint.stage,
+      requirement,
+      resolution,
+      item: persisted.result
     });
   }
 
   async function resume({ itemId }) {
+    requireText(itemId, "itemId");
+    const item = boardItem(await orchestrator.readBlackboard(), itemId);
+    if (item.checkpoint != null) {
+      const checkpoint = workflowCheckpoint(item.checkpoint);
+      invariant(
+        checkpoint.stage !== BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING,
+        "Backend coordination must be resolved with resolveBackendCoordination() before resume"
+      );
+    }
     const resumed = await orchestrator.resume({ itemId });
     return freezeClone({ item: resumed.result });
   }
@@ -471,14 +685,29 @@ export function createDurableBackendQaWorkflow({
   async function current({ itemId }) {
     requireText(itemId, "itemId");
     const item = boardItem(await orchestrator.readBlackboard(), itemId);
-    if (item.status === BlackboardStatus.BLOCKED) return freezeClone({ stage: BackendQaWorkflowStage.BLOCKED, item });
     if (item.status === BlackboardStatus.SUPERSEDED) return freezeClone({ stage: BackendQaWorkflowStage.CANCELED, item });
     if ([BlackboardStatus.PENDING_REVIEW, BlackboardStatus.REVIEWING, BlackboardStatus.PENDING_RECONCILIATION, BlackboardStatus.DONE].includes(item.status)) {
       return freezeClone({ stage: BackendQaWorkflowStage.AWAITING_REVIEW, item });
     }
     invariant(item.checkpoint != null, `Blackboard item ${itemId} has no durable Backend/QA checkpoint`);
-    return freezeClone({ stage: workflowCheckpoint(item.checkpoint).stage, item });
+    const checkpoint = workflowCheckpoint(item.checkpoint);
+    if (item.status === BlackboardStatus.BLOCKED) {
+      return freezeClone({
+        stage: blockedWorkflowStage(checkpoint),
+        coordination: checkpoint.coordination ?? null,
+        item
+      });
+    }
+    return freezeClone({ stage: checkpoint.stage, coordination: checkpoint.coordination ?? null, item });
   }
 
-  return Object.freeze({ initialize, advance, recoverInterrupted, resume, cancel, current });
+  return Object.freeze({
+    initialize,
+    advance,
+    recoverInterrupted,
+    resolveBackendCoordination,
+    resume,
+    cancel,
+    current
+  });
 }
