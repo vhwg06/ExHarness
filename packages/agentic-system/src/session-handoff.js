@@ -20,14 +20,21 @@ function normalizeTextArray(value, name) {
   return [...new Set((value ?? []).map((item, index) => requireText(item, `${name}[${index}]`)))];
 }
 
+export const UserIntentSource = Object.freeze({
+  USER: "USER"
+});
+
 export const SessionHandoffRootKind = Object.freeze({
   USER_INTENT: "USER_INTENT_ROOT"
 });
 
 export function defineUserIntent(raw) {
   invariant(raw && typeof raw === "object" && !Array.isArray(raw), "userIntent must be an object");
+  const source = raw.source ?? UserIntentSource.USER;
+  invariant(source === UserIntentSource.USER, "userIntent.source must be USER");
   return freezeClone({
     id: requireText(raw.id, "userIntent.id"),
+    source,
     objective: requireText(raw.objective, "userIntent.objective"),
     bullets: normalizeTextArray(raw.bullets ?? [], "userIntent.bullets"),
     constraints: normalizeTextArray(raw.constraints ?? [], "userIntent.constraints")
