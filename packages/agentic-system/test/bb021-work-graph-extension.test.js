@@ -240,20 +240,22 @@ test("BB-021 fresh work cannot carry forged lifecycle history", async () => {
 test("BB-021 work graph extension cannot mutate claimed or superseded targets", async () => {
   await withOrchestrator(async (orchestrator) => {
     await orchestrator.claim({ itemId: "A", owner: "worker" });
+    const claimedTarget = await expectedTarget(orchestrator, "A");
     await assert.rejects(
       () => orchestrator.extendWorkGraph({
         targetItemId: "A",
-        expectedTarget: await expectedTarget(orchestrator, "A"),
+        expectedTarget: claimedTarget,
         artifactRefs: ["coordination:x"]
       }),
       /cannot extend its work graph from CLAIMED/
     );
 
     await orchestrator.supersede({ itemId: "B", reason: "canceled" });
+    const supersededTarget = await expectedTarget(orchestrator, "B");
     await assert.rejects(
       () => orchestrator.extendWorkGraph({
         targetItemId: "B",
-        expectedTarget: await expectedTarget(orchestrator, "B"),
+        expectedTarget: supersededTarget,
         artifactRefs: ["coordination:y"]
       }),
       /cannot extend its work graph from SUPERSEDED/
