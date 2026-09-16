@@ -13,14 +13,62 @@ Blackboard
   -> load smallest relevant worktree current-state docs
   -> inspect source/tests
   -> execute/investigate
-  -> verify
-  -> update source if applicable
-  -> reconcile worktree living docs to source
+  -> whenever implementation state materially changes before a durable checkpoint:
+       -> reconcile affected worktree docs
+       -> verify current source + docs still describe the same system
+  -> verify implementation checkpoint
+  -> checkpoint / handoff / review / continue
   -> write result/evidence/artifact refs to Blackboard
   -> DONE | BLOCKED | READY
 ```
 
 The Blackboard is the roadmap/work queue. `docs/worktree/pipeline.md` describes only the execution pipeline that currently exists in source.
+
+Living-doc reconciliation is **not** an end-of-work cleanup step. It happens before the implementation state becomes durable/reviewable/handoff-safe.
+
+## Continuous synchronization pipeline
+
+```text
+source/test/runtime state S0
+        |
+        | implementation changes current semantics
+        v
+source/test/runtime state S1
+        |
+        +--> update affected docs/worktree/* to projection(S1)
+        |
+        +--> verify no desired/future state leaked into worktree
+        |
+        v
+durable checkpoint / handoff / review may proceed
+```
+
+Invariant:
+
+```text
+durable/reviewable checkpoint
+  => docs/worktree/* is the closest source-backed semantic projection
+     of the system that exists at that checkpoint
+```
+
+A Blackboard item does not need to be `DONE` for this to apply. If only half of a larger objective is implemented, worktree docs describe the half that exists now and Blackboard tracks the half that remains.
+
+Temporary local edit order inside one uninterrupted implementation step may transiently lead or lag docs; that transient state must not be checkpointed, handed off, submitted for review or represented as current project state.
+
+A change is not review-complete when it materially changes current system semantics but leaves the affected worktree projection stale.
+
+For every material change, review classifies living-doc impact:
+
+```text
+CURRENT_SYSTEM_CHANGED
+  -> affected worktree docs changed in the same PR/change
+
+CURRENT_SYSTEM_NOT_CHANGED
+  -> no worktree rewrite required
+  -> reviewer confirms the change is documentation-neutral
+```
+
+CI checks the declaration shape and requires a `docs/worktree/*` diff for `CURRENT_SYSTEM_CHANGED`. Review verifies whether that classification is semantically true and whether the projection itself is accurate.
 
 ## Gap migration pipeline
 
@@ -60,9 +108,9 @@ A Board item becoming `DONE` means the operational question/work was resolved. I
 ```text
 source/test/runtime change
   -> detect affected living docs
-  -> rewrite current-state projection
+  -> rewrite current-state projection before durable checkpoint/handoff/review
   -> remove resolved problem from current docs
-  -> close/update Board item
+  -> keep unresolved remainder on Blackboard
 ```
 
-If source and living docs disagree, source wins.
+If source and living docs disagree, source wins **and the docs are stale until reconciled**. Staleness is not deferred documentation debt; it blocks claiming that implementation checkpoint as handoff-safe/current.

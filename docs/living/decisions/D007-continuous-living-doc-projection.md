@@ -1,0 +1,104 @@
+# D007 — Living docs are a continuous current-system projection
+
+Status: **PROMOTED**
+
+Accepted: 2026-09-16
+
+Acceptance boundary: repository owner explicitly requires living docs to be updated continuously so they describe the system as closely as possible at every implementation checkpoint; governance review on PR #77 accepted the same-change/durable-checkpoint enforcement boundary.
+
+## Question
+
+Should `docs/worktree/*` be reconciled only after a work item/phase completes, or continuously as the implemented system changes?
+
+## Decision
+
+`docs/worktree/*` is not an end-of-phase documentation task. It is the continuously maintained projection of the current implemented system.
+
+The synchronization invariant is:
+
+```text
+at every durable/reviewable implementation checkpoint:
+
+source + executable tests + runtime-observable behavior
+    ~= docs/worktree/* current-state projection
+```
+
+A durable/reviewable checkpoint includes any state intended for commit, handoff, review, cross-session continuation or merge. Temporary local edit order inside one uninterrupted implementation step is not itself a documentation lifecycle boundary.
+
+The projection does not mechanically mirror source text. It must remain semantically aligned with the behavior, architecture, contracts, authority boundaries and workflow that actually exist now.
+
+## Same-change rule
+
+Any change that alters current behavior, architecture, contracts, authority boundaries, public surface or executable workflow must reconcile the affected `docs/worktree/*` documents in the same change before that checkpoint is eligible for handoff/review/acceptance/merge.
+
+```text
+implementation changes current system semantics
+  -> identify affected worktree projection
+  -> update source/tests
+  -> update affected worktree docs
+  -> verify source + docs describe the same current system
+  -> only then checkpoint / handoff / review / accept / merge
+```
+
+Do not defer reconciliation until:
+
+- the Blackboard item becomes `DONE`;
+- the end of a phase/wave;
+- a later documentation cleanup;
+- a future session.
+
+A work item may remain unresolved while its already-implemented partial state is reflected in living docs.
+
+## Staleness rule
+
+A stale worktree document is a system-state defect, not harmless documentation debt.
+
+If source/runtime/tests and `docs/worktree/*` disagree:
+
+1. source/runtime/tests remain implementation authority;
+2. the affected living document is immediately considered stale;
+3. the current change/session must reconcile it before claiming the relevant implementation checkpoint as complete or handoff-safe.
+
+The Blackboard must not be used to justify stale living docs. Blackboard stores unresolved work; worktree docs describe what exists now.
+
+## Desired-state separation
+
+Future design, proposed APIs, unresolved gaps, next steps and candidate behavior must not be inserted into `docs/worktree/*` to make it look current.
+
+Those belong to:
+
+- `docs/living/blackboard.md` for unresolved operational work;
+- `docs/living/decisions/*` for proposed/accepted design decisions;
+- `docs/living/knowledge/*` for evidence/judgment/audit artifacts.
+
+## Review contract
+
+Every material change must classify living-doc impact:
+
+```text
+CURRENT_SYSTEM_CHANGED
+  -> affected worktree docs updated in the same change
+
+CURRENT_SYSTEM_NOT_CHANGED
+  -> no worktree rewrite required; reviewer verifies the change is documentation-neutral
+```
+
+A change that materially changes the current system while leaving the corresponding worktree projection stale is not review-complete.
+
+## Enforcement boundary
+
+Repository enforcement is deliberately two-layered:
+
+1. CI requires every PR to declare exactly one living-doc impact classification.
+2. A `CURRENT_SYSTEM_CHANGED` declaration must include at least one `docs/worktree/*` change in the same PR.
+3. Review remains responsible for the semantic question that automation cannot prove: whether the declared classification is true and whether the changed worktree files actually describe the current system accurately.
+
+CI must not pretend that pathname checks prove semantic source↔documentation equivalence.
+
+## Consequences
+
+- living docs evolve incrementally with implementation, not in cleanup batches;
+- fresh sessions see the closest available source-backed description of the system;
+- Board state and current-system docs remain distinct but synchronized to the same repository reality;
+- `DONE` remains an operational acceptance state, not the trigger for documentation synchronization;
+- a reviewable/handoff-safe checkpoint cannot intentionally carry stale current-system documentation.
