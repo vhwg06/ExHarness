@@ -1,10 +1,10 @@
 # D012 — Recorded workflow replay is evaluation evidence, not runtime authority
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
 
-Proposed: 2026-09-16
+Accepted: 2026-09-16
 
-Acceptance boundary: BB-038 research-method review plus application/architecture-boundary review. This decision must not be treated as accepted until those reviews pass.
+Acceptance boundary: BB-038 research-method review plus application/architecture-boundary review. Both reviews passed on PR #93 after checking the deterministic fixture methodology, evidence classification and live-authority separation.
 
 ## Context
 
@@ -110,11 +110,13 @@ Those abstractions require separate repeated-consumer and measured-value evidenc
 - `artifacts/bb038-workflow-replay-eval.json`;
 - BB-024 baseline/candidate cancellation evidence from `blackboard-orchestrator.js` and PR #85;
 - existing deterministic Agentic Application evaluation in `scripts/agentic-backend-qa-eval.mjs`;
-- BB-016/017 separation between lifecycle fencing and live effect reconciliation.
+- BB-016/017 separation between lifecycle fencing and live effect reconciliation;
+- PR #93 research-method review PASS;
+- PR #93 application/architecture-boundary review PASS.
 
 ## Promotion targets
 
-If accepted, the implemented evaluation command is already projected in `docs/worktree/pipeline.md`. No runtime architecture document should describe replay as orchestration/recovery authority.
+The implemented evaluation command is projected in `docs/worktree/pipeline.md`. No runtime architecture document should describe replay as orchestration/recovery authority.
 
 ## What would reopen this decision
 
