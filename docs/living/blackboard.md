@@ -384,7 +384,8 @@ submission:
 review-requirements:
   - Core architecture-boundary review
 reviews:
-  - architecture-boundary review passed on PR #75 head a15a63e6ebbe119448a37cdddbd0f78d22283941 and authorized D005 promotion
+  - architecture-boundary review passed on PR #75 and authorized D005 promotion
+  - merged PR #75 after final exact-head Node 20/22/24 CI
 artifact-refs:
   - docs/living/decisions/D005-no-core-lifecycle-facade-yet.md
   - docs/worktree/core-harness/decisions.md
@@ -392,7 +393,8 @@ artifact-refs:
 evidence-refs:
   - BB-007 concrete recovery-reference consumer in packages/core-harness/test/recovery-composition.test.js
   - repository usage assessment found no second real consumer repeating the full recovery sequence
-  - CI run #1145 green on Node 20/22/24 before promotion-only reconciliation
+  - final exact-head CI run #1149
+  - merge commit 1a506dce1e1f19f604ba47382e55c191d3c9152d
 blockers: []
 follow-up-refs: []
 origin: abstraction assessment explicitly deferred until BB-007 made recovery sequencing concrete
@@ -426,6 +428,7 @@ artifact-refs: []
 evidence-refs: []
 blockers:
   - two current source classes still have materially different lifecycle/provenance semantics
+  - MCP protocol support alone is not a third source; no concrete MCP-backed source exists yet
   - no repeated pressure yet justifies Resolver<I,O>, registry or provider lifecycle
 follow-up-refs: []
 ```
@@ -445,36 +448,43 @@ artifact-refs: []
 evidence-refs: []
 blockers:
   - current Backend/QA callers do not yet demonstrate a machine-readable diagnostic requirement
+  - MCP MRTR/task semantics are mapped architecturally but no concrete adapter/caller yet requires a diagnostic contract
 follow-up-refs: []
 ```
 
 ```text
 BB-013
 question/work: Evaluate MCP 2026-07-28 as an Oracle capability/continuation boundary against the current concrete resolver semantics without prematurely making Oracle MCP-first.
-status: READY
+status: DONE
 owner:
 depends-on: []
-remaining-work:
-  - map current repository/artifact resolution onto MCP capability calls while preserving application-owned context declaration and Oracle-owned resolution semantics
-  - keep Oracle work identity distinct from MCP request/task/trace identities; transport/session lifetime must never become Oracle lifecycle authority
-  - evaluate explicit input-required/task-handle continuation for long-running or multi-step probes, restart recovery and handoff
-  - define how observation/evidence provenance and freshness survive capability transport without turning tool results into correctness claims
-  - account for retry/effect ambiguity: a new MCP request after transport failure must not be treated as proof that an external effect did or did not happen
-  - determine whether MCP-backed source pressure produces a real third Oracle source/adapter before reopening the common-resolver abstraction question
+remaining-work: []
 submission:
-review-requirements: []
-reviews: []
+  - PR #76
+review-requirements:
+  - Oracle architecture-boundary review
+reviews:
+  - architecture review passed on PR #76 head 4a187204e8d0ace2885824b487c7299fd6a624d1 after provenance hardening and authorized D006 promotion
 artifact-refs:
+  - docs/living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md
   - docs/worktree/oracle/state.md
-  - packages/agentic-system/src/oracle.js
+  - docs/worktree/oracle/architecture.md
+  - docs/worktree/oracle/workflow.md
+  - docs/worktree/oracle/decisions.md
 evidence-refs:
   - https://modelcontextprotocol.io/specification/2026-07-28/changelog
+  - https://modelcontextprotocol.io/specification/2026-07-28/server/resources
+  - https://modelcontextprotocol.io/specification/2026-07-28/server/tools
+  - https://tasks.extensions.modelcontextprotocol.io/specification/draft/tasks
+  - CI run #1155 green on Node 20/22/24 before promotion/current-doc synchronization
 blockers: []
 follow-up-refs: [BB-009, BB-010]
 origin: direct user architectural pressure after reviewing MCP 2026-07-28 stateless request, explicit continuation and task-lifecycle changes
 ```
 
-Caching/freshness and semantic retrieval are not Board gaps merely because they are absent. MCP is also **not** promoted as a required integration by BB-013; BB-013 records concrete user-directed evaluation pressure and must earn any architectural promotion through grounded implementation/review evidence.
+BB-013 concludes that MCP is a conditional source/capability adapter and source-call continuation boundary. It is **not** promoted as an MCP-first Oracle layer, a project lifecycle authority or a source class by itself. BB-009/BB-010 remain blocked until a concrete MCP-backed source demonstrates real source/diagnostic pressure.
+
+Caching/freshness and semantic retrieval are not Board gaps merely because they are absent.
 
 ## Storage
 

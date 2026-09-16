@@ -27,4 +27,10 @@ parse QaWorkOrder
 
 An artifact read error is rethrown with the application-artifact boundary/ref context.
 
+## MCP
+
+There is no MCP-backed resolution path in current source. `oracle.js` does not issue `resources/read`, `tools/call`, MRTR retries or Tasks operations, and it persists no MCP continuation state.
+
+D006 is an accepted architecture constraint for any later concrete MCP-backed source; it does not make that flow current implementation. See `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md`.
+
 No implicit refresh, background provider lifecycle, cache or retrieval pass exists in the current workflow.

@@ -1,57 +1,57 @@
-# Oracle decisions
+# Oracle current constraints
 
-Current desired-state constraints for Oracle implementation. This is not an ADR archive.
+These are current source-backed Oracle invariants plus accepted boundary constraints. This is not an ADR archive or a future implementation plan.
 
 ## LAYERING
 
 - Oracle belongs to infrastructure, not the Agentic Application Layer and not ExHarness Core.
 - The Agentic Application Layer owns role/task semantics and context contracts.
 - ExHarness Core remains the execution/runtime substrate; Oracle must not push infrastructure semantics into the kernel.
+- no MCP control plane or MCP-owned Oracle lifecycle exists in current source.
 
 ## OWNERSHIP
 
 - application owns what context is required, why it is required, its semantic scope and output schema;
 - Oracle owns source location, retrieval and source-specific adaptation;
 - Oracle must not invent additional context requirements or broaden semantic relevance beyond the application request;
-- exact Backend/Frontend/QA/Design context schemas are not Oracle-owned.
+- exact Backend/Frontend/QA/Design context schemas are not Oracle-owned;
+- WorkOrder/Blackboard identity is application-owned.
 
 ## LIFECYCLE
 
-- Oracle is single-pass and resolve-once for a Worker execution;
-- resolution happens explicitly before Worker execution;
-- no provider lifecycle, session state, automatic refresh or turn-by-turn context injection belongs in Oracle v0;
-- a later refresh is another explicit application resolution, not hidden Oracle behavior.
+- current Oracle resolution is single-pass and resolve-once before Worker execution;
+- no provider lifecycle, session state, automatic refresh or turn-by-turn context injection exists;
+- a later refresh is another explicit application resolution, not hidden Oracle behavior;
+- current source persists no MCP request, handle, MRTR or Tasks continuation state.
 
 ## CONTRACTS
 
-- context contracts must be typed and runtime-validatable;
-- initial implementation should use Zod-compatible schemas instead of inventing a schema framework;
-- Oracle may not weaken an application schema when source data is missing or malformed.
+- context contracts are typed and runtime-validatable through the application schemas;
+- Oracle may not weaken an application schema when source data is missing or malformed;
+- resolved context carries source refs; QA application artifacts additionally carry producer/acceptance provenance.
 
 ## IMPLEMENTATION POLICY
 
-Use the simplest correct mechanism for each source.
+Current implementation uses the simplest concrete mechanism for each source:
 
 ```text
-direct source access
-    > source-specific adapter
-        > specialized retrieval framework
+repository source           -> repositoryReader
+application artifact source -> artifactReader
 ```
 
-- direct file/API/structured reads are the default;
-- MCP is conditional: use an MCP client when a concrete source already exposes useful MCP capabilities and that path reduces integration cost;
-- semantic retrieval/RAG is conditional: use it when the relevant subset is not known in advance and corpus retrieval is actually required;
-- do not add MCP, embeddings, vector stores or retrieval pipelines merely for uniformity;
-- Oracle complexity should be proportional to the source being resolved, not to hypothetical future platform needs.
+There is no MCP client, retrieval framework, cache layer, embeddings/vector store or generic source-provider framework in current Oracle source.
+
+D006 is an accepted constraint on any later concrete MCP-backed source: MCP must remain below application work/lifecycle authority and protocol support alone does not count as a third source. Detailed non-current MCP mapping remains in `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md`, not in this source-synchronized projection.
 
 ## ABSTRACTION
 
-- begin with functions/resolvers and explicit composition;
-- do not introduce `ContextProvider`, plugin lifecycle, session manager, provider graph or generic context engine without a concrete requirement;
-- common abstractions are justified only after multiple real resolvers demonstrate the same stable contract.
+- current composition is concrete functions/resolvers;
+- there is no `ContextProvider`, generic Resolver interface, plugin lifecycle, session manager, provider graph or context engine;
+- the two implemented source classes still have materially different identity/provenance semantics.
 
 ## AUTHORITY
 
 - resolved context is a Worker input snapshot, not canonical source authority;
 - Oracle is not an agent, advisor, orchestrator, evaluator or correctness authority;
-- source systems remain authoritative for the data Oracle pulls and adapts.
+- source systems remain authoritative for the data Oracle pulls and adapts;
+- transport/source metadata never becomes application correctness or completion authority merely by entering context.
