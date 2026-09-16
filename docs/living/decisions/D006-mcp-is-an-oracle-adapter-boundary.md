@@ -92,9 +92,10 @@ The Blackboard/Orchestrator remains canonical project/work lifecycle authority. 
 
 ## Provenance and freshness
 
-- MCP resource URI / server identity / operation identity may contribute to `sourceRef` / source provenance.
-- `structuredContent` and output schemas help transport validation but do not establish semantic correctness.
-- `ttlMs` is a cache/freshness hint, not proof that content is true or current enough for an application acceptance boundary.
+- a configured MCP source identity/endpoint plus resource URI or concrete operation ref may contribute to `sourceRef` / source provenance;
+- self-reported `serverInfo` / server names are descriptive metadata, not stable source identity or authorization/correctness authority;
+- `structuredContent` and output schemas help transport validation but do not establish semantic correctness;
+- `ttlMs` is a cache/freshness hint, not proof that content is true or current enough for an application acceptance boundary;
 - authorization and server/tool metadata do not become correctness authority.
 
 ## Effect ambiguity
