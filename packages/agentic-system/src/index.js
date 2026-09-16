@@ -52,10 +52,13 @@ export {
 export { createApplicationOrchestrator } from "./application-orchestrator.js";
 export {
   BlackboardDependencyIssueCode,
-  createJsonBlackboardStore,
-  defineBlackboardSnapshot,
   diagnoseBlackboardDependencyGraph
 } from "./blackboard-graph.js";
+export {
+  createJsonBlackboardStore,
+  defineBlackboardSnapshot,
+  validateBlackboardPersistedPayload
+} from "./blackboard-json-payload.js";
 export {
   SessionHandoffRootKind,
   UserIntentSource,
