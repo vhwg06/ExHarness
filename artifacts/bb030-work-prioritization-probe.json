@@ -1,0 +1,58 @@
+{
+  "evidenceClass": "DETERMINISTIC_REFERENCE",
+  "productionEvidence": false,
+  "policy": {
+    "name": "bounded-project-selection",
+    "revision": "1",
+    "selectionBudget": 5,
+    "maxDeferrals": 3,
+    "retryCeiling": 2,
+    "plateauWindow": 2
+  },
+  "baseline": {
+    "selected": [
+      { "id": "DOC-CLEANUP", "reason": "BOARD_ORDER", "score": null },
+      { "id": "LOW-VALUE-REFACTOR", "reason": "BOARD_ORDER", "score": null },
+      { "id": "CORRECTNESS-FENCE", "reason": "BOARD_ORDER", "score": null }
+    ],
+    "spent": 5,
+    "remainingBudget": 0,
+    "observedOutcome": 11,
+    "blockedWorkReduction": 2
+  },
+  "candidate": {
+    "selected": [
+      { "id": "CORRECTNESS-FENCE", "reason": "MANDATORY_CORRECTNESS", "score": null },
+      { "id": "REVIEW-PIPELINE", "reason": "BOUNDED_SCORE", "score": 42.6 }
+    ],
+    "spent": 5,
+    "remainingBudget": 0,
+    "observedOutcome": 13,
+    "blockedWorkReduction": 3
+  },
+  "deltas": {
+    "observedOutcome": 2,
+    "blockedWorkReduction": 1,
+    "spent": 0
+  },
+  "starvation": {
+    "selected": "AGED-P2",
+    "reason": "STARVATION_FENCE"
+  },
+  "missingMeasurement": {
+    "action": "MISSING_MEASUREMENT",
+    "inventedValue": false
+  },
+  "stopping": {
+    "optionalPlateau": "STOP",
+    "mandatoryPlateau": "ESCALATE",
+    "mandatoryBudgetExhausted": "ESCALATE",
+    "optionalStaleEvidence": "STOP"
+  },
+  "limits": [
+    "fixture values do not establish production prioritization benefit",
+    "ranking estimates are not correctness evidence",
+    "mandatory correctness and user constraints remain hard gates",
+    "selection does not mutate Blackboard lifecycle or Core promotion authority"
+  ]
+}
