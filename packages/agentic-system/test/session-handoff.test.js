@@ -5,9 +5,11 @@ import { join } from "node:path";
 import test from "node:test";
 import {
   BlackboardStatus,
+  UserIntentSource,
   createApplicationOrchestrator,
   createJsonBlackboardStore,
   createSessionHandoffSurface,
+  defineUserIntent,
   sessionHandoffFromBlackboard
 } from "../src/index.js";
 
@@ -56,6 +58,7 @@ function workItem(overrides = {}) {
 
 const USER_INTENT = Object.freeze({
   id: "exharness-session-handoff",
+  source: UserIntentSource.USER,
   objective: "Allow any fresh session to continue ExHarness work from the Blackboard.",
   bullets: [
     "Blackboard remains the canonical work tracker.",
@@ -64,6 +67,20 @@ const USER_INTENT = Object.freeze({
   constraints: [
     "Do not depend on previous conversation state."
   ]
+});
+
+test("user intent contract keeps user as the only semantic source", () => {
+  assert.deepEqual(defineUserIntent({
+    id: USER_INTENT.id,
+    objective: USER_INTENT.objective,
+    bullets: USER_INTENT.bullets,
+    constraints: USER_INTENT.constraints
+  }), USER_INTENT);
+
+  assert.throws(
+    () => defineUserIntent({ ...USER_INTENT, source: "PM" }),
+    /userIntent.source must be USER/
+  );
 });
 
 test("session handoff initializes durable user intent and exposes only runnable work as eligible", async () => {
@@ -117,7 +134,7 @@ test("a fresh process/session resumes pending work and artifact refs from Blackb
     const sessionBHandoff = createSessionHandoffSurface({ orchestrator: sessionBOrchestrator });
     const resumed = await sessionBHandoff.read();
 
-    assert.equal(resumed.intent.objective, USER_INTENT.objective);
+    assert.deepEqual(resumed.intent, USER_INTENT);
     assert.deepEqual(resumed.lifecycle.pendingReview.map((item) => item.id), ["BB-200"]);
     assert.deepEqual(resumed.references.artifacts, [
       { itemId: "BB-200", ref: "git://rev-session-a" }
