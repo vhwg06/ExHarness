@@ -1,10 +1,12 @@
 # D016 — Self-upgrade experiments may propose adoption but never self-authorize rollout
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
 
 Proposed: 2026-09-16
 
-Acceptance boundary: BB-034 architecture-boundary review plus evaluation-method review. Merge of research artifacts is not acceptance. This decision remains proposed until a reviewer accepts the corrected exact-head evidence.
+Accepted: 2026-09-16
+
+Acceptance boundary: BB-034 architecture-boundary and evaluation-method review both passed on exact remediation head `ca5157f8ecfa14a6deb95e4e7d8ecf63ba11295a` in PR #105. Exact-head CI #1695 was green, and the corrected research evidence merged on `main` as `854432d6af1aaac3fd27e49823ef2984923d1357`.
 
 ## Context
 
@@ -12,7 +14,7 @@ ExHarness already has separate primitives for grounded cognition, bounded delibe
 
 The pilot uses the historical BB-024 late-reconciliation cancellation failure represented by the deterministic BB-038 replay artifact. The current terminal-cancellation behavior is already delivered; this experiment is research about the control loop, not a new implementation of BB-024.
 
-## Decision candidate
+## Decision
 
 A self-upgrade attempt may produce an **adoption proposal** only after a fixed experiment passes its declared evaluation gates.
 
@@ -168,7 +170,7 @@ BASELINE_SELECTED
 + CANDIDATE_PROPOSED_FOR_REVIEW
 ```
 
-BB-019 remains the dependency for independent application/project acceptance. BB-027 remains the dependency for durable research continuation. BB-034 cannot unblock BB-035 by merge or fixture success alone.
+BB-019 remains the dependency for independent application/project acceptance. BB-034 acceptance satisfies the self-upgrade design dependency, but BB-035 remains blocked until BB-027 supplies durable research continuation.
 
 ## Stop and rollback semantics
 
@@ -208,7 +210,11 @@ Corrected BB-034 evidence:
 - current Core `grounded-cognition.js` source-snapshot semantics;
 - current Core `deliberation-controller.js` ActionIntent policy hook;
 - current Core `deliberation.js` `CUSTOM.payload` normalization;
-- trust artifacts exercised by the probe.
+- trust artifacts exercised by the probe;
+- PR #105 architecture-boundary review PASS on exact remediation head `ca5157f8ecfa14a6deb95e4e7d8ecf63ba11295a`;
+- PR #105 evaluation-method review PASS on the same exact head;
+- exact-head CI #1695;
+- merge commit `854432d6af1aaac3fd27e49823ef2984923d1357`.
 
 The checked artifact remains:
 
@@ -231,7 +237,7 @@ This decision does not create:
 
 ## Promotion rule
 
-If BB-034 architecture and evaluation reviews pass on the corrected exact head, D016 may be accepted as the bounded design constraint for a future BB-035 application pilot.
+D016 is accepted as the bounded design constraint for a future BB-035 application pilot.
 
 Acceptance of D016 still does not mean a self-upgrade runtime exists. `docs/worktree/*` may claim only the executable research verification surface until a separately reviewed implementation is delivered.
 
