@@ -92,6 +92,21 @@ This prevents review failure from being hidden behind a replacement ticket when 
 
 The durable `createDurableBackendQaWorkflow(...)` composition binds the concrete Backend -> QA stages to Blackboard dispatch and recovery. It persists the workflow specification and stage checkpoint, resumes QA from a ref-only accepted Backend handoff, routes QA issues to Backend remediation, preserves blocked source-lookup checkpoints for explicit resume, and submits accepted QA as `PENDING_REVIEW`. The direct `runBackendThenQaObjective(...)` composition remains available for one-session execution.
 
+## Application evaluation gate
+
+Root `npm run verify` now includes the concrete Agentic Application reference evaluation:
+
+```text
+npm run eval:agentic
+ -> scripts/agentic-backend-qa-eval.mjs
+ -> durable Backend -> QA workflow
+ -> happy / restart / remediation / blocked-recovery / cancel scenarios
+ -> measured deterministic result
+ -> deep compare with artifacts/agentic-backend-qa-reference-eval.json
+```
+
+The gate verifies regression-level application behavior including ref-only handoff integrity, false-completion avoidance, repository/application-artifact source reads, remediation/recovery and review-gate behavior. Its checked artifact declares `evidenceClass: DETERMINISTIC_REFERENCE` and `productionEvidence: false`; it is not a production workload benchmark and does not establish Advisor value-add or justify generic abstractions.
+
 ## Current extraction result
 
 Repeated source-backed shapes:
