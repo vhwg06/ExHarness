@@ -178,14 +178,16 @@ A confirmed mutating effect may therefore be ahead of Core candidate persistence
 
 Tracing and semantic memory are context/evidence inputs, never recovery authority by themselves.
 
-This recovery ordering is currently a **concrete contract proof**, not a public generic lifecycle facade. The reusable abstraction question remains separate.
+## CURRENT ABSTRACTION BOUNDARY
 
-## NEXT CORE DELIVERY
+BB-008 assessed the concrete recovery composition and found insufficient repeated pressure for a higher-level executable Core lifecycle facade.
 
-The concrete sequencing pressure required to assess a higher-level Core lifecycle surface now exists. Any extraction must preserve the proven ordering and must not absorb Agentic Application orchestration or merge effect/evidence/completion authority.
+Current evidence has one concrete recovery-reference consumer. The existing public primitives already expose the distinct mechanisms that consumer needs; repository usage does not yet demonstrate a second real caller repeating the full restore/reconcile/recover/resume sequence.
+
+Therefore Core intentionally keeps these mechanisms explicit rather than adding a `LifecycleEngine`, `RecoveryCoordinator`, registry or workflow DSL. Reassess only when another concrete consumer or production evaluation demonstrates repeated orchestration pressure. Any future extraction must preserve the proven ordering and must not absorb Agentic Application orchestration or merge effect/evidence/completion authority.
 
 Application WorkOrder/Worker/Advisor/completion abstractions remain owned by Agentic Application and must preserve concrete-first sequencing.
 
 ## SOURCE
 
-Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `effect-aware-harness.js`, `avo-action-effect.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`. Concrete recovery-composition contract evidence lives in `test/recovery-composition.test.js`.
+Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `effect-aware-harness.js`, `avo-action-effect.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`. Concrete recovery-composition contract evidence lives in `test/recovery-composition.test.js`; the current no-facade decision is recorded in `../../living/decisions/D005-no-core-lifecycle-facade-yet.md`.

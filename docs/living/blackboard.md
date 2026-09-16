@@ -319,7 +319,7 @@ The promoted PM/SA topology in D003 is not yet claimed as a concrete source role
 ```text
 BB-006
 question/work: Close the built-in external-effect/persistence crash window so candidate/trace/variation state can never be mistaken for proof that an externally visible action completed.
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: []
 remaining-work: []
@@ -328,7 +328,9 @@ submission:
 review-requirements:
   - core/code review
   - effect/recovery boundary review
-reviews: []
+reviews:
+  - system review pass on exact PR #73 head after public-facade and authority-boundary hardening
+  - merged PR #73 after Node 20/22/24 CI
 artifact-refs:
   - packages/core-harness/src/avo-action-effect.js
   - packages/core-harness/src/effect-aware-harness.js
@@ -336,6 +338,8 @@ artifact-refs:
   - docs/worktree/core-harness/workflow.md
 evidence-refs:
   - confirmed-result crash recovery / fail-closed ambiguity / explicit idempotent replay contract tests in PR #73
+  - exact-head CI run #1128
+  - merge commit f31af9741118d38bf6b8b68c8e94a392d37ef182
 blockers: []
 follow-up-refs: [BB-007]
 origin: Core effect/persistence crash-window pressure retained from pre-Blackboard architecture review
@@ -344,39 +348,54 @@ origin: Core effect/persistence crash-window pressure retained from pre-Blackboa
 ```text
 BB-007
 question/work: Compose deterministic restore -> pending-effect reconciliation -> evidence restoration -> explicit resume for a concrete recovery consumer.
-status: BLOCKED
+status: DONE
 owner:
 depends-on: [BB-004, BB-006]
-remaining-work:
-  - order interrupted-variation recovery, AgentRuntime snapshot/restore and effect reconciliation
-  - keep safe replay/observation machine-first
-  - fail closed or escalate NON_RECONCILABLE ambiguity
+remaining-work: []
 submission:
-review-requirements: []
-reviews: []
-artifact-refs: []
-evidence-refs: []
-blockers:
-  - BB-006 effect boundary must be accepted
-follow-up-refs: []
+  - PR #74
+review-requirements:
+  - core/code review
+  - recovery-composition authority review
+reviews:
+  - system review pass on exact PR #74 head
+  - merged PR #74 after Node 20/22/24 CI
+artifact-refs:
+  - packages/core-harness/test/recovery-composition.test.js
+  - docs/worktree/core-harness/workflow.md
+evidence-refs:
+  - confirmed-effect/no-redispatch, NON_RECONCILABLE fail-closed and IDEMPOTENT machine-first recovery contracts in PR #74
+  - exact-head CI run #1134
+  - merge commit 7d793c41871cb13df1567ea4c21d26862eaff643
+blockers: []
+follow-up-refs: [BB-008]
+origin: deterministic recovery-composition pressure after BB-004 and BB-006
 ```
 
 ```text
 BB-008
 question/work: Determine whether a higher-level executable Core lifecycle surface is justified after recovery composition is concrete.
-status: BLOCKED
+status: DONE
 owner:
 depends-on: [BB-007]
-remaining-work:
-  - if justified, compose existing deliberation/action/effect/observe/verify/evaluate/cognition/promotion boundaries without absorbing Agentic Application orchestration
+remaining-work: []
 submission:
-review-requirements: []
-reviews: []
-artifact-refs: []
-evidence-refs: []
-blockers:
-  - do not invent a lifecycle facade before BB-007 demonstrates required sequencing
+  - PR #75
+review-requirements:
+  - Core architecture-boundary review
+reviews:
+  - architecture-boundary review passed on PR #75 head a15a63e6ebbe119448a37cdddbd0f78d22283941 and authorized D005 promotion
+artifact-refs:
+  - docs/living/decisions/D005-no-core-lifecycle-facade-yet.md
+  - docs/worktree/core-harness/decisions.md
+  - docs/worktree/core-harness/workflow.md
+evidence-refs:
+  - BB-007 concrete recovery-reference consumer in packages/core-harness/test/recovery-composition.test.js
+  - repository usage assessment found no second real consumer repeating the full recovery sequence
+  - CI run #1145 green on Node 20/22/24 before promotion-only reconciliation
+blockers: []
 follow-up-refs: []
+origin: abstraction assessment explicitly deferred until BB-007 made recovery sequencing concrete
 ```
 
 ## Oracle
