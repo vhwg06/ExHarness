@@ -1,0 +1,188 @@
+{
+  "experiment": "BB-036 task-aware context selection deterministic probe",
+  "evidenceClass": "DETERMINISTIC_REFERENCE",
+  "productionEvidence": false,
+  "repository": {
+    "ref": "repo://bb036-fixture",
+    "revision": "fixture-v1",
+    "fileCount": 16
+  },
+  "policy": {
+    "maxFiles": 3,
+    "maxContextChars": 8000,
+    "minimumCandidateScore": 6,
+    "oversizedChars": 6000,
+    "oversizedPenalty": 6,
+    "docsPenalty": 2
+  },
+  "predeclaredDecisionRule": "Candidate is interesting only if held-out required-context coverage improves over manual without reducing fixture task pass rate; source unavailability must remain fail-closed. Production adoption requires a representative versioned repository/provider corpus.",
+  "summary": {
+    "train": {
+      "manual": {
+        "tasks": 3,
+        "fixtureTaskPasses": 0,
+        "fixtureTaskPassRate": 0,
+        "meanRequiredCoverage": 0.4444,
+        "unnecessaryReads": 0,
+        "attemptedReads": 3,
+        "contextChars": 6300,
+        "selectionInputChars": 361,
+        "totalContextPlusSelectionChars": 6661,
+        "sourceFailureTasks": 0
+      },
+      "lexical": {
+        "tasks": 3,
+        "fixtureTaskPasses": 1,
+        "fixtureTaskPassRate": 0.3333,
+        "meanRequiredCoverage": 0.6667,
+        "unnecessaryReads": 2,
+        "attemptedReads": 7,
+        "contextChars": 22000,
+        "selectionInputChars": 2764,
+        "totalContextPlusSelectionChars": 24764,
+        "sourceFailureTasks": 0
+      },
+      "symbol": {
+        "tasks": 3,
+        "fixtureTaskPasses": 2,
+        "fixtureTaskPassRate": 0.6667,
+        "meanRequiredCoverage": 1,
+        "unnecessaryReads": 2,
+        "attemptedReads": 9,
+        "contextChars": 26000,
+        "selectionInputChars": 5023,
+        "totalContextPlusSelectionChars": 31023,
+        "sourceFailureTasks": 0
+      },
+      "bounded": {
+        "tasks": 3,
+        "fixtureTaskPasses": 3,
+        "fixtureTaskPassRate": 1,
+        "meanRequiredCoverage": 1,
+        "unnecessaryReads": 0,
+        "attemptedReads": 7,
+        "contextChars": 15100,
+        "selectionInputChars": 5650,
+        "totalContextPlusSelectionChars": 20750,
+        "sourceFailureTasks": 0
+      }
+    },
+    "heldout": {
+      "manual": {
+        "tasks": 3,
+        "fixtureTaskPasses": 0,
+        "fixtureTaskPassRate": 0,
+        "meanRequiredCoverage": 0.5,
+        "unnecessaryReads": 0,
+        "attemptedReads": 3,
+        "contextChars": 5000,
+        "selectionInputChars": 361,
+        "totalContextPlusSelectionChars": 5361,
+        "sourceFailureTasks": 1
+      },
+      "lexical": {
+        "tasks": 3,
+        "fixtureTaskPasses": 0,
+        "fixtureTaskPassRate": 0,
+        "meanRequiredCoverage": 0.3333,
+        "unnecessaryReads": 3,
+        "attemptedReads": 5,
+        "contextChars": 16300,
+        "selectionInputChars": 2764,
+        "totalContextPlusSelectionChars": 19064,
+        "sourceFailureTasks": 0
+      },
+      "symbol": {
+        "tasks": 3,
+        "fixtureTaskPasses": 2,
+        "fixtureTaskPassRate": 0.6667,
+        "meanRequiredCoverage": 0.8333,
+        "unnecessaryReads": 4,
+        "attemptedReads": 9,
+        "contextChars": 18400,
+        "selectionInputChars": 5023,
+        "totalContextPlusSelectionChars": 23423,
+        "sourceFailureTasks": 0
+      },
+      "bounded": {
+        "tasks": 3,
+        "fixtureTaskPasses": 2,
+        "fixtureTaskPassRate": 0.6667,
+        "meanRequiredCoverage": 1,
+        "unnecessaryReads": 0,
+        "attemptedReads": 6,
+        "contextChars": 12000,
+        "selectionInputChars": 5650,
+        "totalContextPlusSelectionChars": 17650,
+        "sourceFailureTasks": 1
+      }
+    }
+  },
+  "results": [
+    {
+      "task": {
+        "id": "train-health",
+        "split": "train",
+        "task": "Add GET health endpoint and preserve existing users behavior regression",
+        "declaredFiles": ["src/server.js"],
+        "requiredFiles": ["src/server.js", "test/server.test.js"]
+      },
+      "modes": {
+        "manual": {"selectedFiles":["src/server.js"],"requiredCoverage":0.5,"unnecessaryReads":0,"attemptedReads":1,"unavailableSelected":[],"contextChars":1800,"selectionInputChars":116,"totalContextPlusSelectionChars":1916,"proposalValid":true,"fixtureTaskPass":false},
+        "lexical": {"selectedFiles":["docs/health.md"],"requiredCoverage":0,"unnecessaryReads":1,"attemptedReads":1,"unavailableSelected":[],"contextChars":900,"selectionInputChars":917,"totalContextPlusSelectionChars":1817,"proposalValid":true,"fixtureTaskPass":false},
+        "symbol": {"selectedFiles":["test/server.test.js","src/server.js","docs/health.md"],"requiredCoverage":1,"unnecessaryReads":1,"attemptedReads":3,"unavailableSelected":[],"contextChars":4900,"selectionInputChars":1670,"totalContextPlusSelectionChars":6570,"proposalValid":true,"fixtureTaskPass":true},
+        "bounded": {"selectedFiles":["src/server.js","test/server.test.js"],"requiredCoverage":1,"unnecessaryReads":0,"attemptedReads":2,"unavailableSelected":[],"contextChars":4000,"selectionInputChars":1879,"totalContextPlusSelectionChars":5879,"proposalValid":true,"fixtureTaskPass":true}
+      }
+    },
+    {
+      "task": {"id":"train-quota","split":"train","task":"Enforce tenant quota limit using admission policy and keep regression coverage","declaredFiles":["src/quota/service.js"],"requiredFiles":["src/quota/service.js","src/quota/policy.js","test/quota.test.js"]},
+      "modes": {
+        "manual": {"selectedFiles":["src/quota/service.js"],"requiredCoverage":0.3333,"unnecessaryReads":0,"attemptedReads":1,"unavailableSelected":[],"contextChars":2800,"selectionInputChars":130,"totalContextPlusSelectionChars":2930,"proposalValid":true,"fixtureTaskPass":false},
+        "lexical": {"selectedFiles":["src/quota/policy.js","src/quota/service.js","test/quota.test.js"],"requiredCoverage":1,"unnecessaryReads":0,"attemptedReads":3,"unavailableSelected":[],"contextChars":7300,"selectionInputChars":931,"totalContextPlusSelectionChars":8231,"proposalValid":true,"fixtureTaskPass":true},
+        "symbol": {"selectedFiles":["src/quota/service.js","test/quota.test.js","src/quota/policy.js"],"requiredCoverage":1,"unnecessaryReads":0,"attemptedReads":3,"unavailableSelected":[],"contextChars":7300,"selectionInputChars":1684,"totalContextPlusSelectionChars":8984,"proposalValid":true,"fixtureTaskPass":true},
+        "bounded": {"selectedFiles":["src/quota/service.js","test/quota.test.js","src/quota/policy.js"],"requiredCoverage":1,"unnecessaryReads":0,"attemptedReads":3,"unavailableSelected":[],"contextChars":7300,"selectionInputChars":1893,"totalContextPlusSelectionChars":9193,"proposalValid":true,"fixtureTaskPass":true}
+      }
+    },
+    {
+      "task": {"id":"train-token","split":"train","task":"Fix JWT token expiry parsing and preserve auth regression behavior","declaredFiles":["src/auth/token.js"],"requiredFiles":["src/auth/token.js","test/auth-token.test.js"]},
+      "modes": {
+        "manual": {"selectedFiles":["src/auth/token.js"],"requiredCoverage":0.5,"unnecessaryReads":0,"attemptedReads":1,"unavailableSelected":[],"contextChars":1700,"selectionInputChars":115,"totalContextPlusSelectionChars":1815,"proposalValid":true,"fixtureTaskPass":false},
+        "lexical": {"selectedFiles":["src/auth/token.js","test/auth-token.test.js","src/token-cache.js"],"requiredCoverage":1,"unnecessaryReads":1,"attemptedReads":3,"unavailableSelected":[],"contextChars":13800,"selectionInputChars":916,"totalContextPlusSelectionChars":14716,"proposalValid":true,"fixtureTaskPass":false},
+        "symbol": {"selectedFiles":["test/auth-token.test.js","src/auth/token.js","src/token-cache.js"],"requiredCoverage":1,"unnecessaryReads":1,"attemptedReads":3,"unavailableSelected":[],"contextChars":13800,"selectionInputChars":1669,"totalContextPlusSelectionChars":15469,"proposalValid":true,"fixtureTaskPass":false},
+        "bounded": {"selectedFiles":["src/auth/token.js","test/auth-token.test.js"],"requiredCoverage":1,"unnecessaryReads":0,"attemptedReads":2,"unavailableSelected":[],"contextChars":3800,"selectionInputChars":1878,"totalContextPlusSelectionChars":5678,"proposalValid":true,"fixtureTaskPass":true}
+      }
+    },
+    {
+      "task": {"id":"held-lock","split":"heldout","task":"Prevent stale Blackboard writer lock overwrite and add concurrency regression coverage","declaredFiles":["src/store/blackboard-store.js"],"requiredFiles":["src/store/blackboard-store.js","test/blackboard-store.test.js"]},
+      "modes": {
+        "manual": {"selectedFiles":["src/store/blackboard-store.js"],"requiredCoverage":0.5,"unnecessaryReads":0,"attemptedReads":1,"unavailableSelected":[],"contextChars":3200,"selectionInputChars":147,"totalContextPlusSelectionChars":3347,"proposalValid":true,"fixtureTaskPass":false},
+        "lexical": {"selectedFiles":["docs/lock-guide.md","src/lock-metrics.js","src/store/blackboard-store.js"],"requiredCoverage":0.5,"unnecessaryReads":2,"attemptedReads":3,"unavailableSelected":[],"contextChars":13200,"selectionInputChars":948,"totalContextPlusSelectionChars":14148,"proposalValid":true,"fixtureTaskPass":false},
+        "symbol": {"selectedFiles":["test/blackboard-store.test.js","src/store/blackboard-store.js","docs/lock-guide.md"],"requiredCoverage":1,"unnecessaryReads":1,"attemptedReads":3,"unavailableSelected":[],"contextChars":6800,"selectionInputChars":1701,"totalContextPlusSelectionChars":8501,"proposalValid":true,"fixtureTaskPass":true},
+        "bounded": {"selectedFiles":["src/store/blackboard-store.js","test/blackboard-store.test.js"],"requiredCoverage":1,"unnecessaryReads":0,"attemptedReads":2,"unavailableSelected":[],"contextChars":5800,"selectionInputChars":1910,"totalContextPlusSelectionChars":7710,"proposalValid":true,"fixtureTaskPass":true}
+      }
+    },
+    {
+      "task": {"id":"held-health","split":"heldout","task":"Change users health route behavior and add regression coverage","declaredFiles":["src/server.js"],"requiredFiles":["src/server.js","test/server.test.js"]},
+      "modes": {
+        "manual": {"selectedFiles":["src/server.js"],"requiredCoverage":0.5,"unnecessaryReads":0,"attemptedReads":1,"unavailableSelected":[],"contextChars":1800,"selectionInputChars":107,"totalContextPlusSelectionChars":1907,"proposalValid":true,"fixtureTaskPass":false},
+        "lexical": {"selectedFiles":["docs/health.md"],"requiredCoverage":0,"unnecessaryReads":1,"attemptedReads":1,"unavailableSelected":[],"contextChars":900,"selectionInputChars":908,"totalContextPlusSelectionChars":1808,"proposalValid":true,"fixtureTaskPass":false},
+        "symbol": {"selectedFiles":["test/server.test.js","src/server.js","docs/health.md"],"requiredCoverage":1,"unnecessaryReads":1,"attemptedReads":3,"unavailableSelected":[],"contextChars":4900,"selectionInputChars":1661,"totalContextPlusSelectionChars":6561,"proposalValid":true,"fixtureTaskPass":true},
+        "bounded": {"selectedFiles":["src/server.js","test/server.test.js"],"requiredCoverage":1,"unnecessaryReads":0,"attemptedReads":2,"unavailableSelected":[],"contextChars":4000,"selectionInputChars":1870,"totalContextPlusSelectionChars":5870,"proposalValid":true,"fixtureTaskPass":true}
+      }
+    },
+    {
+      "task": {"id":"held-payment-unavailable","split":"heldout","task":"Fix payment refund timeout and add regression coverage","declaredFiles":["src/payment/client.js"],"requiredFiles":["src/payment/client.js","test/payment.test.js"]},
+      "modes": {
+        "manual": {"selectedFiles":["src/payment/client.js"],"requiredCoverage":0.5,"unnecessaryReads":0,"attemptedReads":1,"unavailableSelected":["src/payment/client.js"],"contextChars":0,"selectionInputChars":107,"totalContextPlusSelectionChars":107,"proposalValid":true,"fixtureTaskPass":false},
+        "lexical": {"selectedFiles":["test/payment.test.js"],"requiredCoverage":0.5,"unnecessaryReads":0,"attemptedReads":1,"unavailableSelected":[],"contextChars":2200,"selectionInputChars":908,"totalContextPlusSelectionChars":3108,"proposalValid":true,"fixtureTaskPass":false},
+        "symbol": {"selectedFiles":["test/payment.test.js","test/auth-token.test.js","test/quota.test.js"],"requiredCoverage":0.5,"unnecessaryReads":2,"attemptedReads":3,"unavailableSelected":[],"contextChars":6700,"selectionInputChars":1661,"totalContextPlusSelectionChars":8361,"proposalValid":true,"fixtureTaskPass":false},
+        "bounded": {"selectedFiles":["src/payment/client.js","test/payment.test.js"],"requiredCoverage":1,"unnecessaryReads":0,"attemptedReads":2,"unavailableSelected":["src/payment/client.js"],"contextChars":2200,"selectionInputChars":1870,"totalContextPlusSelectionChars":4070,"proposalValid":true,"fixtureTaskPass":false}
+      }
+    }
+  ],
+  "conclusion": {
+    "direction": "NARROW",
+    "reason": "The bounded selector improves held-out coverage and fixture task pass rate over manual, preserves unavailable declared sources as explicit failure, and removes unnecessary/oversized symbol-only reads. Evidence is fixture-only, so it supports an opt-in application-side proposal boundary for further real-corpus evaluation, not a production default.",
+    "runtimeDecisionPromoted": false
+  }
+}

@@ -1213,7 +1213,7 @@ BB-036
 question/work: Research an optional task-aware context selection addon above Oracle's existing declared-file contract.
 kind: RESEARCH
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: []
 research-hypothesis: An application-side selector may reduce irrelevant context and missed dependencies while keeping source access explicit.
@@ -1221,24 +1221,32 @@ target-consumer: Backend work-order construction before resolveBackendContext on
 implementation-output: A bounded selector that proposes requiredFiles, with application validation and fallback to the explicit declared set
 value-gate: On held-out tasks, reduce total context/selection cost or improve required-context coverage versus the declared-file baseline without reducing verified task success; report both selection overhead and downstream costs
 scope-boundary: BB-009/010 retain resolver/diagnostic questions. This item studies application context selection, not a generic Oracle provider framework.
-remaining-work:
-  - Compare manually declared files, lexical/symbol-based candidates and a bounded selector on the same versioned repository tasks.
-  - Have selection produce a proposed requiredFiles/artifact set for application validation before Oracle reads it; preserve exact revision and source refs.
-  - Include misleading filenames, transitive dependencies, oversized files and unavailable sources; record selector overhead and omitted required context.
+remaining-work: []
 acceptance-criteria:
   - Report task success, required-context coverage, unnecessary reads, context size and selection cost against the existing baseline.
   - Held-out tasks test whether savings survive without increasing missed-dependency or false-completion outcomes.
   - The result recommends adopt, narrow, or reject; automatic source-scope expansion and correctness claims from retrieval relevance are excluded.
 submission:
+  - PR #92
 review-requirements: [research-method review, application/architecture-boundary review]
-reviews: []
-artifact-refs: []
+reviews:
+  - research-method review passed exact head 3ce4f6965f2e6c4cc60493bc7d86b18bb241e858 with synthetic-dataset bias retained as an explicit limitation
+  - application/architecture-boundary review passed exact head 3ce4f6965f2e6c4cc60493bc7d86b18bb241e858; selector remains before WorkOrder construction and Oracle authority is unchanged
+artifact-refs:
+  - docs/living/knowledge/bb036-task-aware-context-selection.md
+  - docs/living/knowledge/bb036-task-aware-context-selection-probe.mjs
+  - artifacts/bb036-task-aware-context-selection-probe.json
 evidence-refs:
+  - packages/agentic-system/src/backend-application.js
+  - packages/agentic-system/src/contracts.js
   - packages/agentic-system/src/oracle.js
+  - packages/agentic-system/src/backend-worker.js
   - packages/core-harness/src/context.js
-  - scripts/agentic-backend-qa-eval.mjs
+  - exact-head CI #1421 green on living-doc-impact and Node 20/22/24
+  - held-out bounded selector: 2/3 fixture passes, 100% required-context coverage, 0 unnecessary reads; productionEvidence=false
+  - research result: NARROW; no runtime adoption/default authorized from fixture evidence
 blockers: []
-follow-up-refs: []
+follow-up-refs: [BB-005]
 origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
 ```
 
