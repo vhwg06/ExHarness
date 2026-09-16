@@ -1,17 +1,12 @@
 import { BackendCompletionAction } from "./backend-completion.js";
 import { runBackendObjective } from "./backend-application.js";
-import {
-  BlackboardStatus,
-  ReviewRequirementSource
-} from "./blackboard-orchestrator.js";
+import { BlackboardStatus } from "./blackboard-orchestrator.js";
 import { BackendObjectiveSchema } from "./contracts.js";
 import {
   BackendQaHandoffSchema,
   QaObjectiveSchema
 } from "./qa-contracts.js";
-import {
-  QaCompletionAction
-} from "./qa-completion.js";
+import { QaCompletionAction } from "./qa-completion.js";
 import {
   createQaHandoffFromBackendRun,
   runQaObjective
@@ -34,7 +29,6 @@ const WORKFLOW_KIND = "BACKEND_QA_WORKFLOW";
 const WORKFLOW_VERSION = 1;
 const BACKEND_WORK = "Run Backend implementation and establish accepted revision provenance.";
 const QA_WORK = "Run QA verification against the accepted Backend revision.";
-const FINAL_REVIEW_KEY = "BACKEND_QA_APPLICATION_ACCEPTANCE";
 
 export const BackendQaWorkflowStage = Object.freeze({
   BACKEND_PENDING: "BACKEND_PENDING",
@@ -310,12 +304,7 @@ export function createDurableBackendQaWorkflow({
           },
           artifactRefs,
           evidenceRefs
-        },
-        reviewRequests: [{
-          key: FINAL_REVIEW_KEY,
-          source: ReviewRequirementSource.WORKER,
-          reason: "Backend -> QA workflow completed and requires independent application acceptance."
-        }]
+        }
       });
       return freezeClone({
         stage: BackendQaWorkflowStage.AWAITING_REVIEW,
