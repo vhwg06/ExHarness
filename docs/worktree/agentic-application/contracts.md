@@ -121,6 +121,14 @@ Once a Blackboard item is `SUPERSEDED`, later transactions cannot remove or muta
 
 This invariant is enforced at the public Application Orchestrator transaction boundary, so `NON_ACTIONABLE`, `CURRENT_WORK`, `EXISTING_WORK`, `NEW_WORK` and any equivalent stale mutation path fail before persistence when they would change an already-superseded item. `SUPERSEDED` is therefore terminal unless a separate future contract explicitly introduces a new transition.
 
+## Blackboard dependency graph contract
+
+The public complete-snapshot boundary rejects dependency graphs containing dangling edges, self dependencies or cycles. Validation is order-independent: a valid DAG remains accepted when a dependency appears later in the snapshot, and the durable intent root is an ordinary valid dependency when it exists in the same Board.
+
+Normal public store reads and transactions validate the complete graph. Transactions validate the current graph before mutation and the resulting graph before fenced persistence, so an invalid mutation cannot replace the prior committed snapshot. `NEW_WORK` reconciliation is covered by the same resulting-snapshot validation rather than validating only the child item.
+
+Previously accepted structurally valid but graph-invalid legacy state is not silently rewritten. `diagnoseDependencyGraph()` exposes offending item/edge information without admitting the Board for ordinary use. `repairDependencyGraph({ replacements })` requires explicit complete dependency replacements, executes through the fenced store transaction boundary, and must produce a valid complete graph before commit. Failed or incomplete repair leaves the prior committed state unchanged and never invents completed dependencies or silently drops edges.
+
 ## Durable Blackboard store contract
 
 The public `createJsonBlackboardStore(...)` exposes read + transactional mutation over a concrete local filesystem store.
