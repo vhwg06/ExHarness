@@ -141,6 +141,25 @@ npm run eval:memory-reuse
 
 The bounded mode is evaluation tooling for an application-side remediation-context proposal, not a delivered runtime adapter or a Core ranking change. The checked artifact declares deterministic fixture evidence only (`productionEvidence: false`). A reduction in fixture repair attempts does not establish production transfer quality or authorize semantic memory as correctness evidence.
 
+## Self-upgrade research verification
+
+Root `npm run verify` also executes the bounded BB-034 self-upgrade research probe:
+
+```text
+npm run eval:self-upgrade-research
+ -> fresh persisted failure evaluation
+ -> grounded REFLECTION
+ -> stale-evaluation negative control
+ -> bounded DeliberationArtifact + experiment-only ActionIntent
+ -> BB-038 recorded baseline/candidate replay artifact
+ -> fixed target/control/budget checks
+ -> synthetic collateral-regression negative control
+ -> independent EvidenceArtifact + DecisionArtifact + Attestation trust check
+ -> deep compare with artifacts/bb034-self-upgrade-loop-probe.json
+```
+
+This is a deterministic research fixture, not a delivered self-modifying runtime. The ActionIntent authorizes only the isolated experiment, and a trusted experiment result produces only a reviewable proposal. It does not select, deploy or merge the candidate, alter user intent, change acceptance thresholds, or grant runtime authority. Failed or inconclusive experiment criteria retain the baseline. The checked artifact declares `evidenceClass: DETERMINISTIC_SELF_UPGRADE_RESEARCH_FIXTURE` and `productionEvidence: false`; BB-035 remains the conditional implementation lane and retains its own dependency/review gates.
+
 ## Current extraction result
 
 Repeated source-backed shapes:
@@ -156,6 +175,7 @@ Not implemented as generic abstractions:
 - role registry;
 - workflow graph/DSL;
 - Teacher/Reviewer registry;
-- generic workflow Orchestrator.
+- generic workflow Orchestrator;
+- generic self-improvement/self-modifying runtime.
 
 The concrete `ApplicationOrchestrator` owns application Blackboard transitions; it is not a generic orchestration framework or second agent runtime.

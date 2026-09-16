@@ -1,0 +1,90 @@
+{
+  "evidenceClass": "DETERMINISTIC_SYNTHETIC_REPOSITORY_SHAPE",
+  "productionEvidence": false,
+  "scenarios": {
+    "unchanged": {
+      "baseline": {
+        "status": "ACCEPTED",
+        "sourceRef": "artifact-store:report@7",
+        "manifestVerified": false
+      },
+      "manifest": {
+        "status": "ACCEPTED",
+        "sourceRef": "artifact-store:report@7",
+        "manifestVerified": true
+      }
+    },
+    "changedBehindStableRef": {
+      "baseline": {
+        "status": "ACCEPTED",
+        "sourceRef": "artifact-store:report@7",
+        "manifestVerified": false
+      },
+      "manifest": {
+        "status": "REJECTED",
+        "code": "ARTIFACT_CONTENT_MISMATCH",
+        "message": "artifact content identity mismatch for artifact://backend/report"
+      }
+    },
+    "deletedContent": {
+      "baseline": {
+        "status": "REJECTED",
+        "code": "ENOENT",
+        "message": "artifact content unavailable: artifact://backend/report"
+      },
+      "manifest": {
+        "status": "REJECTED",
+        "code": "ARTIFACT_UNAVAILABLE",
+        "message": "artifact content unavailable for retained ref artifact://backend/report"
+      }
+    },
+    "mismatchedProducerRevision": {
+      "baseline": {
+        "status": "ACCEPTED",
+        "sourceRef": "artifact-store:report@7",
+        "manifestVerified": false
+      },
+      "manifest": {
+        "status": "REJECTED",
+        "code": "ARTIFACT_PRODUCER_REVISION_MISMATCH",
+        "message": "artifact producer revision mismatch for artifact://backend/report: expected backend-rev-8; manifest has backend-rev-7"
+      }
+    },
+    "partialManifest": {
+      "baseline": {
+        "status": "ACCEPTED",
+        "sourceRef": "artifact-store:summary@7",
+        "manifestVerified": false
+      },
+      "manifest": {
+        "status": "REJECTED",
+        "code": "ARTIFACT_MANIFEST_MISSING",
+        "message": "artifact manifest missing for artifact://backend/summary"
+      }
+    }
+  },
+  "metrics": {
+    "baseline": {
+      "acceptedUnchanged": 1,
+      "falseAcceptanceChangedContent": 1,
+      "falseAcceptanceWrongRevision": 1,
+      "acceptedWithoutManifest": 1,
+      "explicitIntegrityRejections": 0
+    },
+    "manifest": {
+      "verifiedUnchanged": 1,
+      "changedContentRejected": 1,
+      "wrongRevisionRejected": 1,
+      "unavailableContentDiagnosed": 1,
+      "missingManifestRejected": 1,
+      "falseAcceptanceCount": 0
+    }
+  },
+  "retentionExample": {
+    "ref": "artifact://backend/report",
+    "pinnedBy": [
+      "BB-100:PENDING_REVIEW"
+    ],
+    "meaning": "retention obligation only; not correctness or availability proof"
+  }
+}

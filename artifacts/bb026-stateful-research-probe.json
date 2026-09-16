@@ -1,0 +1,58 @@
+{
+  "evidenceClass": "DETERMINISTIC_REFERENCE",
+  "productionEvidence": false,
+  "sourceRevisions": [
+    "source-rev-a",
+    "source-rev-b"
+  ],
+  "metrics": {
+    "freshSessions": 3,
+    "completedExperimentReplayCount": 0,
+    "resumedInterruptedExperimentCount": 1,
+    "staleEvidenceRetainedCount": 1,
+    "contradictionLinksRetainedCount": 1,
+    "boardEmbeddedWorkProductCount": 0,
+    "automaticDecisionPromotionCount": 0
+  },
+  "continuation": {
+    "completedExperimentIds": [
+      "E1",
+      "E2"
+    ],
+    "resumedExperimentId": "E2",
+    "finalBoardStatus": "PENDING_REVIEW",
+    "reviewRequirementKeys": [
+      "research-workflow"
+    ],
+    "finalDecisionStatus": "PROPOSED"
+  },
+  "evidenceValidity": {
+    "staleEvidenceIds": [
+      "EV1"
+    ],
+    "contradictionLinks": [
+      {
+        "from": "EV2",
+        "to": "EV1"
+      }
+    ]
+  },
+  "boundary": {
+    "boardStoresLifecycleAndRefs": true,
+    "completedExperimentsAreNotRepeated": true,
+    "interruptedExperimentIsResumed": true,
+    "staleEvidenceRemainsInspectable": true,
+    "researchCannotSelfAccept": true
+  },
+  "result": {
+    "runtimeExtensionRequired": false,
+    "missingContract": "versioned research-continuation manifest plus explicit evidence-freshness convention for a concrete research consumer",
+    "implementationOwner": "BB-027"
+  },
+  "limitations": [
+    "deterministic local artifact store and JSON Blackboard only",
+    "does not establish production research quality or storage availability guarantees",
+    "does not validate concurrent research writers",
+    "does not make a PROPOSED architectural decision accepted"
+  ]
+}
