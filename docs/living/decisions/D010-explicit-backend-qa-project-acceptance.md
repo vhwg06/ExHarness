@@ -1,10 +1,12 @@
 # D010 — Backend/QA project completion requires an explicit trusted acceptance obligation
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
 
 Proposed: 2026-09-16
 
-Acceptance boundary: BB-018 application-architecture review plus acceptance/trust review. This proposal must not be promoted into `docs/worktree/*` or used to mark BB-018 complete before those reviews accept it.
+Accepted: 2026-09-16
+
+Acceptance boundary: BB-018 application-architecture review plus acceptance/trust review passed on PR #86 exact design head `f8e97ccaac648dd2e6ef5ca9054c4bda53fb1fd9` after correcting PM-authority laundering, durable trust-artifact dereference, and write-before-reference persistence. This decision is accepted design, not current implemented behavior; it must not be promoted into `docs/worktree/*` until BB-019 implements and verifies the concrete composition.
 
 ## Context
 
@@ -221,6 +223,8 @@ Rejected. Narrative is not grounded evidence, an integrity-checked decision or a
 ## Evidence
 
 - `docs/living/knowledge/bb018-review-to-completion.md`;
+- PR #86 application architecture review on exact design head `f8e97ccaac648dd2e6ef5ca9054c4bda53fb1fd9`;
+- PR #86 acceptance/trust review on exact design head `f8e97ccaac648dd2e6ef5ca9054c4bda53fb1fd9`;
 - `docs/living/decisions/D003-orchestrator-blackboard-review-authority.md`;
 - `packages/agentic-system/src/durable-backend-qa.js` final QA submission behavior;
 - `packages/agentic-system/src/blackboard-orchestrator.js` requirement, dispatch, trust and reconciliation semantics;
