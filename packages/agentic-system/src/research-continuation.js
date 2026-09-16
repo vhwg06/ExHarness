@@ -27,6 +27,11 @@ function nonNegativeInteger(value, name) {
   return value;
 }
 
+function positiveInteger(value, name) {
+  invariant(Number.isInteger(value) && value > 0, `${name} must be a positive integer`);
+  return value;
+}
+
 function uniqueTextArray(value, name, { min = 0 } = {}) {
   invariant(Array.isArray(value ?? []), `${name} must be an array`);
   const result = (value ?? []).map((entry, index) => requireText(entry, `${name}[${index}]`));
@@ -189,16 +194,24 @@ function intersects(scopes, changed) {
   return scopes.some((scope) => changed.has(scope));
 }
 
+function normalizeChangedScopes(value, name) {
+  if (value == null) return Object.freeze({ declared: false, values: new Set() });
+  return Object.freeze({
+    declared: true,
+    values: new Set(uniqueTextArray(value, name))
+  });
+}
+
 export function assessResearchEvidenceFreshness({
   evidenceLedger,
   currentRevision,
-  changedSourceScopes = [],
-  changedPolicyScopes = []
+  changedSourceScopes = null,
+  changedPolicyScopes = null
 }) {
   const ledger = defineResearchEvidenceLedger(evidenceLedger);
   const revision = normalizeRevision(currentRevision, "currentRevision");
-  const sourceChanges = new Set(uniqueTextArray(changedSourceScopes, "changedSourceScopes"));
-  const policyChanges = new Set(uniqueTextArray(changedPolicyScopes, "changedPolicyScopes"));
+  const sourceChanges = normalizeChangedScopes(changedSourceScopes, "changedSourceScopes");
+  const policyChanges = normalizeChangedScopes(changedPolicyScopes, "changedPolicyScopes");
 
   return freezeClone(ledger.evidence.map((entry) => {
     if (ALREADY_NON_CURRENT.has(entry.status)) {
@@ -210,17 +223,24 @@ export function assessResearchEvidenceFreshness({
     }
 
     const reasons = [];
-    if (
-      entry.sourceRevision !== revision.sourceRevision &&
-      intersects(entry.sourceScopes, sourceChanges)
-    ) {
-      reasons.push(`source revision changed for declared scope: ${entry.sourceRevision} -> ${revision.sourceRevision}`);
+    if (entry.sourceRevision !== revision.sourceRevision) {
+      if (!sourceChanges.declared) {
+        reasons.push(`source revision changed without an explicit changed-scope comparison: ${entry.sourceRevision} -> ${revision.sourceRevision}`);
+      } else if (entry.sourceScopes.length === 0) {
+        reasons.push(`source revision changed for evidence with no declared source scope: ${entry.sourceRevision} -> ${revision.sourceRevision}`);
+      } else if (intersects(entry.sourceScopes, sourceChanges.values)) {
+        reasons.push(`source revision changed for declared scope: ${entry.sourceRevision} -> ${revision.sourceRevision}`);
+      }
     }
-    if (
-      entry.policyRevision !== revision.policyRevision &&
-      intersects(entry.policyScopes, policyChanges)
-    ) {
-      reasons.push(`policy revision changed for declared scope: ${entry.policyRevision ?? "<none>"} -> ${revision.policyRevision ?? "<none>"}`);
+
+    if (entry.policyRevision !== revision.policyRevision) {
+      if (!policyChanges.declared) {
+        reasons.push(`policy revision changed without an explicit changed-scope comparison: ${entry.policyRevision ?? "<none>"} -> ${revision.policyRevision ?? "<none>"}`);
+      } else if (entry.policyScopes.length === 0) {
+        reasons.push(`policy revision changed for evidence with no declared policy scope: ${entry.policyRevision ?? "<none>"} -> ${revision.policyRevision ?? "<none>"}`);
+      } else if (intersects(entry.policyScopes, policyChanges.values)) {
+        reasons.push(`policy revision changed for declared scope: ${entry.policyRevision ?? "<none>"} -> ${revision.policyRevision ?? "<none>"}`);
+      }
     }
 
     return {
@@ -286,6 +306,25 @@ function assertContainsAll(actual, required, name) {
   for (const ref of required) invariant(values.has(ref), `${name} must include manifest ref ${ref}`);
 }
 
+function referencesFor(session, collection, itemId) {
+  invariant(session.references && Array.isArray(session.references[collection]), `session references.${collection} must be an array`);
+  return session.references[collection]
+    .filter((entry) => entry.itemId === itemId)
+    .map((entry) => entry.ref);
+}
+
+function assertManifestReferencesDeclared(session, itemId, manifest) {
+  assertContainsAll(
+    referencesFor(session, "artifacts", itemId),
+    requiredManifestArtifactRefs(manifest),
+    `Blackboard artifact references for ${itemId}`
+  );
+  invariant(
+    referencesFor(session, "evidence", itemId).includes(manifest.evidenceLedgerRef),
+    `Blackboard evidence references for ${itemId} must include manifest evidence ledger ${manifest.evidenceLedgerRef}`
+  );
+}
+
 export function createResearchContinuationController({
   orchestrator,
   projectId,
@@ -306,8 +345,8 @@ export function createResearchContinuationController({
   async function resume({
     itemId,
     currentRevision,
-    changedSourceScopes = [],
-    changedPolicyScopes = []
+    changedSourceScopes = null,
+    changedPolicyScopes = null
   }) {
     requireText(itemId, "itemId");
     const revision = normalizeRevision(currentRevision, "currentRevision");
@@ -315,6 +354,7 @@ export function createResearchContinuationController({
     const item = workFromSession(session, itemId);
     invariant(item.checkpoint != null, `research continuation item ${itemId} has no checkpoint`);
     const manifest = defineResearchContinuationManifest(item.checkpoint);
+    assertManifestReferencesDeclared(session, itemId, manifest);
 
     const [question, plan, ledgerRaw, ...experimentRaw] = await Promise.all([
       readArtifact(manifest.questionRef),
@@ -388,7 +428,7 @@ export function createResearchContinuationController({
     return app.checkpoint({
       itemId: requireText(itemId, "itemId"),
       owner: requireText(owner, "owner"),
-      generation: nonNegativeInteger(generation, "generation"),
+      generation: positiveInteger(generation, "generation"),
       checkpoint: manifest,
       artifactRefs: artifacts,
       evidenceRefs: evidence,
@@ -404,8 +444,8 @@ export function createResearchContinuationController({
     generation,
     resultRef,
     currentRevision,
-    changedSourceScopes = [],
-    changedPolicyScopes = [],
+    changedSourceScopes = null,
+    changedPolicyScopes = null,
     resolvedWork = [],
     reviewKey = "research-workflow",
     reviewReason
@@ -416,6 +456,7 @@ export function createResearchContinuationController({
       changedSourceScopes,
       changedPolicyScopes
     });
+    invariant(!continuation.revisionChanged, "research continuation must persist the current source/policy revision before submission");
     invariant(continuation.resumeExperiment == null, "research continuation cannot submit while an experiment remains active");
     invariant(continuation.reassessmentEvidenceIds.length === 0, `research continuation cannot submit with evidence awaiting freshness reassessment: ${continuation.reassessmentEvidenceIds.join(", ")}`);
 
@@ -430,7 +471,7 @@ export function createResearchContinuationController({
     const submitted = await app.submit({
       itemId: requireText(itemId, "itemId"),
       owner: requireText(owner, "owner"),
-      generation: nonNegativeInteger(generation, "generation"),
+      generation: positiveInteger(generation, "generation"),
       submission: {
         resultRef: normalizedResultRef,
         artifactRefs,
