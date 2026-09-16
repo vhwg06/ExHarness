@@ -10,9 +10,7 @@ import {
   createDurableBackendQaWorkflow,
   createJsonBlackboardStore,
   defineBackendObjective,
-  defineQaObjective,
-  makeBackendWorkOrder,
-  resolveBackendContext
+  defineQaObjective
 } from "../src/index.js";
 
 function reviewTrustStub() {
@@ -29,7 +27,7 @@ function backendObjective(id) {
     id,
     task: "Apply one Backend change after resolving the declared repository context.",
     repository: {
-      ref: "repo://bb032",
+      ref: "repo://bb033",
       revision: "rev-1"
     },
     requiredFiles: ["src/server.js"],
@@ -49,7 +47,7 @@ function qaObjective(id) {
 function workItem(id) {
   return {
     id,
-    work: "Research the durable Application / Oracle / Core composition boundary.",
+    work: "Exercise the concrete Backend preparation boundary.",
     status: BlackboardStatus.READY,
     dependsOn: [],
     remainingWork: [],
@@ -63,10 +61,14 @@ function workItem(id) {
   };
 }
 
-function unavailableRepository() {
+function controlledRepository(control) {
   return {
-    async readFile() {
-      throw new Error("repository unavailable");
+    async readFile({ repositoryRef, revision, path }) {
+      if (!control.available) throw new Error("repository unavailable");
+      return {
+        content: `// ${revision}:${path}\n`,
+        sourceRef: `${repositoryRef}@${revision}:${path}`
+      };
     }
   };
 }
@@ -78,11 +80,11 @@ function workerSpies() {
     worker: {
       async execute() {
         calls.execute += 1;
-        throw new Error("Backend Worker must not execute when context resolution fails");
+        throw new Error("entered Backend execute after successful preflight");
       },
       async recover() {
         calls.recover += 1;
-        throw new Error("Backend Worker recovery must not run when context resolution fails");
+        throw new Error("entered Backend recover after successful preflight");
       }
     }
   };
@@ -91,7 +93,7 @@ function workerSpies() {
 function unusedQaWorker() {
   return {
     async execute() {
-      throw new Error("QA is outside the BB-032 preflight probe");
+      throw new Error("QA is outside the BB-033 preflight regression");
     }
   };
 }
@@ -99,13 +101,13 @@ function unusedQaWorker() {
 function unusedArtifactReader() {
   return {
     async readArtifact() {
-      throw new Error("artifact read is outside the BB-032 preflight probe");
+      throw new Error("artifact read is outside the BB-033 preflight regression");
     }
   };
 }
 
-async function withBoard(items, run) {
-  const directory = await mkdtemp(join(tmpdir(), "exharness-bb032-composition-"));
+async function withBoard(item, run) {
+  const directory = await mkdtemp(join(tmpdir(), "exharness-bb033-preflight-"));
   try {
     const path = join(directory, "blackboard.json");
     const makeOrchestrator = () => createApplicationOrchestrator({
@@ -113,7 +115,7 @@ async function withBoard(items, run) {
       reviewTrust: reviewTrustStub()
     });
     const orchestrator = makeOrchestrator();
-    await orchestrator.seed(items);
+    await orchestrator.seed([item]);
     await run({ orchestrator, makeOrchestrator });
   } finally {
     await rm(directory, { recursive: true, force: true });
@@ -130,102 +132,77 @@ function makeWorkflow({ orchestrator, repositoryReader, backendWorker }) {
   });
 }
 
-test("BB-032 baseline leaves a claimed Backend stage when Oracle context resolution fails before Worker execution", async () => {
-  const itemId = "BB-032-BASELINE";
-  const objective = backendObjective("bb032-baseline");
+test("BB-033 persists normal Backend preflight failure as resumable BLOCKED before Worker execution", async () => {
+  const itemId = "BB-033-NORMAL";
+  const control = { available: false };
   const spies = workerSpies();
 
-  await withBoard([workItem(itemId)], async ({ orchestrator }) => {
+  await withBoard(workItem(itemId), async ({ orchestrator }) => {
     const workflow = makeWorkflow({
       orchestrator,
-      repositoryReader: unavailableRepository(),
+      repositoryReader: controlledRepository(control),
       backendWorker: spies.worker
     });
 
     await workflow.initialize({
       itemId,
-      owner: "bb032-init",
-      backendObjective: objective,
-      qaObjective: qaObjective("bb032-baseline")
+      owner: "bb033-init",
+      backendObjective: backendObjective("bb033-normal"),
+      qaObjective: qaObjective("bb033-normal")
     });
 
+    const blocked = await workflow.advance({ itemId, owner: "bb033-run" });
+    assert.equal(blocked.stage, BackendQaWorkflowStage.BLOCKED);
+    assert.equal(blocked.item.status, BlackboardStatus.BLOCKED);
+    assert.equal(blocked.item.checkpoint.stage, BackendQaWorkflowStage.BACKEND_PENDING);
+    assert.equal(blocked.item.checkpoint.backendRecoveryRequired, false);
+    assert.match(blocked.item.blockers[0], /Backend context preflight failed: .*repository unavailable/);
+    assert.deepEqual(spies.calls, { execute: 0, recover: 0 });
+
+    control.available = true;
+    await workflow.resume({ itemId });
     await assert.rejects(
-      () => workflow.advance({ itemId, owner: "bb032-run" }),
-      /backend context resolution failed .* repository unavailable/
+      () => workflow.advance({ itemId, owner: "bb033-resumed" }),
+      /entered Backend execute after successful preflight/
     );
-
-    const afterFailure = (await orchestrator.readBlackboard()).items.find((item) => item.id === itemId);
-    assert.equal(afterFailure.status, BlackboardStatus.CLAIMED);
-    assert.equal(afterFailure.checkpoint.stage, BackendQaWorkflowStage.BACKEND_PENDING);
-    assert.deepEqual(afterFailure.blockers, []);
-    assert.equal(spies.calls.execute, 0, "Oracle failure must occur before Backend Worker execution");
-    const firstGeneration = afterFailure.claimGeneration;
-
-    await assert.rejects(
-      () => workflow.recoverInterrupted({ itemId, owner: "bb032-recovery" }),
-      /backend context resolution failed .* repository unavailable/
-    );
-
-    const afterRecoveryAttempt = (await orchestrator.readBlackboard()).items.find((item) => item.id === itemId);
-    assert.equal(afterRecoveryAttempt.status, BlackboardStatus.CLAIMED);
-    assert.equal(afterRecoveryAttempt.checkpoint.stage, BackendQaWorkflowStage.BACKEND_PENDING);
-    assert.deepEqual(afterRecoveryAttempt.blockers, []);
-    assert.ok(afterRecoveryAttempt.claimGeneration > firstGeneration, "explicit takeover must still fence the old attempt");
-    assert.equal(spies.calls.recover, 0, "Core recovery must not run before required context resolves");
+    assert.deepEqual(spies.calls, { execute: 1, recover: 0 });
   });
 });
 
-test("BB-032 phase-separated Backend preflight prototype persists pre-Worker Oracle failure without claiming Core effect truth", async () => {
-  const itemId = "BB-032-CANDIDATE";
-  const objective = backendObjective("bb032-candidate");
+test("BB-033 preserves recovery-required mode when Oracle is unavailable after interrupted takeover", async () => {
+  const itemId = "BB-033-RECOVERY";
+  const control = { available: false };
   const spies = workerSpies();
-  const repositoryReader = unavailableRepository();
 
-  await withBoard([workItem(itemId)], async ({ orchestrator }) => {
+  await withBoard(workItem(itemId), async ({ orchestrator }) => {
     const workflow = makeWorkflow({
       orchestrator,
-      repositoryReader,
+      repositoryReader: controlledRepository(control),
       backendWorker: spies.worker
     });
 
     await workflow.initialize({
       itemId,
-      owner: "bb032-init",
-      backendObjective: objective,
-      qaObjective: qaObjective("bb032-candidate")
+      owner: "bb033-init",
+      backendObjective: backendObjective("bb033-recovery"),
+      qaObjective: qaObjective("bb033-recovery")
     });
 
-    const claimed = await orchestrator.claim({ itemId, owner: "bb032-preflight" });
-    const generation = claimed.result.claimGeneration;
-    const checkpoint = claimed.result.checkpoint;
-    const order = makeBackendWorkOrder(objective);
+    await orchestrator.claim({ itemId, owner: "crashed-attempt" });
+    const blocked = await workflow.recoverInterrupted({ itemId, owner: "replacement-attempt" });
+    assert.equal(blocked.stage, BackendQaWorkflowStage.BLOCKED);
+    assert.equal(blocked.item.status, BlackboardStatus.BLOCKED);
+    assert.equal(blocked.item.checkpoint.stage, BackendQaWorkflowStage.BACKEND_PENDING);
+    assert.equal(blocked.item.checkpoint.backendRecoveryRequired, true);
+    assert.match(blocked.item.blockers[0], /Backend context preflight failed: .*repository unavailable/);
+    assert.deepEqual(spies.calls, { execute: 0, recover: 0 });
 
-    let resolutionError = null;
-    try {
-      await resolveBackendContext(order, { repositoryReader });
-    } catch (error) {
-      resolutionError = error;
-    }
-    assert.ok(resolutionError, "probe requires a pre-Worker Oracle failure");
-
-    const persisted = await orchestrator.checkpoint({
-      itemId,
-      owner: "bb032-preflight",
-      generation,
-      checkpoint,
-      status: BlackboardStatus.BLOCKED,
-      blockers: [`Backend context preflight failed: ${resolutionError.message}`]
-    });
-
-    assert.equal(persisted.result.status, BlackboardStatus.BLOCKED);
-    assert.equal(persisted.result.checkpoint.stage, BackendQaWorkflowStage.BACKEND_PENDING);
-    assert.match(persisted.result.blockers[0], /repository unavailable/);
-    assert.equal(spies.calls.execute, 0);
-    assert.equal(spies.calls.recover, 0);
-
+    control.available = true;
     await workflow.resume({ itemId });
-    const resumed = await workflow.current({ itemId });
-    assert.equal(resumed.stage, BackendQaWorkflowStage.BACKEND_PENDING);
-    assert.equal(resumed.item.status, BlackboardStatus.REOPENED);
+    await assert.rejects(
+      () => workflow.advance({ itemId, owner: "bb033-resumed-recovery" }),
+      /entered Backend recover after successful preflight/
+    );
+    assert.deepEqual(spies.calls, { execute: 0, recover: 1 });
   });
 });

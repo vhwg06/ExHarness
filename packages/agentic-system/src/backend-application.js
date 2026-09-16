@@ -1,7 +1,10 @@
+import { isDeepStrictEqual } from "node:util";
 import {
+  BackendContextSchema,
   BackendObjectiveSchema,
   BackendRunAction,
-  makeBackendWorkOrder
+  makeBackendWorkOrder,
+  parseBackendWorkOrder
 } from "./contracts.js";
 import {
   BackendCompletionAction,
@@ -83,17 +86,30 @@ async function completeBackendRun({
   });
 }
 
-export async function runBackendObjective(rawObjective, {
-  repositoryReader,
+function requirePreparedBackend(prepared) {
+  invariant(prepared && typeof prepared === "object" && !Array.isArray(prepared), "prepared Backend objective is required");
+  const objective = BackendObjectiveSchema.parse(prepared.objective);
+  const order = parseBackendWorkOrder(prepared.order);
+  const expectedOrder = makeBackendWorkOrder(objective);
+  invariant(isDeepStrictEqual(order, expectedOrder), "prepared Backend WorkOrder must match the prepared objective");
+  const context = BackendContextSchema.parse(prepared.context);
+  return Object.freeze({ objective, order, context });
+}
+
+export async function prepareBackendObjective(rawObjective, { repositoryReader }) {
+  const objective = BackendObjectiveSchema.parse(rawObjective);
+  const order = makeBackendWorkOrder(objective);
+  const context = await resolveBackendContext(order, { repositoryReader });
+  return Object.freeze({ objective, order, context });
+}
+
+export async function runPreparedBackendObjective(rawPrepared, {
   backendWorker,
   completionPolicy = defineBackendCompletionPolicy(),
   backendAdvisor = null
 }) {
-  const objective = BackendObjectiveSchema.parse(rawObjective);
-  invariant(backendWorker && typeof backendWorker.execute === "function", "runBackendObjective requires backendWorker.execute()");
-
-  const order = makeBackendWorkOrder(objective);
-  const context = await resolveBackendContext(order, { repositoryReader });
+  invariant(backendWorker && typeof backendWorker.execute === "function", "runPreparedBackendObjective requires backendWorker.execute()");
+  const { objective, order, context } = requirePreparedBackend(rawPrepared);
   const result = await backendWorker.execute(order, context);
   return completeBackendRun({
     objective,
@@ -105,18 +121,14 @@ export async function runBackendObjective(rawObjective, {
   });
 }
 
-export async function recoverBackendObjective(rawObjective, {
-  repositoryReader,
+export async function recoverPreparedBackendObjective(rawPrepared, {
   backendWorker,
   completionPolicy = defineBackendCompletionPolicy(),
   backendAdvisor = null
 }) {
-  const objective = BackendObjectiveSchema.parse(rawObjective);
-  invariant(backendWorker && typeof backendWorker.execute === "function", "recoverBackendObjective requires backendWorker.execute()");
-  invariant(backendWorker && typeof backendWorker.recover === "function", "recoverBackendObjective requires backendWorker.recover()");
-
-  const order = makeBackendWorkOrder(objective);
-  const context = await resolveBackendContext(order, { repositoryReader });
+  invariant(backendWorker && typeof backendWorker.execute === "function", "recoverPreparedBackendObjective requires backendWorker.execute()");
+  invariant(backendWorker && typeof backendWorker.recover === "function", "recoverPreparedBackendObjective requires backendWorker.recover()");
+  const { objective, order, context } = requirePreparedBackend(rawPrepared);
   const recovery = await backendWorker.recover(order, context);
 
   if (recovery.action === BackendRecoveryAction.BLOCKED) {
@@ -148,5 +160,33 @@ export async function recoverBackendObjective(rawObjective, {
     completionPolicy,
     backendAdvisor,
     recovery
+  });
+}
+
+export async function runBackendObjective(rawObjective, {
+  repositoryReader,
+  backendWorker,
+  completionPolicy = defineBackendCompletionPolicy(),
+  backendAdvisor = null
+}) {
+  const prepared = await prepareBackendObjective(rawObjective, { repositoryReader });
+  return runPreparedBackendObjective(prepared, {
+    backendWorker,
+    completionPolicy,
+    backendAdvisor
+  });
+}
+
+export async function recoverBackendObjective(rawObjective, {
+  repositoryReader,
+  backendWorker,
+  completionPolicy = defineBackendCompletionPolicy(),
+  backendAdvisor = null
+}) {
+  const prepared = await prepareBackendObjective(rawObjective, { repositoryReader });
+  return recoverPreparedBackendObjective(prepared, {
+    backendWorker,
+    completionPolicy,
+    backendAdvisor
   });
 }

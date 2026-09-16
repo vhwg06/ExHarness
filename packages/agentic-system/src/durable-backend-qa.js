@@ -1,7 +1,8 @@
 import { BackendCompletionAction } from "./backend-completion.js";
 import {
-  recoverBackendObjective,
-  runBackendObjective
+  prepareBackendObjective,
+  recoverPreparedBackendObjective,
+  runPreparedBackendObjective
 } from "./backend-application.js";
 import { BlackboardStatus } from "./blackboard-orchestrator.js";
 import { BackendObjectiveSchema } from "./contracts.js";
@@ -89,7 +90,8 @@ function workflowCheckpoint(raw) {
       }
     }),
     qaIssues,
-    remediationObligations
+    remediationObligations,
+    backendRecoveryRequired: raw.backendRecoveryRequired === true
   };
   return freezeClone(parsed);
 }
@@ -106,7 +108,8 @@ function initialCheckpoint(backendObjective, qaObjective) {
     attempt: 0,
     acceptedBackend: null,
     qaIssues: [],
-    remediationObligations: []
+    remediationObligations: [],
+    backendRecoveryRequired: false
   });
 }
 
@@ -163,7 +166,8 @@ function backendCheckpointAfterAccept(checkpoint, handoff, completionDecision) {
       }
     },
     qaIssues: [],
-    remediationObligations: []
+    remediationObligations: [],
+    backendRecoveryRequired: false
   });
 }
 
@@ -172,7 +176,8 @@ function remediationCheckpoint(checkpoint, issues) {
     ...checkpoint,
     stage: BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING,
     qaIssues: issues,
-    remediationObligations: [remediationWork(issues)]
+    remediationObligations: [remediationWork(issues)],
+    backendRecoveryRequired: false
   });
 }
 
@@ -191,7 +196,15 @@ function reviewRemediationCheckpoint(item) {
       completionDecision: submission.backendAcceptanceDecision
     },
     qaIssues: item.remainingWork,
-    remediationObligations: item.remainingWork
+    remediationObligations: item.remainingWork,
+    backendRecoveryRequired: false
+  });
+}
+
+function backendCheckpointForMode(checkpoint, recoveryRequired) {
+  return workflowCheckpoint({
+    ...checkpoint,
+    backendRecoveryRequired: recoveryRequired
   });
 }
 
@@ -265,8 +278,54 @@ export function createDurableBackendQaWorkflow({
     });
   }
 
+  async function persistBackendPreparationFailure({
+    itemId,
+    owner,
+    generation,
+    checkpoint,
+    error,
+    recoveryRequired
+  }) {
+    const blockedCheckpoint = backendCheckpointForMode(checkpoint, recoveryRequired);
+    const persisted = await orchestrator.checkpoint({
+      itemId,
+      owner,
+      generation,
+      checkpoint: blockedCheckpoint,
+      status: BlackboardStatus.BLOCKED,
+      blockers: [`Backend context preflight failed: ${error.message}`]
+    });
+    return freezeClone({
+      stage: BackendQaWorkflowStage.BLOCKED,
+      backend: null,
+      qa: null,
+      error: error.message,
+      recoveryRequired,
+      item: persisted.result
+    });
+  }
+
+  async function prepareBackendStage({ itemId, owner, generation, checkpoint, recoveryRequired }) {
+    try {
+      const prepared = await prepareBackendObjective(backendObjectiveFor(checkpoint), { repositoryReader });
+      return Object.freeze({ prepared });
+    } catch (error) {
+      return {
+        blocked: await persistBackendPreparationFailure({
+          itemId,
+          owner,
+          generation,
+          checkpoint,
+          error,
+          recoveryRequired
+        })
+      };
+    }
+  }
+
   async function persistBackendRun({ itemId, owner, generation, checkpoint, backend }) {
     const currentWork = backendWorkFor(checkpoint);
+    const executionCheckpoint = backendCheckpointForMode(checkpoint, false);
 
     if (acceptance != null) {
       await acceptance.persistRoleCompletion({
@@ -282,7 +341,7 @@ export function createDurableBackendQaWorkflow({
         itemId,
         owner,
         generation,
-        checkpoint,
+        checkpoint: executionCheckpoint,
         artifactRefs: backend.result.artifacts.map((artifact) => artifact.ref),
         evidenceRefs: [backend.completion.decision.id],
         status: blocked ? BlackboardStatus.BLOCKED : BlackboardStatus.REOPENED,
@@ -297,7 +356,7 @@ export function createDurableBackendQaWorkflow({
     }
 
     const handoff = createQaHandoffFromBackendRun(backend);
-    const nextCheckpoint = backendCheckpointAfterAccept(checkpoint, handoff, backend.completion.decision);
+    const nextCheckpoint = backendCheckpointAfterAccept(executionCheckpoint, handoff, backend.completion.decision);
     const resolvedWork = checkpoint.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
       ? checkpoint.remediationObligations
       : [currentWork];
@@ -322,29 +381,32 @@ export function createDurableBackendQaWorkflow({
   }
 
   async function runBackendStage({ itemId, owner, generation, checkpoint }) {
-    const backend = await runBackendObjective(backendObjectiveFor(checkpoint), {
-      repositoryReader,
-      backendWorker,
-      ...(backendCompletionPolicy == null ? {} : { completionPolicy: backendCompletionPolicy }),
-      backendAdvisor
+    const recoveryRequired = checkpoint.backendRecoveryRequired === true;
+    const preparation = await prepareBackendStage({
+      itemId,
+      owner,
+      generation,
+      checkpoint,
+      recoveryRequired
     });
-    return persistBackendRun({ itemId, owner, generation, checkpoint, backend });
-  }
+    if (preparation.blocked) return preparation.blocked;
 
-  async function recoverBackendStage({ itemId, owner, generation, checkpoint }) {
-    const backend = await recoverBackendObjective(backendObjectiveFor(checkpoint), {
-      repositoryReader,
+    const options = {
       backendWorker,
       ...(backendCompletionPolicy == null ? {} : { completionPolicy: backendCompletionPolicy }),
       backendAdvisor
-    });
+    };
+    const backend = recoveryRequired
+      ? await recoverPreparedBackendObjective(preparation.prepared, options)
+      : await runPreparedBackendObjective(preparation.prepared, options);
 
     if (backend.result == null) {
+      const recoveryCheckpoint = backendCheckpointForMode(checkpoint, true);
       const persisted = await orchestrator.checkpoint({
         itemId,
         owner,
         generation,
-        checkpoint,
+        checkpoint: recoveryCheckpoint,
         status: BlackboardStatus.BLOCKED,
         blockers: backend.recovery.blockers
       });
@@ -358,6 +420,45 @@ export function createDurableBackendQaWorkflow({
     }
 
     const result = await persistBackendRun({ itemId, owner, generation, checkpoint, backend });
+    return recoveryRequired ? freezeClone({ ...result, recovery: backend.recovery }) : result;
+  }
+
+  async function recoverBackendStage({ itemId, owner, generation, checkpoint }) {
+    const recoveryCheckpoint = backendCheckpointForMode(checkpoint, true);
+    const preparation = await prepareBackendStage({
+      itemId,
+      owner,
+      generation,
+      checkpoint: recoveryCheckpoint,
+      recoveryRequired: true
+    });
+    if (preparation.blocked) return preparation.blocked;
+
+    const backend = await recoverPreparedBackendObjective(preparation.prepared, {
+      backendWorker,
+      ...(backendCompletionPolicy == null ? {} : { completionPolicy: backendCompletionPolicy }),
+      backendAdvisor
+    });
+
+    if (backend.result == null) {
+      const persisted = await orchestrator.checkpoint({
+        itemId,
+        owner,
+        generation,
+        checkpoint: recoveryCheckpoint,
+        status: BlackboardStatus.BLOCKED,
+        blockers: backend.recovery.blockers
+      });
+      return freezeClone({
+        stage: BackendQaWorkflowStage.BLOCKED,
+        backend,
+        qa: null,
+        recovery: backend.recovery,
+        item: persisted.result
+      });
+    }
+
+    const result = await persistBackendRun({ itemId, owner, generation, checkpoint: recoveryCheckpoint, backend });
     return freezeClone({ ...result, recovery: backend.recovery });
   }
 
