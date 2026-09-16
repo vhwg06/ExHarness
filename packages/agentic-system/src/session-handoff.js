@@ -62,13 +62,13 @@ function intentRootItem(intent, projectId) {
     findings: [],
     origin: {
       kind: SessionHandoffRootKind.USER_INTENT,
-      projectId,
+      ...(projectId == null ? {} : { projectId }),
       userIntent: intent
     }
   };
 }
 
-function initialWorkItem(raw, intent, projectId) {
+function initialWorkItem(raw, intent) {
   invariant(raw && typeof raw === "object" && !Array.isArray(raw), "initial work item must be an object");
   const rootItemId = intentRootId(intent);
   invariant(raw.id !== rootItemId, `work item id is reserved for the user intent root: ${rootItemId}`);
@@ -77,32 +77,39 @@ function initialWorkItem(raw, intent, projectId) {
     dependsOn: [...new Set([rootItemId, ...(raw.dependsOn ?? [])])],
     origin: {
       ...(raw.origin ?? {}),
-      projectId,
       rootIntentId: intent.id,
       rootItemId
     }
   };
 }
 
+function normalizeExpectedProjectId(projectId) {
+  return projectId == null ? null : requireText(projectId, "projectId");
+}
+
 function rootFromBoard(board, expectedProjectId) {
   const roots = board.items.filter((item) => item.origin?.kind === SessionHandoffRootKind.USER_INTENT);
   invariant(roots.length === 1, `session handoff requires exactly one durable user-intent root; found ${roots.length}`);
   const root = roots[0];
-  const projectId = requireText(root.origin?.projectId, "user-intent root projectId");
-  invariant(
-    projectId === expectedProjectId,
-    `session handoff project mismatch: expected ${expectedProjectId}; found ${projectId}`
-  );
+  const storedProjectId = root.origin?.projectId ?? null;
+
+  if (expectedProjectId == null) {
+    invariant(storedProjectId == null, "session handoff project-bound Board requires expected projectId");
+  } else {
+    const projectId = requireText(storedProjectId, "user-intent root projectId");
+    invariant(
+      projectId === expectedProjectId,
+      `session handoff project mismatch: expected ${expectedProjectId}; found ${projectId}`
+    );
+  }
+
   const intent = defineUserIntent(root.origin.userIntent);
   invariant(root.id === intentRootId(intent), "user-intent root id does not match its durable intent");
   invariant(root.status === "DONE", "user-intent root must remain established as DONE input state");
-  return { root, intent, projectId };
+  return { root, intent, projectId: storedProjectId };
 }
 
-function tracesToIntent(item, byId, root, intent, projectId, visiting = new Set()) {
-  if (item.origin?.projectId != null) {
-    invariant(item.origin.projectId === projectId, `Blackboard work item belongs to another project: ${item.id}`);
-  }
+function tracesToIntent(item, byId, root, intent, visiting = new Set()) {
   if (item.id === root.id) return true;
   if (item.origin?.rootIntentId === intent.id && item.origin?.rootItemId === root.id) return true;
   if ((item.dependsOn ?? []).includes(root.id)) return true;
@@ -114,7 +121,7 @@ function tracesToIntent(item, byId, root, intent, projectId, visiting = new Set(
   if (!parent) return false;
   const next = new Set(visiting);
   next.add(item.id);
-  return tracesToIntent(parent, byId, root, intent, projectId, next);
+  return tracesToIntent(parent, byId, root, intent, next);
 }
 
 function dependenciesDone(item, byId) {
@@ -176,14 +183,14 @@ function collectReferences(items, field, submissionField) {
 
 export function sessionHandoffFromBlackboard(board, { projectId } = {}) {
   invariant(board && typeof board === "object" && Array.isArray(board.items), "Blackboard snapshot is required");
-  const expectedProjectId = requireText(projectId, "projectId");
-  const { root, intent } = rootFromBoard(board, expectedProjectId);
+  const expectedProjectId = normalizeExpectedProjectId(projectId);
+  const { root, intent, projectId: storedProjectId } = rootFromBoard(board, expectedProjectId);
   const workItems = board.items.filter((item) => item.id !== root.id);
   const byId = new Map(board.items.map((item) => [item.id, item]));
 
   for (const item of workItems) {
     invariant(
-      tracesToIntent(item, byId, root, intent, expectedProjectId),
+      tracesToIntent(item, byId, root, intent),
       `Blackboard work item is not traceable to durable user intent ${intent.id}: ${item.id}`
     );
   }
@@ -202,7 +209,7 @@ export function sessionHandoffFromBlackboard(board, { projectId } = {}) {
 
   return freezeClone({
     version: 1,
-    projectId: expectedProjectId,
+    projectId: storedProjectId,
     intent,
     rootItemId: root.id,
     workGraph: summaries,
@@ -214,15 +221,17 @@ export function sessionHandoffFromBlackboard(board, { projectId } = {}) {
   });
 }
 
-export function createSessionHandoffSurface({ orchestrator, projectId }) {
+export function createSessionHandoffSurface({ orchestrator, projectId = null }) {
   invariant(
     orchestrator && typeof orchestrator.seed === "function" && typeof orchestrator.readBlackboard === "function",
     "SessionHandoffSurface requires an ApplicationOrchestrator"
   );
-  const expectedProjectId = requireText(projectId, "projectId");
+  const expectedProjectId = normalizeExpectedProjectId(projectId);
 
   async function read() {
-    return sessionHandoffFromBlackboard(await orchestrator.readBlackboard(), { projectId: expectedProjectId });
+    return sessionHandoffFromBlackboard(await orchestrator.readBlackboard(), {
+      ...(expectedProjectId == null ? {} : { projectId: expectedProjectId })
+    });
   }
 
   return Object.freeze({
@@ -231,7 +240,7 @@ export function createSessionHandoffSurface({ orchestrator, projectId }) {
       invariant(Array.isArray(items), "items must be an array");
       const seeded = [
         intentRootItem(intent, expectedProjectId),
-        ...items.map((item) => initialWorkItem(item, intent, expectedProjectId))
+        ...items.map((item) => initialWorkItem(item, intent))
       ];
       await orchestrator.seed(seeded);
       return read();
