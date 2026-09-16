@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "reference": "agentic-backend-qa-v1",
+  "evidenceClass": "DETERMINISTIC_REFERENCE",
+  "productionEvidence": false,
+  "metrics": {
+    "scenarioCount": 5,
+    "scenarioPasses": 5,
+    "deliveryScenarios": 4,
+    "deliveryReachedReviewGate": 4,
+    "expectedCancellation": 1,
+    "falseCompletionCount": 0,
+    "backendRuns": 5,
+    "qaRuns": 5,
+    "repositoryReads": 10,
+    "repositoryContextChars": 330,
+    "artifactReadAttempts": 11,
+    "artifactReadSuccesses": 10,
+    "artifactContextChars": 540,
+    "artifactResolutionFailures": 1,
+    "unexpectedSourceReads": 0,
+    "handoffChecks": 5,
+    "handoffArtifactsChecked": 10,
+    "handoffMismatchCount": 0,
+    "workerEvidenceAcceptedCount": 0,
+    "qaIssues": 1,
+    "remediationCycles": 1,
+    "processRestarts": 2,
+    "recoveryResumes": 1,
+    "reviewGates": 4,
+    "advisorInvocations": 0,
+    "advisorValueAddEvaluated": 0
+  },
+  "provenance": {
+    "scenarios": [
+      "happy",
+      "restart",
+      "remediation",
+      "blocked-recovery",
+      "cancel"
+    ],
+    "terminalStatuses": {
+      "happy": "PENDING_REVIEW",
+      "restart": "PENDING_REVIEW",
+      "remediation": "PENDING_REVIEW",
+      "blocked-recovery": "PENDING_REVIEW",
+      "cancel": "SUPERSEDED"
+    },
+    "acceptedRevisions": {
+      "happy": "rev-2",
+      "restart": "rev-2",
+      "remediation": "rev-3",
+      "blocked-recovery": "rev-2",
+      "cancel": null
+    }
+  },
+  "limitations": {
+    "realRepositories": false,
+    "externalModelProviders": false,
+    "productionLatencyCost": false,
+    "advisorValueAdd": false,
+    "genericAbstractionJustified": false
+  }
+}
