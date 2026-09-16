@@ -34,12 +34,13 @@ This root is durable project input, not a generated PM objective and not a corre
 FRESH SESSION
   -> read durable project intent + Board
   -> recover eligible/pending/blocked/review/reconciliation state
+  -> recover current partial-work checkpoint when present
   -> resolve only referenced artifacts/evidence needed for the next context
   -> choose only eligible unresolved work
   -> CLAIM
   -> resolve concrete work context
   -> dispatch/execute bounded Worker work
-  -> SUBMIT immutable result/artifact/evidence refs
+  -> CHECKPOINT partial continuation OR SUBMIT final result
   -> establish required review work
   -> review now OR leave PENDING_REVIEW for a later/batch session
   -> reconcile assessments/findings
@@ -67,6 +68,7 @@ A handoff-safe project must expose enough durable state for a fresh session to a
 what is the user's objective?
 what work exists?
 what can run now?
+what exact partial-work checkpoint should resume?
 what is already claimed?
 what is pending review or reconciliation?
 what is blocked or done?
@@ -138,6 +140,8 @@ status: READY | CLAIMED | PENDING_REVIEW | REVIEWING | PENDING_RECONCILIATION | 
 owner: <session/agent only while claimed>
 depends-on: []
 remaining-work: []
+checkpoint: <durable partial-work continuation state, when present>
+checkpointed-by: <last session/agent that persisted partial work>
 submission: <immutable submitted result refs, when present>
 review-requirements: []
 reviews: []
@@ -148,15 +152,18 @@ follow-up-refs: []
 origin: <root-intent or parent/finding provenance>
 ```
 
+A checkpoint is continuation state, not acceptance state. Persisting a checkpoint never means the work is complete.
+
 The Board is operational state, not a diary and not an architecture document.
 
 ## Completion invariants
 
 - Worker result/submission is not completion authority.
+- partial checkpoint is not completion authority.
 - `DONE` requires all required reviews/acceptance obligations to be satisfied.
 - rejected or inconclusive review reopens/narrows the current work unless the finding is independently scoped work;
 - Board completion does not automatically promote a design judgment; evidence/judgment/decision semantics remain distinct;
-- role-local completion (for example Backend completion) does not automatically mean the enclosing Blackboard problem is done.
+- role-local completion (for example Backend or QA completion) does not automatically mean the enclosing Blackboard problem is done.
 
 ## Migration rule
 
@@ -222,12 +229,10 @@ follow-up-refs: [BB-004, BB-012]
 origin: governance correction discovered while pressure-testing Blackboard DONE semantics
 ```
 
-## Agentic Application
-
 ```text
 BB-012
 question/work: Make the Blackboard a durable session-handoff surface rooted in user-defined intent so any fresh session can resume from Board state + referenced artifacts without previous conversation context.
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: [BB-011]
 remaining-work: []
@@ -236,39 +241,48 @@ submission:
 review-requirements:
   - application/code review
   - session-handoff boundary review
-reviews: []
+reviews:
+  - merged PR #71 after session-handoff contract tests and CI
 artifact-refs:
   - packages/agentic-system/src/session-handoff.js
   - packages/agentic-system/test/session-handoff.test.js
   - docs/living/decisions/D004-blackboard-session-handoff.md
 evidence-refs:
   - session-handoff contract tests in PR #71
+  - merge commit 3bf194934693e51cf13b9b2ddfcd59219ad24b1a
 blockers: []
-follow-up-refs: []
+follow-up-refs: [BB-004]
 origin: direct user objective defining Blackboard as the cross-session handoff boundary
 ```
+
+## Agentic Application
 
 ```text
 BB-004
 question/work: Integrate the durable Orchestrator-owned application workflow with the concrete Backend accepted -> QA pending/running/completed path, including restart/recovery behavior.
-status: READY
+status: PENDING_REVIEW
 owner:
-depends-on: [BB-003, BB-011]
-remaining-work:
-  - bind Backend/QA dispatch to one durable application workflow state instead of a sidecar Board
-  - determine which objective/result/artifact/acceptance-decision refs survive restart
-  - define retry semantics when QA reports issues after accepted Backend work
-  - define block/cancel/resume semantics across Backend -> QA
-  - compose application state with ExHarness interrupted-variation/effect recovery without duplicating Core authority
-  - define artifact lookup failure/retry behavior at the application boundary
+depends-on: [BB-003, BB-011, BB-012]
+remaining-work: []
 submission:
-review-requirements: []
+  - PR #72
+review-requirements:
+  - application/code review
+  - architecture-boundary review
 reviews: []
-artifact-refs: []
-evidence-refs: []
+artifact-refs:
+  - packages/agentic-system/src/blackboard-orchestrator.js
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/src/session-handoff.js
+  - packages/agentic-system/test/durable-backend-qa.test.js
+evidence-refs:
+  - durable Backend -> QA restart/remediation/block-resume/cancel contract tests in PR #72
 blockers: []
-follow-up-refs: []
+follow-up-refs: [BB-007]
+origin: durable cross-session application execution pressure exposed after BB-012
 ```
+
+BB-004 deliberately does not claim external-effect exactly-once/reconciliation semantics. The remaining Core crash-window and deterministic recovery composition are represented by BB-006 and BB-007 rather than hidden inside application checkpoints.
 
 ```text
 BB-005
@@ -291,7 +305,7 @@ reviews: []
 artifact-refs: []
 evidence-refs: []
 blockers:
-  - BB-004 must produce real durable/recovery behavior to evaluate
+  - BB-004 must be accepted before production evaluation
 follow-up-refs: []
 ```
 
@@ -334,7 +348,7 @@ reviews: []
 artifact-refs: []
 evidence-refs: []
 blockers:
-  - requires real application recovery pressure from BB-004
+  - requires accepted durable application recovery pressure from BB-004
   - external-effect boundary from BB-006 must be trustworthy
 follow-up-refs: []
 ```
@@ -359,13 +373,14 @@ follow-up-refs: []
 
 ## Oracle
 
-Resolved during Waves A/C and therefore **not open work**:
+Resolved during Waves A/C and durable Backend -> QA composition:
 
 - first concrete Backend context slice exists;
 - internal application-artifact context slice exists for QA;
 - stable `sourceRef` is carried by resolved Backend/QA context;
 - internal artifact provenance carries `APPLICATION_ARTIFACT`, producer work-order id and acceptance-decision provenance;
-- failures already identify the concrete repository vs application-artifact source boundary.
+- failures identify the concrete repository vs application-artifact source boundary;
+- QA artifact lookup failure is now preserved as a blocked durable application checkpoint and can retry after source recovery.
 
 Current unresolved questions:
 
@@ -412,6 +427,6 @@ Caching/freshness, MCP-first integration and semantic retrieval are not Board ga
 
 `docs/living/blackboard.md` remains the canonical repository coordination projection today.
 
-The Agentic Application also has a JSON-backed durable Blackboard state primitive for executable orchestration. `createSessionHandoffSurface(...)` now proves a concrete handoff-safe projection over such Board state when exactly one durable user-intent root exists.
+The Agentic Application also has a JSON-backed durable Blackboard state primitive for executable orchestration. `createSessionHandoffSurface(...)` projects durable intent, work checkpoints, lifecycle buckets and artifact/evidence refs for fresh-session continuation.
 
 Replacing the Markdown coordination projection entirely is **not** claimed by this slice; any future convergence must preserve the same authority/state/handoff invariants and must not create two competing canonical Boards.

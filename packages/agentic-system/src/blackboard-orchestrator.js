@@ -146,6 +146,8 @@ function normalizeItem(raw, index = 0) {
     artifactRefs: normalizeTextArray(raw.artifactRefs ?? [], `items[${index}].artifactRefs`),
     evidenceRefs: normalizeTextArray(raw.evidenceRefs ?? [], `items[${index}].evidenceRefs`),
     followUpRefs: normalizeTextArray(raw.followUpRefs ?? [], `items[${index}].followUpRefs`),
+    checkpoint: raw.checkpoint == null ? null : clone(raw.checkpoint),
+    checkpointedBy: raw.checkpointedBy == null ? null : requireText(raw.checkpointedBy, `items[${index}].checkpointedBy`),
     submission: raw.submission == null ? null : clone(raw.submission),
     submittedBy: raw.submittedBy == null ? null : requireText(raw.submittedBy, `items[${index}].submittedBy`),
     reviewRequirements,
@@ -517,6 +519,70 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
       });
     },
 
+    async checkpoint({
+      itemId,
+      owner,
+      checkpoint,
+      artifactRefs = [],
+      evidenceRefs = [],
+      remainingWork = [],
+      resolvedWork = [],
+      status = BlackboardStatus.REOPENED,
+      blockers = []
+    }) {
+      requireText(itemId, "itemId");
+      requireText(owner, "owner");
+      invariant(checkpoint && typeof checkpoint === "object" && !Array.isArray(checkpoint), "checkpoint must be an object");
+      invariant([BlackboardStatus.REOPENED, BlackboardStatus.BLOCKED].includes(status), "checkpoint status must be REOPENED or BLOCKED");
+      const normalizedArtifacts = normalizeTextArray(artifactRefs, "artifactRefs");
+      const normalizedEvidence = normalizeTextArray(evidenceRefs, "evidenceRefs");
+      const normalizedRemaining = normalizeTextArray(remainingWork, "remainingWork");
+      const normalizedBlockers = normalizeTextArray(blockers, "blockers");
+      if (status === BlackboardStatus.BLOCKED) invariant(normalizedBlockers.length > 0, "BLOCKED checkpoint requires blockers");
+
+      return mutate((snapshot) => {
+        const item = findItem(snapshot, itemId);
+        invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${itemId} must be CLAIMED before checkpoint`);
+        invariant(item.owner === owner, `Blackboard item ${itemId} is claimed by another owner`);
+        removeResolvedWork(item, resolvedWork);
+        addUnique(item.artifactRefs, normalizedArtifacts);
+        addUnique(item.evidenceRefs, normalizedEvidence);
+        addUnique(item.remainingWork, normalizedRemaining);
+        item.checkpoint = clone(checkpoint);
+        item.checkpointedBy = owner;
+        item.owner = null;
+        item.blockers = normalizedBlockers;
+        item.status = status;
+        return clone(item);
+      });
+    },
+
+    async resume({ itemId }) {
+      requireText(itemId, "itemId");
+      return mutate((snapshot) => {
+        const item = findItem(snapshot, itemId);
+        invariant(item.status === BlackboardStatus.BLOCKED, `Blackboard item ${itemId} must be BLOCKED before resume`);
+        item.blockers = [];
+        item.status = BlackboardStatus.REOPENED;
+        return clone(item);
+      });
+    },
+
+    async supersede({ itemId, reason }) {
+      requireText(itemId, "itemId");
+      requireText(reason, "reason");
+      return mutate((snapshot) => {
+        const item = findItem(snapshot, itemId);
+        invariant(item.status !== BlackboardStatus.DONE, `Blackboard item ${itemId} cannot be superseded from DONE`);
+        invariant(item.status !== BlackboardStatus.SUPERSEDED, `Blackboard item ${itemId} is already SUPERSEDED`);
+        item.owner = null;
+        item.activeReview = null;
+        item.blockers = [reason];
+        item.status = BlackboardStatus.SUPERSEDED;
+        return clone(item);
+      });
+    },
+
     async submit({ itemId, owner, submission, reviewRequests = [], resolvedWork = [] }) {
       requireText(itemId, "itemId");
       requireText(owner, "owner");
@@ -541,6 +607,8 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
           if (!requirementFor(item, requirement.key)) item.reviewRequirements.push(requirement);
         }
 
+        item.checkpoint = null;
+        item.checkpointedBy = null;
         item.submission = clone(submission);
         item.submittedBy = owner;
         item.owner = null;

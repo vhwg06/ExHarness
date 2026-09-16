@@ -27,7 +27,68 @@ Backend ACCEPT
 
 If Backend is not accepted, QA is not dispatched.
 
-This path is still composed directly by `runBackendThenQaObjective(...)`; durable Blackboard orchestration has not yet been wired around Backend/QA dispatch.
+`runBackendThenQaObjective(...)` still provides this as a direct one-session composition. Cross-session execution uses the durable workflow below.
+
+## Durable Backend -> QA workflow
+
+Canonical durable composition is:
+
+```text
+createDurableBackendQaWorkflow(...)
+ -> initialize(itemId, owner, backendObjective, qaObjective)
+      -> validate objectives
+      -> persist BACKEND_PENDING checkpoint
+      -> release claim as REOPENED
+
+fresh/current session
+ -> advance(itemId, owner)
+      -> claim exact item
+      -> execute exactly one durable stage
+```
+
+State transitions:
+
+```text
+BACKEND_PENDING
+  |
+  | Backend ACCEPT
+  v
+QA_PENDING
+  |
+  +-- QA artifact/context failure --> BLOCKED
+  |                                   |
+  |                                 resume
+  |                                   |
+  +<----------------------------------+
+  |
+  | QA issues
+  v
+BACKEND_REMEDIATION_PENDING
+  |
+  | remediation objective derives from
+  | last accepted revision + grounded QA issues
+  v
+QA_PENDING
+  |
+  | QA ACCEPT
+  v
+final Blackboard submission
+  |
+  v
+PENDING_REVIEW
+  |
+  +-> PM/project coordination may require concrete review
+```
+
+The persisted checkpoint carries the validated workflow spec plus only the continuation state required by the current stage. Accepted Backend -> QA continuation carries the existing ref-only handoff and Backend acceptance-decision provenance rather than artifact payloads.
+
+QA issues do not silently invalidate or rewrite the accepted revision. They create explicit remediation work; the remediation Backend objective uses the accepted revision as its repository base. A new accepted Backend result replaces the QA handoff with the new revision before QA runs again.
+
+Artifact/context lookup failure does not discard progress. The item becomes `BLOCKED` with its `QA_PENDING` checkpoint intact. `resume(...)` returns it to `REOPENED`, and a later session retries the same durable stage.
+
+`cancel(...)` supersedes unfinished work. Superseded work is not claimable.
+
+QA role acceptance is not Blackboard acceptance. Successful QA clears the partial checkpoint and creates a final submission with Backend/QA decision refs and artifact refs. It does **not** fabricate `source: WORKER` for application review. If project completion requires review, PM/project coordination must use the distinct PM review-requirement path.
 
 ## Durable Blackboard lifecycle
 
@@ -35,9 +96,11 @@ This path is still composed directly by `runBackendThenQaObjective(...)`; durabl
 READY / REOPENED
  -> Orchestrator.claim(...)
  -> CLAIMED
- -> Worker produces bounded submission
- -> Orchestrator.submit(...)
- -> PENDING_REVIEW
+ -> either checkpoint partial work
+      -> REOPENED | BLOCKED
+    or submit final work
+      -> PENDING_REVIEW
+ -> project/PM may add required review
  -> Orchestrator.beginReview(...)
       -> freeze exact review target subject
  -> REVIEWING
@@ -55,7 +118,7 @@ READY / REOPENED
 
 The Orchestrator does not accept a naked caller-provided review verdict. Review decision/evidence/signature/authority must pass the application-provided trust policy over the exact active review target.
 
-Review requirements may be Worker-requested at submit time or PM-required separately. The Orchestrator owns scheduling/transition semantics; current source does not yet implement concrete PM/SA role execution or vertical reviewer Workers.
+Review requirements may be Worker-requested when a real Worker raises that need or PM-required separately. `createDurableBackendQaWorkflow(...)` does not impersonate either source after QA completion. Current source still does not implement concrete PM/SA role execution or vertical reviewer Workers.
 
 ## Fresh-session handoff
 
@@ -75,7 +138,7 @@ fresh session
  -> reconstruct ApplicationOrchestrator from the durable Board store
  -> createSessionHandoffSurface(...).read()
  -> recover user intent
- -> recover work graph and current lifecycle buckets
+ -> recover work graph, current checkpoints and lifecycle buckets
  -> recover artifact/evidence refs with item provenance
  -> resolve only the refs needed for the next work context
  -> continue
@@ -85,7 +148,8 @@ The handoff projection exposes:
 
 ```text
 intent
-workGraph
+workGraph[*].checkpoint
+workGraph[*].checkpointedBy
 lifecycle.eligibleWork
 lifecycle.claimedWork
 lifecycle.pendingReview
@@ -118,9 +182,11 @@ Review failure that proves the current obligation is still unresolved does not c
 
 `createJsonBlackboardStore(...)` exposes read + transaction, serializes mutations through a filesystem lock and persists snapshots through temp-file write + rename.
 
-A new `ApplicationOrchestrator` instance can restore submissions, pending reviews and requirements from that file. Concurrent local claims cannot both acquire the same Board item.
+A new `ApplicationOrchestrator` instance can restore checkpoints, submissions, pending reviews and requirements from that file. Concurrent local claims cannot both acquire the same Board item.
 
 Async review trust verification happens outside the mutation lock; the later commit fails closed if the active review target changed meanwhile.
+
+Application checkpoint persistence is not external-effect reconciliation. A crash between an external effect and durable Core proof remains a Core recovery concern and must not be inferred from application stage alone.
 
 ## Context rules
 
@@ -136,4 +202,6 @@ Async review trust verification happens outside the mutation lock; the later com
 
 Worker prose is not completion authority. Role completion is derived from structured results plus grounded role-specific evidence and application policy.
 
-Blackboard problem completion is a separate boundary: Worker submission cannot self-authorize `DONE`; required review/acceptance obligations and unresolved current-work findings must be reconciled first.
+Backend acceptance authorizes creation of the QA handoff; QA acceptance authorizes a final application submission. Neither role-local decision directly authorizes Blackboard `DONE` or a fabricated review requirement.
+
+Blackboard problem completion remains a separate boundary: required review/acceptance obligations and unresolved current-work findings must be reconciled first.
