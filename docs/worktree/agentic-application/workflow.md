@@ -163,7 +163,7 @@ no persisted Core session + volatile/unknown recovery authority
  -> absence is not proof that an external effect did not happen
 
 confirmed effect + Core candidate still at effect base
- -> close interrupted variation
+ -> close interrupted Core variation
  -> replay same strategy on same session
  -> same semantic action key
  -> effect journal returns confirmed result
@@ -269,9 +269,11 @@ PM cannot rewrite user intent or issue architecture/completion/review verdicts. 
 
 SA assessments must reference evidence currently linked to the exact target. PM proposals bind `{itemId, status, claimGeneration, reviewGeneration}` so a delayed proposal cannot apply after the target lifecycle changes. A no-op proposal is still freshness-checked before returning fallback.
 
-Reapplying the same proposal is safe once its canonical proposal ref is linked from Blackboard; replay does not duplicate fresh work or review requirements. If a coordination artifact is written but the canonical Board mutation fails, that orphan artifact is not project lifecycle truth because no Blackboard ref points to it. Adding a PM review requirement never clears an existing blocker; blocked work remains blocked until the ordinary resume/reopen lifecycle resolves that blocker.
+Replay does not trust a coordination-shaped string ref by itself. The controller first requires the PM proposal ref to be a direct target Board artifact ref, then verifies the proposal effects represented by that ref: created-work provenance, dependency edges, current blocker effects, PM review requirements, SA assessment refs and grounded evidence. A submission-only ref or a checkpoint-injected ref without those effects fails closed. If a blocker has already been cleared by later lifecycle progress, the old blocker proposal is no longer treated as safely replay-established.
 
-Fresh-session coordination recovery reads the project handoff, collects only PM/SA artifact refs already linked from Blackboard and dereferences those refs through the concrete coordination artifact store. Conversation history is not required.
+If a coordination artifact is written but the canonical Board mutation fails, that orphan artifact is not project lifecycle truth. Fresh-session coordination recovery scans only direct Board artifact refs for PM/SA artifacts; it does not promote coordination-shaped refs that merely occur inside a submission. Conversation history is not required.
+
+Adding a PM review requirement never clears an existing blocker; blocked work remains blocked until the ordinary resume/reopen lifecycle resolves that blocker.
 
 ## Fresh-session handoff
 
