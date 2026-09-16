@@ -265,23 +265,30 @@ D003 remains the semantic authority split: PM coordinates project obligations; S
 SA assessment is evidence-bound judgment state:
 
 - it binds one project, durable root intent, target item/work and one or more current target evidence refs;
+- SA context construction rejects evidence refs that are not currently linked to the target, and persistence rechecks the same grounding;
 - it may state whether architecture review is required and record the architecture finding;
 - it cannot carry dependency, priority, timeline, lifecycle, completion or review-verdict authority;
-- stale/missing evidence or project/target drift fails before the assessment becomes applicable coordination input.
+- project/root/work/evidence drift fails before the assessment becomes applicable coordination input;
+- PM context cannot reuse an SA assessment that targets different work.
 
 PM proposal is bounded coordination proposal state:
 
 - it binds the exact current target lifecycle tuple `{itemId, status, claimGeneration, reviewGeneration}`;
 - it may propose fresh prerequisite work, dependency edges for the current target/new work, blockers and PM-sourced review requirements;
 - review requirements that claim architecture need must reference a durable current SA assessment that actually requires architecture review;
+- duplicate PM review requirement keys are rejected;
 - it cannot rewrite user intent or carry architecture/completion/review verdict authority;
-- even an empty/no-op proposal must still match the current target state before returning non-mutating fallback.
+- even an empty/no-op proposal must still match the current target state before returning non-mutating fallback, and a no-op proposal does not publish a proposal artifact.
 
-Roles do not mutate Blackboard directly. The controller validates project/root/target/evidence authority and then delegates canonical mutations to `ApplicationOrchestrator`.
+Roles do not mutate Blackboard directly. Controller-side validation is bounded preparation only; canonical authority remains in `ApplicationOrchestrator`.
 
-`extendWorkGraph(...)` is the concrete Orchestrator-owned graph extension primitive used by this slice. It adds only fresh READY work, permits dependency extension only for the target or work created in the same call, preserves idempotent replay of identical fresh work, rejects conflicting duplicate definitions, rejects terminal/active execution states that are not coordinatable and validates the full dependency graph before persistence.
+`extendWorkGraph(...)` is the concrete Orchestrator-owned atomic mutation primitive used by this slice. It requires an `expectedTarget` exact lifecycle tuple and rechecks that tuple **inside the Blackboard transaction** before publishing any coordination effect. In the same transaction it may add fresh READY work, bounded dependency edges, artifact/evidence refs, blockers and PM-sourced review requirements. It permits dependency extension only for the target or work created in the same call, validates the full dependency graph before persistence and rejects terminal/active target states that are not coordinatable.
 
-Durable PM proposal and SA assessment artifacts become continuation-relevant only after their refs are linked into Blackboard. `recoverCoordination()` reconstructs the project handoff and dereferences only linked coordination artifact refs; an orphan artifact written before a failed canonical mutation does not become project lifecycle truth.
+Fresh work cannot carry prior lifecycle authority/history: it must start unclaimed with zero claim/review generations, no checkpoint/submission/active review, no blocker/follow-up/review/finding history and explicit origin provenance. Identical already-created fresh work is idempotent; conflicting duplicate definitions fail the transaction.
+
+For a mutating PM proposal, the content-addressed proposal artifact may be written before canonical application, but the proposal ref is linked to the target in the **same atomic Blackboard transaction** as its graph/ref/blocker/review-requirement effects. If that transaction fails, the orphan artifact has no lifecycle authority. If a later retry sees the exact proposal ref already canonically linked to that target, it treats the previous atomic application as complete (`replayed: true`) rather than trying to replay the proposal's now-stale target tuple.
+
+`recoverCoordination()` reconstructs the project handoff and dereferences only linked coordination artifact refs. Artifact existence alone is not project lifecycle truth.
 
 This implementation is not a generic PM/SA agent runtime, role registry, horizontal-role framework, workflow DSL or vertical reviewer implementation.
 
