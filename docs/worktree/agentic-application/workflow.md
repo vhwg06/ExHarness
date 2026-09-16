@@ -180,11 +180,25 @@ Review failure that proves the current obligation is still unresolved does not c
 
 ## Persistence and concurrency
 
-`createJsonBlackboardStore(...)` exposes read + transaction, serializes mutations through a filesystem lock and persists snapshots through temp-file write + rename.
+`createJsonBlackboardStore(...)` exposes read + transaction over an immutable single-successor revision chain.
 
-A new `ApplicationOrchestrator` instance can restore checkpoints, submissions, pending reviews and requirements from that file. Concurrent local claims cannot both acquire the same Board item.
+```text
+resolve committed revision rN
+ -> run mutator against exact snapshot rN
+ -> write complete successor record to unique temp file
+ -> atomically hard-link successor for rN
+      |
+      +-> link succeeds: commit rN+1
+      +-> successor already exists: explicit transaction conflict
+```
 
-Async review trust verification happens outside the mutation lock; the later commit fails closed if the active review target changed meanwhile.
+A new `ApplicationOrchestrator` instance resolves the same committed chain and restores checkpoints, submissions, pending reviews and requirements. Concurrent local writers from one base revision cannot both publish; one successor wins and stale writers fail before replacing committed state.
+
+Opaque revision tokens identify chain positions. Snapshot digests validate the exact base content but do not define revision identity, so later state may legitimately repeat an earlier snapshot value.
+
+Legacy `.lock` age is not correctness authority. The public store does not trust or delete legacy lock files, and `lockStaleMs` does not authorize takeover. A successor record that was atomically published remains authoritative across process interruption even if the publishing call did not return.
+
+Async review trust verification still happens outside the Board mutation transaction; if another mutation wins before assessment commit, the later store publication fails on its stale base revision. The Orchestrator also re-checks the active review target inside its mutator before publication.
 
 Application checkpoint persistence is not external-effect reconciliation. A crash between an external effect and durable Core proof is handled through the Core effect reconciliation and recovery primitives, which can confirm, safely replay, observe, or escalate ambiguous effects; application stage alone must not be used to infer effect completion.
 
