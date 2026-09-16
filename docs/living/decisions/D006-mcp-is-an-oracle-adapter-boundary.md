@@ -1,8 +1,8 @@
 # D006 — MCP is an Oracle adapter/continuation boundary, not Oracle lifecycle authority
 
-Status: **PROPOSED**
+Status: **PROMOTED**
 
-Proposed: 2026-09-16
+Accepted: 2026-09-16
 
 ## Question
 
@@ -36,7 +36,7 @@ Primary evidence:
 - https://modelcontextprotocol.io/specification/2026-07-28/server/tools
 - https://tasks.extensions.modelcontextprotocol.io/specification/draft/tasks
 
-## Proposed decision
+## Decision
 
 Treat MCP as a **source/capability adapter boundary** inside Oracle when a concrete source already exposes useful MCP capabilities. Do not make Oracle MCP-first.
 
@@ -117,7 +117,7 @@ Therefore this evaluation does not by itself justify:
 
 BB-009/BB-010 may reopen only after a concrete MCP-backed source demonstrates repeated resolver shape or machine-readable diagnostic/continuation pressure in source/tests.
 
-## Consequences if accepted
+## Consequences
 
 - no runtime code is added solely to support MCP uniformity;
 - existing direct readers remain the simplest default;
