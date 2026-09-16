@@ -2,6 +2,8 @@
 
 Status: **EVIDENCE / JUDGMENT CANDIDATE**
 
+Runtime calibration source revision: `8125bef297973c7e4ff24540875589beca303a18`.
+
 ## Question
 
 Can ExHarness use a bounded replay/fault-schedule helper to compare workflow-policy behavior before adoption, reproduce known lifecycle regressions and isolate the changed decision, without replay becoming execution authority or reissuing historical external effects?
@@ -173,6 +175,18 @@ baselineOutcomeRef   = outcome:bb024-baseline-reopened
 candidateOutcomeRef  = outcome:bb024-candidate-superseded
 ```
 
+## Runtime calibration against the actual Orchestrator API
+
+The additional command `node docs/living/knowledge/bb038-runtime-calibration.mjs` runs the cancellation schedule through the real Orchestrator mutation API and JSON Blackboard store. It uses the same seeded post-review item in two isolated temporary stores. The baseline is the unguarded base Orchestrator module; the candidate is the current public composition with the BB-024 terminal-cancellation guard. A new Orchestrator instance reads each committed result. A third run omits cancellation as a control.
+
+```text
+base + cancel + CURRENT_WORK:    REOPENED; finding disposition recorded
+public + cancel + CURRENT_WORK:  SUPERSEDED; mutation rejected; disposition absent
+public + normal CURRENT_WORK:    REOPENED; finding disposition recorded
+```
+
+The probe asserts that the baseline and candidate statuses match the checked replay artifact. This calibrates the replay model against one actual runtime transition and confirms that the public guard does not prevent normal reconciliation. It does not calibrate artifact outage, external-effect retry, review delay, concurrent timing or model/provider behavior. The baseline module is an internal unguarded implementation retained in the codebase; public callers receive the guarded composition.
+
 Artifact outage, retry-recorded-effect and review-delay schedules have the same behavioral outcome under both policy identities.
 
 This is useful because the helper does not merely show that the candidate differs; it also shows the bounded fixture does **not** detect collateral policy changes in the three control schedules.
@@ -302,6 +316,7 @@ Keep the current helper narrow:
 
 - `scripts/workflow-policy-replay-eval.mjs`;
 - `artifacts/bb038-workflow-replay-eval.json`;
+- `docs/living/knowledge/bb038-runtime-calibration.mjs` (actual durable Orchestrator cancellation transition);
 - `scripts/agentic-backend-qa-eval.mjs`;
 - `packages/agentic-system/src/blackboard-orchestrator.js` baseline reconciliation semantics;
 - PR #85 `bb024-cancellation-reconciliation.test.js` and terminal-cancellation guard candidate;

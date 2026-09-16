@@ -797,7 +797,7 @@ origin: INTENT-exharness-agentic-system; tooling child of BB-005, which retains 
 
 Review evidence: `knowledge/project-review-2026-09-16.md`, inspected revision `ad61a2b037b99384e16fdd5245ee04f43dc36083`. R1-R4 were reproduced with isolated adapters; they do not assert production incidents. BB-023/024/025 address newly grounded defects without erasing delivered history. R4 extends BB-016/017. BB-026/027 define a research consumer before choosing an abstraction.
 
-Recommended next sequence: BB-023 and BB-024 (persistence and cancellation correctness), BB-025 (graph integrity), then continue BB-016/018 and the research pilot. These fixes can be investigated independently. BB-014/015/022 remain delivered; BB-005 still requires representative production evidence.
+Current sequence: BB-023 is delivered. BB-024 and BB-025 have merged implementations and passing targeted regression tests; their Board acceptance awaits review-evidence reconciliation. Continue BB-016/018 and the bounded research pilot without reimplementing those fixes. BB-014/015/022 remain delivered; BB-005 still requires representative production evidence.
 
 ```text
 BB-023
@@ -839,22 +839,25 @@ BB-024
 question/work: Preserve SUPERSEDED cancellation when delayed finding reconciliation arrives.
 kind: FIX
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 depends-on: []
 remaining-work:
-  - define legal reconciliation source states and preserve terminal cancellation
-  - reject stale reconciliation before changing findings, status or follow-up items
-  - retain canceled submission/evidence history for inspection
+  - reconcile required review and CI evidence for merged PR #85 before marking DONE
 acceptance-criteria:
   - cancel followed by NON_ACTIONABLE or CURRENT_WORK reconciliation cannot become DONE or REOPENED
   - late NEW_WORK reconciliation cannot create child work after cancellation
   - normal pending-finding reconciliation still derives completion only after remaining obligations resolve
 submission:
+  - merged PR #85 at dfc5249073ebfb1722047a3e4ac851caaee41d19
 review-requirements: [workflow/acceptance review, application/code review]
 reviews: []
-artifact-refs: []
-evidence-refs: [docs/living/knowledge/project-review-2026-09-16.md (R2)]
+artifact-refs:
+  - packages/agentic-system/src/application-orchestrator.js
+  - packages/agentic-system/test/bb024-cancellation-reconciliation.test.js
+evidence-refs:
+  - docs/living/knowledge/project-review-2026-09-16.md (R2)
+  - targeted BB-024 regression passed at 8125bef297973c7e4ff24540875589beca303a18
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; reproduced cancellation-to-DONE transition through reconcileFinding
@@ -865,22 +868,25 @@ BB-025
 question/work: Validate Blackboard dependency graph integrity and diagnose stored graphs that cannot progress.
 kind: FIX
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 depends-on: []
 remaining-work:
-  - reject dangling/self/cyclic dependencies at complete-snapshot admission and transactional writes
-  - check follow-up creation against the resulting complete graph rather than only the new item
-  - define explicit diagnostics and migration/repair for previously accepted invalid snapshots
+  - reconcile required review and CI evidence for merged PR #87 before marking DONE
 acceptance-criteria:
   - R3 dangling and cyclic inputs fail with actionable item/edge diagnostics before persistence
   - valid unordered DAGs and durable intent-root dependencies remain accepted
   - invalid mutations leave the prior snapshot intact and repair never silently drops dependencies
 submission:
+  - merged PR #87 at 8125bef297973c7e4ff24540875589beca303a18
 review-requirements: [state/schema review, application/code review]
 reviews: []
-artifact-refs: []
-evidence-refs: [docs/living/knowledge/project-review-2026-09-16.md (R3)]
+artifact-refs:
+  - packages/agentic-system/src/blackboard-graph.js
+  - packages/agentic-system/test/blackboard-graph.test.js
+evidence-refs:
+  - docs/living/knowledge/project-review-2026-09-16.md (R3)
+  - targeted BB-025 regression passed at 8125bef297973c7e4ff24540875589beca303a18
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; reproduced acceptance of unresolvable dependency graphs
@@ -1290,7 +1296,7 @@ BB-038
 question/work: Research a replay and fault-injection addon for comparing workflow policies against recorded observable events.
 kind: RESEARCH
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 depends-on: []
 research-hypothesis: Controlled replay may reveal regressions and distinguish which workflow decision caused an outcome before a policy is adopted.
@@ -1299,22 +1305,29 @@ implementation-output: A runnable fault-schedule/replay helper integrated with t
 value-gate: Reproduce at least one documented current lifecycle/persistence failure and distinguish the faulty implementation from its fix under the same schedule, with no real external mutation
 scope-boundary: BB-022 remains the reference evaluation gate; BB-016 and BB-023/024 own recovery/defect fixes. This research evaluates reusable experimental tooling, not their implementation.
 remaining-work:
-  - Define the minimum recorded scenario inputs, adapter responses, revisions and policy identity needed for deterministic fixture replay.
-  - Compare two policies under the same artifact outage, cancellation, retry and review-delay schedules; inject failures around durable boundaries.
-  - Distinguish reproducible adapter replay from nondeterministic model/provider execution and from reconstruction of live runtime authority.
+  - Review the fixture-level replay result, runtime cancellation calibration, unsupported schedules and authority boundary.
 acceptance-criteria:
   - A reviewer can reproduce a baseline/candidate divergence and identify the changed decision plus downstream outcome refs.
   - Replays isolate external effects and never reissue a historical mutation merely because it appears in a trace.
   - Report replay fidelity, uncovered failures, storage cost and unsupported cases; avoid claiming causal certainty when model/environment inputs differ.
 submission:
+  - docs/living/knowledge/bb038-workflow-policy-replay.md
+  - scripts/workflow-policy-replay-eval.mjs
+  - docs/living/knowledge/bb038-runtime-calibration.mjs
 review-requirements: [research-method review, application/architecture-boundary review]
 reviews: []
-artifact-refs: []
+artifact-refs:
+  - docs/living/knowledge/bb038-workflow-policy-replay.md
+  - docs/living/knowledge/bb038-runtime-calibration.mjs
+  - artifacts/bb038-workflow-replay-eval.json
 evidence-refs:
   - packages/agentic-system/src/durable-backend-qa.js
   - packages/agentic-system/src/blackboard-orchestrator.js
   - packages/core-harness/src/runtime-snapshot.js
   - scripts/agentic-backend-qa-eval.mjs
+  - npm run eval:workflow-replay is integrated in the root verification script; direct Node evaluation passes the checked artifact
+  - actual JSON-store cancellation calibration: base REOPENED, public SUPERSEDED, normal control REOPENED
+  - research result: NARROW to fixture-level policy replay; productionEvidence=false
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
@@ -1325,7 +1338,7 @@ BB-039
 question/work: Research an artifact-manifest and retention addon that makes ref-only continuation verifiable across project sessions.
 kind: RESEARCH
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 depends-on: []
 research-hypothesis: A minimal manifest linking immutable content identity and producer evidence may make ref-only handoff more dependable under source changes or loss.
@@ -1334,22 +1347,27 @@ implementation-output: A compatible artifact-manifest adapter validating content
 value-gate: Reject changed/mismatched content and diagnose unavailable content in controlled restart scenarios while still accepting unchanged valid artifacts; demonstrate a concrete improvement over that adapter's baseline
 scope-boundary: BB-014/015 settled project-state authority, not artifact storage guarantees. This item does not reopen their accepted project boundaries.
 remaining-work:
-  - Map what current refs and injected readers guarantee versus what depends on external artifact storage.
-  - Compare current refs with an optional manifest carrying content identity, producer revision and retention/availability metadata on one concrete artifact adapter.
-  - Exercise deleted content, changed content behind a stable ref, mismatched revision and partial artifact sets during handoff.
+  - Review the bounded adapter experiment, integrity assumptions, retention proposal and implementation handoff.
 acceptance-criteria:
   - A fresh session can distinguish missing, changed and verified content before using it as evidence; observed behavior is reported without presuming all adapters are defective.
   - A retention proposal names which pending work/review refs pin artifacts and how historical evidence remains inspectable.
   - The recommendation bounds storage cost and compatibility; it does not copy full payloads into Blackboard or treat availability as correctness.
 submission:
+  - docs/living/knowledge/bb039-artifact-manifest-research.md
+  - docs/living/knowledge/bb039-artifact-manifest-probe.mjs
 review-requirements: [research-method review, application/architecture-boundary review]
 reviews: []
-artifact-refs: []
+artifact-refs:
+  - docs/living/knowledge/bb039-artifact-manifest-research.md
+  - docs/living/knowledge/bb039-artifact-manifest-probe.mjs
 evidence-refs:
   - packages/agentic-system/src/artifact-ref.js
   - packages/agentic-system/src/oracle.js
   - packages/agentic-system/src/session-handoff.js
   - packages/agentic-system/src/qa-contracts.js
+  - packages/agentic-system/src/durable-backend-qa.js
+  - measured fixture: baseline passes 2 identity violations; manifest reader rejects both; valid and missing behavior unchanged
+  - research result: NARROW to one opt-in adapter; productionEvidence=false
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
