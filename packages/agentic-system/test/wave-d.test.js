@@ -145,15 +145,24 @@ function workItem(overrides = {}) {
   };
 }
 
+async function claimGeneration(orchestrator, {
+  itemId = "BB-100",
+  owner = "worker-session-1"
+} = {}) {
+  const claimed = await orchestrator.claim({ itemId, owner });
+  return claimed.result.claimGeneration;
+}
+
 async function submitForBackendReview(orchestrator, {
   owner = "worker-session-1",
   revision = "rev-2",
   resolvedWork = []
 } = {}) {
-  await orchestrator.claim({ itemId: "BB-100", owner });
+  const generation = await claimGeneration(orchestrator, { owner });
   return orchestrator.submit({
     itemId: "BB-100",
     owner,
+    generation,
     submission: { revision },
     resolvedWork,
     reviewRequests: [{
@@ -255,10 +264,11 @@ test("Wave D rejects fabricated, stale or unauthorized review authority", async 
 test("Wave D keeps Worker review request and PM review requirement as separate authority paths", async () => {
   await withOrchestrator(async ({ orchestrator }) => {
     await orchestrator.seed([workItem()]);
-    await orchestrator.claim({ itemId: "BB-100", owner: "worker-session-1" });
+    const generation = await claimGeneration(orchestrator);
     await orchestrator.submit({
       itemId: "BB-100",
       owner: "worker-session-1",
+      generation,
       submission: { revision: "rev-2" }
     });
 
@@ -320,6 +330,7 @@ test("Wave D serializes concurrent claims so two sessions cannot own the same Bo
 
     const restored = await orchestrator.readBlackboard();
     assert.equal(restored.items[0].status, BlackboardStatus.CLAIMED);
+    assert.equal(restored.items[0].claimGeneration, 1);
     assert.ok(["worker-session-1", "worker-session-2"].includes(restored.items[0].owner));
   });
 });
@@ -338,6 +349,7 @@ test("Wave D persists PENDING_REVIEW across orchestrator restart", async () => {
     assert.equal(restored.items[0].status, BlackboardStatus.PENDING_REVIEW);
     assert.equal(restored.items[0].submission.revision, "rev-2");
     assert.equal(restored.items[0].submittedBy, "worker-session-1");
+    assert.equal(restored.items[0].claimGeneration, 1);
     assert.equal(restored.items[0].reviewRequirements[0].key, "BACKEND_REVIEW");
   });
 });
@@ -365,10 +377,11 @@ test("Wave D rejected review reopens the same work from trusted unresolved block
     assert.deepEqual(rejected.result.remainingWork, [blocker]);
     assert.deepEqual(rejected.result.findings, []);
 
-    await orchestrator.claim({ itemId: "BB-100", owner: "worker-session-2" });
+    const generation = await claimGeneration(orchestrator, { owner: "worker-session-2" });
     const resubmitted = await orchestrator.submit({
       itemId: "BB-100",
       owner: "worker-session-2",
+      generation,
       submission: { revision: "rev-3" },
       resolvedWork: [blocker]
     });
@@ -492,5 +505,82 @@ test("Wave D follow-up generation reconciles only findings grounded by a trusted
       FollowUpDisposition.NEW_WORK,
       FollowUpDisposition.NON_ACTIONABLE
     ]);
+  });
+});
+
+test("Wave D claim recovery fences a stale executor even when takeover reuses the same owner identity", async () => {
+  await withOrchestrator(async ({ orchestrator }) => {
+    await orchestrator.seed([workItem()]);
+    const first = await orchestrator.claim({ itemId: "BB-100", owner: "worker-session-1" });
+    assert.equal(first.result.claimGeneration, 1);
+
+    const recovered = await orchestrator.recoverClaim({
+      itemId: "BB-100",
+      owner: "worker-session-1",
+      reason: "The original process disappeared before persisting a result."
+    });
+    assert.equal(recovered.result.claimGeneration, 2);
+
+    await assert.rejects(
+      () => orchestrator.checkpoint({
+        itemId: "BB-100",
+        owner: "worker-session-1",
+        generation: 1,
+        checkpoint: { kind: "STALE_ATTEMPT" }
+      }),
+      /claim generation is stale/
+    );
+
+    const persisted = await orchestrator.checkpoint({
+      itemId: "BB-100",
+      owner: "worker-session-1",
+      generation: 2,
+      checkpoint: { kind: "RECOVERED_ATTEMPT" }
+    });
+    assert.equal(persisted.result.status, BlackboardStatus.REOPENED);
+    assert.equal(persisted.result.claimGeneration, 2);
+  });
+});
+
+test("Wave D review recovery changes the exact review subject and rejects the abandoned generation", async () => {
+  await withOrchestrator(async ({ orchestrator }) => {
+    await orchestrator.seed([workItem()]);
+    await submitForBackendReview(orchestrator);
+
+    const first = await beginBackendReview(orchestrator, "backend-reviewer-1");
+    assert.equal(first.result.generation, 1);
+    const abandonedBundle = await reviewBundle({
+      subject: first.result.subject,
+      reviewer: "backend-reviewer-1"
+    });
+
+    const recovered = await orchestrator.recoverReview({
+      itemId: "BB-100",
+      key: "BACKEND_REVIEW",
+      reviewer: "backend-reviewer-1",
+      reason: "The original review dispatch was interrupted."
+    });
+    assert.equal(recovered.result.generation, 2);
+    assert.notEqual(recovered.result.subject.digest, first.result.subject.digest);
+
+    await assert.rejects(
+      () => orchestrator.recordAssessment({
+        itemId: "BB-100",
+        key: "BACKEND_REVIEW",
+        bundle: abandonedBundle
+      }),
+      /review evidence subject does not match active review target/
+    );
+
+    const currentBundle = await reviewBundle({
+      subject: recovered.result.subject,
+      reviewer: "backend-reviewer-1"
+    });
+    const assessed = await orchestrator.recordAssessment({
+      itemId: "BB-100",
+      key: "BACKEND_REVIEW",
+      bundle: currentBundle
+    });
+    assert.equal(assessed.result.status, BlackboardStatus.DONE);
   });
 });

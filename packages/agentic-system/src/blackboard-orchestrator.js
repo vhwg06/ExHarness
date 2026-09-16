@@ -17,6 +17,12 @@ function requireText(value, name) {
   return value;
 }
 
+function requireGeneration(value, name, { allowZero = false } = {}) {
+  invariant(Number.isInteger(value), `${name} must be an integer`);
+  invariant(allowZero ? value >= 0 : value > 0, `${name} must be ${allowZero ? "non-negative" : "positive"}`);
+  return value;
+}
+
 function clone(value) {
   return structuredClone(value);
 }
@@ -109,6 +115,17 @@ function normalizeReviewSubject(raw, name) {
   });
 }
 
+function normalizeActiveReview(raw, index) {
+  if (raw == null) return null;
+  invariant(raw && typeof raw === "object" && !Array.isArray(raw), `items[${index}].activeReview must be an object`);
+  return {
+    key: requireText(raw.key, `items[${index}].activeReview.key`),
+    reviewer: requireText(raw.reviewer, `items[${index}].activeReview.reviewer`),
+    generation: requireGeneration(raw.generation ?? raw.subject?.metadata?.reviewGeneration ?? 1, `items[${index}].activeReview.generation`),
+    subject: normalizeReviewSubject(raw.subject, `items[${index}].activeReview.subject`)
+  };
+}
+
 function normalizeItem(raw, index = 0) {
   invariant(raw && typeof raw === "object" && !Array.isArray(raw), `items[${index}] must be an object`);
   const status = raw.status ?? BlackboardStatus.READY;
@@ -140,6 +157,8 @@ function normalizeItem(raw, index = 0) {
     work: requireText(raw.work, `items[${index}].work`),
     status,
     owner: raw.owner == null ? null : requireText(raw.owner, `items[${index}].owner`),
+    claimGeneration: requireGeneration(raw.claimGeneration ?? 0, `items[${index}].claimGeneration`, { allowZero: true }),
+    reviewGeneration: requireGeneration(raw.reviewGeneration ?? 0, `items[${index}].reviewGeneration`, { allowZero: true }),
     dependsOn: normalizeTextArray(raw.dependsOn ?? [], `items[${index}].dependsOn`),
     remainingWork: normalizeTextArray(raw.remainingWork ?? [], `items[${index}].remainingWork`),
     blockers: normalizeTextArray(raw.blockers ?? [], `items[${index}].blockers`),
@@ -153,11 +172,7 @@ function normalizeItem(raw, index = 0) {
     reviewRequirements,
     reviews,
     findings,
-    activeReview: raw.activeReview == null ? null : {
-      key: requireText(raw.activeReview.key, `items[${index}].activeReview.key`),
-      reviewer: requireText(raw.activeReview.reviewer, `items[${index}].activeReview.reviewer`),
-      subject: normalizeReviewSubject(raw.activeReview.subject, `items[${index}].activeReview.subject`)
-    },
+    activeReview: normalizeActiveReview(raw.activeReview, index),
     origin: raw.origin == null ? null : clone(raw.origin)
   };
 }
@@ -354,12 +369,19 @@ function removeResolvedWork(item, resolvedWork) {
   item.remainingWork = item.remainingWork.filter((work) => !resolved.includes(work));
 }
 
-function reviewSubject(item, key) {
+function assertClaim(item, itemId, owner, generation, action) {
+  invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${itemId} must be CLAIMED before ${action}`);
+  invariant(item.owner === owner, `Blackboard item ${itemId} is claimed by another owner`);
+  invariant(item.claimGeneration === generation, `Blackboard item ${itemId} claim generation is stale`);
+}
+
+function reviewSubject(item, key, generation) {
   invariant(item.submission != null, `Blackboard item ${item.id} has no submission`);
   invariant(item.submittedBy != null, `Blackboard item ${item.id} has no submission producer`);
   return subjectFromValue({
     itemId: item.id,
     reviewKey: key,
+    reviewGeneration: generation,
     submission: item.submission
   }, {
     type: "blackboard-review-target",
@@ -369,7 +391,8 @@ function reviewSubject(item, key) {
     },
     metadata: {
       itemId: item.id,
-      reviewKey: key
+      reviewKey: key,
+      reviewGeneration: generation
     }
   });
 }
@@ -471,6 +494,7 @@ async function evaluateReviewBundle({ item, requirement, activeReview, bundle, r
 function sameActiveReview(left, right) {
   return left?.key === right?.key &&
     left?.reviewer === right?.reviewer &&
+    left?.generation === right?.generation &&
     sameSubject(left?.subject, right?.subject);
 }
 
@@ -512,7 +536,22 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         for (const dependency of item.dependsOn) {
           invariant(findItem(snapshot, dependency).status === BlackboardStatus.DONE, `Blackboard item ${itemId} dependency is not DONE: ${dependency}`);
         }
+        item.claimGeneration += 1;
         item.status = BlackboardStatus.CLAIMED;
+        item.owner = owner;
+        item.blockers = [];
+        return clone(item);
+      });
+    },
+
+    async recoverClaim({ itemId, owner, reason }) {
+      requireText(itemId, "itemId");
+      requireText(owner, "owner");
+      requireText(reason, "reason");
+      return mutate((snapshot) => {
+        const item = findItem(snapshot, itemId);
+        invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${itemId} must be CLAIMED before claim recovery`);
+        item.claimGeneration += 1;
         item.owner = owner;
         item.blockers = [];
         return clone(item);
@@ -522,6 +561,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     async checkpoint({
       itemId,
       owner,
+      generation,
       checkpoint,
       artifactRefs = [],
       evidenceRefs = [],
@@ -532,6 +572,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     }) {
       requireText(itemId, "itemId");
       requireText(owner, "owner");
+      requireGeneration(generation, "generation");
       invariant(checkpoint && typeof checkpoint === "object" && !Array.isArray(checkpoint), "checkpoint must be an object");
       invariant([BlackboardStatus.REOPENED, BlackboardStatus.BLOCKED].includes(status), "checkpoint status must be REOPENED or BLOCKED");
       const normalizedArtifacts = normalizeTextArray(artifactRefs, "artifactRefs");
@@ -542,8 +583,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
 
       return mutate((snapshot) => {
         const item = findItem(snapshot, itemId);
-        invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${itemId} must be CLAIMED before checkpoint`);
-        invariant(item.owner === owner, `Blackboard item ${itemId} is claimed by another owner`);
+        assertClaim(item, itemId, owner, generation, "checkpoint");
         removeResolvedWork(item, resolvedWork);
         addUnique(item.artifactRefs, normalizedArtifacts);
         addUnique(item.evidenceRefs, normalizedEvidence);
@@ -575,6 +615,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         const item = findItem(snapshot, itemId);
         invariant(item.status !== BlackboardStatus.DONE, `Blackboard item ${itemId} cannot be superseded from DONE`);
         invariant(item.status !== BlackboardStatus.SUPERSEDED, `Blackboard item ${itemId} is already SUPERSEDED`);
+        if (item.status === BlackboardStatus.CLAIMED) item.claimGeneration += 1;
         item.owner = null;
         item.activeReview = null;
         item.blockers = [reason];
@@ -583,9 +624,10 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
       });
     },
 
-    async submit({ itemId, owner, submission, reviewRequests = [], resolvedWork = [] }) {
+    async submit({ itemId, owner, generation, submission, reviewRequests = [], resolvedWork = [] }) {
       requireText(itemId, "itemId");
       requireText(owner, "owner");
+      requireGeneration(generation, "generation");
       invariant(submission && typeof submission === "object" && !Array.isArray(submission), "submission must be an object");
       invariant(Array.isArray(reviewRequests), "reviewRequests must be an array");
       invariant(Array.isArray(resolvedWork), "resolvedWork must be an array");
@@ -596,8 +638,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
 
       return mutate((snapshot) => {
         const item = findItem(snapshot, itemId);
-        invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${itemId} must be CLAIMED before submit`);
-        invariant(item.owner === owner, `Blackboard item ${itemId} is claimed by another owner`);
+        assertClaim(item, itemId, owner, generation, "submit");
 
         removeResolvedWork(item, resolvedWork);
 
@@ -651,12 +692,38 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         invariant(reviewFor(item, key) == null, `Blackboard item ${itemId} already has assessment for ${key}`);
         invariant(item.activeReview == null, `Blackboard item ${itemId} already has an active review`);
         invariant(reviewer !== item.submittedBy, "reviewer must be independent from submission producer");
+        item.reviewGeneration += 1;
         item.activeReview = {
           key,
           reviewer,
-          subject: reviewSubject(item, key)
+          generation: item.reviewGeneration,
+          subject: reviewSubject(item, key, item.reviewGeneration)
         };
         item.status = BlackboardStatus.REVIEWING;
+        return clone(item.activeReview);
+      });
+    },
+
+    async recoverReview({ itemId, key, reviewer, reason }) {
+      requireText(itemId, "itemId");
+      requireText(key, "key");
+      requireText(reviewer, "reviewer");
+      requireText(reason, "reason");
+      return mutate((snapshot) => {
+        const item = findItem(snapshot, itemId);
+        invariant(item.submission != null, `Blackboard item ${itemId} has no submission to review`);
+        invariant(item.status === BlackboardStatus.REVIEWING, `Blackboard item ${itemId} must be REVIEWING before review recovery`);
+        invariant(item.activeReview?.key === key, `Blackboard item ${itemId} active review does not match recovery`);
+        invariant(requirementFor(item, key), `Blackboard item ${itemId} does not require review ${key}`);
+        invariant(reviewFor(item, key) == null, `Blackboard item ${itemId} already has assessment for ${key}`);
+        invariant(reviewer !== item.submittedBy, "reviewer must be independent from submission producer");
+        item.reviewGeneration += 1;
+        item.activeReview = {
+          key,
+          reviewer,
+          generation: item.reviewGeneration,
+          subject: reviewSubject(item, key, item.reviewGeneration)
+        };
         return clone(item.activeReview);
       });
     },
@@ -764,14 +831,15 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
       });
     },
 
-    async block({ itemId, owner, blockers }) {
+    async block({ itemId, owner, generation, blockers }) {
       requireText(itemId, "itemId");
+      requireText(owner, "owner");
+      requireGeneration(generation, "generation");
       const normalizedBlockers = normalizeTextArray(blockers, "blockers");
       invariant(normalizedBlockers.length > 0, "block requires at least one blocker");
       return mutate((snapshot) => {
         const item = findItem(snapshot, itemId);
-        invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${itemId} must be CLAIMED before block`);
-        invariant(item.owner === owner, `Blackboard item ${itemId} is claimed by another owner`);
+        assertClaim(item, itemId, owner, generation, "block");
         item.owner = null;
         item.blockers = normalizedBlockers;
         item.status = BlackboardStatus.BLOCKED;

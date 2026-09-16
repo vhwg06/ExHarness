@@ -1,10 +1,14 @@
 # D009 — Interrupted recovery requires generation fencing plus effect reconciliation
 
-Status: **ACCEPTED**
+Status: **PROMOTED**
 
 Accepted: 2026-09-16
 
-Acceptance boundary: BB-016 application-recovery/Core-effect review accepted the source-backed failure matrix and recovery split on PR #82. This decision is not promoted into `docs/worktree/*` because BB-017 has not implemented it yet.
+Promoted: 2026-09-16
+
+Acceptance boundary: BB-016 application-recovery/Core-effect review accepted the source-backed failure matrix and recovery split on PR #82.
+
+Promotion boundary: BB-017 implements execution/review generation fencing, explicit takeover, concrete Backend Core session/effect recovery and non-mutating QA recovery on PR #83. Promotion is reflected in the Agentic Application worktree state/contracts/workflow/decisions; merge remains gated by exact-head CI and review.
 
 ## Question
 
@@ -49,28 +53,44 @@ lease expired
 
 ## Backend recovery
 
-Backend is mutating. Before an interrupted Backend stage can be retried or continued, the concrete application recovery path must restore/reconcile its durable Core execution/effect authority.
+Backend is mutating. Before an interrupted Backend stage can be retried or continued, the concrete application recovery path restores/reconciles its durable Core execution/effect authority.
+
+The implemented BB-017 composition persists the Backend Core session plus AVO action-effect journal through the concrete `createJsonBackendSessionStore(...)` and then recovers the exact Backend WorkOrder/Context.
+
+An **absence** of persisted Core state is usable as recovery evidence only when the configured SessionStore explicitly declares durable recovery authority. `createJsonBackendSessionStore(...)` declares `supportsDurableRecovery: true`; the default in-memory store does not. Therefore an empty volatile store fails closed instead of being interpreted as proof that no interrupted external effect occurred.
 
 Outcomes:
 
 ```text
-confirmed effect
-  -> consume/apply confirmed effect truth without blind external redispatch
+no persisted Core session + durable-recovery store authority
+  -> normal fresh execution may start
+
+no persisted Core session + no durable-recovery authority
+  -> block; empty volatile state does not prove effect absence
+
+confirmed effect on the original candidate
+  -> close interrupted variation
+  -> replay same strategy/session
+  -> consume confirmed effect result without external redispatch
 
 safe idempotent retry
   -> retry only under Core replay policy/action-key semantics
 
 unknown / non-reconcilable
   -> block or escalate; do not redispatch
+
+multiple mutation effects / candidate divergence /
+already-advanced candidate without durable Worker semantic result
+  -> block / require reassessment; do not invent a result
 ```
 
-Current Backend Worker does not yet persist the Core session/effect authority required across process death; BB-017 must close that concrete integration gap rather than treating Blackboard checkpoint state as effect truth.
+A recovered normal Backend result still passes the ordinary lineage, evidence and completion policy. Recovery does not self-authorize Backend acceptance.
 
 ## QA recovery
 
 QA is non-mutating at the application environment boundary. An interrupted QA attempt may be retried against the exact persisted accepted Backend revision/artifact handoff **after** the old execution generation is invalidated.
 
-This does not make stale QA results valid; generation fencing still prevents an abandoned attempt from committing after takeover.
+This does not make stale QA results valid; generation fencing prevents an abandoned attempt from committing after takeover.
 
 ## Review fencing
 
@@ -80,9 +100,9 @@ Rescheduling an interrupted review changes the generation. Evidence/decision/att
 
 ## Recovery visibility
 
-Fresh-session state must distinguish interrupted work that requires recovery from ordinary runnable work.
+Fresh-session state exposes the current `claimGeneration`, `reviewGeneration`, `activeReview` and ordinary Blackboard lifecycle state.
 
-The concrete BB-017 storage/state shape may be chosen from implementation pressure, but it must preserve:
+The implemented semantics preserve:
 
 ```text
 interrupted != safe to retry
@@ -90,11 +110,13 @@ recovery requested != recovery reconciled
 recovery reconciled != accepted
 ```
 
+`CLAIMED` with the current generation identifies the active execution attempt; later `REOPENED`, `BLOCKED`, `PENDING_REVIEW` or other ordinary lifecycle state records the result of the recovered stage. No separate lease/recovery state machine is introduced.
+
 ## Core boundary
 
-This decision does not add a generic Core lifecycle/recovery facade and does not reopen D005 by itself.
+This decision does not add a generic Core lifecycle/recovery facade and does not reopen D005.
 
-BB-017 should first compose the existing Core effect/recovery primitives into the concrete Backend recovery path. Further abstraction requires additional repeated consumer evidence.
+BB-017 composes the existing Core session/effect/recovery primitives in the concrete Backend vertical. Further abstraction requires additional repeated consumer evidence.
 
 ## Non-goals
 
@@ -105,17 +127,38 @@ This decision does not introduce:
 - exactly-once external effects;
 - a generic recovery DSL/registry;
 - reviewer prose as recovery authority;
-- Blackboard checkpoint state as proof of effect completion.
+- Blackboard checkpoint state as proof of effect completion;
+- empty non-durable memory as proof of effect absence;
+- a generic Core recovery facade.
+
+## Promotion targets
+
+- `docs/worktree/agentic-application/state.md`
+- `docs/worktree/agentic-application/contracts.md`
+- `docs/worktree/agentic-application/workflow.md`
+- `docs/worktree/agentic-application/decisions.md`
 
 ## Evidence
 
-- `packages/agentic-system/src/blackboard-orchestrator.js`: current owner-only claim fencing and stranded `CLAIMED`/`REVIEWING` behavior;
-- `packages/agentic-system/src/durable-backend-qa.js`: claim-before-execute plus durable completed-stage checkpoints;
-- `packages/agentic-system/src/backend-worker.js`: current per-execution Core harness with default in-memory session state;
-- `packages/agentic-system/src/qa-worker.js`: non-mutating QA environment boundary;
+Research/acceptance evidence:
+
+- `packages/agentic-system/src/blackboard-orchestrator.js`: pre-BB-017 stranded `CLAIMED`/`REVIEWING` pressure;
+- `packages/agentic-system/src/durable-backend-qa.js`: claim-before-execute and durable stage checkpoints;
 - `packages/core-harness/test/recovery-composition.test.js`: confirmed-effect consumption, fail-closed ambiguity and idempotent retry/reference recovery composition;
 - BB-016 research artifact `../knowledge/bb016-interrupted-work-recovery.md`;
 - PR #82 application-recovery/Core-effect review and CI.
+
+Implementation/promotion evidence:
+
+- `packages/agentic-system/src/blackboard-orchestrator.js`: claim/review generations plus explicit recovery transitions;
+- `packages/agentic-system/src/session-handoff.js`: attempt generation and active-review continuation projection;
+- `packages/agentic-system/src/backend-session-store.js`: concrete durable Backend Core/effect session store and explicit durable-recovery authority;
+- `packages/agentic-system/src/backend-worker.js`: effect-aware Backend recovery with fail-closed empty non-durable state;
+- `packages/agentic-system/src/backend-application.js`: recovered result composition through ordinary completion policy;
+- `packages/agentic-system/src/durable-backend-qa.js`: concrete Backend/QA interrupted-stage recovery;
+- `packages/agentic-system/test/wave-d.test.js`: stale execution/review generation fencing;
+- `packages/agentic-system/test/interrupted-recovery.test.js`: empty non-durable fail-closed, confirmed no-redispatch, same-key idempotent retry and non-reconcilable block contracts;
+- PR #83 Node 20/22/24 source/test matrix passed before current-doc promotion; final exact-head CI gates merge.
 
 ## What would change this decision
 

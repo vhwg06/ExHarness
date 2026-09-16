@@ -114,10 +114,11 @@ test("a fresh process/session resumes pending work and artifact refs from Blackb
       items: [workItem()]
     });
 
-    await orchestrator.claim({ itemId: "BB-200", owner: "session-a" });
+    const claim = await orchestrator.claim({ itemId: "BB-200", owner: "session-a" });
     await orchestrator.submit({
       itemId: "BB-200",
       owner: "session-a",
+      generation: claim.result.claimGeneration,
       submission: {
         revision: "rev-session-a",
         artifactRefs: [
@@ -144,6 +145,7 @@ test("a fresh process/session resumes pending work and artifact refs from Blackb
     ]);
     assert.equal(resumed.lifecycle.pendingReview[0].submittedBy, "session-a");
     assert.equal(resumed.lifecycle.pendingReview[0].submission.revision, "rev-session-a");
+    assert.equal(resumed.lifecycle.pendingReview[0].claimGeneration, 1);
   });
 });
 
