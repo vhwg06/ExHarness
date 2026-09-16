@@ -740,28 +740,30 @@ BB-022
 question/work: Build a reproducible application evaluation and evidence-report pipeline supporting BB-005.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 depends-on: [BB-004, BB-011, BB-012]
-remaining-work:
-  - define versioned task/scenario inputs and a runnable Backend/QA evaluation entrypoint
-  - measure task outcomes, false completion, handoff integrity, remediation, context cost and Advisor use
-  - include restart, unavailable-artifact and review/recovery scenarios supported by the current implementation
-  - persist run configuration, implementation revision, artifact/evidence refs and comparable outcome reports
-  - distinguish deterministic contract fixtures from real-provider/project evaluation and record missing infrastructure explicitly
+remaining-work: []
 acceptance-criteria:
   - another session can reproduce fixture runs from durable inputs and inspect why each outcome was assigned
   - reports separate role acceptance from Board completion and missing/inconclusive evidence from success
   - baseline comparisons identify regressions without inventing production effectiveness from fixture scores
   - real-task evaluation protocol and baseline-derived acceptance thresholds are documented for BB-005
 submission:
+  - PR #78
 review-requirements: [evaluation-method review, application/code review]
 reviews: []
-artifact-refs: []
+artifact-refs:
+  - scripts/agentic-backend-qa-eval.mjs
+  - artifacts/agentic-backend-qa-reference-eval.json
+  - docs/worktree/agentic-application/evaluation.md
+  - docs/living/knowledge/bb022-agentic-evaluation-protocol.md
 evidence-refs:
   - package.json
   - packages/agentic-system/test/durable-backend-qa.test.js
   - packages/agentic-system/test/wave-d.test.js
+  - CI run #1215 green on living-doc-impact and Node 20/22/24
+  - deterministic reference result declares productionEvidence=false
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; tooling child of BB-005, which retains ownership of production evaluation and abstraction conclusions
