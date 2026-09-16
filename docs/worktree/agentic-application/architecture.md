@@ -57,7 +57,7 @@ JSON-backed Blackboard store
         +-> resume BLOCKED -> REOPENED
         +-> supersede unfinished work
         +-> submit immutable result refs
-        +-> extend bounded work/dependency graph for current coordination target
+        +-> extend bounded work/dependency/review graph for current coordination target
         +-> record Worker-requested or PM-required review obligations
         +-> begin one explicit review
         +-> record assessment
@@ -71,7 +71,7 @@ JSON-backed Blackboard store
                +-> NON_ACTIONABLE -> no Board work
 ```
 
-`extendWorkGraph(...)` is an Orchestrator-owned concrete mutation primitive. It may add fresh READY work and dependencies only for the current target or work created in that same extension, preserves idempotent replay of the same fresh work, rejects conflicting duplicate work and validates the complete dependency graph before commit.
+`extendWorkGraph(...)` is an Orchestrator-owned concrete mutation primitive. It binds mutation to an exact expected target lifecycle tuple, then atomically applies fresh READY work, bounded dependency edges, coordination refs/evidence, blockers and PM-sourced review requirements in one Blackboard transaction. It permits dependency extension only for the current target or work created in that same extension, rejects forged fresh-work lifecycle history and conflicting duplicate work, and validates the complete dependency graph before commit.
 
 `createJsonBlackboardStore(...)` remains the durable local Board store used by this lifecycle.
 
@@ -147,15 +147,18 @@ session handoff + exact project identity
                     v
              ApplicationOrchestrator
               +-> extendWorkGraph(...)
-              +-> requireReview(...)
+              |     [exact target fence
+              |      + work/deps/refs/blockers/review requirements atomically]
               +-> beginReview(...)
 ```
 
-PM proposal and SA assessment are application-local, ref-only durable artifacts. They are proposal/judgment state, not lifecycle authority. The controller re-reads the project-bound handoff, rejects project/root/target-state drift, checks SA evidence refs against the current target and only then asks the Orchestrator to apply canonical graph/review changes.
+PM proposal and SA assessment are application-local, ref-only durable artifacts. They are proposal/judgment state, not lifecycle authority. The controller reconstructs the project-bound handoff, validates project/root/target/evidence semantics, persists a content-addressed proposal and then asks the Orchestrator to re-check the exact target lifecycle state inside the canonical mutation transaction before publishing any graph/review change.
 
 PM may propose prerequisite work, dependency edges, blockers that optionally link existing unresolved work and PM-sourced review requirements grounded by a durable SA assessment. PM cannot rewrite user intent or carry architecture/completion/review verdict authority. SA may assess architecture evidence and require architecture review, but cannot own project priority, dependency/timeline mutation or lifecycle transitions.
 
-A no-op PM proposal is a non-mutating fallback, but it is still checked against the exact current target lifecycle state. Reapplying the same accepted graph extension is idempotent; stale or conflicting proposal state fails closed. Fresh-session recovery follows Blackboard artifact refs and reconstructs only coordination artifacts that have been canonically linked from the Board.
+A no-op PM proposal is a non-mutating fallback, but it is still checked against the exact current target lifecycle state. For a mutating proposal, the proposal ref is linked in the same canonical transaction as its graph/review effects. A later retry that observes that exact ref already linked treats the original atomic application as complete instead of reapplying a now-stale lifecycle tuple. An artifact written without a successful Board mutation remains orphaned and is not project lifecycle truth.
+
+Fresh-session recovery follows Blackboard artifact refs and reconstructs only coordination artifacts that have been canonically linked from the Board.
 
 ## Boundaries visible in source
 
@@ -168,8 +171,9 @@ A no-op PM proposal is a non-mutating fallback, but it is still checked against 
 - `ApplicationOrchestrator` owns durable Blackboard lifecycle transitions; Worker submission alone cannot produce `DONE`.
 - bounded PM/SA components can propose or assess coordination state but cannot mutate Blackboard directly.
 - PM and SA receive separate context projections; there is no universal horizontal-role context.
-- PM coordination changes are validated against exact project/root/target state before Orchestrator mutation.
-- SA assessment refs must remain grounded in evidence currently linked to the target work.
+- PM proposal validation outside the transaction is advisory; the Orchestrator re-fences the exact target lifecycle tuple inside the canonical mutation transaction.
+- PM graph/ref/blocker/review-requirement effects are one atomic Board mutation, not a sequence of partially authoritative writes.
+- SA context and persisted assessment refs must remain grounded in evidence currently linked to the target work.
 - partial checkpoints are continuation state, not acceptance state.
 - review requirements distinguish Worker request from PM requirement; application orchestration must not fabricate either source.
 - rejected/inconclusive review reopens current work; follow-up creation is a separate reconciliation decision.
