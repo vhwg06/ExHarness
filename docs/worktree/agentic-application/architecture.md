@@ -68,6 +68,7 @@ JSON-backed Blackboard store
         +-> resume BLOCKED -> REOPENED
         +-> supersede unfinished work
         +-> submit immutable result refs
+        +-> extend bounded work/dependency graph for current coordination target
         +-> record Worker-requested or PM-required review obligations
         +-> begin one explicit review
         +-> record assessment
@@ -80,6 +81,8 @@ JSON-backed Blackboard store
                +-> NEW_WORK -> CREATE with origin provenance
                +-> NON_ACTIONABLE -> no Board work
 ```
+
+`extendWorkGraph(...)` is an Orchestrator-owned concrete mutation primitive. It may add fresh READY work and dependencies only for the current coordination target or work created in that extension. The exact expected target lifecycle tuple is rechecked inside the same Blackboard transaction; graph changes, artifact/evidence refs, blockers and grounded PM review requirements commit atomically; the full dependency graph is validated before persistence. A replay is accepted only when the proposal ref is directly linked as a Board artifact ref and the proposal's graph/blocker/review effects are still established; a submission-only or otherwise forged ref is not a commit receipt. Conflicting duplicate work fails closed, and adding a PM review requirement never clears an existing blocker.
 
 `createJsonBlackboardStore(...)` persists durable Board state through its fenced revision chain so checkpoints, pending review and submitted refs survive a new Orchestrator instance/process session.
 
@@ -139,6 +142,45 @@ The workflow persists validated Backend and QA objectives before execution, so l
 
 Backend completion and QA completion remain role-local decisions. QA acceptance creates a final application submission but does not authorize Blackboard `DONE` and does not impersonate a Worker review request. Project/PM review requirement remains a separate authority path.
 
+## Bounded PM / SA coordination
+
+The application now has one concrete horizontal coordination slice rather than a generic role framework:
+
+```text
+session handoff + exact project identity
+        |
+        +-> SA context
+        |     +-> target work
+        |     +-> architecture facts
+        |     +-> current evidence refs
+        |     -> durable SA assessment ref
+        |
+        +-> PM context
+              +-> intent
+              +-> bounded relevant work/dependencies
+              +-> coordination facts
+              +-> optional SA assessment ref
+              -> durable PM proposal ref
+                    |
+                    v
+          createPmSaCoordinationController(...)
+                    |
+                    v
+             ApplicationOrchestrator
+              +-> extendWorkGraph(...)
+              |     +-> exact-target fence
+              |     +-> graph/refs/blockers
+              |     +-> grounded PM review requirements
+              |     -> one atomic Blackboard transaction
+              +-> beginReview(...)
+```
+
+PM proposal and SA assessment are application-local, ref-only durable artifacts. They are proposal/judgment state, not lifecycle authority. The controller re-reads the project-bound handoff, rejects project/root/target-state drift, checks SA evidence refs against the current target and only then delegates canonical mutation to the Orchestrator.
+
+PM may propose prerequisite work, dependency edges, blockers that optionally link existing unresolved work and PM-sourced review requirements grounded by a durable SA assessment. PM cannot rewrite user intent or carry architecture/completion/review-verdict authority. SA may assess architecture evidence and require architecture review, but cannot own project priority, dependency/timeline mutation or lifecycle transitions. Neither role writes Blackboard state directly.
+
+A no-op PM proposal is a non-mutating fallback, but it is still checked against the exact current target lifecycle state. Reapplying an accepted proposal is idempotent only after the controller verifies both its direct canonical Board ref and the effects that ref is supposed to represent. Coordination recovery likewise dereferences only direct Board artifact refs, not refs that merely appear inside a submission. A PM review requirement never clears an existing blocker. Orphan or spoofed coordination refs are not project lifecycle truth.
+
 ## Boundaries visible in source
 
 - Application contracts own required semantic context and completion semantics.
@@ -150,18 +192,20 @@ Backend completion and QA completion remain role-local decisions. QA acceptance 
 - Backend -> QA carries artifact references and acceptance provenance, not copied artifact contents.
 - `BackendAdvisor` is a narrow bounded-judgment component; it is not dispatch or correctness authority.
 - `ApplicationOrchestrator` owns durable Blackboard lifecycle transitions; Worker submission alone cannot produce `DONE`.
+- bounded PM/SA components can propose or assess coordination state but cannot mutate Blackboard directly.
+- PM and SA receive separate context projections; there is no universal horizontal-role context.
+- PM coordination changes are fenced against exact project/root/target state at the canonical mutation boundary.
+- SA assessment refs must remain grounded in evidence currently linked to the target work.
 - partial checkpoints are continuation state, not acceptance state.
 - review requirements distinguish Worker request from PM requirement; application orchestration must not fabricate either source.
 - rejected/inconclusive review reopens current work; follow-up creation is a separate reconciliation decision.
 - application checkpoint persistence does not prove external-effect completion; Core effect/recovery authority remains separate.
 
-## Not yet implemented as current source roles
-
-The promoted architecture decision D003 distinguishes horizontal PM and SA semantics and vertical context-bound reviewers. Concrete PM context/role execution, SA context/role execution and vertical reviewer slices are not implemented yet and therefore are not claimed here as current source behavior.
-
 ## Abstractions that still do not exist
 
 There is no generic `Worker<C,R>`, generic `WorkOrder<C,R>`, generic Advisor, role registry, workflow graph, Teacher registry or Reviewer registry in current source.
+
+The PM/SA implementation is a concrete application-local coordination controller plus concrete contracts/store; it is not a generic role runtime, generic horizontal-role framework or parallel lifecycle engine.
 
 `ApplicationOrchestrator` is concrete Board/workflow control code, not a generic workflow graph/DSL or a second agent runtime.
 

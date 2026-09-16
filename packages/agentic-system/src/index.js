@@ -67,6 +67,20 @@ export {
   sessionHandoffFromBlackboard
 } from "./session-handoff.js";
 export {
+  PmSaCoordinationKind,
+  buildPmCoordinationContext,
+  buildSaArchitectureContext,
+  createPmSaCoordinationController,
+  definePmCoordinationProposal,
+  defineSaArchitectureAssessment
+} from "./pm-sa-coordination.js";
+export {
+  PmSaCoordinationArtifactKind,
+  createJsonPmSaCoordinationArtifactStore,
+  isPmSaCoordinationArtifactRef,
+  requirePmSaCoordinationArtifactStore
+} from "./pm-sa-coordination-store.js";
+export {
   BackendQaWorkflowStage,
   createDurableBackendQaWorkflow
 } from "./durable-backend-qa.js";

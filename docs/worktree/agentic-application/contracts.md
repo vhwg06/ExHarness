@@ -258,9 +258,36 @@ NON_ACTIONABLE
 
 A finding that proves the current acceptance obligation remains unmet reopens/narrows that same item instead of manufacturing replacement work.
 
-## Horizontal role decision vs current implementation
+## Bounded horizontal PM / SA coordination contract
 
-D003 promotes PM as horizontal project coordination and SA as horizontal architecture only. Concrete PM context/role execution, SA context/role execution and vertical reviewer Workers are not implemented yet and are not current-source contracts here.
+D003 remains the semantic authority split: PM coordinates project obligations; SA assesses architecture. BB-021 implements only a concrete application-local slice of those horizontal semantics.
+
+`createPmSaCoordinationController(...)` consumes the project-bound session handoff and a concrete PM/SA coordination artifact store. PM and SA receive separate bounded context projections rather than one universal role context.
+
+SA assessment is evidence-bound judgment state:
+
+- it binds one project, durable root intent, target item/work and one or more current target evidence refs;
+- it may state whether architecture review is required and record the architecture finding;
+- it cannot carry dependency, priority, timeline, lifecycle, completion or review-verdict authority;
+- stale/missing evidence or project/root/target drift fails before the assessment becomes applicable coordination input.
+
+PM proposal is bounded coordination proposal state:
+
+- it binds the exact current target lifecycle tuple `{itemId, status, claimGeneration, reviewGeneration}`;
+- it may propose fresh prerequisite work, dependency edges for the current target/new work, blockers and PM-sourced review requirements;
+- review requirements that claim architecture need must reference a durable current SA assessment that actually requires architecture review;
+- it cannot rewrite user intent or carry architecture/completion/review-verdict authority;
+- even an empty/no-op proposal must still match the current target state before returning non-mutating fallback.
+
+Roles do not mutate Blackboard directly. The controller validates project/root/target/evidence authority and delegates canonical mutation to `ApplicationOrchestrator`.
+
+`extendWorkGraph(...)` is the concrete Orchestrator-owned graph-extension primitive used by this slice. It adds only fresh READY work, permits dependency extension only for the current target or work created in the same call, rechecks the exact expected target inside the same Blackboard transaction, and atomically commits graph changes, artifact/evidence refs, blockers and PM review requirements. Conflicting duplicate definitions, non-coordinatable target states and invalid complete dependency graphs fail before persistence. A PM review requirement does not clear an existing blocker.
+
+A proposal ref is not sufficient replay authority by itself. Replay requires that the ref is a direct target Board artifact ref and that the proposal's expected new-work provenance, dependency edges, blockers, PM review requirements and grounded SA refs/evidence are still established. A ref present only in a submission, or a direct ref injected by an unrelated checkpoint without the proposal effects, fails closed. `recoverCoordination()` similarly dereferences only direct Board artifact refs rather than submission-contained refs.
+
+Durable PM proposal and SA assessment artifacts become continuation-relevant only after their refs are canonically linked with the corresponding Board effects. An orphan artifact written before a failed canonical mutation does not become project lifecycle truth.
+
+This implementation is not a generic PM/SA agent runtime, role registry, horizontal-role framework, workflow DSL or vertical reviewer implementation.
 
 ## Advisor contract
 
