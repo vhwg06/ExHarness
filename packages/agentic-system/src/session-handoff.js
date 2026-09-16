@@ -199,17 +199,18 @@ export function createSessionHandoffSurface({ orchestrator }) {
     "SessionHandoffSurface requires an ApplicationOrchestrator"
   );
 
+  async function read() {
+    return sessionHandoffFromBlackboard(await orchestrator.readBlackboard());
+  }
+
   return Object.freeze({
     async initialize({ userIntent, items = [] }) {
       const intent = defineUserIntent(userIntent);
       invariant(Array.isArray(items), "items must be an array");
       const seeded = [intentRootItem(intent), ...items.map((item) => initialWorkItem(item, intent))];
       await orchestrator.seed(seeded);
-      return this.read();
+      return read();
     },
-
-    async read() {
-      return sessionHandoffFromBlackboard(await orchestrator.readBlackboard());
-    }
+    read
   });
 }
