@@ -27,8 +27,12 @@ These constraints describe current Core authority boundaries; they are not a fut
 
 ## Recovery/effects
 
-- effect identity/recovery state remain separate from semantic memory and evaluation state;
-- replay/observation is machine-first where semantics are known;
-- non-reconcilable ambiguity is not reconstructed from model prose or traces.
+- effect identity/recovery state remain separate from candidate lineage, semantic memory, evaluation state and application completion;
+- public built-in `avo.act` persists an effect operation before dispatch and records confirmed results independently from the enclosing Core session state;
+- deterministic `actionKey` is operation identity, not evidence that an effect completed;
+- a durably `CONFIRMED` effect result may be reused to finish Core state after a persistence crash without dispatching the external effect again;
+- ambiguous `DISPATCHED`/`UNKNOWN` state fails closed by default with `NON_RECONCILABLE` replay semantics;
+- replay/observation is machine-first only when the environment adapter explicitly declares `PURE`, `IDEMPOTENT` or `OBSERVABLE` semantics;
+- non-reconcilable ambiguity is not reconstructed from model prose, candidate state or traces.
 
 Open integration problems implied by these current boundaries are tracked in `../../living/blackboard.md`.
