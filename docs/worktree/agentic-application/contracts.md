@@ -115,6 +115,12 @@ Only the trusted DecisionArtifact verdict is applied to Board state.
 
 Trust verification runs before the Board mutation transaction; the transaction re-checks that the active review target/generation has not changed before committing the assessment.
 
+## Terminal cancellation contract
+
+Once a Blackboard item is `SUPERSEDED`, later transactions cannot remove or mutate that item. Cancellation preserves the exact stored submission, review, evidence, finding and blocker history for inspection while preventing delayed reconciliation from reviving the item or creating follow-up work from it.
+
+This invariant is enforced at the public Application Orchestrator transaction boundary, so `NON_ACTIONABLE`, `CURRENT_WORK`, `EXISTING_WORK`, `NEW_WORK` and any equivalent stale mutation path fail before persistence when they would change an already-superseded item. `SUPERSEDED` is therefore terminal unless a separate future contract explicitly introduces a new transition.
+
 ## Durable Blackboard store contract
 
 The public `createJsonBlackboardStore(...)` exposes read + transactional mutation over a concrete local filesystem store.
