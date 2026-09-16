@@ -5,7 +5,11 @@ Source-synchronized ExHarness Core checkpoint. Open Core gaps/problems live only
 ## Current implemented capabilities
 
 - `createHarness()` composes persistence, environment actions, observability, supervision, recovery gating, search investment and AVO.
-- `createAVOHarness()` composes AVO variation control with `AgentRuntime`; built-in `avo.act` currently reaches `core.act()` as a normal capability.
+- public `createHarness()` / `createAVOHarness()` route built-in `avo.act` through a durable action-effect boundary before Core candidate/session persistence;
+- built-in AVO effect operations persist `INTENDED -> DISPATCHED -> CONFIRMED | UNKNOWN` in a sidecar journal keyed by deterministic action identity;
+- a durably confirmed action result can be reused after Core-state persistence failure without dispatching the external action again;
+- ambiguous built-in action effects default to `NON_RECONCILABLE`; replay requires explicit adapter `PURE | IDEMPOTENT | OBSERVABLE` semantics;
+- effect operations remain separate from candidate lineage, evaluation, semantic memory and application completion;
 - persistent AVO work state tracks candidates, observations, verifications, evaluations, knowledge, variations, search-investment decisions, trust artifacts, lineage, trajectory and supervision;
 - `createResumableAgentRuntime()` snapshots runtime configuration, event history and agent-scoped resource/live-object activity with compatibility checks and explicit authority rebinding;
 - `recoverInterruptedVariation()` closes an interrupted running variation as `INTERRUPTED`; it is separate from external-effect reconciliation;
