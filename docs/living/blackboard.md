@@ -1007,7 +1007,7 @@ Here, a decision chain means explicit hypotheses, concise rationales, artifact p
 | Architecture composition from existing primitives | BB-032 | BB-033 | P2 |
 | Evidence-gated self-upgrade loop | BB-034 | BB-035 | P1 |
 
-BB-023/024/025 are delivered. BB-028/030/032 research boundaries are accepted and their bounded delivery children are eligible; BB-033 is already occupied by active PR #107. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. BB-034 remains under remediation in PR #105, and BB-035 additionally waits for BB-027 before an application-level upgrade pilot can proceed.
+BB-023/024/025 are delivered. BB-028/030/032 research boundaries are accepted; BB-033 is delivered by PR #107. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. BB-034 and D016 are accepted after PR #105 remediation; BB-035 remains blocked only on BB-027 before an application-level upgrade pilot can proceed.
 
 ```text
 BB-028
@@ -1175,27 +1175,34 @@ BB-033
 question/work: Implement only the concrete composition improvement accepted by BB-032.
 kind: IMPLEMENTATION
 priority: P2
-status: READY
+status: DONE
 owner:
 depends-on: [BB-032]
-remaining-work:
-  - implement the accepted bounded pilot using existing primitives before introducing shared abstractions
-  - persist configuration, candidate/baseline revisions and evidence refs needed for reproduction and continuation
-  - reconcile current documentation only after the corresponding behavior is implemented and verified
+remaining-work: []
 acceptance-criteria:
   - Selected consumers execute the same acceptance/recovery scenarios through the proposed composition without changing authority.
   - Effect confirmation, role acceptance and Board DONE remain separate and invalid evidence fails closed.
   - A no-change research conclusion supersedes this item with provenance instead of forcing an abstraction.
 submission:
+  - PR #107
 review-requirements: [application/code review, independent outcome/authority review]
-reviews: []
-artifact-refs: []
+reviews:
+  - application/code review PASS on exact implementation head b767df168ef74810fbaf88475e7dd7d82c50ec76
+  - independent outcome/authority review PASS on the same exact head
+artifact-refs:
+  - docs/living/knowledge/bb033-backend-preflight-implementation.md
+  - packages/agentic-system/src/backend-application.js
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/test/bb032-composition-boundary-research.test.js
+  - docs/worktree/agentic-application/backend-preparation.md
 evidence-refs:
   - BB-032
   - docs/living/knowledge/bb032-composition-boundary.md
+  - exact-head CI #1720 green on living-doc-impact and Node 20/22/24
+  - merge commit e469dccec8725a300381e0368e83dd1096951ed1
 blockers: []
 follow-up-refs: []
-origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-032; active branch/PR ownership must be checked before claim.
+origin: INTENT-exharness-agentic-system; delivered bounded Backend preparation boundary from BB-032 without widening Core or lifecycle authority.
 ```
 
 ```text
@@ -1203,20 +1210,21 @@ BB-034
 question/work: Research a bounded self-improvement loop that proposes and evaluates upgrades from observed project failures using existing Core primitives.
 kind: RESEARCH
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: []
-remaining-work:
-  - remediate review blockers on experiment grounding, ActionIntent authority enforcement, persisted CUSTOM payload protocol and budget/held-out claims
-  - rerun architecture-boundary and evaluation-method review on the remediated exact head
+remaining-work: []
 acceptance-criteria:
   - Baseline and candidate are compared under recorded conditions with held-out outcomes; the candidate cannot rewrite its own evaluator or acceptance thresholds.
   - A reflection proposes an experiment but cannot accept, deploy, merge or grant new authority; approved lifecycle transitions remain with application orchestration.
   - The report includes negative results, regression checks, cost and rollback criteria; fixture success alone does not justify production rollout.
 submission:
-  - merged research PR #95; acceptance withheld pending remediation PR #105
+  - merged research PR #95
+  - remediation PR #105
 review-requirements: [architecture-boundary review, evaluation-method review]
-reviews: []
+reviews:
+  - architecture-boundary review PASS on exact remediation head ca5157f8ecfa14a6deb95e4e7d8ecf63ba11295a
+  - evaluation-method review PASS on the same exact head
 artifact-refs:
   - docs/living/knowledge/bb034-self-upgrade-loop.md
   - docs/living/knowledge/bb034-self-upgrade-loop-probe.mjs
@@ -1227,11 +1235,12 @@ evidence-refs:
   - packages/core-harness/src/semantic-memory-evolution.js
   - packages/core-harness/src/search-investment.js
   - scripts/agentic-backend-qa-eval.mjs
-  - open remediation PR #105 owns the current acceptance blockers
-blockers:
-  - exact remediation head must satisfy both required reviews before D016/BB-034 acceptance
+  - exact-head CI #1695 green on living-doc-impact and Node 20/22/24
+  - D016 accepted after the required reviews; productionEvidence=false and generalizationEvidence=false
+  - merge commit 854432d6af1aaac3fd27e49823ef2984923d1357
+blockers: []
 follow-up-refs: [BB-035]
-origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Grounded cognition, semantic-memory evolution, candidate evaluation and application reference runs exist; they do not establish a validated autonomous upgrade process for the project itself.
+origin: INTENT-exharness-agentic-system; accepted bounded self-upgrade experiment boundary; no autonomous rollout/runtime authority is created.
 ```
 
 ```text
@@ -1254,9 +1263,10 @@ submission:
 review-requirements: [application/code review, independent outcome/authority review]
 reviews: []
 artifact-refs: []
-evidence-refs: [BB-034]
+evidence-refs:
+  - BB-034
+  - docs/living/decisions/D016-evidence-gated-self-upgrade-proposal-boundary.md
 blockers:
-  - BB-034 must produce an accepted scope and evidence-backed evaluation contract
   - BB-027 must supply durable research continuation
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-034
