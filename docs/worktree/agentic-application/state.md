@@ -103,7 +103,9 @@ The older `runBackendThenQaObjective(...)` direct composition remains available 
 
 `createJsonBackendSessionStore(...)` is the current local durable SessionStore used when a Backend deployment needs process-crash recovery.
 
-It stores one Core session/effect-journal record per encoded session id using revision-aware writes, local filesystem locking and temp-file rename, and explicitly declares `supportsDurableRecovery: true`. That declaration is the concrete authority that permits recovery to interpret an absent persisted session as absent durable Core execution/effect state. A generic/default SessionStore without that declaration cannot make the same inference.
+It stores the Core session/effect journal in an immutable single-successor revision chain per encoded Backend session id. A save may publish exactly one successor for its expected base revision through same-filesystem hard-link no-overwrite semantics; concurrent or stale writers from that base fail explicitly with `StoreConflictError` rather than replacing newer recovery authority. Temporary pre-publication files are not completion evidence, and elapsed lock age is not takeover authority. `lockStaleMs` remains only a compatibility input.
+
+The store explicitly declares `supportsDurableRecovery: true`. That declaration is the concrete authority that permits recovery to interpret an absent persisted session as absent durable Core execution/effect state. A generic/default SessionStore without that declaration cannot make the same inference.
 
 It is application infrastructure for the concrete Backend vertical, not a new generic Core lifecycle facade, distributed lease service or exactly-once effect guarantee.
 
