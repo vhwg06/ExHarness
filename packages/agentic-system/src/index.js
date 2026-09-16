@@ -59,6 +59,10 @@ export {
   defineUserIntent,
   sessionHandoffFromBlackboard
 } from "./session-handoff.js";
+export {
+  BackendQaWorkflowStage,
+  createDurableBackendQaWorkflow
+} from "./durable-backend-qa.js";
 export { createQaWorker } from "./qa-worker.js";
 export {
   createQaHandoffFromBackendRun,
