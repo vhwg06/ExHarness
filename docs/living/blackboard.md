@@ -402,7 +402,7 @@ artifact-refs:
   - docs/worktree/core-harness/workflow.md
 evidence-refs:
   - BB-007 concrete recovery-reference consumer in packages/core-harness/test/recovery-composition.test.js
-  - repository usage assessment found no second real caller repeating the full recovery sequence
+  - repository usage assessment found no second real consumer repeating the full recovery sequence
   - final exact-head CI run #1149
   - merge commit 1a506dce1e1f19f604ba47382e55c191d3c9152d
 blockers: []
@@ -817,7 +817,7 @@ submission:
 review-requirements: [persistence/concurrency review, application/code review]
 reviews:
   - persistence/concurrency + application/code review passed exact head baf175809c45b25b2bbee9e7a234aef7a0e0f9e6
-a rtifact-refs:
+artifact-refs:
   - packages/agentic-system/src/blackboard-store.js
   - packages/agentic-system/test/blackboard-store.test.js
   - docs/living/knowledge/bb023-blackboard-commit-fencing.md
