@@ -38,6 +38,19 @@ Attestation
 
 Writes validate artifact identity and digest. Reads require the exact `{ id, digest }` and validate the stored payload again before returning it. Rewriting a digest with different content is rejected.
 
+A final digest path is never opened for incremental mutation. Publication is:
+
+```text
+write complete unique temporary file
+ -> close temporary file
+ -> hard-link to the content-addressed final path with no-overwrite semantics
+ -> remove temporary file
+```
+
+A process failure before the hard-link publishes no canonical payload and a later retry can publish normally. A failure after the hard-link leaves a complete immutable final payload; an orphan temporary file is not authority. Competing identical writers converge on the same complete payload, while an existing different payload at the same digest fails closed.
+
+This is local process-reconstruction durability over a filesystem with same-filesystem hard-link support. It does not claim distributed storage or power-loss guarantees beyond the configured filesystem.
+
 The store is payload authority only. Blackboard remains lifecycle/ref state and does not copy trust-artifact payloads into work items.
 
 Accepted Backend and QA role-completion lineage follows write-before-ref ordering:
@@ -147,7 +160,7 @@ NEW_WORK
 NON_ACTIONABLE
 ```
 
-The project-acceptance controller does not create a parallel finding model or bypass `ApplicationOrchestrator.reconcileFinding(...)`.
+The project-acceptance controller does not create a parallel finding model or bypass `ApplicationOrchestrator.reconcileFinding(...)`. An accepted assessment with an unreconciled finding therefore remains `PENDING_RECONCILIATION`; the item cannot reach `DONE` until the existing reconciliation transition classifies that finding.
 
 ## Compatibility boundary
 
@@ -164,5 +177,8 @@ The current contract suite covers:
 - missing application review input failing before review dispatch;
 - trusted rejection reopening the same item, fresh-session Backend remediation, QA resubmission and later acceptance;
 - interrupted `REVIEWING` recovery with a new fenced review generation;
+- accepted-with-finding remaining `PENDING_RECONCILIATION` until the existing reconciliation transition runs;
 - trust decision persistence failure leaving Blackboard without the unpublished decision ref;
+- interrupted trust-artifact publication leaving no poisoned final digest path and succeeding on retry;
+- competing identical trust-artifact publications converging on one immutable final payload;
 - existing QA-remediation and durable workflow behavior through the full repository test matrix.
