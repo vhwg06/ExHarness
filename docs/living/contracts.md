@@ -38,10 +38,16 @@ docs/living/blackboard.md
 19. A session/orchestrator write-back preserves status, submission/result refs, artifacts/evidence, review state and newly discovered unresolved findings.
 20. Board completion does not automatically promote a design judgment; evidence/judgment/decision semantics remain distinct.
 21. Role-local completion does not automatically mean the enclosing Blackboard problem is complete.
+22. **Session is not project lifecycle.** Project-critical continuation state may not exist only in prior conversation/model context.
+23. A handoff-safe project must carry one durable user-defined intent root: objective plus explicit bullets/constraints supplied by the user.
+24. Every handoff-safe work item must trace directly or transitively to that durable user intent or to grounded follow-up provenance from such work.
+25. Blackboard remains the work tracker; durable work products remain external artifacts and the Board carries their refs.
+26. A fresh session must be able to recover current lifecycle state and artifact/evidence refs from `Blackboard + referenced artifacts` without previous-session context.
+27. A legacy Board without a durable user-intent root must fail closed as not session-handoff safe rather than guessing project intent from task descriptions.
 
 ## Knowledge invariants
 
-22. Evidence requires provenance.
-23. Judgment is derived from evidence and is not raw evidence itself.
-24. Audit is challenge, not automatic truth.
-25. Accepted/promoted knowledge may be reconciled when executable evidence contradicts it.
+28. Evidence requires provenance.
+29. Judgment is derived from evidence and is not raw evidence itself.
+30. Audit is challenge, not automatic truth.
+31. Accepted/promoted knowledge may be reconciled when executable evidence contradicts it.

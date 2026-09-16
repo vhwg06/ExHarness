@@ -8,10 +8,33 @@ It is shared operational state. It is **not** an actor and it is **not** correct
 
 Living system documents describe current source-backed reality only. If a document discovers something that is not true yet, that item belongs here before another session can work on it.
 
+## Durable project intent root
+
+```text
+id: INTENT-exharness-agentic-system
+source: USER
+objective: Build ExHarness as an agentic system whose project lifecycle can survive and hand off across arbitrary sessions through the Blackboard plus referenced artifacts.
+bullets:
+  - user defines ideas/objectives/constraints; PM manages rather than invents intent
+  - Blackboard remains the canonical work-lifecycle tracker
+  - Orchestrator owns lifecycle/dispatch/reconciliation authority
+  - specialized work/review remains bounded by concrete context and authority
+  - any fresh session must be able to resume from Blackboard + referenced artifacts
+constraints:
+  - project-critical continuation state must not live only in prior conversation/model context
+  - artifacts hold work products; Blackboard stores lifecycle state and refs
+  - concrete semantics before generic role/workflow abstractions
+```
+
+This root is durable project input, not a generated PM objective and not a correctness claim.
+
 ## Session protocol
 
 ```text
-ORCHESTRATOR READS BOARD
+FRESH SESSION
+  -> read durable project intent + Board
+  -> recover eligible/pending/blocked/review/reconciliation state
+  -> resolve only referenced artifacts/evidence needed for the next context
   -> choose only eligible unresolved work
   -> CLAIM
   -> resolve concrete work context
@@ -33,6 +56,26 @@ CLAIMED -> DONE
 is invalid.
 
 A later session must not redo `DONE` work unless new grounded evidence explicitly reopens it.
+
+Session is not project lifecycle. No project-critical continuation state may exist only in previous conversation/model context.
+
+## Session handoff
+
+A handoff-safe project must expose enough durable state for a fresh session to answer:
+
+```text
+what is the user's objective?
+what work exists?
+what can run now?
+what is already claimed?
+what is pending review or reconciliation?
+what is blocked or done?
+which artifact/evidence refs must be resolved to continue?
+```
+
+The Agentic Application session-handoff surface uses one durable user-intent root and rejects work that cannot trace directly or transitively to that root.
+
+Legacy Board construction without a durable intent root may still exist for tests/low-level compatibility, but it is not session-handoff safe and must not infer intent from task descriptions.
 
 ## Review initiation
 
@@ -91,7 +134,7 @@ The current runtime slice persists the following semantics; this Markdown projec
 ```text
 id: BB-XXX
 question/work: <gap/problem/work to resolve>
-status: READY | CLAIMED | PENDING_REVIEW | REVIEWING | BLOCKED | DONE | REOPENED | SUPERSEDED
+status: READY | CLAIMED | PENDING_REVIEW | REVIEWING | PENDING_RECONCILIATION | BLOCKED | DONE | REOPENED | SUPERSEDED
 owner: <session/agent only while claimed>
 depends-on: []
 remaining-work: []
@@ -102,7 +145,7 @@ artifact-refs: []
 evidence-refs: []
 blockers: []
 follow-up-refs: []
-origin: <parent/finding provenance for genuine follow-up work>
+origin: <root-intent or parent/finding provenance>
 ```
 
 The Board is operational state, not a diary and not an architecture document.
@@ -154,12 +197,10 @@ status: DONE
 result: delivered by PR #67
 ```
 
-## Agentic Application
-
 ```text
 BB-011
 question/work: Correct Blackboard completion authority and implement the first Orchestrator-owned durable review/follow-up lifecycle.
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: [BB-003]
 remaining-work: []
@@ -168,21 +209,49 @@ submission:
 review-requirements:
   - application/code review
   - architecture-boundary review
-reviews: []
+reviews:
+  - merged PR #70 after CI/review hardening
 artifact-refs:
   - packages/agentic-system/src/blackboard-orchestrator.js
   - packages/agentic-system/test/wave-d.test.js
 evidence-refs:
   - Wave D contract tests in PR #70
+  - merge commit 1cba83928c7bd320f431be08ba37a7a1d7e50968
 blockers: []
-follow-up-refs: [BB-004]
+follow-up-refs: [BB-004, BB-012]
 origin: governance correction discovered while pressure-testing Blackboard DONE semantics
+```
+
+## Agentic Application
+
+```text
+BB-012
+question/work: Make the Blackboard a durable session-handoff surface rooted in user-defined intent so any fresh session can resume from Board state + referenced artifacts without previous conversation context.
+status: PENDING_REVIEW
+owner:
+depends-on: [BB-011]
+remaining-work: []
+submission:
+  - PR #71
+review-requirements:
+  - application/code review
+  - session-handoff boundary review
+reviews: []
+artifact-refs:
+  - packages/agentic-system/src/session-handoff.js
+  - packages/agentic-system/test/session-handoff.test.js
+  - docs/living/decisions/D004-blackboard-session-handoff.md
+evidence-refs:
+  - session-handoff contract tests in PR #71
+blockers: []
+follow-up-refs: []
+origin: direct user objective defining Blackboard as the cross-session handoff boundary
 ```
 
 ```text
 BB-004
 question/work: Integrate the durable Orchestrator-owned application workflow with the concrete Backend accepted -> QA pending/running/completed path, including restart/recovery behavior.
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-003, BB-011]
 remaining-work:
@@ -197,8 +266,7 @@ review-requirements: []
 reviews: []
 artifact-refs: []
 evidence-refs: []
-blockers:
-  - BB-011 must establish trustworthy Board/review lifecycle first
+blockers: []
 follow-up-refs: []
 ```
 
@@ -344,4 +412,6 @@ Caching/freshness, MCP-first integration and semantic retrieval are not Board ga
 
 `docs/living/blackboard.md` remains the canonical repository coordination projection today.
 
-The Agentic Application now also has a JSON-backed durable Blackboard state primitive for executable orchestration. Replacing the Markdown coordination surface entirely is **not** claimed by this slice; any future convergence must preserve the same authority/state invariants and must not create two competing canonical Boards.
+The Agentic Application also has a JSON-backed durable Blackboard state primitive for executable orchestration. `createSessionHandoffSurface(...)` now proves a concrete handoff-safe projection over such Board state when exactly one durable user-intent root exists.
+
+Replacing the Markdown coordination projection entirely is **not** claimed by this slice; any future convergence must preserve the same authority/state/handoff invariants and must not create two competing canonical Boards.

@@ -52,6 +52,13 @@ export {
   createJsonBlackboardStore,
   defineBlackboardSnapshot
 } from "./blackboard-orchestrator.js";
+export {
+  SessionHandoffRootKind,
+  UserIntentSource,
+  createSessionHandoffSurface,
+  defineUserIntent,
+  sessionHandoffFromBlackboard
+} from "./session-handoff.js";
 export { createQaWorker } from "./qa-worker.js";
 export {
   createQaHandoffFromBackendRun,
