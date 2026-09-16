@@ -291,7 +291,7 @@ export function createJsonWorkSelectionDecisionStore({ path, fs = nodeFs }) {
     try {
       raw = JSON.parse(await fs.readFile(filePath, "utf8"));
     } catch (error) {
-      if (error?.code === "ENOENT") throw new Error(`${type} trust artifact unavailable: ${ref.id}`);
+      if (error?.code === "ENOENT") throw new Error(`work selection decision unavailable: ${ref.id}`);
       throw error;
     }
     const artifact = validateDecisionArtifact(raw);
