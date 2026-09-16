@@ -1196,7 +1196,7 @@ A useful research result must include runnable prototype evidence and a reviewab
 
 ## Research addons: measured value before adoption
 
-These are candidate research addons grounded in existing extension points, subject to the implementable-value gate above. Each must deliver a runnable experiment and implementation handoff for its named consumer. Their absence is not a defect. Existing persistence/cancellation fixes BB-023/024/025 remain higher urgency than optional addons.
+These are candidate research addons grounded in existing extension points, subject to the implementable-value gate above. Each must deliver a runnable experiment and implementation handoff for its named consumer. Their absence is not a defect. Existing correctness fixes BB-023/024/025 remain higher urgency than optional addons.
 
 | Research | Candidate addon | First value to measure |
 | --- | --- | --- |
