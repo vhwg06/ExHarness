@@ -20,7 +20,7 @@ Its shape includes repository-planning metadata such as `kind`, `priority`, rese
 
 `createSessionHandoffSurface(...)` reads exactly the Blackboard supplied to its Orchestrator. A handoff-safe snapshot requires exactly one durable `USER_INTENT_ROOT`; work must trace to that root. The handoff surface does not inspect repository Markdown.
 
-Repository usage search shows the JSON store instantiated in current tests/evaluation with temporary `blackboard.json` paths. No current production/repository entrypoint binds `docs/living/blackboard.md` and a JSON store as two writers of the same ExHarness project.
+Repository usage search shows current in-repository JSON-store instantiations in tests/evaluation with temporary `blackboard.json` paths. The API is caller-configurable, but current repository evidence does not establish an external production consumer. No current repository entrypoint binds `docs/living/blackboard.md` and a JSON store as two writers of the same ExHarness project.
 
 ### Missing identity/concurrency semantics
 
@@ -32,7 +32,7 @@ The repository Markdown Board has Git commit identity, but no runtime linkage to
 
 ## Concrete observed drift
 
-PR #78 supplied a useful observation without proving JSON/Markdown dual authority: after the evaluation PR merged, the repository Markdown Board still said BB-022 was `PENDING_REVIEW` until a separate reconciliation step.
+PR #78 supplied a useful observation without proving JSON/Markdown dual authority: after the evaluation PR merged, the repository Markdown Board still said BB-022 was `PENDING_REVIEW` and required a separate reconciliation step.
 
 That is **repository projection/lifecycle lag**, not evidence that a JSON Board disagreed with the Markdown Board. No same-project JSON Board was involved in that workflow.
 
