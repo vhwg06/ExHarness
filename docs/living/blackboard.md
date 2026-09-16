@@ -429,7 +429,33 @@ blockers:
 follow-up-refs: []
 ```
 
-Caching/freshness, MCP-first integration and semantic retrieval are not Board gaps merely because they are absent. They become Board work only when a concrete source demonstrates latency/cost/freshness or discovery pressure.
+```text
+BB-013
+question/work: Evaluate MCP 2026-07-28 as an Oracle capability/continuation boundary against the current concrete resolver semantics without prematurely making Oracle MCP-first.
+status: READY
+owner:
+depends-on: []
+remaining-work:
+  - map current repository/artifact resolution onto MCP capability calls while preserving application-owned context declaration and Oracle-owned resolution semantics
+  - keep Oracle work identity distinct from MCP request/task/trace identities; transport/session lifetime must never become Oracle lifecycle authority
+  - evaluate explicit input-required/task-handle continuation for long-running or multi-step probes, restart recovery and handoff
+  - define how observation/evidence provenance and freshness survive capability transport without turning tool results into correctness claims
+  - account for retry/effect ambiguity: a new MCP request after transport failure must not be treated as proof that an external effect did or did not happen
+  - determine whether MCP-backed source pressure produces a real third Oracle source/adapter before reopening the common-resolver abstraction question
+submission:
+review-requirements: []
+reviews: []
+artifact-refs:
+  - docs/worktree/oracle/state.md
+  - packages/agentic-system/src/oracle.js
+evidence-refs:
+  - https://modelcontextprotocol.io/specification/2026-07-28/changelog
+blockers: []
+follow-up-refs: [BB-009, BB-010]
+origin: direct user architectural pressure after reviewing MCP 2026-07-28 stateless request, explicit continuation and task-lifecycle changes
+```
+
+Caching/freshness and semantic retrieval are not Board gaps merely because they are absent. MCP is also **not** promoted as a required integration by BB-013; BB-013 records concrete user-directed evaluation pressure and must earn any architectural promotion through grounded implementation/review evidence.
 
 ## Storage
 
