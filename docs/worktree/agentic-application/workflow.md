@@ -13,6 +13,8 @@ parse objective
 
 Deterministic evidence failure/missing/inconclusive paths stay in application code. `BackendAdvisor` is invoked only for the source-implemented semantic-gap condition after required objective checks pass.
 
+Backend preparation is now an explicit read-only application phase before Worker/Core execution. Detailed current semantics, including durable source-failure handling and the `backendRecoveryRequired` fence, are in `backend-preparation.md`.
+
 When process-crash recovery is required, the concrete Backend Worker may use `createJsonBackendSessionStore(...)` so its Core session and AVO action-effect journal survive process reconstruction.
 
 ## Accepted Backend -> QA
@@ -56,15 +58,21 @@ State transitions:
 ```text
 BACKEND_PENDING
   |
+  +-- Backend repository/context failure --> BLOCKED
+  |                                         |
+  |                                       resume
+  |                                         |
+  +<----------------------------------------+
+  |
   | Backend ACCEPT
   v
 QA_PENDING
   |
-  +-- QA artifact/context failure --> BLOCKED
-  |                                   |
-  |                                 resume
-  |                                   |
-  +<----------------------------------+
+  +-- QA artifact/context failure ---------> BLOCKED
+  |                                         |
+  |                                       resume
+  |                                         |
+  +<----------------------------------------+
   |
   | QA issues
   v
@@ -87,9 +95,11 @@ PENDING_REVIEW
 
 The persisted checkpoint carries the validated workflow spec plus only the continuation state required by the current stage. Accepted Backend -> QA continuation carries the existing ref-only handoff and Backend acceptance-decision provenance rather than artifact payloads.
 
+A Backend source-resolution failure is persisted as application lifecycle state only when preparation fails before Worker/Core entry. If that outage happens while recovering an interrupted mutating Backend attempt, the checkpoint retains `backendRecoveryRequired=true`; after source recovery the resumed stage re-enters Backend/Core recovery rather than fresh execution.
+
 QA issues do not silently invalidate or rewrite the accepted revision. They create explicit remediation work; the remediation Backend objective uses the accepted revision as its repository base. A new accepted Backend result replaces the QA handoff with the new revision before QA runs again.
 
-Artifact/context lookup failure does not discard progress. The item becomes `BLOCKED` with its `QA_PENDING` checkpoint intact. `resume(...)` returns it to `REOPENED`, and a later session retries the same durable stage.
+Artifact/context lookup failure does not discard progress. The item becomes `BLOCKED` with its stage checkpoint intact. `resume(...)` returns it to `REOPENED`, and a later session retries the same durable stage under the stored recovery mode.
 
 `cancel(...)` supersedes unfinished work. Superseding claimed work increments its generation so an abandoned executor cannot later commit against the superseded item.
 
@@ -130,10 +140,16 @@ A late QA result from generation N cannot commit application state.
 
 ```text
 recover claim -> generation N+1
- -> resolve exact Backend WorkOrder + Context
- -> load durable Backend Core session/effect journal
- -> reconcile interrupted effect state
- -> only then continue or block
+ -> prepare exact Backend WorkOrder + Context
+      |
+      +-> source unavailable
+      |     -> BLOCKED with backendRecoveryRequired=true
+      |     -> later resume returns to Backend recovery
+      |
+      +-> preparation succeeds
+            -> load durable Backend Core session/effect journal
+            -> reconcile interrupted effect state
+            -> only then continue or block
 ```
 
 Current recovery cases are:
@@ -169,6 +185,8 @@ or candidate already advanced but Worker semantic result was not durably committ
  -> BLOCK / require reassessment
  -> do not fabricate BackendWorkResult
 ```
+
+If Core recovery itself blocks, the application checkpoint keeps `backendRecoveryRequired=true`, so a later source/session resume cannot bypass effect reconciliation by entering normal execute.
 
 Recovery success is not Backend acceptance. Any reconstructed normal Backend result still passes the same mutation/typecheck/tests/artifact evidence and completion policy.
 
@@ -279,7 +297,7 @@ grounded finding(summary + sourceRef)
  -> NON_ACTIONABLE -> no Board work
 ```
 
-Review failure that proves the current obligation is still unresolved does not create a replacement item.
+Review failure that proves the current acceptance obligation is still unresolved does not create a replacement item.
 
 ## Persistence and concurrency
 
@@ -312,6 +330,7 @@ Application checkpoint persistence is not external-effect reconciliation. A cras
 ## Context rules
 
 - repository and application-artifact context are resolved explicitly before execution/recovery;
+- Backend repository resolution is exposed as an explicit preparation phase before Worker/Core entry;
 - source payload is not hidden in a provider/session lifecycle;
 - Oracle does not widen semantic scope;
 - source refs/provenance survive into validated context;
