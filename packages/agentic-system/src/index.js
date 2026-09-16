@@ -54,6 +54,7 @@ export {
 } from "./blackboard-orchestrator.js";
 export {
   SessionHandoffRootKind,
+  UserIntentSource,
   createSessionHandoffSurface,
   defineUserIntent,
   sessionHandoffFromBlackboard
