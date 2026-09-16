@@ -1,41 +1,110 @@
 # BB-039: artifact identity across Backend to QA handoff
 
-Status: submitted research result; application and method review pending. Runtime adoption is not implied.
+Status: **ACCEPTED RESEARCH RESULT** after corrected fresh-session evidence and required reviews. Runtime adoption is not implied.
 
-Source revision: `dfc5249073ebfb1722047a3e4ac851caaee41d19`.
-Reproduce: `node docs/living/knowledge/bb039-artifact-manifest-probe.mjs`.
-Evidence class: deterministic, in-memory adapter fixture. It proves behavior at the current `makeQaWorkOrder` / `resolveQaContext` API boundary, not production artifact-store reliability or QA task correctness.
+Reproduce: `npm run eval:artifact-manifest-research`.
+Evidence class: `DETERMINISTIC_FRESH_SESSION_FIXTURE`.
+Production evidence: `false`.
+
+## Question
+
+Can a fresh session continuing the durable Backend -> QA workflow distinguish verified, changed, missing and provenance-mismatched artifact content before QA uses it, while keeping the Blackboard ref-only and keeping artifact identity separate from correctness?
 
 ## Consumer and current behavior
 
-The consumer is a fresh session continuing the durable Backend to QA workflow. `persistBackendRun` stores accepted Backend artifact refs and a decision reference in its checkpoint. `makeQaWorkOrder` resolves QA's declared paths from those refs. `resolveQaContext` asks the injected `artifactReader` for content and `sourceRef`, then copies the accepted decision into context provenance. The application does not currently compare returned content with a producer-side content identity or check the reader's producer revision. The existing fake readers in `wave-c.test.js` and `durable-backend-qa.test.js` return content from refs, with no immutable-content guarantee.
+The concrete consumer is the durable Backend -> QA continuation path. Accepted Backend state is persisted in the Blackboard checkpoint as `acceptedBackend.handoff`, while artifact refs and the Backend acceptance decision remain durable refs/provenance. A later QA session reconstructs the project through the project-bound session-handoff surface, builds a `QaWorkOrder`, and `resolveQaContext(...)` delegates bytes to the injected `artifactReader`.
 
-The application does reject a missing required path in the handoff and propagates artifact-read failures. A real reader backed by immutable, revision-bound content may already offer stronger guarantees than these fixtures; this experiment makes no claim about adapters not present in the repository.
+The current reader contract does not itself require an immutable producer-side content identity. A concrete reader backed by immutable revision-bound storage may already provide stronger guarantees; BB-039 does not claim that all readers are defective.
 
-## Experiment and predeclared gate
+## Review blocker closed by this revision
 
-The fixed experiment budget is six deterministic scenarios with two artifacts each, one run per mode and no provider or external IO. Before evaluating the fixture, the probe declares: unchanged artifacts must pass in both modes; changed content behind an unchanged ref and wrong producer revision must pass through the current reader but fail through a manifest reader; missing content must fail in both. The same two-artifact handoff and mutable backing map are used in both modes. The prototype serializes and reloads the producer-side manifest before QA, and calls the actual `resolveQaContext` function. It does not dispatch QA Worker or perform external mutations. There is no learned policy or tuning split here; generalization to other adapters is unmeasured.
+The earlier canonical probe serialized a manifest but kept its artifact `Map` and resolver in the same process. That was insufficient for the Board criterion requiring a **fresh session** to distinguish verified, changed and unavailable content. It also relied on code inspection for producer-work-order and acceptance-decision provenance checks rather than executing negative cases.
+
+The corrected probe now uses the existing durable boundaries directly:
+
+```text
+producer session
+ -> project-bound SessionHandoffSurface.initialize(...)
+ -> claim Backend/QA continuation item
+ -> checkpoint QA_PENDING-like acceptedBackend.handoff
+ -> persist artifact refs + acceptance decision in JSON Blackboard
+ -> persist producer manifest + artifact records in filesystem fixture store
+
+fresh session
+ -> new JsonBlackboardStore + ApplicationOrchestrator instance
+ -> new project-bound SessionHandoffSurface.read()
+ -> recover acceptedBackend.handoff + artifact refs from durable Board
+ -> makeQaWorkOrder(...)
+ -> reconstruct filesystem-backed artifact/manifest reader
+ -> resolveQaContext(...)
+```
+
+No producer-side in-memory record map or producer Orchestrator is reused by the QA-side check.
+
+## Predeclared deterministic scenarios
+
+Every scenario reconstructs a new session from the persisted Blackboard and filesystem-backed stores. The same QA objective and two-artifact handoff shape are used in baseline and manifest modes.
 
 | Scenario | Current reader | Manifest reader |
 | --- | --- | --- |
-| Both artifacts unchanged | PASS | PASS |
-| Content changed behind stable ref | PASS | CONTENT_MISMATCH |
-| First artifact missing | MISSING_ARTIFACT | MISSING_ARTIFACT |
-| Same content, wrong stored producer revision | PASS | REVISION_OR_PROVENANCE_MISMATCH |
-| Second artifact missing | MISSING_ARTIFACT | MISSING_ARTIFACT |
-| Manifest unavailable, content present | PASS | MANIFEST_UNAVAILABLE |
+| unchanged content/provenance | PASS | PASS |
+| changed content behind stable ref | PASS | `CONTENT_MISMATCH` |
+| first artifact missing | `MISSING_ARTIFACT` | `MISSING_ARTIFACT` |
+| same ref/content path with wrong stored producer revision | PASS | `REVISION_OR_PROVENANCE_MISMATCH` |
+| partial artifact set | `MISSING_ARTIFACT` | `MISSING_ARTIFACT` |
+| manifest unavailable | PASS | `MANIFEST_UNAVAILABLE` |
+| wrong producer work-order id in durable handoff | PASS | `REVISION_OR_PROVENANCE_MISMATCH` |
+| wrong acceptance-decision id in durable handoff | PASS | `REVISION_OR_PROVENANCE_MISMATCH` |
+| wrong acceptance-decision digest in durable handoff | PASS | `REVISION_OR_PROVENANCE_MISMATCH` |
 
-The two changed-or-wrong artifacts are caught before QA execution by the candidate and accepted into QA context by the baseline. Missing-artifact detection is existing value, not an improvement attributed to the manifest. The serialized two-entry manifest is 502 bytes versus 120 bytes for its ref/path list in this fixture; these are sample payload sizes, not a storage-cost forecast. The manifest carries refs, paths, producer revision, accepted decision and SHA-256 content digests; it contains no artifact bodies.
+The five identity/provenance violations that remain invisible to the weak baseline are rejected by the manifest reader. Existing missing-content behavior remains existing value and is not counted as manifest improvement.
+
+The fixture asserts that every case reconstructed its artifact refs and accepted Backend handoff through a fresh `SessionHandoffSurface`. The manifest contains identity/provenance metadata and content digests only; it never embeds artifact bodies.
+
+## What the result establishes
+
+The result supports one narrow application boundary:
+
+> For mutable/ref-addressed artifact storage, an opt-in application-owned reader can fail closed on content/provenance drift after restart when it resolves a durable producer-side manifest before returning QA context.
+
+The manifest binds:
+
+```text
+ref + path
+producer work-order id
+producer revision
+acceptance-decision id + digest
+stored artifact revision
+content digest
+```
+
+This closes the canonical review evidence gaps for fresh-session reconstruction and explicit work-order/acceptance-decision negative coverage. The required research-method and application/architecture-boundary reviews have accepted this corrected evidence; that accepts the D014 design boundary but still does not deliver a runtime manifest adapter.
 
 ## Implementation handoff
 
-Recommendation: **NARROW** to one opt-in, application-owned artifact adapter with a durable manifest store. The candidate adds an integrity check for mutable/ref-addressed storage; do not make it a universal requirement for readers whose immutability is already independently guaranteed.
+Recommendation remains **NARROW** to one optional application-owned artifact adapter with a durable manifest store.
 
-1. Capture each artifact's bytes and trusted revision at the accepted Backend producer boundary, then persist a manifest keyed by the Backend acceptance decision and producer work order before making the `QA_PENDING` checkpoint visible. A reader must not create a manifest by re-reading possibly changed content for the first time in the later QA session. Define how a failed manifest write leaves the Board at Backend continuation, and how orphaned manifests are collected after a failed checkpoint.
-2. Give the selected `artifactReader` access to this manifest through its injected adapter configuration. On `readArtifact(request)`, require an entry for the exact ref/path and compare requested work order, accepted decision, revision, stored producer revision and bytes digest before returning content. Use explicit missing, mismatch and unavailable outcomes. The application may retain the current `resolveQaContext` interface because it already passes these request fields; introduce a new handoff/checkpoint field only if the chosen store cannot locate the manifest by decision key. Version and migrate that field rather than relying on extra fields that `BackendQaHandoffSchema` currently strips.
-3. Pin the manifest plus referenced bytes while the Board item is `QA_PENDING`, `BACKEND_REMEDIATION_PENDING`, `PENDING_REVIEW`, `REVIEWING` or `PENDING_RECONCILIATION`, including blocked continuation and live review references. Release only after terminal disposition and a declared audit-retention interval. A fresh session must resolve the pin and distinguish verified, missing, changed and unavailable content. Retain an inspectable manifest and decision trail for historical evidence; if bytes expire, surface that limitation instead of claiming they remain inspectable.
-4. Preserve legacy ref-only handoff behavior when the addon is disabled. When enabled, a missing manifest fails closed for that adapter. Regression cases should include valid restart, content swap, same-content wrong revision, partial set, manifest absence, review delay, cancellation and a producer/checkpoint crash boundary. Accept only if valid handoff still reaches QA, corrupted content never does, and pin/release behavior survives restart.
+1. Capture each accepted Backend artifact's identity at the producer boundary and durably persist the manifest before making the QA continuation visible. Do not construct the first trusted manifest by re-reading mutable bytes in the later QA session.
+2. At `readArtifact(request)`, locate the exact manifest and require exact producer work order, acceptance decision, producer/stored revision and content digest before returning ordinary `{ content, sourceRef }`.
+3. Distinguish missing bytes, unavailable manifest and identity/provenance mismatch. Enabling the manifest adapter must not silently fall back to an unvalidated read.
+4. Pin the manifest plus referenced bytes while durable nonterminal execution/review/reconciliation work still needs them. Payload retention is an operational obligation, not correctness evidence; after configured release, historical metadata may remain while bytes explicitly become unavailable.
+5. Preserve current ref-only behavior when the addon is disabled. Readers with independently guaranteed immutable/revision-bound storage do not need to be forced through this adapter by BB-039 alone.
+6. A delivery follow-up must measure lookup/hash/storage overhead and producer/checkpoint crash behavior on one real artifact store before runtime-default adoption.
 
-The hash is an integrity comparison against a trusted producer-side manifest, not proof of the correctness or authenticity of the accepted Backend result. If the manifest and content can be rewritten together by the same untrusted actor, the check provides no independent protection. The experiment does not establish a retention period, repository-wide cost, provider availability, or real QA success rate. Those require a concrete durable artifact store and workload before adoption.
+## Retention boundary
 
-Disposition: the bounded implementation can be opened after research review for one adapter. Its value gate is the observed reduction from two undetected identity violations to zero on controlled restart cases, with valid content still accepted and no increase in incorrect QA acceptance. Do not count the already-detected missing-content cases as improvement.
+Pending execution and acceptance states may pin payloads, including `QA_PENDING`, Backend remediation, blocked continuation, `PENDING_REVIEW`, `REVIEWING` and `PENDING_RECONCILIATION`. Terminal disposition may release the operational payload pin according to configured retention policy while immutable manifest/provenance metadata remains for the configured audit horizon.
+
+Retention does not prove availability forever, content correctness, Backend acceptance correctness, or QA correctness.
+
+## Limitations
+
+- deterministic local filesystem fixture only;
+- no production artifact store, outage distribution, latency or storage-cost measurement;
+- no external model/provider calls;
+- no statistical generalization claim;
+- the digest is useful only relative to a producer-side manifest with an appropriate trust boundary;
+- if an attacker can rewrite both manifest and content under the same authority, this check is not independent authenticity evidence;
+- manifest verification establishes identity/provenance consistency, not semantic correctness or acceptance.
+
+Disposition: **NARROW / ACCEPTED** as research support for D014. Runtime adoption remains separately gated.
