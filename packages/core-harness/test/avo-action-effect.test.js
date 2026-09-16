@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { EffectRecoveryAction, EffectReplayPolicy } from "../src/effect-reconciliation.js";
-import { createEffectAwareHarness } from "../src/effect-aware-harness.js";
-import { createInMemorySessionStore } from "../src/store.js";
+import { createHarness, createInMemorySessionStore } from "../src/index.js";
 
 function objective() {
   return {
@@ -48,7 +47,7 @@ function actionResult(candidate, action) {
 }
 
 function createTestHarness({ store, environment, actionEffect = undefined }) {
-  return createEffectAwareHarness({
+  return createHarness({
     strategy: strategy(),
     objective: objective(),
     environment,
