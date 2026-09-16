@@ -214,9 +214,10 @@ export function buildPmCoordinationContext(session, {
 }) {
   invariant(session && typeof session === "object", "PM coordination context requires project handoff");
   const target = handoffWork(session, requireText(targetItemId, "targetItemId"));
-  const ids = relevantItemIds == null
+  const selectedIds = relevantItemIds == null
     ? [target.id, ...target.dependsOn]
     : textArray(relevantItemIds, "relevantItemIds");
+  const ids = selectedIds.filter((id) => id !== session.rootItemId);
   const work = [...new Set(ids)].map((id) => {
     const item = handoffWork(session, id);
     return {
@@ -264,13 +265,22 @@ function assertOrchestrator(orchestrator) {
   return orchestrator;
 }
 
+function currentEvidenceRefsFor(session, itemId) {
+  return new Set(
+    session.references.evidence
+      .filter((entry) => entry.itemId === itemId)
+      .map((entry) => entry.ref)
+  );
+}
+
 function assertAssessmentCurrent(assessment, session) {
   invariant(assessment.projectId === session.projectId, "SA assessment project identity is stale or mismatched");
   invariant(assessment.rootIntentId === session.intent.id, "SA assessment root intent is stale or mismatched");
   const target = handoffWork(session, assessment.targetItemId);
   invariant(target.work === assessment.targetWork, "SA assessment target work changed");
+  const currentEvidence = currentEvidenceRefsFor(session, target.id);
   for (const ref of assessment.evidenceRefs) {
-    invariant(target.evidenceRefs.includes(ref), `SA assessment evidence is not current on target ${target.id}: ${ref}`);
+    invariant(currentEvidence.has(ref), `SA assessment evidence is not current on target ${target.id}: ${ref}`);
   }
   return target;
 }
@@ -380,12 +390,18 @@ export function createPmSaCoordinationController({
 
   async function applyPmProposal(rawProposal) {
     const proposal = definePmCoordinationProposal(rawProposal);
-    if (!proposalChangesCoordination(proposal)) {
-      return freezeClone({ applied: false, fallback: true, proposalRef: null, item: handoffWork(await readSession(), proposal.target.itemId) });
-    }
-
     const session = await readSession();
     const validated = await validateProposalAgainstCurrent(proposal, session);
+
+    if (!proposalChangesCoordination(proposal)) {
+      return freezeClone({
+        applied: false,
+        fallback: true,
+        proposalRef: null,
+        item: validated.target
+      });
+    }
+
     const proposalRef = await store.putPmProposal(proposal);
     const blockerEdges = proposal.blockers
       .filter((blocker) => blocker.existingWorkRef != null)
