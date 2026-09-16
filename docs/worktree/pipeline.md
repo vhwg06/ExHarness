@@ -124,6 +124,23 @@ npm run eval:workflow-replay
 
 This replay surface is evaluation/regression tooling only. It consumes recorded fixture events and adapter outcomes; it does not replay model/provider calls, reconstruct live runtime authority, reproduce real concurrent timing, or dispatch historical external mutations. Its checked artifact declares `evidenceClass: DETERMINISTIC_POLICY_REPLAY_FIXTURE` and `productionEvidence: false`. A replay divergence identifies a policy/decision difference under fixed fixture inputs; it does not establish causal certainty when live model, environment, timing or authority inputs differ.
 
+## Semantic-memory reuse evaluation
+
+Root `npm run verify` also runs the BB-037 deterministic experience-reuse evaluation:
+
+```text
+npm run eval:memory-reuse
+ -> scripts/semantic-memory-reuse-eval.mjs
+ -> existing Core SemanticMemory retrieval + intelligence ports
+ -> no-memory / lexical / associative / application-bounded modes
+ -> held-out recurring-failure tasks under one fixed repair-attempt budget
+ -> exercise cross-project, revision-specific, policy-mismatch, stale, archived and contradictory experience
+ -> assert retrieval remains RELEVANCE_ONLY and memory never becomes acceptance authority
+ -> deep compare with artifacts/bb037-grounded-experience-reuse-eval.json
+```
+
+The bounded mode is evaluation tooling for an application-side remediation-context proposal, not a delivered runtime adapter or a Core ranking change. The checked artifact declares deterministic fixture evidence only (`productionEvidence: false`). A reduction in fixture repair attempts does not establish production transfer quality or authorize semantic memory as correctness evidence.
+
 ## Current extraction result
 
 Repeated source-backed shapes:
