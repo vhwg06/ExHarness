@@ -703,27 +703,33 @@ BB-020
 question/work: Research concrete PM/SA context and project workflow architecture against the delivered Backend/QA lifecycle.
 kind: RESEARCH
 priority: P2
-status: READY
+status: DONE
 owner:
 depends-on: [BB-004, BB-012]
-remaining-work:
-  - model one user objective through bounded work decomposition, dependencies, blockers, reviews and progress
-  - define separate PM coordination context and SA architecture context with their allowed proposals
-  - identify Orchestrator validation required before proposals change canonical work
-  - compare deterministic coordination with bounded judgment and state where a concrete role adds measurable value
-  - specify decision/artifact handoff and re-planning behavior without changing user intent implicitly
+remaining-work: []
 acceptance-criteria:
   - research includes a concrete project scenario and explicit role input/output/authority contracts
   - accepted recommendation preserves PM/SA separation and Orchestrator lifecycle authority from D003
   - implementation is justified by scenario evidence; generic registries or workflow DSLs require separate repeated-use evidence
 submission:
+  - PR #100
 review-requirements: [project-workflow review, architecture-boundary review]
-reviews: []
-artifact-refs: []
+reviews:
+  - project-workflow review passed exact research head 0bbc5aea63881d75d5ce16c8cd239c81cb652301; semantic replanning and deterministic-fixture limitations retained
+  - architecture-boundary review passed exact research head 0bbc5aea63881d75d5ce16c8cd239c81cb652301; PM/SA remain proposal-only and Orchestrator remains mutation authority
+artifact-refs:
+  - docs/living/knowledge/bb020-pm-sa-workflow.md
+  - packages/agentic-system/test/bb020-pm-sa-research.test.js
 evidence-refs:
   - docs/living/decisions/D003-orchestrator-blackboard-review-authority.md
   - docs/living/decisions/D004-blackboard-session-handoff.md
   - packages/agentic-system/src/session-handoff.js
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/src/blackboard-orchestrator.js
+  - exact research-head CI #1611 green on living-doc-impact and Node 20/22/24
+  - measured fixture: baseline 8/11 obligations (72.73%) vs bounded 11/11 (100%), zero false obligations, 3 semantic replans, 1 SA assessment, 4 authority-fence rejections; productionEvidence=false
+  - separate role-context serialization: 4464 chars vs universal 7743 chars (42.35% reduction proxy)
+  - research result: NARROW; no generic role framework or runtime default authorized
 blockers: []
 follow-up-refs: [BB-021]
 origin: INTENT-exharness-agentic-system; user-requested workflow/architecture research beyond current concrete Backend/QA roles
@@ -751,7 +757,6 @@ reviews: []
 artifact-refs: []
 evidence-refs: [BB-019, BB-020]
 blockers:
-  - BB-020 must justify and specify the concrete role slice
   - BB-019 must deliver the review execution boundary used by coordination
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional implementation follow-up to BB-020
