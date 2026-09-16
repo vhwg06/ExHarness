@@ -42,6 +42,10 @@ export const BackendQaWorkflowStage = Object.freeze({
   CANCELED: "CANCELED"
 });
 
+function remediationWork(issues) {
+  return `Remediate QA issues: ${issues.join(" | ")}`;
+}
+
 function workflowCheckpoint(raw) {
   invariant(raw && typeof raw === "object" && !Array.isArray(raw), "Backend/QA workflow checkpoint is required");
   invariant(raw.kind === WORKFLOW_KIND, `Backend/QA workflow checkpoint kind must be ${WORKFLOW_KIND}`);
@@ -56,6 +60,18 @@ function workflowCheckpoint(raw) {
   );
   const spec = raw.spec;
   invariant(spec && typeof spec === "object" && !Array.isArray(spec), "Backend/QA workflow checkpoint spec is required");
+  const qaIssues = Array.isArray(raw.qaIssues)
+    ? raw.qaIssues.map((issue, index) => requireText(issue, `qaIssues[${index}]`))
+    : [];
+  const remediationObligations = Array.isArray(raw.remediationObligations)
+    ? raw.remediationObligations.map((work, index) => requireText(work, `remediationObligations[${index}]`))
+    : raw.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING && qaIssues.length > 0
+      ? [remediationWork(qaIssues)]
+      : [];
+  if (raw.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING) {
+    invariant(qaIssues.length > 0, "Backend remediation checkpoint requires issues");
+    invariant(remediationObligations.length > 0, "Backend remediation checkpoint requires outstanding obligations");
+  }
   const parsed = {
     kind: WORKFLOW_KIND,
     version: WORKFLOW_VERSION,
@@ -72,9 +88,8 @@ function workflowCheckpoint(raw) {
         digest: requireText(raw.acceptedBackend.completionDecision?.digest, "acceptedBackend.completionDecision.digest")
       }
     }),
-    qaIssues: Array.isArray(raw.qaIssues)
-      ? raw.qaIssues.map((issue, index) => requireText(issue, `qaIssues[${index}]`))
-      : []
+    qaIssues,
+    remediationObligations
   };
   return freezeClone(parsed);
 }
@@ -90,7 +105,8 @@ function initialCheckpoint(backendObjective, qaObjective) {
     },
     attempt: 0,
     acceptedBackend: null,
-    qaIssues: []
+    qaIssues: [],
+    remediationObligations: []
   });
 }
 
@@ -98,10 +114,6 @@ function boardItem(board, itemId) {
   const item = board.items.find((candidate) => candidate.id === itemId);
   invariant(item, `Blackboard item not found: ${itemId}`);
   return item;
-}
-
-function remediationWork(issues) {
-  return `Remediate QA issues: ${issues.join(" | ")}`;
 }
 
 function deriveRemediationObjective(checkpoint) {
@@ -150,7 +162,8 @@ function backendCheckpointAfterAccept(checkpoint, handoff, completionDecision) {
         digest: completionDecision.digest
       }
     },
-    qaIssues: []
+    qaIssues: [],
+    remediationObligations: []
   });
 }
 
@@ -158,7 +171,8 @@ function remediationCheckpoint(checkpoint, issues) {
   return workflowCheckpoint({
     ...checkpoint,
     stage: BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING,
-    qaIssues: issues
+    qaIssues: issues,
+    remediationObligations: [remediationWork(issues)]
   });
 }
 
@@ -176,7 +190,8 @@ function reviewRemediationCheckpoint(item) {
       handoff: submission.acceptedBackendHandoff,
       completionDecision: submission.backendAcceptanceDecision
     },
-    qaIssues: item.remainingWork
+    qaIssues: item.remainingWork,
+    remediationObligations: item.remainingWork
   });
 }
 
@@ -283,6 +298,9 @@ export function createDurableBackendQaWorkflow({
 
     const handoff = createQaHandoffFromBackendRun(backend);
     const nextCheckpoint = backendCheckpointAfterAccept(checkpoint, handoff, backend.completion.decision);
+    const resolvedWork = checkpoint.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
+      ? checkpoint.remediationObligations
+      : [currentWork];
     const persisted = await orchestrator.checkpoint({
       itemId,
       owner,
@@ -290,7 +308,7 @@ export function createDurableBackendQaWorkflow({
       checkpoint: nextCheckpoint,
       artifactRefs: artifactRefsFromHandoff(handoff),
       evidenceRefs: [backend.completion.decision.id],
-      resolvedWork: [currentWork, ...checkpoint.qaIssues],
+      resolvedWork,
       remainingWork: [QA_WORK]
     });
 
