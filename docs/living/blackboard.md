@@ -1177,6 +1177,268 @@ follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-034
 ```
 
+## Research admission: implementable project value
+
+The user's current constraint applies to all open research on this Board: accept research only when it has a concrete project consumer, a bounded implementable change, a baseline comparison and an observable value gate. A topic, literature survey, architecture diagram or recommendation alone does not satisfy delivery acceptance.
+
+Before claiming research, identify the consumer and implementation surface, the current limitation, the smallest runnable experiment, required inputs and an experiment budget. Missing prerequisites must be explicit blockers. Define the success criterion before measuring the candidate; preserve correctness, authority and evidence freshness as hard constraints.
+
+A useful research result must include runnable prototype evidence and a reviewable implementation handoff: exact integration point, interface/configuration changes, compatibility, verification and adoption/rollback plan. Link that handoff to existing implementation work or create a bounded follow-up after review. Do not mark the upgrade delivered until its implementation is integrated and its value gate passes. An inconclusive experiment remains unresolved within its budget; reject/supersede a disproved proposal with evidence instead of presenting it as delivered project value. Historical DONE records remain historical.
+
+## Research addons: measured value before adoption
+
+These are candidate research addons grounded in existing extension points, subject to the implementable-value gate above. Each must deliver a runnable experiment and implementation handoff for its named consumer. Their absence is not a defect. Existing correctness fixes BB-023/024/025 remain higher urgency than optional addons.
+
+| Research | Candidate addon | First value to measure |
+| --- | --- | --- |
+| BB-036 | Task-aware context selection | Context coverage versus task success and context cost |
+| BB-037 | Grounded experience reuse | Fewer repeated failures without negative transfer |
+| BB-038 | Counterfactual workflow replay | Reproducible regressions under controlled failures |
+| BB-039 | Artifact manifest/retention | Reliable, verifiable ref-only session continuation |
+| BB-040 | Measured model routing | Verified quality versus observed cost and latency |
+
+For comparisons, fix the task set and policy versions, keep held-out scenarios, record failed/inconclusive runs and declare the evidence class. Predeclare experiment budgets and decision criteria before observing candidate results. Improvements on deterministic fixtures do not establish production effectiveness. Start with BB-038 and BB-039 for continuation reliability; BB-036 provides a separate context-efficiency experiment. BB-037 and BB-040 need evidence that their added runtime cost is worthwhile.
+
+```text
+BB-036
+question/work: Research an optional task-aware context selection addon above Oracle's existing declared-file contract.
+kind: RESEARCH
+priority: P1
+status: READY
+owner:
+depends-on: []
+research-hypothesis: An application-side selector may reduce irrelevant context and missed dependencies while keeping source access explicit.
+target-consumer: Backend work-order construction before resolveBackendContext on a versioned repository task set
+implementation-output: A bounded selector that proposes requiredFiles, with application validation and fallback to the explicit declared set
+value-gate: On held-out tasks, reduce total context/selection cost or improve required-context coverage versus the declared-file baseline without reducing verified task success; report both selection overhead and downstream costs
+scope-boundary: BB-009/010 retain resolver/diagnostic questions. This item studies application context selection, not a generic Oracle provider framework.
+remaining-work:
+  - Compare manually declared files, lexical/symbol-based candidates and a bounded selector on the same versioned repository tasks.
+  - Have selection produce a proposed requiredFiles/artifact set for application validation before Oracle reads it; preserve exact revision and source refs.
+  - Include misleading filenames, transitive dependencies, oversized files and unavailable sources; record selector overhead and omitted required context.
+acceptance-criteria:
+  - Report task success, required-context coverage, unnecessary reads, context size and selection cost against the existing baseline.
+  - Held-out tasks test whether savings survive without increasing missed-dependency or false-completion outcomes.
+  - The result recommends adopt, narrow, or reject; automatic source-scope expansion and correctness claims from retrieval relevance are excluded.
+submission:
+review-requirements: [research-method review, application/architecture-boundary review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/agentic-system/src/oracle.js
+  - packages/core-harness/src/context.js
+  - scripts/agentic-backend-qa-eval.mjs
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
+```
+
+```text
+BB-037
+question/work: Research whether existing semantic memory can reuse verified task experience across runs without transferring stale or unrelated project knowledge.
+kind: RESEARCH
+priority: P2
+status: READY
+owner:
+depends-on: []
+research-hypothesis: Selective recall of grounded prior failures and successful repairs may reduce repeated remediation work.
+target-consumer: Backend remediation context for recurring verified failure cases, scoped to a project and revision
+implementation-output: An opt-in adapter using the existing memory retrieval port to supply bounded, source-linked repair experience before a remediation run
+value-gate: Reduce repeat failures or repair attempts on held-out recurring-failure tasks versus no-memory runs, within a predeclared overhead budget and without worse final correctness or cross-project leakage
+scope-boundary: BB-026 owns research continuation and BB-034 owns self-upgrade candidates. This item measures the incremental value and risks of memory reuse.
+remaining-work:
+  - Compare no memory, lexical recall and existing associative ranking with identical task inputs and a fixed context budget.
+  - Partition records by project, repository revision, task family and evaluation policy; distinguish transferable technique from revision-specific facts.
+  - Exercise contradictory repairs, archived records, stale evidence and unrelated projects; separate training experience from held-out evaluation tasks.
+acceptance-criteria:
+  - Measure repeat-failure rate, repair attempts, final correctness, retrieval overhead and inappropriate cross-project recall.
+  - A replayable negative-transfer scenario demonstrates that irrelevant/stale memories cannot become acceptance evidence.
+  - Recommend an opt-in composition or no addon; preserve RELEVANCE_ONLY semantics and explicit memory visibility.
+submission:
+review-requirements: [research-method review, application/architecture-boundary review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/core-harness/src/semantic-memory-retrieval.js
+  - packages/core-harness/src/semantic-memory-intelligence.js
+  - packages/core-harness/src/semantic-memory-evolution.js
+  - packages/core-harness/src/grounded-cognition.js
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
+```
+
+```text
+BB-038
+question/work: Research a replay and fault-injection addon for comparing workflow policies against recorded observable events.
+kind: RESEARCH
+priority: P1
+status: READY
+owner:
+depends-on: []
+research-hypothesis: Controlled replay may reveal regressions and distinguish which workflow decision caused an outcome before a policy is adopted.
+target-consumer: Agentic evaluation and regression verification for BB-023/024 plus the BB-016 recovery investigation
+implementation-output: A runnable fault-schedule/replay helper integrated with the existing application evaluation or focused regression tests
+value-gate: Reproduce at least one documented current lifecycle/persistence failure and distinguish the faulty implementation from its fix under the same schedule, with no real external mutation
+scope-boundary: BB-022 remains the reference evaluation gate; BB-016 and BB-023/024 own recovery/defect fixes. This research evaluates reusable experimental tooling, not their implementation.
+remaining-work:
+  - Define the minimum recorded scenario inputs, adapter responses, revisions and policy identity needed for deterministic fixture replay.
+  - Compare two policies under the same artifact outage, cancellation, retry and review-delay schedules; inject failures around durable boundaries.
+  - Distinguish reproducible adapter replay from nondeterministic model/provider execution and from reconstruction of live runtime authority.
+acceptance-criteria:
+  - A reviewer can reproduce a baseline/candidate divergence and identify the changed decision plus downstream outcome refs.
+  - Replays isolate external effects and never reissue a historical mutation merely because it appears in a trace.
+  - Report replay fidelity, uncovered failures, storage cost and unsupported cases; avoid claiming causal certainty when model/environment inputs differ.
+submission:
+review-requirements: [research-method review, application/architecture-boundary review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/src/blackboard-orchestrator.js
+  - packages/core-harness/src/runtime-snapshot.js
+  - scripts/agentic-backend-qa-eval.mjs
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
+```
+
+```text
+BB-039
+question/work: Research an artifact-manifest and retention addon that makes ref-only continuation verifiable across project sessions.
+kind: RESEARCH
+priority: P1
+status: READY
+owner:
+depends-on: []
+research-hypothesis: A minimal manifest linking immutable content identity and producer evidence may make ref-only handoff more dependable under source changes or loss.
+target-consumer: One concrete artifactReader used by durable Backend -> QA continuation
+implementation-output: A compatible artifact-manifest adapter validating content identity and producer revision before returning QA context, with explicit unavailable-content behavior
+value-gate: Reject changed/mismatched content and diagnose unavailable content in controlled restart scenarios while still accepting unchanged valid artifacts; demonstrate a concrete improvement over that adapter's baseline
+scope-boundary: BB-014/015 settled project-state authority, not artifact storage guarantees. This item does not reopen their accepted project boundaries.
+remaining-work:
+  - Map what current refs and injected readers guarantee versus what depends on external artifact storage.
+  - Compare current refs with an optional manifest carrying content identity, producer revision and retention/availability metadata on one concrete artifact adapter.
+  - Exercise deleted content, changed content behind a stable ref, mismatched revision and partial artifact sets during handoff.
+acceptance-criteria:
+  - A fresh session can distinguish missing, changed and verified content before using it as evidence; observed behavior is reported without presuming all adapters are defective.
+  - A retention proposal names which pending work/review refs pin artifacts and how historical evidence remains inspectable.
+  - The recommendation bounds storage cost and compatibility; it does not copy full payloads into Blackboard or treat availability as correctness.
+submission:
+review-requirements: [research-method review, application/architecture-boundary review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/agentic-system/src/artifact-ref.js
+  - packages/agentic-system/src/oracle.js
+  - packages/agentic-system/src/session-handoff.js
+  - packages/agentic-system/src/qa-contracts.js
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
+```
+
+```text
+BB-040
+question/work: Research an optional quality/cost routing policy using existing Core model routing on concrete Backend and QA tasks.
+kind: RESEARCH
+priority: P2
+status: BLOCKED
+owner:
+depends-on: []
+research-hypothesis: Task- and failure-aware route selection may lower cost or latency while preserving independently verified task quality.
+target-consumer: Backend/QA execution with a concrete configured model provider and measured usage on representative tasks
+implementation-output: An opt-in bounded routing/escalation policy over the existing model routing interface, preserving fixed-route fallback
+value-gate: Improve observed total cost or latency at a predeclared verified-quality floor against a fixed-route baseline on held-out tasks; fixture-only route switching cannot establish this value
+scope-boundary: BB-030 owns project work prioritization and BB-005 owns production-effectiveness conclusions. This item studies model-route selection within a bounded task.
+remaining-work:
+  - Compare a fixed model route with a bounded routing/escalation policy using declared provider configurations and identical versioned tasks.
+  - Record route provenance, observed usage, latency, verification outcomes and escalation reasons; preserve unavailable metrics as unknown.
+  - Predeclare budget and escalation limits; test provider errors, easy/hard task mixes and held-out tasks before recommending a default.
+acceptance-criteria:
+  - Report quality/cost tradeoffs with repeated trials and uncertainty; no price or model-quality assumptions are fabricated.
+  - Configured providers, representative tasks and actual usage measurements are prerequisites for acceptance; protocol-only fixtures cannot close this research.
+  - Route changes cannot relax verification, expand authority, or treat model confidence as acceptance; negative results remain valid research outcomes.
+submission:
+review-requirements: [research-method review, application/architecture-boundary review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - packages/core-harness/src/model-routing.js
+  - packages/agentic-system/src/backend-advisor.js
+  - docs/living/knowledge/bb022-agentic-evaluation-protocol.md
+blockers:
+  - concrete provider configuration, representative task set and a measured fixed-route baseline have not been established for this experiment
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
+```
+
+## Value-backed continuation fixes
+
+The runnable probes in `knowledge/value-probes-2026-09-16.mjs` and analysis in `knowledge/value-research-2026-09-16.md` establish concrete implementation opportunities. These are fixes with measurable value, not additional open-ended research topics. Existing persistence/cancellation fixes BB-023/024 remain urgent. BB-041 protects generic durable payloads; BB-042 preserves existing Advisor decisions through durable workflow coordination.
+
+```text
+BB-041
+question/work: Prevent silent loss or conversion of generic checkpoint data across JSON Blackboard persistence.
+kind: FIX
+priority: P1
+status: READY
+owner:
+depends-on: []
+target-consumer: Public checkpoint callers, including the BB-026/027 research-continuation consumer
+implementation-output: A persisted-payload validation boundary in Blackboard normalization/save with explicit handling of unsupported values
+value-gate: Every acknowledged supported payload is semantically identical after reload; unsupported values fail without changing prior Board state
+remaining-work:
+  - define the supported persisted value contract and reject lossy values with useful field-path diagnostics
+  - validate arbitrary checkpoint/origin and other persisted payload fields consistently before durable transitions
+  - preserve compatibility for existing valid JSON snapshots and align returned acknowledgments with actual persisted state
+acceptance-criteria:
+  - the V1 Map/NaN probe cannot silently lose an experiment or convert a value after a successful acknowledgment
+  - test Map/Set/Date, undefined, non-finite numbers, cycles and BigInt as well as valid nested JSON
+  - rejection preserves prior ownership, checkpoint and lifecycle status; successful state round-trips across a new store instance
+submission:
+review-requirements: [persistence/schema review, application/code review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - docs/living/knowledge/value-research-2026-09-16.md (V1)
+  - docs/living/knowledge/value-probes-2026-09-16.mjs
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; user requires implementable research value; reproduced checkpoint acknowledgment/reload mismatch
+```
+
+```text
+BB-042
+question/work: Preserve and resolve Backend Advisor context requests/escalation at the durable workflow boundary before redispatch.
+kind: FIX
+priority: P1
+status: READY
+owner:
+depends-on: []
+target-consumer: createDurableBackendQaWorkflow runBackendStage using runBackendObjective and BackendAdvisor
+implementation-output: Explicit application-owned continuation mapping and persisted coordination requirements with a resolution/resume path
+value-gate: REQUEST_CONTEXT/ESCALATE retain their coordination need across sessions and do not blindly redispatch the unchanged Backend objective
+remaining-work:
+  - define handling for each existing BackendRunAction while preserving Advisor proposal and Orchestrator decision authority
+  - persist gap IDs, context needs and decision rationale/provenance needed by the next session
+  - add explicit requirement resolution/resume and preserve valid retry, failure and QA gating behavior
+acceptance-criteria:
+  - V2 REQUEST_CONTEXT and ESCALATE survive reconstruction and prevent an unchanged second Backend dispatch while unresolved
+  - resolving the actual coordination requirement resumes the intended stage without granting Advisor direct mutation or completion authority
+  - tests cover retry, context resolution, escalation, missing Advisor and default grounded completion policy
+submission:
+review-requirements: [workflow/Advisor authority review, application/code review]
+reviews: []
+artifact-refs: []
+evidence-refs:
+  - docs/living/knowledge/value-research-2026-09-16.md (V2; probe uses synthetic Worker and reduced completion policy)
+  - docs/living/knowledge/value-probes-2026-09-16.mjs
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; user requires implementable research value; reproduced loss of Advisor continuation requirements
+```
+
 ## Storage
 
 `docs/living/blackboard.md` remains the canonical coordination state for the ExHarness repository-development project today.
