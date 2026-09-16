@@ -28,18 +28,49 @@ function snapshotDigest(snapshot) {
   return createHash("sha256").update(serializeSnapshot(snapshot)).digest("hex");
 }
 
-function commitPath(path, baseDigest) {
-  return `${path}.commit-${baseDigest}`;
+function commitPath(path, baseToken) {
+  return `${path}.commit-${baseToken}`;
 }
 
 function parseSnapshot(raw, source) {
   try {
     return defineBlackboardSnapshot(JSON.parse(raw));
   } catch (error) {
-    const wrapped = new Error(`Blackboard store contains invalid committed snapshot at ${source}`);
+    const wrapped = new Error(`Blackboard store contains invalid snapshot at ${source}`);
     wrapped.cause = error;
     throw wrapped;
   }
+}
+
+function defineCommitRecord(raw, source) {
+  invariant(raw && typeof raw === "object" && !Array.isArray(raw), `Blackboard commit record is invalid at ${source}`);
+  invariant(raw.version === 1, `Blackboard commit record version is invalid at ${source}`);
+  const baseToken = requireText(raw.baseToken, `Blackboard commit baseToken at ${source}`);
+  const baseDigest = requireText(raw.baseDigest, `Blackboard commit baseDigest at ${source}`);
+  const nextToken = requireText(raw.nextToken, `Blackboard commit nextToken at ${source}`);
+  invariant(nextToken !== baseToken, `Blackboard commit record cannot point to its own revision at ${source}`);
+  return freezeClone({
+    version: 1,
+    baseToken,
+    baseDigest,
+    nextToken,
+    snapshot: defineBlackboardSnapshot(raw.snapshot)
+  });
+}
+
+function parseCommitRecord(raw, source) {
+  try {
+    return defineCommitRecord(JSON.parse(raw), source);
+  } catch (error) {
+    if (error?.message?.includes(source)) throw error;
+    const wrapped = new Error(`Blackboard store contains invalid commit record at ${source}`);
+    wrapped.cause = error;
+    throw wrapped;
+  }
+}
+
+function serializeCommitRecord(record) {
+  return `${JSON.stringify(record, null, 2)}\n`;
 }
 
 export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300_000 }) {
@@ -57,18 +88,28 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300
 
   async function loadRoot() {
     try {
-      return parseSnapshot(await fs.readFile(path, "utf8"), path);
+      return freezeClone({
+        token: "root",
+        snapshot: parseSnapshot(await fs.readFile(path, "utf8"), path)
+      });
     } catch (error) {
-      if (error?.code === "ENOENT") return defineBlackboardSnapshot();
+      if (error?.code === "ENOENT") {
+        return freezeClone({ token: "root", snapshot: defineBlackboardSnapshot() });
+      }
       throw error;
     }
   }
 
-  async function readCommittedSuccessor(baseSnapshot) {
-    const baseDigest = snapshotDigest(baseSnapshot);
-    const source = commitPath(path, baseDigest);
+  async function readCommittedSuccessor(head) {
+    const source = commitPath(path, head.token);
     try {
-      return parseSnapshot(await fs.readFile(source, "utf8"), source);
+      const record = parseCommitRecord(await fs.readFile(source, "utf8"), source);
+      invariant(record.baseToken === head.token, `Blackboard commit base revision does not match ${head.token}`);
+      invariant(
+        record.baseDigest === snapshotDigest(head.snapshot),
+        `Blackboard commit base digest does not match revision ${head.token}`
+      );
+      return record;
     } catch (error) {
       if (error?.code === "ENOENT") return null;
       throw error;
@@ -76,38 +117,44 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300
   }
 
   async function loadCommittedHead() {
-    let current = await loadRoot();
-    const seen = new Set();
+    let head = await loadRoot();
+    const seenTokens = new Set();
 
     while (true) {
-      const digest = snapshotDigest(current);
-      invariant(!seen.has(digest), `Blackboard store committed snapshot chain contains a cycle at ${digest}`);
-      seen.add(digest);
+      invariant(!seenTokens.has(head.token), `Blackboard store committed revision chain contains a cycle at ${head.token}`);
+      seenTokens.add(head.token);
 
-      const successor = await readCommittedSuccessor(current);
-      if (successor == null) return current;
-
-      const successorDigest = snapshotDigest(successor);
-      invariant(successorDigest !== digest, `Blackboard store committed snapshot cannot point to itself at ${digest}`);
-      current = successor;
+      const successor = await readCommittedSuccessor(head);
+      if (successor == null) return head;
+      invariant(!seenTokens.has(successor.nextToken), `Blackboard store committed revision chain contains a cycle at ${successor.nextToken}`);
+      head = freezeClone({ token: successor.nextToken, snapshot: successor.snapshot });
     }
   }
 
-  async function publishSuccessor(baseSnapshot, nextSnapshot) {
-    const baseDigest = snapshotDigest(baseSnapshot);
+  async function publishSuccessor(baseHead, nextSnapshot) {
+    const baseDigest = snapshotDigest(baseHead.snapshot);
     const nextDigest = snapshotDigest(nextSnapshot);
     if (baseDigest === nextDigest) return false;
 
     await fs.mkdir(dirname(path), { recursive: true });
-    const destination = commitPath(path, baseDigest);
-    const tempPath = `${destination}.${randomUUID()}.tmp`;
-    await fs.writeFile(tempPath, serializeSnapshot(nextSnapshot), "utf8");
+    const nextToken = randomUUID();
+    const destination = commitPath(path, baseHead.token);
+    const tempPath = `${destination}.${nextToken}.tmp`;
+    const record = defineCommitRecord({
+      version: 1,
+      baseToken: baseHead.token,
+      baseDigest,
+      nextToken,
+      snapshot: nextSnapshot
+    }, tempPath);
+
+    await fs.writeFile(tempPath, serializeCommitRecord(record), "utf8");
 
     try {
       await fs.link(tempPath, destination);
     } catch (error) {
       if (error?.code === "EEXIST") {
-        throw new Error(`Blackboard store transaction conflict: base snapshot ${baseDigest} already has a committed successor`);
+        throw new Error(`Blackboard store transaction conflict: revision ${baseHead.token} already has a committed successor`);
       }
       throw error;
     } finally {
@@ -125,13 +172,14 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300
 
   return Object.freeze({
     async load() {
-      return freezeClone(await loadCommittedHead());
+      const head = await loadCommittedHead();
+      return freezeClone(head.snapshot);
     },
 
     async transact(mutator) {
       invariant(typeof mutator === "function", "Blackboard store transact requires a mutator");
       const current = await loadCommittedHead();
-      const next = clone(current);
+      const next = clone(current.snapshot);
       const result = await mutator(next);
       const normalized = defineBlackboardSnapshot(next);
       await publishSuccessor(current, normalized);
