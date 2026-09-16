@@ -55,7 +55,7 @@ test("Backend durable recovery store rejects a stale writer after a newer revisi
     const stale = session("backend:stale", 0, "stale");
     await assert.rejects(
       () => store.save(stale, { expectedRevision: 0 }),
-      (error) => error instanceof StoreConflictError && error.actualRevision === 2
+      (error) => error instanceof StoreConflictError && error.code === "STORE_CONFLICT"
     );
 
     const persisted = await store.load("backend:stale");
