@@ -251,6 +251,8 @@ PM path
 
 The PM proposal may add fresh prerequisite work and dependency edges only for the current target or work created by that proposal. Fresh work must start without prior claim/review/checkpoint/submission/follow-up history. A blocker may link existing unresolved work instead of inventing replacement work. PM review requirements are part of the same canonical transaction as the proposal's graph and blocker effects, so a process cannot publish the graph while losing the review obligation.
 
+Adding a PM review requirement does not resolve existing blockers. If the target is already `BLOCKED`, it remains `BLOCKED` until an explicit lifecycle transition resumes it; the review obligation stays attached for later review.
+
 PM cannot rewrite user intent or issue architecture/completion/review verdicts. SA cannot own dependency, priority, timeline or lifecycle mutation. Neither role writes Board state directly.
 
 SA assessments must reference evidence currently linked to the exact target. PM proposals bind `{itemId, status, claimGeneration, reviewGeneration}`. Controller-side validation narrows the proposal, but correctness fencing happens again inside the Orchestrator transaction: if the target changes between validation and mutation, the proposal fails before canonical state is published. A no-op proposal is also freshness-checked and does not publish a proposal artifact.
