@@ -281,9 +281,11 @@ PM proposal is bounded coordination proposal state:
 
 Roles do not mutate Blackboard directly. The controller validates project/root/target/evidence authority and delegates canonical mutation to `ApplicationOrchestrator`.
 
-`extendWorkGraph(...)` is the concrete Orchestrator-owned graph-extension primitive used by this slice. It adds only fresh READY work, permits dependency extension only for the current target or work created in the same call, rechecks the exact expected target inside the same Blackboard transaction, and atomically commits graph changes, artifact/evidence refs, blockers and PM review requirements. Replaying the same canonically linked proposal is idempotent; conflicting duplicate definitions, non-coordinatable target states and invalid complete dependency graphs fail before persistence. A PM review requirement does not clear an existing blocker.
+`extendWorkGraph(...)` is the concrete Orchestrator-owned graph-extension primitive used by this slice. It adds only fresh READY work, permits dependency extension only for the current target or work created in the same call, rechecks the exact expected target inside the same Blackboard transaction, and atomically commits graph changes, artifact/evidence refs, blockers and PM review requirements. Conflicting duplicate definitions, non-coordinatable target states and invalid complete dependency graphs fail before persistence. A PM review requirement does not clear an existing blocker.
 
-Durable PM proposal and SA assessment artifacts become continuation-relevant only after their refs are linked into Blackboard. `recoverCoordination()` reconstructs the project handoff and dereferences only linked coordination artifact refs; an orphan artifact written before a failed canonical mutation does not become project lifecycle truth.
+A proposal ref is not sufficient replay authority by itself. Replay requires that the ref is a direct target Board artifact ref and that the proposal's expected new-work provenance, dependency edges, blockers, PM review requirements and grounded SA refs/evidence are still established. A ref present only in a submission, or a direct ref injected by an unrelated checkpoint without the proposal effects, fails closed. `recoverCoordination()` similarly dereferences only direct Board artifact refs rather than submission-contained refs.
+
+Durable PM proposal and SA assessment artifacts become continuation-relevant only after their refs are canonically linked with the corresponding Board effects. An orphan artifact written before a failed canonical mutation does not become project lifecycle truth.
 
 This implementation is not a generic PM/SA agent runtime, role registry, horizontal-role framework, workflow DSL or vertical reviewer implementation.
 
