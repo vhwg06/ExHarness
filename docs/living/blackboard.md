@@ -255,12 +255,10 @@ follow-up-refs: [BB-004]
 origin: direct user objective defining Blackboard as the cross-session handoff boundary
 ```
 
-## Agentic Application
-
 ```text
 BB-004
 question/work: Integrate the durable Orchestrator-owned application workflow with the concrete Backend accepted -> QA pending/running/completed path, including restart/recovery behavior.
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: [BB-003, BB-011, BB-012]
 remaining-work: []
@@ -269,7 +267,9 @@ submission:
 review-requirements:
   - application/code review
   - architecture-boundary review
-reviews: []
+reviews:
+  - agentic-system review pass on exact PR #72 head after authority correction
+  - merged PR #72 after Node 20/22/24 CI
 artifact-refs:
   - packages/agentic-system/src/blackboard-orchestrator.js
   - packages/agentic-system/src/durable-backend-qa.js
@@ -277,17 +277,21 @@ artifact-refs:
   - packages/agentic-system/test/durable-backend-qa.test.js
 evidence-refs:
   - durable Backend -> QA restart/remediation/block-resume/cancel contract tests in PR #72
+  - CI run #1111 on reviewed head
+  - merge commit 10a6b3426389a7675cf47609ea01af9cac9f14d5
 blockers: []
-follow-up-refs: [BB-007]
+follow-up-refs: [BB-005, BB-007]
 origin: durable cross-session application execution pressure exposed after BB-012
 ```
 
-BB-004 deliberately does not claim external-effect exactly-once/reconciliation semantics. The remaining Core crash-window and deterministic recovery composition are represented by BB-006 and BB-007 rather than hidden inside application checkpoints.
+BB-004 deliberately does not claim external-effect exactly-once/reconciliation semantics. Core effect truth and recovery composition remain separate under BB-006 and BB-007.
+
+## Agentic Application
 
 ```text
 BB-005
 question/work: Production-evaluate the concrete Backend -> QA system and generalize only evidence-supported repeated semantics.
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-004]
 remaining-work:
@@ -304,8 +308,7 @@ review-requirements: []
 reviews: []
 artifact-refs: []
 evidence-refs: []
-blockers:
-  - BB-004 must be accepted before production evaluation
+blockers: []
 follow-up-refs: []
 ```
 
@@ -316,20 +319,26 @@ The promoted PM/SA topology in D003 is not yet claimed as a concrete source role
 ```text
 BB-006
 question/work: Close the built-in external-effect/persistence crash window so candidate/trace/variation state can never be mistaken for proof that an externally visible action completed.
-status: READY
+status: PENDING_REVIEW
 owner:
 depends-on: []
-remaining-work:
-  - decide how built-in avo.act crosses the effect-aware action-intent boundary
-  - ensure core.act persistence ordering does not infer completion from pre-persistence runtime state
-  - preserve separation between effect state, evaluation, semantic memory and application completion
+remaining-work: []
 submission:
-review-requirements: []
+  - PR #73
+review-requirements:
+  - core/code review
+  - effect/recovery boundary review
 reviews: []
-artifact-refs: []
-evidence-refs: []
+artifact-refs:
+  - packages/core-harness/src/avo-action-effect.js
+  - packages/core-harness/src/effect-aware-harness.js
+  - packages/core-harness/test/avo-action-effect.test.js
+  - docs/worktree/core-harness/workflow.md
+evidence-refs:
+  - confirmed-result crash recovery / fail-closed ambiguity / explicit idempotent replay contract tests in PR #73
 blockers: []
-follow-up-refs: []
+follow-up-refs: [BB-007]
+origin: Core effect/persistence crash-window pressure retained from pre-Blackboard architecture review
 ```
 
 ```text
@@ -348,8 +357,7 @@ reviews: []
 artifact-refs: []
 evidence-refs: []
 blockers:
-  - requires accepted durable application recovery pressure from BB-004
-  - external-effect boundary from BB-006 must be trustworthy
+  - BB-006 effect boundary must be accepted
 follow-up-refs: []
 ```
 
