@@ -38,18 +38,10 @@ QaWorkOrder.requiredArtifacts
 - external repository IO and internal application-artifact IO remain distinct adapters;
 - context carries stable source refs; internal artifacts also carry producer/acceptance provenance;
 - source errors are wrapped with the concrete failing boundary and requested ref/path;
-- Oracle has no agent loop, session lifecycle, generic resolver registry, MCP-first layer, retrieval framework or cache lifecycle in current source.
+- Oracle has no agent loop, session lifecycle, generic resolver registry, MCP-first layer, retrieval framework or cache lifecycle in current source;
+- no MCP client/adapter, MCP request state, MRTR continuation or Tasks handle is implemented or persisted today.
 
-MCP 2026-07-28 is now an accepted **conditional adapter/continuation boundary**, not a required Oracle layer:
-
-- use MCP only when a concrete source already exposes useful MCP resources/tools and it is simpler than direct integration;
-- MCP request ids, transport lifetime, explicit state handles, MRTR `requestState` and task handles remain source-call continuation metadata, never WorkOrder/Blackboard identity or completion authority;
-- `resources/read` is compatible with read-oriented context resolution; mutating `tools/call` would require explicit effect identity/reconciliation rather than retry inference;
-- configured source identity plus URI/operation refs may contribute provenance; self-reported server metadata is descriptive only;
-- `ttlMs` is a freshness/cache hint, not correctness authority;
-- MCP itself is not a third Oracle source class and does not reopen the generic resolver/diagnostics questions without a concrete MCP-backed adapter demonstrating source pressure.
-
-No MCP runtime adapter is implemented by this evaluation. Direct readers remain the current implementation.
+D006 is an accepted architecture boundary: if a concrete MCP-backed source appears later, MCP remains a source/capability adapter below application-owned work/lifecycle authority and protocol support alone does not count as a third source class. That non-current mapping lives in `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md` rather than this current-state projection.
 
 Caching/RAG are not missing features merely because they are absent. If concrete pressure makes them necessary, that work must first appear on the Blackboard.
 
