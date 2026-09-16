@@ -887,7 +887,7 @@ review-requirements: [workflow/acceptance review, application/code review]
 reviews:
   - workflow/acceptance review PASS on exact implementation head 2809dd0354379f596c91d3cea23efe414d568e82
   - application/code review PASS on the same exact head
-a rtifact-refs:
+artifact-refs:
   - packages/agentic-system/src/application-orchestrator.js
   - packages/agentic-system/test/bb024-cancellation-reconciliation.test.js
 evidence-refs:
