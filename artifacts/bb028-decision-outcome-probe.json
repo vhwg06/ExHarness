@@ -2,6 +2,11 @@
   "evidenceClass": "DETERMINISTIC_SYNTHETIC_REPOSITORY_SHAPE",
   "productionEvidence": false,
   "questionCount": 5,
+  "authority": {
+    "summaryOrientationIsCorrectnessEvidence": false,
+    "correctnessAnswersRequireExactUnderlyingReads": true,
+    "summaryAcceptanceAuthority": false
+  },
   "modes": {
     "currentBoundedHandoff": {
       "contextChars": 623,
@@ -23,16 +28,75 @@
       "incorrect": 0,
       "unknown": 0
     },
-    "proposedSummary": {
+    "proposedSummaryOrientation": {
       "contextChars": 1527,
       "boundedEntryReads": 1,
       "additionalExactArtifactReadsForOrientation": 0,
-      "exactEvidenceReadsForAcceptance": 3,
+      "exactEvidenceReadsForCorrectness": 0,
+      "correlationJoins": 0,
+      "boundedDiscoverableDecisionChain": true,
+      "correct": 0,
+      "incorrect": 0,
+      "unknown": 5
+    },
+    "proposedSummaryVerified": {
+      "contextChars": 1527,
+      "boundedEntryReads": 1,
+      "additionalExactArtifactReadsForOrientation": 0,
+      "exactEvidenceReadsForCorrectness": 8,
       "correlationJoins": 0,
       "boundedDiscoverableDecisionChain": true,
       "correct": 5,
       "incorrect": 0,
       "unknown": 0
     }
+  },
+  "antiLaundering": {
+    "controlCount": 7,
+    "escapedControls": 0,
+    "controls": [
+      {
+        "name": "tampered-authorization-copy",
+        "accepted": false,
+        "failClosed": true,
+        "reason": "authorization conflicts with ActionIntent"
+      },
+      {
+        "name": "success-copy-over-failing-evaluation",
+        "accepted": false,
+        "failClosed": true,
+        "reason": "observed outcome conflicts with evaluation"
+      },
+      {
+        "name": "tampered-authorization-evidence-ref",
+        "accepted": false,
+        "failClosed": true,
+        "reason": "authorization evidence refs conflict with ActionIntent"
+      },
+      {
+        "name": "tampered-outcome-ref",
+        "accepted": false,
+        "failClosed": true,
+        "reason": "outcome refs conflict with ActionIntent"
+      },
+      {
+        "name": "missing-underlying-evaluation",
+        "accepted": false,
+        "failClosed": true,
+        "reason": "evaluation ref missing"
+      },
+      {
+        "name": "wrong-action-intent-revision",
+        "accepted": false,
+        "failClosed": true,
+        "reason": "action intent revision mismatch"
+      },
+      {
+        "name": "omitted-counterevidence",
+        "accepted": false,
+        "failClosed": true,
+        "reason": "counterevidence omits current outcome evaluation"
+      }
+    ]
   }
 }
