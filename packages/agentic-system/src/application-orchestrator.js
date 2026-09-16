@@ -163,6 +163,9 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     const normalizedEvidence = normalizeTextArray(evidenceRefs, "evidenceRefs");
     const normalizedBlockers = normalizeTextArray(blockers, "blockers");
     const normalizedNewItems = newItems.map(normalizeFreshWork);
+    const extensionItemIds = new Set(normalizedNewItems.map((item) => item.id));
+    invariant(!extensionItemIds.has(targetItemId), `newItems cannot replace target item ${targetItemId}`);
+    invariant(extensionItemIds.size === normalizedNewItems.length, "newItems cannot contain duplicate ids");
 
     return guardedStore.transact((snapshot) => {
       const target = findItem(snapshot, targetItemId);
@@ -183,6 +186,10 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
       }
 
       for (const edge of edges) {
+        invariant(
+          edge.itemId === targetItemId || extensionItemIds.has(edge.itemId),
+          `Blackboard work graph extension cannot rewrite unrelated item ${edge.itemId}`
+        );
         const item = findItem(snapshot, edge.itemId);
         findItem(snapshot, edge.dependencyId);
         invariant(edge.itemId !== edge.dependencyId, `Blackboard dependency cannot self-reference: ${edge.itemId}`);
