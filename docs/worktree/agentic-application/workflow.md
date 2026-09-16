@@ -76,6 +76,8 @@ final Blackboard submission
   |
   v
 PENDING_REVIEW
+  |
+  +-> PM/project coordination may require concrete review
 ```
 
 The persisted checkpoint carries the validated workflow spec plus only the continuation state required by the current stage. Accepted Backend -> QA continuation carries the existing ref-only handoff and Backend acceptance-decision provenance rather than artifact payloads.
@@ -86,7 +88,7 @@ Artifact/context lookup failure does not discard progress. The item becomes `BLO
 
 `cancel(...)` supersedes unfinished work. Superseded work is not claimable.
 
-QA role acceptance is not Blackboard acceptance. Successful QA clears the partial checkpoint and creates a final submission with Backend/QA decision refs, artifact refs and an independent application-review requirement.
+QA role acceptance is not Blackboard acceptance. Successful QA clears the partial checkpoint and creates a final submission with Backend/QA decision refs and artifact refs. It does **not** fabricate `source: WORKER` for application review. If project completion requires review, PM/project coordination must use the distinct PM review-requirement path.
 
 ## Durable Blackboard lifecycle
 
@@ -98,6 +100,7 @@ READY / REOPENED
       -> REOPENED | BLOCKED
     or submit final work
       -> PENDING_REVIEW
+ -> project/PM may add required review
  -> Orchestrator.beginReview(...)
       -> freeze exact review target subject
  -> REVIEWING
@@ -115,7 +118,7 @@ READY / REOPENED
 
 The Orchestrator does not accept a naked caller-provided review verdict. Review decision/evidence/signature/authority must pass the application-provided trust policy over the exact active review target.
 
-Review requirements may be Worker-requested at submit time or PM-required separately. The Orchestrator owns scheduling/transition semantics; current source does not yet implement concrete PM/SA role execution or vertical reviewer Workers.
+Review requirements may be Worker-requested when a real Worker raises that need or PM-required separately. `createDurableBackendQaWorkflow(...)` does not impersonate either source after QA completion. Current source still does not implement concrete PM/SA role execution or vertical reviewer Workers.
 
 ## Fresh-session handoff
 
@@ -199,6 +202,6 @@ Application checkpoint persistence is not external-effect reconciliation. A cras
 
 Worker prose is not completion authority. Role completion is derived from structured results plus grounded role-specific evidence and application policy.
 
-Backend acceptance authorizes creation of the QA handoff; QA acceptance authorizes a final application submission. Neither role-local decision directly authorizes Blackboard `DONE`.
+Backend acceptance authorizes creation of the QA handoff; QA acceptance authorizes a final application submission. Neither role-local decision directly authorizes Blackboard `DONE` or a fabricated review requirement.
 
 Blackboard problem completion remains a separate boundary: required review/acceptance obligations and unresolved current-work findings must be reconciled first.
