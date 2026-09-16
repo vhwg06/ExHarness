@@ -14,6 +14,7 @@ Source-synchronized application-layer projection. All unresolved application wor
 - default completion requires mutation + typecheck + tests + artifact presence;
 - completion emits an acceptance-boundary ExHarness decision artifact;
 - bounded `BackendAdvisor` is available only after required objective evidence passes and semantic gaps remain;
+- Advisor `REQUEST_CONTEXT` and `ESCALATE` proposals become durable application coordination requirements rather than direct execution authority;
 - Backend execution can use a concrete durable JSON Core SessionStore so Core session state and AVO action-effect journal survive process reconstruction;
 - interrupted Backend recovery is exposed through `BackendWorker.recover(...)` / `recoverBackendObjective(...)` and never bypasses the ordinary Backend completion/evidence policy.
 
@@ -39,7 +40,9 @@ Implemented Board semantics include:
 - `recoverClaim(...)` is an explicit recovery transition from `CLAIMED` that increments the generation before replacement work can mutate Board state;
 - a claimed owner may persist a partial-work checkpoint before final submission;
 - checkpoints can release work as `REOPENED` or preserve exact continuation state while `BLOCKED`;
-- blocked work can be resumed to `REOPENED`; unfinished work can be superseded/canceled;
+- ordinary blocked work can be resumed to `REOPENED`; unfinished work can be superseded/canceled;
+- `SUPERSEDED` is terminal at the public Application Orchestrator transaction boundary and delayed reconciliation cannot mutate/remove that item or create child work by reviving it;
+- `resolveBlockedCheckpoint(...)` atomically replaces one exact expected blocked checkpoint, clears blockers and reopens it in the same guarded store transaction; stale checkpoint state fails closed;
 - a claimed Worker owner may submit an immutable result payload and Worker-sourced review requests;
 - PM-sourced review requirements can be added separately from Worker requests;
 - submitted work becomes `PENDING_REVIEW`, never directly `DONE`;
@@ -48,6 +51,8 @@ Implemented Board semantics include:
 - all required reviews must be `ACCEPTED` and remaining work must be empty before `DONE` is derived;
 - `REJECTED`/`INCONCLUSIVE` review reopens the same item and narrows remaining work;
 - follow-up reconciliation distinguishes current obligation, existing work, genuine new work and non-actionable findings;
+- complete Blackboard snapshots reject dangling, self and cyclic dependency graphs before ordinary use/persistence, with explicit diagnose/repair for legacy graph-invalid state;
+- persisted Blackboard values must satisfy the public JSON-value contract so acknowledged state cannot silently convert `Map`, `NaN`, `Date`, shared identity or other non-preserving values;
 - checkpoints, submissions, generations, active review state and pending review state survive reconstruction through the JSON store.
 
 Generation is lifecycle fencing only. Elapsed time, heartbeat loss or lease expiry is not implemented as correctness authority and does not prove an interrupted effect is safe to retry.
@@ -75,16 +80,23 @@ Project identity belongs to the Board/root boundary rather than being copied int
 Current state transitions are:
 
 - initialization persists validated Backend + QA objectives before Worker execution;
-- `BACKEND_PENDING` executes Backend from the persisted spec;
+- `BACKEND_PENDING` executes Backend from the persisted spec under an exact claim generation;
+- Advisor `RETRY_IMPLEMENTATION` remains an ordinary eligible retry and deterministic `CONTINUE` remains ordinary continuation;
+- Advisor `REQUEST_CONTEXT` or `ESCALATE` persists `BACKEND_COORDINATION_PENDING` as a blocked checkpoint carrying action, bounded gap IDs, context needs, rationale, original Backend stage, attempt and Backend completion-decision provenance;
+- a fresh process/session reconstructs that coordination requirement and `advance(...)` does not redispatch Backend while it is unresolved;
+- generic `resume(...)` cannot bypass an unresolved Backend coordination requirement;
+- `resolveBackendCoordination(...)` is the application-owned resolution boundary: context requests require application-declared additional repository files; escalations require an explicit resolver identity/rationale;
+- coordination resolution replaces the exact expected blocked checkpoint and reopens the original Backend stage atomically through `resolveBlockedCheckpoint(...)`; stale state or a now-`SUPERSEDED` item fails closed;
 - accepted Backend completion persists a ref-only `BackendQaHandoff` plus acceptance-decision provenance as `QA_PENDING`;
 - a fresh process/session can reconstruct the same Board and continue QA without prior conversation state;
 - QA issues persist as `BACKEND_REMEDIATION_PENDING`; remediation uses the last accepted Backend revision as its new repository base;
-- artifact/context lookup failure blocks while preserving the exact `QA_PENDING` checkpoint; resume retries from that checkpoint;
+- artifact/context lookup failure blocks while preserving the exact `QA_PENDING` checkpoint; ordinary resume retries from that checkpoint;
 - QA acceptance clears the partial checkpoint and creates a final Blackboard submission with Backend/QA decision refs and artifact refs;
 - final submission becomes `PENDING_REVIEW` but does not fabricate a Worker-sourced application review request; project/PM review requirements remain a separate authority path;
 - if a process dies while a stage is `CLAIMED`, `recoverInterrupted(...)` first increments the application claim generation to fence the abandoned attempt;
 - interrupted `QA_PENDING` recovery reruns the non-mutating QA stage against the exact persisted accepted Backend handoff;
-- interrupted Backend recovery restores the persisted Core session/effect journal through the concrete Backend session store before deciding whether strategy execution can continue.
+- interrupted Backend recovery restores the persisted Core session/effect journal through the concrete Backend session store before deciding whether strategy execution can continue;
+- `BACKEND_COORDINATION_PENDING` is application coordination, not interrupted execution, and therefore is not recoverable through `recoverInterrupted(...)`.
 
 Concrete Backend recovery handles persisted effect truth as follows:
 
@@ -95,7 +107,7 @@ Concrete Backend recovery handles persisted effect truth as follows:
 - non-reconcilable ambiguity -> recovery blocks rather than redispatching;
 - multiple persisted mutation effects, candidate divergence, or an already-advanced Core candidate without a durable Worker semantic result -> recovery blocks/requires reassessment instead of inventing a Backend result.
 
-A recovered Backend result still passes the ordinary lineage, evidence, completion and Advisor boundaries. Recovery state is not acceptance authority.
+A recovered Backend result still passes the ordinary lineage, evidence, completion and Advisor boundaries. Advisor coordination/resolution is also continuation state only; neither path is acceptance authority.
 
 The older `runBackendThenQaObjective(...)` direct composition remains available as an in-session path. It is not the durable cross-session workflow surface.
 
@@ -117,7 +129,7 @@ The gate executes the concrete durable Backend -> QA workflow across happy-path,
 
 The checked result is explicitly classified as `DETERMINISTIC_REFERENCE` with `productionEvidence: false`. It measures false completion, handoff/ref integrity, source reads/context size, remediation/recovery and review-gate behavior, but does not claim real-repository effectiveness, external-provider quality, production latency/cost, Advisor value-add or justification for generic abstractions.
 
-The interrupted-effect crash scenarios are enforced by application contract tests; they are not currently part of the deterministic `eval:agentic` reference corpus.
+The interrupted-effect crash scenarios and Advisor coordination scenarios are enforced by application contract tests; they are not currently part of the deterministic `eval:agentic` reference corpus.
 
 See `evaluation.md` for the current executable evaluation surface and limitations.
 
@@ -129,7 +141,7 @@ Shared shapes proven in source remain deliberately narrow:
 - evidence integrity / required-claim state plumbing;
 - Blackboard item/review/follow-up/checkpoint/generation state required for durable orchestration;
 - durable `UserIntent` plus optional project-bound read-only session-handoff projection over Blackboard state;
-- concrete Backend -> QA workflow checkpoint semantics earned by the existing Backend and QA slices;
+- concrete Backend -> QA workflow checkpoint semantics including bounded durable Advisor coordination requirements;
 - concrete Backend durable session/effect recovery composition, without a generic recovery registry/facade.
 
 There is still no generic Worker/WorkOrder/Advisor/role registry/workflow graph/Teacher registry/Reviewer registry, project-state registry, lease service or recovery DSL.
@@ -142,7 +154,7 @@ D003 promotes the responsibility split:
 - SA = horizontal architecture only;
 - remaining execution/review = vertical and context-bound.
 
-Concrete PM context/role execution, SA context/role execution and vertical Reviewer implementations are not present in source yet. `requireReview(... source: PM ...)` is an authority boundary available to project coordination, not evidence that a concrete PM runtime role already exists.
+Concrete PM context/role execution, SA context/role execution and vertical Reviewer implementations are not present in source yet. `requireReview(... source: PM ...)` is an authority boundary available to project coordination, not evidence that a concrete PM runtime role already exists. Backend escalation resolution is a narrow application coordination surface and does not imply a concrete PM/SA runtime role.
 
 ## Routing
 
@@ -150,6 +162,7 @@ Concrete PM context/role execution, SA context/role execution and vertical Revie
 - current ownership boundaries -> `boundaries.md`
 - current workflow -> `workflow.md`
 - current contracts -> `contracts.md`
+- current durable Advisor coordination -> `advisor-coordination.md`
 - current decisions/invariants -> `decisions.md`
 - current application evaluation -> `evaluation.md`
 - all open application gaps/problems -> `../../living/blackboard.md`
