@@ -1,0 +1,356 @@
+{
+  "experiment": "BB-037 grounded experience reuse deterministic evaluation",
+  "evidenceClass": "DETERMINISTIC_REFERENCE",
+  "productionEvidence": false,
+  "semantics": "RELEVANCE_ONLY",
+  "corpus": {
+    "trainingExperienceRecords": 9,
+    "heldOutTasks": 4,
+    "archivedRecords": 1,
+    "maxRepairAttempts": 3,
+    "retrievalLimit": 4
+  },
+  "predeclaredDecisionRule": "NARROW or ADOPT only if bounded reuse reduces held-out repeat failures or repair attempts versus no-memory without worse final correctness, cross-project recall, stale/wrong-scope reuse, or acceptance-authority violations. Fixture evidence cannot authorize a production default.",
+  "summary": {
+    "none": {
+      "tasks": 4,
+      "repairAttempts": 8,
+      "meanRepairAttempts": 2,
+      "repeatFailures": 4,
+      "finalCorrect": 4,
+      "negativeTransfers": 0,
+      "crossProjectRecalls": 0,
+      "staleOrWrongScopeRecalls": 0,
+      "retrievalChars": 0,
+      "acceptanceAuthorityViolations": 0
+    },
+    "lexical": {
+      "tasks": 4,
+      "repairAttempts": 6,
+      "meanRepairAttempts": 1.5,
+      "repeatFailures": 2,
+      "finalCorrect": 4,
+      "negativeTransfers": 1,
+      "crossProjectRecalls": 0,
+      "staleOrWrongScopeRecalls": 1,
+      "retrievalChars": 13573,
+      "acceptanceAuthorityViolations": 0
+    },
+    "associative": {
+      "tasks": 4,
+      "repairAttempts": 10,
+      "meanRepairAttempts": 2.5,
+      "repeatFailures": 6,
+      "finalCorrect": 4,
+      "negativeTransfers": 3,
+      "crossProjectRecalls": 2,
+      "staleOrWrongScopeRecalls": 3,
+      "retrievalChars": 16977,
+      "acceptanceAuthorityViolations": 0
+    },
+    "bounded": {
+      "tasks": 4,
+      "repairAttempts": 6,
+      "meanRepairAttempts": 1.5,
+      "repeatFailures": 2,
+      "finalCorrect": 4,
+      "negativeTransfers": 0,
+      "crossProjectRecalls": 0,
+      "staleOrWrongScopeRecalls": 0,
+      "retrievalChars": 7618,
+      "acceptanceAuthorityViolations": 0
+    }
+  },
+  "archivedFilter": {
+    "droppedArchived": 1,
+    "archivedMemoryVisible": false
+  },
+  "runs": [
+    {
+      "task": {
+        "id": "held-alpha-timeout-r2",
+        "project": "alpha",
+        "repository": "checkout",
+        "revision": "r2",
+        "family": "timeout",
+        "evaluationPolicy": "eval-v1",
+        "query": "checkout gateway timeout retry failure backoff",
+        "correctRepair": "retry-jitter"
+      },
+      "modes": {
+        "none": {
+          "selectedMemoryId": null,
+          "selectedRepair": null,
+          "repairAttempts": 2,
+          "repeatFailures": 1,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 0,
+          "visibleMemoryIds": [],
+          "diagnostics": ["NO_MEMORY_BASELINE"],
+          "acceptanceAuthority": false
+        },
+        "lexical": {
+          "selectedMemoryId": "experience-1",
+          "selectedRepair": "retry-jitter",
+          "repairAttempts": 1,
+          "repeatFailures": 0,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 3623,
+          "visibleMemoryIds": ["experience-1", "experience-3", "experience-4", "experience-2"],
+          "diagnostics": [],
+          "acceptanceAuthority": false
+        },
+        "associative": {
+          "selectedMemoryId": "experience-4",
+          "selectedRepair": "gamma-breaker",
+          "repairAttempts": 3,
+          "repeatFailures": 2,
+          "finalCorrect": true,
+          "negativeTransfer": true,
+          "crossProjectRecall": true,
+          "staleOrWrongScopeRecall": true,
+          "retrievalChars": 4809,
+          "visibleMemoryIds": ["experience-4", "experience-3", "experience-1", "experience-2"],
+          "diagnostics": [],
+          "acceptanceAuthority": false
+        },
+        "bounded": {
+          "selectedMemoryId": "experience-1",
+          "selectedRepair": "retry-jitter",
+          "repairAttempts": 1,
+          "repeatFailures": 0,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 2709,
+          "visibleMemoryIds": ["experience-1", "experience-2"],
+          "diagnostics": ["REVISION_MISMATCH:experience-2"],
+          "acceptanceAuthority": false
+        }
+      }
+    },
+    {
+      "task": {
+        "id": "held-beta-timeout-r5",
+        "project": "beta",
+        "repository": "checkout",
+        "revision": "r5",
+        "family": "timeout",
+        "evaluationPolicy": "eval-v1",
+        "query": "checkout gateway timeout retry failure circuit breaker",
+        "correctRepair": "disable-retry"
+      },
+      "modes": {
+        "none": {
+          "selectedMemoryId": null,
+          "selectedRepair": null,
+          "repairAttempts": 2,
+          "repeatFailures": 1,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 0,
+          "visibleMemoryIds": [],
+          "diagnostics": ["NO_MEMORY_BASELINE"],
+          "acceptanceAuthority": false
+        },
+        "lexical": {
+          "selectedMemoryId": "experience-3",
+          "selectedRepair": "disable-retry",
+          "repairAttempts": 1,
+          "repeatFailures": 0,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 3631,
+          "visibleMemoryIds": ["experience-3", "experience-4", "experience-1", "experience-2"],
+          "diagnostics": [],
+          "acceptanceAuthority": false
+        },
+        "associative": {
+          "selectedMemoryId": "experience-4",
+          "selectedRepair": "gamma-breaker",
+          "repairAttempts": 3,
+          "repeatFailures": 2,
+          "finalCorrect": true,
+          "negativeTransfer": true,
+          "crossProjectRecall": true,
+          "staleOrWrongScopeRecall": true,
+          "retrievalChars": 4820,
+          "visibleMemoryIds": ["experience-4", "experience-3", "experience-1", "experience-2"],
+          "diagnostics": [],
+          "acceptanceAuthority": false
+        },
+        "bounded": {
+          "selectedMemoryId": "experience-3",
+          "selectedRepair": "disable-retry",
+          "repairAttempts": 1,
+          "repeatFailures": 0,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 1663,
+          "visibleMemoryIds": ["experience-3"],
+          "diagnostics": [],
+          "acceptanceAuthority": false
+        }
+      }
+    },
+    {
+      "task": {
+        "id": "held-alpha-auth-r2-policy2",
+        "project": "alpha",
+        "repository": "auth",
+        "revision": "r2",
+        "family": "token-expiry",
+        "evaluationPolicy": "eval-v2",
+        "query": "auth token expiry regression clock skew parse",
+        "correctRepair": "normalize-clock"
+      },
+      "modes": {
+        "none": {
+          "selectedMemoryId": null,
+          "selectedRepair": null,
+          "repairAttempts": 2,
+          "repeatFailures": 1,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 0,
+          "visibleMemoryIds": [],
+          "diagnostics": ["NO_MEMORY_BASELINE"],
+          "acceptanceAuthority": false
+        },
+        "lexical": {
+          "selectedMemoryId": "experience-6",
+          "selectedRepair": "clamp-offset",
+          "repairAttempts": 3,
+          "repeatFailures": 2,
+          "finalCorrect": true,
+          "negativeTransfer": true,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": true,
+          "retrievalChars": 3567,
+          "visibleMemoryIds": ["experience-6", "experience-5", "experience-7", "experience-8"],
+          "diagnostics": [],
+          "acceptanceAuthority": false
+        },
+        "associative": {
+          "selectedMemoryId": "experience-5",
+          "selectedRepair": "grace-window",
+          "repairAttempts": 3,
+          "repeatFailures": 2,
+          "finalCorrect": true,
+          "negativeTransfer": true,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": true,
+          "retrievalChars": 3681,
+          "visibleMemoryIds": ["experience-5", "experience-7", "experience-8"],
+          "diagnostics": [],
+          "acceptanceAuthority": false
+        },
+        "bounded": {
+          "selectedMemoryId": null,
+          "selectedRepair": null,
+          "repairAttempts": 2,
+          "repeatFailures": 1,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 557,
+          "visibleMemoryIds": [],
+          "diagnostics": ["NO_APPLICABLE_EXPERIENCE"],
+          "acceptanceAuthority": false
+        }
+      }
+    },
+    {
+      "task": {
+        "id": "held-alpha-quota-r7",
+        "project": "alpha",
+        "repository": "quota",
+        "revision": "r7",
+        "family": "quota-regression",
+        "evaluationPolicy": "eval-v1",
+        "query": "tenant quota regression reserve capacity write",
+        "correctRepair": "reserve-first"
+      },
+      "modes": {
+        "none": {
+          "selectedMemoryId": null,
+          "selectedRepair": null,
+          "repairAttempts": 2,
+          "repeatFailures": 1,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 0,
+          "visibleMemoryIds": [],
+          "diagnostics": ["NO_MEMORY_BASELINE"],
+          "acceptanceAuthority": false
+        },
+        "lexical": {
+          "selectedMemoryId": "experience-7",
+          "selectedRepair": "reserve-first",
+          "repairAttempts": 1,
+          "repeatFailures": 0,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 2752,
+          "visibleMemoryIds": ["experience-7", "experience-8", "experience-5"],
+          "diagnostics": [],
+          "acceptanceAuthority": false
+        },
+        "associative": {
+          "selectedMemoryId": "experience-7",
+          "selectedRepair": "reserve-first",
+          "repairAttempts": 1,
+          "repeatFailures": 0,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 3667,
+          "visibleMemoryIds": ["experience-7", "experience-8", "experience-5"],
+          "diagnostics": [],
+          "acceptanceAuthority": false
+        },
+        "bounded": {
+          "selectedMemoryId": null,
+          "selectedRepair": null,
+          "repairAttempts": 2,
+          "repeatFailures": 1,
+          "finalCorrect": true,
+          "negativeTransfer": false,
+          "crossProjectRecall": false,
+          "staleOrWrongScopeRecall": false,
+          "retrievalChars": 2689,
+          "visibleMemoryIds": ["experience-7", "experience-8"],
+          "diagnostics": ["CONTRADICTORY_REPAIRS:compensate-after-write|reserve-first"],
+          "acceptanceAuthority": false
+        }
+      }
+    }
+  ],
+  "conclusion": {
+    "direction": "NARROW",
+    "reason": "Application-bounded applicability over existing relevance-only memory can reduce repeated fixture remediation while failing closed on policy/revision mismatch, contradictory repairs, archived experience and unrelated projects. The result is deterministic fixture evidence only; representative recurring-failure tasks are required before runtime adoption or default enablement.",
+    "coreChangeRequired": false,
+    "runtimeDefaultAuthorized": false
+  }
+}
