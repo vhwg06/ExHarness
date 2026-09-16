@@ -4,138 +4,158 @@ Status: **PROPOSED**
 
 Proposed: 2026-09-16
 
-Acceptance boundary: BB-034 architecture-boundary review plus evaluation-method review. This decision must not be treated as accepted until both reviews pass.
+Acceptance boundary: BB-034 architecture-boundary review plus evaluation-method review. Merge of research artifacts is not acceptance. This decision remains proposed until a reviewer accepts the corrected exact-head evidence.
 
 ## Context
 
-ExHarness already has separate primitives for fresh grounded reflection, bounded deliberation and ActionIntent authorization, deterministic workflow-policy replay, and independently trusted evidence/decision/attestation bundles.
+ExHarness already has separate primitives for grounded cognition, bounded deliberation and ActionIntent authorization, deterministic policy replay, and trust artifacts. BB-034 asks whether those primitives can compose one bounded improvement experiment without creating a second correctness or rollout authority.
 
-BB-034 composes those primitives against one concrete historical project failure: the BB-024 late-reconciliation cancellation regression represented by merged BB-038. The terminal-cancellation policy is now current source behavior after PR #85; the old defective policy is retained only as an experiment baseline.
+The pilot uses the historical BB-024 late-reconciliation cancellation failure represented by the deterministic BB-038 replay artifact. The current terminal-cancellation behavior is already delivered; this experiment is research about the control loop, not a new implementation of BB-024.
 
-The research question is not whether a model can recursively modify the system. The concrete question is whether an observed failure can produce a bounded candidate experiment without letting the candidate redefine its own evidence, evaluation gate or rollout authority.
+## Decision candidate
 
-## Decision
+A self-upgrade attempt may produce an **adoption proposal** only after a fixed experiment passes its declared evaluation gates.
 
-A self-upgrade attempt is a **bounded evidence-gated experiment that may produce an adoption proposal**.
-
-It is not an authority that may select, merge, deploy or accept itself.
-
-The accepted control shape, if BB-034 reviews pass, is:
+It may not accept, merge, deploy, select, or roll itself out.
 
 ```text
-fresh persisted failure evaluation
- -> grounded REFLECTION
- -> bounded experiment hypothesis
- -> DeliberationArtifact + ActionIntent
- -> EXPERIMENT_ONLY authorization
- -> immutable experiment protocol
- -> development evaluation
- -> predeclared held-out evaluation
- -> independent EvidenceArtifact[]
- -> DecisionArtifact
- -> Attestation
- -> ADOPTION_PROPOSAL | KEEP_BASELINE
- -> separate application/project acceptance
+persisted observed failure
+  -> semantically grounded REFLECTION
+  -> bounded hypothesis
+  -> DeliberationArtifact + ActionIntent
+  -> exact EXPERIMENT_ONLY authorization
+  -> fixed recorded experiment
+  -> development controls
+  -> predeclared recorded holdout-control schedule
+  -> identity-separated evidence / evaluation / attestation
+  -> PROPOSE_FOR_REVIEW | KEEP_BASELINE
+  -> separate application/project acceptance
 ```
 
-## Immutable experiment protocol
+## Grounding contract
 
-Before candidate outcomes are observed, the application must fix and persist at least:
+The reflection must be grounded against persisted source content that establishes the concrete failure, not merely against the existence of an `EVALUATION` ref.
+
+For the BB-034 fixture, the persisted observation and evaluation bind to:
+
+- the exact BB-038 replay artifact ref;
+- its SHA-256 content digest;
+- the `cancellation-late-reconciliation` scenario;
+- baseline final status `REOPENED`;
+- candidate final status `SUPERSEDED`;
+- the failure code representing violation of terminal cancellation.
+
+The GroundingVerifier validates those fields. Changing the active candidate makes the baseline evaluation stale and the reflection cannot be reactivated from it.
 
 ```text
-baseline revision/config
-candidate revision/config
-experiment subject
-target scenario/task set
-development-control set
-held-out set
-evaluator/policy identity
-success thresholds
-resource/iteration budget
-evidence freshness rules
-rollback target
+fresh evaluation ref != semantically grounded claim
 ```
 
-The candidate, reflection, experiment executor and generated rationale may not mutate those gates during the active experiment.
+Both freshness and claim support are required.
 
-Development/held-out membership is part of the experiment subject, not a post-hoc reporting choice. If the evaluator, thresholds, membership or subject changes, previous evidence does not authorize the changed experiment.
+## Exact experiment authorization
 
-## Grounding boundary
-
-A reflection may propose an experiment only from fresh persisted evidence accepted by the existing grounding boundary. Stale evidence is not reusable merely because it supported an earlier candidate revision.
+The experiment ActionIntent is authority-bearing only for one exact custom action:
 
 ```text
-REFLECTION != EVALUATION
-REFLECTION != ACCEPTANCE
-REFLECTION != ROLLOUT AUTHORITY
+CUSTOM evaluation.compare-recorded-policy
 ```
 
-## Action boundary
+For `CUSTOM` ActionIntent, the protocol is carried in `action.payload`. The policy must validate the exact payload before returning `ALLOW`.
 
-The experiment ActionIntent authorizes only the declared isolated experiment.
+The payload binds:
 
-For the BB-034 pilot this means evaluating a recorded baseline/candidate policy fixture. It does not authorize repository mutation, production configuration replacement, Blackboard lifecycle mutation, project-review changes, evaluator changes, merge, deploy or rollout.
+- replay artifact ref and digest;
+- baseline and candidate policy identities;
+- target scenario;
+- development-control scenario ids;
+- recorded holdout-control scenario ids;
+- full experiment budget;
+- `adoptionAuthority: false`.
 
-A future candidate that requires live mutation needs a separately authorized sandbox/execution boundary; no such authority is inferred from this fixture research.
-
-## Evaluation and held-out rule
-
-A candidate becomes eligible for an adoption proposal only when:
+A changed action name, changed payload, widened budget, repository mutation request, or adoption-shaped action is denied before the operation executes.
 
 ```text
-DEVELOPMENT GATE passes
-AND PREDECLARED HELD-OUT GATE passes
-AND fixed budget is respected
+reported EXPERIMENT_ONLY != enforced EXPERIMENT_ONLY
 ```
 
-For the first research fixture:
+The authorization policy itself must enforce the scope.
+
+## Fixed experiment protocol
+
+Before evaluating the candidate, the application fixes:
 
 ```text
-target = cancellation-late-reconciliation
+baseline policy
+candidate policy
+replay artifact identity
+scenario membership
+success predicates
+budget
+rollback/baseline-selection rule
+```
 
-development controls =
+The BB-034 budget is:
+
+```text
+4 scenarios
+2 distinct policy identities
+2 deterministic repeat passes
+0 external mutations/dispatches
+```
+
+`budgetRespected` is true only when all declared dimensions are checked.
+
+## Development and recorded holdout control
+
+The first fixture uses:
+
+```text
+target:
+  cancellation-late-reconciliation
+
+development controls:
   artifact-outage
   retry-recorded-effect
 
-held-out =
+recorded holdout control:
   review-delay
 ```
 
-The corrected probe includes a negative fixture where the development gate still passes but the predeclared held-out schedule regresses. The required outcome is `KEEP_BASELINE`.
+The `review-delay` schedule is **not unseen statistical held-out evidence**. The replay artifact and candidate are already known within this research slice. It is a predeclared recorded control used to prove that the decision rule does not ignore a non-development regression.
 
-This establishes the stop invariant:
-
-```text
-development PASS + held-out FAIL != adoption proposal
-```
-
-Failed or inconclusive candidates and held-out failures must be retained as negative evidence. The system must not weaken the gate or retry indefinitely until a favorable result appears.
-
-## Independent experiment trust
-
-A successful experiment used as proposal input must be independently grounded through the existing trust pipeline.
-
-Minimum authorities remain distinct:
+The negative control modifies only that recorded holdout schedule. Development remains passing while the holdout control fails, and the required result is:
 
 ```text
-candidate/proposal producer
-experiment evidence producer
-experiment evaluator
-attestation issuer
-application/project adoption authority
+KEEP_BASELINE
 ```
 
-A trusted experiment decision establishes only that the declared experiment claims passed under its exact subject/policy. In the BB-034 fixture, the trusted claims include target repair, development-control stability, held-out stability, zero external dispatch and budget compliance.
+This establishes a stop-rule contract. It does not establish production generalization.
 
-Invariant:
+## Trust boundary
+
+The fixture uses distinct identities for:
+
+- proposal producer;
+- experiment evidence producer;
+- evaluator;
+- attestation issuer.
+
+The trust pipeline validates those identities, policy digest, required claims, evidence producer authority, evaluator authority, and attestation signature.
+
+Because all identities are exercised inside one deterministic process, this is **identity-separated trust-contract evidence**, not evidence of organizational/process independence.
+
+A trusted experiment decision still means only:
 
 ```text
-trusted experiment ACCEPT != project adoption
+this exact recorded experiment satisfied its exact policy
 ```
+
+It does not mean project adoption is authorized.
 
 ## Adoption boundary
 
-A PASS changes conceptual state only from:
+PASS changes conceptual state only from:
 
 ```text
 BASELINE_SELECTED
@@ -148,79 +168,73 @@ BASELINE_SELECTED
 + CANDIDATE_PROPOSED_FOR_REVIEW
 ```
 
-Only the enclosing Agentic Application/project acceptance authority may later select the candidate.
+BB-019 remains the dependency for independent application/project acceptance. BB-027 remains the dependency for durable research continuation. BB-034 cannot unblock BB-035 by merge or fixture success alone.
 
-BB-019 remains the dependency for independent application/project acceptance. BB-027 remains the dependency for durable research continuation. Therefore BB-034 acceptance alone does not unblock or authorize BB-035 delivery.
+## Stop and rollback semantics
 
-## Rollback
+For this research fixture:
 
-Every future adoption proposal must name the exact rollback target before rollout. Failure, inconclusive evaluation or held-out regression leaves the current baseline selected.
+```text
+PASS                  -> PROPOSE_FOR_REVIEW
+FAIL                   -> KEEP_BASELINE
+INCONCLUSIVE           -> KEEP_BASELINE
+recorded holdout fail  -> KEEP_BASELINE
+```
 
-The BB-034 fixture uses the historical defective BB-024 policy only to exercise this control field; it is not a production rollback recommendation. A real pilot must use a currently accepted baseline as rollback target.
+The historical defective policy appears as the experiment baseline only. It is not a production rollback recommendation. A real adopted pilot must name the currently accepted production baseline as its rollback target before rollout.
 
-## User/project authority
+## Authority invariants
 
 No self-upgrade iteration may alter by implication:
 
-- user objective or explicit constraints;
+- user objective or constraints;
 - project identity;
-- Blackboard dependency/eligibility rules;
-- mandatory review obligations;
-- acceptance/trust policy;
+- Blackboard lifecycle/dependency rules;
+- mandatory reviews;
+- evaluator or acceptance policy;
+- evidence freshness rules;
+- experiment membership or budget after outcomes are observed;
 - rollout authority.
 
-Changing any of those requires the ordinary authority that owns that boundary. A model-generated suggestion does not gain additional authority because it came from a self-improvement loop.
-
-## Rejected alternatives
-
-### Reflection directly edits the system
-
-Rejected. Grounded reflection is proposal context, not execution or rollout authority.
-
-### Candidate defines its own success test or held-out set
-
-Rejected. That makes evaluation circular and enables the object under test to weaken its own gate.
-
-### Experiment PASS automatically adopts candidate
-
-Rejected. Experiment correctness and project adoption are separate decisions with different authority and risk.
-
-### Development tests only, with no held-out gate
-
-Rejected for the self-upgrade pilot. A candidate known to fit the development fixture needs a predeclared unseen/control gate before it can become an adoption proposal.
-
-### Retry candidates until something passes without a fixed budget
-
-Rejected. This obscures negative results, permits unbounded search cost and increases selection bias.
-
-### Generic autonomous SelfImprover framework now
-
-Rejected. One deterministic pilot does not establish repeated runtime semantics or production value for a generic self-modifying subsystem.
-
-## Consequences
-
-- existing cognition, replay and trust primitives can compose a bounded improvement experiment without creating a second correctness system;
-- experiment configuration, development/held-out separation and stop behavior are explicit and auditable;
-- stale and negative evidence remain first-class;
-- candidate PASS remains proposal state, never hidden auto-rollout;
-- BB-035 receives a concrete implementation handoff only after BB-027 and BB-019 are also delivered;
-- fixture success remains non-production evidence.
+Reflection, candidate generation, experiment execution, experiment evaluation, project acceptance, and rollout are distinct authority boundaries.
 
 ## Evidence
 
-- `docs/living/knowledge/bb034-self-upgrade-loop.md`;
+Corrected BB-034 evidence:
+
 - `docs/living/knowledge/bb034-self-upgrade-loop-probe.mjs`;
-- `artifacts/bb034-self-upgrade-loop-probe.json`;
-- merged D012 / BB-038 replay boundary;
-- merged PR #85 current cancellation behavior;
-- Core grounded-cognition, deliberation and trust primitives exercised by the probe.
+- `artifacts/bb034-self-upgrade-loop-probe.json` schema v3;
+- `artifacts/bb038-workflow-replay-eval.json` and its bound digest;
+- current Core `grounded-cognition.js` source-snapshot semantics;
+- current Core `deliberation-controller.js` ActionIntent policy hook;
+- current Core `deliberation.js` `CUSTOM.payload` normalization;
+- trust artifacts exercised by the probe.
 
-## Promotion targets
+The checked artifact remains:
 
-If accepted, D016 remains a living design constraint until BB-035 implements a real application pilot. No runtime `docs/worktree/*` document should claim a self-upgrade runtime exists from BB-034 alone.
+```text
+evidenceClass = DETERMINISTIC_SELF_UPGRADE_RESEARCH_FIXTURE
+productionEvidence = false
+generalizationEvidence = false
+```
 
-The only current-system projection in BB-034 is the executable research verification command documented in `docs/worktree/pipeline.md`.
+## Non-goals
+
+This decision does not create:
+
+- a generic autonomous SelfImprover runtime;
+- live sandbox mutation authority;
+- automatic merge/deploy/rollout;
+- adaptive evaluator or threshold rewriting;
+- production effectiveness evidence;
+- production rollback policy.
+
+## Promotion rule
+
+If BB-034 architecture and evaluation reviews pass on the corrected exact head, D016 may be accepted as the bounded design constraint for a future BB-035 application pilot.
+
+Acceptance of D016 still does not mean a self-upgrade runtime exists. `docs/worktree/*` may claim only the executable research verification surface until a separately reviewed implementation is delivered.
 
 ## What would reopen this decision
 
-Reopen if a concrete pilot needs live sandbox mutation, multiple competing candidates, adaptive experiment budgets, nondeterministic provider evaluation, automatic rollout, statistical held-out evaluation, or another authority model. Each adds materially different failure/trust semantics and requires separate evidence rather than silent generalization.
+Reopen if a concrete pilot needs live mutation, multiple competing candidates, adaptive budgets, nondeterministic provider evaluation, statistical held-out datasets, automatic rollout, or a materially different authority model.

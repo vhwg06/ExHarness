@@ -1,12 +1,13 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "evidenceClass": "DETERMINISTIC_SELF_UPGRADE_RESEARCH_FIXTURE",
   "productionEvidence": false,
   "pilot": {
     "observedFailure": "BB-024 delayed finding reconciliation can revive SUPERSEDED work",
+    "replayArtifactRef": "artifacts/bb038-workflow-replay-eval.json",
+    "replayArtifactDigest": "d7aa00b2c55911751aaf1dac69e7f5b6603dd3bdd4d5a850e79b8c14eb53428c",
     "baselinePolicy": "bb024-baseline-late-reconciliation-v1",
     "candidatePolicy": "bb024-terminal-cancellation-guard-v1",
-    "experimentRef": "artifacts/bb038-workflow-replay-eval.json",
     "experimentBudget": {
       "scenarios": 4,
       "policyIdentities": 2,
@@ -18,17 +19,24 @@
       "artifact-outage",
       "retry-recorded-effect"
     ],
-    "heldOutScenarioIds": [
+    "heldOutControlScenarioIds": [
       "review-delay"
     ]
   },
   "grounding": {
     "reflectionActivatedFromFreshEvaluation": true,
+    "failureGroundingBoundToReplayDigest": true,
+    "groundingVerifierRevision": "2",
     "staleEvaluationRejected": true
   },
   "proposal": {
     "boundedDeliberationCreated": true,
+    "actionPayloadPreserved": true,
     "experimentActionExecuted": true,
+    "tamperedPayloadRejected": true,
+    "tamperedPayloadOperationRan": false,
+    "mutationActionRejected": true,
+    "mutationOperationRan": false,
     "authorizedScope": "EXPERIMENT_ONLY",
     "adoptionAuthorityGranted": false
   },
@@ -41,13 +49,17 @@
     "heldOutStable": true,
     "noExternalDispatch": true,
     "budgetRespected": true,
+    "policyIdentityCount": 2,
+    "policyIdentityBudgetRespected": true,
     "stopReason": "PROPOSE_FOR_REVIEW",
     "negativeHeldOutControlRejected": true,
     "negativeHeldOutStopReason": "KEEP_BASELINE",
     "scenarioCount": 4,
     "externalDispatchCount": 0,
     "inputFixtureBytes": 1914,
-    "replayTraceBytes": 5508
+    "replayTraceBytes": 5508,
+    "heldOutIsRecordedControl": true,
+    "generalizationEvidence": false
   },
   "independentAcceptance": {
     "trusted": true,
@@ -55,6 +67,7 @@
     "evaluator": "bb034-experiment-evaluator",
     "evidenceProducer": "bb034-experiment-verifier",
     "attestor": "bb034-experiment-attestor",
+    "identitySeparatedAuthorities": true,
     "proposalReadyForApplicationReview": true,
     "adoptionAuthorized": false
   },
@@ -63,12 +76,14 @@
     "failOrInconclusive": "KEEP_BASELINE",
     "heldOutFailure": "KEEP_BASELINE",
     "selectedPolicyUntilApplicationAdoption": "bb024-baseline-late-reconciliation-v1",
-    "rollbackPolicy": "bb024-baseline-late-reconciliation-v1"
+    "rollbackPolicyFieldForFixture": "bb024-baseline-late-reconciliation-v1",
+    "productionRollbackRecommendation": false
   },
   "limitations": {
     "fixtureOnly": true,
+    "sameProcessAuthorityFixture": true,
     "candidateAlreadyKnownFromBB024Research": true,
-    "heldOutIsDeterministicRecordedSchedule": true,
+    "heldOutIsDeterministicRecordedControl": true,
     "candidateGenerationQualityMeasured": false,
     "implementationDeliveryDeferredToBB035": true,
     "productionRolloutJustified": false,
