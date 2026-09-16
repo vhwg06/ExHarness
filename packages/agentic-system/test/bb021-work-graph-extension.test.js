@@ -222,6 +222,43 @@ test("BB-021 work graph extension commits blockers and PM review requirements in
   });
 });
 
+test("BB-021 PM review requirement cannot silently unblock an already blocked submitted item", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "exharness-bb021-blocked-review-"));
+  try {
+    const store = createJsonBlackboardStore({ path: join(directory, "blackboard.json") });
+    const orchestrator = createApplicationOrchestrator({ store, reviewTrust: reviewTrust() });
+    await orchestrator.seed([
+      workItem("A", {
+        status: BlackboardStatus.BLOCKED,
+        blockers: ["existing blocker"],
+        submission: { revision: "rev-1" },
+        submittedBy: "worker"
+      }),
+      workItem("B")
+    ]);
+
+    const result = await orchestrator.extendWorkGraph({
+      targetItemId: "A",
+      expectedTarget: await expectedTarget(orchestrator, "A"),
+      reviewRequirements: [{
+        key: "architecture",
+        source: ReviewRequirementSource.PM,
+        reason: "coordination:assessment"
+      }]
+    });
+
+    assert.equal(result.result.target.status, BlackboardStatus.BLOCKED);
+    assert.deepEqual(result.result.target.blockers, ["existing blocker"]);
+    assert.deepEqual(result.result.target.reviewRequirements, [{
+      key: "architecture",
+      source: ReviewRequirementSource.PM,
+      reason: "coordination:assessment"
+    }]);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test("BB-021 fresh work cannot carry forged lifecycle history", async () => {
   await withOrchestrator(async (orchestrator) => {
     const before = await orchestrator.readBlackboard();
