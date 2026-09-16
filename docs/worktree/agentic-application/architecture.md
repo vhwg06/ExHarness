@@ -110,11 +110,13 @@ final submission
    |
    v
 PENDING_REVIEW
+   |
+   +-> PM/project coordination may REQUIRE concrete review
 ```
 
 The workflow persists validated Backend and QA objectives before execution, so later sessions do not need previous conversation state to reconstruct the next application stage.
 
-Backend completion and QA completion remain role-local decisions. QA acceptance creates a final application submission but does not authorize Blackboard `DONE`; independent application acceptance remains a separate review boundary.
+Backend completion and QA completion remain role-local decisions. QA acceptance creates a final application submission but does not authorize Blackboard `DONE` and does not impersonate a Worker review request. Project/PM review requirement remains a separate authority path.
 
 ## Boundaries visible in source
 
@@ -126,7 +128,7 @@ Backend completion and QA completion remain role-local decisions. QA acceptance 
 - `BackendAdvisor` is a narrow bounded-judgment component; it is not dispatch or correctness authority.
 - `ApplicationOrchestrator` owns durable Blackboard lifecycle transitions; Worker submission alone cannot produce `DONE`.
 - partial checkpoints are continuation state, not acceptance state.
-- review requirements distinguish Worker request from PM requirement, while reviewer identity/assessment stays explicit.
+- review requirements distinguish Worker request from PM requirement; application orchestration must not fabricate either source.
 - rejected/inconclusive review reopens current work; follow-up creation is a separate reconciliation decision.
 - application checkpoint persistence does not prove external-effect completion; Core effect/recovery authority remains separate.
 
