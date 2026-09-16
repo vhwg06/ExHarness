@@ -375,7 +375,7 @@ origin: deterministic recovery-composition pressure after BB-004 and BB-006
 ```text
 BB-008
 question/work: Determine whether a higher-level executable Core lifecycle surface is justified after recovery composition is concrete.
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: [BB-007]
 remaining-work: []
@@ -383,7 +383,8 @@ submission:
   - PR #75
 review-requirements:
   - Core architecture-boundary review
-reviews: []
+reviews:
+  - architecture-boundary review passed on PR #75 head a15a63e6ebbe119448a37cdddbd0f78d22283941 and authorized D005 promotion
 artifact-refs:
   - docs/living/decisions/D005-no-core-lifecycle-facade-yet.md
   - docs/worktree/core-harness/decisions.md
@@ -391,6 +392,7 @@ artifact-refs:
 evidence-refs:
   - BB-007 concrete recovery-reference consumer in packages/core-harness/test/recovery-composition.test.js
   - repository usage assessment found no second real consumer repeating the full recovery sequence
+  - CI run #1145 green on Node 20/22/24 before promotion-only reconciliation
 blockers: []
 follow-up-refs: []
 origin: abstraction assessment explicitly deferred until BB-007 made recovery sequencing concrete
