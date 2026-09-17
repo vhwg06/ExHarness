@@ -208,6 +208,40 @@ function normalizeBudget(raw, policy) {
   return freezeClone({ limit, observedSpent, remaining: limit - observedSpent });
 }
 
+function normalizeSelectionInputs(handoff, measurements, budget, policy) {
+  invariant(Array.isArray(measurements), "measurements must be an array");
+  const byItem = new Map();
+  for (const [index, entry] of measurements.entries()) {
+    invariant(entry && typeof entry === "object" && !Array.isArray(entry), `measurements[${index}] must be an object`);
+    const itemId = requireText(entry.itemId, `measurements[${index}].itemId`);
+    invariant(!byItem.has(itemId), `duplicate measurement itemId: ${itemId}`);
+    byItem.set(itemId, entry);
+  }
+  const normalized = handoff.lifecycle.eligibleWork.map((item, boardOrder) =>
+    normalizeMeasurement(
+      byItem.get(item.id) ?? { itemId: item.id, signals: {} },
+      item,
+      boardOrder,
+      policy
+    )
+  );
+  return Object.freeze({
+    normalized,
+    measurementItemIds: Object.freeze([...byItem.keys()]),
+    budgetState: normalizeBudget(budget, policy)
+  });
+}
+
+function selectionFreshnessSubject({ inputSnapshot, policy, measurements, budget }) {
+  const body = {
+    version: 1,
+    boardInputDigest: inputSnapshot.digest,
+    policyDigest: digestValue(policy),
+    schedulingInputDigest: digestValue({ measurements, budget })
+  };
+  return freezeClone({ ...body, digest: digestValue(body) });
+}
+
 function decisionArtifact(body) {
   const digest = digestValue(body);
   return freezeClone({
@@ -458,31 +492,24 @@ export function createBoundedProjectWorkSelector({ handoffSurface, decisionStore
   const policy = defineBoundedWorkSelectionPolicy(rawPolicy);
 
   async function propose({ measurements = [], budget = null } = {}) {
-    invariant(Array.isArray(measurements), "measurements must be an array");
     const handoff = await surface.read();
-    const budgetState = normalizeBudget(budget, policy);
-    const byItem = new Map();
-    for (const [index, entry] of measurements.entries()) {
-      invariant(entry && typeof entry === "object" && !Array.isArray(entry), `measurements[${index}] must be an object`);
-      const itemId = requireText(entry.itemId, `measurements[${index}].itemId`);
-      invariant(!byItem.has(itemId), `duplicate measurement itemId: ${itemId}`);
-      byItem.set(itemId, entry);
-    }
-
+    const {
+      normalized,
+      measurementItemIds,
+      budgetState
+    } = normalizeSelectionInputs(handoff, measurements, budget, policy);
     const eligibleIds = new Set(handoff.lifecycle.eligibleWork.map((item) => item.id));
-    const normalized = handoff.lifecycle.eligibleWork.map((item, boardOrder) =>
-      normalizeMeasurement(
-        byItem.get(item.id) ?? { itemId: item.id, signals: {} },
-        item,
-        boardOrder,
-        policy
-      )
-    );
-    const nonEligibleExcluded = [...byItem.keys()]
+    const nonEligibleExcluded = measurementItemIds
       .filter((itemId) => !eligibleIds.has(itemId))
       .map((itemId) => ({ itemId, reason: "NOT_ELIGIBLE", missingSignals: [] }));
     const choice = choose(normalized, budgetState, policy);
     const snapshot = selectionInputSnapshot(handoff);
+    const freshnessSubject = selectionFreshnessSubject({
+      inputSnapshot: snapshot,
+      policy,
+      measurements: normalized,
+      budget: budgetState
+    });
     const body = {
       kind: "WORK_SELECTION_DECISION",
       version: 1,
@@ -510,6 +537,7 @@ export function createBoundedProjectWorkSelector({ handoffSurface, decisionStore
         }
       },
       inputSnapshot: snapshot,
+      freshnessSubject,
       eligibleItemRefs: handoff.lifecycle.eligibleWork.map((item) => item.id),
       excluded: [...nonEligibleExcluded, ...choice.excluded],
       measurements: normalized,
@@ -531,13 +559,49 @@ export function createBoundedProjectWorkSelector({ handoffSurface, decisionStore
     return freezeClone({ decisionRef: ref, decision: artifact });
   }
 
-  async function assertFresh(rawRef) {
+  async function assertFresh(rawRef, currentInputs = null) {
     const decision = await store.read(rawRef);
     const handoff = await surface.read();
     const fresh = selectionInputSnapshot(handoff);
     invariant(
       fresh.digest === decision.inputSnapshot.digest,
       `work selection decision is stale: expected input ${decision.inputSnapshot.digest}; found ${fresh.digest}`
+    );
+    invariant(
+      decision.freshnessSubject?.version === 1,
+      "work selection decision predates bounded scheduling-input freshness; recompute it"
+    );
+    invariant(
+      currentInputs &&
+        typeof currentInputs === "object" &&
+        !Array.isArray(currentInputs) &&
+        Object.hasOwn(currentInputs, "measurements") &&
+        Array.isArray(currentInputs.measurements),
+      "current scheduling measurements are required to validate work selection freshness"
+    );
+    const { normalized, budgetState } = normalizeSelectionInputs(
+      handoff,
+      currentInputs.measurements,
+      currentInputs.budget ?? null,
+      policy
+    );
+    const currentSubject = selectionFreshnessSubject({
+      inputSnapshot: fresh,
+      policy,
+      measurements: normalized,
+      budget: budgetState
+    });
+    invariant(
+      currentSubject.policyDigest === decision.freshnessSubject.policyDigest,
+      "work selection decision is stale: selector policy/configuration changed"
+    );
+    invariant(
+      currentSubject.schedulingInputDigest === decision.freshnessSubject.schedulingInputDigest,
+      "work selection decision is stale: scheduling measurement/budget inputs changed"
+    );
+    invariant(
+      currentSubject.digest === decision.freshnessSubject.digest,
+      "work selection decision is stale: bounded freshness subject changed"
     );
     if (decision.selectedItemId != null) {
       invariant(
