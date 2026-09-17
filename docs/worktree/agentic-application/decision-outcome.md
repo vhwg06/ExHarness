@@ -90,7 +90,7 @@ read immutable summary
   -> return the verified summary payload
 ```
 
-Because the JSON summary store is durable, a fresh process can reconstruct the same bounded review input without relying on previous conversation/session memory.
+A fresh application/session instance can reopen the durable JSON summary store and reconstruct the bounded review input as long as the injected `artifactResolver` can still resolve the exact persisted source artifacts. The current deterministic fixture proves reconstruction with newly created store/pilot instances inside the same OS process; it does not independently prove process-restart durability of the underlying artifact resolver.
 
 Changing or removing an underlying artifact after materialization fails closed during fresh-session read. The copied summary cannot launder a newer/stale/contradictory source payload into project acceptance.
 
@@ -114,4 +114,5 @@ This store contains summary payloads only. It is distinct from:
 - This is one Backend/QA pilot; no generic `DecisionOutcomeGraph`, registry, lifecycle facade or Core schema is introduced.
 - The producer must already persist the exact Core chain and provide refs through `chainProvider`; the pilot does not fabricate missing cognition.
 - The pilot establishes deterministic fixture/integration correctness only. It does not establish production effectiveness, improved model reasoning or lower review cost.
+- The current fixture does not establish OS-process restart durability for the underlying source-artifact resolver.
 - Summary orientation is not sufficient for acceptance. The review path must resolve the pinned underlying artifacts every time correctness-relevant fields matter.
