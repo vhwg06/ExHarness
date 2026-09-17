@@ -6,6 +6,7 @@ This directory is the source-backed projection of the Agentic Application as imp
 - `workflow.md` — current end-to-end application and Blackboard lifecycle.
 - `contracts.md` — current authority, persistence and trust contracts.
 - `backend-preparation.md` — current Backend pre-Worker preparation and interrupted-recovery boundary.
+- `decision-outcome.md` — current bounded Backend/QA decision/outcome summary pilot and exact-ref verification boundary.
 - `evaluation.md` — current deterministic application evaluation surface and evidence limits.
 - `boundaries.md` — current application/Core/Oracle boundaries.
 - `semantics.md` — current semantic rules.

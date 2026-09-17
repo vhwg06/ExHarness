@@ -100,6 +100,13 @@ export {
   defineBackendQaProjectAcceptanceRequirement
 } from "./backend-qa-project-acceptance.js";
 export {
+  DecisionOutcomeSummaryKind,
+  DecisionOutcomeSummaryVersion,
+  createDecisionOutcomeBackendQaPilot,
+  createJsonDecisionOutcomeSummaryStore,
+  verifyDecisionOutcomeSummary
+} from "./decision-outcome-pilot.js";
+export {
   createJsonTrustArtifactStore,
   requireTrustArtifactStore
 } from "./trust-artifact-store.js";
