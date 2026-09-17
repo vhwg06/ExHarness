@@ -26,6 +26,13 @@ function guardPersistedPayloadInputs(orchestrator) {
       return orchestrator.submit(input);
     },
 
+    async submitWithRequiredReviews(input) {
+      if (input?.submission != null) {
+        validateBlackboardPersistedPayload(input.submission, { path: "$.submission" });
+      }
+      return orchestrator.submitWithRequiredReviews(input);
+    },
+
     async extendWorkGraph(input) {
       if (Array.isArray(input?.newItems)) {
         validateBlackboardPersistedPayload(input.newItems, { path: "$.newItems" });
