@@ -12,6 +12,13 @@ const SUMMARY_VERSION = 1;
 const SUMMARY_REF_PREFIX = "decision-outcome://";
 const BACKEND_QA_WORKFLOW_KIND = "BACKEND_QA_WORKFLOW";
 const QA_COMPLETED_STAGE = "QA_COMPLETED";
+const SEMANTIC_MEMORY_KINDS = new Set([
+  "EPISODIC",
+  "SEMANTIC",
+  "PROCEDURAL",
+  "REFLECTION",
+  "INTENT"
+]);
 
 function invariant(condition, message) {
   if (!condition) throw new TypeError(message);
@@ -66,8 +73,11 @@ function hasRef(refs, target) {
   return refs.some((ref) => sameRef(ref, target));
 }
 
-function artifactIdentity(artifact) {
+function artifactIdentity(artifact, refKind = null) {
   if (artifact?.artifactRef?.kind && artifact?.artifactRef?.id) return artifact.artifactRef;
+  if (refKind === "MEMORY" && artifact?.id && SEMANTIC_MEMORY_KINDS.has(artifact.kind)) {
+    return { kind: "MEMORY", id: artifact.id, ...(artifact.revision == null ? {} : { revision: artifact.revision }) };
+  }
   if (artifact?.kind && artifact?.id) return { kind: artifact.kind, id: artifact.id, ...(artifact.revision == null ? {} : { revision: artifact.revision }) };
   if (artifact?.operationId) return { kind: "EFFECT_OPERATION", id: artifact.operationId };
   if (artifact?.id) return { kind: null, id: artifact.id, ...(artifact.revision == null ? {} : { revision: artifact.revision }) };
@@ -76,11 +86,12 @@ function artifactIdentity(artifact) {
 
 function assertArtifactMatchesRef(artifact, ref, label) {
   invariant(artifact && typeof artifact === "object", `${label} artifact is required`);
-  const identity = artifactIdentity(artifact);
+  const identity = artifactIdentity(artifact, ref.kind);
   invariant(identity?.id === ref.id, `${label} id mismatch`);
   if (identity.kind != null) invariant(identity.kind === ref.kind, `${label} kind mismatch`);
-  if (ref.revision != null && artifact.revision != null) {
-    invariant(artifact.revision === ref.revision, `${label} revision mismatch`);
+  if (ref.revision != null) {
+    const actualRevision = artifact.revision ?? identity?.revision ?? null;
+    invariant(actualRevision === ref.revision, `${label} revision mismatch`);
   }
 }
 
