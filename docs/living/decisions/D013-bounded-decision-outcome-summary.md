@@ -1,8 +1,12 @@
 # D013 — Bounded application decision/outcome summary
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
 
-Review state: the BB-028 application/architecture boundary is accepted, but evaluation-method / anti-laundering review remains open after exact-head audit of the merged PR #110 fixture found that the artifact index still binds fixture slots to hard-coded ref keys. Merge and green CI do not establish the missing exact-artifact-identity proof.
+Accepted: 2026-09-17
+
+Acceptance boundary: BB-028 application/architecture review is accepted and the remaining evaluation-method / anti-laundering obligation was closed by PR #116 on exact head `dbf825b0223d646b81513a2e97673c77b15db4c2`. The executable remediation keeps hard-coded lookup slots but independently validates canonical stored artifact identity/revision after lookup; five matching baselines pass, five slot-alias/stored-identity mismatch controls fail closed with `escapedControls=0`, and exact-head Actions #1869 is green. Merge commit `6a53285e84200dc1a126b932b2c5f91c6dfdc669` carries that evidence into main.
+
+Acceptance is research/design authority for the bounded BB-029 implementation handoff only. It does not claim runtime delivery, production effectiveness, or summary correctness authority.
 
 ## Context
 
@@ -21,11 +25,9 @@ verified summary
   -> derive correctness-relevant answers from underlying artifacts
 ```
 
-Seven adversarial controls fail closed: tampered authorization, copied success over a failing evaluation, tampered authorization evidence refs, tampered outcome refs, missing evaluation, wrong ActionIntent revision and omitted counterevidence. Evidence remains deterministic/synthetic and explicitly not production-effectiveness evidence.
+Seven adversarial controls fail closed: tampered authorization, copied success over a failing evaluation, tampered authorization evidence refs, tampered outcome refs, missing evaluation, wrong ActionIntent revision and omitted counterevidence. PR #116 adds the missing exact-artifact-identity boundary: a lookup key is not identity proof, and the returned artifact's canonical kind/id/revision must independently match the requested ref. Evidence remains deterministic/synthetic and explicitly not production-effectiveness evidence.
 
-Those controls still do not prove that every resolved artifact actually has the identity requested by the summary ref: the current fixture index can return an artifact from a hard-coded slot even when the artifact's stored canonical identity differs from the requested ref. That unresolved anti-laundering case keeps this decision review-open.
-
-## Proposed decision
+## Decision
 
 For the first Backend/QA remediation pilot, introduce one immutable **application-level** artifact per completed remediation attempt:
 
@@ -88,11 +90,11 @@ Independent acceptance must still verify the exact evidence/decision/attestation
 
 ## Boundary
 
-Implement the first pilot in Agentic Application only after this decision is accepted. Do not add a generic Core `DecisionOutcomeGraph`, registry, lifecycle facade or reasoning engine unless a second concrete consumer demonstrates repeated semantics.
+Implement the first pilot in Agentic Application. Do not add a generic Core `DecisionOutcomeGraph`, registry, lifecycle facade or reasoning engine unless a second concrete consumer demonstrates repeated semantics.
 
 `DeliberationArtifact.judgment` may carry the bounded structured hypothesis/options/rationale input for the pilot; no raw/private chain-of-thought representation is introduced.
 
-## Consequences if accepted
+## Consequences
 
 BB-029 may implement one Backend/QA remediation composition that materializes the summary only after post-action evaluation and grounded reflection/alignment exist, attaches the summary ref to the application review/continuation surface, uses it for bounded orientation, and requires exact underlying resolution for correctness-relevant review.
 
@@ -103,14 +105,19 @@ The BB-028 anti-laundering controls, including exact stored-artifact identity mi
 - `docs/living/knowledge/bb028-decision-outcome-chain.md`
 - `docs/living/knowledge/bb028-decision-outcome-probe.mjs`
 - `artifacts/bb028-decision-outcome-probe.json`
-- merged PR #110 and exact-head CI #1778 are implementation/research evidence, not acceptance authority for the unresolved identity case
-- exact-head audit: `buildArtifactIndex(...)` still maps fixture slots under hard-coded keys; a stored evaluation identity can differ from the requested ref while the resolver still returns that object
+- `docs/living/knowledge/bb028-exact-artifact-identity-probe.mjs`
+- `artifacts/bb028-exact-artifact-identity-probe.json`
+- PR #110 architecture-boundary and anti-laundering remediation context; exact-head CI #1778 green
+- PR #116 evaluation-method / anti-laundering review PASS on exact head `dbf825b0223d646b81513a2e97673c77b15db4c2`
+- PR #116 exact-head Actions #1869 green on living-doc-impact and Node 20/22/24
+- five exact-match baselines accepted; five hard-coded-slot alias / stored-identity or revision mismatch controls fail closed; `escapedControls=0`
+- merge commit `6a53285e84200dc1a126b932b2c5f91c6dfdc669`
 - `packages/core-harness/src/deliberation.js`
 - `packages/core-harness/src/deliberation-controller.js`
 - `packages/core-harness/src/action-effect.js`
 - `packages/core-harness/src/grounded-cognition.js`
 - `packages/agentic-system/src/durable-backend-qa.js`
 
-## Promotion gate
+## Promotion boundary
 
-Remain `PROPOSED` until BB-028 evaluation-method / anti-laundering review accepts executable proof that every correctness-relevant read resolves an artifact whose canonical identity/revision matches the exact requested ref. Architecture-boundary acceptance alone does not authorize BB-029.
+`ACCEPTED` authorizes the bounded BB-029 implementation handoff. It does **not** establish production value, runtime delivery, a default decision-summary mechanism, or independent correctness/acceptance authority for the summary itself.
