@@ -65,8 +65,7 @@ function normalizeRefs(raw, name) {
 function sameRef(left, right) {
   if (!left || !right) return false;
   if (left.kind !== right.kind || left.id !== right.id) return false;
-  if (left.revision != null && right.revision != null) return left.revision === right.revision;
-  return true;
+  return (left.revision ?? null) === (right.revision ?? null);
 }
 
 function hasRef(refs, target) {
