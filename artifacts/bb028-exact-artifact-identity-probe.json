@@ -1,0 +1,46 @@
+{
+  "evidenceClass": "DETERMINISTIC_SYNTHETIC_REPOSITORY_SHAPE",
+  "productionEvidence": false,
+  "question": "Can a hard-coded resolver slot launder an artifact whose canonical identity or revision differs from the exact requested ref?",
+  "baselineCases": 5,
+  "baselineAccepted": 5,
+  "controlCount": 5,
+  "escapedControls": 0,
+  "controls": [
+    {
+      "name": "hard-coded-evaluation-slot-with-wrong-stored-id",
+      "accepted": false,
+      "failClosed": true,
+      "reason": "evaluation identity mismatch"
+    },
+    {
+      "name": "hard-coded-action-intent-slot-with-wrong-stored-revision",
+      "accepted": false,
+      "failClosed": true,
+      "reason": "action intent revision mismatch"
+    },
+    {
+      "name": "hard-coded-memory-slot-with-wrong-stored-id",
+      "accepted": false,
+      "failClosed": true,
+      "reason": "reflection memory identity mismatch"
+    },
+    {
+      "name": "hard-coded-deliberation-slot-with-wrong-canonical-kind",
+      "accepted": false,
+      "failClosed": true,
+      "reason": "deliberation kind mismatch"
+    },
+    {
+      "name": "hard-coded-effect-slot-with-wrong-operation-id",
+      "accepted": false,
+      "failClosed": true,
+      "reason": "effect operation identity mismatch"
+    }
+  ],
+  "conclusion": {
+    "exactArtifactIdentityRequired": true,
+    "hardCodedSlotKeyIsNotIdentityProof": true,
+    "implementationMayProceedWithoutIndependentReview": false
+  }
+}
