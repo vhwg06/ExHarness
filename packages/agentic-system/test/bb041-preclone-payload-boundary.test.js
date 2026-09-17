@@ -92,3 +92,45 @@ test("BB-041 submit rejects hidden submission data while preserving the active c
     assert.equal(item.submission, null);
   });
 });
+
+test("BB-041 extendWorkGraph rejects hidden child origin before BB-021 normalization can erase it", async () => {
+  await withStore(async (path) => {
+    const store = createJsonBlackboardStore({ path });
+    const orchestrator = createApplicationOrchestrator({ store, reviewTrust: reviewTrust() });
+    await orchestrator.seed([workItem()]);
+    const before = (await orchestrator.readBlackboard()).items[0];
+
+    await assert.rejects(
+      () => orchestrator.extendWorkGraph({
+        targetItemId: before.id,
+        expectedTarget: {
+          itemId: before.id,
+          status: before.status,
+          claimGeneration: before.claimGeneration,
+          reviewGeneration: before.reviewGeneration
+        },
+        newItems: [{
+          id: "BB-041-HIDDEN-CHILD",
+          work: "Child work with lossy hidden origin payload.",
+          status: BlackboardStatus.READY,
+          dependsOn: [],
+          remainingWork: [],
+          blockers: [],
+          artifactRefs: [],
+          evidenceRefs: [],
+          followUpRefs: [],
+          reviewRequirements: [],
+          reviews: [],
+          findings: [],
+          origin: hiddenPayload()
+        }]
+      }),
+      /newItems\[0\]\.origin\.hidden: non-enumerable properties are not preserved/
+    );
+
+    const board = await orchestrator.readBlackboard();
+    assert.equal(board.items.length, 1);
+    assert.equal(board.items[0].id, before.id);
+    assert.equal(board.items[0].status, BlackboardStatus.READY);
+  });
+});
