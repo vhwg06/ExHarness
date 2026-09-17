@@ -49,7 +49,7 @@ export {
   ReviewRequirementSource,
   ReviewVerdict
 } from "./blackboard-orchestrator.js";
-export { createApplicationOrchestrator } from "./application-orchestrator.js";
+export { createApplicationOrchestrator } from "./persisted-payload-application-orchestrator.js";
 export {
   BlackboardDependencyIssueCode,
   diagnoseBlackboardDependencyGraph
