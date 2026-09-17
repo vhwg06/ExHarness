@@ -42,6 +42,10 @@ escapedControls = 0
 
 The normal Agentic Application test suite executes the probe and deep-compares its output with `artifacts/bb028-exact-artifact-identity-probe.json`, so the evidence cannot silently drift from the executable control.
 
+## Current-system impact
+
+This remediation is evidence-only. It does not change Agentic Application runtime behavior, Core contracts, or any source-backed `docs/worktree/*` current-state projection. Until the required review accepts this evidence and D013 is promoted, current system semantics remain unchanged.
+
 ## Authority
 
 This closes only the exact stored-artifact identity/revision proof gap. It does not make a decision/outcome summary correctness authority, acceptance authority, or evidence of production effectiveness.
