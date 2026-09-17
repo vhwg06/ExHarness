@@ -1,8 +1,12 @@
 # D014 — Application artifact manifest adapter
 
-Status: **PROPOSED**
+Status: **ACCEPTED**
 
-Review state: the BB-039 application/architecture boundary is accepted, but research-method review remains open because the corrected fixture proves fresh-session reconstruction with new stores/readers inside the fixture process, while the accepted research text still claims behavior "after restart." Merge and green CI do not convert that stronger claim into evidence.
+Accepted: 2026-09-17
+
+Acceptance boundary: BB-039 application/architecture review PASS on PR #108 exact evidence head `fcf5bbd5357543bf3308b668f499804937ed7e22`, and research-method review PASS on PR #119 exact calibration head `dcf541d8db254048c5d121c85f26914a8b37068c`. PR #119 Actions #1893 was green on living-doc-impact and Node 20/22/24; calibration merge `c534c68b12e86a8a980a1d0ad53545aef8215c81` carries the reviewed claim into `main`.
+
+This acceptance is limited to **fresh-session / fresh-reader reconstruction from durable Blackboard and filesystem state within one OS process**. It does not establish OS process-restart behavior, production storage reliability, runtime delivery, semantic correctness, or independent authenticity.
 
 ## Context
 
@@ -12,7 +16,7 @@ BB-039 reproduced a concrete adapter-level gap with a deterministic weak reader:
 
 The corrected BB-039 fixture exercises the boundary after a fresh-session reconstruction using a JSON Blackboard plus separately reconstructed filesystem-backed artifact and manifest stores. The application already has a suitable injection boundary. No evidence requires copying payloads into Blackboard, changing Core, or introducing a global artifact registry.
 
-## Proposed decision
+## Decision
 
 For consumers that require verifiable ref-only continuation across fresh application sessions and artifact-source changes/loss, use an **optional manifest-validating `artifactReader` adapter** at the Agentic Application artifact boundary.
 
@@ -52,7 +56,7 @@ The first pilot should preserve `ApplicationArtifactRef`, `QaWorkOrder` and `QaC
 
 A generic artifact registry, global content-addressed store, Blackboard payload schema expansion or Core abstraction requires separate evidence.
 
-## Corrected evidence
+## Accepted evidence
 
 - `docs/living/knowledge/bb039-artifact-manifest-research.md`;
 - `docs/living/knowledge/bb039-artifact-manifest-probe.mjs`;
@@ -62,11 +66,14 @@ A generic artifact registry, global content-addressed store, Blackboard payload 
 - weak baseline accepts five identity/provenance violations while the manifest reader rejects all five;
 - evidence class `DETERMINISTIC_FRESH_SESSION_FIXTURE`, `productionEvidence=false`;
 - PR #108 application/architecture-boundary review PASS on exact evidence head `fcf5bbd5357543bf3308b668f499804937ed7e22`;
-- exact-head Actions run #1753 green;
-- research-method acceptance remains open because the accepted research result still states the addon can fail closed "after restart," which the same-process fresh-session fixture does not establish.
+- PR #108 exact-head Actions #1753 green;
+- PR #119 calibrates the durable claim from unsupported `after restart` wording to fresh-session/fresh-reader reconstruction and explicitly excludes OS process-restart evidence;
+- PR #119 research-method review PASS on exact head `dcf541d8db254048c5d121c85f26914a8b37068c`;
+- PR #119 exact-head Actions #1893 green on living-doc-impact and Node 20/22/24;
+- calibration merge `c534c68b12e86a8a980a1d0ad53545aef8215c81`.
 
-Earlier PR #90 evidence remains historical precursor evidence but is not sufficient to close this method finding.
+Earlier PR #90 evidence remains historical precursor evidence and is not the acceptance basis for this decision.
 
 ## Promotion boundary
 
-Remain `PROPOSED` until BB-039 research-method review calibrates the evidence claim to what the executable fixture actually proves, or supplies a real process-restart experiment. Application/architecture acceptance does not by itself deliver or promote a runtime manifest adapter. A later implementation must still demonstrate unchanged-valid compatibility, changed-content rejection, producer/revision/provenance mismatch rejection, explicit unavailability, partial-set behavior and bounded lookup/hash/retention cost on the concrete Backend -> QA adapter before runtime promotion.
+`ACCEPTED` authorizes only the bounded optional application-level implementation handoff described above. It does **not** mean a runtime manifest adapter is delivered or should become a default. A later implementation must still demonstrate unchanged-valid compatibility, changed-content rejection, producer/revision/provenance mismatch rejection, explicit unavailability, partial-set behavior and bounded lookup/hash/retention cost on the concrete Backend -> QA adapter before runtime promotion.

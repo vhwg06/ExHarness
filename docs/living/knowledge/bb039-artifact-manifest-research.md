@@ -1,6 +1,6 @@
 # BB-039: artifact identity across Backend to QA handoff
 
-Status: **CALIBRATED EVIDENCE — REVIEW REQUIRED**. Runtime adoption is not implied.
+Status: **ACCEPTED RESEARCH RESULT** after fresh-session claim calibration and exact-head research-method review. Runtime adoption is not implied.
 
 Reproduce: `npm run eval:artifact-manifest-research`.
 Evidence class: `DETERMINISTIC_FRESH_SESSION_FIXTURE`.
@@ -10,7 +10,7 @@ Production evidence: `false`.
 
 The executable BB-039 evidence proves reconstruction through a fresh `JsonBlackboardStore`, `ApplicationOrchestrator`, project-bound `SessionHandoffSurface`, and separately reconstructed filesystem-backed artifact/manifest reader inside the fixture process. It does **not** spawn a second OS process and therefore does not establish an OS process-restart boundary.
 
-This revision narrows the research claim to the evidence actually exercised: **fresh-session / fresh-reader reconstruction from durable Blackboard and filesystem state**. It does not add a new experiment or widen the evidence class. Canonical BB-039 review remains open until an exact-head research-method review accepts this calibrated claim.
+PR #119 narrowed the durable research claim to the evidence actually exercised: **fresh-session / fresh-reader reconstruction from durable Blackboard and filesystem state**. It added no experiment and did not widen the evidence class. Research-method review PASS on exact calibration head `dcf541d8db254048c5d121c85f26914a8b37068c`; Actions #1893 was green on living-doc-impact and Node 20/22/24. Calibration merge `c534c68b12e86a8a980a1d0ad53545aef8215c81` carries that reviewed claim into `main`.
 
 ## Question
 
@@ -84,7 +84,7 @@ stored artifact revision
 content digest
 ```
 
-The executable fixture establishes fresh-session reconstruction plus explicit work-order/acceptance-decision negative coverage. The application/architecture-boundary review on PR #108 accepted this boundary, and the prior research-method review was explicitly scoped to `DETERMINISTIC_FRESH_SESSION_FIXTURE`. This calibration requires a new exact-head research-method review only to verify that the durable prose no longer exceeds that executable evidence. It still does not deliver a runtime manifest adapter.
+The executable fixture establishes fresh-session reconstruction plus explicit work-order/acceptance-decision negative coverage. PR #108 application/architecture-boundary review accepted this boundary. PR #119 research-method review accepted the calibrated durable claim on exact head `dcf541d8db254048c5d121c85f26914a8b37068c`. This accepts the bounded D014 research/design handoff while still not delivering a runtime manifest adapter.
 
 ## Implementation handoff
 
@@ -114,4 +114,4 @@ Retention does not prove availability forever, content correctness, Backend acce
 - if an attacker can rewrite both manifest and content under the same authority, this check is not independent authenticity evidence;
 - manifest verification establishes identity/provenance consistency, not semantic correctness or acceptance.
 
-Disposition: **NARROW / REVIEW REQUIRED** as calibrated research support for D014. Runtime adoption remains separately gated.
+Disposition: **NARROW / ACCEPTED** as calibrated research support for D014. Runtime adoption remains separately gated.
