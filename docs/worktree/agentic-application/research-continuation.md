@@ -113,7 +113,7 @@ decisionStatus = PROPOSED
 Blackboard status = PENDING_REVIEW
 ```
 
-The controller ensures a PM-sourced independent `research-workflow` review requirement exists. It cannot mark the work `DONE`, manufacture a review assessment or promote an architecture decision.
+The controller delegates to the Application Orchestrator's `submitWithRequiredReviews(...)` boundary so the proposal and its PM-sourced independent `research-workflow` review obligation are committed in one Blackboard transaction. There is no accepted intermediate state where the proposal is `PENDING_REVIEW` without that required review. The controller cannot mark the work `DONE`, manufacture a review assessment or promote an architecture decision.
 
 Therefore these remain distinct:
 
