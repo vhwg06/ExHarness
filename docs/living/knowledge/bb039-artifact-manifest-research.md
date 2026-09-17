@@ -1,10 +1,16 @@
 # BB-039: artifact identity across Backend to QA handoff
 
-Status: **ACCEPTED RESEARCH RESULT** after corrected fresh-session evidence and required reviews. Runtime adoption is not implied.
+Status: **CALIBRATED EVIDENCE — REVIEW REQUIRED**. Runtime adoption is not implied.
 
 Reproduce: `npm run eval:artifact-manifest-research`.
 Evidence class: `DETERMINISTIC_FRESH_SESSION_FIXTURE`.
 Production evidence: `false`.
+
+## Review calibration
+
+The executable BB-039 evidence proves reconstruction through a fresh `JsonBlackboardStore`, `ApplicationOrchestrator`, project-bound `SessionHandoffSurface`, and separately reconstructed filesystem-backed artifact/manifest reader inside the fixture process. It does **not** spawn a second OS process and therefore does not establish an OS process-restart boundary.
+
+This revision narrows the research claim to the evidence actually exercised: **fresh-session / fresh-reader reconstruction from durable Blackboard and filesystem state**. It does not add a new experiment or widen the evidence class. Canonical BB-039 review remains open until an exact-head research-method review accepts this calibrated claim.
 
 ## Question
 
@@ -16,7 +22,7 @@ The concrete consumer is the durable Backend -> QA continuation path. Accepted B
 
 The current reader contract does not itself require an immutable producer-side content identity. A concrete reader backed by immutable revision-bound storage may already provide stronger guarantees; BB-039 does not claim that all readers are defective.
 
-## Review blocker closed by this revision
+## Review blocker closed by the executable fixture
 
 The earlier canonical probe serialized a manifest but kept its artifact `Map` and resolver in the same process. That was insufficient for the Board criterion requiring a **fresh session** to distinguish verified, changed and unavailable content. It also relied on code inspection for producer-work-order and acceptance-decision provenance checks rather than executing negative cases.
 
@@ -39,7 +45,7 @@ fresh session
  -> resolveQaContext(...)
 ```
 
-No producer-side in-memory record map or producer Orchestrator is reused by the QA-side check.
+No producer-side in-memory record map or producer Orchestrator is reused by the QA-side check. The producer and fresh-session reconstruction still execute within one OS process; no stronger process-restart claim is made.
 
 ## Predeclared deterministic scenarios
 
@@ -65,7 +71,7 @@ The fixture asserts that every case reconstructed its artifact refs and accepted
 
 The result supports one narrow application boundary:
 
-> For mutable/ref-addressed artifact storage, an opt-in application-owned reader can fail closed on content/provenance drift after restart when it resolves a durable producer-side manifest before returning QA context.
+> For mutable/ref-addressed artifact storage, an opt-in application-owned reader can fail closed on content/provenance drift after fresh-session reconstruction when it resolves a durable producer-side manifest before returning QA context.
 
 The manifest binds:
 
@@ -78,7 +84,7 @@ stored artifact revision
 content digest
 ```
 
-This closes the canonical review evidence gaps for fresh-session reconstruction and explicit work-order/acceptance-decision negative coverage. The required research-method and application/architecture-boundary reviews have accepted this corrected evidence; that accepts the D014 design boundary but still does not deliver a runtime manifest adapter.
+The executable fixture establishes fresh-session reconstruction plus explicit work-order/acceptance-decision negative coverage. The application/architecture-boundary review on PR #108 accepted this boundary, and the prior research-method review was explicitly scoped to `DETERMINISTIC_FRESH_SESSION_FIXTURE`. This calibration requires a new exact-head research-method review only to verify that the durable prose no longer exceeds that executable evidence. It still does not deliver a runtime manifest adapter.
 
 ## Implementation handoff
 
@@ -100,6 +106,7 @@ Retention does not prove availability forever, content correctness, Backend acce
 ## Limitations
 
 - deterministic local filesystem fixture only;
+- fresh-session / fresh-reader reconstruction occurs within one OS process; process-restart behavior is not established by this evidence;
 - no production artifact store, outage distribution, latency or storage-cost measurement;
 - no external model/provider calls;
 - no statistical generalization claim;
@@ -107,4 +114,4 @@ Retention does not prove availability forever, content correctness, Backend acce
 - if an attacker can rewrite both manifest and content under the same authority, this check is not independent authenticity evidence;
 - manifest verification establishes identity/provenance consistency, not semantic correctness or acceptance.
 
-Disposition: **NARROW / ACCEPTED** as research support for D014. Runtime adoption remains separately gated.
+Disposition: **NARROW / REVIEW REQUIRED** as calibrated research support for D014. Runtime adoption remains separately gated.
