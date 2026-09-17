@@ -9,7 +9,7 @@ SessionHandoffSurface.read()
   -> lifecycle.eligibleWork
   -> createBoundedProjectWorkSelector(...).propose(...)
   -> persisted WORK_SELECTION_DECISION v1
-  -> caller validates freshness
+  -> caller validates current Board + scheduling-input freshness
   -> ordinary ApplicationOrchestrator.claim(...)
 ```
 
@@ -104,12 +104,13 @@ A decision records:
 - stable project id;
 - policy name/revision/configuration ref and concrete configuration;
 - explicit/manual baseline policy revision and candidate policy revision;
-- exact input snapshot digest and eligible item ids;
+- exact Blackboard input snapshot digest and eligible item ids;
+- a `freshnessSubject` binding the Board snapshot, selector policy/configuration and normalized scheduling inputs;
 - excluded/non-eligible items with reasons;
 - per-item measurements, missing fields, signal provenance and review requirements;
 - selected item id or null;
 - reason and score components when applicable;
-- budget state;
+- normalized budget state;
 - stop/escalation outcome when applicable;
 - `productionEvidence: false`;
 - explicit authority flags stating that selection does not mutate Blackboard or establish correctness.
@@ -118,9 +119,36 @@ A fresh store instance can reload a decision by `{ id, digest }`.
 
 ## Freshness
 
-The decision input digest covers the project identity, user intent, full handoff work graph and current eligible item ids.
+A persisted decision is current only for the bounded subject it was produced from. `freshnessSubject.version = 1` binds:
 
-`selector.assertFresh(decisionRef)` reloads the decision and compares it with a newly read handoff. Any Board/input change makes the old decision stale and it fails closed instead of being applied as current scheduling evidence.
+```text
+Board input snapshot digest
+  + full normalized selector policy/configuration digest
+  + normalized eligible-work measurements and their provenance/evidence refs
+  + normalized current budget
+```
+
+The Board input snapshot covers project identity, user intent, the full handoff work graph and current eligible item ids. The scheduling-input digest covers the normalized measurements actually used by the selector and the normalized budget state. The policy digest covers the complete normalized policy, including policy revision, configuration ref, limits and weights.
+
+A caller validating a persisted decision uses:
+
+```text
+selector.assertFresh(decisionRef, {
+  measurements: currentMeasurements,
+  budget: currentBudget
+})
+```
+
+Freshness validation fails closed when:
+
+- the current Board/handoff snapshot differs;
+- the selector policy or configuration differs;
+- a scheduling measurement, signal value, signal provenance/evidence ref, obligation, deferral or copied review requirement differs after normalization;
+- the normalized budget differs;
+- the caller omits the current scheduling measurements;
+- the stored decision predates the bounded `freshnessSubject` contract.
+
+An explicit current measurement/budget comparison is therefore required before a persisted ranking can be reused as current scheduling evidence. An unchanged Blackboard alone is not sufficient.
 
 Even a fresh decision does not claim work. The caller still invokes ordinary `ApplicationOrchestrator.claim(...)`, which re-checks current status and dependencies inside canonical Board mutation authority.
 
@@ -138,7 +166,15 @@ Even a fresh decision does not claim work. The caller still invokes ordinary `Ap
 - decision artifacts survive fresh-store reconstruction;
 - the actual selector replays the accepted BB-030 deterministic comparison at equal budget: fixture outcome `11 -> 13` and blocked-work reduction `2 -> 3`.
 
-That comparison remains deterministic fixture evidence only. It does not establish representative project benefit, production cost/latency improvement, universal score weights or a reason to make the selector the default scheduler.
+`packages/agentic-system/test/bb031-selection-freshness.test.js` additionally covers the post-merge freshness obligation:
+
+- the same Board plus the same current scheduling inputs remains fresh;
+- omitting current scheduling measurements fails closed;
+- changing measurement/evidence input with an unchanged Board invalidates the old decision;
+- changing budget with an unchanged Board invalidates the old decision;
+- changing policy revision/configuration with unchanged Board and measurements invalidates the old decision.
+
+The deterministic comparison remains fixture evidence only. It does not establish representative project benefit, production cost/latency improvement, universal score weights or a reason to make the selector the default scheduler.
 
 ## Boundaries
 
