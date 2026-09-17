@@ -49,7 +49,7 @@ export {
   ReviewRequirementSource,
   ReviewVerdict
 } from "./blackboard-orchestrator.js";
-export { createApplicationOrchestrator } from "./application-orchestrator.js";
+export { createApplicationOrchestrator } from "./persisted-payload-application-orchestrator.js";
 export {
   BlackboardDependencyIssueCode,
   diagnoseBlackboardDependencyGraph
@@ -81,6 +81,16 @@ export {
   requirePmSaCoordinationArtifactStore
 } from "./pm-sa-coordination-store.js";
 export {
+  WorkContinuationAction,
+  WorkSelectionEvidenceState,
+  WorkSelectionReason,
+  WorkSelectionSignalSource,
+  createBoundedProjectWorkSelector,
+  createJsonWorkSelectionDecisionStore,
+  decideProjectWorkContinuation,
+  defineBoundedWorkSelectionPolicy
+} from "./work-selection.js";
+export {
   BackendQaWorkflowStage,
   createDurableBackendQaWorkflow
 } from "./durable-backend-qa.js";
@@ -89,6 +99,13 @@ export {
   createBackendQaProjectAcceptanceController,
   defineBackendQaProjectAcceptanceRequirement
 } from "./backend-qa-project-acceptance.js";
+export {
+  DecisionOutcomeSummaryKind,
+  DecisionOutcomeSummaryVersion,
+  createDecisionOutcomeBackendQaPilot,
+  createJsonDecisionOutcomeSummaryStore,
+  verifyDecisionOutcomeSummary
+} from "./decision-outcome-pilot.js";
 export {
   createJsonTrustArtifactStore,
   requireTrustArtifactStore

@@ -52,6 +52,28 @@ function cyclePayload() {
   return value;
 }
 
+function hiddenPropertyPayload() {
+  const value = { visible: "preserved" };
+  Object.defineProperty(value, "hidden", {
+    value: "must-survive",
+    enumerable: false,
+    configurable: true,
+    writable: true
+  });
+  return value;
+}
+
+function hiddenArrayPropertyPayload() {
+  const values = ["preserved"];
+  Object.defineProperty(values, "hidden", {
+    value: "must-survive",
+    enumerable: false,
+    configurable: true,
+    writable: true
+  });
+  return { values };
+}
+
 function unsupportedCases() {
   return [
     ["Map", { pending: new Map([["experiment-1", "needs-review"]]) }, /checkpoint\.pending: Map is not a plain JSON object/],
@@ -63,7 +85,9 @@ function unsupportedCases() {
     ["negative Infinity", { score: Number.NEGATIVE_INFINITY }, /checkpoint\.score: number must be finite/],
     ["negative zero", { score: -0 }, /checkpoint\.score: negative zero is not preserved/],
     ["BigInt", { sequence: 1n }, /checkpoint\.sequence: unsupported bigint value/],
-    ["cycle", cyclePayload(), /checkpoint\.self: object graph reuses or cycles to .*checkpoint/]
+    ["cycle", cyclePayload(), /checkpoint\.self: object graph reuses or cycles to .*checkpoint/],
+    ["non-enumerable object property", hiddenPropertyPayload(), /checkpoint\.hidden: non-enumerable properties are not preserved/],
+    ["non-enumerable array property", hiddenArrayPropertyPayload(), /checkpoint\.values: sparse arrays or extra array properties are not supported/]
   ];
 }
 
@@ -98,6 +122,25 @@ test("BB-041 rejects lossy checkpoint payloads before releasing ownership or cha
       });
     });
   }
+});
+
+test("BB-041 rejects accessor properties without invoking persisted-payload getters", () => {
+  let getterReads = 0;
+  const checkpoint = {};
+  Object.defineProperty(checkpoint, "derived", {
+    enumerable: true,
+    configurable: true,
+    get() {
+      getterReads += 1;
+      return "must-not-be-read";
+    }
+  });
+
+  assert.throws(
+    () => defineBlackboardSnapshot({ version: 1, items: [workItem({ checkpoint })] }),
+    /checkpoint\.derived: accessor properties are not supported/
+  );
+  assert.equal(getterReads, 0);
 });
 
 test("BB-041 round-trips acknowledged nested JSON checkpoint state across a new store instance", async () => {

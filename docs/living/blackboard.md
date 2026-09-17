@@ -1022,7 +1022,7 @@ Here, a decision chain means explicit hypotheses, concise rationales, artifact p
 | Architecture composition from existing primitives | BB-032 | BB-033 | P2 |
 | Evidence-gated self-upgrade loop | BB-034 | BB-035 | P1 |
 
-BB-023/024/025 are delivered. BB-028/030/032 research boundaries are accepted; BB-033 is delivered by PR #107. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. BB-034 and D016 are accepted after PR #105 remediation; BB-035 remains blocked only on BB-027 before an application-level upgrade pilot can proceed.
+BB-023/024/025 are delivered. BB-028/030/032 research boundaries are accepted; BB-029 is READY after PR #116 closed the exact-artifact-identity review obligation. BB-033 is delivered by PR #107. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. BB-034 and D016 are accepted after PR #105 remediation; BB-035 remains blocked only on BB-027 before an application-level upgrade pilot can proceed.
 
 ```text
 BB-028
@@ -1039,30 +1039,36 @@ acceptance-criteria:
   - Missing, stale or contradictory evidence stays visible and no explanation can bypass action authorization or independent acceptance.
 submission:
   - PR #88
+  - remediation PR #110
+  - exact-artifact-identity remediation PR #116
 review-requirements: [architecture-boundary review, evaluation-method review]
 reviews:
-  - architecture-boundary review PASS on exact research head 5e4e3dd1e1afa82c30c5de8857c6712b61b86731
-  - evaluation-method review PASS on the same exact head
+  - architecture-boundary review PASS on BB-028 remediation; the summary remains an application projection with no correctness/lifecycle authority
+  - evaluation-method / anti-laundering review PASS on exact PR #116 head dbf825b0223d646b81513a2e97673c77b15db4c2; the hard-coded-slot identity finding is closed by independent canonical stored-identity/revision validation
 artifact-refs:
   - docs/living/knowledge/bb028-decision-outcome-chain.md
   - docs/living/knowledge/bb028-decision-outcome-probe.mjs
   - artifacts/bb028-decision-outcome-probe.json
+  - docs/living/knowledge/bb028-exact-artifact-identity-probe.mjs
+  - artifacts/bb028-exact-artifact-identity-probe.json
   - docs/living/decisions/D013-bounded-decision-outcome-summary.md
 evidence-refs:
   - packages/core-harness/src/deliberation-controller.js
   - packages/core-harness/src/grounded-cognition.js
   - docs/worktree/core-harness/workflow.md
-  - exact-head CI #1597 green on living-doc-impact and Node 20/22/24
-  - D013 accepted after the required reviews
-  - merge commit 50dfb3696609abb11ae79091372581ad706cc1dd
+  - PR #110 exact-head CI #1778 green
+  - PR #116 exact-head Actions #1869 green on living-doc-impact and Node 20/22/24
+  - PR #116 executable identity controls: five matching baselines accepted; five slot-alias/stored-identity mismatch controls fail closed; escapedControls=0
+  - D013 accepted after the required architecture and evaluation-method reviews
+  - merge commit 6a53285e84200dc1a126b932b2c5f91c6dfdc669
 blockers: []
 follow-up-refs: [BB-029]
-origin: INTENT-exharness-agentic-system; direct user request for architecture/workflow/decision/self-upgrade roadmap. Core already has bounded deliberation, action authorization, effect refs and grounded reflection; their usefulness as one application-level explanation and continuation path has now been bounded by BB-028.
+origin: INTENT-exharness-agentic-system; accepted after PR #116 closed the post-merge exact-artifact-identity anti-laundering finding without widening summary authority.
 ```
 
 ```text
 BB-029
-question/work: Deliver the accepted decision-to-outcome artifact composition for one concrete Backend/QA remediation workflow.
+question/work: Deliver the decision-to-outcome artifact composition for one concrete Backend/QA remediation workflow after BB-028 acceptance.
 kind: IMPLEMENTATION
 priority: P1
 status: READY
@@ -1085,7 +1091,7 @@ evidence-refs:
   - docs/living/decisions/D013-bounded-decision-outcome-summary.md
 blockers: []
 follow-up-refs: []
-origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-028
+origin: INTENT-exharness-agentic-system; conditional delivery follow-up to accepted BB-028/D013 boundary.
 ```
 
 ```text
@@ -1307,7 +1313,7 @@ These are candidate research addons grounded in existing extension points, subje
 | BB-039 | Artifact manifest/retention | Reliable, verifiable ref-only session continuation |
 | BB-040 | Measured model routing | Verified quality versus observed cost and latency |
 
-For comparisons, fix the task set and policy versions, keep held-out scenarios, record failed/inconclusive runs and declare the evidence class. Predeclare experiment budgets and decision criteria before observing candidate results. Improvements on deterministic fixtures do not establish production effectiveness. BB-036/037/038/039 now have bounded research results; BB-040 remains blocked on representative provider/task evidence.
+For comparisons, fix the task set and policy versions, keep held-out scenarios, record failed/inconclusive runs and declare the evidence class. Predeclare experiment budgets and decision criteria before observing candidate results. Improvements on deterministic fixtures do not establish production effectiveness. BB-036/037/038/039 have accepted bounded research results; BB-040 remains blocked on representative provider/task evidence.
 
 ```text
 BB-036
@@ -1446,7 +1452,7 @@ depends-on: []
 research-hypothesis: A minimal manifest linking immutable content identity and producer evidence may make ref-only handoff more dependable under source changes or loss.
 target-consumer: One concrete artifactReader used by durable Backend -> QA continuation
 implementation-output: A compatible artifact-manifest adapter validating content identity and producer revision before returning QA context, with explicit unavailable-content behavior
-value-gate: Reject changed/mismatched content and diagnose unavailable content in controlled restart scenarios while still accepting unchanged valid artifacts; demonstrate a concrete improvement over that adapter's baseline
+value-gate: Reject changed/mismatched content and diagnose unavailable content in controlled fresh-session reconstruction while still accepting unchanged valid artifacts; demonstrate a concrete improvement over that adapter's baseline
 scope-boundary: BB-014/015 settled project-state authority, not artifact storage guarantees. This item does not reopen their accepted project boundaries.
 remaining-work: []
 acceptance-criteria:
@@ -1455,13 +1461,16 @@ acceptance-criteria:
   - The recommendation bounds storage cost and compatibility; it does not copy full payloads into Blackboard or treat availability as correctness.
 submission:
   - PR #90
+  - remediation PR #108
+  - claim-calibration PR #119
 review-requirements: [research-method review, application/architecture-boundary review]
 reviews:
-  - research-method review PASS on exact research head 5da76553060bb72ff0a69de971f665bd8131fe10
-  - application/architecture-boundary review PASS on the same exact head
+  - application/architecture-boundary review PASS on PR #108 exact head fcf5bbd5357543bf3308b668f499804937ed7e22
+  - research-method review PASS on exact calibration head dcf541d8db254048c5d121c85f26914a8b37068c in PR #119; durable claim is limited to fresh-session/fresh-reader reconstruction within one OS process
 artifact-refs:
   - docs/living/knowledge/bb039-artifact-manifest-retention.md
-  - docs/living/knowledge/bb039-artifact-manifest-retention-probe.mjs
+  - docs/living/knowledge/bb039-artifact-manifest-research.md
+  - docs/living/knowledge/bb039-artifact-manifest-probe.mjs
   - artifacts/bb039-artifact-manifest-probe.json
   - docs/living/decisions/D014-application-artifact-manifest-adapter.md
 evidence-refs:
@@ -1470,13 +1479,15 @@ evidence-refs:
   - packages/agentic-system/src/session-handoff.js
   - packages/agentic-system/src/qa-contracts.js
   - packages/agentic-system/src/durable-backend-qa.js
-  - exact-head CI #1603 green on living-doc-impact and Node 20/22/24
-  - measured fixture: baseline passes 2 identity violations; manifest reader rejects both; valid and missing behavior unchanged
-  - D014 accepted after required reviews; runtime adapter remains undelivered
-  - merge commit 48165251181dff3fecd9af29b8eef55007a2212b
+  - PR #108 exact-head CI #1753 green
+  - fresh ApplicationOrchestrator/SessionHandoffSurface plus a newly constructed filesystem reader resolve persisted Board refs across the controlled fixture
+  - PR #119 exact-head Actions #1893 green on living-doc-impact and Node 20/22/24
+  - PR #119 research-method review record 5234783005 closes the claim-calibration finding
+  - calibration merge c534c68b12e86a8a980a1d0ad53545aef8215c81
+  - D014 accepted after the required application/architecture and calibrated research-method reviews
 blockers: []
 follow-up-refs: []
-origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
+origin: INTENT-exharness-agentic-system; accepted after PR #119 calibrated the durable claim to the fresh-session evidence while preserving the application boundary and explicit no-process-restart limitation.
 ```
 
 ```text

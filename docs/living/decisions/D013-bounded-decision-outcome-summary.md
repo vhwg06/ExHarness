@@ -2,11 +2,11 @@
 
 Status: **ACCEPTED**
 
-Accepted: 2026-09-16
+Accepted: 2026-09-17
 
-Acceptance boundary: BB-028 architecture-boundary review plus evaluation-method / anti-laundering review passed the remediated exact evidence head `21cdea2ce62c9a1d0c9663a03c5b8b4bc8a4ecfe` on PR #110; Actions run #1778 was green on living-doc-impact and Node 20/22/24. The earlier PR #88 PASS evidence is superseded for this decision because its post-merge anti-laundering blocker was not executable in that head.
+Acceptance boundary: BB-028 application/architecture review is accepted and the remaining evaluation-method / anti-laundering obligation was closed by PR #116 on exact head `dbf825b0223d646b81513a2e97673c77b15db4c2`. The executable remediation keeps hard-coded lookup slots but independently validates canonical stored artifact identity/revision after lookup; five matching baselines pass, five slot-alias/stored-identity mismatch controls fail closed with `escapedControls=0`, and exact-head Actions #1869 is green. Merge commit `6a53285e84200dc1a126b932b2c5f91c6dfdc669` carries that evidence into main.
 
-Acceptance is research/design authority only. Runtime delivery remains owned by BB-029.
+Acceptance is research/design authority for the bounded BB-029 implementation handoff only. It does not claim runtime delivery, production effectiveness, or summary correctness authority.
 
 ## Context
 
@@ -25,7 +25,7 @@ verified summary
   -> derive correctness-relevant answers from underlying artifacts
 ```
 
-Seven adversarial controls fail closed: tampered authorization, copied success over a failing evaluation, tampered authorization evidence refs, tampered outcome refs, missing evaluation, wrong ActionIntent revision and omitted counterevidence. Evidence remains deterministic/synthetic and explicitly not production-effectiveness evidence.
+Seven adversarial controls fail closed: tampered authorization, copied success over a failing evaluation, tampered authorization evidence refs, tampered outcome refs, missing evaluation, wrong ActionIntent revision and omitted counterevidence. PR #116 adds the missing exact-artifact-identity boundary: a lookup key is not identity proof, and the returned artifact's canonical kind/id/revision must independently match the requested ref. Evidence remains deterministic/synthetic and explicitly not production-effectiveness evidence.
 
 ## Decision
 
@@ -80,7 +80,7 @@ The first pilot must fail closed when:
 
 - a copied summary claim conflicts with its referenced artifact;
 - a required artifact is missing;
-- an exact revision does not match;
+- an exact artifact identity or revision does not match the requested ref;
 - current evaluation contradicts the copied outcome;
 - authorization evidence refs or outcome refs drift from the referenced ActionIntent;
 - required current counterevidence is omitted;
@@ -98,19 +98,20 @@ Implement the first pilot in Agentic Application. Do not add a generic Core `Dec
 
 BB-029 may implement one Backend/QA remediation composition that materializes the summary only after post-action evaluation and grounded reflection/alignment exist, attaches the summary ref to the application review/continuation surface, uses it for bounded orientation, and requires exact underlying resolution for correctness-relevant review.
 
-The BB-028 anti-laundering controls become required implementation regression cases. The pilot must keep fixture metrics separate from production claims.
-
-Acceptance of this decision does **not** establish production value, runtime delivery, or a default decision-summary mechanism.
+The BB-028 anti-laundering controls, including exact stored-artifact identity mismatch, become required implementation regression cases. The pilot must keep fixture metrics separate from production claims.
 
 ## Evidence
 
 - `docs/living/knowledge/bb028-decision-outcome-chain.md`
 - `docs/living/knowledge/bb028-decision-outcome-probe.mjs`
 - `artifacts/bb028-decision-outcome-probe.json`
-- PR #110 architecture-boundary review PASS on exact evidence head `21cdea2ce62c9a1d0c9663a03c5b8b4bc8a4ecfe`
-- PR #110 evaluation-method / anti-laundering review PASS on the same exact evidence head
-- exact evidence-head Actions run #1778 green
-- PR #88 post-merge anti-laundering finding, superseded by PR #110 executable controls
+- `docs/living/knowledge/bb028-exact-artifact-identity-probe.mjs`
+- `artifacts/bb028-exact-artifact-identity-probe.json`
+- PR #110 architecture-boundary and anti-laundering remediation context; exact-head CI #1778 green
+- PR #116 evaluation-method / anti-laundering review PASS on exact head `dbf825b0223d646b81513a2e97673c77b15db4c2`
+- PR #116 exact-head Actions #1869 green on living-doc-impact and Node 20/22/24
+- five exact-match baselines accepted; five hard-coded-slot alias / stored-identity or revision mismatch controls fail closed; `escapedControls=0`
+- merge commit `6a53285e84200dc1a126b932b2c5f91c6dfdc669`
 - `packages/core-harness/src/deliberation.js`
 - `packages/core-harness/src/deliberation-controller.js`
 - `packages/core-harness/src/action-effect.js`
@@ -119,4 +120,4 @@ Acceptance of this decision does **not** establish production value, runtime del
 
 ## Promotion boundary
 
-`ACCEPTED` means the application boundary and authority invariants are approved for the bounded BB-029 pilot. It does **not** mean `DECISION_OUTCOME_SUMMARY v1` is delivered runtime behavior or a production default. Runtime promotion requires BB-029 implementation and verification.
+`ACCEPTED` authorizes the bounded BB-029 implementation handoff. It does **not** establish production value, runtime delivery, a default decision-summary mechanism, or independent correctness/acceptance authority for the summary itself.

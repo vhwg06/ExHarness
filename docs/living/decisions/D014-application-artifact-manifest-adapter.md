@@ -2,9 +2,11 @@
 
 Status: **ACCEPTED**
 
-Accepted: 2026-09-16
+Accepted: 2026-09-17
 
-Acceptance boundary: BB-039 corrected fresh-session research evidence in PR #108 passed application/architecture-boundary and research-method review on exact research head `fcf5bbd5357543bf3308b668f499804937ed7e22`; exact-head Actions run #1753 was green. The corrected fixture closes the earlier same-process and missing provenance-negative coverage gaps. Acceptance remains a design boundary, not delivery of a runtime manifest adapter.
+Acceptance boundary: BB-039 application/architecture review PASS on PR #108 exact evidence head `fcf5bbd5357543bf3308b668f499804937ed7e22`, and research-method review PASS on PR #119 exact calibration head `dcf541d8db254048c5d121c85f26914a8b37068c`. PR #119 Actions #1893 was green on living-doc-impact and Node 20/22/24; calibration merge `c534c68b12e86a8a980a1d0ad53545aef8215c81` carries the reviewed claim into `main`.
+
+This acceptance is limited to **fresh-session / fresh-reader reconstruction from durable Blackboard and filesystem state within one OS process**. It does not establish OS process-restart behavior, production storage reliability, runtime delivery, semantic correctness, or independent authenticity.
 
 ## Context
 
@@ -12,11 +14,11 @@ Durable Backend -> QA continuation persists artifact refs plus upstream Backend 
 
 BB-039 reproduced a concrete adapter-level gap with a deterministic weak reader: changed bytes behind a stable ref and producer/provenance mismatches can be accepted when the source ignores those semantics. Deleted content is observable through the source's ordinary missing-artifact failure shape.
 
-The corrected BB-039 fixture exercises the boundary after an actual fresh-session reconstruction using a JSON Blackboard plus separately reconstructed filesystem-backed artifact and manifest stores. The application already has a suitable injection boundary. No evidence requires copying payloads into Blackboard, changing Core, or introducing a global artifact registry.
+The corrected BB-039 fixture exercises the boundary after a fresh-session reconstruction using a JSON Blackboard plus separately reconstructed filesystem-backed artifact and manifest stores. The application already has a suitable injection boundary. No evidence requires copying payloads into Blackboard, changing Core, or introducing a global artifact registry.
 
 ## Decision
 
-For consumers that require restart-safe ref-only continuation across artifact-source changes/loss, use an **optional manifest-validating `artifactReader` adapter** at the Agentic Application artifact boundary.
+For consumers that require verifiable ref-only continuation across fresh application sessions and artifact-source changes/loss, use an **optional manifest-validating `artifactReader` adapter** at the Agentic Application artifact boundary.
 
 The first concrete manifest binds:
 
@@ -54,7 +56,7 @@ The first pilot should preserve `ApplicationArtifactRef`, `QaWorkOrder` and `QaC
 
 A generic artifact registry, global content-addressed store, Blackboard payload schema expansion or Core abstraction requires separate evidence.
 
-## Corrected evidence
+## Accepted evidence
 
 - `docs/living/knowledge/bb039-artifact-manifest-research.md`;
 - `docs/living/knowledge/bb039-artifact-manifest-probe.mjs`;
@@ -63,12 +65,15 @@ A generic artifact registry, global content-addressed store, Blackboard payload 
 - nine deterministic scenarios including changed bytes, wrong stored revision, missing/partial content, missing manifest, wrong producer work-order id, wrong acceptance-decision id and wrong acceptance-decision digest;
 - weak baseline accepts five identity/provenance violations while the manifest reader rejects all five;
 - evidence class `DETERMINISTIC_FRESH_SESSION_FIXTURE`, `productionEvidence=false`;
-- PR #108 application/architecture-boundary review PASS on exact head `fcf5bbd5357543bf3308b668f499804937ed7e22`;
-- PR #108 research-method review PASS on the same exact head;
-- exact-head Actions run #1753 green.
+- PR #108 application/architecture-boundary review PASS on exact evidence head `fcf5bbd5357543bf3308b668f499804937ed7e22`;
+- PR #108 exact-head Actions #1753 green;
+- PR #119 calibrates the durable claim from unsupported `after restart` wording to fresh-session/fresh-reader reconstruction and explicitly excludes OS process-restart evidence;
+- PR #119 research-method review PASS on exact head `dcf541d8db254048c5d121c85f26914a8b37068c`;
+- PR #119 exact-head Actions #1893 green on living-doc-impact and Node 20/22/24;
+- calibration merge `c534c68b12e86a8a980a1d0ad53545aef8215c81`.
 
-Earlier PR #90 evidence remains historical precursor evidence but is no longer the sole acceptance basis for D014.
+Earlier PR #90 evidence remains historical precursor evidence and is not the acceptance basis for this decision.
 
 ## Promotion boundary
 
-`ACCEPTED` approves the optional application adapter boundary and implementation handoff. It does **not** claim a manifest adapter is delivered runtime behavior. A later implementation must demonstrate unchanged-valid compatibility, changed-content rejection, producer/revision/provenance mismatch rejection, explicit unavailability, partial-set behavior and bounded lookup/hash/retention cost on the concrete Backend -> QA adapter before runtime promotion.
+`ACCEPTED` authorizes only the bounded optional application-level implementation handoff described above. It does **not** mean a runtime manifest adapter is delivered or should become a default. A later implementation must still demonstrate unchanged-valid compatibility, changed-content rejection, producer/revision/provenance mismatch rejection, explicit unavailability, partial-set behavior and bounded lookup/hash/retention cost on the concrete Backend -> QA adapter before runtime promotion.
