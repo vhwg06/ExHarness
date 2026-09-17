@@ -86,7 +86,7 @@ function artifactMap() {
         rationale: "Targets the observed stale-read path without globally reducing cache effectiveness.",
         uncertainty: "The write path may have a second invalidation owner."
       },
-      actionIntentRef: { kind: "ACTION_INTENT", id: "intent-1" }
+      actionIntentRef: { kind: "ACTION_INTENT", id: "intent-1", revision: 3 }
     }],
     ["ACTION_INTENT:intent-1", {
       id: "intent-1",
@@ -109,7 +109,7 @@ function artifactMap() {
     ["EFFECT_OPERATION:effect-1", {
       operationId: "effect-1",
       status: "CONFIRMED",
-      actionIntentRef: { kind: "ACTION_INTENT", id: "intent-1" },
+      actionIntentRef: { kind: "ACTION_INTENT", id: "intent-1", revision: 3 },
       resultRef: { kind: "REPOSITORY_REVISION", id: "rev-2" }
     }],
     ["EVALUATION:qa-eval-v2", {
@@ -298,4 +298,65 @@ test("BB-029 invalid decision chains block the Board before submission instead o
     assert.match(item.blockers[0], /Decision\/outcome summary materialization failed/);
     assert.equal(item.submission, null);
   });
+});
+
+test("BB-029 exact relation checks reject omitted or changed authoritative revisions", async () => {
+  const cases = [
+    {
+      name: "deliberation omits ActionIntent revision",
+      mutate(artifacts) {
+        const deliberation = structuredClone(artifacts.get("DELIBERATION:delib-1"));
+        deliberation.actionIntentRef = { kind: "ACTION_INTENT", id: "intent-1" };
+        artifacts.set("DELIBERATION:delib-1", deliberation);
+      },
+      expected: /deliberation ActionIntent ref mismatch/
+    },
+    {
+      name: "effect changes ActionIntent revision",
+      mutate(artifacts) {
+        const effect = structuredClone(artifacts.get("EFFECT_OPERATION:effect-1"));
+        effect.actionIntentRef = { kind: "ACTION_INTENT", id: "intent-1", revision: 2 };
+        artifacts.set("EFFECT_OPERATION:effect-1", effect);
+      },
+      expected: /effect ActionIntent ref mismatch/
+    },
+    {
+      name: "reflection omits intent-memory revision",
+      mutate(artifacts) {
+        const reflection = structuredClone(artifacts.get("MEMORY:memory-reflection-1"));
+        reflection.sourceRefs[0] = { kind: "MEMORY", id: "memory-intent-1" };
+        artifacts.set("MEMORY:memory-reflection-1", reflection);
+      },
+      expected: /reflection omits exact intent source/
+    },
+    {
+      name: "alignment changes reflection-memory revision",
+      mutate(artifacts) {
+        const alignment = structuredClone(artifacts.get("INTENT_REFLECTION_ALIGNMENT:align-1"));
+        alignment.reflectionRef = { kind: "MEMORY", id: "memory-reflection-1", revision: 2 };
+        artifacts.set("INTENT_REFLECTION_ALIGNMENT:align-1", alignment);
+      },
+      expected: /alignment reflection ref mismatch/
+    }
+  ];
+
+  for (const scenario of cases) {
+    await withFixture(async ({ baseOrchestrator, artifacts, pilot }) => {
+      scenario.mutate(artifacts);
+      const orchestrator = pilot.decorateOrchestrator(baseOrchestrator);
+      const claimed = await orchestrator.claim({ itemId: "BB-029-PILOT", owner: `relation-${scenario.name}` });
+      await assert.rejects(
+        () => orchestrator.submit({
+          itemId: "BB-029-PILOT",
+          owner: `relation-${scenario.name}`,
+          generation: claimed.result.claimGeneration,
+          submission: submission()
+        }),
+        scenario.expected
+      );
+      const item = (await baseOrchestrator.readBlackboard()).items[0];
+      assert.equal(item.status, BlackboardStatus.BLOCKED);
+      assert.equal(item.submission, null);
+    });
+  }
 });
