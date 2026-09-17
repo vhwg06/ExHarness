@@ -7,6 +7,9 @@
   ],
   "metrics": {
     "freshSessions": 3,
+    "freshProcessArtifactReadCount": 1,
+    "actualExperimentDispatchCount": 1,
+    "completedExperimentSkipCount": 3,
     "completedExperimentReplayCount": 0,
     "resumedInterruptedExperimentCount": 1,
     "staleEvidenceRetainedCount": 1,
@@ -15,6 +18,17 @@
     "automaticDecisionPromotionCount": 0
   },
   "continuation": {
+    "sessionBDispatchExperimentIds": [
+      "E2"
+    ],
+    "sessionBSkippedCompletedIds": [
+      "E1"
+    ],
+    "sessionCDispatchExperimentIds": [],
+    "sessionCSkippedCompletedIds": [
+      "E1",
+      "E2"
+    ],
     "completedExperimentIds": [
       "E1",
       "E2"
@@ -38,6 +52,7 @@
     ]
   },
   "boundary": {
+    "artifactRefsResolveWithoutProcessLocalIndex": true,
     "boardStoresLifecycleAndRefs": true,
     "completedExperimentsAreNotRepeated": true,
     "interruptedExperimentIsResumed": true,
@@ -51,7 +66,8 @@
   },
   "limitations": [
     "deterministic local artifact store and JSON Blackboard only",
-    "does not establish production research quality or storage availability guarantees",
+    "fresh-process check proves deterministic ref resolution for this local artifact store, not production storage availability",
+    "does not establish production research quality or production effectiveness",
     "does not validate concurrent research writers",
     "does not make a PROPOSED architectural decision accepted"
   ]
