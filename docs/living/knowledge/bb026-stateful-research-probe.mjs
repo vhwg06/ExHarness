@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { execFile as execFileCallback } from "node:child_process";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { promisify } from "node:util";
 
 import {
   BlackboardStatus,
@@ -11,11 +13,13 @@ import {
   createSessionHandoffSurface
 } from "../../../packages/agentic-system/src/index.js";
 
+const execFile = promisify(execFileCallback);
 const EVIDENCE_CLASS = "DETERMINISTIC_REFERENCE";
 const PROJECT_ID = "bb026-stateful-research-probe";
 const ITEM_ID = "BB-RESEARCH";
 const REV_A = "source-rev-a";
 const REV_B = "source-rev-b";
+const ARTIFACT_REF_PREFIX = "artifact://bb026/";
 
 function reviewTrustStub() {
   return {
@@ -72,11 +76,96 @@ function researchCheckpoint({
 
 function containsEmbeddedWorkProduct(value) {
   const json = JSON.stringify(value);
-  return [
-    "hypothesisText",
-    "experimentProcedure",
-    "rawObservationPayload"
-  ].some((marker) => json.includes(marker));
+  return ["hypothesisText", "experimentProcedure", "rawObservationPayload"]
+    .some((marker) => json.includes(marker));
+}
+
+function requireArtifactName(value) {
+  assert.match(value, /^[a-z0-9-]+$/, `invalid artifact name: ${value}`);
+  return value;
+}
+
+function refForArtifact(name) {
+  return `${ARTIFACT_REF_PREFIX}${requireArtifactName(name)}`;
+}
+
+function artifactNameFromRef(ref) {
+  assert.ok(ref.startsWith(ARTIFACT_REF_PREFIX), `unknown artifact ref: ${ref}`);
+  return requireArtifactName(ref.slice(ARTIFACT_REF_PREFIX.length));
+}
+
+function artifactPath(artifactDirectory, ref) {
+  return join(artifactDirectory, `${artifactNameFromRef(ref)}.json`);
+}
+
+async function writeArtifact(artifactDirectory, name, payload) {
+  const ref = refForArtifact(name);
+  await writeFile(
+    artifactPath(artifactDirectory, ref),
+    `${JSON.stringify(payload, null, 2)}\n`,
+    { encoding: "utf8", flag: "wx" }
+  );
+  return ref;
+}
+
+function makeArtifactReader(artifactDirectory) {
+  return Object.freeze({
+    async read(ref) {
+      return JSON.parse(await readFile(artifactPath(artifactDirectory, ref), "utf8"));
+    }
+  });
+}
+
+async function readArtifactInFreshProcess(artifactDirectory, ref) {
+  const script = `
+    import assert from "node:assert/strict";
+    import { readFile } from "node:fs/promises";
+    import { join } from "node:path";
+    const [directory, ref] = process.argv.slice(1);
+    const prefix = "artifact://bb026/";
+    assert.ok(ref.startsWith(prefix), "unknown artifact ref");
+    const name = ref.slice(prefix.length);
+    assert.match(name, /^[a-z0-9-]+$/, "invalid artifact name");
+    const value = JSON.parse(await readFile(join(directory, name + ".json"), "utf8"));
+    process.stdout.write(JSON.stringify(value));
+  `;
+  const { stdout } = await execFile(process.execPath, ["--input-type=module", "--eval", script, artifactDirectory, ref]);
+  return JSON.parse(stdout);
+}
+
+function selectResearchDispatch(checkpoint, experimentStates) {
+  const byId = new Map(experimentStates.map((experiment) => [experiment.id, experiment]));
+  assert.equal(byId.size, experimentStates.length, "experiment ids must be unique");
+  const skippedCompletedIds = experimentStates
+    .filter((experiment) => experiment.status === "COMPLETED")
+    .map((experiment) => experiment.id);
+  const dispatchExperimentIds = [];
+
+  if (checkpoint.activeExperimentId != null) {
+    const active = byId.get(checkpoint.activeExperimentId);
+    assert.ok(active, `active experiment unavailable: ${checkpoint.activeExperimentId}`);
+    assert.equal(active.status, "IN_PROGRESS", "active experiment must be IN_PROGRESS before resume dispatch");
+    dispatchExperimentIds.push(active.id);
+  } else {
+    assert.ok(
+      experimentStates.every((experiment) => experiment.status === "COMPLETED"),
+      "no active experiment is allowed only when all referenced experiments are COMPLETED"
+    );
+  }
+
+  return Object.freeze({ skippedCompletedIds, dispatchExperimentIds });
+}
+
+function observeDispatch(metrics, selection, experimentStates) {
+  const byId = new Map(experimentStates.map((experiment) => [experiment.id, experiment]));
+  for (const id of selection.dispatchExperimentIds) {
+    const experiment = byId.get(id);
+    assert.ok(experiment, `dispatched experiment unavailable: ${id}`);
+    metrics.actualExperimentDispatchCount += 1;
+    if (experiment.status === "COMPLETED") metrics.completedExperimentReplayCount += 1;
+    if (experiment.status === "IN_PROGRESS") metrics.resumedInterruptedExperimentCount += 1;
+  }
+  metrics.completedExperimentSkipCount += selection.skippedCompletedIds.length;
 }
 
 async function main() {
@@ -84,24 +173,6 @@ async function main() {
   const artifactDirectory = join(directory, "artifacts");
   const boardPath = join(directory, "blackboard.json");
   await mkdir(artifactDirectory, { recursive: true });
-
-  const artifactPaths = new Map();
-  let artifactSequence = 0;
-
-  async function writeArtifact(kind, payload) {
-    artifactSequence += 1;
-    const ref = `artifact://bb026/${String(artifactSequence).padStart(2, "0")}-${kind}`;
-    const path = join(artifactDirectory, `${String(artifactSequence).padStart(2, "0")}-${kind}.json`);
-    await writeFile(path, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
-    artifactPaths.set(ref, path);
-    return ref;
-  }
-
-  async function readArtifact(ref) {
-    const path = artifactPaths.get(ref);
-    assert.ok(path, `unknown artifact ref: ${ref}`);
-    return JSON.parse(await readFile(path, "utf8"));
-  }
 
   function makeOrchestrator() {
     return createApplicationOrchestrator({
@@ -112,6 +183,9 @@ async function main() {
 
   const metrics = {
     freshSessions: 0,
+    freshProcessArtifactReadCount: 0,
+    actualExperimentDispatchCount: 0,
+    completedExperimentSkipCount: 0,
     completedExperimentReplayCount: 0,
     resumedInterruptedExperimentCount: 0,
     staleEvidenceRetainedCount: 0,
@@ -121,7 +195,7 @@ async function main() {
   };
 
   try {
-    // Session A: establish question/hypotheses, complete E1, interrupt E2, checkpoint only refs/cursor.
+    // Session A: persist work products and checkpoint only lifecycle/cursor/refs.
     metrics.freshSessions += 1;
     const sessionAOrchestrator = makeOrchestrator();
     const sessionASurface = createSessionHandoffSurface({
@@ -146,13 +220,13 @@ async function main() {
       items: [initialItem()]
     });
 
-    const questionRef = await writeArtifact("question", {
+    const questionRef = await writeArtifact(artifactDirectory, "question", {
       kind: "RESEARCH_QUESTION",
       id: "Q1",
       question: "Do existing Blackboard checkpoints plus immutable referenced artifacts suffice for resumable research continuation?"
     });
 
-    const planRef = await writeArtifact("plan", {
+    const planRef = await writeArtifact(artifactDirectory, "plan", {
       kind: "RESEARCH_PLAN",
       questionRef,
       hypothesisText: {
@@ -165,7 +239,7 @@ async function main() {
       ]
     });
 
-    const experimentE1Ref = await writeArtifact("experiment-e1-v1", {
+    const experimentE1Ref = await writeArtifact(artifactDirectory, "experiment-e1-v1", {
       kind: "EXPERIMENT_RESULT",
       id: "E1",
       status: "COMPLETED",
@@ -175,7 +249,7 @@ async function main() {
       evidenceIds: ["EV1"]
     });
 
-    const experimentE2InterruptedRef = await writeArtifact("experiment-e2-v1", {
+    const experimentE2InterruptedRef = await writeArtifact(artifactDirectory, "experiment-e2-v1", {
       kind: "EXPERIMENT_STATE",
       id: "E2",
       status: "IN_PROGRESS",
@@ -185,20 +259,18 @@ async function main() {
       nextStep: "change source revision and evaluate evidence freshness"
     });
 
-    const ledgerV1Ref = await writeArtifact("evidence-ledger-v1", {
+    const ledgerV1Ref = await writeArtifact(artifactDirectory, "evidence-ledger-v1", {
       kind: "EVIDENCE_LEDGER",
       revision: 1,
-      evidence: [
-        {
-          id: "EV1",
-          status: "CONFIRMED",
-          sourceRevision: REV_A,
-          sourceScopes: ["packages/agentic-system/src/blackboard-orchestrator.js"],
-          observation: "checkpoint + referenced artifacts reconstructed E2 continuation state",
-          supports: ["H1"],
-          contradicts: []
-        }
-      ]
+      evidence: [{
+        id: "EV1",
+        status: "CONFIRMED",
+        sourceRevision: REV_A,
+        sourceScopes: ["packages/agentic-system/src/blackboard-orchestrator.js"],
+        observation: "checkpoint + referenced artifacts reconstructed E2 continuation state",
+        supports: ["H1"],
+        contradicts: []
+      }]
     });
 
     const claimedA = await sessionAOrchestrator.claim({ itemId: ITEM_ID, owner: "research-session-a" });
@@ -211,7 +283,6 @@ async function main() {
       sourceRevision: REV_A,
       nextAction: "resume E2 after source revision changes"
     });
-
     const persistedA = await sessionAOrchestrator.checkpoint({
       itemId: ITEM_ID,
       owner: "research-session-a",
@@ -223,9 +294,16 @@ async function main() {
     });
     metrics.boardEmbeddedWorkProductCount += containsEmbeddedWorkProduct(persistedA.result.checkpoint) ? 1 : 0;
 
-    // Session B: reconstruct, do not replay E1, resume E2, invalidate EV1 after source revision change.
+    // Prove artifact ref resolution itself has no process-local index dependency.
+    const processRead = await readArtifactInFreshProcess(artifactDirectory, experimentE2InterruptedRef);
+    assert.equal(processRead.id, "E2");
+    assert.equal(processRead.status, "IN_PROGRESS");
+    metrics.freshProcessArtifactReadCount += 1;
+
+    // Session B: reconstruct a new reader from durable path, select actual work, resume only E2.
     metrics.freshSessions += 1;
     const sessionBOrchestrator = makeOrchestrator();
+    const sessionBReader = makeArtifactReader(artifactDirectory);
     const sessionBSurface = createSessionHandoffSurface({
       orchestrator: sessionBOrchestrator,
       projectId: PROJECT_ID
@@ -237,16 +315,14 @@ async function main() {
     assert.equal(resumedB.checkpoint.sourceRevision, REV_A);
 
     const experimentStatesB = await Promise.all(
-      resumedB.checkpoint.experimentRefs.map((ref) => readArtifact(ref))
+      resumedB.checkpoint.experimentRefs.map((ref) => sessionBReader.read(ref))
     );
-    const completed = experimentStatesB.filter((experiment) => experiment.status === "COMPLETED");
-    const active = experimentStatesB.find((experiment) => experiment.id === resumedB.checkpoint.activeExperimentId);
-    assert.deepEqual(completed.map((experiment) => experiment.id), ["E1"]);
-    assert.equal(active.status, "IN_PROGRESS");
-    metrics.completedExperimentReplayCount += 0;
-    metrics.resumedInterruptedExperimentCount += 1;
+    const selectionB = selectResearchDispatch(resumedB.checkpoint, experimentStatesB);
+    observeDispatch(metrics, selectionB, experimentStatesB);
+    assert.deepEqual(selectionB.skippedCompletedIds, ["E1"]);
+    assert.deepEqual(selectionB.dispatchExperimentIds, ["E2"]);
 
-    const ledgerV1 = await readArtifact(resumedB.checkpoint.evidenceLedgerRef);
+    const ledgerV1 = await sessionBReader.read(resumedB.checkpoint.evidenceLedgerRef);
     const changedScopes = new Set(["packages/agentic-system/src/blackboard-orchestrator.js"]);
     const evidenceV2 = ledgerV1.evidence.map((entry) => {
       const affected = entry.sourceRevision !== REV_B && entry.sourceScopes.some((scope) => changedScopes.has(scope));
@@ -263,7 +339,8 @@ async function main() {
     });
     metrics.staleEvidenceRetainedCount += evidenceV2.filter((entry) => entry.status === "STALE").length;
 
-    const experimentE2CompletedRef = await writeArtifact("experiment-e2-v2", {
+    assert.ok(selectionB.dispatchExperimentIds.includes("E2"), "E2 must be selected before its resumed execution is recorded");
+    const experimentE2CompletedRef = await writeArtifact(artifactDirectory, "experiment-e2-v2", {
       kind: "EXPERIMENT_RESULT",
       id: "E2",
       status: "COMPLETED",
@@ -273,7 +350,7 @@ async function main() {
       evidenceIds: ["EV2"]
     });
 
-    const ledgerV2Ref = await writeArtifact("evidence-ledger-v2", {
+    const ledgerV2Ref = await writeArtifact(artifactDirectory, "evidence-ledger-v2", {
       kind: "EVIDENCE_LEDGER",
       revision: 2,
       supersedes: ledgerV1Ref,
@@ -317,9 +394,10 @@ async function main() {
     });
     metrics.boardEmbeddedWorkProductCount += containsEmbeddedWorkProduct(persistedB.result.checkpoint) ? 1 : 0;
 
-    // Session C: reconstruct completed state, submit for review; no self-promotion to DONE/accepted decision.
+    // Session C: reconstruct another reader and prove the selector dispatches nothing once all work is completed.
     metrics.freshSessions += 1;
     const sessionCOrchestrator = makeOrchestrator();
+    const sessionCReader = makeArtifactReader(artifactDirectory);
     const sessionCSurface = createSessionHandoffSurface({
       orchestrator: sessionCOrchestrator,
       projectId: PROJECT_ID
@@ -330,12 +408,14 @@ async function main() {
     assert.equal(resumedC.checkpoint.activeExperimentId, null);
 
     const finalExperiments = await Promise.all(
-      resumedC.checkpoint.experimentRefs.map((ref) => readArtifact(ref))
+      resumedC.checkpoint.experimentRefs.map((ref) => sessionCReader.read(ref))
     );
-    assert.ok(finalExperiments.every((experiment) => experiment.status === "COMPLETED"));
-    metrics.completedExperimentReplayCount += 0;
+    const selectionC = selectResearchDispatch(resumedC.checkpoint, finalExperiments);
+    observeDispatch(metrics, selectionC, finalExperiments);
+    assert.deepEqual(selectionC.dispatchExperimentIds, []);
+    assert.deepEqual(selectionC.skippedCompletedIds, ["E1", "E2"]);
 
-    const researchResultRef = await writeArtifact("research-result", {
+    const researchResultRef = await writeArtifact(artifactDirectory, "research-result", {
       kind: "RESEARCH_RESULT",
       evidenceClass: EVIDENCE_CLASS,
       productionEvidence: false,
@@ -347,7 +427,7 @@ async function main() {
       limitations: [
         "deterministic probe only",
         "no production-effectiveness claim",
-        "artifact durability is assumed from the injected durable artifact store"
+        "artifact availability outside the deterministic local store is not established"
       ]
     });
 
@@ -381,13 +461,17 @@ async function main() {
     metrics.automaticDecisionPromotionCount = 0;
     metrics.boardEmbeddedWorkProductCount += containsEmbeddedWorkProduct(finalItem.submission) ? 1 : 0;
 
-    const finalLedger = await readArtifact(ledgerV2Ref);
+    const finalLedger = await sessionCReader.read(ledgerV2Ref);
     const result = {
       evidenceClass: EVIDENCE_CLASS,
       productionEvidence: false,
       sourceRevisions: [REV_A, REV_B],
       metrics,
       continuation: {
+        sessionBDispatchExperimentIds: selectionB.dispatchExperimentIds,
+        sessionBSkippedCompletedIds: selectionB.skippedCompletedIds,
+        sessionCDispatchExperimentIds: selectionC.dispatchExperimentIds,
+        sessionCSkippedCompletedIds: selectionC.skippedCompletedIds,
         completedExperimentIds: finalExperiments.map((experiment) => experiment.id),
         resumedExperimentId: "E2",
         finalBoardStatus: finalItem.status,
@@ -402,21 +486,29 @@ async function main() {
           .flatMap((entry) => entry.contradicts.map((target) => ({ from: entry.id, to: target })))
       },
       boundary: {
+        artifactRefsResolveWithoutProcessLocalIndex: metrics.freshProcessArtifactReadCount === 1,
         boardStoresLifecycleAndRefs: metrics.boardEmbeddedWorkProductCount === 0,
-        completedExperimentsAreNotRepeated: metrics.completedExperimentReplayCount === 0,
-        interruptedExperimentIsResumed: metrics.resumedInterruptedExperimentCount === 1,
+        completedExperimentsAreNotRepeated: metrics.completedExperimentReplayCount === 0 && metrics.actualExperimentDispatchCount === 1,
+        interruptedExperimentIsResumed: metrics.resumedInterruptedExperimentCount === 1 && selectionB.dispatchExperimentIds[0] === "E2",
         staleEvidenceRemainsInspectable: metrics.staleEvidenceRetainedCount === 1,
         researchCannotSelfAccept: finalItem.status === BlackboardStatus.PENDING_REVIEW && metrics.automaticDecisionPromotionCount === 0
       },
+      result: {
+        runtimeExtensionRequired: false,
+        missingContract: "versioned research-continuation manifest plus explicit evidence-freshness convention for a concrete research consumer",
+        implementationOwner: "BB-027"
+      },
       limitations: [
         "deterministic local artifact store and JSON Blackboard only",
-        "does not establish production research quality or storage availability guarantees",
+        "fresh-process check proves deterministic ref resolution for this local artifact store, not production storage availability",
+        "does not establish production research quality or production effectiveness",
         "does not validate concurrent research writers",
         "does not make a PROPOSED architectural decision accepted"
       ]
     };
 
     assert.deepEqual(result.boundary, {
+      artifactRefsResolveWithoutProcessLocalIndex: true,
       boardStoresLifecycleAndRefs: true,
       completedExperimentsAreNotRepeated: true,
       interruptedExperimentIsResumed: true,
