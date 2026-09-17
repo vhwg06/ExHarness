@@ -1313,7 +1313,7 @@ These are candidate research addons grounded in existing extension points, subje
 | BB-039 | Artifact manifest/retention | Reliable, verifiable ref-only session continuation |
 | BB-040 | Measured model routing | Verified quality versus observed cost and latency |
 
-For comparisons, fix the task set and policy versions, keep held-out scenarios, record failed/inconclusive runs and declare the evidence class. Predeclare experiment budgets and decision criteria before observing candidate results. Improvements on deterministic fixtures do not establish production effectiveness. BB-036/037/038 have accepted bounded research results; BB-039 remains review-open under PR #108; BB-040 remains blocked on representative provider/task evidence.
+For comparisons, fix the task set and policy versions, keep held-out scenarios, record failed/inconclusive runs and declare the evidence class. Predeclare experiment budgets and decision criteria before observing candidate results. Improvements on deterministic fixtures do not establish production effectiveness. BB-036/037/038/039 have accepted bounded research results; BB-040 remains blocked on representative provider/task evidence.
 
 ```text
 BB-036
@@ -1446,7 +1446,7 @@ BB-039
 question/work: Research an artifact-manifest and retention addon that makes ref-only continuation verifiable across project sessions.
 kind: RESEARCH
 priority: P1
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: []
 research-hypothesis: A minimal manifest linking immutable content identity and producer evidence may make ref-only handoff more dependable under source changes or loss.
@@ -1454,8 +1454,7 @@ target-consumer: One concrete artifactReader used by durable Backend -> QA conti
 implementation-output: A compatible artifact-manifest adapter validating content identity and producer revision before returning QA context, with explicit unavailable-content behavior
 value-gate: Reject changed/mismatched content and diagnose unavailable content in controlled fresh-session reconstruction while still accepting unchanged valid artifacts; demonstrate a concrete improvement over that adapter's baseline
 scope-boundary: BB-014/015 settled project-state authority, not artifact storage guarantees. This item does not reopen their accepted project boundaries.
-remaining-work:
-  - calibrate the evidence claim to fresh-session / fresh-reader reconstruction; the current probe does not establish an OS process restart boundary
+remaining-work: []
 acceptance-criteria:
   - A fresh session can distinguish missing, changed and verified content before using it as evidence; observed behavior is reported without presuming all adapters are defective.
   - A retention proposal names which pending work/review refs pin artifacts and how historical evidence remains inspectable.
@@ -1463,12 +1462,14 @@ acceptance-criteria:
 submission:
   - PR #90
   - remediation PR #108
+  - claim-calibration PR #119
 review-requirements: [research-method review, application/architecture-boundary review]
 reviews:
   - application/architecture-boundary review PASS on PR #108 exact head fcf5bbd5357543bf3308b668f499804937ed7e22
-  - research-method review remains open pending claim calibration on the same head
+  - research-method review PASS on exact calibration head dcf541d8db254048c5d121c85f26914a8b37068c in PR #119; durable claim is limited to fresh-session/fresh-reader reconstruction within one OS process
 artifact-refs:
   - docs/living/knowledge/bb039-artifact-manifest-retention.md
+  - docs/living/knowledge/bb039-artifact-manifest-research.md
   - docs/living/knowledge/bb039-artifact-manifest-probe.mjs
   - artifacts/bb039-artifact-manifest-probe.json
   - docs/living/decisions/D014-application-artifact-manifest-adapter.md
@@ -1480,11 +1481,13 @@ evidence-refs:
   - packages/agentic-system/src/durable-backend-qa.js
   - PR #108 exact-head CI #1753 green
   - fresh ApplicationOrchestrator/SessionHandoffSurface plus a newly constructed filesystem reader resolve persisted Board refs across the controlled fixture
-  - D014 remains PROPOSED until research-method acceptance closes
-blockers:
-  - research-method review remains open because fresh-session reconstruction is not evidence of an OS process restart
+  - PR #119 exact-head Actions #1893 green on living-doc-impact and Node 20/22/24
+  - PR #119 research-method review record 5234783005 closes the claim-calibration finding
+  - calibration merge c534c68b12e86a8a980a1d0ad53545aef8215c81
+  - D014 accepted after the required application/architecture and calibrated research-method reviews
+blockers: []
 follow-up-refs: []
-origin: INTENT-exharness-agentic-system; post-merge review reopened the BB-039 research-method obligation while preserving the accepted application boundary.
+origin: INTENT-exharness-agentic-system; accepted after PR #119 calibrated the durable claim to the fresh-session evidence while preserving the application boundary and explicit no-process-restart limitation.
 ```
 
 ```text
