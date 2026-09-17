@@ -1022,18 +1022,17 @@ Here, a decision chain means explicit hypotheses, concise rationales, artifact p
 | Architecture composition from existing primitives | BB-032 | BB-033 | P2 |
 | Evidence-gated self-upgrade loop | BB-034 | BB-035 | P1 |
 
-BB-023/024/025 are delivered. BB-030/032 research boundaries are accepted; BB-028 is review-open under remediation PR #110. BB-033 is delivered by PR #107. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. BB-034 and D016 are accepted after PR #105 remediation; BB-035 remains blocked only on BB-027 before an application-level upgrade pilot can proceed.
+BB-023/024/025 are delivered. BB-028/030/032 research boundaries are accepted; BB-029 is READY after PR #116 closed the exact-artifact-identity review obligation. BB-033 is delivered by PR #107. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. BB-034 and D016 are accepted after PR #105 remediation; BB-035 remains blocked only on BB-027 before an application-level upgrade pilot can proceed.
 
 ```text
 BB-028
 question/work: Research a concrete decision-to-outcome chain for Backend/QA remediation using existing deliberation, ActionIntent and grounded reflection.
 kind: RESEARCH
 priority: P1
-status: PENDING_REVIEW
+status: DONE
 owner:
 depends-on: []
-remaining-work:
-  - close the evaluation-method anti-laundering finding by proving requested exact refs resolve artifacts with matching canonical identity/revision, not fixture-slot aliases
+remaining-work: []
 acceptance-criteria:
   - A fresh reviewer can recover the chosen action, alternatives, supporting evidence and observed outcome through bounded artifact summaries.
   - The design records explicit decision summaries, not raw/private chain-of-thought; rationale is never correctness evidence by itself.
@@ -1041,26 +1040,30 @@ acceptance-criteria:
 submission:
   - PR #88
   - remediation PR #110
+  - exact-artifact-identity remediation PR #116
 review-requirements: [architecture-boundary review, evaluation-method review]
 reviews:
   - architecture-boundary review PASS on BB-028 remediation; the summary remains an application projection with no correctness/lifecycle authority
-  - evaluation-method / anti-laundering review remains open on PR #110 exact head 21cdea2ce62c9a1d0c9663a03c5b8b4bc8a4ecfe
+  - evaluation-method / anti-laundering review PASS on exact PR #116 head dbf825b0223d646b81513a2e97673c77b15db4c2; the hard-coded-slot identity finding is closed by independent canonical stored-identity/revision validation
 artifact-refs:
   - docs/living/knowledge/bb028-decision-outcome-chain.md
   - docs/living/knowledge/bb028-decision-outcome-probe.mjs
   - artifacts/bb028-decision-outcome-probe.json
+  - docs/living/knowledge/bb028-exact-artifact-identity-probe.mjs
+  - artifacts/bb028-exact-artifact-identity-probe.json
   - docs/living/decisions/D013-bounded-decision-outcome-summary.md
 evidence-refs:
   - packages/core-harness/src/deliberation-controller.js
   - packages/core-harness/src/grounded-cognition.js
   - docs/worktree/core-harness/workflow.md
   - PR #110 exact-head CI #1778 green
-  - current review finding: hard-coded artifact-index keys can return an artifact whose stored identity differs from the requested ref
-  - D013 remains PROPOSED until the remediation review closes
-blockers:
-  - evaluation-method anti-laundering review is not yet accepted
+  - PR #116 exact-head Actions #1869 green on living-doc-impact and Node 20/22/24
+  - PR #116 executable identity controls: five matching baselines accepted; five slot-alias/stored-identity mismatch controls fail closed; escapedControls=0
+  - D013 accepted after the required architecture and evaluation-method reviews
+  - merge commit 6a53285e84200dc1a126b932b2c5f91c6dfdc669
+blockers: []
 follow-up-refs: [BB-029]
-origin: INTENT-exharness-agentic-system; post-merge review reopened the BB-028 acceptance obligation after the original fixture did not executable-prove exact underlying artifact identity.
+origin: INTENT-exharness-agentic-system; accepted after PR #116 closed the post-merge exact-artifact-identity anti-laundering finding without widening summary authority.
 ```
 
 ```text
@@ -1068,7 +1071,7 @@ BB-029
 question/work: Deliver the decision-to-outcome artifact composition for one concrete Backend/QA remediation workflow after BB-028 acceptance.
 kind: IMPLEMENTATION
 priority: P1
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-028]
 remaining-work:
@@ -1086,10 +1089,9 @@ artifact-refs: []
 evidence-refs:
   - BB-028
   - docs/living/decisions/D013-bounded-decision-outcome-summary.md
-blockers:
-  - BB-028 remediation/evaluation-method acceptance is unresolved and D013 remains PROPOSED
+blockers: []
 follow-up-refs: []
-origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-028
+origin: INTENT-exharness-agentic-system; conditional delivery follow-up to accepted BB-028/D013 boundary.
 ```
 
 ```text
