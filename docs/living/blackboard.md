@@ -1176,7 +1176,7 @@ submission:
 review-requirements: [architecture-boundary review, evaluation-method review]
 reviews:
   - architecture-boundary review PASS on exact research head 8b174a4ddddcf63adb69ab7523d22332bb370c5e
-  - evaluation-method review PASS on exact research head 8b174a4ddddcf63adb69ab7523d22332bb370c5e
+  - evaluation-method review PASS on the same exact head
 artifact-refs:
   - docs/living/knowledge/bb032-composition-boundary.md
   - packages/agentic-system/test/bb032-composition-boundary-research.test.js
@@ -1421,7 +1421,7 @@ submission:
 review-requirements: [research-method review, application/architecture-boundary review]
 reviews:
   - research-method review PASS on exact research head 8f39fa3320bd701204eafbf8ddaf308343fa101a
-  - application/architecture-boundary review PASS on exact research head 8f39fa3320bd701204eafbf8ddaf308343fa101a
+  - application/architecture-boundary review PASS on the same exact head
 artifact-refs:
   - docs/living/knowledge/bb038-workflow-policy-replay.md
   - docs/living/knowledge/bb038-runtime-calibration.mjs
