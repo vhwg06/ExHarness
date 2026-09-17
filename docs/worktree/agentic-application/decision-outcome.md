@@ -69,7 +69,7 @@ The summary carries exact source pins for:
 - intent/reflection alignment;
 - explicit counterevidence refs.
 
-Each pin contains the semantic ref plus a digest of the resolved payload at materialization time.
+Each pin contains the semantic ref plus a digest of the resolved payload at materialization time. Cross-artifact relation checks use exact semantic identity: kind, id and normalized revision must all match, so a missing revision cannot act as a wildcard for a revision-qualified authoritative ref.
 
 The current pilot requires the ActionIntent to be `EXECUTED`, authorized with `ALLOW`, linked to a `CONFIRMED` effect, and linked consistently back to its Deliberation. Reflection/grounding/alignment must all include the selected post-action evaluation, and non-success outcomes must retain that evaluation as counterevidence.
 
