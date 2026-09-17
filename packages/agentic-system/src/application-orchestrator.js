@@ -1,3 +1,4 @@
+import { subjectFromValue } from "../../core-harness/src/index.js";
 import {
   BlackboardStatus,
   ReviewRequirementSource,
@@ -17,6 +18,11 @@ function requireText(value, name) {
 
 function requireNonNegativeInteger(value, name) {
   invariant(Number.isInteger(value) && value >= 0, `${name} must be a non-negative integer`);
+  return value;
+}
+
+function requirePositiveInteger(value, name) {
+  invariant(Number.isInteger(value) && value > 0, `${name} must be a positive integer`);
   return value;
 }
 
@@ -138,6 +144,20 @@ function sameFreshWork(left, right) {
 
 function addUnique(target, values) {
   for (const value of values) if (!target.includes(value)) target.push(value);
+}
+
+function removeResolvedWork(item, resolvedWork) {
+  const resolved = normalizeTextArray(resolvedWork, "resolvedWork");
+  for (const work of resolved) {
+    invariant(item.remainingWork.includes(work), `resolvedWork is not an outstanding current obligation: ${work}`);
+  }
+  item.remainingWork = item.remainingWork.filter((work) => !resolved.includes(work));
+}
+
+function assertClaim(item, itemId, owner, generation, action) {
+  invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${itemId} must be CLAIMED before ${action}`);
+  invariant(item.owner === owner, `Blackboard item ${itemId} is claimed by another owner`);
+  invariant(item.claimGeneration === generation, `Blackboard item ${itemId} claim generation is stale`);
 }
 
 function normalizeDependencyEdges(rawEdges) {
@@ -300,8 +320,48 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     });
   }
 
+  async function submitWithRequiredReviews({
+    itemId,
+    owner,
+    generation,
+    submission,
+    resolvedWork = [],
+    reviewRequirements
+  }) {
+    requireText(itemId, "itemId");
+    requireText(owner, "owner");
+    requirePositiveInteger(generation, "generation");
+    invariant(submission && typeof submission === "object" && !Array.isArray(submission), "submission must be an object");
+    invariant(Array.isArray(resolvedWork), "resolvedWork must be an array");
+    const normalizedRequirements = normalizeReviewRequirements(reviewRequirements);
+    invariant(normalizedRequirements.length > 0, "submitWithRequiredReviews requires at least one PM review requirement");
+    subjectFromValue({ itemId, submission }, {
+      type: "blackboard-submission",
+      producer: { identity: owner, roles: ["producer"] }
+    });
+
+    return guardedStore.transact((snapshot) => {
+      const item = findItem(snapshot, itemId);
+      assertClaim(item, itemId, owner, generation, "required-review submit");
+      removeResolvedWork(item, resolvedWork);
+      addReviewRequirements(item, normalizedRequirements);
+
+      item.checkpoint = null;
+      item.checkpointedBy = null;
+      item.submission = structuredClone(submission);
+      item.submittedBy = owner;
+      item.owner = null;
+      item.activeReview = null;
+      item.reviews = [];
+      item.findings = [];
+      item.status = BlackboardStatus.PENDING_REVIEW;
+      return structuredClone(item);
+    });
+  }
+
   return Object.freeze({
     ...base,
-    extendWorkGraph
+    extendWorkGraph,
+    submitWithRequiredReviews
   });
 }
