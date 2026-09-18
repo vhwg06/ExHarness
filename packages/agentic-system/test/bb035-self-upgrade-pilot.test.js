@@ -552,3 +552,14 @@ test("BB-035 recovery fails closed after the evaluation-attempt budget is exhaus
     assert.match(item.blockers[0], /^SELF_UPGRADE_EVALUATION_ATTEMPT:2:/);
   });
 });
+
+
+test("BB-035 public package subpath exposes only bounded pilot construction primitives", async () => {
+  const api = await import("@exharness/agentic-system/self-upgrade-pilot");
+  assert.equal(typeof api.createSelfUpgradePilotController, "function");
+  assert.equal(typeof api.createJsonSelfUpgradeArtifactStore, "function");
+  assert.equal(typeof api.defineSelfUpgradeExperimentProtocol, "function");
+  assert.equal(typeof api.defineSelfUpgradeExperimentResult, "function");
+  assert.equal(api.adopt, undefined);
+  assert.equal(api.deploy, undefined);
+});
