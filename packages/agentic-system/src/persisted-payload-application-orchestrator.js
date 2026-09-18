@@ -33,6 +33,16 @@ function guardPersistedPayloadInputs(orchestrator) {
       return orchestrator.submitWithRequiredReviews(input);
     },
 
+    async resolveBlockedCheckpoint(input) {
+      if (input?.expectedCheckpoint != null) {
+        validateBlackboardPersistedPayload(input.expectedCheckpoint, { path: "$.expectedCheckpoint" });
+      }
+      if (input?.checkpoint != null) {
+        validateBlackboardPersistedPayload(input.checkpoint, { path: "$.checkpoint" });
+      }
+      return orchestrator.resolveBlockedCheckpoint(input);
+    },
+
     async extendWorkGraph(input) {
       if (Array.isArray(input?.newItems)) {
         validateBlackboardPersistedPayload(input.newItems, { path: "$.newItems" });
