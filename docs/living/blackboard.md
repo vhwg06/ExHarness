@@ -206,10 +206,11 @@ BB-045
 question/work: Integrate manifest-protected Backend -> QA continuation so exact producer manifest durability precedes QA_PENDING and publication failure resumes through Backend/Core recovery rather than fresh effect execution.
 kind: IMPLEMENTATION
 priority: P1
-status: DONE
+status: REOPENED
 owner:
 depends-on: [BB-044]
-remaining-work: []
+remaining-work:
+  - prevent orphan-manifest recovery from reusing an older acceptance receipt when policy/evaluator/subject/evidence/claims/verdict/metadata semantics drift; timestamp/id wrapper drift alone may reuse the exact durable receipt
 acceptance-criteria:
   - direct-reader workflows are byte-for-byte semantically compatible
   - protected QA_PENDING cannot exist without exact artifactManifestRef
@@ -240,6 +241,8 @@ evidence-refs:
   - merge commit 2649986280b3e2a98c27fded346b5dd5b5855f4d
 blockers: []
 follow-up-refs: []
+reopened-by:
+  - post-merge semantic review found that producer/revision/artifact-byte equality alone could reuse an orphan manifest across a semantically different Backend acceptance decision
 origin: BB-044 accepted implementation handoff
 ```
 
