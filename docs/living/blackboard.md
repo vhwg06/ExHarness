@@ -210,9 +210,9 @@ status: REOPENED
 owner: oracle-detail-session-2026-09-18
 depends-on: [BB-044]
 remaining-work:
-  - reuse an existing durable publication receipt before attempting producer-byte reads
-  - prove orphan-manifest recovery can reattach manifest provenance while producer payload storage is unavailable
-  - preserve first-publication producer-byte validation and exact-manifest QA failure behavior
+  - bind receipt-first orphan recovery to stable Backend acceptance semantics, excluding only generatedAt and derived id/digest
+  - preserve legacy manifests safely: exact legacy acceptance refs may reuse, unverifiable regenerated legacy acceptance must fail closed
+  - preserve receipt-first recovery without producer-byte re-read and the atomic single-publication slot
 acceptance-criteria:
   - direct-reader workflows are byte-for-byte semantically compatible
   - protected QA_PENDING cannot exist without exact artifactManifestRef
@@ -245,9 +245,11 @@ evidence-refs:
   - concurrency/storage review id 5245076636
   - remediation Actions #2122 green on living-doc-impact and Node 20/22/24
   - remediation merge commit 1d36ce696845227fa4f44eb857cf5c5b316bf90a
+  - receipt-first recovery PR #144 exact head 9f5e2d457ab3e130728b51383d501fdbcc2b9c28
+  - receipt-first recovery merge commit f56ae2af3bc5cba59be9d076829b0476a0f88cfa
 blockers: []
 reopen-finding:
-  - createAcceptedBackendArtifactManifestPublisher currently reads producer bytes before findPublication; after crash between durable manifest publication and Board QA_PENDING checkpoint, temporary producer-store unavailability can strand recovery even though the trusted publication receipt already exists
+  - receipt-first recovery is delivered, but the durable receipt can still be reused when a re-derived Backend acceptance changes policy/evaluator/subject/evidence/claims/verdict/metadata semantics; timestamp-only regeneration should be reusable while semantic drift must fail closed
 follow-up-refs: []
 origin: BB-044 accepted implementation handoff
 ```
