@@ -62,17 +62,26 @@ Details: `project-acceptance.md`.
 Outcome: Worker review requests and PM project review requirements coexist without conflating authority.
 Guarantees: `REQUEST != REQUIRE != DISPATCH != ASSESS != ACCEPT`; Orchestrator owns lifecycle state.
 Durable state: requirement source/key/reason + active review.
-Limits: no concrete PM runtime Worker or SA runtime Worker is implemented. D003's PM/SA split is an authority boundary; only PM-sourced requirement transport/lifecycle exists in source today.
+Limits: the implemented PM/SA slice is bounded coordination/proposal/assessment semantics, not concrete PM/SA Worker roles or a generic horizontal-role runtime. PM-sourced review requirements remain distinct from review assessment and acceptance authority.
 Details: `contracts.md`, `boundaries.md`, `state.md`.
 
-## A9 — Bounded project work selection
+## A9 — Bounded PM/SA project coordination
+Outcome: apply evidence-grounded horizontal coordination to one exact current project target without giving PM or SA direct Blackboard mutation authority.
+Requires: project-bound handoff + exact target lifecycle tuple + current target evidence refs + PM/SA coordination artifact store + ApplicationOrchestrator.
+Guarantees: separate PM and SA context projections; SA may assess architecture evidence/review need only; PM may propose fresh prerequisite work, bounded dependency edges, blockers and grounded PM review requirements; controller revalidates project/root/target/evidence; Orchestrator `extendWorkGraph(...)` rechecks the target and atomically commits graph/refs/blocker/review effects.
+Durable state: direct Board-linked PM proposal and SA assessment refs plus their canonical Board effects.
+Failure: stale target/evidence, invalid graph mutation, conflicting work definitions, orphan artifacts or replay without both canonical ref and established effects fail closed.
+Limits: not a generic PM/SA agent runtime, role registry or workflow framework; PM has no architecture/completion/review-verdict authority and SA has no project sequencing/timeline/lifecycle authority.
+Details: `contracts.md`, `workflow.md`, `architecture.md`.
+
+## A10 — Bounded project work selection
 Outcome: propose one eligible item without taking claim authority.
 Requires: current eligible work + explicit policy + current measurements/evidence + budget.
 Guarantees: eligibility hard gate; mandatory/starvation gates before scoring; full freshness before decision reuse; ordinary claim rechecks Board.
 Limits: not a default scheduler.
 Details: `work-selection.md`.
 
-## A10 — Durable research continuation
+## A11 — Durable research continuation
 Outcome: resume exact incomplete research, skip completed experiments, reassess stale evidence, submit only a reviewable proposal.
 Requires: `RESEARCH_CONTINUATION v1` + declared external refs.
 Guarantees: Board stores cursor/refs; only declared refs resolve; scope-aware freshness; proposal + PM-required review commit together.
@@ -80,14 +89,14 @@ Failure: inconsistent experiment state or unresolved freshness blocks submission
 Limits: no generic research engine or automatic decision promotion.
 Details: `research-continuation.md`.
 
-## A11 — Bounded self-upgrade proposal
+## A12 — Bounded self-upgrade proposal
 Outcome: evaluate one pinned candidate vs accepted baseline and either keep baseline or propose for review.
 Requires: fixed protocol, independent evaluator, fixed scenarios/budget/rollback, `adoptionAuthority: false`.
 Guarantees: durable attempt blocker; bounded retry/recovery; only `PROPOSE_FOR_REVIEW` submits; baseline remains selected pending acceptance.
 Limits: no merge/deploy/rollout/self-modification/adoption authority.
 Details: `self-upgrade.md`.
 
-## A12 — Decision/outcome reconstruction
+## A13 — Decision/outcome reconstruction
 Outcome: materialize an immutable orientation summary over existing Core chain and re-verify exact source artifacts in a fresh review.
 Requires: exact chain refs + resolver + immutable summary store.
 Guarantees: relation validation, digest pins, summary ref in submission, fresh re-resolution/re-derivation.
@@ -99,9 +108,12 @@ Details: `decision-outcome.md`.
 
 ```text
 Application declares WHAT semantic context/work is required
-  -> Oracle resolves only those declared sources
-  -> Core executes concrete Worker work and supplies
-     evidence/trust/effect/recovery primitives
+  -> Application calls Oracle for only those declared sources
+  <- Oracle returns application-shaped resolved context
+  -> Application binds WorkOrder + resolved context to a concrete Worker
+  -> Worker executes through Core
+  <- Core returns runtime/evidence/effect/recovery state
+  -> Application applies completion and project-lifecycle semantics
 ```
 
 Application must not turn Oracle into workflow authority or Core into project lifecycle authority.
