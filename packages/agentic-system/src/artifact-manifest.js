@@ -226,10 +226,19 @@ function publicationIdentity(manifest) {
   return canonicalize({
     producerWorkOrderId: manifest.producerWorkOrderId,
     producerRevision: manifest.producerRevision,
-    acceptanceDecision: manifest.acceptanceDecision,
     artifacts: manifest.entries
       .map((entry) => ({ ref: entry.ref, path: entry.path ?? null }))
       .sort((left, right) => artifactKey(left.ref, left.path).localeCompare(artifactKey(right.ref, right.path)))
+  });
+}
+
+function samePublicationPayload(left, right) {
+  return canonicalize({
+    entries: left.entries,
+    retention: left.retention
+  }) === canonicalize({
+    entries: right.entries,
+    retention: right.retention
   });
 }
 
@@ -272,7 +281,7 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
       if (refs.size === 1 && refs.has(manifest.ref)) return manifest.ref;
       throw new ArtifactManifestError(
         ArtifactManifestErrorCode.MANIFEST_CONFLICT,
-        `artifact manifest publication conflicts with existing accepted Backend identity: ${manifest.producerWorkOrderId}@${manifest.producerRevision}`
+        `artifact manifest publication already exists for accepted Backend identity: ${manifest.producerWorkOrderId}@${manifest.producerRevision}`
       );
     }
 
@@ -328,6 +337,30 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
     }
   }
 
+  async function findPublication({ producerWorkOrderId, producerRevision, artifacts }) {
+    const identity = canonicalize({
+      producerWorkOrderId: requireText(producerWorkOrderId, "artifact publication producerWorkOrderId"),
+      producerRevision: requireText(producerRevision, "artifact publication producerRevision"),
+      artifacts: artifacts
+        .map((artifact, index) => {
+          const value = requireRecord(artifact, `artifact publication artifacts[${index}]`);
+          return {
+            ref: requireText(value.ref, `artifact publication artifacts[${index}].ref`),
+            path: normalizePath(value.path, `artifact publication artifacts[${index}].path`)
+          };
+        })
+        .sort((left, right) => artifactKey(left.ref, left.path).localeCompare(artifactKey(right.ref, right.path)))
+    });
+    const matches = (await readAll()).filter((manifest) => publicationIdentity(manifest) === identity);
+    if (matches.length > 1) {
+      throw new ArtifactManifestError(
+        ArtifactManifestErrorCode.MANIFEST_CONFLICT,
+        `multiple artifact manifests exist for accepted Backend identity: ${producerWorkOrderId}@${producerRevision}`
+      );
+    }
+    return matches[0] ?? null;
+  }
+
   async function findCandidates({ ref, path: artifactPath = null }) {
     const normalizedRef = requireText(ref, "artifact manifest lookup ref");
     const normalizedPath = normalizePath(artifactPath, "artifact manifest lookup path");
@@ -342,7 +375,7 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
     return Object.freeze(matches);
   }
 
-  return Object.freeze({ putManifest, readManifest, findCandidates });
+  return Object.freeze({ putManifest, readManifest, findPublication, findCandidates });
 }
 
 function fail(code, message, cause = null) {
@@ -478,7 +511,12 @@ export function createAcceptedBackendArtifactManifestPublisher({
   producerArtifactReader,
   retentionPolicy
 }) {
-  invariant(manifestStore && typeof manifestStore.putManifest === "function", "artifact manifest publisher requires manifestStore.putManifest()");
+  invariant(
+    manifestStore &&
+      typeof manifestStore.putManifest === "function" &&
+      typeof manifestStore.findPublication === "function",
+    "artifact manifest publisher requires manifestStore.putManifest()/findPublication()"
+  );
   invariant(
     producerArtifactReader && typeof producerArtifactReader.readProducedArtifact === "function",
     "artifact manifest publisher requires producerArtifactReader.readProducedArtifact()"
@@ -528,8 +566,28 @@ export function createAcceptedBackendArtifactManifestPublisher({
       producedArtifacts,
       retention
     });
+
+    const existing = await manifestStore.findPublication({
+      producerWorkOrderId,
+      producerRevision,
+      artifacts: run.result.artifacts
+    });
+    if (existing != null) {
+      if (!samePublicationPayload(existing, manifest)) {
+        throw new ArtifactManifestError(
+          ArtifactManifestErrorCode.MANIFEST_CONFLICT,
+          `recovered artifact publication differs from durable producer receipt: ${producerWorkOrderId}@${producerRevision}`
+        );
+      }
+      return freezeClone({
+        manifestRef: existing.ref,
+        manifest: existing,
+        reused: true
+      });
+    }
+
     const manifestRef = await manifestStore.putManifest(manifest);
-    return freezeClone({ manifestRef, manifest });
+    return freezeClone({ manifestRef, manifest, reused: false });
   }
 
   return Object.freeze({ publishAcceptedBackendManifest });
