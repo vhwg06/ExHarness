@@ -80,8 +80,8 @@ function protocol(artifacts, overrides = {}) {
     version: 1,
     id: "bb035-terminal-cancellation-upgrade",
     experimentId: "experiment-1",
-    userIntentRef: "intent:exharness-agentic-system",
-    reviewRequirementRefs: ["review:independent-outcome-authority"],
+    userIntentRef: "bb035-user-intent",
+    reviewRequirementRefs: ["review:self-upgrade-independent-acceptance"],
     sourceRevision: SOURCE_REVISION,
     policyRevision: POLICY_REVISION,
     sourceScopes: ["packages/agentic-system/src/application-orchestrator.js"],
@@ -562,4 +562,60 @@ test("BB-035 public package subpath exposes only bounded pilot construction prim
   assert.equal(typeof api.defineSelfUpgradeExperimentResult, "function");
   assert.equal(api.adopt, undefined);
   assert.equal(api.deploy, undefined);
+});
+
+
+test("BB-035 rejects protocol intent laundering and undeclared review requirements", async () => {
+  await withProject({}, async ({ artifacts, makeController, makeOrchestrator }) => {
+    let orchestrator = makeOrchestrator();
+    let claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-forged-intent" });
+    await assert.rejects(
+      () => makeController().initializeExperiment({
+        itemId: ITEM_ID,
+        owner: "session-forged-intent",
+        generation: claim.result.claimGeneration,
+        objective: "Do not accept a forged intent ref.",
+        protocol: protocol(artifacts, { userIntentRef: "another-user-intent" })
+      }),
+      /user intent ref does not match durable project intent/
+    );
+
+    // The failed initialization did not release the original claim. Reopen the fixture
+    // through a fresh project instance is unnecessary; initialize the valid protocol on
+    // the still-current claim and then complete the bounded experiment.
+    await makeController().initializeExperiment({
+      itemId: ITEM_ID,
+      owner: "session-forged-intent",
+      generation: claim.result.claimGeneration,
+      objective: "Use the durable project intent.",
+      protocol: protocol(artifacts)
+    });
+
+    orchestrator = makeOrchestrator();
+    claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-review-fence-eval" });
+    await makeController().evaluateAndCheckpoint({
+      itemId: ITEM_ID,
+      owner: "session-review-fence-eval",
+      generation: claim.result.claimGeneration,
+      currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION },
+      resolvedWork: ["run fixed experiment"]
+    });
+
+    orchestrator = makeOrchestrator();
+    claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-review-fence-submit" });
+    await assert.rejects(
+      () => makeController().submitForReview({
+        itemId: ITEM_ID,
+        owner: "session-review-fence-submit",
+        generation: claim.result.claimGeneration,
+        currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION },
+        resolvedWork: ["submit result"],
+        reviewKey: "weakened-review"
+      }),
+      /review requirement was not predeclared by protocol/
+    );
+    const item = (await orchestrator.readBlackboard()).items.find((candidate) => candidate.id === ITEM_ID);
+    assert.equal(item.status, BlackboardStatus.CLAIMED);
+    assert.equal(item.submission, null);
+  });
 });
