@@ -21,6 +21,8 @@ QaObjective / QaWorkOrder / QaContext / QaWorkResult
 
 Application decides required semantic context; Oracle resolves/dereferences it before Worker execution.
 
+For an explicitly manifest-protected Backend -> QA workflow, the Application also owns publication ordering: an exact producer manifest ref must be durable before `QA_PENDING` is committed. The manifest publisher has no Board mutation or acceptance authority; a protected fresh QA session must resolve through a reader scoped to the exact persisted manifest ref. Publication failure after Backend effects sets the existing recovery-required fence so Core recovery remains effect replay authority.
+
 ```text
 Application semantic contract
     -> Oracle resolves context
