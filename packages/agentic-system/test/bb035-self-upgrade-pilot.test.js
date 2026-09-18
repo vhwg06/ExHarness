@@ -22,6 +22,11 @@ const PROJECT_ID = "bb035-project";
 const ITEM_ID = "bb035-pilot";
 const SOURCE_REVISION = "repo@accepted";
 const POLICY_REVISION = "self-upgrade-policy@1";
+const EVALUATOR_POLICY_DIGEST = digestValue({
+  id: "policy:bb035-evaluation",
+  revision: "3",
+  rule: "fixed recorded scenarios; no adoption authority"
+});
 
 function reviewTrustStub() {
   return {
@@ -80,8 +85,8 @@ function protocol(artifacts, overrides = {}) {
     version: 1,
     id: "bb035-terminal-cancellation-upgrade",
     experimentId: "experiment-1",
-    userIntentRef: "intent:exharness-agentic-system",
-    reviewRequirementRefs: ["review:independent-outcome-authority"],
+    userIntentRef: "INTENT:bb035-user-intent",
+    reviewRequirementRefs: ["self-upgrade-independent-acceptance"],
     sourceRevision: SOURCE_REVISION,
     policyRevision: POLICY_REVISION,
     sourceScopes: ["packages/agentic-system/src/application-orchestrator.js"],
@@ -103,7 +108,8 @@ function protocol(artifacts, overrides = {}) {
       identity: "independent-evaluator",
       revision: "2",
       policyRef: "policy:bb035-evaluation",
-      policyRevision: "3"
+      policyRevision: "3",
+      policyDigest: EVALUATOR_POLICY_DIGEST
     },
     scenarios: {
       target: ["cancellation-late-reconciliation"],
@@ -139,6 +145,7 @@ function evaluation(verdict = SelfUpgradeEvaluationVerdict.PASS, overrides = {})
     evaluatorRevision: "2",
     evaluatorPolicyRef: "policy:bb035-evaluation",
     evaluatorPolicyRevision: "3",
+    evaluatorPolicyDigest: EVALUATOR_POLICY_DIGEST,
     scenarioResults: [
       { id: "cancellation-late-reconciliation", status: scenarioStatus, evidenceRefs: ["evidence:target"] },
       { id: "artifact-outage", status: scenarioStatus, evidenceRefs: ["evidence:dev-1"] },
@@ -309,6 +316,27 @@ for (const verdict of [
       assert.equal(resumed.result.disposition, SelfUpgradeDisposition.KEEP_BASELINE);
       assert.equal(resumed.evidenceLedger.evidence[0].status, "CONFIRMED");
       assert.ok(resumed.evidenceLedger.evidence[0].supports.includes(SelfUpgradeDisposition.KEEP_BASELINE));
+
+      const submitOrchestrator = makeOrchestrator();
+      const submitClaim = await submitOrchestrator.claim({
+        itemId: ITEM_ID,
+        owner: `session-submit-${verdict.toLowerCase()}`
+      });
+      await assert.rejects(
+        () => makeController().submitForReview({
+          itemId: ITEM_ID,
+          owner: `session-submit-${verdict.toLowerCase()}`,
+          generation: submitClaim.result.claimGeneration,
+          currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION },
+          resolvedWork: ["submit result"]
+        }),
+        /cannot be proposed while the baseline remains selected/
+      );
+      const afterRejectedSubmit = (await makeOrchestrator().readBlackboard()).items.find(
+        (candidate) => candidate.id === ITEM_ID
+      );
+      assert.equal(afterRejectedSubmit.status, BlackboardStatus.CLAIMED);
+      assert.equal(afterRejectedSubmit.submission, null);
     });
   });
 }
@@ -326,6 +354,16 @@ test("BB-035 fails closed on candidate tamper, evaluator laundering and widened 
       }
     }),
     /evaluator must be independent/
+  );
+
+  assert.throws(
+    () => defineSelfUpgradeExperimentResult({
+      protocol: valid,
+      evaluation: evaluation(SelfUpgradeEvaluationVerdict.PASS, {
+        evaluatorPolicyDigest: "sha256:changed-evaluator-policy"
+      })
+    }),
+    /policy digest mismatch/
   );
 
   assert.throws(
@@ -550,4 +588,42 @@ test("BB-035 recovery fails closed after the evaluation-attempt budget is exhaus
     assert.equal(item.status, BlackboardStatus.BLOCKED);
     assert.match(item.blockers[0], /^SELF_UPGRADE_EVALUATION_ATTEMPT:2:/);
   });
+});
+
+test("BB-035 binds protocol to the durable user intent and fixed review requirement", async () => {
+  await withProject({}, async ({ artifacts, makeController, makeOrchestrator }) => {
+    const orchestrator = makeOrchestrator();
+    const claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-authority" });
+
+    await assert.rejects(
+      () => makeController().initializeExperiment({
+        itemId: ITEM_ID,
+        owner: "session-authority",
+        generation: claim.result.claimGeneration,
+        objective: "Reject a protocol bound to another intent.",
+        protocol: protocol(artifacts, { userIntentRef: "INTENT:another-intent" })
+      }),
+      /must match the durable user-intent root/
+    );
+  });
+});
+
+test("BB-035 immutable artifact store rejects lossy hidden content before persistence", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "exharness-bb035-artifact-"));
+  try {
+    const store = createJsonSelfUpgradeArtifactStore({ path: directory });
+    const content = { visible: "preserved" };
+    Object.defineProperty(content, "hidden", {
+      value: "must-not-disappear",
+      enumerable: false,
+      configurable: true,
+      writable: true
+    });
+    await assert.rejects(
+      () => store.putArtifact({ artifactType: "test", content }),
+      /content\.hidden: non-enumerable properties are not preserved/
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
