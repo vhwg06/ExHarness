@@ -194,7 +194,7 @@ previous-phase-closure: docs/living/knowledge/pre-oracle-detail-blackboard-closu
 previous-terminal-count: 42
 previous-done-count: 38
 previous-superseded-count: 4
-next-work-id: BB-045
+next-work-id: BB-046
 ```
 
 The previous coordination phase is fully terminal and archived. Historical items are not copied into this active surface.
@@ -202,28 +202,56 @@ The previous coordination phase is fully terminal and archived. Historical items
 ## Active work
 
 ```text
+BB-045
+question/work: Integrate manifest-protected Backend -> QA continuation so exact producer manifest durability precedes QA_PENDING and publication failure resumes through Backend/Core recovery rather than fresh effect execution.
+kind: IMPLEMENTATION
+priority: P1
+status: CLAIMED
+owner: oracle-detail-session-2026-09-18
+depends-on: [BB-044]
+remaining-work:
+  - add optional producer-manifest publisher composition to createDurableBackendQaWorkflow
+  - persist exact artifact manifest ref in accepted Backend checkpoint and Board artifact refs before QA_PENDING becomes visible
+  - fail closed when a manifest-protected fresh workflow is reconstructed without a manifest-aware reader
+  - on manifest publication failure, persist BLOCKED with backendRecoveryRequired=true so resume uses BackendWorker.recover
+  - make repeated publication idempotent for the same accepted Backend identity and conflicting publication fail closed
+  - preserve direct-reader mode and existing Backend/QA/remediation behavior
+acceptance-criteria:
+  - direct-reader workflows are byte-for-byte semantically compatible
+  - protected QA_PENDING cannot exist without exact artifactManifestRef
+  - publisher failure never dispatches QA and resume does not call fresh Backend execute
+  - crash/orphan manifest before Board checkpoint can be re-published idempotently during Core-backed recovery
+  - fresh QA resolution is scoped to the exact persisted manifest ref
+  - missing/changed payload after QA_PENDING remains QA/source blocking and never becomes Backend replay authority
+submission:
+review-requirements: [application/code review, Oracle architecture-boundary review, crash-recovery review]
+reviews: []
+artifact-refs:
+  - docs/living/knowledge/bb044-manifest-publication-boundary.md
+  - docs/worktree/oracle/artifact-manifest.md
+  - packages/agentic-system/src/artifact-manifest.js
+  - packages/agentic-system/src/durable-backend-qa.js
+evidence-refs:
+  - BB-044
+  - D014
+blockers: []
+follow-up-refs: []
+origin: BB-044 accepted implementation handoff
+```
+
+```text
 BB-044
 question/work: Research the durable publication/recovery boundary required to compose the optional D014 artifact manifest with Backend -> QA without exposing QA before trusted manifest state exists or replaying Backend effects after interruption.
 kind: RESEARCH
 priority: P1
-status: CLAIMED
-owner: oracle-detail-session-2026-09-18
+status: DONE
+owner:
 depends-on: [BB-043]
 research-hypothesis: The current optional manifest primitives need an application-owned publication checkpoint between Backend ACCEPT and QA_PENDING; that boundary must remain producer-side, crash-safe and effect-aware without turning Oracle into workflow authority.
 target-consumer: createDurableBackendQaWorkflow accepted-Backend transition
-implementation-output: Evidence-backed ordering/recovery contract and, only if justified, a narrow implementation handoff for one producer-manifest publication path.
-value-gate: Demonstrate a concrete current failure or ambiguity and show a candidate ordering that prevents QA from consuming unmanifested bytes while preserving existing Core effect recovery and ref-only Board state.
-scope-boundary:
-  - do not reopen generic Oracle resolver/provider or diagnostics abstractions
-  - do not make manifest/hash correctness authority
-  - do not copy artifact payloads into Blackboard
-  - do not infer replay safety from Board state alone
-remaining-work:
-  - reproduce current accepted-Backend -> QA_PENDING behavior with the optional manifest reader enabled but no producer manifest publication
-  - characterize crash points before/after manifest publication and Board checkpoint
-  - determine the minimum producer-side capability needed to create/recover the first trusted manifest without later mutable QA-side re-read
-  - compare fail-closed/recovery behavior against existing Backend Core effect recovery
-  - produce a bounded decision: implement, narrow, or reject runtime integration
+implementation-output: Accepted narrow application-owned manifest publication/checkpoint ordering with Core recovery preserved as effect authority.
+value-gate: Demonstrated current QA_PENDING visibility before manifest durability and a bounded ordering/recovery contract.
+remaining-work: []
 acceptance-criteria:
   - current failure/ambiguity is executable against the delivered BB-043 primitives and durable workflow
   - candidate ordering identifies exactly which state is durable at every crash point
@@ -231,18 +259,21 @@ acceptance-criteria:
   - QA_PENDING is not considered manifest-protected until exact manifest provenance is durable
   - evidence class and production limitations are explicit
 submission:
+  - PR #135
 review-requirements: [Oracle architecture-boundary review, crash-recovery/application review]
-reviews: []
+reviews:
+  - Oracle architecture-boundary review PASS on exact head b477e13096b954632ce0c04fb524f81a72b761a9
+  - crash-recovery/application review PASS on exact head b477e13096b954632ce0c04fb524f81a72b761a9
 artifact-refs:
-  - docs/living/decisions/D014-application-artifact-manifest-adapter.md
-  - docs/worktree/oracle/artifact-manifest.md
-  - packages/agentic-system/src/durable-backend-qa.js
-  - packages/agentic-system/src/artifact-manifest.js
+  - docs/living/knowledge/bb044-manifest-publication-boundary.md
+  - packages/agentic-system/test/bb044-manifest-publication-boundary-research.test.js
 evidence-refs:
   - BB-043
   - D014
+  - Actions #2068 green on living-doc-impact and Node 20/22/24
+  - merge commit f261e290bea64f906d5d096435c70b2742a8bca5
 blockers: []
-follow-up-refs: []
+follow-up-refs: [BB-045]
 origin: INTENT-exharness-agentic-system; ORACLE_DETAIL integration pressure discovered after BB-043 delivery
 ```
 
