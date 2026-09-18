@@ -393,7 +393,7 @@ A context spec declares three sets:
 ```text
 read
 write
-forbidden
+forbiddenWrite
 ```
 
 Write scope is a guardrail, not an exhaustive prediction of every mechanically touched file. If implementation proves another source path is semantically required, the context must be regenerated or explicitly widened before durable mutation is represented as valid.
@@ -517,6 +517,7 @@ docs/living/
     bb046-blackboard-context-contracts.md
     bb046-blackboard-context-pipelines.md
     bb046-blackboard-context-evaluation.md
+    bb046-blackboard-context-implementation-readiness.md
 
     bb046-organizational-integration-implementation-artifact-readiness-v7.md
     bb046-trust-transition-research-v7.md
