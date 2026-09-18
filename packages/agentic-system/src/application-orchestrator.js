@@ -77,6 +77,53 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
   invariant(store && typeof store.load === "function" && typeof store.transact === "function", "ApplicationOrchestrator requires a transactional Blackboard store");
   const base = createBaseApplicationOrchestrator({ store, reviewTrust });
 
+  async function recoverSelfUpgradeEvaluationClaim({
+    itemId,
+    owner,
+    expectedBlocker,
+    expectedCheckpoint
+  }) {
+    const normalizedItemId = requireText(itemId, "itemId");
+    const normalizedOwner = requireText(owner, "owner");
+    const blocker = requireText(expectedBlocker, "expectedBlocker");
+    invariant(
+      blocker.startsWith("SELF_UPGRADE_EVALUATION_ATTEMPT:"),
+      "self-upgrade recovery blocker must use the bounded evaluation-attempt namespace"
+    );
+    invariant(
+      expectedCheckpoint && typeof expectedCheckpoint === "object" && !Array.isArray(expectedCheckpoint),
+      "self-upgrade recovery expectedCheckpoint must be an object"
+    );
+
+    const result = await store.transact((snapshot) => {
+      const item = findItem(snapshot, normalizedItemId);
+      invariant(
+        item.status === BlackboardStatus.BLOCKED,
+        `Blackboard item ${normalizedItemId} must be BLOCKED before self-upgrade evaluation recovery`
+      );
+      invariant(
+        item.checkpoint?.kind === "RESEARCH_CONTINUATION",
+        `Blackboard item ${normalizedItemId} must carry a research-continuation checkpoint`
+      );
+      invariant(
+        item.blockers.length === 1 && item.blockers[0] === blocker,
+        `Blackboard item ${normalizedItemId} self-upgrade evaluation blocker changed`
+      );
+      invariant(
+        isDeepStrictEqual(item.checkpoint, expectedCheckpoint),
+        `Blackboard item ${normalizedItemId} self-upgrade evaluation checkpoint changed`
+      );
+
+      item.claimGeneration += 1;
+      item.status = BlackboardStatus.CLAIMED;
+      item.owner = normalizedOwner;
+      item.blockers = [];
+      return structuredClone(item);
+    });
+
+    return Object.freeze(structuredClone(result));
+  }
+
   async function submitWithRequiredReviews({
     itemId,
     owner,
@@ -152,6 +199,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
   }
   return Object.freeze({
     ...base,
+    recoverSelfUpgradeEvaluationClaim,
     submitWithRequiredReviews,
     resolveBlockedCheckpoint
   });
