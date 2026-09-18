@@ -28,7 +28,8 @@ These are current source-backed Oracle invariants plus accepted boundary constra
 
 - context contracts are typed and runtime-validatable through the application schemas;
 - Oracle may not weaken an application schema when source data is missing or malformed;
-- resolved context carries source refs; QA application artifacts additionally carry producer/acceptance provenance.
+- resolved context carries source refs; QA application artifacts additionally carry producer/acceptance provenance;
+- the optional D014 manifest adapter may fail closed on artifact identity/provenance drift before QA context assembly; hashes and availability remain identity/operational signals, not correctness authority.
 
 ## IMPLEMENTATION POLICY
 
@@ -37,6 +38,7 @@ Current implementation uses the simplest concrete mechanism for each source:
 ```text
 repository source           -> repositoryReader
 application artifact source -> artifactReader
+optional D014 validation    -> manifest-validating artifactReader wrapper
 ```
 
 There is no MCP client, retrieval framework, cache layer, embeddings/vector store or generic source-provider framework in current Oracle source.
