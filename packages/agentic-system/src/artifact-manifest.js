@@ -66,6 +66,16 @@ function parseDecisionRef(raw, name) {
   });
 }
 
+function decisionSemanticDigest(raw) {
+  const value = requireRecord(raw, "Backend acceptance decision");
+  const semantic = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (["id", "digest", "generatedAt"].includes(key)) continue;
+    semantic[key] = structuredClone(entry);
+  }
+  return Object.keys(semantic).length === 0 ? null : digestValue(semantic);
+}
+
 function normalizePath(path, name) {
   return path == null ? null : requireText(path, name);
 }
@@ -125,6 +135,21 @@ function manifestBody(raw) {
     producerWorkOrderId: requireText(value.producerWorkOrderId, "ApplicationArtifactManifest.producerWorkOrderId"),
     producerRevision: requireText(value.producerRevision, "ApplicationArtifactManifest.producerRevision"),
     acceptanceDecision: parseDecisionRef(value.acceptanceDecision, "ApplicationArtifactManifest.acceptanceDecision"),
+    ...(value.acceptanceDecisionSemanticDigest == null
+      ? {}
+      : {
+          acceptanceDecisionSemanticDigest: (() => {
+            const digest = requireText(
+              value.acceptanceDecisionSemanticDigest,
+              "ApplicationArtifactManifest.acceptanceDecisionSemanticDigest"
+            );
+            invariant(
+              /^sha256:[0-9a-f]{64}$/.test(digest),
+              "ApplicationArtifactManifest.acceptanceDecisionSemanticDigest must be a sha256 digest"
+            );
+            return digest;
+          })()
+        }),
     retention: parseRetention(value.retention),
     entries
   };
@@ -199,12 +224,14 @@ export function captureAcceptedBackendArtifactManifest({
     "producedArtifacts contains an artifact outside the accepted Backend result"
   );
 
+  const acceptanceDecisionSemanticDigest = decisionSemanticDigest(run.completion.decision);
   return defineApplicationArtifactManifest({
     kind: ApplicationArtifactManifestKind,
     version: ApplicationArtifactManifestVersion,
     producerWorkOrderId,
     producerRevision,
     acceptanceDecision,
+    ...(acceptanceDecisionSemanticDigest == null ? {} : { acceptanceDecisionSemanticDigest }),
     retention,
     entries
   });
@@ -242,14 +269,28 @@ function publicationFileName(manifest) {
   return `publication-${digest.slice("sha256:".length)}.json`;
 }
 
+function sameAcceptanceSemantics(left, right) {
+  const leftSemantic = left.acceptanceDecisionSemanticDigest ?? null;
+  const rightSemantic = right.acceptanceDecisionSemanticDigest ?? null;
+  if (leftSemantic != null && rightSemantic != null) {
+    return leftSemantic === rightSemantic;
+  }
+
+  // Legacy manifests do not carry enough information to prove semantic
+  // equivalence across a regenerated decision id/digest. They may be reused
+  // only when the exact acceptance ref is unchanged.
+  return canonicalize(left.acceptanceDecision) === canonicalize(right.acceptanceDecision);
+}
+
 function samePublicationPayload(left, right) {
-  return canonicalize({
-    entries: left.entries,
-    retention: left.retention
-  }) === canonicalize({
-    entries: right.entries,
-    retention: right.retention
-  });
+  return sameAcceptanceSemantics(left, right) &&
+    canonicalize({
+      entries: left.entries,
+      retention: left.retention
+    }) === canonicalize({
+      entries: right.entries,
+      retention: right.retention
+    });
 }
 
 export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
@@ -302,11 +343,12 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
       (existing) => publicationIdentity(existing) === publicationIdentity(manifest)
     );
     if (samePublication.length > 0) {
-      const refs = new Set(samePublication.map((existing) => existing.ref));
-      if (refs.size === 1 && refs.has(manifest.ref)) return manifest.ref;
+      if (samePublication.length === 1 && samePublicationPayload(samePublication[0], manifest)) {
+        return samePublication[0].ref;
+      }
       throw new ArtifactManifestError(
         ArtifactManifestErrorCode.MANIFEST_CONFLICT,
-        `artifact manifest publication already exists for accepted Backend identity: ${manifest.producerWorkOrderId}@${manifest.producerRevision}`
+        `artifact manifest publication already exists with different acceptance or payload semantics: ${manifest.producerWorkOrderId}@${manifest.producerRevision}`
       );
     }
 
@@ -332,12 +374,12 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
         const existing = defineApplicationArtifactManifest(
           JSON.parse(await fs.readFile(finalPath, "utf8"))
         );
-        if (existing.ref === manifest.ref && canonicalize(existing) === canonicalize(manifest)) {
+        if (samePublicationPayload(existing, manifest)) {
           return existing.ref;
         }
         throw new ArtifactManifestError(
           ArtifactManifestErrorCode.MANIFEST_CONFLICT,
-          `concurrent artifact manifest publication conflicts for accepted Backend identity: ${manifest.producerWorkOrderId}@${manifest.producerRevision}`,
+          `concurrent artifact manifest publication conflicts in acceptance or payload semantics: ${manifest.producerWorkOrderId}@${manifest.producerRevision}`,
           { cause: error }
         );
       }
