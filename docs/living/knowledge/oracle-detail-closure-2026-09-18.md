@@ -120,6 +120,12 @@ Create new Oracle-detail work only when at least one concrete trigger exists:
 5. a real retention actuator must consume Board/project lifecycle pins;
 6. explicit user intent introduces another concrete Oracle source or correctness problem.
 
+## Phase handoff
+
+The terminal Oracle-detail Board is preserved at `../history/blackboard-oracle-detail-2026-09-18.md`. Its stable current-system results are projected into `docs/worktree/oracle/*`, `docs/worktree/agentic-application/*` and the top-level worktree state/pipeline.
+
+The next coordination phase is `INTEGRATION`. It begins with no fabricated backlog: BB-046 remains unallocated until a concrete component seam, contract failure, recovery gap, end-to-end verification gap or explicit user integration objective creates grounded work. Oracle-specific re-entry still obeys the triggers above, so integration pressure does not by itself authorize a generic resolver/provider framework.
+
 ## Coordination state
 
 ```text

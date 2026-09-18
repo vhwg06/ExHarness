@@ -20,7 +20,8 @@ If a source-backed fact exposes a problem, write the fact here and create/update
 
 ## Routing
 
-- system checkpoint -> `state.md`
+- **system capability semantics -> `capabilities.md`**
+- system checkpoint/composition inventory -> `state.md`
 - current delivered execution topology -> `pipeline.md`
 - current application layer -> `agentic-application/`
 - current Oracle boundary -> `oracle/`

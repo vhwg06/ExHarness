@@ -2,6 +2,7 @@
 
 This directory is the source-backed projection of the Agentic Application as implemented today.
 
+- **`capabilities.md` — current application capability semantics: outcomes, preconditions, durable state, guarantees, failures and authority limits.**
 - `architecture.md` — current component ownership and composition.
 - `workflow.md` — current end-to-end application and Blackboard lifecycle.
 - `contracts.md` — current authority, persistence and trust contracts.

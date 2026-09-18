@@ -135,22 +135,36 @@ Shared shapes proven in source remain deliberately narrow:
 - Blackboard item/review/follow-up/checkpoint/generation state required for durable orchestration;
 - durable `UserIntent` plus optional project-bound read-only session-handoff projection over Blackboard state;
 - concrete Backend -> QA workflow checkpoint semantics earned by the existing Backend and QA slices;
-- concrete Backend durable session/effect recovery composition, without a generic recovery registry/facade.
+- concrete Backend durable session/effect recovery composition, without a generic recovery registry/facade;
+- bounded project-bound PM/SA coordination with separate context projections, durable proposal/assessment refs and Orchestrator-owned canonical mutation.
 
 There is still no generic Worker/WorkOrder/Advisor/role registry/workflow graph/Teacher registry/Reviewer registry, project-state registry, lease service or recovery DSL.
 
-## Promoted but not yet source-implemented roles
+## Bounded PM / SA coordination
 
-D003 promotes the responsibility split:
+D003 remains the authority split:
 
-- PM = horizontal project coordination/timeline/dependency/progress;
-- SA = horizontal architecture only;
+- PM = horizontal project coordination/sequencing/dependency/timeline/progress;
+- SA = horizontal architecture judgment only;
 - remaining execution/review = vertical and context-bound.
 
-Concrete PM context/role execution, SA context/role execution and vertical Reviewer implementations are not present in source yet. `requireReview(... source: PM ...)` is an authority boundary available to project coordination, not evidence that a concrete PM runtime role already exists.
+Current source implements a bounded application-local PM/SA coordination slice through `createPmSaCoordinationController(...)`, not generic PM/SA Worker roles.
+
+The implemented slice provides:
+
+- separate bounded PM and SA context projections rather than one universal role context;
+- durable evidence-bound SA architecture assessments that may require architecture review but cannot own dependency, priority, timeline, lifecycle, completion or review-verdict authority;
+- durable PM coordination proposals bound to the exact target `{itemId, status, claimGeneration, reviewGeneration}`;
+- PM proposals may add fresh prerequisite work, bounded dependency edges, blockers and PM-sourced review requirements, but cannot rewrite user intent or carry architecture/completion/review-verdict authority;
+- project/root/target/evidence freshness checks before coordination can affect canonical state;
+- Orchestrator-owned `extendWorkGraph(...)` as the canonical mutation boundary, with exact-target recheck and atomic graph/ref/blocker/review updates;
+- replay/recovery that requires direct canonical Board refs plus the corresponding established proposal effects; orphan/spoofed coordination artifacts are not lifecycle truth.
+
+What is still not implemented is a generic PM/SA agent runtime, PM/SA Worker abstraction, horizontal-role framework, role registry, workflow DSL or concrete vertical Reviewer Worker. `requireReview(... source: PM ...)` remains only one PM authority surface inside the broader bounded coordination capability.
 
 ## Routing
 
+- **current application capability semantics -> `capabilities.md`**
 - current application architecture -> `architecture.md`
 - current ownership boundaries -> `boundaries.md`
 - current workflow -> `workflow.md`

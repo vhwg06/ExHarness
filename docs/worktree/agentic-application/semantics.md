@@ -1,113 +1,143 @@
 # Agentic Application semantics
 
-Semantic ownership for the application layer. These definitions describe responsibilities, not final TypeScript APIs.
+Current implemented semantic model for the Agentic Application. These definitions describe concrete meanings already present in source, not desired generic APIs or future roles.
 
-## OBJECTIVE
+## Durable project intent
 
-Objective is the application-level goal being pursued. It is not a model prompt and is not an ExHarness runtime state object.
+`UserIntent` is the durable user-owned project intent root used by session handoff. A handoff-safe project has exactly one root; current work must trace directly or transitively to it. Optional `projectId` binds that Board/root to one stable project identity.
 
-The application may decompose one Objective into one or more WorkOrders.
+User intent is project input, not a Worker prompt, Core runtime state, review verdict or completion claim.
 
-## ORCHESTRATOR
+## ApplicationOrchestrator
 
-Orchestrator is deterministic application control code.
+`ApplicationOrchestrator` is the concrete deterministic owner of Blackboard lifecycle transitions.
 
-It owns:
+It owns eligibility/dependency checks; claim/checkpoint/block/submit; claim-generation fencing/recovery; Worker-requested and PM-required review obligations; review dispatch/generation fencing; trusted assessment application; finding reconciliation; and derived terminal/reopen/block state.
 
-- application workflow state;
-- task/work decomposition decisions that are deterministic or already accepted;
-- creation and dispatch of WorkOrders;
-- dependency/order/parallelism enforcement;
-- deciding whether to continue, request Advisor judgment, retry through an explicit policy, stop or complete.
+It does not execute model/runtime loops, resolve source bytes, decide Core effect truth or treat Worker/reviewer prose as correctness authority. It is an application/Board controller, not a generic workflow graph engine or DSL.
 
-Orchestrator is not assumed to be an agent and should not require model reasoning for control decisions that can be expressed deterministically.
+## Backend
 
-## ADVISOR
-
-Advisor is a bounded judgment capability used when the Orchestrator needs semantic reasoning rather than deterministic control.
-
-Typical responsibilities:
-
-- propose a plan;
-- assess progress or gaps;
-- propose a replan;
-- compare alternatives or recommend a next step.
-
-Advisor returns structured advice. It does not directly dispatch Workers, mutate application workflow state, certify correctness or take over orchestration authority.
-
-## WORKER
-
-Worker is a specialist application role with a typed input/context/output contract.
-
-Examples may later include BackendWorker, FrontendWorker, QAWorker and DesignerWorker, but the generic architecture does not require those exact roles.
-
-A Worker:
-
-- receives one bounded WorkOrder;
-- receives context explicitly resolved for that WorkOrder;
-- executes only the authority/capabilities granted to it;
-- returns a bounded WorkResult;
-- does not own the global application workflow or select the next Worker by implicit handoff.
-
-Worker execution may use ExHarness internally. Application semantics do not depend on how long or how many internal agent turns ExHarness uses to produce the WorkResult.
-
-## WORK ORDER
-
-WorkOrder is the explicit unit of delegated application work.
-
-Conceptually it answers:
+Backend is the implemented mutating/promoting application role:
 
 ```text
-what should be done?
-who should do it?
-what context is required?
-what constraints apply?
-what output/completion contract is expected?
-what upstream dependencies must already be satisfied?
+BackendObjective
+BackendWorkOrder
+BackendContext
+BackendWorkResult
+BackendWorker
 ```
 
-It is an application artifact, not a generic conversation message.
+Context is resolved before execution through Oracle. Execution uses ExHarness Core. `APPLIED` requires committed-lineage advancement, and completion is grounded from required runtime/evidence artifacts rather than Worker prose.
 
-## CONTEXT REQUIREMENT
+Interrupted Backend execution is special: application generation fencing cannot prove external-effect truth, so recovery must consult the persisted Backend Core session/effect boundary before deciding whether execution may continue.
 
-ContextRequirement is owned by the application/Worker contract.
+## QA
 
-The application decides:
+QA is the implemented non-mutating verification role over one accepted Backend target:
 
 ```text
-WHAT context is required
-WHY it is required
-HOW the resulting context is shaped
-which parts are required vs optional
-what relevance/budget constraints apply
+QaObjective
+QaWorkOrder
+QaContext
+QaWorkResult
+QaWorker
 ```
 
-Oracle decides only how those requirements are satisfied from infrastructure sources.
+QA consumes the exact accepted Backend revision/artifact handoff, cannot advance lineage or mutate the application environment, and grounds behavior/regression evidence.
 
-## WORK RESULT
+QA issues request bounded remediation. QA acceptance is role-local and flows to review/acceptance; it does not make the Blackboard item `DONE`.
 
-WorkResult is the explicit returned result of a Worker execution.
+Because QA is non-mutating at the application environment boundary, interrupted QA may be redispatched against the exact accepted Backend target after the abandoned claim generation is fenced.
 
-It must be structured enough for the Orchestrator to make the next deterministic application decision without reconstructing state from model prose or a shared chat transcript.
+## BackendAdvisor
 
-Exact fields remain open until the first vertical slice, but result semantics may include output, status, produced artifacts/evidence, explicit gaps/blockers and execution-relevant metadata.
+`BackendAdvisor` is the current bounded judgment surface for the concrete Backend slice. It is consulted only after required objective evidence passes and semantic gaps remain.
 
-## COORDINATION TOPOLOGY
+Advisor output may propose retry, context request or escalation. It is not execution, source-resolution, acceptance or lifecycle authority. `REQUEST_CONTEXT` / `ESCALATE` become durable application coordination state resolved through application-owned transitions.
 
-Desired topology is manager-style delegation:
+No generic Advisor registry/API is implied.
+
+## Work-order semantics
+
+Backend and QA WorkOrders are explicit role-specific application artifacts that bind execution to objective, required semantic context, accepted upstream identity/revision where applicable, constraints and expected completion semantics.
+
+Application contracts decide what context is semantically required. Oracle only satisfies that declared requirement. There is no implemented generic role-independent WorkOrder schema.
+
+## Context semantics
 
 ```text
-Orchestrator
-    -> bounded WorkOrder
-    -> Worker
-    -> bounded WorkResult
-    -> Orchestrator
+Application declares required context
+  -> Oracle resolves declared sources
+  -> concrete Context validation
+  -> concrete Worker execution
 ```
 
-Not handoff-style conversation takeover:
+Backend repository context and QA application-artifact context are distinct source/provenance boundaries. Hidden ambient context injection is not part of the application contract.
+
+## Result and completion semantics
+
+`BackendWorkResult` and `QaWorkResult` are role-specific results; returned prose/status alone is not completion authority.
 
 ```text
-Orchestrator -> Worker A takes global conversation -> Worker B takes over -> ...
+Worker result
+  -> grounded evidence / lineage checks
+  -> role completion decision
+  -> application continuation
 ```
 
-Shared group-chat/speaker-selection semantics are not part of the default application architecture.
+Role-local acceptance remains distinct from project acceptance. There is no implemented generic WorkResult contract.
+
+## Backend -> QA handoff
+
+```text
+accepted Backend revision
++ application artifact refs
++ Backend acceptance-decision provenance
+    -> BackendQaHandoff
+    -> durable QA_PENDING
+    -> Oracle-resolved QaContext
+    -> QA
+```
+
+Artifact payload bodies are not copied into the handoff. With manifest protection, the exact producer manifest ref must be durable before protected `QA_PENDING`; that ref is continuation integrity/provenance, not acceptance authority.
+
+## Review semantics
+
+```text
+Worker submission -> REQUEST review
+PM obligation     -> REQUIRE review
+
+REQUEST != REQUIRE != DISPATCH != ASSESS != ACCEPT
+```
+
+The Orchestrator owns review lifecycle. A trusted assessment must bind to the exact active review subject/generation and satisfy application trust policy before mutating Board state.
+
+Current source supports PM-sourced review requirement transport. It does **not** implement a concrete PM runtime Worker or SA runtime Worker. The promoted PM/SA split is therefore an authority boundary, not a claim that both horizontal roles execute today.
+
+## Control topology
+
+```text
+ApplicationOrchestrator
+  -> concrete WorkOrder + resolved Context
+  -> BackendWorker or QaWorker
+  -> grounded role completion
+  -> ApplicationOrchestrator
+```
+
+Worker-to-Worker conversation takeover is not control authority. A Worker cannot implicitly select the next Worker or transfer global lifecycle ownership.
+
+## Boundary semantics
+
+```text
+Agentic Application = project/work/role meaning + Blackboard lifecycle + stage/review/acceptance ordering
+Oracle              = declared source resolution / dereference / adaptation
+ExHarness Core       = execution/runtime + cognition + evidence/trust/effect/recovery primitives
+Infrastructure       = concrete repository/artifact/storage/executor/network/process authority
+```
+
+These states may reference one another but must not silently become another boundary's source of truth.
+
+## Explicitly not implemented as generic semantics
+
+Current source does not claim a generic Worker, WorkOrder/WorkResult, Advisor registry, PM runtime Worker, SA runtime Worker, Reviewer registry, role registry, workflow graph/DSL, group-chat speaker selection, or a second runtime/session/memory/recovery system around ExHarness.

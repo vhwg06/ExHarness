@@ -7,14 +7,16 @@ Authority and dependency boundaries for the current application layer and its ac
 | Concern | Owner |
 | --- | --- |
 | Objective / domain goal | Agentic Application |
-| Work decomposition | Orchestrator, optionally informed by Advisor |
+| Work decomposition | Orchestrator; bounded Advisor or PM coordination may propose, but cannot commit canonical graph state directly |
 | Which Worker executes | Orchestrator |
 | Worker role semantics | Agentic Application |
 | WorkOrder / WorkResult contracts | Agentic Application |
 | Required context semantics/shape | Agentic Application |
 | Context source resolution/adaptation | Oracle / infrastructure |
-| Planning/progress proposal | Bounded Advisor |
-| Project coordination / sequencing / dependency / timeline / progress authority | PM (accepted responsibility; concrete runtime slice not implemented) |
+| Backend-local continuation/gap proposal | Bounded Advisor |
+| Project-level coordination/progress proposal | PM through the bounded PM/SA coordination slice |
+| Project coordination / sequencing / dependency / timeline / progress proposal | PM through the bounded PM/SA coordination slice; Orchestrator owns canonical mutation |
+| Architecture assessment / architecture-review need | SA through the bounded PM/SA coordination slice; no project lifecycle authority |
 | Application workflow control/state | Orchestrator |
 | Agent/model execution mechanics | ExHarness |
 | Turn/runtime lifecycle | ExHarness |
@@ -58,6 +60,32 @@ execution observation/trust/evidence primitives
 ```
 
 The application must not create a second agent runtime, session loop, memory system or recovery model around ExHarness merely to coordinate Workers.
+
+## APPLICATION / ORCHESTRATOR -> PM / SA COORDINATION
+
+```text
+Application session handoff
+  -> bounded SA context
+       -> evidence-bound architecture assessment
+       -> durable SA assessment ref
+
+Application session handoff
+  -> bounded PM context + optional grounded SA assessment
+       -> PM coordination proposal bound to exact target lifecycle tuple
+       -> durable PM proposal ref
+
+PM/SA coordination controller
+  -> validates project/root/target/evidence freshness
+  -> delegates canonical mutation to ApplicationOrchestrator.extendWorkGraph(...)
+```
+
+PM and SA produce bounded proposal/judgment state; neither mutates Blackboard directly.
+
+PM may propose prerequisite work, dependency edges, blockers and PM-sourced review requirements. It cannot rewrite user intent or carry architecture, completion or review-verdict authority.
+
+SA may assess architecture evidence and state whether architecture review is required. It cannot own dependency, priority, sequencing, timeline, lifecycle, completion or review-verdict authority.
+
+A durable proposal/assessment artifact becomes continuation-relevant only when its ref is canonically linked with the corresponding Board effects. Orphan or spoofed refs are not lifecycle truth. This slice is not a generic PM/SA Worker runtime or horizontal-role framework.
 
 ## ORCHESTRATOR -> ADVISOR
 

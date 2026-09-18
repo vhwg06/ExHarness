@@ -49,6 +49,10 @@ The concrete `createDurableBackendQaWorkflow(...)` path binds Backend -> QA exec
 - QA grounds behavior/regression evidence and cannot advance lineage.
 - `ApplicationArtifactRef` is shared across Backend-produced and QA-consumed artifacts.
 - Backend -> QA state carries refs plus Backend acceptance-decision provenance, not copied artifact payloads.
+- optional manifest-protected Backend -> QA continuation captures producer-side artifact identity/provenance without changing the default direct-reader path.
+- protected `QA_PENDING` is committed only after the exact producer manifest ref is durable, and fresh QA resolution is scoped to that persisted manifest.
+- manifest publication failure after Backend effects returns through the existing Backend/Core recovery fence rather than authorizing a fresh Backend execute.
+- durable publication receipts may be reused without producer-byte reads only when recovered Backend acceptance is semantically equivalent; conflicting acceptance or payload semantics fail closed.
 - durable Backend -> QA execution persists `BACKEND_PENDING`, `QA_PENDING`, `BACKEND_REMEDIATION_PENDING` and blocked checkpoints through the JSON store.
 - a fresh Orchestrator can resume the same QA checkpoint after artifact lookup failure, and QA acceptance produces a final `PENDING_REVIEW` submission.
 - Oracle keeps external repository reads and internal application-artifact reads distinct.
@@ -64,7 +68,8 @@ The concrete `ApplicationOrchestrator` is application workflow/Board control, no
 
 ## Routing
 
-- current delivered pipeline -> `pipeline.md`
+- **current system capability semantics -> `capabilities.md`**
+- current delivered pipeline/composition -> `pipeline.md`
 - current application details -> `agentic-application/state.md`
 - current Oracle details -> `oracle/state.md`
 - current Core details -> `core-harness/state.md`
