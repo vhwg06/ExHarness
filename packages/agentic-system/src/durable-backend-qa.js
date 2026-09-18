@@ -154,7 +154,10 @@ function workflowCheckpoint(raw) {
       completionDecision: {
         id: requireText(raw.acceptedBackend.completionDecision?.id, "acceptedBackend.completionDecision.id"),
         digest: requireText(raw.acceptedBackend.completionDecision?.digest, "acceptedBackend.completionDecision.digest")
-      }
+      },
+      ...(raw.acceptedBackend.artifactManifestRef == null
+        ? {}
+        : { artifactManifestRef: requireText(raw.acceptedBackend.artifactManifestRef, "acceptedBackend.artifactManifestRef") })
     }),
     qaIssues,
     remediationObligations,
@@ -221,7 +224,7 @@ function backendWorkFor(checkpoint) {
     : BACKEND_WORK;
 }
 
-function backendCheckpointAfterAccept(checkpoint, handoff, completionDecision) {
+function backendCheckpointAfterAccept(checkpoint, handoff, completionDecision, artifactManifestRef = null) {
   return workflowCheckpoint({
     ...checkpoint,
     stage: BackendQaWorkflowStage.QA_PENDING,
@@ -233,7 +236,8 @@ function backendCheckpointAfterAccept(checkpoint, handoff, completionDecision) {
       completionDecision: {
         id: completionDecision.id,
         digest: completionDecision.digest
-      }
+      },
+      ...(artifactManifestRef == null ? {} : { artifactManifestRef })
     },
     qaIssues: [],
     remediationObligations: [],
@@ -354,6 +358,22 @@ function artifactRefsFromHandoff(handoff) {
   return handoff.artifacts.map((artifact) => artifact.ref);
 }
 
+function artifactRefsFromAcceptedBackend(acceptedBackend) {
+  return [
+    ...artifactRefsFromHandoff(acceptedBackend.handoff),
+    ...(acceptedBackend.artifactManifestRef == null ? [] : [acceptedBackend.artifactManifestRef])
+  ];
+}
+
+function normalizeArtifactManifestPublisher(publisher) {
+  if (publisher == null) return null;
+  invariant(
+    typeof publisher.publishAcceptedBackendManifest === "function",
+    "artifactManifestPublisher must expose publishAcceptedBackendManifest()"
+  );
+  return publisher;
+}
+
 function blockedWorkflowStage(checkpoint) {
   if (checkpoint?.stage === BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING) {
     return BackendQaWorkflowStage.BACKEND_COORDINATION_PENDING;
@@ -382,7 +402,8 @@ export function createDurableBackendQaWorkflow({
   backendCompletionPolicy = null,
   backendAdvisor = null,
   qaCompletionPolicy = null,
-  projectAcceptance = null
+  projectAcceptance = null,
+  artifactManifestPublisher = null
 }) {
   invariant(
     orchestrator &&
@@ -397,6 +418,7 @@ export function createDurableBackendQaWorkflow({
     "Durable Backend/QA workflow requires recovery-capable ApplicationOrchestrator"
   );
   const acceptance = normalizeProjectAcceptance(projectAcceptance);
+  const manifestPublisher = normalizeArtifactManifestPublisher(artifactManifestPublisher);
 
   async function initialize({ itemId, owner, backendObjective, qaObjective }) {
     requireText(itemId, "itemId");
@@ -523,16 +545,57 @@ export function createDurableBackendQaWorkflow({
 
     invariant(backend.decision.action === BackendRunAction.RETURN, "Accepted Backend completion must return to the workflow");
     const handoff = createQaHandoffFromBackendRun(backend);
-    const nextCheckpoint = backendCheckpointAfterAccept(executionCheckpoint, handoff, backend.completion.decision);
+    let artifactManifestRef = null;
+    if (manifestPublisher != null) {
+      try {
+        const publication = await manifestPublisher.publishAcceptedBackendManifest({
+          itemId,
+          backendRun: backend,
+          handoff
+        });
+        artifactManifestRef = requireText(
+          publication?.manifestRef,
+          "artifactManifestPublisher publication.manifestRef"
+        );
+      } catch (error) {
+        const recoveryCheckpoint = backendCheckpointForMode(executionCheckpoint, true);
+        const persisted = await orchestrator.checkpoint({
+          itemId,
+          owner,
+          generation,
+          checkpoint: recoveryCheckpoint,
+          status: BlackboardStatus.BLOCKED,
+          blockers: [`Backend artifact manifest publication failed: ${error?.message ?? String(error)}`]
+        });
+        return freezeClone({
+          stage: BackendQaWorkflowStage.BLOCKED,
+          backend,
+          handoff,
+          qa: null,
+          artifactManifestRef: null,
+          recoveryRequired: true,
+          error: error?.message ?? String(error),
+          item: persisted.result
+        });
+      }
+    }
+
+    const nextCheckpoint = backendCheckpointAfterAccept(
+      executionCheckpoint,
+      handoff,
+      backend.completion.decision,
+      artifactManifestRef
+    );
     const resolvedWork = checkpoint.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
       ? checkpoint.remediationObligations
       : [currentWork];
+    const acceptedArtifactRefs = artifactRefsFromAcceptedBackend(nextCheckpoint.acceptedBackend);
     const persisted = await orchestrator.checkpoint({
       itemId,
       owner,
       generation,
       checkpoint: nextCheckpoint,
-      artifactRefs: artifactRefsFromHandoff(handoff),
+      artifactRefs: acceptedArtifactRefs,
       evidenceRefs: [backend.completion.decision.id],
       resolvedWork,
       remainingWork: [QA_WORK]
@@ -542,6 +605,7 @@ export function createDurableBackendQaWorkflow({
       stage: BackendQaWorkflowStage.QA_PENDING,
       backend,
       handoff,
+      artifactManifestRef,
       qa: null,
       item: persisted.result
     });
@@ -632,11 +696,19 @@ export function createDurableBackendQaWorkflow({
   async function runQaStage({ itemId, owner, generation, checkpoint }) {
     invariant(checkpoint.acceptedBackend != null, "QA stage requires accepted Backend provenance");
     const handoff = checkpoint.acceptedBackend.handoff;
+    let qaArtifactReader = artifactReader;
+    if (checkpoint.acceptedBackend.artifactManifestRef != null) {
+      invariant(
+        artifactReader && typeof artifactReader.forManifest === "function",
+        "manifest-protected QA checkpoint requires artifactReader.forManifest()"
+      );
+      qaArtifactReader = artifactReader.forManifest(checkpoint.acceptedBackend.artifactManifestRef);
+    }
     let qa;
     try {
       qa = await runQaObjective(checkpoint.spec.qaObjective, {
         handoff,
-        artifactReader,
+        artifactReader: qaArtifactReader,
         qaWorker,
         ...(qaCompletionPolicy == null ? {} : { completionPolicy: qaCompletionPolicy })
       });
@@ -667,7 +739,7 @@ export function createDurableBackendQaWorkflow({
     }
 
     if (qa.completion.action === QaCompletionAction.ACCEPT) {
-      const artifactRefs = artifactRefsFromHandoff(handoff);
+      const artifactRefs = artifactRefsFromAcceptedBackend(checkpoint.acceptedBackend);
       const evidenceRefs = [
         checkpoint.acceptedBackend.completionDecision.id,
         qa.completion.decision.id
@@ -687,6 +759,9 @@ export function createDurableBackendQaWorkflow({
           workflowAttempt: checkpoint.attempt,
           acceptedBackendHandoff: handoff,
           backendAcceptanceDecision: checkpoint.acceptedBackend.completionDecision,
+          ...(checkpoint.acceptedBackend.artifactManifestRef == null
+            ? {}
+            : { artifactManifestRef: checkpoint.acceptedBackend.artifactManifestRef }),
           qaAcceptanceDecision: {
             id: qa.completion.decision.id,
             digest: qa.completion.decision.digest
