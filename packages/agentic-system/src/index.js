@@ -107,6 +107,14 @@ export {
   verifyDecisionOutcomeSummary
 } from "./decision-outcome-pilot.js";
 export {
+  SelfUpgradeDisposition,
+  SelfUpgradeEvaluationVerdict,
+  createJsonSelfUpgradeArtifactStore,
+  createSelfUpgradePilotController,
+  defineSelfUpgradeExperimentProtocol,
+  defineSelfUpgradeExperimentResult
+} from "./self-upgrade-pilot.js";
+export {
   createJsonTrustArtifactStore,
   requireTrustArtifactStore
 } from "./trust-artifact-store.js";
