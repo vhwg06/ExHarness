@@ -15,7 +15,7 @@ import { BlackboardStatus } from "../../../packages/agentic-system/src/blackboar
 const REF = "artifact://bb044/report";
 const PATH = "report.json";
 const CONTENT = "{\"ok\":true}\n";
-const DIGEST = "sha256:bf21a9e8fbc5a3846fb05b4fa0859e0917b2202f3f5a04ef51959e174bcb4e4a";
+const DIGEST = "sha256:e5f1eb4d806641698a35efe20e098efd20d7d57a9b90ee69079d5bb650920726";
 
 function manifest(availability) {
   return defineApplicationArtifactManifest({
