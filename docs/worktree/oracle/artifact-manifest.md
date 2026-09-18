@@ -115,7 +115,7 @@ Enabling the adapter never falls back silently to an unvalidated read.
 
 ## Persistence and reconstruction
 
-`createJsonArtifactManifestStore(...)` persists immutable content-addressed manifest files. A fresh store/reader instance can reconstruct validation only from filesystem state; no producer-side in-memory manifest map is required. Protected workflow checkpoints persist the exact manifest ref and fresh QA scopes the reader through `forManifest(ref)`; switching a protected checkpoint to an ordinary direct reader fails closed.
+`createJsonArtifactManifestStore(...)` persists immutable manifests behind an atomic publication slot keyed by accepted Backend producer/revision/artifact identity. Concurrent identical publishers converge on one manifest ref; concurrent conflicting bytes/provenance cannot both publish. Legacy content-addressed `manifest-<digest>.json` files remain readable. A fresh store/reader instance can reconstruct validation only from filesystem state; no producer-side in-memory manifest map is required. Protected workflow checkpoints persist the exact manifest ref and fresh QA scopes the reader through `forManifest(ref)`; switching a protected checkpoint to an ordinary direct reader fails closed.
 
 The implementation test surface covers unchanged content, changed bytes behind a stable ref, missing bytes, partial manifests, wrong producer work order, wrong producer revision, wrong acceptance-decision id/digest, explicit unavailable metadata, conflicting manifests, and fresh-reader reconstruction.
 
