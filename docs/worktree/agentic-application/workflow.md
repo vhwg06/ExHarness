@@ -47,16 +47,25 @@ createDurableBackendQaWorkflow(...)
 
 fresh/current session
  -> advance(itemId, owner)
-      -> claim exact item
+      -> inspect durable stage
+      -> claim exact item only when the stage is eligible
       -> receive next claimGeneration
       -> execute exactly one durable stage
       -> checkpoint/submit only with exact {owner, generation}
 ```
 
-State transitions:
+Backend and Advisor transitions:
 
 ```text
-BACKEND_PENDING
+BACKEND_PENDING / BACKEND_REMEDIATION_PENDING
+  |
+  +-- Advisor RETRY / deterministic CONTINUE ---> same Backend stage, REOPENED
+  |
+  +-- Advisor REQUEST_CONTEXT / ESCALATE -------> BACKEND_COORDINATION_PENDING
+  |                                                Blackboard = BLOCKED
+  |                                                no redispatch / generic resume
+  |                                                resolveBackendCoordination(...)
+  |                                                -> original Backend stage, REOPENED
   |
   +-- Backend repository/context failure --> BLOCKED
   |                                         |
@@ -99,7 +108,9 @@ A Backend source-resolution failure is persisted as application lifecycle state 
 
 QA issues do not silently invalidate or rewrite the accepted revision. They create explicit remediation work; the remediation Backend objective uses the accepted revision as its repository base. A new accepted Backend result replaces the QA handoff with the new revision before QA runs again.
 
-Artifact/context lookup failure does not discard progress. The item becomes `BLOCKED` with its stage checkpoint intact. `resume(...)` returns it to `REOPENED`, and a later session retries the same durable stage under the stored recovery mode.
+Ordinary artifact/context lookup failure does not discard progress. The item becomes `BLOCKED` with its stage checkpoint intact. `resume(...)` returns it to `REOPENED`, and a later session retries the same durable stage under the stored recovery mode.
+
+`BACKEND_COORDINATION_PENDING` is intentionally different. The checkpoint persists the Advisor proposal plus bounded provenance; `advance(...)` and `current(...)` expose it without Backend redispatch, and generic `resume(...)` is rejected. `resolveBackendCoordination(...)` derives a replacement checkpoint and commits it through atomic `resolveBlockedCheckpoint(...)`. A stale expected checkpoint fails closed. Context requests may expand declared Backend repository files only through explicit application resolution; escalation resolution records resolver + rationale. Neither path accepts Backend work or bypasses QA.
 
 `cancel(...)` supersedes unfinished work. Superseding claimed work increments its generation so an abandoned executor cannot later commit against the superseded item.
 

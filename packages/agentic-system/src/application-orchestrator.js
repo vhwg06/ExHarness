@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import { subjectFromValue } from "../../core-harness/src/index.js";
 import {
   BlackboardStatus,
@@ -152,9 +153,41 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     return Object.freeze(structuredClone(result));
   }
 
+
+  async function resolveBlockedCheckpoint({
+    itemId,
+    checkpointedBy,
+    expectedCheckpoint,
+    checkpoint
+  }) {
+    requireText(itemId, "itemId");
+    requireText(checkpointedBy, "checkpointedBy");
+    invariant(expectedCheckpoint && typeof expectedCheckpoint === "object" && !Array.isArray(expectedCheckpoint), "expectedCheckpoint must be an object");
+    invariant(checkpoint && typeof checkpoint === "object" && !Array.isArray(checkpoint), "checkpoint must be an object");
+
+    const result = await store.transact((snapshot) => {
+      const item = findItem(snapshot, itemId);
+      invariant(item.status === BlackboardStatus.BLOCKED, `Blackboard item ${itemId} must be BLOCKED before blocked-checkpoint resolution`);
+      invariant(item.owner == null, `Blackboard item ${itemId} cannot resolve a blocked checkpoint while owned`);
+      invariant(
+        isDeepStrictEqual(item.checkpoint, expectedCheckpoint),
+        `Blackboard item ${itemId} blocked checkpoint changed before resolution`
+      );
+
+      item.checkpoint = structuredClone(checkpoint);
+      item.checkpointedBy = checkpointedBy;
+      item.owner = null;
+      item.blockers = [];
+      item.status = BlackboardStatus.REOPENED;
+      return structuredClone(item);
+    });
+
+    return Object.freeze(structuredClone(result));
+  }
   return Object.freeze({
     ...base,
     recoverSelfUpgradeEvaluationClaim,
-    submitWithRequiredReviews
+    submitWithRequiredReviews,
+    resolveBlockedCheckpoint
   });
 }
