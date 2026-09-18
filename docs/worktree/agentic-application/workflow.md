@@ -13,6 +13,8 @@ parse objective
 
 Deterministic evidence failure/missing/inconclusive paths stay in application code. `BackendAdvisor` is invoked only for the source-implemented semantic-gap condition after required objective checks pass.
 
+Manifest-protected Backend -> QA is optional application composition: after Backend ACCEPT, a configured producer-manifest publisher must durably establish the exact manifest ref before `QA_PENDING` is checkpointed. Publication failure returns to Backend/Core recovery authority; a later QA source/content failure remains a QA/source blocker.
+
 Backend preparation is now an explicit read-only application phase before Worker/Core execution. Detailed current semantics, including durable source-failure handling and the `backendRecoveryRequired` fence, are in `backend-preparation.md`.
 
 For workflows explicitly configured with D014 artifact-manifest protection, accepted Backend completion has one additional application-owned gate before `QA_PENDING`:
