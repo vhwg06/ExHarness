@@ -68,13 +68,19 @@ SUPERSEDED
 
 Contradiction targets must identify another entry in the same ledger. `STALE` and `SUPERSEDED` evidence carries explicit invalidation provenance instead of being deleted.
 
-Evidence freshness is scope-aware. A source or policy revision mismatch requires reassessment only when the caller declares that one of the evidence entry's bound scopes changed:
+Evidence freshness is scope-aware and fail-closed. A source or policy revision mismatch may remain current only when the caller supplies an explicit changed-scope comparison and the evidence's declared scopes are unaffected. Missing scope-comparison input, or evidence with no declared scope for a changed revision, requires reassessment rather than silently treating old evidence as current:
 
 ```text
+revision differs + no explicit changed-scope comparison
+  -> REASSESS_REQUIRED
+
+revision differs + evidence has no declared scope
+  -> REASSESS_REQUIRED
+
 revision differs + bound scope changed
   -> REASSESS_REQUIRED
 
-revision differs + only unrelated scope changed
+revision differs + explicit comparison shows only unrelated scope changed
   -> CURRENT
 
 STALE / CONTRADICTED / SUPERSEDED
@@ -103,8 +109,11 @@ The controller has no hidden role memory or previous-conversation dependency.
 
 `submitProposal(...)` refuses submission while:
 
-- an experiment remains active; or
-- current source/policy changes leave evidence in `REASSESS_REQUIRED` state.
+- an experiment remains active;
+- current source/policy changes leave evidence in `REASSESS_REQUIRED` state; or
+- the persisted continuation manifest still names an older source/policy revision than the one being submitted.
+
+The last condition requires the current revision to be checkpointed before proposal submission even when an explicit scope comparison proves existing evidence remains current.
 
 A valid final research submission is explicitly:
 

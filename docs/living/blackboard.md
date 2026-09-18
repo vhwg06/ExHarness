@@ -846,7 +846,7 @@ origin: INTENT-exharness-agentic-system; tooling child of BB-005, which retains 
 
 Review evidence: `knowledge/project-review-2026-09-16.md`, inspected revision `ad61a2b037b99384e16fdd5245ee04f43dc36083`. R1-R4 were reproduced with isolated adapters; they do not assert production incidents. BB-023/024/025 address grounded defects without erasing delivered history. R4 was closed by the delivered BB-016/017 recovery track. BB-026/027 define a research consumer before choosing an abstraction.
 
-BB-023/024/025 and BB-016/017 are delivered. BB-026 is accepted and BB-027 is now eligible. The bounded research/delivery backlog continues without reimplementing delivered fixes. BB-014/015/018/019/022 remain delivered; BB-005 still requires representative production evidence.
+BB-023/024/025 and BB-016/017 are delivered. BB-026/027 are delivered. The bounded research/delivery backlog continues without reimplementing delivered fixes. BB-014/015/018/019/022 remain delivered; BB-005 still requires representative production evidence.
 
 ```text
 BB-023
@@ -985,27 +985,39 @@ BB-027
 question/work: Deliver the accepted research-continuation workflow from BB-026 using existing artifacts/checkpoints or its demonstrated minimal extension.
 kind: IMPLEMENTATION
 priority: P2
-status: READY
+status: DONE
 owner:
 depends-on: [BB-026]
-remaining-work:
-  - implement the accepted concrete artifact/checkpoint convention and any justified runtime integration
-  - expose resumable experiment state and evidence-validity decisions with provenance
-  - exercise the research pilot across interruption and source-revision changes
+remaining-work: []
 acceptance-criteria:
   - completed valid experiments are not silently repeated and interrupted experiments are not treated as completed evidence
   - stale and contradictory findings remain inspectable and cannot silently become accepted architecture
   - work products stay in referenced artifacts; Board holds lifecycle and continuation refs
   - research completion cannot bypass independent acceptance or promote its own conclusions
 submission:
-review-requirements: [research-workflow review, application/code review if runtime changes]
-reviews: []
-artifact-refs: []
+  - PR #114
+review-requirements: [research-workflow review, application/code review]
+reviews:
+  - research-workflow review PASS on exact implementation head 6c11978782f97f3f33c2bef635fd0bd81bbfcbbc
+  - application/code review PASS on exact implementation head 6c11978782f97f3f33c2bef635fd0bd81bbfcbbc
+artifact-refs:
+  - docs/worktree/agentic-application/research-continuation.md
+  - packages/agentic-system/src/research-continuation.js
+  - packages/agentic-system/src/research-continuation-base.js
+  - packages/agentic-system/src/application-orchestrator.js
+  - packages/agentic-system/src/application-orchestrator-base.js
+  - packages/agentic-system/test/bb027-research-continuation.test.js
+  - packages/agentic-system/test/bb027-research-continuation-regression.test.js
+  - packages/agentic-system/test/bb027-atomic-submission.test.js
 evidence-refs:
   - BB-026
   - docs/living/knowledge/bb026-stateful-research-continuation.md
+  - BB-026 dependency proof repaired by PR #124 / merge 634133ce19624523c0409e6921f594c36dc940fc
+  - exact-head Actions #1954 green on living-doc-impact and Node 20/22/24
+  - fresh-session continuation, provenance/freshness and atomic proposal+review regressions in PR #114
+  - merge commit 6e100dc175f6859a244426a7a75912a4249d4efe
 blockers: []
-follow-up-refs: []
+follow-up-refs: [BB-035]
 origin: INTENT-exharness-agentic-system; conditional implementation follow-up to BB-026
 ```
 
@@ -1022,7 +1034,7 @@ Here, a decision chain means explicit hypotheses, concise rationales, artifact p
 | Architecture composition from existing primitives | BB-032 | BB-033 | P2 |
 | Evidence-gated self-upgrade loop | BB-034 | BB-035 | P1 |
 
-BB-023/024/025 are delivered. BB-028/030/032 research boundaries are accepted; BB-029 is READY after PR #116 closed the exact-artifact-identity review obligation. BB-033 is delivered by PR #107. BB-026/027 own durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. BB-034 and D016 are accepted after PR #105 remediation; BB-035 remains blocked only on BB-027 before an application-level upgrade pilot can proceed.
+BB-023/024/025 are delivered. BB-028/030/032 research boundaries are accepted; BB-029 is READY after PR #116 closed the exact-artifact-identity review obligation. BB-033 is delivered by PR #107. BB-026/027 deliver durable research continuation; BB-020/021 own PM/SA roles; BB-005 owns production-effectiveness conclusions. BB-034 and D016 are accepted after PR #105 remediation; BB-035 is now READY for an application-level upgrade pilot.
 
 ```text
 BB-028
@@ -1269,7 +1281,7 @@ BB-035
 question/work: Deliver one accepted self-upgrade experiment pipeline with isolated candidates, independent evaluation and explicit adoption control.
 kind: IMPLEMENTATION
 priority: P1
-status: BLOCKED
+status: READY
 owner:
 depends-on: [BB-034, BB-027, BB-019]
 remaining-work:
@@ -1287,8 +1299,7 @@ artifact-refs: []
 evidence-refs:
   - BB-034
   - docs/living/decisions/D016-evidence-gated-self-upgrade-proposal-boundary.md
-blockers:
-  - BB-027 must supply durable research continuation
+blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-034
 ```
