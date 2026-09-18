@@ -194,7 +194,7 @@ previous-phase-closure: docs/living/knowledge/pre-oracle-detail-blackboard-closu
 previous-terminal-count: 42
 previous-done-count: 38
 previous-superseded-count: 4
-next-work-id: BB-044
+next-work-id: BB-045
 ```
 
 The previous coordination phase is fully terminal and archived. Historical items are not copied into this active surface.
@@ -239,6 +239,46 @@ evidence-refs:
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; ORACLE_DETAIL phase implementation handoff from accepted D014
+```
+
+
+```text
+BB-044
+question/work: Separate immutable artifact manifest identity from mutable retention/availability lifecycle state so valid pin/release transitions do not become manifest conflicts.
+kind: FIX
+priority: P1
+status: CLAIMED
+owner: oracle-detail-session-2026-09-18
+depends-on: [BB-043]
+remaining-work:
+  - reproduce the current AVAILABLE -> UNAVAILABLE lifecycle conflict caused by encoding mutable availability inside immutable manifest candidates
+  - add a durable generation-fenced retention-state store keyed by manifest ref
+  - derive operational pins only from durable nonterminal Blackboard artifact refs; terminal work must not retain pins
+  - reject stale/concurrent retention writers and reject marking an artifact unavailable while it is still pinned
+  - let the optional manifest reader consult current retention state while preserving legacy fail-closed behavior when no retention state is configured
+  - keep payload deletion/storage effects outside Oracle; retention state may authorize releasability but does not prove deletion occurred
+  - synchronize Oracle current-state docs and add fresh-store reconstruction tests
+acceptance-criteria:
+  - a lifecycle availability transition for unchanged artifact identity no longer requires minting a conflicting identity manifest when retention state is configured
+  - READY/REOPENED/CLAIMED/PENDING_REVIEW/REVIEWING/PENDING_RECONCILIATION/BLOCKED references pin the exact artifact ref; DONE/SUPERSEDED do not
+  - stale expected revision cannot overwrite a newer retention state
+  - an active pin prevents UNAVAILABLE transition
+  - after pins are released, an explicit UNAVAILABLE transition survives fresh-store reconstruction and the validating reader fails before underlying payload read
+  - changed content digest/stored revision/provenance remains an integrity conflict and is not normalized as lifecycle state
+  - Blackboard, Oracle, manifest digest and retention state remain separate authority surfaces
+submission:
+review-requirements: [application/code review, Oracle architecture-boundary review]
+reviews: []
+artifact-refs:
+  - docs/living/decisions/D014-application-artifact-manifest-adapter.md
+  - docs/worktree/oracle/artifact-manifest.md
+  - packages/agentic-system/src/artifact-manifest.js
+evidence-refs:
+  - BB-043 delivered manifest adapter
+  - source reproduction: immutable manifest candidates include availability while D014 permits lifecycle availability transition after pin release
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; ORACLE_DETAIL finding during BB-043 post-delivery source scan
 ```
 
 New work belongs here only when it is a concrete unresolved Oracle-detail gap/problem/question with source-backed scope or explicit user intent. Historical re-entry triggers create a new work item rather than mutating the archive.
