@@ -176,13 +176,13 @@ async function withProject({ evaluatorOutput = evaluation() } = {}, run) {
     return createJsonSelfUpgradeArtifactStore({ path: selfUpgradePath });
   }
 
-  function makeController(output = evaluatorOutput) {
+  function makeController(output = evaluatorOutput, evaluatorOverride = null) {
     return createSelfUpgradePilotController({
       orchestrator: makeOrchestrator(),
       projectId: PROJECT_ID,
       artifactStore: makeStore(),
       artifactReader: artifacts.reader,
-      evaluator: {
+      evaluator: evaluatorOverride ?? {
         async evaluate(input) {
           assert.equal(input.protocol.candidate.id, artifacts.candidate.id);
           assert.equal(input.protocol.baseline.id, artifacts.baseline.id);
@@ -335,6 +335,13 @@ test("BB-035 fails closed on candidate tamper, evaluator laundering and widened 
     }),
     /exactly one candidate/
   );
+  assert.throws(
+    () => defineSelfUpgradeExperimentProtocol({
+      ...valid,
+      budget: { ...valid.budget, evaluationAttempts: 3 }
+    }),
+    /at most two evaluation attempts/
+  );
 
   assert.throws(
     () => defineSelfUpgradeExperimentResult({
@@ -394,28 +401,24 @@ test("BB-035 stale source/policy revisions cannot be evaluated or submitted with
 
 test("BB-035 concurrent evaluation on the same claim executes the evaluator at most once", async () => {
   let release;
+  let startedResolve;
   const gate = new Promise((resolve) => { release = resolve; });
+  const started = new Promise((resolve) => { startedResolve = resolve; });
   let calls = 0;
-  await withProject({}, async ({ artifacts, makeOrchestrator, makeStore }) => {
-    const orchestrator = makeOrchestrator();
-    const store = makeStore();
-    function controller() {
-      return createSelfUpgradePilotController({
-        orchestrator: makeOrchestrator(),
-        projectId: PROJECT_ID,
-        artifactStore: makeStore(),
-        artifactReader: artifacts.reader,
-        evaluator: {
-          async evaluate() {
-            calls += 1;
-            await gate;
-            return evaluation();
-          }
-        }
-      });
-    }
 
+  await withProject({}, async ({ artifacts, makeController, makeOrchestrator }) => {
+    let orchestrator = makeOrchestrator();
     let claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-init-concurrent" });
+    const evaluatorOverride = {
+      async evaluate() {
+        calls += 1;
+        startedResolve();
+        await gate;
+        return evaluation();
+      }
+    };
+    const controller = () => makeController(evaluation(), evaluatorOverride);
+
     await controller().initializeExperiment({
       itemId: ITEM_ID,
       owner: "session-init-concurrent",
@@ -424,6 +427,7 @@ test("BB-035 concurrent evaluation on the same claim executes the evaluator at m
       protocol: protocol(artifacts)
     });
 
+    orchestrator = makeOrchestrator();
     claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-concurrent" });
     const args = {
       itemId: ITEM_ID,
@@ -432,22 +436,22 @@ test("BB-035 concurrent evaluation on the same claim executes the evaluator at m
       currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION },
       resolvedWork: ["run fixed experiment"]
     };
+
     const first = controller().evaluateAndCheckpoint(args);
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await started;
     const second = controller().evaluateAndCheckpoint(args);
     await assert.rejects(second, /must be CLAIMED before checkpoint|claim generation is stale/);
     assert.equal(calls, 1);
+
     release();
     const completed = await first;
     assert.equal(completed.result.evaluationAttempt.number, 1);
-    assert.equal(store != null, true);
   });
 });
 
-test("BB-035 interrupted evaluation requires explicit bounded recovery and fences the abandoned attempt", async () => {
-  let failFirst = true;
+test("BB-035 interrupted evaluation recovers explicitly within the fixed attempt budget", async () => {
   await withProject({}, async ({ artifacts, makeController, makeOrchestrator }) => {
-    const orchestrator = makeOrchestrator();
+    let orchestrator = makeOrchestrator();
     let claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-init-recovery" });
     await makeController().initializeExperiment({
       itemId: ITEM_ID,
@@ -457,25 +461,93 @@ test("BB-035 interrupted evaluation requires explicit bounded recovery and fence
       protocol: protocol(artifacts)
     });
 
-    function recoveringController() {
-      return createSelfUpgradePilotController({
-        orchestrator: makeOrchestrator(),
-        projectId: PROJECT_ID,
-        artifactStore: createJsonSelfUpgradeArtifactStore({ path: join(tmpdir(), "unused") }),
-        artifactReader: artifacts.reader,
-        evaluator: {
-          async evaluate() {
-            if (failFirst) {
-              failFirst = false;
-              throw new Error("simulated evaluator crash");
-            }
-            return evaluation();
-          }
-        }
-      });
-    }
+    orchestrator = makeOrchestrator();
+    claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-crash" });
+    const crashing = makeController(evaluation(), {
+      async evaluate() {
+        throw new Error("simulated evaluator crash");
+      }
+    });
+    await assert.rejects(
+      () => crashing.evaluateAndCheckpoint({
+        itemId: ITEM_ID,
+        owner: "session-crash",
+        generation: claim.result.claimGeneration,
+        currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION }
+      }),
+      /simulated evaluator crash/
+    );
 
-    // Use the same durable store path as makeController by wrapping its evaluator behavior through
-    // an evaluator output that throws on the first call.
+    let item = (await makeOrchestrator().readBlackboard()).items.find((candidate) => candidate.id === ITEM_ID);
+    assert.equal(item.status, BlackboardStatus.BLOCKED);
+    assert.match(item.blockers[0], /^SELF_UPGRADE_EVALUATION_ATTEMPT:1:/);
+
+    const recovered = await makeController().recoverEvaluationAndCheckpoint({
+      itemId: ITEM_ID,
+      owner: "session-recover",
+      currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION },
+      reason: "previous evaluator process exited before publishing a result",
+      resolvedWork: ["run fixed experiment"]
+    });
+    assert.equal(recovered.result.evaluationAttempt.number, 2);
+    assert.equal(recovered.result.disposition, SelfUpgradeDisposition.PROPOSE_FOR_REVIEW);
+
+    item = (await makeOrchestrator().readBlackboard()).items.find((candidate) => candidate.id === ITEM_ID);
+    assert.equal(item.status, BlackboardStatus.REOPENED);
+    assert.deepEqual(item.remainingWork, ["submit result"]);
+  });
+});
+
+test("BB-035 recovery fails closed after the evaluation-attempt budget is exhausted", async () => {
+  await withProject({}, async ({ artifacts, makeController, makeOrchestrator }) => {
+    let orchestrator = makeOrchestrator();
+    let claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-init-budget" });
+    await makeController().initializeExperiment({
+      itemId: ITEM_ID,
+      owner: "session-init-budget",
+      generation: claim.result.claimGeneration,
+      objective: "Bound interrupted evaluation retries.",
+      protocol: protocol(artifacts)
+    });
+
+    orchestrator = makeOrchestrator();
+    claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-crash-1" });
+    const crash = () => makeController(evaluation(), {
+      async evaluate() {
+        throw new Error("simulated evaluator crash");
+      }
+    });
+
+    await assert.rejects(
+      () => crash().evaluateAndCheckpoint({
+        itemId: ITEM_ID,
+        owner: "session-crash-1",
+        generation: claim.result.claimGeneration,
+        currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION }
+      }),
+      /simulated evaluator crash/
+    );
+    await assert.rejects(
+      () => crash().recoverEvaluationAndCheckpoint({
+        itemId: ITEM_ID,
+        owner: "session-crash-2",
+        currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION },
+        reason: "first evaluator crashed"
+      }),
+      /simulated evaluator crash/
+    );
+    await assert.rejects(
+      () => makeController().recoverEvaluationAndCheckpoint({
+        itemId: ITEM_ID,
+        owner: "session-budget-exhausted",
+        currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION },
+        reason: "second evaluator crashed"
+      }),
+      /recovery budget exhausted/
+    );
+
+    const item = (await makeOrchestrator().readBlackboard()).items.find((candidate) => candidate.id === ITEM_ID);
+    assert.equal(item.status, BlackboardStatus.BLOCKED);
+    assert.match(item.blockers[0], /^SELF_UPGRADE_EVALUATION_ATTEMPT:2:/);
   });
 });
