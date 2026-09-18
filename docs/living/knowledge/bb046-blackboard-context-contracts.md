@@ -88,7 +88,7 @@ auditRefs: []
 sourceScope:
   read: []
   write: []
-  forbidden: []
+  forbiddenWrite: []
 
 hardInvariants: []
 verification: []
@@ -147,8 +147,8 @@ sourceScope:
     - <known relevant paths>
   write:
     - <authorized mutation paths>
-  forbidden:
-    - <explicitly protected boundaries>
+  forbiddenWrite:
+    - <explicitly protected mutation boundaries>
 ```
 
 Rules:
@@ -157,7 +157,7 @@ Rules:
 2. Missing write scope is not permission.
 3. Discovery that another path must change triggers a new context generation or explicit scope extension before durable handoff.
 4. Generated/build/cache paths may be handled by project tooling without being semantically authorized source changes.
-5. `forbidden` wins over proximity or model convenience.
+5. `forbiddenWrite` applies to mutation only and wins over proximity or model convenience; paths may still appear in `read`.
 
 ## 6. Action kinds
 
@@ -235,7 +235,7 @@ Never mutate g0001 into g0002 semantics.
 Use:
 
 ```text
-work-context/BB-046/g0001-readiness-review.md
+work-context/BB-046/g0001-readiness-review.json
 work-context/BB-046/g0002-implementation.json
 ```
 
