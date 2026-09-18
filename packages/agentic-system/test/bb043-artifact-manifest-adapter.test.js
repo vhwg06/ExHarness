@@ -203,6 +203,17 @@ test("BB-043 producer capture requires exact accepted artifact coverage and ACCE
     }),
     /must exactly cover accepted Backend artifacts/
   );
+
+  assert.throws(
+    () => captureAcceptedBackendArtifactManifest({
+      backendRun: acceptedBackendRun(),
+      producedArtifacts: producedArtifacts().map((artifact, index) => index === 0
+        ? { ...artifact, storedRevision: "rev-1" }
+        : artifact),
+      retention: retention()
+    }),
+    /produced artifact revision mismatch/
+  );
 });
 
 test("BB-043 fresh reader reconstructs a valid manifest and preserves existing QA context shape", async () => {
