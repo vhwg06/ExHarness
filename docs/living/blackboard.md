@@ -244,28 +244,25 @@ origin: INTENT-exharness-agentic-system; ORACLE_DETAIL phase implementation hand
 
 ```text
 BB-044
-question/work: Separate immutable artifact manifest identity from mutable retention/availability lifecycle state so valid pin/release transitions do not become manifest conflicts.
-kind: FIX
+question/work: Determine the safe retention/availability authority boundary for BB-043 manifests before adding lifecycle automation.
+kind: RESEARCH
 priority: P1
 status: CLAIMED
 owner: oracle-detail-session-2026-09-18
 depends-on: [BB-043]
 remaining-work:
-  - reproduce the current AVAILABLE -> UNAVAILABLE lifecycle conflict caused by encoding mutable availability inside immutable manifest candidates
-  - add a durable generation-fenced retention-state store keyed by manifest ref
-  - derive operational pins only from durable nonterminal Blackboard artifact refs; terminal work must not retain pins
-  - reject stale/concurrent retention writers and reject marking an artifact unavailable while it is still pinned
-  - let the optional manifest reader consult current retention state while preserving legacy fail-closed behavior when no retention state is configured
-  - keep payload deletion/storage effects outside Oracle; retention state may authorize releasability but does not prove deletion occurred
-  - synchronize Oracle current-state docs and add fresh-store reconstruction tests
+  - reproduce the current conflict if lifecycle availability is modeled by minting another immutable manifest
+  - verify what the current reader already does when retained bytes are actually missing
+  - inspect whether any concrete runtime artifact payload store exposes pin/unpin/delete authority today
+  - model the cross-store race between Blackboard lifecycle changes and external payload release
+  - compare manifest mutation, a generic retention sidecar and deferring retention enforcement to a concrete artifact store
+  - recommend implement, narrow or reject without creating a second lifecycle authority
 acceptance-criteria:
-  - a lifecycle availability transition for unchanged artifact identity no longer requires minting a conflicting identity manifest when retention state is configured
-  - READY/REOPENED/CLAIMED/PENDING_REVIEW/REVIEWING/PENDING_RECONCILIATION/BLOCKED references pin the exact artifact ref; DONE/SUPERSEDED do not
-  - stale expected revision cannot overwrite a newer retention state
-  - an active pin prevents UNAVAILABLE transition
-  - after pins are released, an explicit UNAVAILABLE transition survives fresh-store reconstruction and the validating reader fails before underlying payload read
-  - changed content digest/stored revision/provenance remains an integrity conflict and is not normalized as lifecycle state
-  - Blackboard, Oracle, manifest digest and retention state remain separate authority surfaces
+  - evidence distinguishes immutable identity/provenance from mutable retention/availability state
+  - the probe demonstrates whether a generic sidecar alone can or cannot safely authorize payload release against concurrent Board changes
+  - current missing-payload behavior is measured rather than assumed
+  - the result identifies the minimum concrete consumer/storage API required before runtime retention automation is justified
+  - no generic retention service or storage deletion path is implemented unless the evidence establishes an authority-safe boundary
 submission:
 review-requirements: [application/code review, Oracle architecture-boundary review]
 reviews: []
