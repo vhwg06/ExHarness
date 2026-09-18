@@ -540,7 +540,7 @@ export function createSelfUpgradePilotController({
 
   function parseEvaluationBlocker(blocker, protocol) {
     const value = requireText(blocker, "self-upgrade evaluation blocker");
-    const match = /^SELF_UPGRADE_EVALUATION_ATTEMPT:(\\d+):(sha256:[0-9a-f]{64})$/.exec(value);
+    const match = /^SELF_UPGRADE_EVALUATION_ATTEMPT:(\d+):(sha256:[0-9a-f]{64})$/.exec(value);
     invariant(match != null, "self-upgrade evaluation blocker is malformed");
     invariant(match[2] === digestValue(protocol), "self-upgrade evaluation blocker protocol changed");
     return requirePositiveInteger(Number(match[1]), "self-upgrade evaluation blocker attempt");
