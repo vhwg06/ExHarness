@@ -445,6 +445,67 @@ test("BB-045 changed payload after QA_PENDING blocks QA without reopening Backen
   });
 });
 
+test("BB-045 orphan recovery tolerates timestamp-only decision drift but rejects semantic acceptance drift", async () => {
+  await withFixture(async ({ manifestPath }) => {
+    const parts = manifestParts(manifestPath);
+    const backendRun = (decision) => ({
+      order: { id: "bb045-backend:backend" },
+      result: result(),
+      completion: {
+        action: "ACCEPT",
+        decision
+      }
+    });
+    const decision = (overrides = {}) => ({
+      id: overrides.id ?? "decision:first",
+      digest: overrides.digest ?? "sha256:first",
+      type: "DECISION",
+      subject: { id: "subject:backend-rev-2", digest: "sha256:subject" },
+      boundary: "ACCEPTANCE",
+      policy: { id: "backend-policy", version: "1", digest: overrides.policyDigest ?? "sha256:policy-1" },
+      evaluator: { identity: "backend-completion-policy", version: "1", roles: ["evaluator"] },
+      evidenceManifest: [],
+      claims: [],
+      unresolved: [],
+      verdict: "ACCEPT",
+      generatedAt: overrides.generatedAt ?? "2026-09-18T00:00:00.000Z",
+      metadata: { backendStatus: "APPLIED", reasons: ["ACCEPTED"] }
+    });
+
+    const first = await parts.publisher.publishAcceptedBackendManifest({
+      itemId: ITEM_ID,
+      backendRun: backendRun(decision())
+    });
+
+    const timestampOnly = await parts.publisher.publishAcceptedBackendManifest({
+      itemId: ITEM_ID,
+      backendRun: backendRun(decision({
+        id: "decision:second",
+        digest: "sha256:second",
+        generatedAt: "2026-09-18T00:01:00.000Z"
+      }))
+    });
+    assert.equal(timestampOnly.manifestRef, first.manifestRef);
+    assert.equal(timestampOnly.reused, true);
+
+    await assert.rejects(
+      () => parts.publisher.publishAcceptedBackendManifest({
+        itemId: ITEM_ID,
+        backendRun: backendRun(decision({
+          id: "decision:policy-drift",
+          digest: "sha256:policy-drift",
+          generatedAt: "2026-09-18T00:02:00.000Z",
+          policyDigest: "sha256:policy-2"
+        }))
+      }),
+      (error) => {
+        assert.equal(error.code, ArtifactManifestErrorCode.MANIFEST_CONFLICT);
+        return true;
+      }
+    );
+  });
+});
+
 test("BB-045 accepted publication is idempotent and conflicting producer bytes fail closed", async () => {
   await withFixture(async ({ manifestPath }) => {
     const map = contents();
