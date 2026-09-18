@@ -26,7 +26,7 @@ Every context-managed active Board item has one logical current-context binding:
 ```yaml
 current-context:
   generation: 1
-  ref: docs/living/work-context/BB-046/g0001-readiness-review.md
+  ref: docs/living/work-context/BB-046/g0001-readiness-review.json
 ```
 
 The exact physical representation is repository-specific.
@@ -97,7 +97,7 @@ expectedOutputs: []
 staleWhen: []
 ```
 
-The concrete Markdown artifact may use headings for readability, but these semantics must remain derivable without chat.
+Canonical `WORK_CONTEXT_SPEC` and `WORK_CONTEXT_RECEIPT` serialization is JSON. Markdown/YAML frontmatter may be used only as a derived human explanation, never as the sole current machine state.
 
 ## 4. Required vs audit inputs
 
@@ -236,7 +236,7 @@ Use:
 
 ```text
 work-context/BB-046/g0001-readiness-review.md
-work-context/BB-046/g0002-implementation.md
+work-context/BB-046/g0002-implementation.json
 ```
 
 The Board current-context pointer moves atomically at the coordination layer.
