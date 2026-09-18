@@ -194,13 +194,47 @@ previous-phase-closure: docs/living/knowledge/pre-oracle-detail-blackboard-closu
 previous-terminal-count: 42
 previous-done-count: 38
 previous-superseded-count: 4
-next-work-id: BB-043
+next-work-id: BB-044
 ```
 
 The previous coordination phase is fully terminal and archived. Historical items are not copied into this active surface.
 
 ## Active work
 
-No active Oracle-detail work has been created yet.
+```text
+BB-043
+question/work: Deliver the accepted D014 optional application-artifact manifest adapter for ref-only Backend -> QA continuation.
+kind: IMPLEMENTATION
+priority: P1
+status: CLAIMED
+owner: oracle-detail-session-2026-09-18
+depends-on: []
+remaining-work:
+  - implement a durable manifest record/store that binds artifact ref/path, producer work-order, producer revision, acceptance-decision identity, stored revision and content digest
+  - implement an opt-in manifest-validating artifactReader that preserves the existing readArtifact request/response shape and fails closed on missing/mismatched identity or unavailable bytes
+  - add producer-side manifest creation from content available at the artifact production boundary; never create the first trusted manifest by later re-reading mutable bytes
+  - test unchanged, changed-content, missing/partial content, wrong producer/revision, wrong acceptance decision and fresh-reader reconstruction cases
+  - measure bounded manifest/hash overhead and keep productionEvidence=false
+  - synchronize current Oracle/application docs without promoting the adapter to default
+acceptance-criteria:
+  - unchanged valid artifacts still resolve through resolveQaContext with existing QA schemas
+  - changed bytes behind a stable ref are rejected before QA receives context
+  - producer work-order, revision and acceptance-decision mismatches fail closed
+  - unavailable payload and missing manifest are distinguishable adapter failures while Oracle preserves their cause
+  - the manifest contains identity/provenance/retention metadata but no artifact payload body
+  - the adapter grants no correctness, acceptance, lifecycle or retention authority to Oracle
+submission:
+review-requirements: [application/code review, Oracle architecture-boundary review]
+reviews: []
+artifact-refs:
+  - docs/living/decisions/D014-application-artifact-manifest-adapter.md
+  - docs/living/knowledge/bb039-artifact-manifest-research.md
+evidence-refs:
+  - BB-039 accepted research
+  - D014 ACCEPTED
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; ORACLE_DETAIL phase implementation handoff from accepted D014
+```
 
 New work belongs here only when it is a concrete unresolved Oracle-detail gap/problem/question with source-backed scope or explicit user intent. Historical re-entry triggers create a new work item rather than mutating the archive.
