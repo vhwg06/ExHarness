@@ -294,30 +294,26 @@ BB-004 deliberately does not claim external-effect exactly-once/reconciliation s
 ```text
 BB-005
 question/work: Production-evaluate the concrete Backend -> QA system and generalize only evidence-supported repeated semantics.
-status: BLOCKED
+status: SUPERSEDED
 owner:
 depends-on: [BB-004]
-remaining-work:
-  - run a versioned representative real-repository/provider task corpus
-  - measure production task success across Backend -> QA
-  - measure false-completion rate at role and Board boundaries
-  - measure artifact handoff correctness under real task execution
-  - measure context precision/cost for repository vs internal artifacts
-  - measure QA issue/remediation rate
-  - measure Advisor invocation/value-add or explicitly retain UNEVALUATED with reason
-  - measure recovery correctness under representative interruptions
-  - re-test whether generic Worker/WorkOrder/context/review abstractions are justified
+terminal-disposition: NOT_EXECUTABLE_IN_CURRENT_PHASE
+remaining-work: []
 submission:
+  - pre-Oracle-detail phase closure; no production claim accepted
 review-requirements: []
 reviews: []
 artifact-refs:
   - docs/living/knowledge/bb022-agentic-evaluation-protocol.md
   - artifacts/agentic-backend-qa-reference-eval.json
+  - docs/living/knowledge/pre-oracle-detail-blackboard-closure-2026-09-18.md
 evidence-refs:
   - BB-022
   - deterministic reference evidence declares productionEvidence=false
-blockers:
-  - no versioned representative real-repository/provider workload corpus is currently available in the project; deterministic BB-022 fixture evidence cannot be promoted to production effectiveness
+  - repository scan found no productionEvidence=true evaluation corpus
+blockers: []
+re-entry-trigger:
+  - create new work only when a versioned representative real-repository/provider workload corpus and measurable production execution surface exist
 follow-up-refs: [BB-022]
 origin: INTENT-exharness-agentic-system; production evaluation of the delivered BB-004 workflow
 ```
@@ -426,39 +422,48 @@ Current unresolved questions:
 ```text
 BB-009
 question/work: Determine whether Oracle needs a common resolver contract beyond the two current concrete functions/adapters.
-status: BLOCKED
+status: SUPERSEDED
 owner:
 depends-on: []
-remaining-work:
-  - reopen when a third real source or repeated adapter boilerplate demonstrates a common contract
+terminal-disposition: NOT_ADOPTED_YAGNI
+remaining-work: []
 submission:
+  - pre-Oracle-detail phase closure; common resolver abstraction not adopted without concrete pressure
 review-requirements: []
 reviews: []
-artifact-refs: []
-evidence-refs: []
-blockers:
-  - two current source classes still have materially different lifecycle/provenance semantics
-  - MCP protocol support alone is not a third source; no concrete MCP-backed source exists yet
-  - no repeated pressure yet justifies Resolver<I,O>, registry or provider lifecycle
+artifact-refs:
+  - docs/worktree/oracle/state.md
+  - packages/agentic-system/src/oracle.js
+  - docs/living/knowledge/pre-oracle-detail-blackboard-closure-2026-09-18.md
+evidence-refs:
+  - current source exposes resolveBackendContext(repositoryReader) and resolveQaContext(artifactReader) only
+  - no third concrete Oracle source or repeated adapter boilerplate found
+blockers: []
+re-entry-trigger:
+  - create new work when a third real source boundary or repeated adapter duplication demonstrates a stable common contract
 follow-up-refs: []
 ```
 
 ```text
 BB-010
 question/work: Determine whether callers need structured Oracle resolution diagnostics beyond the current boundary-specific errors.
-status: BLOCKED
+status: SUPERSEDED
 owner:
 depends-on: []
-remaining-work:
-  - if pressure appears, distinguish source unavailable/auth/not-found/adaptation/schema/optional absence without fabricating required context
+terminal-disposition: NOT_ADOPTED_YAGNI
+remaining-work: []
 submission:
+  - pre-Oracle-detail phase closure; generic diagnostic schema not adopted without a concrete consumer
 review-requirements: []
 reviews: []
-artifact-refs: []
-evidence-refs: []
-blockers:
-  - current Backend/QA callers do not yet demonstrate a machine-readable diagnostic requirement
-  - MCP MRTR/task semantics are mapped architecturally but no concrete adapter/caller yet requires a diagnostic contract
+artifact-refs:
+  - packages/agentic-system/src/oracle.js
+  - docs/living/knowledge/pre-oracle-detail-blackboard-closure-2026-09-18.md
+evidence-refs:
+  - current Backend/QA callers do not expose a machine-readable Oracle diagnostic dependency
+blockers: []
+re-entry-trigger:
+  - create new work when a concrete caller must branch programmatically on multiple resolution failure classes while preserving required-vs-optional context semantics
 follow-up-refs: []
 ```
 
@@ -1292,24 +1297,31 @@ BB-035
 question/work: Deliver one accepted self-upgrade experiment pipeline with isolated candidates, independent evaluation and explicit adoption control.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: [BB-034, BB-027, BB-019]
-remaining-work:
-  - implement the accepted bounded pilot using existing primitives before introducing shared abstractions
-  - persist configuration, candidate/baseline revisions and evidence refs needed for reproduction and continuation
-  - reconcile current documentation only after the corresponding behavior is implemented and verified
+remaining-work: []
 acceptance-criteria:
   - A failing or inconclusive candidate leaves the baseline selected and preserves evidence for the next session.
   - A successful candidate produces a reviewable proposal with exact revisions, evaluation refs and rollback information before adoption.
   - Iterations obey experiment/resource limits and cannot change user objectives, review requirements or their own acceptance gates.
 submission:
+  - PR #130
 review-requirements: [application/code review, independent outcome/authority review]
-reviews: []
-artifact-refs: []
+reviews:
+  - application/code review PASS on exact head 5b787d6d3642ab7f157e041ce04f47ab31bcf074
+  - independent outcome/authority review PASS on exact head 5b787d6d3642ab7f157e041ce04f47ab31bcf074
+artifact-refs:
+  - docs/worktree/agentic-application/self-upgrade.md
+  - packages/agentic-system/src/self-upgrade-pilot.js
+  - packages/agentic-system/test/bb035-self-upgrade-pilot.test.js
 evidence-refs:
   - BB-034
   - docs/living/decisions/D016-evidence-gated-self-upgrade-proposal-boundary.md
+  - Actions #2026 green on living-doc-impact and Node 20/22/24
+  - application/code review id 5244089537
+  - independent outcome/authority review id 5244089731
+  - merge commit c60919e1f6ba92b898b0bb3ae75fb3296a897780
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-034
@@ -1517,32 +1529,33 @@ BB-040
 question/work: Research an optional quality/cost routing policy using existing Core model routing on concrete Backend and QA tasks.
 kind: RESEARCH
 priority: P2
-status: BLOCKED
+status: SUPERSEDED
 owner:
 depends-on: []
+terminal-disposition: NOT_EXECUTABLE_IN_CURRENT_PHASE
 research-hypothesis: Task- and failure-aware route selection may lower cost or latency while preserving independently verified task quality.
 target-consumer: Backend/QA execution with a concrete configured model provider and measured usage on representative tasks
-implementation-output: An opt-in bounded routing/escalation policy over the existing model routing interface, preserving fixed-route fallback
-value-gate: Improve observed total cost or latency at a predeclared verified-quality floor against a fixed-route baseline on held-out tasks; fixture-only route switching cannot establish this value
-scope-boundary: BB-030 owns project work prioritization and BB-005 owns production-effectiveness conclusions. This item studies model-route selection within a bounded task.
-remaining-work:
-  - Compare a fixed model route with a bounded routing/escalation policy using declared provider configurations and identical versioned tasks.
-  - Record route provenance, observed usage, latency, verification outcomes and escalation reasons; preserve unavailable metrics as unknown.
-  - Predeclare budget and escalation limits; test provider errors, easy/hard task mixes and held-out tasks before recommending a default.
+implementation-output: No routing policy adopted from protocol-only evidence.
+value-gate: Representative configured-provider measurements remain required before any future adoption.
+scope-boundary: BB-030 owns project work prioritization; production-effectiveness claims remain forbidden without representative evidence.
+remaining-work: []
 acceptance-criteria:
-  - Report quality/cost tradeoffs with repeated trials and uncertainty; no price or model-quality assumptions are fabricated.
-  - Configured providers, representative tasks and actual usage measurements are prerequisites for acceptance; protocol-only fixtures cannot close this research.
-  - Route changes cannot relax verification, expand authority, or treat model confidence as acceptance; negative results remain valid research outcomes.
+  - no price, latency or model-quality assumption is fabricated
+  - no route-selection default is promoted without configured-provider and representative-task evidence
 submission:
-review-requirements: [research-method review, application/architecture-boundary review]
+  - pre-Oracle-detail phase closure; research not executable with current evidence
+review-requirements: []
 reviews: []
-artifact-refs: []
-evidence-refs:
+artifact-refs:
   - packages/core-harness/src/model-routing.js
   - packages/agentic-system/src/backend-advisor.js
-  - docs/living/knowledge/bb022-agentic-evaluation-protocol.md
-blockers:
-  - concrete provider configuration, representative task set and a measured fixed-route baseline have not been established for this experiment
+  - docs/living/knowledge/pre-oracle-detail-blackboard-closure-2026-09-18.md
+evidence-refs:
+  - repository scan found no concrete provider configuration or measured fixed-route cost/latency baseline
+  - current evaluation surfaces remain productionEvidence=false
+blockers: []
+re-entry-trigger:
+  - create new work when configured providers, representative versioned tasks, actual usage/latency measurements and a verified fixed-route baseline are available
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; explicit user request for useful research addons based on existing project capabilities
 ```
