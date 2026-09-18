@@ -53,7 +53,7 @@ The direct-reader workflow remains unchanged when no publisher is configured.
 
 If publication fails after Backend execution, the workflow persists the existing Backend stage as `BLOCKED` with `backendRecoveryRequired=true`. After resume, execution re-enters `BackendWorker.recover(...)`; it does not perform a fresh Backend execute merely to recreate manifest state.
 
-If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion republishes the same accepted identity idempotently. A different manifest for the same producer work-order/revision/acceptance/artifact set fails at the manifest-store publication boundary.
+If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion republishes the same accepted identity idempotently. Recovery compares a stable acceptance-decision semantic digest that excludes only the generated timestamp and id/digest wrapper while retaining the decision subject, policy, evaluator, evidence/claims, verdict and metadata semantics. Timestamp-only re-derivation may therefore reuse the durable receipt; policy/evaluator/subject/evidence/verdict drift fails closed instead of laundering a different acceptance through the orphan manifest. A different manifest payload for the same producer work-order/revision/artifact set also fails at the manifest-store publication boundary.
 
 ## Durable Backend -> QA protected mode
 
