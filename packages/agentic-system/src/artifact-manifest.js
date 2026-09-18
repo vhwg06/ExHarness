@@ -215,6 +215,33 @@ function fileNameForDigest(digest) {
   return `manifest-${digest.slice("sha256:".length)}.json`;
 }
 
+function digestFromManifestRef(ref) {
+  const value = requireText(ref, "artifact manifest ref");
+  const match = /^artifact-manifest:\/\/(sha256:[0-9a-f]{64})$/.exec(value);
+  invariant(match, "artifact manifest ref must contain an exact sha256 digest");
+  return match[1];
+}
+
+function publicationIdentity(manifest) {
+  return canonicalize({
+    producerWorkOrderId: manifest.producerWorkOrderId,
+    producerRevision: manifest.producerRevision,
+    artifacts: manifest.entries
+      .map((entry) => ({ ref: entry.ref, path: entry.path ?? null }))
+      .sort((left, right) => artifactKey(left.ref, left.path).localeCompare(artifactKey(right.ref, right.path)))
+  });
+}
+
+function samePublicationPayload(left, right) {
+  return canonicalize({
+    entries: left.entries,
+    retention: left.retention
+  }) === canonicalize({
+    entries: right.entries,
+    retention: right.retention
+  });
+}
+
 export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
   requireText(path, "artifact manifest store path");
   invariant(
@@ -228,9 +255,36 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
     "artifact manifest store requires filesystem mkdir/open/readFile/readdir/link/unlink capability"
   );
 
+  async function readAll() {
+    try {
+      const names = (await fs.readdir(path)).filter((name) => /^manifest-[0-9a-f]{64}\.json$/.test(name)).sort();
+      const manifests = [];
+      for (const name of names) {
+        manifests.push(defineApplicationArtifactManifest(JSON.parse(await fs.readFile(join(path, name), "utf8"))));
+      }
+      return manifests;
+    } catch (error) {
+      if (error?.code === "ENOENT") return [];
+      throw error;
+    }
+  }
+
   async function putManifest(raw) {
     const manifest = defineApplicationArtifactManifest(raw);
     await fs.mkdir(path, { recursive: true });
+
+    const samePublication = (await readAll()).filter(
+      (existing) => publicationIdentity(existing) === publicationIdentity(manifest)
+    );
+    if (samePublication.length > 0) {
+      const refs = new Set(samePublication.map((existing) => existing.ref));
+      if (refs.size === 1 && refs.has(manifest.ref)) return manifest.ref;
+      throw new ArtifactManifestError(
+        ArtifactManifestErrorCode.MANIFEST_CONFLICT,
+        `artifact manifest publication already exists for accepted Backend identity: ${manifest.producerWorkOrderId}@${manifest.producerRevision}`
+      );
+    }
+
     const filename = fileNameForDigest(manifest.digest);
     const finalPath = join(path, filename);
     const tempPath = join(path, `.${filename}.${randomUUID()}.tmp`);
@@ -263,18 +317,48 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
     return manifest.ref;
   }
 
-  async function readAll() {
+  async function readManifest(ref) {
+    const digest = digestFromManifestRef(ref);
     try {
-      const names = (await fs.readdir(path)).filter((name) => /^manifest-[0-9a-f]{64}\.json$/.test(name)).sort();
-      const manifests = [];
-      for (const name of names) {
-        manifests.push(defineApplicationArtifactManifest(JSON.parse(await fs.readFile(join(path, name), "utf8"))));
-      }
-      return manifests;
+      const manifest = defineApplicationArtifactManifest(
+        JSON.parse(await fs.readFile(join(path, fileNameForDigest(digest)), "utf8"))
+      );
+      invariant(manifest.ref === ref, "artifact manifest ref does not match persisted content");
+      return manifest;
     } catch (error) {
-      if (error?.code === "ENOENT") return [];
+      if (error?.code === "ENOENT") {
+        throw new ArtifactManifestError(
+          ArtifactManifestErrorCode.MANIFEST_MISSING,
+          `artifact manifest is unavailable for exact ref ${ref}`,
+          { cause: error }
+        );
+      }
       throw error;
     }
+  }
+
+  async function findPublication({ producerWorkOrderId, producerRevision, artifacts }) {
+    const identity = canonicalize({
+      producerWorkOrderId: requireText(producerWorkOrderId, "artifact publication producerWorkOrderId"),
+      producerRevision: requireText(producerRevision, "artifact publication producerRevision"),
+      artifacts: artifacts
+        .map((artifact, index) => {
+          const value = requireRecord(artifact, `artifact publication artifacts[${index}]`);
+          return {
+            ref: requireText(value.ref, `artifact publication artifacts[${index}].ref`),
+            path: normalizePath(value.path, `artifact publication artifacts[${index}].path`)
+          };
+        })
+        .sort((left, right) => artifactKey(left.ref, left.path).localeCompare(artifactKey(right.ref, right.path)))
+    });
+    const matches = (await readAll()).filter((manifest) => publicationIdentity(manifest) === identity);
+    if (matches.length > 1) {
+      throw new ArtifactManifestError(
+        ArtifactManifestErrorCode.MANIFEST_CONFLICT,
+        `multiple artifact manifests exist for accepted Backend identity: ${producerWorkOrderId}@${producerRevision}`
+      );
+    }
+    return matches[0] ?? null;
   }
 
   async function findCandidates({ ref, path: artifactPath = null }) {
@@ -291,7 +375,7 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
     return Object.freeze(matches);
   }
 
-  return Object.freeze({ putManifest, findCandidates });
+  return Object.freeze({ putManifest, readManifest, findPublication, findCandidates });
 }
 
 function fail(code, message, cause = null) {
@@ -331,7 +415,12 @@ function exactManifestCandidate(candidates, request) {
 
 export function createManifestArtifactReader({ reader, manifestStore }) {
   invariant(reader && typeof reader.readArtifact === "function", "manifest artifact reader requires reader.readArtifact()");
-  invariant(manifestStore && typeof manifestStore.findCandidates === "function", "manifest artifact reader requires manifestStore.findCandidates()");
+  invariant(
+    manifestStore &&
+      typeof manifestStore.findCandidates === "function" &&
+      typeof manifestStore.readManifest === "function",
+    "manifest artifact reader requires manifestStore.findCandidates()/readManifest()"
+  );
 
   const counters = {
     manifestLookups: 0,
@@ -340,58 +429,166 @@ export function createManifestArtifactReader({ reader, manifestStore }) {
     validationFailures: 0
   };
 
-  async function readArtifact(rawRequest) {
-    const request = requireRecord(rawRequest, "artifact read request");
-    const normalized = {
-      ref: requireText(request.ref, "artifact read request.ref"),
-      path: normalizePath(request.path, "artifact read request.path"),
-      producerWorkOrderId: requireText(request.producerWorkOrderId, "artifact read request.producerWorkOrderId"),
-      revision: requireText(request.revision, "artifact read request.revision"),
-      acceptanceDecision: parseDecisionRef(request.acceptanceDecision, "artifact read request.acceptanceDecision")
-    };
+  function scopedReader(requiredManifestRef = null) {
+    const exactRef = requiredManifestRef == null ? null : requireText(requiredManifestRef, "required manifest ref");
 
-    try {
-      counters.manifestLookups += 1;
-      const candidate = exactManifestCandidate(
-        await manifestStore.findCandidates({ ref: normalized.ref, path: normalized.path }),
-        normalized
-      );
-      if (candidate.entry.storedRevision !== normalized.revision) {
-        fail(
-          ArtifactManifestErrorCode.STORED_REVISION_MISMATCH,
-          `artifact stored revision mismatch for ${normalized.ref}: requested ${normalized.revision}; manifest has ${candidate.entry.storedRevision}`
-        );
-      }
-      if (candidate.entry.availability !== ArtifactAvailability.AVAILABLE) {
-        fail(ArtifactManifestErrorCode.UNAVAILABLE, `artifact payload is unavailable for ${normalized.ref}`);
-      }
+    async function readArtifact(rawRequest) {
+      const request = requireRecord(rawRequest, "artifact read request");
+      const normalized = {
+        ref: requireText(request.ref, "artifact read request.ref"),
+        path: normalizePath(request.path, "artifact read request.path"),
+        producerWorkOrderId: requireText(request.producerWorkOrderId, "artifact read request.producerWorkOrderId"),
+        revision: requireText(request.revision, "artifact read request.revision"),
+        acceptanceDecision: parseDecisionRef(request.acceptanceDecision, "artifact read request.acceptanceDecision")
+      };
 
-      let resolved;
       try {
-        counters.underlyingReads += 1;
-        resolved = await reader.readArtifact(rawRequest);
+        counters.manifestLookups += 1;
+        let candidates;
+        if (exactRef == null) {
+          candidates = await manifestStore.findCandidates({ ref: normalized.ref, path: normalized.path });
+        } else {
+          const manifest = await manifestStore.readManifest(exactRef);
+          const entry = manifest.entries.find(
+            (candidate) => candidate.ref === normalized.ref && (candidate.path ?? null) === normalized.path
+          );
+          candidates = entry == null ? [] : [freezeClone({ manifest, entry })];
+        }
+        const candidate = exactManifestCandidate(candidates, normalized);
+        if (candidate.entry.storedRevision !== normalized.revision) {
+          fail(
+            ArtifactManifestErrorCode.STORED_REVISION_MISMATCH,
+            `artifact stored revision mismatch for ${normalized.ref}: requested ${normalized.revision}; manifest has ${candidate.entry.storedRevision}`
+          );
+        }
+        if (candidate.entry.availability !== ArtifactAvailability.AVAILABLE) {
+          fail(ArtifactManifestErrorCode.UNAVAILABLE, `artifact payload is unavailable for ${normalized.ref}`);
+        }
+
+        let resolved;
+        try {
+          counters.underlyingReads += 1;
+          resolved = await reader.readArtifact(rawRequest);
+        } catch (error) {
+          fail(ArtifactManifestErrorCode.UNAVAILABLE, `artifact payload is unavailable for ${normalized.ref}`, error);
+        }
+        invariant(resolved && typeof resolved === "object" && !Array.isArray(resolved), "underlying artifact reader must return an object");
+        const content = typeof resolved.content === "string"
+          ? resolved.content
+          : (() => { throw new TypeError("underlying artifact reader content must be a string"); })();
+        const sourceRef = requireText(resolved.sourceRef, "underlying artifact reader sourceRef");
+        counters.bytesHashed += Buffer.byteLength(content, "utf8");
+        if (contentDigest(content) !== candidate.entry.contentDigest) {
+          fail(ArtifactManifestErrorCode.CONTENT_MISMATCH, `artifact content identity mismatch for ${normalized.ref}`);
+        }
+        return freezeClone({ content, sourceRef });
       } catch (error) {
-        fail(ArtifactManifestErrorCode.UNAVAILABLE, `artifact payload is unavailable for ${normalized.ref}`, error);
+        counters.validationFailures += 1;
+        throw error;
       }
-      invariant(resolved && typeof resolved === "object" && !Array.isArray(resolved), "underlying artifact reader must return an object");
-      const content = typeof resolved.content === "string"
-        ? resolved.content
-        : (() => { throw new TypeError("underlying artifact reader content must be a string"); })();
-      const sourceRef = requireText(resolved.sourceRef, "underlying artifact reader sourceRef");
-      counters.bytesHashed += Buffer.byteLength(content, "utf8");
-      if (contentDigest(content) !== candidate.entry.contentDigest) {
-        fail(ArtifactManifestErrorCode.CONTENT_MISMATCH, `artifact content identity mismatch for ${normalized.ref}`);
-      }
-      return freezeClone({ content, sourceRef });
-    } catch (error) {
-      counters.validationFailures += 1;
-      throw error;
     }
+
+    return Object.freeze({
+      readArtifact,
+      stats,
+      forManifest
+    });
+  }
+
+  function forManifest(manifestRef) {
+    return scopedReader(manifestRef);
   }
 
   function stats() {
     return freezeClone(counters);
   }
 
-  return Object.freeze({ readArtifact, stats });
+  return scopedReader();
+}
+
+export function createAcceptedBackendArtifactManifestPublisher({
+  manifestStore,
+  producerArtifactReader,
+  retentionPolicy
+}) {
+  invariant(
+    manifestStore &&
+      typeof manifestStore.putManifest === "function" &&
+      typeof manifestStore.findPublication === "function",
+    "artifact manifest publisher requires manifestStore.putManifest()/findPublication()"
+  );
+  invariant(
+    producerArtifactReader && typeof producerArtifactReader.readProducedArtifact === "function",
+    "artifact manifest publisher requires producerArtifactReader.readProducedArtifact()"
+  );
+  invariant(
+    retentionPolicy && (typeof retentionPolicy === "object" || typeof retentionPolicy === "function"),
+    "artifact manifest publisher requires retentionPolicy"
+  );
+
+  async function publishAcceptedBackendManifest({ itemId, backendRun }) {
+    const run = requireRecord(backendRun, "backendRun");
+    const producerWorkOrderId = requireText(run.order?.id, "backendRun.order.id");
+    const producerRevision = requireText(run.result?.revision, "backendRun.result.revision");
+    const decision = parseDecisionRef(run.completion?.decision, "backendRun.completion.decision");
+    invariant(run.completion?.action === BackendCompletionAction.ACCEPT, "manifest publication requires ACCEPTED Backend completion");
+    invariant(Array.isArray(run.result?.artifacts) && run.result.artifacts.length > 0, "manifest publication requires Backend artifacts");
+
+    const producedArtifacts = [];
+    for (const [index, rawArtifact] of run.result.artifacts.entries()) {
+      const artifact = requireRecord(rawArtifact, `backendRun.result.artifacts[${index}]`);
+      const ref = requireText(artifact.ref, `backendRun.result.artifacts[${index}].ref`);
+      const path = normalizePath(artifact.path, `backendRun.result.artifacts[${index}].path`);
+      const resolved = await producerArtifactReader.readProducedArtifact({
+        itemId: requireText(itemId, "itemId"),
+        ref,
+        path,
+        producerWorkOrderId,
+        revision: producerRevision,
+        acceptanceDecision: decision
+      });
+      invariant(resolved && typeof resolved === "object" && !Array.isArray(resolved), `producer artifact reader must return an object for ${ref}`);
+      producedArtifacts.push({
+        ref,
+        ...(path == null ? {} : { path }),
+        storedRevision: requireText(resolved.storedRevision, `producer artifact ${ref}.storedRevision`),
+        content: typeof resolved.content === "string"
+          ? resolved.content
+          : (() => { throw new TypeError(`producer artifact ${ref}.content must be a string`); })()
+      });
+    }
+
+    const retention = typeof retentionPolicy === "function"
+      ? await retentionPolicy({ itemId, backendRun: freezeClone(run) })
+      : retentionPolicy;
+    const manifest = captureAcceptedBackendArtifactManifest({
+      backendRun: run,
+      producedArtifacts,
+      retention
+    });
+
+    const existing = await manifestStore.findPublication({
+      producerWorkOrderId,
+      producerRevision,
+      artifacts: run.result.artifacts
+    });
+    if (existing != null) {
+      if (!samePublicationPayload(existing, manifest)) {
+        throw new ArtifactManifestError(
+          ArtifactManifestErrorCode.MANIFEST_CONFLICT,
+          `recovered artifact publication differs from durable producer receipt: ${producerWorkOrderId}@${producerRevision}`
+        );
+      }
+      return freezeClone({
+        manifestRef: existing.ref,
+        manifest: existing,
+        reused: true
+      });
+    }
+
+    const manifestRef = await manifestStore.putManifest(manifest);
+    return freezeClone({ manifestRef, manifest, reused: false });
+  }
+
+  return Object.freeze({ publishAcceptedBackendManifest });
 }

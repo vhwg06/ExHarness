@@ -30,6 +30,49 @@ Artifact payload bodies are not stored in the manifest.
 
 The first trusted manifest must not be created later by re-reading mutable QA-side bytes. The capture helper therefore requires the producer to provide the exact bytes corresponding to every accepted Backend artifact and rejects missing/extra coverage.
 
+## Durable workflow composition
+
+A manifest-protected `createDurableBackendQaWorkflow(...)` instance receives an explicit application-owned `artifactManifestPublisher`.
+
+```text
+Backend/Core accepted result
+ -> artifactManifestPublisher.publishAcceptedBackendManifest(...)
+    -> producer-side revision-bound bytes
+    -> immutable manifest publication
+    -> exact manifestRef
+ -> QA_PENDING checkpoint
+    -> accepted Backend handoff
+    -> Backend completion decision
+    -> artifactManifestRef
+ -> fresh QA
+    -> artifactReader.forManifest(artifactManifestRef)
+    -> resolveQaContext(...)
+```
+
+The direct-reader workflow remains unchanged when no publisher is configured.
+
+If publication fails after Backend execution, the workflow persists the existing Backend stage as `BLOCKED` with `backendRecoveryRequired=true`. After resume, execution re-enters `BackendWorker.recover(...)`; it does not perform a fresh Backend execute merely to recreate manifest state.
+
+If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion republishes the same accepted identity idempotently. A different manifest for the same producer work-order/revision/acceptance/artifact set fails at the manifest-store publication boundary.
+
+## Durable Backend -> QA protected mode
+
+The durable workflow can now opt into an application-owned `artifactManifestPublisher`.
+
+```text
+Backend/Core accepted result
+ -> producer manifest publisher
+ -> immutable manifestRef
+ -> QA_PENDING checkpoint persists exact artifactManifestRef
+ -> fresh QA scopes the manifest-validating reader to that exact ref
+```
+
+If publication fails after Backend execution, the workflow persists the Backend-stage checkpoint as `BLOCKED` with `backendRecoveryRequired=true`. Resume therefore re-enters `BackendWorker.recover(...)`; it does not fresh-execute Backend merely to regenerate manifest state.
+
+If a manifest was durably published but the Board checkpoint was interrupted, recovery may reuse the prior durable publication receipt when producer revision/artifact bytes still match. The persisted manifest acceptance provenance is retained rather than replaced by a regenerated completion decision.
+
+Direct-reader mode remains unchanged when no publisher is configured.
+
 ## QA read boundary
 
 The optional adapter wraps an existing `artifactReader`:
@@ -72,7 +115,7 @@ Enabling the adapter never falls back silently to an unvalidated read.
 
 ## Persistence and reconstruction
 
-`createJsonArtifactManifestStore(...)` persists immutable content-addressed manifest files. A fresh store/reader instance can reconstruct validation only from filesystem state; no producer-side in-memory manifest map is required.
+`createJsonArtifactManifestStore(...)` persists immutable content-addressed manifest files. A fresh store/reader instance can reconstruct validation only from filesystem state; no producer-side in-memory manifest map is required. Protected workflow checkpoints persist the exact manifest ref and fresh QA scopes the reader through `forManifest(ref)`; switching a protected checkpoint to an ordinary direct reader fails closed.
 
 The implementation test surface covers unchanged content, changed bytes behind a stable ref, missing bytes, partial manifests, wrong producer work order, wrong producer revision, wrong acceptance-decision id/digest, explicit unavailable metadata, conflicting manifests, and fresh-reader reconstruction.
 
@@ -100,6 +143,7 @@ It does not establish:
 - Backend or QA acceptance correctness;
 - infinite payload retention;
 - automatic Board-derived retention release;
+- proof that every producer source is immutable/revision-bound; protected publication requires an explicitly configured producer reader with that property;
 - a generic artifact registry, Oracle provider registry, cache, or retrieval framework.
 
 D014 remains the design authority for this boundary. Default adoption or stronger retention lifecycle automation requires separate evidence.

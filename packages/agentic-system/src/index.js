@@ -113,6 +113,7 @@ export {
   ArtifactManifestError,
   ArtifactManifestErrorCode,
   captureAcceptedBackendArtifactManifest,
+  createAcceptedBackendArtifactManifestPublisher,
   createJsonArtifactManifestStore,
   createManifestArtifactReader,
   defineApplicationArtifactManifest
