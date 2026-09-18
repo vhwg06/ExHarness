@@ -92,10 +92,12 @@ function normalizeBudget(raw) {
     policyIdentities: requirePositiveInteger(value.policyIdentities, "self-upgrade budget.policyIdentities"),
     repeatPasses: requirePositiveInteger(value.repeatPasses, "self-upgrade budget.repeatPasses"),
     maxCandidates: requirePositiveInteger(value.maxCandidates, "self-upgrade budget.maxCandidates"),
+    evaluationAttempts: requirePositiveInteger(value.evaluationAttempts, "self-upgrade budget.evaluationAttempts"),
     externalMutations: Number(value.externalMutations)
   });
   invariant(budget.policyIdentities === 2, "self-upgrade pilot requires exactly two policy identities");
   invariant(budget.maxCandidates === 1, "self-upgrade pilot permits exactly one candidate");
+  invariant(budget.evaluationAttempts <= 2, "self-upgrade pilot permits at most two evaluation attempts");
   invariant(budget.externalMutations === 0, "self-upgrade pilot forbids external mutations");
   return budget;
 }
@@ -413,6 +415,12 @@ export function createSelfUpgradePilotController({
       typeof artifactStore.readArtifact === "function",
     "self-upgrade pilot requires artifactStore put/read capability"
   );
+  invariant(
+    orchestrator &&
+      typeof orchestrator.recoverSelfUpgradeEvaluationClaim === "function",
+    "self-upgrade pilot requires ApplicationOrchestrator.recoverSelfUpgradeEvaluationClaim()"
+  );
+  const appOrchestrator = orchestrator;
   const externalReader = requireArtifactReader(artifactReader);
   const experimentEvaluator = requireEvaluator(evaluator);
 
@@ -526,26 +534,67 @@ export function createSelfUpgradePilotController({
     return freezeClone({ ...state, protocol, result });
   }
 
-  async function evaluateAndCheckpoint({
+  function evaluationBlocker(protocol, attempt) {
+    return `SELF_UPGRADE_EVALUATION_ATTEMPT:${attempt}:${digestValue(protocol)}`;
+  }
+
+  function parseEvaluationBlocker(blocker, protocol) {
+    const value = requireText(blocker, "self-upgrade evaluation blocker");
+    const match = /^SELF_UPGRADE_EVALUATION_ATTEMPT:(\\d+):(sha256:[0-9a-f]{64})$/.exec(value);
+    invariant(match != null, "self-upgrade evaluation blocker is malformed");
+    invariant(match[2] === digestValue(protocol), "self-upgrade evaluation blocker protocol changed");
+    return requirePositiveInteger(Number(match[1]), "self-upgrade evaluation blocker attempt");
+  }
+
+  function continuationArtifactRefs(state, protocol, extra = []) {
+    return [...new Set([
+      state.manifest.questionRef,
+      state.manifest.planRef,
+      ...state.manifest.experimentRefs,
+      state.manifest.evidenceLedgerRef,
+      protocol.baseline.artifactRef,
+      protocol.candidate.artifactRef,
+      ...extra
+    ])];
+  }
+
+  async function runEvaluationAttempt({
+    state,
+    attempt,
     itemId,
     owner,
     generation,
     currentRevision,
-    changedSourceScopes = null,
-    changedPolicyScopes = null,
-    resolvedWork = []
+    changedSourceScopes,
+    changedPolicyScopes,
+    resolvedWork,
+    recoveryReason = null
   }) {
-    const state = await resume({
-      itemId,
-      currentRevision,
-      changedSourceScopes,
-      changedPolicyScopes
-    });
-    invariant(state.resumeExperiment != null, "self-upgrade pilot has no active experiment to evaluate");
-    invariant(state.reassessmentEvidenceIds.length === 0, "self-upgrade pilot requires evidence reassessment before evaluation");
-    invariant(!state.revisionChanged, "self-upgrade pilot must checkpoint current revisions before evaluation");
-
     const protocol = state.protocol;
+    invariant(attempt <= protocol.budget.evaluationAttempts, "self-upgrade evaluation attempt budget exhausted");
+    const attemptRef = await artifactStore.putArtifact({
+      artifactType: "attempt",
+      content: {
+        kind: "SELF_UPGRADE_EVALUATION_ATTEMPT",
+        protocolDigest: digestValue(protocol),
+        attempt,
+        owner: requireText(owner, "owner"),
+        recoveryReason: recoveryReason == null ? null : requireText(recoveryReason, "recoveryReason")
+      }
+    });
+    const blocker = evaluationBlocker(protocol, attempt);
+
+    await continuation.persistContinuation({
+      itemId,
+      owner,
+      generation,
+      manifest: state.manifest,
+      artifactRefs: continuationArtifactRefs(state, protocol, [attemptRef]),
+      evidenceRefs: [state.manifest.evidenceLedgerRef],
+      status: "BLOCKED",
+      blockers: [blocker]
+    });
+
     const [baselineRaw, candidateRaw] = await Promise.all([
       externalReader.readArtifact({ ref: protocol.baseline.artifactRef }),
       externalReader.readArtifact({ ref: protocol.candidate.artifactRef })
@@ -558,9 +607,18 @@ export function createSelfUpgradePilotController({
     const rawEvaluation = await experimentEvaluator.evaluate(freezeClone({
       protocol,
       baseline,
-      candidate
+      candidate,
+      attempt,
+      attemptRef
     }));
-    const result = defineSelfUpgradeExperimentResult({ protocol, evaluation: rawEvaluation });
+    const evaluatedResult = defineSelfUpgradeExperimentResult({ protocol, evaluation: rawEvaluation });
+    const result = freezeClone({
+      ...evaluatedResult,
+      evaluationAttempt: {
+        number: attempt,
+        ref: attemptRef
+      }
+    });
     const resultRef = await artifactStore.putArtifact({ artifactType: "result", content: result });
     const experimentRef = await artifactStore.putArtifact({
       artifactType: "experiment",
@@ -606,10 +664,16 @@ export function createSelfUpgradePilotController({
       activeExperimentId: null,
       nextAction: "submit self-upgrade experiment result for independent review"
     });
+
+    const recovered = await appOrchestrator.recoverSelfUpgradeEvaluationClaim({
+      itemId,
+      owner,
+      expectedBlocker: blocker
+    });
     await continuation.persistContinuation({
       itemId,
       owner,
-      generation,
+      generation: recovered.result.claimGeneration,
       manifest,
       artifactRefs: [
         manifest.questionRef,
@@ -617,6 +681,7 @@ export function createSelfUpgradePilotController({
         experimentRef,
         ledgerRef,
         resultRef,
+        attemptRef,
         protocol.baseline.artifactRef,
         protocol.candidate.artifactRef
       ],
@@ -624,7 +689,86 @@ export function createSelfUpgradePilotController({
       resolvedWork
     });
 
-    return freezeClone({ result, resultRef, manifest, experimentRef, ledgerRef });
+    return freezeClone({ result, resultRef, manifest, experimentRef, ledgerRef, attemptRef });
+  }
+
+  async function evaluateAndCheckpoint({
+    itemId,
+    owner,
+    generation,
+    currentRevision,
+    changedSourceScopes = null,
+    changedPolicyScopes = null,
+    resolvedWork = []
+  }) {
+    const state = await resume({
+      itemId,
+      currentRevision,
+      changedSourceScopes,
+      changedPolicyScopes
+    });
+    invariant(state.resumeExperiment != null, "self-upgrade pilot has no active experiment to evaluate");
+    invariant(state.reassessmentEvidenceIds.length === 0, "self-upgrade pilot requires evidence reassessment before evaluation");
+    invariant(!state.revisionChanged, "self-upgrade pilot must checkpoint current revisions before evaluation");
+
+    return runEvaluationAttempt({
+      state,
+      attempt: 1,
+      itemId,
+      owner,
+      generation,
+      currentRevision,
+      changedSourceScopes,
+      changedPolicyScopes,
+      resolvedWork
+    });
+  }
+
+  async function recoverEvaluationAndCheckpoint({
+    itemId,
+    owner,
+    currentRevision,
+    reason,
+    changedSourceScopes = null,
+    changedPolicyScopes = null,
+    resolvedWork = []
+  }) {
+    const state = await resume({
+      itemId,
+      currentRevision,
+      changedSourceScopes,
+      changedPolicyScopes
+    });
+    invariant(state.resumeExperiment != null, "self-upgrade pilot has no interrupted experiment to recover");
+    invariant(state.item.status === "BLOCKED", "self-upgrade evaluation recovery requires BLOCKED item");
+    invariant(state.item.blockers.length === 1, "self-upgrade evaluation recovery requires one exact blocker");
+    invariant(state.reassessmentEvidenceIds.length === 0, "self-upgrade pilot requires evidence reassessment before recovery");
+    invariant(!state.revisionChanged, "self-upgrade pilot must checkpoint current revisions before recovery");
+
+    const previousAttempt = parseEvaluationBlocker(state.item.blockers[0], state.protocol);
+    const nextAttempt = previousAttempt + 1;
+    invariant(
+      nextAttempt <= state.protocol.budget.evaluationAttempts,
+      "self-upgrade evaluation recovery budget exhausted"
+    );
+    const claimed = await appOrchestrator.recoverSelfUpgradeEvaluationClaim({
+      itemId,
+      owner,
+      expectedBlocker: state.item.blockers[0]
+    });
+
+    return runEvaluationAttempt({
+      state,
+      attempt: nextAttempt,
+      itemId,
+      owner,
+      generation: claimed.result.claimGeneration,
+      currentRevision,
+      changedSourceScopes,
+      changedPolicyScopes,
+      resolvedWork,
+      recoveryReason: reason
+    });
   }
 
   async function submitForReview({
@@ -671,6 +815,7 @@ export function createSelfUpgradePilotController({
     initializeExperiment,
     resume,
     evaluateAndCheckpoint,
+    recoverEvaluationAndCheckpoint,
     submitForReview
   });
 }
