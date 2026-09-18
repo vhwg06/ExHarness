@@ -92,7 +92,23 @@ Details: `agentic-application/project-acceptance.md`, `agentic-application/contr
 
 Details: `agentic-application/contracts.md`, `core-harness/workflow.md`.
 
-## C6 — Bounded project work selection
+## C6 — Bounded PM/SA project coordination
+
+**Outcome:** a fresh/current project session can turn evidence-grounded SA architecture assessment and PM coordination proposals into bounded, durable project-graph changes without giving either role direct Blackboard authority.
+
+**Preconditions:** project-bound session handoff; exact target lifecycle tuple; current target evidence refs; PM/SA coordination artifact store; canonical ApplicationOrchestrator.
+
+**Application guarantees:** SA sees architecture-scoped context and can produce only architecture judgment/review need; PM sees bounded coordination context and can propose prerequisite work, target/new-work dependency edges, blockers and PM-sourced review requirements. The controller validates project/root/target/evidence freshness before delegating canonical mutation to the Orchestrator. `extendWorkGraph(...)` rechecks the exact target inside the same Blackboard transaction and atomically applies graph changes, direct proposal/assessment refs, blockers and grounded PM review requirements.
+
+**Durable handoff:** direct Board-linked PM proposal refs + SA assessment refs + the corresponding canonical graph/blocker/review effects.
+
+**Failure semantics:** stale project/root/target/evidence, invalid graph changes, conflicting work definitions or replay without both the direct canonical ref and its established effects fail closed. Orphan coordination artifacts are not lifecycle truth.
+
+**Does not imply:** generic PM/SA Workers, a horizontal-role runtime/framework, SA ownership of project sequencing/timeline, PM architecture/completion/review-verdict authority, or direct role mutation of Blackboard.
+
+Details: `agentic-application/contracts.md`, `agentic-application/workflow.md`, `agentic-application/architecture.md`.
+
+## C7 — Bounded project work selection
 
 **Outcome:** an opt-in selector can propose one currently eligible work item using explicit bounded policy/evidence while ordinary Orchestrator claim remains lifecycle authority.
 
@@ -106,7 +122,7 @@ Details: `agentic-application/contracts.md`, `core-harness/workflow.md`.
 
 Details: `agentic-application/work-selection.md`.
 
-## C7 — Durable research continuation
+## C8 — Durable research continuation
 
 **Outcome:** research can resume exact incomplete work across fresh sessions, skip completed experiments, reassess stale evidence and submit only a reviewable proposal.
 
@@ -120,7 +136,7 @@ Details: `agentic-application/work-selection.md`.
 
 Details: `agentic-application/research-continuation.md`.
 
-## C8 — Bounded self-upgrade proposal loop
+## C9 — Bounded self-upgrade proposal loop
 
 **Outcome:** one pinned candidate can be compared to one accepted baseline under fixed recorded scenarios and either keep the baseline or produce a proposal for independent review.
 
@@ -134,7 +150,7 @@ Details: `agentic-application/research-continuation.md`.
 
 Details: `agentic-application/self-upgrade.md`.
 
-## C9 — Decision/outcome reconstruction for review
+## C10 — Decision/outcome reconstruction for review
 
 **Outcome:** an immutable summary can index already-persisted Core decision/outcome artifacts and a fresh review can re-resolve and verify the exact underlying chain.
 
@@ -154,21 +170,28 @@ Details: `agentic-application/decision-outcome.md`, `core-harness/capabilities.m
 
 ```text
 Agentic Application
-  owns capability/workflow meaning, durable project lifecycle,
-  stage/review/acceptance ordering
+  owns capability/workflow meaning, WorkOrder/context requirements,
+  durable project lifecycle and completion/review/acceptance semantics
         |
-        | exact declared context/artifact requirements + refs
-        v
-Oracle
-  owns declared-source resolution, dereference, adaptation,
-  provenance/integrity checks
+        +--> Oracle
+        |      owns declared-source resolution, dereference, adaptation,
+        |      provenance/integrity checks
+        |      |
+        |      +--> returns application-shaped BackendContext / QaContext
+        |           to Agentic Application
         |
-        | application-shaped resolved context
-        v
-ExHarness Core
-  owns execution/runtime mechanics, evidence/trust/cognition,
-  effect truth and recovery primitives
+        +--> concrete Worker + resolved Application context
+               |
+               v
+          ExHarness Core
+            owns execution/runtime mechanics, evidence/trust/cognition,
+            effect truth and recovery primitives
+               |
+               +--> returns runtime/evidence/effect state
+                    to Agentic Application
 ```
+
+Oracle and Core are dependencies composed by Agentic Application. Oracle does not dispatch Core work or own a direct authority edge into Core; Application binds resolved context to the concrete Worker before Core execution and applies completion/lifecycle semantics to the returned execution state.
 
 State remains deliberately separate:
 
