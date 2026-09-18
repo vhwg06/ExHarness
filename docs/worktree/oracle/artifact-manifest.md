@@ -55,6 +55,24 @@ If publication fails after Backend execution, the workflow persists the existing
 
 If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion republishes the same accepted identity idempotently. A different manifest for the same producer work-order/revision/acceptance/artifact set fails at the manifest-store publication boundary.
 
+## Durable Backend -> QA protected mode
+
+The durable workflow can now opt into an application-owned `artifactManifestPublisher`.
+
+```text
+Backend/Core accepted result
+ -> producer manifest publisher
+ -> immutable manifestRef
+ -> QA_PENDING checkpoint persists exact artifactManifestRef
+ -> fresh QA scopes the manifest-validating reader to that exact ref
+```
+
+If publication fails after Backend execution, the workflow persists the Backend-stage checkpoint as `BLOCKED` with `backendRecoveryRequired=true`. Resume therefore re-enters `BackendWorker.recover(...)`; it does not fresh-execute Backend merely to regenerate manifest state.
+
+If a manifest was durably published but the Board checkpoint was interrupted, recovery may reuse the prior durable publication receipt when producer revision/artifact bytes still match. The persisted manifest acceptance provenance is retained rather than replaced by a regenerated completion decision.
+
+Direct-reader mode remains unchanged when no publisher is configured.
+
 ## QA read boundary
 
 The optional adapter wraps an existing `artifactReader`:
