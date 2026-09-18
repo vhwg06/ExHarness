@@ -547,8 +547,10 @@ export function createDurableBackendQaWorkflow({
     }
 
     invariant(backend.decision.action === BackendRunAction.RETURN, "Accepted Backend completion must return to the workflow");
-    const handoff = createQaHandoffFromBackendRun(backend);
+    let handoff = createQaHandoffFromBackendRun(backend);
+    let completionDecision = backend.completion.decision;
     let artifactManifestRef = null;
+    let artifactManifestReused = false;
     if (manifestPublisher != null) {
       try {
         const publication = await manifestPublisher.publishAcceptedBackendManifest({
@@ -560,6 +562,16 @@ export function createDurableBackendQaWorkflow({
           publication?.manifestRef,
           "artifactManifestPublisher publication.manifestRef"
         );
+        const publishedDecision = parseDecisionRef(
+          publication?.manifest?.acceptanceDecision,
+          "artifactManifestPublisher publication.manifest.acceptanceDecision"
+        );
+        completionDecision = publishedDecision;
+        handoff = BackendQaHandoffSchema.parse({
+          ...handoff,
+          acceptanceDecision: publishedDecision
+        });
+        artifactManifestReused = publication?.reused === true;
       } catch (error) {
         const recoveryCheckpoint = backendCheckpointForMode(executionCheckpoint, true);
         const persisted = await orchestrator.checkpoint({
@@ -586,7 +598,7 @@ export function createDurableBackendQaWorkflow({
     const nextCheckpoint = backendCheckpointAfterAccept(
       executionCheckpoint,
       handoff,
-      backend.completion.decision,
+      completionDecision,
       artifactManifestRef
     );
     const resolvedWork = checkpoint.stage === BackendQaWorkflowStage.BACKEND_REMEDIATION_PENDING
@@ -599,7 +611,7 @@ export function createDurableBackendQaWorkflow({
       generation,
       checkpoint: nextCheckpoint,
       artifactRefs: acceptedArtifactRefs,
-      evidenceRefs: [backend.completion.decision.id],
+      evidenceRefs: [completionDecision.id],
       resolvedWork,
       remainingWork: [QA_WORK]
     });
@@ -609,6 +621,7 @@ export function createDurableBackendQaWorkflow({
       backend,
       handoff,
       artifactManifestRef,
+      artifactManifestReused,
       qa: null,
       item: persisted.result
     });
