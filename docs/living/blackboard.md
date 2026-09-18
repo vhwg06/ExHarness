@@ -206,16 +206,10 @@ BB-043
 question/work: Deliver the accepted D014 optional application-artifact manifest adapter for ref-only Backend -> QA continuation.
 kind: IMPLEMENTATION
 priority: P1
-status: CLAIMED
-owner: oracle-detail-session-2026-09-18
+status: DONE
+owner:
 depends-on: []
-remaining-work:
-  - implement a durable manifest record/store that binds artifact ref/path, producer work-order, producer revision, acceptance-decision identity, stored revision and content digest
-  - implement an opt-in manifest-validating artifactReader that preserves the existing readArtifact request/response shape and fails closed on missing/mismatched identity or unavailable bytes
-  - add producer-side manifest creation from content available at the artifact production boundary; never create the first trusted manifest by later re-reading mutable bytes
-  - test unchanged, changed-content, missing/partial content, wrong producer/revision, wrong acceptance decision and fresh-reader reconstruction cases
-  - measure bounded manifest/hash overhead and keep productionEvidence=false
-  - synchronize current Oracle/application docs without promoting the adapter to default
+remaining-work: []
 acceptance-criteria:
   - unchanged valid artifacts still resolve through resolveQaContext with existing QA schemas
   - changed bytes behind a stable ref are rejected before QA receives context
@@ -224,14 +218,24 @@ acceptance-criteria:
   - the manifest contains identity/provenance/retention metadata but no artifact payload body
   - the adapter grants no correctness, acceptance, lifecycle or retention authority to Oracle
 submission:
+  - PR #133
 review-requirements: [application/code review, Oracle architecture-boundary review]
-reviews: []
+reviews:
+  - application/code review PASS on exact head 07276b1d13b06a3fb55a8b7ef6a4bb5a6fca6638
+  - Oracle architecture-boundary review PASS on exact head 07276b1d13b06a3fb55a8b7ef6a4bb5a6fca6638
 artifact-refs:
   - docs/living/decisions/D014-application-artifact-manifest-adapter.md
   - docs/living/knowledge/bb039-artifact-manifest-research.md
+  - docs/worktree/oracle/artifact-manifest.md
+  - packages/agentic-system/src/artifact-manifest.js
+  - packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js
 evidence-refs:
   - BB-039 accepted research
   - D014 ACCEPTED
+  - Actions #2054 green on living-doc-impact and Node 20/22/24
+  - application/code review id 5244789001
+  - Oracle architecture-boundary review id 5244789380
+  - merge commit 9511b5a196bc5442a3a3b91db39ee706ae5438dc
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; ORACLE_DETAIL phase implementation handoff from accepted D014
