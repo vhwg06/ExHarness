@@ -194,12 +194,57 @@ previous-phase-closure: docs/living/knowledge/pre-oracle-detail-blackboard-closu
 previous-terminal-count: 42
 previous-done-count: 38
 previous-superseded-count: 4
-next-work-id: BB-044
+next-work-id: BB-045
 ```
 
 The previous coordination phase is fully terminal and archived. Historical items are not copied into this active surface.
 
 ## Active work
+
+```text
+BB-044
+question/work: Research the durable publication/recovery boundary required to compose the optional D014 artifact manifest with Backend -> QA without exposing QA before trusted manifest state exists or replaying Backend effects after interruption.
+kind: RESEARCH
+priority: P1
+status: CLAIMED
+owner: oracle-detail-session-2026-09-18
+depends-on: [BB-043]
+research-hypothesis: The current optional manifest primitives need an application-owned publication checkpoint between Backend ACCEPT and QA_PENDING; that boundary must remain producer-side, crash-safe and effect-aware without turning Oracle into workflow authority.
+target-consumer: createDurableBackendQaWorkflow accepted-Backend transition
+implementation-output: Evidence-backed ordering/recovery contract and, only if justified, a narrow implementation handoff for one producer-manifest publication path.
+value-gate: Demonstrate a concrete current failure or ambiguity and show a candidate ordering that prevents QA from consuming unmanifested bytes while preserving existing Core effect recovery and ref-only Board state.
+scope-boundary:
+  - do not reopen generic Oracle resolver/provider or diagnostics abstractions
+  - do not make manifest/hash correctness authority
+  - do not copy artifact payloads into Blackboard
+  - do not infer replay safety from Board state alone
+remaining-work:
+  - reproduce current accepted-Backend -> QA_PENDING behavior with the optional manifest reader enabled but no producer manifest publication
+  - characterize crash points before/after manifest publication and Board checkpoint
+  - determine the minimum producer-side capability needed to create/recover the first trusted manifest without later mutable QA-side re-read
+  - compare fail-closed/recovery behavior against existing Backend Core effect recovery
+  - produce a bounded decision: implement, narrow, or reject runtime integration
+acceptance-criteria:
+  - current failure/ambiguity is executable against the delivered BB-043 primitives and durable workflow
+  - candidate ordering identifies exactly which state is durable at every crash point
+  - no candidate redispatches a potentially effectful Backend action merely to recreate manifest state
+  - QA_PENDING is not considered manifest-protected until exact manifest provenance is durable
+  - evidence class and production limitations are explicit
+submission:
+review-requirements: [Oracle architecture-boundary review, crash-recovery/application review]
+reviews: []
+artifact-refs:
+  - docs/living/decisions/D014-application-artifact-manifest-adapter.md
+  - docs/worktree/oracle/artifact-manifest.md
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/src/artifact-manifest.js
+evidence-refs:
+  - BB-043
+  - D014
+blockers: []
+follow-up-refs: []
+origin: INTENT-exharness-agentic-system; ORACLE_DETAIL integration pressure discovered after BB-043 delivery
+```
 
 ```text
 BB-043
