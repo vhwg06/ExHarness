@@ -49,6 +49,49 @@ function manifest(content) {
   });
 }
 
+function semanticDecision({ id, digest, generatedAt, policyDigest = "sha256:policy-1" }) {
+  return {
+    id,
+    digest,
+    type: "DECISION",
+    subject: { id: "subject:bb045-atomic", digest: "sha256:subject" },
+    boundary: "ACCEPTANCE",
+    policy: { id: "backend-policy", version: "1", digest: policyDigest },
+    evaluator: { identity: "backend-completion-policy", version: "1", roles: ["evaluator"] },
+    evidenceManifest: [],
+    claims: [],
+    unresolved: [],
+    verdict: "ACCEPT",
+    generatedAt,
+    metadata: { backendStatus: "APPLIED", reasons: ["ACCEPTED"] }
+  };
+}
+
+function semanticManifest(decision) {
+  const run = acceptedRun();
+  return captureAcceptedBackendArtifactManifest({
+    backendRun: {
+      ...run,
+      completion: {
+        ...run.completion,
+        decision
+      }
+    },
+    producedArtifacts: [
+      {
+        ref: "artifact://bb045-atomic/server",
+        path: "src/server.js",
+        storedRevision: "rev-2",
+        content: "export const healthy = true;\n"
+      }
+    ],
+    retention: {
+      policyRevision: "bb045-atomic-retention@1",
+      pinnedBy: ["BB-045:QA_PENDING"]
+    }
+  });
+}
+
 function twoWriterBarrierFs() {
   let arrivals = 0;
   let release;
@@ -105,6 +148,43 @@ test("BB-045 concurrent identical publication is idempotent with one atomic publ
 
     const names = await nodeFs.readdir(directory);
     assert.equal(names.filter((name) => /^publication-.*\.json$/.test(name)).length, 1);
+  });
+});
+
+test("BB-045 concurrent timestamp-only acceptance regeneration converges on one durable receipt", async () => {
+  await withDirectory(async (directory) => {
+    const store = createJsonArtifactManifestStore({
+      path: directory,
+      fs: twoWriterBarrierFs()
+    });
+    const first = semanticManifest(semanticDecision({
+      id: "decision:first",
+      digest: "sha256:first",
+      generatedAt: "2026-09-18T00:00:00.000Z"
+    }));
+    const second = semanticManifest(semanticDecision({
+      id: "decision:second",
+      digest: "sha256:second",
+      generatedAt: "2026-09-18T00:01:00.000Z"
+    }));
+
+    assert.notEqual(first.ref, second.ref);
+    assert.equal(first.acceptanceDecisionSemanticDigest, second.acceptanceDecisionSemanticDigest);
+
+    const [left, right] = await Promise.all([
+      store.putManifest(first),
+      store.putManifest(second)
+    ]);
+
+    assert.equal(left, right);
+    assert.ok([first.ref, second.ref].includes(left));
+
+    const publication = await store.findPublication({
+      producerWorkOrderId: first.producerWorkOrderId,
+      producerRevision: first.producerRevision,
+      artifacts: first.entries
+    });
+    assert.equal(publication.ref, left);
   });
 });
 
