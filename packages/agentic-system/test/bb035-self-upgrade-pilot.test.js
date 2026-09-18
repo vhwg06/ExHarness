@@ -370,7 +370,8 @@ test("BB-035 fails closed on candidate tamper, evaluator laundering and widened 
     );
     const board = await orchestrator.readBlackboard();
     const item = board.items.find((candidate) => candidate.id === ITEM_ID);
-    assert.equal(item.status, BlackboardStatus.CLAIMED);
+    assert.equal(item.status, BlackboardStatus.BLOCKED);
+    assert.match(item.blockers[0], /^SELF_UPGRADE_EVALUATION_ATTEMPT:1:/);
     assert.equal(item.submission, null);
   });
 });
