@@ -206,10 +206,13 @@ BB-045
 question/work: Integrate manifest-protected Backend -> QA continuation so exact producer manifest durability precedes QA_PENDING and publication failure resumes through Backend/Core recovery rather than fresh effect execution.
 kind: IMPLEMENTATION
 priority: P1
-status: DONE
-owner:
+status: REOPENED
+owner: oracle-detail-session-2026-09-18
 depends-on: [BB-044]
-remaining-work: []
+remaining-work:
+  - reuse an existing durable publication receipt before attempting producer-byte reads
+  - prove orphan-manifest recovery can reattach manifest provenance while producer payload storage is unavailable
+  - preserve first-publication producer-byte validation and exact-manifest QA failure behavior
 acceptance-criteria:
   - direct-reader workflows are byte-for-byte semantically compatible
   - protected QA_PENDING cannot exist without exact artifactManifestRef
@@ -243,6 +246,8 @@ evidence-refs:
   - remediation Actions #2122 green on living-doc-impact and Node 20/22/24
   - remediation merge commit 1d36ce696845227fa4f44eb857cf5c5b316bf90a
 blockers: []
+reopen-finding:
+  - createAcceptedBackendArtifactManifestPublisher currently reads producer bytes before findPublication; after crash between durable manifest publication and Board QA_PENDING checkpoint, temporary producer-store unavailability can strand recovery even though the trusted publication receipt already exists
 follow-up-refs: []
 origin: BB-044 accepted implementation handoff
 ```
