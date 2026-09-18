@@ -7,13 +7,14 @@ Authority and dependency boundaries for the current application layer and its ac
 | Concern | Owner |
 | --- | --- |
 | Objective / domain goal | Agentic Application |
-| Work decomposition | Orchestrator, optionally informed by Advisor |
+| Work decomposition | Orchestrator; bounded Advisor or PM coordination may propose, but cannot commit canonical graph state directly |
 | Which Worker executes | Orchestrator |
 | Worker role semantics | Agentic Application |
 | WorkOrder / WorkResult contracts | Agentic Application |
 | Required context semantics/shape | Agentic Application |
 | Context source resolution/adaptation | Oracle / infrastructure |
-| Planning/progress proposal | Bounded Advisor |
+| Backend-local continuation/gap proposal | Bounded Advisor |
+| Project-level coordination/progress proposal | PM through the bounded PM/SA coordination slice |
 | Project coordination / sequencing / dependency / timeline / progress proposal | PM through the bounded PM/SA coordination slice; Orchestrator owns canonical mutation |
 | Architecture assessment / architecture-review need | SA through the bounded PM/SA coordination slice; no project lifecycle authority |
 | Application workflow control/state | Orchestrator |
