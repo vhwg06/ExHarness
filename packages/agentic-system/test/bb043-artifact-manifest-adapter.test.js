@@ -439,11 +439,15 @@ test("BB-043 conflicting manifests for one exact provenance fail closed", async 
     });
     const store = createJsonArtifactManifestStore({ path: manifestPath });
     await store.putManifest(original);
-    await store.putManifest(changed);
-
-    await expectOracleManifestError(
-      () => resolveWith({ manifestPath, underlyingReader }),
-      ArtifactManifestErrorCode.MANIFEST_CONFLICT
+    await assert.rejects(
+      () => store.putManifest(changed),
+      (error) => {
+        assert.equal(error.code, ArtifactManifestErrorCode.MANIFEST_CONFLICT);
+        return true;
+      }
     );
+
+    const { context } = await resolveWith({ manifestPath, underlyingReader });
+    assert.equal(context.artifacts.length, 2);
   });
 });
