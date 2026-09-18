@@ -15,6 +15,18 @@ Deterministic evidence failure/missing/inconclusive paths stay in application co
 
 Backend preparation is now an explicit read-only application phase before Worker/Core execution. Detailed current semantics, including durable source-failure handling and the `backendRecoveryRequired` fence, are in `backend-preparation.md`.
 
+For workflows explicitly configured with D014 artifact-manifest protection, accepted Backend completion has one additional application-owned gate before `QA_PENDING`:
+
+```text
+accepted Backend result
+ -> producer manifest publication
+ -> exact manifestRef
+ -> QA_PENDING checkpoint
+ -> fresh QA scopes artifactReader to that exact manifest
+```
+
+Manifest publication failure persists `BLOCKED` with `backendRecoveryRequired=true`, so resume re-enters Backend/Core recovery rather than fresh effectful execution. Direct-reader workflows remain unchanged.
+
 When process-crash recovery is required, the concrete Backend Worker may use `createJsonBackendSessionStore(...)` so its Core session and AVO action-effect journal survive process reconstruction.
 
 ## Accepted Backend -> QA
