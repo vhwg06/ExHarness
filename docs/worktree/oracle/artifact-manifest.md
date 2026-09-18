@@ -21,6 +21,7 @@ The manifest binds:
 - Backend producer work-order id;
 - accepted producer revision;
 - acceptance-decision id + digest;
+- stable acceptance-decision semantic digest when the full decision artifact is available; this excludes only generated timestamp and the derived id/digest wrapper;
 - stored artifact revision;
 - SHA-256 content identity;
 - availability metadata;
@@ -53,7 +54,7 @@ The direct-reader workflow remains unchanged when no publisher is configured.
 
 If publication fails after Backend execution, the workflow persists the existing Backend stage as `BLOCKED` with `backendRecoveryRequired=true`. After resume, execution re-enters `BackendWorker.recover(...)`; it does not perform a fresh Backend execute merely to recreate manifest state.
 
-If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion reuses the durable publication receipt when the same producer work-order/revision/artifact set resolves to the same producer bytes. The publication slot is keyed by producer work-order + producer revision + artifact ref/path set; the manifest itself still records the original acceptance-decision provenance. Recovery therefore retains that original provenance instead of treating a newly regenerated completion decision as a new publication identity. Conflicting producer bytes for the same publication slot fail closed.
+If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion reuses the durable publication receipt only when the same producer work-order/revision/artifact set resolves to the same producer bytes **and** the re-derived Backend acceptance is semantically equivalent. The publication slot is keyed by producer work-order + producer revision + artifact ref/path set, while reuse additionally compares a stable acceptance-decision semantic digest covering subject, boundary, policy, evaluator, evidence/claims, unresolved state, verdict and metadata. Only `generatedAt` plus the derived decision `id/digest` wrapper are excluded. Timestamp-only regeneration may therefore reuse the durable receipt; policy/evaluator/subject/evidence/claim/verdict/metadata drift fails closed. Legacy manifests without the semantic digest may be reused only when the exact acceptance-decision ref is unchanged. The durable manifest keeps the original acceptance provenance.
 
 Direct-reader mode remains unchanged when no publisher is configured.
 
