@@ -167,7 +167,7 @@ parent generation monotonic
 required refs exist
 implementation action has exact decision ref
 review action has empty write scope
-write/forbidden overlap rejected
+write/forbiddenWrite overlap rejected
 old/current pointer ambiguity rejected
 ```
 
@@ -336,7 +336,7 @@ valid review spec
 valid implementation spec
 wrong item id rejected
 generation zero/rollback rejected
-write/forbidden overlap rejected
+write/forbiddenWrite overlap rejected
 implementation without accepted decision rejected
 review with source writes rejected
 missing required refs rejected
