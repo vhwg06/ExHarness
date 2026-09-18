@@ -333,7 +333,10 @@ function reviewRemediationCheckpoint(item) {
     attempt: submission.workflowAttempt,
     acceptedBackend: {
       handoff: submission.acceptedBackendHandoff,
-      completionDecision: submission.backendAcceptanceDecision
+      completionDecision: submission.backendAcceptanceDecision,
+      ...(submission.artifactManifestRef == null
+        ? {}
+        : { artifactManifestRef: submission.artifactManifestRef })
     },
     qaIssues: item.remainingWork,
     remediationObligations: item.remainingWork,
