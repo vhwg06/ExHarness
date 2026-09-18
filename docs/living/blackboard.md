@@ -194,6 +194,8 @@ previous-phase-closure: docs/living/knowledge/pre-oracle-detail-blackboard-closu
 previous-terminal-count: 42
 previous-done-count: 38
 previous-superseded-count: 4
+current-phase-closure-scan: docs/living/knowledge/oracle-detail-closure-2026-09-18.md
+current-active-debt: 0
 next-work-id: BB-046
 ```
 
