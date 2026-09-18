@@ -69,10 +69,9 @@
       "packages/agentic-system/src/session-handoff.js"
     ],
     "write": [],
-    "forbidden": [
-      "packages/core/**",
-      "packages/agentic-system/src/oracle/**",
-      "runtime implementation changes"
+    "forbiddenWrite": [
+      "packages/**",
+      "docs/worktree/**"
     ]
   },
   "hardInvariants": [
@@ -92,7 +91,8 @@
     "PM != Organization Scheduler",
     "Artifact acceptance != blanket obligation authorization",
     "Board CLAIMED != executable capability",
-    "ClaimReleaseHead != Blackboard lifecycle authority"
+    "ClaimReleaseHead != Blackboard lifecycle authority",
+    "REVIEW context sourceScope.write must be empty"
   ],
   "verification": [
     "derive exact A.1 source seams without chat reinterpretation",
@@ -141,5 +141,9 @@
       "exact accepted A.1 sourceScope.write",
       "exact verification commands/tests"
     ]
+  },
+  "reviewTarget": {
+    "pullRequest": 151,
+    "headBinding": "exact PR head at independent review dispatch"
   }
 }
