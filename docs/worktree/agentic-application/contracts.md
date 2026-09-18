@@ -292,3 +292,14 @@ This implementation is not a generic PM/SA agent runtime, role registry, horizon
 ## Advisor contract
 
 `BackendAdvisor` remains a bounded judgment boundary. Advisor output is proposal state; it does not own Blackboard transitions, dispatch or correctness authority.
+
+The durable Backend -> QA workflow interprets Advisor actions at the application boundary:
+
+- `RETRY` remains an ordinary Backend retry and deterministic `CONTINUE` remains ordinary continuation;
+- `REQUEST_CONTEXT` and `ESCALATE` persist `BACKEND_COORDINATION_PENDING` and move the Board item to `BLOCKED` instead of silently redispatching;
+- the requirement persists gap ids, context needs, rationale, original Backend stage, attempt and Backend completion-decision provenance;
+- `advance(...)` / `current(...)` expose unresolved coordination without redispatching Backend, and generic `resume(...)` fails closed;
+- only application-owned `resolveBackendCoordination(...)` may clear the requirement;
+- context resolution must declare additional repository files; escalation resolution must identify a resolver and rationale.
+
+The workflow commits resolution through `resolveBlockedCheckpoint(...)`, which compares the exact expected blocked checkpoint and atomically replaces it plus `REOPENED` in one store transaction. Resolution does not accept Backend work, bypass QA, authorize `DONE`, or grant lifecycle authority to the Advisor.
