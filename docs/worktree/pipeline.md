@@ -158,7 +158,7 @@ npm run eval:self-upgrade-research
  -> deep compare with artifacts/bb034-self-upgrade-loop-probe.json
 ```
 
-This is a deterministic research fixture, not a delivered self-modifying runtime. The ActionIntent authorizes only the isolated experiment, and a trusted experiment result produces only a reviewable proposal. It does not select, deploy or merge the candidate, alter user intent, change acceptance thresholds, or grant runtime authority. Failed or inconclusive experiment criteria retain the baseline. The checked artifact declares `evidenceClass: DETERMINISTIC_SELF_UPGRADE_RESEARCH_FIXTURE` and `productionEvidence: false`; BB-035 remains the conditional implementation lane and retains its own dependency/review gates.
+This remains a deterministic research fixture rather than evidence of autonomous self-modification. The ActionIntent authorizes only the isolated experiment, and a trusted experiment result produces only a reviewable proposal. It does not select, deploy or merge the candidate, alter user intent, change acceptance thresholds, or grant runtime authority. Failed or inconclusive experiment criteria retain the baseline. The checked artifact declares `evidenceClass: DETERMINISTIC_SELF_UPGRADE_RESEARCH_FIXTURE` and `productionEvidence: false`. The bounded BB-035 application pilot is now delivered separately; its runtime boundary still exposes proposal-for-review rather than adoption authority.
 
 ## Artifact-manifest fresh-session research verification
 
@@ -176,7 +176,7 @@ npm run eval:artifact-manifest-research
  -> explicit missing-content / partial-set / manifest-unavailable outcomes
 ```
 
-This verification surface closes a research-evidence gap; it does not deliver or enable a manifest reader in the runtime Backend -> QA composition. Every scenario reconstructs the project from durable Blackboard state plus filesystem-backed stores. The manifest establishes content/provenance identity only, never correctness or acceptance authority. The probe declares `evidenceClass: DETERMINISTIC_FRESH_SESSION_FIXTURE` and `productionEvidence: false`; real artifact-store latency, retention cost, availability and production value remain unmeasured.
+This verification surface remains the deterministic research evidence for D014. The optional runtime manifest-validating artifactReader is now delivered by BB-043 as an application-owned wrapper; the default direct artifactReader path remains unchanged. Every research scenario reconstructs the project from durable Blackboard state plus filesystem-backed stores. The manifest establishes content/provenance identity only, never correctness or acceptance authority. The probe declares `evidenceClass: DETERMINISTIC_FRESH_SESSION_FIXTURE` and `productionEvidence: false`; real artifact-store latency, retention cost, availability and production value remain unmeasured.
 
 ## Current extraction result
 
