@@ -21,6 +21,7 @@ The manifest binds:
 - Backend producer work-order id;
 - accepted producer revision;
 - acceptance-decision id + digest;
+- stable acceptance-decision semantic digest when the full decision artifact is available; it excludes only `generatedAt` and the derived decision `id/digest` wrapper;
 - stored artifact revision;
 - SHA-256 content identity;
 - availability metadata;
@@ -54,9 +55,13 @@ The direct-reader workflow remains unchanged when no publisher is configured.
 
 If publication fails after Backend execution, the workflow persists the existing Backend stage as `BLOCKED` with `backendRecoveryRequired=true`. After resume, execution re-enters `BackendWorker.recover(...)`; it does not perform a fresh Backend execute merely to recreate manifest state.
 
-If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion first looks up the durable publication receipt by producer work-order + producer revision + artifact ref/path set. If that receipt exists, recovery reuses its exact manifest ref and original acceptance-decision provenance **without re-reading producer bytes**. Producer-side bytes are required only to mint the first trusted receipt. Later QA still reads the payload through the exact manifest-scoped reader and fails closed on missing or changed content.
+If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion first looks up the durable publication receipt by producer work-order + producer revision + artifact ref/path set. If that receipt exists, recovery may reuse its exact manifest ref and original acceptance-decision provenance **without re-reading producer bytes**, but only when the re-derived Backend acceptance is semantically equivalent.
 
-The publication slot is keyed by producer work-order + producer revision + artifact ref/path set; the manifest itself still records the original acceptance-decision provenance. Concurrent competing first publications remain single-winner through the atomic publication slot.
+For full DecisionArtifacts, the manifest stores a stable acceptance semantic digest covering subject, boundary, policy, evaluator, evidence manifest, claims, unresolved state, verdict and metadata. Only `generatedAt` plus the derived decision `id/digest` wrapper are excluded. Timestamp-only regeneration may therefore reuse the durable receipt; policy/evaluator/subject/evidence/claim/verdict/metadata drift fails closed with `ARTIFACT_MANIFEST_CONFLICT`. Legacy manifests without the semantic digest may be reused only when the exact acceptance-decision ref is unchanged.
+
+Producer-side bytes are required only to mint the first trusted receipt. Later QA still reads the payload through the exact manifest-scoped reader and fails closed on missing or changed content.
+
+The publication slot is keyed by producer work-order + producer revision + artifact ref/path set; the manifest records the original acceptance provenance separately. Concurrent semantically equivalent first publications converge on one receipt, while conflicting acceptance or payload semantics fail closed through the atomic publication slot.
 
 Direct-reader mode remains unchanged when no publisher is configured.
 

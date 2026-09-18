@@ -6,6 +6,7 @@ import { join } from "node:path";
 import test from "node:test";
 
 import {
+  ArtifactManifestErrorCode,
   BackendQaWorkflowStage,
   BackendRecoveryAction,
   BackendWorkStatus,
@@ -442,6 +443,78 @@ test("BB-045 changed payload after QA_PENDING blocks QA without reopening Backen
     assert.match(blocked.item.blockers[0], /artifact content identity mismatch/);
     assert.equal(c.execute, 1);
     assert.equal(c.recover, 0);
+  });
+});
+
+test("BB-045 receipt-first recovery tolerates timestamp-only decision drift but rejects semantic acceptance drift", async () => {
+  await withFixture(async ({ manifestPath }) => {
+    const firstParts = manifestParts(manifestPath);
+    const backendRun = (decision) => ({
+      order: { id: "bb045-backend:backend" },
+      result: result(),
+      completion: {
+        action: "ACCEPT",
+        decision
+      }
+    });
+    const decision = (overrides = {}) => ({
+      id: overrides.id ?? "decision:first",
+      digest: overrides.digest ?? "sha256:first",
+      type: "DECISION",
+      subject: { id: "subject:backend-rev-2", digest: "sha256:subject" },
+      boundary: "ACCEPTANCE",
+      policy: { id: "backend-policy", version: "1", digest: overrides.policyDigest ?? "sha256:policy-1" },
+      evaluator: {
+        identity: overrides.evaluatorIdentity ?? "backend-completion-policy",
+        version: "1",
+        roles: ["evaluator"]
+      },
+      evidenceManifest: [],
+      claims: [],
+      unresolved: [],
+      verdict: "ACCEPT",
+      generatedAt: overrides.generatedAt ?? "2026-09-18T00:00:00.000Z",
+      metadata: { backendStatus: "APPLIED", reasons: ["ACCEPTED"] }
+    });
+
+    const first = await firstParts.publisher.publishAcceptedBackendManifest({
+      itemId: ITEM_ID,
+      backendRun: backendRun(decision())
+    });
+
+    // Receipt-first recovery must not need producer payloads, but it still
+    // needs to prove that the recovered acceptance means the same thing.
+    const recoveryParts = manifestParts(manifestPath, new Map());
+    const timestampOnly = await recoveryParts.publisher.publishAcceptedBackendManifest({
+      itemId: ITEM_ID,
+      backendRun: backendRun(decision({
+        id: "decision:second",
+        digest: "sha256:second",
+        generatedAt: "2026-09-18T00:01:00.000Z"
+      }))
+    });
+    assert.equal(timestampOnly.manifestRef, first.manifestRef);
+    assert.equal(timestampOnly.reused, true);
+    assert.deepEqual(timestampOnly.manifest.acceptanceDecision, first.manifest.acceptanceDecision);
+
+    for (const drift of [
+      { id: "decision:policy-drift", digest: "sha256:policy-drift", policyDigest: "sha256:policy-2" },
+      { id: "decision:evaluator-drift", digest: "sha256:evaluator-drift", evaluatorIdentity: "different-evaluator" }
+    ]) {
+      await assert.rejects(
+        () => recoveryParts.publisher.publishAcceptedBackendManifest({
+          itemId: ITEM_ID,
+          backendRun: backendRun(decision({
+            ...drift,
+            generatedAt: "2026-09-18T00:02:00.000Z"
+          }))
+        }),
+        (error) => {
+          assert.equal(error.code, ArtifactManifestErrorCode.MANIFEST_CONFLICT);
+          return true;
+        }
+      );
+    }
   });
 });
 
