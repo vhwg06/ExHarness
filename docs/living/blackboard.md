@@ -206,10 +206,14 @@ BB-045
 question/work: Integrate manifest-protected Backend -> QA continuation so exact producer manifest durability precedes QA_PENDING and publication failure resumes through Backend/Core recovery rather than fresh effect execution.
 kind: IMPLEMENTATION
 priority: P1
-status: DONE
-owner:
+status: REOPENED
+owner: oracle-detail-session-2026-09-18
 depends-on: [BB-044]
-remaining-work: []
+remaining-work:
+  - make one accepted Backend publication identity atomic under concurrent publishers
+  - ensure two concurrent conflicting publications cannot both succeed
+  - preserve idempotent same-manifest publication and legacy manifest readability
+  - keep exact manifestRef recovery semantics from PR #136
 acceptance-criteria:
   - direct-reader workflows are byte-for-byte semantically compatible
   - protected QA_PENDING cannot exist without exact artifactManifestRef
@@ -239,6 +243,8 @@ evidence-refs:
   - crash-recovery review id 5245017399
   - merge commit 2649986280b3e2a98c27fded346b5dd5b5855f4d
 blockers: []
+reopen-finding:
+  - concurrent putManifest calls currently perform read-before-write against different digest filenames, so conflicting manifests for one producer/revision/artifact identity can both publish before either observes the other
 follow-up-refs: []
 origin: BB-044 accepted implementation handoff
 ```
