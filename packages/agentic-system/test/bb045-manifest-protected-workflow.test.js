@@ -319,18 +319,19 @@ test("BB-045 protected checkpoint blocks if fresh workflow loses manifest-aware 
 });
 
 test("BB-045 publication failure blocks in recovery-required mode and resume does not execute Backend again", async () => {
-  await withFixture(async ({ orchestrator }) => {
+  await withFixture(async ({ manifestPath, orchestrator }) => {
     const c = { execute: 0, recover: 0 };
+    const parts = manifestParts(manifestPath);
     let fail = true;
     const publisher = {
-      async publishAcceptedBackendManifest() {
+      async publishAcceptedBackendManifest(input) {
         if (fail) throw new Error("manifest store unavailable");
-        return { manifestRef: "artifact-manifest://sha256:" + "1".repeat(64) };
+        return parts.publisher.publishAcceptedBackendManifest(input);
       }
     };
     const instance = makeWorkflow({
       orchestrator,
-      artifactReader: directReader(contents()),
+      artifactReader: parts.reader,
       backendWorker: worker(c),
       publisher
     });
@@ -346,6 +347,7 @@ test("BB-045 publication failure blocks in recovery-required mode and resume doe
     await instance.resume({ itemId: ITEM_ID });
     const resumed = await instance.advance({ itemId: ITEM_ID, owner: "session-b" });
     assert.equal(resumed.stage, BackendQaWorkflowStage.QA_PENDING);
+    assert.match(resumed.item.checkpoint.acceptedBackend.artifactManifestRef, /^artifact-manifest:\/\/sha256:/);
     assert.equal(c.execute, 1);
     assert.equal(c.recover, 1);
   });
@@ -399,9 +401,47 @@ test("BB-045 orphan manifest is idempotently recovered after Board checkpoint in
     });
     const recovered = await fresh.recoverInterrupted({ itemId: ITEM_ID, owner: "session-b" });
     assert.equal(recovered.stage, BackendQaWorkflowStage.QA_PENDING);
+    assert.equal(recovered.artifactManifestReused, true);
     assert.equal(recovered.item.checkpoint.acceptedBackend.artifactManifestRef, publishedRef);
+    const durableManifest = await freshParts.manifestStore.readManifest(publishedRef);
+    assert.deepEqual(
+      recovered.item.checkpoint.acceptedBackend.completionDecision,
+      durableManifest.acceptanceDecision,
+      "recovery must retain the durable manifest publication acceptance provenance"
+    );
     assert.equal(c.execute, 1);
     assert.equal(c.recover, 1);
+  });
+});
+
+test("BB-045 changed payload after QA_PENDING blocks QA without reopening Backend execution", async () => {
+  await withFixture(async ({ manifestPath, orchestrator, makeOrchestrator }) => {
+    const c = { execute: 0, recover: 0 };
+    const parts = manifestParts(manifestPath);
+    const first = makeWorkflow({
+      orchestrator,
+      artifactReader: parts.reader,
+      backendWorker: worker(c),
+      publisher: parts.publisher
+    });
+    await initialize(first);
+    const backend = await first.advance({ itemId: ITEM_ID, owner: "session-a" });
+    assert.equal(backend.stage, BackendQaWorkflowStage.QA_PENDING);
+
+    parts.map.set("workspace://rev-2/src/server.js", "export const healthy = false;\n");
+
+    const freshParts = manifestParts(manifestPath, parts.map);
+    const fresh = makeWorkflow({
+      orchestrator: makeOrchestrator(),
+      artifactReader: freshParts.reader,
+      backendWorker: worker(c)
+    });
+    const blocked = await fresh.advance({ itemId: ITEM_ID, owner: "session-b" });
+    assert.equal(blocked.stage, BackendQaWorkflowStage.BLOCKED);
+    assert.equal(blocked.item.checkpoint.stage, BackendQaWorkflowStage.QA_PENDING);
+    assert.match(blocked.item.blockers[0], /artifact content identity mismatch/);
+    assert.equal(c.execute, 1);
+    assert.equal(c.recover, 0);
   });
 });
 
