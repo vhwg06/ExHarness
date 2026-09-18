@@ -195,7 +195,7 @@ previous-terminal-count: 42
 previous-done-count: 38
 previous-superseded-count: 4
 current-phase-closure-scan: docs/living/knowledge/oracle-detail-closure-2026-09-18.md
-current-active-debt: 1
+current-active-debt: 0
 next-work-id: BB-046
 ```
 
@@ -208,14 +208,10 @@ BB-045
 question/work: Integrate manifest-protected Backend -> QA continuation so exact producer manifest durability precedes QA_PENDING and publication failure resumes through Backend/Core recovery rather than fresh effect execution.
 kind: IMPLEMENTATION
 priority: P1
-status: REOPENED
-owner: oracle-detail-session-2026-09-18
+status: DONE
+owner:
 depends-on: [BB-044]
-remaining-work:
-  - bind receipt-first orphan recovery to stable Backend acceptance semantics, excluding only generatedAt and derived id/digest
-  - preserve legacy manifests safely: exact legacy acceptance refs may reuse, unverifiable regenerated legacy acceptance must fail closed
-  - preserve receipt-first recovery without producer-byte re-read and the atomic single-publication slot
-  - prove timestamp-only regeneration reuses the receipt while policy/evaluator semantic drift fails closed
+remaining-work: []
 acceptance-criteria:
   - direct-reader workflows are byte-for-byte semantically compatible
   - protected QA_PENDING cannot exist without exact artifactManifestRef
@@ -254,9 +250,13 @@ evidence-refs:
   - receipt-first crash-recovery review id 5245261861
   - receipt-first Oracle architecture-boundary review id 5245262130
   - receipt-first remediation merge commit f56ae2af3bc5cba59be9d076829b0476a0f88cfa
+  - acceptance-semantic recovery remediation PR #148 exact head c11d9fc81df606aebb1ad6776df10581174428af
+  - acceptance-semantic recovery Actions #2175 green on living-doc-impact and Node 20/22/24
+  - acceptance-semantic application/code review id 5245398758
+  - acceptance-semantic Oracle architecture-boundary review id 5245399062
+  - acceptance-semantic crash-recovery/trust-provenance review id 5245399328
+  - acceptance-semantic remediation merge commit 4db3457418836ec7a305f388d20626ddeea41abb
 blockers: []
-reopened-by:
-  - post-reconciliation semantic review found that receipt-first recovery can reuse an orphan manifest even when the re-derived Backend acceptance changes policy/evaluator/subject/evidence/claims/verdict/metadata semantics; producer bytes may be unavailable during recovery, so the guard must rely on durable acceptance provenance rather than re-reading payloads
 follow-up-refs: []
 origin: BB-044 accepted implementation handoff
 ```
