@@ -14,6 +14,7 @@ Source-synchronized application-layer projection. All unresolved application wor
 - default completion requires mutation + typecheck + tests + artifact presence;
 - completion emits an acceptance-boundary ExHarness decision artifact;
 - bounded `BackendAdvisor` is available only after required objective evidence passes and semantic gaps remain;
+- Advisor `REQUEST_CONTEXT` / `ESCALATE` proposals become durable application coordination requirements; they are not direct execution or acceptance authority;
 - Backend execution can use a concrete durable JSON Core SessionStore so Core session state and AVO action-effect journal survive process reconstruction;
 - interrupted Backend recovery is exposed through `BackendWorker.recover(...)` / `recoverBackendObjective(...)` and never bypasses the ordinary Backend completion/evidence policy.
 
@@ -40,6 +41,7 @@ Implemented Board semantics include:
 - a claimed owner may persist a partial-work checkpoint before final submission;
 - checkpoints can release work as `REOPENED` or preserve exact continuation state while `BLOCKED`;
 - blocked work can be resumed to `REOPENED`; unfinished work can be superseded/canceled;
+- unresolved Backend coordination is the narrow exception: `resolveBlockedCheckpoint(...)` atomically replaces one exact blocked checkpoint and reopens it, while generic resume is rejected for that state;
 - a claimed Worker owner may submit an immutable result payload and Worker-sourced review requests;
 - PM-sourced review requirements can be added separately from Worker requests;
 - submitted work becomes `PENDING_REVIEW`, never directly `DONE`;
@@ -76,10 +78,13 @@ Current state transitions are:
 
 - initialization persists validated Backend + QA objectives before Worker execution;
 - `BACKEND_PENDING` executes Backend from the persisted spec;
+- Advisor `RETRY` and deterministic `CONTINUE` remain ordinary eligible Backend continuation;
+- Advisor `REQUEST_CONTEXT` / `ESCALATE` persist `BACKEND_COORDINATION_PENDING` as `BLOCKED`, including gap/context/rationale/completion-decision provenance, and a fresh session does not redispatch Backend while it remains unresolved;
+- `resolveBackendCoordination(...)` is application-owned: context requests require declared additional repository files; escalations require an explicit resolver and rationale; resolution only reopens the original Backend stage;
 - accepted Backend completion persists a ref-only `BackendQaHandoff` plus acceptance-decision provenance as `QA_PENDING`;
 - a fresh process/session can reconstruct the same Board and continue QA without prior conversation state;
 - QA issues persist as `BACKEND_REMEDIATION_PENDING`; remediation uses the last accepted Backend revision as its new repository base;
-- artifact/context lookup failure blocks while preserving the exact `QA_PENDING` checkpoint; resume retries from that checkpoint;
+- ordinary artifact/context lookup failure blocks while preserving the exact stage checkpoint; resume retries from that checkpoint; unresolved `BACKEND_COORDINATION_PENDING` cannot be cleared by generic resume;
 - QA acceptance clears the partial checkpoint and creates a final Blackboard submission with Backend/QA decision refs and artifact refs;
 - final submission becomes `PENDING_REVIEW` but does not fabricate a Worker-sourced application review request; project/PM review requirements remain a separate authority path;
 - if a process dies while a stage is `CLAIMED`, `recoverInterrupted(...)` first increments the application claim generation to fence the abandoned attempt;

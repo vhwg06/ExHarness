@@ -134,3 +134,45 @@ test("BB-041 extendWorkGraph rejects hidden child origin before BB-021 normaliza
     assert.equal(board.items[0].status, BlackboardStatus.READY);
   });
 });
+
+
+test("BB-041 resolveBlockedCheckpoint rejects hidden replacement data before clone and preserves the blocked state", async () => {
+  await withStore(async (path) => {
+    const store = createJsonBlackboardStore({ path });
+    const orchestrator = createApplicationOrchestrator({ store, reviewTrust: reviewTrust() });
+    await orchestrator.seed([workItem()]);
+    const claimed = await orchestrator.claim({ itemId: "BB-041-PRECLONE", owner: "session-block" });
+    await orchestrator.checkpoint({
+      itemId: "BB-041-PRECLONE",
+      owner: "session-block",
+      generation: claimed.result.claimGeneration,
+      checkpoint: { kind: "BLOCKED_CHECKPOINT", version: 1 },
+      status: BlackboardStatus.BLOCKED,
+      blockers: ["application resolution required"]
+    });
+
+    const before = (await orchestrator.readBlackboard()).items[0];
+    const replacement = { kind: "RESOLVED_CHECKPOINT", version: 1 };
+    Object.defineProperty(replacement, "hidden", {
+      value: "must-not-disappear",
+      enumerable: false,
+      configurable: true,
+      writable: true
+    });
+
+    await assert.rejects(
+      () => orchestrator.resolveBlockedCheckpoint({
+        itemId: "BB-041-PRECLONE",
+        checkpointedBy: "coordinator",
+        expectedCheckpoint: before.checkpoint,
+        checkpoint: replacement
+      }),
+      /checkpoint\.hidden: non-enumerable properties are not preserved/
+    );
+
+    const after = (await orchestrator.readBlackboard()).items[0];
+    assert.equal(after.status, BlackboardStatus.BLOCKED);
+    assert.deepEqual(after.checkpoint, before.checkpoint);
+    assert.deepEqual(after.blockers, before.blockers);
+  });
+});
