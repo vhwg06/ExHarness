@@ -151,6 +151,7 @@ Concrete PM context/role execution, SA context/role execution and vertical Revie
 
 ## Routing
 
+- **current application capability semantics -> `capabilities.md`**
 - current application architecture -> `architecture.md`
 - current ownership boundaries -> `boundaries.md`
 - current workflow -> `workflow.md`

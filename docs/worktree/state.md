@@ -68,7 +68,8 @@ The concrete `ApplicationOrchestrator` is application workflow/Board control, no
 
 ## Routing
 
-- current delivered pipeline -> `pipeline.md`
+- **current system capability semantics -> `capabilities.md`**
+- current delivered pipeline/composition -> `pipeline.md`
 - current application details -> `agentic-application/state.md`
 - current Oracle details -> `oracle/state.md`
 - current Core details -> `core-harness/state.md`
