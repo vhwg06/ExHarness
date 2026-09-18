@@ -26,29 +26,6 @@ The Blackboard is the roadmap/work queue. `docs/worktree/pipeline.md` describes 
 
 Living-doc reconciliation is **not** an end-of-work cleanup step. It happens before the implementation state becomes durable/reviewable/handoff-safe.
 
-## Fresh-session resume pipeline
-
-```text
-FRESH SESSION
-  -> read durable user intent + current Board
-  -> verify project identity when the Board is project-bound
-  -> recover eligible / claimed / blocked / review / reconciliation state
-  -> recover exact partial-work checkpoint when present
-  -> resolve only the referenced artifacts/evidence needed for the next context
-  -> choose only eligible unresolved work
-  -> CLAIM
-  -> resolve concrete work context
-  -> execute bounded Worker work
-  -> CHECKPOINT continuation OR SUBMIT final result
-  -> establish required review work
-  -> review now OR leave durable pending review/reconciliation state
-  -> reconcile findings against the current item
-  -> DONE | REOPENED | BLOCKED
-  -> reconcile source-synchronized worktree docs whenever current behavior changed
-```
-
-A Worker submission never self-authorizes `DONE`, and a later session does not redo terminal work unless new grounded evidence explicitly reopens it.
-
 ## Continuous synchronization pipeline
 
 ```text
