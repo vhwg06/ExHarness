@@ -242,16 +242,6 @@ function publicationFileName(manifest) {
   return `publication-${digest.slice("sha256:".length)}.json`;
 }
 
-function samePublicationPayload(left, right) {
-  return canonicalize({
-    entries: left.entries,
-    retention: left.retention
-  }) === canonicalize({
-    entries: right.entries,
-    retention: right.retention
-  });
-}
-
 export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
   requireText(path, "artifact manifest store path");
   invariant(
@@ -579,6 +569,19 @@ export function createAcceptedBackendArtifactManifestPublisher({
     invariant(run.completion?.action === BackendCompletionAction.ACCEPT, "manifest publication requires ACCEPTED Backend completion");
     invariant(Array.isArray(run.result?.artifacts) && run.result.artifacts.length > 0, "manifest publication requires Backend artifacts");
 
+    const existing = await manifestStore.findPublication({
+      producerWorkOrderId,
+      producerRevision,
+      artifacts: run.result.artifacts
+    });
+    if (existing != null) {
+      return freezeClone({
+        manifestRef: existing.ref,
+        manifest: existing,
+        reused: true
+      });
+    }
+
     const producedArtifacts = [];
     for (const [index, rawArtifact] of run.result.artifacts.entries()) {
       const artifact = requireRecord(rawArtifact, `backendRun.result.artifacts[${index}]`);
@@ -611,25 +614,6 @@ export function createAcceptedBackendArtifactManifestPublisher({
       producedArtifacts,
       retention
     });
-
-    const existing = await manifestStore.findPublication({
-      producerWorkOrderId,
-      producerRevision,
-      artifacts: run.result.artifacts
-    });
-    if (existing != null) {
-      if (!samePublicationPayload(existing, manifest)) {
-        throw new ArtifactManifestError(
-          ArtifactManifestErrorCode.MANIFEST_CONFLICT,
-          `recovered artifact publication differs from durable producer receipt: ${producerWorkOrderId}@${producerRevision}`
-        );
-      }
-      return freezeClone({
-        manifestRef: existing.ref,
-        manifest: existing,
-        reused: true
-      });
-    }
 
     const manifestRef = await manifestStore.putManifest(manifest);
     return freezeClone({ manifestRef, manifest, reused: false });

@@ -6,7 +6,6 @@ import { join } from "node:path";
 import test from "node:test";
 
 import {
-  ArtifactManifestErrorCode,
   BackendQaWorkflowStage,
   BackendRecoveryAction,
   BackendWorkStatus,
@@ -392,7 +391,8 @@ test("BB-045 orphan manifest is idempotently recovered after Board checkpoint in
     assert.equal(afterCrash.status, BlackboardStatus.CLAIMED);
     assert.equal(afterCrash.checkpoint.stage, BackendQaWorkflowStage.BACKEND_PENDING);
 
-    const freshParts = manifestParts(manifestPath);
+    const unavailableProducerStore = new Map();
+    const freshParts = manifestParts(manifestPath, unavailableProducerStore);
     const fresh = makeWorkflow({
       orchestrator: makeOrchestrator(),
       artifactReader: freshParts.reader,
@@ -445,7 +445,7 @@ test("BB-045 changed payload after QA_PENDING blocks QA without reopening Backen
   });
 });
 
-test("BB-045 accepted publication is idempotent and conflicting producer bytes fail closed", async () => {
+test("BB-045 accepted publication reuses the durable receipt before later producer reads", async () => {
   await withFixture(async ({ manifestPath }) => {
     const map = contents();
     const parts = manifestParts(manifestPath, map);
@@ -458,16 +458,12 @@ test("BB-045 accepted publication is idempotent and conflicting producer bytes f
       }
     };
     const first = await parts.publisher.publishAcceptedBackendManifest({ itemId: ITEM_ID, backendRun });
-    const second = await parts.publisher.publishAcceptedBackendManifest({ itemId: ITEM_ID, backendRun });
-    assert.equal(second.manifestRef, first.manifestRef);
+    assert.equal(first.reused, false);
 
-    map.set("workspace://rev-2/src/server.js", "export const healthy = false;\n");
-    await assert.rejects(
-      () => parts.publisher.publishAcceptedBackendManifest({ itemId: ITEM_ID, backendRun }),
-      (error) => {
-        assert.equal(error.code, ArtifactManifestErrorCode.MANIFEST_CONFLICT);
-        return true;
-      }
-    );
+    map.clear();
+    const second = await parts.publisher.publishAcceptedBackendManifest({ itemId: ITEM_ID, backendRun });
+    assert.equal(second.reused, true);
+    assert.equal(second.manifestRef, first.manifestRef);
+    assert.deepEqual(second.manifest, first.manifest);
   });
 });

@@ -37,8 +37,9 @@ A manifest-protected `createDurableBackendQaWorkflow(...)` instance receives an 
 ```text
 Backend/Core accepted result
  -> artifactManifestPublisher.publishAcceptedBackendManifest(...)
-    -> producer-side revision-bound bytes
-    -> immutable manifest publication
+    -> existing durable publication receipt? reuse exact manifestRef
+    -> otherwise read producer-side revision-bound bytes
+    -> immutable first manifest publication
     -> exact manifestRef
  -> QA_PENDING checkpoint
     -> accepted Backend handoff
@@ -53,7 +54,9 @@ The direct-reader workflow remains unchanged when no publisher is configured.
 
 If publication fails after Backend execution, the workflow persists the existing Backend stage as `BLOCKED` with `backendRecoveryRequired=true`. After resume, execution re-enters `BackendWorker.recover(...)`; it does not perform a fresh Backend execute merely to recreate manifest state.
 
-If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion reuses the durable publication receipt when the same producer work-order/revision/artifact set resolves to the same producer bytes. The publication slot is keyed by producer work-order + producer revision + artifact ref/path set; the manifest itself still records the original acceptance-decision provenance. Recovery therefore retains that original provenance instead of treating a newly regenerated completion decision as a new publication identity. Conflicting producer bytes for the same publication slot fail closed.
+If manifest publication succeeds but the following Board checkpoint is interrupted, the durable manifest may be orphaned temporarily. Recovered Backend completion first looks up the durable publication receipt by producer work-order + producer revision + artifact ref/path set. If that receipt exists, recovery reuses its exact manifest ref and original acceptance-decision provenance **without re-reading producer bytes**. Producer-side bytes are required only to mint the first trusted receipt. Later QA still reads the payload through the exact manifest-scoped reader and fails closed on missing or changed content.
+
+The publication slot is keyed by producer work-order + producer revision + artifact ref/path set; the manifest itself still records the original acceptance-decision provenance. Concurrent competing first publications remain single-winner through the atomic publication slot.
 
 Direct-reader mode remains unchanged when no publisher is configured.
 
