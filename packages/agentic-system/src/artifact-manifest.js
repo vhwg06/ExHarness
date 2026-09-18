@@ -66,6 +66,16 @@ function parseDecisionRef(raw, name) {
   });
 }
 
+function decisionSemanticDigest(raw) {
+  const value = requireRecord(raw, "Backend acceptance decision");
+  const semantic = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (["id", "digest", "generatedAt"].includes(key)) continue;
+    semantic[key] = structuredClone(entry);
+  }
+  return Object.keys(semantic).length === 0 ? null : digestValue(semantic);
+}
+
 function normalizePath(path, name) {
   return path == null ? null : requireText(path, name);
 }
@@ -125,6 +135,14 @@ function manifestBody(raw) {
     producerWorkOrderId: requireText(value.producerWorkOrderId, "ApplicationArtifactManifest.producerWorkOrderId"),
     producerRevision: requireText(value.producerRevision, "ApplicationArtifactManifest.producerRevision"),
     acceptanceDecision: parseDecisionRef(value.acceptanceDecision, "ApplicationArtifactManifest.acceptanceDecision"),
+    ...(value.acceptanceDecisionSemanticDigest == null
+      ? {}
+      : {
+          acceptanceDecisionSemanticDigest: requireText(
+            value.acceptanceDecisionSemanticDigest,
+            "ApplicationArtifactManifest.acceptanceDecisionSemanticDigest"
+          )
+        }),
     retention: parseRetention(value.retention),
     entries
   };
@@ -205,6 +223,9 @@ export function captureAcceptedBackendArtifactManifest({
     producerWorkOrderId,
     producerRevision,
     acceptanceDecision,
+    ...(decisionSemanticDigest(run.completion.decision) == null
+      ? {}
+      : { acceptanceDecisionSemanticDigest: decisionSemanticDigest(run.completion.decision) }),
     retention,
     entries
   });
@@ -232,11 +253,17 @@ function publicationIdentity(manifest) {
   });
 }
 
+function manifestAcceptanceDecisionIdentity(manifest) {
+  return manifest.acceptanceDecisionSemanticDigest ?? canonicalize(manifest.acceptanceDecision);
+}
+
 function samePublicationPayload(left, right) {
   return canonicalize({
+    acceptanceDecision: manifestAcceptanceDecisionIdentity(left),
     entries: left.entries,
     retention: left.retention
   }) === canonicalize({
+    acceptanceDecision: manifestAcceptanceDecisionIdentity(right),
     entries: right.entries,
     retention: right.retention
   });
