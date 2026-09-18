@@ -107,6 +107,17 @@ export {
   verifyDecisionOutcomeSummary
 } from "./decision-outcome-pilot.js";
 export {
+  ApplicationArtifactManifestKind,
+  ApplicationArtifactManifestVersion,
+  ArtifactAvailability,
+  ArtifactManifestError,
+  ArtifactManifestErrorCode,
+  captureAcceptedBackendArtifactManifest,
+  createJsonArtifactManifestStore,
+  createManifestArtifactReader,
+  defineApplicationArtifactManifest
+} from "./artifact-manifest.js";
+export {
   SelfUpgradeDisposition,
   SelfUpgradeEvaluationVerdict,
   createJsonSelfUpgradeArtifactStore,

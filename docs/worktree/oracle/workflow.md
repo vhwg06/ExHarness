@@ -27,6 +27,20 @@ parse QaWorkOrder
 
 An artifact read error is rethrown with the application-artifact boundary/ref context.
 
+When the D014 optional manifest adapter is enabled, the injected `artifactReader` is wrapped before Oracle sees it:
+
+```text
+QaWorkOrder request
+ -> manifest lookup
+ -> producer/revision/acceptance/stored-revision checks
+ -> payload read
+ -> content-digest check
+ -> { content, sourceRef }
+ -> resolveQaContext(...)
+```
+
+Missing manifest, unavailable payload and identity/provenance mismatches fail closed. The adapter is optional and does not change the default QA resolver or QA context schema.
+
 ## MCP
 
 There is no MCP-backed resolution path in current source. `oracle.js` does not issue `resources/read`, `tools/call`, MRTR retries or Tasks operations, and it persists no MCP continuation state.
