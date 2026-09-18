@@ -206,16 +206,10 @@ BB-045
 question/work: Integrate manifest-protected Backend -> QA continuation so exact producer manifest durability precedes QA_PENDING and publication failure resumes through Backend/Core recovery rather than fresh effect execution.
 kind: IMPLEMENTATION
 priority: P1
-status: CLAIMED
-owner: oracle-detail-session-2026-09-18
+status: DONE
+owner:
 depends-on: [BB-044]
-remaining-work:
-  - add optional producer-manifest publisher composition to createDurableBackendQaWorkflow
-  - persist exact artifact manifest ref in accepted Backend checkpoint and Board artifact refs before QA_PENDING becomes visible
-  - fail closed when a manifest-protected fresh workflow is reconstructed without a manifest-aware reader
-  - on manifest publication failure, persist BLOCKED with backendRecoveryRequired=true so resume uses BackendWorker.recover
-  - make repeated publication idempotent for the same accepted Backend identity and conflicting publication fail closed
-  - preserve direct-reader mode and existing Backend/QA/remediation behavior
+remaining-work: []
 acceptance-criteria:
   - direct-reader workflows are byte-for-byte semantically compatible
   - protected QA_PENDING cannot exist without exact artifactManifestRef
@@ -224,16 +218,26 @@ acceptance-criteria:
   - fresh QA resolution is scoped to the exact persisted manifest ref
   - missing/changed payload after QA_PENDING remains QA/source blocking and never becomes Backend replay authority
 submission:
+  - PR #136
 review-requirements: [application/code review, Oracle architecture-boundary review, crash-recovery review]
-reviews: []
+reviews:
+  - application/code review PASS on exact head 93d7bc79d5d237aa64fc2be146be18bffa6614b0
+  - Oracle architecture-boundary review PASS on exact head 93d7bc79d5d237aa64fc2be146be18bffa6614b0
+  - crash-recovery review PASS on exact head 93d7bc79d5d237aa64fc2be146be18bffa6614b0
 artifact-refs:
   - docs/living/knowledge/bb044-manifest-publication-boundary.md
   - docs/worktree/oracle/artifact-manifest.md
   - packages/agentic-system/src/artifact-manifest.js
   - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/test/bb045-manifest-protected-workflow.test.js
 evidence-refs:
   - BB-044
   - D014
+  - Actions #2101 green on living-doc-impact and Node 20/22/24
+  - application/code review id 5245016965
+  - Oracle architecture-boundary review id 5245017203
+  - crash-recovery review id 5245017399
+  - merge commit 2649986280b3e2a98c27fded346b5dd5b5855f4d
 blockers: []
 follow-up-refs: []
 origin: BB-044 accepted implementation handoff
