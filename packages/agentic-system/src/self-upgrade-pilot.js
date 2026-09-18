@@ -13,6 +13,7 @@ import {
   createResearchContinuationController,
   defineResearchContinuationManifest
 } from "./research-continuation.js";
+import { sessionHandoffFromBlackboard } from "./session-handoff.js";
 
 const STORE_KIND = "SELF_UPGRADE_ARTIFACT";
 const STORE_VERSION = 1;
@@ -440,12 +441,12 @@ export function createSelfUpgradePilotController({
   });
 
   async function assertProtocolAuthority(protocol) {
-    const board = await appOrchestrator.readBlackboard();
-    const root = board.items.find((item) => item.origin?.kind === "USER_INTENT_ROOT") ?? null;
-    invariant(root != null, "self-upgrade pilot requires durable user-intent root");
-    invariant(root.origin?.projectId === expectedProjectId, "self-upgrade pilot project identity mismatch");
+    const session = sessionHandoffFromBlackboard(
+      await appOrchestrator.readBlackboard(),
+      { projectId: expectedProjectId }
+    );
     invariant(
-      protocol.userIntentRef === root.id || protocol.userIntentRef === root.origin?.intentId,
+      protocol.userIntentRef === session.intent.id || protocol.userIntentRef === session.rootItemId,
       "self-upgrade protocol user intent ref does not match durable project intent"
     );
   }
