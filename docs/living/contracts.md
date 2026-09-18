@@ -52,69 +52,6 @@ docs/living/blackboard.md
 33. A fresh session must be able to recover current lifecycle state and artifact/evidence refs from `Blackboard + referenced artifacts` without previous-session context.
 34. A legacy Board without a durable user-intent root must fail closed as not session-handoff safe rather than guessing project intent from task descriptions.
 
-## Durable handoff contract
-
-A fresh session must be able to answer, from durable project state rather than prior model context:
-
-```text
-what project did I open?
-what is the user's objective?
-what work exists and what is eligible?
-what partial checkpoint should resume?
-what is claimed, blocked, pending review or pending reconciliation?
-which exact artifact/evidence refs are required to continue?
-```
-
-The session-handoff surface carries a stable project id on the durable user-intent root. Project identity is distinct from store path, session/owner identity, work id and user-intent id. A project-bound reader fails closed when the expected project id differs. An unbound legacy reader must not silently open a project-bound Board, and a project-bound reader must not silently assign identity to a legacy unbound Board.
-
-## Operational work-item contract
-
-The Markdown Board projection follows the current runtime lifecycle semantics without requiring byte-for-byte JSON identity:
-
-```text
-id: BB-XXX
-question/work: <gap/problem/work to resolve>
-status: READY | CLAIMED | PENDING_REVIEW | REVIEWING | PENDING_RECONCILIATION | BLOCKED | DONE | REOPENED | SUPERSEDED
-owner: <session/agent only while claimed>
-depends-on: []
-remaining-work: []
-checkpoint: <durable partial-work continuation state, when present>
-checkpointed-by: <last session/agent that persisted partial work>
-submission: <immutable submitted result refs, when present>
-review-requirements: []
-reviews: []
-artifact-refs: []
-evidence-refs: []
-blockers: []
-follow-up-refs: []
-origin: <root-intent or parent/finding provenance>
-```
-
-A checkpoint is continuation state, not acceptance state. Persisting a checkpoint never means the work is complete. The Board is operational state, not a diary or architecture document.
-
-## Review and reconciliation contract
-
-Review sources and authorities remain distinct:
-
-```text
-Worker -> REQUEST review
-PM     -> REQUIRE review
-REQUEST != REQUIRE != DISPATCH != ASSESS != ACCEPT
-```
-
-PM owns project coordination, sequencing, dependency, timeline and progress semantics. SA owns architecture constraints/judgment/review. Other specialist execution and review remains vertical and context-bound, and PM/SA receive separately resolved context rather than one universal review context.
-
-Findings are reconciled against current work before new Board work is created:
-
-```text
-finding still belongs to current acceptance obligation -> REOPEN current item and narrow remaining work
-finding already represented elsewhere                 -> LINK existing item
-finding independently actionable                      -> CREATE child/follow-up with provenance
-finding speculative/non-actionable                    -> do not create Board work
-```
-
-Do not generate new work when the finding is evidence that the current work is not done.
-
 ## Knowledge invariants
 
 35. Evidence requires provenance.
