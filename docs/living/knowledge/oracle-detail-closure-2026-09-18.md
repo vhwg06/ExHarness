@@ -27,9 +27,13 @@ The active Oracle-detail Board delivered three source-backed items:
   - publication failure returns through Backend/Core recovery;
   - atomic single-publication slot under concurrent writers;
   - orphan durable publication receipt is reused before producer-byte reads;
+  - receipt reuse is bound to stable Backend acceptance semantics: timestamp-only decision regeneration may reuse the original receipt, while policy/evaluator/subject/evidence/claim/verdict/metadata drift fails closed;
+  - legacy manifests without the semantic digest require exact acceptance-ref equality for receipt reuse;
   - changed/missing payload after QA_PENDING remains a QA/source failure rather than Backend replay authority.
 
 All three Board items are terminal DONE. The active Board has zero READY, CLAIMED, BLOCKED, PENDING_REVIEW, REVIEWING, PENDING_RECONCILIATION or REOPENED items.
+
+The zero-debt scan was revalidated after BB-045 was reopened twice by post-merge evidence: first for receipt-first recovery during producer-store outage (PR #144), then for acceptance-semantic receipt reuse (PR #148). Both findings were reconciled back into BB-045 rather than manufacturing BB-046.
 
 ## Current Oracle boundary after delivery
 
@@ -125,6 +129,7 @@ done: 3
 non-terminal: 0
 next-work-id: BB-046
 new-work-created-by-this-scan: 0
+latest-bb045-remediation: PR #148 / merge 4db3457418836ec7a305f388d20626ddeea41abb
 ```
 
 The Board remains the active coordination surface. BB-046 is reserved, not allocated. Future sessions must not manufacture work from the existence of an unused id.
