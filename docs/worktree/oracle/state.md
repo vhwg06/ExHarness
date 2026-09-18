@@ -40,6 +40,7 @@ QaWorkOrder.requiredArtifacts
 - source errors are wrapped with the concrete failing boundary and requested ref/path;
 - an optional application-owned manifest-validating artifactReader can verify ref/path + producer/revision/acceptance provenance + content digest before QA receives bytes; the default artifactReader path remains unchanged;
 - the optional manifest store is durable filesystem state and the validating reader returns the existing { content, sourceRef } shape after validation;
+- manifest-protected durable Backend -> QA composition persists the exact manifest ref before QA_PENDING and scopes fresh QA reads to that ref; direct-reader mode remains supported;
 - Oracle has no agent loop, session lifecycle, generic resolver registry, MCP-first layer, retrieval framework or cache lifecycle in current source;
 - no MCP client/adapter, MCP request state, MRTR continuation or Tasks handle is implemented or persisted today.
 
