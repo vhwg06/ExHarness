@@ -998,3 +998,832 @@ Validation requirements:
 project/root identity required
 source/policy revision required
 evidence refs non-empty
+decision selected + rejected alternatives explicit
+hard invariants present and unchanged
+acceptance_model present with all required proof obligations
+implementationSlices have unique keys + explicit sourceChanges/verification
+runtime fixture obligation keys unique
+owningDomain/workloadType/issuer/target/derivation explicit
+fixture dependency keys exist and are acyclic
+unresolved questions have an explicit blocking boundary
+no lifecycle/completion authority fields
+```
+
+### 5.2 `MATERIALIZATION_AUTHORIZATION_GRANT / REVOCATION v1`
+
+Artifact acceptance and obligation execution authorization are separate, and authorization is not permanently live.
+
+```yaml
+kind: MATERIALIZATION_AUTHORIZATION_GRANT
+version: 1
+authorizationId: <stable subject>
+generation: <monotonic positive integer>
+projectId: <project>
+rootIntentId: <intent>
+acceptedDecisionRef: <trusted accepted/promotion decision>
+implementationArtifactRef: <exact candidate ref/digest/revision>
+authorizedSliceIds: [integration-a1-runtime-fixture]
+authorizedObligationKeys: [<exact obligation key>]
+issuedByAuthorityRef: <authority>
+authorityPolicyRevision: <pinned model/policy revision>
+```
+
+```yaml
+kind: MATERIALIZATION_AUTHORIZATION_REVOCATION
+version: 1
+authorizationId: <same subject>
+generation: <next generation>
+revokesGrantRef: <exact prior active grant>
+issuedByAuthorityRef: <authority>
+authorityPolicyRevision: <pinned revision>
+reasonRef: <durable reason>
+```
+
+Rules:
+
+```text
+issuedByAuthorityRef is derived from verified issuer context, never caller authority self-assertion
+no implicit wildcard / authorize-all
+immutable grant/revocation payloads
+current status derived from exact authorization head/generation
+candidate/decision/policy change invalidates stale grant use
+materialize + claim + execution-entry revalidate active generation
+revocation fences linked non-terminal work so it cannot start under stale authority
+```
+
+### 5.2.1 `EXECUTION_AUTHORITY_POLICY / HEAD v1`
+
+```yaml
+kind: EXECUTION_AUTHORITY_POLICY
+version: 1
+policyId: organization-execution-authority
+generation: <monotonic positive integer>
+projectId: <project>
+status: ACTIVE | DISABLED
+bindings:
+  - principalRef: <trusted principal ref>
+    authorizedDomains: [<domain>]
+issuedByAuthorityRef: <trusted application/root authority>
+```
+
+Durable currentness:
+
+```text
+policyId -> { generation, status, policyRef }
+CAS update requires expected generation
+fresh process resolves same head
+old immutable policy refs remain historical only
+```
+
+A claim controller must authorize against the current head, not merely a caller-supplied or previously cached policy ref.
+
+### 5.2.2 `CLAIM_RELEASE_RECEIPT / HEAD v1`
+
+```yaml
+kind: CLAIM_RELEASE_RECEIPT
+version: 1
+projectId: <project>
+rootIntentId: <root>
+itemId: <board item>
+claimGeneration: <exact current generation>
+principalRef: <trusted principal>
+boardOwner: <derived owner>
+workContractRef: <exact>
+materializationAuthorizationRef: <exact active grant>
+materializationAuthorizationGeneration: <generation>
+executionAuthorityPolicyRef: <exact current policy>
+executionAuthorityPolicyGeneration: <generation>
+```
+
+The durable release head is keyed by the exact claim subject:
+
+```text
+claimReleaseSubjectKey = H(projectId, itemId, claimGeneration)
+claimReleaseSubjectKey -> { status: RELEASED | FENCED, receiptRef }
+```
+
+`CLAIMED` without a current release-head receipt is non-executable. The receipt becomes usable only after fresh authority revalidation at execution entry.
+
+### 5.3 `ORGANIZATION_WORK_CONTRACT v1`
+
+```yaml
+kind: ORGANIZATION_WORK_CONTRACT
+version: 1
+id: <content-addressed id>
+projectId: <project>
+rootIntentId: <intent>
+researchDecisionRef: <accepted/promotion ref>
+materializationAuthorizationId: <stable auth subject>
+materializationAuthorizationRef: <exact active grant ref>
+materializationAuthorizationGeneration: <generation>
+implementationArtifactRef: <exact accepted candidate artifact ref>
+obligationKey: <authorized key>
+obligationSubjectKey: <deterministic logical obligation identity>
+materializationKey: <deterministic exact grant-bound materialization identity>
+boardItemId: <canonical derived/materialized item id>
+owningDomain: <domain>
+workloadType: <type>
+summary: <bounded work>
+requiredArtifactRefs: []
+expectedArtifactKind: <kind>
+acceptanceRefs: []
+```
+
+Authority restrictions:
+
+```text
+may bind exact project/item/domain/input/output/acceptance refs
+may be consumed by discovery/context/claim authorization
+may NOT mutate lifecycle, certify correctness, waive review, close objective, or resolve ExecutionPolicy/ExecutionStrategy
+```
+
+Exactly-once logical work rules:
+
+```text
+obligationSubjectKey = H(projectId, rootIntentId, implementationArtifactRef, obligationKey)
+materializationKey   = H(obligationSubjectKey, acceptedDecisionRef, materializationAuthorizationRef)
+same materializationKey -> same Board item + commit receipt
+at most one live item per obligationSubjectKey
+caller cannot choose a second arbitrary id for the same subject
+```
+
+## 6. Acceptance authority for this candidate
+
+This artifact can be submitted through the existing research continuation boundary as:
+
+```text
+decisionStatus = PROPOSED
+resultRef = exact candidate artifact ref
+reviewRequirement = research-workflow / organizational-integration-readiness
+Board = PENDING_REVIEW
+```
+
+An independent reviewer/evaluator must assess the exact candidate against Section 12.
+
+This reuse of the existing review lifecycle does **not** assume that any configured `research-workflow` reviewer is automatically sufficient for a phase-shaping architecture artifact. The inspected source proves the review lifecycle, not that the configured reviewer scope is sufficient at organization-authority/contract scale, so review adequacy must be checked explicitly.
+
+The reviewer/evaluator authority used for BB-046 must cover at least:
+
+```text
+organizational authority model
+Blackboard/application boundary
+artifact/provenance contract
+first-bridge source seams
+hard invariants
+known unresolved blocking matrix
+```
+
+If the configured reviewer is scoped only to a narrow research finding, its PASS cannot authorize this candidate. The review requirement must be widened or supplemented by an appropriate architecture/application authority review. Reuse the lifecycle; do not rubber-stamp the scope.
+
+A successful adequate review may authorize **delivery of `implementationSlices[implement-integration-a1]` through the existing project-delivery lifecycle**. It does not require or invoke the new materializer.
+
+After A.1 exists, the bridge acceptance fixture separately obtains an explicit runtime materialization scope:
+
+```yaml
+kind: MATERIALIZATION_AUTHORIZATION_GRANT
+authorizationId: <stable subject>
+generation: 1
+acceptedDecisionRef: <exact accepted decision>
+implementationArtifactRef: <exact artifact ref/digest/revision>
+authorizedSliceIds: [integration-a1-runtime-fixture]
+authorizedObligationKeys: [<exact keys>]
+issuedByAuthorityRef: <authority ref>
+authorityPolicyRevision: <pinned policy/model revision>
+```
+
+There is no implicit wildcard/all-obligations meaning in v1. `OrganizationWorkMaterializer` may execute only when the requested obligation key is present in this exact scope and the scope is fresh for the accepted candidate.
+
+Adequacy is **not reviewer self-attestation**. Before review dispatch, the BB-046 review requirement must declare the required scope keys and bind the exact candidate ref/digest/revision plus expected reviewer/evaluator identity. The application can machine-check those fields and freshness. Whether the configured reviewer/evaluator is organizationally authorized for the declared scope keys remains project-authority configuration; if current configuration cannot carry that scope metadata, add a separate architecture/application review requirement. A reviewer cannot satisfy adequacy by merely asserting "I am qualified" inside the verdict.
+
+The candidate artifact itself is never the acceptance authority.
+
+---
+
+## 7. First implementation slice after acceptance
+
+Name: **Research-to-role-work bridge**.
+
+Bootstrap is explicit:
+
+```text
+BB-046 accepted for source slice `implement-integration-a1`
+  -> explicit existing/human-authorized implementation handoff implements A.1
+  -> A.1 code exists
+  -> post-build runtime fixture creates exact fixture obligation + ACTIVE runtime grant
+  -> materializer -> Board work -> trusted-principal claim
+```
+
+The component under construction never creates its own implementation task.
+
+### Required source changes
+
+#### New — `packages/agentic-system/src/organizational-integration-artifact.js`
+
+```text
+defineOrganizationalIntegrationImplementation(...)
+defineMaterializationAuthorization(...)
+defineExecutionAuthorityPolicy(...)
+defineClaimReleaseReceipt(...)
+defineClaimAuthorityInvalidation(...)
+defineOrganizationWorkContract(...)
+validate obligation dependency graph
+validate unresolved blocking metadata
+validate exact hard-invariant set
+validate CLAIM_AUTHORITY_INVALIDATION exact claim/head bindings
+```
+
+#### New — `packages/agentic-system/src/organizational-integration-store.js`
+
+Content-addressed/ref-only store for immutable organizational artifacts used by A.1: candidate implementation artifact, materialization grant/revocation, execution-authority policy, claim-release receipt, claim-authority invalidation and organization work contract. Storage gains no lifecycle/currentness/acceptance authority; currentness lives only in the explicit head stores.
+
+#### New — `packages/agentic-system/src/organization-authorization-store.js`
+
+Durable CAS-fenced application-local currentness indexes for immutable authority artifacts:
+
+```text
+materialization authorization:
+  resolveAuthorizationHead(authorizationId)
+  compareAndSetAuthorizationHead(authorizationId, expectedGeneration, nextHead)
+  authorizationId -> { generation, status, grantOrRevocationRef }
+
+execution authority policy:
+  resolveExecutionAuthorityPolicyHead(policyId)
+  compareAndSetExecutionAuthorityPolicyHead(policyId, expectedGeneration, nextHead)
+  policyId -> { generation, status, policyRef }
+
+expected generation required for every head update
+fresh instance reconstructs the same heads
+```
+
+The head indexes are authority-currentness state; immutable grant/revocation/policy payloads remain content-addressed artifacts. This is a narrow application store, not a generic IAM database.
+
+#### New — `packages/agentic-system/src/organization-authorization.js`
+
+Concrete first-bridge authority adapter. It reuses the same architectural pattern as current `reviewTrust.verify*Authority`: authority is checked by an injected application trust boundary, not inferred from payload prose/ids.
+
+```text
+trusted organizationAuthority adapter/context
+  verifyMaterializationAuthorizationIssuer(...)
+  verifyExecutionAuthorityPolicyPublisher(...)
+  derive canonical issuedByAuthorityRef from verified principal/context
+trusted ExecutionPrincipal provider/context
+durable EXECUTION_AUTHORITY_POLICY head/model + revoke-sensitive lookup
+durable MATERIALIZATION_AUTHORIZATION CAS head resolution
+immutable CLAIM_RELEASE_RECEIPT construction + release-head publication
+precheck/post-release freshness handshake + stale-generation fencing
+```
+
+No caller-provided domain string grants authority. No caller-provided `issuedByAuthorityRef` grants issuer/publisher authority either.
+
+#### New — `packages/agentic-system/src/organization-claim-release-store.js`
+
+Durable CAS state for crossing Board lifecycle ownership into executable capability:
+
+```text
+claimReleaseSubjectKey(projectId, itemId, claimGeneration)
+  -> { status: RELEASED | FENCED, receiptRef }
+
+resolveClaimReleaseHead(subjectKey)
+compareAndSetClaimReleaseHead(subjectKey, expectedState, nextState)
+
+first release: ABSENT -> RELEASED(exact receiptRef)
+identical replay: return same receipt/head
+conflicting receipt for same subject: fail closed
+fence: RELEASED(exact receiptRef) -> FENCED(exact receiptRef, reasonRef)
+```
+
+Receipt payloads remain immutable/content-addressed in the organizational artifact store. `ClaimReleaseHead` is capability currentness only; it does not release or block Blackboard ownership. On authority invalidation, the Board lifecycle transition commits first, then this head is fenced idempotently. A later ordinary claim uses a new `claimGeneration` and therefore a new release subject.
+
+#### New — `packages/agentic-system/src/organization-work-materializer.js`
+
+Deterministic adapter from one explicitly authorized obligation to one immutable work contract + canonical Board work request.
+
+```text
+resolve exact candidate + accepted decision + ACTIVE authorization grant/generation
+verify key/slice scope
+compute obligationSubjectKey + materializationKey
+copy exact owningDomain/workloadType/dependencies/output/acceptance semantics
+persist content-addressed ORGANIZATION_WORK_CONTRACT
+delegate canonical creation to materializeAcceptedWork(...)
+```
+
+No PM proposal dependency, model call, next-role selection or execution-policy/strategy resolution.
+
+#### Change — `packages/agentic-system/src/application-orchestrator-base.js`
+
+Add one narrow mutation primitive, not a scheduler:
+
+```text
+materializeAcceptedWork({
+  acceptedDecisionRef,
+  materializationAuthorizationRef,
+  materializationAuthorizationGeneration,
+  implementationArtifactRef,
+  obligationKey,
+  obligationSubjectKey,
+  materializationKey,
+  workContractRef
+})
+```
+
+Transaction requirements:
+
+```text
+revalidate exact project/root + current ACTIVE authorization generation
+verify accepted decision/artifact/scope
+validate deterministic identity keys
+at most one live item per obligationSubjectKey
+same materializationKey replay returns same item/commit receipt
+conflicting replay fails closed
+derive/validate canonical item identity; caller cannot choose arbitrary duplicate id
+attach workContract/auth/provenance atomically
+```
+
+Also add one narrow **canonical organization-claim invalidation** mutation, distinct from generic `recoverClaim(...)`:
+
+```text
+invalidateOrganizationClaim({
+  itemId,
+  expectedOwner,
+  expectedClaimGeneration,
+  invalidationRef,
+  invalidationKind
+})
+```
+
+Transaction requirements:
+
+```text
+require exact current CLAIMED { owner, claimGeneration }
+require immutable validated CLAIM_AUTHORITY_INVALIDATION ref
+
+EXECUTION_AUTHORITY_INVALIDATED
+ABANDONED_PROVISIONAL_CLAIM
+  -> attach invalidationRef
+  -> owner = null
+  -> status = REOPENED
+
+WORK_AUTHORIZATION_INVALIDATED
+  -> attach invalidationRef
+  -> owner = null
+  -> status = BLOCKED
+  -> add exact authorization-invalidated blocker/ref
+
+same invalidationRef replay -> idempotent committed result
+stale/conflicting expected tuple -> fail closed
+```
+
+This Blackboard transaction is the **canonical lifecycle consequence** of authority invalidation. It commits before any `ClaimReleaseHead` fencing. The release-head fence is capability cleanup/currentness only, not lifecycle authority. Generic `recoverClaim(...)` is not used as a revocation alias.
+
+#### New — `packages/agentic-system/src/organization-work-selection.js`
+
+Read-only domain discovery:
+
+```text
+SessionHandoffSurface.read()
+  -> lifecycle.eligibleWork
+  -> item-scoped artifact refs
+  -> resolve exact ORGANIZATION_WORK_CONTRACT
+  -> validate project/root/item binding
+  -> filter owningDomain
+  -> candidates
+```
+
+No claim and no Board mutation.
+
+#### New — `packages/agentic-system/src/organization-work-claim.js`
+
+Application authorization gate:
+
+```text
+claimForPrincipal({ itemId, executionPrincipalContext })
+  -> derive trusted ExecutionPrincipal (or accept only framework-authenticated context)
+  -> resolve CURRENT ExecutionAuthorityPolicyHead(policyId)
+  -> derive authorizedDomains(principal) from exact current policyRef/generation
+  -> precheck current ACTIVE materialization-auth head
+  -> re-read current Board + exact work contract
+  -> require workContract.owningDomain in principal authorizedDomains
+  -> derive Board owner/execution identity from trusted principal
+  -> delegate ApplicationOrchestrator.claim(...) as provisional claim generation N
+  -> re-read Board claim + both authority heads
+       drift/revoked ->
+         create immutable CLAIM_AUTHORITY_INVALIDATION
+         commit ApplicationOrchestrator.invalidateOrganizationClaim(...) first
+         idempotently fence ClaimReleaseHead(itemId,N) if one exists
+         fail closed
+  -> build immutable CLAIM_RELEASE_RECEIPT bound to itemId/N/principal/work/auth/policy heads
+  -> CAS publish ClaimReleaseHead(itemId,N) -> exact receiptRef
+  -> final re-read Board claim + both authority heads
+       unchanged -> return durable releasedClaimReceiptRef
+       drift/revoked ->
+         create immutable CLAIM_AUTHORITY_INVALIDATION
+         commit Board lifecycle invalidation first
+         idempotently fence ClaimReleaseHead(itemId,N)
+         fail closed
+```
+
+`requestedDomain` is not an authority parameter. A non-BA principal cannot claim BA work by spoofing the string. For organization-managed claims, the Board owner is the canonical durable principal identity (or a durable reversible mapping), so a fresh process can recover the principal from Board state.
+
+The same module exposes explicit fresh-process reconciliation:
+
+```text
+reconcileOrganizationClaimAuthority({ itemId })
+  -> read exact current Board item
+  -> if not CLAIMED: no organization-claim reconciliation needed
+  -> resolve canonical principal from durable Board owner
+  -> resolve exact work contract + current materialization-auth head + current execution-authority-policy head
+  -> resolve ClaimReleaseHead(itemId, claimGeneration)
+
+  no release head + authority still valid
+    -> deterministically finish release for SAME claimGeneration
+    -> publish/reuse exact CLAIM_RELEASE_RECEIPT
+
+  no release head + authority invalid
+    -> create/reuse CLAIM_AUTHORITY_INVALIDATION
+    -> invalidateOrganizationClaim(...)
+
+  RELEASED head + authority still valid
+    -> return/reconstruct exact usable receipt
+
+  RELEASED/FENCED head + authority invalid or inconsistent
+    -> commit/reconcile canonical Board invalidation first
+    -> fence/verify historical release head idempotently
+```
+
+Canonical lifecycle mutation remains in `ApplicationOrchestrator.claim(...)` / `invalidateOrganizationClaim(...)`. The claim-release store is a distinct durable capability boundary: `CLAIMED` alone is never executable. Execution entry must revalidate Board `{owner, claimGeneration}`, direct current release head, materialization authorization head and execution-authority policy head before creating or recovering any `ExecutionAttemptBinding`.
+
+#### Later owning-domain execution boundary — required before Integration B execution
+
+A.1 stops at claim. Current source still assigns Worker execution selection to Orchestrator, so Integration B requires an accepted `DOMAIN_EXECUTION_CONTROL` migration.
+
+After a **released** claim:
+
+```text
+OwningDomainController (single released claim only)
+  -> resolve/create durable semantic ExecutionAttemptHead for this work
+       ACTIVE/RECOVERY_REQUIRED -> reuse same executionAttemptId
+       new attempt only after exact remediation/lifecycle authorization
+  -> read exact domain execution-policy head
+  -> resolve immutable ExecutionPolicy for (domain, workloadType, WorkContract version)
+  -> resolve immutable ExecutionStrategyDescriptor
+  -> validate workload/work-contract compatibility
+  -> obtain exact runtime binding before side effects
+  -> persist ExecutionAttemptBinding
+       executionAttemptId
+       workContractRef
+       releasedClaimReceiptRef
+       executionPolicyRef
+       executionStrategyRef
+       strategyKind / strategyId / strategyVersion
+       runtimeBindingRef / runtimeCodeIdentity
+       contextPolicyRef
+       toolset/model/harness refs where applicable
+  -> invoke strategy with executionAttemptId as attempt identity/idempotency subject
+  -> persist runtimeInvocationId + ExecutionAttemptOutcome/provenance
+  -> ordinary domain completion / verifier / Claim publication gate
+```
+
+The controller cannot scan/rank the Blackboard, claim unrelated work, change owning domain, modify work semantics, or bypass write/obligation authority. Strategy output is execution evidence/output only; product authority remains outside the strategy.
+
+`ORGANIZATION_WORK_CONTRACT` carries no `ExecutionPolicyRef`, `ExecutionStrategyRef` or runtime target; it defines WHAT, not HOW. A pipeline/workflow may be used *inside* a strategy adapter but is not part of organizational work semantics.
+
+Recovery/takeover of the same semantic execution attempt must use the same `ExecutionAttemptHead`, `executionAttemptId` and binding even when Board `claimGeneration` changes for writer fencing. A new remediation attempt receives a new `executionAttemptId` only after an explicit durable remediation/lifecycle transition advances the attempt head, and may then resolve a newer accepted policy. A policy/strategy promotion applies to new attempts only unless a separately authorized migration explicitly says otherwise.
+
+Execution provenance must begin in Integration B; Integration I aggregates it later rather than inventing it retroactively.
+
+Minimum Integration-B execution-control tests:
+
+```text
+- policy sees only one released claim/work contract; cannot select another Board item
+- incompatible strategy/work-contract version fails closed
+- policy-head change before binding commit invalidates/restarts resolution; no stale binding is released
+- policy-head change after binding commit does not rewrite the in-flight attempt
+- same executionAttemptId recovery reloads byte-equivalent binding
+- new remediation attempt gets a new executionAttemptId and may use a newer policy
+- strategy promotion does not stale already accepted product artifacts merely because HOW changed
+- strategy output cannot publish authoritative Claim without ordinary domain completion/write gates
+- human-assisted strategy cannot bypass the same gates
+- a Backend strategy cannot directly dispatch QA organizational work; cross-domain continuation requires authorized Obligation/materialization/claim
+- Restate Workflow adapter never uses stable workId as the once-per-workflow identity when remediation can create multiple attempts
+- Restate adapter records runtime invocation/deployment identity and proves it matches the binding before outcome is accepted
+```
+
+#### No change in first bridge slice
+
+```text
+packages/core-harness/*
+Oracle generic boundary
+blackboard-orchestrator generic item schema
+research-continuation lifecycle
+ProductStateProjection
+QA/deployment revision freeze
+```
+
+---
+
+## 8. Deterministic materialization + authorization/replay contract
+
+Preconditions:
+
+```text
+trusted accepted decision binds exact candidate
+ACTIVE authorization grant binds exact decision + candidate + project/root + slice/key + policy revision + generation
+caller supplies exact obligationKey but request is not authority
+obligation unchanged in candidate
+identity keys recompute exactly
+```
+
+Ordering:
+
+```text
+precheck current authorization head/generation with revoke-sensitive consistency
+ -> compute obligationSubjectKey + materializationKey
+ -> derive/persist immutable work contract
+ -> materializeAcceptedWork Board transaction
+      uses exact prechecked head as expected fence metadata
+      enforces logical uniqueness
+      returns PROVISIONAL Board commit receipt
+ -> post-commit re-read authorization head
+      same ACTIVE generation -> release usable receipt
+      drift/revoked -> fence/supersede just-created work + fail closed
+```
+
+Failure/race semantics:
+
+```text
+contract put then crash -> orphan, no authority
+concurrent identical retry -> same materializationKey -> same Board item/receipt
+conflicting same obligation subject -> fail closed
+revoke before claim -> claim gate rejects inactive authorization; no lifecycle ownership is created
+claim uses precheck auth+principal-policy heads -> provisional Board claim -> post-commit recheck
+head drift during that handshake -> commit exact `invalidateOrganizationClaim(...)`; no usable claim receipt
+revoke after released claim before execution -> execution-entry refuses stale authority, commits Board invalidation first, then fences historical release head
+```
+
+Content-addressed payload identity is necessary but **not sufficient** for exactly-once logical organizational work.
+
+## 9. Bootstrap and relationship to Integration B
+
+```text
+A.1 delivery plane
+  accepted implementation slice -> existing delivery lifecycle -> bridge code
+
+A.1 system-under-test plane
+  bridge fixture -> exact runtime grant -> BA-owned READY/claimable fixture work
+
+Integration B real product plane
+  RootIntent + ROOT_OUTCOME_SET -> PM ProductObjective/ScopeDecision
+  -> BA requirement-analysis workload -> RequirementSet
+```
+
+The bridge fixture is not the product vertical and its runtime authorization is not the implementation authorization that built the bridge.
+
+---
+
+## 10. Explicit unresolved mechanism matrix
+
+| Gap | First bridge status | Why non-blocking for first bridge | Becomes blocking before | Required next research/output |
+| --- | --- | --- | --- | --- |
+| Domain wake-up trigger | OPEN | A.1 explicit/pull only. | Integration D | `DOMAIN_ACTIVATION`; Activation != Scheduling. |
+| Domain execution-control ownership | OPEN | A.1 stops after claim. Current source assigns Worker selection to Orchestrator. | **Integration B** | `DOMAIN_EXECUTION_CONTROL`: Orchestrator lifecycle only; owning-domain controller owns durable semantic `ExecutionAttemptHead`, resolves `ExecutionPolicy -> ExecutionStrategyRef -> ExecutionAttemptBinding`, proves exact runtime binding, and emits durable provenance. Restart/takeover reuses the same active attempt; only explicit remediation/lifecycle authority may advance attempt generation. |
+| Domain write-scope authority | OPEN | A.1 performs no role work. | B exit / reusable before C | enforced PM/BA writers; then reusable policy. |
+| Cross-domain obligation issuance authority | OPEN | A.1 consumes one pre-authorized obligation. | C | allowed obligation kinds/targets/derivation refs. |
+| Root intent / scope authority | OPEN | A.1 does not exercise PM product scope. | B | ROOT_OUTCOME_SET coverage; no B-v1 policy-exception bypass. |
+| Dependency/Claim lineage + transitive invalidation | OPEN | no downstream product graph. | C | immutable exact refs + stale propagation/CAS/recovery. |
+| Product-history completeness/projection subject | OPEN | no projection in A.1. | G | canonical history/head or equivalent completeness proof; projection derives current set. |
+| Remediation timeout/escalation + human decision | OPEN | no loop. | F exit / H | bounded budget + BLOCKED + HUMAN_DECISION_REQUIRED. |
+| QA exact revision freeze | OPEN | no QA/deploy. | F | AcceptanceSnapshot + observed runtime identity. |
+| PM waiver vs override | OPEN | no closure. | G | separate waiver authority; waiver != root amendment. |
+| Post-closure invalidation/currentness | OPEN | no closure. Current `supersede(DONE)` is not available as generic mechanism. | G/H | snapshot-relative ProductOutcomeClaim + new head/current projection + revalidation work, or separately reviewed terminal reopen. |
+| Execution-strategy/policy drift during self-improvement | OPEN | no post-claim execution or upgrade. | J | fixed-work-semantics compatibility + immutable strategy refs + replay/eval; promotion changes HOW for new attempts only. |
+
+Six mechanisms are **no longer allowed to remain unresolved inside A.1 itself**: trusted principal/domain authority, durable execution-authority-policy currentness, authorization grant/revocation freshness, deterministic materialization identity, durable claim-release capability/reconstruction, and canonical authority-revocation -> Blackboard lifecycle invalidation.
+
+### Claim authority is not write-scope authority
+
+The first bridge solves only the entry gate:
+
+```text
+may this domain claim this work item?
+```
+
+It does not yet establish the execution-time writer gate:
+
+```text
+after a valid claim, which artifact kinds or mutations may this domain publish?
+```
+
+Integration B may use concrete PM and BA producer APIs/stores instead of a generic policy, but this **must be enforced and negatively tested**, not documented as convention: PM cannot publish `RequirementSet`; BA cannot publish `ProductObjective`/`ScopeDecision`; producer identity binds authoritative artifacts/claims; forbidden cross-domain writes fail closed. Those tests are an Integration B exit condition.
+
+Before Integration C introduces SA as another independent writer, reusable cross-domain authority must cover **both product writes and obligation issuance**:
+
+```text
+canPublishArtifactKinds
+canPublishClaimKinds
+canIssueObligationKinds
+allowedTargetDomains
+requiredDerivationRefs
+forbiddenMutations
+```
+
+The receiving/materialization gate must verify that an emitted obligation is allowed for its issuer/domain/kind/target and is grounded in the required current claim/evidence/policy refs. Creating an arbitrary obligation for another domain is dispatch authority and must fail closed.
+
+---
+
+## 11. Product-state, completeness and post-closure currentness
+
+Later product composition must not ask a caller to nominate “current” refs.
+
+```text
+canonical append-only product history / equivalent durable fact ledger
+  -> ProductHistoryHead { generation, digest }
+  -> derive complete active Claims + Obligations + lineage at that head
+
+ProductStateProjectionInput
+  = ProductHistoryHead ref/generation/digest
+  + exact RootIntent/RootOutcomeSet/ProductObjective refs
+  + acceptance-policy revision
+  + applicable waiver refs
+```
+
+`ProductStateProjection` is deterministic/read-only and rebuildable. Caller-selected `currentClaimRefs[]` / `currentObligationRefs[]` are rejected as a completeness model.
+
+`ProductOutcomeClaim` binds exact projection subject/input digest + history head. A later upstream supersession creates a new head; old ProductOutcomeClaim remains immutable historical evidence but is non-current if its dependencies are no longer current. The new projection may become NOT_READY and create bounded revalidation/remediation work.
+
+This matters because current inspected Blackboard source rejects `supersede(...)` from `DONE`; therefore the architecture must not casually assume terminal mutation exists. First implementation direction for G/H is historical closure + derived current readiness. A generic terminal-DONE reopen primitive is an alternative requiring separate research/acceptance.
+
+## 12. Independent review checklist
+
+A reviewer should reject this candidate if any of these cannot be answered from the artifact + evidence refs:
+
+```text
+1. Who is allowed to authorize implementation?
+2. What exact source boundary changes in the first bridge slice?
+3. Why are domain fields not added to Blackboard yet?
+4. What authority enforcement replaces self-reported owningDomain?
+5. How is ORGANIZATION_WORK_CONTRACT governed and updated?
+6. How is the bridge different from the PM+BA product vertical?
+7. Why is global BSP rejected and where are local barriers still allowed?
+8. Which known gaps remain open, and exactly when does each become blocking?
+9. Are all hard invariants preserved by the proposed source seams?
+10. Is claim authorization clearly separated from domain write-scope authorization?
+11. Does the configured reviewer/evaluator actually have authority and scope for this architecture-level decision rather than only a narrow research finding?
+12. Does the candidate preserve the full acceptance_model: exact revision lineage, deterministic stale propagation, crash/restart reconstruction, no shared conversation dependency, local bounded remediation, deterministic objective readiness and rebuildable/non-authoritative ProductStateProjection?
+13. Can a fresh implementation session derive tests without reconstructing these decisions from chat history?
+14. Is PM clearly prevented from becoming an organization scheduler through materialization?
+15. Is RootIntent protected from ordinary PM scope weakening/closure substitution?
+16. Is work-contract publication crash-safe under write-before-ref semantics?
+17. Is dependency invalidation explicitly blocked before the first slice that uses it (Integration C)?
+18. Is ProductStateProjection explicitly non-authoritative and rebuildable from complete pinned policy/root/waiver/claim inputs?
+19. Does acceptance bind an exact materialization scope rather than implicitly authorizing every obligation?
+20. Is ExecutionPolicy/ExecutionStrategy resolution absent from materialization and deferred to the owning domain after a released claim?
+21. Are claim assertion payloads immutable after publication?
+22. Is cross-domain obligation issuance explicitly governed before Integration C?
+23. Does `ROOT_INTENT_SCOPE_AUTHORITY` reduce PM weakening detection to mandatory-id coverage plus authorized exceptions rather than PM semantic self-report?
+24. Does Product QA require observed runtime identity evidence bound to the exact `AcceptanceSnapshot`?
+25. Are remediation/verification time and cost budgets explicit before unattended E2E?
+
+26. Does claim authority derive from a trusted ExecutionPrincipal + pinned authority policy rather than caller `requestedDomain`?
+27. Does materialization authorization bind decision/candidate/policy generation and have explicit revoke/supersede freshness semantics?
+28. Does identical concurrent materialization converge on one logical Board work identity/commit receipt?
+29. Is post-claim execution selection explicitly migrated away from current Orchestrator ownership before Integration B execution?
+30. Does DOMAIN_EXECUTION_CONTROL pin an immutable ExecutionAttemptBinding before execution?
+31. Is ExecutionAuthorityPolicy currentness a durable CAS-fenced head rather than ambient config?
+32. Is Board CLAIMED explicitly non-executable until an exact durable CLAIM_RELEASE_RECEIPT is released/revalidated?
+33. Does execution-attempt ownership prevent restart/takeover from minting a new semantic attempt?
+34. Can a strategy/policy revision change without changing WorkContract/acceptance semantics?
+35. For a Restate adapter, is exact strategy runtime identity addressable/verified before start rather than inferred from "latest" after execution?
+36. Does a Restate workflow use executionAttemptId rather than stable workId for once-per-ID semantics?
+37. Is execution provenance mandatory from Integration B onward rather than deferred to Integration I?
+38. Does authority revocation have one canonical Blackboard lifecycle transition, with Board invalidation committed before ClaimReleaseHead fencing?
+39. Can a fresh process reconcile a provisional/released invalid claim without treating generic `recoverClaim(...)` as revocation?
+40. Is organization-managed Board owner identity durable/canonical enough to recover the principal after a crash before claim-release publication?
+41. Does ProductStateProjection derive completeness from a canonical ProductHistoryHead rather than arbitrary caller-selected current refs?
+42. Is post-closure invalidation defined without mutating historical ProductOutcomeClaim or assuming an unavailable `supersede(DONE)` primitive?
+```
+
+Passing this review would authorize **the first bridge slice only**. It would not authorize the full A→J integration roadmap as already implementation-ready. A lifecycle-valid but scope-inadequate/rubber-stamp review must not be treated as sufficient acceptance evidence.
+
+---
+
+## 13. Verification contract for the first bridge slice
+
+Required executable scenarios after independent acceptance:
+
+```text
+bootstrap separation
+- accepted BB-046 source slice can be delivered without OrganizationWorkMaterializer existing
+- bridge component never creates its own implementation task
+- research acceptance alone does not authorize runtime organization work
+- runtime fixture grant is issued/used only after A.1 code exists
+
+artifact / authorization validation
+- unreviewed runtime fixture cannot materialize
+- forged/self-asserted issuedByAuthorityRef cannot issue a materialization grant or publish an execution-authority policy
+- worker/BA execution principal cannot advance authorization/policy heads unless separately trusted as the configured authority publisher
+- grant binds exact acceptedDecisionRef + candidate + project/root + slice/key + authorityPolicyRevision + generation
+- wildcard/implicit-all rejected
+- revoked/superseded grant rejected
+
+trusted principal authorization
+- BA principal can claim BA item
+- non-BA principal sending requestedDomain=BA still fails closed
+- principal/domain membership revoked in current execution-authority policy makes claim fail even if an older policy allowed it
+- current execution-authority policy head survives fresh-process reconstruction with exact policyId/generation/policyRef/status
+- old policy ref is rejected after head advances, even if that old policy allowed the principal
+- concurrent policy-head update uses CAS; stale publisher cannot overwrite current head
+- current execution-authority policy/model revision is recorded in claim/release provenance
+- Board owner identity is derived from trusted principal/execution context
+
+exactly-once logical materialization
+- deterministic obligationSubjectKey/materializationKey recompute exactly
+- two concurrent identical materializations -> one Board item + same commit receipt
+- same obligationSubjectKey with conflicting contract/grant -> fail closed
+- caller cannot create second item by supplying another id
+
+claim-release durability
+- Board CLAIMED with no ClaimReleaseHead is non-executable
+- crash after Board claim but before release-head commit reconstructs a provisional/non-executable claim
+- fresh reconciliation derives the canonical principal from durable Board owner; if authority is still valid it completes the SAME claim-generation release rather than minting a new claim
+- crash after release-head commit reconstructs the same immutable CLAIM_RELEASE_RECEIPT
+- duplicate release for the same itemId/claimGeneration returns the same receipt/head
+- conflicting receipt for the same release subject fails closed
+- ClaimReleaseHead.FENCED alone never counts as Blackboard lifecycle release
+
+canonical authority invalidation
+- EXECUTION_AUTHORITY_INVALIDATED on exact CLAIMED tuple -> Board REOPENED, owner cleared, invalidationRef atomically linked
+- ABANDONED_PROVISIONAL_CLAIM -> Board REOPENED, owner cleared
+- WORK_AUTHORIZATION_INVALIDATED -> Board BLOCKED, owner cleared, exact blocker/invalidationRef linked
+- invalidation does not use generic recoverClaim as a revocation alias
+- identical invalidation replay is idempotent
+- stale/conflicting expected owner/generation fails closed
+- after REOPENED invalidation, next authorized ordinary claim advances to a new claimGeneration
+
+revoke / race
+- authorization-head store survives fresh-process reconstruction with same current generation
+- grant revoked after materialization before claim -> item non-claimable
+- revoke/policy change between precheck and Board claim commit -> exact claim is invalidated through canonical Board transition
+- revoke between materialization precheck and Board commit -> post-commit check invalidates provisional work deterministically
+- revoke/policy-head change after release before execution -> execution-entry refuses stale receipt, commits Board invalidation first, then fences old release head
+- crash after Board invalidation before release-head fence -> Board is already non-executable; fresh process fences old head idempotently
+- crash before Board invalidation -> fresh `reconcileOrganizationClaimAuthority(...)` revalidates the exact current claim; valid authority completes/reuses release, invalid authority retries exact invalidation
+- concurrent generic recover/takeover vs invalidation: one exact Board transaction wins; stale loser fails closed and must re-resolve current tuple/authority
+- concurrent new claimant cannot claim until invalidation commits REOPENED; once it does, new claim gets a later generation and old release receipt cannot match
+- policy re-authorizes principal after invalidation was triggered -> old claim is not resurrected; a new claim/release against current heads is required
+
+publication / recovery
+- contract put then crash -> orphan only; no eligible work
+- retry converges on same logical Board work
+- failed Board transaction exposes no partial item/ref
+- fresh process reconstructs exact work/auth generation/principal-independent durable state
+
+domain / execution boundary
+- discovery filters by owningDomain but does not authenticate caller
+- claim controller authenticates/authorizes principal
+- materializer/work contract has no ExecutionPolicy, ExecutionStrategy or runtime-binding API/path
+- A.1 stops after claim; Integration B cannot execute until DOMAIN_EXECUTION_CONTROL is accepted
+
+conversation independence
+- no shared chat is required for any reconstruction above
+```
+
+Passing only happy-path `BA sees work -> claim succeeds` is insufficient.
+
+## 14. Architecture viability tripwire carried into later slices
+
+Accepting this candidate does not make the blackboard/obligation model unfalsifiable. Integration D/E benchmark plans must freeze a bounded evaluation budget and tripwire thresholds before execution. Evidence must trigger `ARCHITECTURE_REASSESSMENT_REQUIRED` if the organization repeatedly shows patterns such as:
+
+```text
+healthy domains stuck in mutual obligations with no progress
+progress requires a central actor to choose the next domain
+local changes repeatedly invalidate unrelated work / approximate whole-stage reset
+whole-organization barriers are repeatedly required for ordinary progress
+materializer, PM or activation layer invents routing absent from accepted obligations/authorization
+ProductStateProjection cannot be deterministically rebuilt from durable history
+```
+
+A fired tripwire pauses further architecture promotion and creates an explicit reassessment research obligation. It does not silently weaken the hard invariants or automatically select a replacement architecture.
+
+---
+
+## 15. Terminal semantics for BB-046
+
+Current state of this file:
+
+```text
+candidate artifact exists
++ evidence trail exists
++ tradeoffs/rejected alternatives are explicit
++ hard invariants are explicit, including PM != Organization Scheduler and ProductStateProjection != Product Authority
++ first bridge scope is explicit
++ post-claim execution is rebased to WorkloadType -> ExecutionPolicy -> ExecutionStrategy -> ExecutionAttemptBinding
++ Restate is constrained to a replaceable execution runtime below organization authority
++ twelve downstream gaps are explicit
++ review-scope adequacy is an explicit acceptance condition
+----------------------------------------
+PROPOSED / AWAITING INDEPENDENT REVIEW
+```
+
+BB-046 should become terminal only after the existing independent review/decision path accepts the exact artifact according to project policy.
+
+The research producer must not write its own terminal `IMPLEMENTATION_READY` status.
