@@ -432,11 +432,32 @@ export function createSelfUpgradePilotController({
       return externalReader.readArtifact({ ref });
     }
   };
+  const expectedProjectId = requireText(projectId, "projectId");
   const continuation = createResearchContinuationController({
     orchestrator,
-    projectId,
+    projectId: expectedProjectId,
     artifactReader: compositeReader
   });
+
+  async function assertProtocolAuthority(protocol) {
+    const board = await appOrchestrator.readBlackboard();
+    const root = board.items.find((item) => item.origin?.kind === "USER_INTENT_ROOT") ?? null;
+    invariant(root != null, "self-upgrade pilot requires durable user-intent root");
+    invariant(root.origin?.projectId === expectedProjectId, "self-upgrade pilot project identity mismatch");
+    invariant(
+      protocol.userIntentRef === root.id || protocol.userIntentRef === root.origin?.intentId,
+      "self-upgrade protocol user intent ref does not match durable project intent"
+    );
+  }
+
+  function assertReviewRequirement(protocol, reviewKey) {
+    const key = requireText(reviewKey, "reviewKey");
+    invariant(
+      protocol.reviewRequirementRefs.includes(`review:${key}`),
+      `self-upgrade review requirement was not predeclared by protocol: ${key}`
+    );
+    return key;
+  }
 
   async function initializeExperiment({
     itemId,
@@ -447,6 +468,7 @@ export function createSelfUpgradePilotController({
     resolvedWork = []
   }) {
     const protocol = defineSelfUpgradeExperimentProtocol(rawProtocol);
+    await assertProtocolAuthority(protocol);
     const questionRef = await artifactStore.putArtifact({
       artifactType: "question",
       content: {
@@ -801,7 +823,7 @@ export function createSelfUpgradePilotController({
       changedSourceScopes,
       changedPolicyScopes,
       resolvedWork,
-      reviewKey,
+      reviewKey: boundedReviewKey,
       reviewReason
     });
     return freezeClone({
