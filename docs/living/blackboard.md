@@ -1083,24 +1083,29 @@ BB-029
 question/work: Deliver the decision-to-outcome artifact composition for one concrete Backend/QA remediation workflow after BB-028 acceptance.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: [BB-028]
-remaining-work:
-  - implement the accepted bounded pilot using existing primitives before introducing shared abstractions
-  - persist configuration, candidate/baseline revisions and evidence refs needed for reproduction and continuation
-  - reconcile current documentation only after the corresponding behavior is implemented and verified
+remaining-work: []
 acceptance-criteria:
   - Decision summaries link the exact objective, action, revision and outcome without fabricating intermediate reasoning.
   - Fresh-session reconstruction and contradictory/stale evidence cases preserve the accepted contract.
   - Measured comparison reports benefits, costs and failure cases; no blanket claim of improved model reasoning.
 submission:
+  - PR #115
 review-requirements: [application/code review, independent outcome/authority review]
-reviews: []
-artifact-refs: []
+reviews:
+  - application/code review PASS on exact head da2ac964f323c9b16d7b14bb42d4fbd018a90257
+  - independent outcome/authority review PASS on exact head da2ac964f323c9b16d7b14bb42d4fbd018a90257
+artifact-refs:
+  - docs/worktree/agentic-application/decision-outcome.md
+  - packages/agentic-system/src/decision-outcome-pilot.js
+  - packages/agentic-system/test/bb029-decision-outcome-pilot.test.js
 evidence-refs:
   - BB-028
   - docs/living/decisions/D013-bounded-decision-outcome-summary.md
+  - Actions #1923 green on living-doc-impact and Node 20/22/24
+  - merge commit a387dc32296d7a1e5e3229637402e99b7454b9f0
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional delivery follow-up to accepted BB-028/D013 boundary.
@@ -1147,24 +1152,30 @@ BB-031
 question/work: Implement the accepted bounded application scheduling/investment pilot over existing Blackboard work.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: [BB-030]
-remaining-work:
-  - implement the accepted bounded pilot using existing primitives before introducing shared abstractions
-  - persist configuration, candidate/baseline revisions and evidence refs needed for reproduction and continuation
-  - reconcile current documentation only after the corresponding behavior is implemented and verified
+remaining-work: []
 acceptance-criteria:
   - Eligible dependencies and mandatory reviews remain gates regardless of ranking score.
   - Priority decisions carry policy/input revisions, reasons and measured-versus-estimated fields in referenced artifacts.
   - Stop, retry, starvation and cost-budget scenarios are reproducible; effectiveness claims use the declared evidence class.
 submission:
+  - PR #111
+  - remediation PR #117
 review-requirements: [application/code review, independent outcome/authority review]
-reviews: []
-artifact-refs: []
+reviews:
+  - application/code review PASS on exact remediation head 5f425379f1604db2756afe5aca975c2b5931073c
+  - independent outcome/authority review PASS on exact remediation head 5f425379f1604db2756afe5aca975c2b5931073c
+artifact-refs:
+  - docs/worktree/agentic-application/work-selection.md
+  - packages/agentic-system/src/work-selection.js
+  - packages/agentic-system/test/bb031-selection-freshness.test.js
 evidence-refs:
   - BB-030
   - docs/living/decisions/D015-bounded-project-work-selection.md
+  - Actions #1877 green on living-doc-impact and Node 20/22/24
+  - merge commit 9c644eeea3713bf8083dd24301968b16face88e3
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; conditional delivery follow-up to BB-030
@@ -1545,27 +1556,37 @@ BB-041
 question/work: Prevent silent loss or conversion of generic checkpoint data across JSON Blackboard persistence.
 kind: FIX
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: []
 target-consumer: Public checkpoint callers, including the BB-026/027 research-continuation consumer
 implementation-output: A persisted-payload validation boundary in Blackboard normalization/save with explicit handling of unsupported values
 value-gate: Every acknowledged supported payload is semantically identical after reload; unsupported values fail without changing prior Board state
-remaining-work:
-  - define the supported persisted value contract and reject lossy values with useful field-path diagnostics
-  - validate arbitrary checkpoint/origin and other persisted payload fields consistently before durable transitions
-  - preserve compatibility for existing valid JSON snapshots and align returned acknowledgments with actual persisted state
+remaining-work: []
 acceptance-criteria:
   - the V1 Map/NaN probe cannot silently lose an experiment or convert a value after a successful acknowledgment
   - test Map/Set/Date, undefined, non-finite numbers, cycles and BigInt as well as valid nested JSON
   - rejection preserves prior ownership, checkpoint and lifecycle status; successful state round-trips across a new store instance
 submission:
+  - PR #120
+  - compatibility extension in PR #127 for blocked-checkpoint resolution
 review-requirements: [persistence/schema review, application/code review]
-reviews: []
-artifact-refs: []
+reviews:
+  - persistence/schema review PASS on exact PR #120 head 610ecde93b145429ef5b75424e2d4b1d9aa83d26
+  - application/code review PASS on exact PR #120 head 610ecde93b145429ef5b75424e2d4b1d9aa83d26
+  - PR #127 application/code review revalidated pre-clone persisted-value protection for the new resolveBlockedCheckpoint write path
+artifact-refs:
+  - docs/worktree/agentic-application/contracts.md
+  - packages/agentic-system/src/blackboard-json-payload.js
+  - packages/agentic-system/src/persisted-payload-application-orchestrator.js
+  - packages/agentic-system/test/bb041-preclone-payload-boundary.test.js
+  - packages/agentic-system/test/blackboard-json-payload.test.js
 evidence-refs:
   - docs/living/knowledge/value-research-2026-09-16.md (V1)
   - docs/living/knowledge/value-probes-2026-09-16.mjs
+  - Actions #1914 green on living-doc-impact and Node 20/22/24
+  - PR #120 merge commit e8b31315f2ba6945a7d44d440e16a5698ce8c4e9
+  - PR #127 Actions #1984 green on living-doc-impact and Node 20/22/24
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; user requires implementable research value; reproduced checkpoint acknowledgment/reload mismatch
@@ -1576,27 +1597,38 @@ BB-042
 question/work: Preserve and resolve Backend Advisor context requests/escalation at the durable workflow boundary before redispatch.
 kind: FIX
 priority: P1
-status: READY
+status: DONE
 owner:
 depends-on: []
 target-consumer: createDurableBackendQaWorkflow runBackendStage using runBackendObjective and BackendAdvisor
 implementation-output: Explicit application-owned continuation mapping and persisted coordination requirements with a resolution/resume path
 value-gate: REQUEST_CONTEXT/ESCALATE retain their coordination need across sessions and do not blindly redispatch the unchanged Backend objective
-remaining-work:
-  - define handling for each existing BackendRunAction while preserving Advisor proposal and Orchestrator decision authority
-  - persist gap IDs, context needs and decision rationale/provenance needed by the next session
-  - add explicit requirement resolution/resume and preserve valid retry, failure and QA gating behavior
+remaining-work: []
 acceptance-criteria:
   - V2 REQUEST_CONTEXT and ESCALATE survive reconstruction and prevent an unchanged second Backend dispatch while unresolved
   - resolving the actual coordination requirement resumes the intended stage without granting Advisor direct mutation or completion authority
   - tests cover retry, context resolution, escalation, missing Advisor and default grounded completion policy
 submission:
+  - PR #127
 review-requirements: [workflow/Advisor authority review, application/code review]
-reviews: []
-artifact-refs: []
+reviews:
+  - workflow/Advisor authority review PASS on exact head 2e4f4c1fdedccc686c29e4162761419774429707
+  - application/code review PASS on exact head 2e4f4c1fdedccc686c29e4162761419774429707
+artifact-refs:
+  - docs/worktree/agentic-application/state.md
+  - docs/worktree/agentic-application/contracts.md
+  - docs/worktree/agentic-application/workflow.md
+  - packages/agentic-system/src/application-orchestrator.js
+  - packages/agentic-system/src/durable-backend-qa.js
+  - packages/agentic-system/src/persisted-payload-application-orchestrator.js
+  - packages/agentic-system/test/bb042-advisor-continuation.test.js
 evidence-refs:
   - docs/living/knowledge/value-research-2026-09-16.md (V2; probe uses synthetic Worker and reduced completion policy)
   - docs/living/knowledge/value-probes-2026-09-16.mjs
+  - Actions #1984 green on living-doc-impact and Node 20/22/24
+  - workflow/Advisor authority review id 5244027486
+  - application/code review id 5244027676
+  - merge commit 6dd233e1cd794b15b1266c94f9b3559ec3999347
 blockers: []
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; user requires implementable research value; reproduced loss of Advisor continuation requirements
