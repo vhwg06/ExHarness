@@ -182,6 +182,10 @@ export function captureAcceptedBackendArtifactManifest({
   const entries = expected.map((artifact) => {
     const producedArtifact = byKey.get(artifactKey(artifact.ref, artifact.path));
     invariant(producedArtifact, `producedArtifacts missing accepted artifact: ${artifact.ref}`);
+    invariant(
+      producedArtifact.storedRevision === producerRevision,
+      `produced artifact revision mismatch for ${artifact.ref}: expected ${producerRevision}; got ${producedArtifact.storedRevision}`
+    );
     return {
       ref: artifact.ref,
       ...(artifact.path == null ? {} : { path: artifact.path }),
