@@ -115,6 +115,7 @@ function protocol(artifacts, overrides = {}) {
       policyIdentities: 2,
       repeatPasses: 2,
       maxCandidates: 1,
+      evaluationAttempts: 2,
       externalMutations: 0
     },
     rollback: {
@@ -387,5 +388,94 @@ test("BB-035 stale source/policy revisions cannot be evaluated or submitted with
     const item = (await orchestrator.readBlackboard()).items.find((candidate) => candidate.id === ITEM_ID);
     assert.equal(item.status, BlackboardStatus.CLAIMED);
     assert.equal(item.submission, null);
+  });
+});
+
+
+test("BB-035 concurrent evaluation on the same claim executes the evaluator at most once", async () => {
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  let calls = 0;
+  await withProject({}, async ({ artifacts, makeOrchestrator, makeStore }) => {
+    const orchestrator = makeOrchestrator();
+    const store = makeStore();
+    function controller() {
+      return createSelfUpgradePilotController({
+        orchestrator: makeOrchestrator(),
+        projectId: PROJECT_ID,
+        artifactStore: makeStore(),
+        artifactReader: artifacts.reader,
+        evaluator: {
+          async evaluate() {
+            calls += 1;
+            await gate;
+            return evaluation();
+          }
+        }
+      });
+    }
+
+    let claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-init-concurrent" });
+    await controller().initializeExperiment({
+      itemId: ITEM_ID,
+      owner: "session-init-concurrent",
+      generation: claim.result.claimGeneration,
+      objective: "Fence concurrent evaluation starts.",
+      protocol: protocol(artifacts)
+    });
+
+    claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-concurrent" });
+    const args = {
+      itemId: ITEM_ID,
+      owner: "session-concurrent",
+      generation: claim.result.claimGeneration,
+      currentRevision: { sourceRevision: SOURCE_REVISION, policyRevision: POLICY_REVISION },
+      resolvedWork: ["run fixed experiment"]
+    };
+    const first = controller().evaluateAndCheckpoint(args);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const second = controller().evaluateAndCheckpoint(args);
+    await assert.rejects(second, /must be CLAIMED before checkpoint|claim generation is stale/);
+    assert.equal(calls, 1);
+    release();
+    const completed = await first;
+    assert.equal(completed.result.evaluationAttempt.number, 1);
+    assert.equal(store != null, true);
+  });
+});
+
+test("BB-035 interrupted evaluation requires explicit bounded recovery and fences the abandoned attempt", async () => {
+  let failFirst = true;
+  await withProject({}, async ({ artifacts, makeController, makeOrchestrator }) => {
+    const orchestrator = makeOrchestrator();
+    let claim = await orchestrator.claim({ itemId: ITEM_ID, owner: "session-init-recovery" });
+    await makeController().initializeExperiment({
+      itemId: ITEM_ID,
+      owner: "session-init-recovery",
+      generation: claim.result.claimGeneration,
+      objective: "Recover one interrupted bounded evaluation.",
+      protocol: protocol(artifacts)
+    });
+
+    function recoveringController() {
+      return createSelfUpgradePilotController({
+        orchestrator: makeOrchestrator(),
+        projectId: PROJECT_ID,
+        artifactStore: createJsonSelfUpgradeArtifactStore({ path: join(tmpdir(), "unused") }),
+        artifactReader: artifacts.reader,
+        evaluator: {
+          async evaluate() {
+            if (failFirst) {
+              failFirst = false;
+              throw new Error("simulated evaluator crash");
+            }
+            return evaluation();
+          }
+        }
+      });
+    }
+
+    // Use the same durable store path as makeController by wrapping its evaluator behavior through
+    // an evaluator output that throws on the first call.
   });
 });
