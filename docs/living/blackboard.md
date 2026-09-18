@@ -369,6 +369,7 @@ review-requirements:
   - recovery-composition authority review
 reviews:
   - system review pass on exact PR #74 head
+  - merged PR #74 after Node 20/22/24 CI
 artifact-refs:
   - packages/core-harness/test/recovery-composition.test.js
   - docs/worktree/core-harness/workflow.md
