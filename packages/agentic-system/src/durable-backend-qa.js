@@ -696,16 +696,16 @@ export function createDurableBackendQaWorkflow({
   async function runQaStage({ itemId, owner, generation, checkpoint }) {
     invariant(checkpoint.acceptedBackend != null, "QA stage requires accepted Backend provenance");
     const handoff = checkpoint.acceptedBackend.handoff;
-    let qaArtifactReader = artifactReader;
-    if (checkpoint.acceptedBackend.artifactManifestRef != null) {
-      invariant(
-        artifactReader && typeof artifactReader.forManifest === "function",
-        "manifest-protected QA checkpoint requires artifactReader.forManifest()"
-      );
-      qaArtifactReader = artifactReader.forManifest(checkpoint.acceptedBackend.artifactManifestRef);
-    }
     let qa;
     try {
+      let qaArtifactReader = artifactReader;
+      if (checkpoint.acceptedBackend.artifactManifestRef != null) {
+        invariant(
+          artifactReader && typeof artifactReader.forManifest === "function",
+          "manifest-protected QA checkpoint requires artifactReader.forManifest()"
+        );
+        qaArtifactReader = artifactReader.forManifest(checkpoint.acceptedBackend.artifactManifestRef);
+      }
       qa = await runQaObjective(checkpoint.spec.qaObjective, {
         handoff,
         artifactReader: qaArtifactReader,
