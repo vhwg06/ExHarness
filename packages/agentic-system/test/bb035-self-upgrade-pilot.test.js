@@ -5,18 +5,18 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { digestValue } from "../../core-harness/src/index.js";
-import { createApplicationOrchestrator } from "../src/application-orchestrator.js";
-import { createJsonBlackboardStore } from "../src/blackboard-json-payload.js";
-import { BlackboardStatus } from "../src/blackboard-orchestrator.js";
-import { createSessionHandoffSurface } from "../src/session-handoff.js";
 import {
+  BlackboardStatus,
   SelfUpgradeDisposition,
   SelfUpgradeEvaluationVerdict,
+  createApplicationOrchestrator,
+  createJsonBlackboardStore,
   createJsonSelfUpgradeArtifactStore,
   createSelfUpgradePilotController,
+  createSessionHandoffSurface,
   defineSelfUpgradeExperimentProtocol,
   defineSelfUpgradeExperimentResult
-} from "../src/self-upgrade-pilot.js";
+} from "../src/index.js";
 
 const PROJECT_ID = "bb035-project";
 const ITEM_ID = "bb035-pilot";
