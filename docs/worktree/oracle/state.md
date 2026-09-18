@@ -50,6 +50,7 @@ Caching/RAG are not missing features merely because they are absent. If concrete
 
 ## Routing
 
+- **current Oracle capability semantics -> `capabilities.md`**
 - current semantic meaning -> `semantics.md`
 - current dependency placement -> `architecture.md`
 - current concrete resolution flow -> `workflow.md`

@@ -33,6 +33,7 @@ Source/public exports are authority for the exact behavior. Any unresolved Core 
 
 ## Routing
 
+- **current Core capability semantics -> `capabilities.md`**
 - current Core structure -> `architecture.md`
 - current execution/cognition/recovery behavior -> `workflow.md`
 - current Core invariants -> `decisions.md`
