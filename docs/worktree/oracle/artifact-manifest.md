@@ -69,7 +69,7 @@ Backend/Core accepted result
 
 If publication fails after Backend execution, the workflow persists the Backend-stage checkpoint as `BLOCKED` with `backendRecoveryRequired=true`. Resume therefore re-enters `BackendWorker.recover(...)`; it does not fresh-execute Backend merely to regenerate manifest state.
 
-If a manifest was durably published but the Board checkpoint was interrupted, recovery may reuse the prior durable publication receipt when producer revision/artifact bytes still match. The persisted manifest acceptance provenance is retained rather than replaced by a regenerated completion decision.
+If a manifest was durably published but the Board checkpoint was interrupted, recovery reuses the prior durable publication receipt **before any producer-byte re-read**. The receipt is already the trusted first publication for that producer/revision/artifact identity; the persisted manifest acceptance provenance is retained rather than replaced by a regenerated completion decision. Producer bytes are required only when minting the first receipt. Later QA still validates payload bytes against the exact persisted manifest and blocks on missing/changed content.
 
 Direct-reader mode remains unchanged when no publisher is configured.
 
