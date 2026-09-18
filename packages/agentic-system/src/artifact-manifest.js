@@ -222,14 +222,24 @@ function digestFromManifestRef(ref) {
   return match[1];
 }
 
-function publicationIdentity(manifest) {
-  return canonicalize({
+function publicationDescriptor(manifest) {
+  return {
     producerWorkOrderId: manifest.producerWorkOrderId,
     producerRevision: manifest.producerRevision,
     artifacts: manifest.entries
       .map((entry) => ({ ref: entry.ref, path: entry.path ?? null }))
       .sort((left, right) => artifactKey(left.ref, left.path).localeCompare(artifactKey(right.ref, right.path)))
-  });
+  };
+}
+
+function publicationIdentity(manifest) {
+  return canonicalize(publicationDescriptor(manifest));
+}
+
+function publicationFileName(manifest) {
+  const digest = digestValue(publicationDescriptor(manifest));
+  invariant(/^sha256:[0-9a-f]{64}$/.test(digest), "artifact publication identity must be sha256");
+  return `publication-${digest.slice("sha256:".length)}.json`;
 }
 
 function samePublicationPayload(left, right) {
@@ -257,12 +267,25 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
 
   async function readAll() {
     try {
-      const names = (await fs.readdir(path)).filter((name) => /^manifest-[0-9a-f]{64}\.json$/.test(name)).sort();
-      const manifests = [];
+      const names = (await fs.readdir(path))
+        .filter((name) => /^(?:manifest|publication)-[0-9a-f]{64}\.json$/.test(name))
+        .sort();
+      const byRef = new Map();
       for (const name of names) {
-        manifests.push(defineApplicationArtifactManifest(JSON.parse(await fs.readFile(join(path, name), "utf8"))));
+        const manifest = defineApplicationArtifactManifest(
+          JSON.parse(await fs.readFile(join(path, name), "utf8"))
+        );
+        const existing = byRef.get(manifest.ref);
+        if (existing != null) {
+          invariant(
+            canonicalize(existing) === canonicalize(manifest),
+            `artifact manifest ref ${manifest.ref} resolves to different persisted content`
+          );
+        } else {
+          byRef.set(manifest.ref, manifest);
+        }
       }
-      return manifests;
+      return [...byRef.values()];
     } catch (error) {
       if (error?.code === "ENOENT") return [];
       throw error;
@@ -273,6 +296,8 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
     const manifest = defineApplicationArtifactManifest(raw);
     await fs.mkdir(path, { recursive: true });
 
+    // Compatibility: honor a previously persisted legacy/content-addressed
+    // manifest before attempting the new atomic publication slot.
     const samePublication = (await readAll()).filter(
       (existing) => publicationIdentity(existing) === publicationIdentity(manifest)
     );
@@ -285,7 +310,10 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
       );
     }
 
-    const filename = fileNameForDigest(manifest.digest);
+    // The final filename is derived only from the accepted Backend publication
+    // identity, not the manifest content digest. hard-link no-overwrite makes
+    // this the atomic single-winner slot across concurrent publishers.
+    const filename = publicationFileName(manifest);
     const finalPath = join(path, filename);
     const tempPath = join(path, `.${filename}.${randomUUID()}.tmp`);
     const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
@@ -301,8 +329,17 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
         await fs.link(tempPath, finalPath);
       } catch (error) {
         if (error?.code !== "EEXIST") throw error;
-        const existing = defineApplicationArtifactManifest(JSON.parse(await fs.readFile(finalPath, "utf8")));
-        invariant(canonicalize(existing) === canonicalize(manifest), "artifact manifest digest already exists with different content");
+        const existing = defineApplicationArtifactManifest(
+          JSON.parse(await fs.readFile(finalPath, "utf8"))
+        );
+        if (existing.ref === manifest.ref && canonicalize(existing) === canonicalize(manifest)) {
+          return existing.ref;
+        }
+        throw new ArtifactManifestError(
+          ArtifactManifestErrorCode.MANIFEST_CONFLICT,
+          `concurrent artifact manifest publication conflicts for accepted Backend identity: ${manifest.producerWorkOrderId}@${manifest.producerRevision}`,
+          { cause: error }
+        );
       }
     } finally {
       if (handle != null) await handle.close();
@@ -319,6 +356,8 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
 
   async function readManifest(ref) {
     const digest = digestFromManifestRef(ref);
+
+    // Legacy BB-043/045 stores used content-addressed manifest filenames.
     try {
       const manifest = defineApplicationArtifactManifest(
         JSON.parse(await fs.readFile(join(path, fileNameForDigest(digest)), "utf8"))
@@ -326,15 +365,21 @@ export function createJsonArtifactManifestStore({ path, fs = nodeFs }) {
       invariant(manifest.ref === ref, "artifact manifest ref does not match persisted content");
       return manifest;
     } catch (error) {
-      if (error?.code === "ENOENT") {
-        throw new ArtifactManifestError(
-          ArtifactManifestErrorCode.MANIFEST_MISSING,
-          `artifact manifest is unavailable for exact ref ${ref}`,
-          { cause: error }
-        );
-      }
-      throw error;
+      if (error?.code !== "ENOENT") throw error;
     }
+
+    const matches = (await readAll()).filter((manifest) => manifest.ref === ref);
+    if (matches.length === 1) return matches[0];
+    if (matches.length > 1) {
+      throw new ArtifactManifestError(
+        ArtifactManifestErrorCode.MANIFEST_CONFLICT,
+        `multiple persisted manifests resolve exact ref ${ref}`
+      );
+    }
+    throw new ArtifactManifestError(
+      ArtifactManifestErrorCode.MANIFEST_MISSING,
+      `artifact manifest is unavailable for exact ref ${ref}`
+    );
   }
 
   async function findPublication({ producerWorkOrderId, producerRevision, artifacts }) {
