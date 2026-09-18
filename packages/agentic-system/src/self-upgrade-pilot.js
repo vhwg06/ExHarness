@@ -257,9 +257,9 @@ export function defineSelfUpgradeExperimentResult({ protocol: rawProtocol, evalu
     experimentId: protocol.experimentId,
     sourceRevision: protocol.sourceRevision,
     policyRevision: protocol.policyRevision,
-    baseline: protocol.baseline,
-    candidate: protocol.candidate,
-    evaluator: protocol.evaluator,
+    baseline: structuredClone(protocol.baseline),
+    candidate: structuredClone(protocol.candidate),
+    evaluator: structuredClone(protocol.evaluator),
     scenarioResults: evaluation.scenarioResults,
     evaluationRefs: evaluation.evidenceRefs,
     observedCost: evaluation.observedCost,
@@ -267,8 +267,8 @@ export function defineSelfUpgradeExperimentResult({ protocol: rawProtocol, evalu
     productionEvidence: false,
     generalizationEvidence: false,
     disposition,
-    selectedUntilIndependentAcceptance: protocol.baseline,
-    rollback: protocol.rollback,
+    selectedUntilIndependentAcceptance: structuredClone(protocol.baseline),
+    rollback: structuredClone(protocol.rollback),
     adoptionControl: {
       projectAcceptanceRequired: true,
       adoptionAuthority: false,
@@ -556,7 +556,7 @@ export function createSelfUpgradePilotController({
 
   function parseEvaluationBlocker(blocker, protocol) {
     const value = requireText(blocker, "self-upgrade evaluation blocker");
-    const match = /^SELF_UPGRADE_EVALUATION_ATTEMPT:(\\d+):(sha256:[0-9a-f]{64})$/.exec(value);
+    const match = /^SELF_UPGRADE_EVALUATION_ATTEMPT:(\d+):(sha256:[0-9a-f]{64})$/.exec(value);
     invariant(match != null, "self-upgrade evaluation blocker is malformed");
     invariant(match[2] === digestValue(protocol), "self-upgrade evaluation blocker protocol changed");
     return requirePositiveInteger(Number(match[1]), "self-upgrade evaluation blocker attempt");
