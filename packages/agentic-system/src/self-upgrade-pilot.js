@@ -668,7 +668,8 @@ export function createSelfUpgradePilotController({
     const recovered = await appOrchestrator.recoverSelfUpgradeEvaluationClaim({
       itemId,
       owner,
-      expectedBlocker: blocker
+      expectedBlocker: blocker,
+      expectedCheckpoint: state.manifest
     });
     await continuation.persistContinuation({
       itemId,
@@ -754,7 +755,8 @@ export function createSelfUpgradePilotController({
     const claimed = await appOrchestrator.recoverSelfUpgradeEvaluationClaim({
       itemId,
       owner,
-      expectedBlocker: state.item.blockers[0]
+      expectedBlocker: state.item.blockers[0],
+      expectedCheckpoint: state.item.checkpoint
     });
 
     return runEvaluationAttempt({
