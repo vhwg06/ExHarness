@@ -13,6 +13,8 @@ import {
   createResearchContinuationController,
   defineResearchContinuationManifest
 } from "./research-continuation.js";
+import { validateBlackboardPersistedPayload } from "./blackboard-json-payload.js";
+import { sessionHandoffFromBlackboard } from "./session-handoff.js";
 
 const STORE_KIND = "SELF_UPGRADE_ARTIFACT";
 const STORE_VERSION = 1;
@@ -81,7 +83,8 @@ function normalizeEvaluator(raw) {
     identity: requireText(value.identity, "self-upgrade evaluator.identity"),
     revision: requireText(value.revision, "self-upgrade evaluator.revision"),
     policyRef: requireText(value.policyRef, "self-upgrade evaluator.policyRef"),
-    policyRevision: requireText(value.policyRevision, "self-upgrade evaluator.policyRevision")
+    policyRevision: requireText(value.policyRevision, "self-upgrade evaluator.policyRevision"),
+    policyDigest: requireText(value.policyDigest, "self-upgrade evaluator.policyDigest")
   });
 }
 
@@ -208,6 +211,7 @@ function defineSelfUpgradeEvaluation(raw, protocol, evaluator) {
   invariant(value.evaluatorRevision === evaluator.revision, "self-upgrade evaluation evaluator revision mismatch");
   invariant(value.evaluatorPolicyRef === evaluator.policyRef, "self-upgrade evaluation policy ref mismatch");
   invariant(value.evaluatorPolicyRevision === evaluator.policyRevision, "self-upgrade evaluation policy revision mismatch");
+  invariant(value.evaluatorPolicyDigest === evaluator.policyDigest, "self-upgrade evaluation policy digest mismatch");
   invariant(value.repeatPasses === protocol.budget.repeatPasses, "self-upgrade evaluation repeat-pass budget mismatch");
   invariant(value.policyIdentityCount === protocol.budget.policyIdentities, "self-upgrade evaluation policy-identity budget mismatch");
   invariant(value.externalMutationCount === 0, "self-upgrade evaluation must not perform external mutations");
@@ -221,6 +225,7 @@ function defineSelfUpgradeEvaluation(raw, protocol, evaluator) {
     evaluatorRevision: evaluator.revision,
     evaluatorPolicyRef: evaluator.policyRef,
     evaluatorPolicyRevision: evaluator.policyRevision,
+    evaluatorPolicyDigest: evaluator.policyDigest,
     scenarioResults: normalizeScenarioResults(value.scenarioResults, protocol),
     repeatPasses: value.repeatPasses,
     policyIdentityCount: value.policyIdentityCount,
@@ -290,6 +295,7 @@ function fileNameFor(ref) {
 
 function envelopeFor(artifactType, content) {
   const type = requireText(artifactType, "self-upgrade artifactType").toLowerCase();
+  validateBlackboardPersistedPayload(content, { path: "$.content" });
   const frozenContent = freezeClone(content);
   const digest = digestValue({ artifactType: type, content: frozenContent });
   const ref = `${REF_PREFIX}${type}/${digest}`;
@@ -417,8 +423,9 @@ export function createSelfUpgradePilotController({
   );
   invariant(
     orchestrator &&
+      typeof orchestrator.readBlackboard === "function" &&
       typeof orchestrator.recoverSelfUpgradeEvaluationClaim === "function",
-    "self-upgrade pilot requires ApplicationOrchestrator.recoverSelfUpgradeEvaluationClaim()"
+    "self-upgrade pilot requires read-capable ApplicationOrchestrator with recoverSelfUpgradeEvaluationClaim()"
   );
   const appOrchestrator = orchestrator;
   const externalReader = requireArtifactReader(artifactReader);
@@ -447,6 +454,11 @@ export function createSelfUpgradePilotController({
     resolvedWork = []
   }) {
     const protocol = defineSelfUpgradeExperimentProtocol(rawProtocol);
+    const session = sessionHandoffFromBlackboard(await appOrchestrator.readBlackboard(), { projectId });
+    invariant(
+      protocol.userIntentRef === session.rootItemId,
+      "self-upgrade protocol userIntentRef must match the durable user-intent root"
+    );
     const questionRef = await artifactStore.putArtifact({
       artifactType: "question",
       content: {
@@ -524,6 +536,10 @@ export function createSelfUpgradePilotController({
       changedPolicyScopes
     });
     const protocol = defineSelfUpgradeExperimentProtocol(state.plan);
+    invariant(
+      protocol.userIntentRef === state.session.rootItemId,
+      "self-upgrade protocol userIntentRef no longer matches the durable user-intent root"
+    );
     let result = null;
     const completed = state.experiments.find((entry) => entry.id === protocol.experimentId && entry.status === ResearchExperimentStatus.COMPLETED);
     if (completed?.resultRefs?.length > 0) {
@@ -791,6 +807,15 @@ export function createSelfUpgradePilotController({
       changedPolicyScopes
     });
     invariant(state.result != null, "self-upgrade pilot cannot submit before experiment completion");
+    invariant(
+      state.result.disposition === SelfUpgradeDisposition.PROPOSE_FOR_REVIEW,
+      "self-upgrade candidate cannot be proposed while the baseline remains selected"
+    );
+    invariant(
+      state.protocol.reviewRequirementRefs.length === 1 &&
+        state.protocol.reviewRequirementRefs[0] === reviewKey,
+      "self-upgrade review requirement changed from the fixed experiment protocol"
+    );
     const completed = state.experiments.find((entry) => entry.id === state.protocol.experimentId);
     invariant(completed?.resultRefs?.length === 1, "self-upgrade pilot requires one exact completed result ref");
 
