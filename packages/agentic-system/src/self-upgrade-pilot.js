@@ -547,6 +547,7 @@ export function createSelfUpgradePilotController({
       changedPolicyScopes
     });
     const protocol = defineSelfUpgradeExperimentProtocol(state.plan);
+    await assertProtocolAuthority(protocol);
     let result = null;
     const completed = state.experiments.find((entry) => entry.id === protocol.experimentId && entry.status === ResearchExperimentStatus.COMPLETED);
     if (completed?.resultRefs?.length > 0) {
