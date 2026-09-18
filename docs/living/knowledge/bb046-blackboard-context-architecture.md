@@ -149,6 +149,8 @@ The last two fields are a **logical contract** of this proposal: the Board must 
 
 Immutable, item-scoped declaration of what is safe to do **now**.
 
+Canonical repository representation is JSON. This keeps current context machine-checkable and avoids introducing a permissive Markdown/frontmatter parser as a hidden authority boundary. Human-readable Markdown may explain the architecture but is not canonical context state.
+
 It contains refs and scope, not copied source payloads.
 
 Typical content:
@@ -482,7 +484,7 @@ Rejected:
 
 Rejected for Integration-phase work because the inference is precisely the risk being addressed.
 
-### One mutable `work-context/BB-046.md`
+### One mutable work-context file
 
 Rejected because a stale worker cannot prove which version defined its action. Use immutable generations and an exact current pointer.
 
@@ -507,8 +509,8 @@ docs/living/
   work-context/
     README.md
     BB-046/
-      g0001-readiness-review.md
-      # g0002-implementation.md only after exact acceptance
+      g0001-readiness-review.json
+      # g0002-implementation.json only after exact acceptance
 
   knowledge/
     bb046-blackboard-context-architecture.md
@@ -534,7 +536,7 @@ This MR:
 
 - allocates BB-046;
 - adds the architecture/contracts/pipelines/evaluation artifacts;
-- adds one concrete **review-only** g0001 context example;
+- adds one concrete machine-readable **review-only** g0001 JSON context example;
 - imports the organizational integration v7 evidence;
 - changes no runtime/source semantics.
 
