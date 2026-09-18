@@ -754,6 +754,9 @@ export function createDurableBackendQaWorkflow({
       return freezeClone({ stage: BackendQaWorkflowStage.AWAITING_REVIEW, item });
     }
 
+    if (item.status === BlackboardStatus.BLOCKED && item.checkpoint == null) {
+      return freezeClone({ stage: BackendQaWorkflowStage.BLOCKED, item });
+    }
     const checkpoint = item.checkpoint != null
       ? workflowCheckpoint(item.checkpoint)
       : reviewRemediationCheckpoint(item);
@@ -884,7 +887,9 @@ export function createDurableBackendQaWorkflow({
     requireText(itemId, "itemId");
     const item = boardItem(await orchestrator.readBlackboard(), itemId);
     if (item.status === BlackboardStatus.BLOCKED) {
-      invariant(item.checkpoint != null, `Blackboard item ${itemId} has no durable Backend/QA checkpoint`);
+      if (item.checkpoint == null) {
+        return freezeClone({ stage: BackendQaWorkflowStage.BLOCKED, item });
+      }
       const checkpoint = workflowCheckpoint(item.checkpoint);
       return freezeClone({
         stage: blockedWorkflowStage(checkpoint),
