@@ -341,6 +341,38 @@ declared source/tests
 
 No recursive graph walk by default.
 
+
+## 17. Review-target freeze pipeline
+
+Review dispatch uses two repository commits to avoid circular self-reference:
+
+```text
+C1 = final semantic candidate snapshot
+     architecture/contracts/pipelines/evaluation/readiness
+
+C2 = review envelope
+     immutable context generation gN
+       reviewTarget.candidateHeadSha = C1
+     Board current-context pointer -> gN
+```
+
+Independent review evaluates the exact semantic subject C1 under the exact context generation created in C2.
+
+While review is active:
+
+```text
+diff(C1, current PR head)
+  contains only declared envelope paths
+    -> review context remains current
+
+diff contains candidate/source semantic path
+    -> gN stale
+    -> create new semantic snapshot C3
+    -> create REVIEW generation gN+1 targeting C3
+```
+
+A reviewer decision must record the exact candidate head it accepted. PR number alone is never sufficient transition evidence.
+
 ## 17. Expected failure behavior
 
 ```text
