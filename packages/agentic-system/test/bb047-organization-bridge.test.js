@@ -250,9 +250,9 @@ test("authority head changes revoke execution entry without rewriting the histor
 });
 
 test("canonical Board invalidation commits before release fencing, so fence failure remains safe",async()=>{
-  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore})=>{
+  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry})=>{
     const base=createOrganizationWorkClaimController({
-      orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore
+      orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry
     });
     const claimed=await base.claim({
       itemId:materialized.item.id,principal:{identity:"ba-1"},
@@ -271,7 +271,7 @@ test("canonical Board invalidation commits before release fencing, so fence fail
     };
     const controller=createOrganizationWorkClaimController({
       orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
-      claimReleaseStore:failingReleaseStore
+      claimReleaseStore:failingReleaseStore,artifactRegistry
     });
     await assert.rejects(
       ()=>controller.invalidateOrganizationClaim({
