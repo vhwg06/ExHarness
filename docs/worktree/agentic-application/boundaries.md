@@ -166,3 +166,30 @@ The caller cannot self-assert the execution principal identity. Application code
 Materialization and claim capability are both project/root-bound. A stale materialization-authorization observation cannot leave new READY work eligible: publication revalidates the exact observation and post-publication drift is reconciled to BLOCKED.
 
 Claim invalidation provenance is an immutable content-addressed artifact, not a caller-authored evidence string. The canonical Board transition validates that artifact against the exact project/root + claim tuple before mutation; release-head fencing remains second and idempotent.
+
+
+## Final A.1 trust/currentness boundary
+
+The organizational claim bridge has four caller/authority separations:
+
+```text
+caller principal context
+  -> trusted ExecutionPrincipal provider
+  -> canonical principalRef + Board owner
+
+Board organization item
+  -> exact materialization authorizationId/ref/generation/revision
+  -> current grant must still be that exact observation
+
+application controller configuration
+  -> executionAuthorityPolicyId
+  -> caller cannot select another policy subject
+
+logical obligation subject
+  -> one live Board item maximum
+  -> exact grant/decision produces materialization identity beneath that subject
+```
+
+Fresh-process reconciliation operates only on the current durable Board claim. It recovers the principal from durable owner identity through the trusted provider, keeps the same `claimGeneration`, and converges the release/invalidation boundary from durable Board, immutable artifacts and current heads.
+
+Authority publisher verification produces canonical provenance that is stored in the immutable authority artifact before the pointer head advances. Payload fields that merely claim an issuer/publisher identity are not authority.
