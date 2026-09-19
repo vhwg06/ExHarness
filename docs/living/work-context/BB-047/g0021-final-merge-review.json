@@ -1,0 +1,88 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_REVIEW_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 21,
+  "parentContextRef": "docs/living/work-context/BB-047/g0020-final-race-repair.json",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Final merge review of canonical BB-047 A.1 delivery after all authority/recovery race repairs.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "repair source in review lane",
+      "enter DOMAIN_EXECUTION_CONTROL / Integration B"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "pullRequest": 183,
+    "targetType": "git-commit",
+    "candidateHeadSha": "7390dabe7f35bae07537593fb62af2845175739c",
+    "baseHeadSha": "ce6db2285e3811c97924c16c7eaecd1fe4b412e1",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/g0021-final-merge-review.json",
+      "docs/living/decisions/D027-bb047-a1-merge-acceptance.md",
+      "docs/living/history/bb047-a1-closure-2026-09-19.md"
+    ]
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/worktree/agentic-application/contracts.md",
+    "docs/worktree/agentic-application/boundaries.md",
+    "packages/agentic-system/src/application-orchestrator.js",
+    "packages/agentic-system/src/organization-artifact-store.js",
+    "packages/agentic-system/src/organization-authority.js",
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/src/organization-work.js",
+    "packages/agentic-system/src/index.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/decisions/D026-bb047-final-authority-recovery-races.md",
+    "docs/living/work-context/BB-047/g0020-final-race-repair.json",
+    "packages/agentic-system/test/bb047-organization-bridge.test.js"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "all prior A.1 findings remain closed",
+    "invalid/corrupt authority converges through typed Board invalidation plus release fencing",
+    "released capability boundaries final-revalidate exact Board claim tuple",
+    "candidate CI is green on Node 20/22/24 plus living-doc impact",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL / Integration B"
+  ],
+  "verification": [
+    "candidate CI 35456829081 SUCCESS 4/4",
+    "fresh final architecture/authority/recovery review"
+  ],
+  "expectedOutputs": [
+    "clean merge acceptance evidence or complete grounded findings list"
+  ],
+  "staleWhen": [
+    "PR #183 candidate changes outside allowed envelope",
+    "main base changes",
+    "accepted A.1 v7 contract changes"
+  ]
+}
