@@ -1,20 +1,20 @@
-# Worktree — source-synchronized living system docs
+# Living system — source-synchronized current-system docs
 
 `docs/living/system/` is the current materialized documentation of the Agentic System **as implemented now**.
 
-Despite the legacy directory name, it is not a backlog, planning tree or candidate-design area.
+This directory is not a backlog, planning tree or candidate-design area.
 
 ## Invariant
 
 ```text
-worktree/*
+living/system/*
     = current source-backed state / architecture / semantics / contracts / workflow
 
 docs/blackboard/state.md
     = unresolved gaps / problems / questions / blockers / next work
 ```
 
-A worktree document must be reconciled when source changes. It must not contain future desired APIs, open gaps, next-stage plans or speculative abstractions.
+A Living system document must be reconciled when source changes. It must not contain future desired APIs, open gaps, next-stage plans or speculative abstractions.
 
 If a source-backed fact exposes a problem, write the fact here and create/update the corresponding Blackboard item. Do not leave the problem embedded in this tree.
 
