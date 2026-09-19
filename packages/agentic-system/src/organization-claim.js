@@ -3,7 +3,7 @@ import {
   AuthorityHeadStatus,
   ClaimReleaseStatus
 } from "./organization-authority-store.js";
-import { defineOrganizationWorkContract } from "./organization-work.js";
+import { resolveOrganizationWorkContract } from "./organization-work.js";
 
 function invariant(condition,message){if(!condition) throw new TypeError(message);}
 function requireText(value,name){invariant(typeof value==="string"&&value.trim(),`${name} must be a non-empty string`);return value;}
@@ -63,9 +63,11 @@ export function createOrganizationWorkClaimController({
   orchestrator,
   materializationAuthorizationStore,
   executionAuthorityPolicyStore,
-  claimReleaseStore
+  claimReleaseStore,
+  artifactStore
 }){
   invariant(orchestrator&&typeof orchestrator.readBlackboard==="function"&&typeof orchestrator.claim==="function","claim controller requires ApplicationOrchestrator");
+  invariant(artifactStore&&typeof artifactStore.get==="function","claim controller requires immutable artifact store");
   for(const [name,store] of Object.entries({materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore})){
     invariant(store&&typeof store.current==="function"&&typeof store.compareAndSwap==="function",`${name} must support current/CAS`);
   }
@@ -83,8 +85,8 @@ export function createOrganizationWorkClaimController({
   }
 
   return Object.freeze({
-    async claim({itemId,contract:rawContract,principal,authorizationId,policyId}){
-      const contract=defineOrganizationWorkContract(rawContract);
+    async claim({itemId,contractRef,principal,authorizationId,policyId}){
+      const contract=await resolveOrganizationWorkContract({artifactStore,contractRef});
       const identity=requireText(principal?.identity,"principal.identity");
       requireText(authorizationId,"authorizationId");
       requireText(policyId,"policyId");
@@ -95,6 +97,15 @@ export function createOrganizationWorkClaimController({
         authorizationId,policyId,principal:identity,contract
       });
       const claimed=await orchestrator.claim({itemId,owner:identity});
+      try{
+        await currentAuthorities({materializationAuthorizationStore,executionAuthorityPolicyStore,authorizationId,policyId,principal:identity,contract});
+      }catch(error){
+        await orchestrator.invalidateOrganizationClaim({
+          itemId,expectedOwner:identity,expectedClaimGeneration:claimed.result.claimGeneration,
+          kind:"EXECUTION_AUTHORITY_INVALIDATED",invalidationRef:`post-claim-authority:${policyId}`
+        });
+        throw error;
+      }
       return freeze({
         item:claimed.result,
         contract,
@@ -105,9 +116,9 @@ export function createOrganizationWorkClaimController({
       });
     },
 
-    async release({itemId,claimGeneration,contract:rawContract,principal,authorizationId,policyId}){
+    async release({itemId,claimGeneration,contractRef,principal,authorizationId,policyId}){
       invariant(Number.isInteger(claimGeneration)&&claimGeneration>0,"claimGeneration must be positive");
-      const contract=defineOrganizationWorkContract(rawContract);
+      const contract=await resolveOrganizationWorkContract({artifactStore,contractRef});
       const identity=requireText(principal?.identity,"principal.identity");
       const board=await orchestrator.readBlackboard();
       const item=itemFor(board,itemId);
@@ -145,6 +156,12 @@ export function createOrganizationWorkClaimController({
         const after=await claimReleaseStore.current(key);
         invariant(after?.value?.status===ClaimReleaseStatus.RELEASED&&after.value.receiptRef===receiptRef,"conflicting claim release CAS");
       }
+      try{
+        await currentAuthorities({materializationAuthorizationStore,executionAuthorityPolicyStore,authorizationId,policyId,principal:identity,contract});
+      }catch(error){
+        await fenceRelease(itemId,claimGeneration,`post-release-authority:${policyId}`);
+        throw error;
+      }
       return freeze({...receipt,receiptRef});
     },
 
@@ -167,8 +184,8 @@ export function createOrganizationWorkClaimController({
       return true;
     },
 
-    async recoverClaim({itemId,contract:rawContract,principal,authorizationId,policyId,reason}){
-      const contract=defineOrganizationWorkContract(rawContract);
+    async recoverClaim({itemId,contractRef,principal,authorizationId,policyId,reason}){
+      const contract=await resolveOrganizationWorkContract({artifactStore,contractRef});
       const identity=requireText(principal?.identity,"principal.identity");
       const before=itemFor(await orchestrator.readBlackboard(),itemId);
       invariant(before.status==="CLAIMED","organization claim must be CLAIMED before recovery");
@@ -183,11 +200,23 @@ export function createOrganizationWorkClaimController({
     },
 
     async invalidateOrganizationClaim({itemId,expectedOwner,expectedClaimGeneration,kind,invalidationRef}){
-      const invalidated=await orchestrator.invalidateOrganizationClaim({
-        itemId,expectedOwner,expectedClaimGeneration,kind,invalidationRef
-      });
+      const before=itemFor(await orchestrator.readBlackboard(),itemId);
+      let item;
+      if(before.status==="CLAIMED"){
+        const invalidated=await orchestrator.invalidateOrganizationClaim({
+          itemId,expectedOwner,expectedClaimGeneration,kind,invalidationRef
+        });
+        item=invalidated.result;
+      }else{
+        invariant(before.claimGeneration===expectedClaimGeneration,"organization invalidation replay generation mismatch");
+        invariant(before.owner==null,"organization invalidation replay requires cleared owner");
+        const evidence=(before.evidenceRefs??[]).includes(invalidationRef);
+        const expectedStatus=kind==="WORK_AUTHORIZATION_INVALIDATED"?"BLOCKED":"REOPENED";
+        invariant(evidence&&before.status===expectedStatus,"organization invalidation replay does not match canonical Board consequence");
+        item=before;
+      }
       await fenceRelease(itemId,expectedClaimGeneration,invalidationRef);
-      return freeze(invalidated.result);
+      return freeze(item);
     }
   });
 }
