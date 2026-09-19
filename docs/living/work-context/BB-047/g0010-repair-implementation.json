@@ -1,0 +1,85 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "ACCEPTED_IMPLEMENTATION_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 10,
+  "parentContextRef": "docs/living/work-context/BB-047/g0009-repair-review.json",
+  "transitionReasonRef": "docs/living/decisions/D020-bb047-a1-repair-rejection.md",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "READY",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "IMPLEMENT",
+    "summary": "Repair only the four remaining P1 findings from D020.",
+    "allowedMutations": [
+      "make verified immutable authority artifacts mandatory authorization source",
+      "bind exact authority observations across claim/release durable mutations",
+      "restore Board-first post-release invalidation ordering",
+      "preserve typed work-vs-execution invalidation lifecycle consequences",
+      "add focused regression tests and affected worktree projection"
+    ],
+    "forbiddenActions": [
+      "mark BB-047 DONE",
+      "merge implementation",
+      "enter DOMAIN_EXECUTION_CONTROL / Integration B",
+      "run BA execution"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "2b71c45ca340f45aee0f61cf3ad7e2f1a5b11cae"
+  },
+  "requiredInputRefs": [
+    "docs/living/decisions/D020-bb047-a1-repair-rejection.md",
+    "docs/living/work-context/BB-047/g0009-repair-review.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb047-organization-bridge.test.js",
+      "docs/worktree/agentic-application/contracts.md",
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/**",
+      "docs/living/decisions/D020-bb047-a1-repair-rejection.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**"
+    ]
+  },
+  "hardInvariants": [
+    "raw CAS head payload is never sufficient authority",
+    "authority head resolves exact verified immutable artifact",
+    "post-mutation freshness compares exact observed head identity",
+    "Board invalidation precedes release fencing",
+    "work authorization invalidation BLOCKS; execution authority invalidation REOPENS",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL / Integration B"
+  ],
+  "verification": [
+    "node --test packages/agentic-system/test/bb047-*.test.js",
+    "npm run verify",
+    "fresh authority-boundary review",
+    "fresh race/lifecycle review"
+  ],
+  "expectedOutputs": [
+    "D020 four-P1 repair candidate",
+    "focused regression evidence",
+    "fresh read-only review handoff"
+  ]
+}
