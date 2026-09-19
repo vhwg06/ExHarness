@@ -1,0 +1,100 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_REVIEW_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 6,
+  "parentContextRef": "docs/living/work-context/BB-047/g0005-implementation.json",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Fresh independent review of the authorized Integration A.1 implementation candidate.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "repair or extend A.1 source in the review lane",
+      "self-accept or transition BB-047 to DONE",
+      "enter DOMAIN_EXECUTION_CONTROL / Integration B",
+      "run BA requirement-analysis execution"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "pullRequest": 161,
+    "targetType": "git-commit",
+    "candidateHeadSha": "ebec8b38176c50c7848bdf11693d88fcd3fe05d0",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/g0006-implementation-review.json"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "ebec8b38176c50c7848bdf11693d88fcd3fe05d0"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/worktree/state.md",
+    "docs/worktree/agentic-application/state.md",
+    "docs/worktree/agentic-application/boundaries.md",
+    "docs/worktree/agentic-application/contracts.md",
+    "packages/agentic-system/src/application-orchestrator.js",
+    "packages/agentic-system/src/organization-authority-store.js",
+    "packages/agentic-system/src/organization-work.js",
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/src/index.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/work-context/BB-047/g0005-implementation.json",
+    "docs/living/decisions/D018-bb047-a1-implementation-readiness-acceptance.md",
+    "packages/agentic-system/test/bb047-organization-bridge.test.js"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md",
+    "docs/living/knowledge/domain-execution-control-implementation-readiness.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/state.md",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "review lane is read-only",
+    "review target is exact immutable A.1 source candidate",
+    "trusted-principal authorization is current-head derived",
+    "Board CLAIMED is not executable capability",
+    "canonical Board invalidation precedes claim-release fencing",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL / Integration B",
+    "review acceptance cannot widen source authority"
+  ],
+  "verification": [
+    "node --test packages/agentic-system/test/bb047-*.test.js",
+    "npm run verify",
+    "independent A.1 implementation contract/authority review",
+    "independent crash/race/recovery review"
+  ],
+  "expectedOutputs": [
+    "independent review verdict bound to this context and exact candidate head",
+    "grounded implementation findings or acceptance evidence",
+    "if accepted, terminal A.1 acceptance/closure may be performed without authorizing Integration B source"
+  ],
+  "staleWhen": [
+    "PR #161 candidate changes outside the allowed review envelope",
+    "Board current-context generation/ref changes",
+    "A.1 source scope changes"
+  ]
+}
