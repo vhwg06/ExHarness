@@ -36,3 +36,8 @@ test("implementation decision subject must bind parent",()=>{
   const impl={...base,action:{kind:"IMPLEMENT"},parentContextRef:"g1",authority:{implementationDecisionRef:"d",subjectContextRef:"other",subjectCandidateHeadSha:"abc"},sourceScope:{read:[],write:[],forbiddenWrite:[]}};
   assert.throws(()=>assertWorkContext(impl),/parent context/);
 });
+
+test("current-context parser ignores refs from later sibling fields",()=>{
+  const board="BB-X\nstatus: READY\ncurrent-context:\n  generation: 2\n  ref: x.json\nimplementation-input:\n  ref: input.md\nremaining-work:\n";
+  assert.deepEqual(parseCurrentContext(board,"BB-X"),{generation:2,ref:"x.json"});
+});

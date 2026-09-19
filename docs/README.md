@@ -1,48 +1,49 @@
 # Documentation router
 
-## Work selection
+The documentation surface has two top-level domains:
 
-For every non-trivial session, start at:
+```text
+docs/
+  living/       current system truth and durable project knowledge
+  blackboard/   development state, context, artifacts and pipeline routing
+```
 
-- `living/blackboard.md` — canonical gaps/problems/open-work surface.
+For non-trivial development work, start at `blackboard/state.md`, select the exact active work item, then follow its `current-context` pointer. Load only the Living Docs, source and artifact refs declared by that context.
 
-Claim eligible work there before execution.
+A fresh session must not reconstruct project state by reading all docs, Board history or previous chat context.
 
-## Current system documentation
+## Living Docs
 
-After claiming work, load the smallest relevant current-state document:
+`living/` answers: **what system exists now, and what do we explicitly know about it?**
 
-- `worktree/state.md` — current system checkpoint.
-- `worktree/pipeline.md` — current delivered Backend -> QA pipeline.
-- `worktree/agentic-application/` — current application architecture/semantics/contracts/workflow.
-- `worktree/oracle/` — current source-resolution boundary.
-- `worktree/core-harness/` — current Core boundary.
+Primary current-system projection:
 
-`docs/worktree/` is source-synchronized living documentation despite its legacy directory name. It contains no open gaps/backlog by contract.
+- `living/system/state.md`
+- `living/system/capabilities.md`
+- `living/system/pipeline.md`
+- `living/system/agentic-application/`
+- `living/system/oracle/`
+- `living/system/core-harness/`
 
-## Durable knowledge
+Durable supporting knowledge remains under `living/knowledge/`, `living/decisions/` and `living/reference/`.
 
-- `living/knowledge/evidence.md`
-- `living/knowledge/judgment.md`
-- `living/knowledge/audit.md`
-- `living/decisions/`
-- `living/architecture.md`
-- `living/contracts.md`
-- `living/pipelines.md`
+Living Docs are not a work queue. They do not own blockers, next actions, active pipeline stage or fresh-session routing.
 
-## Deeper references
+## Outer Blackboard
 
-- `architecture/` — deeper historical/reference implementation records.
-- `development/` — development/verification process.
+`blackboard/` answers: **how is the system currently being developed?**
+
+It owns active work, pipeline/stage routing, exact fresh-session context pointers, development artifacts and operational history.
 
 ## Authority
 
 ```text
 implemented behavior       -> source/public exports + executable tests/runtime
-current documented system  -> worktree/* reconciled to source
-open gap/problem/next work -> living/blackboard.md
-knowledge provenance       -> living/knowledge/*
-accepted doc invariants    -> living/decisions + living/contracts
+current documented system  -> docs/living/system/* reconciled to source
+development state          -> docs/blackboard/state.md
+fresh-session inputs       -> exact current WORK_CONTEXT_SPEC
+development work products  -> docs/blackboard/artifacts/*
+durable knowledge          -> docs/living/knowledge/* + decisions/*
 ```
 
-If `worktree/*` and source disagree, source wins and the living document must be reconciled. If an unresolved problem appears in `worktree/*`, migrate it to the Blackboard.
+Blackboard may reference Living Docs, but must not duplicate current-system semantics.

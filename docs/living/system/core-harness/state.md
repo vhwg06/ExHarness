@@ -1,6 +1,6 @@
 # Core Harness current state
 
-Source-synchronized ExHarness Core checkpoint. Open Core gaps/problems live only in `../../living/blackboard.md`.
+Source-synchronized ExHarness Core checkpoint. Open Core gaps/problems live only in `../docs/blackboard/state.md`.
 
 ## Current implemented capabilities
 
@@ -37,4 +37,4 @@ Source/public exports are authority for the exact behavior. Any unresolved Core 
 - current Core structure -> `architecture.md`
 - current execution/cognition/recovery behavior -> `workflow.md`
 - current Core invariants -> `decisions.md`
-- all open Core work -> `../../living/blackboard.md`
+- all open Core work -> `../docs/blackboard/state.md`

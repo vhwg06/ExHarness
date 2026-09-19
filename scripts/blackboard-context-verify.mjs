@@ -5,19 +5,22 @@ import { parseCurrentContext, assertBoardBinding } from "./blackboard-context-bo
 import { resolveContext } from "./blackboard-context-resolver.mjs";
 
 function git(root,args){return execFileSync("git",["-C",root,...args],{encoding:"utf8"}).trim();}
+function activeSection(board){
+  const after=board.split("## Active work")[1] ?? "";
+  return after.split(/\n##\s+/)[0] ?? "";
+}
+function activeItems(board){
+  return [...activeSection(board).matchAll(/^BB-\d+\s*$/gm)].map(m=>m[0].trim());
+}
 function assertReviewTarget(review,{root="."}={}) {
   const target=review.reviewTarget.candidateHeadSha;
   const head=git(root,["rev-parse","HEAD"]);
-  // PR CI commonly checks out a synthetic merge commit and may not fetch every
-  // intermediate branch object. The immutable target is still verifiable when
-  // HEAD is that target or HEAD's first parent is that target.
   let available=true;
   try { git(root,["cat-file","-e",`${target}^{commit}`]); } catch { available=false; }
   if(!available) {
     let firstParent="";
     try { firstParent=git(root,["rev-parse","HEAD^1"]); } catch {}
-    if(head!==target && firstParent!==target)
-      throw new Error(`REVIEW_TARGET_UNAVAILABLE: ${target}`);
+    if(head!==target && firstParent!==target) throw new Error(`REVIEW_TARGET_UNAVAILABLE: ${target}`);
     return;
   }
   const changed=git(root,["diff","--name-only",target,"HEAD"]).split("\n").filter(Boolean);
@@ -32,16 +35,7 @@ function parseDecision(path) {
   const verdict=text.match(/verdict:\s*(\S+)/)?.[1];
   return {subjectContextRef,subjectCandidateHeadSha,verdict};
 }
-
-export function verifyCurrentContext({boardPath="docs/living/blackboard.md",root="."}={}) {
-  const board=fs.readFileSync(`${root}/${boardPath}`,"utf8");
-  const activeSection=board.split("## Active work")[1]?.split("## Integration entry rule")[0] ?? "";
-  const activeItems=[...activeSection.matchAll(/^BB-\d+$/gm)].map(match=>match[0]);
-  const itemId=process.env.BLACKBOARD_CONTEXT_ITEM || activeSection.match(/^BB-\d+\n[\s\S]*?current-context:/m)?.[0]?.match(/^BB-\d+/)?.[0];
-  if(!itemId) {
-    if(activeItems.length) throw new Error(`BOARD_BINDING_INVALID: active item(s) missing current-context: ${activeItems.join(",")}`);
-    return {binding:null,pack:{itemId:null,generation:null,action:"NONE",resolved:[],auditRefs:[]}};
-  }
+function verifyOne({board,boardPath,root,itemId}) {
   const binding=parseCurrentContext(board,itemId);
   const spec=readJson(`${root}/${binding.ref}`);
   assertWorkContext(spec);
@@ -58,10 +52,36 @@ export function verifyCurrentContext({boardPath="docs/living/blackboard.md",root
       throw new Error("IMPLEMENT_AUTHORITY_INVALID: candidate mismatch");
   }
   const pack=resolveContext(spec,{root});
-  return {binding,pack};
+  return {itemId,binding,pack,boardPath};
+}
+
+export function verifyCurrentContexts({boardPath="docs/blackboard/state.md",root="."}={}) {
+  const board=fs.readFileSync(`${root}/${boardPath}`,"utf8");
+  const items=activeItems(board);
+  if(!items.length) return [];
+  const missing=[];
+  for(const id of items){
+    try { parseCurrentContext(board,id); }
+    catch(e) { if(/expected one current-context/.test(e.message)) missing.push(id); else throw e; }
+  }
+  if(missing.length) throw new Error(`BOARD_BINDING_INVALID: active item(s) missing current-context: ${missing.join(",")}`);
+  return items.map(itemId=>verifyOne({board,boardPath,root,itemId}));
+}
+
+export function verifyCurrentContext({boardPath="docs/blackboard/state.md",root=".",itemId=process.env.BLACKBOARD_CONTEXT_ITEM}={}) {
+  const board=fs.readFileSync(`${root}/${boardPath}`,"utf8");
+  const items=activeItems(board);
+  if(itemId) {
+    if(!items.includes(itemId)) throw new Error(`BOARD_BINDING_INVALID: ${itemId} is not active`);
+    return verifyOne({board,boardPath,root,itemId});
+  }
+  if(items.length===0) return {binding:null,pack:{itemId:null,generation:null,action:"NONE",resolved:[],auditRefs:[]}};
+  if(items.length>1) throw new Error(`BOARD_BINDING_INVALID: multiple active items require BLACKBOARD_CONTEXT_ITEM: ${items.join(",")}`);
+  return verifyOne({board,boardPath,root,itemId:items[0]});
 }
 
 if (process.argv[1]?.endsWith("blackboard-context-verify.mjs")) {
-  const out=verifyCurrentContext();
-  console.log(JSON.stringify({ok:true,itemId:out.pack.itemId,generation:out.pack.generation,resolved:out.pack.resolved.length}));
+  const selected=process.env.BLACKBOARD_CONTEXT_ITEM;
+  const out=selected ? [verifyCurrentContext({itemId:selected})] : verifyCurrentContexts();
+  console.log(JSON.stringify({ok:true,items:out.map(x=>({itemId:x.pack.itemId,generation:x.pack.generation,resolved:x.pack.resolved.length}))}));
 }

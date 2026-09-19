@@ -15,9 +15,13 @@ export function assertWorkContext(spec) {
   const fail = (m) => { throw new Error(`WORK_CONTEXT_INVALID: ${m}`); };
   if (spec?.kind !== "WORK_CONTEXT_SPEC" || spec?.version !== 1) fail("kind/version");
   if (!spec.itemId || !Number.isInteger(spec.generation) || spec.generation < 1) fail("item/generation");
-  if (!["REVIEW","IMPLEMENT"].includes(spec.action?.kind)) fail("action.kind");
+  if (!["REVIEW","IMPLEMENT","RESEARCH","SYNTHESIZE"].includes(spec.action?.kind)) fail("action.kind");
+  if (spec.pipeline != null && !["RESEARCH_SA","IMPLEMENTATION_WORKER"].includes(spec.pipeline)) fail("pipeline");
+  if (spec.stage != null && (typeof spec.stage !== "string" || !spec.stage.trim())) fail("stage");
   for (const k of ["read","write","forbiddenWrite"]) if (!Array.isArray(spec.sourceScope?.[k])) fail(`sourceScope.${k}`);
   for (const w of spec.sourceScope.write) for (const x of spec.sourceScope.forbiddenWrite) if (overlap(w,x)) fail(`write/forbidden overlap: ${w} <> ${x}`);
+  if (["RESEARCH","SYNTHESIZE"].includes(spec.action.kind) && spec.sourceScope.write.length)
+    fail("Research/SA may not write product source");
   if (spec.action.kind === "REVIEW") {
     if (spec.sourceScope.write.length) fail("REVIEW may not write source");
     if (!spec.reviewTarget?.repository || !spec.reviewTarget?.candidateHeadSha) fail("REVIEW requires immutable review target");

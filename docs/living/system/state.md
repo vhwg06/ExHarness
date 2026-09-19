@@ -1,6 +1,6 @@
 # Agentic System current state
 
-Source-synchronized system checkpoint. Open work is intentionally excluded; see `../living/blackboard.md`.
+Source-synchronized system checkpoint. Open work is intentionally excluded; see `docs/blackboard/state.md`.
 
 ## Current composition
 
@@ -73,7 +73,7 @@ The concrete `ApplicationOrchestrator` is application workflow/Board control, no
 - current application details -> `agentic-application/state.md`
 - current Oracle details -> `oracle/state.md`
 - current Core details -> `core-harness/state.md`
-- all gaps/problems/next work -> `../living/blackboard.md`
+- all gaps/problems/next work -> `docs/blackboard/state.md`
 
 
 ## Repository coordination context plane

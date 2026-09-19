@@ -1,6 +1,6 @@
 # Oracle current state
 
-Source-synchronized Oracle projection. Open Oracle questions live only in `../../living/blackboard.md`.
+Source-synchronized Oracle projection. Open Oracle questions live only in `../docs/blackboard/state.md`.
 
 ## Current implemented boundary
 
@@ -57,4 +57,4 @@ Caching/RAG are not missing features merely because they are absent. If concrete
 - optional artifact-manifest boundary -> `artifact-manifest.md`
 - current invariants -> `decisions.md`
 - accepted MCP boundary decision -> `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md`
-- all open Oracle questions -> `../../living/blackboard.md`
+- all open Oracle questions -> `../docs/blackboard/state.md`
