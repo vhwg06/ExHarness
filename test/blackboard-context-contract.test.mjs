@@ -22,3 +22,8 @@ test("board binding is exact",()=>{
   assert.equal(assertBoardBinding(b,base,"x.json"),true);
   assert.throws(()=>assertBoardBinding({...b,generation:1},base,"x.json"),/mismatch/);
 });
+
+test("duplicate item binding fails closed",()=>{
+  const board="BB-X\nstatus: READY\ncurrent-context:\n  generation: 2\n  ref: x.json\n\nBB-X\nstatus: READY\ncurrent-context:\n  generation: 2\n  ref: x.json\n";
+  assert.throws(()=>parseCurrentContext(board,"BB-X"),/ambiguous|expected one/);
+});
