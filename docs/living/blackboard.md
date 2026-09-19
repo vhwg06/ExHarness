@@ -61,57 +61,46 @@ The Integration phase begins deliberately with zero active debt. An unused work 
 ## Active work
 
 ```text
-BB-046
-question/work: Implement and evaluate the accepted repository-local Blackboard Context Plane so fresh sessions receive an exact safe-next-action context instead of inferring scope/authority from Board prose.
+BB-047
+question/work: Implement the accepted Integration A.1 runtime organizational bridge through authorized claim, without entering post-claim execution.
 kind: IMPLEMENTATION
 priority: P1
-status: PENDING_REVIEW
+status: READY
 owner:
 depends-on: []
 target-consumer:
-  - repository fresh-session developer/reviewer work
-implementation-output: JSON context validation, exact Board binding, deterministic resolver/generator, stale/review-subject verification, evaluation fixtures and living-doc promotion.
-value-gate: Explicit-context fixtures must preserve authority/correctness controls, reconstruct the same safe action without chat, and improve irrelevant-read / wrong-scope behavior enough to justify context-management overhead.
-current-context:
-  generation: 4
-  ref: docs/living/work-context/BB-046/g0004-implementation-review.json
-  implementation-context: docs/living/work-context/BB-046/g0003-implementation.json
-  decision-ref: docs/living/decisions/D017-bb046-context-plane-acceptance.md
-  reviewed-candidate-head: ebd3475bc9dd7b1f582de873345d9242534f4dcc
-remaining-work:
-  - independent fresh review of g0004 exact candidate
-  - independent CI/evaluation evidence review
-  - reopen implementation only if review returns grounded blockers
+  - runtime organizational integration bridge
+implementation-output:
+  - OrganizationWorkClaimController with trusted principal -> authorized domain enforcement
+  - exact acceptance/obligation authorization and fail-closed materialization
+  - durable Authorization CAS head
+  - durable ExecutionAuthorityPolicy current head + revoke lookup
+  - durable ClaimReleaseHead per claim generation
+  - canonical CLAIMED generation recovery/invalidation semantics
+  - immutable ORGANIZATION_WORK_CONTRACT and bridge fixture stopping at authorized claim
+scope-boundary:
+  - implement A.1 only through authorized claim
+  - do not implement DOMAIN_EXECUTION_CONTROL/post-claim execution yet
+  - do not run BA requirement analysis yet
+  - do not widen packages/core-harness/* or the Oracle generic boundary
+  - keep ProductStateProjection and Integration B-J deferred
 acceptance-criteria:
-  - fresh worker reconstructs the same safe action without chat
-  - stale generation cannot authorize durable action
-  - review context cannot authorize source implementation
-  - implementation requires an exact accepted decision bound to parent context + candidate head
-  - required refs and audit refs remain distinct
-  - missing/duplicate/mismatched Board bindings fail closed
-  - write/forbiddenWrite overlap fails closed
-  - context resolver does not schedule work or decide acceptance
-  - runtime JSON Blackboard adoption remains out of scope
+  - non-authorized principal cannot claim another domain's work
+  - materializer cannot emit obligations outside exact accepted scope
+  - authorization/execution authority/claim-release heads are durable and CAS/fencing safe
+  - recoverClaim increments generation and invalidates prior execution capability
+  - invalidateOrganizationClaim commits canonical Board lifecycle before release-head fencing
+  - bridge reconstructs Root/accepted materialization -> immutable work contract -> trusted principal claim
+  - fixture stops at authorized CLAIMED state; no execution strategy is selected
 submission:
-  - PR #153 exact review target ebd3475bc9dd7b1f582de873345d9242534f4dcc
 review-requirements:
-  - implementation contract review
-  - evaluation/value-gate review
-reviews:
-  - docs/living/decisions/D017-bb046-context-plane-acceptance.md
-artifact-refs:
-  - docs/living/work-context/BB-046/g0003-implementation.json
-  - docs/living/decisions/D017-bb046-context-plane-acceptance.md
-  - docs/living/knowledge/bb046-blackboard-context-implementation-readiness.md
-  - docs/living/knowledge/bb046-blackboard-context-evaluation.md
-evidence-refs:
-  - INTENT-exharness-agentic-system
-  - exact parent review context docs/living/work-context/BB-046/g0002-readiness-review.json
-  - semantic review target d013b6118dccfea67e8615f4624d3a00f6e10b4f
+  - runtime contract/authority review
+  - crash/race/recovery review
 blockers: []
 follow-up-refs:
-  - Integration A.1 runtime bridge implementation requires a separate exact implementation context after this repository-local slice; Integration B-J remain deferred.
-origin: D017 accepted BB-046 generation 2 and authorized the bounded repository context-plane implementation slice.
+  - DOMAIN_EXECUTION_CONTROL is required before Integration B and owns ExecutionAttemptHead plus ExecutionPolicy -> ExecutionStrategyRef -> ExecutionAttemptBinding.
+origin: BB-046 Context Plane implementation merged via PR #153; accepted A.1 architecture remains the next bounded integration slice.
+
 ```
 
 ## Integration entry rule
