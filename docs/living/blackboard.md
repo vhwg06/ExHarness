@@ -45,8 +45,8 @@ previous-phase-closure: docs/living/knowledge/oracle-detail-closure-2026-09-18.m
 previous-terminal-count: 3
 previous-done-count: 3
 previous-superseded-count: 0
-current-active-debt: 1
-next-work-id: BB-047
+current-active-debt: 5
+next-work-id: BB-052
 phase-scope:
   - integrate Oracle through concrete application/component consumers without widening Oracle authority
   - integrate delivered Agentic Application, Oracle and Core boundaries across real composition seams
@@ -110,6 +110,126 @@ follow-up-refs:
 origin: BB-046 Context Plane implementation merged via PR #153; accepted A.1 architecture remains the next bounded integration slice.
 
 ```
+
+
+BB-048
+question/work: Implement DOMAIN_EXECUTION_CONTROL for one released BA-owned work item, with durable attempt binding/recovery and reconstructable execution/publication evidence.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+current-context:
+depends-on:
+  - BB-047
+implementation-artifact:
+  - git:7fffca8bd8c8d9cbdd10202816617e4a9bb544ad:docs/living/work-artifacts/BB-048/implementation.json
+decision-ref: git:7fffca8bd8c8d9cbdd10202816617e4a9bb544ad:docs/living/decisions/D021-integration-worker-artifact-promotion.md
+target-consumer:
+  - domain-local execution control
+scope-boundary:
+  - HOW only after exact released organizational claim
+  - no cross-domain obligation issuance
+  - no DOMAIN_ACTIVATION
+  - no ProductStateProjection
+acceptance-criteria:
+  - released claim -> ExecutionPolicy -> immutable ExecutionStrategy -> ExecutionAttemptBinding -> exact runtime/outcome -> completion -> publication
+  - active/recovery attempt never re-resolves newer policy/strategy
+  - execution success cannot self-authorize domain acceptance/publication
+blockers:
+  - BB-047 must be terminal accepted/DONE on the selected source baseline
+follow-up-refs:
+  - git:a29993bcba1a319e299b0e89fc57cbd538de7e00:docs/living/knowledge/domain-execution-control-implementation-readiness.md
+  - git:a29993bcba1a319e299b0e89fc57cbd538de7e00:docs/living/knowledge/domain-execution-control-judgment-artifacts.md
+origin: accepted/research-grounded Integration B architecture materialized as worker-ready implementation artifact.
+
+BB-049
+question/work: Implement typed cross-domain obligations, authoritative semantic lineage and selective dependency invalidation through the BA -> SA slice.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+current-context:
+depends-on:
+  - BB-048
+implementation-artifact:
+  - git:7fffca8bd8c8d9cbdd10202816617e4a9bb544ad:docs/living/work-artifacts/BB-049/implementation.json
+decision-ref: git:7fffca8bd8c8d9cbdd10202816617e4a9bb544ad:docs/living/decisions/D021-integration-worker-artifact-promotion.md
+target-consumer:
+  - BA -> SA organizational product handoff
+scope-boundary:
+  - obligation states WHAT, never target HOW
+  - semantic lineage is distinct from Board dependency lifecycle
+  - no autonomous domain activation yet
+acceptance-criteria:
+  - accepted BA semantic claims issue only authorized SA obligations
+  - SA materializes/executes through existing organization + execution-control contracts
+  - upstream semantic revision invalidates only exact reverse-dependent claims/obligations/work
+  - racing new lineage publication cannot escape upstream invalidation
+blockers:
+  - BB-048 must be terminal accepted/DONE and DomainPublicationReceipt semantics must be current
+follow-up-refs:
+  - git:a29993bcba1a319e299b0e89fc57cbd538de7e00:docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md
+origin: merged Integration C research converted into bounded implementation artifact.
+
+BB-050
+question/work: Implement DOMAIN_ACTIVATION and prove independent FE/BE parallel autonomy without a central next-role dispatcher.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+current-context:
+depends-on:
+  - BB-049
+implementation-artifact:
+  - git:7fffca8bd8c8d9cbdd10202816617e4a9bb544ad:docs/living/work-artifacts/BB-050/implementation.json
+decision-ref: git:7fffca8bd8c8d9cbdd10202816617e4a9bb544ad:docs/living/decisions/D021-integration-worker-artifact-promotion.md
+target-consumer:
+  - owning-domain autonomous wake-up/reconciliation
+scope-boundary:
+  - activation != scheduling
+  - event/queue != lifecycle or execution authority
+  - activation cannot choose ExecutionStrategy
+  - no DevOps/Product QA slice yet
+acceptance-criteria:
+  - missed activation signal is recovered from canonical state after restart/scan
+  - duplicate signals converge to one current claim/execution
+  - FE and BE progress independently under domain-local strategies
+  - stale queued signal cannot resurrect invalidated work
+blockers:
+  - BB-049 must be terminal accepted/DONE and source-obligation currentness must be bound into materialized work
+follow-up-refs:
+  - git:a29993bcba1a319e299b0e89fc57cbd538de7e00:docs/living/knowledge/domain-activation-parallel-autonomy-implementation-readiness.md
+origin: merged Integration D research converted into bounded implementation artifact.
+
+BB-051
+question/work: Implement exact deployment identity, immutable AcceptanceSnapshot, independent runtime observation and Product QA QualityAcceptance.
+kind: IMPLEMENTATION
+priority: P1
+status: BLOCKED
+owner:
+current-context:
+depends-on:
+  - BB-050
+implementation-artifact:
+  - git:7fffca8bd8c8d9cbdd10202816617e4a9bb544ad:docs/living/work-artifacts/BB-051/implementation.json
+decision-ref: git:7fffca8bd8c8d9cbdd10202816617e4a9bb544ad:docs/living/decisions/D021-integration-worker-artifact-promotion.md
+target-consumer:
+  - DevOps deployment -> Product QA trust boundary
+scope-boundary:
+  - DeploymentRelease != runtime observation
+  - runtime observation != QualityAcceptance
+  - no global ProductStateProjection/product closure yet
+acceptance-criteria:
+  - exact accepted FE/BE outputs trace to immutable deployable digests and one DeploymentRelease
+  - deterministic AcceptanceSnapshot pins exact release/components/criteria/environment
+  - QA independently observes exact runtime identity
+  - mixed rollout or deployment change during QA cannot publish current ACCEPT
+blockers:
+  - BB-050 must be terminal accepted/DONE and FE/BE deliveries must expose exact immutable output identity
+follow-up-refs:
+  - git:a29993bcba1a319e299b0e89fc57cbd538de7e00:docs/living/knowledge/deployment-acceptance-snapshot-implementation-readiness.md
+origin: merged Integration E/F trust-boundary research converted into bounded implementation artifact.
+
 
 ## Integration entry rule
 
