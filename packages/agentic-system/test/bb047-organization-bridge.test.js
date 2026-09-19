@@ -10,10 +10,13 @@ import {
   createApplicationOrchestrator,
   createJsonBlackboardStore,
   createJsonClaimReleaseStore,
+  createJsonImmutableArtifactStore,
+  createOrganizationAuthorityPublishers,
   createJsonExecutionAuthorityPolicyStore,
   createJsonMaterializationAuthorizationStore,
   createOrganizationWorkClaimController,
-  createOrganizationWorkMaterializer
+  createOrganizationWorkMaterializer,
+  resolveOrganizationWorkContract
 } from "../src/index.js";
 
 function reviewTrustStub(){
@@ -70,12 +73,18 @@ async function withFixture(run){
       store:createJsonBlackboardStore({path:join(root,"board.json")}),
       reviewTrust:reviewTrustStub()
     });
+    const artifactStore=createJsonImmutableArtifactStore({path:join(root,"artifacts.json")});
     const materializationAuthorizationStore=createJsonMaterializationAuthorizationStore({path:join(root,"materialization.json")});
     const executionAuthorityPolicyStore=createJsonExecutionAuthorityPolicyStore({path:join(root,"policy.json")});
     const claimReleaseStore=createJsonClaimReleaseStore({path:join(root,"release.json")});
-    await publish(materializationAuthorizationStore,"auth-1",materializationHead());
-    await publish(executionAuthorityPolicyStore,"organization-execution-authority",policyHead());
-    const materializer=createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore});
+    const organizationAuthority={
+      async verifyMaterializationAuthorizationIssuer({publisher}){return publisher?.identity==="governance";},
+      async verifyExecutionAuthorityPolicyPublisher({publisher}){return publisher?.identity==="security";}
+    };
+    const publishers=createOrganizationAuthorityPublishers({materializationAuthorizationStore,executionAuthorityPolicyStore,artifactStore,organizationAuthority});
+    await publishers.materialization.publish({publisher:{identity:"governance"},artifact:materializationHead()});
+    await publishers.execution.publish({publisher:{identity:"security"},artifact:policyHead()});
+    const materializer=createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore,artifactStore});
     const materialized=await materializer.materialize({
       authorizationId:"auth-1",
       decision:decision(),
@@ -85,11 +94,12 @@ async function withFixture(run){
       orchestrator,
       materializationAuthorizationStore,
       executionAuthorityPolicyStore,
-      claimReleaseStore
+      claimReleaseStore,
+      artifactStore
     });
     await run({
       root,orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
-      claimReleaseStore,materializer,materialized,controller
+      claimReleaseStore,artifactStore,publishers,materializer,materialized,controller
     });
   }finally{
     await rm(root,{recursive:true,force:true});
@@ -134,7 +144,7 @@ test("domain authorization precedes claim and CLAIMED stays provisional until du
     await assert.rejects(
       ()=>controller.claim({
         itemId:materialized.item.id,
-        contract:materialized.contract,
+        contractRef:materialized.contract.contractRef,
         principal:{identity:"be-1"},
         authorizationId:"auth-1",
         policyId:"organization-execution-authority"
@@ -145,7 +155,7 @@ test("domain authorization precedes claim and CLAIMED stays provisional until du
 
     const claimed=await controller.claim({
       itemId:materialized.item.id,
-      contract:materialized.contract,
+      contractRef:materialized.contract.contractRef,
       principal:{identity:"ba-1"},
       authorizationId:"auth-1",
       policyId:"organization-execution-authority"
@@ -165,7 +175,7 @@ test("domain authorization precedes claim and CLAIMED stays provisional until du
     const released=await controller.release({
       itemId:materialized.item.id,
       claimGeneration:claimed.item.claimGeneration,
-      contract:materialized.contract,
+      contractRef:materialized.contract.contractRef,
       principal:{identity:"ba-1"},
       authorizationId:"auth-1",
       policyId:"organization-execution-authority"
@@ -173,7 +183,7 @@ test("domain authorization precedes claim and CLAIMED stays provisional until du
     const duplicate=await controller.release({
       itemId:materialized.item.id,
       claimGeneration:claimed.item.claimGeneration,
-      contract:materialized.contract,
+      contractRef:materialized.contract.contractRef,
       principal:{identity:"ba-1"},
       authorizationId:"auth-1",
       policyId:"organization-execution-authority"
@@ -192,16 +202,16 @@ test("domain authorization precedes claim and CLAIMED stays provisional until du
 test("claim recovery advances generation and fences the prior released capability",async()=>{
   await withFixture(async({controller,materialized,claimReleaseStore})=>{
     const claimed=await controller.claim({
-      itemId:materialized.item.id,contract:materialized.contract,principal:{identity:"ba-1"},
+      itemId:materialized.item.id,contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},
       authorizationId:"auth-1",policyId:"organization-execution-authority"
     });
     const released=await controller.release({
       itemId:materialized.item.id,claimGeneration:claimed.item.claimGeneration,
-      contract:materialized.contract,principal:{identity:"ba-1"},
+      contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},
       authorizationId:"auth-1",policyId:"organization-execution-authority"
     });
     const recovered=await controller.recoverClaim({
-      itemId:materialized.item.id,contract:materialized.contract,principal:{identity:"ba-1"},
+      itemId:materialized.item.id,contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},
       authorizationId:"auth-1",policyId:"organization-execution-authority",reason:"controller takeover"
     });
     assert.equal(recovered.item.claimGeneration,claimed.item.claimGeneration+1);
@@ -220,12 +230,12 @@ test("claim recovery advances generation and fences the prior released capabilit
 test("authority head changes revoke execution entry without rewriting the historical receipt",async()=>{
   await withFixture(async({controller,materialized,executionAuthorityPolicyStore})=>{
     const claimed=await controller.claim({
-      itemId:materialized.item.id,contract:materialized.contract,principal:{identity:"ba-1"},
+      itemId:materialized.item.id,contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},
       authorizationId:"auth-1",policyId:"organization-execution-authority"
     });
     const released=await controller.release({
       itemId:materialized.item.id,claimGeneration:claimed.item.claimGeneration,
-      contract:materialized.contract,principal:{identity:"ba-1"},
+      contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},
       authorizationId:"auth-1",policyId:"organization-execution-authority"
     });
     const current=await executionAuthorityPolicyStore.current("organization-execution-authority");
@@ -248,15 +258,15 @@ test("authority head changes revoke execution entry without rewriting the histor
 test("canonical Board invalidation commits before release fencing, so fence failure remains safe",async()=>{
   await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore})=>{
     const base=createOrganizationWorkClaimController({
-      orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore
+      orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactStore
     });
     const claimed=await base.claim({
-      itemId:materialized.item.id,contract:materialized.contract,principal:{identity:"ba-1"},
+      itemId:materialized.item.id,contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},
       authorizationId:"auth-1",policyId:"organization-execution-authority"
     });
     await base.release({
       itemId:materialized.item.id,claimGeneration:claimed.item.claimGeneration,
-      contract:materialized.contract,principal:{identity:"ba-1"},
+      contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},
       authorizationId:"auth-1",policyId:"organization-execution-authority"
     });
     const failingReleaseStore={
@@ -268,7 +278,7 @@ test("canonical Board invalidation commits before release fencing, so fence fail
     };
     const controller=createOrganizationWorkClaimController({
       orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
-      claimReleaseStore:failingReleaseStore
+      claimReleaseStore:failingReleaseStore,artifactStore
     });
     await assert.rejects(
       ()=>controller.invalidateOrganizationClaim({
@@ -290,7 +300,7 @@ test("canonical Board invalidation commits before release fencing, so fence fail
 test("work-authorization invalidation blocks canonical work without incrementing generation",async()=>{
   await withFixture(async({controller,materialized,orchestrator})=>{
     const claimed=await controller.claim({
-      itemId:materialized.item.id,contract:materialized.contract,principal:{identity:"ba-1"},
+      itemId:materialized.item.id,contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},
       authorizationId:"auth-1",policyId:"organization-execution-authority"
     });
     const invalidated=await controller.invalidateOrganizationClaim({
@@ -304,5 +314,60 @@ test("work-authorization invalidation blocks canonical work without incrementing
     assert.equal(invalidated.claimGeneration,claimed.item.claimGeneration);
     assert.match(invalidated.blockers[0],/WORK_AUTHORIZATION_INVALIDATED/);
     assert.equal((await orchestrator.readBlackboard()).items[0].owner,null);
+  });
+});
+
+test("fresh process resolves immutable work contract and authority artifacts by ref",async()=>{
+  await withFixture(async({root,artifactStore,materialized,materializationAuthorizationStore})=>{
+    const restarted=createJsonImmutableArtifactStore({path:join(root,"artifacts.json")});
+    const contract=await resolveOrganizationWorkContract({artifactStore:restarted,contractRef:materialized.contract.contractRef});
+    assert.equal(contract.owningDomain,"BUSINESS_ANALYSIS");
+    const head=await materializationAuthorizationStore.current("auth-1");
+    const authority=await restarted.get(head.value.artifactRef);
+    assert.equal(authority.authorizationId,"auth-1");
+  });
+});
+
+test("untrusted authority publishers cannot self-grant domain authority",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"exharness-bb047-publisher-"));
+  try{
+    const artifactStore=createJsonImmutableArtifactStore({path:join(root,"artifacts.json")});
+    const materializationAuthorizationStore=createJsonMaterializationAuthorizationStore({path:join(root,"materialization.json")});
+    const executionAuthorityPolicyStore=createJsonExecutionAuthorityPolicyStore({path:join(root,"policy.json")});
+    const publishers=createOrganizationAuthorityPublishers({
+      materializationAuthorizationStore,executionAuthorityPolicyStore,artifactStore,
+      organizationAuthority:{
+        async verifyMaterializationAuthorizationIssuer({publisher}){return publisher?.identity==="governance";},
+        async verifyExecutionAuthorityPolicyPublisher({publisher}){return publisher?.identity==="security";}
+      }
+    });
+    await assert.rejects(
+      ()=>publishers.execution.publish({publisher:{identity:"ba-1"},artifact:policyHead()}),
+      /publisher is not trusted/
+    );
+    assert.equal(await executionAuthorityPolicyStore.current("organization-execution-authority"),null);
+  }finally{await rm(root,{recursive:true,force:true});}
+});
+
+test("invalidation replay after fence crash reconciles the historical release in a fresh controller",async()=>{
+  await withFixture(async({orchestrator,materialized,artifactStore,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore})=>{
+    const base=createOrganizationWorkClaimController({orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactStore});
+    const claimed=await base.claim({itemId:materialized.item.id,contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},authorizationId:"auth-1",policyId:"organization-execution-authority"});
+    await base.release({itemId:materialized.item.id,claimGeneration:claimed.item.claimGeneration,contractRef:materialized.contract.contractRef,principal:{identity:"ba-1"},authorizationId:"auth-1",policyId:"organization-execution-authority"});
+    let fail=true;
+    const flaky={
+      current:(key)=>claimReleaseStore.current(key),
+      async compareAndSwap(key,expected,next){
+        if(fail&&next.status===ClaimReleaseStatus.FENCED){fail=false;throw new Error("crash-window");}
+        return claimReleaseStore.compareAndSwap(key,expected,next);
+      }
+    };
+    const first=createOrganizationWorkClaimController({orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore:flaky,artifactStore});
+    const args={itemId:materialized.item.id,expectedOwner:"ba-1",expectedClaimGeneration:claimed.item.claimGeneration,kind:"EXECUTION_AUTHORITY_INVALIDATED",invalidationRef:"invalidation://replay"};
+    await assert.rejects(()=>first.invalidateOrganizationClaim(args),/crash-window/);
+    const restarted=createOrganizationWorkClaimController({orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactStore});
+    const replayed=await restarted.invalidateOrganizationClaim(args);
+    assert.equal(replayed.status,BlackboardStatus.REOPENED);
+    assert.equal((await claimReleaseStore.current(`${materialized.item.id}:${claimed.item.claimGeneration}`)).value.status,ClaimReleaseStatus.FENCED);
   });
 });
