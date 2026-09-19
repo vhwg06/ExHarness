@@ -349,3 +349,16 @@ Claim and release capture exact authority observations (CAS revision + generatio
 
 Freshness failures preserve lifecycle cause. Materialization/work-authorization failure commits `WORK_AUTHORIZATION_INVALIDATED -> BLOCKED`; execution-policy/principal failure commits `EXECUTION_AUTHORITY_INVALIDATED -> REOPENED`. Post-release failure commits that canonical Board consequence before fencing the release head, so the existing replay path can reconcile a fence crash without leaving canonical lifecycle stale.
 
+
+
+### A.1 trust-completion repair
+
+Organization authority consumers are project/root-bound. `ORGANIZATION_WORK_CONTRACT v1` records the durable `projectId`, root item and root intent in addition to obligation/domain/workload refs. Materialization authorization artifacts must bind the same project, and the exact authorization observation is revalidated inside the Board publication transaction and again immediately after publication. Drift after publication moves the newly materialized work to `BLOCKED` rather than leaving stale work eligible.
+
+Execution identity comes from an injected trusted `executionPrincipalProvider`. Caller context is only input to that provider and cannot directly choose the Board owner or policy principal. The released capability records both the derived Board owner and immutable trusted `principalRef`.
+
+`CLAIM_RELEASE_RECEIPT` is an immutable content-addressed organizational artifact. `ClaimReleaseHead` is currentness only and stores `{ status, receiptRef }` under a project-scoped subject derived from `{ projectId, itemId, claimGeneration }`. Execution entry resolves the immutable receipt and checks its exact project/root/work-contract/authority bindings before accepting the release.
+
+Organization-claim invalidation also uses an immutable `CLAIM_AUTHORITY_INVALIDATION` artifact. It binds project/root, exact item/owner/generation, typed cause, observed materialization/execution authority heads, reason provenance, and an optional released receipt ref. The Orchestrator accepts only a content-addressed ref whose payload matches the exact current claim tuple; replay reuses the same artifact and then completes release-head fencing.
+
+These changes remain A.1 application-local trust/currentness semantics. They do not introduce a generic IAM system or enter domain execution/HOW resolution.
