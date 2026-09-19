@@ -362,3 +362,23 @@ Execution identity comes from an injected trusted `executionPrincipalProvider`. 
 Organization-claim invalidation also uses an immutable `CLAIM_AUTHORITY_INVALIDATION` artifact. It binds project/root, exact item/owner/generation, typed cause, observed materialization/execution authority heads, reason provenance, and an optional released receipt ref. The Orchestrator accepts only a content-addressed ref whose payload matches the exact current claim tuple; replay reuses the same artifact and then completes release-head fencing.
 
 These changes remain A.1 application-local trust/currentness semantics. They do not introduce a generic IAM system or enter domain execution/HOW resolution.
+
+
+### A.1 final-completion repair
+
+Organization-managed work now separates logical obligation identity from exact materialization identity:
+
+```text
+obligationSubjectKey = H(projectId, rootIntentId, implementationArtifactRef, obligationKey)
+materializationKey   = H(obligationSubjectKey, acceptedDecisionRef, authorizationRef)
+```
+
+The canonical materialization transaction derives/validates the Board item id from `materializationKey`, records the exact `authorizationId/ref/generation/revision` plus implementation artifact provenance, and permits at most one live Board item for one `obligationSubjectKey`. A later grant cannot silently create duplicate live work for the same logical obligation.
+
+Claim/release/recovery do not accept a caller-selected materialization authorization subject. They derive the exact `authorizationId` from Board materialization provenance and require the current head revision, generation and artifact ref to match the observation that created the work. The execution-authority policy subject is controller configuration rather than caller authority.
+
+The trusted principal boundary supports both request-context resolution and durable owner recovery. `reconcileOrganizationClaimAuthority({ itemId })` reconstructs the canonical principal from Board owner state and, without incrementing claim generation, either completes a missing release, reconstructs an existing immutable release receipt, or commits typed Board invalidation then fences the release capability.
+
+Verified authority publication persists canonical publisher provenance. The trusted organization-authority adapter returns a canonical `authorityRef`; caller-supplied issuer/publisher provenance is stripped and cannot become authority. Immutable materialization grants carry `issuedByAuthorityRef`; immutable execution policies carry `publishedByAuthorityRef`.
+
+Materialization grants explicitly bind `implementationArtifactRef`, `authorizedSliceIds` and `authorizedObligationKeys`. There is no wildcard grant interpretation.
