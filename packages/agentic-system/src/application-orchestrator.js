@@ -207,6 +207,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     work,
     owningDomain,
     workloadType,
+    dependencyIds = [],
     obligationSubjectKey,
     materializationKey,
     workContractRef,
@@ -224,6 +225,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     const normalizedWork=requireText(work,"work");
     const normalizedDomain=requireText(owningDomain,"owningDomain");
     const normalizedWorkload=requireText(workloadType,"workloadType");
+    const normalizedDependencyIds=normalizeTextArray(dependencyIds,"dependencyIds");
     const normalizedObligationSubjectKey=requireText(obligationSubjectKey,"obligationSubjectKey");
     const normalizedKey=requireText(materializationKey,"materializationKey");
     invariant(normalizedItemId==="ORG-"+normalizedKey.slice(0,24),"organization materialization itemId is not canonical for materializationKey");
@@ -256,6 +258,8 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         invariant(existing.origin.authorizationId===normalizedAuthorizationId,"Blackboard item "+normalizedItemId+" authorization subject conflicts");
         invariant(existing.origin.authorizationRef===normalizedAuthorizationRef&&existing.origin.authorizationGeneration===normalizedAuthorizationGeneration&&existing.origin.authorizationRevision===normalizedAuthorizationRevision,"Blackboard item "+normalizedItemId+" authorization observation conflicts");
         invariant(existing.origin.implementationArtifactRef===normalizedImplementationArtifactRef,"Blackboard item "+normalizedItemId+" implementation artifact conflicts");
+        const expectedDependencies=[...new Set([normalizedRootItemId,...normalizedDependencyIds])];
+        invariant(JSON.stringify(existing.dependsOn)===JSON.stringify(expectedDependencies),"Blackboard item "+normalizedItemId+" dependency set conflicts");
         return structuredClone(existing);
       }
 
@@ -266,6 +270,11 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
       )??null;
       invariant(conflictingLive==null,"live organization work already exists for obligationSubjectKey");
 
+      for(const dependencyId of normalizedDependencyIds){
+        invariant(dependencyId!==normalizedItemId,"organization materialization cannot depend on itself");
+        findItem(snapshot,dependencyId);
+      }
+
       const item={
         id:normalizedItemId,
         work:normalizedWork,
@@ -273,7 +282,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         owner:null,
         claimGeneration:0,
         reviewGeneration:0,
-        dependsOn:[normalizedRootItemId],
+        dependsOn:[...new Set([normalizedRootItemId,...normalizedDependencyIds])],
         remainingWork:[],
         blockers:[],
         artifactRefs:[normalizedContractRef],
