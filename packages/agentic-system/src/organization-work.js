@@ -76,7 +76,7 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
         authorizationRef:requireText(authorization.authorizationRef,"materialization authorization ref")
       });
       const itemId=`ORG-${key.slice(0,24)}`;
-      const item=await orchestrator.materializeAcceptedWork({
+      const materialized=await orchestrator.materializeAcceptedWork({
         itemId,
         work:requireText(obligation.summary??obligationKey,"obligation.summary"),
         owningDomain,
@@ -85,7 +85,7 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
         workContractRef:contract.contractRef,
         authorizationRef:authorization.authorizationRef
       });
-      return freeze({item,contract,materializationKey:key,authorizationGeneration:authorization.generation});
+      return freeze({item:materialized.result,contract,materializationKey:key,authorizationGeneration:authorization.generation});
     }
   });
 }
