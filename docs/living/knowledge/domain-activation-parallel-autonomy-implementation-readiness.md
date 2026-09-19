@@ -114,6 +114,14 @@ Minimal subject:
       owningDomain
     }
 
+For work materialized from Integration C cross-domain obligations, the immutable OrganizationWorkContract must retain the exact source obligation/currentness subject needed to revalidate that the work is still semantically authorized:
+
+    sourceObligationRef
+    sourceObligationKey
+    observedObligationHeadGeneration
+
+These are execution-admission inputs, not activation-event fields.
+
 Optional trigger metadata may carry:
 
     observedBoardRevision
@@ -217,7 +225,9 @@ Recommended semantic flow:
       READY / REOPENED and claimable
         -> ordinary trusted principal claim
         -> publish/reuse release capability
-        -> enter DomainExecutionController
+        -> revalidate exact source-obligation/currentness subject
+        -> if stale: canonical claim invalidation/fencing and STOP
+        -> otherwise enter DomainExecutionController
 
       CLAIMED by same recoverable domain path
         -> recoverClaim / exact existing recovery semantics
@@ -235,6 +245,28 @@ Recommended semantic flow:
         -> NOOP
 
 At no point does activation resolve ExecutionStrategy directly.
+
+### Claim/invalidation race closure
+
+Activation pre-check is not sufficient by itself:
+
+    T1 activation reads obligation ACTIVE
+    T2 activation claims work
+    T3 upstream invalidation marks obligation STALE
+    T4 execution starts
+
+To fail closed, the path must revalidate the exact source-obligation/currentness subject **after claim/release publication and immediately before execution entry**.
+
+If currentness changed:
+
+    organization claim
+      -> canonical invalidateOrganizationClaim(...)
+      -> release capability fenced
+      -> no DomainExecutionController start
+
+If execution already crossed the entry boundary, Integration C/A.1 invalidation must fence the current claim/release and Integration B recovery/effect semantics decide safe reconciliation.
+
+This makes activation and invalidation symmetric; neither assumes its earlier read stays current.
 
 Integration B remains owner of:
 
@@ -457,7 +489,9 @@ Integration D must prove:
 11. domain restart does not require prior shared conversation or event history;
 12. strategy promotion changes new attempts only and does not alter activation ownership;
 13. partial invalidation suppresses only stale affected activation keys while unrelated domain work remains actionable;
-14. removing the manual next-role dispatcher does not stop organization progress.
+14. removing the manual next-role dispatcher does not stop organization progress;
+15. obligation supersession racing activation between pre-check and claim/release cannot enter execution after the post-release currentness recheck;
+16. obligation supersession after execution entry fences the current claim/release and cannot be bypassed by queued activation hints.
 
 ## 18. Observability facts to capture now
 
@@ -502,6 +536,8 @@ Integration D is implementation-ready when exact source seams can be named for:
     DomainActivationController.reconcile(...)
     trusted domain principal binding
     claim/release handoff into DomainExecutionController
+    source-obligation/currentness binding on materialized WorkContract
+    post-claim/post-release currentness handshake before execution entry
     restart/rescan semantics
     optional Restate activation adapter
     FE concrete domain
