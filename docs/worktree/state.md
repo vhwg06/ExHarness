@@ -89,3 +89,9 @@ The Agentic Application now contains the bounded Integration A.1 organization bo
 Organizational claim authorization is derived from a trusted principal plus the current execution-authority policy, not from caller-supplied domain text. Blackboard `CLAIMED` remains provisional; executable capability requires a current durable `CLAIM_RELEASE_RECEIPT`/head matching the exact Board owner + claim generation and still-current materialization/execution authority heads.
 
 Organization claim invalidation commits the canonical Blackboard consequence first and only then fences the release head. A release-fence cleanup failure therefore cannot preserve executable capability after the Board claim tuple is no longer current. The slice stops before `DOMAIN_EXECUTION_CONTROL`, ExecutionPolicy/ExecutionStrategy resolution, BA execution and ProductStateProjection.
+
+## A.1 durability/authority repair
+
+The organizational A.1 bridge now persists immutable work/authority artifacts behind exact content refs and resolves them in fresh processes. Current-head stores remain mutable CAS pointers, but advancing materialization/execution authority is mediated by trusted publisher boundaries rather than treating raw store mutation as authorization.
+
+Claim/release freshness is a handshake rather than a single pre-check: claim revalidates authority after the canonical Board claim and invalidates stale provisional claims; release revalidates after publishing the release head and fences a stale release. Organization invalidation replay recognizes the already-committed canonical Board consequence and can finish release fencing after a crash/restart.
