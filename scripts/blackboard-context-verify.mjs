@@ -35,7 +35,9 @@ function parseDecision(path) {
 
 export function verifyCurrentContext({boardPath="docs/living/blackboard.md",root="."}={}) {
   const board=fs.readFileSync(`${root}/${boardPath}`,"utf8");
-  const binding=parseCurrentContext(board,"BB-046");
+  const itemId=process.env.BLACKBOARD_CONTEXT_ITEM || board.match(/^BB-\d+\n[\s\S]*?current-context:/m)?.[0]?.match(/^BB-\d+/)?.[0];
+  if(!itemId) return {binding:null,pack:{itemId:null,generation:null,action:"NONE",resolved:[],auditRefs:[]}};
+  const binding=parseCurrentContext(board,itemId);
   const spec=readJson(`${root}/${binding.ref}`);
   assertWorkContext(spec);
   assertBoardBinding(binding,spec,binding.ref);
