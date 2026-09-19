@@ -197,10 +197,108 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
 
     return Object.freeze(structuredClone(result));
   }
+  async function materializeAcceptedWork({
+    itemId,
+    work,
+    owningDomain,
+    workloadType,
+    materializationKey,
+    workContractRef,
+    authorizationRef
+  }) {
+    const normalizedItemId=requireText(itemId,"itemId");
+    const normalizedWork=requireText(work,"work");
+    const normalizedDomain=requireText(owningDomain,"owningDomain");
+    const normalizedWorkload=requireText(workloadType,"workloadType");
+    const normalizedKey=requireText(materializationKey,"materializationKey");
+    const normalizedContractRef=requireText(workContractRef,"workContractRef");
+    const normalizedAuthorizationRef=requireText(authorizationRef,"authorizationRef");
+
+    const result=await store.transact((snapshot)=>{
+      const existing=snapshot.items.find((candidate)=>candidate.id===normalizedItemId)??null;
+      if(existing){
+        invariant(existing.origin?.kind==="ORGANIZATION_MATERIALIZATION",`Blackboard item ${normalizedItemId} conflicts with deterministic materialization`);
+        invariant(existing.origin.materializationKey===normalizedKey,`Blackboard item ${normalizedItemId} materialization key conflicts`);
+        invariant(existing.origin.workContractRef===normalizedContractRef,`Blackboard item ${normalizedItemId} work contract conflicts`);
+        return structuredClone(existing);
+      }
+      const item={
+        id:normalizedItemId,
+        work:normalizedWork,
+        status:BlackboardStatus.READY,
+        owner:null,
+        claimGeneration:0,
+        reviewGeneration:0,
+        dependsOn:[],
+        remainingWork:[],
+        blockers:[],
+        artifactRefs:[normalizedContractRef],
+        evidenceRefs:[normalizedAuthorizationRef],
+        followUpRefs:[],
+        checkpoint:null,
+        checkpointedBy:null,
+        submission:null,
+        submittedBy:null,
+        reviewRequirements:[],
+        reviews:[],
+        findings:[],
+        activeReview:null,
+        origin:{
+          kind:"ORGANIZATION_MATERIALIZATION",
+          owningDomain:normalizedDomain,
+          workloadType:normalizedWorkload,
+          materializationKey:normalizedKey,
+          workContractRef:normalizedContractRef,
+          authorizationRef:normalizedAuthorizationRef
+        }
+      };
+      snapshot.items.push(item);
+      return structuredClone(item);
+    });
+    return Object.freeze(structuredClone(result));
+  }
+
+  async function invalidateOrganizationClaim({
+    itemId,
+    expectedOwner,
+    expectedClaimGeneration,
+    kind,
+    invalidationRef
+  }) {
+    requireText(itemId,"itemId");
+    requireText(expectedOwner,"expectedOwner");
+    requirePositiveInteger(expectedClaimGeneration,"expectedClaimGeneration");
+    requireText(invalidationRef,"invalidationRef");
+    invariant(
+      ["EXECUTION_AUTHORITY_INVALIDATED","ABANDONED_PROVISIONAL_CLAIM","WORK_AUTHORIZATION_INVALIDATED"].includes(kind),
+      "organization claim invalidation kind is invalid"
+    );
+    const result=await store.transact((snapshot)=>{
+      const item=findItem(snapshot,itemId);
+      invariant(item.status===BlackboardStatus.CLAIMED,`Blackboard item ${itemId} must be CLAIMED before organization invalidation`);
+      invariant(item.owner===expectedOwner,`Blackboard item ${itemId} owner changed before organization invalidation`);
+      invariant(item.claimGeneration===expectedClaimGeneration,`Blackboard item ${itemId} claim generation changed before organization invalidation`);
+      if(!item.evidenceRefs.includes(invalidationRef)) item.evidenceRefs.push(invalidationRef);
+      item.owner=null;
+      item.activeReview=null;
+      if(kind==="WORK_AUTHORIZATION_INVALIDATED"){
+        item.blockers=[`WORK_AUTHORIZATION_INVALIDATED:${invalidationRef}`];
+        item.status=BlackboardStatus.BLOCKED;
+      }else{
+        item.blockers=[];
+        item.status=BlackboardStatus.REOPENED;
+      }
+      return structuredClone(item);
+    });
+    return Object.freeze(structuredClone(result));
+  }
+
   return Object.freeze({
     ...base,
     recoverSelfUpgradeEvaluationClaim,
     submitWithRequiredReviews,
-    resolveBlockedCheckpoint
+    resolveBlockedCheckpoint,
+    materializeAcceptedWork,
+    invalidateOrganizationClaim
   });
 }
