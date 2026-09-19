@@ -103,6 +103,63 @@ Board work result / runtime observation
 
 A Board item becoming `DONE` means the operational question/work was resolved. It does not automatically mean every design conclusion from that work is promoted knowledge.
 
+
+## Research-to-implementation promotion pipeline
+
+Research/SA artifacts may be promoted to `docs/living/knowledge/*` before their implementation slice is allocated. Promotion means the architecture input is canonical and recoverable on the current integration baseline; it does **not** create Board work or implementation authority.
+
+```text
+Researcher / SA
+  -> evidence-backed architecture artifact
+  -> accepted/promoted knowledge on current integration baseline
+  -> wait for grounded integration trigger
+
+grounded trigger
+  -> allocate one Blackboard item
+  -> create exact read-only REVIEW WORK_CONTEXT_SPEC
+  -> review only implementation readiness / authority for that bounded slice
+  -> ACCEPT decision bound to exact review context + candidate
+  -> child IMPLEMENT WORK_CONTEXT_SPEC
+       + then-current sourceBaseline
+       + exact sourceScope.write
+       + exact verification
+  -> Board READY
+  -> Worker claims and implements
+```
+
+The REVIEW gate does not mean Researcher/SA review every implementation request. Its purpose is repository authority/currentness: bind one implementation slice to an exact candidate, accepted knowledge, bounded write scope and deterministic verification. Accepted architecture is reopened only when grounded contradictory evidence or a new architecture obligation appears.
+
+There is no separate `docs/living/work-artifacts/*` implementation-authority layer. For repository coordination, the native implementation artifact is the current `WORK_CONTEXT_SPEC` generation with `action.kind = IMPLEMENT`, backed by its exact accepted parent REVIEW decision.
+
+### Canonical promotion and stacked branches
+
+Merge state is branch-relative.
+
+```text
+PR merged into stacked parent branch
+  != artifact promoted to current integration baseline
+
+artifact present on current integration baseline (normally main)
+  = canonical repository knowledge input
+```
+
+Before a Blackboard context declares a knowledge artifact as a required input, that artifact must resolve from the selected source baseline/current integration branch. A stacked research merge that has not propagated to the current integration baseline remains non-canonical for future work allocation.
+
+This rule prevents a side branch from silently becoming a second roadmap or authority surface.
+
+### Future research is not backlog
+
+Promoted future-slice knowledge may exist on `main` without a corresponding active Board item.
+
+```text
+promoted knowledge
+  != allocated work
+  != READY
+  != implementation authority
+```
+
+The Blackboard remains small and only allocates work when an Integration entry trigger exists.
+
 ## Reconciliation pipeline
 
 ```text
