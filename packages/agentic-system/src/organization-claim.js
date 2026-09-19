@@ -126,41 +126,35 @@ async function currentAuthorities({
   return {materialization,policy};
 }
 
-async function authorityObservations({
+function rawAuthorityHeadObservation(head,subjectId){
+  return freeze({
+    subjectId:requireText(subjectId,"authority observation subjectId"),
+    revision:head?.revision??null,
+    generation:Number.isInteger(head?.value?.generation)?head.value.generation:null,
+    status:typeof head?.value?.status==="string"?head.value.status:"ABSENT",
+    artifactRef:typeof head?.value?.artifactRef==="string"?head.value.artifactRef:null
+  });
+}
+
+async function authorityHeadObservations({
   materializationAuthorizationStore,
   executionAuthorityPolicyStore,
-  artifactRegistry,
   item,
-  policyId,
-  projectId
+  policyId
 }){
   const authorizationId=materializationAuthorizationId(item);
   const [materializationHead,policyHead]=await Promise.all([
     materializationAuthorizationStore.current(authorizationId),
     executionAuthorityPolicyStore.current(policyId)
   ]);
-  const materialization=await resolveAuthority({
-    head:materializationHead,
-    resolve:(ref)=>artifactRegistry.resolveMaterializationAuthorization(ref),
-    subjectField:"authorizationId",
-    subject:authorizationId,
-    kind:"WORK",
-    requireActive:false
-  });
-  const policy=await resolveAuthority({
-    head:policyHead,
-    resolve:(ref)=>artifactRegistry.resolveExecutionAuthorityPolicy(ref),
-    subjectField:"policyId",
-    subject:policyId,
-    kind:"EXECUTION",
-    requireActive:false
-  });
-  invariant(materialization.artifact.projectId===projectId,"materialization authority observation project mismatch");
-  invariant(policy.artifact.projectId===projectId,"execution authority observation project mismatch");
-  return {materialization,policy};
+  return {
+    materialization:{observation:rawAuthorityHeadObservation(materializationHead,authorizationId)},
+    policy:{observation:rawAuthorityHeadObservation(policyHead,policyId)}
+  };
 }
 
 function authorityObservationArtifact(authority,subjectField){
+  if(authority?.observation) return freeze(authority.observation);
   return freeze({
     subjectId:authority.artifact[subjectField],
     revision:authority.head.revision,
@@ -199,6 +193,14 @@ function assertBoardContract(item,contract,project){
     contract.rootIntentId===project.rootIntentId,
     "work contract project/root mismatch"
   );
+}
+
+
+function exactClaimTuple(item,expected){
+  return item?.id===expected.id&&
+    item.status==="CLAIMED"&&
+    item.owner===expected.owner&&
+    item.claimGeneration===expected.claimGeneration;
 }
 
 export function createOrganizationWorkClaimController({
@@ -489,6 +491,12 @@ export function createOrganizationWorkClaimController({
         throw error;
       }
 
+      const currentBoardItem=itemFor(await orchestrator.readBlackboard(),itemId);
+      if(!exactClaimTuple(currentBoardItem,item)){
+        await fenceRelease(contract.projectId,itemId,claimGeneration,"board-claim-drift:"+claimGeneration);
+        throw new TypeError("Board claim tuple changed across release");
+      }
+
       return released;
     },
 
@@ -521,11 +529,10 @@ export function createOrganizationWorkClaimController({
           item,policyId,principal,contract
         });
         assertReceiptAuthority(receipt,observed,item);
-        return true;
       }catch(error){
-        const snapshot=observed??await authorityObservations({
-          materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-          item,policyId,projectId:contract.projectId
+        const snapshot=observed??await authorityHeadObservations({
+          materializationAuthorizationStore,executionAuthorityPolicyStore,
+          item,policyId
         });
         await applyInvalidation({
           item,
@@ -538,6 +545,13 @@ export function createOrganizationWorkClaimController({
         });
         throw error;
       }
+
+      const currentBoardItem=itemFor(await orchestrator.readBlackboard(),itemId);
+      if(!exactClaimTuple(currentBoardItem,item)){
+        await fenceRelease(contract.projectId,itemId,claimGeneration,"execution-entry-board-drift:"+claimGeneration);
+        throw new TypeError("Board claim tuple changed across execution entry");
+      }
+      return true;
     },
 
     async recoverClaim({itemId,principalContext,reason}){
@@ -586,9 +600,9 @@ export function createOrganizationWorkClaimController({
           item,policyId,principal,contract
         });
       }catch(error){
-        const snapshot=await authorityObservations({
-          materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-          item,policyId,projectId:contract.projectId
+        const snapshot=await authorityHeadObservations({
+          materializationAuthorizationStore,executionAuthorityPolicyStore,
+          item,policyId
         });
         const invalidated=await applyInvalidation({
           item,
@@ -610,7 +624,6 @@ export function createOrganizationWorkClaimController({
             item,policyId,principal,contract
           });
           assertSameAuthorities(observed,after);
-          return freeze({state:"RELEASED",receipt:published});
         }catch(error){
           const invalidated=await applyInvalidation({
             item,
@@ -623,6 +636,13 @@ export function createOrganizationWorkClaimController({
           });
           return freeze({state:"INVALIDATED",...invalidated});
         }
+
+        const currentBoardItem=itemFor(await orchestrator.readBlackboard(),itemId);
+        if(!exactClaimTuple(currentBoardItem,item)){
+          await fenceRelease(contract.projectId,itemId,item.claimGeneration,"reconcile-board-drift:"+item.claimGeneration);
+          return freeze({state:"STALE_CLAIM",item:currentBoardItem});
+        }
+        return freeze({state:"RELEASED",receipt:published});
       }
 
       if(released.head.value.status===ClaimReleaseStatus.FENCED){
@@ -653,6 +673,12 @@ export function createOrganizationWorkClaimController({
         });
         return freeze({state:"INVALIDATED",...invalidated});
       }
+
+      const currentBoardItem=itemFor(await orchestrator.readBlackboard(),itemId);
+      if(!exactClaimTuple(currentBoardItem,item)){
+        await fenceRelease(contract.projectId,itemId,item.claimGeneration,"reconcile-board-drift:"+item.claimGeneration);
+        return freeze({state:"STALE_CLAIM",item:currentBoardItem});
+      }
       return freeze({state:"RELEASED",receipt:released.receipt});
     },
 
@@ -673,9 +699,9 @@ export function createOrganizationWorkClaimController({
       });
 
       if(persisted==null){
-        const observed=await authorityObservations({
-          materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-          item:initial,policyId,projectId:contract.projectId
+        const observed=await authorityHeadObservations({
+          materializationAuthorizationStore,executionAuthorityPolicyStore,
+          item:initial,policyId
         });
         const item=initial.status==="CLAIMED"?
           initial:
