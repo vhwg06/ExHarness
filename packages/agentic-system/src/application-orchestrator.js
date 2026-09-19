@@ -207,11 +207,14 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     work,
     owningDomain,
     workloadType,
+    obligationSubjectKey,
     materializationKey,
     workContractRef,
+    authorizationId,
     authorizationRef,
     authorizationGeneration,
     authorizationRevision,
+    implementationArtifactRef,
     projectId,
     rootItemId,
     rootIntentId,
@@ -221,11 +224,15 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     const normalizedWork=requireText(work,"work");
     const normalizedDomain=requireText(owningDomain,"owningDomain");
     const normalizedWorkload=requireText(workloadType,"workloadType");
+    const normalizedObligationSubjectKey=requireText(obligationSubjectKey,"obligationSubjectKey");
     const normalizedKey=requireText(materializationKey,"materializationKey");
+    invariant(normalizedItemId==="ORG-"+normalizedKey.slice(0,24),"organization materialization itemId is not canonical for materializationKey");
     const normalizedContractRef=requireText(workContractRef,"workContractRef");
+    const normalizedAuthorizationId=requireText(authorizationId,"authorizationId");
     const normalizedAuthorizationRef=requireText(authorizationRef,"authorizationRef");
     const normalizedAuthorizationGeneration=requirePositiveInteger(authorizationGeneration,"authorizationGeneration");
     const normalizedAuthorizationRevision=requireText(authorizationRevision,"authorizationRevision");
+    const normalizedImplementationArtifactRef=requireText(implementationArtifactRef,"implementationArtifactRef");
     const normalizedProjectId=requireText(projectId,"projectId");
     const normalizedRootItemId=requireText(rootItemId,"rootItemId");
     const normalizedRootIntentId=requireText(rootIntentId,"rootIntentId");
@@ -242,12 +249,22 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
       const existing=snapshot.items.find((candidate)=>candidate.id===normalizedItemId)??null;
       if(existing){
         invariant(existing.origin?.kind==="ORGANIZATION_MATERIALIZATION","Blackboard item "+normalizedItemId+" conflicts with deterministic materialization");
+        invariant(existing.origin.obligationSubjectKey===normalizedObligationSubjectKey,"Blackboard item "+normalizedItemId+" logical obligation subject conflicts");
         invariant(existing.origin.materializationKey===normalizedKey,"Blackboard item "+normalizedItemId+" materialization key conflicts");
         invariant(existing.origin.workContractRef===normalizedContractRef,"Blackboard item "+normalizedItemId+" work contract conflicts");
         invariant(existing.origin.projectId===normalizedProjectId&&existing.origin.rootItemId===normalizedRootItemId&&existing.origin.rootIntentId===normalizedRootIntentId,"Blackboard item "+normalizedItemId+" project/root binding conflicts");
+        invariant(existing.origin.authorizationId===normalizedAuthorizationId,"Blackboard item "+normalizedItemId+" authorization subject conflicts");
         invariant(existing.origin.authorizationRef===normalizedAuthorizationRef&&existing.origin.authorizationGeneration===normalizedAuthorizationGeneration&&existing.origin.authorizationRevision===normalizedAuthorizationRevision,"Blackboard item "+normalizedItemId+" authorization observation conflicts");
+        invariant(existing.origin.implementationArtifactRef===normalizedImplementationArtifactRef,"Blackboard item "+normalizedItemId+" implementation artifact conflicts");
         return structuredClone(existing);
       }
+
+      const conflictingLive=snapshot.items.find((candidate)=>
+        candidate.origin?.kind==="ORGANIZATION_MATERIALIZATION"&&
+        candidate.origin.obligationSubjectKey===normalizedObligationSubjectKey&&
+        ![BlackboardStatus.DONE,BlackboardStatus.SUPERSEDED].includes(candidate.status)
+      )??null;
+      invariant(conflictingLive==null,"live organization work already exists for obligationSubjectKey");
 
       const item={
         id:normalizedItemId,
@@ -277,11 +294,14 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
           rootIntentId:normalizedRootIntentId,
           owningDomain:normalizedDomain,
           workloadType:normalizedWorkload,
+          obligationSubjectKey:normalizedObligationSubjectKey,
           materializationKey:normalizedKey,
           workContractRef:normalizedContractRef,
+          authorizationId:normalizedAuthorizationId,
           authorizationRef:normalizedAuthorizationRef,
           authorizationGeneration:normalizedAuthorizationGeneration,
-          authorizationRevision:normalizedAuthorizationRevision
+          authorizationRevision:normalizedAuthorizationRevision,
+          implementationArtifactRef:normalizedImplementationArtifactRef
         }
       };
       snapshot.items.push(item);
