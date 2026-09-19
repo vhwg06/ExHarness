@@ -65,11 +65,11 @@ BB-047
 question/work: Implement the accepted Integration A.1 runtime organizational bridge through authorized claim, without entering post-claim execution.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 10
-  ref: docs/living/work-context/BB-047/g0010-repair-implementation.json
+  generation: 11
+  ref: docs/living/work-context/BB-047/g0011-repair-review.json
 depends-on: []
 target-consumer:
   - runtime organizational integration bridge
@@ -96,7 +96,7 @@ acceptance-criteria:
   - bridge reconstructs Root/accepted materialization -> immutable work contract -> trusted principal claim
   - fixture stops at authorized CLAIMED state; no execution strategy is selected
 submission:
-  - g0009 REJECT review evidence 5255858892; g0010 bounded repair authority
+  - g0011 fresh review target 1e5cc2297322f7b2da7e21a6a874cf776d325dcc
 decision-ref: docs/living/decisions/D020-bb047-a1-repair-rejection.md
 review-requirements:
   - runtime contract/authority review
