@@ -73,7 +73,7 @@ Policy promotion after binding commit cannot rewrite an in-flight attempt.
 
 ## Judgment artifact plane
 
-The execution contracts above are only half of Integration B. Implementation must also emit a fresh-session reconstructable judgment chain defined in:
+The execution contracts above are only half of Integration B. Implementation must also emit a fresh-session reconstructable fact/judgment chain defined in:
 
 - `domain-execution-control-judgment-artifacts.md`
 
@@ -101,7 +101,9 @@ strategy-proposed lineage != authoritative dependency lineage
 derived review bundle != source of truth
 ```
 
-Every correctness-relevant artifact must be durably resolvable from an exact immutable ref in a fresh process, have producer authority verified outside payload self-assertion, and survive crash/replay without caller-supplied raw payloads. Fresh review must distinguish execution-time historical validity from authority that must be current for a new mutation; later policy/claim-head advancement cannot retroactively rewrite a completed attempt.
+Every correctness-relevant artifact must be durably resolvable from an exact immutable ref in a fresh process, have producer authority verified outside payload self-assertion, and survive crash/replay without caller-supplied raw payloads. Historical/acceptance judgment must distinguish execution-time validity from authority that must be current for a new mutation; later policy/claim-head advancement cannot retroactively rewrite a completed attempt.
+
+These artifacts are emitted as runtime facts and consumed by the appropriate bounded gate. They do not create a standing Researcher/SA review loop. Researcher is invoked only for unresolved mechanism/evidence questions; SA only for architecture obligations/tripwires; independent review only at explicit acceptance/promotion gates.
 
 ExecutionAttemptOutcome must also preserve explicit output-to-input derivation edges where the domain can establish them. Integration C dependency invalidation must not have to infer lineage retrospectively from "all inputs/all outputs" run membership.
 
@@ -182,7 +184,7 @@ The controller composes existing Core/runtime primitives but does not move organ
 
 The contract is specific enough for a bounded Integration B source slice after A.1 is accepted and a dedicated implementation context authorizes it. Attempt ownership is resolved before policy/strategy selection so recovery cannot accidentally bind a newer policy to an existing semantic attempt.
 
-Implementation acceptance additionally requires the companion judgment-artifact contract: one concrete BA workload must leave enough immutable, resolvable evidence for an independent fresh reviewer to reconstruct WHAT/WHO/AUTHORITY, the exact bound HOW/runtime, what actually happened, and why the domain accepted/rejected it.
+Integration B slice acceptance additionally requires the companion judgment-artifact contract: one concrete BA workload must leave enough immutable, resolvable evidence for the explicit acceptance consumer to reconstruct WHAT/WHO/AUTHORITY, the exact bound HOW/runtime, what actually happened, and why the domain accepted/rejected it. This is a slice/decision gate, not a per-PR Researcher or SA responsibility.
 
 Passing execution/recovery tests without that reconstructable judgment chain is insufficient.
 
