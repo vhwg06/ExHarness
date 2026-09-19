@@ -848,3 +848,29 @@ test("released receipt records pinned authority-policy revisions and canonical p
     assert.equal(released.executionAuthorityPolicyRevision,"organization-authority-policy:v1");
   });
 });
+
+
+test("ACTIVE execution policy with a different pinned authority revision cannot authorize the work",async()=>{
+  await withFixture(async({controller,materialized,publisher,orchestrator})=>{
+    await publisher.publishExecutionAuthorityPolicy({
+      publisher:{identity:"authority-admin"},
+      policy:{
+        ...policyHead(),
+        generation:2,
+        authorityPolicyRevision:"organization-authority-policy:v2"
+      }
+    });
+
+    await assert.rejects(
+      ()=>controller.claim({
+        itemId:materialized.item.id,
+        principalContext:{token:"ba"}
+      }),
+      /execution authority policy revision mismatch/
+    );
+
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(item.status,BlackboardStatus.READY);
+    assert.equal(item.owner,null);
+  });
+});
