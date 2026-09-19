@@ -295,11 +295,39 @@ The target domain does not trust the producer payload directly.
 
 Same obligation revision + same authorization must converge on the same logical work identity.
 
+Identity rule for v1:
+
+    obligationKey
+      = stable semantic obligation identity owned by the issuer domain contract
+
+    obligation revision
+      = immutable payload digest bound to:
+          obligationKey
+          issuerPublicationReceiptRef
+          targetDomain/workloadType
+          requiredInputSubjects
+          requiredOutputKinds
+          acceptanceContractRef
+
+Replaying the same normalized payload under the same publication converges on the same revision/ref. Changing semantic payload produces a new revision and requires an explicit supersede transition; it does not mutate the old obligation.
+
 A source domain never calls target DomainExecutionController directly.
 
-## 8. Obligation currentness
+## 8. Claim and obligation currentness
 
-Obligation payload is immutable. Currentness is separate:
+Accepted semantic claim payloads are immutable. Currentness is separate:
+
+    SemanticClaimHead(subjectKey)
+      -> {
+           generation,
+           claimRef,
+           state: CURRENT | STALE | REVOKED | SUPERSEDED,
+           transitionRef
+         }
+
+A new accepted revision advances the stable subjectKey to a new immutable claim ref. The old claim remains historical.
+
+Obligation payload is likewise immutable. Its currentness is separate:
 
     ObligationHead(obligationKey)
       -> {
@@ -352,7 +380,40 @@ Graph constraints:
 
 This avoids turning iterative product work into a literal cycle even when BA -> SA -> BE -> QA -> remediation repeats over time.
 
-## 10. Dependency invalidation
+## 10. Publication freshness handshake
+
+A new authoritative output/derivation edge must not race an upstream invalidation.
+
+Before canonical DomainPublicationReceipt publication:
+
+    resolve every exact input SemanticClaimHead
+      -> require the consumed assertion refs are CURRENT
+      -> capture observed generations/revisions
+      -> validate DomainWriteAuthorityHead
+      -> persist candidate artifacts/edge payloads
+
+At canonical publication:
+
+    re-check input heads + write-authority head
+      -> publish DomainPublicationReceipt + acceptedDerivationEdges
+
+Immediately after canonical publication:
+
+    re-read the exact consumed input heads
+
+If an input changed across the publication window, the output must not remain silently CURRENT. The publisher/reconciler immediately emits the corresponding STALE currentness transition for the just-published output and any obligations derived from it.
+
+This closes the race where an upstream invalidator computes its reverse closure just before a new dependent edge becomes visible.
+
+The architecture therefore does not require one global lineage lock/head in Integration C. Correctness is composed from:
+
+    upstream invalidation
+      +
+    downstream pre/post publication freshness handshake
+
+The same rule applies to cross-domain obligation issuance: a newly published obligation that raced an input supersession is reconciled non-current before it can materialize target work.
+
+## 11. Dependency invalidation
 
 Trigger:
 
@@ -394,7 +455,7 @@ Later, a domain-specific verifier may prove:
 
 That should create a new revalidation/currentness fact bound to R2. It must not rewrite the historical derivation that used R1.
 
-## 11. Board consequences
+## 12. Board consequences
 
 Product semantic lineage and Blackboard work lifecycle remain different.
 
@@ -427,7 +488,7 @@ Examples:
 
 No "reset Integration C/D stage" primitive is introduced.
 
-## 12. First concrete Integration C slice
+## 13. First concrete Integration C slice
 
 Use BA -> SA first.
 
@@ -460,7 +521,7 @@ Flow:
 
 C may materialize/test those obligations explicitly. Autonomous wake-up remains D.
 
-## 13. Canonical invalidation acceptance scenario
+## 14. Canonical invalidation acceptance scenario
 
 Initial current graph:
 
@@ -485,7 +546,7 @@ Expected:
 
 If the system instead invalidates all architecture/FE/BE work because RequirementSet changed, Integration C fails its architecture goal.
 
-## 14. Crash/race requirements
+## 15. Crash/race requirements
 
 Required before C implementation can be accepted:
 
@@ -502,9 +563,12 @@ Required before C implementation can be accepted:
 11. unrelated product claims outside reverse transitive closure remain current;
 12. historical stale/revoked claims remain reconstructable and are not mutated in place;
 13. causal lineage graph rejects self/future/backward edges that would create historical cycles;
-14. deleting any disposable impact/projection cache can be rebuilt from authoritative refs/transitions.
+14. deleting any disposable impact/projection cache can be rebuilt from authoritative refs/transitions;
+15. downstream publication racing upstream supersession cannot leave a silently-current dependent edge: post-publication revalidation must reconcile it STALE;
+16. obligation issuance racing an input supersession cannot leave a newly materializable stale obligation;
+17. exact replay of the same obligation publication converges on one immutable revision/ref, while semantic payload change requires a new superseding revision.
 
-## 15. Researcher / SA / Observer placement
+## 16. Researcher / SA / Observer placement
 
 Normal product execution does not invoke Researcher or SA as generic reviewers.
 
@@ -518,7 +582,7 @@ Researcher is activated only when that SA workload or runtime evidence exposes a
 
 Observer later aggregates invalidation/rework evidence. Repeated broad invalidation or cross-domain deadlock can raise an architecture tripwire and create a new SA/research obligation.
 
-## 16. Non-goals
+## 17. Non-goals
 
 Do not add in C:
 
@@ -533,7 +597,7 @@ Do not add in C:
 - self-improvement/policy promotion loop (Integration J);
 - A2A protocol dependency solely to represent obligations.
 
-## 17. Implementation-ready boundary
+## 18. Implementation-ready boundary
 
 Integration C is implementation-ready only when the source slice can name exact seams for:
 
@@ -541,7 +605,9 @@ Integration C is implementation-ready only when the source slice can name exact 
     CrossDomainObligation immutable store/ref
     obligation issuance receipt/currentness head
     deterministic target materialization bridge
+    SemanticClaimHead + immutable currentness transitions
     accepted ProductDerivationEdge persistence
+    pre/post publication input-currentness handshake
     DependencyImpactAnalysis
     currentness transition + replay/reconciliation
     Board/claim invalidation adapter
