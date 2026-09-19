@@ -252,7 +252,7 @@ test("claim recovery advances generation and fences the prior released capabilit
         itemId:materialized.item.id,claimGeneration:claimed.item.claimGeneration,
         receiptRef:released.receiptRef,authorizationId:"auth-1",policyId:"organization-execution-authority"
       }),
-      /claim release is not current\/released/
+      /Board claim tuple no longer matches released capability/
     );
   });
 });
