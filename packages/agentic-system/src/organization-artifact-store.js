@@ -58,7 +58,11 @@ export function createJsonImmutableArtifactStore({path,fs=nodeFs}){
 export function createOrganizationArtifactRegistry({store}){
   invariant(store&&typeof store.put==="function"&&typeof store.resolve==="function","artifact registry requires immutable artifact store");
   return Object.freeze({
-    putWorkContract:(value)=>store.put("organization-work-contract",value),
+    async putWorkContract(value){
+      const artifact=structuredClone(value);
+      delete artifact.contractRef;
+      return store.put("organization-work-contract",artifact);
+    },
     resolveWorkContract:(ref)=>store.resolve(ref),
     putMaterializationAuthorization:(value)=>store.put("materialization-authorization",value),
     resolveMaterializationAuthorization:(ref)=>store.resolve(ref),
