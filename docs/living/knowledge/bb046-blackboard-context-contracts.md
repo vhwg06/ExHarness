@@ -437,6 +437,50 @@ This proposal does not retroactively make historical items invalid.
 
 If accepted, migration should be bounded to new Integration-phase items first. Generalizing every old Board item is explicitly out of scope.
 
+
+## 19. Immutable review-target contract
+
+A REVIEW context that can lead to implementation must bind one immutable semantic candidate.
+
+Required shape:
+
+```json
+{
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "pullRequest": 151,
+    "candidateHeadSha": "<exact immutable commit>",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-046/<current-generation>.json"
+    ]
+  }
+}
+```
+
+`pullRequest` is navigational metadata only. `candidateHeadSha` is the semantic review subject.
+
+A resolver/verifier must compare the diff from `candidateHeadSha` to the current review-envelope head. Any changed path outside `allowedPostTargetEnvelopePaths` makes the context stale.
+
+The review decision used to create an IMPLEMENT context must contain or resolve:
+
+```text
+subjectContextRef
+subjectCandidateHeadSha
+verdict
+review authority/scope
+```
+
+The implementation-context generator must reject when:
+
+```text
+decision.subjectCandidateHeadSha != parentReviewContext.reviewTarget.candidateHeadSha
+decision.subjectContextRef != parent review context
+decision.verdict != ACCEPT
+```
+
+This is an exact-subject check, not a semantic guess that two nearby PR heads are equivalent.
+
 ## 19. Contract acceptance tests
 
 At minimum, a future implementation/probe must show:
