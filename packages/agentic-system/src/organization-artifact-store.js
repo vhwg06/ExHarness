@@ -26,9 +26,17 @@ export function createJsonImmutableArtifactStore({path,fs=nodeFs}){
   }
   async function withLock(action){
     await fs.mkdir(dirname(path),{recursive:true});
-    let handle;
-    try{handle=await fs.open(lockPath,"wx");}
-    catch(error){if(error?.code==="EEXIST") throw new Error("artifact store mutation already in progress");throw error;}
+    let handle=null;
+    for(let attempt=0;attempt<100;attempt+=1){
+      try{
+        handle=await fs.open(lockPath,"wx");
+        break;
+      }catch(error){
+        if(error?.code!=="EEXIST") throw error;
+        await new Promise((resolve)=>setTimeout(resolve,2));
+      }
+    }
+    if(handle==null) throw new Error("artifact store mutation already in progress");
     try{return await action();}finally{await handle.close();try{await fs.unlink(lockPath);}catch(error){if(error?.code!=="ENOENT") throw error;}}
   }
   return Object.freeze({
