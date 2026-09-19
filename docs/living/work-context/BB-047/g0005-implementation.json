@@ -1,0 +1,133 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "ACCEPTED_IMPLEMENTATION_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 5,
+  "parentContextRef": "docs/living/work-context/BB-047/g0004-implementation-readiness-review.json",
+  "transitionReasonRef": "docs/living/decisions/D018-bb047-a1-implementation-readiness-acceptance.md",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "READY",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "IMPLEMENT",
+    "summary": "Implement the accepted Integration A.1 organizational bridge through released/authorized claim, stopping before post-claim execution.",
+    "allowedMutations": [
+      "implement immutable organization work-contract/materialization contracts",
+      "implement durable materialization/execution authority currentness stores",
+      "implement trusted-principal domain claim authorization and claim-release fencing",
+      "implement canonical organization-claim recovery/invalidation lifecycle",
+      "add focused A.1 contract/race/recovery tests and bridge fixture",
+      "project delivered current-system behavior into affected worktree docs",
+      "create the next read-only review context and Board handoff after implementation"
+    ],
+    "forbiddenActions": [
+      "implement DOMAIN_EXECUTION_CONTROL or Integration B",
+      "resolve ExecutionPolicy or ExecutionStrategy",
+      "execute BA requirement analysis",
+      "implement ProductStateProjection",
+      "dispatch authoritative cross-domain work from a strategy",
+      "widen packages/core-harness or Oracle authority",
+      "treat Board CLAIMED as executable capability",
+      "treat ClaimReleaseHead.FENCED as Blackboard lifecycle transition"
+    ]
+  },
+  "authority": {
+    "implementationDecisionRef": "docs/living/decisions/D018-bb047-a1-implementation-readiness-acceptance.md",
+    "subjectContextRef": "docs/living/work-context/BB-047/g0004-implementation-readiness-review.json",
+    "subjectCandidateHeadSha": "3a109db42befb9e0e207038a9c349048e602c461"
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "662a2a21511cca6c7ad55ddee23db8251ae52ecd"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/living/blackboard.md",
+    "docs/living/contracts.md",
+    "docs/living/pipelines.md",
+    "docs/worktree/state.md",
+    "docs/worktree/agentic-application/state.md",
+    "docs/worktree/agentic-application/boundaries.md",
+    "docs/worktree/agentic-application/contracts.md",
+    "packages/agentic-system/src/application-orchestrator.js",
+    "packages/agentic-system/src/blackboard-orchestrator.js",
+    "packages/agentic-system/src/index.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/decisions/D018-bb047-a1-implementation-readiness-acceptance.md",
+    "docs/living/work-context/BB-047/g0004-implementation-readiness-review.json",
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-execution-strategy-rebase-research-v6.md",
+    "docs/living/knowledge/domain-execution-control-implementation-readiness.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/state.md",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [
+      "packages/agentic-system/src/organization-*.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/blackboard-orchestrator.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb047-*.test.js",
+      "docs/worktree/state.md",
+      "docs/worktree/agentic-application/**",
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/**"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "docs/worktree/core-harness/**",
+      "docs/worktree/oracle/**"
+    ]
+  },
+  "hardInvariants": [
+    "trusted principal -> authorized domain is derived from current durable authority",
+    "artifact acceptance != blanket obligation authorization",
+    "OrganizationWorkMaterializer != Execution Resolver",
+    "Board CLAIMED != executable capability",
+    "ClaimReleaseHead.FENCED != Blackboard lifecycle transition",
+    "canonical Board invalidation commits before release-head fencing",
+    "recover/takeover cannot resurrect stale execution authority",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL and post-claim execution",
+    "Integration B-J remain out of scope"
+  ],
+  "verification": [
+    "node --test packages/agentic-system/test/bb047-*.test.js",
+    "npm run verify",
+    "fresh A.1 runtime contract/authority review",
+    "fresh crash/race/recovery review"
+  ],
+  "expectedOutputs": [
+    "immutable OrganizationWorkContract contract",
+    "exact-scope deterministic materialization boundary",
+    "durable materialization/execution authority current-head stores",
+    "OrganizationWorkClaimController with trusted-principal domain authorization",
+    "durable claim-release receipt/head fencing",
+    "canonical organization-claim invalidation/recovery semantics",
+    "A.1 bridge fixture ending at released authorized claim",
+    "affected current-system worktree projection",
+    "next immutable REVIEW context for implementation acceptance"
+  ],
+  "staleWhen": [
+    "Board current-context generation/ref changes",
+    "D018 is superseded",
+    "implementation requires a write outside sourceScope.write",
+    "implementation requires post-claim HOW/execution semantics"
+  ]
+}
