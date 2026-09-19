@@ -170,6 +170,18 @@ test("materialization is exact-scope, deterministic, and duplicate retries conve
     });
     assert.equal(duplicate.item.id,materialized.item.id);
     assert.equal(duplicate.contract.contractRef,materialized.contract.contractRef);
+    assert.equal(duplicate.materializationReceiptRef,materialized.materializationReceiptRef);
+    assert.equal(materialized.contract.boardItemId,materialized.item.id);
+    assert.equal(materialized.contract.materializationAuthorizationId,"auth-1");
+    assert.equal(materialized.contract.materializationAuthorizationRef,materialized.item.origin.authorizationRef);
+    assert.equal(materialized.contract.materializationAuthorizationGeneration,1);
+    assert.equal(materialized.contract.implementationArtifactRef,"artifact://integration-a1");
+    assert.equal(materialized.contract.obligationSubjectKey,materialized.item.origin.obligationSubjectKey);
+    assert.equal(materialized.contract.materializationKey,materialized.item.origin.materializationKey);
+    assert.equal(materialized.contract.summary,"Analyze product requirements");
+    assert.equal(materialized.contract.expectedArtifactKind,"RequirementSet");
+    assert.deepEqual(materialized.contract.requiredArtifactRefs,["intent://root"]);
+    assert.deepEqual(materialized.contract.dependencyIds,[]);
     assert.equal((await orchestrator.readBlackboard()).items.length,2);
     await assert.rejects(
       ()=>materializer.materialize({
@@ -767,5 +779,72 @@ test("immutable authority artifacts persist canonical verified publisher provena
     const policyArtifact=await artifactRegistry.resolveExecutionAuthorityPolicy(policyCurrent.value.artifactRef);
     assert.equal(policyArtifact.publishedByAuthorityRef,"authority://organization-admin");
     assert.notEqual(policyArtifact.publishedByAuthorityRef,"authority://caller-spoof");
+  });
+});
+
+
+test("concurrent identical materializations converge on one Board item and one receipt",async()=>{
+  await withFixture(async({materializer,orchestrator})=>{
+    const [left,right]=await Promise.all([
+      materializer.materialize({authorizationId:"auth-1",decision:decision(),obligation:obligation()}),
+      materializer.materialize({authorizationId:"auth-1",decision:decision(),obligation:obligation()})
+    ]);
+    assert.equal(left.item.id,right.item.id);
+    assert.equal(left.contract.contractRef,right.contract.contractRef);
+    assert.equal(left.materializationReceiptRef,right.materializationReceiptRef);
+    const organizationItems=(await orchestrator.readBlackboard()).items.filter(
+      (item)=>item.origin?.kind==="ORGANIZATION_MATERIALIZATION"
+    );
+    assert.equal(organizationItems.length,1);
+  },{materialize:false});
+});
+
+test("organization discovery is read-only and filters eligible work by owning domain",async()=>{
+  await withFixture(async({discovery,materialized,orchestrator})=>{
+    const before=await orchestrator.readBlackboard();
+    const ba=await discovery.listEligible({owningDomain:"BUSINESS_ANALYSIS"});
+    const be=await discovery.listEligible({owningDomain:"BACKEND"});
+    const after=await orchestrator.readBlackboard();
+
+    assert.equal(ba.length,1);
+    assert.equal(ba[0].item.id,materialized.item.id);
+    assert.equal(ba[0].contract.contractRef,materialized.contract.contractRef);
+    assert.equal(be.length,0);
+    assert.deepEqual(after,before);
+  });
+});
+
+test("organization discovery excludes work whose declared dependency is not DONE",async()=>{
+  await withFixture(async({materializer,discovery})=>{
+    const materialized=await materializer.materialize({
+      authorizationId:"auth-1",
+      decision:decision(),
+      obligation:{...obligation(),dependencyIds:["DEP-1"]}
+    });
+    assert.ok(materialized.item.dependsOn.includes("DEP-1"));
+    const eligible=await discovery.listEligible({owningDomain:"BUSINESS_ANALYSIS"});
+    assert.equal(eligible.length,0);
+  },{
+    materialize:false,
+    initialItems:[{
+      id:"DEP-1",
+      work:"Prerequisite",
+      status:"READY",
+      origin:{kind:"FIXTURE_DEPENDENCY"}
+    }]
+  });
+});
+
+test("released receipt records pinned authority-policy revisions and canonical principal ref",async()=>{
+  await withFixture(async({controller,materialized})=>{
+    const claimed=await controller.claim({itemId:materialized.item.id,principalContext:{token:"ba"}});
+    const released=await controller.release({
+      itemId:materialized.item.id,
+      claimGeneration:claimed.item.claimGeneration,
+      principalContext:{token:"ba"}
+    });
+    assert.equal(released.principalRef,"principal://ba-1");
+    assert.equal(released.materializationAuthorityPolicyRevision,"organization-authority-policy:v1");
+    assert.equal(released.executionAuthorityPolicyRevision,"organization-authority-policy:v1");
   });
 });
