@@ -91,6 +91,7 @@ async function currentAuthorities({
   const grant=materialization.artifact;
   if(materialization.artifactRef!==item.origin.authorizationRef) throw new AuthorityFailure("WORK","materialization authorization ref no longer matches Board provenance");
   if(grant.generation!==item.origin.authorizationGeneration) throw new AuthorityFailure("WORK","materialization authorization generation no longer matches Board provenance");
+  if(materialization.head.revision!==item.origin.authorizationRevision) throw new AuthorityFailure("WORK","materialization authorization revision no longer matches Board provenance");
   if(grant.projectId!==contract.projectId) throw new AuthorityFailure("WORK","materialization authorization project mismatch");
   if(grant.implementationArtifactRef!==item.origin.implementationArtifactRef) throw new AuthorityFailure("WORK","materialization authorization implementation artifact mismatch");
   if(grant.acceptedDecisionRef!==contract.acceptedDecisionRef) throw new AuthorityFailure("WORK","materialization authorization decision mismatch");
