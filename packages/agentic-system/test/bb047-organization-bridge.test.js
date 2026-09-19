@@ -874,3 +874,210 @@ test("ACTIVE execution policy with a different pinned authority revision cannot 
     assert.equal(item.owner,null);
   });
 });
+
+
+test("execution entry invalidates and fences when current policy artifact is missing",async()=>{
+  await withFixture(async({controller,materialized,executionAuthorityPolicyStore,claimReleaseStore,orchestrator})=>{
+    const claimed=await controller.claim({itemId:materialized.item.id,principalContext:{token:"ba"}});
+    const released=await controller.release({
+      itemId:materialized.item.id,
+      claimGeneration:claimed.item.claimGeneration,
+      principalContext:{token:"ba"}
+    });
+
+    const current=await executionAuthorityPolicyStore.current("organization-execution-authority");
+    assert.equal(await executionAuthorityPolicyStore.compareAndSwap(
+      "organization-execution-authority",
+      current.revision,
+      {generation:2,status:AuthorityHeadStatus.ACTIVE,artifactRef:"execution-authority-policy:sha256:missing"}
+    ),true);
+
+    await assert.rejects(
+      ()=>controller.assertExecutable({
+        itemId:materialized.item.id,
+        claimGeneration:claimed.item.claimGeneration,
+        receiptRef:released.receiptRef
+      }),
+      /authority artifact not found/
+    );
+
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(item.status,BlackboardStatus.REOPENED);
+    assert.equal(item.owner,null);
+    const releaseHead=await claimReleaseStore.current(
+      claimReleaseSubjectKey("project-1",materialized.item.id,claimed.item.claimGeneration)
+    );
+    assert.equal(releaseHead.value.status,ClaimReleaseStatus.FENCED);
+  });
+});
+
+test("fresh reconciliation blocks work when materialization authority artifact is missing",async()=>{
+  await withFixture(async({controller,materialized,materializationAuthorizationStore,orchestrator})=>{
+    const claimed=await controller.claim({itemId:materialized.item.id,principalContext:{token:"ba"}});
+    const current=await materializationAuthorizationStore.current("auth-1");
+    assert.equal(await materializationAuthorizationStore.compareAndSwap(
+      "auth-1",
+      current.revision,
+      {generation:2,status:AuthorityHeadStatus.ACTIVE,artifactRef:"materialization-authorization:sha256:missing"}
+    ),true);
+
+    const reconciled=await controller.reconcileOrganizationClaimAuthority({itemId:materialized.item.id});
+    assert.equal(reconciled.state,"INVALIDATED");
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(item.status,BlackboardStatus.BLOCKED);
+    assert.equal(item.owner,null);
+    assert.equal(item.claimGeneration,claimed.item.claimGeneration);
+  });
+});
+
+test("release fences its old capability when Board generation drifts after release publication",async()=>{
+  await withFixture(async({
+    orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,
+    claimReleaseStore,artifactRegistry,executionPrincipalProvider
+  })=>{
+    const base=createOrganizationWorkClaimController({
+      orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
+      claimReleaseStore,artifactRegistry,executionPrincipalProvider,
+      executionAuthorityPolicyId:"organization-execution-authority"
+    });
+    const claimed=await base.claim({itemId:materialized.item.id,principalContext:{token:"ba"}});
+    let drifted=false;
+    const racingReleaseStore={
+      current:(key)=>claimReleaseStore.current(key),
+      async compareAndSwap(key,expected,next){
+        const ok=await claimReleaseStore.compareAndSwap(key,expected,next);
+        if(ok&&!drifted&&next.status===ClaimReleaseStatus.RELEASED){
+          drifted=true;
+          await orchestrator.recoverClaim({
+            itemId:materialized.item.id,
+            owner:"ba-1",
+            reason:"concurrent recovery after release publication"
+          });
+        }
+        return ok;
+      }
+    };
+    const racing=createOrganizationWorkClaimController({
+      orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
+      claimReleaseStore:racingReleaseStore,artifactRegistry,executionPrincipalProvider,
+      executionAuthorityPolicyId:"organization-execution-authority"
+    });
+
+    await assert.rejects(
+      ()=>racing.release({
+        itemId:materialized.item.id,
+        claimGeneration:claimed.item.claimGeneration,
+        principalContext:{token:"ba"}
+      }),
+      /Board claim tuple changed across release/
+    );
+
+    const boardItem=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(boardItem.status,BlackboardStatus.CLAIMED);
+    assert.equal(boardItem.claimGeneration,claimed.item.claimGeneration+1);
+    const oldHead=await claimReleaseStore.current(
+      claimReleaseSubjectKey("project-1",materialized.item.id,claimed.item.claimGeneration)
+    );
+    assert.equal(oldHead.value.status,ClaimReleaseStatus.FENCED);
+  });
+});
+
+test("execution entry final Board re-read rejects concurrent claim recovery and fences old release",async()=>{
+  await withFixture(async({
+    orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,
+    claimReleaseStore,artifactRegistry,executionPrincipalProvider
+  })=>{
+    const base=createOrganizationWorkClaimController({
+      orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
+      claimReleaseStore,artifactRegistry,executionPrincipalProvider,
+      executionAuthorityPolicyId:"organization-execution-authority"
+    });
+    const claimed=await base.claim({itemId:materialized.item.id,principalContext:{token:"ba"}});
+    const released=await base.release({
+      itemId:materialized.item.id,
+      claimGeneration:claimed.item.claimGeneration,
+      principalContext:{token:"ba"}
+    });
+
+    let drifted=false;
+    const racingPolicyStore={
+      compareAndSwap:(...args)=>executionAuthorityPolicyStore.compareAndSwap(...args),
+      async current(key){
+        const head=await executionAuthorityPolicyStore.current(key);
+        if(!drifted){
+          drifted=true;
+          await orchestrator.recoverClaim({
+            itemId:materialized.item.id,
+            owner:"ba-1",
+            reason:"concurrent recovery during execution entry"
+          });
+        }
+        return head;
+      }
+    };
+    const racing=createOrganizationWorkClaimController({
+      orchestrator,materializationAuthorizationStore,
+      executionAuthorityPolicyStore:racingPolicyStore,
+      claimReleaseStore,artifactRegistry,executionPrincipalProvider,
+      executionAuthorityPolicyId:"organization-execution-authority"
+    });
+
+    await assert.rejects(
+      ()=>racing.assertExecutable({
+        itemId:materialized.item.id,
+        claimGeneration:claimed.item.claimGeneration,
+        receiptRef:released.receiptRef
+      }),
+      /Board claim tuple changed across execution entry/
+    );
+
+    const oldHead=await claimReleaseStore.current(
+      claimReleaseSubjectKey("project-1",materialized.item.id,claimed.item.claimGeneration)
+    );
+    assert.equal(oldHead.value.status,ClaimReleaseStatus.FENCED);
+  });
+});
+
+test("reconciliation final Board re-read returns stale claim and fences release after concurrent recovery",async()=>{
+  await withFixture(async({
+    orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,
+    claimReleaseStore,artifactRegistry,executionPrincipalProvider
+  })=>{
+    const base=createOrganizationWorkClaimController({
+      orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
+      claimReleaseStore,artifactRegistry,executionPrincipalProvider,
+      executionAuthorityPolicyId:"organization-execution-authority"
+    });
+    const claimed=await base.claim({itemId:materialized.item.id,principalContext:{token:"ba"}});
+    let drifted=false;
+    const racingReleaseStore={
+      current:(key)=>claimReleaseStore.current(key),
+      async compareAndSwap(key,expected,next){
+        const ok=await claimReleaseStore.compareAndSwap(key,expected,next);
+        if(ok&&!drifted&&next.status===ClaimReleaseStatus.RELEASED){
+          drifted=true;
+          await orchestrator.recoverClaim({
+            itemId:materialized.item.id,
+            owner:"ba-1",
+            reason:"concurrent recovery during reconciliation"
+          });
+        }
+        return ok;
+      }
+    };
+    const racing=createOrganizationWorkClaimController({
+      orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
+      claimReleaseStore:racingReleaseStore,artifactRegistry,executionPrincipalProvider,
+      executionAuthorityPolicyId:"organization-execution-authority"
+    });
+
+    const result=await racing.reconcileOrganizationClaimAuthority({itemId:materialized.item.id});
+    assert.equal(result.state,"STALE_CLAIM");
+    const currentItem=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(currentItem.claimGeneration,claimed.item.claimGeneration+1);
+    const oldHead=await claimReleaseStore.current(
+      claimReleaseSubjectKey("project-1",materialized.item.id,claimed.item.claimGeneration)
+    );
+    assert.equal(oldHead.value.status,ClaimReleaseStatus.FENCED);
+  });
+});
