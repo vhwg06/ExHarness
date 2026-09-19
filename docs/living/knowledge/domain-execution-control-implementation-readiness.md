@@ -20,11 +20,11 @@ Introduce one concrete domain-local path only:
 
 released claim receipt
 -> DomainExecutionController
--> current ExecutionPolicy head
--> immutable ExecutionStrategyDescriptor
 -> durable ExecutionAttemptHead
--> immutable ExecutionAttemptBinding
--> execute/recover one BA-owned workload
+   -> ACTIVE / RECOVERY_REQUIRED: load the existing immutable ExecutionAttemptBinding; do not re-resolve policy
+   -> ABSENT: resolve current ExecutionPolicy head + immutable ExecutionStrategyDescriptor, then CAS-create the first attempt/binding
+   -> TERMINAL: require an explicit remediation/new-attempt decision before creating another attempt
+-> execute/recover one BA-owned workload from the bound attempt
 -> ordinary completion/verification/write gates
 
 No global StrategyRegistry is required.
@@ -71,11 +71,17 @@ Policy promotion after binding commit cannot rewrite an in-flight attempt.
 
 ## Recovery semantics
 
-Crash before attempt-head commit: no semantic attempt exists; retry resolution.
+Controller entry first reads ExecutionAttemptHead before any policy/strategy resolution.
 
-Crash after attempt-head commit but before binding commit: same attempt is RECOVERY_REQUIRED; reconstruct/finalize the same attempt rather than minting another.
+If the head is ACTIVE or RECOVERY_REQUIRED, recovery loads the already-bound attempt and MUST NOT resolve the current policy/strategy again.
 
-Crash after binding/effect start: adapter recovery must use the same binding/runtime identity.
+Only ABSENT may resolve current ExecutionPolicy + ExecutionStrategyDescriptor for a first attempt. That resolution and attempt/binding publication must be fenced so a racing controller cannot create a second semantic attempt.
+
+Crash before attempt-head/binding commit: no semantic attempt exists; retry may resolve policy again.
+
+Crash after the attempt/binding commit: the same attempt is RECOVERY_REQUIRED; reconstruct/reload the same immutable binding rather than minting another or observing a newer policy.
+
+Crash after effect start: adapter recovery must use the same binding/runtime identity.
 
 Claim takeover/recovery may advance Blackboard claimGeneration while the semantic execution attempt remains the same until external-effect reconciliation resolves it.
 
@@ -99,7 +105,7 @@ Candidate strategy kind: application-core-loop or human-assisted adapter first. 
 1. policy cannot select a different Board item;
 2. incompatible WorkContract version fails closed;
 3. strategy cannot change output/acceptance semantics;
-4. restart while attempt ACTIVE reuses the same attempt/binding;
+4. restart while attempt ACTIVE/RECOVERY_REQUIRED loads ExecutionAttemptHead first and reuses the same attempt/binding without policy re-resolution;
 5. policy promotion does not alter an in-flight binding;
 6. runtime code identity must be exact, not mutable latest;
 7. Backend strategy cannot dispatch QA organizational work;
@@ -123,6 +129,6 @@ The controller composes existing Core/runtime primitives but does not move organ
 
 ## Readiness result
 
-The contract is specific enough for a bounded Integration B source slice after A.1 is accepted and a dedicated implementation context authorizes it.
+The contract is specific enough for a bounded Integration B source slice after A.1 is accepted and a dedicated implementation context authorizes it. Attempt ownership is resolved before policy/strategy selection so recovery cannot accidentally bind a newer policy to an existing semantic attempt.
 
 This artifact does not authorize Integration B implementation.
