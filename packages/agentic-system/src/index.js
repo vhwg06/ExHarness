@@ -166,3 +166,9 @@ export {
   materializationSubjectKey
 } from "./organization-work.js";
 export { createOrganizationWorkClaimController } from "./organization-claim.js";
+
+export {
+  createJsonImmutableArtifactStore,
+  createOrganizationArtifactRegistry
+} from "./organization-artifact-store.js";
+export { createOrganizationAuthorityPublisher } from "./organization-authority.js";
