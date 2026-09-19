@@ -101,7 +101,7 @@ strategy-proposed lineage != authoritative dependency lineage
 derived review bundle != source of truth
 ```
 
-Every correctness-relevant artifact must be durably resolvable from an exact immutable ref in a fresh process, have producer authority verified outside payload self-assertion, and survive crash/replay without caller-supplied raw payloads.
+Every correctness-relevant artifact must be durably resolvable from an exact immutable ref in a fresh process, have producer authority verified outside payload self-assertion, and survive crash/replay without caller-supplied raw payloads. Fresh review must distinguish execution-time historical validity from authority that must be current for a new mutation; later policy/claim-head advancement cannot retroactively rewrite a completed attempt.
 
 ExecutionAttemptOutcome must also preserve explicit output-to-input derivation edges where the domain can establish them. Integration C dependency invalidation must not have to infer lineage retrospectively from "all inputs/all outputs" run membership.
 
@@ -160,7 +160,9 @@ Candidate strategy kind: application-core-loop or human-assisted adapter first. 
 15. attempt-transition publication/head-CAS crash recovery is idempotent and cannot duplicate semantic attempts;
 16. policy-head race before binding forces re-resolution while promotion after binding cannot alter the attempt;
 17. crash after runtime dispatch uses the stable attempt-scoped invocation identity to recover/observe rather than blind redispatch;
-18. raw strategy lineage cannot become cross-domain dependency truth without an accepted DomainPublicationReceipt.
+18. raw strategy lineage cannot become cross-domain dependency truth without an accepted DomainPublicationReceipt;
+19. historical review accepts a completed attempt whose claim/policy heads later advanced, provided execution-time authority/history proves the pinned heads were valid then;
+20. authoritative domain publication revalidates current lifecycle + write authority after completion decision and fails closed on revoke/race.
 
 ## Source placement candidate
 
