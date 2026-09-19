@@ -65,8 +65,11 @@ BB-047
 question/work: Implement the accepted Integration A.1 runtime organizational bridge through authorized claim, without entering post-claim execution.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
+current-context:
+  generation: 1
+  ref: docs/living/work-context/BB-047/g0001-implementation-readiness-review.json
 depends-on: []
 target-consumer:
   - runtime organizational integration bridge
@@ -93,10 +96,12 @@ acceptance-criteria:
   - bridge reconstructs Root/accepted materialization -> immutable work contract -> trusted principal claim
   - fixture stops at authorized CLAIMED state; no execution strategy is selected
 submission:
+  - A.1 implementation-readiness review target 4d1832ce6cabd5e712e75673c902bcdb61db41e8
 review-requirements:
   - runtime contract/authority review
   - crash/race/recovery review
-blockers: []
+blockers:
+  - runtime source implementation is blocked until an exact accepted decision authorizes generation 2 IMPLEMENT
 follow-up-refs:
   - DOMAIN_EXECUTION_CONTROL is required before Integration B and owns ExecutionAttemptHead plus ExecutionPolicy -> ExecutionStrategyRef -> ExecutionAttemptBinding.
 origin: BB-046 Context Plane implementation merged via PR #153; accepted A.1 architecture remains the next bounded integration slice.
