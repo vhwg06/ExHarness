@@ -96,7 +96,7 @@ export function createOrganizationWorkClaimController({
       });
       const claimed=await orchestrator.claim({itemId,owner:identity});
       return freeze({
-        item:claimed,
+        item:claimed.result,
         contract,
         principal:identity,
         materializationAuthorizationGeneration:authority.materialization.generation,
@@ -178,16 +178,16 @@ export function createOrganizationWorkClaimController({
         authorizationId,policyId,principal:identity,contract
       });
       const recovered=await orchestrator.recoverClaim({itemId,owner:identity,reason:requireText(reason,"reason")});
-      await fenceRelease(itemId,before.claimGeneration,`claim-recovery:${recovered.claimGeneration}`);
-      return freeze({item:recovered,contract,released:false});
+      await fenceRelease(itemId,before.claimGeneration,`claim-recovery:${recovered.result.claimGeneration}`);
+      return freeze({item:recovered.result,contract,released:false});
     },
 
     async invalidateOrganizationClaim({itemId,expectedOwner,expectedClaimGeneration,kind,invalidationRef}){
-      const item=await orchestrator.invalidateOrganizationClaim({
+      const invalidated=await orchestrator.invalidateOrganizationClaim({
         itemId,expectedOwner,expectedClaimGeneration,kind,invalidationRef
       });
       await fenceRelease(itemId,expectedClaimGeneration,invalidationRef);
-      return freeze(item);
+      return freeze(invalidated.result);
     }
   });
 }
