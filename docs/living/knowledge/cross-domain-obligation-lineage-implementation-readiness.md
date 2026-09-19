@@ -1,8 +1,8 @@
 # Integration C — cross-domain obligation + dependency invalidation readiness
 
-Status: **CANDIDATE ARCHITECTURE — NOT IMPLEMENTATION AUTHORITY**
+Status: **PROMOTED RESEARCH INPUT — NOT IMPLEMENTATION AUTHORITY**
 
-This artifact is the Researcher + SA look-ahead for the first post-Integration-B cross-domain slice.
+This artifact is the canonical Researcher + SA architecture input for the first post-Integration-B cross-domain slice.
 
 It does not schedule Researcher/SA per PR, does not authorize Integration C source implementation, and does not create a global organization workflow.
 
@@ -625,3 +625,22 @@ The desired invariant is:
       -> no global workflow appears
 
 This artifact is a Researcher + SA candidate. It requires a later explicit implementation-authority decision before source delivery; its existence does not itself schedule review work.
+
+
+## Outer-Blackboard implementation lifecycle
+
+Promotion of this research to `main` does not allocate Integration C work and does not authorize source changes.
+
+When Integration C receives a grounded entry trigger, the repository-native flow is:
+
+```text
+promoted research input on main
+  -> allocate one Blackboard item
+  -> create exact read-only WORK_CONTEXT_SPEC REVIEW generation
+  -> independent readiness/authority decision bound to that exact context + candidate
+  -> on ACCEPT create child IMPLEMENT generation with then-current sourceBaseline + bounded sourceScope.write
+  -> Board item READY
+  -> worker implements
+```
+
+No separate `docs/living/work-artifacts/*` authority layer exists. Researcher/SA are not standing reviewers for each implementation request; architecture research reopens only on grounded contradiction or a newly exposed architecture obligation.
