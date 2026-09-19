@@ -154,6 +154,7 @@ export {
 export { runBackendThenQaObjective } from "./composition.js";
 export { AuthorityHeadStatus, ClaimReleaseStatus, createJsonClaimReleaseStore } from "./organization-authority-store.js";
 export {
+  createOrganizationWorkDiscovery,
   createOrganizationWorkMaterializer,
   defineOrganizationWorkContract,
   obligationSubjectKey,
