@@ -84,6 +84,7 @@ If any answer requires previous conversation state, a mutable in-memory object, 
 
     OrganizationWorkContract
     + current ClaimReleaseReceipt
+    + current ExecutionPolicyHead
             ↓
     ExecutionAttemptBinding                 PRE-EXECUTION FACT
             ↓
@@ -95,11 +96,34 @@ If any answer requires previous conversation state, a mutable in-memory object, 
             ↓
     DomainCompletionDecision                DOMAIN JUDGMENT
             ↓
+    DomainPublicationReceipt                WRITE/PUBLICATION AUTHORITY
+            ↓
     ExecutionJudgmentBundle                 DERIVED REVIEW INDEX
 
 ExecutionAttemptHead remains a durable current pointer over semantic-attempt lifecycle. Its transitions must reference immutable transition/decision artifacts; the head itself is not the historical audit record.
 
-### 1. ExecutionAttemptBinding
+### 1. ExecutionPolicy currentness
+
+ExecutionPolicy is immutable/versioned. Currentness is owned by a separate CAS-fenced head, not by a mutable latest alias:
+
+    ExecutionPolicyHead(domain, workloadType)
+      -> { generation, policyRef, status }
+
+Only trusted policy-publisher authority may advance the head.
+
+First-attempt creation must:
+
+    read head P
+     -> resolve exact policy/strategy/runtime target
+     -> prepare immutable binding
+     -> re-check head is still P
+     -> CAS-create attempt/binding
+
+If the head changed before binding commit, retry resolution against the new current head. After binding commit, later policy promotion does not rewrite the attempt.
+
+A policy payload field such as issuedByAuthorityRef is provenance only; publisher authority must be verified outside the payload.
+
+### 2. ExecutionAttemptBinding
 
 Existing Integration B contract remains authoritative.
 
@@ -116,6 +140,7 @@ Required additions for judgment:
       kind: <application-core-loop | restate | human-assisted | ...>
       adapterRef: <exact adapter/config ref>
       expectedRuntimeCodeRef: <addressable immutable identity>
+      runtimeInvocationKey: <stable attempt-scoped dispatch/recovery identity where supported>
       bindingMode: <IMMUTABLE_LOCAL | VERSION_ADDRESSABLE | HUMAN_SESSION>
 
     contextRefs: [...]
@@ -125,7 +150,11 @@ Required additions for judgment:
 
 The binding is committed before external effects. A mutable service name such as latest is not an acceptable exact runtime binding by itself.
 
-### 2. RuntimeExecutionAttestation
+Where the runtime supports a stable invocation/workflow/idempotency identity, that key is fixed before dispatch. A crash after dispatch but before local attestation publication must recover/observe the same runtime invocation rather than inventing a fresh call.
+
+After binding commit and immediately before first runtime/effect dispatch, execution entry revalidates the exact claim/release authority again. A revoked/stale release cannot execute merely because an older binding exists.
+
+### 3. RuntimeExecutionAttestation
 
 A strategy must not prove its own runtime identity merely by returning a field.
 
@@ -155,7 +184,7 @@ One semantic attempt may involve more than one runtime invocation during retry/r
 
 For Restate, the adapter must record/verify the immutable deployment serving the invocation. Restate's own versioning behavior is useful evidence, but ExHarness still needs the exact runtime identity bound into its evidence chain.
 
-### 3. ExecutionAttemptOutcome
+### 4. ExecutionAttemptOutcome
 
 Produced by the ExecutionStrategy after execution/recovery.
 
@@ -176,16 +205,18 @@ It is **not** completion authority.
     startedAt: <timestamp>
     finishedAt: <timestamp>
 
-    derivationEdges:
-      - outputRef: <exact output>
+    proposedDerivationEdges:
+      - outputRef: <exact candidate output>
         derivedFrom:
           - <exact input/work/context/artifact ref>
 
-derivationEdges must be as precise as the domain can establish. Do not infer a Cartesian product where every output depends on every input merely because they appeared in one run. This becomes correctness input for selective invalidation in Integration C+.
+proposedDerivationEdges must be as precise as the strategy can establish. Do not infer a Cartesian product where every output depends on every input merely because they appeared in one run.
+
+These edges are **not authoritative product lineage yet**. Strategy output is a proposal/result. DomainCompletionDecision plus the write/publication authority boundary must validate and promote exact accepted lineage before Integration C+ may use it for selective invalidation.
 
 The strategy may report failure/success mechanics, but a field such as accepted: true has no domain authority.
 
-### 4. ExecutionAttemptTransition
+### 5. ExecutionAttemptTransition
 
 Every semantic-attempt head transition that matters for recovery/new-attempt creation must be backed by an immutable reason artifact:
 
@@ -208,7 +239,7 @@ Process restart alone is never a valid REMEDIATION_AUTHORIZED reason.
 
 The concrete store protocol must make transition publication/head CAS recoverable so a fresh process does not invent or lose attempt history after a crash.
 
-### 5. DomainCompletionDecision
+### 6. DomainCompletionDecision
 
 Domain completion is a separate trusted judgment over exact execution facts.
 
@@ -248,7 +279,35 @@ Hard rule:
 
 Likewise, human-assisted execution does not bypass this decision boundary.
 
-### 6. ExecutionJudgmentBundle
+### 7. DomainPublicationReceipt
+
+A successful domain completion decision still does not prove that candidate outputs were published as authoritative domain products.
+
+For each authoritative publication, the domain write gate emits an immutable receipt:
+
+    kind: DOMAIN_PUBLICATION_RECEIPT
+    domain: <exact owning domain>
+    producerPrincipalRef: <trusted principal>
+    writeAuthorityRef: <exact current writer-authority subject>
+    completionDecisionRef: <exact ACCEPT decision>
+    publishedArtifactRefs: [{ ref, digest }]
+    publishedClaimRefs: [{ ref, digest }]
+    acceptedDerivationEdges:
+      - outputRef: <published exact output>
+        derivedFrom: [<exact authoritative input refs>]
+    publicationStoreRevision: <commit/currentness subject>
+
+The receipt proves the write/publication boundary accepted these exact products under this exact authority. It does not make the artifacts semantically correct by itself; correctness still comes from completion/evidence policy.
+
+Hard separation:
+
+    proposedDerivationEdges from strategy outcome
+    !=
+    acceptedDerivationEdges published by domain authority
+
+Integration C dependency invalidation may consume only authoritative lineage/claim edges, not raw strategy proposals.
+
+### 8. ExecutionJudgmentBundle
 
 This is a derived orientation/index artifact for fresh review, analogous to the current DECISION_OUTCOME_SUMMARY pattern.
 
@@ -266,6 +325,7 @@ It is not correctness evidence, action authorization, product authority, or acce
       runtimeAttestations: [{ ref, digest }]
       outcome: { ref, digest }
       completionDecision: { ref, digest }
+      publicationReceipt: { ref, digest }
       evidence: [{ ref, digest }]
       transitionHistory: [{ ref, digest }]
 
@@ -339,17 +399,20 @@ In addition to the DOMAIN_EXECUTION_CONTROL tests:
 2. changing/removing any pinned correctness artifact fails fresh review closed;
 3. strategy self-report of runtime version without trusted RuntimeExecutionAttestation is insufficient;
 4. mutable/latest runtime alias cannot satisfy exact runtime identity;
-5. same semantic attempt may record multiple runtime invocations, but all must resolve under the same immutable ExecutionAttemptBinding;
-6. restart/recover of ACTIVE attempt preserves the same binding and transition history;
-7. strategy SUCCEEDED cannot self-authorize DomainCompletionDecision ACCEPT;
-8. human-assisted strategy passes through the same completion evidence/decision boundary;
-9. known counterevidence is preserved in the decision/bundle and cannot be silently dropped;
-10. telemetry-only evidence cannot satisfy an acceptance criterion that requires trusted runtime/effect evidence;
-11. exact output-input derivation edges survive fresh reconstruction;
-12. two outputs from one run may declare different input dependencies without the system inventing cross-edges;
-13. policy/strategy promotion after binding changes only new attempts;
-14. new remediation attempt requires an exact transition/decision ref, not process restart;
-15. a crash between transition artifact publication and head CAS can be reconciled idempotently without creating duplicate semantic attempts.
+5. policy head change before attempt/binding commit forces re-resolution; policy head change after binding does not rewrite the attempt;
+6. crash after runtime dispatch but before local attestation publication recovers/observes the same stable runtime invocation identity rather than redispatching blindly;
+7. same semantic attempt may record multiple runtime invocations, but all must resolve under the same immutable ExecutionAttemptBinding;
+8. restart/recover of ACTIVE attempt preserves the same binding and transition history;
+9. strategy SUCCEEDED cannot self-authorize DomainCompletionDecision ACCEPT;
+10. human-assisted strategy passes through the same completion evidence/decision boundary;
+11. known counterevidence is preserved in the decision/bundle and cannot be silently dropped;
+12. telemetry-only evidence cannot satisfy an acceptance criterion that requires trusted runtime/effect evidence;
+13. candidate output/input derivation edges survive fresh reconstruction but are not authoritative until the domain publication gate accepts them;
+14. two outputs from one run may declare different input dependencies without the system inventing cross-edges;
+15. a cross-domain consumer cannot use raw strategy lineage when DomainPublicationReceipt is missing/stale;
+16. policy/strategy promotion after binding changes only new attempts;
+17. new remediation attempt requires an exact transition/decision ref, not process restart;
+18. a crash between transition artifact publication and head CAS can be reconciled idempotently without creating duplicate semantic attempts.
 
 ## Integration B exit packet
 
@@ -357,7 +420,7 @@ Before Integration B can be judged accepted, one concrete BA workload should exp
 
     OrganizationWorkContract
     ClaimReleaseReceipt
-    ExecutionPolicy
+    ExecutionPolicyHead + exact ExecutionPolicy
     ExecutionStrategyDescriptor
     ExecutionAttemptBinding
     ExecutionAttemptTransition history
@@ -365,6 +428,7 @@ Before Integration B can be judged accepted, one concrete BA workload should exp
     ExecutionAttemptOutcome
     verification/effect artifacts
     DomainCompletionDecision
+    DomainPublicationReceipt
     ExecutionJudgmentBundle
 
 The reviewer should be able to reconstruct:
