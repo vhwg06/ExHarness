@@ -89,13 +89,18 @@ async function currentAuthorities({
     kind:"WORK"
   });
   const grant=materialization.artifact;
+  if(grant.kind!=="MATERIALIZATION_AUTHORIZATION_GRANT"||grant.version!==1) throw new AuthorityFailure("WORK","materialization authorization artifact kind/version mismatch");
   if(materialization.artifactRef!==item.origin.authorizationRef) throw new AuthorityFailure("WORK","materialization authorization ref no longer matches Board provenance");
   if(grant.generation!==item.origin.authorizationGeneration) throw new AuthorityFailure("WORK","materialization authorization generation no longer matches Board provenance");
   if(materialization.head.revision!==item.origin.authorizationRevision) throw new AuthorityFailure("WORK","materialization authorization revision no longer matches Board provenance");
   if(grant.projectId!==contract.projectId) throw new AuthorityFailure("WORK","materialization authorization project mismatch");
-  if(grant.implementationArtifactRef!==item.origin.implementationArtifactRef) throw new AuthorityFailure("WORK","materialization authorization implementation artifact mismatch");
+  if(grant.rootIntentId!==contract.rootIntentId) throw new AuthorityFailure("WORK","materialization authorization root intent mismatch");
+  if(grant.implementationArtifactRef!==item.origin.implementationArtifactRef||grant.implementationArtifactRef!==contract.implementationArtifactRef) throw new AuthorityFailure("WORK","materialization authorization implementation artifact mismatch");
   if(grant.acceptedDecisionRef!==contract.acceptedDecisionRef) throw new AuthorityFailure("WORK","materialization authorization decision mismatch");
-  if(!grant.authorizedObligationKeys?.includes(contract.obligationKey)) throw new AuthorityFailure("WORK","work contract outside materialization authorization scope");
+  if(grant.authorityPolicyRevision!==contract.authorityPolicyRevision) throw new AuthorityFailure("WORK","materialization authorization policy revision mismatch");
+  if(!grant.authorizedObligationKeys?.includes(contract.obligationKey)||grant.authorizedObligationKeys?.includes("*")) throw new AuthorityFailure("WORK","work contract outside materialization authorization scope");
+  if(!grant.authorizedSliceIds?.includes(contract.sliceId)||grant.authorizedSliceIds?.includes("*")) throw new AuthorityFailure("WORK","work contract slice outside materialization authorization scope");
+  requireText(grant.issuedByAuthorityRef,"materialization authorization issuedByAuthorityRef");
   if(grant.owningDomain!=null&&grant.owningDomain!==contract.owningDomain) throw new AuthorityFailure("WORK","materialization authorization domain mismatch");
   if(grant.workloadType!=null&&grant.workloadType!==contract.workloadType) throw new AuthorityFailure("WORK","materialization authorization workload mismatch");
 
@@ -106,9 +111,15 @@ async function currentAuthorities({
     subject:policyId,
     kind:"EXECUTION"
   });
+  if(policy.artifact.kind!=="EXECUTION_AUTHORITY_POLICY"||policy.artifact.version!==1) throw new AuthorityFailure("EXECUTION","execution authority policy kind/version mismatch");
   if(policy.artifact.projectId!==contract.projectId) throw new AuthorityFailure("EXECUTION","execution authority policy project mismatch");
-  if(!policy.artifact.principalDomains?.[principal.identity]?.includes(contract.owningDomain))
-    throw new AuthorityFailure("EXECUTION","principal "+principal.identity+" is not authorized for domain "+contract.owningDomain);
+  requireText(policy.artifact.authorityPolicyRevision,"execution authority policy authorityPolicyRevision");
+  requireText(policy.artifact.publishedByAuthorityRef,"execution authority policy publishedByAuthorityRef");
+  const binding=Array.isArray(policy.artifact.bindings)?
+    policy.artifact.bindings.find((candidate)=>candidate?.principalRef===principal.principalRef):
+    null;
+  if(!binding?.authorizedDomains?.includes(contract.owningDomain))
+    throw new AuthorityFailure("EXECUTION","principal "+principal.principalRef+" is not authorized for domain "+contract.owningDomain);
 
   return {materialization,policy};
 }
@@ -314,9 +325,11 @@ export function createOrganizationWorkClaimController({
       materializationAuthorizationId:materializationAuthorizationId(item),
       materializationAuthorizationRef:observed.materialization.artifactRef,
       materializationAuthorizationGeneration:observed.materialization.artifact.generation,
+      materializationAuthorityPolicyRevision:observed.materialization.artifact.authorityPolicyRevision,
       executionAuthorityPolicyId:policyId,
       executionAuthorityPolicyRef:observed.policy.artifactRef,
-      executionAuthorityPolicyGeneration:observed.policy.artifact.generation
+      executionAuthorityPolicyGeneration:observed.policy.artifact.generation,
+      executionAuthorityPolicyRevision:observed.policy.artifact.authorityPolicyRevision
     });
   }
 
@@ -359,18 +372,18 @@ export function createOrganizationWorkClaimController({
   }
 
   function assertReceiptAuthority(receipt,observed,item){
-    invariant(receipt.materializationAuthorizationId===materializationAuthorizationId(item),"claim release materialization subject mismatch");
-    invariant(receipt.executionAuthorityPolicyId===policyId,"claim release execution policy subject mismatch");
-    invariant(
-      observed.materialization.artifactRef===receipt.materializationAuthorizationRef&&
-      observed.materialization.artifact.generation===receipt.materializationAuthorizationGeneration,
-      "materialization authorization head changed"
-    );
-    invariant(
-      observed.policy.artifactRef===receipt.executionAuthorityPolicyRef&&
-      observed.policy.artifact.generation===receipt.executionAuthorityPolicyGeneration,
-      "execution authority policy head changed"
-    );
+    if(receipt.materializationAuthorizationId!==materializationAuthorizationId(item)) throw new AuthorityFailure("WORK","claim release materialization subject mismatch");
+    if(
+      observed.materialization.artifactRef!==receipt.materializationAuthorizationRef||
+      observed.materialization.artifact.generation!==receipt.materializationAuthorizationGeneration||
+      observed.materialization.artifact.authorityPolicyRevision!==receipt.materializationAuthorityPolicyRevision
+    ) throw new AuthorityFailure("WORK","materialization authorization head changed");
+    if(receipt.executionAuthorityPolicyId!==policyId) throw new AuthorityFailure("EXECUTION","claim release execution policy subject mismatch");
+    if(
+      observed.policy.artifactRef!==receipt.executionAuthorityPolicyRef||
+      observed.policy.artifact.generation!==receipt.executionAuthorityPolicyGeneration||
+      observed.policy.artifact.authorityPolicyRevision!==receipt.executionAuthorityPolicyRevision
+    ) throw new AuthorityFailure("EXECUTION","execution authority policy head changed");
   }
 
   return Object.freeze({
