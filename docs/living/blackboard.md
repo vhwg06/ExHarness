@@ -45,7 +45,7 @@ previous-phase-closure: docs/living/knowledge/oracle-detail-closure-2026-09-18.m
 previous-terminal-count: 3
 previous-done-count: 3
 previous-superseded-count: 0
-current-active-debt: 1
+current-active-debt: 0
 next-work-id: BB-047
 phase-scope:
   - integrate Oracle through concrete application/component consumers without widening Oracle authority
@@ -60,59 +60,7 @@ The Integration phase begins deliberately with zero active debt. An unused work 
 
 ## Active work
 
-```text
-BB-046
-question/work: Implement and evaluate the accepted repository-local Blackboard Context Plane so fresh sessions receive an exact safe-next-action context instead of inferring scope/authority from Board prose.
-kind: IMPLEMENTATION
-priority: P1
-status: PENDING_REVIEW
-owner:
-depends-on: []
-target-consumer:
-  - repository fresh-session developer/reviewer work
-implementation-output: JSON context validation, exact Board binding, deterministic resolver/generator, stale/review-subject verification, evaluation fixtures and living-doc promotion.
-value-gate: Explicit-context fixtures must preserve authority/correctness controls, reconstruct the same safe action without chat, and improve irrelevant-read / wrong-scope behavior enough to justify context-management overhead.
-current-context:
-  generation: 4
-  ref: docs/living/work-context/BB-046/g0004-implementation-review.json
-  implementation-context: docs/living/work-context/BB-046/g0003-implementation.json
-  decision-ref: docs/living/decisions/D017-bb046-context-plane-acceptance.md
-  reviewed-candidate-head: ebd3475bc9dd7b1f582de873345d9242534f4dcc
-remaining-work:
-  - independent fresh review of g0004 exact candidate
-  - independent CI/evaluation evidence review
-  - reopen implementation only if review returns grounded blockers
-acceptance-criteria:
-  - fresh worker reconstructs the same safe action without chat
-  - stale generation cannot authorize durable action
-  - review context cannot authorize source implementation
-  - implementation requires an exact accepted decision bound to parent context + candidate head
-  - required refs and audit refs remain distinct
-  - missing/duplicate/mismatched Board bindings fail closed
-  - write/forbiddenWrite overlap fails closed
-  - context resolver does not schedule work or decide acceptance
-  - runtime JSON Blackboard adoption remains out of scope
-submission:
-  - PR #153 exact review target ebd3475bc9dd7b1f582de873345d9242534f4dcc
-review-requirements:
-  - implementation contract review
-  - evaluation/value-gate review
-reviews:
-  - docs/living/decisions/D017-bb046-context-plane-acceptance.md
-artifact-refs:
-  - docs/living/work-context/BB-046/g0003-implementation.json
-  - docs/living/decisions/D017-bb046-context-plane-acceptance.md
-  - docs/living/knowledge/bb046-blackboard-context-implementation-readiness.md
-  - docs/living/knowledge/bb046-blackboard-context-evaluation.md
-evidence-refs:
-  - INTENT-exharness-agentic-system
-  - exact parent review context docs/living/work-context/BB-046/g0002-readiness-review.json
-  - semantic review target d013b6118dccfea67e8615f4624d3a00f6e10b4f
-blockers: []
-follow-up-refs:
-  - Integration A.1 runtime bridge implementation requires a separate exact implementation context after this repository-local slice; Integration B-J remain deferred.
-origin: D017 accepted BB-046 generation 2 and authorized the bounded repository context-plane implementation slice.
-```
+No active item is allocated on this branch. BB-046 implementation evidence has been merged/reviewed; the next work id remains `BB-047`. Allocation of BB-047 must occur atomically with its first exact `current-context` pointer.
 
 ## Integration entry rule
 

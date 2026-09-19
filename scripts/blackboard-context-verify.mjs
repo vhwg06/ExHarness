@@ -35,7 +35,14 @@ function parseDecision(path) {
 
 export function verifyCurrentContext({boardPath="docs/living/blackboard.md",root="."}={}) {
   const board=fs.readFileSync(`${root}/${boardPath}`,"utf8");
-  const binding=parseCurrentContext(board,"BB-046");
+  const activeSection=board.split("## Active work")[1]?.split("## Integration entry rule")[0] ?? "";
+  const activeItems=[...activeSection.matchAll(/^BB-\d+$/gm)].map(match=>match[0]);
+  const itemId=process.env.BLACKBOARD_CONTEXT_ITEM || activeSection.match(/^BB-\d+\n[\s\S]*?current-context:/m)?.[0]?.match(/^BB-\d+/)?.[0];
+  if(!itemId) {
+    if(activeItems.length) throw new Error(`BOARD_BINDING_INVALID: active item(s) missing current-context: ${activeItems.join(",")}`);
+    return {binding:null,pack:{itemId:null,generation:null,action:"NONE",resolved:[],auditRefs:[]}};
+  }
+  const binding=parseCurrentContext(board,itemId);
   const spec=readJson(`${root}/${binding.ref}`);
   assertWorkContext(spec);
   assertBoardBinding(binding,spec,binding.ref);
