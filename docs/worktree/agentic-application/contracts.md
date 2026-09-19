@@ -307,3 +307,26 @@ The durable Backend -> QA workflow interprets Advisor actions at the application
 - context resolution must declare additional repository files; escalation resolution must identify a resolver and rationale.
 
 The workflow commits resolution through `resolveBlockedCheckpoint(...)`, which compares the exact expected blocked checkpoint and atomically replaces it plus `REOPENED` in one store transaction. Resolution does not accept Backend work, bypass QA, authorize `DONE`, or grant lifecycle authority to the Advisor.
+
+## Organization work/claim authority contract
+
+`ORGANIZATION_WORK_CONTRACT v1` freezes one accepted obligation's owning domain, workload type, exact input/output refs and acceptance refs. Its content-derived ref is stable across duplicate materialization attempts.
+
+Materialization is permitted only while the exact authorization head is `ACTIVE`, still binds the accepted decision and includes the obligation key. The resulting Board item records exact materialization/work-contract provenance; a conflicting duplicate id/key/ref fails closed.
+
+Execution authority is current-head based. A historical policy ref is insufficient after the durable policy head advances or becomes revoked. Principal-to-domain membership is read from the current policy head.
+
+A claim-release receipt binds the exact:
+
+```text
+itemId
+principal
+claimGeneration
+workContractRef
+materialization authorization id/ref/generation
+execution authority policy id/ref/generation
+```
+
+The release head is keyed by `{itemId, claimGeneration}`. Duplicate release for the same exact receipt converges; a conflicting receipt fails closed. Execution entry requires a matching current Board claim tuple, a RELEASED head and unchanged active authority heads.
+
+Recovery and invalidation preserve the accepted v7 ordering: generation takeover makes prior release subjects stale; canonical Board invalidation commits before release-head fencing. If release-head fencing later fails, the stale release cannot pass the Board tuple check.
