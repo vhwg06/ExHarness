@@ -193,3 +193,25 @@ logical obligation subject
 Fresh-process reconciliation operates only on the current durable Board claim. It recovers the principal from durable owner identity through the trusted provider, keeps the same `claimGeneration`, and converges the release/invalidation boundary from durable Board, immutable artifacts and current heads.
 
 Authority publisher verification produces canonical provenance that is stored in the immutable authority artifact before the pointer head advances. Payload fields that merely claim an issuer/publisher identity are not authority.
+
+
+### A.1 final acceptance repair
+
+The bridge now has an explicit read-only discovery seam before claim:
+
+```text
+Board eligible work
+  -> resolve exact ORGANIZATION_WORK_CONTRACT
+  -> validate project/root/item/materialization provenance
+  -> require dependencies DONE
+  -> filter owningDomain
+  -> candidates
+```
+
+Discovery is not an authentication or scheduling boundary. Claim authority remains separate and derives the exact materialization authorization subject from Board provenance plus the configured current execution-authority policy.
+
+The immutable work contract carries the complete governed WHAT/provenance set; Board origin remains lifecycle/index provenance rather than a second source of work semantics.
+
+Execution entry is an active revocation boundary, not only a predicate: a stale released claim persists an exact invalidation artifact, commits the typed canonical Board lifecycle consequence first, and fences the historical release head second.
+
+Concurrent identical materialization must converge across both immutable-artifact persistence and Blackboard publication. Conflicting materializations for the same live logical obligation fail closed.
