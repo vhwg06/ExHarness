@@ -63,11 +63,24 @@ export function createOrganizationWorkClaimController({
   orchestrator,
   materializationAuthorizationStore,
   executionAuthorityPolicyStore,
-  claimReleaseStore
+  claimReleaseStore,
+  artifactRegistry
 }){
   invariant(orchestrator&&typeof orchestrator.readBlackboard==="function"&&typeof orchestrator.claim==="function","claim controller requires ApplicationOrchestrator");
+  invariant(artifactRegistry&&typeof artifactRegistry.resolveWorkContract==="function","claim controller requires artifact registry");
   for(const [name,store] of Object.entries({materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore})){
     invariant(store&&typeof store.current==="function"&&typeof store.compareAndSwap==="function",`${name} must support current/CAS`);
+  }
+
+  async function resolveContractForItem(itemId){
+    const board=await orchestrator.readBlackboard();
+    const item=itemFor(board,itemId);
+    const ref=requireText(item.origin?.workContractRef,`Blackboard item ${itemId} workContractRef`);
+    const artifact=await artifactRegistry.resolveWorkContract(ref);
+    invariant(artifact,`work contract artifact not found: ${ref}`);
+    const contract=defineOrganizationWorkContract(artifact);
+    invariant(contract.contractRef===ref,`work contract artifact ref mismatch: ${ref}`);
+    return {board,item,contract};
   }
 
   async function fenceRelease(itemId,generation,invalidationRef){
@@ -83,18 +96,26 @@ export function createOrganizationWorkClaimController({
   }
 
   return Object.freeze({
-    async claim({itemId,contract:rawContract,principal,authorizationId,policyId}){
-      const contract=defineOrganizationWorkContract(rawContract);
+    async claim({itemId,principal,authorizationId,policyId}){
+      const {item:before,contract}=await resolveContractForItem(itemId);
       const identity=requireText(principal?.identity,"principal.identity");
       requireText(authorizationId,"authorizationId");
       requireText(policyId,"policyId");
-      const board=await orchestrator.readBlackboard();
-      assertBoardContract(itemFor(board,itemId),contract);
+      assertBoardContract(before,contract);
       const authority=await currentAuthorities({
         materializationAuthorizationStore,executionAuthorityPolicyStore,
         authorizationId,policyId,principal:identity,contract
       });
       const claimed=await orchestrator.claim({itemId,owner:identity});
+      try{
+        await currentAuthorities({materializationAuthorizationStore,executionAuthorityPolicyStore,authorizationId,policyId,principal:identity,contract});
+      }catch(error){
+        await orchestrator.invalidateOrganizationClaim({
+          itemId,expectedOwner:identity,expectedClaimGeneration:claimed.result.claimGeneration,
+          kind:"EXECUTION_AUTHORITY_INVALIDATED",invalidationRef:`claim-freshness:${policyId}`
+        });
+        throw error;
+      }
       return freeze({
         item:claimed.result,
         contract,
@@ -105,9 +126,9 @@ export function createOrganizationWorkClaimController({
       });
     },
 
-    async release({itemId,claimGeneration,contract:rawContract,principal,authorizationId,policyId}){
+    async release({itemId,claimGeneration,principal,authorizationId,policyId}){
       invariant(Number.isInteger(claimGeneration)&&claimGeneration>0,"claimGeneration must be positive");
-      const contract=defineOrganizationWorkContract(rawContract);
+      const {contract}=await resolveContractForItem(itemId);
       const identity=requireText(principal?.identity,"principal.identity");
       const board=await orchestrator.readBlackboard();
       const item=itemFor(board,itemId);
@@ -145,6 +166,16 @@ export function createOrganizationWorkClaimController({
         const after=await claimReleaseStore.current(key);
         invariant(after?.value?.status===ClaimReleaseStatus.RELEASED&&after.value.receiptRef===receiptRef,"conflicting claim release CAS");
       }
+      try{
+        await currentAuthorities({materializationAuthorizationStore,executionAuthorityPolicyStore,authorizationId,policyId,principal:identity,contract});
+      }catch(error){
+        await fenceRelease(itemId,claimGeneration,`release-freshness:${receiptRef}`);
+        await orchestrator.invalidateOrganizationClaim({
+          itemId,expectedOwner:identity,expectedClaimGeneration:claimGeneration,
+          kind:"EXECUTION_AUTHORITY_INVALIDATED",invalidationRef:`release-freshness:${receiptRef}`
+        });
+        throw error;
+      }
       return freeze({...receipt,receiptRef});
     },
 
@@ -167,8 +198,8 @@ export function createOrganizationWorkClaimController({
       return true;
     },
 
-    async recoverClaim({itemId,contract:rawContract,principal,authorizationId,policyId,reason}){
-      const contract=defineOrganizationWorkContract(rawContract);
+    async recoverClaim({itemId,principal,authorizationId,policyId,reason}){
+      const {contract}=await resolveContractForItem(itemId);
       const identity=requireText(principal?.identity,"principal.identity");
       const before=itemFor(await orchestrator.readBlackboard(),itemId);
       invariant(before.status==="CLAIMED","organization claim must be CLAIMED before recovery");
@@ -183,11 +214,24 @@ export function createOrganizationWorkClaimController({
     },
 
     async invalidateOrganizationClaim({itemId,expectedOwner,expectedClaimGeneration,kind,invalidationRef}){
-      const invalidated=await orchestrator.invalidateOrganizationClaim({
-        itemId,expectedOwner,expectedClaimGeneration,kind,invalidationRef
-      });
+      const board=await orchestrator.readBlackboard();
+      const current=itemFor(board,itemId);
+      let item;
+      if(current.status==="CLAIMED"){
+        const invalidated=await orchestrator.invalidateOrganizationClaim({
+          itemId,expectedOwner,expectedClaimGeneration,kind,invalidationRef
+        });
+        item=invalidated.result;
+      }else{
+        const expectedStatus=kind==="WORK_AUTHORIZATION_INVALIDATED"?"BLOCKED":"REOPENED";
+        invariant(current.status===expectedStatus,"organization invalidation replay found incompatible Board state");
+        invariant(current.owner==null,"organization invalidation replay requires cleared owner");
+        invariant(current.claimGeneration===expectedClaimGeneration,"organization invalidation replay generation mismatch");
+        invariant(current.evidenceRefs.includes(invalidationRef),"organization invalidation replay provenance mismatch");
+        item=current;
+      }
       await fenceRelease(itemId,expectedClaimGeneration,invalidationRef);
-      return freeze(invalidated.result);
+      return freeze(item);
     }
   });
 }
