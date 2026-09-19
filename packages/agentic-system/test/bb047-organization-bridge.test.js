@@ -244,7 +244,7 @@ test("authority head changes revoke execution entry without rewriting the histor
         itemId:materialized.item.id,claimGeneration:claimed.item.claimGeneration,
         receiptRef:released.receiptRef,authorizationId:"auth-1",policyId:"organization-execution-authority"
       }),
-      /execution authority policy is no longer active/
+      /authority head is not active/
     );
   });
 });
