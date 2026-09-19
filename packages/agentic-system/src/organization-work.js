@@ -32,16 +32,18 @@ export function materializationSubjectKey({obligationKey,acceptedDecisionRef,aut
   });
 }
 
-function assertAuthorization(head,{authorizationId,decisionRef,obligationKey,owningDomain,workloadType}){
+async function resolveAuthorization(head,{artifactRegistry,authorizationId,decisionRef,obligationKey,owningDomain,workloadType}){
   invariant(head?.value,"materialization authorization is unavailable");
-  const value=head.value;
-  invariant(value.status===AuthorityHeadStatus.ACTIVE,"materialization authorization is not active");
-  invariant(value.authorizationId===authorizationId,"materialization authorization subject mismatch");
+  invariant(head.value.status===AuthorityHeadStatus.ACTIVE,"materialization authorization is not active");
+  const ref=requireText(head.value.artifactRef,"materialization authorization artifactRef");
+  const value=await artifactRegistry.resolveMaterializationAuthorization(ref);
+  invariant(value,"materialization authorization artifact is unavailable");
+  invariant(value.authorizationId===authorizationId&&value.generation===head.value.generation&&value.status===head.value.status,"materialization authorization artifact/head mismatch");
   invariant(value.acceptedDecisionRef===decisionRef,"materialization authorization decision mismatch");
   invariant(Array.isArray(value.obligationKeys)&&value.obligationKeys.includes(obligationKey),"obligation is outside materialization authorization scope");
   if(value.owningDomain!=null) invariant(value.owningDomain===owningDomain,"materialization authorization domain mismatch");
   if(value.workloadType!=null) invariant(value.workloadType===workloadType,"materialization authorization workload mismatch");
-  return value;
+  return {value,artifactRef:ref};
 }
 
 export function createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore,artifactRegistry}){
@@ -59,9 +61,10 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
       const owningDomain=requireText(obligation.owningDomain,"obligation.owningDomain");
       const workloadType=requireText(obligation.workloadType,"obligation.workloadType");
       const authHead=await materializationAuthorizationStore.current(authorizationId);
-      const authorization=assertAuthorization(authHead,{
+      const resolvedAuthorization=await resolveAuthorization(authHead,{artifactRegistry,
         authorizationId,decisionRef:acceptedDecisionRef,obligationKey,owningDomain,workloadType
       });
+      const authorization=resolvedAuthorization.value;
       const contract=defineOrganizationWorkContract({
         obligationKey,
         acceptedDecisionRef,
@@ -76,7 +79,7 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
       const key=materializationSubjectKey({
         obligationKey,
         acceptedDecisionRef,
-        authorizationRef:requireText(authorization.authorizationRef,"materialization authorization ref")
+        authorizationRef:resolvedAuthorization.artifactRef
       });
       const itemId=`ORG-${key.slice(0,24)}`;
       const materialized=await orchestrator.materializeAcceptedWork({
@@ -86,7 +89,7 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
         workloadType,
         materializationKey:key,
         workContractRef:contract.contractRef,
-        authorizationRef:authorization.authorizationRef
+        authorizationRef:resolvedAuthorization.artifactRef
       });
       return freeze({item:materialized.result,contract,materializationKey:key,authorizationGeneration:authorization.generation});
     }
