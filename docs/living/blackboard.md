@@ -65,11 +65,11 @@ BB-047
 question/work: Implement the accepted Integration A.1 runtime organizational bridge through authorized claim, without entering post-claim execution.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 10
-  ref: docs/living/work-context/BB-047/g0010-repair-implementation.json
+  generation: 11
+  ref: docs/living/work-context/BB-047/g0011-repair-review.json
 depends-on: []
 target-consumer:
   - runtime organizational integration bridge
@@ -96,15 +96,15 @@ acceptance-criteria:
   - bridge reconstructs Root/accepted materialization -> immutable work contract -> trusted principal claim
   - fixture stops at authorized CLAIMED state; no execution strategy is selected
 submission:
-  - g0009 findings review target 2b71c45ca340f45aee0f61cf3ad7e2f1a5b11cae; repair authority D021
+  - g0011 fresh review target 0f1106fa0b61f6a0eda7e049aa6b7f3aa13a508c
 decision-ref: docs/living/decisions/D021-bb047-a1-repair-findings.md
 review-requirements:
   - runtime contract/authority review
   - crash/race/recovery review
 blockers: []
 remaining-work:
-  - repair the four findings raised by g0009 / review 5255858892
-  - hand the repaired exact candidate to a fresh read-only review
+  - fresh review of the exact D021 repair candidate
+  - resolve any grounded findings before merge
 follow-up-refs:
   - DOMAIN_EXECUTION_CONTROL is required before Integration B and owns ExecutionAttemptHead plus ExecutionPolicy -> ExecutionStrategyRef -> ExecutionAttemptBinding.
 origin: BB-046 Context Plane implementation merged via PR #153; accepted A.1 architecture remains the next bounded integration slice.
