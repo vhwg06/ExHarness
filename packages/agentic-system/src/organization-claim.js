@@ -178,7 +178,13 @@ function assertSameAuthorities(before,after){
 function assertBoardContract(item,contract,project){
   invariant(item.origin?.kind==="ORGANIZATION_MATERIALIZATION","Blackboard item "+item.id+" is not organization-managed work");
   invariant(item.origin.workContractRef===contract.contractRef,"Blackboard item "+item.id+" work contract mismatch");
+  invariant(contract.boardItemId===item.id,"Blackboard item "+item.id+" contract item identity mismatch");
   invariant(item.origin.owningDomain===contract.owningDomain,"Blackboard item "+item.id+" owning domain mismatch");
+  invariant(item.origin.workloadType===contract.workloadType,"Blackboard item "+item.id+" workload type mismatch");
+  invariant(item.origin.obligationSubjectKey===contract.obligationSubjectKey&&item.origin.materializationKey===contract.materializationKey,"Blackboard item "+item.id+" materialization identity mismatch");
+  invariant(item.origin.authorizationId===contract.materializationAuthorizationId,"Blackboard item "+item.id+" materialization authorization subject mismatch");
+  invariant(item.origin.authorizationRef===contract.materializationAuthorizationRef&&item.origin.authorizationGeneration===contract.materializationAuthorizationGeneration&&item.origin.authorizationRevision===contract.materializationAuthorizationRevision,"Blackboard item "+item.id+" materialization authorization provenance mismatch");
+  invariant(item.origin.implementationArtifactRef===contract.implementationArtifactRef,"Blackboard item "+item.id+" implementation artifact mismatch");
   invariant(
     item.origin.projectId===project.projectId&&
     item.origin.rootItemId===project.rootItemId&&
