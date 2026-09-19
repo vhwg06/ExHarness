@@ -123,6 +123,7 @@ depends-on:
   - BB-047
 implementation-artifact:
   - docs/living/work-artifacts/BB-048/implementation.json
+decision-ref: docs/living/decisions/D021-integration-worker-artifact-promotion.md
 target-consumer:
   - domain-local execution control
 scope-boundary:
@@ -152,6 +153,7 @@ depends-on:
   - BB-048
 implementation-artifact:
   - docs/living/work-artifacts/BB-049/implementation.json
+decision-ref: docs/living/decisions/D021-integration-worker-artifact-promotion.md
 target-consumer:
   - BA -> SA organizational product handoff
 scope-boundary:
@@ -180,6 +182,7 @@ depends-on:
   - BB-049
 implementation-artifact:
   - docs/living/work-artifacts/BB-050/implementation.json
+decision-ref: docs/living/decisions/D021-integration-worker-artifact-promotion.md
 target-consumer:
   - owning-domain autonomous wake-up/reconciliation
 scope-boundary:
@@ -209,6 +212,7 @@ depends-on:
   - BB-050
 implementation-artifact:
   - docs/living/work-artifacts/BB-051/implementation.json
+decision-ref: docs/living/decisions/D021-integration-worker-artifact-promotion.md
 target-consumer:
   - DevOps deployment -> Product QA trust boundary
 scope-boundary:
