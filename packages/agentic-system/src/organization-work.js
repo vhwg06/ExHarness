@@ -44,9 +44,10 @@ function assertAuthorization(head,{authorizationId,decisionRef,obligationKey,own
   return value;
 }
 
-export function createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore}){
+export function createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore,artifactStore}){
   invariant(orchestrator&&typeof orchestrator.materializeAcceptedWork==="function","materializer requires orchestrator.materializeAcceptedWork");
   invariant(materializationAuthorizationStore&&typeof materializationAuthorizationStore.current==="function","materializer requires materialization authorization store");
+  invariant(artifactStore&&typeof artifactStore.put==="function"&&typeof artifactStore.get==="function","materializer requires immutable artifact store");
   return Object.freeze({
     async materialize({authorizationId,decision,obligation}){
       requireText(authorizationId,"authorizationId");
@@ -70,6 +71,8 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
         expectedOutputRefs:obligation.expectedOutputRefs??[],
         acceptanceRefs:obligation.acceptanceRefs
       });
+      const storedContractRef=await artifactStore.put("organization-work-contract",contract);
+      invariant(storedContractRef===contract.contractRef.replace("organization-work-contract:","organization-work-contract:"),"work contract artifact ref mismatch");
       const key=materializationSubjectKey({
         obligationKey,
         acceptedDecisionRef,
@@ -82,10 +85,18 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
         owningDomain,
         workloadType,
         materializationKey:key,
-        workContractRef:contract.contractRef,
+        workContractRef:storedContractRef,
         authorizationRef:authorization.authorizationRef
       });
-      return freeze({item:materialized.result,contract,materializationKey:key,authorizationGeneration:authorization.generation});
+      return freeze({item:materialized.result,contract:{...contract,contractRef:storedContractRef},materializationKey:key,authorizationGeneration:authorization.generation});
     }
   });
+}
+
+export async function resolveOrganizationWorkContract({artifactStore,contractRef}){
+  invariant(artifactStore&&typeof artifactStore.get==="function","artifactStore is required");
+  const stored=await artifactStore.get(requireText(contractRef,"contractRef"));
+  const contract=defineOrganizationWorkContract(stored);
+  invariant(contract.contractRef===contractRef,"resolved work contract ref mismatch");
+  return contract;
 }
