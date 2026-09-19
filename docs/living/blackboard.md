@@ -75,9 +75,12 @@ target-consumer:
 implementation-output: If independently accepted and benchmark-worthy, one repository-local context-plane slice (JSON spec validation, Board binding, resolver/generator, evaluation) before any runtime Blackboard adoption.
 value-gate: Explicit-context fixtures must preserve authority/correctness controls, reconstruct the same safe action without chat, and improve irrelevant-read / wrong-scope behavior enough to justify context-management overhead.
 current-context-candidate:
-  generation: 1
-  ref: docs/living/work-context/BB-046/g0001-readiness-review.json
-  note: candidate example only; BB-046 acceptance is required before context currentness becomes promoted repository protocol.
+  generation: 2
+  ref: docs/living/work-context/BB-046/g0002-readiness-review.json
+  review-target:
+    repository: vhwg06/ExHarness
+    candidate-head: d013b6118dccfea67e8615f4624d3a00f6e10b4f
+  note: review-envelope candidate only; generation 2 binds one immutable semantic candidate commit and grants no implementation authority.
 remaining-work:
   - independent architecture/application review of the Blackboard Context Plane
   - independent readiness review of the exact organizational A.1 trust-transition candidate
@@ -85,6 +88,7 @@ remaining-work:
 acceptance-criteria:
   - reviewer can distinguish Blackboard lifecycle, WORK_CONTEXT_SPEC, runtime ORGANIZATION_WORK_CONTRACT and ExecutionPolicy/Strategy without chat reinterpretation
   - current context is an exact Board-linked generation/ref, not inferred from artifact existence or ranking
+  - independent review binds exact immutable candidate commit d013b6118dccfea67e8615f4624d3a00f6e10b4f; PR #151 is navigation only
   - required current-system/input refs are explicit while audit/history refs remain lazy and non-authoritative
   - source read/write/forbidden scope is explicit and context producer cannot self-authorize wider mutation or acceptance
   - context generation/currentness has fail-closed stale/recovery semantics and remains distinct from claim/review/execution generations
@@ -105,6 +109,7 @@ artifact-refs:
   - docs/living/knowledge/bb046-blackboard-context-evaluation.md
   - docs/living/knowledge/bb046-blackboard-context-implementation-readiness.md
   - docs/living/work-context/BB-046/g0001-readiness-review.json
+  - docs/living/work-context/BB-046/g0002-readiness-review.json
   - docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md
   - docs/living/knowledge/bb046-trust-transition-research-v7.md
   - docs/living/knowledge/bb046-execution-strategy-rebase-research-v6.md
@@ -115,11 +120,12 @@ evidence-refs:
   - BB-028 bounded orientation vs exact-underlying-read evidence
   - D009 generation-fenced interrupted recovery
   - source baseline ad36638dd7041a60c224dfe3c9beb252069ecdae
+  - semantic review target d013b6118dccfea67e8615f4624d3a00f6e10b4f
   - Kubernetes generation/observed-generation design calibration
   - Bazel hermetic explicit-input design calibration
   - in-toto authorized-step/material/product design calibration
 blockers:
-  - exact architecture and A.1 candidate are awaiting independent review; no implementation authority is granted by this PR
+  - exact architecture and A.1 candidate at d013b6118dccfea67e8615f4624d3a00f6e10b4f are awaiting independent review under g0002; no implementation authority is granted by this PR
 follow-up-refs: []
 origin: INTENT-exharness-agentic-system; explicit user Integration-phase request to make work context around the Blackboard durable and implementation-safe
 ```
