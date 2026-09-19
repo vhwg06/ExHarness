@@ -152,3 +152,8 @@ export {
   runPreparedBackendObjective
 } from "./backend-application.js";
 export { runBackendThenQaObjective } from "./composition.js";
+export {
+  createOrganizationWorkClaimController,
+  defineOrganizationWorkContract,
+  materializeAuthorizedObligations
+} from "./organization-work-claim.js";
