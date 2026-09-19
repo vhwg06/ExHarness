@@ -104,6 +104,31 @@ Failure: missing/changed/stale source blocks materialization/reconstruction.
 Limits: summary is not correctness evidence, action authorization or project acceptance.
 Details: `decision-outcome.md`.
 
+## A14 — Organization work materialization, trusted claim and released capability
+Outcome: turn one accepted bounded obligation into durable organization work and, after exact authority checks, expose one released executable claim that a later domain-execution boundary may consume.
+
+Requires: project/root-bound Board; accepted decision; explicit non-wildcard materialization grant; immutable organization artifact store; current materialization/execution-authority heads; trusted principal provider; project-scoped release store.
+
+Guarantees:
+- materialization validates project/root, accepted decision, implementation artifact, authorized slice/obligation and pinned authority-policy revision before publishing READY work;
+- the immutable `ORGANIZATION_WORK_CONTRACT` is the complete governed WHAT/provenance source; Board origin is lifecycle/index provenance, not a second work-semantics authority;
+- `obligationSubjectKey` identifies logical work and permits at most one live item; `materializationKey` identifies the exact decision+grant materialization and identical concurrent attempts converge;
+- `createOrganizationWorkDiscovery(...)` is read-only and returns only currently eligible, dependency-satisfied, contract-valid work for the requested owning domain;
+- `createOrganizationWorkClaimController(...)` obtains canonical `principalRef`/Board owner from the trusted principal boundary and derives the exact materialization authorization subject from Board provenance; caller context cannot choose identity, grant or execution-authority policy subject;
+- successful claim is provisional. `release(...)` persists an immutable `CLAIM_RELEASE_RECEIPT` and advances a project-scoped ref-only release head;
+- release, fresh-process reconciliation and execution-entry checks require the exact current Board `{ itemId, status: CLAIMED, owner, claimGeneration }`, exact materialization grant observation and exact execution-authority policy revision/currentness;
+- `reconcileOrganizationClaimAuthority({ itemId })` keeps the same claim generation while completing/reconstructing release or converging invalidation after restart;
+- typed authority loss is canonical lifecycle: work authority -> BLOCKED, execution authority -> REOPENED; Board transition precedes release fencing and replay is idempotent;
+- corrupt/missing authority artifacts cannot strand executable authority: raw current-head observations are sufficient to persist exact invalidation provenance and fence stale release capability.
+
+Durable state: `ORGANIZATION_WORK_CONTRACT`, materialization receipt, verified materialization/execution-authority artifacts, `CLAIM_RELEASE_RECEIPT`, `CLAIM_AUTHORITY_INVALIDATION`, Board `claimGeneration`, pointer-only authority heads and project-scoped `ClaimReleaseHead`.
+
+Failure: stale grant/policy revision, ACTIVE→ACTIVE current-head drift, principal/domain mismatch, duplicate logical live work, claim-generation drift, missing/corrupt authority artifact or stale release/Board tuple fails closed and cannot silently preserve executable capability.
+
+Limits: A.1 ends at the released executable claim boundary. It does not resolve execution HOW, choose `ExecutionPolicy`/`ExecutionStrategy`, create semantic execution attempts, execute a domain workload, judge domain completion, publish authoritative domain products or issue cross-domain obligations.
+
+Details: `contracts.md`, `boundaries.md`, `state.md`, `../../living/history/bb047-a1-closure-2026-09-19.md`.
+
 ## Cross-layer rule
 
 ```text
