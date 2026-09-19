@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { assertWorkContext, requiredRefs } from "./blackboard-context-contract.mjs";
 import { parseCurrentContext, assertBoardBinding } from "./blackboard-context-board.mjs";
 
-const review={kind:"WORK_CONTEXT_SPEC",version:1,itemId:"BB-EVAL",generation:1,action:{kind:"REVIEW"},sourceScope:{read:["required-a","required-b"],write:[],forbiddenWrite:["packages/**"]},requiredCurrentSystemRefs:["required-a"],requiredInputRefs:["required-b"],auditRefs:["audit-a","audit-b"]};
+const review={kind:"WORK_CONTEXT_SPEC",version:1,itemId:"BB-EVAL",generation:1,action:{kind:"REVIEW"},reviewTarget:{repository:"r",candidateHeadSha:"abc",allowedPostTargetEnvelopePaths:[]},sourceScope:{read:["required-a","required-b"],write:[],forbiddenWrite:["packages/**"]},requiredCurrentSystemRefs:["required-a"],requiredInputRefs:["required-b"],auditRefs:["audit-a","audit-b"]};
 const board="BB-EVAL\nstatus: PENDING_REVIEW\ncurrent-context:\n  generation: 1\n  ref: g1.json\nremaining-work:\n";
 const scenarios=[];
 function run(name,fn){try{fn();scenarios.push({name,pass:true});}catch(e){scenarios.push({name,pass:false,error:e.message});}}
