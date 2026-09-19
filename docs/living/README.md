@@ -4,23 +4,29 @@ ExHarness separates **current system truth** from **open work**.
 
 ## First read for any non-trivial work
 
-1. `blackboard.md` — see what is unresolved, eligible, claimed, blocked or done.
-2. After claiming an item, load only the relevant source-synchronized docs under `../worktree/`.
-3. Inspect source/tests whenever implementation detail matters.
-4. After source changes, update the relevant worktree docs and write the Board result back.
+1. `blackboard.md` — identify the unresolved/eligible item.
+2. When that item has `current-context`, load that exact immutable `WORK_CONTEXT_SPEC`; do not infer another generation from artifact existence.
+3. Resolve only its declared required current-system/input refs. `auditRefs` stay lazy and non-authoritative.
+4. Inspect source/tests whenever implementation detail matters.
+5. After source changes, update the relevant worktree docs and write the Board result back.
 
-## Two surfaces
+For an item without the migrated context binding, use the legacy bounded route: Board -> smallest relevant worktree docs -> source/tests. Runtime JSON Blackboard does not consume this repository context plane.
+
+## Three distinct surfaces
 
 ```text
 ../worktree/*
-    = living documents kept up to date with source code
-    = current state only
+    = source-synchronized current-system truth
 
 blackboard.md
-    = gaps / problems / open questions / blockers / next work
+    = lifecycle / gaps / blockers / exact current-context pointer
+
+work-context/<item>/gNNNN-*.json
+    = immutable safe-next-action context for one Board generation
+    = not source truth, acceptance authority or a second queue
 ```
 
-If a worktree document contains a future desired component or unresolved problem, the documentation is incorrectly partitioned: move that item to the Blackboard and leave only current source-backed facts in the living projection.
+A stale/old context remains history but is not permission for new durable work.
 
 ## Durable knowledge
 
@@ -30,13 +36,18 @@ If a worktree document contains a future desired component or unresolved problem
 - `decisions/` — accepted/promoted choices.
 - `architecture.md` / `contracts.md` / `pipelines.md` — documentation/knowledge-system invariants.
 
-These do not replace the Board. A judgment may remain unresolved epistemically, but actionable project gaps/problems still need a Blackboard item if another session may work on them.
+These do not replace the Board or current-system source.
 
 ## Routing
 
 ```text
 What should I work on?
     -> blackboard.md
+    -> exact current-context when present
+
+What is safe/authorized for this repository work generation?
+    -> current WORK_CONTEXT_SPEC
+    -> exact accepted decision when action=IMPLEMENT
 
 What does the system currently do?
     -> ../worktree/state.md
@@ -46,8 +57,4 @@ What does the system currently do?
 Why do we believe a claim?
     -> knowledge/evidence.md
     -> knowledge/judgment.md
-
-What documentation rules apply?
-    -> architecture.md
-    -> contracts.md
 ```
