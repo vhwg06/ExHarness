@@ -1,6 +1,6 @@
 # DOMAIN_EXECUTION_CONTROL — judgment artifact contract
 
-Status: **PENDING REVIEW**
+Status: **REVIEWED — IMPLEMENTATION-READY; NOT IMPLEMENTATION AUTHORITY**
 
 Companion to domain-execution-control-implementation-readiness.md.
 
