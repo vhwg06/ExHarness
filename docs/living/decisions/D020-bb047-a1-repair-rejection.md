@@ -1,15 +1,16 @@
 # D020 — Reject BB-047 A.1 repair candidate
 
-Status: **REJECTED**
+Status: **ACCEPTED REPAIR AUTHORIZATION**
 
-Rejected: 2026-09-19
+Accepted for bounded repair: 2026-09-19
 
 ## Decision subject
 
 ```text
 subjectContextRef: docs/living/work-context/BB-047/g0009-repair-review.json
 subjectCandidateHeadSha: 2b71c45ca340f45aee0f61cf3ad7e2f1a5b11cae
-verdict: REJECT
+verdict: ACCEPT
+acceptedAction: REPAIR_REJECTED_CANDIDATE
 reviewEvidence: 5255858892
 ```
 
