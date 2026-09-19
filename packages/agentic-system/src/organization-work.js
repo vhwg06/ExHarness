@@ -358,8 +358,11 @@ export function createOrganizationWorkDiscovery({orchestrator,artifactRegistry})
         invariant(contract.boardItemId===item.id,"organization work contract Board item mismatch");
         invariant(contract.projectId===project.projectId&&contract.rootItemId===project.rootItemId&&contract.rootIntentId===project.rootIntentId,"organization work contract project/root mismatch");
         invariant(contract.obligationSubjectKey===item.origin.obligationSubjectKey&&contract.materializationKey===item.origin.materializationKey,"organization work identity mismatch");
-        invariant(contract.materializationAuthorizationId===item.origin.authorizationId&&contract.materializationAuthorizationRef===item.origin.authorizationRef&&contract.materializationAuthorizationGeneration===item.origin.authorizationGeneration,"organization work authorization provenance mismatch");
-        invariant(contract.owningDomain===item.origin.owningDomain,"organization work domain mismatch");
+        invariant(contract.materializationAuthorizationId===item.origin.authorizationId&&contract.materializationAuthorizationRef===item.origin.authorizationRef&&contract.materializationAuthorizationGeneration===item.origin.authorizationGeneration&&contract.materializationAuthorizationRevision===item.origin.authorizationRevision,"organization work authorization provenance mismatch");
+        invariant(contract.implementationArtifactRef===item.origin.implementationArtifactRef,"organization work implementation artifact mismatch");
+        invariant(contract.owningDomain===item.origin.owningDomain&&contract.workloadType===item.origin.workloadType,"organization work domain/workload mismatch");
+        const expectedDependsOn=[...new Set([project.rootItemId,...contract.dependencyIds])];
+        invariant(JSON.stringify(item.dependsOn)===JSON.stringify(expectedDependsOn),"organization work dependency provenance mismatch");
         if(contract.owningDomain!==domain) continue;
         discovered.push(freeze({item,contract}));
       }
