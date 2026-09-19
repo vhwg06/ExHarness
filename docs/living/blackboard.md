@@ -73,18 +73,15 @@ target-consumer:
 implementation-output: JSON context validation, exact Board binding, deterministic resolver/generator, stale/review-subject verification, evaluation fixtures and living-doc promotion.
 value-gate: Explicit-context fixtures must preserve authority/correctness controls, reconstruct the same safe action without chat, and improve irrelevant-read / wrong-scope behavior enough to justify context-management overhead.
 current-context:
-  generation: 3
-  ref: docs/living/work-context/BB-046/g0003-implementation.json
+  generation: 4
+  ref: docs/living/work-context/BB-046/g0004-implementation-review.json
+  implementation-context: docs/living/work-context/BB-046/g0003-implementation.json
   decision-ref: docs/living/decisions/D017-bb046-context-plane-acceptance.md
-  parent-review-context: docs/living/work-context/BB-046/g0002-readiness-review.json
-  reviewed-candidate-head: d013b6118dccfea67e8615f4624d3a00f6e10b4f
+  reviewed-candidate-head: 3a5063277a556b6db424f4035814d3dce3a01ff5
 remaining-work:
-  - implement WORK_CONTEXT_SPEC validation and fail-closed Board binding
-  - implement deterministic required-ref resolver and candidate generator helpers
-  - implement stale/currentness and immutable review-subject verification
-  - add deterministic contract/fresh-session/drift/authority fixtures
-  - run explicit-context evaluation against the current heuristic baseline
-  - promote delivered semantics into living contracts/pipelines only after implementation exists
+  - independent fresh review of g0004 exact candidate
+  - independent CI/evaluation evidence review
+  - reopen implementation only if review returns grounded blockers
 acceptance-criteria:
   - fresh worker reconstructs the same safe action without chat
   - stale generation cannot authorize durable action
@@ -96,6 +93,7 @@ acceptance-criteria:
   - context resolver does not schedule work or decide acceptance
   - runtime JSON Blackboard adoption remains out of scope
 submission:
+  - PR #153 exact review target 3a5063277a556b6db424f4035814d3dce3a01ff5
 review-requirements:
   - implementation contract review
   - evaluation/value-gate review
