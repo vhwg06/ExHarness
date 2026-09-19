@@ -114,3 +114,36 @@ source/test/runtime change
 ```
 
 If source and living docs disagree, source wins **and the docs are stale until reconciled**. Staleness is not deferred documentation debt; it blocks claiming that implementation checkpoint as handoff-safe/current.
+
+
+## Repository context loading pipeline
+
+For a migrated item:
+
+```text
+Blackboard item
+  -> exact current-context ref + generation
+  -> validate WORK_CONTEXT_SPEC
+  -> verify exact Board binding
+  -> resolve required current-system/input refs
+  -> keep auditRefs lazy
+  -> execute only the declared action/scope
+  -> source/tests remain correctness truth
+```
+
+Failure of binding, required refs, review read-only scope, or implementation authority fails closed. A worker does not recover missing authority from prior chat or a neighboring generation file.
+
+Context generation is separate from currentness:
+
+```text
+candidate gN+1 generated + validated
+  != current
+
+reviewed repository change updates Board pointer
+  -> gN+1 becomes current
+
+old gN
+  -> historical / stale for new durable action
+```
+
+The first consumer is repository development coordination only. Runtime JSON Blackboard keeps its existing application lifecycle semantics.

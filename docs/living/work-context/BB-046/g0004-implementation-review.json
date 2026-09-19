@@ -1,0 +1,97 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_REVIEW_CONTEXT",
+  "contextId": "BB-046-context",
+  "itemId": "BB-046",
+  "generation": 4,
+  "parentContextRef": "docs/living/work-context/BB-046/g0003-implementation.json",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Fresh independent implementation and evaluation review of PR #153 after P1 remediation.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "implement or repair source in the review lane",
+      "self-accept or transition BB-046 to DONE",
+      "widen runtime Blackboard or Integration B-J scope"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "pullRequest": 153,
+    "targetType": "git-commit",
+    "candidateHeadSha": "ebd3475bc9dd7b1f582de873345d9242534f4dcc",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-046/g0004-implementation-review.json"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "ebd3475bc9dd7b1f582de873345d9242534f4dcc"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/worktree/state.md",
+    "docs/living/blackboard.md",
+    "docs/living/contracts.md",
+    "docs/living/pipelines.md",
+    "docs/living/README.md",
+    "package.json"
+  ],
+  "requiredInputRefs": [
+    "docs/living/work-context/BB-046/g0003-implementation.json",
+    "docs/living/decisions/D017-bb046-context-plane-acceptance.md",
+    "artifacts/bb046-blackboard-context-eval.json",
+    "scripts/blackboard-context-contract.mjs",
+    "scripts/blackboard-context-board.mjs",
+    "scripts/blackboard-context-resolver.mjs",
+    "scripts/blackboard-context-generate.mjs",
+    "scripts/blackboard-context-verify.mjs"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-blackboard-context-evaluation.md",
+    "docs/living/knowledge/bb046-blackboard-context-implementation-readiness.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/state.md",
+      "package.json",
+      "scripts/blackboard-context-*.mjs",
+      "test/blackboard-context-*.test.mjs",
+      "artifacts/bb046-blackboard-context-eval.json"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "review lane is read-only",
+    "review target is exact immutable candidate head",
+    "Work Context != Acceptance Authority",
+    "reviewer must use repository/CI evidence rather than prior chat"
+  ],
+  "verification": [
+    "npm run verify:blackboard-context",
+    "npm run verify",
+    "independent implementation contract review",
+    "independent evaluation/value-gate review"
+  ],
+  "expectedOutputs": [
+    "independent review verdict bound to this context and candidate head",
+    "grounded findings or acceptance evidence"
+  ],
+  "staleWhen": [
+    "PR #153 candidate surface changes outside allowed post-target envelope",
+    "Board current-context generation/ref changes",
+    "review target candidate SHA no longer matches submitted candidate"
+  ]
+}

@@ -58,3 +58,16 @@ docs/living/blackboard.md
 36. Judgment is derived from evidence and is not raw evidence itself.
 37. Audit is challenge, not automatic truth.
 38. Accepted/promoted knowledge may be reconciled when executable evidence contradicts it.
+
+
+## Repository work-context invariants
+
+39. **Exact current pointer.** For a migrated Board item, current repository work context is the single `current-context.ref + generation` bound by the Board; scanning generation files does not establish currentness.
+40. **Immutable generations.** Old `WORK_CONTEXT_SPEC` generations remain history and cannot authorize new durable action after the Board pointer advances.
+41. **Context is not truth or acceptance.** A work context declares bounded inputs/action/scope; source/tests remain current-system truth and accepted review/decision evidence remains acceptance authority.
+42. **Required vs audit.** `requiredCurrentSystemRefs + requiredInputRefs` are resolved for the normal path; `auditRefs` are lazy challenge/history and cannot widen authority or write scope.
+43. **Review is read-only.** A REVIEW context has empty source write scope and cannot self-authorize implementation.
+44. **Implementation is decision-bound.** An IMPLEMENT context requires an exact parent review context and accepted decision reference. Candidate generation does not make itself current.
+45. **Fail closed binding.** Missing, duplicate or mismatched Board item/context ref/generation is invalid; malformed Markdown is not repaired by inference.
+46. **Bounded consumer.** The repository Context Resolver resolves declared refs and identities only. It does not schedule work, choose acceptance, mutate Board lifecycle or become runtime Blackboard authority.
+47. **Migration boundary.** These invariants currently apply to migrated repository coordination items such as BB-046; runtime JSON Blackboard adoption requires separate evidence/decision.
