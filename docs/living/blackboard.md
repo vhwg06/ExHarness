@@ -68,8 +68,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 8
-  ref: docs/living/work-context/BB-047/g0008-repair-review.json
+  generation: 9
+  ref: docs/living/work-context/BB-047/g0009-repair-review.json
 depends-on: []
 target-consumer:
   - runtime organizational integration bridge
@@ -96,7 +96,7 @@ acceptance-criteria:
   - bridge reconstructs Root/accepted materialization -> immutable work contract -> trusted principal claim
   - fixture stops at authorized CLAIMED state; no execution strategy is selected
 submission:
-  - g0008 fresh review target 2b71c45ca340f45aee0f61cf3ad7e2f1a5b11cae
+  - g0009 fresh review target 2b71c45ca340f45aee0f61cf3ad7e2f1a5b11cae
 decision-ref: docs/living/decisions/D019-bb047-a1-implementation-rejection.md
 review-requirements:
   - runtime contract/authority review
