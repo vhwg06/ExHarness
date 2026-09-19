@@ -4,7 +4,50 @@ Status: **PENDING REVIEW**
 
 Companion to domain-execution-control-implementation-readiness.md.
 
-This artifact does not authorize Integration B implementation. It defines the minimum durable evidence/judgment surface that an Integration B implementation must produce so a fresh reviewer can decide correctness without reconstructing intent from chat, mutable process state, or strategy self-report.
+This artifact does not authorize Integration B implementation. It defines the minimum durable evidence/judgment surface that an Integration B implementation must produce so later bounded judgment consumers can decide from durable facts without reconstructing intent from chat, mutable process state, or strategy self-report.
+
+It does **not** imply that Researcher or SA review every execution or every PR.
+
+## Who consumes these artifacts — and when
+
+Artifacts are produced per attempt because facts are cheapest and most reliable at the point they happen. **Judgment roles are not invoked per artifact or per PR.**
+
+    execution attempt
+      -> emit durable facts automatically
+      -> ordinary domain completion/evaluation gate consumes what it needs
+
+    repeated executions
+      -> Observer/metrics aggregate facts continuously
+
+    explicit implementation/promotion/phase gate
+      -> independent acceptance/review consumes an exact bounded packet
+
+    architecture obligation / tripwire / cross-domain inconsistency
+      -> SA consumes relevant evidence and produces an architecture decision/artifact
+
+    unresolved mechanism / surprising failure / evidence gap
+      -> Researcher runs a bounded research workload and produces candidate evidence/design
+
+Researcher and SA are **producers/decision roles for specific questions**, not standing PR reviewers.
+
+Hard separation:
+
+    Researcher
+      = investigate unresolved questions, external/source evidence, alternatives, experiments
+
+    SA
+      = own technical architecture/contracts/trade-offs when an architecture obligation exists
+
+    Reviewer / acceptance authority
+      = judge an exact proposal/implementation/promotion when policy requires an acceptance gate
+
+    Observer
+      = aggregate operational history/metrics and surface grounded findings
+
+    Domain completion evaluator
+      = judge one domain workload against its existing acceptance contract
+
+Therefore the existence of ExecutionJudgmentBundle does not schedule Researcher, SA, or a human reviewer. It only makes a later judgment cheap and grounded when some explicit policy/work item requires one.
 
 ## Why this companion exists
 
@@ -65,7 +108,7 @@ References:
 
 ## Judgment questions
 
-A fresh reviewer for one domain execution must be able to answer these from durable refs only:
+A bounded judgment consumer must be able to answer these from durable refs only when that judgment is required:
 
 1. **Authority** — was this exact work still executable for this principal/claim subject?
 2. **Binding** — which exact WorkContract, policy, strategy, runtime/config refs were frozen before effects?
@@ -342,7 +385,7 @@ It is not correctness evidence, action authorization, product authority, or acce
 
     counterevidenceRefs: [...]
 
-Fresh read must:
+When a judgment bundle is consumed, read must:
 
     read bundle
      -> re-resolve every correctness-relevant pin
@@ -356,7 +399,7 @@ The bundle may make review cheaper; it may not launder missing or contradictory 
 
 ## Currentness semantics
 
-Fresh review must distinguish **historical validity** from **current authority for a new mutation**.
+Historical/acceptance judgment must distinguish **historical validity** from **current authority for a new mutation**.
 
 Three modes are needed:
 
@@ -389,7 +432,7 @@ but:
 
 ExecutionJudgmentBundle should classify each correctness-relevant pin by its currentness mode or otherwise make the distinction mechanically unambiguous.
 
-Fresh reconstruction checks historical execution-time heads against durable transition/history evidence; it must not compare every old head to today's current pointer and reject legitimate history.
+Historical reconstruction checks historical execution-time heads against durable transition/history evidence; it must not compare every old head to today's current pointer and reject legitimate history.
 
 ## Telemetry is not evidence authority
 
@@ -495,7 +538,7 @@ In addition to the DOMAIN_EXECUTION_CONTROL tests:
 
 ## Integration B exit packet
 
-Before Integration B can be judged accepted, one concrete BA workload should expose a complete review packet:
+Before Integration B can be judged accepted at its explicit slice gate, one concrete BA workload should expose a complete acceptance packet:
 
     OrganizationWorkContract
     ClaimReleaseReceipt
@@ -510,7 +553,7 @@ Before Integration B can be judged accepted, one concrete BA workload should exp
     DomainPublicationReceipt
     ExecutionJudgmentBundle
 
-The reviewer should be able to reconstruct:
+The Integration B acceptance consumer should be able to reconstruct:
 
     WHAT / WHO / AUTHORITY
             +
