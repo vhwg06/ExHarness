@@ -67,8 +67,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 2
-  ref: docs/living/work-context/BB-048/g0002-implementation-readiness-review.json
+  generation: 3
+  ref: docs/living/work-context/BB-048/g0003-implementation-readiness-review.json
 depends-on: []
 target-consumer:
   - post-claim domain-local execution control
@@ -89,6 +89,7 @@ acceptance-criteria:
   - strategy/runtime cannot select other organizational work or dispatch another domain
 review-requirements:
   - implementation-readiness review is read-only and bound to the exact canonical integration candidate
+  - generation 3 retargets review after BB-047 capability truth was reconciled into the source-synchronized capability maps
   - accepted decision must bind this exact context + candidate before any IMPLEMENT generation exists
   - promoted Integration C/D/E-F research is canonical knowledge only; it does not widen BB-048 scope
 blockers:

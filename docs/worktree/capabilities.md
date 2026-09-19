@@ -166,6 +166,31 @@ Details: `agentic-application/self-upgrade.md`.
 
 Details: `agentic-application/decision-outcome.md`, `core-harness/capabilities.md`.
 
+## C11 — Authorized organizational work → released executable claim
+
+**Outcome:** one accepted obligation can become one durable organization-managed work item that is discoverable by owning domain, claimable only by a trusted authorized principal, and releasable as an exact executable capability that survives restart and authority races.
+
+**Preconditions:** one project/root intent; accepted decision + explicit bounded `MATERIALIZATION_AUTHORIZATION_GRANT`; durable Blackboard + immutable artifact registry + CAS current heads; trusted execution-principal provider; current `EXECUTION_AUTHORITY_POLICY` for the owning domain.
+
+**Application guarantees:**
+- materialization writes one immutable `ORGANIZATION_WORK_CONTRACT` containing the governed WHAT/provenance: project/root, accepted decision, exact grant observation, pinned authority-policy revision, implementation artifact, slice/obligation, logical/materialization identities, Board item id, domain/workload, dependencies, required artifacts, expected outputs and acceptance refs;
+- `obligationSubjectKey` is the logical-work identity; at most one live Board item may exist for it. Exact `materializationKey` retries/concurrent identical attempts converge on the same Board item and immutable materialization receipt;
+- organization work discovery is read-only: it validates exact immutable contracts, dependencies and owning domain; it cannot authenticate, claim, schedule or mutate lifecycle;
+- claim authority derives the exact materialization grant from Board provenance plus a controller-configured current `EXECUTION_AUTHORITY_POLICY`; caller input cannot substitute another grant/policy or self-assert the execution principal;
+- Board `CLAIMED` is provisional. Executable capability exists only after an immutable project/root-bound `CLAIM_RELEASE_RECEIPT` is current behind the project-scoped `ClaimReleaseHead`;
+- claim/release/reconciliation/execution-entry revalidate exact authority observations and the exact canonical Board claim tuple. ACTIVE→ACTIVE head drift, policy-revision drift and stale claim generations fail closed;
+- a fresh process can reconcile the same current claim generation from durable Board/artifacts/heads: complete a missing release, reconstruct the current receipt, or converge typed invalidation without minting a new semantic claim;
+- work/materialization-authority loss converges `WORK_AUTHORIZATION_INVALIDATED -> BLOCKED`; execution principal/policy loss converges `EXECUTION_AUTHORITY_INVALIDATED -> REOPENED`. Canonical Board invalidation commits before release fencing;
+- missing/corrupt immutable authority artifacts still produce exact raw-head invalidation provenance, so broken authority cannot leave a stale released capability silently executable.
+
+**Durable state:** immutable work contract, materialization receipt, authority grant/policy artifacts, claim-release receipt, claim-authority invalidation artifacts; Board item + `claimGeneration`; pointer-only materialization/execution-authority heads; project-scoped claim-release head.
+
+**Failure semantics:** stale/mismatched provenance, duplicate live logical work, unauthorized principal/domain, changed authority observation, corrupt authority artifact, stale Board claim tuple or release mismatch fail closed. Old release subjects are fenced without overwriting a newer canonical Board lifecycle.
+
+**Does not imply:** execution HOW, `DOMAIN_EXECUTION_CONTROL`, Integration-B `ExecutionPolicy` / `ExecutionStrategy`, `ExecutionAttemptHead` / `ExecutionAttemptBinding`, actual BA/FE/BE/QA/DevOps workload execution, authoritative domain publication, cross-domain dispatch or ProductStateProjection.
+
+Details: `agentic-application/capabilities.md`, `agentic-application/contracts.md`, `agentic-application/boundaries.md`, `../living/history/bb047-a1-closure-2026-09-19.md`.
+
 ## Integration semantics
 
 ```text
