@@ -609,3 +609,114 @@ test("materialization authorization drift after Board publication blocks the new
     assert.match(item.blockers[0],/^WORK_AUTHORIZATION_INVALIDATED:/);
   });
 });
+
+
+test("caller cannot substitute a different materialization grant for the grant that created the Board item",async()=>{
+  await withFixture(async({controller,materialized,publisher,orchestrator})=>{
+    await publisher.publishMaterializationAuthorization({
+      publisher:{identity:"authority-admin"},
+      authorization:{...materializationHead(),authorizationId:"auth-2"}
+    });
+    await publisher.publishMaterializationAuthorization({
+      publisher:{identity:"authority-admin"},
+      authorization:{...materializationHead(),generation:2,status:AuthorityHeadStatus.REVOKED}
+    });
+
+    await assert.rejects(
+      ()=>controller.claim({
+        itemId:materialized.item.id,
+        principalContext:{token:"ba"},
+        authorizationId:"auth-2"
+      }),
+      /authority head is not active/
+    );
+
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(item.status,BlackboardStatus.BLOCKED);
+  });
+});
+
+test("fresh process reconciliation completes and reconstructs release for the same claim generation",async()=>{
+  await withFixture(async({
+    root,controller,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,
+    claimReleaseStore,artifactRegistry,executionPrincipalProvider
+  })=>{
+    const claimed=await controller.claim({
+      itemId:materialized.item.id,
+      principalContext:{token:"ba"}
+    });
+
+    const restartedOrchestrator=createApplicationOrchestrator({
+      store:createJsonBlackboardStore({path:join(root,"board.json")}),
+      reviewTrust:reviewTrustStub()
+    });
+    const restartedRegistry=createOrganizationArtifactRegistry({
+      store:createJsonImmutableArtifactStore({path:join(root,"artifacts.json")})
+    });
+    const restarted=createOrganizationWorkClaimController({
+      orchestrator:restartedOrchestrator,
+      materializationAuthorizationStore,
+      executionAuthorityPolicyStore,
+      claimReleaseStore,
+      artifactRegistry:restartedRegistry,
+      executionPrincipalProvider,
+      executionAuthorityPolicyId:"organization-execution-authority"
+    });
+
+    const first=await restarted.reconcileOrganizationClaimAuthority({itemId:materialized.item.id});
+    assert.equal(first.state,"RELEASED");
+    assert.equal(first.receipt.claimGeneration,claimed.item.claimGeneration);
+
+    const second=await restarted.reconcileOrganizationClaimAuthority({itemId:materialized.item.id});
+    assert.equal(second.state,"RELEASED");
+    assert.equal(second.receipt.receiptRef,first.receipt.receiptRef);
+    assert.equal(second.receipt.claimGeneration,claimed.item.claimGeneration);
+  });
+});
+
+test("reauthorization cannot create a second live Board item for the same logical obligation",async()=>{
+  await withFixture(async({publisher,materializer,orchestrator,materialized})=>{
+    await publisher.publishMaterializationAuthorization({
+      publisher:{identity:"authority-admin"},
+      authorization:{...materializationHead(),authorizationId:"auth-2"}
+    });
+
+    await assert.rejects(
+      ()=>materializer.materialize({
+        authorizationId:"auth-2",
+        decision:decision(),
+        obligation:obligation()
+      }),
+      /live organization work already exists for obligationSubjectKey/
+    );
+
+    const organizationItems=(await orchestrator.readBlackboard()).items.filter(
+      (item)=>item.origin?.kind==="ORGANIZATION_MATERIALIZATION"
+    );
+    assert.equal(organizationItems.length,1);
+    assert.equal(organizationItems[0].id,materialized.item.id);
+  });
+});
+
+test("immutable authority artifacts persist canonical verified publisher provenance",async()=>{
+  await withFixture(async({
+    publisher,materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry
+  })=>{
+    const materializationCurrent=await materializationAuthorizationStore.current("auth-1");
+    const materializationArtifact=await artifactRegistry.resolveMaterializationAuthorization(materializationCurrent.value.artifactRef);
+    assert.equal(materializationArtifact.issuedByAuthorityRef,"authority://organization-admin");
+
+    await publisher.publishExecutionAuthorityPolicy({
+      publisher:{identity:"authority-admin"},
+      policy:{
+        ...policyHead(),
+        generation:2,
+        publishedByAuthorityRef:"authority://caller-spoof"
+      }
+    });
+    const policyCurrent=await executionAuthorityPolicyStore.current("organization-execution-authority");
+    const policyArtifact=await artifactRegistry.resolveExecutionAuthorityPolicy(policyCurrent.value.artifactRef);
+    assert.equal(policyArtifact.publishedByAuthorityRef,"authority://organization-admin");
+    assert.notEqual(policyArtifact.publishedByAuthorityRef,"authority://caller-spoof");
+  });
+});
