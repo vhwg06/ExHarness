@@ -134,6 +134,8 @@ Required additions for judgment:
     workContractRef: <exact immutable ref>
     claimReleaseReceiptRef: <exact immutable ref>
     executionPolicyRef: <exact immutable ref>
+    observedExecutionPolicyHead: <policyId + generation + head revision>
+    observedClaimReleaseHead: <subject + head revision>
     executionStrategyRef: <exact immutable ref>
 
     runtimeBinding:
@@ -171,6 +173,9 @@ A trusted runtime adapter/infrastructure boundary emits an immutable attestation
     finishedAt: <timestamp or null>
     effectRefs: [...]
     traceRefs: [...]
+    dispatchAuthoritySnapshot:
+      claimReleaseHead: <exact observed subject/revision>
+      executionPolicyHead: <exact policy generation used by binding>
     producerAuthorityRef: <trusted adapter/platform authority>
     attestationRef: <signature/trust artifact where required>
 
@@ -297,6 +302,8 @@ For each authoritative publication, the domain write gate emits an immutable rec
         derivedFrom: [<exact authoritative input refs>]
     publicationStoreRevision: <commit/currentness subject>
 
+Publication commit must revalidate the exact current work/lifecycle subject and current domain write-authority head after the completion decision and immediately before canonical publication. If either changed, no authoritative publication receipt may be committed.
+
 The receipt proves the write/publication boundary accepted these exact products under this exact authority. It does not make the artifacts semantically correct by itself; correctness still comes from completion/evidence policy.
 
 Hard separation:
@@ -339,12 +346,50 @@ Fresh read must:
 
     read bundle
      -> re-resolve every correctness-relevant pin
-     -> verify digest/currentness/authority
+     -> verify digests + producer authority
+     -> apply each pin's currentness mode (historical-at-execution vs current mutation gate)
      -> re-check cross-artifact identity relations
      -> re-derive correctness-relevant summary fields
      -> reject copied fields that conflict with sources
 
 The bundle may make review cheaper; it may not launder missing or contradictory source evidence.
+
+## Currentness semantics
+
+Fresh review must distinguish **historical validity** from **current authority for a new mutation**.
+
+Three modes are needed:
+
+    EXECUTION_TIME_PIN
+      The ref/head had to be current when binding/dispatch was authorized.
+      Later head advancement does not invalidate the historical attempt.
+      Examples: ClaimReleaseReceipt, observed ExecutionPolicyHead.
+
+    REVIEW_INTEGRITY_PIN
+      The immutable historical artifact must still resolve with the same digest/relations.
+      It does not need to be the current head.
+      Examples: binding, runtime attestations, outcome, transition history.
+
+    MUTATION_CURRENT_GATE
+      The authority/lifecycle subject must be current at the moment a new side effect/publication is committed.
+      Examples: current domain write authority, exact current work/lifecycle subject for publication.
+
+Therefore:
+
+    old policy P17 after promotion to P18
+      != invalid historical attempt
+
+    released claim after work later leaves CLAIMED
+      != invalid historical execution evidence
+
+but:
+
+    publish a new authoritative RequirementSet
+      -> MUST revalidate current write/lifecycle authority now
+
+ExecutionJudgmentBundle should classify each correctness-relevant pin by its currentness mode or otherwise make the distinction mechanically unambiguous.
+
+Fresh reconstruction checks historical execution-time heads against durable transition/history evidence; it must not compare every old head to today's current pointer and reject legitimate history.
 
 ## Telemetry is not evidence authority
 
@@ -411,8 +456,10 @@ In addition to the DOMAIN_EXECUTION_CONTROL tests:
 14. two outputs from one run may declare different input dependencies without the system inventing cross-edges;
 15. a cross-domain consumer cannot use raw strategy lineage when DomainPublicationReceipt is missing/stale;
 16. policy/strategy promotion after binding changes only new attempts;
-17. new remediation attempt requires an exact transition/decision ref, not process restart;
-18. a crash between transition artifact publication and head CAS can be reconciled idempotently without creating duplicate semantic attempts.
+17. advancing claim/policy heads after a completed attempt does not invalidate historical review solely because those old heads are no longer current;
+18. authoritative publication revalidates current work/lifecycle + write authority after completion decision and fails closed on a revoke/race;
+19. new remediation attempt requires an exact transition/decision ref, not process restart;
+20. a crash between transition artifact publication and head CAS can be reconciled idempotently without creating duplicate semantic attempts.
 
 ## Integration B exit packet
 
