@@ -265,30 +265,71 @@ test("claim recovery advances generation and fences the prior released capabilit
   });
 });
 
-test("authority head changes revoke execution entry without rewriting the historical receipt",async()=>{
-  await withFixture(async({controller,materialized,executionAuthorityPolicyStore})=>{
+test("execution-entry policy revocation reopens Board work before fencing the historical release",async()=>{
+  await withFixture(async({controller,materialized,publisher,orchestrator,claimReleaseStore})=>{
     const claimed=await controller.claim({
-      itemId:materialized.item.id,principalContext:{token:"ba"},
-      authorizationId:"auth-1",policyId:"organization-execution-authority"
+      itemId:materialized.item.id,principalContext:{token:"ba"}
     });
     const released=await controller.release({
-      itemId:materialized.item.id,claimGeneration:claimed.item.claimGeneration,principalContext:{token:"ba"},
-      authorizationId:"auth-1",policyId:"organization-execution-authority"
+      itemId:materialized.item.id,
+      claimGeneration:claimed.item.claimGeneration,
+      principalContext:{token:"ba"}
     });
-    const current=await executionAuthorityPolicyStore.current("organization-execution-authority");
-    await executionAuthorityPolicyStore.compareAndSwap("organization-execution-authority",current.revision,{
-      ...policyHead(),
-      generation:2,
-      status:AuthorityHeadStatus.REVOKED,
-      policyRef:"policy://organization-execution-authority/g2"
+    await publisher.publishExecutionAuthorityPolicy({
+      publisher:{identity:"authority-admin"},
+      policy:{...policyHead(),generation:2,status:AuthorityHeadStatus.REVOKED}
     });
+
     await assert.rejects(
       ()=>controller.assertExecutable({
-        itemId:materialized.item.id,claimGeneration:claimed.item.claimGeneration,
-        receiptRef:released.receiptRef,authorizationId:"auth-1",policyId:"organization-execution-authority"
+        itemId:materialized.item.id,
+        claimGeneration:claimed.item.claimGeneration,
+        receiptRef:released.receiptRef
       }),
       /authority head is not active/
     );
+
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(item.status,BlackboardStatus.REOPENED);
+    assert.equal(item.owner,null);
+    const releaseHead=await claimReleaseStore.current(
+      claimReleaseSubjectKey("project-1",materialized.item.id,claimed.item.claimGeneration)
+    );
+    assert.equal(releaseHead.value.status,ClaimReleaseStatus.FENCED);
+  });
+});
+
+test("execution-entry work authorization revocation blocks Board work before fencing release",async()=>{
+  await withFixture(async({controller,materialized,publisher,orchestrator,claimReleaseStore})=>{
+    const claimed=await controller.claim({
+      itemId:materialized.item.id,principalContext:{token:"ba"}
+    });
+    const released=await controller.release({
+      itemId:materialized.item.id,
+      claimGeneration:claimed.item.claimGeneration,
+      principalContext:{token:"ba"}
+    });
+    await publisher.publishMaterializationAuthorization({
+      publisher:{identity:"authority-admin"},
+      authorization:{...materializationHead(),generation:2,status:AuthorityHeadStatus.REVOKED}
+    });
+
+    await assert.rejects(
+      ()=>controller.assertExecutable({
+        itemId:materialized.item.id,
+        claimGeneration:claimed.item.claimGeneration,
+        receiptRef:released.receiptRef
+      }),
+      /authority head is not active/
+    );
+
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(item.status,BlackboardStatus.BLOCKED);
+    assert.equal(item.owner,null);
+    const releaseHead=await claimReleaseStore.current(
+      claimReleaseSubjectKey("project-1",materialized.item.id,claimed.item.claimGeneration)
+    );
+    assert.equal(releaseHead.value.status,ClaimReleaseStatus.FENCED);
   });
 });
 
