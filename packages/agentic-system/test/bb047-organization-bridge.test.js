@@ -18,6 +18,7 @@ import {
   createSessionHandoffSurface,
 
   createOrganizationWorkClaimController,
+  createOrganizationWorkDiscovery,
   createOrganizationWorkMaterializer
 } from "../src/index.js";
 
@@ -44,13 +45,18 @@ function obligation(){return {
   summary:"Analyze product requirements",
   owningDomain:"BUSINESS_ANALYSIS",
   workloadType:"requirements-analysis",
+  dependencyIds:[],
+  requiredArtifactRefs:["intent://root"],
   inputRefs:["intent://root"],
+  expectedArtifactKind:"RequirementSet",
   expectedOutputRefs:["artifact://srs"],
   acceptanceRefs:["acceptance://requirements"]
 };}
 function materializationHead(){return {
   authorizationId:"auth-1",
   projectId:"project-1",
+  rootIntentId:"root",
+  authorityPolicyRevision:"organization-authority-policy:v1",
   generation:1,
   status:AuthorityHeadStatus.ACTIVE,
   
@@ -64,16 +70,16 @@ function materializationHead(){return {
 function policyHead(){return {
   policyId:"organization-execution-authority",
   projectId:"project-1",
+  authorityPolicyRevision:"organization-authority-policy:v1",
   generation:1,
   status:AuthorityHeadStatus.ACTIVE,
-  
-  principalDomains:{
-    "ba-1":["BUSINESS_ANALYSIS"],
-    "be-1":["BACKEND"]
-  }
+  bindings:[
+    {principalRef:"principal://ba-1",authorizedDomains:["BUSINESS_ANALYSIS"]},
+    {principalRef:"principal://be-1",authorizedDomains:["BACKEND"]}
+  ]
 };}
 
-async function withFixture(run){
+async function withFixture(run,{materialize=true,initialItems=[]}={}){
   const root=await mkdtemp(join(tmpdir(),"exharness-bb047-"));
   try{
     const orchestrator=createApplicationOrchestrator({
@@ -82,7 +88,8 @@ async function withFixture(run){
     });
     const handoff=createSessionHandoffSurface({orchestrator,projectId:"project-1"});
     await handoff.initialize({
-      userIntent:{id:"root",source:"USER",objective:"Build product",bullets:[],constraints:[]}
+      userIntent:{id:"root",source:"USER",objective:"Build product",bullets:[],constraints:[]},
+      items:initialItems
     });
     const materializationAuthorizationStore=createJsonMaterializationAuthorizationStore({path:join(root,"materialization.json")});
     const executionAuthorityPolicyStore=createJsonExecutionAuthorityPolicyStore({path:join(root,"policy.json")});
@@ -118,11 +125,12 @@ async function withFixture(run){
     await publisher.publishMaterializationAuthorization({publisher:{identity:"authority-admin"},authorization:materializationHead()});
     await publisher.publishExecutionAuthorityPolicy({publisher:{identity:"authority-admin"},policy:policyHead()});
     const materializer=createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore,artifactRegistry});
-    const materialized=await materializer.materialize({
+    const materialized=materialize?await materializer.materialize({
       authorizationId:"auth-1",
       decision:decision(),
       obligation:obligation()
-    });
+    }):null;
+    const discovery=createOrganizationWorkDiscovery({orchestrator,artifactRegistry});
     const controller=createOrganizationWorkClaimController({
       orchestrator,
       materializationAuthorizationStore,
@@ -134,7 +142,7 @@ async function withFixture(run){
     });
     await run({
       root,orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
-      claimReleaseStore,artifactRegistry,publisher,materializer,materialized,controller,executionPrincipalProvider
+      claimReleaseStore,artifactRegistry,publisher,materializer,materialized,discovery,controller,executionPrincipalProvider
     });
   }finally{
     await rm(root,{recursive:true,force:true});
