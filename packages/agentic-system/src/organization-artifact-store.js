@@ -71,6 +71,8 @@ export function createOrganizationArtifactRegistry({store}){
     putClaimReleaseReceipt:(value)=>store.put("claim-release-receipt",value),
     resolveClaimReleaseReceipt:(ref)=>store.resolve(ref),
     putClaimAuthorityInvalidation:(value)=>store.put("claim-authority-invalidation",value),
-    resolveClaimAuthorityInvalidation:(ref)=>store.resolve(ref)
+    resolveClaimAuthorityInvalidation:(ref)=>store.resolve(ref),
+    putMaterializationReceipt:(value)=>store.put("organization-materialization-receipt",value),
+    resolveMaterializationReceipt:(ref)=>store.resolve(ref)
   });
 }
