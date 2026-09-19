@@ -181,9 +181,9 @@ Documentation routing:
 
 ```text
 docs/README.md
-  -> docs/blackboard/state.md          what remains to do
-  -> docs/living/system/state.md             what exists now
-     -> worktree/pipeline.md             current delivered pipeline
+  -> docs/blackboard/state.md             where development is now
+  -> docs/living/system/state.md          what exists now
+     -> living/system/pipeline.md          current delivered pipeline
      -> agentic-application/             current application docs
      -> oracle/                          current Oracle docs
      -> core-harness/                    current Core docs
