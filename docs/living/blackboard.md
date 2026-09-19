@@ -68,8 +68,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 3
-  ref: docs/living/work-context/BB-047/g0003-implementation-readiness-review.json
+  generation: 4
+  ref: docs/living/work-context/BB-047/g0004-implementation-readiness-review.json
 depends-on: []
 target-consumer:
   - runtime organizational integration bridge
@@ -101,8 +101,8 @@ review-requirements:
   - runtime contract/authority review
   - crash/race/recovery review
 blockers:
-  - generations 1 and 2 review contexts are stale history after #154 fail-closed remediation/envelope correction
-  - runtime source implementation is blocked until an exact accepted decision authorizes a later IMPLEMENT generation
+  - generations 1, 2, and 3 are stale/rejected review history
+  - runtime source implementation is blocked until an exact accepted decision authorizes the next IMPLEMENT generation
 follow-up-refs:
   - DOMAIN_EXECUTION_CONTROL is required before Integration B and owns ExecutionAttemptHead plus ExecutionPolicy -> ExecutionStrategyRef -> ExecutionAttemptBinding.
 origin: BB-046 Context Plane implementation merged via PR #153; accepted A.1 architecture remains the next bounded integration slice.
