@@ -1,0 +1,159 @@
+{
+  "kind": "IMPLEMENTATION_WORK_ARTIFACT",
+  "version": 1,
+  "itemId": "BB-050",
+  "status": "IMPLEMENTATION_READY_BLOCKED",
+  "title": "Implement DOMAIN_ACTIVATION and FE/BE parallel autonomy",
+  "dependsOn": [
+    "BB-049"
+  ],
+  "objective": "Make persisted actionable FE/BE work wake its exact owning domain automatically through level-triggered reconciliation, without a central next-role dispatcher or event/queue authority.",
+  "architectureInputs": [
+    {
+      "repository": "vhwg06/ExHarness",
+      "revision": "a29993bcba1a319e299b0e89fc57cbd538de7e00",
+      "path": "docs/living/knowledge/domain-activation-parallel-autonomy-implementation-readiness.md",
+      "blobSha": "362ade6bef9ed9030cf637c4bd248f167c9809b5"
+    },
+    {
+      "repository": "vhwg06/ExHarness",
+      "revision": "a29993bcba1a319e299b0e89fc57cbd538de7e00",
+      "path": "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+      "blobSha": "7f1501275c77e174e29897a249f1245e6075297c"
+    }
+  ],
+  "architectureDecisions": [
+    "DOMAIN_ACTIVATION is domain-local level-triggered reconciliation",
+    "event/watch/poll/restart inputs are wake-up hints only; canonical state is re-read on every reconcile",
+    "Activation != Scheduling and does not rank multiple actionable work items",
+    "activation works on exact projectId/workId/owningDomain keys, never role/stage names",
+    "duplicate triggers converge through canonical lifecycle/claim fencing",
+    "missed triggers are recovered by domain-specific canonical scans; event queue/cache is disposable",
+    "no transactional outbox is required for correctness in D v1",
+    "activation never resolves ExecutionStrategy; BB-048 remains the HOW boundary",
+    "post-claim/post-release source-obligation currentness is revalidated before execution entry",
+    "FE and BE are independently activatable and may use different strategy kinds/versions"
+  ],
+  "planningBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "d647903b56312fa9ec3bfbea1c73f98561aec2f5",
+    "note": "planning only; activation after BB-049 must use then-current source head"
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/backend-worker.js",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "BB-048 DOMAIN_EXECUTION_CONTROL source",
+      "BB-049 obligation/currentness source"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/domain-activation.js",
+      "packages/agentic-system/src/domain-activation-source.js",
+      "packages/agentic-system/src/backend-execution-strategy.js",
+      "packages/agentic-system/src/frontend-contracts.js",
+      "packages/agentic-system/src/frontend-worker.js",
+      "packages/agentic-system/src/frontend-application.js",
+      "packages/agentic-system/src/frontend-execution-strategy.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/bb050-domain-activation.test.js",
+      "packages/agentic-system/test/bb050-activation-recovery.test.js",
+      "packages/agentic-system/test/bb050-fe-be-parallel.test.js",
+      "packages/agentic-system/test/bb050-partial-invalidation.test.js"
+    ]
+  },
+  "implementationSlices": [
+    {
+      "id": "D1",
+      "output": "DomainActivationKey + DomainActivationSource + DomainActivationController.reconcile",
+      "requirements": [
+        "canonical domain scan is mandatory recovery source",
+        "event/watch source is optional latency optimization",
+        "wrong-domain key cannot claim/execute",
+        "NOOP is normal when current state is not actionable"
+      ]
+    },
+    {
+      "id": "D2",
+      "output": "activation -> claim/release -> execution admission handshake",
+      "requirements": [
+        "trusted domain principal binding is runtime configuration, not trigger payload",
+        "after claim/release, exact source obligation/currentness is revalidated before DomainExecutionController entry",
+        "stale race invalidates canonical organization claim and fences release"
+      ]
+    },
+    {
+      "id": "D3",
+      "output": "Backend domain-local strategy adapter",
+      "requirements": [
+        "reuse Backend worker/preparation/Core/completion primitives",
+        "do not reuse createDurableBackendQaWorkflow as the strategy because it contains QA cross-domain control",
+        "Backend strategy terminates at Backend-owned output/evidence/publication"
+      ]
+    },
+    {
+      "id": "D4",
+      "output": "first real Frontend domain + domain-local strategy using same organization/execution contracts",
+      "requirements": [
+        "Frontend has explicit WorkContract/WorkResult/context/completion semantics",
+        "no shared conversation dependency with Backend"
+      ]
+    },
+    {
+      "id": "D5",
+      "output": "parallel autonomy fixture + activation observations",
+      "requirements": [
+        "FE and BE can progress independently",
+        "one domain outage does not block unrelated domain work",
+        "remove manual next-role dispatcher from acceptance path",
+        "emit low-cost DomainActivationObservation telemetry without making telemetry authority"
+      ]
+    }
+  ],
+  "hardInvariants": [
+    "event != authority",
+    "queue != source of truth",
+    "Activation != Scheduling",
+    "activation != strategy selection",
+    "activation != obligation creation",
+    "no implicit FE/BE stage barrier",
+    "one domain outage must not block unrelated domain work",
+    "queued stale hints cannot resurrect invalidated work"
+  ],
+  "acceptanceCriteria": [
+    "persisted actionable FE/BE work is eventually discovered after process restart even if original notification is lost",
+    "duplicate event + scan hints for same work converge to one current claim/execution",
+    "FE and BE execute independently under different domain-local strategy descriptors",
+    "old activation hint becomes NOOP after obligation/work invalidation",
+    "obligation supersession between activation pre-check and claim/release cannot enter execution after post-release recheck",
+    "one-domain-down fixture still allows independent domain progress",
+    "manual next-role dispatch can be removed without halting organization progress"
+  ],
+  "mandatoryNegativeTests": [
+    "event payload directly authorizes execution",
+    "activate BACKEND role/stage instead of exact work key",
+    "wrong-domain controller claims work",
+    "lost queue entry strands canonical actionable work",
+    "duplicate triggers create two current claims/attempts",
+    "activation resolves ExecutionStrategy itself",
+    "FE waits for whole Backend stage absent an exact dependency",
+    "stale queued trigger executes after selective invalidation"
+  ],
+  "forbidden": [
+    "global scheduler",
+    "role registry",
+    "organization workflow graph",
+    "event bus/queue as lifecycle truth",
+    "transactional outbox required for correctness",
+    "DevOps/Product QA implementation",
+    "ProductStateProjection"
+  ],
+  "activationRule": {
+    "when": "BB-049 is terminal accepted/DONE and cross-domain obligation/currentness/materialization semantics are current",
+    "createContext": "materialize new WORK_CONTEXT_SPEC from then-current head and pin this artifact + exact BB-049 source contracts; mark BB-050 READY",
+    "staleIf": "cross-domain work no longer retains the source-obligation/currentness subject required for admission revalidation"
+  }
+}
