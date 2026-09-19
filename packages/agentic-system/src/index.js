@@ -158,7 +158,7 @@ export {
   defineOrganizationWorkContract,
   materializationSubjectKey
 } from "./organization-work.js";
-export { createOrganizationWorkClaimController } from "./organization-claim.js";
+export { claimReleaseSubjectKey, createOrganizationWorkClaimController } from "./organization-claim.js";
 
 export {
   createJsonImmutableArtifactStore,
