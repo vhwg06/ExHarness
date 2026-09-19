@@ -65,7 +65,7 @@ BB-046
 question/work: Implement and evaluate the accepted repository-local Blackboard Context Plane so fresh sessions receive an exact safe-next-action context instead of inferring scope/authority from Board prose.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 depends-on: []
 target-consumer:
