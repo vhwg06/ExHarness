@@ -68,8 +68,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 21
-  ref: docs/living/work-context/BB-047/g0021-final-merge-review.json
+  generation: 22
+  ref: docs/living/work-context/BB-047/g0022-final-merge-review.json
 depends-on: []
 target-consumer:
   - runtime organizational integration bridge
@@ -96,14 +96,14 @@ acceptance-criteria:
   - bridge reconstructs Root/accepted materialization -> immutable work contract -> trusted principal claim
   - fixture stops at authorized CLAIMED state; no execution strategy is selected
 submission:
-  - g0021 final merge review target 7390dabe7f35bae07537593fb62af2845175739c
+  - g0022 final merge review target d986fc5bf137d4f6e57338d851090b14be056a6d
 decision-ref: docs/living/decisions/D023-bb047-a1-final-completion-findings.md
 review-requirements:
   - runtime contract/authority review
   - crash/race/recovery review
 blockers: []
 remaining-work:
-  - final fresh review exact g0020 repair candidate
+  - final fresh review after exact main-lane sync
   - if clean, record acceptance/closure in allowed envelope and merge PR #183
 follow-up-refs:
   - DOMAIN_EXECUTION_CONTROL is required before Integration B and owns ExecutionAttemptHead plus ExecutionPolicy -> ExecutionStrategyRef -> ExecutionAttemptBinding.
