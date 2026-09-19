@@ -382,3 +382,16 @@ The trusted principal boundary supports both request-context resolution and dura
 Verified authority publication persists canonical publisher provenance. The trusted organization-authority adapter returns a canonical `authorityRef`; caller-supplied issuer/publisher provenance is stripped and cannot become authority. Immutable materialization grants carry `issuedByAuthorityRef`; immutable execution policies carry `publishedByAuthorityRef`.
 
 Materialization grants explicitly bind `implementationArtifactRef`, `authorizedSliceIds` and `authorizedObligationKeys`. There is no wildcard grant interpretation.
+
+
+### A.1 final acceptance repair
+
+`ORGANIZATION_WORK_CONTRACT v1` is now the complete immutable WHAT/provenance artifact for one materialized obligation. It binds project/root, accepted decision, exact materialization authorization id/ref/generation/revision, pinned authority-policy revision, implementation artifact, slice/key, logical `obligationSubjectKey`, grant-bound `materializationKey`, canonical Board item id, domain/workload, bounded summary, declared dependencies, required artifact refs, expected artifact kind/output refs and acceptance refs. Consumers validate the content-derived contract ref rather than reconstructing these semantics from caller input.
+
+Runtime materialization grants are explicit immutable grant/revocation artifacts. Active grants bind project + root intent + accepted decision + implementation artifact + authorized slice/key + pinned authority-policy revision + verified issuer provenance. Wildcard slice/key grants are rejected by the materializer. Execution-authority policy artifacts bind canonical `principalRef` values to authorized domains and carry the same pinned authority-policy revision plus verified publisher provenance; Board-owner display identity is not policy authority.
+
+Claim-release receipts record exact materialization and execution authority refs/generations plus their pinned policy revisions. At execution entry, stale work authorization maps to `WORK_AUTHORIZATION_INVALIDATED -> BLOCKED`; stale execution policy/principal authority maps to `EXECUTION_AUTHORITY_INVALIDATED -> REOPENED`. The canonical Board invalidation commits before historical release-head fencing.
+
+Materialization is exactly-once at two levels: `obligationSubjectKey` permits at most one live logical Board item, while identical `materializationKey` attempts converge on that exact item. Concurrent immutable-artifact writes wait/recheck content identity, concurrent Board publication conflicts reload the deterministic result, and all successful identical callers receive the same content-addressed materialization receipt ref.
+
+`createOrganizationWorkDiscovery(...)` is read-only. It reads current Board eligibility, requires dependencies DONE, resolves and validates each exact immutable work contract/project/root/item binding, and filters by `owningDomain`. It does not authenticate a caller, claim work, choose a next domain, or mutate lifecycle.
