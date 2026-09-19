@@ -114,6 +114,8 @@ async function currentAuthorities({
   if(policy.artifact.kind!=="EXECUTION_AUTHORITY_POLICY"||policy.artifact.version!==1) throw new AuthorityFailure("EXECUTION","execution authority policy kind/version mismatch");
   if(policy.artifact.projectId!==contract.projectId) throw new AuthorityFailure("EXECUTION","execution authority policy project mismatch");
   requireText(policy.artifact.authorityPolicyRevision,"execution authority policy authorityPolicyRevision");
+  if(policy.artifact.authorityPolicyRevision!==contract.authorityPolicyRevision)
+    throw new AuthorityFailure("EXECUTION","execution authority policy revision mismatch");
   requireText(policy.artifact.publishedByAuthorityRef,"execution authority policy publishedByAuthorityRef");
   const binding=Array.isArray(policy.artifact.bindings)?
     policy.artifact.bindings.find((candidate)=>candidate?.principalRef===principal.principalRef):
