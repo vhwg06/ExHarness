@@ -156,6 +156,8 @@ export {
   AuthorityHeadStatus,
   ClaimReleaseStatus,
   createJsonCasHeadStore,
+  createJsonImmutableArtifactStore,
+  createOrganizationAuthorityPublishers,
   createJsonClaimReleaseStore,
   createJsonExecutionAuthorityPolicyStore,
   createJsonMaterializationAuthorizationStore
@@ -163,6 +165,7 @@ export {
 export {
   createOrganizationWorkMaterializer,
   defineOrganizationWorkContract,
-  materializationSubjectKey
+  materializationSubjectKey,
+  resolveOrganizationWorkContract
 } from "./organization-work.js";
 export { createOrganizationWorkClaimController } from "./organization-claim.js";
