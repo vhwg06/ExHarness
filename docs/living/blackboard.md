@@ -67,8 +67,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 1
-  ref: docs/living/work-context/BB-048/g0001-implementation-readiness-review.json
+  generation: 2
+  ref: docs/living/work-context/BB-048/g0002-implementation-readiness-review.json
 depends-on: []
 target-consumer:
   - post-claim domain-local execution control
@@ -88,8 +88,9 @@ acceptance-criteria:
   - execution result, runtime fact, verification evidence, domain acceptance and authoritative publication remain separate
   - strategy/runtime cannot select other organizational work or dispatch another domain
 review-requirements:
-  - implementation-readiness review is read-only and bound to exact current main candidate
+  - implementation-readiness review is read-only and bound to the exact canonical integration candidate
   - accepted decision must bind this exact context + candidate before any IMPLEMENT generation exists
+  - promoted Integration C/D/E-F research is canonical knowledge only; it does not widen BB-048 scope
 blockers:
   - implementation authority not yet granted; current generation is REVIEW only
 required-input-refs:
@@ -109,6 +110,8 @@ Allocate BB-046 or later only when at least one grounded integration trigger exi
 - crash/recovery/handoff behavior fails when components are composed;
 - an integration or end-to-end verification exposes a reproducible gap;
 - explicit user intent requests a concrete integration outcome.
+
+Promoted future-slice research on `main` is knowledge, not backlog: it does not allocate a work id, create active debt, or authorize implementation until one of the entry triggers above allocates a concrete Board item. The native repository authority path is `REVIEW context -> accepted decision -> IMPLEMENT context -> READY worker`; no separate `work-artifacts/*` authority layer exists.
 
 Oracle-specific work must still respect the Oracle-detail re-entry triggers. Integration pressure alone does not justify a generic resolver/provider registry, MCP-first Oracle, cache/retrieval framework or another speculative abstraction.
 

@@ -71,3 +71,14 @@ docs/living/blackboard.md
 45. **Fail closed binding.** Missing, duplicate or mismatched Board item/context ref/generation is invalid; malformed Markdown is not repaired by inference.
 46. **Bounded consumer.** The repository Context Resolver resolves declared refs and identities only. It does not schedule work, choose acceptance, mutate Board lifecycle or become runtime Blackboard authority.
 47. **Migration boundary.** These invariants currently apply to migrated repository coordination items such as BB-046; runtime JSON Blackboard adoption requires separate evidence/decision.
+
+
+## Research / implementation authority invariants
+
+48. **Promoted knowledge is not allocated work.** A research/SA artifact may be canonical on the current integration baseline while no Blackboard item exists for its future slice.
+49. **Canonical means baseline-visible.** A branch-local or stacked-branch merge is not a canonical future input until the artifact resolves from the selected current integration baseline.
+50. **No parallel implementation-artifact authority.** `docs/living/work-artifacts/*` is not a recognized repository authority surface. Repository implementation authority is carried by the exact current `WORK_CONTEXT_SPEC` with `action.kind = IMPLEMENT`.
+51. **Review precedes implementation authority.** A newly allocated implementation item starts with a read-only REVIEW generation. An IMPLEMENT generation is valid only as the child of that exact review context and an ACCEPT decision bound to the same candidate.
+52. **Researcher/SA are not standing PR reviewers.** Their architecture artifacts are reopened only by grounded contradiction, new unresolved architecture pressure or an explicit architecture obligation; ordinary implementation review does not re-run architecture discovery.
+53. **Future context is not pre-authorized.** Do not create an accepted IMPLEMENT generation before its implementation source baseline and parent review decision exist.
+54. **Board stays demand-driven.** Promoted future-slice research does not consume a work id or create active debt until an Integration entry trigger allocates concrete work.
