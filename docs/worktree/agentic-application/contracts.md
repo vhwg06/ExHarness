@@ -330,3 +330,11 @@ execution authority policy id/ref/generation
 The release head is keyed by `{itemId, claimGeneration}`. Duplicate release for the same exact receipt converges; a conflicting receipt fails closed. Execution entry requires a matching current Board claim tuple, a RELEASED head and unchanged active authority heads.
 
 Recovery and invalidation preserve the accepted v7 ordering: generation takeover makes prior release subjects stale; canonical Board invalidation commits before release-head fencing. If release-head fencing later fails, the stale release cannot pass the Board tuple check.
+
+## Durable A.1 artifact/publisher contract
+
+Immutable organization artifacts use durable content-addressed storage. Board/workflow state keeps refs; a fresh process resolves the exact `ORGANIZATION_WORK_CONTRACT` and authority artifacts from those refs instead of accepting caller-supplied raw authority objects as truth.
+
+Materialization and execution current-head publication is separated from storage mechanics. `createOrganizationAuthorityPublishers(...)` requires the injected organization authority to verify the materialization issuer or execution-policy publisher before immutable artifact publication and CAS head advancement. Raw CAS remains a persistence primitive, not the trusted publishing API.
+
+Claim and release each revalidate authority after their state-changing step. A stale post-claim check canonically invalidates the provisional Board claim. A stale post-release check fences the just-published release subject. Invalidation replay is idempotent: when the exact Board consequence is already present with the same invalidation evidence/generation, retry skips the lifecycle mutation and reconciles release fencing.
