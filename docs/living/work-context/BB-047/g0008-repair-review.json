@@ -1,0 +1,90 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_REVIEW_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 8,
+  "parentContextRef": "docs/living/work-context/BB-047/g0007-repair-implementation.json",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Fresh independent review of the generation-7 A.1 repairs for all four D019 P1 findings.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "repair source in review lane",
+      "self-accept or mark DONE",
+      "enter Integration B"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "pullRequest": 163,
+    "targetType": "git-commit",
+    "candidateHeadSha": "03571e319e7efce1b541f5bd5e27df2129713163",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/g0008-repair-review.json"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "03571e319e7efce1b541f5bd5e27df2129713163"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/worktree/state.md",
+    "docs/worktree/agentic-application/contracts.md",
+    "packages/agentic-system/src/organization-authority-store.js",
+    "packages/agentic-system/src/organization-work.js",
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/test/bb047-organization-bridge.test.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/work-context/BB-047/g0007-repair-implementation.json",
+    "docs/living/decisions/D019-bb047-a1-implementation-rejection.md"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "review all four D019 P1 repairs independently",
+    "fresh process resolves immutable work/authority refs",
+    "authority publication requires trusted verifier boundary",
+    "same invalidation replay reconciles Board-first crash window",
+    "claim/release freshness races reconcile to non-executable state",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL / Integration B"
+  ],
+  "verification": [
+    "node --test packages/agentic-system/test/bb047-*.test.js",
+    "npm run verify",
+    "independent durability/publisher/restart/race review"
+  ],
+  "expectedOutputs": [
+    "review verdict bound to this exact repaired candidate",
+    "grounded remaining findings or A.1 implementation acceptance evidence"
+  ],
+  "staleWhen": [
+    "PR #163 candidate changes outside review envelope",
+    "Board current-context generation/ref changes",
+    "A.1 repair scope changes"
+  ]
+}
