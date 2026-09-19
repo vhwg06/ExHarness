@@ -395,3 +395,10 @@ Claim-release receipts record exact materialization and execution authority refs
 Materialization is exactly-once at two levels: `obligationSubjectKey` permits at most one live logical Board item, while identical `materializationKey` attempts converge on that exact item. Concurrent immutable-artifact writes wait/recheck content identity, concurrent Board publication conflicts reload the deterministic result, and all successful identical callers receive the same content-addressed materialization receipt ref.
 
 `createOrganizationWorkDiscovery(...)` is read-only. It reads current Board eligibility, requires dependencies DONE, resolves and validates each exact immutable work contract/project/root/item binding, and filters by `owningDomain`. It does not authenticate a caller, claim work, choose a next domain, or mutate lifecycle.
+
+
+### A.1 final authority/recovery race repair
+
+Authority invalidation provenance can be constructed from the exact raw current-head observations even when the immutable authority artifact behind a head is missing or inconsistent. That fallback records the subject, CAS revision, generation, status and artifact ref without treating the broken artifact as trusted authority. This lets fresh reconciliation and execution entry still commit the typed canonical Board consequence before release fencing.
+
+Released capability boundaries also final-revalidate the canonical Board claim tuple. After release publication, during fresh-process reconciliation, and immediately before execution entry returns usable authority, the controller re-reads exact `{ itemId, status: CLAIMED, owner, claimGeneration }`. If that tuple has advanced or been invalidated concurrently, the old release subject is fenced and no stale capability is returned; the newer canonical Board lifecycle is never overwritten by the stale path.
