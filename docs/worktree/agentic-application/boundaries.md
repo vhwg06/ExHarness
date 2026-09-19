@@ -147,13 +147,22 @@ accepted obligation
   + current MATERIALIZATION_AUTHORIZATION
   -> deterministic OrganizationWorkMaterializer
   -> immutable ORGANIZATION_WORK_CONTRACT + READY Board item
-  -> trusted ExecutionPrincipal
+  -> trusted ExecutionPrincipal provider/context
+  -> derived { principalRef, Board owner }
   + current ExecutionAuthorityPolicyHead
   -> Blackboard CLAIMED { owner, claimGeneration }
-  -> current ClaimReleaseHead(itemId, claimGeneration)
+  -> immutable project/root-bound CLAIM_RELEASE_RECEIPT
+  -> current ClaimReleaseHead(projectId, itemId, claimGeneration) = { status, receiptRef }
   -> released executable capability
 ```
 
 The materializer has no work-selection, scheduling or execution-policy authority. The claim controller cannot choose another item/domain or rewrite work semantics. Board `CLAIMED` alone is not execution authority, and `ClaimReleaseHead.FENCED` is not a Blackboard lifecycle transition.
 
 A.1 ends at released claim. `DOMAIN_EXECUTION_CONTROL` owns HOW only after this boundary and remains a separate integration slice.
+
+
+The caller cannot self-assert the execution principal identity. Application code obtains it through the injected trusted principal boundary and derives Board ownership from that result.
+
+Materialization and claim capability are both project/root-bound. A stale materialization-authorization observation cannot leave new READY work eligible: publication revalidates the exact observation and post-publication drift is reconciled to BLOCKED.
+
+Claim invalidation provenance is an immutable content-addressed artifact, not a caller-authored evidence string. The canonical Board transition validates that artifact against the exact project/root + claim tuple before mutation; release-head fencing remains second and idempotent.
