@@ -341,3 +341,11 @@ Claim freshness is checked both before and after the canonical Board claim. A po
 
 Organization invalidation is replayable. If the Board transition commits but release fencing fails, the same `invalidationRef` against the same claim generation recognizes the already-applied REOPENED/BLOCKED Board consequence and resumes release-head fencing. A fresh process can therefore reconcile the Board-first crash window.
 
+### A.1 authority-currentness repair
+
+Authority current heads are now pointers, not authority payloads: `{ generation, status, artifactRef }`. Authorization resolves the exact immutable artifact behind `artifactRef` and validates subject, generation and status before reading work scope or principal/domain grants. Raw authority CAS constructors are no longer exported from the package application surface.
+
+Claim and release capture exact authority observations (CAS revision + generation + artifact ref) before their durable mutation and require the same observations afterward. ACTIVE-to-ACTIVE head advancement is therefore a freshness failure even when the new policy would grant the same domain.
+
+Freshness failures preserve lifecycle cause. Materialization/work-authorization failure commits `WORK_AUTHORIZATION_INVALIDATED -> BLOCKED`; execution-policy/principal failure commits `EXECUTION_AUTHORITY_INVALIDATED -> REOPENED`. Post-release failure commits that canonical Board consequence before fencing the release head, so the existing replay path can reconcile a fence crash without leaving canonical lifecycle stale.
+
