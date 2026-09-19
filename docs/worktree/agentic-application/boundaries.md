@@ -139,3 +139,21 @@ Unless a concrete use case proves otherwise, the application layer does not own:
 - source connector/retrieval frameworks;
 - generic workflow graph engines;
 - model routing/runtime loops already supplied by ExHarness.
+
+## Organizational trust → claim boundary
+
+```text
+accepted obligation
+  + current MATERIALIZATION_AUTHORIZATION
+  -> deterministic OrganizationWorkMaterializer
+  -> immutable ORGANIZATION_WORK_CONTRACT + READY Board item
+  -> trusted ExecutionPrincipal
+  + current ExecutionAuthorityPolicyHead
+  -> Blackboard CLAIMED { owner, claimGeneration }
+  -> current ClaimReleaseHead(itemId, claimGeneration)
+  -> released executable capability
+```
+
+The materializer has no work-selection, scheduling or execution-policy authority. The claim controller cannot choose another item/domain or rewrite work semantics. Board `CLAIMED` alone is not execution authority, and `ClaimReleaseHead.FENCED` is not a Blackboard lifecycle transition.
+
+A.1 ends at released claim. `DOMAIN_EXECUTION_CONTROL` owns HOW only after this boundary and remains a separate integration slice.
