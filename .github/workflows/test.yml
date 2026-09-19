@@ -66,4 +66,6 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Verify kernel
+        env:
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: npm run verify
