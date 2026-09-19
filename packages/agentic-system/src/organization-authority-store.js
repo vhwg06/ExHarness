@@ -7,7 +7,10 @@ function requireText(value,name){invariant(typeof value==="string"&&value.trim()
 function clone(value){return structuredClone(value);}
 function freeze(value){return Object.freeze(clone(value));}
 function revisionFor(value){return createHash("sha256").update(JSON.stringify(value)).digest("hex");}
-function artifactRef(kind,value){return `${kind}:sha256:${revisionFor(value)}`;}
+function artifactRef(kind,value){
+  const normalized=value?.contractRef?Object.fromEntries(Object.entries(value).filter(([key])=>key!=="contractRef")):value;
+  return `${kind}:sha256:${revisionFor(normalized)}`;
+}
 
 async function atomicWrite(fs,path,value){
   await fs.mkdir(dirname(path),{recursive:true});
