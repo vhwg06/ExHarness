@@ -559,6 +559,58 @@ These are design calibrations, not dependencies:
 - Bazel hermeticity emphasizes explicit source/tool identity for reproducibility: https://bazel.build/concepts/hermeticity
 - in-toto layouts separate authorized steps/materials/products from the evidence that a step ran: https://in-toto.io/docs/getting-started/
 
+
+## Immutable review-target binding
+
+Independent review must bind an immutable semantic subject. A pull-request number or phrase such as "exact PR head at review dispatch" is not a subject identity because the PR ref can move after review begins.
+
+The selected repository pattern is a **detached review target**:
+
+```text
+semantic candidate commit Cn
+  contains architecture/contracts/pipelines/evaluation/readiness candidate
+
+next context-envelope commit
+  contains immutable WORK_CONTEXT_SPEC gN
+  reviewTarget.candidateHeadSha = Cn
+  Board pointer -> gN
+```
+
+The context generation does not attempt to contain the hash of its own commit. Instead it binds the preceding immutable semantic candidate commit.
+
+A current review context MUST include:
+
+```text
+repository
+pullRequest (navigation only)
+candidateHeadSha (authority-bearing semantic subject)
+allowedPostTargetEnvelopePaths
+```
+
+For BB-046 the only allowed post-target envelope changes are the exact Board current-context binding and the new immutable context-generation file. If any architecture, contract, pipeline, evaluation, implementation-readiness, organizational-integration or source file changes after `candidateHeadSha`, the review context is stale and a new REVIEW generation is required.
+
+The independent review decision must bind both:
+
+```text
+subjectContextRef
+subjectCandidateHeadSha
+verdict
+```
+
+Transition to implementation is valid only when:
+
+```text
+decision.subjectContextRef == current review context
+decision.subjectCandidateHeadSha == reviewTarget.candidateHeadSha
+decision.verdict == ACCEPT
+```
+
+This makes review/currentness obey the same principle as the rest of the architecture:
+
+```text
+mutable PR ref != accepted semantic subject
+```
+
 ## Decision status
 
 The architecture is **not promoted** by this document.
