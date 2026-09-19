@@ -8,7 +8,15 @@ export function parseCurrentContext(boardText, itemId) {
   const block=lines.slice(start,end);
   const ctxLines=block.map((line,i)=>line.trim()==="current-context:"?i:-1).filter(i=>i>=0);
   if(ctxLines.length!==1) throw new Error("BOARD_BINDING_INVALID: expected one current-context");
-  const section=block.slice(ctxLines[0]+1).filter(line=>/^\s+/.test(line));
+
+  const section=[];
+  for(let i=ctxLines[0]+1;i<block.length;i++){
+    const line=block[i];
+    if(!line.trim()) continue;
+    if(!/^\s+/.test(line)) break;
+    section.push(line);
+  }
+
   const gens=section.map(x=>x.match(/^\s*generation:\s*(\d+)\s*$/)).filter(Boolean);
   const refs=section.map(x=>x.match(/^\s*ref:\s*(\S+)\s*$/)).filter(Boolean);
   if(gens.length!==1||refs.length!==1) throw new Error("BOARD_BINDING_INVALID: ambiguous current-context");
