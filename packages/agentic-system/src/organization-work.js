@@ -44,9 +44,10 @@ function assertAuthorization(head,{authorizationId,decisionRef,obligationKey,own
   return value;
 }
 
-export function createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore}){
+export function createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore,artifactRegistry}){
   invariant(orchestrator&&typeof orchestrator.materializeAcceptedWork==="function","materializer requires orchestrator.materializeAcceptedWork");
   invariant(materializationAuthorizationStore&&typeof materializationAuthorizationStore.current==="function","materializer requires materialization authorization store");
+  invariant(artifactRegistry&&typeof artifactRegistry.putWorkContract==="function","materializer requires artifact registry");
   return Object.freeze({
     async materialize({authorizationId,decision,obligation}){
       requireText(authorizationId,"authorizationId");
@@ -70,6 +71,8 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
         expectedOutputRefs:obligation.expectedOutputRefs??[],
         acceptanceRefs:obligation.acceptanceRefs
       });
+      const persistedContractRef=await artifactRegistry.putWorkContract({...contract,contractRef:undefined});
+      invariant(persistedContractRef===contract.contractRef,"persisted work contract ref mismatch");
       const key=materializationSubjectKey({
         obligationKey,
         acceptedDecisionRef,
