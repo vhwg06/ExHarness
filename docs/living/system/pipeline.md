@@ -1,6 +1,6 @@
 # Agentic System current delivered pipeline
 
-This document describes execution/verification pipelines that exist in source today. It is not the roadmap. Open stages and future work live only in `../living/blackboard.md`.
+This document describes execution/verification pipelines that exist in source today. It is not the roadmap. Open stages and future work live only in `docs/blackboard/state.md`.
 
 ## Backend path
 

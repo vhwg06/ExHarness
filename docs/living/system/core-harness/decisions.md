@@ -38,4 +38,4 @@ These constraints describe current Core authority boundaries; they are not a fut
 - BB-007 recovery ordering remains a concrete contract: restore runtime authority -> reconcile effect truth -> close interrupted variation -> preserve evidence -> explicit resume;
 - do not collapse runtime restore, effect reconciliation, variation recovery, evidence restoration or application completion into one authority merely for API convenience.
 
-Open integration problems implied by these current boundaries are tracked in `../../living/blackboard.md`.
+Open integration problems implied by these current boundaries are tracked in `../docs/blackboard/state.md`.

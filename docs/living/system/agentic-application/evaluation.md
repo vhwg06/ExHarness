@@ -1,6 +1,6 @@
 # Agentic Application current evaluation
 
-Source-synchronized projection of the application evaluation gate that exists in the repository today. Production-evaluation work that does not yet exist remains on `../../living/blackboard.md`.
+Source-synchronized projection of the application evaluation gate that exists in the repository today. Production-evaluation work that does not yet exist remains on `../docs/blackboard/state.md`.
 
 ## Runnable gate
 

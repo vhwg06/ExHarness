@@ -1,6 +1,6 @@
 # Worktree — source-synchronized living system docs
 
-`docs/worktree/` is the current materialized documentation of the Agentic System **as implemented now**.
+`docs/living/system/` is the current materialized documentation of the Agentic System **as implemented now**.
 
 Despite the legacy directory name, it is not a backlog, planning tree or candidate-design area.
 
@@ -10,7 +10,7 @@ Despite the legacy directory name, it is not a backlog, planning tree or candida
 worktree/*
     = current source-backed state / architecture / semantics / contracts / workflow
 
-../living/blackboard.md
+docs/blackboard/state.md
     = unresolved gaps / problems / questions / blockers / next work
 ```
 
@@ -27,7 +27,7 @@ If a source-backed fact exposes a problem, write the fact here and create/update
 - current Oracle boundary -> `oracle/`
 - current Core boundary -> `core-harness/`
 
-For any question of **what remains to do**, read `../living/blackboard.md`, not this tree.
+For any question of **what remains to do**, read `docs/blackboard/state.md`, not this tree.
 
 ## Source authority
 

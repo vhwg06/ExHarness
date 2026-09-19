@@ -1,6 +1,6 @@
 # Agentic Application current state
 
-Source-synchronized application-layer projection. All unresolved application work lives in `../../living/blackboard.md`.
+Source-synchronized application-layer projection. All unresolved application work lives in `../docs/blackboard/state.md`.
 
 ## Current roles
 
@@ -171,7 +171,7 @@ What is still not implemented is a generic PM/SA agent runtime, PM/SA Worker abs
 - current contracts -> `contracts.md`
 - current decisions/invariants -> `decisions.md`
 - current application evaluation -> `evaluation.md`
-- all open application gaps/problems -> `../../living/blackboard.md`
+- all open application gaps/problems -> `../docs/blackboard/state.md`
 
 ## Organization claim/release boundary
 
