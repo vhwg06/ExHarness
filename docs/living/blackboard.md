@@ -68,8 +68,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 2
-  ref: docs/living/work-context/BB-047/g0002-implementation-readiness-review.json
+  generation: 3
+  ref: docs/living/work-context/BB-047/g0003-implementation-readiness-review.json
 depends-on: []
 target-consumer:
   - runtime organizational integration bridge
@@ -101,7 +101,7 @@ review-requirements:
   - runtime contract/authority review
   - crash/race/recovery review
 blockers:
-  - generation 1 review context is stale after #154 fail-closed remediation
+  - generations 1 and 2 review contexts are stale history after #154 fail-closed remediation/envelope correction
   - runtime source implementation is blocked until an exact accepted decision authorizes a later IMPLEMENT generation
 follow-up-refs:
   - DOMAIN_EXECUTION_CONTROL is required before Integration B and owns ExecutionAttemptHead plus ExecutionPolicy -> ExecutionStrategyRef -> ExecutionAttemptBinding.
