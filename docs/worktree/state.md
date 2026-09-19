@@ -78,6 +78,6 @@ The concrete `ApplicationOrchestrator` is application workflow/Board control, no
 
 ## Repository coordination context plane
 
-Repository development coordination now has a bounded context-plane implementation for migrated Blackboard items. A migrated item binds one immutable `WORK_CONTEXT_SPEC` generation through its exact Board `current-context` pointer. The repository verifier validates unique Board binding, generation lineage, required refs, read-only review scope and exact accepted-decision subject binding before an implementation context is usable.
+Repository development coordination now has a bounded context-plane implementation for migrated Blackboard items. A migrated active item binds one immutable `WORK_CONTEXT_SPEC` generation through its exact Board `current-context` pointer. The repository verifier fails closed when an active migrated item has no pointer, and validates unique Board binding, generation lineage, required refs, read-only review scope and exact accepted-decision subject binding before an implementation context is usable. A Board with no active item may have no current context.
 
 The resolver loads declared required current-system/input refs while keeping audit/history refs lazy. Context generation does not make a candidate current, schedule work, decide acceptance or replace source/tests as current-system truth. This capability is repository coordination only; the runtime JSON Blackboard has not adopted it.
