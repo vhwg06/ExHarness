@@ -414,6 +414,27 @@ return repository workflow to current Board + bounded handoff rules
 
 No runtime data migration is required because the first slice is repository-local.
 
+
+## 13. Exact review-subject verification
+
+The first verifier must treat mutable PR refs as navigation only.
+
+Add checks:
+
+```text
+review context requires reviewTarget.repository
+review context requires exact candidateHeadSha
+candidateHeadSha must resolve in the repository
+diff(candidateHeadSha, current envelope head) may touch only allowedPostTargetEnvelopePaths
+decision used for implementation must bind exact parent context ref
+decision used for implementation must bind exact candidateHeadSha
+candidate-surface drift after target -> review context stale
+```
+
+The generator must never resolve "whatever PR #151 points to now" as the accepted candidate.
+
+This requirement is part of the first implementation slice; it does not require a new authority subsystem.
+
 ## 13. Implementation acceptance
 
 The first implementation slice is accepted only when:
