@@ -21,9 +21,7 @@ class AuthorityFailure extends Error{
   constructor(kind,message){super(message);this.kind=kind;}
 }
 
-async function resolveExecutionPrincipal(executionPrincipalProvider,principalContext){
-  invariant(executionPrincipalProvider&&typeof executionPrincipalProvider.resolve==="function","executionPrincipalProvider.resolve is required");
-  const principal=await executionPrincipalProvider.resolve(freeze(principalContext??{}));
+function normalizePrincipal(principal){
   invariant(principal&&typeof principal==="object"&&!Array.isArray(principal),"trusted execution principal is required");
   return freeze({
     identity:requireText(principal.identity,"trusted execution principal identity"),
@@ -31,8 +29,22 @@ async function resolveExecutionPrincipal(executionPrincipalProvider,principalCon
   });
 }
 
+async function resolveExecutionPrincipal(executionPrincipalProvider,principalContext){
+  invariant(executionPrincipalProvider&&typeof executionPrincipalProvider.resolve==="function","executionPrincipalProvider.resolve is required");
+  return normalizePrincipal(await executionPrincipalProvider.resolve(freeze(principalContext??{})));
+}
+
+async function resolveExecutionPrincipalByIdentity(executionPrincipalProvider,identity){
+  invariant(executionPrincipalProvider&&typeof executionPrincipalProvider.resolveByIdentity==="function","executionPrincipalProvider.resolveByIdentity is required");
+  const principal=normalizePrincipal(await executionPrincipalProvider.resolveByIdentity(requireText(identity,"Board owner")));
+  invariant(principal.identity===identity,"trusted principal recovery identity mismatch");
+  return principal;
+}
+
 function sameObservation(left,right){
-  return left.revision===right.revision&&left.value.generation===right.value.generation&&left.value.artifactRef===right.value.artifactRef;
+  return left.revision===right.revision&&
+    left.value.generation===right.value.generation&&
+    left.value.artifactRef===right.value.artifactRef;
 }
 
 async function resolveAuthority({head,resolve,subjectField,subject,kind,requireActive=true}){
@@ -41,24 +53,34 @@ async function resolveAuthority({head,resolve,subjectField,subject,kind,requireA
   const ref=requireText(head.value.artifactRef,"authority artifactRef");
   const artifact=await resolve(ref);
   if(!artifact) throw new AuthorityFailure(kind,"authority artifact not found: "+ref);
-  if(artifact[subjectField]!==subject||artifact.generation!==head.value.generation||artifact.status!==head.value.status)
-    throw new AuthorityFailure(kind,"authority artifact/head mismatch");
+  if(
+    artifact[subjectField]!==subject||
+    artifact.generation!==head.value.generation||
+    artifact.status!==head.value.status
+  ) throw new AuthorityFailure(kind,"authority artifact/head mismatch");
   return {head,artifact,artifactRef:ref};
+}
+
+function materializationAuthorizationId(item){
+  invariant(item.origin?.kind==="ORGANIZATION_MATERIALIZATION","organization work origin is required");
+  return requireText(item.origin.authorizationId,"organization work authorizationId");
 }
 
 async function currentAuthorities({
   materializationAuthorizationStore,
   executionAuthorityPolicyStore,
   artifactRegistry,
-  authorizationId,
+  item,
   policyId,
   principal,
   contract
 }){
+  const authorizationId=materializationAuthorizationId(item);
   const [materializationHead,policyHead]=await Promise.all([
     materializationAuthorizationStore.current(authorizationId),
     executionAuthorityPolicyStore.current(policyId)
   ]);
+
   const materialization=await resolveAuthority({
     head:materializationHead,
     resolve:(ref)=>artifactRegistry.resolveMaterializationAuthorization(ref),
@@ -66,14 +88,15 @@ async function currentAuthorities({
     subject:authorizationId,
     kind:"WORK"
   });
-  const materializationArtifact=materialization.artifact;
-  if(materializationArtifact.projectId!==contract.projectId) throw new AuthorityFailure("WORK","materialization authorization project mismatch");
-  if(materializationArtifact.acceptedDecisionRef!==contract.acceptedDecisionRef||!materializationArtifact.obligationKeys?.includes(contract.obligationKey))
-    throw new AuthorityFailure("WORK","work contract outside materialization authority");
-  if(materializationArtifact.owningDomain!=null&&materializationArtifact.owningDomain!==contract.owningDomain)
-    throw new AuthorityFailure("WORK","materialization authorization domain mismatch");
-  if(materializationArtifact.workloadType!=null&&materializationArtifact.workloadType!==contract.workloadType)
-    throw new AuthorityFailure("WORK","materialization authorization workload mismatch");
+  const grant=materialization.artifact;
+  if(materialization.artifactRef!==item.origin.authorizationRef) throw new AuthorityFailure("WORK","materialization authorization ref no longer matches Board provenance");
+  if(grant.generation!==item.origin.authorizationGeneration) throw new AuthorityFailure("WORK","materialization authorization generation no longer matches Board provenance");
+  if(grant.projectId!==contract.projectId) throw new AuthorityFailure("WORK","materialization authorization project mismatch");
+  if(grant.implementationArtifactRef!==item.origin.implementationArtifactRef) throw new AuthorityFailure("WORK","materialization authorization implementation artifact mismatch");
+  if(grant.acceptedDecisionRef!==contract.acceptedDecisionRef) throw new AuthorityFailure("WORK","materialization authorization decision mismatch");
+  if(!grant.authorizedObligationKeys?.includes(contract.obligationKey)) throw new AuthorityFailure("WORK","work contract outside materialization authorization scope");
+  if(grant.owningDomain!=null&&grant.owningDomain!==contract.owningDomain) throw new AuthorityFailure("WORK","materialization authorization domain mismatch");
+  if(grant.workloadType!=null&&grant.workloadType!==contract.workloadType) throw new AuthorityFailure("WORK","materialization authorization workload mismatch");
 
   const policy=await resolveAuthority({
     head:policyHead,
@@ -85,6 +108,7 @@ async function currentAuthorities({
   if(policy.artifact.projectId!==contract.projectId) throw new AuthorityFailure("EXECUTION","execution authority policy project mismatch");
   if(!policy.artifact.principalDomains?.[principal.identity]?.includes(contract.owningDomain))
     throw new AuthorityFailure("EXECUTION","principal "+principal.identity+" is not authorized for domain "+contract.owningDomain);
+
   return {materialization,policy};
 }
 
@@ -92,10 +116,11 @@ async function authorityObservations({
   materializationAuthorizationStore,
   executionAuthorityPolicyStore,
   artifactRegistry,
-  authorizationId,
+  item,
   policyId,
   projectId
 }){
+  const authorizationId=materializationAuthorizationId(item);
   const [materializationHead,policyHead]=await Promise.all([
     materializationAuthorizationStore.current(authorizationId),
     executionAuthorityPolicyStore.current(policyId)
@@ -142,8 +167,18 @@ function assertBoardContract(item,contract,project){
   invariant(item.origin?.kind==="ORGANIZATION_MATERIALIZATION","Blackboard item "+item.id+" is not organization-managed work");
   invariant(item.origin.workContractRef===contract.contractRef,"Blackboard item "+item.id+" work contract mismatch");
   invariant(item.origin.owningDomain===contract.owningDomain,"Blackboard item "+item.id+" owning domain mismatch");
-  invariant(item.origin.projectId===project.projectId&&item.origin.rootItemId===project.rootItemId&&item.origin.rootIntentId===project.rootIntentId,"Blackboard item "+item.id+" project/root mismatch");
-  invariant(contract.projectId===project.projectId&&contract.rootItemId===project.rootItemId&&contract.rootIntentId===project.rootIntentId,"work contract project/root mismatch");
+  invariant(
+    item.origin.projectId===project.projectId&&
+    item.origin.rootItemId===project.rootItemId&&
+    item.origin.rootIntentId===project.rootIntentId,
+    "Blackboard item "+item.id+" project/root mismatch"
+  );
+  invariant(
+    contract.projectId===project.projectId&&
+    contract.rootItemId===project.rootItemId&&
+    contract.rootIntentId===project.rootIntentId,
+    "work contract project/root mismatch"
+  );
 }
 
 export function createOrganizationWorkClaimController({
@@ -152,14 +187,17 @@ export function createOrganizationWorkClaimController({
   executionAuthorityPolicyStore,
   claimReleaseStore,
   artifactRegistry,
-  executionPrincipalProvider
+  executionPrincipalProvider,
+  executionAuthorityPolicyId
 }){
+  const policyId=requireText(executionAuthorityPolicyId,"executionAuthorityPolicyId");
   invariant(orchestrator&&typeof orchestrator.readBlackboard==="function"&&typeof orchestrator.claim==="function","claim controller requires ApplicationOrchestrator");
   invariant(orchestrator&&typeof orchestrator.blockOrganizationMaterialization==="function","claim controller requires materialization blocking");
   invariant(artifactRegistry&&typeof artifactRegistry.resolveWorkContract==="function","claim controller requires artifact registry");
   invariant(typeof artifactRegistry.putClaimReleaseReceipt==="function"&&typeof artifactRegistry.resolveClaimReleaseReceipt==="function","claim controller requires claim release artifact registry");
   invariant(typeof artifactRegistry.putClaimAuthorityInvalidation==="function"&&typeof artifactRegistry.resolveClaimAuthorityInvalidation==="function","claim controller requires claim invalidation artifact registry");
   invariant(executionPrincipalProvider&&typeof executionPrincipalProvider.resolve==="function","claim controller requires trusted executionPrincipalProvider");
+  invariant(typeof executionPrincipalProvider.resolveByIdentity==="function","claim controller requires executionPrincipalProvider.resolveByIdentity");
   for(const [name,store] of Object.entries({materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore})){
     invariant(store&&typeof store.current==="function"&&typeof store.compareAndSwap==="function",name+" must support current/CAS");
   }
@@ -190,7 +228,10 @@ export function createOrganizationWorkClaimController({
     };
     if(await claimReleaseStore.compareAndSwap(key,current.revision,next)) return freeze(next);
     const after=await claimReleaseStore.current(key);
-    invariant(after?.value?.status===ClaimReleaseStatus.FENCED&&after.value.receiptRef===next.receiptRef,"claim release fencing conflict");
+    invariant(
+      after?.value?.status===ClaimReleaseStatus.FENCED&&after.value.receiptRef===next.receiptRef,
+      "claim release fencing conflict"
+    );
     return freeze(after.value);
   }
 
@@ -257,15 +298,89 @@ export function createOrganizationWorkClaimController({
     return null;
   }
 
+  function buildReceipt({item,contract,principal,observed}){
+    return freeze({
+      kind:"CLAIM_RELEASE_RECEIPT",
+      version:1,
+      projectId:contract.projectId,
+      rootItemId:contract.rootItemId,
+      rootIntentId:contract.rootIntentId,
+      itemId:item.id,
+      boardOwner:principal.identity,
+      principalRef:principal.principalRef,
+      claimGeneration:item.claimGeneration,
+      workContractRef:contract.contractRef,
+      materializationAuthorizationId:materializationAuthorizationId(item),
+      materializationAuthorizationRef:observed.materialization.artifactRef,
+      materializationAuthorizationGeneration:observed.materialization.artifact.generation,
+      executionAuthorityPolicyId:policyId,
+      executionAuthorityPolicyRef:observed.policy.artifactRef,
+      executionAuthorityPolicyGeneration:observed.policy.artifact.generation
+    });
+  }
+
+  async function publishRelease({item,contract,principal,observed}){
+    const receipt=buildReceipt({item,contract,principal,observed});
+    const receiptRef=await artifactRegistry.putClaimReleaseReceipt(receipt);
+    const key=claimReleaseSubjectKey(contract.projectId,item.id,item.claimGeneration);
+    const current=await claimReleaseStore.current(key);
+    if(current!=null){
+      invariant(
+        current.value.status===ClaimReleaseStatus.RELEASED&&current.value.receiptRef===receiptRef,
+        "conflicting claim release already exists"
+      );
+    }else{
+      invariant(
+        await claimReleaseStore.compareAndSwap(key,null,{status:ClaimReleaseStatus.RELEASED,receiptRef}),
+        "conflicting claim release CAS"
+      );
+    }
+    return freeze({...receipt,receiptRef});
+  }
+
+  async function resolveReleasedReceipt({item,contract}){
+    const key=claimReleaseSubjectKey(contract.projectId,item.id,item.claimGeneration);
+    const head=await claimReleaseStore.current(key);
+    if(head==null) return {head:null,receipt:null};
+    const receiptRef=requireText(head.value.receiptRef,"claim release receiptRef");
+    const receipt=await artifactRegistry.resolveClaimReleaseReceipt(receiptRef);
+    invariant(receipt,"claim release receipt artifact not found: "+receiptRef);
+    invariant(
+      receipt.projectId===contract.projectId&&
+      receipt.rootItemId===contract.rootItemId&&
+      receipt.rootIntentId===contract.rootIntentId&&
+      receipt.itemId===item.id&&
+      receipt.claimGeneration===item.claimGeneration&&
+      receipt.workContractRef===contract.contractRef,
+      "claim release receipt subject mismatch"
+    );
+    return {head,receipt:freeze({...receipt,receiptRef})};
+  }
+
+  function assertReceiptAuthority(receipt,observed,item){
+    invariant(receipt.materializationAuthorizationId===materializationAuthorizationId(item),"claim release materialization subject mismatch");
+    invariant(receipt.executionAuthorityPolicyId===policyId,"claim release execution policy subject mismatch");
+    invariant(
+      observed.materialization.artifactRef===receipt.materializationAuthorizationRef&&
+      observed.materialization.artifact.generation===receipt.materializationAuthorizationGeneration,
+      "materialization authorization head changed"
+    );
+    invariant(
+      observed.policy.artifactRef===receipt.executionAuthorityPolicyRef&&
+      observed.policy.artifact.generation===receipt.executionAuthorityPolicyGeneration,
+      "execution authority policy head changed"
+    );
+  }
+
   return Object.freeze({
-    async claim({itemId,principalContext,authorizationId,policyId}){
+    async claim({itemId,principalContext}){
       const {item:before,contract}=await resolveContractForItem(itemId);
       const principal=await resolveExecutionPrincipal(executionPrincipalProvider,principalContext);
       let observed;
       try{
         observed=await currentAuthorities({
           materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-          authorizationId,policyId,principal,contract
+          item:before,policyId,principal,contract
         });
       }catch(error){
         if(error?.kind==="WORK"&&(before.status==="READY"||before.status==="REOPENED")){
@@ -283,7 +398,7 @@ export function createOrganizationWorkClaimController({
       try{
         const after=await currentAuthorities({
           materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-          authorizationId,policyId,principal,contract
+          item:claimed.result,policyId,principal,contract
         });
         assertSameAuthorities(observed,after);
       }catch(error){
@@ -309,53 +424,28 @@ export function createOrganizationWorkClaimController({
       });
     },
 
-    async release({itemId,claimGeneration,principalContext,authorizationId,policyId}){
+    async release({itemId,claimGeneration,principalContext}){
       invariant(Number.isInteger(claimGeneration)&&claimGeneration>0,"claimGeneration must be positive");
-      const {contract}=await resolveContractForItem(itemId);
+      const {item,contract}=await resolveContractForItem(itemId);
       const principal=await resolveExecutionPrincipal(executionPrincipalProvider,principalContext);
-      const item=itemFor(await orchestrator.readBlackboard(),itemId);
-      assertBoardContract(item,contract,organizationProjectBindingFromBoard(await orchestrator.readBlackboard()));
-      invariant(item.status==="CLAIMED"&&item.owner===principal.identity&&item.claimGeneration===claimGeneration,"organization claim tuple changed before release");
-
+      invariant(
+        item.status==="CLAIMED"&&item.owner===principal.identity&&item.claimGeneration===claimGeneration,
+        "organization claim tuple changed before release"
+      );
       const observed=await currentAuthorities({
         materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-        authorizationId,policyId,principal,contract
+        item,policyId,principal,contract
       });
-      const receipt=freeze({
-        kind:"CLAIM_RELEASE_RECEIPT",
-        version:1,
-        projectId:contract.projectId,
-        rootItemId:contract.rootItemId,
-        rootIntentId:contract.rootIntentId,
-        itemId,
-        boardOwner:principal.identity,
-        principalRef:principal.principalRef,
-        claimGeneration,
-        workContractRef:contract.contractRef,
-        materializationAuthorizationId:authorizationId,
-        materializationAuthorizationRef:observed.materialization.artifactRef,
-        materializationAuthorizationGeneration:observed.materialization.artifact.generation,
-        executionAuthorityPolicyId:policyId,
-        executionAuthorityPolicyRef:observed.policy.artifactRef,
-        executionAuthorityPolicyGeneration:observed.policy.artifact.generation
-      });
-      const receiptRef=await artifactRegistry.putClaimReleaseReceipt(receipt);
-      const key=claimReleaseSubjectKey(contract.projectId,itemId,claimGeneration);
-      const current=await claimReleaseStore.current(key);
-      if(current!=null){
-        invariant(current.value.status===ClaimReleaseStatus.RELEASED&&current.value.receiptRef===receiptRef,"conflicting claim release already exists");
-      }else{
-        invariant(await claimReleaseStore.compareAndSwap(key,null,{status:ClaimReleaseStatus.RELEASED,receiptRef}),"conflicting claim release CAS");
-      }
+      const released=await publishRelease({item,contract,principal,observed});
 
       try{
         const after=await currentAuthorities({
           materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-          authorizationId,policyId,principal,contract
+          item,policyId,principal,contract
         });
         assertSameAuthorities(observed,after);
       }catch(error){
-        const reasonRef="release-freshness:"+receiptRef;
+        const reasonRef="release-freshness:"+released.receiptRef;
         const persisted=await persistInvalidation({
           item,
           contract,
@@ -363,7 +453,7 @@ export function createOrganizationWorkClaimController({
           observed,
           cause:invalidationCause(error),
           reasonRef,
-          releasedClaimReceiptRef:receiptRef
+          releasedClaimReceiptRef:released.receiptRef
         });
         await orchestrator.invalidateOrganizationClaim({
           itemId,
@@ -377,11 +467,12 @@ export function createOrganizationWorkClaimController({
         throw error;
       }
 
-      return freeze({...receipt,receiptRef});
+      return released;
     },
 
-    async assertExecutable({itemId,claimGeneration,receiptRef,authorizationId,policyId}){
-      const {contract}=await resolveContractForItem(itemId);
+    async assertExecutable({itemId,claimGeneration,receiptRef}){
+      const {item,contract}=await resolveContractForItem(itemId);
+      invariant(item.status==="CLAIMED"&&item.claimGeneration===claimGeneration,"Board claim tuple no longer matches released capability");
       const key=claimReleaseSubjectKey(contract.projectId,itemId,claimGeneration);
       const current=await claimReleaseStore.current(key);
       invariant(current?.value?.status===ClaimReleaseStatus.RELEASED&&current.value.receiptRef===receiptRef,"claim release is not current/released");
@@ -393,36 +484,40 @@ export function createOrganizationWorkClaimController({
         receipt.rootIntentId===contract.rootIntentId&&
         receipt.itemId===itemId&&
         receipt.claimGeneration===claimGeneration&&
-        receipt.workContractRef===contract.contractRef,
+        receipt.workContractRef===contract.contractRef&&
+        item.owner===receipt.boardOwner,
         "claim release receipt subject mismatch"
       );
-      const item=itemFor(await orchestrator.readBlackboard(),itemId);
-      invariant(item.status==="CLAIMED"&&item.owner===receipt.boardOwner&&item.claimGeneration===claimGeneration,"Board claim tuple no longer matches released capability");
-      const principal=freeze({identity:receipt.boardOwner,principalRef:requireText(receipt.principalRef,"receipt principalRef")});
+      const principal=freeze({
+        identity:receipt.boardOwner,
+        principalRef:requireText(receipt.principalRef,"receipt principalRef")
+      });
       const authority=await currentAuthorities({
         materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-        authorizationId,policyId,principal,contract
+        item,policyId,principal,contract
       });
-      invariant(authority.materialization.artifactRef===receipt.materializationAuthorizationRef&&authority.materialization.artifact.generation===receipt.materializationAuthorizationGeneration,"materialization authorization head changed");
-      invariant(authority.policy.artifactRef===receipt.executionAuthorityPolicyRef&&authority.policy.artifact.generation===receipt.executionAuthorityPolicyGeneration,"execution authority policy head changed");
+      assertReceiptAuthority(receipt,authority,item);
       return true;
     },
 
-    async recoverClaim({itemId,principalContext,authorizationId,policyId,reason}){
-      const {contract}=await resolveContractForItem(itemId);
+    async recoverClaim({itemId,principalContext,reason}){
+      const {item:before,contract}=await resolveContractForItem(itemId);
       const principal=await resolveExecutionPrincipal(executionPrincipalProvider,principalContext);
-      const before=itemFor(await orchestrator.readBlackboard(),itemId);
       invariant(before.status==="CLAIMED","organization claim must be CLAIMED before recovery");
       const observed=await currentAuthorities({
         materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-        authorizationId,policyId,principal,contract
+        item:before,policyId,principal,contract
       });
-      const recovered=await orchestrator.recoverClaim({itemId,owner:principal.identity,reason:requireText(reason,"reason")});
+      const recovered=await orchestrator.recoverClaim({
+        itemId,
+        owner:principal.identity,
+        reason:requireText(reason,"reason")
+      });
       await fenceRelease(contract.projectId,itemId,before.claimGeneration,"claim-recovery:"+recovered.result.claimGeneration);
       try{
         const after=await currentAuthorities({
           materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-          authorizationId,policyId,principal,contract
+          item:recovered.result,policyId,principal,contract
         });
         assertSameAuthorities(observed,after);
       }catch(error){
@@ -439,14 +534,94 @@ export function createOrganizationWorkClaimController({
       return freeze({item:recovered.result,contract,released:false});
     },
 
+    async reconcileOrganizationClaimAuthority({itemId}){
+      const {item,contract}=await resolveContractForItem(itemId);
+      if(item.status!=="CLAIMED") return freeze({state:"NO_CURRENT_CLAIM",item});
+
+      const principal=await resolveExecutionPrincipalByIdentity(executionPrincipalProvider,item.owner);
+      let observed;
+      try{
+        observed=await currentAuthorities({
+          materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
+          item,policyId,principal,contract
+        });
+      }catch(error){
+        const snapshot=await authorityObservations({
+          materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
+          item,policyId,projectId:contract.projectId
+        });
+        const invalidated=await applyInvalidation({
+          item,
+          contract,
+          principalRef:principal.principalRef,
+          observed:snapshot,
+          cause:invalidationCause(error),
+          reasonRef:"reconcile-authority:"+item.claimGeneration
+        });
+        return freeze({state:"INVALIDATED",...invalidated});
+      }
+
+      const released=await resolveReleasedReceipt({item,contract});
+      if(released.head==null){
+        const published=await publishRelease({item,contract,principal,observed});
+        try{
+          const after=await currentAuthorities({
+            materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
+            item,policyId,principal,contract
+          });
+          assertSameAuthorities(observed,after);
+          return freeze({state:"RELEASED",receipt:published});
+        }catch(error){
+          const invalidated=await applyInvalidation({
+            item,
+            contract,
+            principalRef:principal.principalRef,
+            observed,
+            cause:invalidationCause(error),
+            reasonRef:"reconcile-release-freshness:"+published.receiptRef,
+            releasedClaimReceiptRef:published.receiptRef
+          });
+          return freeze({state:"INVALIDATED",...invalidated});
+        }
+      }
+
+      if(released.head.value.status===ClaimReleaseStatus.FENCED){
+        const invalidated=await applyInvalidation({
+          item,
+          contract,
+          principalRef:principal.principalRef,
+          observed,
+          cause:"ABANDONED_PROVISIONAL_CLAIM",
+          reasonRef:"reconcile-fenced-release:"+released.receipt.receiptRef,
+          releasedClaimReceiptRef:released.receipt.receiptRef
+        });
+        return freeze({state:"INVALIDATED",...invalidated});
+      }
+
+      invariant(released.head.value.status===ClaimReleaseStatus.RELEASED,"claim release head state is invalid");
+      try{
+        assertReceiptAuthority(released.receipt,observed,item);
+      }catch(error){
+        const invalidated=await applyInvalidation({
+          item,
+          contract,
+          principalRef:principal.principalRef,
+          observed,
+          cause:"ABANDONED_PROVISIONAL_CLAIM",
+          reasonRef:"reconcile-release-mismatch:"+released.receipt.receiptRef,
+          releasedClaimReceiptRef:released.receipt.receiptRef
+        });
+        return freeze({state:"INVALIDATED",...invalidated});
+      }
+      return freeze({state:"RELEASED",receipt:released.receipt});
+    },
+
     async invalidateOrganizationClaim({
       itemId,
       expectedOwner,
       expectedClaimGeneration,
       kind,
-      invalidationRef,
-      authorizationId,
-      policyId
+      invalidationRef
     }){
       const {item:initial,contract}=await resolveContractForItem(itemId);
       const reasonRef=requireText(invalidationRef,"invalidation reason ref");
@@ -460,11 +635,11 @@ export function createOrganizationWorkClaimController({
       if(persisted==null){
         const observed=await authorityObservations({
           materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-          authorizationId:requireText(authorizationId,"authorizationId"),
-          policyId:requireText(policyId,"policyId"),
-          projectId:contract.projectId
+          item:initial,policyId,projectId:contract.projectId
         });
-        const item=initial.status==="CLAIMED"?initial:freeze({...initial,owner:expectedOwner,claimGeneration:expectedClaimGeneration});
+        const item=initial.status==="CLAIMED"?
+          initial:
+          freeze({...initial,owner:expectedOwner,claimGeneration:expectedClaimGeneration});
         persisted=await persistInvalidation({
           item,
           contract,
