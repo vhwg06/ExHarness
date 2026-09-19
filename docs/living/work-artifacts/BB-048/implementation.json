@@ -1,0 +1,161 @@
+{
+  "kind": "IMPLEMENTATION_WORK_ARTIFACT",
+  "version": 1,
+  "itemId": "BB-048",
+  "status": "IMPLEMENTATION_READY_BLOCKED",
+  "title": "Implement DOMAIN_EXECUTION_CONTROL with one BA-owned execution slice",
+  "dependsOn": [
+    "BB-047"
+  ],
+  "objective": "Turn one released organizational claim into one durable domain-local execution attempt whose exact HOW/runtime/outcome can be reconstructed, without moving organizational scheduling into the strategy/runtime.",
+  "architectureInputs": [
+    {
+      "repository": "vhwg06/ExHarness",
+      "revision": "a29993bcba1a319e299b0e89fc57cbd538de7e00",
+      "path": "docs/living/knowledge/domain-execution-control-implementation-readiness.md",
+      "blobSha": "2387fc0fdba4c3f09e6e2cb91770031af55bbc88"
+    },
+    {
+      "repository": "vhwg06/ExHarness",
+      "revision": "a29993bcba1a319e299b0e89fc57cbd538de7e00",
+      "path": "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+      "blobSha": "53affb1afd93973d97244227ca809fe4598b430d"
+    },
+    {
+      "repository": "vhwg06/ExHarness",
+      "revision": "908ffac8752b84c9211a2132e5c17c21eeca4152",
+      "path": "docs/living/knowledge/bb046-execution-strategy-rebase-research-v6.md"
+    }
+  ],
+  "architectureDecisions": [
+    "organization/lifecycle chooses WHAT and ownership; DOMAIN_EXECUTION_CONTROL owns HOW only after released claim",
+    "ExecutionPolicy is immutable/versioned with a CAS-fenced current head",
+    "ExecutionAttemptHead is read before any policy resolution; ACTIVE/RECOVERY_REQUIRED reuses the existing immutable binding",
+    "ExecutionAttemptBinding pins exact WorkContract, release receipt, policy, strategy, runtime/config/context refs before effects",
+    "semantic executionAttemptId is distinct from runtime invocation id",
+    "strategy result is not runtime fact, runtime fact is not verification evidence, and execution success is not domain acceptance",
+    "domain acceptance is distinct from authoritative domain publication",
+    "Restate may be an adapter/runtime but is not organization workflow authority",
+    "strategy cannot dispatch authoritative work into another domain"
+  ],
+  "planningBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "d647903b56312fa9ec3bfbea1c73f98561aec2f5",
+    "note": "planning only; activation context must use then-current accepted source head after BB-047"
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/index.js"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/domain-execution-controller.js",
+      "packages/agentic-system/src/execution-policy.js",
+      "packages/agentic-system/src/execution-attempt-store.js",
+      "packages/agentic-system/src/execution-judgment.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "packages/agentic-system/test/bb048-domain-execution-recovery.test.js",
+      "packages/agentic-system/test/bb048-domain-execution-judgment.test.js"
+    ]
+  },
+  "implementationSlices": [
+    {
+      "id": "B1",
+      "output": "ExecutionPolicy/ExecutionStrategyDescriptor immutable artifacts plus trusted policy publisher and CAS current head",
+      "requirements": [
+        "policy keyed by domain + workloadType with explicit WorkContract compatibility",
+        "policy/strategy cannot rewrite work inputs, outputs, acceptance, owner, priority or downstream obligations",
+        "policy head race before first binding forces re-resolution; promotion after binding affects new attempts only"
+      ]
+    },
+    {
+      "id": "B2",
+      "output": "ExecutionAttemptHead + immutable ExecutionAttemptBinding + recovery semantics",
+      "requirements": [
+        "ABSENT may resolve policy/strategy and CAS-create first semantic attempt",
+        "ACTIVE/RECOVERY_REQUIRED loads existing binding before policy resolution",
+        "TERMINAL requires explicit remediation/new-attempt authority",
+        "stable attempt-scoped runtime invocation/idempotency identity is fixed before dispatch where runtime supports it"
+      ]
+    },
+    {
+      "id": "B3",
+      "output": "one concrete BA-owned execution strategy adapter using existing Core/runtime primitives",
+      "requirements": [
+        "same WorkContract and acceptance semantics under any strategy",
+        "no Backend->QA or other cross-domain dispatch",
+        "Restate is optional for this slice; contract must not depend on Restate to be correct"
+      ]
+    },
+    {
+      "id": "B4",
+      "output": "durable judgment/publication chain",
+      "requirements": [
+        "RuntimeExecutionAttestation comes from trusted adapter/platform boundary rather than strategy self-report",
+        "ExecutionAttemptOutcome preserves candidate outputs, effects, counterevidence and proposed derivation edges",
+        "DomainCompletionDecision judges exact acceptance criteria/evidence",
+        "DomainPublicationReceipt is the authoritative write/publication boundary and publishes accepted derivation edges",
+        "ExecutionJudgmentBundle is derived orientation only and re-resolves source refs"
+      ]
+    },
+    {
+      "id": "B5",
+      "output": "worktree projection + deterministic BA fixture + crash/race regression suite",
+      "requirements": [
+        "fresh process reconstructs exact binding/runtime/outcome/decision/publication chain",
+        "raw strategy lineage is never authoritative dependency truth"
+      ]
+    }
+  ],
+  "hardInvariants": [
+    "Blackboard CLAIMED != executable capability",
+    "released claim prerequisite != scheduler input",
+    "OrganizationWorkContract != ExecutionPlan",
+    "ExecutionPolicy != Work Scheduler",
+    "ExecutionStrategy != Cross-Domain Dispatcher",
+    "policy promotion never rewrites an in-flight binding",
+    "process restart alone cannot mint a new semantic execution attempt",
+    "SUCCEEDED != ACCEPT",
+    "ACCEPT != authoritative publication",
+    "telemetry != correctness authority"
+  ],
+  "acceptanceCriteria": [
+    "one released BA-owned work item executes through DomainExecutionController and leaves a complete reconstructable binding->runtime->outcome->decision->publication chain",
+    "same active/recovery attempt survives process restart without re-resolving newer policy/strategy",
+    "policy head race before binding fails/re-resolves; policy promotion after binding does not change the attempt",
+    "runtime code/deployment identity is exact and trusted, not mutable latest/self-report",
+    "claim/release authority is revalidated immediately before first runtime/effect dispatch",
+    "human-assisted or alternate strategy cannot bypass completion/publication gates",
+    "fresh process can resolve all correctness-relevant refs and distinguish historical validity from authority needed for a new mutation"
+  ],
+  "mandatoryNegativeTests": [
+    "policy selects another Board item",
+    "strategy changes acceptance/output semantics",
+    "Backend strategy dispatches QA organizational work",
+    "strategy self-reports runtime version without trusted attestation",
+    "process restart creates second semantic attempt",
+    "SUCCEEDED self-authorizes ACCEPT",
+    "raw proposed lineage becomes cross-domain dependency truth",
+    "mutable latest runtime alias satisfies exact runtime identity"
+  ],
+  "forbidden": [
+    "global StrategyRegistry unless a concrete second consumer proves it is required",
+    "organization-level Restate workflow",
+    "generic provenance framework",
+    "ProductStateProjection",
+    "cross-domain obligation issuance",
+    "DOMAIN_ACTIVATION",
+    "widen packages/core-harness organization authority"
+  ],
+  "activationRule": {
+    "when": "BB-047 is terminal accepted/DONE and A.1 source is on the selected implementation baseline",
+    "createContext": "new WORK_CONTEXT_SPEC generation using then-current head; pin this artifact and exact architectureInputs; set Board BB-048 READY only then",
+    "staleIf": "required implementation needs architecture changes outside this artifact or predecessor semantics differ from the pinned A.1 contracts"
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "kind": "IMPLEMENTATION_WORK_ARTIFACT",
+  "version": 1,
+  "itemId": "BB-051",
+  "status": "IMPLEMENTATION_READY_BLOCKED",
+  "title": "Implement exact deployment identity, AcceptanceSnapshot and Product QA trust boundary",
+  "dependsOn": [
+    "BB-050"
+  ],
+  "objective": "Prove Product QA tests the exact deployed FE/BE artifacts/configuration by binding one immutable DeploymentRelease into an AcceptanceSnapshot and independently observing runtime identity before QualityAcceptance.",
+  "architectureInputs": [
+    {
+      "repository": "vhwg06/ExHarness",
+      "revision": "a29993bcba1a319e299b0e89fc57cbd538de7e00",
+      "path": "docs/living/knowledge/deployment-acceptance-snapshot-implementation-readiness.md",
+      "blobSha": "9b354973a4e6eb49f9839165a08ea0bb5fac99ba"
+    },
+    {
+      "repository": "vhwg06/ExHarness",
+      "revision": "a29993bcba1a319e299b0e89fc57cbd538de7e00",
+      "path": "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+      "blobSha": "7f1501275c77e174e29897a249f1245e6075297c"
+    }
+  ],
+  "architectureDecisions": [
+    "source revision, build artifact, image tag, immutable artifact digest, DeploymentRelease and observed runtime identity are distinct",
+    "DeploymentRelease is DevOps authoritative publication of exact deployables/configuration/evidence; it is not Product QA truth",
+    "AcceptanceSnapshot is deterministic/immutable and derived from one exact DeploymentRelease plus current acceptance subjects",
+    "caller/QA cannot omit mandatory components or mix component refs from different releases unless explicit policy permits",
+    "QA independently observes runtime identity; DevOps/app self-report alone is insufficient",
+    "mixed old/new rollout blocks/inconclusive by default",
+    "QA revalidates deployment/currentness and runtime identity before effects and before QualityAcceptance publication",
+    "old snapshots/acceptances remain historical after newer release; they are not current for the new release"
+  ],
+  "planningBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "d647903b56312fa9ec3bfbea1c73f98561aec2f5",
+    "note": "planning only; activation after BB-050 must use then-current source head"
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "BB-049 semantic lineage/currentness source",
+      "BB-050 FE/BE domain delivery/publication source",
+      "packages/agentic-system/src/qa-worker.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/trust-artifact-store.js",
+      "packages/agentic-system/src/index.js"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/deployable-artifact.js",
+      "packages/agentic-system/src/devops-execution-strategy.js",
+      "packages/agentic-system/src/deployment-release.js",
+      "packages/agentic-system/src/acceptance-snapshot.js",
+      "packages/agentic-system/src/runtime-observation.js",
+      "packages/agentic-system/src/product-qa.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/bb051-deployment-release.test.js",
+      "packages/agentic-system/test/bb051-acceptance-snapshot.test.js",
+      "packages/agentic-system/test/bb051-runtime-observation.test.js",
+      "packages/agentic-system/test/bb051-product-qa-race.test.js"
+    ]
+  },
+  "implementationSlices": [
+    {
+      "id": "EF1",
+      "output": "DeployableArtifactRef + BuildProvenance resolution for exact FE/BE immutable digests",
+      "requirements": [
+        "mutable tag/branch alone cannot satisfy correctness identity",
+        "sourceDeliveryRef and build provenance remain linked to exact deployable digest"
+      ]
+    },
+    {
+      "id": "EF2",
+      "output": "DevOps domain-local deployment execution + immutable DeploymentRelease/currentness",
+      "requirements": [
+        "bind exact FE/BE deployables, environment, deployment spec/config refs, rollout/health evidence and expected runtime identities",
+        "first source delivery may use deterministic deployment fixture adapter; no universal deployment platform is required",
+        "DevOps cannot produce Product QA verdict"
+      ]
+    },
+    {
+      "id": "EF3",
+      "output": "deterministic AcceptanceSnapshot builder",
+      "requirements": [
+        "derive required FE+BE components from exact DeploymentRelease and acceptance policy",
+        "pin current requirement/criterion/deployment subjects",
+        "prevent omission/mixed-release attack"
+      ]
+    },
+    {
+      "id": "EF4",
+      "output": "RuntimeObservation verifier/adapters",
+      "requirements": [
+        "observe tested environment independently from DeploymentRelease self-report",
+        "support exact digest/runtime identity evidence; Kubernetes imageID/digest may be one adapter, not universal semantics",
+        "mixed or unknown runtime identity blocks/inconclusive by default"
+      ]
+    },
+    {
+      "id": "EF5",
+      "output": "Product QA WorkContract bound to AcceptanceSnapshot + immutable QualityAcceptance",
+      "requirements": [
+        "QA strategy cannot rewrite snapshot",
+        "pre-QA and pre-publication deployment/currentness/runtime rechecks close shifting-environment race",
+        "QualityAcceptance references exact runtime observations and criterion evidence"
+      ]
+    }
+  ],
+  "hardInvariants": [
+    "source commit != deployable digest",
+    "image tag != immutable image identity",
+    "DeploymentRelease != RuntimeObservation",
+    "RuntimeObservation != QualityAcceptance",
+    "QA strategy SUCCEEDED != QualityAcceptance ACCEPT",
+    "caller-selected ref list cannot omit mandatory snapshot components",
+    "deployment change during QA cannot produce current acceptance for newer release"
+  ],
+  "acceptanceCriteria": [
+    "exact FE/BE deployable digests are traceable from accepted source delivery/build provenance into one DeploymentRelease",
+    "AcceptanceSnapshot deterministically pins exact release, components, criteria, environment and verifier policy",
+    "QA independently observes runtime identity and rejects/blocks mismatch or mixed rollout",
+    "deployment revision change before QA start prevents current run; change during QA prevents current QualityAcceptance publication",
+    "old snapshot/acceptance remains reconstructable historical evidence after newer release",
+    "fresh process can trace SourceDelivery -> BuildProvenance -> DeployableDigest -> DeploymentRelease -> AcceptanceSnapshot -> RuntimeObservation -> QualityAcceptance"
+  ],
+  "mandatoryNegativeTests": [
+    "mutable image tag satisfies exact identity",
+    "snapshot omits Backend or Frontend required by policy",
+    "snapshot mixes components from different releases",
+    "DevOps self-report alone proves runtime identity",
+    "mixed B4+B5 rollout accepted when snapshot expects B5",
+    "deployment changes during QA but old tests publish current ACCEPT",
+    "source commit sameness overrides deployable digest mismatch",
+    "QA mutates DeploymentRelease"
+  ],
+  "forbidden": [
+    "global ProductStateProjection/closure semantics",
+    "universal supply-chain framework",
+    "Sigstore/in-toto runtime dependency solely for this slice",
+    "generic artifact registry rewrite",
+    "QA as deployment controller",
+    "automatic remediation policy"
+  ],
+  "activationRule": {
+    "when": "BB-050 is terminal accepted/DONE and FE/BE autonomous deliveries publish exact immutable product outputs",
+    "createContext": "materialize new WORK_CONTEXT_SPEC from then-current head, pin this artifact/research refs and exact current FE/BE delivery contracts; mark BB-051 READY",
+    "staleIf": "FE/BE output identity/publication semantics cannot provide exact deployable/source lineage expected by this artifact"
+  }
+}
