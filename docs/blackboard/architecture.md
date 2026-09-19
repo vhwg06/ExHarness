@@ -1,45 +1,37 @@
-# Living documentation architecture
+# Outer Blackboard architecture
 
-Status: **PROMOTED**
-
-The repository uses two complementary operational documentation surfaces plus executable artifacts.
+Status: **CURRENT DEVELOPMENT COORDINATION MODEL**
 
 ```text
 SOURCE / TESTS / RUNTIME
         |
-        | reconcile current behavior
         v
-+-------------------------------+
-| docs/worktree/*               |
-| SOURCE-SYNCHRONIZED LIVING DOCS|
-| current state/architecture/   |
-| semantics/contracts/workflow  |
-+-------------------------------+
-
-unresolved gap/problem discovered
+docs/living/system/*
+CURRENT SYSTEM TRUTH
+        ^
         |
-        v
-+-------------------------------+
-| docs/living/blackboard.md     |
-| OPERATIONAL OPEN WORK         |
-| claim / status / blockers /   |
-| result / artifact refs        |
-+-------------------------------+
+        | selected bounded refs
         |
-        | work resolves + source changes
-        +-----------> reconcile living docs
+docs/blackboard/context/<work>/gNNNN-*.json
+        ^
+        |
+docs/blackboard/state.md
+CURRENT DEVELOPMENT ROUTING
 ```
 
-Durable evidence/judgment/audit/decisions remain under `docs/living/knowledge/` and `docs/living/decisions/`.
+The Blackboard does not explain the system. It points fresh sessions at the exact bounded context needed to perform current development work.
 
-## Authority by question
+Two independent pipeline lanes consume the same Living Docs truth but own different work products:
 
 ```text
-What exists / executes?          source + tests/runtime
-What is the current system model? docs/worktree/*
-What remains unresolved?         docs/living/blackboard.md
-Why is a conclusion believed?    living/knowledge/evidence + judgment
-What was accepted/promoted?      living/decisions + promoted contracts
+RESEARCH_SA
+  -> research / architecture development artifacts
+  -> accepted implementation input
+
+IMPLEMENTATION_WORKER
+  -> consumes accepted implementation input
+  -> changes source/tests
+  -> reconciles Living Docs when delivered semantics change
 ```
 
-The Blackboard is not a future runtime component. It is the current shared work surface. Worktree docs are not candidate/design scratchpads; they are materialized current-state documentation.
+No pipeline may silently infer missing authority or missing project knowledge from a previous session.

@@ -1,60 +1,42 @@
-# Living documentation router
+# Living Docs
 
-ExHarness separates **current system truth** from **open work**.
+Status: **CURRENT SYSTEM / DURABLE PROJECT KNOWLEDGE**
 
-## First read for any non-trivial work
+Living Docs are the clearest explicit description of the system that exists now.
 
-1. `blackboard.md` — identify the unresolved/eligible item.
-2. When that item has `current-context`, load that exact immutable `WORK_CONTEXT_SPEC`; do not infer another generation from artifact existence.
-3. Resolve only its declared required current-system/input refs. `auditRefs` stay lazy and non-authoritative.
-4. Inspect source/tests whenever implementation detail matters.
-5. After source changes, update the relevant worktree docs and write the Board result back.
+They answer:
 
-For an item without the migrated context binding, use the legacy bounded route: Board -> smallest relevant worktree docs -> source/tests. Runtime JSON Blackboard does not consume this repository context plane.
+> What does ExHarness currently do, what boundaries/contracts exist, and what durable knowledge is true for the current project state?
 
-## Three distinct surfaces
+They do not track active development work, blockers, next actions, pipeline stage or fresh-session ownership. Those belong to `../blackboard/`.
+
+## Current system
+
+`system/` is the source-synchronized current-system projection:
+
+- `system/state.md` — current composition checkpoint;
+- `system/capabilities.md` — explicit delivered capability semantics;
+- `system/pipeline.md` — currently delivered execution topology;
+- `system/agentic-application/` — application semantics/contracts;
+- `system/oracle/` — current Oracle boundary;
+- `system/core-harness/` — current Core boundary.
 
 ```text
-../worktree/*
-    = source-synchronized current-system truth
-
-blackboard.md
-    = lifecycle / gaps / blockers / exact current-context pointer
-
-work-context/<item>/gNNNN-*.json
-    = immutable safe-next-action context for one Board generation
-    = not source truth, acceptance authority or a second queue
+living/system/*
+  = what exists now
+  != desired future state
+  != active implementation plan
+  != backlog
 ```
 
-A stale/old context remains history but is not permission for new durable work.
+When source semantics materially change, the affected `living/system/*` projection is reconciled in the same durable change.
 
 ## Durable knowledge
 
-- `knowledge/evidence.md` — observations with provenance.
-- `knowledge/judgment.md` — conclusions derived from evidence.
-- `knowledge/audit.md` — independent challenge.
-- `decisions/` — accepted/promoted choices.
-- `architecture.md` / `contracts.md` / `pipelines.md` — documentation/knowledge-system invariants.
+- `knowledge/` — evidence, judgment and retained research already promoted into project knowledge;
+- `decisions/` — accepted/promoted decisions and provenance;
+- `reference/architecture/` — deeper historical/reference architecture records.
 
-These do not replace the Board or current-system source.
+These are not the default fresh-session loading surface. The current Blackboard context selects the minimum relevant refs.
 
-## Routing
-
-```text
-What should I work on?
-    -> blackboard.md
-    -> exact current-context when present
-
-What is safe/authorized for this repository work generation?
-    -> current WORK_CONTEXT_SPEC
-    -> exact accepted decision when action=IMPLEMENT
-
-What does the system currently do?
-    -> ../worktree/state.md
-    -> smallest relevant child
-    -> source/tests when needed
-
-Why do we believe a claim?
-    -> knowledge/evidence.md
-    -> knowledge/judgment.md
-```
+For current development state, read `../blackboard/state.md`. Do not infer open work from Living Docs.

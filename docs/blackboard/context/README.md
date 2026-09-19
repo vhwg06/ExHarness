@@ -1,29 +1,23 @@
-# Blackboard work-context candidates
+# Blackboard work contexts
 
-Status: **PROPOSED / BB-046 RESEARCH SURFACE**
+Status: **CURRENT REPOSITORY CONTEXT ROUTER**
 
-This directory contains immutable machine-readable candidate context generations for active Blackboard items.
+Each active Blackboard work item binds exactly one immutable `WORK_CONTEXT_SPEC` generation through `docs/blackboard/state.md`.
 
-It is not a work queue and not lifecycle authority.
+Context answers only what role/action is being executed, which refs must be loaded, what scope/authority applies, what output is expected, and when the context becomes stale.
 
-Currentness must come from the Blackboard's exact context ref/generation after the BB-046 context architecture is accepted. Until then, files here are reviewable examples only.
-
-## Shape
+Context is not current-system truth, a work queue or acceptance authority.
 
 ```text
-work-context/
-  BB-046/
-    g0001-readiness-review.json
-    g0002-implementation.json
+context file exists
+  != current
+
+state.md current-context.ref + generation
+  = current for that work item
 ```
 
-Canonical `WORK_CONTEXT_SPEC` / `WORK_CONTEXT_RECEIPT` state is JSON so validation does not depend on permissive Markdown/YAML parsing. Markdown remains architecture/rationale only.
+Multiple work items may be current simultaneously because currentness is per work item.
 
-Rules proposed by BB-046:
+BB-046/BB-047 and early BB-048 generations were produced before the `docs/blackboard/*` namespace migration. Their bodies are retained as historical artifacts; old embedded paths are provenance and must not be interpreted as current routing.
 
-- never mutate one generation into another semantic action;
-- keep payloads/ref targets external;
-- required inputs and audit inputs are distinct;
-- source write scope is explicit;
-- context artifacts never self-authorize Board currentness;
-- old generations remain history, not current permission.
+New generations use the current namespace and explicit pipeline metadata.
