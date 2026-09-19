@@ -77,7 +77,7 @@ current-context:
   ref: docs/living/work-context/BB-046/g0004-implementation-review.json
   implementation-context: docs/living/work-context/BB-046/g0003-implementation.json
   decision-ref: docs/living/decisions/D017-bb046-context-plane-acceptance.md
-  reviewed-candidate-head: 4a10363c4ae74e1be3e1ca0a0d650293116842d1
+  reviewed-candidate-head: ebd3475bc9dd7b1f582de873345d9242534f4dcc
 remaining-work:
   - independent fresh review of g0004 exact candidate
   - independent CI/evaluation evidence review
@@ -93,7 +93,7 @@ acceptance-criteria:
   - context resolver does not schedule work or decide acceptance
   - runtime JSON Blackboard adoption remains out of scope
 submission:
-  - PR #153 exact review target 4a10363c4ae74e1be3e1ca0a0d650293116842d1
+  - PR #153 exact review target ebd3475bc9dd7b1f582de873345d9242534f4dcc
 review-requirements:
   - implementation contract review
   - evaluation/value-gate review
