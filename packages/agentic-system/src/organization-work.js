@@ -71,8 +71,8 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
         expectedOutputRefs:obligation.expectedOutputRefs??[],
         acceptanceRefs:obligation.acceptanceRefs
       });
-      const persistedContractRef=await artifactRegistry.putWorkContract({...contract,contractRef:undefined});
-      invariant(persistedContractRef===contract.contractRef,"persisted work contract ref mismatch");
+      const persistedContractRef=await artifactRegistry.putWorkContract(contract);
+      invariant(persistedContractRef.endsWith(contract.contractRef.split(":sha256:")[1]),"persisted work contract ref mismatch");
       const key=materializationSubjectKey({
         obligationKey,
         acceptedDecisionRef,
