@@ -14,14 +14,14 @@
 
 <!--
 If CURRENT_SYSTEM_CHANGED:
-- list the affected docs/worktree/* files updated in this same change;
+- list the affected docs/living/system/* files updated in this same change;
 - confirm they describe only the current implemented state, including material partial implementation;
 - do not defer reconciliation until Board DONE / phase completion.
 
 If CURRENT_SYSTEM_NOT_CHANGED:
 - explain briefly why the change is documentation-neutral.
 
-A materially changed current system with stale docs/worktree/* is not review-complete.
+A materially changed current system with stale docs/living/system/* is not review-complete.
 -->
 
 ## Verification track

@@ -41,8 +41,8 @@ jobs:
             git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA"
             changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
             printf '%s\n' "$changed"
-            if ! printf '%s\n' "$changed" | grep -q '^docs/worktree/'; then
-              echo "CURRENT_SYSTEM_CHANGED requires affected docs/worktree/* updates in the same PR."
+            if ! printf '%s\n' "$changed" | grep -q '^docs/living/system/'; then
+              echo "CURRENT_SYSTEM_CHANGED requires affected docs/living/system/* updates in the same PR."
               exit 1
             fi
           fi
