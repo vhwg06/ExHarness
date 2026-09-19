@@ -12,6 +12,7 @@ subjectCandidateHeadSha: 1e5cc2297322f7b2da7e21a6a874cf776d325dcc
 reviewHeadSha: d647903b56312fa9ec3bfbea1c73f98561aec2f5
 reviewVerdict: REJECT
 reviewEvidence: 5256017957
+verdict: ACCEPT
 acceptedAction: REIMPLEMENT_D020_REPAIR_WITH_VALID_PROVENANCE
 ```
 
