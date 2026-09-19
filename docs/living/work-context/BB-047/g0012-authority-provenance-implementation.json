@@ -1,0 +1,103 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "ACCEPTED_IMPLEMENTATION_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 12,
+  "parentContextRef": "docs/living/work-context/BB-047/g0011-repair-review.json",
+  "transitionReasonRef": "docs/living/decisions/D021-bb047-a1-authority-provenance-repair.md",
+  "authority": {
+    "implementationDecisionRef": "docs/living/decisions/D021-bb047-a1-authority-provenance-repair.md",
+    "subjectContextRef": "docs/living/work-context/BB-047/g0011-repair-review.json",
+    "subjectCandidateHeadSha": "1e5cc2297322f7b2da7e21a6a874cf776d325dcc"
+  },
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "READY",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "IMPLEMENT",
+    "summary": "Reproduce the D020 semantic repair under valid pre-existing authority provenance.",
+    "allowedMutations": [
+      "reproduce mandatory immutable authority artifact resolution",
+      "reproduce exact authority-head drift fencing",
+      "reproduce Board-first post-release invalidation",
+      "reproduce typed WORK->BLOCKED / EXECUTION->REOPENED lifecycle mapping",
+      "tests and current-system projection"
+    ],
+    "forbiddenActions": [
+      "mutate D020, g0010 or g0011",
+      "mark DONE or merge",
+      "enter DOMAIN_EXECUTION_CONTROL / Integration B"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "d647903b56312fa9ec3bfbea1c73f98561aec2f5"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/worktree/agentic-application/contracts.md",
+    "packages/agentic-system/src/organization-artifact-store.js",
+    "packages/agentic-system/src/organization-authority-store.js",
+    "packages/agentic-system/src/organization-authority.js",
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/src/organization-work.js",
+    "packages/agentic-system/src/index.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/decisions/D021-bb047-a1-authority-provenance-repair.md",
+    "docs/living/work-context/BB-047/g0011-repair-review.json"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb047-organization-bridge.test.js",
+      "docs/worktree/agentic-application/contracts.md",
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/**",
+      "docs/living/decisions/D021-bb047-a1-authority-provenance-repair.md"
+    ],
+    "forbiddenWrite": [
+      "docs/living/decisions/D020-bb047-a1-repair-rejection.md",
+      "docs/living/work-context/BB-047/g0010-repair-implementation.json",
+      "docs/living/work-context/BB-047/g0011-repair-review.json",
+      "packages/core-harness/**",
+      "packages/oracle/**"
+    ]
+  },
+  "hardInvariants": [
+    "D021 and g0012 pre-exist source mutation",
+    "D020/g0010/g0011 remain immutable rejected history",
+    "organization-work.js is explicitly in write scope",
+    "D020 semantic repair invariants remain intact",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL / Integration B"
+  ],
+  "verification": [
+    "node --test packages/agentic-system/test/bb047-*.test.js",
+    "npm run verify",
+    "fresh authority-provenance review"
+  ],
+  "expectedOutputs": [
+    "fresh source candidate whose authority predates source mutation",
+    "independent review handoff"
+  ]
+}
