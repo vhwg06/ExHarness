@@ -62,72 +62,58 @@ The Integration phase begins deliberately with zero active debt. An unused work 
 
 ```text
 BB-046
-question/work: Research and independently review the Integration-phase organizational architecture plus a Blackboard Context Plane that makes the safe next-action context explicit instead of requiring a fresh model to infer implementation scope from Board prose and arbitrary refs.
-kind: RESEARCH / ARCHITECTURE
+question/work: Implement and evaluate the accepted repository-local Blackboard Context Plane so fresh sessions receive an exact safe-next-action context instead of inferring scope/authority from Board prose.
+kind: IMPLEMENTATION
 priority: P1
-status: PENDING_REVIEW
+status: READY
 owner:
 depends-on: []
-research-hypothesis: A small Board-linked immutable context generation can reduce context-loading and wrong-scope implementation risk without becoming a second Blackboard, correctness authority, scheduler or runtime WorkContract.
 target-consumer:
   - repository fresh-session developer/reviewer work
-  - Integration A.1 independent readiness review and later implementation handoff
-implementation-output: If independently accepted and benchmark-worthy, one repository-local context-plane slice (JSON spec validation, Board binding, resolver/generator, evaluation) before any runtime Blackboard adoption.
+implementation-output: JSON context validation, exact Board binding, deterministic resolver/generator, stale/review-subject verification, evaluation fixtures and living-doc promotion.
 value-gate: Explicit-context fixtures must preserve authority/correctness controls, reconstruct the same safe action without chat, and improve irrelevant-read / wrong-scope behavior enough to justify context-management overhead.
-current-context-candidate:
-  generation: 2
-  ref: docs/living/work-context/BB-046/g0002-readiness-review.json
-  review-target:
-    repository: vhwg06/ExHarness
-    candidate-head: d013b6118dccfea67e8615f4624d3a00f6e10b4f
-  note: review-envelope candidate only; generation 2 binds one immutable semantic candidate commit and grants no implementation authority.
+current-context:
+  generation: 3
+  ref: docs/living/work-context/BB-046/g0003-implementation.json
+  decision-ref: docs/living/decisions/D017-bb046-context-plane-acceptance.md
+  parent-review-context: docs/living/work-context/BB-046/g0002-readiness-review.json
+  reviewed-candidate-head: d013b6118dccfea67e8615f4624d3a00f6e10b4f
 remaining-work:
-  - independent architecture/application review of the Blackboard Context Plane
-  - independent readiness review of the exact organizational A.1 trust-transition candidate
-  - decide whether the repository-local context implementation slice is justified by the evaluation plan
+  - implement WORK_CONTEXT_SPEC validation and fail-closed Board binding
+  - implement deterministic required-ref resolver and candidate generator helpers
+  - implement stale/currentness and immutable review-subject verification
+  - add deterministic contract/fresh-session/drift/authority fixtures
+  - run explicit-context evaluation against the current heuristic baseline
+  - promote delivered semantics into living contracts/pipelines only after implementation exists
 acceptance-criteria:
-  - reviewer can distinguish Blackboard lifecycle, WORK_CONTEXT_SPEC, runtime ORGANIZATION_WORK_CONTRACT and ExecutionPolicy/Strategy without chat reinterpretation
-  - current context is an exact Board-linked generation/ref, not inferred from artifact existence or ranking
-  - independent review binds exact immutable candidate commit d013b6118dccfea67e8615f4624d3a00f6e10b4f; PR #151 is navigation only
-  - required current-system/input refs are explicit while audit/history refs remain lazy and non-authoritative
-  - source read/write/forbidden scope is explicit and context producer cannot self-authorize wider mutation or acceptance
-  - context generation/currentness has fail-closed stale/recovery semantics and remains distinct from claim/review/execution generations
-  - canonical machine context is JSON; proposed validation does not depend on a permissive Markdown/YAML parser
-  - first implementation consumer is repository development coordination; runtime JSON Blackboard adoption requires separate evidence
-  - organizational A.1 architecture remains PROPOSED until an adequate independent review accepts the exact candidate
+  - fresh worker reconstructs the same safe action without chat
+  - stale generation cannot authorize durable action
+  - review context cannot authorize source implementation
+  - implementation requires an exact accepted decision bound to parent context + candidate head
+  - required refs and audit refs remain distinct
+  - missing/duplicate/mismatched Board bindings fail closed
+  - write/forbiddenWrite overlap fails closed
+  - context resolver does not schedule work or decide acceptance
+  - runtime JSON Blackboard adoption remains out of scope
 submission:
-  - PR #151
 review-requirements:
-  - Blackboard/living-doc architecture review
-  - Agentic Application authority-boundary review
-  - independent BB-046/A.1 readiness review
-reviews: []
+  - implementation contract review
+  - evaluation/value-gate review
+reviews:
+  - docs/living/decisions/D017-bb046-context-plane-acceptance.md
 artifact-refs:
-  - docs/living/knowledge/bb046-blackboard-context-architecture.md
-  - docs/living/knowledge/bb046-blackboard-context-contracts.md
-  - docs/living/knowledge/bb046-blackboard-context-pipelines.md
-  - docs/living/knowledge/bb046-blackboard-context-evaluation.md
+  - docs/living/work-context/BB-046/g0003-implementation.json
+  - docs/living/decisions/D017-bb046-context-plane-acceptance.md
   - docs/living/knowledge/bb046-blackboard-context-implementation-readiness.md
-  - docs/living/work-context/BB-046/g0001-readiness-review.json
-  - docs/living/work-context/BB-046/g0002-readiness-review.json
-  - docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md
-  - docs/living/knowledge/bb046-trust-transition-research-v7.md
-  - docs/living/knowledge/bb046-execution-strategy-rebase-research-v6.md
-  - docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md
+  - docs/living/knowledge/bb046-blackboard-context-evaluation.md
 evidence-refs:
   - INTENT-exharness-agentic-system
-  - D008 explicit repository/runtime project-state boundary
-  - BB-028 bounded orientation vs exact-underlying-read evidence
-  - D009 generation-fenced interrupted recovery
-  - source baseline ad36638dd7041a60c224dfe3c9beb252069ecdae
+  - exact parent review context docs/living/work-context/BB-046/g0002-readiness-review.json
   - semantic review target d013b6118dccfea67e8615f4624d3a00f6e10b4f
-  - Kubernetes generation/observed-generation design calibration
-  - Bazel hermetic explicit-input design calibration
-  - in-toto authorized-step/material/product design calibration
-blockers:
-  - exact architecture and A.1 candidate at d013b6118dccfea67e8615f4624d3a00f6e10b4f are awaiting independent review under g0002; no implementation authority is granted by this PR
-follow-up-refs: []
-origin: INTENT-exharness-agentic-system; explicit user Integration-phase request to make work context around the Blackboard durable and implementation-safe
+blockers: []
+follow-up-refs:
+  - Integration A.1 runtime bridge implementation requires a separate exact implementation context after this repository-local slice; Integration B-J remain deferred.
+origin: D017 accepted BB-046 generation 2 and authorized the bounded repository context-plane implementation slice.
 ```
 
 ## Integration entry rule

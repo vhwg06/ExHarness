@@ -1,0 +1,121 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "ACCEPTED_IMPLEMENTATION_CONTEXT",
+  "contextId": "BB-046-context",
+  "itemId": "BB-046",
+  "generation": 3,
+  "parentContextRef": "docs/living/work-context/BB-046/g0002-readiness-review.json",
+  "transitionReasonRef": "docs/living/decisions/D017-bb046-context-plane-acceptance.md",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "READY",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "IMPLEMENT",
+    "summary": "Implement and evaluate the repository-local Blackboard Context Plane first slice accepted by D017.",
+    "allowedMutations": [
+      "create/update the bounded repository context-plane scripts and tests",
+      "add deterministic evaluation artifact generation",
+      "add package verification/evaluation commands",
+      "promote delivered repository context semantics into living documentation"
+    ],
+    "forbiddenActions": [
+      "implement Integration B-J",
+      "adopt the context plane in runtime JSON Blackboard",
+      "turn Context Resolver into scheduler or acceptance authority",
+      "widen Oracle, Core, PM or Blackboard authority",
+      "implement a generic context database/service",
+      "change product/work acceptance semantics"
+    ]
+  },
+  "authority": {
+    "implementationDecisionRef": "docs/living/decisions/D017-bb046-context-plane-acceptance.md",
+    "subjectContextRef": "docs/living/work-context/BB-046/g0002-readiness-review.json",
+    "subjectCandidateHeadSha": "d013b6118dccfea67e8615f4624d3a00f6e10b4f"
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "454ef423c23ab8cf0c39f4892a271238720e470b"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/living/blackboard.md",
+    "docs/living/contracts.md",
+    "docs/living/pipelines.md",
+    "docs/living/README.md",
+    "package.json"
+  ],
+  "requiredInputRefs": [
+    "docs/living/decisions/D017-bb046-context-plane-acceptance.md",
+    "docs/living/knowledge/bb046-blackboard-context-contracts.md",
+    "docs/living/knowledge/bb046-blackboard-context-evaluation.md",
+    "docs/living/knowledge/bb046-blackboard-context-implementation-readiness.md",
+    "docs/living/work-context/BB-046/g0002-readiness-review.json"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-blackboard-context-architecture.md",
+    "docs/living/knowledge/bb046-blackboard-context-pipelines.md",
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "package.json",
+      "scripts/**"
+    ],
+    "write": [
+      "scripts/blackboard-context-*.mjs",
+      "test/blackboard-context-*.test.mjs",
+      "artifacts/bb046-blackboard-context-eval.json",
+      "package.json",
+      "docs/living/README.md",
+      "docs/living/contracts.md",
+      "docs/living/pipelines.md",
+      "docs/living/blackboard.md",
+      "docs/living/work-context/**",
+      "docs/living/decisions/D017-bb046-context-plane-acceptance.md"
+    ],
+    "forbiddenWrite": [
+      "packages/**",
+      "docs/worktree/**"
+    ]
+  },
+  "hardInvariants": [
+    "Blackboard != Scheduler",
+    "Blackboard != Work Context",
+    "Work Context != Source Truth",
+    "Work Context != Acceptance Authority",
+    "Work Context != WorkContract",
+    "Context producer != context-currentness authority",
+    "artifact existence != current context",
+    "audit refs != hidden implementation requirements",
+    "runtime Blackboard adoption is out of scope",
+    "Integration B-J is out of scope"
+  ],
+  "verification": [
+    "node --test test/blackboard-context-*.test.mjs",
+    "node scripts/blackboard-context-verify.mjs",
+    "node scripts/blackboard-context-eval.mjs",
+    "npm run verify:blackboard-context",
+    "npm run eval:blackboard-context"
+  ],
+  "expectedOutputs": [
+    "deterministic repository context validator",
+    "narrow fail-closed Markdown Board binding adapter",
+    "required-ref resolver/read model",
+    "candidate context generator helpers",
+    "hard verifier for current binding and review-subject authority",
+    "deterministic evaluation artifact",
+    "promoted living-doc contracts/pipelines after behavior exists"
+  ],
+  "staleWhen": [
+    "Board current context generation/ref changes",
+    "D017 is superseded",
+    "source changes materially alter declared context-plane seams before handoff",
+    "implementation requires a write outside declared sourceScope.write"
+  ]
+}
