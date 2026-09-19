@@ -252,6 +252,53 @@ DETERMINISTIC_REPOSITORY_FIXTURE
 productionEvidence: false
 ```
 
+
+## 10. Review-subject drift controls
+
+Add explicit adversarial scenarios:
+
+### Mutable PR head after review starts
+
+```text
+gN targets candidate C1
+producer changes architecture at C3
+```
+
+Expected:
+
+```text
+gN stale
+old ACCEPT decision for C1 cannot authorize C3
+new REVIEW generation required
+```
+
+### Review-envelope-only commit
+
+```text
+C1 candidate
+C2 adds only gN + Board pointer
+```
+
+Expected:
+
+```text
+gN remains valid because post-target changes are restricted to declared envelope paths
+```
+
+### Decision subject mismatch
+
+```text
+decision.subjectCandidateHeadSha != gN.reviewTarget.candidateHeadSha
+```
+
+Expected: fail closed before generating IMPLEMENT context.
+
+Hard metric:
+
+```text
+review-subject drift escapes = 0
+```
+
 ## 10. Promotion rule
 
 A positive benchmark may justify a bounded context-plane implementation.
