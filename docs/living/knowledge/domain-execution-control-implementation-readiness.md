@@ -33,11 +33,13 @@ No global StrategyRegistry is required.
 
 ### ExecutionPolicy
 
-- keyed by domain + workloadType;
+- immutable/versioned and keyed by domain + workloadType;
 - compatible WorkContract versions are explicit;
 - points to exact strategy descriptor;
 - may not inspect/rank the Blackboard;
 - may not change work inputs, outputs, acceptance, domain, priority, or downstream obligations.
+
+Currentness is owned by a separate CAS-fenced ExecutionPolicyHead. Only trusted policy-publisher authority may advance the head. First-attempt binding must re-check that the observed policy head is still current before its CAS commit; a race that advances the head before binding forces re-resolution. A later promotion affects new attempts only.
 
 ### ExecutionStrategyDescriptor
 
@@ -83,6 +85,7 @@ ExecutionAttemptBinding
  -> ExecutionAttemptOutcome
  -> verification/effect evidence
  -> DomainCompletionDecision
+ -> DomainPublicationReceipt
  -> derived ExecutionJudgmentBundle
 ```
 
@@ -93,6 +96,8 @@ strategy result != runtime fact
 runtime fact != verification evidence
 telemetry != correctness authority
 execution success != domain acceptance
+domain acceptance != authoritative publication
+strategy-proposed lineage != authoritative dependency lineage
 derived review bundle != source of truth
 ```
 
@@ -114,6 +119,10 @@ Crash before attempt-head/binding commit: no semantic attempt exists; retry may 
 Crash after the attempt/binding commit: the same attempt is RECOVERY_REQUIRED; reconstruct/reload the same immutable binding rather than minting another or observing a newer policy.
 
 Crash after effect start: adapter recovery must use the same binding/runtime identity.
+
+Where the runtime supports a stable workflow/invocation/idempotency identity, that attempt-scoped dispatch key must be fixed before runtime dispatch so a crash after dispatch but before local publication can recover/observe the same invocation rather than blindly issuing another.
+
+After binding publication and immediately before first runtime/effect dispatch, execution entry revalidates the exact current claim/release authority again. A stale/revoked release cannot execute merely because an older binding exists.
 
 Claim takeover/recovery may advance Blackboard claimGeneration while the semantic execution attempt remains the same until external-effect reconciliation resolves it.
 
@@ -148,7 +157,10 @@ Candidate strategy kind: application-core-loop or human-assisted adapter first. 
 12. strategy self-report cannot prove runtime deployment/version without trusted runtime attestation;
 13. strategy SUCCEEDED cannot self-authorize domain ACCEPT;
 14. exact output/input derivation edges reconstruct without invented cross-edges;
-15. attempt-transition publication/head-CAS crash recovery is idempotent and cannot duplicate semantic attempts.
+15. attempt-transition publication/head-CAS crash recovery is idempotent and cannot duplicate semantic attempts;
+16. policy-head race before binding forces re-resolution while promotion after binding cannot alter the attempt;
+17. crash after runtime dispatch uses the stable attempt-scoped invocation identity to recover/observe rather than blind redispatch;
+18. raw strategy lineage cannot become cross-domain dependency truth without an accepted DomainPublicationReceipt.
 
 ## Source placement candidate
 
