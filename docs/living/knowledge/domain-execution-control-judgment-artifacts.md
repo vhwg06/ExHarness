@@ -418,6 +418,38 @@ Every correctness-relevant artifact above must satisfy the same class of invaria
 
 An object containing issuedBy: root does not prove root authority.
 
+## Reuse before new framework
+
+This contract names semantic artifacts; it does not require one new generic store/registry per name.
+
+Prefer existing proven boundaries:
+
+    EvidenceArtifact / DecisionArtifact / Attestation
+      -> reuse for verifier/completion/trust payloads where the semantics fit
+
+    Core effect-operation refs / effect journal
+      -> reuse for external-effect truth and reconciliation
+
+    immutable content-addressed application stores
+      -> reuse the write-before-ref + exact-read pattern
+
+    DECISION_OUTCOME_SUMMARY pattern
+      -> reuse its "derived index, re-resolve sources on fresh read" semantics
+         for ExecutionJudgmentBundle
+
+    OpenTelemetry trace/span ids
+      -> optional correlation links only
+
+Do not introduce in Integration B:
+
+    universal ArtifactRegistry
+    generic ProvenanceGraph engine
+    second trust framework
+    second effect journal
+    organization-wide telemetry-as-authority layer
+
+Generalize storage/schema infrastructure only when multiple concrete artifact kinds prove the same persistence contract.
+
 ## Failure attribution
 
 Integration B must capture raw facts now so Integration I/J do not infer history later.
