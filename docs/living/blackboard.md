@@ -45,8 +45,8 @@ previous-phase-closure: docs/living/knowledge/oracle-detail-closure-2026-09-18.m
 previous-terminal-count: 3
 previous-done-count: 3
 previous-superseded-count: 0
-current-active-debt: 0
-next-work-id: BB-048
+current-active-debt: 1
+next-work-id: BB-049
 phase-scope:
   - integrate Oracle through concrete application/component consumers without widening Oracle authority
   - integrate delivered Agentic Application, Oracle and Core boundaries across real composition seams
@@ -56,13 +56,49 @@ phase-scope:
 
 The Oracle-detail phase is terminal and archived. BB-043..045 are no longer active Board state; their current-system results are projected into `docs/worktree/*` and their evidence/history remains referenced by the phase archive and closure note.
 
-The Integration phase begins deliberately with zero active debt. An unused work id is not backlog.
+The Integration phase now has one explicitly allocated bounded item. Unused later work ids remain non-backlog until separately triggered.
 
 ## Active work
 
-No active Integration work is allocated.
+BB-048
+question/work: Authorize and implement the first bounded DOMAIN_EXECUTION_CONTROL / Integration B slice from an exact released organizational claim through immutable domain-local execution binding and evidence/publication.
+kind: IMPLEMENTATION
+priority: P1
+status: PENDING_REVIEW
+owner:
+current-context:
+  generation: 1
+  ref: docs/living/work-context/BB-048/g0001-implementation-readiness-review.json
+depends-on: []
+target-consumer:
+  - post-claim domain-local execution control
+entry-trigger:
+  - explicit user request to proceed from terminal A.1 into Integration B
+  - BB-047 A.1 accepted/closed on main
+  - reviewed DOMAIN_EXECUTION_CONTROL readiness merged on main
+scope-boundary:
+  - start only from an exact current released organizational claim
+  - own HOW/runtime below the organization boundary
+  - prove one concrete BA-owned execution slice only
+  - do not introduce cross-domain obligation issuance, DOMAIN_ACTIVATION, ProductStateProjection, deployment/Product QA, or Integration C-J
+acceptance-criteria:
+  - ExecutionAttemptHead currentness is resolved before policy/strategy selection
+  - immutable ExecutionAttemptBinding pins exact WorkContract/release/policy/strategy/runtime/config before effects
+  - same semantic attempt recovery reuses the same binding; process restart cannot mint a new attempt
+  - execution result, runtime fact, verification evidence, domain acceptance and authoritative publication remain separate
+  - strategy/runtime cannot select other organizational work or dispatch another domain
+review-requirements:
+  - implementation-readiness review is read-only and bound to exact current main candidate
+  - accepted decision must bind this exact context + candidate before any IMPLEMENT generation exists
+blockers:
+  - implementation authority not yet granted; current generation is REVIEW only
+required-input-refs:
+  - docs/living/knowledge/domain-execution-control-implementation-readiness.md
+  - docs/living/knowledge/domain-execution-control-judgment-artifacts.md
+  - docs/living/decisions/D027-bb047-a1-merge-acceptance.md
+origin: explicit Integration B allocation after terminal BB-047 closure and merged #159 implementation-readiness research.
 
-BB-047 A.1 is terminal and preserved at `docs/living/history/bb047-a1-closure-2026-09-19.md`. Its clean merge acceptance is `docs/living/decisions/D027-bb047-a1-merge-acceptance.md`. The next bounded integration work remains unallocated; DOMAIN_EXECUTION_CONTROL / Integration B requires its own explicit entry trigger and authority.
+BB-047 A.1 remains terminal and preserved at `docs/living/history/bb047-a1-closure-2026-09-19.md`; its clean merge acceptance is `docs/living/decisions/D027-bb047-a1-merge-acceptance.md`.
 
 ## Integration entry rule
 
