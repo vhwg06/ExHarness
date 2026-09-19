@@ -40,4 +40,4 @@ Attestations are subject-, policy-, environment- and issuer-bound. `attestCurren
 
 Domain workflows and concrete model/tool/sandbox/store/signature/key-management/authority-verification adapters are intentionally injected by consuming projects rather than embedded in the kernel.
 
-See `docs/architecture/kernel-completion.md`, `docs/architecture/trust-pipeline.md`, and `docs/architecture/process-trust.md` in the repository for the architecture contracts.
+See `docs/living/reference/architecture/kernel-completion.md`, `docs/living/reference/architecture/trust-pipeline.md`, and `docs/living/reference/architecture/process-trust.md` in the repository for the architecture contracts.

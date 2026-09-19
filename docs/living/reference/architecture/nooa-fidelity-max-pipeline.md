@@ -79,11 +79,11 @@ The completion claim becomes canonical only after the exact final F5 head and me
 
 Completed artifacts:
 
-- F1: `docs/architecture/object-agent.md` — PR #26.
-- F2: `docs/architecture/live-object-reference-graph.md` — PR #27.
-- F3: `docs/architecture/progressive-discovery.md` — PR #28.
-- F4: `docs/architecture/javascript-codeact-session.md` — PR #29.
-- F5: `docs/architecture/fidelity-reference-evaluation.md` + `artifacts/nooa-fidelity-eval.json` — PR #30.
+- F1: `docs/living/reference/architecture/object-agent.md` — PR #26.
+- F2: `docs/living/reference/architecture/live-object-reference-graph.md` — PR #27.
+- F3: `docs/living/reference/architecture/progressive-discovery.md` — PR #28.
+- F4: `docs/living/reference/architecture/javascript-codeact-session.md` — PR #29.
+- F5: `docs/living/reference/architecture/fidelity-reference-evaluation.md` + `artifacts/nooa-fidelity-eval.json` — PR #30.
 
 ---
 
@@ -103,7 +103,7 @@ Make normal JavaScript objects/classes the ergonomic ExHarness programming surfa
 - zero/multi-argument calls have explicit bridges;
 - packed consumer proves the public package path.
 
-Detailed artifact: `docs/architecture/object-agent.md`.
+Detailed artifact: `docs/living/reference/architecture/object-agent.md`.
 
 ---
 
@@ -125,7 +125,7 @@ Preserve live object identity, mutation and cycles behind explicit authority han
 - tracing/observability/snapshot/rebind preserve authority boundaries;
 - packed consumer proves cyclic identity and mutation/reread.
 
-Detailed artifact: `docs/architecture/live-object-reference-graph.md`.
+Detailed artifact: `docs/living/reference/architecture/live-object-reference-graph.md`.
 
 ---
 
@@ -145,7 +145,7 @@ Give the model NOOA-style progressive discovery: a small initial `self` contract
 - no transitive graph dump occurs;
 - packed consumer measured `236` concise chars vs `725` full chars (32.6% initial/full) while task completion remained PASS.
 
-Detailed artifact: `docs/architecture/progressive-discovery.md`.
+Detailed artifact: `docs/living/reference/architecture/progressive-discovery.md`.
 
 ---
 
@@ -166,7 +166,7 @@ Add a CodeAct mode where the model writes JavaScript cells against a persistent 
 - finite action-protocol CodeAct remains supported;
 - packed child-process reference execution proves real JavaScript looping, persistent locals, nested discovery, mutation/reread, terminal abort and infinite-loop containment.
 
-Detailed artifact: `docs/architecture/javascript-codeact-session.md`.
+Detailed artifact: `docs/living/reference/architecture/javascript-codeact-session.md`.
 
 ### Measured packed reference path
 
@@ -208,7 +208,7 @@ Prove F1-F4 through the packed public package and compare with the existing expl
 6. trace correlation and snapshot/rebind authority freshness;
 7. adversarial authority, terminal and containment failures.
 
-Detailed artifact: `docs/architecture/fidelity-reference-evaluation.md`.
+Detailed artifact: `docs/living/reference/architecture/fidelity-reference-evaluation.md`.
 Stable measurement artifact: `artifacts/nooa-fidelity-eval.json`.
 
 ### Measured same-task comparison

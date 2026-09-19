@@ -13,9 +13,9 @@ PROPOSED
   -> SUPERSEDED when later accepted evidence replaces it
 ```
 
-`docs/worktree/*` must never be used for proposed/future design merely because a decision is not accepted yet. Worktree is the source-synchronized projection of the system that exists now.
+`docs/living/system/*` must never be used for proposed/future design merely because a decision is not accepted yet. Worktree is the source-synchronized projection of the system that exists now.
 
-Unresolved operational work belongs on `../blackboard.md`. Evidence/judgment/audit material belongs under `../knowledge/`. A decision proposal may live here as `PROPOSED` while it is being reviewed, but it must not be promoted into worktree current-state docs until accepted and applicable to current source-backed reality.
+Unresolved operational work belongs on `docs/blackboard/state.md`. Evidence/judgment/audit material belongs under `../knowledge/`. A decision proposal may live here as `PROPOSED` while it is being reviewed, but it must not be promoted into worktree current-state docs until accepted and applicable to current source-backed reality.
 
 Each material decision should state:
 
@@ -33,4 +33,4 @@ promotion targets
 what would reopen it
 ```
 
-`PROMOTED` means the accepted decision has been materialized into the relevant authority view. Promotion into `docs/worktree/*` is valid only for constraints/facts that describe or constrain the current source-backed system; it must not make unimplemented desired state look current.
+`PROMOTED` means the accepted decision has been materialized into the relevant authority view. Promotion into `docs/living/system/*` is valid only for constraints/facts that describe or constrain the current source-backed system; it must not make unimplemented desired state look current.

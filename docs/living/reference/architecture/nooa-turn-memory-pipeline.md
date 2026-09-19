@@ -55,7 +55,7 @@ Introduce first-class `BEFORE_TURN` / `AFTER_TURN` runtime boundaries for every 
 - concurrent model turns fail closed;
 - instrumentation preserves `turnEvents()`.
 
-Artifact: `docs/architecture/turn-lifecycle.md`.
+Artifact: `docs/living/reference/architecture/turn-lifecycle.md`.
 
 ---
 
@@ -88,7 +88,7 @@ model generation
 - JavaScript CodeAct `doc(self)` follows the latest turn projection;
 - context render failure closes the prepared turn before model generation.
 
-Artifact: `docs/architecture/turn-context-refresh.md`.
+Artifact: `docs/living/reference/architecture/turn-context-refresh.md`.
 
 ---
 
@@ -121,7 +121,7 @@ next-turn prompt history
 - reducers stay lossy projections and cannot mutate canonical events;
 - history/context bounds are re-enforced at each turn.
 
-Artifact: `docs/architecture/turn-history-evolution.md`.
+Artifact: `docs/living/reference/architecture/turn-history-evolution.md`.
 
 ---
 
@@ -154,7 +154,7 @@ ARCHIVED, retained for explicit inspection
 - provider return values cross clone boundaries so persistence identity cannot leak to callers;
 - archived records are hidden by default but remain explicitly inspectable.
 
-Artifact: `docs/architecture/semantic-memory-port.md`.
+Artifact: `docs/living/reference/architecture/semantic-memory-port.md`.
 
 ---
 
@@ -189,7 +189,7 @@ RELEVANCE_ONLY RecallResult
 - retrieval output is `RELEVANCE_ONLY` and contains no truth, trust or verdict authority;
 - G5 performs no prompt injection.
 
-Artifact: `docs/architecture/associative-recall.md`.
+Artifact: `docs/living/reference/architecture/associative-recall.md`.
 
 ---
 
@@ -231,7 +231,7 @@ model
 - retrieval/context failures happen before model generation;
 - per-call cadence caches are isolated by call ID and bounded by deterministic LRU rather than retained without limit.
 
-Artifact: `docs/architecture/spontaneous-recall.md`.
+Artifact: `docs/living/reference/architecture/spontaneous-recall.md`.
 
 ---
 
@@ -289,7 +289,7 @@ BEFORE_TURN / AFTER     3 / 3
 
 The eval keeps semantic assertions and also deep-compares the full deterministic result against the checked-in artifact. Metric drift therefore fails CI rather than silently redefining the reference target.
 
-Artifact: `docs/architecture/turn-memory-reference-evaluation.md` + `artifacts/nooa-turn-memory-eval.json`.
+Artifact: `docs/living/reference/architecture/turn-memory-reference-evaluation.md` + `artifacts/nooa-turn-memory-eval.json`.
 
 G7 merge commit `6a63a6a675577ada713d326a6fd11ad42e5a5af6` passed the post-merge Node 20/22/24 matrix.
 

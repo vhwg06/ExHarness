@@ -165,24 +165,24 @@ search investment/supervision != promotion correctness
 The repository has a strict partition:
 
 ```text
-docs/worktree/*
+docs/living/system/*
     = source-synchronized living system docs
     = current state only
 
-docs/living/blackboard.md
+docs/blackboard/state.md
     = all unresolved gaps / problems / questions / blockers / next work
 ```
 
 The Blackboard is shared operational state, not an actor. Orchestration owns lifecycle transitions; a Worker may submit/request review but cannot close its own work.
 
-Do **not** use `docs/worktree/` as a hidden backlog. If a current-system document discovers an unresolved problem, keep the current fact in the document and move the problem to the Blackboard.
+Do **not** use `docs/living/system/` as a hidden backlog. If a current-system document discovers an unresolved problem, keep the current fact in the document and move the problem to the Blackboard.
 
 Documentation routing:
 
 ```text
 docs/README.md
-  -> docs/living/blackboard.md          what remains to do
-  -> docs/worktree/state.md             what exists now
+  -> docs/blackboard/state.md          what remains to do
+  -> docs/living/system/state.md             what exists now
      -> worktree/pipeline.md             current delivered pipeline
      -> agentic-application/             current application docs
      -> oracle/                          current Oracle docs
@@ -191,7 +191,7 @@ docs/README.md
   -> docs/living/decisions/*            accepted decisions
 ```
 
-Source/public exports and executable tests/runtime are implementation authority. `docs/worktree/*` must be reconciled to them.
+Source/public exports and executable tests/runtime are implementation authority. `docs/living/system/*` must be reconciled to them.
 
 ## Core package
 

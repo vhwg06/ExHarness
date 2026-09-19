@@ -63,7 +63,7 @@ The substrate completion claim is canonical after the exact final NOOA-10 head a
 
 The completed substrate intentionally stopped short of copying NOOA's identity-defining object-native ergonomics and language-native CodeAct. The follow-on execution authority is:
 
-`docs/architecture/nooa-fidelity-max-pipeline.md`
+`docs/living/reference/architecture/nooa-fidelity-max-pipeline.md`
 
 That pipeline pushes four areas further without weakening existing explicit authority/trust boundaries:
 
@@ -84,15 +84,15 @@ The completion status in this file remains DONE; the fidelity pipeline is an exp
 |---|---|---:|
 | NOOA-01 Typed Judgment | typed judgment contract in runtime/tests | #10 |
 | NOOA-02 Predict Strategy | Predict strategy contract in runtime/tests | #11 |
-| NOOA-03 AgentEvent working history | `docs/architecture/agent-events.md` | #13 |
-| AVO-R1 Adaptive useful-range gate | `docs/architecture/adaptive-useful-range.md` | #16 |
-| NOOA-04 Context blocks + history selection | `docs/architecture/context-history.md` | #17 |
-| NOOA-05 ResourceRef / live resources | `docs/architecture/resource-ref.md` | #18 |
-| NOOA-06 CodeAct | `docs/architecture/codeact.md` | #19 |
-| NOOA-07 Nested tracing | `docs/architecture/nested-tracing.md` | #21 |
-| NOOA-08 Model routing | `docs/architecture/model-routing.md` | #22 |
-| NOOA-09 Runtime snapshot / resume | `docs/architecture/runtime-snapshot.md` | #23 |
-| NOOA-10 Reference substrate + adversarial evaluation | `docs/architecture/reference-substrate-evaluation.md` + `artifacts/nooa-reference-eval.json` | #24 |
+| NOOA-03 AgentEvent working history | `docs/living/reference/architecture/agent-events.md` | #13 |
+| AVO-R1 Adaptive useful-range gate | `docs/living/reference/architecture/adaptive-useful-range.md` | #16 |
+| NOOA-04 Context blocks + history selection | `docs/living/reference/architecture/context-history.md` | #17 |
+| NOOA-05 ResourceRef / live resources | `docs/living/reference/architecture/resource-ref.md` | #18 |
+| NOOA-06 CodeAct | `docs/living/reference/architecture/codeact.md` | #19 |
+| NOOA-07 Nested tracing | `docs/living/reference/architecture/nested-tracing.md` | #21 |
+| NOOA-08 Model routing | `docs/living/reference/architecture/model-routing.md` | #22 |
+| NOOA-09 Runtime snapshot / resume | `docs/living/reference/architecture/runtime-snapshot.md` | #23 |
+| NOOA-10 Reference substrate + adversarial evaluation | `docs/living/reference/architecture/reference-substrate-evaluation.md` + `artifacts/nooa-reference-eval.json` | #24 |
 
 ---
 

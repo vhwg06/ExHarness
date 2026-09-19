@@ -1,12 +1,12 @@
 # Current knowledge state
 
-Durable knowledge snapshot; operational open work lives in `../blackboard.md`.
+Durable knowledge snapshot; operational open work lives in `docs/blackboard/state.md`.
 
 ## Accepted documentation model
 
 - source/public exports and executable behavior are implementation authority;
-- `docs/worktree/*` is the source-synchronized current-system projection;
-- `docs/living/blackboard.md` is the canonical home for all actionable gaps/problems/questions/blockers/next work;
+- `docs/living/system/*` is the source-synchronized current-system projection;
+- `docs/blackboard/state.md` is the canonical home for all actionable gaps/problems/questions/blockers/next work;
 - evidence, judgment, audit and decision remain separate from Board work status;
 - session count does not promote knowledge;
 - a completed Board item does not automatically promote an architectural conclusion.
@@ -31,4 +31,4 @@ The former worktree gap files have been reconciled:
 - deliberate non-goals such as cache/MCP/RAG without concrete pressure were not converted into fake work;
 - worktree docs no longer own future roadmap/gap state.
 
-For current unresolved work, read `../blackboard.md`.
+For current unresolved work, read `docs/blackboard/state.md`.
