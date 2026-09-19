@@ -506,12 +506,30 @@ export function createOrganizationWorkClaimController({
         identity:receipt.boardOwner,
         principalRef:requireText(receipt.principalRef,"receipt principalRef")
       });
-      const authority=await currentAuthorities({
-        materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-        item,policyId,principal,contract
-      });
-      assertReceiptAuthority(receipt,authority,item);
-      return true;
+      let observed=null;
+      try{
+        observed=await currentAuthorities({
+          materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
+          item,policyId,principal,contract
+        });
+        assertReceiptAuthority(receipt,observed,item);
+        return true;
+      }catch(error){
+        const snapshot=observed??await authorityObservations({
+          materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
+          item,policyId,projectId:contract.projectId
+        });
+        await applyInvalidation({
+          item,
+          contract,
+          principalRef:principal.principalRef,
+          observed:snapshot,
+          cause:invalidationCause(error),
+          reasonRef:"execution-entry-freshness:"+receiptRef,
+          releasedClaimReceiptRef:receiptRef
+        });
+        throw error;
+      }
     },
 
     async recoverClaim({itemId,principalContext,reason}){
