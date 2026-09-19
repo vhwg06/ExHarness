@@ -1,0 +1,92 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_REVIEW_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 1,
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Fresh independent review of Integration A.1 runtime implementation readiness and exact source authorization boundary.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "implement or repair A.1 runtime source in the review lane",
+      "self-accept or transition BB-047 to implementation",
+      "enter DOMAIN_EXECUTION_CONTROL, BA execution, ProductStateProjection, or Integration B-J"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "pullRequest": 154,
+    "targetType": "git-commit",
+    "candidateHeadSha": "4d1832ce6cabd5e712e75673c902bcdb61db41e8",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/g0001-implementation-readiness-review.json"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "4d1832ce6cabd5e712e75673c902bcdb61db41e8"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/worktree/state.md",
+    "docs/living/blackboard.md",
+    "docs/living/contracts.md",
+    "docs/living/pipelines.md",
+    "packages/agentic-system/src/application-orchestrator.js",
+    "packages/agentic-system/src/blackboard-orchestrator.js",
+    "packages/agentic-system/src/blackboard-store.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/decisions/D017-bb046-context-plane-acceptance.md",
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-execution-strategy-rebase-research-v6.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/state.md",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "review lane is read-only",
+    "A.1 source implementation requires an exact accepted decision bound to this review context and candidate",
+    "trusted principal -> authorized domain is derived from durable authority, never caller role text",
+    "Board CLAIMED is not executable capability",
+    "ClaimReleaseHead.FENCED is not a Blackboard lifecycle transition",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL and post-claim execution"
+  ],
+  "verification": [
+    "npm run verify:blackboard-context",
+    "npm run verify",
+    "independent A.1 runtime authority/contract review",
+    "independent crash/race/recovery review"
+  ],
+  "expectedOutputs": [
+    "accepted or rejected decision bound to this exact context and candidate",
+    "if accepted, exact A.1 runtime source write scope and verification contract for generation 2 IMPLEMENT"
+  ],
+  "staleWhen": [
+    "review candidate surface changes outside allowed post-target envelope",
+    "Board current-context generation/ref changes",
+    "A.1 implementation boundary changes"
+  ]
+}
