@@ -444,7 +444,9 @@ export function createOrganizationWorkClaimController({
       expectedOwner,
       expectedClaimGeneration,
       kind,
-      invalidationRef
+      invalidationRef,
+      authorizationId,
+      policyId
     }){
       const {item:initial,contract}=await resolveContractForItem(itemId);
       const reasonRef=requireText(invalidationRef,"invalidation reason ref");
@@ -458,8 +460,8 @@ export function createOrganizationWorkClaimController({
       if(persisted==null){
         const observed=await authorityObservations({
           materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
-          authorizationId:initial.origin.authorizationId??"auth-1",
-          policyId:initial.origin.policyId??"organization-execution-authority",
+          authorizationId:requireText(authorizationId,"authorizationId"),
+          policyId:requireText(policyId,"policyId"),
           projectId:contract.projectId
         });
         const item=initial.status==="CLAIMED"?initial:freeze({...initial,owner:expectedOwner,claimGeneration:expectedClaimGeneration});
