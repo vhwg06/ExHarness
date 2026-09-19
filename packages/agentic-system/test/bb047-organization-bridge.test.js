@@ -462,3 +462,130 @@ test("post-release stale policy commits Board invalidation before release fencin
     assert.equal((await claimReleaseStore.current(claimReleaseSubjectKey("project-1",materialized.item.id,claimed.item.claimGeneration))).value.status,ClaimReleaseStatus.FENCED);
   });
 });
+
+
+test("caller context cannot impersonate a policy-authorized execution principal",async()=>{
+  await withFixture(async({controller,materialized,orchestrator})=>{
+    await assert.rejects(
+      ()=>controller.claim({
+        itemId:materialized.item.id,
+        principalContext:{token:"be",identity:"ba-1"},
+        authorizationId:"auth-1",
+        policyId:"organization-execution-authority"
+      }),
+      /not authorized for domain BUSINESS_ANALYSIS/
+    );
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(item.status,BlackboardStatus.READY);
+    assert.equal(item.owner,null);
+  });
+});
+
+test("claim release head is project-scoped and ref-only while receipt is immutable",async()=>{
+  await withFixture(async({controller,materialized,claimReleaseStore,artifactRegistry})=>{
+    const claimed=await controller.claim({
+      itemId:materialized.item.id,
+      principalContext:{token:"ba"},
+      authorizationId:"auth-1",
+      policyId:"organization-execution-authority"
+    });
+    const released=await controller.release({
+      itemId:materialized.item.id,
+      claimGeneration:claimed.item.claimGeneration,
+      principalContext:{token:"ba"},
+      authorizationId:"auth-1",
+      policyId:"organization-execution-authority"
+    });
+    const key=claimReleaseSubjectKey("project-1",materialized.item.id,claimed.item.claimGeneration);
+    const head=await claimReleaseStore.current(key);
+    assert.deepEqual(Object.keys(head.value).sort(),["receiptRef","status"]);
+    assert.equal(head.value.receiptRef,released.receiptRef);
+    assert.notEqual(
+      key,
+      claimReleaseSubjectKey("project-2",materialized.item.id,claimed.item.claimGeneration)
+    );
+    const receipt=await artifactRegistry.resolveClaimReleaseReceipt(released.receiptRef);
+    assert.equal(receipt.projectId,"project-1");
+    assert.equal(receipt.rootIntentId,"root");
+    assert.equal(receipt.principalRef,"principal://ba-1");
+    assert.equal(receipt.boardOwner,"ba-1");
+  });
+});
+
+test("organization invalidation persists exact immutable provenance and reuses it on replay",async()=>{
+  await withFixture(async({controller,materialized,orchestrator,artifactRegistry})=>{
+    const claimed=await controller.claim({
+      itemId:materialized.item.id,
+      principalContext:{token:"ba"},
+      authorizationId:"auth-1",
+      policyId:"organization-execution-authority"
+    });
+    const invalidated=await controller.invalidateOrganizationClaim({
+      itemId:materialized.item.id,
+      expectedOwner:"ba-1",
+      expectedClaimGeneration:claimed.item.claimGeneration,
+      kind:"EXECUTION_AUTHORITY_INVALIDATED",
+      invalidationRef:"reason://manual-policy-invalidation",
+      authorizationId:"auth-1",
+      policyId:"organization-execution-authority"
+    });
+    assert.match(invalidated.invalidationRef,/^claim-authority-invalidation:sha256:/);
+    const artifact=await artifactRegistry.resolveClaimAuthorityInvalidation(invalidated.invalidationRef);
+    assert.equal(artifact.projectId,"project-1");
+    assert.equal(artifact.itemId,materialized.item.id);
+    assert.equal(artifact.expectedOwner,"ba-1");
+    assert.equal(artifact.expectedClaimGeneration,claimed.item.claimGeneration);
+    assert.equal(artifact.cause,"EXECUTION_AUTHORITY_INVALIDATED");
+    assert.equal(artifact.reasonRef,"reason://manual-policy-invalidation");
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.ok(item.evidenceRefs.includes(invalidated.invalidationRef));
+
+    const replayed=await controller.invalidateOrganizationClaim({
+      itemId:materialized.item.id,
+      expectedOwner:"ba-1",
+      expectedClaimGeneration:claimed.item.claimGeneration,
+      kind:"EXECUTION_AUTHORITY_INVALIDATED",
+      invalidationRef:"reason://manual-policy-invalidation",
+      authorizationId:"auth-1",
+      policyId:"organization-execution-authority"
+    });
+    assert.equal(replayed.invalidationRef,invalidated.invalidationRef);
+  });
+});
+
+test("materialization authorization drift after Board publication blocks the new work",async()=>{
+  await withFixture(async({
+    orchestrator,materialized,materializationAuthorizationStore,artifactRegistry,publisher
+  })=>{
+    // Reopen the already-materialized logical subject only to exercise deterministic replay under a
+    // publication race. The wrapper changes authority after the Board transaction but before the
+    // materializer returns; the post-publication fence must make the work non-eligible.
+    const racingOrchestrator={
+      ...orchestrator,
+      async materializeAcceptedWork(args){
+        const result=await orchestrator.materializeAcceptedWork(args);
+        await publisher.publishMaterializationAuthorization({
+          publisher:{identity:"authority-admin"},
+          authorization:{...materializationHead(),generation:2,status:AuthorityHeadStatus.REVOKED}
+        });
+        return result;
+      }
+    };
+    const racingMaterializer=createOrganizationWorkMaterializer({
+      orchestrator:racingOrchestrator,
+      materializationAuthorizationStore,
+      artifactRegistry
+    });
+    await assert.rejects(
+      ()=>racingMaterializer.materialize({
+        authorizationId:"auth-1",
+        decision:decision(),
+        obligation:obligation()
+      }),
+      /materialization authorization is not active|changed across publication/
+    );
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
+    assert.equal(item.status,BlackboardStatus.BLOCKED);
+    assert.match(item.blockers[0],/^WORK_AUTHORIZATION_INVALIDATED:/);
+  });
+});
