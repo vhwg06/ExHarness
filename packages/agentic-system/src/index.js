@@ -152,3 +152,18 @@ export {
   runPreparedBackendObjective
 } from "./backend-application.js";
 export { runBackendThenQaObjective } from "./composition.js";
+export { AuthorityHeadStatus, ClaimReleaseStatus, createJsonClaimReleaseStore } from "./organization-authority-store.js";
+export {
+  createOrganizationWorkDiscovery,
+  createOrganizationWorkMaterializer,
+  defineOrganizationWorkContract,
+  obligationSubjectKey,
+  materializationSubjectKey
+} from "./organization-work.js";
+export { claimReleaseSubjectKey, createOrganizationWorkClaimController } from "./organization-claim.js";
+
+export {
+  createJsonImmutableArtifactStore,
+  createOrganizationArtifactRegistry
+} from "./organization-artifact-store.js";
+export { createOrganizationAuthorityPublisher } from "./organization-authority.js";

@@ -1,0 +1,94 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_REVIEW_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 13,
+  "parentContextRef": "docs/living/work-context/BB-047/g0012-trust-completion-implementation.json",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Fresh independent review of the D022 A.1 trust-completion repair candidate.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "repair source in review lane",
+      "mark DONE or merge",
+      "enter DOMAIN_EXECUTION_CONTROL / Integration B"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "pullRequest": 181,
+    "targetType": "git-commit",
+    "candidateHeadSha": "ee94a318e953d16f5e9cd5d8ecb64b2a8340f659",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/g0013-trust-completion-review.json"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "ee94a318e953d16f5e9cd5d8ecb64b2a8340f659"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/worktree/agentic-application/contracts.md",
+    "docs/worktree/agentic-application/boundaries.md",
+    "packages/agentic-system/src/application-orchestrator.js",
+    "packages/agentic-system/src/organization-artifact-store.js",
+    "packages/agentic-system/src/organization-authority.js",
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/src/organization-work.js",
+    "packages/agentic-system/src/index.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/decisions/D022-bb047-a1-trust-completion-findings.md",
+    "docs/living/work-context/BB-047/g0012-trust-completion-implementation.json",
+    "packages/agentic-system/test/bb047-organization-bridge.test.js"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "trusted ExecutionPrincipal is derived through injected trust boundary; caller context cannot choose identity",
+    "release receipt is immutable content-addressed artifact and release head is project-scoped ref-only currentness",
+    "claim invalidation is immutable exact provenance and replay reuses exact artifact",
+    "organization work/materialization binds project/root and exact authorization observation around publication",
+    "Board invalidation precedes release fencing",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL / Integration B"
+  ],
+  "verification": [
+    "node --test packages/agentic-system/test/bb047-*.test.js",
+    "npm run verify",
+    "fresh principal/receipt/invalidation authority review",
+    "fresh materialization publication/race review"
+  ],
+  "expectedOutputs": [
+    "independent verdict bound to exact candidate",
+    "remaining grounded findings or clean A.1 acceptance evidence"
+  ],
+  "staleWhen": [
+    "PR #181 candidate changes outside review envelope",
+    "Board current-context changes",
+    "D022 repair scope changes"
+  ]
+}

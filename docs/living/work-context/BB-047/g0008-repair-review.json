@@ -1,0 +1,87 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_REVIEW_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 8,
+  "parentContextRef": "docs/living/work-context/BB-047/g0007-repair-implementation.json",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Fresh independent review of the D019 four-P1 A.1 repair candidate.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "repair source in review lane",
+      "mark DONE or merge",
+      "enter DOMAIN_EXECUTION_CONTROL / Integration B"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "pullRequest": 164,
+    "targetType": "git-commit",
+    "candidateHeadSha": "2b71c45ca340f45aee0f61cf3ad7e2f1a5b11cae",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/g0008-repair-review.json"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "2b71c45ca340f45aee0f61cf3ad7e2f1a5b11cae"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/worktree/agentic-application/contracts.md",
+    "packages/agentic-system/src/organization-artifact-store.js",
+    "packages/agentic-system/src/organization-authority.js",
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/src/organization-work.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/decisions/D019-bb047-a1-implementation-rejection.md",
+    "docs/living/work-context/BB-047/g0007-repair-implementation.json",
+    "packages/agentic-system/test/bb047-organization-bridge.test.js"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "review target addresses all four exact D019 P1 findings",
+    "fresh process resolves exact work/authority artifacts from durable refs",
+    "authority heads advance only through trusted publisher verification",
+    "same invalidation replay reconciles Board-first crash window",
+    "post-claim/post-release authority races reconcile to non-executable state",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL / Integration B"
+  ],
+  "verification": [
+    "node --test packages/agentic-system/test/bb047-*.test.js",
+    "npm run verify",
+    "fresh durability/publisher-boundary review",
+    "fresh crash/race/reconciliation review"
+  ],
+  "expectedOutputs": [
+    "independent verdict bound to this exact repair candidate",
+    "remaining grounded blockers or A.1 repair acceptance evidence"
+  ],
+  "staleWhen": [
+    "PR #164 candidate changes outside review envelope",
+    "Board current-context generation/ref changes",
+    "D019 repair scope changes"
+  ]
+}

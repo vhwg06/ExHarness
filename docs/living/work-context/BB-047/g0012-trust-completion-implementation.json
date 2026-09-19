@@ -1,0 +1,122 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "ACCEPTED_IMPLEMENTATION_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 12,
+  "parentContextRef": "docs/living/work-context/BB-047/g0011-repair-review.json",
+  "transitionReasonRef": "docs/living/decisions/D022-bb047-a1-trust-completion-findings.md",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "READY",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "IMPLEMENT",
+    "summary": "Repair the four exact A.1 trust-completion findings raised by g0011.",
+    "allowedMutations": [
+      "add trusted ExecutionPrincipal provider/context and derive Board owner from verified identity",
+      "persist immutable project/root-bound claim release receipts and use ref-only project-scoped release heads",
+      "persist/validate immutable claim-authority invalidation artifacts and exact replay bindings",
+      "bind organization work/materialization to exact project/root plus authorization observation and reconcile publication drift",
+      "add focused adversarial/restart/race tests and update current-system projection",
+      "hand repaired candidate to a fresh immutable REVIEW generation"
+    ],
+    "forbiddenActions": [
+      "mark BB-047 DONE before fresh acceptance",
+      "merge before fresh review acceptance",
+      "enter DOMAIN_EXECUTION_CONTROL / Integration B",
+      "resolve ExecutionPolicy or ExecutionStrategy",
+      "execute BA requirement analysis",
+      "implement ProductStateProjection"
+    ]
+  },
+  "authority": {
+    "implementationDecisionRef": "docs/living/decisions/D022-bb047-a1-trust-completion-findings.md",
+    "subjectContextRef": "docs/living/work-context/BB-047/g0011-repair-review.json",
+    "subjectCandidateHeadSha": "022074d3faa4465416361f2c2743bc8f7d5bb263",
+    "reviewEvidence": "5256180921"
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "be58e903522cda558a6a8956ea861e2f0531ef72"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/worktree/agentic-application/contracts.md",
+    "docs/worktree/agentic-application/boundaries.md",
+    "packages/agentic-system/src/application-orchestrator.js",
+    "packages/agentic-system/src/organization-artifact-store.js",
+    "packages/agentic-system/src/organization-authority.js",
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/src/organization-work.js",
+    "packages/agentic-system/src/index.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/decisions/D022-bb047-a1-trust-completion-findings.md",
+    "docs/living/work-context/BB-047/g0011-repair-review.json"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb047-organization-bridge.test.js",
+      "docs/worktree/agentic-application/contracts.md",
+      "docs/worktree/agentic-application/boundaries.md",
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/**"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "docs/worktree/core-harness/**",
+      "docs/worktree/oracle/**"
+    ]
+  },
+  "hardInvariants": [
+    "caller-provided identity is never execution-principal authority",
+    "release head is project-scoped and ref-only; receipt payload is immutable artifact",
+    "invalidationRef resolves exact immutable artifact bound to the invalidated claim and authority observations",
+    "organization work and receipt bind exact project/root",
+    "materialization authorization observation is revalidated around Board publication and drift converges to non-eligible work",
+    "Board invalidation precedes release fencing",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL / Integration B"
+  ],
+  "verification": [
+    "node --test packages/agentic-system/test/bb047-*.test.js",
+    "npm run verify",
+    "fresh trusted-principal/receipt/invalidation review",
+    "fresh materialization-race/recovery review"
+  ],
+  "expectedOutputs": [
+    "trusted-principal boundary",
+    "immutable receipt/invalidation artifacts",
+    "project/root scoped release capability",
+    "materialization publication fencing/reconciliation",
+    "fresh focused regression evidence",
+    "next immutable REVIEW context"
+  ],
+  "staleWhen": [
+    "Board current-context changes",
+    "D022 is superseded",
+    "repair requires write outside sourceScope.write",
+    "repair requires post-claim HOW semantics"
+  ]
+}

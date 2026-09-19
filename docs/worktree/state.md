@@ -81,3 +81,11 @@ The concrete `ApplicationOrchestrator` is application workflow/Board control, no
 Repository development coordination now has a bounded context-plane implementation for migrated Blackboard items. A migrated active item binds one immutable `WORK_CONTEXT_SPEC` generation through its exact Board `current-context` pointer. The repository verifier fails closed when an active migrated item has no pointer, and validates unique Board binding, generation lineage, required refs, read-only review scope and exact accepted-decision subject binding before an implementation context is usable. A Board with no active item may have no current context.
 
 The resolver loads declared required current-system/input refs while keeping audit/history refs lazy. Context generation does not make a candidate current, schedule work, decide acceptance or replace source/tests as current-system truth. This capability is repository coordination only; the runtime JSON Blackboard has not adopted it.
+
+## Organizational A.1 bridge
+
+The Agentic Application now contains the bounded Integration A.1 organization boundary. Accepted obligations can be deterministically materialized into immutable `ORGANIZATION_WORK_CONTRACT`-bound Blackboard work. Materialization, execution-authority policy and claim-release currentness use durable CAS heads.
+
+Organizational claim authorization is derived from a trusted principal plus the current execution-authority policy, not from caller-supplied domain text. Blackboard `CLAIMED` remains provisional; executable capability requires a current durable `CLAIM_RELEASE_RECEIPT`/head matching the exact Board owner + claim generation and still-current materialization/execution authority heads.
+
+Organization claim invalidation commits the canonical Blackboard consequence first and only then fences the release head. A release-fence cleanup failure therefore cannot preserve executable capability after the Board claim tuple is no longer current. The slice stops before `DOMAIN_EXECUTION_CONTROL`, ExecutionPolicy/ExecutionStrategy resolution, BA execution and ProductStateProjection.

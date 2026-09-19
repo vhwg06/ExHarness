@@ -139,3 +139,79 @@ Unless a concrete use case proves otherwise, the application layer does not own:
 - source connector/retrieval frameworks;
 - generic workflow graph engines;
 - model routing/runtime loops already supplied by ExHarness.
+
+## Organizational trust → claim boundary
+
+```text
+accepted obligation
+  + current MATERIALIZATION_AUTHORIZATION
+  -> deterministic OrganizationWorkMaterializer
+  -> immutable ORGANIZATION_WORK_CONTRACT + READY Board item
+  -> trusted ExecutionPrincipal provider/context
+  -> derived { principalRef, Board owner }
+  + current ExecutionAuthorityPolicyHead
+  -> Blackboard CLAIMED { owner, claimGeneration }
+  -> immutable project/root-bound CLAIM_RELEASE_RECEIPT
+  -> current ClaimReleaseHead(projectId, itemId, claimGeneration) = { status, receiptRef }
+  -> released executable capability
+```
+
+The materializer has no work-selection, scheduling or execution-policy authority. The claim controller cannot choose another item/domain or rewrite work semantics. Board `CLAIMED` alone is not execution authority, and `ClaimReleaseHead.FENCED` is not a Blackboard lifecycle transition.
+
+A.1 ends at released claim. `DOMAIN_EXECUTION_CONTROL` owns HOW only after this boundary and remains a separate integration slice.
+
+
+The caller cannot self-assert the execution principal identity. Application code obtains it through the injected trusted principal boundary and derives Board ownership from that result.
+
+Materialization and claim capability are both project/root-bound. A stale materialization-authorization observation cannot leave new READY work eligible: publication revalidates the exact observation and post-publication drift is reconciled to BLOCKED.
+
+Claim invalidation provenance is an immutable content-addressed artifact, not a caller-authored evidence string. The canonical Board transition validates that artifact against the exact project/root + claim tuple before mutation; release-head fencing remains second and idempotent.
+
+
+## Final A.1 trust/currentness boundary
+
+The organizational claim bridge has four caller/authority separations:
+
+```text
+caller principal context
+  -> trusted ExecutionPrincipal provider
+  -> canonical principalRef + Board owner
+
+Board organization item
+  -> exact materialization authorizationId/ref/generation/revision
+  -> current grant must still be that exact observation
+
+application controller configuration
+  -> executionAuthorityPolicyId
+  -> caller cannot select another policy subject
+
+logical obligation subject
+  -> one live Board item maximum
+  -> exact grant/decision produces materialization identity beneath that subject
+```
+
+Fresh-process reconciliation operates only on the current durable Board claim. It recovers the principal from durable owner identity through the trusted provider, keeps the same `claimGeneration`, and converges the release/invalidation boundary from durable Board, immutable artifacts and current heads.
+
+Authority publisher verification produces canonical provenance that is stored in the immutable authority artifact before the pointer head advances. Payload fields that merely claim an issuer/publisher identity are not authority.
+
+
+### A.1 final acceptance repair
+
+The bridge now has an explicit read-only discovery seam before claim:
+
+```text
+Board eligible work
+  -> resolve exact ORGANIZATION_WORK_CONTRACT
+  -> validate project/root/item/materialization provenance
+  -> require dependencies DONE
+  -> filter owningDomain
+  -> candidates
+```
+
+Discovery is not an authentication or scheduling boundary. Claim authority remains separate and derives the exact materialization authorization subject from Board provenance plus the configured current execution-authority policy.
+
+The immutable work contract carries the complete governed WHAT/provenance set; Board origin remains lifecycle/index provenance rather than a second source of work semantics.
+
+Execution entry is an active revocation boundary, not only a predicate: a stale released claim persists an exact invalidation artifact, commits the typed canonical Board lifecycle consequence first, and fences the historical release head second.
+
+Concurrent identical materialization must converge across both immutable-artifact persistence and Blackboard publication. Conflicting materializations for the same live logical obligation fail closed.

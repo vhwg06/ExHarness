@@ -172,3 +172,17 @@ What is still not implemented is a generic PM/SA agent runtime, PM/SA Worker abs
 - current decisions/invariants -> `decisions.md`
 - current application evaluation -> `evaluation.md`
 - all open application gaps/problems -> `../../living/blackboard.md`
+
+## Organization claim/release boundary
+
+Integration A.1 adds a concrete organizational bridge without turning the Application Orchestrator into a scheduler:
+
+- `createOrganizationWorkMaterializer(...)` validates an exact accepted obligation against the current materialization-authorization head, derives a deterministic materialization identity, and converges duplicate retries on one Board item + immutable work-contract ref;
+- `createOrganizationWorkClaimController(...)` derives domain claim authority from the current execution-authority policy and authenticated principal identity;
+- successful Board claim is provisional only;
+- `release(...)` publishes an immutable `CLAIM_RELEASE_RECEIPT` behind a durable claim-generation-specific release head;
+- execution entry must revalidate the exact Board claim tuple plus current materialization/execution authority heads;
+- `recoverClaim(...)` increments the Blackboard claim generation and fences the prior release subject;
+- `invalidateOrganizationClaim(...)` transitions canonical Board state before release-head fencing. Execution-authority invalidation reopens still-valid work; work-authorization invalidation blocks it without incrementing the invalidated generation.
+
+The authority-head stores are concrete durable JSON CAS stores. This slice does not implement post-claim execution ownership, strategy resolution, BA requirement analysis or cross-domain dispatch.

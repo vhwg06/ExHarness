@@ -307,3 +307,98 @@ The durable Backend -> QA workflow interprets Advisor actions at the application
 - context resolution must declare additional repository files; escalation resolution must identify a resolver and rationale.
 
 The workflow commits resolution through `resolveBlockedCheckpoint(...)`, which compares the exact expected blocked checkpoint and atomically replaces it plus `REOPENED` in one store transaction. Resolution does not accept Backend work, bypass QA, authorize `DONE`, or grant lifecycle authority to the Advisor.
+
+## Organization work/claim authority contract
+
+`ORGANIZATION_WORK_CONTRACT v1` freezes one accepted obligation's owning domain, workload type, exact input/output refs and acceptance refs. Its content-derived ref is stable across duplicate materialization attempts.
+
+Materialization is permitted only while the exact authorization head is `ACTIVE`, still binds the accepted decision and includes the obligation key. The resulting Board item records exact materialization/work-contract provenance; a conflicting duplicate id/key/ref fails closed.
+
+Execution authority is current-head based. A historical policy ref is insufficient after the durable policy head advances or becomes revoked. Principal-to-domain membership is read from the current policy head.
+
+A claim-release receipt binds the exact:
+
+```text
+itemId
+principal
+claimGeneration
+workContractRef
+materialization authorization id/ref/generation
+execution authority policy id/ref/generation
+```
+
+The release head is keyed by `{itemId, claimGeneration}`. Duplicate release for the same exact receipt converges; a conflicting receipt fails closed. Execution entry requires a matching current Board claim tuple, a RELEASED head and unchanged active authority heads.
+
+Recovery and invalidation preserve the accepted v7 ordering: generation takeover makes prior release subjects stale; canonical Board invalidation commits before release-head fencing. If release-head fencing later fails, the stale release cannot pass the Board tuple check.
+
+### A.1 repair: durable resolution and trusted publication
+
+Organization work and authority references are now backed by a durable immutable artifact registry. A fresh process resolves the exact work contract from the Board's `workContractRef`; claim/release/recovery no longer accept a caller-supplied raw contract as authority.
+
+Materialization-authorization and execution-authority current heads are advanced through a trusted publisher boundary. The boundary invokes `organizationAuthority.verifyMaterializationAuthorizationIssuer(...)` or `verifyExecutionAuthorityPolicyPublisher(...)` before publishing an immutable authority artifact and CAS-advancing its current head. Raw CAS storage is persistence infrastructure, not publication authority.
+
+Claim freshness is checked both before and after the canonical Board claim. A post-claim authority failure invalidates the provisional claim. Release freshness is checked after durable release publication; a stale result fences that release subject and invalidates the canonical claim.
+
+Organization invalidation is replayable. If the Board transition commits but release fencing fails, the same `invalidationRef` against the same claim generation recognizes the already-applied REOPENED/BLOCKED Board consequence and resumes release-head fencing. A fresh process can therefore reconcile the Board-first crash window.
+
+### A.1 authority-currentness repair
+
+Authority current heads are now pointers, not authority payloads: `{ generation, status, artifactRef }`. Authorization resolves the exact immutable artifact behind `artifactRef` and validates subject, generation and status before reading work scope or principal/domain grants. Raw authority CAS constructors are no longer exported from the package application surface.
+
+Claim and release capture exact authority observations (CAS revision + generation + artifact ref) before their durable mutation and require the same observations afterward. ACTIVE-to-ACTIVE head advancement is therefore a freshness failure even when the new policy would grant the same domain.
+
+Freshness failures preserve lifecycle cause. Materialization/work-authorization failure commits `WORK_AUTHORIZATION_INVALIDATED -> BLOCKED`; execution-policy/principal failure commits `EXECUTION_AUTHORITY_INVALIDATED -> REOPENED`. Post-release failure commits that canonical Board consequence before fencing the release head, so the existing replay path can reconcile a fence crash without leaving canonical lifecycle stale.
+
+
+
+### A.1 trust-completion repair
+
+Organization authority consumers are project/root-bound. `ORGANIZATION_WORK_CONTRACT v1` records the durable `projectId`, root item and root intent in addition to obligation/domain/workload refs. Materialization authorization artifacts must bind the same project, and the exact authorization observation is revalidated inside the Board publication transaction and again immediately after publication. Drift after publication moves the newly materialized work to `BLOCKED` rather than leaving stale work eligible.
+
+Execution identity comes from an injected trusted `executionPrincipalProvider`. Caller context is only input to that provider and cannot directly choose the Board owner or policy principal. The released capability records both the derived Board owner and immutable trusted `principalRef`.
+
+`CLAIM_RELEASE_RECEIPT` is an immutable content-addressed organizational artifact. `ClaimReleaseHead` is currentness only and stores `{ status, receiptRef }` under a project-scoped subject derived from `{ projectId, itemId, claimGeneration }`. Execution entry resolves the immutable receipt and checks its exact project/root/work-contract/authority bindings before accepting the release.
+
+Organization-claim invalidation also uses an immutable `CLAIM_AUTHORITY_INVALIDATION` artifact. It binds project/root, exact item/owner/generation, typed cause, observed materialization/execution authority heads, reason provenance, and an optional released receipt ref. The Orchestrator accepts only a content-addressed ref whose payload matches the exact current claim tuple; replay reuses the same artifact and then completes release-head fencing.
+
+These changes remain A.1 application-local trust/currentness semantics. They do not introduce a generic IAM system or enter domain execution/HOW resolution.
+
+
+### A.1 final-completion repair
+
+Organization-managed work now separates logical obligation identity from exact materialization identity:
+
+```text
+obligationSubjectKey = H(projectId, rootIntentId, implementationArtifactRef, obligationKey)
+materializationKey   = H(obligationSubjectKey, acceptedDecisionRef, authorizationRef)
+```
+
+The canonical materialization transaction derives/validates the Board item id from `materializationKey`, records the exact `authorizationId/ref/generation/revision` plus implementation artifact provenance, and permits at most one live Board item for one `obligationSubjectKey`. A later grant cannot silently create duplicate live work for the same logical obligation.
+
+Claim/release/recovery do not accept a caller-selected materialization authorization subject. They derive the exact `authorizationId` from Board materialization provenance and require the current head revision, generation and artifact ref to match the observation that created the work. The execution-authority policy subject is controller configuration rather than caller authority.
+
+The trusted principal boundary supports both request-context resolution and durable owner recovery. `reconcileOrganizationClaimAuthority({ itemId })` reconstructs the canonical principal from Board owner state and, without incrementing claim generation, either completes a missing release, reconstructs an existing immutable release receipt, or commits typed Board invalidation then fences the release capability.
+
+Verified authority publication persists canonical publisher provenance. The trusted organization-authority adapter returns a canonical `authorityRef`; caller-supplied issuer/publisher provenance is stripped and cannot become authority. Immutable materialization grants carry `issuedByAuthorityRef`; immutable execution policies carry `publishedByAuthorityRef`.
+
+Materialization grants explicitly bind `implementationArtifactRef`, `authorizedSliceIds` and `authorizedObligationKeys`. There is no wildcard grant interpretation.
+
+
+### A.1 final acceptance repair
+
+`ORGANIZATION_WORK_CONTRACT v1` is now the complete immutable WHAT/provenance artifact for one materialized obligation. It binds project/root, accepted decision, exact materialization authorization id/ref/generation/revision, pinned authority-policy revision, implementation artifact, slice/key, logical `obligationSubjectKey`, grant-bound `materializationKey`, canonical Board item id, domain/workload, bounded summary, declared dependencies, required artifact refs, expected artifact kind/output refs and acceptance refs. Consumers validate the content-derived contract ref rather than reconstructing these semantics from caller input.
+
+Runtime materialization grants are explicit immutable grant/revocation artifacts. Active grants bind project + root intent + accepted decision + implementation artifact + authorized slice/key + pinned authority-policy revision + verified issuer provenance. Wildcard slice/key grants are rejected by the materializer. Execution-authority policy artifacts bind canonical `principalRef` values to authorized domains and carry the same pinned authority-policy revision plus verified publisher provenance; Board-owner display identity is not policy authority.
+
+Claim-release receipts record exact materialization and execution authority refs/generations plus their pinned policy revisions. At execution entry, stale work authorization maps to `WORK_AUTHORIZATION_INVALIDATED -> BLOCKED`; stale execution policy/principal authority maps to `EXECUTION_AUTHORITY_INVALIDATED -> REOPENED`. The canonical Board invalidation commits before historical release-head fencing.
+
+Materialization is exactly-once at two levels: `obligationSubjectKey` permits at most one live logical Board item, while identical `materializationKey` attempts converge on that exact item. Concurrent immutable-artifact writes wait/recheck content identity, concurrent Board publication conflicts reload the deterministic result, and all successful identical callers receive the same content-addressed materialization receipt ref.
+
+`createOrganizationWorkDiscovery(...)` is read-only. It reads current Board eligibility, requires dependencies DONE, resolves and validates each exact immutable work contract/project/root/item binding, and filters by `owningDomain`. It does not authenticate a caller, claim work, choose a next domain, or mutate lifecycle.
+
+
+### A.1 final authority/recovery race repair
+
+Authority invalidation provenance can be constructed from the exact raw current-head observations even when the immutable authority artifact behind a head is missing or inconsistent. That fallback records the subject, CAS revision, generation, status and artifact ref without treating the broken artifact as trusted authority. This lets fresh reconciliation and execution entry still commit the typed canonical Board consequence before release fencing.
+
+Released capability boundaries also final-revalidate the canonical Board claim tuple. After release publication, during fresh-process reconciliation, and immediately before execution entry returns usable authority, the controller re-reads exact `{ itemId, status: CLAIMED, owner, claimGeneration }`. If that tuple has advanced or been invalidated concurrently, the old release subject is fenced and no stale capability is returned; the newer canonical Board lifecycle is never overwritten by the stale path.

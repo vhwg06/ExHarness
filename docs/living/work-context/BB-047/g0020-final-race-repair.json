@@ -1,0 +1,105 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "ACCEPTED_IMPLEMENTATION_CONTEXT",
+  "contextId": "BB-047-context",
+  "itemId": "BB-047",
+  "generation": 20,
+  "parentContextRef": "docs/living/work-context/BB-047/g0019-policy-revision-review.json",
+  "transitionReasonRef": "docs/living/decisions/D026-bb047-final-authority-recovery-races.md",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "READY",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "IMPLEMENT",
+    "summary": "Repair the two exact final authority/recovery race findings.",
+    "allowedMutations": [
+      "capture raw authority head observations for invalidation provenance without trusting broken artifacts",
+      "converge missing/corrupt authority to typed canonical Board invalidation before release fencing",
+      "final re-read exact Board claim tuple around release/reconciliation/execution entry",
+      "fence stale old-generation release capability without overwriting newer canonical Board state",
+      "add focused race and corrupt-artifact regressions",
+      "hand exact repaired candidate to final read-only review"
+    ],
+    "forbiddenActions": [
+      "merge before clean fresh review",
+      "enter DOMAIN_EXECUTION_CONTROL / Integration B",
+      "execute role work",
+      "implement ProductStateProjection"
+    ]
+  },
+  "authority": {
+    "implementationDecisionRef": "docs/living/decisions/D026-bb047-final-authority-recovery-races.md",
+    "subjectContextRef": "docs/living/work-context/BB-047/g0019-policy-revision-review.json",
+    "subjectCandidateHeadSha": "7b89e0f4a0e8be05badff7fc91bae161adb76fa3",
+    "reviewEvidence": "5256584644"
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "80dc28a237ee09ddd689d6f24c929a3661717cf4"
+  },
+  "requiredCurrentSystemRefs": [
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/test/bb047-organization-bridge.test.js",
+    "docs/worktree/agentic-application/contracts.md"
+  ],
+  "requiredInputRefs": [
+    "docs/living/decisions/D026-bb047-final-authority-recovery-races.md",
+    "docs/living/work-context/BB-047/g0019-policy-revision-review.json"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/test/bb047-organization-bridge.test.js",
+      "docs/worktree/agentic-application/contracts.md",
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-047/**"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "docs/worktree/core-harness/**",
+      "docs/worktree/oracle/**"
+    ]
+  },
+  "hardInvariants": [
+    "invalid/inconsistent authority still yields exact immutable invalidation provenance",
+    "typed WORK invalidation BLOCKS and EXECUTION invalidation REOPENS",
+    "Board claim tuple is final-fresh across released capability boundaries",
+    "newer canonical Board lifecycle is never overwritten by stale old-generation repair",
+    "A.1 stops before DOMAIN_EXECUTION_CONTROL / Integration B"
+  ],
+  "verification": [
+    "node --test packages/agentic-system/test/bb047-*.test.js",
+    "npm run verify",
+    "corrupt authority regression",
+    "release/execution Board drift race regression",
+    "fresh final review"
+  ],
+  "expectedOutputs": [
+    "raw-head invalidation fallback",
+    "Board tuple final-freshness fencing",
+    "focused regression evidence",
+    "final fresh review context"
+  ],
+  "staleWhen": [
+    "Board current-context changes",
+    "D026 is superseded",
+    "repair requires write outside sourceScope.write"
+  ]
+}
