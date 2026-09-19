@@ -6,8 +6,21 @@ import { resolveContext } from "./blackboard-context-resolver.mjs";
 
 function git(root,args){return execFileSync("git",["-C",root,...args],{encoding:"utf8"}).trim();}
 function assertReviewTarget(review,{root="."}={}) {
-  git(root,["cat-file","-e",`${review.reviewTarget.candidateHeadSha}^{commit}`]);
-  const changed=git(root,["diff","--name-only",review.reviewTarget.candidateHeadSha,"HEAD"]).split("\n").filter(Boolean);
+  const target=review.reviewTarget.candidateHeadSha;
+  const head=git(root,["rev-parse","HEAD"]);
+  // PR CI commonly checks out a synthetic merge commit and may not fetch every
+  // intermediate branch object. The immutable target is still verifiable when
+  // HEAD is that target or HEAD's first parent is that target.
+  let available=true;
+  try { git(root,["cat-file","-e",`${target}^{commit}`]); } catch { available=false; }
+  if(!available) {
+    let firstParent="";
+    try { firstParent=git(root,["rev-parse","HEAD^1"]); } catch {}
+    if(head!==target && firstParent!==target)
+      throw new Error(`REVIEW_TARGET_UNAVAILABLE: ${target}`);
+    return;
+  }
+  const changed=git(root,["diff","--name-only",target,"HEAD"]).split("\n").filter(Boolean);
   const allowed=new Set(review.reviewTarget.allowedPostTargetEnvelopePaths);
   const bad=changed.filter(p=>!allowed.has(p));
   if(bad.length) throw new Error(`REVIEW_TARGET_STALE: ${bad.join(",")}`);
