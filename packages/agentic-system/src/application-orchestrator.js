@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { subjectFromValue } from "../../core-harness/src/index.js";
 import {
@@ -18,6 +19,10 @@ function requireText(value, name) {
 function requirePositiveInteger(value, name) {
   invariant(Number.isInteger(value) && value > 0, `${name} must be a positive integer`);
   return value;
+}
+
+function digest(value) {
+  return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
 function normalizeTextArray(value, name) {
@@ -204,7 +209,13 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     workloadType,
     materializationKey,
     workContractRef,
-    authorizationRef
+    authorizationRef,
+    authorizationGeneration,
+    authorizationRevision,
+    projectId,
+    rootItemId,
+    rootIntentId,
+    revalidateAuthorization
   }) {
     const normalizedItemId=requireText(itemId,"itemId");
     const normalizedWork=requireText(work,"work");
@@ -213,15 +224,31 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     const normalizedKey=requireText(materializationKey,"materializationKey");
     const normalizedContractRef=requireText(workContractRef,"workContractRef");
     const normalizedAuthorizationRef=requireText(authorizationRef,"authorizationRef");
+    const normalizedAuthorizationGeneration=requirePositiveInteger(authorizationGeneration,"authorizationGeneration");
+    const normalizedAuthorizationRevision=requireText(authorizationRevision,"authorizationRevision");
+    const normalizedProjectId=requireText(projectId,"projectId");
+    const normalizedRootItemId=requireText(rootItemId,"rootItemId");
+    const normalizedRootIntentId=requireText(rootIntentId,"rootIntentId");
+    invariant(typeof revalidateAuthorization==="function","revalidateAuthorization must be a function");
 
-    const result=await store.transact((snapshot)=>{
+    const result=await store.transact(async(snapshot)=>{
+      const root=findItem(snapshot,normalizedRootItemId);
+      invariant(root.origin?.kind==="USER_INTENT_ROOT","organization materialization root kind mismatch");
+      invariant(root.origin?.projectId===normalizedProjectId,"organization materialization project mismatch");
+      invariant(root.origin?.userIntent?.id===normalizedRootIntentId,"organization materialization root intent mismatch");
+      invariant(root.status===BlackboardStatus.DONE,"organization materialization root must remain DONE");
+      invariant(await revalidateAuthorization()===true,"materialization authorization revalidation failed");
+
       const existing=snapshot.items.find((candidate)=>candidate.id===normalizedItemId)??null;
       if(existing){
-        invariant(existing.origin?.kind==="ORGANIZATION_MATERIALIZATION",`Blackboard item ${normalizedItemId} conflicts with deterministic materialization`);
-        invariant(existing.origin.materializationKey===normalizedKey,`Blackboard item ${normalizedItemId} materialization key conflicts`);
-        invariant(existing.origin.workContractRef===normalizedContractRef,`Blackboard item ${normalizedItemId} work contract conflicts`);
+        invariant(existing.origin?.kind==="ORGANIZATION_MATERIALIZATION","Blackboard item "+normalizedItemId+" conflicts with deterministic materialization");
+        invariant(existing.origin.materializationKey===normalizedKey,"Blackboard item "+normalizedItemId+" materialization key conflicts");
+        invariant(existing.origin.workContractRef===normalizedContractRef,"Blackboard item "+normalizedItemId+" work contract conflicts");
+        invariant(existing.origin.projectId===normalizedProjectId&&existing.origin.rootItemId===normalizedRootItemId&&existing.origin.rootIntentId===normalizedRootIntentId,"Blackboard item "+normalizedItemId+" project/root binding conflicts");
+        invariant(existing.origin.authorizationRef===normalizedAuthorizationRef&&existing.origin.authorizationGeneration===normalizedAuthorizationGeneration&&existing.origin.authorizationRevision===normalizedAuthorizationRevision,"Blackboard item "+normalizedItemId+" authorization observation conflicts");
         return structuredClone(existing);
       }
+
       const item={
         id:normalizedItemId,
         work:normalizedWork,
@@ -229,7 +256,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         owner:null,
         claimGeneration:0,
         reviewGeneration:0,
-        dependsOn:[],
+        dependsOn:[normalizedRootItemId],
         remainingWork:[],
         blockers:[],
         artifactRefs:[normalizedContractRef],
@@ -245,14 +272,47 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         activeReview:null,
         origin:{
           kind:"ORGANIZATION_MATERIALIZATION",
+          projectId:normalizedProjectId,
+          rootItemId:normalizedRootItemId,
+          rootIntentId:normalizedRootIntentId,
           owningDomain:normalizedDomain,
           workloadType:normalizedWorkload,
           materializationKey:normalizedKey,
           workContractRef:normalizedContractRef,
-          authorizationRef:normalizedAuthorizationRef
+          authorizationRef:normalizedAuthorizationRef,
+          authorizationGeneration:normalizedAuthorizationGeneration,
+          authorizationRevision:normalizedAuthorizationRevision
         }
       };
       snapshot.items.push(item);
+      return structuredClone(item);
+    });
+    return Object.freeze(structuredClone(result));
+  }
+
+  async function blockOrganizationMaterialization({
+    itemId,
+    authorizationRef,
+    authorizationGeneration,
+    reasonRef
+  }) {
+    const normalizedItemId=requireText(itemId,"itemId");
+    const normalizedAuthorizationRef=requireText(authorizationRef,"authorizationRef");
+    const normalizedAuthorizationGeneration=requirePositiveInteger(authorizationGeneration,"authorizationGeneration");
+    const normalizedReasonRef=requireText(reasonRef,"reasonRef");
+    const blocker="WORK_AUTHORIZATION_INVALIDATED:"+normalizedReasonRef;
+
+    const result=await store.transact((snapshot)=>{
+      const item=findItem(snapshot,normalizedItemId);
+      invariant(item.origin?.kind==="ORGANIZATION_MATERIALIZATION","organization materialization blocker requires organization-managed work");
+      invariant(item.origin.authorizationRef===normalizedAuthorizationRef,"organization materialization authorization ref changed");
+      invariant(item.origin.authorizationGeneration===normalizedAuthorizationGeneration,"organization materialization authorization generation changed");
+      if(item.status===BlackboardStatus.BLOCKED&&item.blockers.includes(blocker)) return structuredClone(item);
+      invariant(item.status===BlackboardStatus.READY||item.status===BlackboardStatus.REOPENED,"organization materialization can only be blocked while eligible");
+      if(!item.evidenceRefs.includes(normalizedReasonRef)) item.evidenceRefs.push(normalizedReasonRef);
+      item.owner=null;
+      item.blockers=[blocker];
+      item.status=BlackboardStatus.BLOCKED;
       return structuredClone(item);
     });
     return Object.freeze(structuredClone(result));
@@ -263,26 +323,36 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     expectedOwner,
     expectedClaimGeneration,
     kind,
-    invalidationRef
+    invalidationRef,
+    invalidation
   }) {
-    requireText(itemId,"itemId");
-    requireText(expectedOwner,"expectedOwner");
-    requirePositiveInteger(expectedClaimGeneration,"expectedClaimGeneration");
-    requireText(invalidationRef,"invalidationRef");
+    const normalizedItemId=requireText(itemId,"itemId");
+    const normalizedOwner=requireText(expectedOwner,"expectedOwner");
+    const normalizedGeneration=requirePositiveInteger(expectedClaimGeneration,"expectedClaimGeneration");
+    const normalizedRef=requireText(invalidationRef,"invalidationRef");
+    invariant(invalidation&&typeof invalidation==="object"&&!Array.isArray(invalidation),"invalidation artifact is required");
+    invariant(invalidation.kind==="CLAIM_AUTHORITY_INVALIDATION"&&invalidation.version===1,"claim authority invalidation artifact is invalid");
     invariant(
       ["EXECUTION_AUTHORITY_INVALIDATED","ABANDONED_PROVISIONAL_CLAIM","WORK_AUTHORIZATION_INVALIDATED"].includes(kind),
       "organization claim invalidation kind is invalid"
     );
+    invariant(invalidation.itemId===normalizedItemId,"claim invalidation item mismatch");
+    invariant(invalidation.expectedOwner===normalizedOwner,"claim invalidation owner mismatch");
+    invariant(invalidation.expectedClaimGeneration===normalizedGeneration,"claim invalidation generation mismatch");
+    invariant(invalidation.cause===kind,"claim invalidation cause mismatch");
+    invariant("claim-authority-invalidation:sha256:"+digest(invalidation)===normalizedRef,"claim invalidation ref/content mismatch");
+
     const result=await store.transact((snapshot)=>{
-      const item=findItem(snapshot,itemId);
-      invariant(item.status===BlackboardStatus.CLAIMED,`Blackboard item ${itemId} must be CLAIMED before organization invalidation`);
-      invariant(item.owner===expectedOwner,`Blackboard item ${itemId} owner changed before organization invalidation`);
-      invariant(item.claimGeneration===expectedClaimGeneration,`Blackboard item ${itemId} claim generation changed before organization invalidation`);
-      if(!item.evidenceRefs.includes(invalidationRef)) item.evidenceRefs.push(invalidationRef);
+      const item=findItem(snapshot,normalizedItemId);
+      invariant(item.status===BlackboardStatus.CLAIMED,"Blackboard item "+normalizedItemId+" must be CLAIMED before organization invalidation");
+      invariant(item.owner===normalizedOwner,"Blackboard item "+normalizedItemId+" owner changed before organization invalidation");
+      invariant(item.claimGeneration===normalizedGeneration,"Blackboard item "+normalizedItemId+" claim generation changed before organization invalidation");
+      invariant(item.origin?.projectId===invalidation.projectId&&item.origin?.rootItemId===invalidation.rootItemId&&item.origin?.rootIntentId===invalidation.rootIntentId,"claim invalidation project/root mismatch");
+      if(!item.evidenceRefs.includes(normalizedRef)) item.evidenceRefs.push(normalizedRef);
       item.owner=null;
       item.activeReview=null;
       if(kind==="WORK_AUTHORIZATION_INVALIDATED"){
-        item.blockers=[`WORK_AUTHORIZATION_INVALIDATED:${invalidationRef}`];
+        item.blockers=["WORK_AUTHORIZATION_INVALIDATED:"+normalizedRef];
         item.status=BlackboardStatus.BLOCKED;
       }else{
         item.blockers=[];
@@ -299,6 +369,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     submitWithRequiredReviews,
     resolveBlockedCheckpoint,
     materializeAcceptedWork,
+    blockOrganizationMaterialization,
     invalidateOrganizationClaim
   });
 }
