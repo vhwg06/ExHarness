@@ -1,16 +1,17 @@
 # D019 — Reject BB-047 A.1 implementation candidate
 
-Status: **REJECTED**
+Status: **ACCEPTED REPAIR AUTHORIZATION**
 
-Rejected: 2026-09-19
+Accepted for bounded repair: 2026-09-19
 
 ## Decision subject
 
 ```text
 subjectContextRef: docs/living/work-context/BB-047/g0006-implementation-review.json
 subjectCandidateHeadSha: ebec8b38176c50c7848bdf11693d88fcd3fe05d0
-verdict: REJECT
+verdict: ACCEPT
 reviewEvidence: 5255764112
+acceptedAction: REPAIR_REJECTED_CANDIDATE
 ```
 
 Exact source-candidate CI run `35443072326` and review-envelope head CI run `35443135140` were green. Rejection is semantic, not CI-derived.
@@ -34,5 +35,7 @@ The repair generation must:
 - preserve Board-first invalidation ordering and A.1's stop-before-DOMAIN_EXECUTION_CONTROL boundary.
 
 ## Authority consequence
+
+The reviewed source candidate remains **REJECTED** for product acceptance. The `ACCEPT` verdict above applies only to this decision's bounded repair authorization: it accepts g0006 as the exact reviewed subject from which the four grounded findings may be repaired. It is not an acceptance of candidate correctness.
 
 Generation 6 remains immutable rejected review history. This decision authorizes only a bounded A.1 repair generation for the four findings above. It does not authorize Integration B, DONE, merge, or terminal Blackboard transition.
