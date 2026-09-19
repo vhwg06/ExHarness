@@ -69,6 +69,38 @@ Must be durably committed before effects begin and pins:
 
 Policy promotion after binding commit cannot rewrite an in-flight attempt.
 
+## Judgment artifact plane
+
+The execution contracts above are only half of Integration B. Implementation must also emit a fresh-session reconstructable judgment chain defined in:
+
+- `domain-execution-control-judgment-artifacts.md`
+
+Minimum post-execution chain:
+
+```text
+ExecutionAttemptBinding
+ -> RuntimeExecutionAttestation(s)
+ -> ExecutionAttemptOutcome
+ -> verification/effect evidence
+ -> DomainCompletionDecision
+ -> derived ExecutionJudgmentBundle
+```
+
+Hard separations:
+
+```text
+strategy result != runtime fact
+runtime fact != verification evidence
+telemetry != correctness authority
+execution success != domain acceptance
+derived review bundle != source of truth
+```
+
+Every correctness-relevant artifact must be durably resolvable from an exact immutable ref in a fresh process, have producer authority verified outside payload self-assertion, and survive crash/replay without caller-supplied raw payloads.
+
+ExecutionAttemptOutcome must also preserve explicit output-to-input derivation edges where the domain can establish them. Integration C dependency invalidation must not have to infer lineage retrospectively from "all inputs/all outputs" run membership.
+
+
 ## Recovery semantics
 
 Controller entry first reads ExecutionAttemptHead before any policy/strategy resolution.
@@ -111,7 +143,12 @@ Candidate strategy kind: application-core-loop or human-assisted adapter first. 
 7. Backend strategy cannot dispatch QA organizational work;
 8. claim-generation fencing prevents stale writers without automatically minting a new semantic attempt;
 9. missing/stale released claim prevents execution entry;
-10. human-assisted strategy does not bypass completion/acceptance gates.
+10. human-assisted strategy does not bypass completion/acceptance gates;
+11. fresh process resolves the complete execution judgment chain from immutable refs only;
+12. strategy self-report cannot prove runtime deployment/version without trusted runtime attestation;
+13. strategy SUCCEEDED cannot self-authorize domain ACCEPT;
+14. exact output/input derivation edges reconstruct without invented cross-edges;
+15. attempt-transition publication/head-CAS crash recovery is idempotent and cannot duplicate semantic attempts.
 
 ## Source placement candidate
 
@@ -130,5 +167,9 @@ The controller composes existing Core/runtime primitives but does not move organ
 ## Readiness result
 
 The contract is specific enough for a bounded Integration B source slice after A.1 is accepted and a dedicated implementation context authorizes it. Attempt ownership is resolved before policy/strategy selection so recovery cannot accidentally bind a newer policy to an existing semantic attempt.
+
+Implementation acceptance additionally requires the companion judgment-artifact contract: one concrete BA workload must leave enough immutable, resolvable evidence for an independent fresh reviewer to reconstruct WHAT/WHO/AUTHORITY, the exact bound HOW/runtime, what actually happened, and why the domain accepted/rejected it.
+
+Passing execution/recovery tests without that reconstructable judgment chain is insufficient.
 
 This artifact does not authorize Integration B implementation.
