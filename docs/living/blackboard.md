@@ -45,8 +45,8 @@ previous-phase-closure: docs/living/knowledge/oracle-detail-closure-2026-09-18.m
 previous-terminal-count: 3
 previous-done-count: 3
 previous-superseded-count: 0
-current-active-debt: 1
-next-work-id: BB-047
+current-active-debt: 0
+next-work-id: BB-048
 phase-scope:
   - integrate Oracle through concrete application/component consumers without widening Oracle authority
   - integrate delivered Agentic Application, Oracle and Core boundaries across real composition seams
@@ -60,56 +60,9 @@ The Integration phase begins deliberately with zero active debt. An unused work 
 
 ## Active work
 
-```text
-BB-047
-question/work: Implement the accepted Integration A.1 runtime organizational bridge through authorized claim, without entering post-claim execution.
-kind: IMPLEMENTATION
-priority: P1
-status: PENDING_REVIEW
-owner:
-current-context:
-  generation: 22
-  ref: docs/living/work-context/BB-047/g0022-final-merge-review.json
-depends-on: []
-target-consumer:
-  - runtime organizational integration bridge
-implementation-output:
-  - OrganizationWorkClaimController with trusted principal -> authorized domain enforcement
-  - exact acceptance/obligation authorization and fail-closed materialization
-  - durable Authorization CAS head
-  - durable ExecutionAuthorityPolicy current head + revoke lookup
-  - durable ClaimReleaseHead per claim generation
-  - canonical CLAIMED generation recovery/invalidation semantics
-  - immutable ORGANIZATION_WORK_CONTRACT and bridge fixture stopping at authorized claim
-scope-boundary:
-  - implement A.1 only through authorized claim
-  - do not implement DOMAIN_EXECUTION_CONTROL/post-claim execution yet
-  - do not run BA requirement analysis yet
-  - do not widen packages/core-harness/* or the Oracle generic boundary
-  - keep ProductStateProjection and Integration B-J deferred
-acceptance-criteria:
-  - non-authorized principal cannot claim another domain's work
-  - materializer cannot emit obligations outside exact accepted scope
-  - authorization/execution authority/claim-release heads are durable and CAS/fencing safe
-  - recoverClaim increments generation and invalidates prior execution capability
-  - invalidateOrganizationClaim commits canonical Board lifecycle before release-head fencing
-  - bridge reconstructs Root/accepted materialization -> immutable work contract -> trusted principal claim
-  - fixture stops at authorized CLAIMED state; no execution strategy is selected
-submission:
-  - g0022 final merge review target d986fc5bf137d4f6e57338d851090b14be056a6d
-decision-ref: docs/living/decisions/D023-bb047-a1-final-completion-findings.md
-review-requirements:
-  - runtime contract/authority review
-  - crash/race/recovery review
-blockers: []
-remaining-work:
-  - final fresh review after exact main-lane sync
-  - if clean, record acceptance/closure in allowed envelope and merge PR #183
-follow-up-refs:
-  - DOMAIN_EXECUTION_CONTROL is required before Integration B and owns ExecutionAttemptHead plus ExecutionPolicy -> ExecutionStrategyRef -> ExecutionAttemptBinding.
-origin: BB-046 Context Plane implementation merged via PR #153; accepted A.1 architecture remains the next bounded integration slice.
+No active Integration work is allocated.
 
-```
+BB-047 A.1 is terminal and preserved at `docs/living/history/bb047-a1-closure-2026-09-19.md`. Its clean merge acceptance is `docs/living/decisions/D027-bb047-a1-merge-acceptance.md`. The next bounded integration work remains unallocated; DOMAIN_EXECUTION_CONTROL / Integration B requires its own explicit entry trigger and authority.
 
 ## Integration entry rule
 
