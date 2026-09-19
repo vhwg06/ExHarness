@@ -271,7 +271,7 @@ test("authority head changes revoke execution entry without rewriting the histor
 });
 
 test("canonical Board invalidation commits before release fencing, so fence failure remains safe",async()=>{
-  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry})=>{
+  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,executionPrincipalProvider})=>{
     const base=createOrganizationWorkClaimController({
       orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,executionPrincipalProvider
     });
@@ -306,7 +306,7 @@ test("canonical Board invalidation commits before release fencing, so fence fail
       }),
       /injected release-fence failure/
     );
-    const item=(await orchestrator.readBlackboard()).items[0];
+    const item=(await orchestrator.readBlackboard()).items.find((candidate)=>candidate.id===materialized.item.id);
     assert.equal(item.status,BlackboardStatus.REOPENED);
     assert.equal(item.owner,null);
     assert.equal(item.claimGeneration,claimed.item.claimGeneration);
@@ -337,7 +337,7 @@ test("work-authorization invalidation blocks canonical work without incrementing
 
 
 test("fresh process resolves work contract from durable ref and rejects untrusted authority publisher",async()=>{
-  await withFixture(async({root,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry})=>{
+  await withFixture(async({root,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,executionPrincipalProvider})=>{
     const restartedOrchestrator=createApplicationOrchestrator({
       store:createJsonBlackboardStore({path:join(root,"board.json")}),
       reviewTrust:reviewTrustStub()
@@ -349,7 +349,8 @@ test("fresh process resolves work contract from durable ref and rejects untruste
       materializationAuthorizationStore,
       executionAuthorityPolicyStore,
       claimReleaseStore,
-      artifactRegistry:restartedRegistry
+      artifactRegistry:restartedRegistry,
+      executionPrincipalProvider
     });
     const claimed=await restarted.claim({
       itemId:materialized.item.id,
@@ -379,7 +380,7 @@ test("fresh process resolves work contract from durable ref and rejects untruste
 });
 
 test("same invalidation replay reconciles a prior Board-first fence crash",async()=>{
-  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry})=>{
+  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,executionPrincipalProvider})=>{
     const controller=createOrganizationWorkClaimController({
       orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,executionPrincipalProvider
     });
@@ -400,7 +401,7 @@ test("same invalidation replay reconciles a prior Board-first fence crash",async
     };
     const first=createOrganizationWorkClaimController({
       orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,
-      claimReleaseStore:failing,artifactRegistry
+      claimReleaseStore:failing,artifactRegistry,executionPrincipalProvider
     });
     const args={
       itemId:materialized.item.id,expectedOwner:"ba-1",
@@ -434,7 +435,7 @@ test("raw CAS self-grant cannot authorize because head must resolve a verified i
 });
 
 test("ACTIVE to ACTIVE policy drift across claim invalidates the provisional claim",async()=>{
-  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,publisher})=>{
+  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,publisher,executionPrincipalProvider})=>{
     const racingOrchestrator={...orchestrator,async claim(args){const result=await orchestrator.claim(args);await publisher.publishExecutionAuthorityPolicy({publisher:{identity:"authority-admin"},policy:{...policyHead(),generation:2}});return result;}};
     const controller=createOrganizationWorkClaimController({orchestrator:racingOrchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,executionPrincipalProvider});
     await assert.rejects(()=>controller.claim({itemId:materialized.item.id,principalContext:{token:"ba"},authorizationId:"auth-1",policyId:"organization-execution-authority"}),/changed across durable mutation/);
@@ -443,7 +444,7 @@ test("ACTIVE to ACTIVE policy drift across claim invalidates the provisional cla
 });
 
 test("materialization authority loss across claim blocks work instead of reopening it",async()=>{
-  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,publisher})=>{
+  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,publisher,executionPrincipalProvider})=>{
     const racingOrchestrator={...orchestrator,async claim(args){const result=await orchestrator.claim(args);await publisher.publishMaterializationAuthorization({publisher:{identity:"authority-admin"},authorization:{...materializationHead(),generation:2,status:AuthorityHeadStatus.REVOKED}});return result;}};
     const controller=createOrganizationWorkClaimController({orchestrator:racingOrchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,executionPrincipalProvider});
     await assert.rejects(()=>controller.claim({itemId:materialized.item.id,principalContext:{token:"ba"},authorizationId:"auth-1",policyId:"organization-execution-authority"}),/not active/);
@@ -452,7 +453,7 @@ test("materialization authority loss across claim blocks work instead of reopeni
 });
 
 test("post-release stale policy commits Board invalidation before release fencing",async()=>{
-  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,publisher})=>{
+  await withFixture(async({orchestrator,materialized,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore,artifactRegistry,publisher,executionPrincipalProvider})=>{
     const racingReleaseStore={...claimReleaseStore,async compareAndSwap(key,expected,next){const ok=await claimReleaseStore.compareAndSwap(key,expected,next);if(ok&&next.status===ClaimReleaseStatus.RELEASED) await publisher.publishExecutionAuthorityPolicy({publisher:{identity:"authority-admin"},policy:{...policyHead(),generation:2}});return ok;}};
     const controller=createOrganizationWorkClaimController({orchestrator,materializationAuthorizationStore,executionAuthorityPolicyStore,claimReleaseStore:racingReleaseStore,artifactRegistry,executionPrincipalProvider});
     const claimed=await controller.claim({itemId:materialized.item.id,principalContext:{token:"ba"},authorizationId:"auth-1",policyId:"organization-execution-authority"});
