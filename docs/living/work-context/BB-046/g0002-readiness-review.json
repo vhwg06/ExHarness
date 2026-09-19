@@ -1,0 +1,168 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PROPOSED_REVIEW_ENVELOPE",
+  "contextId": "BB-046-context",
+  "itemId": "BB-046",
+  "generation": 2,
+  "parentContextRef": "docs/living/work-context/BB-046/g0001-readiness-review.json",
+  "transitionReasonRef": "git:d013b6118dccfea67e8615f4624d3a00f6e10b4f:immutable-review-target-correction",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Independently review BB-046 organizational integration plus the proposed Blackboard Context Plane.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "implement Integration A.1 source changes",
+      "implement Integration B-J",
+      "mark the candidate accepted without independent authority",
+      "widen Oracle, Core or Blackboard authority",
+      "use prior chat to fill missing required input"
+    ]
+  },
+  "authority": {
+    "implementationDecisionRef": null,
+    "acceptanceAuthority": "configured independent architecture/application reviewer"
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "ad36638dd7041a60c224dfe3c9beb252069ecdae"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/living/contracts.md",
+    "docs/living/pipelines.md",
+    "docs/living/README.md",
+    "docs/worktree/agentic-application/semantics.md",
+    "docs/worktree/agentic-application/boundaries.md",
+    "docs/worktree/agentic-application/capabilities.md",
+    "packages/agentic-system/src/blackboard-orchestrator.js",
+    "packages/agentic-system/src/application-orchestrator-base.js",
+    "packages/agentic-system/src/session-handoff.js"
+  ],
+  "requiredInputRefs": [
+    "docs/living/knowledge/bb046-blackboard-context-architecture.md",
+    "docs/living/knowledge/bb046-blackboard-context-contracts.md",
+    "docs/living/knowledge/bb046-blackboard-context-pipelines.md",
+    "docs/living/knowledge/bb046-blackboard-context-evaluation.md",
+    "docs/living/knowledge/bb046-blackboard-context-implementation-readiness.md",
+    "docs/living/knowledge/bb046-organizational-integration-implementation-artifact-readiness-v7.md",
+    "docs/living/knowledge/bb046-trust-transition-research-v7.md"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/bb046-execution-strategy-rebase-research-v6.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md",
+    "docs/living/knowledge/bb028-decision-outcome-chain.md",
+    "docs/living/decisions/D009-generation-fenced-interrupted-recovery.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/**",
+      "docs/worktree/agentic-application/**",
+      "packages/agentic-system/src/blackboard-orchestrator.js",
+      "packages/agentic-system/src/application-orchestrator-base.js",
+      "packages/agentic-system/src/session-handoff.js"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "packages/**",
+      "docs/worktree/**"
+    ]
+  },
+  "hardInvariants": [
+    "Blackboard != Scheduler",
+    "Blackboard != Work Context",
+    "Work Context != Source Truth",
+    "Work Context != Acceptance Authority",
+    "Work Context != WorkContract",
+    "Context producer != context-currentness authority",
+    "Message != Authoritative Output",
+    "Research producer != acceptance authority",
+    "Organization != Workflow",
+    "Workload != Workflow",
+    "WorkContract != ExecutionPlan",
+    "ExecutionPolicy != Work Scheduler",
+    "ExecutionStrategy != Cross-Domain Dispatcher",
+    "PM != Organization Scheduler",
+    "Artifact acceptance != blanket obligation authorization",
+    "Board CLAIMED != executable capability",
+    "ClaimReleaseHead != Blackboard lifecycle authority",
+    "REVIEW context sourceScope.write must be empty"
+  ],
+  "verification": [
+    "derive exact A.1 source seams without chat reinterpretation",
+    "verify trust transition crash/race semantics",
+    "verify the Blackboard Context Plane does not become a second lifecycle authority",
+    "verify context generation is distinct from claim/review/execution generations",
+    "verify normal loading uses required refs while audit refs remain lazy",
+    "verify no source mutation is authorized by this generation"
+  ],
+  "expectedOutputs": [
+    "independent review decision/evidence bound to this exact context generation and reviewTarget.candidateHeadSha",
+    "grounded findings attached back to BB-046",
+    "if accepted, a new immutable g0003 implementation context with exact decisionRef and current source baseline"
+  ],
+  "staleWhen": [
+    "BB-046 leaves PENDING_REVIEW",
+    "Board current context generation/ref changes",
+    "any post-target change outside reviewTarget.allowedPostTargetEnvelopePaths",
+    "configured reviewer authority/scope changes"
+  ],
+  "reviewQuestion": [
+    "is the organizational A.1 trust transition deterministic enough to implement?",
+    "does the Blackboard Context Plane reduce context inference without becoming a second Board/authority?",
+    "can the next implementation slice be generated explicitly after acceptance rather than inferred from this review artifact?"
+  ],
+  "mandatoryNegativeChecks": [
+    "old generation remains implementation permission",
+    "review PASS mutates review context into implementation context",
+    "context producer fabricates authority",
+    "worker must scan arbitrary Board refs to identify current context",
+    "audit-only research becomes hidden implementation requirement",
+    "context resolver selects work or schedules domains",
+    "Blackboard starts carrying source/context payload bodies",
+    "runtime WorkContract and repository Work Context are conflated",
+    "context currentness is inferred from file existence",
+    "review decision binds only mutable PR number/head alias instead of exact candidateHeadSha",
+    "candidate-surface change after candidateHeadSha is accepted without a new REVIEW generation",
+    "implementation generation accepts a decision whose subjectContextRef or subjectCandidateHeadSha mismatches the parent review context"
+  ],
+  "nextGenerationOnAcceptance": {
+    "path": "docs/living/work-context/BB-046/g0003-implementation.json",
+    "parentContextRef": "docs/living/work-context/BB-046/g0002-readiness-review.json",
+    "transitionReasonRef": "<exact accepted review decision bound to this context + candidateHeadSha>",
+    "actionKind": "IMPLEMENT",
+    "requirements": [
+      "exact implementationDecisionRef",
+      "decision.subjectContextRef == this exact g0002 context",
+      "decision.subjectCandidateHeadSha == reviewTarget.candidateHeadSha",
+      "then-current sourceBaseline",
+      "exact accepted A.1 sourceScope.write",
+      "exact verification commands/tests"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "pullRequest": 151,
+    "targetType": "git-commit",
+    "candidateHeadSha": "d013b6118dccfea67e8615f4624d3a00f6e10b4f",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/living/blackboard.md",
+      "docs/living/work-context/BB-046/g0002-readiness-review.json"
+    ],
+    "decisionBinding": {
+      "requiredFields": [
+        "subjectContextRef",
+        "subjectCandidateHeadSha",
+        "verdict"
+      ],
+      "subjectContextRef": "docs/living/work-context/BB-046/g0002-readiness-review.json",
+      "subjectCandidateHeadSha": "d013b6118dccfea67e8615f4624d3a00f6e10b4f"
+    }
+  }
+}
