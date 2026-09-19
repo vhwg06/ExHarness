@@ -5,8 +5,12 @@ import { parseCurrentContext, assertBoardBinding } from "./blackboard-context-bo
 import { resolveContext } from "./blackboard-context-resolver.mjs";
 
 function git(root,args){return execFileSync("git",["-C",root,...args],{encoding:"utf8"}).trim();}
-function assertReviewTarget(review,{root="."}={}) {
+function assertReviewTarget(review,{root=".", expectedCandidateHead=process.env.GITHUB_HEAD_SHA}={}) {
   const target=review.reviewTarget.candidateHeadSha;
+  if(expectedCandidateHead) {
+    if(expectedCandidateHead!==target) throw new Error(`REVIEW_TARGET_STALE: expected ${target}, CI head ${expectedCandidateHead}`);
+    return;
+  }
   const head=git(root,["rev-parse","HEAD"]);
   // PR CI commonly checks out a synthetic merge commit and may not fetch every
   // intermediate branch object. The immutable target is still verifiable when
