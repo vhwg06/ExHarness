@@ -17,7 +17,7 @@ scope:
   - Integration A.1 bridge architecture only
 ```
 
-The review also checked the post-target envelope. The semantic candidate is an ancestor of the pre-merge source baseline `ad36638dd7041a60c224dfe3c9beb252069ecdae`; the merge to `main` materialized the reviewed candidate plus the declared review envelope. No later source/runtime implementation is treated as part of this acceptance.
+The review also checked the post-target envelope. The pre-merge source baseline `ad36638dd7041a60c224dfe3c9beb252069ecdae` is an ancestor of the semantic candidate `d013b6118dccfea67e8615f4624d3a00f6e10b4f`; the merge to `main` materialized the reviewed candidate plus the declared review envelope. No later source/runtime implementation is treated as part of this acceptance.
 
 ## Choice
 
