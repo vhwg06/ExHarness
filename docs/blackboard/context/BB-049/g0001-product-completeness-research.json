@@ -1,0 +1,83 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "RESEARCH_CONTEXT",
+  "contextId": "BB-049-context",
+  "itemId": "BB-049",
+  "generation": 1,
+  "pipeline": "RESEARCH_SA",
+  "stage": "RESEARCH",
+  "role": "RESEARCHER",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "action": {
+    "kind": "RESEARCH",
+    "summary": "Research Integration G product completeness and closure-currentness so product readiness cannot be forged by caller-selected or incomplete current refs.",
+    "allowedMutations": [
+      "docs/blackboard/artifacts/research/BB-049-product-completeness-closure-research.md"
+    ],
+    "forbiddenActions": [
+      "mutate product source",
+      "allocate Integration G implementation work",
+      "treat current SemanticClaimHead or ObligationHead scans as completeness proof without a canonical completeness subject",
+      "introduce a global scheduler or organization workflow",
+      "make ProductStateProjection source of truth",
+      "reuse a historical ProductOutcomeClaim as a permanent DONE bit"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "cf535e162717520910417943f4fc57f3d08db8af"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/blackboard/contracts.md",
+    "docs/blackboard/pipelines.md",
+    "docs/blackboard/state.md",
+    "docs/living/system/state.md",
+    "docs/living/system/capabilities.md",
+    "docs/living/system/agentic-application/contracts.md"
+  ],
+  "requiredInputRefs": [
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md",
+    "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+    "docs/living/knowledge/deployment-acceptance-snapshot-implementation-readiness.md",
+    "docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json",
+    "docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot-v1.json"
+  ],
+  "auditRefs": [
+    "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+    "docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/blackboard/**",
+      "docs/living/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "packages/**"
+    ]
+  },
+  "hardInvariants": [
+    "research reduces uncertainty; it does not mutate product source",
+    "ProductStateProjection is derived/rebuildable and cannot be source of truth",
+    "caller-selected current claim/obligation lists cannot establish completeness",
+    "historical ProductOutcomeClaim is not a permanent current DONE bit",
+    "closure must bind exact current product-state and policy subjects and fail closed on currentness races",
+    "Integration G must compose with Integration C semantic currentness and E/F exact QualityAcceptance without inventing a second independent truth system"
+  ],
+  "researchQuestion": [
+    "what canonical subject proves the complete closure-relevant product history/current set?",
+    "how should product-level history compose with per-subject claim/obligation currentness without contradictory sources of truth?",
+    "how can projection be deterministic/rebuildable and resist omission attacks?",
+    "what exact currentness handshake prevents closure against a stale product state?",
+    "how should post-closure supersession preserve historical closure while making it non-current?"
+  ],
+  "expectedOutputs": [
+    "bounded research artifact with evidence, failure modes, rejected alternatives and SA-ready decision surface",
+    "explicit recommendation for product-history completeness and closure-currentness semantics"
+  ]
+}
