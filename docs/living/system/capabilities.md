@@ -241,3 +241,13 @@ Blackboard lifecycle state
 ```
 
 Integration must preserve those authorities. Source failure blocks at the source boundary; lifecycle interruption is generation-fenced by Application; ambiguous mutating effects are reconciled from Core effect truth; acceptance failure returns through Application review/remediation semantics.
+
+## C13 — Publication-fenced domain execution repair
+
+**Outcome:** Integration B authoritative publication is mutation-current: one accepted domain outcome can become a canonical product only while the exact organization claim lifecycle and exact current domain writer authority remain fenced through the publication commit.
+
+**Guarantees:** publication uses a stable semantic-attempt publication key; concurrent recovery/retry converges on one canonical publication; the publication receipt records the exact lifecycle and writer-authority observations used by the mutation gate; recovery-relevant attempt transitions bind the exact observed durable head revision; fresh judgment re-derives transition/CAS revision continuity.
+
+**Failure semantics:** claim lifecycle drift or writer-authority revocation cannot interleave through a canonical publication commit; a concurrent recovery loser may replay the terminal winner but cannot create a second canonical publication; forged or missing transition-head revision evidence fails fresh reconstruction.
+
+**Does not imply:** cross-domain scheduling, Integration C+ lineage propagation, automatic domain remediation, deployment, or Product QA.
