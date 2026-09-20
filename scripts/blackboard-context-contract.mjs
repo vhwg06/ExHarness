@@ -28,10 +28,15 @@ export function assertWorkContext(spec) {
     if (spec.lane === "EXECUTION") {
       if (spec.action.kind !== "IMPLEMENT") fail("EXECUTION lane requires IMPLEMENT action");
       if (!["INITIAL","REPAIR"].includes(spec.executionMode)) fail("EXECUTION lane requires executionMode INITIAL or REPAIR");
+      if (spec.judgmentKind != null) fail("EXECUTION lane may not declare judgmentKind");
     }
     if (spec.lane === "JUDGMENT") {
       if (spec.action.kind !== "REVIEW") fail("JUDGMENT lane requires REVIEW action");
       if (!["READINESS","CANDIDATE"].includes(spec.judgmentKind)) fail("JUDGMENT lane requires judgmentKind READINESS or CANDIDATE");
+      if (spec.executionMode != null) fail("JUDGMENT lane may not declare executionMode");
+      if (spec.authority != null) fail("JUDGMENT lane may not carry execution authority");
+      if (spec.judgmentKind === "READINESS" && spec.implementationResultRef != null)
+        fail("readiness JUDGMENT may not bind implementation result");
       if (spec.judgmentKind === "CANDIDATE") {
         if (typeof spec.implementationResultRef !== "string" || !spec.implementationResultRef.endsWith(".json"))
           fail("candidate JUDGMENT requires implementationResultRef");
@@ -55,6 +60,8 @@ export function assertWorkContext(spec) {
     if (!spec.parentContextRef || spec.authority.subjectContextRef !== spec.parentContextRef) fail("IMPLEMENT authority subject must equal parent context");
     if (spec.pipeline === "IMPLEMENTATION_WORKER" && spec.executionMode === "REPAIR") {
       if (!spec.authority?.repairJudgmentRef) fail("REPAIR requires repair judgment ref");
+      if (!spec.requiredInputRefs.includes(spec.authority.repairJudgmentRef))
+        fail("repair judgment ref must be a required input");
     } else if (!spec.authority?.implementationDecisionRef) {
       fail("IMPLEMENT requires decision ref");
     }
