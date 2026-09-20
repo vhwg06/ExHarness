@@ -4,6 +4,8 @@ Status: **DEVELOPMENT CONTEXT ROUTER**
 
 The Blackboard describes how ExHarness is currently being developed. It does not describe what ExHarness is; current system truth is under `docs/living/`.
 
+This file is the single mutable current-state source of truth for outer-Blackboard routing. Other Blackboard documents may define invariants or retain immutable evidence, but they must not duplicate current active work, queue membership, current-context, blockers or next actions.
+
 ## Project
 
 ```text
@@ -26,9 +28,9 @@ RESEARCH_SA
 
 IMPLEMENTATION_WORKER
   active: BB-048
-  lane: EXECUTION
-  execution-mode: REPAIR
-  stage: IMPLEMENTATION_REPAIR
+  lane: JUDGMENT
+  judgment-kind: CANDIDATE
+  stage: IMPLEMENTATION_CANDIDATE_REVIEW
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
@@ -37,21 +39,21 @@ The lanes are independent. Future Research/SA work does not need to reconstruct 
 
 BB-048
 pipeline: IMPLEMENTATION_WORKER
-lane: EXECUTION
-execution-mode: REPAIR
-stage: IMPLEMENTATION_REPAIR
+lane: JUDGMENT
+judgment-kind: CANDIDATE
+stage: IMPLEMENTATION_CANDIDATE_REVIEW
 question/work: Repair the grounded post-merge Integration B findings without widening BB-048 semantics.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 17
-  ref: docs/blackboard/context/BB-048/g0017-repair-implementation.json
+  generation: 18
+  ref: docs/blackboard/context/BB-048/g0018-repair-candidate-judgment.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 implementation-result:
-  ref: docs/blackboard/artifacts/implementation-result/BB-048-postmerge-reconciliation.json
+  ref: docs/blackboard/artifacts/implementation-result/BB-048-g0017-repair.json
 depends-on: []
 scope-boundary:
   - fix publication lifecycle/write-authority fencing
@@ -60,10 +62,10 @@ scope-boundary:
   - do not enter Integration C-J
 blockers: []
 next:
-  - repair only g0016 P1 findings
-  - run focused negative/concurrency verification plus full repository verify
-  - publish factual BB-048-g0017 repair result
-  - materialize fresh g0018 JUDGMENT/CANDIDATE
+  - fresh-review exact repair candidate d21dce6934cdf8351ec7d9d860fbbed79a960e3c
+  - judge only g0016 findings plus repair-scope/currentness regressions
+  - on ACCEPT, close BB-048 repair and merge PR #197 only after exact-head CI/currentness recheck
+  - on FINDINGS, materialize bounded next repair generation
 
 ## Accepted semantic input queue
 
