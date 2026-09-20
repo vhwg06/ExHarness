@@ -167,3 +167,20 @@ export {
   createOrganizationArtifactRegistry
 } from "./organization-artifact-store.js";
 export { createOrganizationAuthorityPublisher } from "./organization-authority.js";
+
+export {
+  ExecutionAttemptStatus,
+  ExecutionPolicyStatus,
+  createDomainExecutionArtifactRegistry,
+  createJsonDomainExecutionPolicyStore,
+  createJsonExecutionAttemptStore
+} from "./domain-execution-store.js";
+export {
+  createDomainExecutionController,
+  createDomainExecutionPolicyPublisher,
+  defineExecutionPolicy,
+  defineExecutionStrategyDescriptor,
+  executionAttemptSubjectKey,
+  executionPolicySubjectKey,
+  resolveExecutionJudgmentBundle
+} from "./domain-execution-control.js";
