@@ -46,6 +46,17 @@ for(const file of knowledgeFiles){
 for(const file of allowedKnowledge){
   if(!livingFiles.includes(file))fail(`missing canonical Living knowledge: ${file}`);
 }
+const roadmapPath="docs/living/knowledge/integration-phase-research-to-implementation-readiness.md";
+const roadmap=fs.readFileSync(path.join(root,roadmapPath),"utf8");
+for(const staleMarker of [
+  "PROPOSED / AWAITING INDEPENDENT REVIEW",
+  "After A.1 code exists",
+  "first derived implementation seam",
+  "Điểm làm đầu tiên"
+]){
+  if(roadmap.includes(staleMarker))
+    fail(`historical roadmap transcript leaked into current roadmap: ${staleMarker}`);
+}
 
 const decisionFiles=livingFiles.filter(file=>file.startsWith("docs/living/decisions/"));
 const allowedDecisions=new Set([
