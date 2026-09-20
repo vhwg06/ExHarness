@@ -80,3 +80,29 @@ Only grounded `FINDINGS` can authorize a bounded repair execution.
 - `implementation-input/BB-048-migrated-readiness.md` — historical migration provenance only.
 
 An accepted artifact does not claim the capability already exists. Living Docs change only when delivered system behavior changes.
+
+
+## Accepted implementation-input queue
+
+Research/SA may complete semantic compilation before Implementation/Worker work is allocated.
+
+```text
+ACCEPTED IMPLEMENTATION_INPUT
+  -> may remain queued here
+  -> no active Blackboard item required
+  -> no work id consumed
+  -> no source mutation authority
+  -> later grounded trigger binds the exact artifact into a new IMPLEMENTATION_WORKER item/context
+```
+
+The queue is an inventory of accepted semantic handoffs, **not backlog**. Current work still comes only from `docs/blackboard/state.md`.
+
+Accepted unallocated inputs:
+
+- `implementation-input/integration-c-cross-domain-obligation-lineage-v1.json` — typed cross-domain obligations, authoritative semantic lineage and selective invalidation.
+- `implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json` — domain-local activation and FE/BE parallel autonomy.
+- `implementation-input/integration-ef-deployment-acceptance-snapshot-v1.json` — exact deployment identity, AcceptanceSnapshot, runtime observation and Product QA trust.
+
+Allocated/in-flight input:
+
+- `implementation-input/BB-048-domain-execution-control-v1.json` — bound by active BB-048.

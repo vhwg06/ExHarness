@@ -45,8 +45,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 10
-  ref: docs/blackboard/context/BB-048/g0010-implementation-readiness-judgment.json
+  generation: 11
+  ref: docs/blackboard/context/BB-048/g0011-implementation-readiness-judgment.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
@@ -58,9 +58,19 @@ scope-boundary:
 blockers:
   - implementation authority not yet granted; current lane is JUDGMENT/READINESS
 next:
-  - execute fresh readiness judgment from exact g0010 context
-  - on ACCEPT, materialize bounded g0011 EXECUTION/INITIAL context
+  - execute fresh readiness judgment from exact g0011 context
+  - on ACCEPT, materialize bounded g0012 EXECUTION/INITIAL context
   - EXECUTION may publish IMPLEMENTATION_RESULT facts only; a later fresh JUDGMENT/CANDIDATE owns correctness
+
+## Accepted semantic input queue
+
+Research/SA has completed semantic handoff for three future slices. These are accepted artifacts, not active work and not ordered backlog:
+
+- `docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json`
+- `docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json`
+- `docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot-v1.json`
+
+They do not consume work ids or `current-active-debt`. A future grounded trigger allocates a new IMPLEMENTATION_WORKER item and binds exactly one queued semantic input.
 
 ## Allocation rules
 

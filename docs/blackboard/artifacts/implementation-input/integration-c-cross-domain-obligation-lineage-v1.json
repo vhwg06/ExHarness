@@ -1,0 +1,177 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_INPUT",
+  "artifactId": "integration-c-cross-domain-obligation-lineage-v1",
+  "status": "ACCEPTED",
+  "subject": {
+    "id": "agentic-application.cross-domain-obligation-lineage.integration-c",
+    "title": "Cross-domain obligations and selective semantic invalidation"
+  },
+  "semantics": {
+    "desiredOutcome": "An accepted domain publication can create only authorized typed obligations for another domain, and authoritative semantic lineage can make exactly the affected downstream claims, obligations and work non-current when an upstream semantic subject changes without introducing cross-domain dispatch or whole-stage reset.",
+    "currentState": "The delivered system stops at the A.1 released-claim boundary and does not yet provide domain write authority, semantic claim/obligation currentness heads, authoritative product derivation edges, typed cross-domain obligations or selective dependency invalidation. Integration B domain execution/publication is a prerequisite delivery boundary, not part of this semantic input.",
+    "requiredBehaviors": [
+      {
+        "id": "RB-1",
+        "statement": "Domain write authority is explicit, immutable/versioned and separate from organizational claim authority and domain execution policy."
+      },
+      {
+        "id": "RB-2",
+        "statement": "Authoritative semantic claims and cross-domain obligations are immutable assertions whose currentness is represented separately through durable currentness heads and transitions."
+      },
+      {
+        "id": "RB-3",
+        "statement": "A CrossDomainObligation states the required outcome and derivation for a target domain while leaving target worker, execution policy, execution strategy, runtime and priority outside the obligation."
+      },
+      {
+        "id": "RB-4",
+        "statement": "Target-domain materialization resolves and verifies the exact obligation, issuance authority, current input subjects and ordinary materialization authorization before creating organizational work."
+      },
+      {
+        "id": "RB-5",
+        "statement": "Only accepted derivation edges published through an authoritative domain publication boundary enter product dependency truth; strategy-proposed lineage remains candidate evidence."
+      },
+      {
+        "id": "RB-6",
+        "statement": "Upstream semantic currentness changes invalidate the exact reverse transitive closure of authoritative dependent subjects instead of resetting artifact containers, roles or lifecycle stages."
+      },
+      {
+        "id": "RB-7",
+        "statement": "Publication and obligation issuance revalidate exact consumed input currentness across the publication window so a racing upstream supersession cannot leave a newly published dependent silently current."
+      },
+      {
+        "id": "RB-8",
+        "statement": "If already-materialized or claimed work becomes semantically stale, reconciliation uses canonical organizational lifecycle invalidation and execution fencing rather than deleting work or mutating lifecycle state out of band."
+      },
+      {
+        "id": "RB-9",
+        "statement": "The first executable cross-domain slice carries accepted BA requirement subjects into a typed SA solution-design obligation and allows accepted SA architecture subjects to issue only explicitly authorized downstream obligation kinds."
+      }
+    ],
+    "invariants": [
+      {
+        "id": "INV-1",
+        "statement": "Obligation is not dispatch."
+      },
+      {
+        "id": "INV-2",
+        "statement": "Dependency edge is not work ordering."
+      },
+      {
+        "id": "INV-3",
+        "statement": "Invalidation is not organization or workflow-stage reset."
+      },
+      {
+        "id": "INV-4",
+        "statement": "Product semantic lineage and Blackboard work lifecycle are distinct state spaces."
+      },
+      {
+        "id": "INV-5",
+        "statement": "Claim authority, execution policy and domain write authority do not imply one another."
+      },
+      {
+        "id": "INV-6",
+        "statement": "Historical accepted claims and obligations remain reconstructable after becoming stale, revoked or superseded."
+      },
+      {
+        "id": "INV-7",
+        "statement": "Container revision alone is not sufficient authority to invalidate unrelated semantic subjects."
+      },
+      {
+        "id": "INV-8",
+        "statement": "Semantic equivalence guessed by an LLM cannot prune required invalidation in the first implementation slice."
+      }
+    ],
+    "acceptanceCriteria": [
+      {
+        "id": "AC-1",
+        "statement": "One accepted BA requirement subject can produce an authorized solution-design obligation that deterministically materializes SA-owned work without the BA domain selecting SA execution mechanics."
+      },
+      {
+        "id": "AC-2",
+        "statement": "Accepted SA output can publish architecture subjects and only obligation kinds allowed by current domain write authority."
+      },
+      {
+        "id": "AC-3",
+        "statement": "Changing one detail requirement makes only its architecture/detail dependents non-current while unrelated list claims and work remain current."
+      },
+      {
+        "id": "AC-4",
+        "statement": "A newly published dependent racing upstream supersession cannot remain silently current after the publication currentness handshake."
+      },
+      {
+        "id": "AC-5",
+        "statement": "Replaying the same normalized obligation publication converges on one logical immutable obligation revision; semantic change creates a superseding revision instead of mutation in place."
+      },
+      {
+        "id": "AC-6",
+        "statement": "Stale or revoked obligations cannot materialize new target work, and already-claimed stale work loses executable capability through canonical invalidation/fencing."
+      },
+      {
+        "id": "AC-7",
+        "statement": "Authoritative lineage/currentness state can be reconstructed from immutable claims, obligations, publication receipts, edges and transitions without relying on disposable impact caches."
+      }
+    ],
+    "outOfScope": [
+      {
+        "id": "OOS-1",
+        "statement": "Autonomous DOMAIN_ACTIVATION, event-driven wake-up and FE/BE parallel autonomy."
+      },
+      {
+        "id": "OOS-2",
+        "statement": "Global ProductStateProjection, product-completeness or closure semantics."
+      },
+      {
+        "id": "OOS-3",
+        "statement": "Global organization scheduler, role-stage workflow or next-domain dispatcher."
+      },
+      {
+        "id": "OOS-4",
+        "statement": "Generic graph database or generic semantic-equivalence engine."
+      },
+      {
+        "id": "OOS-5",
+        "statement": "Self-improvement or execution-strategy promotion."
+      }
+    ],
+    "affectedCapabilities": [
+      "domain.write-authority",
+      "cross-domain.obligation",
+      "semantic-claim.currentness",
+      "product.lineage",
+      "dependency.invalidation",
+      "organization.work-materialization"
+    ],
+    "affectedContracts": [
+      "DomainWriteAuthorityPolicy",
+      "CrossDomainObligation",
+      "SemanticClaimHead",
+      "ObligationHead",
+      "DomainPublicationReceipt",
+      "ProductDerivationEdge",
+      "OrganizationWorkContract"
+    ]
+  },
+  "provenance": {
+    "sourceArtifactRefs": [
+      "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+      "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md"
+    ],
+    "evidenceRefs": [
+      "docs/living/decisions/D027-bb047-a1-merge-acceptance.md",
+      "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json"
+    ],
+    "currentSystemRefs": [
+      "docs/living/system/state.md",
+      "docs/living/system/capabilities.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md"
+    ],
+    "acceptance": {
+      "kind": "USER_DIRECTIVE",
+      "ref": "user-directive:2026-09-20:compile-promoted-research-into-implementation-input-queue"
+    }
+  }
+}
