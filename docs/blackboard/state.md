@@ -9,7 +9,7 @@ The Blackboard describes how ExHarness is currently being developed. It does not
 ```text
 phase: INTEGRATION
 started: 2026-09-18
-current-active-debt: 0
+current-active-debt: 1
 next-work-id: BB-050
 living-system-root: docs/living/system/state.md
 integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness-v8.md
@@ -25,15 +25,45 @@ RESEARCH_SA
   terminal-output: ACCEPTED IMPLEMENTATION_INPUT
 
 IMPLEMENTATION_WORKER
-  active: NONE
-  terminal-output: RECORDED JUDGMENT
+  active: BB-048
+  lane: EXECUTION
+  execution-mode: REPAIR
+  stage: IMPLEMENTATION_REPAIR
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
 
 ## Active work
 
-NONE
+BB-048
+pipeline: IMPLEMENTATION_WORKER
+lane: EXECUTION
+execution-mode: REPAIR
+stage: IMPLEMENTATION_REPAIR
+question/work: Repair the grounded post-merge Integration B findings without widening BB-048 semantics.
+kind: IMPLEMENTATION
+priority: P1
+status: READY
+owner:
+current-context:
+  generation: 17
+  ref: docs/blackboard/context/BB-048/g0017-repair-implementation.json
+implementation-input:
+  ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
+implementation-result:
+  ref: docs/blackboard/artifacts/implementation-result/BB-048-postmerge-reconciliation.json
+depends-on: []
+scope-boundary:
+  - fix publication lifecycle/write-authority fencing
+  - make canonical publication idempotent under concurrent recovery
+  - bind ExecutionAttemptTransition to exact observed CAS head revision
+  - do not enter Integration C-J
+blockers: []
+next:
+  - repair only g0016 P1 findings
+  - run focused negative/concurrency verification plus full repository verify
+  - publish factual BB-048-g0017 repair result
+  - materialize fresh g0018 JUDGMENT/CANDIDATE
 
 ## Accepted semantic input queue
 
@@ -56,7 +86,7 @@ Promoted research knowledge alone is not future backlog. Living Docs never becom
 
 ## Terminal lineage
 
-BB-048 Integration B is terminal on this branch after independent candidate judgment `ACCEPT` for exact candidate `7a34a38c05acbdabd92305e2cca66ba454a66c30`. Implementation result: `docs/blackboard/artifacts/implementation-result/BB-048-g0014.json`. Judgment: `docs/blackboard/artifacts/judgment/BB-048-g0015.json`. PR #193 remains the single implementation PR for merge/closure.
+BB-048 prior g0015 ACCEPT is historical/stale after post-merge review #5260290893 found the final merged tree changed outside its review envelope and identified two additional P1 implementation/evidence gaps. Current repair authority is g0017 from `docs/blackboard/artifacts/judgment/BB-048-g0016.json`.
 
 BB-049 Research/SA is terminal. It produced the accepted unallocated Integration G semantic input at `docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure-v1.json`. Closure record: `docs/blackboard/history/bb049-integration-g-research-sa-closure-2026-09-20.md`.
 
