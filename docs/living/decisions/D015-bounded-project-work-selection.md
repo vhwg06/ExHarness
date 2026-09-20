@@ -86,8 +86,8 @@ Disable the opt-in policy and return to ordinary eligible-work selection. The fi
 
 ## Evidence
 
-- `docs/living/knowledge/bb030-work-prioritization.md`
-- `docs/living/knowledge/bb030-work-prioritization-probe.mjs`
+- `docs/living/system/agentic-application/work-selection.md`
+- `scripts/work-selection-eval.mjs`
 - `artifacts/bb030-work-prioritization-probe.json`
 - PR #94 architecture-boundary review PASS on exact head `d103d4547181a3d166a0c2f1f0a1c29d4af3289c`;
 - PR #94 evaluation-method review PASS on the same exact head;
