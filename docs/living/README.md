@@ -40,3 +40,7 @@ When source semantics materially change, the affected `living/system/*` projecti
 These are not the default fresh-session loading surface. The current Blackboard context selects the minimum relevant refs.
 
 For current development state, read `../blackboard/state.md`. Do not infer open work from Living Docs.
+
+## Canonical mutable documents
+
+For current mutable project knowledge such as the active integration roadmap, keep one canonical path and update it in place. Git history is the revision history. Do not create sibling `vN` files for ordinary corrections unless the document is intentionally frozen as historical evidence and is clearly marked non-current.
