@@ -2,117 +2,82 @@
 
 Status: **CURRENT DEVELOPMENT PIPELINE CONTRACT**
 
-## Pipeline 1 — RESEARCH_SA
-
-Purpose: turn an explicit problem/question into a bounded implementation input.
+## RESEARCH_SA
 
 ```text
-Blackboard work item
-  pipeline: RESEARCH_SA
-        |
-        v
-Research context
-  -> exact problem/objective
-  -> selected Living Docs refs
-  -> existing evidence/input refs
-  -> explicit questions
-  -> expected ResearchArtifact
-        |
-        v
-Researcher
-        |
-        v
-ResearchArtifact
-        |
-        v
-SA context
-  -> ResearchArtifact
-  -> selected current-system truth
-  -> architecture constraints / decisions
-  -> explicit output contract
-        |
-        v
-SA synthesis / review
-        |
-        v
-ACCEPTED IMPLEMENTATION_INPUT
+explicit problem/question
+  -> current context
+  -> Researcher
+  -> research artifact / evidence
+  -> SA synthesis
+  -> canonical IMPLEMENTATION_INPUT
 ```
 
-Normal outputs live under `docs/blackboard/artifacts/`. Research/SA output is development input; it does not make an undelivered capability appear in Living Docs.
+Research/SA output is implementation input, not delivered system truth.
 
-## Pipeline 2 — IMPLEMENTATION_WORKER
-
-Purpose: realize one accepted semantic implementation input while separating producer facts from correctness judgment.
+## IMPLEMENTATION_WORKER
 
 ```text
-ACCEPTED IMPLEMENTATION_INPUT
+canonical IMPLEMENTATION_INPUT
         |
         v
 JUDGMENT / READINESS
         |
-        | exact acceptance authority
+        +-> canonical READINESS_DECISION
+        |
         v
 EXECUTION / INITIAL
-  -> inspect / implement / verify
-  -> publish candidate facts only
+        |
+        +-> canonical IMPLEMENTATION_RESULT
         |
         v
-IMPLEMENTATION_RESULT
-  != DONE
-  != ACCEPT
+JUDGMENT / CANDIDATE
         |
-        v
-fresh JUDGMENT / CANDIDATE
-  -> independently reconstruct
-  -> assess criteria + invariants
-        |
-        +---- ACCEPT ----> lifecycle/merge continuation
+        +---- ACCEPT ----> merge / reconcile Living Docs / close
         |
         +---- FINDINGS --> EXECUTION / REPAIR
                               |
-                              +-> new IMPLEMENTATION_RESULT
-                                   -> fresh JUDGMENT again
+                              +-> update IMPLEMENTATION_RESULT
+                              +-> update current context to JUDGMENT again
 ```
 
-The semantic implementation input is unchanged across execution, judgment and repair generations.
+The helper context file remains:
 
-### EXECUTION lane
+`docs/blackboard/context/<WORK_ID>/current.json`
 
-Execution owns HOW within exact bounded mutation authority.
+and is overwritten in place as the lane changes.
 
-It may produce:
+### Authority flow
 
-- candidate revision;
-- changed-surface facts;
-- verification-run facts;
-- evidence references;
-- observed facts.
+```text
+current.json
+  -> semanticArtifactRef
+  -> authority.ref / implementationResultRef as needed
 
-It must not claim that the candidate is correct, done, accepted or safe to merge.
+READINESS_DECISION
+  -> itemId + semanticArtifactRef
 
-### JUDGMENT lane
+IMPLEMENTATION_RESULT
+  -> semantic input + candidate + executionAuthorityRef
 
-Judgment owns correctness assessment only. It is read-only for product source.
+JUDGMENT
+  -> semantic input + implementation result + candidate
+```
 
-Candidate judgment receives the exact semantic input + exact implementation result + exact candidate + evidence. It does not require Worker reasoning or chat history.
-
-A candidate judgment publishes `ACCEPT` or typed `FINDINGS`. Findings may authorize a bounded repair generation; they do not widen the semantic input.
+Context identity is not part of authority.
 
 ### Fresh-session bootstrap
 
-`start implement blackboard` and `continue implement blackboard` mean:
-
 ```text
 state.md
-  -> select active IMPLEMENTATION_WORKER item
-  -> exact current-context
-  -> exact current lane
-  -> semanticArtifactRef
-  -> materialize for executor profile
-  -> execute only that lane authority
+  -> active workId
+  -> current-context.ref
+  -> exact lane/action
+  -> explicit required refs
+  -> execute only that lane
 ```
 
-They do **not** mean "force EXECUTION". If the current lane is `JUDGMENT`, the fresh session performs judgment first.
+No prior context generation/history is loaded.
 
 Repository bootstrap:
 
@@ -122,101 +87,15 @@ npm run start:blackboard-implementation -- RICH_CODING_HARNESS [WORK_ID]
 npm run start:blackboard-implementation -- WEAK_BOUNDED [WORK_ID]
 ```
 
-## Fresh-session loading
-
-```text
-state.md
-  -> workId
-  -> pipeline + stage + lane (for IMPLEMENTATION_WORKER)
-  -> exact current-context
-  -> requiredCurrentSystemRefs
-  -> requiredInputRefs
-  -> execute
-```
-
-Do not load full Board history or all Living Docs by default.
-
-## Concurrent pipeline families
-
-Research/SA and Implementation/Worker may both have active items. Their pipeline concurrency is separate from the internal `EXECUTION` / `JUDGMENT` lane split inside `IMPLEMENTATION_WORKER`. Context currentness is per work item, not global.
-
-The repository verifier therefore validates every active work item when no explicit item is requested, or validates only `BLACKBOARD_CONTEXT_ITEM` when explicitly selected.
-
-## Research -> implementation boundary
-
-For newly allocated work after this migration:
-
-```text
-ResearchArtifact
-  -> SA synthesis/review
-  -> IMPLEMENTATION_INPUT: ACCEPTED
-  -> Implementation/Worker allocation
-```
-
-`IMPLEMENTATION_INPUT` conveys the semantic change that should be realized. It is not an implementation plan and not implementation permission by itself; repository implementation authority still requires the exact current implementation context/review decision.
-
-BB-048 predates this split. `artifacts/implementation-input/BB-048-migrated-readiness.md` makes its existing promoted readiness inputs explicit without rewriting Living Docs history.
-
-## Semantic artifact -> execution context
-
-The implementation pipeline preserves this separation:
-
-```text
-accepted semantic IMPLEMENTATION_INPUT
-        |
-        | immutable meaning
-        v
-WORK_CONTEXT_SPEC
-  + current-system refs
-  + source/read/write bounds
-  + verification contract
-        |
-        v
-Context Materializer(profile)
-        |
-        +-- RICH_CODING_HARNESS
-        |     minimal refs + self-directed exploration within scope
-        |
-        +-- GENERIC_INTERACTIVE
-        |     resolved bounded refs + explicit scope
-        |
-        +-- WEAK_BOUNDED
-              explicit bounded execution projection
-```
-
-All profiles receive the exact same semantic artifact. Profile choice changes context presentation only; it cannot add, remove or reinterpret required behavior, invariants or acceptance criteria.
-
-Repository usage:
-
-```text
-npm run materialize:blackboard-context -- <context-spec.json> RICH_CODING_HARNESS
-npm run materialize:blackboard-context -- <context-spec.json> GENERIC_INTERACTIVE
-npm run materialize:blackboard-context -- <context-spec.json> WEAK_BOUNDED
-```
-
-For ChatGPT Web/fresh interactive sessions, `GENERIC_INTERACTIVE` is the normal shape. Rich repo-native coding harnesses may use `RICH_CODING_HARNESS`. Smaller/less capable executors should use `WEAK_BOUNDED`.
-
-
 ## Accepted semantic input queue
 
-The Research/SA lane may finish before the Implementation/Worker lane is ready to allocate the resulting work.
+Accepted implementation inputs may exist without active work. `state.md` names the current queue membership.
 
 ```text
-explicit problem/question
-  -> RESEARCH_SA
-  -> ResearchArtifact
-  -> SA synthesis
-  -> ACCEPTED IMPLEMENTATION_INPUT
-  -> semantic input queue
-       |
-       | no active debt / no work id / no source authority
-       v
-  grounded implementation trigger
-  -> allocate IMPLEMENTATION_WORKER item
-  -> JUDGMENT / READINESS
-  -> on ACCEPT enter EXECUTION / INITIAL
+accepted semantic input
+  != active work
+  != source mutation authority
+  != priority/order
 ```
 
-Queueing preserves research value without fabricating future Blackboard work. Multiple accepted semantic inputs may wait while another implementation item is active. Ordering among queued inputs is not implied by directory order; prerequisites and current-system pressure are evaluated when work is allocated.
-
-The internal `EXECUTION` / `JUDGMENT` lane split begins only after an accepted semantic input is allocated to `IMPLEMENTATION_WORKER`; it does not apply to an unallocated queued input.
+Allocation creates/updates one active Board item and one `current.json`; no generation chain is created.
