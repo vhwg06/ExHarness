@@ -397,8 +397,9 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     const owner = requireText(expectedOwner, "expectedOwner");
     const generation = requirePositiveInteger(expectedClaimGeneration, "expectedClaimGeneration");
     invariant(typeof action === "function", "withOrganizationClaimGuard requires action");
+    invariant(typeof store.withMutationFence === "function", "Blackboard store mutation fence is required for guarded organization publication");
 
-    const guarded = await store.transact(async (snapshot) => {
+    return store.withMutationFence(async ({ token, snapshot }) => {
       const item = findItem(snapshot, normalizedItemId);
       invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${normalizedItemId} must remain CLAIMED during guarded mutation`);
       invariant(item.owner === owner, `Blackboard item ${normalizedItemId} owner changed during guarded mutation`);
@@ -408,7 +409,9 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
         status: item.status,
         owner: item.owner,
         claimGeneration: item.claimGeneration,
+        boardRevision: token,
         lifecycleRevision: digest({
+          boardRevision: token,
           itemId: item.id,
           status: item.status,
           owner: item.owner,
@@ -416,12 +419,11 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
           origin: item.origin
         })
       });
-      return {
+      return Object.freeze({
         observation,
         result: await action(observation)
-      };
+      });
     });
-    return Object.freeze(guarded.result);
   }
 
   return Object.freeze({
