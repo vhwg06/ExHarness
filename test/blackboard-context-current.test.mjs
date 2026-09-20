@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { verifyCurrentContext, verifyCurrentContexts } from "../scripts/blackboard-context-verify.mjs";
+import { verifyCurrentContext, verifyCurrentContexts, assertCandidateJudgmentBinding } from "../scripts/blackboard-context-verify.mjs";
 
 test("repository current migrated contexts follow exact Board bindings",()=>{
   const out=verifyCurrentContexts();
@@ -32,4 +32,19 @@ test("active Board item without current-context fails closed",()=>{
   mkdirSync(join(root,"docs/blackboard"),{recursive:true});
   writeFileSync(join(root,"docs/blackboard/state.md"),"# Outer Blackboard\n\n## Active work\n\nBB-999\nstatus: READY\n\n## Allocation rules\n");
   assert.throws(()=>verifyCurrentContexts({root}),/BOARD_BINDING_INVALID: active item\(s\) missing current-context: BB-999/);
+});
+
+test("candidate judgment binding rejects same producer context and drift",()=>{
+  const spec={
+    sourceBaseline:{revision:"base-sha"},
+    semanticArtifactRef:"input.json",
+    reviewTarget:{candidateHeadSha:"candidate-sha"}
+  };
+  const result={
+    artifactType:"IMPLEMENTATION_RESULT",
+    subject:{itemId:"BB-X",semanticArtifactRef:"input.json",sourceBaseline:"base-sha",candidateRef:"candidate-sha",producerContextRef:"g2.json"}
+  };
+  assert.equal(assertCandidateJudgmentBinding({spec,result,bindingRef:"g3.json",itemId:"BB-X"}),true);
+  assert.throws(()=>assertCandidateJudgmentBinding({spec,result,bindingRef:"g2.json",itemId:"BB-X"}),/JUDGMENT_INDEPENDENCE_INVALID/);
+  assert.throws(()=>assertCandidateJudgmentBinding({spec,result:{...result,subject:{...result.subject,candidateRef:"other"}},bindingRef:"g3.json",itemId:"BB-X"}),/subject mismatch/);
 });

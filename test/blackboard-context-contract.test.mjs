@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { assertWorkContext, requiredRefs } from "../scripts/blackboard-context-contract.mjs";
-import { parseCurrentContext, parseItemRef, assertBoardBinding } from "../scripts/blackboard-context-board.mjs";
+import { parseCurrentContext, parseItemRef, parseItemScalar, assertBoardBinding } from "../scripts/blackboard-context-board.mjs";
 
 const base={kind:"WORK_CONTEXT_SPEC",version:1,itemId:"BB-X",generation:2,action:{kind:"REVIEW"},reviewTarget:{repository:"r",candidateHeadSha:"abc",allowedPostTargetEnvelopePaths:[]},sourceScope:{read:[],write:[],forbiddenWrite:["packages/**"]},requiredCurrentSystemRefs:["a"],requiredInputRefs:["b"],auditRefs:["history"]};
 
@@ -43,11 +43,26 @@ test("current-context parser ignores refs from later sibling fields",()=>{
 });
 
 test("implementation worker context requires exact semantic JSON input",()=>{
-  const impl={...base,pipeline:"IMPLEMENTATION_WORKER",action:{kind:"REVIEW"},reviewTarget:base.reviewTarget};
+  const impl={...base,pipeline:"IMPLEMENTATION_WORKER",action:{kind:"REVIEW"},reviewTarget:base.reviewTarget,lane:"JUDGMENT",judgmentKind:"READINESS"};
   assert.throws(()=>assertWorkContext(impl),/semanticArtifactRef/);
   assert.doesNotThrow(()=>assertWorkContext({...impl,semanticArtifactRef:"artifact.json",requiredInputRefs:["b","artifact.json"]}));
 });
 test("board implementation input ref parses independently from current context",()=>{
   const board="BB-X\ncurrent-context:\n  generation: 2\n  ref: x.json\nimplementation-input:\n  ref: artifact.json\n";
   assert.equal(parseItemRef(board,"BB-X","implementation-input"),"artifact.json");
+});
+
+test("implementation worker lane and action must agree",()=>{
+  const common={...base,pipeline:"IMPLEMENTATION_WORKER",semanticArtifactRef:"artifact.json",requiredInputRefs:["b","artifact.json"]};
+  assert.throws(()=>assertWorkContext({...common,lane:"EXECUTION",executionMode:"INITIAL",action:{kind:"REVIEW"}}),/EXECUTION lane requires IMPLEMENT/);
+  assert.throws(()=>assertWorkContext({...common,lane:"JUDGMENT",judgmentKind:"READINESS",action:{kind:"IMPLEMENT"},parentContextRef:"g1",authority:{implementationDecisionRef:"d",subjectContextRef:"g1",subjectCandidateHeadSha:"abc"}}),/JUDGMENT lane requires REVIEW/);
+});
+test("candidate judgment requires exact implementation result input",()=>{
+  const ctx={...base,pipeline:"IMPLEMENTATION_WORKER",lane:"JUDGMENT",judgmentKind:"CANDIDATE",semanticArtifactRef:"artifact.json",requiredInputRefs:["b","artifact.json"]};
+  assert.throws(()=>assertWorkContext(ctx),/implementationResultRef/);
+  assert.doesNotThrow(()=>assertWorkContext({...ctx,implementationResultRef:"result.json",requiredInputRefs:["b","artifact.json","result.json"]}));
+});
+test("board lane parses as an exact scalar",()=>{
+  const board="BB-X\npipeline: IMPLEMENTATION_WORKER\nlane: EXECUTION\ncurrent-context:\n  generation: 2\n  ref: x.json\n";
+  assert.equal(parseItemScalar(board,"BB-X","lane"),"EXECUTION");
 });

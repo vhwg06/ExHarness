@@ -23,7 +23,8 @@ function fixture(){
   writeFileSync(join(root,"artifact.json"),JSON.stringify(artifact));
   writeFileSync(join(root,"docs/current.md"),"current");
   const spec={
-    kind:"WORK_CONTEXT_SPEC",version:1,itemId:"BB-X",generation:1,pipeline:"IMPLEMENTATION_WORKER",stage:"IMPLEMENT",
+    kind:"WORK_CONTEXT_SPEC",version:1,itemId:"BB-X",generation:1,pipeline:"IMPLEMENTATION_WORKER",stage:"IMPLEMENTATION_READINESS_REVIEW",
+    lane:"JUDGMENT",judgmentKind:"READINESS",
     semanticArtifactRef:"artifact.json",action:{kind:"REVIEW"},reviewTarget:{repository:"r",candidateHeadSha:"abc",allowedPostTargetEnvelopePaths:[]},
     sourceScope:{read:["src/**"],write:[],forbiddenWrite:["**"]},
     requiredCurrentSystemRefs:["docs/current.md"],requiredInputRefs:["artifact.json"],auditRefs:[],
@@ -43,4 +44,6 @@ test("profiles preserve one semantic artifact while changing projection",()=>{
   assert.equal(rich.exploration,"SELF_DIRECTED_WITHIN_SCOPE");
   assert.ok(generic.resolvedRefs.length===2);
   assert.deepEqual(weak.boundedExecution.readScope,["src/**"]);
+  assert.equal(rich.lane,"JUDGMENT");
+  assert.equal(generic.claimPolicy,"INDEPENDENT_JUDGMENT_NO_SOURCE_MUTATION");
 });

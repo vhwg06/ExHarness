@@ -50,3 +50,18 @@ export function parseItemRef(boardText,itemId,fieldName){
   if(refs.length!==1) throw new Error(`BOARD_BINDING_INVALID: ambiguous ${fieldName}`);
   return refs[0][1];
 }
+
+export function parseItemScalar(boardText,itemId,fieldName){
+  const lines=boardText.split("\n");
+  const itemLines=lines.map((line,i)=>line.trim()===itemId?i:-1).filter(i=>i>=0);
+  if(itemLines.length!==1) throw new Error(`BOARD_BINDING_INVALID: expected one ${itemId}, found ${itemLines.length}`);
+  const start=itemLines[0];
+  let end=lines.length;
+  for(let i=start+1;i<lines.length;i++) if(/^BB-\d+\s*$/.test(lines[i].trim())) { end=i; break; }
+  const prefix=fieldName+":";
+  const matches=lines.slice(start,end).map(line=>line.trim()).filter(line=>line.startsWith(prefix));
+  if(matches.length!==1) throw new Error(`BOARD_BINDING_INVALID: expected one ${fieldName}`);
+  const value=matches[0].slice(prefix.length).trim();
+  if(!value||/\s/.test(value)) throw new Error(`BOARD_BINDING_INVALID: invalid ${fieldName}`);
+  return value;
+}

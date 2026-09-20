@@ -53,3 +53,17 @@ Status: **PROMOTED FOR REPOSITORY DEVELOPMENT COORDINATION**
 32. **Execution details live in context.** Source scope, write scope, verification checks, entrypoints and repair bounds belong to `WORK_CONTEXT_SPEC` or its materialized executor projection, never to the canonical semantic artifact.
 33. **Executor capability cannot rewrite meaning.** Rich coding agents, generic interactive sessions and weak bounded harnesses may receive different context projections, but each projection carries the same semantic artifact unchanged.
 34. **Repository gate.** Invalid semantic artifacts, missing implementation artifact bindings or Board/context/artifact mismatches fail `npm run verify:blackboard-context`.
+
+## Implementation execution / judgment invariants
+
+35. `IMPLEMENTATION_WORKER` is one development pipeline with two authority lanes: `EXECUTION` and `JUDGMENT`. They are not separate project pipelines.
+36. Every current `IMPLEMENTATION_WORKER` context and Board item declares the exact current `lane`; Board lane and context lane must match.
+37. `EXECUTION` requires an `IMPLEMENT` action. It may mutate only within bounded source authority and may publish an `IMPLEMENTATION_RESULT` containing candidate identity, verification runs, evidence and observed facts.
+38. `IMPLEMENTATION_RESULT` is producer evidence, not correctness authority. Its schema forbids verdict/accepted/correct/done/safe-to-merge style claims.
+39. `JUDGMENT` requires a read-only `REVIEW` action. Candidate judgment independently evaluates the exact semantic input, implementation result, candidate revision, evidence, acceptance criteria and invariants.
+40. Candidate judgment requires exact `Board implementation-result.ref == WorkContextSpec.implementationResultRef` and exact result subject binding to work id, semantic input and candidate.
+41. The producer context and candidate-judgment context must be different immutable generations. Producer reasoning is not acceptance authority.
+42. `JUDGMENT/READINESS` may authorize the first bounded `EXECUTION/INITIAL` generation. `JUDGMENT/CANDIDATE` evaluates an implementation candidate; the two judgment subjects are distinct.
+43. A `JUDGMENT` with `FINDINGS` may authorize only a bounded `EXECUTION/REPAIR` generation bound to that exact judgment and candidate. `ACCEPT` cannot be reused as repair authority.
+44. Artifact existence is not completion. `IMPLEMENTATION_RESULT != JUDGMENT`, and a judgment artifact does not mutate canonical Board lifecycle by itself.
+45. `start implement blackboard` and `continue implement blackboard` are bootstrap intents, not lane overrides. A fresh session must resolve the current Board item/context and obey its current lane.

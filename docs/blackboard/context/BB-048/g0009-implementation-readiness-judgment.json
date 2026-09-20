@@ -1,0 +1,172 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_REVIEW_CONTEXT",
+  "contextId": "BB-048-context",
+  "itemId": "BB-048",
+  "generation": 9,
+  "parentContextRef": "docs/blackboard/context/BB-048/g0008-implementation-readiness-review.json",
+  "pipeline": "IMPLEMENTATION_WORKER",
+  "stage": "IMPLEMENTATION_READINESS_REVIEW",
+  "role": "REVIEWER",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Independently judge BB-048 implementation readiness under the enforced EXECUTION/JUDGMENT lane split.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "mutate DOMAIN_EXECUTION_CONTROL product source",
+      "skip readiness judgment to enter EXECUTION",
+      "treat producer facts as acceptance authority",
+      "claim implementation completion from artifact existence",
+      "reopen terminal BB-047 A.1 without grounded contradictory evidence",
+      "enter cross-domain obligation issuance, DOMAIN_ACTIVATION, ProductStateProjection, deployment/Product QA, or Integration C-J implementation"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "targetType": "git-commit",
+    "candidateHeadSha": "bdf700300adf56e1f6d520cb0e224e1b9c9d773c",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/blackboard/state.md",
+      "docs/blackboard/context/BB-048/g0009-implementation-readiness-judgment.json"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "bdf700300adf56e1f6d520cb0e224e1b9c9d773c"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/blackboard/contracts.md",
+    "docs/blackboard/pipelines.md",
+    "docs/living/system/state.md",
+    "docs/living/system/capabilities.md",
+    "docs/living/system/agentic-application/state.md",
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/system/agentic-application/boundaries.md",
+    "docs/living/system/agentic-application/contracts.md",
+    "packages/agentic-system/src/organization-work.js",
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/src/organization-authority.js",
+    "packages/agentic-system/src/organization-authority-store.js",
+    "packages/agentic-system/src/organization-artifact-store.js",
+    "packages/agentic-system/src/index.js"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+    "docs/living/decisions/D027-bb047-a1-merge-acceptance.md"
+  ],
+  "auditRefs": [
+    "docs/blackboard/context/BB-048/g0008-implementation-readiness-review.json",
+    "docs/blackboard/context/BB-048/g0007-implementation-readiness-review.json",
+    "docs/blackboard/context/BB-048/g0006-implementation-readiness-review.json",
+    "docs/blackboard/artifacts/implementation-input/BB-048-migrated-readiness.md",
+    "docs/blackboard/context/BB-048/g0005-implementation-readiness-review.json",
+    "docs/blackboard/context/BB-048/g0004-implementation-readiness-review.json",
+    "docs/blackboard/context/BB-048/g0003-implementation-readiness-review.json",
+    "docs/living/knowledge/domain-execution-control-implementation-readiness.md",
+    "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+    "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+    "docs/living/knowledge/domain-activation-parallel-autonomy-implementation-readiness.md",
+    "docs/living/knowledge/deployment-acceptance-snapshot-implementation-readiness.md",
+    "docs/living/knowledge/bb046-execution-strategy-rebase-research-v6.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/blackboard/**",
+      "docs/living/system/**",
+      "docs/living/knowledge/**",
+      "docs/living/decisions/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/core-harness/src/**",
+      "packages/core-harness/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "IMPLEMENTATION_WORKER has separate EXECUTION and JUDGMENT authority lanes",
+    "READINESS JUDGMENT is read-only and cannot mutate product source",
+    "start/continue implement blackboard obeys the current Board lane and cannot force EXECUTION",
+    "EXECUTION may later publish IMPLEMENTATION_RESULT facts but cannot claim ACCEPT, DONE, correctness or safe-to-merge",
+    "candidate correctness requires a different immutable JUDGMENT context bound to exact semantic input, result and candidate",
+    "FINDINGS may authorize bounded repair; ACCEPT cannot be reused as repair authority",
+    "canonical implementation input is semantic and contains no executor-specific procedure",
+    "Board implementation-input.ref equals this context semanticArtifactRef",
+    "executor-specific materialization may change context presentation but cannot rewrite semantic behavior, invariants or acceptance criteria",
+    "Living Docs describe the system that exists now; Blackboard only describes development state and routes fresh-session context",
+    "RESEARCH_SA and IMPLEMENTATION_WORKER are independent development pipelines",
+    "BB-048 uses a migration adapter for already-promoted pre-split research; this does not rewrite BB-047 Living Docs history",
+    "BB-047 A.1 is terminal current-system truth",
+    "Integration B begins only from an exact current released organizational claim",
+    "ExecutionAttemptHead is resolved before policy/strategy selection",
+    "same semantic attempt recovery reuses the same immutable ExecutionAttemptBinding",
+    "ExecutionPolicy != Work Scheduler",
+    "ExecutionStrategy != Cross-Domain Dispatcher",
+    "strategy result != runtime fact != verification evidence",
+    "SUCCEEDED != ACCEPT and ACCEPT != authoritative publication",
+    "Integration C-J remain out of implementation scope"
+  ],
+  "verification": [
+    "npm run start:blackboard-implementation -- GENERIC_INTERACTIVE BB-048",
+    "npm run verify:blackboard-artifacts",
+    "npm run verify:blackboard-context",
+    "npm run verify",
+    "independent readiness review that the current lane split cannot let an EXECUTION producer claim candidate correctness",
+    "independent authority-boundary review proving no global scheduler/cross-domain dispatcher is introduced"
+  ],
+  "expectedOutputs": [
+    "ACCEPT or findings decision bound to this exact generation 9 readiness JUDGMENT context and candidate",
+    "if accepted, child g0010 is EXECUTION/INITIAL with exact bounded sourceScope.write and deterministic tests",
+    "child EXECUTION preserves this exact semanticArtifactRef unchanged",
+    "future EXECUTION output is IMPLEMENTATION_RESULT only; candidate acceptance requires a later fresh JUDGMENT context",
+    "no Living Docs rewrite unless product/system semantics actually change"
+  ],
+  "staleWhen": [
+    "candidate changes outside the allowed post-target envelope",
+    "Board current-context generation/ref changes",
+    "Board lane changes",
+    "Board implementation-input.ref changes",
+    "semantic implementation input changes",
+    "terminal A.1 source contracts or capability projection change materially",
+    "BB-048 requires semantics outside the accepted DOMAIN_EXECUTION_CONTROL input"
+  ],
+  "reviewQuestion": [
+    "does start/continue implement blackboard reconstruct BB-048 at JUDGMENT/READINESS without prior chat?",
+    "does the repository prevent EXECUTION from publishing correctness verdicts?",
+    "does candidate JUDGMENT require a distinct immutable context and exact implementation-result/candidate binding?",
+    "can only FINDINGS authorize bounded repair while ACCEPT cannot?",
+    "is the current semantic baseline sufficient to authorize one bounded DOMAIN_EXECUTION_CONTROL EXECUTION/INITIAL slice?"
+  ],
+  "nextGenerationOnAcceptance": {
+    "path": "docs/blackboard/context/BB-048/g0010-implementation.json",
+    "parentContextRef": "docs/blackboard/context/BB-048/g0009-implementation-readiness-judgment.json",
+    "actionKind": "IMPLEMENT",
+    "lane": "EXECUTION",
+    "executionMode": "INITIAL",
+    "requirements": [
+      "exact accepted implementationDecisionRef",
+      "decision subjectContextRef equals this g0009",
+      "decision subjectCandidateHeadSha equals reviewTarget.candidateHeadSha",
+      "semanticArtifactRef remains docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+      "then-current sourceBaseline",
+      "exact bounded Integration B sourceScope.write",
+      "exact focused verification/negative tests",
+      "EXECUTION must publish IMPLEMENTATION_RESULT without correctness verdict",
+      "Board transitions BB-048 to READY with lane EXECUTION and current-context generation 10"
+    ]
+  },
+  "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+  "lane": "JUDGMENT",
+  "judgmentKind": "READINESS"
+}

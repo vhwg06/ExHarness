@@ -1,40 +1,80 @@
 # Blackboard development artifacts
 
-Blackboard artifacts are durable **semantic work products** exchanged between development pipelines. They are not Living Docs, prompts, execution plans or executor-specific context packs.
+Blackboard artifacts are durable work products exchanged by development pipelines. They are not Living Docs, prompts or session transcripts.
 
-## Canonical boundary
+## Canonical semantic input
 
 ```text
-Blackboard Artifact
+IMPLEMENTATION_INPUT
   = WHAT / WHY / required behavior / invariants / acceptance
 
 WorkContextSpec
   = bounded refs / source scope / verification / authority
 
 Context Materializer
-  = executor-specific projection of that same context
+  = executor-specific projection
 
 Executor
-  = chooses HOW to perform the bounded work
+  = HOW
 ```
 
-A canonical artifact must not encode a preferred file edit sequence, shell commands, model prompt, tool calls, implementation plan or executor profile.
+Canonical `IMPLEMENTATION_INPUT` remains semantic-only. It must not encode preferred edit sequences, commands, prompts, tool calls, implementation plans or executor profiles.
 
-## Implementation input
+## Implementation lane artifacts
 
-Canonical `IMPLEMENTATION_INPUT` artifacts are JSON and must pass `scripts/blackboard-artifact-contract.mjs`.
+```text
+IMPLEMENTATION_INPUT
+        |
+        v
+EXECUTION
+        |
+        +--> IMPLEMENTATION_RESULT
+               candidateRef
+               changedSurfaces
+               verificationRuns
+               observedFacts
+               evidenceRefs
+               |
+               |  no correctness verdict
+               v
+JUDGMENT
+        |
+        +--> JUDGMENT
+               criterion assessments
+               invariant assessments
+               findings
+               verdict: ACCEPT | FINDINGS
+```
 
-Required semantic content includes stable subject identity, desired outcome/current-state boundary, required behaviors, invariants, acceptance criteria, explicit out-of-scope semantics, affected capabilities/contracts, provenance and acceptance authority.
+### IMPLEMENTATION_RESULT
 
-File paths are permitted only as provenance/current-system references, not as implementation instructions.
+This is a producer observation artifact. It can state what changed, what was run and what was observed.
 
-## Current enforced type
+It cannot claim `ACCEPT`, `DONE`, correctness, requirement satisfaction or safe-to-merge. The repository schema rejects those authority claims.
 
-`IMPLEMENTATION_INPUT` is the accepted semantic handoff consumed by `IMPLEMENTATION_WORKER`.
+### JUDGMENT
 
-Research evidence and historical Markdown may remain as provenance, but a new Implementation/Worker context cannot use prose/history as its canonical implementation input.
+This is the independent correctness artifact for an exact candidate. It binds:
 
-Current example:
+- exact work id;
+- exact semantic implementation input;
+- exact implementation result;
+- exact candidate revision;
+- exact source baseline;
+- exact judgment context.
+
+`ACCEPT` requires every criterion/invariant assessment to be satisfied and zero findings. `FINDINGS` requires concrete typed findings.
+
+A finding is classified as one of:
+
+- `IMPLEMENTATION_FINDING`;
+- `EVIDENCE_INSUFFICIENT`;
+- `CONTEXT_STALE`;
+- `INPUT_CONTRADICTION`.
+
+Only grounded `FINDINGS` can authorize a bounded repair execution.
+
+## Current enforced artifacts
 
 - `implementation-input/BB-048-domain-execution-control-v1.json` — canonical semantic input.
 - `implementation-input/BB-048-migrated-readiness.md` — historical migration provenance only.
