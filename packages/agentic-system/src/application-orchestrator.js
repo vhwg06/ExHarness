@@ -392,6 +392,38 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     return Object.freeze(structuredClone(result));
   }
 
+  async function withOrganizationClaimGuard({ itemId, expectedOwner, expectedClaimGeneration }, action) {
+    const normalizedItemId = requireText(itemId, "itemId");
+    const owner = requireText(expectedOwner, "expectedOwner");
+    const generation = requirePositiveInteger(expectedClaimGeneration, "expectedClaimGeneration");
+    invariant(typeof action === "function", "withOrganizationClaimGuard requires action");
+
+    const guarded = await store.transact(async (snapshot) => {
+      const item = findItem(snapshot, normalizedItemId);
+      invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${normalizedItemId} must remain CLAIMED during guarded mutation`);
+      invariant(item.owner === owner, `Blackboard item ${normalizedItemId} owner changed during guarded mutation`);
+      invariant(item.claimGeneration === generation, `Blackboard item ${normalizedItemId} claim generation changed during guarded mutation`);
+      const observation = Object.freeze({
+        itemId: normalizedItemId,
+        status: item.status,
+        owner: item.owner,
+        claimGeneration: item.claimGeneration,
+        lifecycleRevision: digest({
+          itemId: item.id,
+          status: item.status,
+          owner: item.owner,
+          claimGeneration: item.claimGeneration,
+          origin: item.origin
+        })
+      });
+      return {
+        observation,
+        result: await action(observation)
+      };
+    });
+    return Object.freeze(guarded.result);
+  }
+
   return Object.freeze({
     ...base,
     recoverSelfUpgradeEvaluationClaim,
@@ -399,6 +431,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     resolveBlockedCheckpoint,
     materializeAcceptedWork,
     blockOrganizationMaterialization,
-    invalidateOrganizationClaim
+    invalidateOrganizationClaim,
+    withOrganizationClaimGuard
   });
 }
