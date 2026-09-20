@@ -32,7 +32,11 @@ Open mechanisms:
   tracked in the explicit twelve-gap matrix with hard blocking slices
 ```
 
-Research revision: **v7 trust-transition lifecycle closure**.
+Status: **CANONICAL INTEGRATION ROADMAP**.
+
+This file is the single current roadmap source of truth. Git history carries revisions; do not create sibling `vN` roadmap files for ordinary roadmap corrections.
+
+The current roadmap preserves the established trust/authority architecture. It does **not** rebase B→J, introduce a workflow-generation engine, or move organizational authority into Restate. It makes explicit an already-compatible delivery assumption: lifecycle/workload workflows may be predefined and versioned, while the project artifact set may begin incomplete and evolve with the end user across those known phases.
 
 Objective benchmark nên là kiểu:
 
@@ -56,6 +60,82 @@ Không cần auth/payment/database phức tạp ở phase đầu. Nhưng objecti
 ### Glossary cho independent reviewer
 
 Tài liệu chỉ có **một glossary canonical** ở Section 2. Executive summary không duplicate định nghĩa để tránh hai nguồn terminology drift. Reviewer đọc nhanh có thể nhảy thẳng tới `Working glossary for independent review` trước khi review authority contracts.
+
+# 0. Explicit lifecycle + evolving artifact bundle
+
+The integration target does not require ExHarness to invent a project workflow from arbitrary artifacts at runtime.
+
+The delivery lifecycle may be an explicit, versioned contract selected before execution:
+
+```text
+ProjectSeed
+  goal
+  lifecycleRef
+  initialArtifactRefs[]   # may be incomplete
+        |
+        v
+explicit/versioned product lifecycle
+        |
+        +-> product / PM responsibility
+        +-> BA responsibility
+        +-> SA responsibility
+        +-> FE / BE responsibility
+        +-> DevOps responsibility
+        +-> QA responsibility
+        +-> closure
+```
+
+The lifecycle defines expected responsibility, accepted input/output artifact kinds, completion semantics and bounded human-interaction points. It does **not** require an LLM planner to invent role ordering, workflow topology or a new orchestration graph for every project.
+
+The artifact bundle is allowed to evolve through the lifecycle:
+
+```text
+initial artifacts v0
+  idea.md
+  requirement-notes.md
+  design.fig
+        |
+        v
+bounded phase/workload
+  consume what exists
+  identify missing/ambiguous inputs for that responsibility
+  ask the end user only when authoritative clarification is required
+  publish/supersede canonical artifacts
+        |
+        v
+artifact bundle v1
+        |
+        v
+next actionable domain workloads
+        |
+       ...
+        |
+        v
+complete delivery evidence + ProductOutcomeClaim
+```
+
+Hard distinctions:
+
+```text
+explicit lifecycle/workflow definition
+!= runtime workflow-generation engine
+
+artifact exists
+!= artifact is accepted/current product truth
+
+phase/workload can request HUMAN_DECISION_REQUIRED
+!= agent fabricates missing Product Owner authority
+
+Restate workflow/handler
+= one durable execution mechanism for a bounded ExecutionStrategy
+!= organization-wide authority to choose arbitrary work/domain/product truth
+```
+
+A project may therefore start with only a partial artifact set. Each bounded domain workload decides whether its declared inputs are sufficient for its own responsibility. Missing or conflicting semantics become typed obligations, bounded clarification or downstream work; they do not require a generic "understand the whole project and invent a workflow" engine.
+
+This keeps the cost model bounded: lifecycle design can evolve deliberately between versions, while individual project runs reuse the selected lifecycle and evolve only project artifacts/evidence.
+
+---
 
 # 1. Research cho thấy mình nên đi hướng nào
 
@@ -2497,12 +2577,23 @@ Tao sẽ không accept phase bằng unit tests đơn thuần.
 
 Canonical test:
 
+The canonical fixture starts from a **ProjectSeed**, not from a requirement that every canonical project artifact already exists. The selected lifecycle is explicit/versioned; the supplied artifact bundle may be incomplete.
+
 ```text
-Fresh empty organization
+ProjectSeed
+  goal: "complete and deliver this product"
+  lifecycleRef: software-product-delivery@v1
+  initialArtifactRefs:
+    - requirement-notes.md
+    - design.fig
+    - any other artifacts the end user currently has
         │
         ▼
-User / Product Owner establishes RootIntent:
-"Build and deploy a small public catalog website..."
+selected explicit lifecycle establishes / evolves canonical project artifacts
+with bounded end-user clarification where required
+        │
+        ▼
+RootIntent + ROOT_OUTCOME_SET
         │
         ▼
 accepted ProductObjective/ScopeDecision bound to that RootIntent
@@ -2670,8 +2761,9 @@ The phase must also make organizational behavior
 observable and close at least one evidence-gated
 execution-strategy self-improvement experiment.
 
-Workflow/pipeline is never an organizational primitive; it is only
-one possible versioned implementation shape of a domain-local ExecutionStrategy.
+The product-delivery lifecycle and workload workflows may be explicit and versioned inputs; ExHarness does not need a runtime engine that invents new workflows from project artifacts. The project artifact bundle may be incomplete at entry and evolve through those known responsibilities with bounded end-user interaction.
+
+A Restate handler/workflow remains one possible durable implementation shape of a bounded domain-local ExecutionStrategy. Selecting or versioning that workflow does not grant organization-wide scheduling, cross-domain dispatch, product/write authority or permission to rewrite work semantics.
 ```
 
 Và **không build trong phase này**: generic universal `RoleRegistry`, one global `WorkflowGraph`, central LLM manager, shared group-chat memory, Oracle-based dispatch, global LLM `DONE` judge, hay self-improvement được phép tự sửa evaluator/acceptance authority.
@@ -2679,3 +2771,42 @@ Và **không build trong phase này**: generic universal `RoleRegistry`, one glo
 Điểm làm đầu tiên là **BB-046 research Organizational Integration cho đến khi publish được một candidate `IntegrationImplementationArtifact` evidence-backed, rồi đưa exact artifact qua independent review/decision**. Research producer không được tự gắn `IMPLEMENTATION_READY` authority cho output của chính nó.
 
 Sau khi BB-046 được independently accepted, first derived implementation seam là **Integration A.1 research-to-role-work bridge**, implemented through deterministic `OrganizationWorkMaterializer` rather than PM dispatch, with canonical authority-revocation -> Blackboard lifecycle invalidation; sau khi bridge pass mới chạy PM+BA product vertical. Các mechanism chưa đủ evidence vẫn nằm trong explicit twelve-gap blocking matrix và chỉ được mở khi slice tương ứng đến gần. Như vậy Blackboard Integration vẫn bắt đầu từ concrete seam/objective, không fabricate backlog trước, nhưng research cũng không dừng ở architecture summary và không self-approve downstream implementation.
+
+
+---
+
+# 18. Artifact-evolution acceptance fixtures
+
+The final integration proof must cover different starting completeness levels under the **same explicit lifecycle contract**:
+
+```text
+Fixture A — minimal seed
+  idea / goal artifact only
+  -> lifecycle evolves requirements, architecture, delivery, deployment and QA artifacts
+
+Fixture B — partial project
+  requirement markdown + Figma/design artifact
+  -> reuse what is grounded
+  -> clarify/complete missing semantics
+  -> materialize only required downstream work
+
+Fixture C — advanced project
+  requirements + architecture + design + existing FE/BE/code/deployment refs
+  -> verify/adopt current artifacts through normal authority gates
+  -> do not redo already-current accepted work
+  -> materialize only missing/stale obligations
+```
+
+All fixtures must converge through the same canonical product-state and closure semantics. Different initial completeness changes the amount of work, not the trust model or the selected lifecycle's authority boundaries.
+
+Required counterexample:
+
+```text
+input contains architecture.md or design.fig
+!= automatically ACCEPTED ArchitecturePackage / FrontendDelivery
+
+input artifact
+  -> exact provenance
+  -> bounded owning-domain evaluation/adoption/completion
+  -> canonical accepted artifact/Claim only through normal authority gates
+```
