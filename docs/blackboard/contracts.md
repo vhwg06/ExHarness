@@ -53,3 +53,13 @@ Status: **PROMOTED FOR REPOSITORY DEVELOPMENT COORDINATION**
 32. **Execution details live in context.** Source scope, write scope, verification checks, entrypoints and repair bounds belong to `WORK_CONTEXT_SPEC` or its materialized executor projection, never to the canonical semantic artifact.
 33. **Executor capability cannot rewrite meaning.** Rich coding agents, generic interactive sessions and weak bounded harnesses may receive different context projections, but each projection carries the same semantic artifact unchanged.
 34. **Repository gate.** Invalid semantic artifacts, missing implementation artifact bindings or Board/context/artifact mismatches fail `npm run verify:blackboard-context`.
+
+
+## Semantic input queue invariants
+
+35. **Queued implementation input is not active work.** An accepted `IMPLEMENTATION_INPUT` may exist without a Blackboard work item, active debt, owner or current context.
+36. **Queue does not allocate identity.** Creating an accepted semantic input does not consume the next Blackboard work id; work identity is assigned only when a grounded trigger allocates implementation work.
+37. **Queue does not authorize mutation.** Accepted semantic meaning remains distinct from repository implementation authority; source mutation still requires the exact current IMPLEMENT context and its decision binding.
+38. **Queue order is non-semantic.** File ordering or creation time does not establish implementation priority or dependency order.
+39. **Allocation binds exactly one semantic subject.** A newly allocated Implementation/Worker item names the exact accepted implementation-input ref it consumes; it does not reconstruct meaning from research history.
+40. **Stale premise fails closed at allocation.** If current-system truth materially contradicts a queued semantic input before allocation, the item returns to Research/SA for bounded reconciliation rather than being silently reinterpreted by the Worker.
