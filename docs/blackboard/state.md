@@ -25,9 +25,9 @@ RESEARCH_SA
 
 IMPLEMENTATION_WORKER
   active: BB-048
-  lane: JUDGMENT
-  judgment-kind: READINESS
-  stage: IMPLEMENTATION_READINESS_REVIEW
+  lane: EXECUTION
+  execution-mode: INITIAL
+  stage: IMPLEMENTATION_EXECUTION
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
@@ -36,17 +36,17 @@ The lanes are independent. Future Research/SA work does not need to reconstruct 
 
 BB-048
 pipeline: IMPLEMENTATION_WORKER
-lane: JUDGMENT
-judgment-kind: READINESS
-stage: IMPLEMENTATION_READINESS_REVIEW
+lane: EXECUTION
+execution-mode: INITIAL
+stage: IMPLEMENTATION_EXECUTION
 question/work: Authorize the first bounded DOMAIN_EXECUTION_CONTROL / Integration B slice from an exact released organizational claim through immutable domain-local execution binding and evidence/publication.
 kind: IMPLEMENTATION
 priority: P1
-status: PENDING_REVIEW
+status: READY
 owner:
 current-context:
-  generation: 10
-  ref: docs/blackboard/context/BB-048/g0010-implementation-readiness-judgment.json
+  generation: 11
+  ref: docs/blackboard/context/BB-048/g0011-implementation.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
@@ -55,12 +55,11 @@ scope-boundary:
   - own HOW/runtime below the organization boundary
   - prove one concrete BA-owned execution slice only
   - do not introduce cross-domain obligation issuance, DOMAIN_ACTIVATION, ProductStateProjection, deployment/Product QA, or Integration C-J
-blockers:
-  - implementation authority not yet granted; current lane is JUDGMENT/READINESS
+blockers: []
 next:
-  - execute fresh readiness judgment from exact g0010 context
-  - on ACCEPT, materialize bounded g0011 EXECUTION/INITIAL context
-  - EXECUTION may publish IMPLEMENTATION_RESULT facts only; a later fresh JUDGMENT/CANDIDATE owns correctness
+  - implement only within exact g0011 write scope
+  - publish IMPLEMENTATION_RESULT facts only
+  - materialize fresh g0012 JUDGMENT/CANDIDATE bound to the exact result and candidate
 
 ## Allocation rules
 
