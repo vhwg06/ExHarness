@@ -11,6 +11,9 @@ export function nextImplementationContext({ parent, decisionRef, decisionSubject
       decisionSubject.subjectCandidateHeadSha !== parent.reviewTarget.candidateHeadSha)
     throw new Error("CONTEXT_GENERATION_INVALID: decision subject mismatch");
 
+  if (parent.pipeline === "IMPLEMENTATION_WORKER" && !parent.semanticArtifactRef)
+    throw new Error("CONTEXT_GENERATION_INVALID: implementation parent requires semantic artifact");
+
   const candidate={
     ...parent,
     status:"ACCEPTED_IMPLEMENTATION_CONTEXT",
