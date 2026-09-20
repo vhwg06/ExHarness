@@ -25,6 +25,8 @@ RESEARCH_SA
 
 IMPLEMENTATION_WORKER
   active: BB-048
+  lane: JUDGMENT
+  judgment-kind: READINESS
   stage: IMPLEMENTATION_READINESS_REVIEW
 ```
 
@@ -34,6 +36,8 @@ The lanes are independent. Future Research/SA work does not need to reconstruct 
 
 BB-048
 pipeline: IMPLEMENTATION_WORKER
+lane: JUDGMENT
+judgment-kind: READINESS
 stage: IMPLEMENTATION_READINESS_REVIEW
 question/work: Authorize the first bounded DOMAIN_EXECUTION_CONTROL / Integration B slice from an exact released organizational claim through immutable domain-local execution binding and evidence/publication.
 kind: IMPLEMENTATION
@@ -41,8 +45,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 8
-  ref: docs/blackboard/context/BB-048/g0008-implementation-readiness-review.json
+  generation: 9
+  ref: docs/blackboard/context/BB-048/g0009-implementation-readiness-judgment.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
@@ -52,10 +56,11 @@ scope-boundary:
   - prove one concrete BA-owned execution slice only
   - do not introduce cross-domain obligation issuance, DOMAIN_ACTIVATION, ProductStateProjection, deployment/Product QA, or Integration C-J
 blockers:
-  - implementation authority not yet granted; current generation is REVIEW only
+  - implementation authority not yet granted; current lane is JUDGMENT/READINESS
 next:
-  - execute fresh review from exact g0008 context
-  - on ACCEPT, materialize bounded g0009 IMPLEMENT context for Worker
+  - execute fresh readiness judgment from exact g0009 context
+  - on ACCEPT, materialize bounded g0010 EXECUTION/INITIAL context
+  - EXECUTION may publish IMPLEMENTATION_RESULT facts only; a later fresh JUDGMENT/CANDIDATE owns correctness
 
 ## Allocation rules
 
