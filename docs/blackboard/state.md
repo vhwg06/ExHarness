@@ -12,6 +12,7 @@ started: 2026-09-18
 current-active-debt: 1
 next-work-id: BB-050
 living-system-root: docs/living/system/state.md
+integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness-v8.md
 previous-board-archive: docs/blackboard/history/blackboard-oracle-detail-2026-09-18.md
 previous-phase-closure: docs/living/knowledge/oracle-detail-closure-2026-09-18.md
 ```
@@ -45,8 +46,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 12
-  ref: docs/blackboard/context/BB-048/g0012-implementation-readiness-judgment.json
+  generation: 13
+  ref: docs/blackboard/context/BB-048/g0013-implementation-readiness-judgment.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
@@ -58,8 +59,8 @@ scope-boundary:
 blockers:
   - implementation authority not yet granted; current lane is JUDGMENT/READINESS
 next:
-  - execute fresh readiness judgment from exact g0012 context
-  - on ACCEPT, materialize bounded g0013 EXECUTION/INITIAL context
+  - execute fresh readiness judgment from exact g0013 context
+  - on ACCEPT, materialize bounded g0014 EXECUTION/INITIAL context
   - EXECUTION may publish IMPLEMENTATION_RESULT facts only; a later fresh JUDGMENT/CANDIDATE owns correctness
 
 ## Accepted semantic input queue
