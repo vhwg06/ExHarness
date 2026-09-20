@@ -204,7 +204,7 @@ Reflection, candidate generation, experiment execution, experiment evaluation, p
 
 Corrected BB-034 evidence:
 
-- `docs/living/knowledge/bb034-self-upgrade-loop-probe.mjs`;
+- `scripts/self-upgrade-loop-eval.mjs`;
 - `artifacts/bb034-self-upgrade-loop-probe.json` schema v3;
 - `artifacts/bb038-workflow-replay-eval.json` and its bound digest;
 - current Core `grounded-cognition.js` source-snapshot semantics;
