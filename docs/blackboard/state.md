@@ -28,9 +28,9 @@ RESEARCH_SA
 
 IMPLEMENTATION_WORKER
   active: BB-048
-  lane: JUDGMENT
-  judgment-kind: CANDIDATE
-  stage: IMPLEMENTATION_CANDIDATE_REVIEW
+  lane: EXECUTION
+  execution-mode: REPAIR
+  stage: IMPLEMENTATION_REPAIR
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
@@ -39,33 +39,33 @@ The lanes are independent. Future Research/SA work does not need to reconstruct 
 
 BB-048
 pipeline: IMPLEMENTATION_WORKER
-lane: JUDGMENT
-judgment-kind: CANDIDATE
-stage: IMPLEMENTATION_CANDIDATE_REVIEW
+lane: EXECUTION
+execution-mode: REPAIR
+stage: IMPLEMENTATION_REPAIR
 question/work: Repair the grounded post-merge Integration B findings without widening BB-048 semantics.
 kind: IMPLEMENTATION
 priority: P1
-status: PENDING_REVIEW
+status: READY
 owner:
 current-context:
-  generation: 18
-  ref: docs/blackboard/context/BB-048/g0018-repair-candidate-judgment.json
+  generation: 19
+  ref: docs/blackboard/context/BB-048/g0019-repair-implementation.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 implementation-result:
   ref: docs/blackboard/artifacts/implementation-result/BB-048-g0017-repair.json
 depends-on: []
 scope-boundary:
-  - fix publication lifecycle/write-authority fencing
-  - make canonical publication idempotent under concurrent recovery
-  - bind ExecutionAttemptTransition to exact observed CAS head revision
+  - replace optimistic lifecycle publication guard with a real fail-closed currentness fence
+  - verify the production Blackboard store/orchestrator race, not a stronger fixture-only serial lock
+  - preserve canonical publication idempotency, writer-authority fencing, and transition CAS lineage
   - do not enter Integration C-J
 blockers: []
 next:
-  - fresh-review exact repair candidate d21dce6934cdf8351ec7d9d860fbbed79a960e3c
-  - judge only g0016 findings plus repair-scope/currentness regressions
-  - on ACCEPT, close BB-048 repair and merge PR #197 only after exact-head CI/currentness recheck
-  - on FINDINGS, materialize bounded next repair generation
+  - repair only g0018 P1 lifecycle-publication fence
+  - add production-path race verification using the real Blackboard store/orchestrator/claim controller
+  - run focused tests plus full repository verify
+  - publish factual BB-048-g0019 repair result and materialize fresh g0020 JUDGMENT/CANDIDATE
 
 ## Accepted semantic input queue
 
@@ -88,7 +88,7 @@ Promoted research knowledge alone is not future backlog. Living Docs never becom
 
 ## Terminal lineage
 
-BB-048 prior g0015 ACCEPT is historical/stale after post-merge review #5260290893 found the final merged tree changed outside its review envelope and identified two additional P1 implementation/evidence gaps. Current repair authority is g0017 from `docs/blackboard/artifacts/judgment/BB-048-g0016.json`.
+BB-048 prior g0015 ACCEPT remains historical/stale. g0018 fresh repair judgment on exact candidate `d21dce6934cdf8351ec7d9d860fbbed79a960e3c` recorded FINDINGS: writer-authority/idempotency and transition-revision repairs are closed, but the production lifecycle publication guard is still optimistic and can detect a Blackboard conflict only after an authoritative publication side effect. Current bounded repair authority is g0019 from `docs/blackboard/artifacts/judgment/BB-048-g0018.json`.
 
 BB-049 Research/SA is terminal. It produced the accepted unallocated Integration G semantic input at `docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure-v1.json`. Closure record: `docs/blackboard/history/bb049-integration-g-research-sa-closure-2026-09-20.md`.
 
