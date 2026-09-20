@@ -44,7 +44,7 @@ current-context:
   generation: 6
   ref: docs/blackboard/context/BB-048/g0006-implementation-readiness-review.json
 implementation-input:
-  ref: docs/blackboard/artifacts/implementation-input/BB-048-migrated-readiness.md
+  ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
 scope-boundary:
   - start only from an exact current released organizational claim
