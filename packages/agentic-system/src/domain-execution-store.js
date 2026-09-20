@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { dirname } from "node:path";
+import { promises as nodeFs } from "node:fs";
 import { createJsonCasHeadStore } from "./organization-authority-store.js";
 
 function invariant(condition,message){if(!condition) throw new TypeError(message);}
@@ -9,7 +11,40 @@ function freeze(value){return Object.freeze(structuredClone(value));}
 export const ExecutionPolicyStatus=Object.freeze({ACTIVE:"ACTIVE",REVOKED:"REVOKED"});
 export const ExecutionAttemptStatus=Object.freeze({ACTIVE:"ACTIVE",RECOVERY_REQUIRED:"RECOVERY_REQUIRED",TERMINAL:"TERMINAL"});
 
-export function createJsonDomainExecutionPolicyStore(options){return createJsonCasHeadStore(options);}
+async function withFileLock({path,fs=nodeFs},action){
+  requireText(path,"policy store path");
+  const lockPath=`${path}.domain-policy-guard.lock`;
+  await fs.mkdir(dirname(path),{recursive:true});
+  let handle=null;
+  for(let attempt=0;attempt<100;attempt+=1){
+    try{handle=await fs.open(lockPath,"wx");break;}
+    catch(error){
+      if(error?.code!=="EEXIST")throw error;
+      await new Promise(resolve=>setTimeout(resolve,2));
+    }
+  }
+  if(handle==null)throw new Error("domain execution policy mutation already in progress");
+  try{return await action();}
+  finally{
+    await handle.close();
+    try{await fs.unlink(lockPath);}catch(error){if(error?.code!=="ENOENT")throw error;}
+  }
+}
+
+export function createJsonDomainExecutionPolicyStore(options){
+  const raw=createJsonCasHeadStore(options);
+  return Object.freeze({
+    current:(key)=>raw.current(key),
+    compareAndSwap:(key,expectedRevision,nextValue)=>withFileLock(options,()=>raw.compareAndSwap(key,expectedRevision,nextValue)),
+    withCurrentGuard:(key,expectedRevision,action)=>withFileLock(options,async()=>{
+      invariant(typeof action==="function","policy guard action is required");
+      const current=await raw.current(key);
+      if((current?.revision??null)!==expectedRevision)return freeze({matched:false,current});
+      const result=await action(freeze(current));
+      return freeze({matched:true,current,result});
+    })
+  });
+}
 export function createJsonExecutionAttemptStore(options){return createJsonCasHeadStore(options);}
 
 const ARTIFACTS=Object.freeze({
