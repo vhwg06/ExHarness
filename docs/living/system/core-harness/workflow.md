@@ -180,7 +180,7 @@ Tracing and semantic memory are context/evidence inputs, never recovery authorit
 
 ## CURRENT ABSTRACTION BOUNDARY
 
-BB-008 assessed the concrete recovery composition and found insufficient repeated pressure for a higher-level executable Core lifecycle facade.
+The concrete recovery composition shows insufficient repeated pressure for a higher-level executable Core lifecycle facade.
 
 Current evidence has one concrete recovery-reference consumer. The existing public primitives already expose the distinct mechanisms that consumer needs; repository usage does not yet demonstrate a second real caller repeating the full restore/reconcile/recover/resume sequence.
 
