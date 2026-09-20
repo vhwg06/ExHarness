@@ -11,7 +11,7 @@ This file is the single current-state source of truth for outer-Blackboard routi
 ```text
 phase: INTEGRATION
 started: 2026-09-18
-current-active-debt: 1
+current-active-debt: 0
 next-work-id: BB-050
 living-system-root: docs/living/system/state.md
 integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness.md
@@ -25,44 +25,15 @@ RESEARCH_SA
   terminal-output: ACCEPTED IMPLEMENTATION_INPUT
 
 IMPLEMENTATION_WORKER
-  active: BB-048
-  lane: JUDGMENT
-  judgment-kind: CANDIDATE
-  stage: IMPLEMENTATION_CANDIDATE_REVIEW
+  active: NONE
+  terminal-output: RECORDED JUDGMENT
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
 
 ## Active work
 
-BB-048
-pipeline: IMPLEMENTATION_WORKER
-lane: JUDGMENT
-judgment-kind: CANDIDATE
-stage: IMPLEMENTATION_CANDIDATE_REVIEW
-question/work: Independently judge the exact BB-048 repair candidate against the current semantic input and implementation result.
-kind: IMPLEMENTATION
-priority: P1
-status: PENDING_REVIEW
-owner:
-current-context:
-  ref: docs/blackboard/context/BB-048/current.json
-implementation-input:
-  ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json
-implementation-result:
-  ref: docs/blackboard/artifacts/implementation-result/BB-048.json
-depends-on: []
-scope-boundary:
-  - review exact candidate d2136feb1099df6f57bb1c5f1a95965e927772fb only
-  - independently verify lifecycle/publication fencing, writer authority, idempotency and transition CAS lineage
-  - do not mutate source in JUDGMENT
-  - do not enter Integration C-J
-blockers:
-  - exact candidate judgment not yet recorded
-next:
-  - fresh-review exact candidate d2136feb1099df6f57bb1c5f1a95965e927772fb
-  - update canonical JUDGMENT in place with ACCEPT or FINDINGS
-  - on FINDINGS rewrite current.json back to bounded EXECUTION/REPAIR; on ACCEPT close BB-048 and merge only after final main-currentness check
+NONE
 
 ## Accepted semantic input queue
 
