@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
-const probePath = "docs/living/knowledge/bb028-exact-artifact-identity-probe.mjs";
+const probePath = "scripts/exact-artifact-identity-eval.mjs";
 const artifactPath = "artifacts/bb028-exact-artifact-identity-probe.json";
 
 test("BB-028 exact artifact identity controls fail closed even when resolver slots are hard-coded", async () => {
