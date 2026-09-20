@@ -215,3 +215,20 @@ The immutable work contract carries the complete governed WHAT/provenance set; B
 Execution entry is an active revocation boundary, not only a predicate: a stale released claim persists an exact invalidation artifact, commits the typed canonical Board lifecycle consequence first, and fences the historical release head second.
 
 Concurrent identical materialization must converge across both immutable-artifact persistence and Blackboard publication. Conflicting materializations for the same live logical obligation fail closed.
+
+## Domain execution HOW boundary
+
+Integration B begins only after A.1 has produced an exact current released organizational claim. A.1 remains authority for WHAT/WHO and claim currentness; the domain execution controller owns only HOW for that one already-authorized work subject.
+
+```text
+A.1 released claim
+  -> DomainExecutionController
+       -> ExecutionPolicyHead / immutable policy
+       -> ExecutionAttemptHead / immutable binding
+       -> trusted runtime adapter
+       -> factual outcome
+       -> separate domain completion authority
+       -> separate publication authority
+```
+
+The controller cannot inspect or rank unrelated Blackboard work, issue authoritative cross-domain obligations, mutate ApplicationOrchestrator lifecycle semantics, or treat an ExecutionStrategy as a cross-domain dispatcher. A strategy result is not runtime identity, runtime success is not domain acceptance, and acceptance is not publication authority. Telemetry or the derived ExecutionJudgmentBundle may index evidence but cannot become correctness authority.
