@@ -392,6 +392,12 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     return Object.freeze(structuredClone(result));
   }
 
+  async function withOrganizationLifecycleMutation(action) {
+    invariant(typeof action === "function", "organization lifecycle mutation requires action");
+    invariant(typeof store.withMutationFence === "function", "Blackboard store mutation fence is required for organization lifecycle mutation");
+    return store.withMutationFence(async () => action());
+  }
+
   async function withOrganizationClaimGuard({ itemId, expectedOwner, expectedClaimGeneration }, action) {
     const normalizedItemId = requireText(itemId, "itemId");
     const owner = requireText(expectedOwner, "expectedOwner");
@@ -428,12 +434,18 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
 
   return Object.freeze({
     ...base,
+    claim:(input)=>withOrganizationLifecycleMutation(()=>base.claim(input)),
+    recoverClaim:(input)=>withOrganizationLifecycleMutation(()=>base.recoverClaim(input)),
+    checkpoint:(input)=>withOrganizationLifecycleMutation(()=>base.checkpoint(input)),
+    submit:(input)=>withOrganizationLifecycleMutation(()=>base.submit(input)),
+    block:(input)=>withOrganizationLifecycleMutation(()=>base.block(input)),
+    supersede:(input)=>withOrganizationLifecycleMutation(()=>base.supersede(input)),
     recoverSelfUpgradeEvaluationClaim,
-    submitWithRequiredReviews,
+    submitWithRequiredReviews:(input)=>withOrganizationLifecycleMutation(()=>submitWithRequiredReviews(input)),
     resolveBlockedCheckpoint,
     materializeAcceptedWork,
     blockOrganizationMaterialization,
-    invalidateOrganizationClaim,
+    invalidateOrganizationClaim:(input)=>withOrganizationLifecycleMutation(()=>invalidateOrganizationClaim(input)),
     withOrganizationClaimGuard
   });
 }
