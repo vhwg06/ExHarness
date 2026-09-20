@@ -23,6 +23,22 @@ export function assertWorkContext(spec) {
       fail("IMPLEMENTATION_WORKER requires semanticArtifactRef JSON");
     if (!spec.requiredInputRefs.includes(spec.semanticArtifactRef))
       fail("semanticArtifactRef must be a required input");
+    if (!["EXECUTION","JUDGMENT"].includes(spec.lane))
+      fail("IMPLEMENTATION_WORKER requires lane EXECUTION or JUDGMENT");
+    if (spec.lane === "EXECUTION") {
+      if (spec.action.kind !== "IMPLEMENT") fail("EXECUTION lane requires IMPLEMENT action");
+      if (!["INITIAL","REPAIR"].includes(spec.executionMode)) fail("EXECUTION lane requires executionMode INITIAL or REPAIR");
+    }
+    if (spec.lane === "JUDGMENT") {
+      if (spec.action.kind !== "REVIEW") fail("JUDGMENT lane requires REVIEW action");
+      if (!["READINESS","CANDIDATE"].includes(spec.judgmentKind)) fail("JUDGMENT lane requires judgmentKind READINESS or CANDIDATE");
+      if (spec.judgmentKind === "CANDIDATE") {
+        if (typeof spec.implementationResultRef !== "string" || !spec.implementationResultRef.endsWith(".json"))
+          fail("candidate JUDGMENT requires implementationResultRef");
+        if (!spec.requiredInputRefs.includes(spec.implementationResultRef))
+          fail("implementationResultRef must be a required input");
+      }
+    }
   }
   if (spec.stage != null && (typeof spec.stage !== "string" || !spec.stage.trim())) fail("stage");
   for (const k of ["read","write","forbiddenWrite"]) if (!Array.isArray(spec.sourceScope?.[k])) fail(`sourceScope.${k}`);
@@ -35,9 +51,13 @@ export function assertWorkContext(spec) {
     if (!Array.isArray(spec.reviewTarget.allowedPostTargetEnvelopePaths)) fail("REVIEW requires allowed envelope paths");
   }
   if (spec.action.kind === "IMPLEMENT") {
-    if (!spec.authority?.implementationDecisionRef) fail("IMPLEMENT requires decision ref");
-    if (!spec.authority?.subjectContextRef || !spec.authority?.subjectCandidateHeadSha) fail("IMPLEMENT requires exact decision subject");
-    if (!spec.parentContextRef || spec.authority.subjectContextRef !== spec.parentContextRef) fail("IMPLEMENT decision subject must equal parent context");
+    if (!spec.authority?.subjectContextRef || !spec.authority?.subjectCandidateHeadSha) fail("IMPLEMENT requires exact authority subject");
+    if (!spec.parentContextRef || spec.authority.subjectContextRef !== spec.parentContextRef) fail("IMPLEMENT authority subject must equal parent context");
+    if (spec.pipeline === "IMPLEMENTATION_WORKER" && spec.executionMode === "REPAIR") {
+      if (!spec.authority?.repairJudgmentRef) fail("REPAIR requires repair judgment ref");
+    } else if (!spec.authority?.implementationDecisionRef) {
+      fail("IMPLEMENT requires decision ref");
+    }
   }
   return spec;
 }
