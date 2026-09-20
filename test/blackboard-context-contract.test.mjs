@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { assertWorkContext, requiredRefs } from "../scripts/blackboard-context-contract.mjs";
-import { parseCurrentContext, assertBoardBinding } from "../scripts/blackboard-context-board.mjs";
+import { parseCurrentContext, parseItemRef, assertBoardBinding } from "../scripts/blackboard-context-board.mjs";
 
 const base={kind:"WORK_CONTEXT_SPEC",version:1,itemId:"BB-X",generation:2,action:{kind:"REVIEW"},reviewTarget:{repository:"r",candidateHeadSha:"abc",allowedPostTargetEnvelopePaths:[]},sourceScope:{read:[],write:[],forbiddenWrite:["packages/**"]},requiredCurrentSystemRefs:["a"],requiredInputRefs:["b"],auditRefs:["history"]};
 
@@ -40,4 +40,14 @@ test("implementation decision subject must bind parent",()=>{
 test("current-context parser ignores refs from later sibling fields",()=>{
   const board="BB-X\nstatus: READY\ncurrent-context:\n  generation: 2\n  ref: x.json\nimplementation-input:\n  ref: input.md\nremaining-work:\n";
   assert.deepEqual(parseCurrentContext(board,"BB-X"),{generation:2,ref:"x.json"});
+});
+
+test("implementation worker context requires exact semantic JSON input",()=>{
+  const impl={...base,pipeline:"IMPLEMENTATION_WORKER",action:{kind:"REVIEW"},reviewTarget:base.reviewTarget};
+  assert.throws(()=>assertWorkContext(impl),/semanticArtifactRef/);
+  assert.doesNotThrow(()=>assertWorkContext({...impl,semanticArtifactRef:"artifact.json",requiredInputRefs:["b","artifact.json"]}));
+});
+test("board implementation input ref parses independently from current context",()=>{
+  const board="BB-X\ncurrent-context:\n  generation: 2\n  ref: x.json\nimplementation-input:\n  ref: artifact.json\n";
+  assert.equal(parseItemRef(board,"BB-X","implementation-input"),"artifact.json");
 });
