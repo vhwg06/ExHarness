@@ -31,9 +31,13 @@ RESEARCH_SA
                          v
 IMPLEMENTATION_WORKER
   accepted implementation input
-    -> Worker
-    -> verification / review / repair
-    -> merge
+    -> JUDGMENT / READINESS
+    -> EXECUTION / INITIAL
+    -> IMPLEMENTATION_RESULT
+    -> fresh JUDGMENT / CANDIDATE
+         -> ACCEPT
+         -> FINDINGS -> EXECUTION / REPAIR
+    -> merge / closure
     -> reconcile Living Docs when current system truth changed
 ```
 
@@ -81,3 +85,18 @@ materialized context
 ```
 
 For `IMPLEMENTATION_WORKER`, the exact semantic artifact binding is verified by CI. A session may explore differently depending on harness capability, but it cannot replace the artifact with an inferred requirement from history or prior chat.
+
+## Fresh implementation-session intent
+
+When a fresh session receives `start implement blackboard` or `continue implement blackboard`, it must enter the current `IMPLEMENTATION_WORKER` lifecycle at the exact Board lane. The phrase is not authority to skip readiness/judgment.
+
+```text
+user intent
+  -> Board current item
+  -> current-context
+  -> lane
+     EXECUTION: candidate + facts only
+     JUDGMENT: correctness assessment, no source mutation
+```
+
+`EXECUTION` and `JUDGMENT` use different immutable context generations. A producer may report what it did and observed; only the judgment lane may claim acceptance.
