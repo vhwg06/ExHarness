@@ -51,3 +51,5 @@ Current integration roadmap:
 `knowledge/integration-phase-research-to-implementation-readiness.md`
 
 Research/probe execution belongs under `scripts/` and tests. Once research semantics are promoted into current system/decision/implementation-input surfaces, the research transcript is removed from the working tree; Git history preserves it.
+
+Current-only structure is enforced by `npm run verify:current-docs`.
