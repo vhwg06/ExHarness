@@ -1,0 +1,176 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_INPUT",
+  "artifactId": "integration-ef-deployment-acceptance-snapshot",
+  "status": "ACCEPTED",
+  "subject": {
+    "id": "agentic-application.deployment-acceptance-snapshot.integration-ef",
+    "title": "Exact deployment identity and Product QA acceptance snapshot"
+  },
+  "semantics": {
+    "desiredOutcome": "Product QA can accept only an exact immutable deployment subject whose Frontend and Backend deployable identities, correctness-relevant configuration and observed runtime identities are pinned and independently verified, preserving the distinction between deployment publication, runtime observation and quality acceptance.",
+    "currentState": "The delivered system has Backend and QA application slices plus the A.1 organization boundary, but it does not provide exact Frontend/Backend deployable provenance, a DevOps DeploymentRelease, an immutable AcceptanceSnapshot, independent runtime-identity observation or Product QA QualityAcceptance over one exact deployed product subject.",
+    "requiredBehaviors": [
+      {
+        "id": "RB-1",
+        "statement": "Accepted Frontend and Backend delivery outputs are linked through build provenance to exact immutable deployable artifact identities such as content digests rather than mutable tags or branch names."
+      },
+      {
+        "id": "RB-2",
+        "statement": "DevOps publishes one immutable DeploymentRelease that binds exact deployable artifacts, target environment, correctness-relevant deployment/configuration identity and rollout/health evidence."
+      },
+      {
+        "id": "RB-3",
+        "statement": "AcceptanceSnapshot is derived deterministically from one exact DeploymentRelease plus the current required product acceptance subjects and cannot be assembled by arbitrarily omitting or mixing required components."
+      },
+      {
+        "id": "RB-4",
+        "statement": "Product QA execution binds the exact AcceptanceSnapshot and cannot rewrite the snapshot or substitute a different release component during verification."
+      },
+      {
+        "id": "RB-5",
+        "statement": "Runtime identity is observed independently from the tested environment under an explicit verifier policy; DevOps or application self-report alone is not sufficient runtime truth."
+      },
+      {
+        "id": "RB-6",
+        "statement": "Mixed, unknown or mismatched runtime revisions prevent a current quality acceptance unless an explicit acceptance policy permits the observed bounded set."
+      },
+      {
+        "id": "RB-7",
+        "statement": "Deployment and acceptance currentness are revalidated before QA effects and again before authoritative QualityAcceptance publication so a changing environment cannot be accepted as the newer current release."
+      },
+      {
+        "id": "RB-8",
+        "statement": "Historical DeploymentRelease, AcceptanceSnapshot, runtime observations and QualityAcceptance remain immutable and reconstructable after newer deployment subjects become current."
+      },
+      {
+        "id": "RB-9",
+        "statement": "The complete provenance chain from accepted source delivery through build artifact, deployment release, acceptance snapshot, runtime observation and criterion evidence remains fresh-session resolvable."
+      }
+    ],
+    "invariants": [
+      {
+        "id": "INV-1",
+        "statement": "Source revision is not deployable artifact identity."
+      },
+      {
+        "id": "INV-2",
+        "statement": "Mutable image tag or alias is not immutable deployment identity."
+      },
+      {
+        "id": "INV-3",
+        "statement": "DeploymentRelease is not RuntimeObservation."
+      },
+      {
+        "id": "INV-4",
+        "statement": "RuntimeObservation is not QualityAcceptance."
+      },
+      {
+        "id": "INV-5",
+        "statement": "QA strategy success is not equivalent to QualityAcceptance ACCEPT."
+      },
+      {
+        "id": "INV-6",
+        "statement": "A caller-selected subset of component refs cannot prove acceptance completeness."
+      },
+      {
+        "id": "INV-7",
+        "statement": "Deployment change during the QA verification window cannot produce current acceptance for the newer release."
+      },
+      {
+        "id": "INV-8",
+        "statement": "DevOps and Product QA remain separate authority domains for deployment publication and quality judgment."
+      }
+    ],
+    "acceptanceCriteria": [
+      {
+        "id": "AC-1",
+        "statement": "Exact Frontend and Backend deployable identities are traceable from accepted delivery/build provenance into one immutable DeploymentRelease."
+      },
+      {
+        "id": "AC-2",
+        "statement": "AcceptanceSnapshot deterministically pins the exact required components, release, acceptance criteria, environment and verifier policy without omission or cross-release substitution."
+      },
+      {
+        "id": "AC-3",
+        "statement": "Independent runtime observation detects mismatch between expected and actually served component identity and prevents current acceptance."
+      },
+      {
+        "id": "AC-4",
+        "statement": "A mixed old/new rollout is blocked or inconclusive by default rather than silently accepted."
+      },
+      {
+        "id": "AC-5",
+        "statement": "Deployment change before QA starts invalidates the current verification target; deployment change during QA prevents current QualityAcceptance publication for the changed release."
+      },
+      {
+        "id": "AC-6",
+        "statement": "Old snapshots and acceptances remain reconstructable historical evidence after a newer release becomes current."
+      },
+      {
+        "id": "AC-7",
+        "statement": "A fresh consumer can trace source delivery to build provenance, exact deployable, DeploymentRelease, AcceptanceSnapshot, RuntimeObservation and QualityAcceptance without prior conversation state."
+      }
+    ],
+    "outOfScope": [
+      {
+        "id": "OOS-1",
+        "statement": "Global ProductStateProjection, product completeness and objective-closure semantics."
+      },
+      {
+        "id": "OOS-2",
+        "statement": "Universal software-supply-chain framework or mandatory Sigstore/in-toto adoption."
+      },
+      {
+        "id": "OOS-3",
+        "statement": "Generic artifact-registry rewrite or environment-inventory platform."
+      },
+      {
+        "id": "OOS-4",
+        "statement": "QA acting as deployment controller."
+      },
+      {
+        "id": "OOS-5",
+        "statement": "Automatic remediation or product-owner decision policy."
+      }
+    ],
+    "affectedCapabilities": [
+      "deployable.provenance",
+      "devops.deployment-release",
+      "product.acceptance-snapshot",
+      "runtime.identity-observation",
+      "product.qa-acceptance"
+    ],
+    "affectedContracts": [
+      "DeployableArtifactRef",
+      "BuildProvenance",
+      "DeploymentRelease",
+      "AcceptanceSnapshot",
+      "RuntimeObservationEvidence",
+      "QualityAcceptance"
+    ]
+  },
+  "provenance": {
+    "sourceArtifactRefs": [
+      "docs/living/knowledge/deployment-acceptance-snapshot-implementation-readiness.md",
+      "docs/living/knowledge/domain-activation-parallel-autonomy-implementation-readiness.md",
+      "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md"
+    ],
+    "evidenceRefs": [
+      "docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json",
+      "docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json"
+    ],
+    "currentSystemRefs": [
+      "docs/living/system/state.md",
+      "docs/living/system/capabilities.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md"
+    ],
+    "acceptance": {
+      "kind": "USER_DIRECTIVE",
+      "ref": "user-directive:2026-09-20:compile-promoted-research-into-implementation-input-queue"
+    }
+  }
+}
