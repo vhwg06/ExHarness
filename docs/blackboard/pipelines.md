@@ -42,36 +42,85 @@ Normal outputs live under `docs/blackboard/artifacts/`. Research/SA output is de
 
 ## Pipeline 2 — IMPLEMENTATION_WORKER
 
-Purpose: realize one accepted implementation input against a bounded current-system baseline.
+Purpose: realize one accepted semantic implementation input while separating producer facts from correctness judgment.
 
 ```text
 ACCEPTED IMPLEMENTATION_INPUT
         |
         v
-Implementation context
-  -> exact input artifact
-  -> selected Living Docs refs
-  -> bounded source/test scope
-  -> invariants
-  -> verification contract
+JUDGMENT / READINESS
+        |
+        | exact acceptance authority
+        v
+EXECUTION / INITIAL
+  -> inspect / implement / verify
+  -> publish candidate facts only
         |
         v
-Worker
-  -> implement
-  -> test
-  -> produce implementation result
+IMPLEMENTATION_RESULT
+  != DONE
+  != ACCEPT
         |
         v
-independent review / repair
+fresh JUDGMENT / CANDIDATE
+  -> independently reconstruct
+  -> assess criteria + invariants
         |
-        v
-merge
+        +---- ACCEPT ----> lifecycle/merge continuation
         |
-        +-> if current system semantics changed
-              reconcile docs/living/system/*
+        +---- FINDINGS --> EXECUTION / REPAIR
+                              |
+                              +-> new IMPLEMENTATION_RESULT
+                                   -> fresh JUDGMENT again
 ```
 
-Worker may raise a grounded architecture/specification gap, but must not silently invent a new design. That creates/returns Research/SA work.
+The semantic implementation input is unchanged across execution, judgment and repair generations.
+
+### EXECUTION lane
+
+Execution owns HOW within exact bounded mutation authority.
+
+It may produce:
+
+- candidate revision;
+- changed-surface facts;
+- verification-run facts;
+- evidence references;
+- observed facts.
+
+It must not claim that the candidate is correct, done, accepted or safe to merge.
+
+### JUDGMENT lane
+
+Judgment owns correctness assessment only. It is read-only for product source.
+
+Candidate judgment receives the exact semantic input + exact implementation result + exact candidate + evidence. It does not require Worker reasoning or chat history.
+
+A candidate judgment publishes `ACCEPT` or typed `FINDINGS`. Findings may authorize a bounded repair generation; they do not widen the semantic input.
+
+### Fresh-session bootstrap
+
+`start implement blackboard` and `continue implement blackboard` mean:
+
+```text
+state.md
+  -> select active IMPLEMENTATION_WORKER item
+  -> exact current-context
+  -> exact current lane
+  -> semanticArtifactRef
+  -> materialize for executor profile
+  -> execute only that lane authority
+```
+
+They do **not** mean "force EXECUTION". If the current lane is `JUDGMENT`, the fresh session performs judgment first.
+
+Repository bootstrap:
+
+```text
+npm run start:blackboard-implementation -- GENERIC_INTERACTIVE [WORK_ID]
+npm run start:blackboard-implementation -- RICH_CODING_HARNESS [WORK_ID]
+npm run start:blackboard-implementation -- WEAK_BOUNDED [WORK_ID]
+```
 
 ## Fresh-session loading
 
