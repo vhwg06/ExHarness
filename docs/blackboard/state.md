@@ -26,9 +26,9 @@ RESEARCH_SA
 
 IMPLEMENTATION_WORKER
   active: BB-048
-  lane: JUDGMENT
-  judgment-kind: READINESS
-  stage: IMPLEMENTATION_READINESS_REVIEW
+  lane: EXECUTION
+  execution-mode: INITIAL
+  stage: IMPLEMENTATION_EXECUTION
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
@@ -37,17 +37,17 @@ The lanes are independent. Future Research/SA work does not need to reconstruct 
 
 BB-048
 pipeline: IMPLEMENTATION_WORKER
-lane: JUDGMENT
-judgment-kind: READINESS
-stage: IMPLEMENTATION_READINESS_REVIEW
+lane: EXECUTION
+execution-mode: INITIAL
+stage: IMPLEMENTATION_EXECUTION
 question/work: Authorize the first bounded DOMAIN_EXECUTION_CONTROL / Integration B slice from an exact released organizational claim through immutable domain-local execution binding and evidence/publication.
 kind: IMPLEMENTATION
 priority: P1
-status: PENDING_REVIEW
+status: READY
 owner:
 current-context:
-  generation: 13
-  ref: docs/blackboard/context/BB-048/g0013-implementation-readiness-judgment.json
+  generation: 14
+  ref: docs/blackboard/context/BB-048/g0014-implementation.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
@@ -56,16 +56,16 @@ scope-boundary:
   - own HOW/runtime below the organization boundary
   - prove one concrete BA-owned execution slice only
   - do not introduce cross-domain obligation issuance, DOMAIN_ACTIVATION, ProductStateProjection, deployment/Product QA, or Integration C-J
-blockers:
-  - implementation authority not yet granted; current lane is JUDGMENT/READINESS
+blockers: []
 next:
-  - execute fresh readiness judgment from exact g0013 context
-  - on ACCEPT, materialize bounded g0014 EXECUTION/INITIAL context
-  - EXECUTION may publish IMPLEMENTATION_RESULT facts only; a later fresh JUDGMENT/CANDIDATE owns correctness
+  - execute only within exact g0014 source scope from source baseline 8a651cb902b0df8786883d4c091cdf7e57ac659d
+  - continue implementation directly on PR #193 branch; do not fork a parallel implementation PR
+  - publish factual BB-048-g0014 IMPLEMENTATION_RESULT only
+  - materialize fresh g0015 JUDGMENT/CANDIDATE bound to the exact result and candidate
 
 ## Accepted semantic input queue
 
-Research/SA has completed semantic handoff for three future slices. These are accepted artifacts, not active work and not ordered backlog:
+Research/SA has completed semantic handoff for four future slices. These are accepted artifacts, not active work and not ordered backlog:
 
 - `docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json`
 - `docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json`
