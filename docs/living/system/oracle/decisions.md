@@ -43,7 +43,7 @@ optional D014 validation    -> manifest-validating artifactReader wrapper
 
 There is no MCP client, retrieval framework, cache layer, embeddings/vector store or generic source-provider framework in current Oracle source.
 
-D006 is an accepted constraint on any later concrete MCP-backed source: MCP must remain below application work/lifecycle authority and protocol support alone does not count as a third source. Detailed non-current MCP mapping remains in `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md`, not in this source-synchronized projection.
+Any later concrete MCP-backed source must remain below application work/lifecycle authority; protocol support alone does not count as a third source class.
 
 ## ABSTRACTION
 
