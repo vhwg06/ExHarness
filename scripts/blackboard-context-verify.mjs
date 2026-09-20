@@ -36,6 +36,19 @@ function parseDecision(path) {
   const verdict=text.match(/verdict:\s*(\S+)/)?.[1];
   return {subjectContextRef,subjectCandidateHeadSha,verdict};
 }
+export function assertCandidateJudgmentBinding({spec,result,bindingRef,itemId}) {
+  if(result.artifactType!=="IMPLEMENTATION_RESULT")
+    throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: wrong artifact type");
+  const baseline=typeof spec.sourceBaseline==="string"?spec.sourceBaseline:spec.sourceBaseline?.revision;
+  if(result.subject.itemId!==itemId ||
+     result.subject.semanticArtifactRef!==spec.semanticArtifactRef ||
+     result.subject.sourceBaseline!==baseline ||
+     result.subject.candidateRef!==spec.reviewTarget?.candidateHeadSha)
+    throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: subject mismatch");
+  if(result.subject.producerContextRef===bindingRef)
+    throw new Error("JUDGMENT_INDEPENDENCE_INVALID: producer and judgment context must differ");
+  return true;
+}
 function verifyOne({board,boardPath,root,itemId}) {
   const binding=parseCurrentContext(board,itemId);
   const spec=readJson(`${root}/${binding.ref}`);
@@ -57,14 +70,7 @@ function verifyOne({board,boardPath,root,itemId}) {
         throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: Board/context mismatch");
       const result=JSON.parse(fs.readFileSync(`${root}/${spec.implementationResultRef}`,"utf8"));
       assertBlackboardArtifact(result);
-      if(result.artifactType!=="IMPLEMENTATION_RESULT")
-        throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: wrong artifact type");
-      if(result.subject.itemId!==itemId ||
-         result.subject.semanticArtifactRef!==spec.semanticArtifactRef ||
-         result.subject.candidateRef!==spec.reviewTarget.candidateHeadSha)
-        throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: subject mismatch");
-      if(result.subject.producerContextRef===binding.ref)
-        throw new Error("JUDGMENT_INDEPENDENCE_INVALID: producer and judgment context must differ");
+      assertCandidateJudgmentBinding({spec,result,bindingRef:binding.ref,itemId});
     }
   }
   if(spec.action.kind==="REVIEW") assertReviewTarget(spec,{root});
