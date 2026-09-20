@@ -255,6 +255,6 @@ idempotent canonical publish(publicationKey = semantic attempt/binding)
 DomainPublicationReceipt
 ```
 
-Neither the completion evaluator nor the execution strategy may bypass these guards. The lifecycle guard is a shared production Blackboard mutation fence: lifecycle `transact()` and guarded publication cannot overlap, so a successor-CAS conflict cannot be discovered only after the authoritative side effect. Runtime success, completion ACCEPT and publication authority remain separate. The guards protect mutation currentness only; they do not make the published artifact correct by themselves.
+Neither the completion evaluator nor the execution strategy may bypass these guards. The lifecycle guard is a shared production Blackboard mutation fence: organization-claim recovery/invalidation/checkpoint/submit/block/supersede paths and guarded publication cannot overlap. General unrelated Blackboard transactions keep their optimistic successor-CAS semantics. Runtime success, completion ACCEPT and publication authority remain separate. The guards protect mutation currentness only; they do not make the published artifact correct by themselves.
 
 Concurrent recovery shares the immutable attempt identity and therefore the same publication key. A second worker may replay the already-committed result but cannot obtain authority for a second canonical publication.
