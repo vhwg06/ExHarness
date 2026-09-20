@@ -41,7 +41,7 @@ IMPLEMENTATION_WORKER
     -> reconcile Living Docs when current system truth changed
 ```
 
-The two pipelines are independent lanes. There is no implicit "first active Board item" and no single global session pipeline.
+The two pipeline families are independent. `EXECUTION` and `JUDGMENT` are internal authority lanes only inside `IMPLEMENTATION_WORKER`. There is no implicit "first active Board item" and no single global session pipeline.
 
 ## Fresh-session contract
 
