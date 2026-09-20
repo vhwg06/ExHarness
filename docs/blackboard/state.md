@@ -9,7 +9,7 @@ The Blackboard describes how ExHarness is currently being developed. It does not
 ```text
 phase: INTEGRATION
 started: 2026-09-18
-current-active-debt: 1
+current-active-debt: 0
 next-work-id: BB-050
 living-system-root: docs/living/system/state.md
 integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness-v8.md
@@ -25,45 +25,15 @@ RESEARCH_SA
   terminal-output: ACCEPTED IMPLEMENTATION_INPUT
 
 IMPLEMENTATION_WORKER
-  active: BB-048
-  lane: JUDGMENT
-  judgment-kind: CANDIDATE
-  stage: IMPLEMENTATION_CANDIDATE_REVIEW
+  active: NONE
+  terminal-output: RECORDED JUDGMENT
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
 
 ## Active work
 
-BB-048
-pipeline: IMPLEMENTATION_WORKER
-lane: JUDGMENT
-judgment-kind: CANDIDATE
-stage: IMPLEMENTATION_CANDIDATE_REVIEW
-question/work: Authorize the first bounded DOMAIN_EXECUTION_CONTROL / Integration B slice from an exact released organizational claim through immutable domain-local execution binding and evidence/publication.
-kind: IMPLEMENTATION
-priority: P1
-status: PENDING_REVIEW
-owner:
-current-context:
-  generation: 15
-  ref: docs/blackboard/context/BB-048/g0015-candidate-judgment.json
-implementation-input:
-  ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
-implementation-result:
-  ref: docs/blackboard/artifacts/implementation-result/BB-048-g0014.json
-depends-on: []
-scope-boundary:
-  - start only from an exact current released organizational claim
-  - own HOW/runtime below the organization boundary
-  - prove one concrete BA-owned execution slice only
-  - do not introduce cross-domain obligation issuance, DOMAIN_ACTIVATION, ProductStateProjection, deployment/Product QA, or Integration C-J
-blockers:
-  - exact candidate judgment not yet recorded
-next:
-  - independently review candidate 7a34a38c05acbdabd92305e2cca66ba454a66c30 from exact g0015 context
-  - on FINDINGS, materialize only a bounded EXECUTION/REPAIR generation from that judgment
-  - on ACCEPT, record the exact judgment and proceed to merge/closure without mutating candidate source
+NONE
 
 ## Accepted semantic input queue
 
@@ -85,6 +55,8 @@ New Implementation/Worker work requires an accepted implementation-input artifac
 Promoted research knowledge alone is not future backlog. Living Docs never become the work queue.
 
 ## Terminal lineage
+
+BB-048 Integration B is terminal on this branch after independent candidate judgment `ACCEPT` for exact candidate `7a34a38c05acbdabd92305e2cca66ba454a66c30`. Implementation result: `docs/blackboard/artifacts/implementation-result/BB-048-g0014.json`. Judgment: `docs/blackboard/artifacts/judgment/BB-048-g0015.json`. PR #193 remains the single implementation PR for merge/closure.
 
 BB-049 Research/SA is terminal. It produced the accepted unallocated Integration G semantic input at `docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure-v1.json`. Closure record: `docs/blackboard/history/bb049-integration-g-research-sa-closure-2026-09-20.md`.
 
