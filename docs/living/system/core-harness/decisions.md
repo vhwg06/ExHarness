@@ -35,7 +35,7 @@ These constraints describe current Core authority boundaries; they are not a fut
 - ambiguous `DISPATCHED`/`UNKNOWN` state fails closed by default with `NON_RECONCILABLE` replay semantics;
 - replay/observation is machine-first only when the environment adapter explicitly declares `PURE`, `IDEMPOTENT` or `OBSERVABLE` semantics;
 - non-reconcilable ambiguity is not reconstructed from model prose, candidate state or traces;
-- BB-007 recovery ordering remains a concrete contract: restore runtime authority -> reconcile effect truth -> close interrupted variation -> preserve evidence -> explicit resume;
+- recovery ordering remains a concrete contract: restore runtime authority -> reconcile effect truth -> close interrupted variation -> preserve evidence -> explicit resume;
 - do not collapse runtime restore, effect reconciliation, variation recovery, evidence restoration or application completion into one authority merely for API convenience.
 
 Open integration problems implied by these current boundaries are tracked in `../docs/blackboard/state.md`.
