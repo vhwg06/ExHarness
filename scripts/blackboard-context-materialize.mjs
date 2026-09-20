@@ -39,3 +39,11 @@ export function materializeContext(spec,{root=".",profile=CONTEXT_PROFILES.GENER
 
   return {...common,profile,resolvedRefs:resolved.resolved,boundedExecution:{readScope:[...spec.sourceScope.read],writeScope:[...spec.sourceScope.write],forbiddenWrite:[...spec.sourceScope.forbiddenWrite],verification:[...(spec.verification??[])]},exploration:"EXPLICIT_ONLY"};
 }
+
+if(process.argv[1]?.endsWith("blackboard-context-materialize.mjs")){
+  const specPath=process.argv[2];
+  const profile=process.argv[3]??CONTEXT_PROFILES.GENERIC_INTERACTIVE;
+  if(!specPath)throw new Error("usage: node scripts/blackboard-context-materialize.mjs <context-spec.json> [profile]");
+  const spec=JSON.parse(fs.readFileSync(specPath,"utf8"));
+  console.log(JSON.stringify(materializeContext(spec,{profile}),null,2));
+}
