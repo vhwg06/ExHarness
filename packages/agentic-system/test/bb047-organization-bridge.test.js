@@ -250,6 +250,68 @@ test("domain authorization precedes claim and CLAIMED stays provisional until du
   });
 });
 
+test("real Blackboard mutation fence prevents lifecycle invalidation from committing through publication",async()=>{
+  await withFixture(async({controller,materialized,orchestrator})=>{
+    const claimed=await controller.claim({
+      itemId:materialized.item.id,
+      principalContext:{token:"ba"}
+    });
+    const released=await controller.release({
+      itemId:materialized.item.id,
+      claimGeneration:claimed.item.claimGeneration,
+      principalContext:{token:"ba"}
+    });
+
+    let enteredPublication;
+    let releasePublication;
+    const entered=new Promise(resolve=>{enteredPublication=resolve;});
+    const allowPublication=new Promise(resolve=>{releasePublication=resolve;});
+    let authoritativeSideEffects=0;
+
+    const publishing=controller.withExecutablePublicationGuard({
+      itemId:materialized.item.id,
+      claimGeneration:claimed.item.claimGeneration,
+      receiptRef:released.receiptRef
+    },async(observation)=>{
+      enteredPublication(observation);
+      await allowPublication;
+      authoritativeSideEffects+=1;
+      return {publicationStoreRevision:"requirements-store:guarded"};
+    });
+
+    const observed=await entered;
+    assert.equal(observed.lifecycle.boardRevision!=null,true);
+    assert.equal(observed.lifecycle.claimGeneration,claimed.item.claimGeneration);
+
+    let invalidationSettled=false;
+    const invalidating=controller.invalidateOrganizationClaim({
+      itemId:materialized.item.id,
+      expectedOwner:"ba-1",
+      expectedClaimGeneration:claimed.item.claimGeneration,
+      kind:"EXECUTION_AUTHORITY_INVALIDATED",
+      invalidationRef:"reason://publication-race"
+    }).finally(()=>{invalidationSettled=true;});
+
+    await new Promise(resolve=>setTimeout(resolve,30));
+    assert.equal(invalidationSettled,false);
+    assert.equal(authoritativeSideEffects,0);
+    const during=(await orchestrator.readBlackboard()).items.find((item)=>item.id===materialized.item.id);
+    assert.equal(during.status,BlackboardStatus.CLAIMED);
+    assert.equal(during.claimGeneration,claimed.item.claimGeneration);
+
+    releasePublication();
+    const publication=await publishing;
+    assert.equal(publication.result.publicationStoreRevision,"requirements-store:guarded");
+    assert.equal(authoritativeSideEffects,1);
+
+    const invalidated=await invalidating;
+    assert.equal(invalidated.status,BlackboardStatus.REOPENED);
+    const after=(await orchestrator.readBlackboard()).items.find((item)=>item.id===materialized.item.id);
+    assert.equal(after.status,BlackboardStatus.REOPENED);
+    assert.equal(after.owner,null);
+  });
+});
+
 test("claim recovery advances generation and fences the prior released capability",async()=>{
   await withFixture(async({controller,materialized,claimReleaseStore})=>{
     const claimed=await controller.claim({
