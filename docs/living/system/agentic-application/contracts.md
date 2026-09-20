@@ -402,3 +402,25 @@ Materialization is exactly-once at two levels: `obligationSubjectKey` permits at
 Authority invalidation provenance can be constructed from the exact raw current-head observations even when the immutable authority artifact behind a head is missing or inconsistent. That fallback records the subject, CAS revision, generation, status and artifact ref without treating the broken artifact as trusted authority. This lets fresh reconciliation and execution entry still commit the typed canonical Board consequence before release fencing.
 
 Released capability boundaries also final-revalidate the canonical Board claim tuple. After release publication, during fresh-process reconciliation, and immediately before execution entry returns usable authority, the controller re-reads exact `{ itemId, status: CLAIMED, owner, claimGeneration }`. If that tuple has advanced or been invalidated concurrently, the old release subject is fenced and no stale capability is returned; the newer canonical Board lifecycle is never overwritten by the stale path.
+
+## Domain execution control contract
+
+`ExecutionPolicyHead(domain, workloadType)` is a CAS-fenced current pointer to an immutable `EXECUTION_POLICY`. Trusted publication verifies publisher authority externally before advancing the head. Policy compatibility is explicit by WorkContract version and exact immutable strategy ref.
+
+`ExecutionAttemptHead(project, item, workContractRef)` is the durable current pointer for one semantic attempt. ABSENT may create the first attempt; ACTIVE or RECOVERY_REQUIRED must reuse the exact immutable `EXECUTION_ATTEMPT_BINDING`; TERMINAL is replayable and does not silently mint a new attempt. The binding pins the exact WorkContract, ClaimReleaseReceipt, observed claim/policy heads, policy, strategy, trusted runtime adapter/code identity and stable invocation key before dispatch.
+
+First-attempt publication rechecks the observed policy head before CAS and revalidates the exact released claim. Execution entry revalidates the released claim again immediately before runtime dispatch. Recovery does not consult the current policy/strategy; later policy promotion therefore cannot rewrite an in-flight semantic attempt.
+
+The post-execution chain is explicit and content-addressed:
+
+```text
+RUNTIME_EXECUTION_ATTESTATION
+ -> EXECUTION_ATTEMPT_OUTCOME
+ -> DOMAIN_COMPLETION_DECISION
+ -> DOMAIN_PUBLICATION_RECEIPT
+ -> EXECUTION_JUDGMENT_BUNDLE
+```
+
+Runtime attestation is emitted from the trusted adapter boundary. Outcome is factual strategy result only. Domain completion is a separate authority; `SUCCEEDED != ACCEPT`. Publication is another authority and is attempted only after ACCEPT plus a fresh claim-currentness check. Publication may promote only exact produced outputs and derivation edges already proposed by the outcome.
+
+`EXECUTION_JUDGMENT_BUNDLE` is a derived index. Fresh resolution dereferences the exact WorkContract, release receipt, policy, strategy, binding, runtime attestations, outcome, completion decision, optional publication receipt and transition history, then validates cross-artifact identity relations. It is not correctness or mutation authority.
