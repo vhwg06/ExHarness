@@ -166,7 +166,7 @@ The project-acceptance controller does not create a parallel finding model or by
 
 `createDurableBackendQaWorkflow(...)` still accepts no project-acceptance controller for existing role-local/low-level compositions. That compatibility path still stops at `PENDING_REVIEW` and does not claim project completion.
 
-The concrete BB-019 project-completion path is the composition with an explicit `createBackendQaProjectAcceptanceController(...)` attached. In that path, PM requirement transport, durable trust-artifact persistence and trusted project review are mandatory parts of reaching Blackboard `DONE`.
+The concrete project-completion path is the composition with an explicit `createBackendQaProjectAcceptanceController(...)` attached. In that path, PM requirement transport, durable trust-artifact persistence and trusted project review are mandatory parts of reaching Blackboard `DONE`.
 
 ## Verified scenarios
 
