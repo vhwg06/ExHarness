@@ -8,7 +8,7 @@ import test from "node:test";
 
 const execFile = promisify(execFileCallback);
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const probePath = join(repositoryRoot, "docs/living/knowledge/bb026-stateful-research-probe.mjs");
+const probePath = join(repositoryRoot, "scripts/research-continuation-eval.mjs");
 const expectedPath = join(repositoryRoot, "artifacts/bb026-stateful-research-probe.json");
 
 test("BB-026 research continuation proof matches checked evidence and measures restart-safe selection", async () => {
