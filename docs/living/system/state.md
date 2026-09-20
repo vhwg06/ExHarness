@@ -99,3 +99,13 @@ ACTIVE or RECOVERY_REQUIRED attempts recover the same semantic attempt and immut
 Execution facts remain split from judgment and publication: RuntimeExecutionAttestation -> ExecutionAttemptOutcome -> DomainCompletionDecision -> DomainPublicationReceipt. A derived ExecutionJudgmentBundle indexes exact content-addressed refs and re-resolves the source chain for fresh-session reconstruction. Runtime SUCCEEDED is not domain ACCEPT, and domain ACCEPT is not authoritative publication.
 
 This slice proves one BUSINESS_ANALYSIS-owned domain execution path. It does not select Blackboard work, dispatch another organizational domain, change ApplicationOrchestrator lifecycle semantics, widen Oracle/Core authority, or implement Integration C-J.
+
+## Integration B post-merge authority repair
+
+The bounded domain-execution slice now fences authoritative publication across two current mutation gates held through canonical publication commit: the exact organization claim lifecycle and the current domain write-authority subject. The lifecycle fence is shared by every organization-claim lifecycle mutation that can invalidate the released capability, so recovery/invalidation/checkpoint/submit/block/supersede cannot commit while canonical publication is inside the guarded action. Unrelated Blackboard transactions retain the normal optimistic single-successor CAS protocol. A completion decision alone is not enough to publish.
+
+Canonical publication is keyed idempotently by the semantic execution attempt/binding. Concurrent recovery may observe/recover the same runtime attempt, but duplicate workers converge on one authoritative publication rather than duplicating domain write side effects.
+
+Recovery-relevant `EXECUTION_ATTEMPT_TRANSITION` artifacts record the exact observed `ExecutionAttemptHead` revision they attempt to advance. Fresh judgment reconstruction verifies those revisions against the reconstructed CAS-head sequence, not only status continuity.
+
+The earlier g0015 candidate acceptance is historical/stale evidence after the merged tree changed outside that review envelope. Current acceptance must come from the post-merge repair and a fresh exact candidate judgment.

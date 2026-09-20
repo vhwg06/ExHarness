@@ -232,3 +232,29 @@ A.1 released claim
 ```
 
 The controller cannot inspect or rank unrelated Blackboard work, issue authoritative cross-domain obligations, mutate ApplicationOrchestrator lifecycle semantics, or treat an ExecutionStrategy as a cross-domain dispatcher. A strategy result is not runtime identity, runtime success is not domain acceptance, and acceptance is not publication authority. Telemetry or the derived ExecutionJudgmentBundle may index evidence but cannot become correctness authority.
+
+## Publication mutation-currentness boundary
+
+```text
+DomainCompletionDecision == ACCEPT
+        |
+        v
+exact Organization claim guard
+        |
+        +-- exact { itemId, owner, claimGeneration } held current
+        |
+        v
+current Domain write-authority guard
+        |
+        +-- exact writer authority/revision held current
+        |
+        v
+idempotent canonical publish(publicationKey = semantic attempt/binding)
+        |
+        v
+DomainPublicationReceipt
+```
+
+Neither the completion evaluator nor the execution strategy may bypass these guards. The lifecycle guard is a shared production Blackboard mutation fence: organization-claim recovery/invalidation/checkpoint/submit/block/supersede paths and guarded publication cannot overlap. General unrelated Blackboard transactions keep their optimistic successor-CAS semantics. Runtime success, completion ACCEPT and publication authority remain separate. The guards protect mutation currentness only; they do not make the published artifact correct by themselves.
+
+Concurrent recovery shares the immutable attempt identity and therefore the same publication key. A second worker may replay the already-committed result but cannot obtain authority for a second canonical publication.

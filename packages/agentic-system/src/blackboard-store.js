@@ -36,6 +36,14 @@ function commitPath(path, baseToken) {
   return `${path}.commit-${baseToken}`;
 }
 
+function mutationFencePath(path) {
+  return `${path}.mutation-fence`;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function parseSnapshot(raw, source) {
   try {
     return defineBlackboardSnapshot(JSON.parse(raw));
@@ -128,6 +136,62 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300
     }
 
     return parseSnapshot(await fs.readFile(authorityPath, "utf8"), authorityPath);
+  }
+
+  async function acquireMutationFence() {
+    await fs.mkdir(dirname(path), { recursive: true });
+    const token = randomUUID();
+    const destination = mutationFencePath(path);
+    const tempPath = `${destination}.${token}.tmp`;
+    await fs.writeFile(tempPath, `${JSON.stringify({ version: 1, token })}\n`, "utf8");
+    const startedAt = Date.now();
+    const retryDelayMs = Math.min(25, Math.max(1, Math.floor(lockStaleMs / 100)));
+
+    try {
+      while (true) {
+        try {
+          await fs.link(tempPath, destination);
+          return token;
+        } catch (error) {
+          if (error?.code !== "EEXIST") throw error;
+          if (Date.now() - startedAt >= lockStaleMs) {
+            throw new Error("Blackboard store mutation fence remained held past wait limit");
+          }
+          await delay(retryDelayMs);
+        }
+      }
+    } finally {
+      try {
+        await fs.unlink(tempPath);
+      } catch (cleanupError) {
+        if (cleanupError?.code !== "ENOENT") {
+          // The fence hard link, when present, is the ownership token. Temp cleanup is non-authoritative.
+        }
+      }
+    }
+  }
+
+  async function releaseMutationFence(token) {
+    const destination = mutationFencePath(path);
+    let record;
+    try {
+      record = JSON.parse(await fs.readFile(destination, "utf8"));
+    } catch (error) {
+      if (error?.code === "ENOENT") throw new Error("Blackboard store mutation fence disappeared before release");
+      throw error;
+    }
+    invariant(record?.version === 1 && record.token === token, "Blackboard store mutation fence ownership changed");
+    await fs.unlink(destination);
+  }
+
+  async function withMutationFence(action) {
+    invariant(typeof action === "function", "Blackboard store mutation fence requires an action");
+    const token = await acquireMutationFence();
+    try {
+      return await action();
+    } finally {
+      await releaseMutationFence(token);
+    }
   }
 
   async function loadRoot() {
@@ -231,6 +295,14 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300
     async load() {
       const head = await loadCommittedHead();
       return freezeClone(head.snapshot);
+    },
+
+    async withMutationFence(action) {
+      invariant(typeof action === "function", "Blackboard store withMutationFence requires an action");
+      return withMutationFence(async () => {
+        const head = await loadCommittedHead();
+        return action(freezeClone({ token: head.token, snapshot: head.snapshot }));
+      });
     },
 
     async transact(mutator) {

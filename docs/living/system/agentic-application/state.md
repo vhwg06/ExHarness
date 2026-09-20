@@ -207,3 +207,11 @@ ORGANIZATION_WORK_CONTRACT + CLAIM_RELEASE_RECEIPT
 ```
 
 The current concrete proof surface is BUSINESS_ANALYSIS-owned work only. No global execution scheduler, cross-domain dispatcher or ProductStateProjection is introduced.
+
+## Domain execution post-merge repair
+
+Authoritative domain publication now runs inside the current organization claim guard and the current domain write-authority guard. The organization guard is backed by the public Blackboard store's production mutation fence. ApplicationOrchestrator uses that same fence around every organization-claim lifecycle mutation that can invalidate publication and holds it across the asynchronous canonical publication action; unrelated Board transactions remain optimistic successor-CAS operations. Both currentness subjects remain held through the idempotent canonical publication operation. The resulting `DOMAIN_PUBLICATION_RECEIPT` records the stable publication key plus the lifecycle and writer-authority observations used by that mutation.
+
+Concurrent recovery still reuses the same immutable `ExecutionAttemptBinding`, but canonical publication is attempt-scoped and idempotent. If another worker has already terminalized the attempt, the loser reloads and replays that terminal result rather than inventing a new terminal outcome.
+
+Every recovery-relevant `EXECUTION_ATTEMPT_TRANSITION` now carries `observedHeadRevision`. Fresh `ExecutionJudgmentBundle` reconstruction derives the expected CAS revision after each nonterminal transition and fails closed when the next transition does not bind that exact revision.

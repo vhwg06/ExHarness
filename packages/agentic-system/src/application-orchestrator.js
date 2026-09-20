@@ -392,13 +392,60 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
     return Object.freeze(structuredClone(result));
   }
 
+  async function withOrganizationLifecycleMutation(action) {
+    invariant(typeof action === "function", "organization lifecycle mutation requires action");
+    if(typeof store.withMutationFence !== "function") return action();
+    return store.withMutationFence(async () => action());
+  }
+
+  async function withOrganizationClaimGuard({ itemId, expectedOwner, expectedClaimGeneration }, action) {
+    const normalizedItemId = requireText(itemId, "itemId");
+    const owner = requireText(expectedOwner, "expectedOwner");
+    const generation = requirePositiveInteger(expectedClaimGeneration, "expectedClaimGeneration");
+    invariant(typeof action === "function", "withOrganizationClaimGuard requires action");
+    invariant(typeof store.withMutationFence === "function", "Blackboard store mutation fence is required for guarded organization publication");
+
+    return store.withMutationFence(async ({ token, snapshot }) => {
+      const item = findItem(snapshot, normalizedItemId);
+      invariant(item.status === BlackboardStatus.CLAIMED, `Blackboard item ${normalizedItemId} must remain CLAIMED during guarded mutation`);
+      invariant(item.owner === owner, `Blackboard item ${normalizedItemId} owner changed during guarded mutation`);
+      invariant(item.claimGeneration === generation, `Blackboard item ${normalizedItemId} claim generation changed during guarded mutation`);
+      const observation = Object.freeze({
+        itemId: normalizedItemId,
+        status: item.status,
+        owner: item.owner,
+        claimGeneration: item.claimGeneration,
+        boardRevision: token,
+        lifecycleRevision: digest({
+          boardRevision: token,
+          itemId: item.id,
+          status: item.status,
+          owner: item.owner,
+          claimGeneration: item.claimGeneration,
+          origin: item.origin
+        })
+      });
+      return Object.freeze({
+        observation,
+        result: await action(observation)
+      });
+    });
+  }
+
   return Object.freeze({
     ...base,
+    claim:(input)=>withOrganizationLifecycleMutation(()=>base.claim(input)),
+    recoverClaim:(input)=>withOrganizationLifecycleMutation(()=>base.recoverClaim(input)),
+    checkpoint:(input)=>withOrganizationLifecycleMutation(()=>base.checkpoint(input)),
+    submit:(input)=>withOrganizationLifecycleMutation(()=>base.submit(input)),
+    block:(input)=>withOrganizationLifecycleMutation(()=>base.block(input)),
+    supersede:(input)=>withOrganizationLifecycleMutation(()=>base.supersede(input)),
     recoverSelfUpgradeEvaluationClaim,
-    submitWithRequiredReviews,
+    submitWithRequiredReviews:(input)=>withOrganizationLifecycleMutation(()=>submitWithRequiredReviews(input)),
     resolveBlockedCheckpoint,
     materializeAcceptedWork,
     blockOrganizationMaterialization,
-    invalidateOrganizationClaim
+    invalidateOrganizationClaim:(input)=>withOrganizationLifecycleMutation(()=>invalidateOrganizationClaim(input)),
+    withOrganizationClaimGuard
   });
 }

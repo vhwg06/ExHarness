@@ -17,6 +17,18 @@ const SHA_A="a".repeat(64), SHA_B="b".repeat(64);
 const output={ref:"requirement-set:sha256:"+SHA_A,digest:SHA_A};
 const now="2026-09-20T02:30:00.000Z";
 
+function serialGuard(){
+  let tail=Promise.resolve();
+  return async(action)=>{
+    const previous=tail;
+    let release;
+    tail=new Promise(resolve=>{release=resolve;});
+    await previous;
+    try{return await action();}
+    finally{release();}
+  };
+}
+
 async function fixture({dispatchThrows=false,completionVerdict="ACCEPT"}={}){
   const dir=await mkdtemp(join(tmpdir(),"exharness-bb048-"));
   const immutable=createJsonImmutableArtifactStore({path:join(dir,"artifacts.json")});
@@ -42,7 +54,28 @@ async function fixture({dispatchThrows=false,completionVerdict="ACCEPT"}={}){
   assert.equal(await releaseStore.compareAndSwap(releaseKey,null,{status:ClaimReleaseStatus.RELEASED,receiptRef}),true);
 
   let executable=true,claimChecks=0,currentClaim={claimGeneration:1,receiptRef};
-  const claimController={async assertExecutable(args){claimChecks+=1;assert.deepEqual(args,{itemId:contract.boardItemId,...currentClaim});if(!executable)throw new TypeError("claim stale");return true;}};
+  const claimGuard=serialGuard();
+  async function assertExecutable(args){
+    claimChecks+=1;
+    assert.deepEqual(args,{itemId:contract.boardItemId,...currentClaim});
+    if(!executable)throw new TypeError("claim stale");
+    return true;
+  }
+  const claimController={
+    assertExecutable,
+    async withExecutablePublicationGuard(args,action){
+      return claimGuard(async()=>{
+        await assertExecutable(args);
+        const lifecycleObservation={
+          lifecycle:{itemId:contract.boardItemId,status:"CLAIMED",owner:"ba-worker",claimGeneration:args.claimGeneration,lifecycleRevision:"lifecycle:"+args.claimGeneration},
+          claimRelease:{subjectKey:claimReleaseSubjectKey(contract.projectId,contract.boardItemId,args.claimGeneration),revision:"release:"+args.claimGeneration,receiptRef:args.receiptRef},
+          principalRef:"principal:ba-worker",
+          workContractRef:contract.contractRef
+        };
+        return {observation:lifecycleObservation.lifecycle,result:await action(lifecycleObservation)};
+      });
+    }
+  };
   async function advanceClaim(claimGeneration){
     const nextReceipt={...receipt,claimGeneration};
     const nextReceiptRef=await org.putClaimReleaseReceipt(nextReceipt);
@@ -62,9 +95,51 @@ async function fixture({dispatchThrows=false,completionVerdict="ACCEPT"}={}){
   const success=()=>({status:"SUCCEEDED",runtimeInvocationId:"runtime-invocation-1",runtimeDeploymentRef:"strategy-self-report-ignored",startedAt:now,finishedAt:now,effectRefs:["effect:1"],traceRefs:["trace:1"],outputArtifactRefs:[output],verificationCandidateRefs:["evidence:requirement-check"],counterevidenceRefs:[],proposedDerivationEdges:[{outputRef:output.ref,derivedFrom:[contract.requiredArtifactRefs[0]]}],accepted:true});
   const runtimeAdapter={adapterRef:strategy.adapterRef,runtimeKind:"local-process",runtimeDeploymentRef:strategy.expectedRuntimeCodeRef,producerAuthorityRef:"authority:trusted-runtime",async dispatch(){dispatches+=1;if(dispatchThrows)throw new Error("crash-after-dispatch");return success();},async recover(){recoveries+=1;return success();}};
   const completionEvaluator={authorityRef:"authority:ba-completion",async evaluate(){return {verdict:completionVerdict,criterionResults:[{criterionId:"requirements-complete",verdict:completionVerdict==="ACCEPT"?"PASS":"FAIL",evidenceRefs:["evidence:requirement-check"]}],counterevidenceRefs:[]};}};
-  const publicationGate={authorityRef:"authority:ba-writer",producerPrincipalRef:"principal:ba-worker",async publish(){publications+=1;return {publishedArtifactRefs:[output],publishedClaimRefs:[],acceptedDerivationEdges:[{outputRef:output.ref,derivedFrom:[contract.requiredArtifactRefs[0]]}],publicationStoreRevision:"requirements-store:42"};}};
-  const makeController=(overridePolicyStore=policyStore,adapter=runtimeAdapter,overrideAttemptStore=attemptStore)=>createDomainExecutionController({claimController,claimReleaseStore:releaseStore,organizationArtifactRegistry:org,artifactRegistry:domain,executionPolicyStore:overridePolicyStore,executionAttemptStore:overrideAttemptStore,runtimeAdapter:adapter,completionEvaluator,publicationGate});
-  return {dir,immutable,org,domain,releaseStore,policyStore,attemptStore,contract,receiptRef,claimController,publisher,policyKey,strategy,strategyRef,runtimeAdapter,makeController,advanceClaim,setExecutable:v=>{executable=v;},counts:()=>({claimChecks,dispatches,recoveries,publications})};
+  const writeGuard=serialGuard();
+  let writeAuthorityActive=true,writeAuthorityRevision="writer-revision:1",publicationHook=null,publicationCalls=0;
+  const publicationByKey=new Map();
+  const publicationGate={
+    authorityRef:"authority:ba-writer",
+    producerPrincipalRef:"principal:ba-worker",
+    async withCurrentWriteAuthority({domain,producerPrincipalRef},action){
+      assert.equal(domain,contract.owningDomain);
+      assert.equal(producerPrincipalRef,"principal:ba-worker");
+      return writeGuard(async()=>{
+        if(!writeAuthorityActive)throw new TypeError("write authority revoked");
+        return action({authorityRef:"authority:ba-writer",revision:writeAuthorityRevision});
+      });
+    },
+    async publishIdempotent(args){
+      publicationCalls+=1;
+      const existing=publicationByKey.get(args.publicationKey);
+      if(existing){
+        assert.equal(existing.completionDecisionRef,args.completionDecisionRef);
+        return existing.result;
+      }
+      if(publicationHook)await publicationHook(args);
+      const result={
+        publicationKey:args.publicationKey,
+        publishedArtifactRefs:[output],
+        publishedClaimRefs:[],
+        acceptedDerivationEdges:[{outputRef:output.ref,derivedFrom:[contract.requiredArtifactRefs[0]]}],
+        publicationStoreRevision:"requirements-store:"+(publications+1)
+      };
+      publications+=1;
+      publicationByKey.set(args.publicationKey,{completionDecisionRef:args.completionDecisionRef,result});
+      return result;
+    }
+  };
+  const makeController=(overridePolicyStore=policyStore,adapter=runtimeAdapter,overrideAttemptStore=attemptStore,overridePublicationGate=publicationGate)=>createDomainExecutionController({claimController,claimReleaseStore:releaseStore,organizationArtifactRegistry:org,artifactRegistry:domain,executionPolicyStore:overridePolicyStore,executionAttemptStore:overrideAttemptStore,runtimeAdapter:adapter,completionEvaluator,publicationGate:overridePublicationGate});
+  async function invalidateLifecycle(){return claimGuard(async()=>{executable=false;return true;});}
+  async function revokeWriteAuthority(){return writeGuard(async()=>{writeAuthorityActive=false;writeAuthorityRevision="writer-revision:2";return true;});}
+  return {
+    dir,immutable,org,domain,releaseStore,policyStore,attemptStore,contract,receiptRef,claimController,publisher,policyKey,strategy,strategyRef,runtimeAdapter,publicationGate,makeController,advanceClaim,
+    setExecutable:v=>{executable=v;},
+    invalidateLifecycle,
+    revokeWriteAuthority,
+    setPublicationHook:hook=>{publicationHook=hook;},
+    counts:()=>({claimChecks,dispatches,recoveries,publications,publicationCalls})
+  };
 }
 
 async function cleanup(f){await rm(f.dir,{recursive:true,force:true});}
@@ -136,6 +211,11 @@ test("BB-048 emits a resolvable judgment chain and keeps runtime result separate
     const missingOutcomeRef="execution-attempt-outcome:sha256:"+"d".repeat(64);
     const missingRef=await f.domain.putExecutionJudgmentBundle({...originalBundle,pins:{...originalBundle.pins,outcome:{ref:missingOutcomeRef,digest:"d".repeat(64)}}});
     await assert.rejects(()=>resolveExecutionJudgmentBundle({artifactRegistry:f.domain,organizationArtifactRegistry:f.org,bundleRef:missingRef}),/judgment source artifact missing/);
+    const firstTransitionRef=originalBundle.pins.transitionHistory[0].ref;
+    const firstTransition=await f.domain.resolveExecutionAttemptTransition(firstTransitionRef);
+    const forgedTransitionRef=await f.domain.putExecutionAttemptTransition({...firstTransition,observedHeadRevision:"e".repeat(64)});
+    const forgedTransitionBundleRef=await f.domain.putExecutionJudgmentBundle({...originalBundle,pins:{...originalBundle.pins,transitionHistory:[{ref:forgedTransitionRef,digest:forgedTransitionRef.split(":").at(-1)},...originalBundle.pins.transitionHistory.slice(1)]}});
+    await assert.rejects(()=>resolveExecutionJudgmentBundle({artifactRegistry:f.domain,organizationArtifactRegistry:f.org,bundleRef:forgedTransitionBundleRef}),/attempt transition observed head revision mismatch/);
   }finally{await cleanup(f);}
 });
 
@@ -170,6 +250,53 @@ test("claim-generation takeover recovers the same semantic attempt while recordi
     assert.equal(packet.receipt.claimGeneration,1);
     assert.equal(packet.runtimeClaimReceipts.at(-1).claimGeneration,2);
     assert.equal(packet.runtimeAttestations.at(-1).dispatchAuthoritySnapshot.claimReleaseHead.receiptRef,receipt2);
+  }finally{await cleanup(f);}
+});
+
+test("publication commit fences lifecycle and writer authority until canonical publish completes",async()=>{
+  const f=await fixture();
+  try{
+    let entered;
+    let releasePublish;
+    const enteredPromise=new Promise(resolve=>{entered=resolve;});
+    const releasePromise=new Promise(resolve=>{releasePublish=resolve;});
+    f.setPublicationHook(async()=>{entered();await releasePromise;});
+    const execution=f.makeController().execute({itemId:f.contract.boardItemId,claimGeneration:1,receiptRef:f.receiptRef});
+    await enteredPromise;
+
+    let lifecycleChanged=false,writerRevoked=false;
+    const lifecycle=f.invalidateLifecycle().then(()=>{lifecycleChanged=true;});
+    const revoke=f.revokeWriteAuthority().then(()=>{writerRevoked=true;});
+    await new Promise(resolve=>setTimeout(resolve,10));
+    assert.equal(lifecycleChanged,false);
+    assert.equal(writerRevoked,false);
+
+    releasePublish();
+    const result=await execution;
+    assert.equal(result.state,ExecutionAttemptStatus.TERMINAL);
+    await Promise.all([lifecycle,revoke]);
+    assert.equal(lifecycleChanged,true);
+    assert.equal(writerRevoked,true);
+    assert.equal(f.counts().publications,1);
+
+    const packet=await resolveExecutionJudgmentBundle({artifactRegistry:f.domain,organizationArtifactRegistry:f.org,bundleRef:result.judgmentBundleRef});
+    assert.equal(packet.publicationReceipt.writeAuthorityRevision,"writer-revision:1");
+    assert.equal(packet.publicationReceipt.lifecycleObservation.lifecycle.claimGeneration,1);
+  }finally{await cleanup(f);}
+});
+
+test("concurrent recovery converges on one idempotent canonical publication",async()=>{
+  const f=await fixture({dispatchThrows:true});
+  try{
+    await assert.rejects(()=>f.makeController().execute({itemId:f.contract.boardItemId,claimGeneration:1,receiptRef:f.receiptRef}),/crash-after-dispatch/);
+    const a=f.makeController().execute({itemId:f.contract.boardItemId,claimGeneration:1,receiptRef:f.receiptRef});
+    const b=f.makeController().execute({itemId:f.contract.boardItemId,claimGeneration:1,receiptRef:f.receiptRef});
+    const [left,right]=await Promise.all([a,b]);
+    assert.equal(left.state,ExecutionAttemptStatus.TERMINAL);
+    assert.equal(right.state,ExecutionAttemptStatus.TERMINAL);
+    assert.equal(f.counts().publications,1);
+    assert.ok(f.counts().publicationCalls>=1);
+    assert.equal(left.executionAttemptId,right.executionAttemptId);
   }finally{await cleanup(f);}
 });
 

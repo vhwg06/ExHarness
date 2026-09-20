@@ -424,3 +424,23 @@ RUNTIME_EXECUTION_ATTESTATION
 Runtime attestation is emitted from the trusted adapter boundary. Outcome is factual strategy result only. Domain completion is a separate authority; `SUCCEEDED != ACCEPT`. Publication is another authority and is attempted only after ACCEPT plus a fresh claim-currentness check. Publication may promote only exact produced outputs and derivation edges already proposed by the outcome.
 
 `EXECUTION_JUDGMENT_BUNDLE` is a derived index. Fresh resolution dereferences the exact WorkContract, release receipt, policy, strategy, binding, runtime attestations, outcome, completion decision, optional publication receipt and transition history, then validates cross-artifact identity relations. It is not correctness or mutation authority.
+
+### Integration B publication/currentness repair
+
+After `DOMAIN_COMPLETION_DECISION.verdict == ACCEPT`, publication is a separate mutation-current transaction. The controller enters an exact organization-claim lifecycle guard backed by the public Blackboard store's shared mutation fence, then an exact current domain writer-authority guard, and performs the canonical write while both remain held. ApplicationOrchestrator wraps organization-claim lifecycle mutations that can invalidate an executable claim—recovery, checkpoint, submit, block, supersede and typed organization invalidation—in that same fence before their normal Board transaction. Guarded publication acquires the fence before reading the lifecycle subject and retains it through the external canonical write. Unrelated Blackboard transactions remain optimistic and are still governed by the immutable single-successor revision chain. Elapsed time never grants a second fence owner; fence contention waits/fails closed rather than stealing ownership.
+
+The publication operation is idempotent under a stable key derived from the semantic execution attempt and immutable binding. Repeated/concurrent recovery for that attempt must return the same canonical publication result rather than duplicate external domain writes.
+
+`DOMAIN_PUBLICATION_RECEIPT` additionally records:
+
+```text
+publicationKey
+writeAuthorityRef
+writeAuthorityRevision
+lifecycleObservation
+publicationStoreRevision
+```
+
+Those fields are historical proof of the exact mutation gate used for the commit. They do not become new authority for future writes.
+
+`EXECUTION_ATTEMPT_TRANSITION` records `observedHeadRevision` for every transition that advances an existing attempt head; the first ABSENT -> ACTIVE transition records no predecessor revision. Fresh reconstruction walks the immutable transition sequence, reconstructs the exact nonterminal head value after each transition, derives its CAS revision and requires the next transition's `observedHeadRevision` to match. Status continuity alone is insufficient.
