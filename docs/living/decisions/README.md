@@ -1,36 +1,23 @@
 # Decisions
 
-This directory contains material architecture/governance decisions and their promotion state.
+This directory contains **current material architecture/governance decisions** that still constrain or explain the system as it exists now.
 
-A decision is not a transcript and not a parking lot for unrelated ideas.
-
-Decision lifecycle:
+A decision is not a transcript, review log, repair log, closure record, or revision archive.
 
 ```text
-PROPOSED
-  -> evidence/review/audit as required
-  -> ACCEPTED / PROMOTED
-  -> SUPERSEDED when later accepted evidence replaces it
+current material decision
+  -> keep canonical decision file
+
+decision fully promoted into current system semantics
+and no longer needed to explain a live constraint
+  -> remove from working tree
+
+previous decision/review/repair/closure state
+  -> Git history only
 ```
 
-`docs/living/system/*` must never be used for proposed/future design merely because a decision is not accepted yet. Worktree is the source-synchronized projection of the system that exists now.
+Do not keep `SUPERSEDED`, historical readiness, rejection, repair-finding, merge-acceptance, or closure files in Living Docs merely for traceability. Git already provides that history.
 
-Unresolved operational work belongs on `docs/blackboard/state.md`. Evidence/judgment/audit material belongs under `../knowledge/`. A decision proposal may live here as `PROPOSED` while it is being reviewed, but it must not be promoted into worktree current-state docs until accepted and applicable to current source-backed reality.
+`docs/living/system/*` is the source-synchronized statement of what is true now. Active work belongs to `docs/blackboard/state.md`; current queued semantic work belongs to canonical Blackboard implementation-input artifacts.
 
-Each material decision should state:
-
-```text
-id
-status: PROPOSED | ACCEPTED | PROMOTED | SUPERSEDED
-proposed-at / accepted-at
-accepted-by / acceptance boundary
-context
-choice
-supporting evidence/judgment refs when applicable
-rejected alternatives
-consequences
-promotion targets
-what would reopen it
-```
-
-`PROMOTED` means the accepted decision has been materialized into the relevant authority view. Promotion into `docs/living/system/*` is valid only for constraints/facts that describe or constrain the current source-backed system; it must not make unimplemented desired state look current.
+A decision that remains here must still contribute current semantic value: an authority boundary, architecture constraint, accepted trade-off, or explicit non-goal that is not already self-evident from the current system projection.
