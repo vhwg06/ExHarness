@@ -12,7 +12,7 @@ started: 2026-09-18
 current-active-debt: 1
 next-work-id: BB-050
 living-system-root: docs/living/system/state.md
-integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness-v8.md
+integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md
 previous-board-archive: docs/blackboard/history/blackboard-oracle-detail-2026-09-18.md
 previous-phase-closure: docs/living/knowledge/oracle-detail-closure-2026-09-18.md
 ```
