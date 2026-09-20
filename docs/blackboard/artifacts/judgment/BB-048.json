@@ -8,24 +8,25 @@
     "itemId": "BB-048",
     "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json",
     "implementationResultRef": "docs/blackboard/artifacts/implementation-result/BB-048.json",
-    "candidateRef": "d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
-    "sourceBaseline": "cfc42798f4ceb99f27a93ea6e9a751b647487ef2"
+    "candidateRef": "d2136feb1099df6f57bb1c5f1a95965e927772fb",
+    "sourceBaseline": "abad5d6ec4d5f98d48aeb1eb81f1729a176029d5"
   },
   "assessments": {
     "criteria": [
       {
         "id": "AC-1",
         "status": "SATISFIED",
-        "reason": "Stale released claims remain rejected before executable domain authority.",
+        "reason": "Execution still begins only from an exact current released organizational claim; stale release/claim authority fails before usable domain execution.",
         "evidenceRefs": [
           "packages/agentic-system/src/organization-claim.js",
+          "packages/agentic-system/test/bb047-organization-bridge.test.js",
           "packages/agentic-system/test/bb048-domain-execution-control.test.js"
         ]
       },
       {
         "id": "AC-2",
         "status": "SATISFIED",
-        "reason": "Crash/recovery preserves one semantic attempt and immutable binding.",
+        "reason": "Crash/recovery continues to reuse the same semantic execution attempt and immutable binding.",
         "evidenceRefs": [
           "packages/agentic-system/src/domain-execution-control.js",
           "packages/agentic-system/test/bb048-domain-execution-control.test.js"
@@ -34,78 +35,94 @@
       {
         "id": "AC-3",
         "status": "SATISFIED",
-        "reason": "Policy promotion does not rewrite an already-bound in-flight attempt.",
+        "reason": "Later execution policy/strategy promotion does not rewrite an already-bound in-flight attempt.",
         "evidenceRefs": [
-          "packages/agentic-system/src/domain-execution-control.js"
+          "packages/agentic-system/src/domain-execution-control.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
         ]
       },
       {
         "id": "AC-4",
-        "status": "FINDING",
-        "reason": "The candidate lifecycle guard used optimistic Blackboard transaction currentness and could detect a competing lifecycle commit only after external publication.",
+        "status": "SATISFIED",
+        "reason": "The production lifecycle/publication fence is shared with organization-claim lifecycle mutation paths while ordinary Blackboard concurrency remains optimistic; execution still does not gain cross-domain scheduling or lifecycle authority.",
         "evidenceRefs": [
           "packages/agentic-system/src/blackboard-store.js",
           "packages/agentic-system/src/application-orchestrator.js",
-          "github-review:5260506099"
+          "packages/agentic-system/test/bb047-organization-bridge.test.js",
+          "packages/agentic-system/test/blackboard-store.test.js",
+          "github-review:5260629972"
         ]
       },
       {
         "id": "AC-5",
         "status": "SATISFIED",
-        "reason": "The slice remains bounded before Integration C-J.",
+        "reason": "The candidate remains bounded to Integration B repair and current coordination migration; Integration C-J product mechanisms are not implemented.",
         "evidenceRefs": [
-          "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c"
+          "git:d2136feb1099df6f57bb1c5f1a95965e927772fb",
+          "github-review:5260629972"
         ]
       }
     ],
     "invariants": [
       {
-        "id": "PUBLICATION-LIFECYCLE-FENCE",
-        "status": "FINDING",
-        "reason": "Canonical publication must share a real lifecycle currentness fence with claim lifecycle mutation.",
+        "id": "LIFECYCLE-PUBLICATION-FENCE",
+        "status": "SATISFIED",
+        "reason": "Guarded publication requires the production Blackboard mutation fence; organization claim lifecycle mutations that can invalidate executable capability use the same fence and therefore cannot commit through the guarded publication action.",
         "evidenceRefs": [
-          "github-review:5260506099",
-          "packages/agentic-system/src/blackboard-store.js"
+          "packages/agentic-system/src/blackboard-store.js",
+          "packages/agentic-system/src/application-orchestrator.js",
+          "packages/agentic-system/src/organization-claim.js",
+          "packages/agentic-system/test/bb047-organization-bridge.test.js"
         ]
       },
       {
-        "id": "PUBLICATION-IDEMPOTENCY",
+        "id": "GENERAL-BLACKBOARD-OPTIMISTIC-CAS",
         "status": "SATISFIED",
-        "reason": "One stable semantic-attempt publication key is present.",
+        "reason": "General Blackboard transact() remains the immutable single-successor optimistic CAS protocol; stale/competing writer regression tests pass on the exact candidate.",
         "evidenceRefs": [
-          "packages/agentic-system/src/domain-execution-control.js"
+          "packages/agentic-system/src/blackboard-store.js",
+          "packages/agentic-system/test/blackboard-store.test.js",
+          "github-actions:run:35512000074"
+        ]
+      },
+      {
+        "id": "PUBLICATION-WRITER-AUTHORITY-IDEMPOTENCY",
+        "status": "SATISFIED",
+        "reason": "Canonical publication remains behind current writer authority and one stable semantic-attempt publication key; concurrent recovery converges without duplicate authoritative publication.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
         ]
       },
       {
         "id": "TRANSITION-CAS-LINEAGE",
         "status": "SATISFIED",
-        "reason": "Recovery-relevant transitions record and reconstruct observedHeadRevision.",
+        "reason": "Recovery-relevant ExecutionAttemptTransition artifacts retain observedHeadRevision and fresh reconstruction verifies exact derived head-revision continuity.",
         "evidenceRefs": [
           "packages/agentic-system/src/domain-execution-control.js",
           "packages/agentic-system/test/bb048-domain-execution-control.test.js"
         ]
+      },
+      {
+        "id": "SCOPE-BOUNDARY",
+        "status": "SATISFIED",
+        "reason": "No cross-domain scheduling/work-selection authority or Integration C-J product implementation is added by the repair.",
+        "evidenceRefs": [
+          "git:abad5d6ec4d5f98d48aeb1eb81f1729a176029d5",
+          "git:d2136feb1099df6f57bb1c5f1a95965e927772fb"
+        ]
       }
     ]
   },
-  "findings": [
-    {
-      "id": "P1-LIFECYCLE-PUBLICATION-FENCE",
-      "type": "IMPLEMENTATION_FINDING",
-      "severity": "P1",
-      "statement": "Replace the optimistic lifecycle publication guard with a production fence shared by Blackboard lifecycle mutations and canonical publication, and prove the race with the real store/orchestrator/claim-controller path.",
-      "evidenceRefs": [
-        "github-review:5260506099",
-        "packages/agentic-system/src/blackboard-store.js",
-        "packages/agentic-system/src/application-orchestrator.js"
-      ]
-    }
-  ],
-  "verdict": "FINDINGS",
+  "findings": [],
+  "verdict": "ACCEPT",
   "provenance": {
     "evidenceRefs": [
+      "git:d2136feb1099df6f57bb1c5f1a95965e927772fb",
+      "git:abad5d6ec4d5f98d48aeb1eb81f1729a176029d5",
+      "github-actions:run:35512000074",
       "github-review:5260506099",
-      "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
-      "github-actions:run:35503903989"
+      "github-review:5260629972"
     ]
   }
 }
