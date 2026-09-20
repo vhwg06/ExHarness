@@ -22,13 +22,14 @@
     "eval:cognition": "node scripts/cognition-eval.mjs",
     "verify:package": "npm pack --dry-run --workspace packages/core-harness",
     "verify:consumer": "node scripts/consumer-smoke.mjs && node scripts/discovery-consumer-smoke.mjs && node scripts/javascript-codeact-consumer-smoke.mjs && node scripts/cognition-consumer-smoke.mjs",
-    "verify": "npm test && npm run example && npm run benchmark && npm run eval:reference && npm run eval:agentic && npm run eval:workflow-replay && npm run eval:memory-reuse && npm run eval:self-upgrade-research && npm run eval:artifact-manifest-research && npm run eval:fidelity && npm run eval:turn-memory && npm run eval:cognition && npm run verify:package && npm run verify:consumer && npm run verify:blackboard-context",
+    "verify": "npm test && npm run example && npm run benchmark && npm run eval:reference && npm run eval:agentic && npm run eval:workflow-replay && npm run eval:memory-reuse && npm run eval:self-upgrade-research && npm run eval:artifact-manifest-research && npm run eval:fidelity && npm run eval:turn-memory && npm run eval:cognition && npm run verify:package && npm run verify:consumer && npm run verify:blackboard-context && npm run verify:current-docs",
     "test:blackboard-context": "node --test test/blackboard-context-*.test.mjs",
     "verify:blackboard-context": "npm run verify:blackboard-artifacts && node scripts/blackboard-context-verify.mjs && npm run test:blackboard-context && npm run eval:blackboard-context",
     "eval:blackboard-context": "node scripts/blackboard-context-eval.mjs",
     "test:blackboard-artifacts": "node --test test/blackboard-artifact-*.test.mjs",
     "verify:blackboard-artifacts": "node scripts/blackboard-artifact-verify.mjs && npm run test:blackboard-artifacts",
     "materialize:blackboard-context": "node scripts/blackboard-context-materialize.mjs",
-    "start:blackboard-implementation": "node scripts/blackboard-implementation-bootstrap.mjs"
+    "start:blackboard-implementation": "node scripts/blackboard-implementation-bootstrap.mjs",
+    "verify:current-docs": "node scripts/current-docs-verify.mjs"
   }
 }
