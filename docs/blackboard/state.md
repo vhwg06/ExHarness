@@ -10,7 +10,7 @@ The Blackboard describes how ExHarness is currently being developed. It does not
 phase: INTEGRATION
 started: 2026-09-18
 current-active-debt: 1
-next-work-id: BB-049
+next-work-id: BB-050
 living-system-root: docs/living/system/state.md
 previous-board-archive: docs/blackboard/history/blackboard-oracle-detail-2026-09-18.md
 previous-phase-closure: docs/living/knowledge/oracle-detail-closure-2026-09-18.md
@@ -45,8 +45,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 11
-  ref: docs/blackboard/context/BB-048/g0011-implementation-readiness-judgment.json
+  generation: 12
+  ref: docs/blackboard/context/BB-048/g0012-implementation-readiness-judgment.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
@@ -58,8 +58,8 @@ scope-boundary:
 blockers:
   - implementation authority not yet granted; current lane is JUDGMENT/READINESS
 next:
-  - execute fresh readiness judgment from exact g0011 context
-  - on ACCEPT, materialize bounded g0012 EXECUTION/INITIAL context
+  - execute fresh readiness judgment from exact g0012 context
+  - on ACCEPT, materialize bounded g0013 EXECUTION/INITIAL context
   - EXECUTION may publish IMPLEMENTATION_RESULT facts only; a later fresh JUDGMENT/CANDIDATE owns correctness
 
 ## Accepted semantic input queue
@@ -69,6 +69,7 @@ Research/SA has completed semantic handoff for three future slices. These are ac
 - `docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json`
 - `docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json`
 - `docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot-v1.json`
+- `docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure-v1.json`
 
 They do not consume work ids or `current-active-debt`. A future grounded trigger allocates a new IMPLEMENTATION_WORKER item and binds exactly one queued semantic input.
 
@@ -81,6 +82,8 @@ New Implementation/Worker work requires an accepted implementation-input artifac
 Promoted research knowledge alone is not future backlog. Living Docs never become the work queue.
 
 ## Terminal lineage
+
+BB-049 Research/SA is terminal. It produced the accepted unallocated Integration G semantic input at `docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure-v1.json`. Closure record: `docs/blackboard/history/bb049-integration-g-research-sa-closure-2026-09-20.md`.
 
 BB-047 A.1 is terminal current-system history. Its delivery is represented in Living Docs and accepted by `docs/living/decisions/D027-bb047-a1-merge-acceptance.md`.
 
