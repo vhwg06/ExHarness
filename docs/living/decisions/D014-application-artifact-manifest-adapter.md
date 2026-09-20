@@ -58,8 +58,8 @@ A generic artifact registry, global content-addressed store, Blackboard payload 
 
 ## Accepted evidence
 
-- `docs/living/knowledge/bb039-artifact-manifest-research.md`;
-- `docs/living/knowledge/bb039-artifact-manifest-probe.mjs`;
+- `docs/living/system/oracle/artifact-manifest.md`;
+- `scripts/artifact-manifest-eval.mjs`;
 - project-bound `SessionHandoffSurface` fresh-session reconstruction through a durable JSON Blackboard;
 - filesystem-backed artifact and manifest stores reconstructed independently from the producer session;
 - nine deterministic scenarios including changed bytes, wrong stored revision, missing/partial content, missing manifest, wrong producer work-order id, wrong acceptance-decision id and wrong acceptance-decision digest;
