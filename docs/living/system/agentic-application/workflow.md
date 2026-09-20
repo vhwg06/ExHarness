@@ -17,7 +17,7 @@ Manifest-protected Backend -> QA is optional application composition: after Back
 
 Backend preparation is now an explicit read-only application phase before Worker/Core execution. Detailed current semantics, including durable source-failure handling and the `backendRecoveryRequired` fence, are in `backend-preparation.md`.
 
-For workflows explicitly configured with D014 artifact-manifest protection, accepted Backend completion has one additional application-owned gate before `QA_PENDING`:
+For workflows explicitly configured with artifact-manifest protection, accepted Backend completion has one additional application-owned gate before `QA_PENDING`:
 
 ```text
 accepted Backend result
