@@ -82,7 +82,9 @@ function verifyOne({board,boardPath,root,itemId}) {
       const judgment=JSON.parse(fs.readFileSync(`${root}/${spec.authority.repairJudgmentRef}`,"utf8"));
       assertBlackboardArtifact(judgment);
       if(judgment.artifactType!=="JUDGMENT"||judgment.verdict!=="FINDINGS"||
+         judgment.subject.itemId!==spec.itemId||
          judgment.subject.judgmentContextRef!==spec.authority.subjectContextRef||
+         judgment.subject.implementationResultRef!==parent.implementationResultRef||
          judgment.subject.candidateRef!==spec.authority.subjectCandidateHeadSha||
          judgment.subject.semanticArtifactRef!==spec.semanticArtifactRef)
         throw new Error("REPAIR_AUTHORITY_INVALID: judgment subject/verdict mismatch");
