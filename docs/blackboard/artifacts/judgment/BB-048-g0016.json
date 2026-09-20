@@ -1,0 +1,139 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "JUDGMENT",
+  "artifactId": "BB-048-g0016",
+  "status": "RECORDED",
+  "subject": {
+    "itemId": "BB-048",
+    "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+    "implementationResultRef": "docs/blackboard/artifacts/implementation-result/BB-048-postmerge-reconciliation.json",
+    "candidateRef": "cfc42798f4ceb99f27a93ea6e9a751b647487ef2",
+    "sourceBaseline": "8a651cb902b0df8786883d4c091cdf7e57ac659d",
+    "judgmentContextRef": "docs/blackboard/context/BB-048/g0016-postmerge-candidate-judgment.json"
+  },
+  "assessments": {
+    "criteria": [
+      {
+        "id": "AC-1",
+        "status": "SATISFIED",
+        "reason": "Merged code still rejects stale/non-current released claim before domain execution.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "status": "FINDING",
+        "reason": "Recovery preserves semantic binding, but concurrent recovery is not publication-exclusive and can race to duplicate authoritative publish side effects.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "github-review:5260290893"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "status": "SATISFIED",
+        "reason": "Policy/strategy promotion after binding does not mutate the existing in-flight binding.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ]
+      },
+      {
+        "id": "AC-4",
+        "status": "FINDING",
+        "reason": "Execution remains domain-local, but the authoritative publication boundary lacks a lifecycle/write-authority fence through commit.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+          "github-review:5260290893"
+        ]
+      },
+      {
+        "id": "AC-5",
+        "status": "SATISFIED",
+        "reason": "Merged slice still stops before Integration C-J implementation.",
+        "evidenceRefs": [
+          "git:cfc42798f4ceb99f27a93ea6e9a751b647487ef2"
+        ]
+      }
+    ],
+    "invariants": [
+      {
+        "id": "POSTMERGE-CURRENTNESS",
+        "status": "FINDING",
+        "reason": "Prior g0015 ACCEPT targeted 7a34a38c... but final merged tree includes an out-of-envelope bootstrap-test change; the old judgment is stale.",
+        "evidenceRefs": [
+          "docs/blackboard/context/BB-048/g0015-candidate-judgment.json",
+          "git:7a34a38c05acbdabd92305e2cca66ba454a66c30",
+          "git:99fa96f1480b1c0babdaae5e1c97b97411b66799",
+          "github-review:5260290893"
+        ]
+      },
+      {
+        "id": "PUBLICATION-CURRENTNESS",
+        "status": "FINDING",
+        "reason": "Publication currently checks executable authority before publish but does not hold current lifecycle and domain write authority stable through canonical publication commit.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+          "github-review:5260290893"
+        ]
+      },
+      {
+        "id": "TRANSITION-CAS-PROVENANCE",
+        "status": "FINDING",
+        "reason": "ExecutionAttemptTransition does not record observedHeadRevision, so fresh reconstruction cannot bind transition history to exact durable CAS subjects.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+          "github-review:5260290893"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "P1-STALE-G0015",
+      "type": "CONTEXT_STALE",
+      "severity": "P1",
+      "statement": "Treat g0015 ACCEPT as historical/stale and require a fresh exact repair candidate judgment before Integration B is accepted again.",
+      "evidenceRefs": [
+        "docs/blackboard/context/BB-048/g0015-candidate-judgment.json",
+        "github-review:5260290893"
+      ]
+    },
+    {
+      "id": "P1-PUBLICATION-FENCE",
+      "type": "IMPLEMENTATION_FINDING",
+      "severity": "P1",
+      "statement": "Fence authoritative publication across exact current work/lifecycle and current domain write authority, and prevent concurrent recovery workers from publishing the same semantic attempt more than once.",
+      "evidenceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+        "github-review:5260290893"
+      ]
+    },
+    {
+      "id": "P1-TRANSITION-REVISION",
+      "type": "EVIDENCE_INSUFFICIENT",
+      "severity": "P1",
+      "statement": "ExecutionAttemptTransition must bind observedHeadRevision and fresh reconstruction must verify transition/CAS revision continuity.",
+      "evidenceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+        "github-review:5260290893"
+      ]
+    }
+  ],
+  "verdict": "FINDINGS",
+  "provenance": {
+    "evidenceRefs": [
+      "github-review:5260290893",
+      "git:cfc42798f4ceb99f27a93ea6e9a751b647487ef2",
+      "docs/blackboard/artifacts/implementation-result/BB-048-postmerge-reconciliation.json"
+    ]
+  }
+}
