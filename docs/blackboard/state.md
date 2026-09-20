@@ -26,9 +26,9 @@ RESEARCH_SA
 
 IMPLEMENTATION_WORKER
   active: BB-048
-  lane: EXECUTION
-  execution-mode: REPAIR
-  stage: IMPLEMENTATION_REPAIR
+  lane: JUDGMENT
+  judgment-kind: CANDIDATE
+  stage: IMPLEMENTATION_CANDIDATE_REVIEW
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
@@ -37,13 +37,13 @@ The lanes are independent. Future Research/SA work does not need to reconstruct 
 
 BB-048
 pipeline: IMPLEMENTATION_WORKER
-lane: EXECUTION
-execution-mode: REPAIR
-stage: IMPLEMENTATION_REPAIR
-question/work: Repair the remaining lifecycle-publication currentness race without widening Integration B.
+lane: JUDGMENT
+judgment-kind: CANDIDATE
+stage: IMPLEMENTATION_CANDIDATE_REVIEW
+question/work: Independently judge the exact BB-048 repair candidate against the current semantic input and implementation result.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 current-context:
   ref: docs/blackboard/context/BB-048/current.json
@@ -53,15 +53,16 @@ implementation-result:
   ref: docs/blackboard/artifacts/implementation-result/BB-048.json
 depends-on: []
 scope-boundary:
-  - use the real shared Blackboard lifecycle/publication fence
-  - prove invalidation cannot commit through canonical publication on the production path
-  - preserve publication idempotency, writer-authority fencing and transition CAS lineage
+  - review exact candidate d2136feb1099df6f57bb1c5f1a95965e927772fb only
+  - independently verify lifecycle/publication fencing, writer authority, idempotency and transition CAS lineage
+  - do not mutate source in JUDGMENT
   - do not enter Integration C-J
-blockers: []
+blockers:
+  - exact candidate judgment not yet recorded
 next:
-  - run focused production race tests and full repository verification
-  - update the current IMPLEMENTATION_RESULT with the exact repair candidate
-  - rewrite current context to JUDGMENT/CANDIDATE for fresh independent review
+  - fresh-review exact candidate d2136feb1099df6f57bb1c5f1a95965e927772fb
+  - update canonical JUDGMENT in place with ACCEPT or FINDINGS
+  - on FINDINGS rewrite current.json back to bounded EXECUTION/REPAIR; on ACCEPT close BB-048 and merge only after final main-currentness check
 
 ## Accepted semantic input queue
 
