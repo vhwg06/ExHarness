@@ -1,0 +1,71 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-048",
+  "status": "PRODUCED",
+  "subject": {
+    "itemId": "BB-048",
+    "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json",
+    "sourceBaseline": "cfc42798f4ceb99f27a93ea6e9a751b647487ef2",
+    "candidateRef": "d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+    "executionAuthorityRef": "git:800f4a828211c17db80d751ea25d4f80470b3fbf:docs/blackboard/artifacts/judgment/BB-048-g0016.json"
+  },
+  "observations": {
+    "changedSurfaces": [
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "docs/living/system/state.md",
+      "docs/living/system/capabilities.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/boundaries.md",
+      "docs/living/system/agentic-application/contracts.md"
+    ],
+    "verificationRuns": [
+      {
+        "id": "repair-candidate-ci",
+        "command": "npm run verify",
+        "status": "PASSED",
+        "evidenceRefs": [
+          "github-actions:run:35503903989",
+          "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c"
+        ]
+      }
+    ],
+    "observedFacts": [
+      {
+        "id": "OF-1",
+        "statement": "Candidate d21dce6934cdf8351ec7d9d860fbbed79a960e3c closed the writer-authority/idempotency and transition-revision findings.",
+        "evidenceRefs": [
+          "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+          "github-review:5260506099"
+        ]
+      },
+      {
+        "id": "OF-2",
+        "statement": "Fresh independent review 5260506099 retained one P1: the lifecycle publication guard was optimistic in the production Blackboard store path.",
+        "evidenceRefs": [
+          "github-review:5260506099"
+        ]
+      }
+    ],
+    "evidenceRefs": [
+      "github-actions:run:35503903989",
+      "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+      "github-review:5260506099"
+    ]
+  },
+  "provenance": {
+    "inputRefs": [
+      "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json",
+      "github-review:5260290893"
+    ],
+    "evidenceRefs": [
+      "github-actions:run:35503903989",
+      "github-review:5260506099"
+    ]
+  }
+}

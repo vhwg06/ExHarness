@@ -56,7 +56,7 @@ export function bootstrapImplementationSession({
     rules=[
       "judge readiness without product-source mutation",
       "do not bypass readiness authority into execution",
-      "bind any decision to this exact context and candidate"
+      "bind any decision to the exact semantic input being judged"
     ];
   }
   return {workId:selected,pipeline:"IMPLEMENTATION_WORKER",lane,mode:spec.executionMode??spec.judgmentKind,intent,rules,context};

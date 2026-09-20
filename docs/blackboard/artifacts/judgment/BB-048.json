@@ -1,0 +1,111 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "JUDGMENT",
+  "artifactId": "BB-048",
+  "status": "RECORDED",
+  "subject": {
+    "itemId": "BB-048",
+    "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json",
+    "implementationResultRef": "docs/blackboard/artifacts/implementation-result/BB-048.json",
+    "candidateRef": "d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+    "sourceBaseline": "cfc42798f4ceb99f27a93ea6e9a751b647487ef2"
+  },
+  "assessments": {
+    "criteria": [
+      {
+        "id": "AC-1",
+        "status": "SATISFIED",
+        "reason": "Stale released claims remain rejected before executable domain authority.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/organization-claim.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ]
+      },
+      {
+        "id": "AC-2",
+        "status": "SATISFIED",
+        "reason": "Crash/recovery preserves one semantic attempt and immutable binding.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ]
+      },
+      {
+        "id": "AC-3",
+        "status": "SATISFIED",
+        "reason": "Policy promotion does not rewrite an already-bound in-flight attempt.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js"
+        ]
+      },
+      {
+        "id": "AC-4",
+        "status": "FINDING",
+        "reason": "The candidate lifecycle guard used optimistic Blackboard transaction currentness and could detect a competing lifecycle commit only after external publication.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/blackboard-store.js",
+          "packages/agentic-system/src/application-orchestrator.js",
+          "github-review:5260506099"
+        ]
+      },
+      {
+        "id": "AC-5",
+        "status": "SATISFIED",
+        "reason": "The slice remains bounded before Integration C-J.",
+        "evidenceRefs": [
+          "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c"
+        ]
+      }
+    ],
+    "invariants": [
+      {
+        "id": "PUBLICATION-LIFECYCLE-FENCE",
+        "status": "FINDING",
+        "reason": "Canonical publication must share a real lifecycle currentness fence with claim lifecycle mutation.",
+        "evidenceRefs": [
+          "github-review:5260506099",
+          "packages/agentic-system/src/blackboard-store.js"
+        ]
+      },
+      {
+        "id": "PUBLICATION-IDEMPOTENCY",
+        "status": "SATISFIED",
+        "reason": "One stable semantic-attempt publication key is present.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js"
+        ]
+      },
+      {
+        "id": "TRANSITION-CAS-LINEAGE",
+        "status": "SATISFIED",
+        "reason": "Recovery-relevant transitions record and reconstruct observedHeadRevision.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "P1-LIFECYCLE-PUBLICATION-FENCE",
+      "type": "IMPLEMENTATION_FINDING",
+      "severity": "P1",
+      "statement": "Replace the optimistic lifecycle publication guard with a production fence shared by Blackboard lifecycle mutations and canonical publication, and prove the race with the real store/orchestrator/claim-controller path.",
+      "evidenceRefs": [
+        "github-review:5260506099",
+        "packages/agentic-system/src/blackboard-store.js",
+        "packages/agentic-system/src/application-orchestrator.js"
+      ]
+    }
+  ],
+  "verdict": "FINDINGS",
+  "provenance": {
+    "evidenceRefs": [
+      "github-review:5260506099",
+      "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+      "github-actions:run:35503903989"
+    ]
+  }
+}

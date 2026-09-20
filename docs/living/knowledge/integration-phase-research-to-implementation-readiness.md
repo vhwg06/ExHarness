@@ -1,3 +1,9 @@
+# Integration phase research-to-implementation readiness
+
+Status: **CURRENT ROADMAP**
+
+This is the single current roadmap. Update this file in place; Git history carries revisions. Fresh sessions do not load previous roadmap revisions.
+
 Ừ. Sau khi research + đối chiếu với source ExHarness hiện tại, tao nghĩ **integration phase nên dùng một workload objective đủ lớn để bắt hệ thống phải hành xử như một software organization thật**.
 
 ## Executive review summary
@@ -31,10 +37,6 @@ Hard boundaries:
 Open mechanisms:
   tracked in the explicit twelve-gap matrix with hard blocking slices
 ```
-
-Status: **CANONICAL INTEGRATION ROADMAP**.
-
-This file is the single current roadmap source of truth. Git history carries revisions; do not create sibling `vN` roadmap files for ordinary roadmap corrections.
 
 The current roadmap preserves the established trust/authority architecture. It does **not** rebase B→J, introduce a workflow-generation engine, or move organizational authority into Restate. It makes explicit an already-compatible delivery assumption: lifecycle/workload workflows may be predefined and versioned, while the project artifact set may begin incomplete and evolve with the end user across those known phases.
 

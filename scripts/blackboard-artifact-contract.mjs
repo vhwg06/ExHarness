@@ -11,6 +11,9 @@ const SEMANTIC_FORBIDDEN_KEYS=new Set([
   "file","files","path","paths","commands","command","steps","sourceScope","writeScope",
   "testScope","implementationPlan","executor","executorProfile","model","prompt","toolCalls"
 ]);
+const READINESS_KEYS=new Set([
+  "kind","version","artifactType","artifactId","status","subject","verdict","provenance"
+]);
 const RESULT_KEYS=new Set([
   "kind","version","artifactType","artifactId","status","subject","observations","provenance"
 ]);
@@ -81,14 +84,24 @@ function assertImplementationInput(artifact){
     fail("provenance.acceptance.kind");
   nonEmptyString(artifact.provenance.acceptance.ref,"provenance.acceptance.ref");
 }
+function assertReadinessDecision(artifact){
+  exactKeys(artifact,READINESS_KEYS,"READINESS_DECISION");
+  if(artifact.status!=="RECORDED")fail("READINESS_DECISION status must be RECORDED");
+  exactKeys(artifact.subject,new Set(["itemId","semanticArtifactRef"]),"subject");
+  nonEmptyString(artifact.subject.itemId,"subject.itemId");
+  nonEmptyString(artifact.subject.semanticArtifactRef,"subject.semanticArtifactRef");
+  if(!["ACCEPT","FINDINGS"].includes(artifact.verdict))fail("READINESS_DECISION verdict");
+  exactKeys(artifact.provenance,new Set(["evidenceRefs"]),"provenance");
+  stringArray(artifact.provenance.evidenceRefs,"provenance.evidenceRefs");
+}
 function assertImplementationResult(artifact){
   exactKeys(artifact,RESULT_KEYS,"IMPLEMENTATION_RESULT");
   rejectKeys(artifact,RESULT_JUDGMENT_FORBIDDEN_KEYS);
   if(artifact.status!=="PRODUCED")fail("IMPLEMENTATION_RESULT status must be PRODUCED");
   exactKeys(artifact.subject,new Set([
-    "itemId","semanticArtifactRef","sourceBaseline","candidateRef","producerContextRef"
+    "itemId","semanticArtifactRef","sourceBaseline","candidateRef","executionAuthorityRef"
   ]),"subject");
-  for(const key of ["itemId","semanticArtifactRef","sourceBaseline","candidateRef","producerContextRef"])
+  for(const key of ["itemId","semanticArtifactRef","sourceBaseline","candidateRef","executionAuthorityRef"])
     nonEmptyString(artifact.subject[key],`subject.${key}`);
 
   exactKeys(artifact.observations,new Set([
@@ -129,9 +142,9 @@ function assertJudgment(artifact){
   exactKeys(artifact,JUDGMENT_KEYS,"JUDGMENT");
   if(artifact.status!=="RECORDED")fail("JUDGMENT status must be RECORDED");
   exactKeys(artifact.subject,new Set([
-    "itemId","semanticArtifactRef","implementationResultRef","candidateRef","sourceBaseline","judgmentContextRef"
+    "itemId","semanticArtifactRef","implementationResultRef","candidateRef","sourceBaseline"
   ]),"subject");
-  for(const key of ["itemId","semanticArtifactRef","implementationResultRef","candidateRef","sourceBaseline","judgmentContextRef"])
+  for(const key of ["itemId","semanticArtifactRef","implementationResultRef","candidateRef","sourceBaseline"])
     nonEmptyString(artifact.subject[key],`subject.${key}`);
 
   exactKeys(artifact.assessments,new Set(["criteria","invariants"]),"assessments");
@@ -142,7 +155,7 @@ function assertJudgment(artifact){
   for(const finding of artifact.findings){
     exactKeys(finding,new Set(["id","type","severity","statement","evidenceRefs"]),"finding");
     nonEmptyString(finding.id,"finding.id");
-    if(!["IMPLEMENTATION_FINDING","EVIDENCE_INSUFFICIENT","CONTEXT_STALE","INPUT_CONTRADICTION"].includes(finding.type))
+    if(!["IMPLEMENTATION_FINDING","EVIDENCE_INSUFFICIENT","INPUT_CONTRADICTION"].includes(finding.type))
       fail("finding.type");
     if(!["P1","P2","P3"].includes(finding.severity))fail("finding.severity");
     nonEmptyString(finding.statement,"finding.statement");
@@ -165,6 +178,7 @@ export function readSemanticArtifact(path){
 export function assertBlackboardArtifact(artifact){
   assertBase(artifact);
   if(artifact.artifactType==="IMPLEMENTATION_INPUT")assertImplementationInput(artifact);
+  else if(artifact.artifactType==="READINESS_DECISION")assertReadinessDecision(artifact);
   else if(artifact.artifactType==="IMPLEMENTATION_RESULT")assertImplementationResult(artifact);
   else if(artifact.artifactType==="JUDGMENT")assertJudgment(artifact);
   else fail("unsupported artifactType");
