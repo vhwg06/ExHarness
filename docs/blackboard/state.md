@@ -26,9 +26,9 @@ RESEARCH_SA
 
 IMPLEMENTATION_WORKER
   active: BB-048
-  lane: EXECUTION
-  execution-mode: INITIAL
-  stage: IMPLEMENTATION_EXECUTION
+  lane: JUDGMENT
+  judgment-kind: CANDIDATE
+  stage: IMPLEMENTATION_CANDIDATE_REVIEW
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
@@ -37,31 +37,33 @@ The lanes are independent. Future Research/SA work does not need to reconstruct 
 
 BB-048
 pipeline: IMPLEMENTATION_WORKER
-lane: EXECUTION
-execution-mode: INITIAL
-stage: IMPLEMENTATION_EXECUTION
+lane: JUDGMENT
+judgment-kind: CANDIDATE
+stage: IMPLEMENTATION_CANDIDATE_REVIEW
 question/work: Authorize the first bounded DOMAIN_EXECUTION_CONTROL / Integration B slice from an exact released organizational claim through immutable domain-local execution binding and evidence/publication.
 kind: IMPLEMENTATION
 priority: P1
-status: READY
+status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 14
-  ref: docs/blackboard/context/BB-048/g0014-implementation.json
+  generation: 15
+  ref: docs/blackboard/context/BB-048/g0015-candidate-judgment.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
+implementation-result:
+  ref: docs/blackboard/artifacts/implementation-result/BB-048-g0014.json
 depends-on: []
 scope-boundary:
   - start only from an exact current released organizational claim
   - own HOW/runtime below the organization boundary
   - prove one concrete BA-owned execution slice only
   - do not introduce cross-domain obligation issuance, DOMAIN_ACTIVATION, ProductStateProjection, deployment/Product QA, or Integration C-J
-blockers: []
+blockers:
+  - exact candidate judgment not yet recorded
 next:
-  - execute only within exact g0014 source scope from source baseline 8a651cb902b0df8786883d4c091cdf7e57ac659d
-  - continue implementation directly on PR #193 branch; do not fork a parallel implementation PR
-  - publish factual BB-048-g0014 IMPLEMENTATION_RESULT only
-  - materialize fresh g0015 JUDGMENT/CANDIDATE bound to the exact result and candidate
+  - independently review candidate 7a34a38c05acbdabd92305e2cca66ba454a66c30 from exact g0015 context
+  - on FINDINGS, materialize only a bounded EXECUTION/REPAIR generation from that judgment
+  - on ACCEPT, record the exact judgment and proceed to merge/closure without mutating candidate source
 
 ## Accepted semantic input queue
 
