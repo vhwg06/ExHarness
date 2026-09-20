@@ -129,6 +129,16 @@ Limits: A.1 ends at the released executable claim boundary. It does not resolve 
 
 Details: `contracts.md`, `boundaries.md`, `state.md`, `../../living/history/bb047-a1-closure-2026-09-19.md`.
 
+## A15 — Bounded domain execution control
+
+**Outcome:** exact released organization work can enter one domain-local semantic execution attempt with immutable policy/strategy/runtime binding and fresh-session reconstructable evidence.
+
+**Guarantees:** policy publisher authority is verified outside payload self-assertion; current policy is CAS-headed separately from immutable policy artifacts; attempt currentness is CAS-headed separately from immutable binding/history; recovery reuses the same binding; runtime identity comes from trusted attestation; outcome, domain completion and publication authority remain distinct; judgment bundles re-resolve source artifacts rather than laundering copied claims.
+
+**Failure semantics:** stale claim or release blocks execution entry; policy race before first binding forces re-resolution; runtime crash preserves RECOVERY_REQUIRED on the same attempt; a non-ACCEPT domain decision cannot publish authoritative products.
+
+**Does not imply:** work selection, cross-domain continuation, automatic acceptance, or a generic workflow engine.
+
 ## Cross-layer rule
 
 ```text
