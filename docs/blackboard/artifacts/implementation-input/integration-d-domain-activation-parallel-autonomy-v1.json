@@ -1,0 +1,178 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_INPUT",
+  "artifactId": "integration-d-domain-activation-parallel-autonomy-v1",
+  "status": "ACCEPTED",
+  "subject": {
+    "id": "agentic-application.domain-activation.parallel-autonomy.integration-d",
+    "title": "Domain activation and FE BE parallel autonomy"
+  },
+  "semantics": {
+    "desiredOutcome": "Persisted actionable work can wake its exact owning domain and enter the existing authorized claim and domain-execution path through level-triggered reconciliation, allowing independent Frontend and Backend progress without a central next-role dispatcher or event transport becoming authority.",
+    "currentState": "The current delivered system has no generic DOMAIN_ACTIVATION capability and no autonomous Frontend domain. Existing organization semantics end at released claim, while promoted Integration C research defines the obligation/currentness boundary that activation must consume after it is delivered.",
+    "requiredBehaviors": [
+      {
+        "id": "RB-1",
+        "statement": "Activation operates on one exact organizational work identity and owning domain rather than a role name, global stage or inferred next domain."
+      },
+      {
+        "id": "RB-2",
+        "statement": "Every activation attempt re-reads canonical organizational state and treats event, watch, poll, retry and restart signals only as wake-up hints."
+      },
+      {
+        "id": "RB-3",
+        "statement": "A domain-local canonical scan can rediscover persisted actionable work after process restart or missed notification, so disposable queues and cursors are not correctness truth."
+      },
+      {
+        "id": "RB-4",
+        "statement": "Duplicate activation hints converge through existing lifecycle, claim and currentness fencing instead of creating multiple current claims or semantic execution attempts."
+      },
+      {
+        "id": "RB-5",
+        "statement": "Activation validates exact domain ownership and uses trusted execution-principal configuration; trigger payloads cannot grant domain identity or execution authority."
+      },
+      {
+        "id": "RB-6",
+        "statement": "After claim and release, the exact source-obligation/currentness subject is revalidated immediately before domain-execution entry so invalidation racing activation fails closed."
+      },
+      {
+        "id": "RB-7",
+        "statement": "Activation hands an already-selected work item into domain execution control and never selects ExecutionPolicy, ExecutionStrategy or another organizational work item."
+      },
+      {
+        "id": "RB-8",
+        "statement": "Frontend and Backend can be independently actionable and execute under different domain-local strategy descriptors without an implicit stage barrier."
+      },
+      {
+        "id": "RB-9",
+        "statement": "One domain outage or blocked dependency does not prevent unrelated actionable work in another healthy domain from progressing."
+      }
+    ],
+    "invariants": [
+      {
+        "id": "INV-1",
+        "statement": "Activation is not scheduling."
+      },
+      {
+        "id": "INV-2",
+        "statement": "Event or queue delivery is not lifecycle, claim or execution authority."
+      },
+      {
+        "id": "INV-3",
+        "statement": "Activation is not strategy selection and is not obligation creation."
+      },
+      {
+        "id": "INV-4",
+        "statement": "Queue, cursor and local backoff state are disposable and reconstructable from canonical work state."
+      },
+      {
+        "id": "INV-5",
+        "statement": "A stale queued hint cannot resurrect invalidated work."
+      },
+      {
+        "id": "INV-6",
+        "statement": "Frontend and Backend independence is governed by exact semantic dependencies, not global development stages."
+      },
+      {
+        "id": "INV-7",
+        "statement": "A durable runtime such as Restate may host activation mechanics but cannot become organizational source of truth or hidden scheduler."
+      }
+    ],
+    "acceptanceCriteria": [
+      {
+        "id": "AC-1",
+        "statement": "Persisted actionable work is rediscovered and processed after controller restart even when its original notification was lost."
+      },
+      {
+        "id": "AC-2",
+        "statement": "Concurrent duplicate hints for one work item converge to one current claim/execution path."
+      },
+      {
+        "id": "AC-3",
+        "statement": "A wrong-domain activation attempt cannot claim or execute the work."
+      },
+      {
+        "id": "AC-4",
+        "statement": "Obligation supersession between activation pre-check and execution entry prevents execution through the post-release currentness recheck."
+      },
+      {
+        "id": "AC-5",
+        "statement": "Frontend and Backend work can progress concurrently and independently under their own domain execution strategies."
+      },
+      {
+        "id": "AC-6",
+        "statement": "An outage in one domain leaves unrelated work in another domain actionable and able to progress."
+      },
+      {
+        "id": "AC-7",
+        "statement": "Removing a manual next-role dispatcher does not stop progress for persisted actionable work."
+      },
+      {
+        "id": "AC-8",
+        "statement": "Partial upstream invalidation suppresses only affected activation subjects while unrelated domain work remains actionable."
+      }
+    ],
+    "outOfScope": [
+      {
+        "id": "OOS-1",
+        "statement": "Global scheduler, role registry or organization workflow graph."
+      },
+      {
+        "id": "OOS-2",
+        "statement": "Exactly-once event transport or transactional outbox as a correctness prerequisite."
+      },
+      {
+        "id": "OOS-3",
+        "statement": "Deployment, AcceptanceSnapshot or Product QA semantics."
+      },
+      {
+        "id": "OOS-4",
+        "statement": "Global product-completeness or closure projection."
+      },
+      {
+        "id": "OOS-5",
+        "statement": "Execution-policy or strategy selection inside the activation boundary."
+      }
+    ],
+    "affectedCapabilities": [
+      "domain.activation",
+      "organization.work-discovery",
+      "organization.claim-entry",
+      "frontend.domain-execution",
+      "backend.domain-execution",
+      "parallel.domain-autonomy"
+    ],
+    "affectedContracts": [
+      "DomainActivationKey",
+      "DomainActivationSource",
+      "DomainActivationController",
+      "OrganizationWorkContract",
+      "ClaimReleaseReceipt",
+      "ExecutionAttemptBinding",
+      "CrossDomainObligation"
+    ]
+  },
+  "provenance": {
+    "sourceArtifactRefs": [
+      "docs/living/knowledge/domain-activation-parallel-autonomy-implementation-readiness.md",
+      "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+      "docs/living/knowledge/domain-execution-control-implementation-readiness.md",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md"
+    ],
+    "evidenceRefs": [
+      "docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json",
+      "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json"
+    ],
+    "currentSystemRefs": [
+      "docs/living/system/state.md",
+      "docs/living/system/capabilities.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md"
+    ],
+    "acceptance": {
+      "kind": "USER_DIRECTIVE",
+      "ref": "user-directive:2026-09-20:compile-promoted-research-into-implementation-input-queue"
+    }
+  }
+}
