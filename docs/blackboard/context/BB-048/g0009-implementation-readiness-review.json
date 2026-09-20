@@ -1,0 +1,157 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_REVIEW_CONTEXT",
+  "contextId": "BB-048-context",
+  "itemId": "BB-048",
+  "generation": 9,
+  "parentContextRef": "docs/blackboard/context/BB-048/g0008-implementation-readiness-review.json",
+  "pipeline": "IMPLEMENTATION_WORKER",
+  "stage": "IMPLEMENTATION_READINESS_REVIEW",
+  "role": "REVIEWER",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Fresh implementation-readiness review of Integration B after completing the independent Research/SA semantic-input queue for future Integration C/D/E-F slices.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "implement or repair DOMAIN_EXECUTION_CONTROL source in the review lane",
+      "reopen terminal BB-047 A.1 without grounded contradictory evidence",
+      "consume queued Integration C/D/E-F semantic inputs as BB-048 implementation requirements",
+      "treat accepted queued semantic inputs as active Blackboard work or source mutation authority",
+      "create an IMPLEMENT generation without an exact ACCEPT decision bound to this context and candidate",
+      "enter cross-domain obligation issuance, DOMAIN_ACTIVATION, ProductStateProjection, deployment/Product QA, or Integration C-J implementation"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "targetType": "git-commit",
+    "candidateHeadSha": "96bfbebd91af0200c7a2eae9586ad0b3865afa22",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/blackboard/state.md",
+      "docs/blackboard/context/BB-048/g0009-implementation-readiness-review.json"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "96bfbebd91af0200c7a2eae9586ad0b3865afa22"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/blackboard/contracts.md",
+    "docs/blackboard/pipelines.md",
+    "docs/living/system/state.md",
+    "docs/living/system/capabilities.md",
+    "docs/living/system/agentic-application/state.md",
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/system/agentic-application/boundaries.md",
+    "docs/living/system/agentic-application/contracts.md",
+    "packages/agentic-system/src/organization-work.js",
+    "packages/agentic-system/src/organization-claim.js",
+    "packages/agentic-system/src/organization-authority.js",
+    "packages/agentic-system/src/organization-authority-store.js",
+    "packages/agentic-system/src/organization-artifact-store.js",
+    "packages/agentic-system/src/index.js"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+    "docs/living/decisions/D027-bb047-a1-merge-acceptance.md"
+  ],
+  "auditRefs": [
+    "docs/blackboard/context/BB-048/g0008-implementation-readiness-review.json",
+    "docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json",
+    "docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json",
+    "docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot-v1.json",
+    "docs/blackboard/artifacts/implementation-input/BB-048-migrated-readiness.md",
+    "docs/living/knowledge/domain-execution-control-implementation-readiness.md",
+    "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+    "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+    "docs/living/knowledge/domain-activation-parallel-autonomy-implementation-readiness.md",
+    "docs/living/knowledge/deployment-acceptance-snapshot-implementation-readiness.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/blackboard/**",
+      "docs/living/system/**",
+      "docs/living/knowledge/**",
+      "docs/living/decisions/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/core-harness/src/**",
+      "packages/core-harness/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "canonical implementation input is semantic and contains no executor-specific procedure",
+    "Board implementation-input.ref equals this context semanticArtifactRef",
+    "accepted queued Integration C/D/E-F implementation inputs are independent semantic handoffs and do not widen BB-048 scope",
+    "queued semantic input is not active work, does not consume a work id and does not authorize source mutation",
+    "Living Docs describe the system that exists now; Blackboard only describes development state and routes fresh-session context",
+    "RESEARCH_SA and IMPLEMENTATION_WORKER are independent development pipelines",
+    "review lane is read-only",
+    "BB-047 A.1 is terminal current-system truth",
+    "Integration B begins only from an exact current released organizational claim",
+    "ExecutionAttemptHead is resolved before policy/strategy selection",
+    "same semantic attempt recovery reuses the same immutable ExecutionAttemptBinding",
+    "ExecutionPolicy != Work Scheduler",
+    "ExecutionStrategy != Cross-Domain Dispatcher",
+    "strategy result != runtime fact != verification evidence",
+    "SUCCEEDED != ACCEPT and ACCEPT != authoritative publication",
+    "Integration C-J remain out of BB-048 implementation scope"
+  ],
+  "verification": [
+    "npm run verify:blackboard-artifacts",
+    "npm run verify:blackboard-context",
+    "npm run verify",
+    "materialize the same context under RICH_CODING_HARNESS, GENERIC_INTERACTIVE and WEAK_BOUNDED and confirm the semantic artifact is byte/structure equivalent",
+    "independent readiness review that the semantic input plus bounded current-system refs are sufficient for one DOMAIN_EXECUTION_CONTROL implementation slice",
+    "independent authority-boundary review proving no global scheduler/cross-domain dispatcher is introduced"
+  ],
+  "expectedOutputs": [
+    "ACCEPT or findings decision bound to this exact generation 9 context and candidate",
+    "if accepted, exact bounded sourceScope.write and deterministic tests for child g0010 IMPLEMENT",
+    "child IMPLEMENT preserves this exact BB-048 semanticArtifactRef unchanged",
+    "queued Integration C/D/E-F semantic inputs remain unallocated until separate grounded implementation triggers",
+    "no Living Docs rewrite unless product/system semantics actually change"
+  ],
+  "staleWhen": [
+    "candidate changes outside the allowed post-target envelope",
+    "Board current-context generation/ref changes",
+    "Board implementation-input.ref changes",
+    "BB-048 semantic implementation input changes",
+    "terminal A.1 source contracts or capability projection change materially",
+    "Integration B implementation requires architecture outside promoted DOMAIN_EXECUTION_CONTROL readiness"
+  ],
+  "reviewQuestion": [
+    "does a fresh BB-048 implementation session obtain semantic intent without reconstructing research/project history?",
+    "do the newly queued future semantic inputs remain completely outside BB-048 required behavior and authority?",
+    "does Board -> context -> artifact binding fail closed on mismatch?",
+    "is the canonical baseline sufficient for one bounded DOMAIN_EXECUTION_CONTROL implementation slice?"
+  ],
+  "nextGenerationOnAcceptance": {
+    "path": "docs/blackboard/context/BB-048/g0010-implementation.json",
+    "parentContextRef": "docs/blackboard/context/BB-048/g0009-implementation-readiness-review.json",
+    "actionKind": "IMPLEMENT",
+    "requirements": [
+      "exact accepted implementationDecisionRef",
+      "decision subjectContextRef equals this g0009",
+      "decision subjectCandidateHeadSha equals reviewTarget.candidateHeadSha",
+      "semanticArtifactRef remains docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+      "then-current sourceBaseline",
+      "exact bounded Integration B sourceScope.write",
+      "exact focused verification/negative tests",
+      "Board transitions BB-048 to READY with current-context generation 10"
+    ]
+  },
+  "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json"
+}
