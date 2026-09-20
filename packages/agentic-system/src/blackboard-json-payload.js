@@ -97,6 +97,14 @@ export function createJsonBlackboardStore(options) {
       return freezeClone(transaction);
     },
 
+    async withMutationFence(action) {
+      invariant(typeof action === "function", "Blackboard store withMutationFence requires an action");
+      return store.withMutationFence(async ({ token, snapshot }) => {
+        validateBlackboardPersistedPayload(snapshot);
+        return action(freezeClone({ token, snapshot }));
+      });
+    },
+
     async diagnoseDependencyGraph() {
       return store.diagnoseDependencyGraph();
     },
