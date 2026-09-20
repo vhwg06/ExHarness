@@ -102,7 +102,7 @@ This slice proves one BUSINESS_ANALYSIS-owned domain execution path. It does not
 
 ## Integration B post-merge authority repair
 
-The bounded domain-execution slice now fences authoritative publication across two current mutation gates held through canonical publication commit: the exact organization claim lifecycle and the current domain write-authority subject. The lifecycle fence is the same production Blackboard mutation fence used by every Board transaction, so an invalidation/recovery mutation cannot commit while canonical publication is inside the guarded action. A completion decision alone is not enough to publish.
+The bounded domain-execution slice now fences authoritative publication across two current mutation gates held through canonical publication commit: the exact organization claim lifecycle and the current domain write-authority subject. The lifecycle fence is shared by every organization-claim lifecycle mutation that can invalidate the released capability, so recovery/invalidation/checkpoint/submit/block/supersede cannot commit while canonical publication is inside the guarded action. Unrelated Blackboard transactions retain the normal optimistic single-successor CAS protocol. A completion decision alone is not enough to publish.
 
 Canonical publication is keyed idempotently by the semantic execution attempt/binding. Concurrent recovery may observe/recover the same runtime attempt, but duplicate workers converge on one authoritative publication rather than duplicating domain write side effects.
 
