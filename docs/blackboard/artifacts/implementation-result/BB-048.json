@@ -7,15 +7,19 @@
   "subject": {
     "itemId": "BB-048",
     "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json",
-    "sourceBaseline": "cfc42798f4ceb99f27a93ea6e9a751b647487ef2",
-    "candidateRef": "d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
-    "executionAuthorityRef": "git:800f4a828211c17db80d751ea25d4f80470b3fbf:docs/blackboard/artifacts/judgment/BB-048-g0016.json"
+    "sourceBaseline": "abad5d6ec4d5f98d48aeb1eb81f1729a176029d5",
+    "candidateRef": "d2136feb1099df6f57bb1c5f1a95965e927772fb",
+    "executionAuthorityRef": "git:d2136feb1099df6f57bb1c5f1a95965e927772fb:docs/blackboard/artifacts/judgment/BB-048.json"
   },
   "observations": {
     "changedSurfaces": [
+      "packages/agentic-system/src/blackboard-store.js",
+      "packages/agentic-system/src/blackboard-graph.js",
+      "packages/agentic-system/src/blackboard-json-payload.js",
       "packages/agentic-system/src/application-orchestrator.js",
-      "packages/agentic-system/src/domain-execution-control.js",
       "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/test/bb047-organization-bridge.test.js",
       "packages/agentic-system/test/bb048-domain-execution-control.test.js",
       "docs/living/system/state.md",
       "docs/living/system/capabilities.md",
@@ -26,45 +30,90 @@
     ],
     "verificationRuns": [
       {
-        "id": "repair-candidate-ci",
+        "id": "g0019-focused-organization-race",
+        "command": "node --test packages/agentic-system/test/bb047-organization-bridge.test.js",
+        "status": "PASSED",
+        "evidenceRefs": [
+          "github-actions:run:35512000074",
+          "git:d2136feb1099df6f57bb1c5f1a95965e927772fb"
+        ]
+      },
+      {
+        "id": "g0019-domain-execution-regression",
+        "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
+        "status": "PASSED",
+        "evidenceRefs": [
+          "github-actions:run:35512000074",
+          "git:d2136feb1099df6f57bb1c5f1a95965e927772fb"
+        ]
+      },
+      {
+        "id": "g0019-repository-verify",
         "command": "npm run verify",
         "status": "PASSED",
         "evidenceRefs": [
-          "github-actions:run:35503903989",
-          "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c"
+          "github-actions:run:35512000074",
+          "git:d2136feb1099df6f57bb1c5f1a95965e927772fb"
         ]
       }
     ],
     "observedFacts": [
       {
         "id": "OF-1",
-        "statement": "Candidate d21dce6934cdf8351ec7d9d860fbbed79a960e3c closed the writer-authority/idempotency and transition-revision findings.",
+        "statement": "The production Blackboard store exposes a non-takeover mutation fence while ordinary transact() retains the optimistic immutable single-successor revision protocol.",
         "evidenceRefs": [
-          "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
-          "github-review:5260506099"
+          "packages/agentic-system/src/blackboard-store.js",
+          "git:d2136feb1099df6f57bb1c5f1a95965e927772fb"
         ]
       },
       {
         "id": "OF-2",
-        "statement": "Fresh independent review 5260506099 retained one P1: the lifecycle publication guard was optimistic in the production Blackboard store path.",
+        "statement": "ApplicationOrchestrator shares that fence between guarded organization publication and organization-claim lifecycle mutation paths that can invalidate an executable claim.",
         "evidenceRefs": [
-          "github-review:5260506099"
+          "packages/agentic-system/src/application-orchestrator.js",
+          "packages/agentic-system/src/organization-claim.js"
+        ]
+      },
+      {
+        "id": "OF-3",
+        "statement": "The production-path race test uses createJsonBlackboardStore, ApplicationOrchestrator and OrganizationWorkClaimController and observes that typed invalidation does not settle while guarded publication is active.",
+        "evidenceRefs": [
+          "packages/agentic-system/test/bb047-organization-bridge.test.js",
+          "github-actions:run:35512000074"
+        ]
+      },
+      {
+        "id": "OF-4",
+        "statement": "Stable publication idempotency and ExecutionAttemptTransition observedHeadRevision reconstruction remain present in the same candidate.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ]
+      },
+      {
+        "id": "OF-5",
+        "statement": "The candidate is based on current main abad5d6ec4d5f98d48aeb1eb81f1729a176029d5 and the PR was mergeable when the candidate was frozen.",
+        "evidenceRefs": [
+          "git:abad5d6ec4d5f98d48aeb1eb81f1729a176029d5",
+          "git:d2136feb1099df6f57bb1c5f1a95965e927772fb",
+          "github-pr:197"
         ]
       }
     ],
     "evidenceRefs": [
-      "github-actions:run:35503903989",
-      "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+      "github-actions:run:35512000074",
+      "git:d2136feb1099df6f57bb1c5f1a95965e927772fb",
       "github-review:5260506099"
     ]
   },
   "provenance": {
     "inputRefs": [
       "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json",
-      "github-review:5260290893"
+      "github-review:5260506099"
     ],
     "evidenceRefs": [
-      "github-actions:run:35503903989",
+      "github-actions:run:35512000074",
+      "git:d2136feb1099df6f57bb1c5f1a95965e927772fb",
       "github-review:5260506099"
     ]
   }
