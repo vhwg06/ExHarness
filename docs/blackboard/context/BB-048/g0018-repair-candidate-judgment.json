@@ -1,0 +1,126 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "PENDING_JUDGMENT_CONTEXT",
+  "contextId": "BB-048-context",
+  "itemId": "BB-048",
+  "generation": 18,
+  "parentContextRef": "docs/blackboard/context/BB-048/g0017-repair-implementation.json",
+  "transitionReasonRef": "docs/blackboard/artifacts/implementation-result/BB-048-g0017-repair.json",
+  "pipeline": "IMPLEMENTATION_WORKER",
+  "stage": "IMPLEMENTATION_CANDIDATE_REVIEW",
+  "role": "REVIEWER",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "boardSubject": {
+    "expectedStatus": "PENDING_REVIEW",
+    "expectedOwner": null
+  },
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Independently judge the exact BB-048 post-merge repair candidate against g0016 FINDINGS and g0017 repair authority.",
+    "allowedMutations": [],
+    "forbiddenActions": [
+      "mutate product source",
+      "repair findings inside the judgment generation",
+      "reuse g0017 producer observations as acceptance authority",
+      "change the exact candidate revision",
+      "treat prior g0015 ACCEPT as current acceptance authority",
+      "widen repair into Integration C-J",
+      "treat Blackboard single-current-state SoT clarification as a new BB-048 product requirement"
+    ]
+  },
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "targetType": "git-commit",
+    "candidateHeadSha": "d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+    "allowedPostTargetEnvelopePaths": [
+      "docs/blackboard/artifacts/implementation-result/BB-048-g0017-repair.json",
+      "docs/blackboard/context/BB-048/g0018-repair-candidate-judgment.json",
+      "docs/blackboard/state.md"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "9fc6ce08a2463465a00eda42bbee85a9f81f8265",
+    "repairSubjectBaseline": "cfc42798f4ceb99f27a93ea6e9a751b647487ef2"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/blackboard/contracts.md",
+    "docs/blackboard/state.md",
+    "docs/living/system/state.md",
+    "docs/living/system/capabilities.md",
+    "docs/living/system/agentic-application/state.md",
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/system/agentic-application/boundaries.md",
+    "docs/living/system/agentic-application/contracts.md",
+    "packages/agentic-system/src/application-orchestrator.js",
+    "packages/agentic-system/src/domain-execution-control.js",
+    "packages/agentic-system/src/domain-execution-store.js",
+    "packages/agentic-system/src/organization-claim.js"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+    "docs/blackboard/artifacts/judgment/BB-048-g0016.json",
+    "docs/blackboard/context/BB-048/g0017-repair-implementation.json",
+    "docs/blackboard/artifacts/implementation-result/BB-048-g0017-repair.json",
+    "github-review:5260290893"
+  ],
+  "auditRefs": [
+    "git:5b3023d6f5f59d1ec0b8b658d4acf497455be262",
+    "docs/living/knowledge/domain-execution-control-implementation-readiness.md",
+    "docs/living/knowledge/domain-execution-control-judgment-artifacts.md",
+    "docs/blackboard/artifacts/judgment/BB-048-g0015.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/blackboard/**",
+      "docs/living/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "hardInvariants": [
+    "candidate judgment is read-only and distinct from g0017 repair execution authority",
+    "judgment binds exact g0016 findings, g0017 repair result, source baseline and candidate d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+    "prior g0015 ACCEPT remains historical/stale and cannot authorize this repair",
+    "canonical publication must remain fenced across exact current organization lifecycle and current domain write authority through commit",
+    "canonical publication must be idempotent for one semantic attempt under concurrent recovery/retry",
+    "ExecutionAttemptTransition must bind observedHeadRevision to the exact durable head revision it advances",
+    "fresh judgment reconstruction must verify transition/head revision continuity and fail closed on forged lineage",
+    "repair does not widen into Integration C-J, cross-domain scheduling, or work-selection authority",
+    "main commit 5b3023d6f5f59d1ec0b8b658d4acf497455be262 is control-plane SoT clarification only unless review finds contrary evidence"
+  ],
+  "verification": [
+    "verify workflow run 35503903989 belongs to exact candidate d21dce6934cdf8351ec7d9d860fbbed79a960e3c and passed",
+    "verify lifecycle invalidation cannot interleave through canonical publication commit",
+    "verify domain write-authority revoke cannot interleave through canonical publication commit",
+    "verify concurrent recovery cannot create two canonical publications for one semantic attempt",
+    "verify forged/missing observedHeadRevision fails fresh reconstruction",
+    "verify repair diff is confined to g0016 findings plus affected Living Docs/control-plane handoff",
+    "verify post-baseline main drift through 5b3023d6f5f59d1ec0b8b658d4acf497455be262 does not materially alter BB-048 repair semantics"
+  ],
+  "expectedOutputs": [
+    "one JUDGMENT artifact bound to exact repair result and candidate d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+    "criterion/finding disposition grounded in exact source/test/CI evidence",
+    "either ACCEPT with zero findings or FINDINGS with bounded repair items",
+    "no source mutation from judgment lane"
+  ],
+  "staleWhen": [
+    "candidate changes outside the allowed post-target envelope",
+    "Board current-context generation/ref or lane changes",
+    "BB-048 semantic implementation input changes",
+    "g0016 findings or g0017 repair result changes",
+    "main current-system/product authority semantics change materially"
+  ],
+  "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+  "implementationResultRef": "docs/blackboard/artifacts/implementation-result/BB-048-g0017-repair.json",
+  "lane": "JUDGMENT",
+  "judgmentKind": "CANDIDATE"
+}
