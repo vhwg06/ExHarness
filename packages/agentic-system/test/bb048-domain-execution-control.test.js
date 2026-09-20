@@ -6,11 +6,12 @@ import {join} from "node:path";
 import {
   ClaimReleaseStatus,ExecutionAttemptStatus,
   claimReleaseSubjectKey,createDomainExecutionArtifactRegistry,createDomainExecutionController,
-  createDomainExecutionPolicyPublisher,createJsonClaimReleaseStore,createJsonDomainExecutionPolicyStore,
+  createDomainExecutionPolicyPublisher,createJsonClaimReleaseStore,
   createJsonExecutionAttemptStore,createJsonImmutableArtifactStore,createOrganizationArtifactRegistry,
   defineExecutionStrategyDescriptor,defineOrganizationWorkContract,executionAttemptSubjectKey,
   executionPolicySubjectKey,resolveExecutionJudgmentBundle
 } from "../src/index.js";
+import {createJsonDomainExecutionPolicyStore} from "../src/domain-execution-store.js";
 
 const SHA_A="a".repeat(64), SHA_B="b".repeat(64);
 const output={ref:"requirement-set:sha256:"+SHA_A,digest:SHA_A};
@@ -62,11 +63,48 @@ async function fixture({dispatchThrows=false,completionVerdict="ACCEPT"}={}){
   const runtimeAdapter={adapterRef:strategy.adapterRef,runtimeKind:"local-process",runtimeDeploymentRef:strategy.expectedRuntimeCodeRef,producerAuthorityRef:"authority:trusted-runtime",async dispatch(){dispatches+=1;if(dispatchThrows)throw new Error("crash-after-dispatch");return success();},async recover(){recoveries+=1;return success();}};
   const completionEvaluator={authorityRef:"authority:ba-completion",async evaluate(){return {verdict:completionVerdict,criterionResults:[{criterionId:"requirements-complete",verdict:completionVerdict==="ACCEPT"?"PASS":"FAIL",evidenceRefs:["evidence:requirement-check"]}],counterevidenceRefs:[]};}};
   const publicationGate={authorityRef:"authority:ba-writer",producerPrincipalRef:"principal:ba-worker",async publish(){publications+=1;return {publishedArtifactRefs:[output],publishedClaimRefs:[],acceptedDerivationEdges:[{outputRef:output.ref,derivedFrom:[contract.requiredArtifactRefs[0]]}],publicationStoreRevision:"requirements-store:42"};}};
-  const makeController=(overridePolicyStore=policyStore,adapter=runtimeAdapter)=>createDomainExecutionController({claimController,claimReleaseStore:releaseStore,organizationArtifactRegistry:org,artifactRegistry:domain,executionPolicyStore:overridePolicyStore,executionAttemptStore:attemptStore,runtimeAdapter:adapter,completionEvaluator,publicationGate});
+  const makeController=(overridePolicyStore=policyStore,adapter=runtimeAdapter,overrideAttemptStore=attemptStore)=>createDomainExecutionController({claimController,claimReleaseStore:releaseStore,organizationArtifactRegistry:org,artifactRegistry:domain,executionPolicyStore:overridePolicyStore,executionAttemptStore:overrideAttemptStore,runtimeAdapter:adapter,completionEvaluator,publicationGate});
   return {dir,immutable,org,domain,releaseStore,policyStore,attemptStore,contract,receiptRef,claimController,publisher,policyKey,strategy,strategyRef,runtimeAdapter,makeController,advanceClaim,setExecutable:v=>{executable=v;},counts:()=>({claimChecks,dispatches,recoveries,publications})};
 }
 
 async function cleanup(f){await rm(f.dir,{recursive:true,force:true});}
+
+test("raw ExecutionPolicy head storage is not exposed on the application package surface",async()=>{
+  const publicApi=await import("../src/index.js");
+  assert.equal("createJsonDomainExecutionPolicyStore" in publicApi,false);
+});
+
+test("policy promotion cannot pass the final guard before first-attempt CAS commits",async()=>{
+  const f=await fixture();
+  try{
+    const v2=defineExecutionStrategyDescriptor({...f.strategy,strategyVersion:"2.0.0"});
+    const v2ref=await f.domain.putExecutionStrategyDescriptor(v2);
+    let promotionPromise=null;
+    let observedDuringCas=null;
+    const guardedAttemptStore={
+      current:(key)=>f.attemptStore.current(key),
+      async compareAndSwap(key,expectedRevision,nextValue){
+        if(expectedRevision===null&&promotionPromise==null){
+          promotionPromise=f.publisher.publish({
+            publisher:{identity:"policy-admin"},
+            policy:{policyId:f.policyKey,generation:2,status:"ACTIVE",domain:f.contract.owningDomain,workloadType:f.contract.workloadType,compatibleWorkContractVersions:[1],strategyRef:v2ref}
+          });
+          await new Promise(resolve=>setTimeout(resolve,10));
+          observedDuringCas=await f.policyStore.current(f.policyKey);
+        }
+        return f.attemptStore.compareAndSwap(key,expectedRevision,nextValue);
+      }
+    };
+    const result=await f.makeController(f.policyStore,f.runtimeAdapter,guardedAttemptStore).execute({
+      itemId:f.contract.boardItemId,claimGeneration:1,receiptRef:f.receiptRef
+    });
+    assert.equal(observedDuringCas.value.generation,1);
+    const binding=await f.domain.resolveExecutionAttemptBinding(result.bindingRef);
+    assert.equal(binding.executionPolicyRef,(await f.domain.resolveExecutionJudgmentBundle(result.judgmentBundleRef)).pins.executionPolicy.ref);
+    await promotionPromise;
+    assert.equal((await f.policyStore.current(f.policyKey)).value.generation,2);
+  }finally{await cleanup(f);}
+});
 
 test("BB-048 emits a resolvable judgment chain and keeps runtime result separate from acceptance/publication",async()=>{
   const f=await fixture();
@@ -93,6 +131,11 @@ test("BB-048 emits a resolvable judgment chain and keeps runtime result separate
     const originalBundle=await f.domain.resolveExecutionJudgmentBundle(result.judgmentBundleRef);
     const forgedRef=await f.domain.putExecutionJudgmentBundle({...originalBundle,pins:{...originalBundle.pins,executionStrategy:{ref:alternateRef,digest:alternateRef.split(":").at(-1)}}});
     await assert.rejects(()=>resolveExecutionJudgmentBundle({artifactRegistry:f.domain,organizationArtifactRegistry:f.org,bundleRef:forgedRef}),/binding policy\/strategy relation mismatch/);
+    const badDigestRef=await f.domain.putExecutionJudgmentBundle({...originalBundle,pins:{...originalBundle.pins,outcome:{...originalBundle.pins.outcome,digest:"c".repeat(64)}}});
+    await assert.rejects(()=>resolveExecutionJudgmentBundle({artifactRegistry:f.domain,organizationArtifactRegistry:f.org,bundleRef:badDigestRef}),/execution outcome pin digest mismatch/);
+    const missingOutcomeRef="execution-attempt-outcome:sha256:"+"d".repeat(64);
+    const missingRef=await f.domain.putExecutionJudgmentBundle({...originalBundle,pins:{...originalBundle.pins,outcome:{ref:missingOutcomeRef,digest:"d".repeat(64)}}});
+    await assert.rejects(()=>resolveExecutionJudgmentBundle({artifactRegistry:f.domain,organizationArtifactRegistry:f.org,bundleRef:missingRef}),/judgment source artifact missing/);
   }finally{await cleanup(f);}
 });
 
