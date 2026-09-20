@@ -186,3 +186,24 @@ Integration A.1 adds a concrete organizational bridge without turning the Applic
 - `invalidateOrganizationClaim(...)` transitions canonical Board state before release-head fencing. Execution-authority invalidation reopens still-valid work; work-authorization invalidation blocks it without incrementing the invalidated generation.
 
 The authority-head stores are concrete durable JSON CAS stores. This slice does not implement post-claim execution ownership, strategy resolution, BA requirement analysis or cross-domain dispatch.
+
+## Domain execution control
+
+The application now owns one bounded post-claim HOW boundary. `createDomainExecutionController(...)` accepts an exact released claim subject, resolves the existing `ExecutionAttemptHead` before any current-policy lookup, creates an immutable first-attempt binding only under a rechecked current policy head, and revalidates the released claim immediately before runtime dispatch.
+
+Recovery reuses the exact existing `ExecutionAttemptBinding`; it does not re-resolve the current policy or strategy. Runtime attestation uses the trusted adapter/deployment identity configured at the boundary. Completion evaluation and authoritative publication are separate injected authorities.
+
+The durable artifact chain is:
+
+```text
+ORGANIZATION_WORK_CONTRACT + CLAIM_RELEASE_RECEIPT
+ -> EXECUTION_POLICY + EXECUTION_STRATEGY_DESCRIPTOR
+ -> EXECUTION_ATTEMPT_BINDING + transition history
+ -> RUNTIME_EXECUTION_ATTESTATION
+ -> EXECUTION_ATTEMPT_OUTCOME
+ -> DOMAIN_COMPLETION_DECISION
+ -> DOMAIN_PUBLICATION_RECEIPT (only after ACCEPT + current claim revalidation)
+ -> EXECUTION_JUDGMENT_BUNDLE
+```
+
+The current concrete proof surface is BUSINESS_ANALYSIS-owned work only. No global execution scheduler, cross-domain dispatcher or ProductStateProjection is introduced.

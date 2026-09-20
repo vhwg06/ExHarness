@@ -191,6 +191,18 @@ Details: `agentic-application/decision-outcome.md`, `core-harness/capabilities.m
 
 Details: `agentic-application/capabilities.md`, `agentic-application/contracts.md`, `agentic-application/boundaries.md`, `../living/history/bb047-a1-closure-2026-09-19.md`.
 
+## C12 — Released claim → bounded domain execution and reconstructable judgment
+
+**Outcome:** one exact current released organizational claim can execute one owning-domain workload through a durable semantic attempt whose HOW/runtime binding is immutable and reconstructable across restart.
+
+**Preconditions:** C11 released capability; current domain ExecutionPolicy head; immutable compatible ExecutionStrategyDescriptor; trusted runtime adapter; explicit domain completion evaluator and publication gate; durable immutable artifact and CAS-head stores.
+
+**Application guarantees:** ExecutionAttemptHead is resolved before policy selection; first-attempt binding rechecks policy currentness before CAS; ACTIVE/RECOVERY_REQUIRED reuse the same ExecutionAttemptBinding; claim/release authority is revalidated before dispatch; exact runtime deployment identity is attested outside strategy self-report; runtime outcome, completion decision and authoritative publication are separate artifacts; fresh review can re-resolve the exact ExecutionJudgmentBundle chain.
+
+**Failure semantics:** stale released claim fails before policy/runtime entry; crash after attempt creation preserves the same attempt and invocation identity for recovery; later policy promotion cannot rewrite an in-flight binding; strategy SUCCEEDED cannot self-authorize ACCEPT or publication.
+
+**Does not imply:** organization-wide scheduling, cross-domain dispatch, automatic remediation/new attempts, ProductStateProjection, deployment/Product QA, or Integration C-J.
+
 ## Integration semantics
 
 ```text

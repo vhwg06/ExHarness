@@ -1,0 +1,126 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-048-g0014",
+  "status": "PRODUCED",
+  "subject": {
+    "itemId": "BB-048",
+    "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+    "sourceBaseline": "8a651cb902b0df8786883d4c091cdf7e57ac659d",
+    "candidateRef": "7a34a38c05acbdabd92305e2cca66ba454a66c30",
+    "producerContextRef": "docs/blackboard/context/BB-048/g0014-implementation.json"
+  },
+  "observations": {
+    "changedSurfaces": [
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/domain-execution-store.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "test/blackboard-context-bootstrap.test.mjs",
+      "docs/living/system/state.md",
+      "docs/living/system/capabilities.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/boundaries.md",
+      "docs/living/system/agentic-application/contracts.md"
+    ],
+    "verificationRuns": [
+      {
+        "id": "bb048-focused",
+        "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
+        "status": "PASSED",
+        "evidenceRefs": [
+          "github-actions:run:35494782111",
+          "git:7a34a38c05acbdabd92305e2cca66ba454a66c30"
+        ]
+      },
+      {
+        "id": "bb047-regression",
+        "command": "node --test packages/agentic-system/test/bb047-organization-bridge.test.js",
+        "status": "PASSED",
+        "evidenceRefs": [
+          "github-actions:run:35494782111"
+        ]
+      },
+      {
+        "id": "bootstrap-current-lane",
+        "command": "node --test test/blackboard-context-bootstrap.test.mjs",
+        "status": "PASSED",
+        "evidenceRefs": [
+          "github-actions:run:35494782111"
+        ]
+      },
+      {
+        "id": "repository-verify",
+        "command": "npm run verify",
+        "status": "PASSED",
+        "evidenceRefs": [
+          "github-actions:run:35494782111",
+          "github-actions:kernel-node-20:106035722438",
+          "github-actions:kernel-node-22:106035722449",
+          "github-actions:kernel-node-24:106035722426"
+        ]
+      }
+    ],
+    "observedFacts": [
+      {
+        "id": "OF-1",
+        "statement": "The package application index does not expose the raw domain execution policy-head store constructor; policy publication is routed through createDomainExecutionPolicyPublisher.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/index.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ]
+      },
+      {
+        "id": "OF-2",
+        "statement": "First-attempt publication uses a policy-currentness guard that serializes policy-head advancement with the attempt-head CAS window.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-store.js",
+          "packages/agentic-system/src/domain-execution-control.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ]
+      },
+      {
+        "id": "OF-3",
+        "statement": "Fresh judgment reconstruction validates content-addressed pin digests before dereference and fails when a correctness-relevant source artifact is unresolved.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ]
+      },
+      {
+        "id": "OF-4",
+        "statement": "The implementation keeps runtime outcome, domain completion decision, and authoritative publication as separate artifacts and authorities.",
+        "evidenceRefs": [
+          "packages/agentic-system/src/domain-execution-control.js",
+          "docs/living/system/agentic-application/contracts.md"
+        ]
+      },
+      {
+        "id": "OF-5",
+        "statement": "The exact candidate differs from the g0014 source baseline only on the declared BB-048 authority envelope, Integration B implementation/tests, and affected Living Docs.",
+        "evidenceRefs": [
+          "git:7a34a38c05acbdabd92305e2cca66ba454a66c30",
+          "git:8a651cb902b0df8786883d4c091cdf7e57ac659d"
+        ]
+      }
+    ],
+    "evidenceRefs": [
+      "github-actions:run:35494782111",
+      "git:7a34a38c05acbdabd92305e2cca66ba454a66c30"
+    ]
+  },
+  "provenance": {
+    "inputRefs": [
+      "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+      "docs/blackboard/artifacts/readiness/BB-048-g0013-acceptance.md",
+      "docs/blackboard/context/BB-048/g0014-implementation.json",
+      "docs/living/decisions/D027-bb047-a1-merge-acceptance.md"
+    ],
+    "evidenceRefs": [
+      "github-actions:run:35494782111",
+      "git:7a34a38c05acbdabd92305e2cca66ba454a66c30"
+    ]
+  }
+}

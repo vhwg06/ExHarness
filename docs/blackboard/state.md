@@ -9,7 +9,7 @@ The Blackboard describes how ExHarness is currently being developed. It does not
 ```text
 phase: INTEGRATION
 started: 2026-09-18
-current-active-debt: 1
+current-active-debt: 0
 next-work-id: BB-050
 living-system-root: docs/living/system/state.md
 integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness-v8.md
@@ -25,47 +25,19 @@ RESEARCH_SA
   terminal-output: ACCEPTED IMPLEMENTATION_INPUT
 
 IMPLEMENTATION_WORKER
-  active: BB-048
-  lane: JUDGMENT
-  judgment-kind: READINESS
-  stage: IMPLEMENTATION_READINESS_REVIEW
+  active: NONE
+  terminal-output: RECORDED JUDGMENT
 ```
 
 The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
 
 ## Active work
 
-BB-048
-pipeline: IMPLEMENTATION_WORKER
-lane: JUDGMENT
-judgment-kind: READINESS
-stage: IMPLEMENTATION_READINESS_REVIEW
-question/work: Authorize the first bounded DOMAIN_EXECUTION_CONTROL / Integration B slice from an exact released organizational claim through immutable domain-local execution binding and evidence/publication.
-kind: IMPLEMENTATION
-priority: P1
-status: PENDING_REVIEW
-owner:
-current-context:
-  generation: 13
-  ref: docs/blackboard/context/BB-048/g0013-implementation-readiness-judgment.json
-implementation-input:
-  ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
-depends-on: []
-scope-boundary:
-  - start only from an exact current released organizational claim
-  - own HOW/runtime below the organization boundary
-  - prove one concrete BA-owned execution slice only
-  - do not introduce cross-domain obligation issuance, DOMAIN_ACTIVATION, ProductStateProjection, deployment/Product QA, or Integration C-J
-blockers:
-  - implementation authority not yet granted; current lane is JUDGMENT/READINESS
-next:
-  - execute fresh readiness judgment from exact g0013 context
-  - on ACCEPT, materialize bounded g0014 EXECUTION/INITIAL context
-  - EXECUTION may publish IMPLEMENTATION_RESULT facts only; a later fresh JUDGMENT/CANDIDATE owns correctness
+NONE
 
 ## Accepted semantic input queue
 
-Research/SA has completed semantic handoff for three future slices. These are accepted artifacts, not active work and not ordered backlog:
+Research/SA has completed semantic handoff for four future slices. These are accepted artifacts, not active work and not ordered backlog:
 
 - `docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json`
 - `docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json`
@@ -83,6 +55,8 @@ New Implementation/Worker work requires an accepted implementation-input artifac
 Promoted research knowledge alone is not future backlog. Living Docs never become the work queue.
 
 ## Terminal lineage
+
+BB-048 Integration B is terminal on this branch after independent candidate judgment `ACCEPT` for exact candidate `7a34a38c05acbdabd92305e2cca66ba454a66c30`. Implementation result: `docs/blackboard/artifacts/implementation-result/BB-048-g0014.json`. Judgment: `docs/blackboard/artifacts/judgment/BB-048-g0015.json`. PR #193 remains the single implementation PR for merge/closure.
 
 BB-049 Research/SA is terminal. It produced the accepted unallocated Integration G semantic input at `docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure-v1.json`. Closure record: `docs/blackboard/history/bb049-integration-g-research-sa-closure-2026-09-20.md`.
 
