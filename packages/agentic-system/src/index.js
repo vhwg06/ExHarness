@@ -172,7 +172,6 @@ export {
   ExecutionAttemptStatus,
   ExecutionPolicyStatus,
   createDomainExecutionArtifactRegistry,
-  createJsonDomainExecutionPolicyStore,
   createJsonExecutionAttemptStore
 } from "./domain-execution-store.js";
 export {
