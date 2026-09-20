@@ -104,6 +104,45 @@ ResearchArtifact
   -> Implementation/Worker allocation
 ```
 
-`IMPLEMENTATION_INPUT` conveys what should be realized. It is not implementation permission by itself; repository implementation authority still requires the exact current implementation context/review decision.
+`IMPLEMENTATION_INPUT` conveys the semantic change that should be realized. It is not an implementation plan and not implementation permission by itself; repository implementation authority still requires the exact current implementation context/review decision.
 
 BB-048 predates this split. `artifacts/implementation-input/BB-048-migrated-readiness.md` makes its existing promoted readiness inputs explicit without rewriting Living Docs history.
+
+## Semantic artifact -> execution context
+
+The implementation pipeline preserves this separation:
+
+```text
+accepted semantic IMPLEMENTATION_INPUT
+        |
+        | immutable meaning
+        v
+WORK_CONTEXT_SPEC
+  + current-system refs
+  + source/read/write bounds
+  + verification contract
+        |
+        v
+Context Materializer(profile)
+        |
+        +-- RICH_CODING_HARNESS
+        |     minimal refs + self-directed exploration within scope
+        |
+        +-- GENERIC_INTERACTIVE
+        |     resolved bounded refs + explicit scope
+        |
+        +-- WEAK_BOUNDED
+              explicit bounded execution projection
+```
+
+All profiles receive the exact same semantic artifact. Profile choice changes context presentation only; it cannot add, remove or reinterpret required behavior, invariants or acceptance criteria.
+
+Repository usage:
+
+```text
+npm run materialize:blackboard-context -- <context-spec.json> RICH_CODING_HARNESS
+npm run materialize:blackboard-context -- <context-spec.json> GENERIC_INTERACTIVE
+npm run materialize:blackboard-context -- <context-spec.json> WEAK_BOUNDED
+```
+
+For ChatGPT Web/fresh interactive sessions, `GENERIC_INTERACTIVE` is the normal shape. Rich repo-native coding harnesses may use `RICH_CODING_HARNESS`. Smaller/less capable executors should use `WEAK_BOUNDED`.
