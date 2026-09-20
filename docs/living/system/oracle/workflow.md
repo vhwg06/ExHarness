@@ -27,7 +27,7 @@ parse QaWorkOrder
 
 An artifact read error is rethrown with the application-artifact boundary/ref context.
 
-When the D014 optional manifest adapter is enabled, the injected `artifactReader` is wrapped before Oracle sees it:
+When the optional manifest adapter is enabled, the injected `artifactReader` is wrapped before Oracle sees it:
 
 ```text
 QaWorkOrder request
