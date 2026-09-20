@@ -67,3 +67,13 @@ Status: **PROMOTED FOR REPOSITORY DEVELOPMENT COORDINATION**
 43. A `JUDGMENT` with `FINDINGS` may authorize only a bounded `EXECUTION/REPAIR` generation bound to that exact judgment and candidate. `ACCEPT` cannot be reused as repair authority.
 44. Artifact existence is not completion. `IMPLEMENTATION_RESULT != JUDGMENT`, and a judgment artifact does not mutate canonical Board lifecycle by itself.
 45. `start implement blackboard` and `continue implement blackboard` are bootstrap intents, not lane overrides. A fresh session must resolve the current Board item/context and obey its current lane.
+
+
+## Semantic input queue invariants
+
+46. **Queued implementation input is not active work.** An accepted `IMPLEMENTATION_INPUT` may exist without a Blackboard work item, active debt, owner, lane or current context.
+47. **Queue does not allocate identity.** Creating an accepted semantic input does not consume the next Blackboard work id; work identity is assigned only when a grounded trigger allocates implementation work.
+48. **Queue does not authorize mutation.** Accepted semantic meaning remains distinct from repository implementation authority; source mutation still requires the exact current `IMPLEMENTATION_WORKER / EXECUTION` context and its authority binding.
+49. **Queue order is non-semantic.** File ordering or creation time does not establish implementation priority or dependency order.
+50. **Allocation binds exactly one semantic subject.** A newly allocated Implementation/Worker item names the exact accepted implementation-input ref it consumes; it does not reconstruct meaning from research history.
+51. **Stale premise fails closed at allocation.** If current-system truth materially contradicts a queued semantic input before allocation, the item returns to Research/SA for bounded reconciliation rather than being silently reinterpreted by Worker execution or judgment.
