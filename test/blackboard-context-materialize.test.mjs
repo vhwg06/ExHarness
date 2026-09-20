@@ -23,11 +23,11 @@ function fixture(){
   writeFileSync(join(root,"artifact.json"),JSON.stringify(artifact));
   writeFileSync(join(root,"docs/current.md"),"current");
   const spec={
-    kind:"WORK_CONTEXT_SPEC",version:1,itemId:"BB-X",generation:1,pipeline:"IMPLEMENTATION_WORKER",stage:"IMPLEMENTATION_READINESS_REVIEW",
+    kind:"WORK_CONTEXT_SPEC",version:1,itemId:"BB-X",pipeline:"IMPLEMENTATION_WORKER",stage:"IMPLEMENTATION_READINESS_REVIEW",
     lane:"JUDGMENT",judgmentKind:"READINESS",
-    semanticArtifactRef:"artifact.json",action:{kind:"REVIEW"},reviewTarget:{repository:"r",candidateHeadSha:"abc",allowedPostTargetEnvelopePaths:[]},
+    semanticArtifactRef:"artifact.json",action:{kind:"REVIEW"},
     sourceScope:{read:["src/**"],write:[],forbiddenWrite:["**"]},
-    requiredCurrentSystemRefs:["docs/current.md"],requiredInputRefs:["artifact.json"],auditRefs:[],
+    requiredCurrentSystemRefs:["docs/current.md"],requiredInputRefs:["artifact.json"],
     hardInvariants:["keep authority"],expectedOutputs:["candidate"],verification:["test"]
   };
   return {root,spec,artifact};
