@@ -64,3 +64,20 @@ A fresh session must not need previous chat context, full Board history or a rep
 - `process/` — development verification process references.
 
 Historical pre-migration context generations may retain original embedded path strings as provenance. They are audit history, never current authority.
+
+## Artifact / context separation
+
+Fresh sessions must not treat development artifacts as prompts.
+
+```text
+semantic artifact
+  -> stable meaning and acceptance
+
+current context
+  -> bounded execution authority and required refs
+
+materialized context
+  -> executor-specific presentation
+```
+
+For `IMPLEMENTATION_WORKER`, the exact semantic artifact binding is verified by CI. A session may explore differently depending on harness capability, but it cannot replace the artifact with an inferred requirement from history or prior chat.
