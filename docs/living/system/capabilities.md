@@ -246,7 +246,7 @@ Integration must preserve those authorities. Source failure blocks at the source
 
 **Outcome:** Integration B authoritative publication is mutation-current: one accepted domain outcome can become a canonical product only while the exact organization claim lifecycle and exact current domain writer authority remain fenced through the publication commit.
 
-**Guarantees:** publication uses a stable semantic-attempt publication key; concurrent recovery/retry converges on one canonical publication; the publication receipt records the exact lifecycle and writer-authority observations used by the mutation gate; recovery-relevant attempt transitions bind the exact observed durable head revision; fresh judgment re-derives transition/CAS revision continuity.
+**Guarantees:** the public Blackboard store serializes every mutation and guarded publication through one non-takeover mutation fence while the immutable successor chain remains commit authority; publication uses a stable semantic-attempt publication key; concurrent recovery/retry converges on one canonical publication; the publication receipt records the exact lifecycle and writer-authority observations used by the mutation gate; recovery-relevant attempt transitions bind the exact observed durable head revision; fresh judgment re-derives transition/CAS revision continuity.
 
 **Failure semantics:** claim lifecycle drift or writer-authority revocation cannot interleave through a canonical publication commit; a concurrent recovery loser may replay the terminal winner but cannot create a second canonical publication; forged or missing transition-head revision evidence fails fresh reconstruction.
 
