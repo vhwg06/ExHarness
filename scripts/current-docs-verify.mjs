@@ -46,6 +46,17 @@ for(const file of knowledgeFiles){
 for(const file of allowedKnowledge){
   if(!livingFiles.includes(file))fail(`missing canonical Living knowledge: ${file}`);
 }
+const roadmapPath="docs/living/knowledge/integration-phase-research-to-implementation-readiness.md";
+const roadmap=fs.readFileSync(path.join(root,roadmapPath),"utf8");
+for(const staleMarker of [
+  "PROPOSED / AWAITING INDEPENDENT REVIEW",
+  "After A.1 code exists",
+  "first derived implementation seam",
+  "Điểm làm đầu tiên"
+]){
+  if(roadmap.includes(staleMarker))
+    fail(`historical roadmap transcript leaked into current roadmap: ${staleMarker}`);
+}
 
 const decisionFiles=livingFiles.filter(file=>file.startsWith("docs/living/decisions/"));
 const allowedDecisions=new Set([
@@ -59,12 +70,24 @@ for(const file of allowedDecisions){
   if(!livingFiles.includes(file))fail(`missing Living decisions policy: ${file}`);
 }
 
-for(const file of livingFiles.filter(file=>file.startsWith("docs/living/system/")&&file.endsWith(".md"))){
+for(const file of livingFiles.filter(file=>file.endsWith(".md"))){
   const body=fs.readFileSync(path.join(root,file),"utf8");
   if(/\bBB-\d+\b/.test(body))
-    fail(`delivery-work id leaked into current system docs: ${file}`);
+    fail(`delivery-work id leaked into current Living Docs: ${file}`);
   if(/\bD0\d+\b/.test(body))
-    fail(`delivery-decision id leaked into current system docs: ${file}`);
+    fail(`delivery-decision id leaked into current Living Docs: ${file}`);
+  for(const legacy of [
+    "docs/living/work-context/",
+    "docs/blackboard/history/",
+    "parentContextRef",
+    "staleWhen",
+    "auditRefs"
+  ]){
+    if(body.includes(legacy))
+      fail(`legacy delivery/context history leaked into current Living Docs: ${file} -> ${legacy}`);
+  }
+  if(/WORK_CONTEXT_SPEC[^\n]{0,80}\bgeneration\b/i.test(body))
+    fail(`legacy versioned helper-context semantics leaked into current Living Docs: ${file}`);
 }
 
 console.log(JSON.stringify({

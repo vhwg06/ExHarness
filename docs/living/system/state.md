@@ -78,9 +78,26 @@ The concrete `ApplicationOrchestrator` is application workflow/Board control, no
 
 ## Repository coordination context plane
 
-Repository development coordination now has a bounded context-plane implementation for migrated Blackboard items. A migrated active item binds one immutable `WORK_CONTEXT_SPEC` generation through its exact Board `current-context` pointer. The repository verifier fails closed when an active migrated item has no pointer, and validates unique Board binding, generation lineage, required refs, read-only review scope and exact accepted-decision subject binding before an implementation context is usable. A Board with no active item may have no current context.
+Repository development coordination uses an explicit-current context model.
 
-The resolver loads declared required current-system/input refs while keeping audit/history refs lazy. Context generation does not make a candidate current, schedule work, decide acceptance or replace source/tests as current-system truth. This capability is repository coordination only; the runtime JSON Blackboard has not adopted it.
+```text
+docs/blackboard/state.md
+  -> active work item
+  -> current-context.ref
+  -> docs/blackboard/context/<WORK_ID>/current.json
+       -> exact action/lane
+       -> semantic input ref
+       -> authority/result refs when required
+       -> required current-system/input refs
+       -> bounded source scope
+       -> verification
+```
+
+The helper context is updated in place as the lane changes. It has no generation chain, parent traversal, stale marker or audit-history dependency. Git preserves prior revisions.
+
+Helper context is routing/loading convenience only. Readiness decisions, implementation results and judgments bind the semantic work/candidate subjects directly; context identity is not authority. A Board with no active work has no required `current.json`.
+
+The resolver loads only the refs declared by the current context. It does not scan repository history to infer currentness, choose work, decide acceptance or replace source/tests as current-system truth. This capability is repository development coordination only; runtime product/Blackboard generations used for domain fencing remain separate application semantics.
 
 ## Organizational A.1 bridge
 
