@@ -14,10 +14,14 @@ function overlap(a,b) {
 export function assertWorkContext(spec) {
   const fail = (m) => { throw new Error(`WORK_CONTEXT_INVALID: ${m}`); };
   if (spec?.kind !== "WORK_CONTEXT_SPEC" || spec?.version !== 1) fail("kind/version");
-  if (!spec.itemId || !Number.isInteger(spec.generation) || spec.generation < 1) fail("item/generation");
+  if (!spec.itemId) fail("item");
+  if ("generation" in spec) fail("generation is not allowed on helpful context");
+  if ("parentContextRef" in spec) fail("parentContextRef is not allowed on helpful context");
+  if ("staleWhen" in spec) fail("staleWhen is not allowed; current context is updated explicitly");
+  if ("auditRefs" in spec) fail("auditRefs are not allowed; context loads only delivery refs");
   if (!["REVIEW","IMPLEMENT","RESEARCH","SYNTHESIZE"].includes(spec.action?.kind)) fail("action.kind");
   if (spec.pipeline != null && !["RESEARCH_SA","IMPLEMENTATION_WORKER"].includes(spec.pipeline)) fail("pipeline");
-  for (const k of ["requiredCurrentSystemRefs","requiredInputRefs","auditRefs"]) if (!Array.isArray(spec[k])) fail(k);
+  for (const k of ["requiredCurrentSystemRefs","requiredInputRefs"]) if (!Array.isArray(spec[k])) fail(k);
   if (spec.pipeline === "IMPLEMENTATION_WORKER") {
     if (typeof spec.semanticArtifactRef !== "string" || !spec.semanticArtifactRef.endsWith(".json"))
       fail("IMPLEMENTATION_WORKER requires semanticArtifactRef JSON");
@@ -29,6 +33,8 @@ export function assertWorkContext(spec) {
       if (spec.action.kind !== "IMPLEMENT") fail("EXECUTION lane requires IMPLEMENT action");
       if (!["INITIAL","REPAIR"].includes(spec.executionMode)) fail("EXECUTION lane requires executionMode INITIAL or REPAIR");
       if (spec.judgmentKind != null) fail("EXECUTION lane may not declare judgmentKind");
+      if (!spec.authority?.ref) fail("EXECUTION lane requires exact authority.ref");
+      if (Object.keys(spec.authority).length !== 1) fail("EXECUTION authority may contain only ref");
     }
     if (spec.lane === "JUDGMENT") {
       if (spec.action.kind !== "REVIEW") fail("JUDGMENT lane requires REVIEW action");
@@ -52,27 +58,10 @@ export function assertWorkContext(spec) {
     fail("Research/SA may not write product source");
   if (spec.action.kind === "REVIEW") {
     if (spec.sourceScope.write.length) fail("REVIEW may not write source");
-    if (!spec.reviewTarget?.repository || !spec.reviewTarget?.candidateHeadSha) fail("REVIEW requires immutable review target");
-    if (!Array.isArray(spec.reviewTarget.allowedPostTargetEnvelopePaths)) fail("REVIEW requires allowed envelope paths");
-  }
-  if (spec.action.kind === "IMPLEMENT") {
-    if (!spec.authority?.subjectContextRef || !spec.authority?.subjectCandidateHeadSha) fail("IMPLEMENT requires exact authority subject");
-    if (!spec.parentContextRef || spec.authority.subjectContextRef !== spec.parentContextRef) fail("IMPLEMENT authority subject must equal parent context");
-    if (spec.pipeline === "IMPLEMENTATION_WORKER" && spec.executionMode === "REPAIR") {
-      if (!spec.authority?.repairJudgmentRef) fail("REPAIR requires repair judgment ref");
-      if (!spec.requiredInputRefs.includes(spec.authority.repairJudgmentRef))
-        fail("repair judgment ref must be a required input");
-    } else if (!spec.authority?.implementationDecisionRef) {
-      fail("IMPLEMENT requires decision ref");
-    }
+    if (spec.judgmentKind === "CANDIDATE" && (!spec.reviewTarget?.repository || !spec.reviewTarget?.candidateHeadSha))
+      fail("candidate REVIEW requires exact review target");
   }
   return spec;
-}
-
-export function assertGeneration(parent, child) {
-  if (!parent || child.parentContextRef == null || child.generation !== parent.generation + 1)
-    throw new Error("WORK_CONTEXT_INVALID: generation lineage");
-  return true;
 }
 
 export function requiredRefs(spec) {

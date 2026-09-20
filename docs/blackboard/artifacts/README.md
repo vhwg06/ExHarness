@@ -1,98 +1,63 @@
 # Blackboard development artifacts
 
-Blackboard artifacts are durable work products exchanged by development pipelines. They are not Living Docs, prompts or session transcripts.
+Blackboard artifacts are current semantic/decision/result/judgment work products used by the development pipelines.
 
-## Canonical semantic input
+## Canonical paths
+
+Each current subject has one canonical file. Do not encode revision history in filenames with `vN` or `gNNNN`.
+
+Examples:
+
+```text
+implementation-input/BB-050-domain-execution-control.json
+readiness/BB-050.json
+implementation-result/BB-050.json
+judgment/BB-050.json
+```
+
+When the current artifact changes, update the canonical file in place. Git history preserves previous revisions.
+
+## Separation
 
 ```text
 IMPLEMENTATION_INPUT
   = WHAT / WHY / required behavior / invariants / acceptance
 
-WorkContextSpec
-  = bounded refs / source scope / verification / authority
+current.json
+  = bounded helper context / refs / scope / verification
 
-Context Materializer
-  = executor-specific projection
+READINESS_DECISION
+  = implementation entry authority
 
-Executor
-  = HOW
-```
+IMPLEMENTATION_RESULT
+  = producer facts/evidence only
 
-Canonical `IMPLEMENTATION_INPUT` remains semantic-only. It must not encode preferred edit sequences, commands, prompts, tool calls, implementation plans or executor profiles.
-
-## Implementation lane artifacts
-
-```text
-IMPLEMENTATION_INPUT
-        |
-        v
-EXECUTION
-        |
-        +--> IMPLEMENTATION_RESULT
-               candidateRef
-               changedSurfaces
-               verificationRuns
-               observedFacts
-               evidenceRefs
-               |
-               |  no correctness verdict
-               v
 JUDGMENT
-        |
-        +--> JUDGMENT
-               criterion assessments
-               invariant assessments
-               findings
-               verdict: ACCEPT | FINDINGS
+  = independent correctness assessment
 ```
 
-### IMPLEMENTATION_RESULT
+Helper context identity is never embedded as authority/provenance.
 
-This is a producer observation artifact. It can state what changed, what was run and what was observed.
+## IMPLEMENTATION_RESULT
 
-It cannot claim `ACCEPT`, `DONE`, correctness, requirement satisfaction or safe-to-merge. The repository schema rejects those authority claims.
+May state candidate identity, changed surfaces, verification runs, evidence and observed facts.
 
-### JUDGMENT
+It cannot claim `ACCEPT`, `DONE`, correctness or safe-to-merge.
 
-This is the independent correctness artifact for an exact candidate. It binds:
+## JUDGMENT
 
-- exact work id;
-- exact semantic implementation input;
-- exact implementation result;
-- exact candidate revision;
-- exact source baseline;
-- exact judgment context.
+Binds the exact work id, semantic input, implementation result, candidate and source baseline.
 
-`ACCEPT` requires every criterion/invariant assessment to be satisfied and zero findings. `FINDINGS` requires concrete typed findings.
+`ACCEPT` requires all assessments satisfied and zero findings. `FINDINGS` requires concrete findings.
 
-A finding is classified as one of:
+Allowed finding types:
 
-- `IMPLEMENTATION_FINDING`;
-- `EVIDENCE_INSUFFICIENT`;
-- `CONTEXT_STALE`;
-- `INPUT_CONTRADICTION`.
+- `IMPLEMENTATION_FINDING`
+- `EVIDENCE_INSUFFICIENT`
+- `INPUT_CONTRADICTION`
 
-Only grounded `FINDINGS` can authorize a bounded repair execution.
+There is no `CONTEXT_STALE` finding.
 
-## Accepted implementation-input queue
+## Queue
 
-Research/SA may complete semantic compilation before Implementation/Worker work is allocated.
-
-```text
-ACCEPTED IMPLEMENTATION_INPUT
-  -> may remain unallocated
-  -> no active Blackboard item required
-  -> no work id consumed
-  -> no source mutation authority
-  -> later grounded trigger binds the exact artifact into a new IMPLEMENTATION_WORKER item/context
-```
-
-This directory stores immutable semantic handoffs and evidence. It does **not** maintain the current queue inventory.
-
-Current accepted queue membership, active allocation and current-context routing are read only from:
-
-`docs/blackboard/state.md`
-
-Artifact existence, filename ordering, creation time, or a `vN` suffix never establishes currentness.
-
-If a semantic input is superseded before allocation, both immutable artifacts may remain for provenance, but `state.md` must name only the current accepted input(s). A future worker binds the exact ref named by the current state; it never guesses which version is latest.
+This directory does not define queue membership. Current accepted unallocated inputs are named only by `docs/blackboard/state.md`.

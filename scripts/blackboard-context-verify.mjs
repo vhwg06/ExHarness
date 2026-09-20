@@ -1,11 +1,9 @@
 import fs from "node:fs";
-import { execFileSync } from "node:child_process";
-import { readJson, assertWorkContext, assertGeneration } from "./blackboard-context-contract.mjs";
+import { readJson, assertWorkContext } from "./blackboard-context-contract.mjs";
 import { parseCurrentContext, parseItemRef, parseItemScalar, assertBoardBinding } from "./blackboard-context-board.mjs";
 import { resolveContext } from "./blackboard-context-resolver.mjs";
 import { assertSemanticArtifact, assertBlackboardArtifact } from "./blackboard-artifact-contract.mjs";
 
-function git(root,args){return execFileSync("git",["-C",root,...args],{encoding:"utf8"}).trim();}
 function activeSection(board){
   const after=board.split("## Active work")[1] ?? "";
   return after.split(/\n##\s+/)[0] ?? "";
@@ -13,30 +11,8 @@ function activeSection(board){
 function activeItems(board){
   return [...activeSection(board).matchAll(/^BB-\d+\s*$/gm)].map(m=>m[0].trim());
 }
-function assertReviewTarget(review,{root="."}={}) {
-  const target=review.reviewTarget.candidateHeadSha;
-  const head=git(root,["rev-parse","HEAD"]);
-  let available=true;
-  try { git(root,["cat-file","-e",`${target}^{commit}`]); } catch { available=false; }
-  if(!available) {
-    let firstParent="";
-    try { firstParent=git(root,["rev-parse","HEAD^1"]); } catch {}
-    if(head!==target && firstParent!==target) throw new Error(`REVIEW_TARGET_UNAVAILABLE: ${target}`);
-    return;
-  }
-  const changed=git(root,["diff","--name-only",target,"HEAD"]).split("\n").filter(Boolean);
-  const allowed=new Set(review.reviewTarget.allowedPostTargetEnvelopePaths);
-  const bad=changed.filter(p=>!allowed.has(p));
-  if(bad.length) throw new Error(`REVIEW_TARGET_STALE: ${bad.join(",")}`);
-}
-function parseDecision(path) {
-  const text=fs.readFileSync(path,"utf8");
-  const subjectContextRef=text.match(/subjectContextRef:\s*(\S+)/)?.[1];
-  const subjectCandidateHeadSha=text.match(/subjectCandidateHeadSha:\s*(\S+)/)?.[1];
-  const verdict=text.match(/verdict:\s*(\S+)/)?.[1];
-  return {subjectContextRef,subjectCandidateHeadSha,verdict};
-}
-export function assertCandidateJudgmentBinding({spec,result,bindingRef,itemId}) {
+
+export function assertCandidateJudgmentBinding({spec,result,itemId}) {
   if(result.artifactType!=="IMPLEMENTATION_RESULT")
     throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: wrong artifact type");
   const baseline=typeof spec.sourceBaseline==="string"?spec.sourceBaseline:spec.sourceBaseline?.revision;
@@ -45,15 +21,36 @@ export function assertCandidateJudgmentBinding({spec,result,bindingRef,itemId}) 
      result.subject.sourceBaseline!==baseline ||
      result.subject.candidateRef!==spec.reviewTarget?.candidateHeadSha)
     throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: subject mismatch");
-  if(result.subject.producerContextRef===bindingRef)
-    throw new Error("JUDGMENT_INDEPENDENCE_INVALID: producer and judgment context must differ");
   return true;
 }
+
+function verifyExecutionAuthority({spec,root}){
+  const authority=JSON.parse(fs.readFileSync(`${root}/${spec.authority.ref}`,"utf8"));
+  assertBlackboardArtifact(authority);
+  if(spec.executionMode==="INITIAL"){
+    if(authority.artifactType!=="READINESS_DECISION" || authority.verdict!=="ACCEPT" ||
+       authority.subject.itemId!==spec.itemId ||
+       authority.subject.semanticArtifactRef!==spec.semanticArtifactRef)
+      throw new Error("IMPLEMENT_AUTHORITY_INVALID: readiness decision mismatch");
+  }else{
+    if(authority.artifactType!=="JUDGMENT" || authority.verdict!=="FINDINGS" ||
+       authority.subject.itemId!==spec.itemId ||
+       authority.subject.semanticArtifactRef!==spec.semanticArtifactRef)
+      throw new Error("REPAIR_AUTHORITY_INVALID: judgment subject/verdict mismatch");
+    if(spec.implementationResultRef && authority.subject.implementationResultRef!==spec.implementationResultRef)
+      throw new Error("REPAIR_AUTHORITY_INVALID: implementation result mismatch");
+  }
+}
+
 function verifyOne({board,boardPath,root,itemId}) {
   const binding=parseCurrentContext(board,itemId);
+  const expectedRef=`docs/blackboard/context/${itemId}/current.json`;
+  if(binding.ref!==expectedRef) throw new Error(`BOARD_BINDING_INVALID: expected current context ref ${expectedRef}`);
   const spec=readJson(`${root}/${binding.ref}`);
   assertWorkContext(spec);
   assertBoardBinding(binding,spec,binding.ref);
+  if(spec.itemId!==itemId) throw new Error("BOARD_BINDING_INVALID: item mismatch");
+
   if(spec.pipeline==="IMPLEMENTATION_WORKER"){
     const boardArtifactRef=parseItemRef(board,itemId,"implementation-input");
     if(boardArtifactRef!==spec.semanticArtifactRef)
@@ -64,40 +61,18 @@ function verifyOne({board,boardPath,root,itemId}) {
     const artifact=JSON.parse(fs.readFileSync(`${root}/${spec.semanticArtifactRef}`,"utf8"));
     assertSemanticArtifact(artifact);
 
+    if(spec.lane==="EXECUTION") verifyExecutionAuthority({spec,root});
+
     if(spec.lane==="JUDGMENT"&&spec.judgmentKind==="CANDIDATE"){
       const boardResultRef=parseItemRef(board,itemId,"implementation-result");
       if(boardResultRef!==spec.implementationResultRef)
         throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: Board/context mismatch");
       const result=JSON.parse(fs.readFileSync(`${root}/${spec.implementationResultRef}`,"utf8"));
       assertBlackboardArtifact(result);
-      assertCandidateJudgmentBinding({spec,result,bindingRef:binding.ref,itemId});
+      assertCandidateJudgmentBinding({spec,result,itemId});
     }
   }
-  if(spec.action.kind==="REVIEW") assertReviewTarget(spec,{root});
-  if(spec.action.kind==="IMPLEMENT"){
-    const parent=readJson(`${root}/${spec.parentContextRef}`);
-    assertWorkContext(parent);
-    assertGeneration(parent,spec);
-    if(spec.pipeline==="IMPLEMENTATION_WORKER"&&spec.executionMode==="REPAIR"){
-      const judgment=JSON.parse(fs.readFileSync(`${root}/${spec.authority.repairJudgmentRef}`,"utf8"));
-      assertBlackboardArtifact(judgment);
-      if(judgment.artifactType!=="JUDGMENT"||judgment.verdict!=="FINDINGS"||
-         judgment.subject.itemId!==spec.itemId||
-         judgment.subject.judgmentContextRef!==spec.authority.subjectContextRef||
-         judgment.subject.implementationResultRef!==parent.implementationResultRef||
-         judgment.subject.candidateRef!==spec.authority.subjectCandidateHeadSha||
-         judgment.subject.semanticArtifactRef!==spec.semanticArtifactRef)
-        throw new Error("REPAIR_AUTHORITY_INVALID: judgment subject/verdict mismatch");
-      if(parent.reviewTarget?.candidateHeadSha!==spec.authority.subjectCandidateHeadSha)
-        throw new Error("REPAIR_AUTHORITY_INVALID: candidate mismatch");
-    } else {
-      const decision=parseDecision(`${root}/${spec.authority.implementationDecisionRef}`);
-      if(decision.verdict!=="ACCEPT"||decision.subjectContextRef!==spec.authority.subjectContextRef||decision.subjectCandidateHeadSha!==spec.authority.subjectCandidateHeadSha)
-        throw new Error("IMPLEMENT_AUTHORITY_INVALID: decision subject/verdict mismatch");
-      if(parent.reviewTarget?.candidateHeadSha!==spec.authority.subjectCandidateHeadSha)
-        throw new Error("IMPLEMENT_AUTHORITY_INVALID: candidate mismatch");
-    }
-  }
+
   const pack=resolveContext(spec,{root});
   return {itemId,binding,pack,boardPath};
 }
@@ -122,7 +97,7 @@ export function verifyCurrentContext({boardPath="docs/blackboard/state.md",root=
     if(!items.includes(itemId)) throw new Error(`BOARD_BINDING_INVALID: ${itemId} is not active`);
     return verifyOne({board,boardPath,root,itemId});
   }
-  if(items.length===0) return {binding:null,pack:{itemId:null,generation:null,action:"NONE",resolved:[],auditRefs:[]}};
+  if(items.length===0) return {binding:null,pack:{itemId:null,action:"NONE",resolved:[]}};
   if(items.length>1) throw new Error(`BOARD_BINDING_INVALID: multiple active items require BLACKBOARD_CONTEXT_ITEM: ${items.join(",")}`);
   return verifyOne({board,boardPath,root,itemId:items[0]});
 }
@@ -130,5 +105,5 @@ export function verifyCurrentContext({boardPath="docs/blackboard/state.md",root=
 if (process.argv[1]?.endsWith("blackboard-context-verify.mjs")) {
   const selected=process.env.BLACKBOARD_CONTEXT_ITEM;
   const out=selected ? [verifyCurrentContext({itemId:selected})] : verifyCurrentContexts();
-  console.log(JSON.stringify({ok:true,items:out.map(x=>({itemId:x.pack.itemId,generation:x.pack.generation,resolved:x.pack.resolved.length}))}));
+  console.log(JSON.stringify({ok:true,items:out.map(x=>({itemId:x.pack.itemId,resolved:x.pack.resolved.length}))}));
 }

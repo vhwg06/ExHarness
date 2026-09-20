@@ -629,18 +629,19 @@ This artifact is a Researcher + SA candidate. It requires a later explicit imple
 
 ## Outer-Blackboard implementation lifecycle
 
-Promotion of this research to `main` does not allocate Integration C work and does not authorize source changes.
+This durable knowledge does not allocate Integration C work and does not authorize source changes.
 
 When Integration C receives a grounded entry trigger, the repository-native flow is:
 
 ```text
-promoted research input on main
+current accepted implementation input
   -> allocate one Blackboard item
-  -> create exact read-only WORK_CONTEXT_SPEC REVIEW generation
-  -> independent readiness/authority decision bound to that exact context + candidate
-  -> on ACCEPT create child IMPLEMENT generation with then-current sourceBaseline + bounded sourceScope.write
-  -> Board item READY
+  -> write docs/blackboard/context/<WORK_ID>/current.json for JUDGMENT / READINESS
+  -> independent READINESS_DECISION bound to workId + semanticArtifactRef
+  -> overwrite current.json for EXECUTION / INITIAL with exact authority ref + bounded sourceScope.write
   -> worker implements
+  -> publish IMPLEMENTATION_RESULT bound to semantic input + authority + candidate
+  -> overwrite current.json for JUDGMENT / CANDIDATE
 ```
 
 No separate `docs/living/work-artifacts/*` authority layer exists. Researcher/SA are not standing reviewers for each implementation request; architecture research reopens only on grounded contradiction or a newly exposed architecture obligation.

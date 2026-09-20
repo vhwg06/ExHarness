@@ -17,15 +17,16 @@ export function parseCurrentContext(boardText, itemId) {
     section.push(line);
   }
 
-  const gens=section.map(x=>x.match(/^\s*generation:\s*(\d+)\s*$/)).filter(Boolean);
   const refs=section.map(x=>x.match(/^\s*ref:\s*(\S+)\s*$/)).filter(Boolean);
-  if(gens.length!==1||refs.length!==1) throw new Error("BOARD_BINDING_INVALID: ambiguous current-context");
-  return {generation:Number(gens[0][1]),ref:refs[0][1]};
+  const generations=section.filter(x=>/^\s*generation\s*:/.test(x));
+  if(refs.length!==1) throw new Error("BOARD_BINDING_INVALID: ambiguous current-context");
+  if(generations.length) throw new Error("BOARD_BINDING_INVALID: current-context generation is not allowed; currentness is the exact ref");
+  return {ref:refs[0][1]};
 }
 
 export function assertBoardBinding(binding, spec, specRef) {
-  if (binding.ref !== specRef || binding.generation !== spec.generation || spec.itemId == null)
-    throw new Error("BOARD_BINDING_INVALID: ref/generation mismatch");
+  if (binding.ref !== specRef || spec.itemId == null)
+    throw new Error("BOARD_BINDING_INVALID: ref/item mismatch");
   return true;
 }
 
