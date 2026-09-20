@@ -10,5 +10,5 @@ export function resolveContext(spec, { root = "." } = {}) {
     const body = fs.readFileSync(path);
     return { ref, sha256: crypto.createHash("sha256").update(body).digest("hex"), bytes: body.length };
   });
-  return { itemId: spec.itemId, generation: spec.generation, action: spec.action.kind, resolved, auditRefs: [...spec.auditRefs] };
+  return { itemId: spec.itemId, action: spec.action.kind, resolved };
 }
