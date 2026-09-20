@@ -180,7 +180,7 @@ Tracing and semantic memory are context/evidence inputs, never recovery authorit
 
 ## CURRENT ABSTRACTION BOUNDARY
 
-BB-008 assessed the concrete recovery composition and found insufficient repeated pressure for a higher-level executable Core lifecycle facade.
+The concrete recovery composition shows insufficient repeated pressure for a higher-level executable Core lifecycle facade.
 
 Current evidence has one concrete recovery-reference consumer. The existing public primitives already expose the distinct mechanisms that consumer needs; repository usage does not yet demonstrate a second real caller repeating the full restore/reconcile/recover/resume sequence.
 
@@ -190,4 +190,4 @@ Application WorkOrder/Worker/Advisor/completion abstractions remain owned by Age
 
 ## SOURCE
 
-Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `effect-aware-harness.js`, `avo-action-effect.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`. Concrete recovery-composition contract evidence lives in `test/recovery-composition.test.js`; the current no-facade decision is recorded in `../../living/decisions/D005-no-core-lifecycle-facade-yet.md`.
+Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `effect-aware-harness.js`, `avo-action-effect.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`. Concrete recovery-composition contract evidence lives in `test/recovery-composition.test.js`; the current no-facade constraint is stated directly above; no separate decision-history document is required.

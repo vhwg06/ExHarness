@@ -142,7 +142,7 @@ There is still no generic Worker/WorkOrder/Advisor/role registry/workflow graph/
 
 ## Bounded PM / SA coordination
 
-D003 remains the authority split:
+The current authority split is:
 
 - PM = horizontal project coordination/sequencing/dependency/timeline/progress;
 - SA = horizontal architecture judgment only;

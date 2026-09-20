@@ -116,7 +116,7 @@ npm run eval:workflow-replay
  -> scripts/workflow-policy-replay-eval.mjs
  -> fixed artifact-outage / cancellation / retry / review-delay schedules
  -> same recorded observable events under baseline and candidate policy identities
- -> reproduce the BB-024 late-reconciliation cancellation divergence
+ -> reproduce the late-reconciliation cancellation divergence
  -> assert unrelated schedules remain behaviorally unchanged
  -> assert historical mutating-effect observations cause zero external dispatches
  -> deep compare with artifacts/bb038-workflow-replay-eval.json
@@ -126,7 +126,7 @@ This replay surface is evaluation/regression tooling only. It consumes recorded 
 
 ## Semantic-memory reuse evaluation
 
-Root `npm run verify` also runs the BB-037 deterministic experience-reuse evaluation:
+Root `npm run verify` also runs the deterministic experience-reuse evaluation:
 
 ```text
 npm run eval:memory-reuse
@@ -143,7 +143,7 @@ The bounded mode is evaluation tooling for an application-side remediation-conte
 
 ## Self-upgrade research verification
 
-Root `npm run verify` also executes the bounded BB-034 self-upgrade research probe:
+Root `npm run verify` also executes the bounded self-upgrade evaluation:
 
 ```text
 npm run eval:self-upgrade-research
@@ -151,18 +151,18 @@ npm run eval:self-upgrade-research
  -> grounded REFLECTION
  -> stale-evaluation negative control
  -> bounded DeliberationArtifact + experiment-only ActionIntent
- -> BB-038 recorded baseline/candidate replay artifact
+ -> recorded baseline/candidate replay artifact
  -> fixed target/control/budget checks
  -> synthetic collateral-regression negative control
  -> independent EvidenceArtifact + DecisionArtifact + Attestation trust check
  -> deep compare with artifacts/bb034-self-upgrade-loop-probe.json
 ```
 
-This remains a deterministic research fixture rather than evidence of autonomous self-modification. The ActionIntent authorizes only the isolated experiment, and a trusted experiment result produces only a reviewable proposal. It does not select, deploy or merge the candidate, alter user intent, change acceptance thresholds, or grant runtime authority. Failed or inconclusive experiment criteria retain the baseline. The checked artifact declares `evidenceClass: DETERMINISTIC_SELF_UPGRADE_RESEARCH_FIXTURE` and `productionEvidence: false`. The bounded BB-035 application pilot is now delivered separately; its runtime boundary still exposes proposal-for-review rather than adoption authority.
+This remains a deterministic research fixture rather than evidence of autonomous self-modification. The ActionIntent authorizes only the isolated experiment, and a trusted experiment result produces only a reviewable proposal. It does not select, deploy or merge the candidate, alter user intent, change acceptance thresholds, or grant runtime authority. Failed or inconclusive experiment criteria retain the baseline. The checked artifact declares `evidenceClass: DETERMINISTIC_SELF_UPGRADE_RESEARCH_FIXTURE` and `productionEvidence: false`. The bounded application pilot is delivered separately; its runtime boundary still exposes proposal-for-review rather than adoption authority.
 
 ## Artifact-manifest fresh-session research verification
 
-Root `npm run verify` also executes the corrected BB-039 artifact-manifest probe:
+Root `npm run verify` also executes the artifact-manifest evaluation:
 
 ```text
 npm run eval:artifact-manifest-research
@@ -176,7 +176,7 @@ npm run eval:artifact-manifest-research
  -> explicit missing-content / partial-set / manifest-unavailable outcomes
 ```
 
-This verification surface remains the deterministic research evidence for D014. The optional runtime manifest-validating artifactReader is now delivered by BB-043 as an application-owned wrapper; the default direct artifactReader path remains unchanged. Every research scenario reconstructs the project from durable Blackboard state plus filesystem-backed stores. The manifest establishes content/provenance identity only, never correctness or acceptance authority. The probe declares `evidenceClass: DETERMINISTIC_FRESH_SESSION_FIXTURE` and `productionEvidence: false`; real artifact-store latency, retention cost, availability and production value remain unmeasured.
+This verification surface remains deterministic evidence for the optional manifest boundary. The runtime manifest-validating artifactReader is delivered as an application-owned wrapper; the default direct artifactReader path remains unchanged. Every research scenario reconstructs the project from durable Blackboard state plus filesystem-backed stores. The manifest establishes content/provenance identity only, never correctness or acceptance authority. The probe declares `evidenceClass: DETERMINISTIC_FRESH_SESSION_FIXTURE` and `productionEvidence: false`; real artifact-store latency, retention cost, availability and production value remain unmeasured.
 
 ## Current extraction result
 

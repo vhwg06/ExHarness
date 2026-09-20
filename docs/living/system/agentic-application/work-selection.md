@@ -1,6 +1,6 @@
 # Bounded project work selection
 
-This document describes the delivered opt-in BB-031 Agentic Application work-selection surface. It is current source-backed behavior, not the research roadmap and not a production-effectiveness claim.
+This document describes the delivered opt-in Agentic Application work-selection surface. It is current source-backed behavior, not the research roadmap and not a production-effectiveness claim.
 
 ## Position in the application
 
@@ -164,7 +164,7 @@ Even a fresh decision does not claim work. The caller still invokes ordinary `Ap
 - stale decisions fail after Board changes;
 - ordinary claim still rejects work that became ineligible/claimed;
 - decision artifacts survive fresh-store reconstruction;
-- the actual selector replays the accepted BB-030 deterministic comparison at equal budget: fixture outcome `11 -> 13` and blocked-work reduction `2 -> 3`.
+- the actual selector replays the accepted deterministic comparison at equal budget: fixture outcome `11 -> 13` and blocked-work reduction `2 -> 3`.
 
 `packages/agentic-system/test/bb031-selection-freshness.test.js` additionally covers the post-merge freshness obligation:
 
@@ -188,4 +188,4 @@ This delivery does not introduce:
 - automatic review waiver;
 - production/default scheduler promotion.
 
-Core search-investment remains scoped to variation investment inside one Core session. BB-031 project work selection remains an application-level choice among distinct already-eligible Blackboard obligations.
+Core search-investment remains scoped to variation investment inside one Core session. Project work selection remains an application-level choice among distinct already-eligible Blackboard obligations.

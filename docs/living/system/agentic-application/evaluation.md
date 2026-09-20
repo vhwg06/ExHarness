@@ -67,4 +67,4 @@ genericAbstractionJustified: false
 
 Therefore this gate establishes deterministic application-contract/regression evidence only. It does **not** establish production effectiveness, model/provider quality, real-repository task success, latency/cost performance, Advisor value-add or justification for a generic Worker/WorkOrder/context/review abstraction.
 
-Those unresolved evidence requirements remain operational work on BB-005/BB-022 rather than being inferred from fixture success.
+Those unresolved evidence requirements remain operational work rather than being inferred from fixture success.

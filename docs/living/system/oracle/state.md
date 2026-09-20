@@ -44,7 +44,7 @@ QaWorkOrder.requiredArtifacts
 - Oracle has no agent loop, session lifecycle, generic resolver registry, MCP-first layer, retrieval framework or cache lifecycle in current source;
 - no MCP client/adapter, MCP request state, MRTR continuation or Tasks handle is implemented or persisted today.
 
-D006 is an accepted architecture boundary: if a concrete MCP-backed source appears later, MCP remains a source/capability adapter below application-owned work/lifecycle authority and protocol support alone does not count as a third source class. That non-current mapping lives in `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md` rather than this current-state projection.
+If a concrete MCP-backed source appears later, MCP remains a source/capability adapter below application-owned work/lifecycle authority; protocol support alone does not count as a third source class.
 
 Caching/RAG are not missing features merely because they are absent. If concrete pressure makes them necessary, that work must first appear on the Blackboard.
 
@@ -56,5 +56,4 @@ Caching/RAG are not missing features merely because they are absent. If concrete
 - current concrete resolution flow -> `workflow.md`
 - optional artifact-manifest boundary -> `artifact-manifest.md`
 - current invariants -> `decisions.md`
-- accepted MCP boundary decision -> `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md`
 - all open Oracle questions -> `../docs/blackboard/state.md`

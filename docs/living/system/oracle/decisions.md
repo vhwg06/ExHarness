@@ -29,7 +29,7 @@ These are current source-backed Oracle invariants plus accepted boundary constra
 - context contracts are typed and runtime-validatable through the application schemas;
 - Oracle may not weaken an application schema when source data is missing or malformed;
 - resolved context carries source refs; QA application artifacts additionally carry producer/acceptance provenance;
-- the optional D014 manifest adapter may fail closed on artifact identity/provenance drift before QA context assembly; hashes and availability remain identity/operational signals, not correctness authority.
+- the optional manifest adapter may fail closed on artifact identity/provenance drift before QA context assembly; hashes and availability remain identity/operational signals, not correctness authority.
 
 ## IMPLEMENTATION POLICY
 
@@ -38,12 +38,12 @@ Current implementation uses the simplest concrete mechanism for each source:
 ```text
 repository source           -> repositoryReader
 application artifact source -> artifactReader
-optional D014 validation    -> manifest-validating artifactReader wrapper
+optional manifest validation -> manifest-validating artifactReader wrapper
 ```
 
 There is no MCP client, retrieval framework, cache layer, embeddings/vector store or generic source-provider framework in current Oracle source.
 
-D006 is an accepted constraint on any later concrete MCP-backed source: MCP must remain below application work/lifecycle authority and protocol support alone does not count as a third source. Detailed non-current MCP mapping remains in `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md`, not in this source-synchronized projection.
+Any later concrete MCP-backed source must remain below application work/lifecycle authority; protocol support alone does not count as a third source class.
 
 ## ABSTRACTION
 

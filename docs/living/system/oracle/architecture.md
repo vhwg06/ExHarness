@@ -22,6 +22,6 @@ The two implemented source classes intentionally remain distinct because reposit
 
 Current source has **no MCP adapter** and no MCP-owned Oracle lifecycle. MCP request ids, handles, MRTR state and task state therefore do not appear in the current runtime architecture.
 
-The accepted D006 decision constrains any later concrete MCP-backed source to remain a source/capability adapter below the application-owned context/work lifecycle boundary. MCP protocol support alone does not create a third Oracle source class.
+Any later concrete MCP-backed source must remain a source/capability adapter below the application-owned context/work lifecycle boundary. MCP protocol support alone does not create a third Oracle source class.
 
 Current source contains no generic source registry, generic Resolver interface, provider lifecycle, automatic refresh, MCP adapter framework or retrieval engine.

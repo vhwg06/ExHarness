@@ -77,7 +77,7 @@ Once recovery returns a normal Backend result, the recovery-required marker is c
 
 ## Regression coverage
 
-`packages/agentic-system/test/bb032-composition-boundary-research.test.js` now acts as the post-BB-033 regression for the research finding:
+`packages/agentic-system/test/bb032-composition-boundary-research.test.js` is the regression for the composition-boundary finding:
 
 - ordinary source failure becomes durable `BLOCKED` before Worker execution and resumes into normal execution after the source returns;
 - source failure after interrupted takeover becomes durable `BLOCKED` with recovery-required mode, and resume re-enters `BackendWorker.recover(...)` rather than `execute(...)`.

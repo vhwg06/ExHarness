@@ -1,27 +1,22 @@
-# Decisions
+# Living decision policy
 
-This directory contains **current material architecture/governance decisions** that still constrain or explain the system as it exists now.
+This directory is reserved for a **current material decision that still has semantic value not already expressed by the current system projection**.
 
-A decision is not a transcript, review log, repair log, closure record, or revision archive.
+At present there are no separate current decision documents. Delivered constraints are stated directly in `docs/living/system/*`; prior decision/review/repair/acceptance records live in Git history.
+
+Do not use this directory as an ADR archive or delivery transcript.
 
 ```text
-current material decision
-  -> keep canonical decision file
+decision needed to understand current delivery
+  -> one canonical semantic decision file
 
-decision fully promoted into current system semantics
-and no longer needed to explain a live constraint
-  -> remove from working tree
+decision promoted into current system semantics
+  -> remove the separate decision file
 
-previous decision/review/repair/closure state
+prior revision / review / repair / acceptance history
   -> Git history only
 ```
 
-Do not keep `SUPERSEDED`, historical readiness, rejection, repair-finding, merge-acceptance, or closure files in Living Docs merely for traceability. Git already provides that history.
+A future decision file must contain the current choice, constraint, trade-off and reopen condition only. It must not require a fresh session to reconstruct BB work ids, PR rounds, CI runs or superseded decision chains.
 
-`docs/living/system/*` is the source-synchronized statement of what is true now. Active work belongs to `docs/blackboard/state.md`; current queued semantic work belongs to canonical Blackboard implementation-input artifacts.
-
-A decision that remains here must still contribute current semantic value: an authority boundary, architecture constraint, accepted trade-off, or explicit non-goal that is not already self-evident from the current system projection.
-
-## Current-decision rule
-
-This directory keeps only decisions that still constrain or explain current system semantics. Readiness reviews, rejection/repair rounds, merge acceptance transcripts and superseded delivery evidence are not Living decisions and must not remain in the working tree after their semantics are promoted. Git history is sufficient for those records.
+Current-tree invariant: current semantic decisions may exist here only while they add live value beyond `docs/living/system/*`; historical delivery records never do.

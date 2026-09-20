@@ -1,6 +1,6 @@
 # Optional application-artifact manifest adapter
 
-The current Agentic Application exports an opt-in manifest boundary for Backend -> QA artifact continuation. It implements the bounded D014 runtime slice without changing the default Oracle resolver or the existing `ApplicationArtifactRef`, `QaWorkOrder`, or `QaContext` schemas.
+The current Agentic Application exports an opt-in manifest boundary for Backend -> QA artifact continuation. It implements the bounded optional manifest runtime slice without changing the default Oracle resolver or the existing `ApplicationArtifactRef`, `QaWorkOrder`, or `QaContext` schemas.
 
 ## Producer boundary
 
@@ -138,4 +138,4 @@ It does not establish:
 - proof that every producer source is immutable/revision-bound; protected publication requires an explicitly configured producer reader with that property;
 - a generic artifact registry, Oracle provider registry, cache, or retrieval framework.
 
-D014 remains the design authority for this boundary. Default adoption or stronger retention lifecycle automation requires separate evidence.
+The boundary remains opt-in. Default adoption or stronger retention lifecycle automation requires separate evidence.

@@ -1,6 +1,6 @@
 # Bounded self-upgrade pilot
 
-The Agentic Application exposes one opt-in BB-035 self-upgrade experiment pilot. It implements the accepted D016 boundary over the existing research-continuation and Blackboard lifecycle surfaces. It is not a generic SelfImprover runtime.
+The Agentic Application exposes one opt-in self-upgrade experiment pilot over the existing research-continuation and Blackboard lifecycle surfaces. It is not a generic SelfImprover runtime.
 
 ## Authority boundary
 
@@ -20,7 +20,7 @@ The protocol is rejected when the user-intent root does not match the project ha
 
 ## Durable experiment state
 
-`createSelfUpgradePilotController(...)` composes BB-027 research continuation:
+`createSelfUpgradePilotController(...)` composes the delivered research-continuation boundary:
 
 ```text
 Blackboard lifecycle + RESEARCH_CONTINUATION cursor
@@ -62,7 +62,7 @@ any scenario not PASS
 
 Both outcomes persist evidence. `selectedUntilIndependentAcceptance` and `rollback` remain the accepted baseline.
 
-Only `PROPOSE_FOR_REVIEW` can call `submitForReview(...)`. The review key must be the single key fixed in the protocol. Submission uses BB-027's atomic proposal + PM-required-review boundary and remains `PENDING_REVIEW`; there is no `adopt`, merge, deploy or rollout method.
+Only `PROPOSE_FOR_REVIEW` can call `submitForReview(...)`. The review key must be the single key fixed in the protocol. Submission uses the atomic proposal + PM-required-review boundary and remains `PENDING_REVIEW`; there is no `adopt`, merge, deploy or rollout method.
 
 ## Evidence limits
 

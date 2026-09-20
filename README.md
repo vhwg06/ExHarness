@@ -71,7 +71,7 @@ Current implementation facts:
 
 ## Role topology
 
-Promoted decision D003 separates horizontal governance from vertical context-bound execution:
+Current authority topology separates horizontal governance from vertical context-bound execution:
 
 ```text
 PM
@@ -187,8 +187,7 @@ docs/README.md
      -> agentic-application/             current application docs
      -> oracle/                          current Oracle docs
      -> core-harness/                    current Core docs
-  -> docs/living/knowledge/*            evidence / judgment / audit
-  -> docs/living/decisions/*            accepted decisions
+  -> docs/living/knowledge/integration-phase-research-to-implementation-readiness.md  current integration roadmap
 ```
 
 Source/public exports and executable tests/runtime are implementation authority. `docs/living/system/*` must be reconciled to them.
