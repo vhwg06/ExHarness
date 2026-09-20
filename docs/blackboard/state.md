@@ -41,8 +41,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 8
-  ref: docs/blackboard/context/BB-048/g0008-implementation-readiness-review.json
+  generation: 9
+  ref: docs/blackboard/context/BB-048/g0009-implementation-readiness-review.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
@@ -54,8 +54,20 @@ scope-boundary:
 blockers:
   - implementation authority not yet granted; current generation is REVIEW only
 next:
-  - execute fresh review from exact g0008 context
-  - on ACCEPT, materialize bounded g0009 IMPLEMENT context for Worker
+  - execute fresh review from exact g0009 context
+  - on ACCEPT, materialize bounded g0010 IMPLEMENT context for Worker
+
+## Accepted semantic input queue
+
+Accepted Research/SA handoffs may wait without becoming active work. Inventory: `docs/blackboard/artifacts/README.md#accepted-implementation-input-queue`.
+
+Currently queued and unallocated:
+
+- `integration-c-cross-domain-obligation-lineage-v1.json`
+- `integration-d-domain-activation-parallel-autonomy-v1.json`
+- `integration-ef-deployment-acceptance-snapshot-v1.json`
+
+These entries do not consume work ids, do not contribute to `current-active-debt`, and do not establish implementation order.
 
 ## Allocation rules
 
