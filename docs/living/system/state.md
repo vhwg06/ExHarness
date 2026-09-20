@@ -89,3 +89,13 @@ The Agentic Application now contains the bounded Integration A.1 organization bo
 Organizational claim authorization is derived from a trusted principal plus the current execution-authority policy, not from caller-supplied domain text. Blackboard `CLAIMED` remains provisional; executable capability requires a current durable `CLAIM_RELEASE_RECEIPT`/head matching the exact Board owner + claim generation and still-current materialization/execution authority heads.
 
 Organization claim invalidation commits the canonical Blackboard consequence first and only then fences the release head. A release-fence cleanup failure therefore cannot preserve executable capability after the Board claim tuple is no longer current. The slice stops before `DOMAIN_EXECUTION_CONTROL`, ExecutionPolicy/ExecutionStrategy resolution, BA execution and ProductStateProjection.
+
+## Bounded domain execution control
+
+The Agentic Application now contains the first bounded Integration B execution slice below A.1. One exact current released organizational claim can enter a domain-local execution controller. The controller reads the durable ExecutionAttemptHead before policy resolution, pins an immutable ExecutionPolicy / ExecutionStrategyDescriptor / ExecutionAttemptBinding before runtime dispatch, and revalidates the exact released-claim authority immediately before dispatch.
+
+ACTIVE or RECOVERY_REQUIRED attempts recover the same semantic attempt and immutable binding rather than resolving a newer policy. Policy promotion after binding affects only later attempts. Runtime identity comes from the configured trusted runtime-adapter boundary, not strategy self-report.
+
+Execution facts remain split from judgment and publication: RuntimeExecutionAttestation -> ExecutionAttemptOutcome -> DomainCompletionDecision -> DomainPublicationReceipt. A derived ExecutionJudgmentBundle indexes exact content-addressed refs and re-resolves the source chain for fresh-session reconstruction. Runtime SUCCEEDED is not domain ACCEPT, and domain ACCEPT is not authoritative publication.
+
+This slice proves one BUSINESS_ANALYSIS-owned domain execution path. It does not select Blackboard work, dispatch another organizational domain, change ApplicationOrchestrator lifecycle semantics, widen Oracle/Core authority, or implement Integration C-J.
