@@ -11,6 +11,13 @@ const hash=v=>createHash("sha256").update(JSON.stringify(v)).digest("hex");
 const arr=(v,n)=>{inv(Array.isArray(v),n+" must be an array");return v;};
 const strs=(v,n)=>arr(v,n).map((x,i)=>txt(x,n+"["+i+"]"));
 const pin=ref=>{const r=txt(ref,"artifact ref"),m=r.match(/:sha256:([a-f0-9]{64})$/);inv(m,"artifact ref must be content addressed: "+r);return fr({ref:r,digest:m[1]});};
+const checkedPin=(value,label)=>{
+  inv(value&&typeof value==="object",label+" pin required");
+  const r=txt(value.ref,label+" ref"),d=txt(value.digest,label+" digest");
+  const m=r.match(/:sha256:([a-f0-9]{64})$/);
+  inv(m&&m[1]===d,label+" pin digest mismatch");
+  return value;
+};
 const stableRuntime=ref=>{const r=txt(ref,"runtime ref");inv(!/(^|[:/@-])latest$/i.test(r),"runtime ref must not be latest");return r;};
 const STRATEGY_KINDS=new Set(["restate-handler","restate-workflow","application-core-loop","human-assisted"]);
 
@@ -47,7 +54,15 @@ export function createDomainExecutionController({claimController,claimReleaseSto
   const runtime={adapterRef:txt(runtimeAdapter?.adapterRef,"runtime adapterRef"),runtimeKind:txt(runtimeAdapter?.runtimeKind,"runtime kind"),runtimeDeploymentRef:stableRuntime(runtimeAdapter?.runtimeDeploymentRef),producerAuthorityRef:txt(runtimeAdapter?.producerAuthorityRef,"runtime producer authority")};inv(typeof runtimeAdapter.dispatch==="function"&&typeof runtimeAdapter.recover==="function","runtime dispatch/recover required");const completionAuthority=txt(completionEvaluator.authorityRef,"completion authority"),publicationAuthority=txt(publicationGate.authorityRef,"publication authority"),publicationPrincipal=txt(publicationGate.producerPrincipalRef,"publication principal");
 
   async function establish(s,{itemId,claimGeneration,receiptRef}){const key=executionAttemptSubjectKey({projectId:s.contract.projectId,itemId,workContractRef:s.contract.contractRef});let head=await executionAttemptStore.current(key);if(head){const binding=await artifactRegistry.resolveExecutionAttemptBinding(head.value.bindingRef);inv(binding&&binding.workContractRef===s.contract.contractRef&&binding.workId===itemId,"attempt binding subject mismatch");return {key,head,binding,bindingRef:head.value.bindingRef,created:false};}
-    for(let n=0;n<4;n++){const pr=await currentPolicy({executionPolicyStore,artifactRegistry,contract:s.contract}),st=await strategy({artifactRegistry,p:pr.p,contract:s.contract,runtime});const id="execution-attempt-id:"+hash({key,ordinal:1}),binding=fr({kind:"EXECUTION_ATTEMPT_BINDING",version:1,executionAttemptId:id,workId:itemId,owningDomain:s.contract.owningDomain,workloadType:s.contract.workloadType,workContractRef:s.contract.contractRef,claimReleaseReceiptRef:receiptRef,observedClaimReleaseHead:{subjectKey:s.releaseKey,revision:s.releaseHead.revision,receiptRef},executionPolicyRef:pr.policyRef,observedExecutionPolicyHead:{subjectKey:pr.key,revision:pr.head.revision,generation:pr.head.value.generation,policyRef:pr.policyRef},executionStrategyRef:pr.p.strategyRef,runtimeBinding:{kind:st.strategyKind,adapterRef:runtime.adapterRef,expectedRuntimeCodeRef:runtime.runtimeDeploymentRef,runtimeInvocationKey:"execution-invocation:"+hash({id,adapterRef:runtime.adapterRef,runtimeDeploymentRef:runtime.runtimeDeploymentRef}),bindingMode:st.runtimeBindingMode},contextRefs:st.contextRefs,toolsetRef:st.toolsetRef,modelProfileRef:st.modelProfileRef,harnessRef:st.harnessRef}),bindingRef=await artifactRegistry.putExecutionAttemptBinding(binding),first=await transition(artifactRegistry,{workId:itemId,id,from:"ABSENT",to:ExecutionAttemptStatus.ACTIVE,reason:"FIRST_ATTEMPT",decisionRef:receiptRef}),now=await executionPolicyStore.current(pr.key);if(now?.revision!==pr.head.revision)continue;await claimController.assertExecutable({itemId,claimGeneration,receiptRef});const value={status:ExecutionAttemptStatus.ACTIVE,executionAttemptId:id,bindingRef,transitionRefs:[first],outcomeRef:null,completionDecisionRef:null,publicationReceiptRef:null,judgmentBundleRef:null};if(await executionAttemptStore.compareAndSwap(key,null,value))return {key,head:await executionAttemptStore.current(key),binding,bindingRef,created:true};head=await executionAttemptStore.current(key);const winner=await artifactRegistry.resolveExecutionAttemptBinding(head.value.bindingRef);return {key,head,binding:winner,bindingRef:head.value.bindingRef,created:false};}throw new TypeError("execution policy changed repeatedly before attempt commit");}
+    for(let n=0;n<4;n++){const pr=await currentPolicy({executionPolicyStore,artifactRegistry,contract:s.contract}),st=await strategy({artifactRegistry,p:pr.p,contract:s.contract,runtime});const id="execution-attempt-id:"+hash({key,ordinal:1}),binding=fr({kind:"EXECUTION_ATTEMPT_BINDING",version:1,executionAttemptId:id,workId:itemId,owningDomain:s.contract.owningDomain,workloadType:s.contract.workloadType,workContractRef:s.contract.contractRef,claimReleaseReceiptRef:receiptRef,observedClaimReleaseHead:{subjectKey:s.releaseKey,revision:s.releaseHead.revision,receiptRef},executionPolicyRef:pr.policyRef,observedExecutionPolicyHead:{subjectKey:pr.key,revision:pr.head.revision,generation:pr.head.value.generation,policyRef:pr.policyRef},executionStrategyRef:pr.p.strategyRef,runtimeBinding:{kind:st.strategyKind,adapterRef:runtime.adapterRef,expectedRuntimeCodeRef:runtime.runtimeDeploymentRef,runtimeInvocationKey:"execution-invocation:"+hash({id,adapterRef:runtime.adapterRef,runtimeDeploymentRef:runtime.runtimeDeploymentRef}),bindingMode:st.runtimeBindingMode},contextRefs:st.contextRefs,toolsetRef:st.toolsetRef,modelProfileRef:st.modelProfileRef,harnessRef:st.harnessRef}),bindingRef=await artifactRegistry.putExecutionAttemptBinding(binding),first=await transition(artifactRegistry,{workId:itemId,id,from:"ABSENT",to:ExecutionAttemptStatus.ACTIVE,reason:"FIRST_ATTEMPT",decisionRef:receiptRef}),value={status:ExecutionAttemptStatus.ACTIVE,executionAttemptId:id,bindingRef,transitionRefs:[first],outcomeRef:null,completionDecisionRef:null,publicationReceiptRef:null,judgmentBundleRef:null};
+      inv(typeof executionPolicyStore.withCurrentGuard==="function","execution policy store must provide guarded currentness");
+      const guarded=await executionPolicyStore.withCurrentGuard(pr.key,pr.head.revision,async()=>{
+        await claimController.assertExecutable({itemId,claimGeneration,receiptRef});
+        return executionAttemptStore.compareAndSwap(key,null,value);
+      });
+      if(!guarded.matched)continue;
+      if(guarded.result)return {key,head:await executionAttemptStore.current(key),binding,bindingRef,created:true};
+      head=await executionAttemptStore.current(key);const winner=await artifactRegistry.resolveExecutionAttemptBinding(head.value.bindingRef);return {key,head,binding:winner,bindingRef:head.value.bindingRef,created:false};}throw new TypeError("execution policy changed repeatedly before attempt commit");}
 
   async function recoverHead(x){if(x.head.value.status!==ExecutionAttemptStatus.ACTIVE)return x;const tr=await transition(artifactRegistry,{workId:x.binding.workId,id:x.binding.executionAttemptId,from:ExecutionAttemptStatus.ACTIVE,to:ExecutionAttemptStatus.RECOVERY_REQUIRED,reason:"RECOVERY_REQUIRED",decisionRef:x.bindingRef}),next={...x.head.value,status:ExecutionAttemptStatus.RECOVERY_REQUIRED,transitionRefs:[...x.head.value.transitionRefs,tr]};if(await executionAttemptStore.compareAndSwap(x.key,x.head.revision,next))x.head=await executionAttemptStore.current(x.key);return x;}
   async function terminal(head){const packet=await resolveExecutionJudgmentBundle({artifactRegistry,organizationArtifactRegistry,bundleRef:head.value.judgmentBundleRef});return fr({state:ExecutionAttemptStatus.TERMINAL,replayed:true,executionAttemptId:head.value.executionAttemptId,bindingRef:head.value.bindingRef,outcomeRef:head.value.outcomeRef,completionDecisionRef:head.value.completionDecisionRef,publicationReceiptRef:head.value.publicationReceiptRef,judgmentBundleRef:head.value.judgmentBundleRef,packet});}
@@ -64,6 +79,16 @@ export async function resolveExecutionJudgmentBundle({artifactRegistry,organizat
   const b=await artifactRegistry.resolveExecutionJudgmentBundle(bundleRef);
   inv(b,"judgment bundle missing");
   const p=b.pins;
+  checkedPin(p.workContract,"work contract");
+  checkedPin(p.claimReleaseReceipt,"claim release receipt");
+  checkedPin(p.executionPolicy,"execution policy");
+  checkedPin(p.executionStrategy,"execution strategy");
+  checkedPin(p.binding,"execution binding");
+  for(const [index,value] of p.runtimeAttestations.entries())checkedPin(value,`runtime attestation[${index}]`);
+  checkedPin(p.outcome,"execution outcome");
+  checkedPin(p.completionDecision,"completion decision");
+  if(p.publicationReceipt)checkedPin(p.publicationReceipt,"publication receipt");
+  for(const [index,value] of p.transitionHistory.entries())checkedPin(value,`transition[${index}]`);
   const rawContract=await organizationArtifactRegistry.resolveWorkContract(p.workContract.ref);
   inv(rawContract,"judgment work contract missing");
   const contract=defineOrganizationWorkContract(rawContract);
