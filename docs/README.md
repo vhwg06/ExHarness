@@ -25,7 +25,7 @@ Primary current-system projection:
 - `living/system/oracle/`
 - `living/system/core-harness/`
 
-Durable supporting knowledge remains under `living/knowledge/`, `living/decisions/` and `living/reference/`.
+Current durable supporting knowledge remains only where it has live semantic value. The integration roadmap is under `living/knowledge/`; current system semantics belong under `living/system/`. Historical research/decisions are Git history, not current documentation.
 
 Living Docs are not a work queue. They do not own blockers, next actions, active pipeline stage or fresh-session routing.
 
@@ -33,7 +33,7 @@ Living Docs are not a work queue. They do not own blockers, next actions, active
 
 `blackboard/` answers: **how is the system currently being developed?**
 
-It owns active work, pipeline/stage routing, exact fresh-session context pointers, development artifacts and operational history.
+It owns active work, pipeline/stage routing, exact fresh-session context pointers and current development artifacts. Historical delivery state lives in Git history.
 
 ## Authority
 
@@ -43,7 +43,7 @@ current documented system  -> docs/living/system/* reconciled to source
 development state          -> docs/blackboard/state.md
 fresh-session inputs       -> exact current WORK_CONTEXT_SPEC
 development work products  -> docs/blackboard/artifacts/*
-durable knowledge          -> docs/living/knowledge/* + decisions/*
+current roadmap            -> docs/living/knowledge/integration-phase-research-to-implementation-readiness.md
 ```
 
 Blackboard may reference Living Docs, but must not duplicate current-system semantics.
