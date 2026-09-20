@@ -43,3 +43,13 @@ Status: **PROMOTED FOR REPOSITORY DEVELOPMENT COORDINATION**
 25. BB-048 is the first in-flight item rebound onto the new `docs/blackboard/*` context router.
 26. Newly allocated implementation work after this migration requires an explicit implementation-input artifact from the Research/SA boundary.
 27. Existing Living Docs knowledge through terminal BB-047 is not semantically rewritten by this migration.
+
+## Semantic artifact invariants
+
+28. **Artifact is semantic, not procedural.** Canonical `IMPLEMENTATION_INPUT` records WHAT must become true, WHY it matters, required behaviors, invariants, acceptance criteria and semantic scope. It does not prescribe edit order, commands, prompts or model behavior.
+29. **Machine-readable canonical input.** New `IMPLEMENTATION_WORKER` contexts bind one accepted JSON `IMPLEMENTATION_INPUT` through `semanticArtifactRef`.
+30. **Exact three-way binding.** The Blackboard `implementation-input.ref`, the current `WORK_CONTEXT_SPEC.semanticArtifactRef` and the resolved artifact path must be identical.
+31. **Semantic acceptance is separate from implementation authority.** An accepted implementation input authorizes the meaning of the requested change; an IMPLEMENT context still requires its exact review/decision authority.
+32. **Execution details live in context.** Source scope, write scope, verification checks, entrypoints and repair bounds belong to `WORK_CONTEXT_SPEC` or its materialized executor projection, never to the canonical semantic artifact.
+33. **Executor capability cannot rewrite meaning.** Rich coding agents, generic interactive sessions and weak bounded harnesses may receive different context projections, but each projection carries the same semantic artifact unchanged.
+34. **Repository gate.** Invalid semantic artifacts, missing implementation artifact bindings or Board/context/artifact mismatches fail `npm run verify:blackboard-context`.
