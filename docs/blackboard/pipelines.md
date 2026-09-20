@@ -146,3 +146,26 @@ npm run materialize:blackboard-context -- <context-spec.json> WEAK_BOUNDED
 ```
 
 For ChatGPT Web/fresh interactive sessions, `GENERIC_INTERACTIVE` is the normal shape. Rich repo-native coding harnesses may use `RICH_CODING_HARNESS`. Smaller/less capable executors should use `WEAK_BOUNDED`.
+
+
+## Accepted semantic input queue
+
+The Research/SA lane may finish before the Implementation/Worker lane is ready to allocate the resulting work.
+
+```text
+explicit problem/question
+  -> RESEARCH_SA
+  -> ResearchArtifact
+  -> SA synthesis
+  -> ACCEPTED IMPLEMENTATION_INPUT
+  -> semantic input queue
+       |
+       | no active debt / no work id / no source authority
+       v
+  grounded implementation trigger
+  -> allocate IMPLEMENTATION_WORKER item
+  -> bind exact implementation-input.ref
+  -> current WORK_CONTEXT_SPEC
+```
+
+Queueing preserves research value without fabricating future Blackboard work. Multiple accepted semantic inputs may wait while another implementation item is active. Ordering among queued inputs is not implied by directory order; prerequisites/current-system pressure are evaluated when work is allocated.
