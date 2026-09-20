@@ -45,8 +45,8 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 9
-  ref: docs/blackboard/context/BB-048/g0009-implementation-readiness-judgment.json
+  generation: 10
+  ref: docs/blackboard/context/BB-048/g0010-implementation-readiness-judgment.json
 implementation-input:
   ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
@@ -58,8 +58,8 @@ scope-boundary:
 blockers:
   - implementation authority not yet granted; current lane is JUDGMENT/READINESS
 next:
-  - execute fresh readiness judgment from exact g0009 context
-  - on ACCEPT, materialize bounded g0010 EXECUTION/INITIAL context
+  - execute fresh readiness judgment from exact g0010 context
+  - on ACCEPT, materialize bounded g0011 EXECUTION/INITIAL context
   - EXECUTION may publish IMPLEMENTATION_RESULT facts only; a later fresh JUDGMENT/CANDIDATE owns correctness
 
 ## Allocation rules
