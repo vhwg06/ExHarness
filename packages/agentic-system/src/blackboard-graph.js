@@ -125,6 +125,13 @@ export function createJsonBlackboardStore(options) {
       });
     },
 
+    async withMutationFence(action) {
+      invariant(typeof action === "function", "Blackboard store withMutationFence requires an action");
+      return store.withMutationFence(async ({ token, snapshot }) => {
+        return action(freezeClone({ token, snapshot: defineBlackboardSnapshot(snapshot) }));
+      });
+    },
+
     async diagnoseDependencyGraph() {
       return diagnoseBlackboardDependencyGraph(await store.load());
     },
