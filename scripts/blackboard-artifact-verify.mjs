@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { assertSemanticArtifact } from "./blackboard-artifact-contract.mjs";
+import { assertBlackboardArtifact } from "./blackboard-artifact-contract.mjs";
 
 function walk(dir){
   if(!fs.existsSync(dir))return [];
@@ -15,12 +15,12 @@ export function verifySemanticArtifacts({root="."}={}){
   const files=walk(dir).filter(p=>p.endsWith(".json"));
   for(const file of files){
     const artifact=JSON.parse(fs.readFileSync(file,"utf8"));
-    assertSemanticArtifact(artifact);
+    assertBlackboardArtifact(artifact);
   }
   return files.map(p=>path.relative(root,p).replaceAll("\\","/"));
 }
 
 if(process.argv[1]?.endsWith("blackboard-artifact-verify.mjs")){
   const files=verifySemanticArtifacts();
-  console.log(JSON.stringify({ok:true,semanticArtifacts:files.length,files}));
+  console.log(JSON.stringify({ok:true,blackboardArtifacts:files.length,files}));
 }
