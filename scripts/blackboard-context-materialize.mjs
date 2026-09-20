@@ -18,7 +18,6 @@ export function materializeContext(spec,{root=".",profile=CONTEXT_PROFILES.GENER
 
   const common={
     itemId:spec.itemId,
-    generation:spec.generation,
     pipeline:spec.pipeline,
     stage:spec.stage,
     action:spec.action.kind,
