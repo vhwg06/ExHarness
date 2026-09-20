@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import { readJson, assertWorkContext, assertGeneration } from "./blackboard-context-contract.mjs";
-import { parseCurrentContext, parseItemRef, assertBoardBinding } from "./blackboard-context-board.mjs";
+import { parseCurrentContext, parseItemRef, parseItemScalar, assertBoardBinding } from "./blackboard-context-board.mjs";
 import { resolveContext } from "./blackboard-context-resolver.mjs";
-import { assertSemanticArtifact } from "./blackboard-artifact-contract.mjs";
+import { assertSemanticArtifact, assertBlackboardArtifact } from "./blackboard-artifact-contract.mjs";
 
 function git(root,args){return execFileSync("git",["-C",root,...args],{encoding:"utf8"}).trim();}
 function activeSection(board){
@@ -45,19 +45,50 @@ function verifyOne({board,boardPath,root,itemId}) {
     const boardArtifactRef=parseItemRef(board,itemId,"implementation-input");
     if(boardArtifactRef!==spec.semanticArtifactRef)
       throw new Error("SEMANTIC_ARTIFACT_BINDING_INVALID: Board/context mismatch");
+    const boardLane=parseItemScalar(board,itemId,"lane");
+    if(boardLane!==spec.lane)
+      throw new Error("IMPLEMENTATION_LANE_BINDING_INVALID: Board/context mismatch");
     const artifact=JSON.parse(fs.readFileSync(`${root}/${spec.semanticArtifactRef}`,"utf8"));
     assertSemanticArtifact(artifact);
+
+    if(spec.lane==="JUDGMENT"&&spec.judgmentKind==="CANDIDATE"){
+      const boardResultRef=parseItemRef(board,itemId,"implementation-result");
+      if(boardResultRef!==spec.implementationResultRef)
+        throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: Board/context mismatch");
+      const result=JSON.parse(fs.readFileSync(`${root}/${spec.implementationResultRef}`,"utf8"));
+      assertBlackboardArtifact(result);
+      if(result.artifactType!=="IMPLEMENTATION_RESULT")
+        throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: wrong artifact type");
+      if(result.subject.itemId!==itemId ||
+         result.subject.semanticArtifactRef!==spec.semanticArtifactRef ||
+         result.subject.candidateRef!==spec.reviewTarget.candidateHeadSha)
+        throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: subject mismatch");
+      if(result.subject.producerContextRef===binding.ref)
+        throw new Error("JUDGMENT_INDEPENDENCE_INVALID: producer and judgment context must differ");
+    }
   }
   if(spec.action.kind==="REVIEW") assertReviewTarget(spec,{root});
   if(spec.action.kind==="IMPLEMENT"){
     const parent=readJson(`${root}/${spec.parentContextRef}`);
     assertWorkContext(parent);
     assertGeneration(parent,spec);
-    const decision=parseDecision(`${root}/${spec.authority.implementationDecisionRef}`);
-    if(decision.verdict!=="ACCEPT"||decision.subjectContextRef!==spec.authority.subjectContextRef||decision.subjectCandidateHeadSha!==spec.authority.subjectCandidateHeadSha)
-      throw new Error("IMPLEMENT_AUTHORITY_INVALID: decision subject/verdict mismatch");
-    if(parent.reviewTarget?.candidateHeadSha!==spec.authority.subjectCandidateHeadSha)
-      throw new Error("IMPLEMENT_AUTHORITY_INVALID: candidate mismatch");
+    if(spec.pipeline==="IMPLEMENTATION_WORKER"&&spec.executionMode==="REPAIR"){
+      const judgment=JSON.parse(fs.readFileSync(`${root}/${spec.authority.repairJudgmentRef}`,"utf8"));
+      assertBlackboardArtifact(judgment);
+      if(judgment.artifactType!=="JUDGMENT"||judgment.verdict!=="FINDINGS"||
+         judgment.subject.judgmentContextRef!==spec.authority.subjectContextRef||
+         judgment.subject.candidateRef!==spec.authority.subjectCandidateHeadSha||
+         judgment.subject.semanticArtifactRef!==spec.semanticArtifactRef)
+        throw new Error("REPAIR_AUTHORITY_INVALID: judgment subject/verdict mismatch");
+      if(parent.reviewTarget?.candidateHeadSha!==spec.authority.subjectCandidateHeadSha)
+        throw new Error("REPAIR_AUTHORITY_INVALID: candidate mismatch");
+    } else {
+      const decision=parseDecision(`${root}/${spec.authority.implementationDecisionRef}`);
+      if(decision.verdict!=="ACCEPT"||decision.subjectContextRef!==spec.authority.subjectContextRef||decision.subjectCandidateHeadSha!==spec.authority.subjectCandidateHeadSha)
+        throw new Error("IMPLEMENT_AUTHORITY_INVALID: decision subject/verdict mismatch");
+      if(parent.reviewTarget?.candidateHeadSha!==spec.authority.subjectCandidateHeadSha)
+        throw new Error("IMPLEMENT_AUTHORITY_INVALID: candidate mismatch");
+    }
   }
   const pack=resolveContext(spec,{root});
   return {itemId,binding,pack,boardPath};
