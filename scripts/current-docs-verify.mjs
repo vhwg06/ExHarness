@@ -47,9 +47,30 @@ for(const file of allowedKnowledge){
   if(!livingFiles.includes(file))fail(`missing canonical Living knowledge: ${file}`);
 }
 
+const decisionFiles=livingFiles.filter(file=>file.startsWith("docs/living/decisions/"));
+const allowedDecisions=new Set([
+  "docs/living/decisions/README.md"
+]);
+for(const file of decisionFiles){
+  if(!allowedDecisions.has(file))
+    fail(`non-current Living decision file: ${file}`);
+}
+for(const file of allowedDecisions){
+  if(!livingFiles.includes(file))fail(`missing Living decisions policy: ${file}`);
+}
+
+for(const file of livingFiles.filter(file=>file.startsWith("docs/living/system/")&&file.endsWith(".md"))){
+  const body=fs.readFileSync(path.join(root,file),"utf8");
+  if(/\bBB-\d+\b/.test(body))
+    fail(`delivery-work id leaked into current system docs: ${file}`);
+  if(/\bD0\d+\b/.test(body))
+    fail(`delivery-decision id leaked into current system docs: ${file}`);
+}
+
 console.log(JSON.stringify({
   ok:true,
   blackboardFiles:blackboardFiles.length,
   livingFiles:livingFiles.length,
-  currentKnowledge:[...allowedKnowledge]
+  currentKnowledge:[...allowedKnowledge],
+  currentDecisionPolicy:[...allowedDecisions]
 }));
