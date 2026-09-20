@@ -28,8 +28,8 @@ const input={
 };
 
 test("accepted implementation input is semantic and valid",()=>assert.equal(assertSemanticArtifact(input),input));
-test("procedural command field is rejected",()=>assert.throws(()=>assertSemanticArtifact({...input,semantics:{...input.semantics,commands:["npm test"]}}),/non-semantic|procedural/));
-test("source scope cannot leak into semantic artifact",()=>assert.throws(()=>assertSemanticArtifact({...input,semantics:{...input.semantics,sourceScope:{write:["x"]}}}),/procedural/));
+test("procedural command field is rejected",()=>assert.throws(()=>assertSemanticArtifact({...input,semantics:{...input.semantics,commands:["npm test"]}}),/non-semantic|procedural|forbidden field/));
+test("source scope cannot leak into semantic artifact",()=>assert.throws(()=>assertSemanticArtifact({...input,semantics:{...input.semantics,sourceScope:{write:["x"]}}}),/procedural|forbidden field/));
 test("implementation input must be accepted",()=>assert.throws(()=>assertSemanticArtifact({...input,status:"PROPOSED"}),/status must be ACCEPTED/));
 
 const resultArtifact={
