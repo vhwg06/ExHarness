@@ -74,36 +74,25 @@ A finding is classified as one of:
 
 Only grounded `FINDINGS` can authorize a bounded repair execution.
 
-## Current enforced artifacts
-
-- `implementation-input/BB-048-domain-execution-control-v1.json` — canonical semantic input.
-- `implementation-input/BB-048-migrated-readiness.md` — historical migration provenance only.
-
-An accepted artifact does not claim the capability already exists. Living Docs change only when delivered system behavior changes.
-
-
 ## Accepted implementation-input queue
 
 Research/SA may complete semantic compilation before Implementation/Worker work is allocated.
 
 ```text
 ACCEPTED IMPLEMENTATION_INPUT
-  -> may remain queued here
+  -> may remain unallocated
   -> no active Blackboard item required
   -> no work id consumed
   -> no source mutation authority
   -> later grounded trigger binds the exact artifact into a new IMPLEMENTATION_WORKER item/context
 ```
 
-The queue is an inventory of accepted semantic handoffs, **not backlog**. Current work still comes only from `docs/blackboard/state.md`.
+This directory stores immutable semantic handoffs and evidence. It does **not** maintain the current queue inventory.
 
-Accepted unallocated inputs:
+Current accepted queue membership, active allocation and current-context routing are read only from:
 
-- `implementation-input/integration-c-cross-domain-obligation-lineage-v1.json` — typed cross-domain obligations, authoritative semantic lineage and selective invalidation.
-- `implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json` — domain-local activation and FE/BE parallel autonomy.
-- `implementation-input/integration-ef-deployment-acceptance-snapshot-v1.json` — exact deployment identity, AcceptanceSnapshot, runtime observation and Product QA trust.
-- `implementation-input/integration-g-product-completeness-closure-v1.json` — omission-resistant ProductHistory completeness, deterministic projection and closure currentness.
+`docs/blackboard/state.md`
 
-Allocated/in-flight input:
+Artifact existence, filename ordering, creation time, or a `vN` suffix never establishes currentness.
 
-- `implementation-input/BB-048-domain-execution-control-v1.json` — bound by active BB-048.
+If a semantic input is superseded before allocation, both immutable artifacts may remain for provenance, but `state.md` must name only the current accepted input(s). A future worker binds the exact ref named by the current state; it never guesses which version is latest.

@@ -4,6 +4,8 @@ Status: **DEVELOPMENT CONTEXT ROUTER**
 
 The Blackboard describes how ExHarness is currently being developed. It does not describe what ExHarness is; current system truth is under `docs/living/`.
 
+This file is the single mutable current-state source of truth for outer-Blackboard routing. Other Blackboard documents may define invariants or retain immutable evidence, but they must not duplicate current active work, queue membership, current-context, blockers or next actions.
+
 ## Project
 
 ```text

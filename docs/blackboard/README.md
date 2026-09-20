@@ -100,3 +100,41 @@ user intent
 ```
 
 `EXECUTION` and `JUDGMENT` use different immutable context generations. A producer may report what it did and observed; only the judgment lane may claim acceptance.
+
+
+## Single current-state source of truth
+
+`state.md` is the only mutable current-state projection for the outer Blackboard.
+
+It owns current facts such as:
+
+- active work;
+- current pipeline/lane/stage;
+- current-context ref + generation;
+- current accepted semantic-input queue membership;
+- next work id;
+- current blockers / next actions;
+- canonical roadmap pointer.
+
+Other Blackboard files must not duplicate those facts as independently current inventories.
+
+```text
+state.md
+  = CURRENT DEVELOPMENT STATE / ROUTING SoT
+
+README.md
+contracts.md
+pipelines.md
+  = stable semantics / invariants
+  != current work inventory
+
+context/gNNNN-*.json
+judgment/result artifacts
+history/*
+  = immutable evidence/history
+  != currentness by existence
+```
+
+For mutable Blackboard documentation, update the canonical file in place and use Git history for revisions. Do not create sibling `vN` files for ordinary corrections.
+
+Immutable context generations and judgment/result artifacts are intentionally append-only. They are not competing SoTs because currentness is established only by the exact pointer in `state.md` (or by a terminal record after work closes), never by choosing the highest generation or newest filename.

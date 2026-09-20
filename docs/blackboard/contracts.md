@@ -77,3 +77,13 @@ Status: **PROMOTED FOR REPOSITORY DEVELOPMENT COORDINATION**
 49. **Queue order is non-semantic.** File ordering or creation time does not establish implementation priority or dependency order.
 50. **Allocation binds exactly one semantic subject.** A newly allocated Implementation/Worker item names the exact accepted implementation-input ref it consumes; it does not reconstruct meaning from research history.
 51. **Stale premise fails closed at allocation.** If current-system truth materially contradicts a queued semantic input before allocation, the item returns to Research/SA for bounded reconciliation rather than being silently reinterpreted by Worker execution or judgment.
+
+
+## Current-state SoT invariants
+
+52. **One mutable current-state SoT.** `docs/blackboard/state.md` is the only canonical mutable projection of current outer-Blackboard work state and routing.
+53. **No duplicated current inventories.** README, contracts, pipeline, artifact and history documents may describe semantics or immutable facts, but must not maintain a second independently-current list of active work, queue membership, current context, blocker or next action.
+54. **Mutable canonical files update in place.** Ordinary corrections to mutable Blackboard documentation update the existing canonical path; Git history provides revision history. Sibling `vN` files are not created for ordinary corrections.
+55. **Immutable generations remain append-only.** `WORK_CONTEXT_SPEC` generations, implementation results, judgments and terminal history are immutable evidence. Their multiplicity is intentional and does not define currentness.
+56. **Pointer beats filename/version.** Currentness is never inferred from largest generation, newest timestamp, filename suffix or artifact existence. It comes from the exact canonical pointer in `state.md`; terminal work uses its recorded closure/judgment lineage.
+57. **Semantic artifact supersession must be explicit.** If an accepted semantic input is replaced before allocation, the canonical queue/current-state projection must explicitly stop naming the superseded artifact and name the replacement. Consumers never guess by `v1/v2` filenames.
