@@ -45,6 +45,6 @@ Missing manifest, unavailable payload and identity/provenance mismatches fail cl
 
 There is no MCP-backed resolution path in current source. `oracle.js` does not issue `resources/read`, `tools/call`, MRTR retries or Tasks operations, and it persists no MCP continuation state.
 
-D006 is an accepted architecture constraint for any later concrete MCP-backed source; it does not make that flow current implementation. See `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md`.
+Any later concrete MCP-backed source remains below application-owned work/lifecycle authority; this constraint does not make an MCP flow current implementation.
 
 No implicit refresh, background provider lifecycle, cache or retrieval pass exists in the current workflow.
