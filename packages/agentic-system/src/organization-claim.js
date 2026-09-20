@@ -214,6 +214,7 @@ export function createOrganizationWorkClaimController({
 }){
   const policyId=requireText(executionAuthorityPolicyId,"executionAuthorityPolicyId");
   invariant(orchestrator&&typeof orchestrator.readBlackboard==="function"&&typeof orchestrator.claim==="function","claim controller requires ApplicationOrchestrator");
+  invariant(typeof orchestrator.withOrganizationClaimGuard==="function","claim controller requires organization claim mutation guard");
   invariant(orchestrator&&typeof orchestrator.blockOrganizationMaterialization==="function","claim controller requires materialization blocking");
   invariant(artifactRegistry&&typeof artifactRegistry.resolveWorkContract==="function","claim controller requires artifact registry");
   invariant(typeof artifactRegistry.putClaimReleaseReceipt==="function"&&typeof artifactRegistry.resolveClaimReleaseReceipt==="function","claim controller requires claim release artifact registry");
@@ -396,6 +397,57 @@ export function createOrganizationWorkClaimController({
     ) throw new AuthorityFailure("EXECUTION","execution authority policy head changed");
   }
 
+  async function withExecutablePublicationGuard({itemId,claimGeneration,receiptRef},action){
+    invariant(Number.isInteger(claimGeneration)&&claimGeneration>0,"claimGeneration must be positive");
+    invariant(typeof action==="function","publication guard action is required");
+    const preReceipt=await artifactRegistry.resolveClaimReleaseReceipt(receiptRef);
+    invariant(preReceipt,"claim release receipt artifact not found: "+receiptRef);
+    invariant(preReceipt.itemId===itemId&&preReceipt.claimGeneration===claimGeneration,"claim release receipt subject mismatch");
+
+    return orchestrator.withOrganizationClaimGuard({
+      itemId,
+      expectedOwner:requireText(preReceipt.boardOwner,"receipt boardOwner"),
+      expectedClaimGeneration:claimGeneration
+    },async(lifecycleObservation)=>{
+      const {item,contract}=await resolveContractForItem(itemId);
+      invariant(item.status==="CLAIMED"&&item.owner===preReceipt.boardOwner&&item.claimGeneration===claimGeneration,"Board claim tuple changed before publication");
+      const key=claimReleaseSubjectKey(contract.projectId,itemId,claimGeneration);
+      const releaseHead=await claimReleaseStore.current(key);
+      invariant(releaseHead?.value?.status===ClaimReleaseStatus.RELEASED&&releaseHead.value.receiptRef===receiptRef,"claim release is not current/released during publication");
+      const receipt=await artifactRegistry.resolveClaimReleaseReceipt(receiptRef);
+      invariant(receipt,"claim release receipt artifact not found: "+receiptRef);
+      invariant(
+        receipt.projectId===contract.projectId&&
+        receipt.rootItemId===contract.rootItemId&&
+        receipt.rootIntentId===contract.rootIntentId&&
+        receipt.itemId===itemId&&
+        receipt.claimGeneration===claimGeneration&&
+        receipt.workContractRef===contract.contractRef&&
+        receipt.boardOwner===item.owner,
+        "claim release receipt subject mismatch during publication"
+      );
+      const principal=freeze({
+        identity:receipt.boardOwner,
+        principalRef:requireText(receipt.principalRef,"receipt principalRef")
+      });
+      const observed=await currentAuthorities({
+        materializationAuthorizationStore,executionAuthorityPolicyStore,artifactRegistry,
+        item,policyId,principal,contract
+      });
+      assertReceiptAuthority(receipt,observed,item);
+      return action(freeze({
+        lifecycle:lifecycleObservation,
+        claimRelease:{
+          subjectKey:key,
+          revision:releaseHead.revision,
+          receiptRef
+        },
+        principalRef:principal.principalRef,
+        workContractRef:contract.contractRef
+      }));
+    });
+  }
+
   return Object.freeze({
     async claim({itemId,principalContext}){
       const {item:before,contract}=await resolveContractForItem(itemId);
@@ -499,6 +551,8 @@ export function createOrganizationWorkClaimController({
 
       return released;
     },
+
+    withExecutablePublicationGuard,
 
     async assertExecutable({itemId,claimGeneration,receiptRef}){
       const {item,contract}=await resolveContractForItem(itemId);
