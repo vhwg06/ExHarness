@@ -10,9 +10,9 @@ import {
   createApplicationOrchestrator,
   createJsonBlackboardStore,
   createSessionHandoffSurface
-} from "../../../packages/agentic-system/src/index.js";
-import { makeQaWorkOrder } from "../../../packages/agentic-system/src/qa-contracts.js";
-import { resolveQaContext } from "../../../packages/agentic-system/src/oracle.js";
+} from "../packages/agentic-system/src/index.js";
+import { makeQaWorkOrder } from "../packages/agentic-system/src/qa-contracts.js";
+import { resolveQaContext } from "../packages/agentic-system/src/oracle.js";
 
 const PROJECT_ID = "bb039-project";
 const ITEM_ID = "bb039-qa-continuation";

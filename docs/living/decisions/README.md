@@ -21,3 +21,7 @@ Do not keep `SUPERSEDED`, historical readiness, rejection, repair-finding, merge
 `docs/living/system/*` is the source-synchronized statement of what is true now. Active work belongs to `docs/blackboard/state.md`; current queued semantic work belongs to canonical Blackboard implementation-input artifacts.
 
 A decision that remains here must still contribute current semantic value: an authority boundary, architecture constraint, accepted trade-off, or explicit non-goal that is not already self-evident from the current system projection.
+
+## Current-decision rule
+
+This directory keeps only decisions that still constrain or explain current system semantics. Readiness reviews, rejection/repair rounds, merge acceptance transcripts and superseded delivery evidence are not Living decisions and must not remain in the working tree after their semantics are promoted. Git history is sufficient for those records.

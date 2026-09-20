@@ -13,7 +13,7 @@ import {
   createDeliberationStore,
   createGroundedCognitionPort,
   defineGroundingVerifier
-} from "../../../packages/core-harness/src/cognition.js";
+} from "../packages/core-harness/src/cognition.js";
 import {
   ClaimStatus,
   SemanticMemorySourceRefKind,
@@ -28,13 +28,13 @@ import {
   environmentRefFromValue,
   evaluateTrustBoundary,
   policyRefFromValue
-} from "../../../packages/core-harness/src/index.js";
+} from "../packages/core-harness/src/index.js";
 import {
   createDeterministicClock,
   createDeterministicIdFactory
-} from "../../../packages/core-harness/src/testing.js";
+} from "../packages/core-harness/src/testing.js";
 
-const root = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
+const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const replayArtifact = JSON.parse(await readFile(
   join(root, "artifacts", "bb038-workflow-replay-eval.json"),
   "utf8"

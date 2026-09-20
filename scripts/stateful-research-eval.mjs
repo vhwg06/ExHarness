@@ -11,7 +11,7 @@ import {
   createApplicationOrchestrator,
   createJsonBlackboardStore,
   createSessionHandoffSurface
-} from "../../../packages/agentic-system/src/index.js";
+} from "../packages/agentic-system/src/index.js";
 
 const execFile = promisify(execFileCallback);
 const EVIDENCE_CLASS = "DETERMINISTIC_REFERENCE";

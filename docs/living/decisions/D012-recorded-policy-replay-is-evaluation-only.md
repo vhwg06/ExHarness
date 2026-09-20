@@ -105,7 +105,7 @@ Those abstractions require separate repeated-consumer and measured-value evidenc
 
 ## Evidence
 
-- `docs/living/knowledge/bb038-workflow-policy-replay.md`;
+- `scripts/workflow-policy-replay-eval.mjs`;
 - `scripts/workflow-policy-replay-eval.mjs`;
 - `artifacts/bb038-workflow-replay-eval.json`;
 - BB-024 baseline/candidate cancellation evidence from `blackboard-orchestrator.js` and PR #85;

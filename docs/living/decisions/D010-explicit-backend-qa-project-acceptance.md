@@ -222,7 +222,7 @@ Rejected. Narrative is not grounded evidence, an integrity-checked decision or a
 
 ## Evidence
 
-- `docs/living/knowledge/bb018-review-to-completion.md`;
+- `docs/living/system/agentic-application/project-acceptance.md`;
 - PR #86 application architecture review on exact design head `f8e97ccaac648dd2e6ef5ca9054c4bda53fb1fd9`;
 - PR #86 acceptance/trust review on exact design head `f8e97ccaac648dd2e6ef5ca9054c4bda53fb1fd9`;
 - `docs/living/decisions/D003-orchestrator-blackboard-review-authority.md`;

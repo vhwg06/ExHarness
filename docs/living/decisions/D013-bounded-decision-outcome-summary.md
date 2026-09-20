@@ -102,10 +102,10 @@ The BB-028 anti-laundering controls, including exact stored-artifact identity mi
 
 ## Evidence
 
-- `docs/living/knowledge/bb028-decision-outcome-chain.md`
-- `docs/living/knowledge/bb028-decision-outcome-probe.mjs`
+- `docs/living/system/agentic-application/decision-outcome.md`
+- `scripts/decision-outcome-eval.mjs`
 - `artifacts/bb028-decision-outcome-probe.json`
-- `docs/living/knowledge/bb028-exact-artifact-identity-probe.mjs`
+- `scripts/exact-artifact-identity-eval.mjs`
 - `artifacts/bb028-exact-artifact-identity-probe.json`
 - PR #110 architecture-boundary and anti-laundering remediation context; exact-head CI #1778 green
 - PR #116 evaluation-method / anti-laundering review PASS on exact head `dbf825b0223d646b81513a2e97673c77b15db4c2`
