@@ -1,31 +1,28 @@
 {
   "kind": "WORK_CONTEXT_SPEC",
   "version": 1,
-  "status": "REPAIR_IMPLEMENTATION_CONTEXT",
+  "status": "PENDING_JUDGMENT_CONTEXT",
   "contextId": "BB-048-context",
   "itemId": "BB-048",
   "pipeline": "IMPLEMENTATION_WORKER",
-  "stage": "IMPLEMENTATION_REPAIR",
-  "role": "IMPLEMENTATION_WORKER",
+  "stage": "IMPLEMENTATION_CANDIDATE_REVIEW",
+  "role": "REVIEWER",
   "action": {
-    "kind": "IMPLEMENT",
-    "summary": "Repair only the remaining lifecycle-publication currentness race from the current BB-048 FINDINGS judgment.",
-    "allowedMutations": [
-      "use one production Blackboard mutation fence for lifecycle transactions and guarded canonical publication",
-      "prove lifecycle invalidation cannot commit through publication using the real store/orchestrator/claim-controller path",
-      "preserve current writer-authority fencing, publication idempotency and transition revision lineage",
-      "update current Living Docs and current implementation result/context only"
-    ],
+    "kind": "REVIEW",
+    "summary": "Fresh independent review of the exact BB-048 repair candidate after replacing the optimistic lifecycle guard with a production organization lifecycle/publication fence.",
+    "allowedMutations": [],
     "forbiddenActions": [
-      "change BB-048 semantic input",
-      "reopen already-closed publication-idempotency or transition-revision findings without contradictory evidence",
-      "implement Integration C-J",
-      "introduce cross-domain scheduling or work-selection authority",
-      "claim acceptance from EXECUTION"
+      "mutate product source",
+      "reuse prior FINDINGS or producer observations as acceptance authority",
+      "repair findings in the judgment lane",
+      "change the exact candidate revision",
+      "enter Integration C-J implementation"
     ]
   },
-  "authority": {
-    "ref": "docs/blackboard/artifacts/judgment/BB-048.json"
+  "reviewTarget": {
+    "repository": "vhwg06/ExHarness",
+    "targetType": "git-commit",
+    "candidateHeadSha": "d2136feb1099df6f57bb1c5f1a95965e927772fb"
   },
   "sourceBaseline": {
     "repository": "vhwg06/ExHarness",
@@ -38,15 +35,14 @@
     "packages/agentic-system/src/application-orchestrator.js",
     "packages/agentic-system/src/organization-claim.js",
     "packages/agentic-system/src/domain-execution-control.js",
-    "packages/agentic-system/test/bb048-domain-execution-control.test.js",
     "packages/agentic-system/test/bb047-organization-bridge.test.js",
+    "packages/agentic-system/test/bb048-domain-execution-control.test.js",
     "docs/living/knowledge/domain-execution-control-implementation-readiness.md",
     "docs/living/knowledge/domain-execution-control-judgment-artifacts.md"
   ],
   "requiredInputRefs": [
     "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json",
-    "docs/blackboard/artifacts/implementation-result/BB-048.json",
-    "docs/blackboard/artifacts/judgment/BB-048.json"
+    "docs/blackboard/artifacts/implementation-result/BB-048.json"
   ],
   "sourceScope": {
     "read": [
@@ -56,60 +52,36 @@
       "packages/agentic-system/test/**",
       "test/**"
     ],
-    "write": [
-      "packages/agentic-system/src/blackboard-store.js",
-      "packages/agentic-system/src/blackboard-graph.js",
-      "packages/agentic-system/src/blackboard-json-payload.js",
-      "packages/agentic-system/src/application-orchestrator.js",
-      "packages/agentic-system/src/organization-claim.js",
-      "packages/agentic-system/src/domain-execution-control.js",
-      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
-      "packages/agentic-system/test/bb047-organization-bridge.test.js",
-      "docs/living/system/state.md",
-      "docs/living/system/capabilities.md",
-      "docs/living/system/agentic-application/state.md",
-      "docs/living/system/agentic-application/capabilities.md",
-      "docs/living/system/agentic-application/boundaries.md",
-      "docs/living/system/agentic-application/contracts.md",
-      "docs/blackboard/artifacts/implementation-result/BB-048.json",
-      "docs/blackboard/context/BB-048/current.json",
-      "docs/blackboard/state.md"
-    ],
+    "write": [],
     "forbiddenWrite": [
-      "packages/core-harness/**",
-      "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/pm-sa-coordination.js",
-      "packages/agentic-system/src/durable-backend-qa.js",
-      "docs/living/system/core-harness/**",
-      "docs/living/system/oracle/**"
+      "**"
     ]
   },
   "hardInvariants": [
-    "no authoritative publication side effect may commit after the exact organization claim lifecycle subject becomes non-current",
-    "publication lifecycle currentness uses the same production mutation fence as every claim lifecycle transaction",
-    "successor conflict discovered after external publication is not a lifecycle fence",
+    "candidate judgment is read-only and independent from execution producer authority",
+    "judgment binds exact semantic input, current implementation result, source baseline and exact candidate revision",
+    "organization claim lifecycle mutations that can invalidate executable capability share one production fence with authoritative publication",
+    "general unrelated Blackboard transactions retain optimistic single-successor CAS semantics",
     "domain writer authority remains fenced through canonical publication commit",
-    "stable semantic-attempt publication idempotency remains intact",
-    "ExecutionAttemptTransition observedHeadRevision remains intact",
-    "EXECUTION publishes facts only and cannot self-accept"
+    "canonical publication remains idempotent under concurrent recovery",
+    "ExecutionAttemptTransition observedHeadRevision reconstruction remains intact",
+    "Integration C-J remain out of scope"
   ],
   "verification": [
-    "real Blackboard store/ApplicationOrchestrator/OrganizationWorkClaimController race: invalidation cannot commit while guarded publication is active",
-    "existing concurrent recovery/idempotent publication test",
-    "existing forged observedHeadRevision fresh reconstruction test",
-    "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
-    "node --test packages/agentic-system/test/bb047-organization-bridge.test.js",
-    "npm run verify"
+    "independently inspect the exact diff abad5d6ec4d5f98d48aeb1eb81f1729a176029d5..d2136feb1099df6f57bb1c5f1a95965e927772fb",
+    "verify workflow run 35512000074 on exact candidate",
+    "verify the real production-path lifecycle/publication race test does not use fixture serialGuard() as lifecycle authority",
+    "verify ordinary Blackboard writer concurrency remains optimistic successor-CAS",
+    "verify writer-authority/idempotency and transition-revision repairs remain intact",
+    "verify no Integration C-J scope leak"
   ],
   "expectedOutputs": [
-    "real lifecycle publication fence",
-    "production race proof",
-    "preserved closed repairs",
-    "current BB-048 implementation result",
-    "fresh candidate judgment"
+    "one current JUDGMENT artifact bound to exact candidate and current result",
+    "ACCEPT with zero findings or FINDINGS with grounded repair items",
+    "no source mutation from judgment lane"
   ],
   "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json",
   "implementationResultRef": "docs/blackboard/artifacts/implementation-result/BB-048.json",
-  "lane": "EXECUTION",
-  "executionMode": "REPAIR"
+  "lane": "JUDGMENT",
+  "judgmentKind": "CANDIDATE"
 }
