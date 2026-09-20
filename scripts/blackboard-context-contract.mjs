@@ -34,6 +34,7 @@ export function assertWorkContext(spec) {
       if (!["INITIAL","REPAIR"].includes(spec.executionMode)) fail("EXECUTION lane requires executionMode INITIAL or REPAIR");
       if (spec.judgmentKind != null) fail("EXECUTION lane may not declare judgmentKind");
       if (!spec.authority?.ref) fail("EXECUTION lane requires exact authority.ref");
+      if (Object.keys(spec.authority).length !== 1) fail("EXECUTION authority may contain only ref");
     }
     if (spec.lane === "JUDGMENT") {
       if (spec.action.kind !== "REVIEW") fail("JUDGMENT lane requires REVIEW action");
