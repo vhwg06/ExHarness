@@ -1,8 +1,9 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import { readJson, assertWorkContext, assertGeneration } from "./blackboard-context-contract.mjs";
-import { parseCurrentContext, assertBoardBinding } from "./blackboard-context-board.mjs";
+import { parseCurrentContext, parseItemRef, assertBoardBinding } from "./blackboard-context-board.mjs";
 import { resolveContext } from "./blackboard-context-resolver.mjs";
+import { assertSemanticArtifact } from "./blackboard-artifact-contract.mjs";
 
 function git(root,args){return execFileSync("git",["-C",root,...args],{encoding:"utf8"}).trim();}
 function activeSection(board){
@@ -40,6 +41,13 @@ function verifyOne({board,boardPath,root,itemId}) {
   const spec=readJson(`${root}/${binding.ref}`);
   assertWorkContext(spec);
   assertBoardBinding(binding,spec,binding.ref);
+  if(spec.pipeline==="IMPLEMENTATION_WORKER"){
+    const boardArtifactRef=parseItemRef(board,itemId,"implementation-input");
+    if(boardArtifactRef!==spec.semanticArtifactRef)
+      throw new Error("SEMANTIC_ARTIFACT_BINDING_INVALID: Board/context mismatch");
+    const artifact=JSON.parse(fs.readFileSync(`${root}/${spec.semanticArtifactRef}`,"utf8"));
+    assertSemanticArtifact(artifact);
+  }
   if(spec.action.kind==="REVIEW") assertReviewTarget(spec,{root});
   if(spec.action.kind==="IMPLEMENT"){
     const parent=readJson(`${root}/${spec.parentContextRef}`);

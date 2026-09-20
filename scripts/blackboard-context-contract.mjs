@@ -17,6 +17,13 @@ export function assertWorkContext(spec) {
   if (!spec.itemId || !Number.isInteger(spec.generation) || spec.generation < 1) fail("item/generation");
   if (!["REVIEW","IMPLEMENT","RESEARCH","SYNTHESIZE"].includes(spec.action?.kind)) fail("action.kind");
   if (spec.pipeline != null && !["RESEARCH_SA","IMPLEMENTATION_WORKER"].includes(spec.pipeline)) fail("pipeline");
+  for (const k of ["requiredCurrentSystemRefs","requiredInputRefs","auditRefs"]) if (!Array.isArray(spec[k])) fail(k);
+  if (spec.pipeline === "IMPLEMENTATION_WORKER") {
+    if (typeof spec.semanticArtifactRef !== "string" || !spec.semanticArtifactRef.endsWith(".json"))
+      fail("IMPLEMENTATION_WORKER requires semanticArtifactRef JSON");
+    if (!spec.requiredInputRefs.includes(spec.semanticArtifactRef))
+      fail("semanticArtifactRef must be a required input");
+  }
   if (spec.stage != null && (typeof spec.stage !== "string" || !spec.stage.trim())) fail("stage");
   for (const k of ["read","write","forbiddenWrite"]) if (!Array.isArray(spec.sourceScope?.[k])) fail(`sourceScope.${k}`);
   for (const w of spec.sourceScope.write) for (const x of spec.sourceScope.forbiddenWrite) if (overlap(w,x)) fail(`write/forbidden overlap: ${w} <> ${x}`);
@@ -32,7 +39,6 @@ export function assertWorkContext(spec) {
     if (!spec.authority?.subjectContextRef || !spec.authority?.subjectCandidateHeadSha) fail("IMPLEMENT requires exact decision subject");
     if (!spec.parentContextRef || spec.authority.subjectContextRef !== spec.parentContextRef) fail("IMPLEMENT decision subject must equal parent context");
   }
-  for (const k of ["requiredCurrentSystemRefs","requiredInputRefs","auditRefs"]) if (!Array.isArray(spec[k])) fail(k);
   return spec;
 }
 

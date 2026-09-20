@@ -41,10 +41,10 @@ priority: P1
 status: PENDING_REVIEW
 owner:
 current-context:
-  generation: 6
-  ref: docs/blackboard/context/BB-048/g0006-implementation-readiness-review.json
+  generation: 8
+  ref: docs/blackboard/context/BB-048/g0008-implementation-readiness-review.json
 implementation-input:
-  ref: docs/blackboard/artifacts/implementation-input/BB-048-migrated-readiness.md
+  ref: docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json
 depends-on: []
 scope-boundary:
   - start only from an exact current released organizational claim
@@ -54,8 +54,8 @@ scope-boundary:
 blockers:
   - implementation authority not yet granted; current generation is REVIEW only
 next:
-  - execute fresh review from exact g0006 context
-  - on ACCEPT, materialize bounded g0007 IMPLEMENT context for Worker
+  - execute fresh review from exact g0008 context
+  - on ACCEPT, materialize bounded g0009 IMPLEMENT context for Worker
 
 ## Allocation rules
 
