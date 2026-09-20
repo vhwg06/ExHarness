@@ -1,0 +1,75 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "status": "SYNTHESIS_CONTEXT",
+  "contextId": "BB-049-context",
+  "itemId": "BB-049",
+  "generation": 2,
+  "parentContextRef": "docs/blackboard/context/BB-049/g0001-product-completeness-research.json",
+  "pipeline": "RESEARCH_SA",
+  "stage": "SA_SYNTHESIS",
+  "role": "SOLUTION_ARCHITECT",
+  "project": {
+    "rootIntentId": "INTENT-exharness-agentic-system"
+  },
+  "action": {
+    "kind": "SYNTHESIZE",
+    "summary": "Convert BB-049 completeness/closure research into one semantic Integration G implementation input without prescribing implementation procedure.",
+    "allowedMutations": [
+      "docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure-v1.json",
+      "docs/blackboard/history/bb049-integration-g-research-sa-closure-2026-09-20.md"
+    ],
+    "forbiddenActions": [
+      "mutate product source",
+      "allocate Integration G implementation work",
+      "encode files, commands, edit order, source scope or executor instructions in the implementation input",
+      "turn ProductStateProjection into source of truth",
+      "require Merkle proofs or a universal event platform in v1",
+      "make historical ProductOutcomeClaim a permanent current DONE bit"
+    ]
+  },
+  "sourceBaseline": {
+    "repository": "vhwg06/ExHarness",
+    "revision": "cf535e162717520910417943f4fc57f3d08db8af"
+  },
+  "requiredCurrentSystemRefs": [
+    "docs/blackboard/contracts.md",
+    "docs/blackboard/pipelines.md",
+    "docs/living/system/state.md",
+    "docs/living/system/capabilities.md",
+    "docs/living/system/agentic-application/contracts.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/research/BB-049-product-completeness-closure-research.md",
+    "docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json",
+    "docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot-v1.json",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md"
+  ],
+  "auditRefs": [
+    "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+    "docs/living/knowledge/deployment-acceptance-snapshot-implementation-readiness.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/blackboard/**",
+      "docs/living/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "packages/**"
+    ]
+  },
+  "hardInvariants": [
+    "SA synthesis freezes semantic WHAT/WHY/invariants/acceptance only; HOW remains Worker authority",
+    "caller-selected current refs cannot establish product completeness",
+    "ProductStateProjection is derived/rebuildable and disposable",
+    "ProductHistoryHead is the product-level completeness subject, not a scheduler or execution log",
+    "per-subject currentness heads remain operational indexes but are insufficient as product closure completeness proof",
+    "historical ProductOutcomeClaim remains immutable and can become non-current after later closure-relevant history",
+    "closure must fail closed when product-history or acceptance-policy currentness changes"
+  ],
+  "expectedOutputs": [
+    "accepted semantic IMPLEMENTATION_INPUT for Integration G",
+    "terminal Research/SA closure record for BB-049"
+  ]
+}
