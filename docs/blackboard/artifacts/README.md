@@ -102,6 +102,7 @@ Accepted unallocated inputs:
 - `implementation-input/integration-c-cross-domain-obligation-lineage-v1.json` — typed cross-domain obligations, authoritative semantic lineage and selective invalidation.
 - `implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json` — domain-local activation and FE/BE parallel autonomy.
 - `implementation-input/integration-ef-deployment-acceptance-snapshot-v1.json` — exact deployment identity, AcceptanceSnapshot, runtime observation and Product QA trust.
+- `implementation-input/integration-g-product-completeness-closure-v1.json` — omission-resistant ProductHistory completeness, deterministic projection and closure currentness.
 
 Allocated/in-flight input:
 
