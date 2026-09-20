@@ -123,6 +123,8 @@
     "ExecutionAttemptHead is read before policy or strategy resolution",
     "ACTIVE or RECOVERY_REQUIRED reuses the exact immutable ExecutionAttemptBinding and does not re-resolve current policy/strategy",
     "first-attempt policy head is rechecked before attempt-head CAS publication",
+    "no application-surface caller may advance ExecutionPolicyHead or install an authoritative current policy without passing the trusted execution-policy publisher authority boundary",
+    "a policy-head change at any point before successful attempt-head CAS publication invalidates the prepared first binding and forces policy/strategy re-resolution",
     "policy promotion after binding commit cannot rewrite the in-flight attempt",
     "ExecutionPolicy is not a work scheduler and ExecutionStrategy is not a cross-domain dispatcher",
     "strategy result != runtime attestation != verification evidence != domain completion decision != authoritative publication",
@@ -137,6 +139,9 @@
     "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
     "node --test packages/agentic-system/test/bb047-organization-bridge.test.js",
     "node --test test/blackboard-context-bootstrap.test.mjs",
+    "negative test: raw/public store APIs cannot bypass trusted ExecutionPolicy publication authority",
+    "negative test: policy-head advancement during the final pre-CAS window cannot commit a stale first-attempt binding",
+    "negative test: fresh judgment reconstruction fails closed on unresolved or digest-inconsistent correctness-relevant pins",
     "npm run verify"
   ],
   "expectedOutputs": [
