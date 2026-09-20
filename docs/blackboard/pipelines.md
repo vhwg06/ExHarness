@@ -127,7 +127,7 @@ npm run start:blackboard-implementation -- WEAK_BOUNDED [WORK_ID]
 ```text
 state.md
   -> workId
-  -> pipeline + stage
+  -> pipeline + stage + lane (for IMPLEMENTATION_WORKER)
   -> exact current-context
   -> requiredCurrentSystemRefs
   -> requiredInputRefs
@@ -136,9 +136,9 @@ state.md
 
 Do not load full Board history or all Living Docs by default.
 
-## Concurrent lanes
+## Concurrent pipeline families
 
-Research/SA and Implementation/Worker may both have active items. Context currentness is per work item, not global.
+Research/SA and Implementation/Worker may both have active items. Their pipeline concurrency is separate from the internal `EXECUTION` / `JUDGMENT` lane split inside `IMPLEMENTATION_WORKER`. Context currentness is per work item, not global.
 
 The repository verifier therefore validates every active work item when no explicit item is requested, or validates only `BLACKBOARD_CONTEXT_ITEM` when explicitly selected.
 
