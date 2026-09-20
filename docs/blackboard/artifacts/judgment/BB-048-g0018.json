@@ -1,0 +1,62 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "JUDGMENT",
+  "artifactId": "BB-048-g0018",
+  "status": "RECORDED",
+  "subject": {
+    "itemId": "BB-048",
+    "semanticArtifactRef": "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control-v1.json",
+    "repairJudgmentRef": "docs/blackboard/artifacts/judgment/BB-048-g0016.json",
+    "implementationResultRef": "docs/blackboard/artifacts/implementation-result/BB-048-g0017-repair.json",
+    "candidateRef": "d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+    "integrationBaseline": "9fc6ce08a2463465a00eda42bbee85a9f81f8265",
+    "judgmentContextRef": "docs/blackboard/context/BB-048/g0018-repair-candidate-judgment.json"
+  },
+  "assessments": {
+    "repairedFindings": [
+      {
+        "id": "G0016-CONCURRENT-PUBLICATION",
+        "status": "SATISFIED",
+        "reason": "The controller derives one stable publication key per semantic attempt and requires the publication gate to expose publishIdempotent(); concurrent terminal CAS losers converge on the winning terminal head."
+      },
+      {
+        "id": "G0016-TRANSITION-REVISION",
+        "status": "SATISFIED",
+        "reason": "ExecutionAttemptTransition records observedHeadRevision and fresh reconstruction derives/validates revision continuity from the immutable transition history."
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "P1-LIFECYCLE-PUBLICATION-FENCE",
+      "priority": "P1",
+      "status": "OPEN",
+      "statement": "The production organization lifecycle guard does not fence lifecycle currentness through canonical publication commit.",
+      "evidenceRefs": [
+        "packages/agentic-system/src/application-orchestrator.js",
+        "packages/agentic-system/src/blackboard-store.js",
+        "packages/agentic-system/src/organization-claim.js",
+        "packages/agentic-system/src/domain-execution-control.js",
+        "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+        "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+        "github-review:5260506099"
+      ],
+      "reason": "withOrganizationClaimGuard delegates to optimistic store.transact(), whose mutator/action runs before the successor CAS. Another lifecycle transaction may commit during publishIdempotent(); the guard can discover the conflict only after the publication side effect. The focused test uses serialGuard() instead of the production Blackboard transaction protocol and therefore masks this race.",
+      "requiredRepair": [
+        "introduce a real lifecycle currentness fence shared by claim lifecycle mutation and authoritative publication commit, or an equivalent conditional publication protocol that prevents authoritative side effects after lifecycle currentness changes",
+        "add a race/integration test using the actual Blackboard store, ApplicationOrchestrator and OrganizationWorkClaimController rather than the serialGuard fixture",
+        "preserve current write-authority fencing and idempotent publication semantics"
+      ]
+    }
+  ],
+  "verdict": "FINDINGS",
+  "provenance": {
+    "evidenceRefs": [
+      "github-actions:run:35503903989",
+      "git:d21dce6934cdf8351ec7d9d860fbbed79a960e3c",
+      "git:5b3023d6f5f59d1ec0b8b658d4acf497455be262",
+      "github-review:5260506099"
+    ]
+  }
+}
