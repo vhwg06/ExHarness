@@ -1,0 +1,190 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_INPUT",
+  "artifactId": "integration-g-product-completeness-closure",
+  "status": "ACCEPTED",
+  "subject": {
+    "id": "agentic-application.product-completeness-closure.integration-g",
+    "title": "Omission-resistant product completeness and closure currentness"
+  },
+  "semantics": {
+    "desiredOutcome": "Product readiness and closure are evaluated only from one canonical complete current product-history subject plus canonical acceptance-policy authority, so callers cannot manufacture ELIGIBLE_FOR_CLOSURE by omitting blocking claims, obligations, stale subjects or newer product transitions.",
+    "currentState": "The delivered system and queued Integration C through E/F semantics do not yet provide ProductHistoryHead, a canonical product-level completeness boundary, a deterministic rebuildable ProductStateProjection, or a currentness-safe ProductOutcomeClaim closure path.",
+    "requiredBehaviors": [
+      {
+        "id": "RB-1",
+        "statement": "Closure-relevant product transitions are recorded as immutable append-only product history and advance one CAS-fenced ProductHistoryHead that commits to one complete ordered history prefix."
+      },
+      {
+        "id": "RB-2",
+        "statement": "Every closure-relevant semantic claim, obligation, accepted-lineage, deployment/quality acceptance, root/objective/outcome, and applicable policy/waiver currentness transition participates in the canonical product-history commit boundary before it can affect closure semantics."
+      },
+      {
+        "id": "RB-3",
+        "statement": "Per-subject semantic claim and obligation heads remain usable operational indexes, but product closure cannot treat a caller-selected or ad hoc scan of those heads as completeness proof."
+      },
+      {
+        "id": "RB-4",
+        "statement": "A trusted projection builder consumes an exact ProductHistoryHead and exact current acceptance-policy authority and derives the complete current closure subject; callers cannot supply a subset of current claims, obligations, blockers or waivers to define readiness."
+      },
+      {
+        "id": "RB-5",
+        "statement": "The projection builder produces an immutable ProductProjectionSubject that pins exact history generation/digest, root intent/outcome/objective refs, acceptance policy revision, derived applicable waiver refs and projection algorithm version."
+      },
+      {
+        "id": "RB-6",
+        "statement": "ProductStateProjection is a deterministic disposable derived view; deleting it and rebuilding from the same ProductProjectionSubject yields the same readiness and blocker set."
+      },
+      {
+        "id": "RB-7",
+        "statement": "An authorized closure action can publish an immutable ProductOutcomeClaim only after revalidating the exact ProductHistoryHead and acceptance-policy subject used by the eligible projection immediately before closure commit."
+      },
+      {
+        "id": "RB-8",
+        "statement": "If product history or policy currentness changes after projection but before closure, the old projection is stale and closure fails closed until rebuilt."
+      },
+      {
+        "id": "RB-9",
+        "statement": "A ProductOutcomeClaim remains immutable historical evidence; later closure-relevant history may make it non-current without rewriting the historical claim or silently preserving a permanent DONE bit."
+      },
+      {
+        "id": "RB-10",
+        "statement": "Post-closure supersession derives a new current projection and materializes only bounded revalidation/remediation required by the changed semantic lineage instead of resetting the whole organization."
+      }
+    ],
+    "invariants": [
+      {
+        "id": "INV-1",
+        "statement": "Caller-selected current refs are not completeness proof."
+      },
+      {
+        "id": "INV-2",
+        "statement": "ProductHistoryHead is a product-completeness/currentness subject, not an organization scheduler, execution log or observability stream."
+      },
+      {
+        "id": "INV-3",
+        "statement": "ProductStateProjection is not product authority and is never directly mutated as truth."
+      },
+      {
+        "id": "INV-4",
+        "statement": "A stable product state cannot expose a newer authoritative closure-relevant transition while the canonical completeness head still commits only to an older state."
+      },
+      {
+        "id": "INV-5",
+        "statement": "Historical ProductOutcomeClaim is not a permanent current DONE bit."
+      },
+      {
+        "id": "INV-6",
+        "statement": "Acceptance-policy and applicable-waiver currentness are derived from canonical authority and pinned in the projection subject rather than accepted as a convenient caller subset."
+      },
+      {
+        "id": "INV-7",
+        "statement": "Execution-policy or execution-strategy changes alone do not change product readiness unless accepted product semantic lineage changes."
+      },
+      {
+        "id": "INV-8",
+        "statement": "Cryptographic Merkle inclusion/consistency proofs are not required for Integration G v1; exact generation/digest commitment and durable CAS/recovery are sufficient for the current trusted-store threat model."
+      }
+    ],
+    "acceptanceCriteria": [
+      {
+        "id": "AC-1",
+        "statement": "Omitting a current QUALITY_REJECTED claim from caller input cannot make the product eligible; the builder derives it from canonical history and returns NOT_READY."
+      },
+      {
+        "id": "AC-2",
+        "statement": "Omitting a current blocking obligation from caller input cannot make the product eligible; the builder derives the obligation and returns NOT_READY."
+      },
+      {
+        "id": "AC-3",
+        "statement": "A projection built at history head Hn cannot authorize closure after a closure-relevant Hn+1 transition; the closure currentness recheck rejects the stale basis."
+      },
+      {
+        "id": "AC-4",
+        "statement": "Deleting any cached ProductStateProjection and rebuilding from the same pinned subject yields identical readiness, active-set identity and blockers."
+      },
+      {
+        "id": "AC-5",
+        "statement": "Restarting a fresh process can reconstruct the same current product subject and projection from durable history/policy refs without prior conversation state."
+      },
+      {
+        "id": "AC-6",
+        "statement": "Changing acceptance-policy revision while product history is unchanged makes the old projection subject non-current and requires deterministic re-evaluation."
+      },
+      {
+        "id": "AC-7",
+        "statement": "Publishing a new accepted Backend or other closure-relevant product revision after closure retains the old ProductOutcomeClaim historically but makes current readiness re-evaluate under the newer history head."
+      },
+      {
+        "id": "AC-8",
+        "statement": "Attempted in-place mutation of an historical claim, obligation, history commit or ProductOutcomeClaim is rejected; correction occurs through new immutable transitions."
+      },
+      {
+        "id": "AC-9",
+        "statement": "A strategy-only revision with unchanged accepted product outputs and lineage does not by itself invalidate product closure readiness."
+      }
+    ],
+    "outOfScope": [
+      {
+        "id": "OOS-1",
+        "statement": "Global organization scheduling, role sequencing or next-domain dispatch."
+      },
+      {
+        "id": "OOS-2",
+        "statement": "Generic event-sourcing platform, universal provenance database or organization-wide telemetry ledger."
+      },
+      {
+        "id": "OOS-3",
+        "statement": "Mandatory Certificate Transparency, Merkle-tree inclusion proofs or external transparency-log infrastructure."
+      },
+      {
+        "id": "OOS-4",
+        "statement": "Implementation of terminal Blackboard DONE reopening; Integration G v1 uses immutable historical closure plus current projection/revalidation semantics."
+      },
+      {
+        "id": "OOS-5",
+        "statement": "Adversarial recovery benchmark, causal observability and self-improvement loops reserved for later Integration H through J."
+      }
+    ],
+    "affectedCapabilities": [
+      "product.history-completeness",
+      "product.state-projection",
+      "product.closure-currentness",
+      "product.outcome-claim",
+      "product.revalidation"
+    ],
+    "affectedContracts": [
+      "ProductHistoryCommit",
+      "ProductHistoryHead",
+      "ProductProjectionSubject",
+      "ProductStateProjection",
+      "ProductOutcomeClaim",
+      "AcceptancePolicy"
+    ]
+  },
+  "provenance": {
+    "sourceArtifactRefs": [
+      "docs/blackboard/artifacts/research/BB-049-product-completeness-closure-research.md",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness-v7.md",
+      "docs/living/knowledge/cross-domain-obligation-lineage-implementation-readiness.md",
+      "docs/living/knowledge/deployment-acceptance-snapshot-implementation-readiness.md",
+      "docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json",
+      "docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot-v1.json"
+    ],
+    "evidenceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing",
+      "https://learn.microsoft.com/azure/architecture/patterns/materialized-view",
+      "https://www.rfc-editor.org/rfc/rfc9162.html"
+    ],
+    "currentSystemRefs": [
+      "docs/living/system/state.md",
+      "docs/living/system/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md"
+    ],
+    "acceptance": {
+      "kind": "USER_DIRECTIVE",
+      "ref": "user-directive:2026-09-20:execute-integration-g-research-sa"
+    }
+  }
+}
