@@ -157,7 +157,7 @@ Application must not turn Oracle into workflow authority or Core into project li
 
 **Outcome:** an accepted domain completion can publish authoritative outputs only inside exact lifecycle and writer-authority currentness fences.
 
-**Guarantees:** the organization claim guard holds the exact CLAIMED owner/generation through publication; the domain writer gate holds its exact current authority through publication; one semantic attempt uses one stable canonical publication key; duplicate recovery converges; publication receipts preserve the mutation-current observations; attempt-transition history preserves exact CAS-head revisions.
+**Guarantees:** the organization claim guard holds the exact CLAIMED owner/generation through publication by acquiring the same production Blackboard mutation fence used by every lifecycle transaction; the domain writer gate holds its exact current authority through publication; one semantic attempt uses one stable canonical publication key; duplicate recovery converges; publication receipts preserve the mutation-current observations; attempt-transition history preserves exact CAS-head revisions.
 
 **Failure semantics:** lifecycle change, writer revoke, duplicate recovery publication, or transition-revision mismatch fails closed or converges to the already-committed canonical result.
 
