@@ -16,12 +16,12 @@ test("repository current contexts follow exact Board refs",()=>{
 
 test("singular verifier requires explicit selection when multiple active items exist",()=>{
   const root=mkdtempSync(join(tmpdir(),"bb-context-"));
-  mkdirSync(join(root,"docs/blackboard/context/A"),{recursive:true});
-  mkdirSync(join(root,"docs/blackboard/context/B"),{recursive:true});
+  mkdirSync(join(root,"docs/blackboard/context/BB-901"),{recursive:true});
+  mkdirSync(join(root,"docs/blackboard/context/BB-902"),{recursive:true});
   const base=id=>({kind:"WORK_CONTEXT_SPEC",version:1,itemId:id,pipeline:"RESEARCH_SA",stage:"RESEARCH",action:{kind:"RESEARCH"},sourceScope:{read:[],write:[],forbiddenWrite:["packages/**"]},requiredCurrentSystemRefs:[],requiredInputRefs:[]});
-  writeFileSync(join(root,"docs/blackboard/context/A/current.json"),JSON.stringify(base("BB-901")));
-  writeFileSync(join(root,"docs/blackboard/context/B/current.json"),JSON.stringify(base("BB-902")));
-  writeFileSync(join(root,"docs/blackboard/state.md"),"# Outer Blackboard\n\n## Active work\n\nBB-901\npipeline: RESEARCH_SA\nstage: RESEARCH\nstatus: READY\ncurrent-context:\n  ref: docs/blackboard/context/A/current.json\n\nBB-902\npipeline: RESEARCH_SA\nstage: RESEARCH\nstatus: READY\ncurrent-context:\n  ref: docs/blackboard/context/B/current.json\n\n## Allocation rules\n");
+  writeFileSync(join(root,"docs/blackboard/context/BB-901/current.json"),JSON.stringify(base("BB-901")));
+  writeFileSync(join(root,"docs/blackboard/context/BB-902/current.json"),JSON.stringify(base("BB-902")));
+  writeFileSync(join(root,"docs/blackboard/state.md"),"# Outer Blackboard\n\n## Active work\n\nBB-901\npipeline: RESEARCH_SA\nstage: RESEARCH\nstatus: READY\ncurrent-context:\n  ref: docs/blackboard/context/BB-901/current.json\n\nBB-902\npipeline: RESEARCH_SA\nstage: RESEARCH\nstatus: READY\ncurrent-context:\n  ref: docs/blackboard/context/BB-902/current.json\n\n## Allocation rules\n");
   assert.throws(()=>verifyCurrentContext({root}),/multiple active items/);
   assert.equal(verifyCurrentContexts({root}).length,2);
 });
