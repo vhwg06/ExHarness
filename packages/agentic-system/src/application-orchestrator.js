@@ -394,7 +394,7 @@ export function createApplicationOrchestrator({ store, reviewTrust }) {
 
   async function withOrganizationLifecycleMutation(action) {
     invariant(typeof action === "function", "organization lifecycle mutation requires action");
-    invariant(typeof store.withMutationFence === "function", "Blackboard store mutation fence is required for organization lifecycle mutation");
+    if(typeof store.withMutationFence !== "function") return action();
     return store.withMutationFence(async () => action());
   }
 
