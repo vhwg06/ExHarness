@@ -56,5 +56,4 @@ Caching/RAG are not missing features merely because they are absent. If concrete
 - current concrete resolution flow -> `workflow.md`
 - optional artifact-manifest boundary -> `artifact-manifest.md`
 - current invariants -> `decisions.md`
-- accepted MCP boundary decision -> `../../living/decisions/D006-mcp-is-an-oracle-adapter-boundary.md`
 - all open Oracle questions -> `../docs/blackboard/state.md`
