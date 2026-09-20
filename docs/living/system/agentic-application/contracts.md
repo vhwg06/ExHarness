@@ -162,7 +162,7 @@ Commit records also carry the digest of the exact base snapshot for mismatch/cor
 
 `<path>.root` plus immutable successor records are persistence authority. The caller-selected `<path>` JSON file remains a compatibility/inspection projection of the latest committed snapshot; it is refreshed only after commit publication and is never read as authority once the immutable root exists. Tampering with or losing that projection cannot roll back the committed chain.
 
-A legacy pre-D011 `<path>` snapshot is used only to initialize the immutable root when no root authority exists yet. Concurrent initialization publishes exactly one root through hard-link no-overwrite semantics.
+A legacy pre-immutable-root `<path>` snapshot is used only to initialize the immutable root when no root authority exists yet. Concurrent initialization publishes exactly one root through hard-link no-overwrite semantics.
 
 Legacy `.lock` files are not correctness authority and are neither trusted nor deleted by the public store. `lockStaleMs` remains accepted for compatibility but elapsed time does not grant takeover authority.
 
@@ -264,7 +264,7 @@ A finding that proves the current acceptance obligation remains unmet reopens/na
 
 ## Bounded horizontal PM / SA coordination contract
 
-D003 remains the semantic authority split: PM coordinates project obligations; SA assesses architecture. BB-021 implements only a concrete application-local slice of those horizontal semantics.
+The semantic authority split remains: PM coordinates project obligations; SA assesses architecture. The current implementation is only a concrete application-local slice of those horizontal semantics.
 
 `createPmSaCoordinationController(...)` consumes the project-bound session handoff and a concrete PM/SA coordination artifact store. PM and SA receive separate bounded context projections rather than one universal role context.
 
