@@ -307,21 +307,19 @@ export function createJsonBlackboardStore({ path, fs = nodeFs, lockStaleMs = 300
 
     async transact(mutator) {
       invariant(typeof mutator === "function", "Blackboard store transact requires a mutator");
-      return withMutationFence(async () => {
-        const current = await loadCommittedHead();
-        const next = clone(current.snapshot);
-        const result = await mutator(next);
-        const normalized = defineBlackboardSnapshot(next);
-        const committed = await publishSuccessor(current, normalized);
-        if (committed) {
-          try {
-            await refreshCompatibilityProjection();
-          } catch {
-            // The immutable successor chain is commit authority. Projection failure cannot turn a committed transaction into an unknown outcome.
-          }
+      const current = await loadCommittedHead();
+      const next = clone(current.snapshot);
+      const result = await mutator(next);
+      const normalized = defineBlackboardSnapshot(next);
+      const committed = await publishSuccessor(current, normalized);
+      if (committed) {
+        try {
+          await refreshCompatibilityProjection();
+        } catch {
+          // The immutable successor chain is commit authority. Projection failure cannot turn a committed transaction into an unknown outcome.
         }
-        return freezeClone({ snapshot: normalized, result });
-      });
+      }
+      return freezeClone({ snapshot: normalized, result });
     }
   });
 }
