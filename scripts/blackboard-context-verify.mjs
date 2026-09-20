@@ -44,6 +44,8 @@ function verifyExecutionAuthority({spec,root}){
 
 function verifyOne({board,boardPath,root,itemId}) {
   const binding=parseCurrentContext(board,itemId);
+  const expectedRef=`docs/blackboard/context/${itemId}/current.json`;
+  if(binding.ref!==expectedRef) throw new Error(`BOARD_BINDING_INVALID: expected current context ref ${expectedRef}`);
   const spec=readJson(`${root}/${binding.ref}`);
   assertWorkContext(spec);
   assertBoardBinding(binding,spec,binding.ref);
