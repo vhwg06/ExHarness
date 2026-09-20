@@ -64,7 +64,7 @@ next:
 
 ## Accepted semantic input queue
 
-Research/SA has completed semantic handoff for three future slices. These are accepted artifacts, not active work and not ordered backlog:
+Research/SA has completed semantic handoff for four future slices. These are accepted artifacts, not active work and not ordered backlog:
 
 - `docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage-v1.json`
 - `docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy-v1.json`
