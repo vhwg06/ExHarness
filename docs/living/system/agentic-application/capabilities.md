@@ -127,7 +127,7 @@ Failure: stale grant/policy revision, ACTIVE→ACTIVE current-head drift, princi
 
 Limits: A.1 ends at the released executable claim boundary. It does not resolve execution HOW, choose `ExecutionPolicy`/`ExecutionStrategy`, create semantic execution attempts, execute a domain workload, judge domain completion, publish authoritative domain products or issue cross-domain obligations.
 
-Details: `contracts.md`, `boundaries.md`, `state.md`, `../../living/history/bb047-a1-closure-2026-09-19.md`.
+Details: `contracts.md`, `boundaries.md`, `state.md`.
 
 ## A15 — Bounded domain execution control
 
