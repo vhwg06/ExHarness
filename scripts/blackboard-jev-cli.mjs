@@ -5,6 +5,7 @@ import { materialize, evaluate } from './blackboard-jev.mjs';
 import { publishEvaluation, collectEvidence, verifyDelivery, publishDelivery, importEvaluationEvidence } from './blackboard-delivery.mjs';
 import { renderStateProjection } from './blackboard-state-project.mjs';
 import { deriveTaskContext } from './blackboard-task-context-resolver.mjs';
+import { taskReadiness } from './blackboard-work-graph.mjs';
 import { loadDotEnv } from './blackboard-env.mjs';
 
 const [command,id,arg] = process.argv.slice(2);
@@ -38,6 +39,8 @@ else if(command==='claim') {
   if(!arg)fail('worker id required');
   const {graph,task}=loadSubject(root,id);
   if(task.status!=='PLANNED')fail('only PLANNED work may be claimed');
+  const readiness=taskReadiness(graph,id);
+  if(!readiness.ready)fail(`work is not schedulable: ${readiness.reason}`);
   const context=deriveTaskContext(id);
   task.status='ACTIVE';task.claim={workerId:arg};task.currentContextRef=`docs/blackboard/context/${id}/current.json`;
   write(root,task.currentContextRef,context);write(root,'docs/blackboard/work-graph.json',graph);project();result={taskId:id,lane:task.lane,phase:task.phase};
