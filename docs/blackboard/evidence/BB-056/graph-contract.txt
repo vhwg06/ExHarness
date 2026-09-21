@@ -1,0 +1,39 @@
+
+> verify:blackboard-work-graph
+> node scripts/blackboard-work-graph.mjs && npm run verify:blackboard-delivery-contracts && npm run verify:blackboard-state && npm run test:blackboard-work-graph
+
+{"ok":true,"phase":"INTEGRATION","schedulable":["BB-052"],"tasks":6,"components":8}
+
+> verify:blackboard-delivery-contracts
+> node scripts/blackboard-delivery-verify.mjs
+
+{"ok":true,"contract":"OBJECTIVE_PLAN_DELIVERY"}
+
+> verify:blackboard-state
+> node scripts/blackboard-state-project.mjs --verify
+
+{"ok":true,"state":"docs/blackboard/state.md"}
+
+> test:blackboard-work-graph
+> node --test test/blackboard-work-graph.test.mjs test/blackboard-task-context-resolver.test.mjs
+
+✔ task context is deterministically derived from one task and its components (6.1683ms)
+✔ DONE dependency contributes consolidated Living truth, not historical delivery transcript (2.9016ms)
+✔ repository-wide discovery is progressive only and absent from deterministic required refs (2.6934ms)
+✔ blocked task cannot materialize execution context before direct dependencies are done (3.1641ms)
+✔ outer Blackboard is a typed dependency graph with task scheduling and component context routing (2.7419ms)
+✔ accepted worker cannot be claimed again while awaiting merge (0.3091ms)
+✔ task may span multiple components without creating multiple execution owners (0.2953ms)
+✔ work graph rejects unknown component and dependency cycles (0.9901ms)
+✔ non-active tasks cannot carry worker claim or current context (0.6205ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 126.6751
+
+
+exitCode=0
