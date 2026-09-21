@@ -12,6 +12,9 @@ function walk(dir){
 
 export function verifySemanticArtifacts({root="."}={}){
   const dir=path.join(root,"docs/blackboard/artifacts");
+  const allowed=new Set(["objective","ready-implement-plan"]);
+  if(fs.existsSync(dir)) for(const entry of fs.readdirSync(dir,{withFileTypes:true}))
+    if(entry.isDirectory()&&!allowed.has(entry.name)) throw new Error(`BLACKBOARD_ARTIFACT_LAYOUT_INVALID: legacy directory ${entry.name}`);
   const files=walk(dir).filter(p=>p.endsWith(".json"));
   for(const file of files){
     const artifact=JSON.parse(fs.readFileSync(file,"utf8"));

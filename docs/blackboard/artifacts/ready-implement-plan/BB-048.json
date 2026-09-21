@@ -1,0 +1,239 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-048",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-048.json",
+    "hash": "1440c07573d17499ddc044beea7a8f1e413e68adac1ea38947084bbdb7b0beed"
+  },
+  "scope": [
+    "organization.released-claim",
+    "domain.execution-control",
+    "execution.attempt-binding",
+    "execution.recovery"
+  ],
+  "outOfScope": [
+    "Cross-domain obligation issuance and continuation.",
+    "DOMAIN_ACTIVATION and parallel domain autonomy.",
+    "ProductStateProjection and deployment/Product QA.",
+    "Integration C through J."
+  ],
+  "constraints": [
+    "Organization owns WHAT, WHO and execution authority; domain execution control owns HOW for the already-released claim.",
+    "Execution policy is not a work scheduler.",
+    "Execution strategy cannot select another organizational work item or dispatch another domain.",
+    "A successful runtime result is not equivalent to acceptance or authoritative publication.",
+    "In-flight execution remains bound to the exact selected strategy and runtime identity across recovery."
+  ],
+  "invariants": [
+    "Blackboard CLAIMED != executable capability",
+    "released claim prerequisite != scheduler input",
+    "OrganizationWorkContract != ExecutionPlan",
+    "ExecutionPolicy != Work Scheduler",
+    "ExecutionStrategy != Cross-Domain Dispatcher",
+    "policy promotion never rewrites an in-flight binding",
+    "process restart alone cannot mint a new semantic execution attempt",
+    "SUCCEEDED != ACCEPT",
+    "ACCEPT != authoritative publication",
+    "telemetry != correctness authority"
+  ],
+  "architectureDecisions": [
+    "organization/lifecycle chooses WHAT and ownership; DOMAIN_EXECUTION_CONTROL owns HOW only after released claim",
+    "ExecutionPolicy is immutable/versioned with a CAS-fenced current head",
+    "ExecutionAttemptHead is read before any policy resolution; ACTIVE/RECOVERY_REQUIRED reuses the existing immutable binding",
+    "ExecutionAttemptBinding pins exact WorkContract, release receipt, policy, strategy, runtime/config/context refs before effects",
+    "semantic executionAttemptId is distinct from runtime invocation id",
+    "strategy result is not runtime fact, runtime fact is not verification evidence, and execution success is not domain acceptance",
+    "domain acceptance is distinct from authoritative domain publication",
+    "Restate may be an adapter/runtime but is not organization workflow authority",
+    "strategy cannot dispatch authoritative work into another domain"
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/index.js"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/domain-execution-controller.js",
+      "packages/agentic-system/src/execution-policy.js",
+      "packages/agentic-system/src/execution-attempt-store.js",
+      "packages/agentic-system/src/execution-judgment.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "packages/agentic-system/test/bb048-domain-execution-recovery.test.js",
+      "packages/agentic-system/test/bb048-domain-execution-judgment.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "packages/agentic-system/test/bb048-domain-execution-recovery.test.js",
+      "packages/agentic-system/test/bb048-domain-execution-judgment.test.js"
+    ],
+    "write": [],
+    "forbiddenWrite": []
+  },
+  "implementationSlices": [
+    "B1: ExecutionPolicy/ExecutionStrategyDescriptor immutable artifacts plus trusted policy publisher and CAS current head",
+    "B2: ExecutionAttemptHead + immutable ExecutionAttemptBinding + recovery semantics",
+    "B3: one concrete BA-owned execution strategy adapter using existing Core/runtime primitives",
+    "B4: durable judgment/publication chain",
+    "B5: worktree projection + deterministic BA fixture + crash/race regression suite"
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "one released BA-owned work item executes through DomainExecutionController and leaves a complete reconstructable binding->runtime->outcome->decision->publication chain",
+      "verificationIds": [
+        "retained-verification"
+      ],
+      "evidenceRequired": [
+        "retained terminal evidence"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "same active/recovery attempt survives process restart without re-resolving newer policy/strategy",
+      "verificationIds": [
+        "retained-verification"
+      ],
+      "evidenceRequired": [
+        "retained terminal evidence"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "policy head race before binding fails/re-resolves; policy promotion after binding does not change the attempt",
+      "verificationIds": [
+        "retained-verification"
+      ],
+      "evidenceRequired": [
+        "retained terminal evidence"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "statement": "runtime code/deployment identity is exact and trusted, not mutable latest/self-report",
+      "verificationIds": [
+        "retained-verification"
+      ],
+      "evidenceRequired": [
+        "retained terminal evidence"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "statement": "claim/release authority is revalidated immediately before first runtime/effect dispatch",
+      "verificationIds": [
+        "retained-verification"
+      ],
+      "evidenceRequired": [
+        "retained terminal evidence"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "statement": "human-assisted or alternate strategy cannot bypass completion/publication gates",
+      "verificationIds": [
+        "retained-verification"
+      ],
+      "evidenceRequired": [
+        "retained terminal evidence"
+      ]
+    },
+    {
+      "id": "AC-7",
+      "statement": "fresh process can resolve all correctness-relevant refs and distinguish historical validity from authority needed for a new mutation",
+      "verificationIds": [
+        "retained-verification"
+      ],
+      "evidenceRequired": [
+        "retained terminal evidence"
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Blackboard CLAIMED != executable capability",
+      "criterionIds": [
+        "AC-1"
+      ]
+    },
+    {
+      "invariant": "released claim prerequisite != scheduler input",
+      "criterionIds": [
+        "AC-2"
+      ]
+    },
+    {
+      "invariant": "OrganizationWorkContract != ExecutionPlan",
+      "criterionIds": [
+        "AC-3"
+      ]
+    },
+    {
+      "invariant": "ExecutionPolicy != Work Scheduler",
+      "criterionIds": [
+        "AC-4"
+      ]
+    },
+    {
+      "invariant": "ExecutionStrategy != Cross-Domain Dispatcher",
+      "criterionIds": [
+        "AC-5"
+      ]
+    },
+    {
+      "invariant": "policy promotion never rewrites an in-flight binding",
+      "criterionIds": [
+        "AC-6"
+      ]
+    },
+    {
+      "invariant": "process restart alone cannot mint a new semantic execution attempt",
+      "criterionIds": [
+        "AC-7"
+      ]
+    },
+    {
+      "invariant": "SUCCEEDED != ACCEPT",
+      "criterionIds": [
+        "AC-1"
+      ]
+    },
+    {
+      "invariant": "ACCEPT != authoritative publication",
+      "criterionIds": [
+        "AC-2"
+      ]
+    },
+    {
+      "invariant": "telemetry != correctness authority",
+      "criterionIds": [
+        "AC-3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "retained-verification",
+      "command": "npm run verify"
+    }
+  ],
+  "retainedTerminalEvidence": true,
+  "currentStatus": "DELIVERED",
+  "researchGaps": []
+}

@@ -2,6 +2,7 @@ import fs from "node:fs";
 import { assertBlackboardArtifact } from "./blackboard-artifact-contract.mjs";
 import { assertWorkGraph, readWorkGraph, readComponentRegistry, taskReadiness } from "./blackboard-work-graph.mjs";
 import { assertWorkContext } from "./blackboard-context-contract.mjs";
+import { deriveDeliveryContext } from './blackboard-delivery-context.mjs';
 
 const uniq=(xs)=>[...new Set(xs)];
 const fail=(m)=>{throw new Error(`TASK_CONTEXT_INVALID: ${m}`);};
@@ -41,6 +42,7 @@ function readSpec(root,ref){
 export function deriveTaskContext(taskId,{root=".",graph=readWorkGraph(`${root}/docs/blackboard/work-graph.json`),registry=readComponentRegistry(`${root}/docs/blackboard/component-registry.json`)}={}){
   assertWorkGraph(graph,registry);
   const task=find(graph,"tasks",taskId);
+  if(task.contract) return deriveDeliveryContext(taskId,{root,graph,registry});
   const readiness=taskReadiness(graph,taskId);
   if(task.status!=="ACTIVE"&&!readiness.ready)fail(`${taskId} is not context-resolvable for execution: ${readiness.reason}`);
 
@@ -111,7 +113,7 @@ export function deriveTaskContext(taskId,{root=".",graph=readWorkGraph(`${root}/
     executionSourceScope:{
       read:sourceRead,
       write:sourceWrite,
-      forbiddenWrite:["docs/living/**","docs/blackboard/artifacts/implementation-input/**"]
+      forbiddenWrite:["docs/living/**","docs/blackboard/artifacts/objective/**","docs/blackboard/artifacts/ready-implement-plan/**"]
     },
     verification:[],
     progressiveDiscovery:{

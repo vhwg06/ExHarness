@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { assertSemanticArtifact, assertBlackboardArtifact } from "../scripts/blackboard-artifact-contract.mjs";
+import { verifySemanticArtifacts } from "../scripts/blackboard-artifact-verify.mjs";
 
 const input={
   kind:"BLACKBOARD_ARTIFACT",version:1,artifactType:"IMPLEMENTATION_INPUT",artifactId:"I-1",status:"ACCEPTED",
@@ -60,7 +64,7 @@ test("CONTEXT_STALE is not a valid finding type",()=>assert.throws(()=>assertBla
 const implementationSpec={
   kind:"BLACKBOARD_ARTIFACT",version:1,artifactType:"IMPLEMENTATION_SPEC",artifactId:"integration-c-implementation-spec",status:"ACCEPTED",
   subject:{id:"capability.x",title:"Capability X"},
-  semanticInputRef:"docs/blackboard/artifacts/implementation-input/x.json",
+  semanticInputRef:"docs/blackboard/artifacts/objective/x.source.json",
   objective:"Implement X without widening authority.",
   architectureDecisions:["X owns HOW only."],
   sourceSeams:{requiredExisting:["src/existing.js"],expectedNew:["src/x.js"],expectedTests:["test/x.test.js"]},
@@ -76,3 +80,10 @@ const implementationSpec={
 test("implementation spec preserves worker-ready HOW without becoming routing authority",()=>assert.equal(assertBlackboardArtifact(implementationSpec),implementationSpec));
 test("implementation spec cannot become routing authority",()=>assert.throws(()=>assertBlackboardArtifact({...implementationSpec,activation:{...implementationSpec.activation,routingAuthority:true}}),/cannot be routing authority/));
 test("implementation spec preserves origin work id as provenance only",()=>assert.throws(()=>assertBlackboardArtifact({...implementationSpec,provenance:{...implementationSpec.provenance,originWorkId:"integration-c"}}),/originWorkId/));
+
+test("artifact validator rejects legacy top-level directories",t=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),"bb-artifact-layout-"));
+  t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+  fs.mkdirSync(path.join(root,"docs/blackboard/artifacts/judgment"),{recursive:true});
+  assert.throws(()=>verifySemanticArtifacts({root}),/BLACKBOARD_ARTIFACT_LAYOUT_INVALID: legacy directory judgment/);
+});

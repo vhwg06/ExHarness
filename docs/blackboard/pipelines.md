@@ -1,160 +1,44 @@
 # Outer Blackboard pipelines
 
-Status: **CURRENT TASK-GRAPH DELIVERY CONTRACT**
+Status: **CURRENT TWO-LANE DELIVERY CONTRACT**
 
-## Planning topology
-
-```text
-Topic
-  -> Feature | Bug
-     -> Task
-        -> direct Task dependencies
-        -> components[]
-        -> explicit artifacts
-```
-
-Task is the only schedulable/claimable unit. Component is used only to route context.
+Topic -> Feature/Bug -> Task remains the planning topology. Task is the only schedulable and claimable unit. Component metadata routes context and cannot grant authority.
 
 ## RESEARCH_SA
 
-```text
-problem / question
-  -> bounded Research Task
-  -> research evidence
-  -> SA synthesis
-  -> canonical IMPLEMENTATION_INPUT
-  -> optional canonical IMPLEMENTATION_SPEC
-  -> attach artifacts to target implementation Task
-```
+OBJECTIVE -> research and plan draft -> Jev readiness -> READY_IMPLEMENT_PLAN.
 
-Research/SA output is implementation input, not delivered system truth and not source mutation authority.
+Jev evaluates atomic objective-coverage and implementability claims. Every claim must be SATISFIED before the plan becomes READY. Gaps return to research; unknown or failed API results never promote readiness. Research does not mutate product source or claim feature delivery.
 
-## Task readiness
+## WORKER
 
-Readiness is derived from direct graph dependencies.
+Exact READY_IMPLEMENT_PLAN -> execution -> verification/evidence -> Jev candidate judgment.
 
-```text
-Task PLANNED
-  |
-  +-- every direct dependency DONE
-  |      -> schedulable
-  |
-  +-- any direct dependency non-DONE
-         -> blocked
-```
+- SATISFIED for every acceptance claim -> MERGE_PENDING.
+- Implementation defect or insufficient evidence -> REPAIR within the same plan.
+- Plan/input contradiction -> RESEARCH_SA; revoke readiness before any further execution.
+- Exact candidate merged to main, with verified tree and current source -> DELIVERED_FEATURE.
 
-No task becomes ready because its filename appears later in a queue.
+Jev is the semantic judge. Confidence/probability is recorded for stability analysis, not used as another acceptance threshold. Deterministic checks enforce source scope, full criterion coverage, evidence integrity and current binding. Worker observations cannot self-accept.
 
-## Context resolution
+Execution, judgment, repair and merge-pending are phases within these two lanes. There is no independently routable reviewer lane.
 
-```text
-Task
-  |
-  +-> Topic / Feature artifacts
-  |
-  +-> components[]
-  |      -> Component Context Profiles
-  |           -> current Living refs
-  |           -> source/test roots
-  |           -> contracts
-  |           -> bounded search roots
-  |
-  +-> task IMPLEMENTATION_INPUT
-  +-> task IMPLEMENTATION_SPEC
-  |
-  +-> direct dependencies
-         DONE -> dependency consolidatedRefs
-  |
-  v
-derived TaskContext
-  -> current.json only when Task becomes ACTIVE
-```
+## Context and currentness
 
-The deterministic seed is loaded before any search. Progressive grep/search is allowed only for unresolved context and only under the declared search roots.
+Task -> graph/catalog -> current objective/plan -> components -> direct dependency consolidated refs -> deterministic context. Non-DONE dependencies block execution context. Bounded search is available only for unresolved context.
 
-## IMPLEMENTATION_WORKER
+The current graph owns lane, phase, claims and artifact refs. The context file is a rebuildable projection. It is updated in place and removed from active routing on completion; canonical delivery evidence remains addressable. Exact baseline commit reads verify source identity; they do not reconstruct historical work or context generations.
 
-```text
-schedulable Task
-  -> JUDGMENT / READINESS
-       context = graph-derived TaskContext
-       executionSourceScope = graph/components/spec-derived
-  -> READINESS_DECISION
-  -> Task ACTIVE / one worker claim
-  -> EXECUTION / INITIAL
-       reuse executionSourceScope
-  -> IMPLEMENTATION_RESULT
-  -> JUDGMENT / CANDIDATE
-       |
-       +-- ACCEPT
-       |    -> merge
-       |    -> reconcile Task outputs
-       |    -> Feature/Topic consolidation
-       |    -> Living Docs
-       |    -> Task DONE
-       |
-       +-- FINDINGS
-            -> EXECUTION / REPAIR
-            -> update IMPLEMENTATION_RESULT
-            -> fresh candidate judgment
-```
+A plan edit at the same canonical ref changes its content hash and invalidates readiness. Worker cannot reinterpret or silently rebind that input.
 
-A Task may touch many Components. It still has one execution claim.
+## Feature completion
 
-## Dependency context after completion
+A feature identifies its acceptance task. For one task, it is that task. For multiple tasks, an aggregation task depends on all implementation tasks and its plan/evaluation covers every feature acceptance criterion. Intermediate task completion alone cannot close the feature.
 
-```text
-producer Task ACTIVE
-  -> consumer cannot execute
+## Commands and integration
 
-producer Task DONE
-  -> consumer context loads producer.consolidatedRefs
-  -> normally Living/current system truth
+See [Jev integration](jev.md) for evidence collection, API/CI evaluation, current publication and merge verification. The compatibility bootstrap command supports both outer lanes:
 
-producer implementation result/judgment
-  -> retained delivery evidence
-  -> not default dependency context
-```
+    npm run start:blackboard-implementation -- GENERIC_INTERACTIVE <WORK_ID>
 
-This prevents future workers from reconstructing current truth from delivery transcript.
-
-## current.json lifecycle
-
-```text
-canonical graph/catalog/artifacts
-        |
-        v
-context resolver
-        |
-        v
-context/<TASK_ID>/current.json
-
-READINESS -> EXECUTION -> CANDIDATE JUDGMENT -> REPAIR?
-        update same file in place
-
-Task DONE
-        remove current.json
-```
-
-No generation chain or history traversal exists.
-
-## Worker bootstrap
-
-```text
-work-graph.json
-  -> ACTIVE Task
-  -> task.currentContextRef
-  -> verify projection still contains graph-derived refs/components/dependencies
-  -> materialize profile
-  -> execute declared lane
-```
-
-Repository commands:
-
-```text
-npm run verify:blackboard-work-graph
-npm run resolve:blackboard-task-context -- BB-052
-npm run start:blackboard-implementation -- GENERIC_INTERACTIVE [TASK_ID]
-```
-
-The internal Agentic Application Blackboard is out of scope for this outer development pipeline. It may adopt this model later only after the outer pipeline produces useful evidence.
+The Agentic Application's internal runtime Blackboard is outside this development pipeline.

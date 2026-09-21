@@ -1,0 +1,353 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-052",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-052.json",
+    "hash": "d7ad008826e6900d4d10bb56dddbb0a301c1acf78ffd0bf479b8666d5b408d6e"
+  },
+  "scope": [
+    "domain.write-authority",
+    "cross-domain.obligation",
+    "semantic-claim.currentness",
+    "product.lineage",
+    "dependency.invalidation",
+    "organization.work-materialization"
+  ],
+  "outOfScope": [
+    "Autonomous DOMAIN_ACTIVATION, event-driven wake-up and FE/BE parallel autonomy.",
+    "Global ProductStateProjection, product-completeness or closure semantics.",
+    "Global organization scheduler, role-stage workflow or next-domain dispatcher.",
+    "Generic graph database or generic semantic-equivalence engine.",
+    "Self-improvement or execution-strategy promotion."
+  ],
+  "constraints": [
+    "Obligation is not dispatch.",
+    "Dependency edge is not work ordering.",
+    "Invalidation is not organization or workflow-stage reset.",
+    "Product semantic lineage and Blackboard work lifecycle are distinct state spaces.",
+    "Claim authority, execution policy and domain write authority do not imply one another.",
+    "Historical accepted claims and obligations remain reconstructable after becoming stale, revoked or superseded.",
+    "Container revision alone is not sufficient authority to invalidate unrelated semantic subjects.",
+    "Semantic equivalence guessed by an LLM cannot prune required invalidation in the first implementation slice."
+  ],
+  "invariants": [
+    "Obligation != Dispatch",
+    "Dependency edge != Work ordering",
+    "Invalidation != Organization reset",
+    "Board dependency DAG != product semantic lineage",
+    "raw strategy lineage != authoritative lineage",
+    "claim authority != execution policy != domain write authority",
+    "historical claim validity != currentness for new mutation",
+    "no LLM semantic guess may prune required invalidation in v1"
+  ],
+  "architectureDecisions": [
+    "CrossDomainObligation states WHAT another domain owes; it is never a dispatch command",
+    "source domain cannot choose target worker, strategy, runtime or priority",
+    "only accepted lineage from DomainPublicationReceipt enters product dependency truth",
+    "dependency invalidation follows exact semantic subjects and reverse transitive closure, not artifact containers/stages",
+    "semantic claim/obligation payloads are immutable; currentness lives in separate heads/transitions",
+    "precision comes from stable RequirementClaim/AcceptanceCriterion/etc subject keys and exact assertion refs",
+    "downstream publication uses pre/post input-currentness handshake so upstream invalidation cannot miss a racing new edge",
+    "historical claims remain reconstructable after becoming STALE/REVOKED/SUPERSEDED"
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/index.js",
+      "delivered Integration B domain-execution-control source"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/domain-write-authority.js",
+      "packages/agentic-system/src/cross-domain-obligation.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/src/sa-execution-strategy.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/cross-domain-obligation.test.js",
+      "packages/agentic-system/test/dependency-invalidation.test.js",
+      "packages/agentic-system/test/lineage-race.test.js",
+      "packages/agentic-system/test/ba-sa-vertical.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/bb047-organization-bridge.test.js",
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "packages/agentic-system/test/**",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/index.js",
+      "delivered Integration B domain-execution-control source",
+      "packages/agentic-system/src/domain-write-authority.js",
+      "packages/agentic-system/src/cross-domain-obligation.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/src/sa-execution-strategy.js",
+      "packages/agentic-system/test/cross-domain-obligation.test.js",
+      "packages/agentic-system/test/dependency-invalidation.test.js",
+      "packages/agentic-system/test/lineage-race.test.js",
+      "packages/agentic-system/test/ba-sa-vertical.test.js"
+    ],
+    "write": [
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/bb047-organization-bridge.test.js",
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "packages/agentic-system/test/**",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/index.js",
+      "delivered Integration B domain-execution-control source",
+      "packages/agentic-system/src/domain-write-authority.js",
+      "packages/agentic-system/src/cross-domain-obligation.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/src/sa-execution-strategy.js",
+      "packages/agentic-system/test/cross-domain-obligation.test.js",
+      "packages/agentic-system/test/dependency-invalidation.test.js",
+      "packages/agentic-system/test/lineage-race.test.js",
+      "packages/agentic-system/test/ba-sa-vertical.test.js"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**"
+    ]
+  },
+  "implementationSlices": [
+    "C1: DomainWriteAuthorityPolicy + trusted publisher + CAS DomainWriteAuthorityHead",
+    "C2: immutable SemanticClaim + SemanticClaimHead/currentness transitions and immutable CrossDomainObligation + ObligationHead",
+    "C3: cross-domain materialization bridge",
+    "C4: authoritative ProductDerivationEdge persistence + deterministic DependencyImpactAnalysis + currentness transition/reconciliation",
+    "C5: BA -> SA executable slice"
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "One accepted BA requirement subject can produce an authorized solution-design obligation that deterministically materializes SA-owned work without the BA domain selecting SA execution mechanics.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "Accepted SA output can publish architecture subjects and only obligation kinds allowed by current domain write authority.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "Changing one detail requirement makes only its architecture/detail dependents non-current while unrelated list claims and work remain current.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "statement": "A newly published dependent racing upstream supersession cannot remain silently current after the publication currentness handshake.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "statement": "Replaying the same normalized obligation publication converges on one logical immutable obligation revision; semantic change creates a superseding revision instead of mutation in place.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "statement": "Stale or revoked obligations cannot materialize new target work, and already-claimed stale work loses executable capability through canonical invalidation/fencing.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-7",
+      "statement": "Authoritative lineage/currentness state can be reconstructed from immutable claims, obligations, publication receipts, edges and transitions without relying on disposable impact caches.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Obligation != Dispatch",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Dependency edge != Work ordering",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "Invalidation != Organization reset",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-4",
+      "statement": "Board dependency DAG != product semantic lineage",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-5",
+      "statement": "raw strategy lineage != authoritative lineage",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-6",
+      "statement": "claim authority != execution policy != domain write authority",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-7",
+      "statement": "historical claim validity != currentness for new mutation",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-8",
+      "statement": "no LLM semantic guess may prune required invalidation in v1",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Obligation != Dispatch",
+      "criterionIds": [
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "Dependency edge != Work ordering",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "Invalidation != Organization reset",
+      "criterionIds": [
+        "INV-3"
+      ]
+    },
+    {
+      "invariant": "Board dependency DAG != product semantic lineage",
+      "criterionIds": [
+        "INV-4"
+      ]
+    },
+    {
+      "invariant": "raw strategy lineage != authoritative lineage",
+      "criterionIds": [
+        "INV-5"
+      ]
+    },
+    {
+      "invariant": "claim authority != execution policy != domain write authority",
+      "criterionIds": [
+        "INV-6"
+      ]
+    },
+    {
+      "invariant": "historical claim validity != currentness for new mutation",
+      "criterionIds": [
+        "INV-7"
+      ]
+    },
+    {
+      "invariant": "no LLM semantic guess may prune required invalidation in v1",
+      "criterionIds": [
+        "INV-8"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "repository-verification",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [
+    "Confirm architecture/source seams against current delivered dependencies",
+    "Replace generic verification mapping with criterion-specific commands and evidence; no automatic READY during migration"
+  ]
+}

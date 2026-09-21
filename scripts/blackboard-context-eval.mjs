@@ -17,7 +17,7 @@ const b=deriveTaskContext("BB-052");
 
 run("one-schedulable-task-from-direct-dependencies",()=>{
   const ready=schedulableTasks(graph);
-  if(JSON.stringify(ready)!==JSON.stringify(["BB-052"]))throw Error("unexpected schedulable set");
+  if(JSON.stringify(ready)!==JSON.stringify(["BB-052","BB-056"]))throw Error("unexpected schedulable set");
 });
 run("multi-component-task-still-one-context",()=>{
   if(a.taskId!=="BB-052"||a.components.length!==3)throw Error("task/component projection mismatch");
@@ -25,7 +25,7 @@ run("multi-component-task-still-one-context",()=>{
 run("done-dependency-loads-living-truth-not-transcript",()=>{
   const dep=a.dependencyContext.find(x=>x.taskId==="BB-048");
   if(!dep||dep.source!=="LIVING_CONSOLIDATED")throw Error("dependency source mismatch");
-  if(a.requiredInputRefs.some(x=>/implementation-result\/BB-048|judgment\/BB-048/.test(x)))throw Error("terminal transcript leaked");
+  if(a.requiredInputRefs.some(x=>/ready-implement-plan\/BB-048\.(implementation-result|judgment)\.json/.test(x)))throw Error("terminal transcript leaked");
 });
 run("progressive-search-is-not-default-context",()=>{
   if(!a.progressiveDiscovery.searchRoots.includes("packages/agentic-system/src/**"))throw Error("missing progressive search root");
@@ -71,7 +71,7 @@ const artifact={
   scenarios,
   result:{
     failedScenarios:scenarios.filter(x=>!x.pass).length,
-    transcriptReads:deterministicLoaded.filter(x=>/implementation-result\/BB-048|judgment\/BB-048/.test(x)).length,
+    transcriptReads:deterministicLoaded.filter(x=>/ready-implement-plan\/BB-048\.(implementation-result|judgment)\.json/.test(x)).length,
     broadSearchRootsAutoLoaded:deterministicLoaded.filter(x=>x.includes("/**")).length,
     deterministicContextReduction:deterministicLoaded.length<baselineLoaded.length,
     allDeterministicControlsPass:scenarios.every(x=>x.pass)

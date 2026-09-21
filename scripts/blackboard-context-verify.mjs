@@ -63,6 +63,11 @@ function verifyOne({root,task,graph,registry}) {
   if(ref!==expectedRef) throw new Error(`TASK_CONTEXT_BINDING_INVALID: expected current context ref ${expectedRef}`);
   const spec=readJson(`${root}/${ref}`);
   assertWorkContext(spec);
+  if(task.contract){
+    const expected=deriveTaskContext(task.id,{root,graph,registry});
+    if(JSON.stringify(spec)!==JSON.stringify(expected)) fail('TASK_CONTEXT_BINDING_INVALID: current projection differs from canonical context');
+    return {itemId:task.id,binding:{ref},pack:resolveContext(spec,{root}),graphRef:'docs/blackboard/work-graph.json'};
+  }
   verifyTaskProjection({task,spec,root,graph,registry});
 
   if(spec.pipeline==="IMPLEMENTATION_WORKER"){

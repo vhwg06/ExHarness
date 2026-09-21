@@ -2,6 +2,8 @@
 
 Source-synchronized system checkpoint. Open work is intentionally excluded; see `docs/blackboard/state.md`.
 
+Outer repository-development tooling is separate from the Agentic Application runtime. Its current contract routes OBJECTIVE through RESEARCH_SA to READY_IMPLEMENT_PLAN, then through WORKER to DELIVERED_FEATURE. The scripts validate exact semantic bindings, collect candidate evidence, integrate typed Jev evaluation and verify candidate presence/tree identity on main. Live provider judgment and actual delivery require their own evidence; offline tooling tests do not establish either. Operational details are in `docs/blackboard/jev.md`.
+
 ## Current composition
 
 Concrete execution path:

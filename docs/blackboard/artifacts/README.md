@@ -1,102 +1,39 @@
-# Blackboard development artifacts
+# Blackboard task artifacts
 
-Blackboard artifacts are current semantic/decision/result/judgment work products used by the development pipelines.
-
-## Canonical paths
-
-Each current subject has one canonical file. Do not encode revision history in filenames with `vN` or `gNNNN`.
-
-Examples:
+The canonical task artifact tree has exactly two directories:
 
 ```text
-implementation-input/integration-c-cross-domain-obligation-lineage.json
-implementation-spec/integration-c-cross-domain-obligation-lineage.json
-readiness/BB-050.json
-implementation-result/BB-050.json
-judgment/BB-050.json
+docs/blackboard/artifacts/objective/
+  BB-<id>.json              # current OBJECTIVE input
+  BB-<id>.source.json       # retained source evidence, when migration needs it
+
+docs/blackboard/artifacts/ready-implement-plan/
+  BB-<id>.json              # current READY_IMPLEMENT_PLAN
+  BB-<id>.source.json       # retained legacy plan/spec evidence
+  BB-<id>.readiness-jev-evaluation.json
+  BB-<id>.candidate-jev-evaluation.json
+  BB-<id>.implementation-result.json
+  BB-<id>.judgment.json      # retained terminal evidence, when applicable
 ```
 
-When the current artifact changes, update the canonical file in place. Git history preserves previous revisions.
+There are no canonical `implementation-input/`, `implementation-spec/`, `implementation-result/` or `judgment/` directories. Those names belonged to the previous multi-lane layout. Retained terminal evidence is co-located under the task's ready-plan directory so current routing has one path vocabulary.
 
-## Retention
-
-`current-only` applies to revisions of the same artifact subject; it does not mean `active-work-only`.
-
-Closing a work item removes its `context/<WORK_ID>/current.json` and active routing entry, but does **not** delete its canonical delivery artifacts merely because the work became terminal. Accepted `IMPLEMENTATION_INPUT`, retained `IMPLEMENTATION_SPEC`, produced `IMPLEMENTATION_RESULT`, and recorded `JUDGMENT` remain addressable at their canonical paths. A later correction updates the same canonical file in place; it does not create a `vN` or `gNNNN` sibling.
-Deleting a canonical delivery artifact requires an explicit semantic retirement/supersession reason; work completion alone is not such a reason.
-
-
-## Separation
+The active contract is:
 
 ```text
-IMPLEMENTATION_INPUT
-  = WHAT / WHY / required behavior / invariants / acceptance
-
-IMPLEMENTATION_SPEC
-  = worker-ready HOW / source seams / implementation slices / negative tests / forbidden moves
-  = retained by semantic subject
-  != routing authority
-  != work-id allocation authority
-
-current.json
-  = bounded helper context / refs / scope / verification
-
-READINESS_DECISION
-  = implementation entry authority
-
-IMPLEMENTATION_RESULT
-  = producer facts/evidence only
-
-JUDGMENT
-  = independent correctness assessment
+OBJECTIVE
+  -> RESEARCH_SA
+  -> READY_IMPLEMENT_PLAN
+  -> WORKER
+  -> DELIVERED_FEATURE
 ```
 
-Helper context identity is never embedded as authority/provenance.
+Only the unsuffixed `objective/BB-<id>.json` and `ready-implement-plan/BB-<id>.json` files are current lane inputs. `.source.json`, `.implementation-result.json` and `.judgment.json` files are retained evidence; they are never discovered or selected by scanning. The graph binds every active task to its exact current refs.
 
-## IMPLEMENTATION_RESULT
+When a current artifact changes, update that canonical file in place. A content hash in the graph/evaluation binding detects a same-path replacement. Git retains revision history; no `vN`, `gNNNN` or parallel legacy directory is created.
 
-May state candidate identity, changed surfaces, verification runs, evidence and observed facts.
+`current-only` means terminal evidence is retained, while routing remains current-only. Completing a task removes its active context but does not remove the canonical evidence kept under these two directories.
 
-It cannot claim `ACCEPT`, `DONE`, correctness or safe-to-merge.
+`OBJECTIVE` owns outcome, problem, scope, constraints and success criteria. `READY_IMPLEMENT_PLAN` owns architecture decisions, invariants, source seams, authorized write scope, implementation slices, atomic acceptance criteria and verification. The plan is not executable until Jev readiness is satisfied. Worker evidence and Jev evaluation are bound to the exact plan and candidate; they cannot redefine upstream semantics.
 
-## JUDGMENT
-
-Binds the exact work id, semantic input, implementation result, candidate and source baseline.
-
-`ACCEPT` requires all assessments satisfied and zero findings. `FINDINGS` requires concrete findings.
-
-Allowed finding types:
-
-- `IMPLEMENTATION_FINDING`
-- `EVIDENCE_INSUFFICIENT`
-- `INPUT_CONTRADICTION`
-
-There is no `CONTEXT_STALE` finding.
-
-## Work-graph binding
-
-This directory does not define task membership, scheduling or priority.
-
-Canonical Task nodes in `docs/blackboard/work-graph.json` bind the exact artifact refs they consume/produce. Schedulability is derived from direct Task dependencies; `state.md` only projects that graph for humans.
-
-An accepted artifact that is not referenced by a Task may be durable knowledge/evidence, but it is not implicitly queued work.
-
-
-## Implementation-spec identity
-
-Implementation specs are keyed by semantic subject, not by mutable Blackboard routing ids.
-
-A migrated spec may retain an `originWorkId` only in provenance. That id never reactivates work, consumes `next-work-id`, or becomes current routing authority. This avoids collisions when an old delivery work id was later reused by a different Research/SA item.
-
-For an implementation Task:
-
-```text
-work-graph Task
-  -> IMPLEMENTATION_INPUT   # semantic authority / WHAT
-  -> IMPLEMENTATION_SPEC    # worker-ready HOW
-  -> components[]
-  -> direct dependencies
-  -> derived current.json when ACTIVE
-```
-
-The worker may repair the implementation spec in place when current source seams change, but may not use that repair to change the semantic input or acceptance criteria.
+The artifact validator rejects any direct subdirectory below `docs/blackboard/artifacts/` other than `objective` and `ready-implement-plan`. This keeps the filesystem shape aligned with the two outer lanes rather than preserving historical routing names.

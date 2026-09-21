@@ -27,7 +27,7 @@ Status: **CURRENT TYPED WORK / CONTEXT CONTRACT**
 15. Every referenced Component resolves through one canonical Context Profile.
 16. Context Profiles may declare current-system refs, source roots, test roots, contracts and progressive-search roots.
 17. Component metadata must not grant source mutation, acceptance or runtime authority.
-18. Task-specific `IMPLEMENTATION_SPEC` may narrow/extend worker-ready source seams without changing the semantic `IMPLEMENTATION_INPUT`.
+18. `READY_IMPLEMENT_PLAN` fixes source seams and authorized scope before worker execution. Component metadata cannot expand that scope.
 
 ## Context derivation
 
@@ -42,21 +42,21 @@ Status: **CURRENT TYPED WORK / CONTEXT CONTRACT**
 
 ## Research / implementation boundary
 
-27. `RESEARCH_SA` turns an explicit problem/question into an accepted `IMPLEMENTATION_INPUT`.
-28. `IMPLEMENTATION_INPUT` owns WHAT/WHY/required behavior/invariants/acceptance.
-29. `IMPLEMENTATION_SPEC` owns worker-ready HOW/source seams/slices/negative tests; it is not routing, acceptance or allocation authority.
-30. `IMPLEMENTATION_WORKER` consumes the exact Task, its semantic input/spec, graph-derived component context and exact dependency truth.
-31. Worker may not silently redefine semantic input; architecture gaps return to Research/SA.
+27. `RESEARCH_SA` consumes `OBJECTIVE` and converges only to a Jev-satisfied `READY_IMPLEMENT_PLAN`.
+28. The plan contains scope, constraints, invariants, architecture decisions, source seams, slices, acceptance criteria and verification. A draft is not executable.
+29. Plan content binds the exact objective ref/hash. Readiness evaluates source at the exact recorded research baseline; worker source changes do not rewrite that baseline.
+30. `WORKER` consumes the exact ready plan ref/content hash and dependency truth. It converges only to `DELIVERED_FEATURE`.
+31. Worker cannot redefine its plan. Plan/input contradictions return to Research/SA and revoke readiness. Research cannot claim delivery.
 
 ## Implementation lanes and artifacts
 
-32. `IMPLEMENTATION_WORKER` has `JUDGMENT/READINESS -> EXECUTION -> JUDGMENT/CANDIDATE -> REPAIR?`.
-33. Readiness context carries a graph-derived execution source scope; accepted execution reuses that scope instead of inventing one later.
-34. `READINESS_DECISION` binds `taskId + semanticArtifactRef`.
-35. `IMPLEMENTATION_RESULT` binds `taskId + semanticArtifactRef + sourceBaseline + candidateRef + executionAuthorityRef` and records facts only.
-36. `JUDGMENT` independently binds semantic input/result/candidate and owns correctness assessment.
-37. `ACCEPT` cannot authorize repair; `FINDINGS` may authorize only bounded repair.
-38. Helper-context identity is never an authority subject.
+32. Outer lane is exactly `RESEARCH_SA | WORKER`. Research, execution, judgment, repair and merge-pending are phases, not extra lanes.
+33. Execution uses the plan's authorized source scope. Research and judgment contexts have no product write scope.
+34. `JEV_EVALUATION` binds task, objective, plan, evaluation spec/model and materialized evidence; worker evaluation also binds candidate SHA/tree and result.
+35. Worker evidence records exact verification commands, exit codes, candidate SHA, hashed logs and criterion evidence. Producer observations are not acceptance.
+36. Jev owns semantic judgment. All typed choices must be SATISFIED; confidence is telemetry only. Schema, evidence, binding and merge checks remain deterministic.
+37. Defects and insufficient evidence authorize bounded repair. Input contradiction returns upstream. Unchanged input reuses its judgment; no rerolling for pass.
+38. DELIVERED_FEATURE requires all claims satisfied, exact candidate ancestor of main, merge tree equality, and evaluated source still present in main. Helper-context identity is never an authority subject.
 
 ## Retention and consolidation
 
@@ -66,3 +66,7 @@ Status: **CURRENT TYPED WORK / CONTEXT CONTRACT**
 42. Task outputs aggregate through Feature/Bug and Topic consolidation into Living Docs.
 43. Once a dependency is DONE and consolidated, future context prefers Living/current truth over historical task transcript.
 44. Git retains revision history; fresh workers do not reconstruct context from Git history.
+45. Migration converts unfinished work only. Existing terminal canonical evidence stays unchanged and valid; no version/history reconstruction.
+46. Multi-task features declare an acceptance task depending on all implementation tasks. Its plan covers the whole feature; only its delivered receipt closes the feature. A single-task feature uses that task as its acceptance task.
+
+API, publication, failure handling and commands are specified in [Jev integration](jev.md).

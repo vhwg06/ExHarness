@@ -1,0 +1,89 @@
+{
+  "kind": "OUTER_BLACKBOARD_TASK_CONTEXT_EVAL",
+  "version": 1,
+  "evidenceClass": "DETERMINISTIC_REPOSITORY_FIXTURE",
+  "productionEvidence": false,
+  "subject": {
+    "taskId": "BB-052",
+    "components": [
+      "agentic/organization-work",
+      "agentic/domain-execution-control",
+      "agentic/product-lineage"
+    ],
+    "directDependencies": [
+      "BB-048"
+    ]
+  },
+  "budget": {
+    "failedScenarios": 0,
+    "transcriptReads": 0,
+    "broadSearchRootsAutoLoaded": 0,
+    "deterministicLoadedRefsMustBeLessThanBaseline": true
+  },
+  "baseline": {
+    "mode": "repository-scan-and-infer",
+    "loadedRefs": [
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+      "docs/blackboard/artifacts/objective/BB-052.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-052.json",
+      "repo-scan:packages/**",
+      "git-history:delivery-transcripts",
+      "blackboard-history:old-context",
+      "guess:adjacent-components"
+    ],
+    "loadedRefCount": 10
+  },
+  "explicit": {
+    "mode": "task-graph-component-resolution",
+    "loadedRefs": [
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+      "docs/blackboard/artifacts/objective/BB-052.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-052.json"
+    ],
+    "loadedRefCount": 6,
+    "progressiveSearchRoots": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "one-schedulable-task-from-direct-dependencies",
+      "pass": true
+    },
+    {
+      "name": "multi-component-task-still-one-context",
+      "pass": true
+    },
+    {
+      "name": "done-dependency-loads-living-truth-not-transcript",
+      "pass": true
+    },
+    {
+      "name": "progressive-search-is-not-default-context",
+      "pass": true
+    },
+    {
+      "name": "context-seed-is-deterministic",
+      "pass": true
+    },
+    {
+      "name": "execution-scope-is-derived-before-worker-execution",
+      "pass": true
+    }
+  ],
+  "result": {
+    "failedScenarios": 0,
+    "transcriptReads": 0,
+    "broadSearchRootsAutoLoaded": 0,
+    "deterministicContextReduction": true,
+    "allDeterministicControlsPass": true,
+    "valueGatePass": true
+  }
+}

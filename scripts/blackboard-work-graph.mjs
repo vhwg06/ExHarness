@@ -68,6 +68,14 @@ export function assertWorkGraph(graph,registry){
     if(!/^BB-\d+$/.test(task.id||""))fail(`task id: ${task.id}`);
     if(taskIds.has(task.id))fail(`duplicate task: ${task.id}`);
     taskIds.add(task.id);
+    if(task.contract){
+      if(!['RESEARCH_SA','WORKER'].includes(task.lane))fail('delivery lane');
+      const phases=task.lane==='RESEARCH_SA'?['RESEARCH','JUDGMENT']:['EXECUTION','REPAIR','JUDGMENT','MERGE_PENDING','DELIVERED'];
+      if(!phases.includes(task.phase))fail('delivery phase');
+      for(const k of ['objectiveRef','planRef'])text(task.contract[k],`contract.${k}`);
+      if(!/^[a-f0-9]{40}$/.test(task.contract.researchBaselineSha??''))fail('exact research baseline required');
+      if(task.status==='DONE'&&(!task.contract.deliveryRef||task.phase!=='DELIVERED'))fail('DONE requires delivery receipt');
+    }else if(graph.deliveryContract==='OBJECTIVE_PLAN_DELIVERY' && (task.status!=='DONE'||!graph.retainedTerminalTaskIds?.includes(task.id)))fail('only retained terminal work may omit delivery contract');
     if(task.featureId!=null&&!featureIds.has(task.featureId))fail(`unknown task feature: ${task.id}`);
     text(task.title,"task.title");
     if(!["IMPLEMENTATION","RESEARCH","REVIEW","BUGFIX"].includes(task.kind))fail(`task kind: ${task.id}`);
@@ -96,6 +104,11 @@ export function assertWorkGraph(graph,registry){
   }
 
   for(const feature of graph.features){
+    if(graph.deliveryContract==='OBJECTIVE_PLAN_DELIVERY' && feature.status!=='DONE'){
+      if(!feature.taskIds.includes(feature.acceptanceTaskId))fail(`feature requires acceptance task: ${feature.id}`);
+      const acceptance=graph.tasks.find(t=>t.id===feature.acceptanceTaskId);
+      if(feature.taskIds.length>1 && feature.taskIds.filter(id=>id!==feature.acceptanceTaskId).some(id=>!acceptance?.dependencies.some(d=>d.taskId===id)))fail('feature acceptance task must depend on all implementation tasks');
+    }
     for(const id of feature.taskIds){
       const task=graph.tasks.find(t=>t.id===id);
       if(!task)fail(`feature references unknown task: ${feature.id} -> ${id}`);

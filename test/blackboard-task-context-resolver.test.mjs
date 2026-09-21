@@ -13,8 +13,9 @@ test("task context is deterministically derived from one task and its components
     "agentic/domain-execution-control",
     "agentic/product-lineage"
   ]);
-  assert.equal(ctx.semanticArtifactRef,"docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage.json");
-  assert.equal(ctx.implementationSpecRef,"docs/blackboard/artifacts/implementation-spec/integration-c-cross-domain-obligation-lineage.json");
+  assert.equal(ctx.lane,"RESEARCH_SA");
+  assert.equal(ctx.semanticArtifactRef,"docs/blackboard/artifacts/objective/BB-052.json");
+  assert.equal(ctx.planRef,"docs/blackboard/artifacts/ready-implement-plan/BB-052.json");
 });
 
 test("DONE dependency contributes consolidated Living truth, not historical delivery transcript",()=>{
@@ -23,8 +24,8 @@ test("DONE dependency contributes consolidated Living truth, not historical deli
   assert.equal(dep.source,"LIVING_CONSOLIDATED");
   assert.ok(dep.refs.includes("docs/living/system/agentic-application/capabilities.md"));
   assert.ok(ctx.requiredCurrentSystemRefs.includes("docs/living/system/agentic-application/contracts.md"));
-  assert.ok(!ctx.requiredInputRefs.includes("docs/blackboard/artifacts/implementation-result/BB-048.json"));
-  assert.ok(!ctx.requiredInputRefs.includes("docs/blackboard/artifacts/judgment/BB-048.json"));
+  assert.ok(!ctx.requiredInputRefs.includes("docs/blackboard/artifacts/ready-implement-plan/BB-048.implementation-result.json"));
+  assert.ok(!ctx.requiredInputRefs.includes("docs/blackboard/artifacts/ready-implement-plan/BB-048.judgment.json"));
 });
 
 test("repository-wide discovery is progressive only and absent from deterministic required refs",()=>{

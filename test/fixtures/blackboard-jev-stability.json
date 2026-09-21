@@ -1,0 +1,7 @@
+[
+  {"id":"ready-clear","lane":"RESEARCH_SA","question":"Does the plan specify both an exact source seam and executable verification command?","state":{"plan":{"source":"source.js export answer","verification":"node --test answer.test.js"}},"expected":"SATISFIED"},
+  {"id":"ready-gap","lane":"RESEARCH_SA","question":"Does the plan provide the verification command required before execution?","state":{"plan":{"verification":null}},"expected":"INSUFFICIENT_EVIDENCE"},
+  {"id":"worker-pass","lane":"WORKER","question":"Does source export answer equal to two?","state":{"source":"export const answer = 2;"},"expected":"SATISFIED"},
+  {"id":"worker-defect","lane":"WORKER","question":"Does source export answer equal to two?","state":{"source":"export const answer = 1;"},"expected":"IMPLEMENTATION_DEFECT"},
+  {"id":"input-contradiction","lane":"WORKER","question":"Can the plan's required value of answer be implemented consistently?","state":{"requirements":["answer must equal 1","answer must equal 2 at the same time"]},"expected":"PLAN_INPUT_CONTRADICTION"}
+]

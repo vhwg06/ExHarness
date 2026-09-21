@@ -1,0 +1,327 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-054",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-054.json",
+    "hash": "8efc33ca5b77c68e6f2d1ed8f0504779fdb49c5a77e50bac7c8cec40957e334c"
+  },
+  "scope": [
+    "deployable.provenance",
+    "devops.deployment-release",
+    "product.acceptance-snapshot",
+    "runtime.identity-observation",
+    "product.qa-acceptance"
+  ],
+  "outOfScope": [
+    "Global ProductStateProjection, product completeness and objective-closure semantics.",
+    "Universal software-supply-chain framework or mandatory Sigstore/in-toto adoption.",
+    "Generic artifact-registry rewrite or environment-inventory platform.",
+    "QA acting as deployment controller.",
+    "Automatic remediation or product-owner decision policy."
+  ],
+  "constraints": [
+    "Source revision is not deployable artifact identity.",
+    "Mutable image tag or alias is not immutable deployment identity.",
+    "DeploymentRelease is not RuntimeObservation.",
+    "RuntimeObservation is not QualityAcceptance.",
+    "QA strategy success is not equivalent to QualityAcceptance ACCEPT.",
+    "A caller-selected subset of component refs cannot prove acceptance completeness.",
+    "Deployment change during the QA verification window cannot produce current acceptance for the newer release.",
+    "DevOps and Product QA remain separate authority domains for deployment publication and quality judgment."
+  ],
+  "invariants": [
+    "source commit != deployable digest",
+    "image tag != immutable image identity",
+    "DeploymentRelease != RuntimeObservation",
+    "RuntimeObservation != QualityAcceptance",
+    "QA strategy SUCCEEDED != QualityAcceptance ACCEPT",
+    "caller-selected ref list cannot omit mandatory snapshot components",
+    "deployment change during QA cannot produce current acceptance for newer release"
+  ],
+  "architectureDecisions": [
+    "source revision, build artifact, image tag, immutable artifact digest, DeploymentRelease and observed runtime identity are distinct",
+    "DeploymentRelease is DevOps authoritative publication of exact deployables/configuration/evidence; it is not Product QA truth",
+    "AcceptanceSnapshot is deterministic/immutable and derived from one exact DeploymentRelease plus current acceptance subjects",
+    "caller/QA cannot omit mandatory components or mix component refs from different releases unless explicit policy permits",
+    "QA independently observes runtime identity; DevOps/app self-report alone is insufficient",
+    "mixed old/new rollout blocks/inconclusive by default",
+    "QA revalidates deployment/currentness and runtime identity before effects and before QualityAcceptance publication",
+    "old snapshots/acceptances remain historical after newer release; they are not current for the new release"
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "delivered Integration C semantic lineage/currentness source",
+      "delivered Integration D FE/BE domain delivery/publication source",
+      "packages/agentic-system/src/qa-worker.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/trust-artifact-store.js",
+      "packages/agentic-system/src/index.js"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/deployable-artifact.js",
+      "packages/agentic-system/src/devops-execution-strategy.js",
+      "packages/agentic-system/src/deployment-release.js",
+      "packages/agentic-system/src/acceptance-snapshot.js",
+      "packages/agentic-system/src/runtime-observation.js",
+      "packages/agentic-system/src/product-qa.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/deployment-release.test.js",
+      "packages/agentic-system/test/acceptance-snapshot.test.js",
+      "packages/agentic-system/test/runtime-observation.test.js",
+      "packages/agentic-system/test/product-qa-race.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/src/qa-worker.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/test/**",
+      "delivered Integration C semantic lineage/currentness source",
+      "delivered Integration D FE/BE domain delivery/publication source",
+      "packages/agentic-system/src/trust-artifact-store.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/deployable-artifact.js",
+      "packages/agentic-system/src/devops-execution-strategy.js",
+      "packages/agentic-system/src/deployment-release.js",
+      "packages/agentic-system/src/acceptance-snapshot.js",
+      "packages/agentic-system/src/runtime-observation.js",
+      "packages/agentic-system/src/product-qa.js",
+      "packages/agentic-system/test/deployment-release.test.js",
+      "packages/agentic-system/test/acceptance-snapshot.test.js",
+      "packages/agentic-system/test/runtime-observation.test.js",
+      "packages/agentic-system/test/product-qa-race.test.js"
+    ],
+    "write": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/src/qa-worker.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/test/**",
+      "delivered Integration C semantic lineage/currentness source",
+      "delivered Integration D FE/BE domain delivery/publication source",
+      "packages/agentic-system/src/trust-artifact-store.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/deployable-artifact.js",
+      "packages/agentic-system/src/devops-execution-strategy.js",
+      "packages/agentic-system/src/deployment-release.js",
+      "packages/agentic-system/src/acceptance-snapshot.js",
+      "packages/agentic-system/src/runtime-observation.js",
+      "packages/agentic-system/src/product-qa.js",
+      "packages/agentic-system/test/deployment-release.test.js",
+      "packages/agentic-system/test/acceptance-snapshot.test.js",
+      "packages/agentic-system/test/runtime-observation.test.js",
+      "packages/agentic-system/test/product-qa-race.test.js"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**"
+    ]
+  },
+  "implementationSlices": [
+    "EF1: DeployableArtifactRef + BuildProvenance resolution for exact FE/BE immutable digests",
+    "EF2: DevOps domain-local deployment execution + immutable DeploymentRelease/currentness",
+    "EF3: deterministic AcceptanceSnapshot builder",
+    "EF4: RuntimeObservation verifier/adapters",
+    "EF5: Product QA WorkContract bound to AcceptanceSnapshot + immutable QualityAcceptance"
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "Exact Frontend and Backend deployable identities are traceable from accepted delivery/build provenance into one immutable DeploymentRelease.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "AcceptanceSnapshot deterministically pins the exact required components, release, acceptance criteria, environment and verifier policy without omission or cross-release substitution.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "Independent runtime observation detects mismatch between expected and actually served component identity and prevents current acceptance.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "statement": "A mixed old/new rollout is blocked or inconclusive by default rather than silently accepted.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "statement": "Deployment change before QA starts invalidates the current verification target; deployment change during QA prevents current QualityAcceptance publication for the changed release.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "statement": "Old snapshots and acceptances remain reconstructable historical evidence after a newer release becomes current.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-7",
+      "statement": "A fresh consumer can trace source delivery to build provenance, exact deployable, DeploymentRelease, AcceptanceSnapshot, RuntimeObservation and QualityAcceptance without prior conversation state.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "source commit != deployable digest",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "image tag != immutable image identity",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "DeploymentRelease != RuntimeObservation",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-4",
+      "statement": "RuntimeObservation != QualityAcceptance",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-5",
+      "statement": "QA strategy SUCCEEDED != QualityAcceptance ACCEPT",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-6",
+      "statement": "caller-selected ref list cannot omit mandatory snapshot components",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-7",
+      "statement": "deployment change during QA cannot produce current acceptance for newer release",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "source commit != deployable digest",
+      "criterionIds": [
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "image tag != immutable image identity",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "DeploymentRelease != RuntimeObservation",
+      "criterionIds": [
+        "INV-3"
+      ]
+    },
+    {
+      "invariant": "RuntimeObservation != QualityAcceptance",
+      "criterionIds": [
+        "INV-4"
+      ]
+    },
+    {
+      "invariant": "QA strategy SUCCEEDED != QualityAcceptance ACCEPT",
+      "criterionIds": [
+        "INV-5"
+      ]
+    },
+    {
+      "invariant": "caller-selected ref list cannot omit mandatory snapshot components",
+      "criterionIds": [
+        "INV-6"
+      ]
+    },
+    {
+      "invariant": "deployment change during QA cannot produce current acceptance for newer release",
+      "criterionIds": [
+        "INV-7"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "repository-verification",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [
+    "Confirm architecture/source seams against current delivered dependencies",
+    "Replace generic verification mapping with criterion-specific commands and evidence; no automatic READY during migration"
+  ]
+}

@@ -1,0 +1,128 @@
+name: blackboard-jev
+
+on:
+  workflow_dispatch:
+    inputs:
+      work_id:
+        description: Exact current Blackboard work id
+        required: true
+        type: string
+      candidate_sha:
+        description: Exact candidate commit (empty for research)
+        required: false
+        type: string
+  workflow_run:
+    workflows: [test]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: blackboard-jev-${{ inputs.work_id || github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  select:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    outputs:
+      work: ${{ steps.select.outputs.work }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - id: select
+        env:
+          WORK_ID: ${{ inputs.work_id }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha || github.event.workflow_run.head_sha }}
+        run: node scripts/blackboard-jev-ci.mjs select
+
+  evidence:
+    needs: select
+    if: needs.select.outputs.work != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        work: ${{ fromJSON(needs.select.outputs.work) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: trusted
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.work.sha }}
+          path: subject
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Collect evidence without provider credentials
+        env:
+          WORK_ID: ${{ matrix.work.id }}
+          CANDIDATE_SHA: ${{ matrix.work.sha }}
+        run: node trusted/scripts/blackboard-jev-ci.mjs collect
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jev-input-${{ matrix.work.id }}
+          path: subject/artifacts/blackboard-verification/
+          if-no-files-found: error
+
+  evaluate:
+    needs: [select, evidence]
+    if: needs.select.outputs.work != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        work: ${{ fromJSON(needs.select.outputs.work) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: trusted
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.work.sha }}
+          path: subject
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: jev-input-${{ matrix.work.id }}
+          path: subject/artifacts/blackboard-verification/
+      - uses: actions/cache/restore@v4
+        with:
+          path: subject/.cache/blackboard-jev
+          key: jev-${{ matrix.work.id }}-${{ github.run_id }}
+          restore-keys: jev-${{ matrix.work.id }}-
+      - name: Materialize, evaluate and validate using trusted evaluator
+        env:
+          WORK_ID: ${{ matrix.work.id }}
+          CANDIDATE_SHA: ${{ matrix.work.sha }}
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+        run: node trusted/scripts/blackboard-jev-ci.mjs evaluate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jev-evaluation-${{ matrix.work.id }}
+          path: subject/artifacts/blackboard-jev/
+          if-no-files-found: warn
+      - uses: actions/cache/save@v4
+        if: always() && hashFiles('subject/.cache/blackboard-jev/*.json') != ''
+        with:
+          path: subject/.cache/blackboard-jev
+          key: jev-${{ matrix.work.id }}-${{ github.run_id }}

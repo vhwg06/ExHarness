@@ -1,0 +1,258 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-056",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-056.json",
+    "hash": "91bdbec979f3b9c828d879b83aa4460a8db266fd7733bfc86cea89e78b44b76c"
+  },
+  "scope": [
+    "OBJECTIVE -> READY_IMPLEMENT_PLAN -> DELIVERED_FEATURE",
+    "Jev API/CI judgment and semantic cache",
+    "Current-only unfinished work migration"
+  ],
+  "outOfScope": [
+    "Internal agentic application runtime refactor"
+  ],
+  "constraints": [
+    "Exactly RESEARCH_SA and WORKER lanes",
+    "Current-only canonical artifacts; retain terminal evidence",
+    "Jev owns semantic judgment; producer cannot accept its own output"
+  ],
+  "invariants": [
+    "Exactly RESEARCH_SA and WORKER lanes",
+    "Current-only canonical artifacts; retain terminal evidence",
+    "Jev owns semantic judgment; producer cannot accept its own output"
+  ],
+  "architectureDecisions": [
+    "The canonical graph routes exactly RESEARCH_SA and WORKER; EXECUTION, JUDGMENT, REPAIR and MERGE_PENDING are phases.",
+    "OBJECTIVE and plan are bound by canonical ref and content hash. Plan hashing excludes only status/readiness receipt. Current artifacts are updated in place without history chains.",
+    "Jev replaces semantic judgment. Deterministic validators enforce bindings, claim coverage, successful evidence and delivery identity. Confidence is telemetry only.",
+    "Use native Node fetch with the pinned jev-1.13.0 model and one batch of independent Choice questions. Missing evidence and malformed output cannot become SATISFIED.",
+    "Cache normalized state/spec/model/policy hashes including source and evidence contents. Reuse valid findings, never reroll unchanged input for pass.",
+    "Use a separate trusted CI evaluator job with TYPESAFE_API_KEY; candidate verification runs in a job without that key. Canonical publication remains a trusted-controller command.",
+    "Preserve candidate commit identity. Require candidate ancestry on main, exact merge tree, and evaluated source still present at delivery observation.",
+    "Retain terminal canonical artifacts unchanged. Convert unfinished tasks to new objective/plan drafts, without retroactive acceptance.",
+    "Features with multiple tasks require a final acceptance task that depends on all implementation tasks and evaluates the complete feature plan."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "scripts/blackboard-work-graph.mjs",
+      "scripts/blackboard-artifact-contract.mjs"
+    ],
+    "expectedNew": [
+      "scripts/blackboard-delivery-contract.mjs",
+      "scripts/blackboard-delivery-context.mjs",
+      "scripts/blackboard-delivery-migrate.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-jev-cli.mjs",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-jev-stability.mjs",
+      ".github/workflows/blackboard-jev.yml"
+    ],
+    "expectedTests": [
+      "test/blackboard-jev.test.mjs",
+      "test/blackboard-work-graph.test.mjs",
+      "test/blackboard-task-context-resolver.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "scripts/**",
+      "test/**",
+      "docs/**",
+      ".github/**",
+      "package.json",
+      "AGENTS.md"
+    ],
+    "write": [
+      "scripts/**",
+      "test/**",
+      "docs/blackboard/**",
+      "docs/living/system/**",
+      ".github/**",
+      "package.json",
+      "AGENTS.md",
+      ".gitignore"
+    ],
+    "forbiddenWrite": [
+      "packages/**"
+    ]
+  },
+  "implementationSlices": [
+    "Contracts and exact binding",
+    "Jev materialization, typed validation, cache and metrics",
+    "Context routing and current-only migration",
+    "CI, merge receipt and regression verification"
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "LANES",
+      "statement": "Only RESEARCH_SA and WORKER route unfinished work; phases do not grant a third lane.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "READINESS",
+      "statement": "A draft plan cannot authorize worker execution; readiness covers objective and implementability claims.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "BINDING",
+      "statement": "An objective, plan or evidence change at the same ref invalidates the prior bound evaluation.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "CLAIMS",
+      "statement": "Worker acceptance requires exactly one typed answer and evidence mapping for every criterion, with all choices SATISFIED.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "ROUTING",
+      "statement": "Defects and missing evidence return to worker repair; input contradiction revokes readiness and returns to research.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "CACHE",
+      "statement": "Identical semantic input reuses answers without a network call; state/spec/model changes invalidate the cache.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "API",
+      "statement": "The TypeSafe adapter validates typed output and bounds retries; missing credentials and transport/schema errors cannot pass.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "CONFIDENCE",
+      "statement": "SATISFIED with low confidence still passes the semantic choice gate; distributions are recorded as telemetry.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "DELIVERY",
+      "statement": "Only an exact evaluated candidate preserved in main with matching merge tree and current evaluated source can publish delivery.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "MIGRATION",
+      "statement": "Migration is idempotent and preserves terminal canonical evidence unchanged.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "CI",
+      "statement": "Live TypeSafe calls are absent from normal verification and run separately from candidate command execution.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    },
+    {
+      "id": "METRICS",
+      "statement": "Evaluation records usage/cache/cost metadata and the separate labeled stability benchmark never publishes acceptance.",
+      "verificationIds": [
+        "jev-regressions",
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Exactly RESEARCH_SA and WORKER lanes",
+      "criterionIds": [
+        "LANES"
+      ]
+    },
+    {
+      "invariant": "Current-only canonical artifacts; retain terminal evidence",
+      "criterionIds": [
+        "MIGRATION"
+      ]
+    },
+    {
+      "invariant": "Jev owns semantic judgment; producer cannot accept its own output",
+      "criterionIds": [
+        "CLAIMS",
+        "ROUTING"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "jev-regressions",
+      "command": "npm run test:blackboard-jev"
+    },
+    {
+      "id": "repository-verification",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": []
+}

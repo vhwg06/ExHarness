@@ -1,0 +1,38 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-048",
+  "outcome": "An exact current released organizational claim can enter one bounded domain-local execution path without widening organizational work-selection or acceptance authority.",
+  "currentProblem": "Integration B is delivered on main. The accepted repair closes the lifecycle-publication currentness race while preserving writer-authority/idempotency and transition-revision guarantees.",
+  "scope": [
+    "organization.released-claim",
+    "domain.execution-control",
+    "execution.attempt-binding",
+    "execution.recovery"
+  ],
+  "constraints": [
+    "Organization owns WHAT, WHO and execution authority; domain execution control owns HOW for the already-released claim.",
+    "Execution policy is not a work scheduler.",
+    "Execution strategy cannot select another organizational work item or dispatch another domain.",
+    "A successful runtime result is not equivalent to acceptance or authoritative publication.",
+    "In-flight execution remains bound to the exact selected strategy and runtime identity across recovery."
+  ],
+  "successCriteria": [
+    "A stale or non-current released claim cannot acquire executable domain-local authority.",
+    "Crash and restart preserve the same semantic execution-attempt binding.",
+    "A later policy or strategy revision cannot mutate an already-bound in-flight attempt.",
+    "Verification demonstrates that domain execution cannot widen into cross-domain scheduling or organizational lifecycle control.",
+    "The delivered slice stops before cross-domain continuation, ProductStateProjection, deployment and Product QA."
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/state.md",
+    "docs/living/system/capabilities.md",
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/system/agentic-application/contracts.md"
+  ],
+  "retainedTerminalEvidence": [
+    "docs/blackboard/artifacts/ready-implement-plan/BB-048.implementation-result.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-048.judgment.json"
+  ]
+}

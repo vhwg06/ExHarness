@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { deliveryTypes, assertDeliveryArtifact } from './blackboard-delivery-contract.mjs';
 
 const IMPLEMENTATION_INPUT_KEYS=new Set([
   "kind","version","artifactType","artifactId","status","subject","semantics","provenance"
@@ -219,6 +220,7 @@ export function readSemanticArtifact(path){
 }
 
 export function assertBlackboardArtifact(artifact){
+  if(deliveryTypes.has(artifact?.artifactType)||(artifact?.artifactType==='IMPLEMENTATION_RESULT'&&artifact.plan)) return assertDeliveryArtifact(artifact);
   assertBase(artifact);
   if(artifact.artifactType==="IMPLEMENTATION_INPUT")assertImplementationInput(artifact);
   else if(artifact.artifactType==="IMPLEMENTATION_SPEC")assertImplementationSpec(artifact);
@@ -230,6 +232,7 @@ export function assertBlackboardArtifact(artifact){
 }
 
 export function assertSemanticArtifact(artifact){
+  if(['OBJECTIVE','READY_IMPLEMENT_PLAN'].includes(artifact?.artifactType)) return assertDeliveryArtifact(artifact);
   if(artifact?.artifactType!=="IMPLEMENTATION_INPUT")fail("expected IMPLEMENTATION_INPUT");
   return assertBlackboardArtifact(artifact);
 }

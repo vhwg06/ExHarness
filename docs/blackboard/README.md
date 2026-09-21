@@ -93,7 +93,7 @@ Task
   -> Topic / Feature
   -> components[]
   -> Component Registry / Context Profiles
-  -> task IMPLEMENTATION_INPUT + IMPLEMENTATION_SPEC
+  -> task OBJECTIVE + exact READY_IMPLEMENT_PLAN
   -> direct dependencies
        DONE -> consolidated Living refs
   -> exact source/test/contract scope
@@ -123,7 +123,7 @@ delete current.json
   -> resolver can reconstruct the semantic context seed
 ```
 
-The context file is updated in place as execution moves through readiness, execution, candidate judgment and repair. There is no generation chain, parent context chain, stale marker or audit-ref traversal.
+The context file is updated in place as work moves through research, execution, Jev judgment and repair. There is no generation chain, parent context chain, stale marker or audit-ref traversal. The two outer lanes are RESEARCH_SA and WORKER; their input/output contracts are OBJECTIVE -> READY_IMPLEMENT_PLAN and READY_IMPLEMENT_PLAN -> DELIVERED_FEATURE.
 
 ## Artifact flow
 
@@ -145,7 +145,7 @@ Delivery evidence may remain as canonical Blackboard artifacts, but future task 
 - `contracts.md` — graph/context/authority invariants;
 - `pipelines.md` — Research/SA and implementation flow;
 - `context/<TASK_ID>/current.json` — active task projection only;
-- `artifacts/` — semantic input/spec/result/judgment delivery artifacts;
+- `artifacts/objective/` and `artifacts/ready-implement-plan/` — current lane inputs plus co-located retained delivery evidence;
 - `process/` — verification process references.
 
 Git is revision history. It is not a context source that a fresh worker must reconstruct.

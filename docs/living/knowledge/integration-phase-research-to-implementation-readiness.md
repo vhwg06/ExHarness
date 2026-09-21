@@ -497,7 +497,7 @@ roadmap
 docs/blackboard/state.md
   = current delivery router / active work / accepted input queue
 
-docs/blackboard/artifacts/implementation-input/*
+docs/blackboard/artifacts/objective/*
   = exact accepted semantic slices
 
 docs/living/system/*

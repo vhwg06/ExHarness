@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-056
+next-work-id: BB-057
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -30,7 +30,7 @@ current-active-debt: 0
 RESEARCH_SA
   active: NONE
 
-IMPLEMENTATION_WORKER
+WORKER
   active: NONE
 ```
 
@@ -40,16 +40,18 @@ NONE
 
 ## Schedulable tasks
 
-- BB-052 — Implement cross-domain obligations and selective semantic invalidation
+- BB-052 [RESEARCH_SA/RESEARCH] — Implement cross-domain obligations and selective semantic invalidation
+- BB-056 [RESEARCH_SA/RESEARCH] — Deliver two-lane outer Blackboard with Jev judgment
 
 ## Dependency graph
 
 ```text
 BB-048 [DONE] <- ROOT
-BB-052 [READY] <- BB-048
+BB-052 [RESEARCH_SCHEDULABLE] <- BB-048
 BB-053 [BLOCKED_BY BB-052] <- BB-052
 BB-054 [BLOCKED_BY BB-053] <- BB-053
 BB-055 [BLOCKED_BY BB-054] <- BB-054
+BB-056 [RESEARCH_SCHEDULABLE] <- ROOT
 ```
 
 ## Context semantics

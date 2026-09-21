@@ -1,0 +1,56 @@
+# Jev evaluation and delivery
+
+The outer Blackboard has two contracts: OBJECTIVE -> READY_IMPLEMENT_PLAN through RESEARCH_SA, and exact READY_IMPLEMENT_PLAN -> DELIVERED_FEATURE through WORKER. Jev is the semantic judge for both. This tooling does not itself attest that a feature has been delivered.
+
+## API and evidence
+
+The trusted Node evaluator calls `POST https://api.typesafe.ai/v1/systemone` using `TYPESAFE_API_KEY`. It sends one `{model,state,questions}` batch. Model is pinned to `jev-1.13.0`; aliases and unexpected returned models fail closed. See the [provider API](https://docs.typesafe.ai/api) and [atomic question guidance](https://docs.typesafe.ai/primitives).
+
+The state includes the objective, semantic plan and bounded source/evidence contents, not a whole conversation or bare references. Readiness reads source at `contract.researchBaselineSha`; updating that exact baseline is an explicit research change. Worker reads source from the exact candidate commit, includes changed surfaces and required seams/tests, and checks plan scope. Verification logs bind command, successful exit, candidate identity and content hash. Additional criterion evidence is attached through `contract.claimEvidence`.
+
+Questions are independent Choice questions. All must select SATISFIED to pass. IMPLEMENTATION_DEFECT and INSUFFICIENT_EVIDENCE return to worker repair; PLAN_INPUT_CONTRADICTION returns upstream. Research findings always stay in research. Confidence does not change the selected outcome. Invalid response shape, missing claims, model mismatch, missing evidence or stale hashes block publication.
+
+Payload budget is 512 KiB, configured in `jev-policy.json`. Exceeding it requires more precise evidence selection; the tool does not silently truncate mandatory coverage. Research must replace generic migration verification mappings with criterion-specific commands and negative cases before readiness.
+
+## Cache, cost and stability
+
+Cache identity includes canonical materialized state, questions/spec, model, materializer/validator policy and lane. Keys ignore object key ordering and run metadata. Plan status and its readiness receipt are excluded from plan content hashing to avoid a circular binding. Source/evidence contents remain in the hash. A different candidate can reuse answers only when all evaluated content is identical; publication still binds the exact new subject.
+
+Valid findings are cached as well as SATISFIED answers. Unchanged input never rerolls for acceptance. A repeated finding publication reports `noSemanticProgress`. Error responses are not cached. Cache entries are operational data under `.cache/blackboard-jev`, not canonical authority or artifact history.
+
+API requests have a 30-second deadline and at most one transport/429/5xx retry. Auth/schema errors are not retried. Retry-After must fit within the deadline. Missing key, timeout and invalid responses cannot produce an evaluation artifact or a satisfied check.
+
+Metrics include request attempts, cache hit, payload bytes, token usage, latency, typed distributions and estimated cost. `pricing: null` means unknown monetary cost. To estimate cost, configure model, source URL, date, inputPerMillion and outputPerMillion; never infer a price from token count alone.
+
+`npm run eval:blackboard-jev-stability` makes three uncached runs per labeled fixture for both lanes. It reports agreement, verdict flips, false-satisfied cases, usage and cost. It never publishes canonical judgment. It requires a real API key and is excluded from normal verification.
+
+## Local lifecycle
+
+1. Resolve current work from the graph. Claim a schedulable task with `npm run claim:blackboard -- <WORK_ID> <WORKER_ID>`, then materialize its context using the compatibility bootstrap command.
+2. Research edits the current plan draft and resolves its recorded gaps. Materialize with `npm run materialize:blackboard-evaluation -- <WORK_ID>`.
+3. Set TYPESAFE_API_KEY in the process environment and run `npm run eval:blackboard-jev -- <WORK_ID>`. Output is `artifacts/blackboard-jev/<WORK_ID>.json`; exit 2 means findings, not API failure.
+4. Publish an evaluation produced by the trusted evaluator with `npm run publish:blackboard-evaluation -- <WORK_ID> <ARTIFACT>`. The publisher rereads current bindings and serializes publication with an exclusive lock. It updates current canonical artifacts and graph in place; completed publications are idempotent. An interrupted multi-file publication fails closed and requires reconciliation of the current files before work resumes. No lock is stolen on a timeout.
+5. After readiness, set exact candidateSha/baselineSha and evidenceRef on the current task. The candidate must be committed. Run `npm run collect:blackboard-evidence -- <WORK_ID>` without provider credentials. Verification runs execute plan commands; attach domain observations via claimEvidence when logs are insufficient.
+6. Evaluate/publish worker claims. SATISFIED advances only to MERGE_PENDING. Merge using a merge commit or fast-forward, preserving candidate SHA. If the integrated tree changes, verify and evaluate a new candidate first.
+7. Fetch main. Record exact mergeSha and current consolidatedRefs, then run `npm run verify:blackboard-delivery -- <WORK_ID> <MERGE_SHA>`. Verify checks candidate ancestry, tree identity and evaluated source still present on main.
+8. `npm run publish:blackboard-delivery -- <WORK_ID> <MERGE_SHA>` writes the canonical receipt and completes routing. Commit the canonical publication changes through the repository's normal change process. Artifact upload alone never marks work DONE.
+
+Canonical control-plane documents and generated artifacts may differ from the candidate checkout while evidence is collected; product source must match the candidate. No source code is taken from those control-plane changes for candidate evaluation. Provider credentials must not be present during verification-command execution.
+
+## CI
+
+`blackboard-jev.yml` is separate from the Node test matrix. Manual dispatch accepts a current work id; a successful normal verification workflow also triggers evaluation for current worker tasks bound to that workflow's exact head SHA. It does not guess which unbound task a PR implements.
+
+The workflow checks out routing/evaluator code from main. One job runs verification without TypeSafe credentials. A separate job reads candidate source and the collected evidence as data, calls Jev, validates the typed result, and uploads `jev-evaluation-<WORK_ID>`. It never executes candidate code with the provider key. Only same-repository successful workflow runs are automatically eligible.
+
+Download the complete result bundle from this trusted workflow and use the publication command above against the current checkout. Keep the sibling implementation-result JSON and `evidence/<WORK_ID>` directory beside the evaluation. The publisher imports the result into the canonical `docs/blackboard/artifacts/ready-implement-plan/<WORK_ID>.implementation-result.json` path and evidence into `docs/blackboard/evidence`, after checking the current candidate/plan binding and log digests, then validates the full evaluation state. Commit these canonical files with the publication so future checkouts retain the evidence.
+
+The canonical publisher rejects stale inputs; an uploaded or manually edited JSON file is not independent proof of provider provenance. Publishing is a trusted-controller action, not a worker self-acceptance API. CI does not bypass repository merge permissions or automatically push to main.
+
+Offline validator, routing, cache and merge fixtures run in normal verification with mock transport and no API key. Live API evaluation and stability benchmarks do not run in that matrix.
+
+## Current-only migration
+
+`npm run migrate:blackboard-delivery` converts unfinished work into objective/plan bindings and research drafts, retaining task identities/dependencies. DONE evidence is co-located under the ready-plan directory. Any retained source material uses `.source.json` beside the canonical objective/plan; graph bindings select only the unsuffixed current contract. No generation siblings, history chains or retrospective judgments are created.
+
+The evaluator's own initial implementation is bootstrapped by the explicit user instruction. It remains unconverged until real readiness, candidate judgment and merge evidence exist. Neither mock tests nor installation of this workflow count as a live Jev verdict.

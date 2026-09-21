@@ -2,6 +2,8 @@
 
 Status: **REBUILDABLE TASK CONTEXT PROJECTION**
 
+Current unfinished contexts use exactly `lane: RESEARCH_SA | WORKER` and a separate `phase`. Their semantic input is the objective for research or exact ready plan for worker. `planRef` and `planHash` preserve the downstream binding. Jev owns judgment; read-only contexts never grant product writes. The canonical context is regenerated from the current graph and checked for exact equality before bootstrap.
+
 Each ACTIVE outer-Blackboard Task has at most one canonical helper context:
 
 `docs/blackboard/context/<TASK_ID>/current.json`

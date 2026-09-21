@@ -1,0 +1,28 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-056",
+  "outcome": "Deliver two-lane outer Blackboard with Jev judgment",
+  "currentProblem": "Outer Blackboard lacks implementable-plan convergence, Jev evaluation and exact delivery enforcement.",
+  "scope": [
+    "OBJECTIVE -> READY_IMPLEMENT_PLAN -> DELIVERED_FEATURE",
+    "Jev API/CI judgment and semantic cache",
+    "Current-only unfinished work migration"
+  ],
+  "constraints": [
+    "Exactly RESEARCH_SA and WORKER lanes",
+    "Current-only canonical artifacts; retain terminal evidence",
+    "Jev owns semantic judgment; producer cannot accept its own output"
+  ],
+  "successCriteria": [
+    "Research converges only with an implementable plan and SATISFIED readiness claims",
+    "Worker converges only when every acceptance claim is SATISFIED and exact candidate exists in main",
+    "Normal verification never calls live Jev",
+    "Semantic cache prevents unchanged reevaluation",
+    "Migration preserves terminal artifacts"
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/state.md"
+  ]
+}

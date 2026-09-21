@@ -1,0 +1,312 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-055",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-055.json",
+    "hash": "39013b984a5a227b72f8a5a3f0f56b856f3774185711bd0fd97695417d41b142"
+  },
+  "scope": [
+    "product.history-completeness",
+    "product.state-projection",
+    "product.closure-currentness",
+    "product.outcome-claim",
+    "product.revalidation"
+  ],
+  "outOfScope": [
+    "Global organization scheduling, role sequencing or next-domain dispatch.",
+    "Generic event-sourcing platform, universal provenance database or organization-wide telemetry ledger.",
+    "Mandatory Certificate Transparency, Merkle-tree inclusion proofs or external transparency-log infrastructure.",
+    "Implementation of terminal Blackboard DONE reopening; Integration G v1 uses immutable historical closure plus current projection/revalidation semantics.",
+    "Adversarial recovery benchmark, causal observability and self-improvement loops reserved for later Integration H through J."
+  ],
+  "constraints": [
+    "Caller-selected current refs are not completeness proof.",
+    "ProductHistoryHead is a product-completeness/currentness subject, not an organization scheduler, execution log or observability stream.",
+    "ProductStateProjection is not product authority and is never directly mutated as truth.",
+    "A stable product state cannot expose a newer authoritative closure-relevant transition while the canonical completeness head still commits only to an older state.",
+    "Historical ProductOutcomeClaim is not a permanent current DONE bit.",
+    "Acceptance-policy and applicable-waiver currentness are derived from canonical authority and pinned in the projection subject rather than accepted as a convenient caller subset.",
+    "Execution-policy or execution-strategy changes alone do not change product readiness unless accepted product semantic lineage changes.",
+    "Cryptographic Merkle inclusion/consistency proofs are not required for Integration G v1; exact generation/digest commitment and durable CAS/recovery are sufficient for the current trusted-store threat model."
+  ],
+  "invariants": [
+    "Caller-selected current refs are not completeness proof.",
+    "ProductHistoryHead is a product-completeness/currentness subject, not an organization scheduler, execution log or observability stream.",
+    "ProductStateProjection is not product authority and is never directly mutated as truth.",
+    "A stable product state cannot expose a newer authoritative closure-relevant transition while the canonical completeness head still commits only to an older state.",
+    "Historical ProductOutcomeClaim is not a permanent current DONE bit.",
+    "Acceptance-policy and applicable-waiver currentness are derived from canonical authority and pinned in the projection subject rather than accepted as a convenient caller subset.",
+    "Execution-policy or execution-strategy changes alone do not change product readiness unless accepted product semantic lineage changes.",
+    "Cryptographic Merkle inclusion/consistency proofs are not required for Integration G v1; exact generation/digest commitment and durable CAS/recovery are sufficient for the current trusted-store threat model."
+  ],
+  "architectureDecisions": [
+    "RESEARCH REQUIRED: resolve architecture decisions before readiness"
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/src/qa-worker.js",
+      "packages/agentic-system/src/qa-application.js"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/agentic-system/test/**"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/src/qa-worker.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/src/qa-worker.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/test/**"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**"
+    ]
+  },
+  "implementationSlices": [
+    "RESEARCH REQUIRED: decompose implementation and resolve source seams"
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "Omitting a current QUALITY_REJECTED claim from caller input cannot make the product eligible; the builder derives it from canonical history and returns NOT_READY.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "Omitting a current blocking obligation from caller input cannot make the product eligible; the builder derives the obligation and returns NOT_READY.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "A projection built at history head Hn cannot authorize closure after a closure-relevant Hn+1 transition; the closure currentness recheck rejects the stale basis.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "statement": "Deleting any cached ProductStateProjection and rebuilding from the same pinned subject yields identical readiness, active-set identity and blockers.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "statement": "Restarting a fresh process can reconstruct the same current product subject and projection from durable history/policy refs without prior conversation state.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "statement": "Changing acceptance-policy revision while product history is unchanged makes the old projection subject non-current and requires deterministic re-evaluation.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-7",
+      "statement": "Publishing a new accepted Backend or other closure-relevant product revision after closure retains the old ProductOutcomeClaim historically but makes current readiness re-evaluate under the newer history head.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-8",
+      "statement": "Attempted in-place mutation of an historical claim, obligation, history commit or ProductOutcomeClaim is rejected; correction occurs through new immutable transitions.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "AC-9",
+      "statement": "A strategy-only revision with unchanged accepted product outputs and lineage does not by itself invalidate product closure readiness.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Passing exact-candidate verification logs and relevant source evidence"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Caller-selected current refs are not completeness proof.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "ProductHistoryHead is a product-completeness/currentness subject, not an organization scheduler, execution log or observability stream.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "ProductStateProjection is not product authority and is never directly mutated as truth.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-4",
+      "statement": "A stable product state cannot expose a newer authoritative closure-relevant transition while the canonical completeness head still commits only to an older state.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-5",
+      "statement": "Historical ProductOutcomeClaim is not a permanent current DONE bit.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-6",
+      "statement": "Acceptance-policy and applicable-waiver currentness are derived from canonical authority and pinned in the projection subject rather than accepted as a convenient caller subset.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-7",
+      "statement": "Execution-policy or execution-strategy changes alone do not change product readiness unless accepted product semantic lineage changes.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    },
+    {
+      "id": "INV-8",
+      "statement": "Cryptographic Merkle inclusion/consistency proofs are not required for Integration G v1; exact generation/digest commitment and durable CAS/recovery are sufficient for the current trusted-store threat model.",
+      "verificationIds": [
+        "repository-verification"
+      ],
+      "evidenceRequired": [
+        "Exact candidate source and negative verification evidence"
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Caller-selected current refs are not completeness proof.",
+      "criterionIds": [
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "ProductHistoryHead is a product-completeness/currentness subject, not an organization scheduler, execution log or observability stream.",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "ProductStateProjection is not product authority and is never directly mutated as truth.",
+      "criterionIds": [
+        "INV-3"
+      ]
+    },
+    {
+      "invariant": "A stable product state cannot expose a newer authoritative closure-relevant transition while the canonical completeness head still commits only to an older state.",
+      "criterionIds": [
+        "INV-4"
+      ]
+    },
+    {
+      "invariant": "Historical ProductOutcomeClaim is not a permanent current DONE bit.",
+      "criterionIds": [
+        "INV-5"
+      ]
+    },
+    {
+      "invariant": "Acceptance-policy and applicable-waiver currentness are derived from canonical authority and pinned in the projection subject rather than accepted as a convenient caller subset.",
+      "criterionIds": [
+        "INV-6"
+      ]
+    },
+    {
+      "invariant": "Execution-policy or execution-strategy changes alone do not change product readiness unless accepted product semantic lineage changes.",
+      "criterionIds": [
+        "INV-7"
+      ]
+    },
+    {
+      "invariant": "Cryptographic Merkle inclusion/consistency proofs are not required for Integration G v1; exact generation/digest commitment and durable CAS/recovery are sufficient for the current trusted-store threat model.",
+      "criterionIds": [
+        "INV-8"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "repository-verification",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [
+    "Confirm architecture/source seams against current delivered dependencies",
+    "Replace generic verification mapping with criterion-specific commands and evidence; no automatic READY during migration"
+  ]
+}

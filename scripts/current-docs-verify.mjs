@@ -29,13 +29,21 @@ for(const required of [
 assertWorkGraph(readWorkGraph("docs/blackboard/work-graph.json"),readComponentRegistry("docs/blackboard/component-registry.json"));
 verifyStateProjection("docs/blackboard/state.md");
 
-const requiredImplementationSpecs=[
-  "docs/blackboard/artifacts/implementation-spec/integration-b-domain-execution-control.json",
-  "docs/blackboard/artifacts/implementation-spec/integration-c-cross-domain-obligation-lineage.json",
-  "docs/blackboard/artifacts/implementation-spec/integration-d-domain-activation-parallel-autonomy.json",
-  "docs/blackboard/artifacts/implementation-spec/integration-ef-deployment-acceptance-snapshot.json"
+const requiredTaskArtifacts=[
+  "docs/blackboard/artifacts/objective/BB-048.json",
+  "docs/blackboard/artifacts/objective/BB-052.json",
+  "docs/blackboard/artifacts/objective/BB-053.json",
+  "docs/blackboard/artifacts/objective/BB-054.json",
+  "docs/blackboard/artifacts/objective/BB-055.json",
+  "docs/blackboard/artifacts/objective/BB-056.json",
+  "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+  "docs/blackboard/artifacts/ready-implement-plan/BB-052.json",
+  "docs/blackboard/artifacts/ready-implement-plan/BB-053.json",
+  "docs/blackboard/artifacts/ready-implement-plan/BB-054.json",
+  "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+  "docs/blackboard/artifacts/ready-implement-plan/BB-056.json"
 ];
-for(const file of requiredImplementationSpecs){
+for(const file of requiredTaskArtifacts){
   if(!blackboardFiles.includes(file))fail(`missing canonical implementation spec: ${file}`);
 }
 

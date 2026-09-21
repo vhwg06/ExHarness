@@ -1,0 +1,41 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-053",
+  "outcome": "Persisted actionable work can wake its exact owning domain and enter the existing authorized claim and domain-execution path through level-triggered reconciliation, allowing independent Frontend and Backend progress without a central next-role dispatcher or event transport becoming authority.",
+  "currentProblem": "The delivered system now includes organization work discovery/claim/release plus bounded domain execution and mutation-current publication, but it has no generic DOMAIN_ACTIVATION capability and no autonomous Frontend domain. Integration C remains a queued prerequisite because activation must consume authoritative obligation/currentness semantics once those are delivered.",
+  "scope": [
+    "domain.activation",
+    "organization.work-discovery",
+    "organization.claim-entry",
+    "frontend.domain-execution",
+    "backend.domain-execution",
+    "parallel.domain-autonomy"
+  ],
+  "constraints": [
+    "Activation is not scheduling.",
+    "Event or queue delivery is not lifecycle, claim or execution authority.",
+    "Activation is not strategy selection and is not obligation creation.",
+    "Queue, cursor and local backoff state are disposable and reconstructable from canonical work state.",
+    "A stale queued hint cannot resurrect invalidated work.",
+    "Frontend and Backend independence is governed by exact semantic dependencies, not global development stages.",
+    "A durable runtime such as Restate may host activation mechanics but cannot become organizational source of truth or hidden scheduler."
+  ],
+  "successCriteria": [
+    "Persisted actionable work is rediscovered and processed after controller restart even when its original notification was lost.",
+    "Concurrent duplicate hints for one work item converge to one current claim/execution path.",
+    "A wrong-domain activation attempt cannot claim or execute the work.",
+    "Obligation supersession between activation pre-check and execution entry prevents execution through the post-release currentness recheck.",
+    "Frontend and Backend work can progress concurrently and independently under their own domain execution strategies.",
+    "An outage in one domain leaves unrelated work in another domain actionable and able to progress.",
+    "Removing a manual next-role dispatcher does not stop progress for persisted actionable work.",
+    "Partial upstream invalidation suppresses only affected activation subjects while unrelated domain work remains actionable."
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/agentic-application/contracts.md",
+    "docs/living/system/agentic-application/state.md",
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+  ]
+}

@@ -13,7 +13,7 @@ export function bootstrapImplementationSession({
   const graph=readWorkGraph(`${root}/${graphPath}`);
   const registry=readComponentRegistry(`${root}/${registryPath}`);
   assertWorkGraph(graph,registry);
-  const implementationItems=graph.tasks.filter(t=>t.status==="ACTIVE"&&["IMPLEMENTATION","BUGFIX"].includes(t.kind));
+  const implementationItems=graph.tasks.filter(t=>t.status==="ACTIVE"&&(t.contract ? ['RESEARCH_SA','WORKER'].includes(t.lane) : ["IMPLEMENTATION","BUGFIX"].includes(t.kind)));
   if(!implementationItems.length)throw new Error("BLACKBOARD_BOOTSTRAP_INVALID: no active implementation task");
   const selected=itemId??(implementationItems.length===1?implementationItems[0].id:null);
   if(!selected)throw new Error(`BLACKBOARD_BOOTSTRAP_INVALID: multiple implementation tasks require task id: ${implementationItems.map(t=>t.id).join(",")}`);
@@ -24,6 +24,7 @@ export function bootstrapImplementationSession({
   const spec=JSON.parse(fs.readFileSync(`${root}/${verified.binding.ref}`,"utf8"));
   const context=materializeContext(spec,{root,profile});
   const lane=spec.lane;
+  if(task.contract) return {workId:selected,taskId:selected,pipeline:lane,lane,phase:spec.phase,intent:lane==='RESEARCH_SA'?'BUILD_READY_IMPLEMENT_PLAN':'IMPLEMENT_EXACT_READY_PLAN',rules:['Jev is the semantic judge','Do not redefine upstream input','Do not claim delivery before exact candidate exists in main'],context};
 
   let intent;
   let rules;

@@ -36,10 +36,10 @@ export function renderStateProjection({graph=readWorkGraph(),registry=readCompon
     "",
     "```text",
     "RESEARCH_SA",
-    "  active: NONE",
+    `  active: ${active.filter(t=>t.lane==='RESEARCH_SA').map(t=>t.id).join(',')||'NONE'}`,
     "",
-    "IMPLEMENTATION_WORKER",
-    `  active: ${active.length?active.map(t=>t.id).join(","):"NONE"}`,
+    "WORKER",
+    `  active: ${active.filter(t=>t.lane==='WORKER'||!t.contract).map(t=>t.id).join(',')||'NONE'}`,
     "```",
     "",
     "## Active work",
@@ -47,20 +47,20 @@ export function renderStateProjection({graph=readWorkGraph(),registry=readCompon
   ];
   if(!active.length)lines.push("NONE");
   else for(const task of active){
-    lines.push("",task.id,`task: ${task.title}`,`current-context: ${task.currentContextRef}`,`components: ${task.components.join(", ")}`,`worker: ${task.claim.workerId}`);
+    lines.push("",task.id,`task: ${task.title}`,`lane: ${task.lane??'WORKER'}`,`phase: ${task.phase??'LEGACY'}`,`current-context: ${task.currentContextRef}`,`components: ${task.components.join(", ")}`,`worker: ${task.claim.workerId}`);
   }
 
   lines.push("","## Schedulable tasks","");
   if(!schedulable.length)lines.push("NONE");
   else for(const id of schedulable){
     const task=graph.tasks.find(t=>t.id===id);
-    lines.push(`- ${id} — ${task.title}`);
+    lines.push(`- ${id} [${task.lane??'WORKER'}/${task.phase??'LEGACY'}] — ${task.title}`);
   }
 
   lines.push("","## Dependency graph","","```text");
   for(const task of graph.tasks){
     const r=taskReadiness(graph,task.id);
-    const derived=task.status==="DONE"?"DONE":task.status==="ACTIVE"?"ACTIVE":r.ready?"READY":r.reason==="DEPENDENCIES_NOT_DONE"?`BLOCKED_BY ${r.blockedBy.join(",")}`:task.status;
+    const derived=task.status==="DONE"?"DONE":task.status==="ACTIVE"?"ACTIVE":r.ready?(task.lane==='RESEARCH_SA'?'RESEARCH_SCHEDULABLE':'WORKER_SCHEDULABLE'):r.reason==="DEPENDENCIES_NOT_DONE"?`BLOCKED_BY ${r.blockedBy.join(",")}`:task.status;
     lines.push(`${task.id} [${derived}] <- ${task.dependencies.map(d=>d.taskId).join(", ")||"ROOT"}`);
   }
   lines.push("```","","## Context semantics","","```text",

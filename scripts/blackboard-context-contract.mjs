@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { fail, list, nonempty } from './blackboard-delivery-contract.mjs';
 
 export function readJson(path) {
   return JSON.parse(fs.readFileSync(path, "utf8"));
@@ -12,6 +13,20 @@ function overlap(a,b) {
 }
 
 export function assertWorkContext(spec) {
+  if(spec?.contract === 'OBJECTIVE_PLAN_DELIVERY') {
+    if(spec.kind !== 'WORK_CONTEXT_SPEC' || spec.version !== 1) fail('context kind/version');
+    if(!['RESEARCH_SA','WORKER'].includes(spec.lane) || spec.pipeline !== spec.lane) fail('context lane');
+    for(const key of ['generation','parentContextRef','staleWhen','auditRefs']) if(key in spec) fail(`forbidden context ${key}`);
+    nonempty(spec.itemId,'itemId'); if(spec.taskId !== spec.itemId) fail('task identity');
+    nonempty(spec.semanticArtifactRef,'semanticArtifactRef');
+    for(const key of ['requiredCurrentSystemRefs','requiredInputRefs']) list(spec[key],key,true);
+    if(!spec.requiredInputRefs.includes(spec.semanticArtifactRef)) fail('semantic input missing');
+    for(const key of ['read','write','forbiddenWrite']) list(spec.sourceScope?.[key],key,true);
+    const writing = spec.lane === 'WORKER' && ['EXECUTION','REPAIR'].includes(spec.phase);
+    if(!writing && spec.sourceScope.write.length) fail('non-execution context cannot write product source');
+    if(writing && spec.action?.kind !== 'IMPLEMENT') fail('execution action');
+    return spec;
+  }
   const fail = (m) => { throw new Error(`WORK_CONTEXT_INVALID: ${m}`); };
   if (spec?.kind !== "WORK_CONTEXT_SPEC" || spec?.version !== 1) fail("kind/version");
   if (!spec.itemId) fail("item");
