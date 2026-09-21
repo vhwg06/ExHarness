@@ -35,7 +35,33 @@ export function materialize(root, id, { readiness = false } = {}) {
   check(spec.confidenceGate==null||spec.confidenceGate===false,'confidence may not override typed choice');
   const subject = { workId: id, plan: { ref: task.contract.planRef, hash: planHash(plan) }, objective: plan.objective };
   const questions = {};
-  const state = { objective, plan: planContent(plan), evidence: [] };
+  const workerPlan = {
+    kind: plan.kind,
+    version: plan.version,
+    artifactType: plan.artifactType,
+    artifactId: plan.artifactId,
+    objective: plan.objective,
+    planHash: planHash(plan),
+    scope: plan.scope,
+    outOfScope: plan.outOfScope,
+    constraints: plan.constraints,
+    invariants: plan.invariants,
+    architectureDecisions: plan.architectureDecisions,
+    laneContracts: plan.laneContracts,
+    deliveryContract: plan.deliveryContract,
+    ciContract: plan.ciContract,
+    cacheContract: plan.cacheContract,
+    migrationContract: plan.migrationContract,
+    sourceSeams: plan.sourceSeams,
+    sourceScope: plan.sourceScope,
+    implementationSlices: plan.implementationSlices,
+    negativeVerificationCases: plan.negativeVerificationCases,
+    acceptanceCriteria: plan.acceptanceCriteria,
+    invariantCoverage: plan.invariantCoverage,
+    verificationPlan: plan.verificationPlan,
+    researchGaps: plan.researchGaps
+  };
+  const state = { objective, plan: lane === 'WORKER' ? workerPlan : planContent(plan), evidence: [] };
   const question = (id, statement, evidencePath) => {
     const laneRule = lane === 'RESEARCH_SA'
       ? 'This is a RESEARCH_SA readiness judgment: the explicit plan fields and plan-derived evidence are the evidence of implementability. Do not require future worker code, candidate commits, runtime logs or delivery receipts at this lane.'
@@ -110,11 +136,26 @@ export function materialize(root, id, { readiness = false } = {}) {
     const changed = git(root, 'diff', '--name-only', '--no-renames', evidence.baselineSha, evidence.candidateSha).split('\n').filter(Boolean);
     for (const ref of changed) check(plan.sourceScope.write.some(p => scopeContains(p, ref)) && !plan.sourceScope.forbiddenWrite.some(p => scopeContains(p, ref)), `out of plan scope: ${ref}`);
     const sourceRefs = [...new Set([...changed, ...plan.sourceSeams.requiredExisting, ...plan.sourceSeams.expectedTests, ...plan.sourceSeams.expectedNew])];
+    const fullSourceRefs = new Set([
+      'scripts/blackboard-jev.mjs',
+      'scripts/blackboard-delivery.mjs',
+      'scripts/blackboard-delivery-contract.mjs',
+      'scripts/blackboard-work-graph.mjs',
+      'scripts/blackboard-context-eval.mjs',
+      'scripts/blackboard-implementation-bootstrap.mjs',
+      'scripts/blackboard-jev-cli.mjs',
+      'scripts/blackboard-env.mjs',
+      // The worker evidence already contains the exact test and migration logs;
+      // keep their candidate hashes/byte sizes in state without duplicating
+      // their full bodies in the model input.
+    ]);
     state.sources = sourceRefs.map(ref => {
       const deleted = !git(root, 'ls-tree', evidence.candidateSha, '--', ref);
       check(!deleted || changed.includes(ref), `missing source seam: ${ref}`);
       const body = deleted ? null : gitFile(root, evidence.candidateSha, ref);
-      return { ref, hash: hash(body), body, deleted };
+      return fullSourceRefs.has(ref)
+        ? { ref, hash: hash(body), body, deleted }
+        : { ref, hash: hash(body), bytes: Buffer.byteLength(body ?? ''), omitted: true, deleted };
     });
     state.verification = [];
     const evidenceFiles=new Map();
