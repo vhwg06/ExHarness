@@ -32,7 +32,9 @@
     "start:blackboard-implementation": "node scripts/blackboard-implementation-bootstrap.mjs",
     "verify:current-docs": "node scripts/current-docs-verify.mjs",
     "test:blackboard-work-graph": "node --test test/blackboard-work-graph.test.mjs test/blackboard-task-context-resolver.test.mjs",
-    "verify:blackboard-work-graph": "node scripts/blackboard-work-graph.mjs && npm run test:blackboard-work-graph",
-    "resolve:blackboard-task-context": "node scripts/blackboard-task-context-resolver.mjs"
+    "verify:blackboard-work-graph": "node scripts/blackboard-work-graph.mjs && npm run verify:blackboard-state && npm run test:blackboard-work-graph",
+    "resolve:blackboard-task-context": "node scripts/blackboard-task-context-resolver.mjs",
+    "project:blackboard-state": "node scripts/blackboard-state-project.mjs --write",
+    "verify:blackboard-state": "node scripts/blackboard-state-project.mjs --verify"
   }
 }
