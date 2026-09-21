@@ -44,31 +44,36 @@
     "no LLM semantic guess may prune required invalidation in v1"
   ],
   "architectureDecisions": [
-    "CrossDomainObligation states WHAT another domain owes; it is never a dispatch command",
-    "source domain cannot choose target worker, strategy, runtime or priority",
-    "only accepted lineage from DomainPublicationReceipt enters product dependency truth",
-    "dependency invalidation follows exact semantic subjects and reverse transitive closure, not artifact containers/stages",
-    "semantic claim/obligation payloads are immutable; currentness lives in separate heads/transitions",
-    "precision comes from stable RequirementClaim/AcceptanceCriterion/etc subject keys and exact assertion refs",
-    "downstream publication uses pre/post input-currentness handshake so upstream invalidation cannot miss a racing new edge",
-    "historical claims remain reconstructable after becoming STALE/REVOKED/SUPERSEDED"
+    "CrossDomainObligation is an immutable WHAT contract from one accepted semantic publication to another domain; it contains target domain/workload and required outcome, never worker identity, runtime, strategy or priority.",
+    "Domain write authority is a separate CAS-headed authority surface. A production publication gate implements the existing DomainExecutionController publicationGate interface instead of introducing a second execution controller.",
+    "DomainExecutionController remains the generic post-claim HOW boundary. SA execution is selected later from SA-owned ExecutionPolicy and immutable ExecutionStrategyDescriptor; Integration C does not add an SA-specific scheduler or hard-coded execution strategy module.",
+    "Only a trusted accepted DomainPublicationReceipt may commit SemanticClaim revisions, CrossDomainObligation revisions and ProductDerivationEdge records into authoritative product truth; runtime proposedDerivationEdges remain proposals until publication.",
+    "SemanticClaim and CrossDomainObligation payloads are immutable. Separate CAS currentness heads point to the current revision and record ACTIVE, STALE, REVOKED or SUPERSEDED transitions without mutating historical evidence.",
+    "Logical obligation identity is normalized from project/root intent, issuing semantic subject, target domain/workload, obligation kind and stable obligation key. Replaying identical normalized content converges on one immutable revision; changed semantic content creates a new revision and supersedes the prior current head.",
+    "ProductDerivationEdge is a product-semantic dependency, not a Blackboard dependency. Reverse adjacency/impact indexes are rebuildable accelerators; immutable publication receipts, semantic revisions, edges and head transitions remain authority.",
+    "Selective invalidation starts from exact superseded semantic subject keys and follows reverse-transitive authoritative ProductDerivationEdge closure. Only impacted claim/obligation heads transition non-current; unrelated siblings remain current.",
+    "Dependent publication uses a two-observation currentness handshake: capture every consumed semantic-head revision before publication, persist the publication under the guarded write-authority/lifecycle window, then revalidate those exact observations before the dependent head can remain current. Drift forces deterministic stale reconciliation.",
+    "Cross-domain work materialization consumes an exact ACTIVE CrossDomainObligation revision plus its issuance/publication authority and existing materialization authorization. Stale/revoked/superseded obligations fail closed before new work can be created.",
+    "When an obligation becomes non-current, only Board work materialized from that exact obligation subject is affected. READY/REOPENED work is blocked; claimed/released work is invalidated through the existing organization claim lifecycle so executable capability is fenced before it can continue.",
+    "No LLM semantic-equivalence decision participates in invalidation pruning for v1. Precision comes from explicit stable semantic subject keys and accepted derivation edges."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agentic-system/src/organization-work.js",
       "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-authority.js",
       "packages/agentic-system/src/organization-authority-store.js",
       "packages/agentic-system/src/organization-artifact-store.js",
       "packages/agentic-system/src/application-orchestrator.js",
-      "packages/agentic-system/src/index.js",
-      "delivered Integration B domain-execution-control source"
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/domain-execution-store.js",
+      "packages/agentic-system/src/index.js"
     ],
     "expectedNew": [
       "packages/agentic-system/src/domain-write-authority.js",
       "packages/agentic-system/src/cross-domain-obligation.js",
       "packages/agentic-system/src/product-lineage.js",
-      "packages/agentic-system/src/dependency-invalidation.js",
-      "packages/agentic-system/src/sa-execution-strategy.js"
+      "packages/agentic-system/src/dependency-invalidation.js"
     ],
     "expectedTests": [
       "packages/agentic-system/test/cross-domain-obligation.test.js",
@@ -79,48 +84,20 @@
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/src/organization-work.js",
-      "packages/agentic-system/src/organization-claim.js",
-      "packages/agentic-system/src/organization-authority.js",
-      "packages/agentic-system/src/application-orchestrator.js",
-      "packages/agentic-system/src/domain-execution-control.js",
       "packages/agentic-system/src/**",
-      "packages/agentic-system/test/bb047-organization-bridge.test.js",
-      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
-      "packages/agentic-system/test/**",
-      "packages/agentic-system/src/organization-authority-store.js",
-      "packages/agentic-system/src/organization-artifact-store.js",
-      "packages/agentic-system/src/index.js",
-      "delivered Integration B domain-execution-control source",
-      "packages/agentic-system/src/domain-write-authority.js",
-      "packages/agentic-system/src/cross-domain-obligation.js",
-      "packages/agentic-system/src/product-lineage.js",
-      "packages/agentic-system/src/dependency-invalidation.js",
-      "packages/agentic-system/src/sa-execution-strategy.js",
-      "packages/agentic-system/test/cross-domain-obligation.test.js",
-      "packages/agentic-system/test/dependency-invalidation.test.js",
-      "packages/agentic-system/test/lineage-race.test.js",
-      "packages/agentic-system/test/ba-sa-vertical.test.js"
+      "packages/agentic-system/test/**"
     ],
     "write": [
       "packages/agentic-system/src/organization-work.js",
       "packages/agentic-system/src/organization-claim.js",
-      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
       "packages/agentic-system/src/application-orchestrator.js",
       "packages/agentic-system/src/domain-execution-control.js",
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/test/bb047-organization-bridge.test.js",
-      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
-      "packages/agentic-system/test/**",
-      "packages/agentic-system/src/organization-authority-store.js",
-      "packages/agentic-system/src/organization-artifact-store.js",
       "packages/agentic-system/src/index.js",
-      "delivered Integration B domain-execution-control source",
       "packages/agentic-system/src/domain-write-authority.js",
       "packages/agentic-system/src/cross-domain-obligation.js",
       "packages/agentic-system/src/product-lineage.js",
       "packages/agentic-system/src/dependency-invalidation.js",
-      "packages/agentic-system/src/sa-execution-strategy.js",
       "packages/agentic-system/test/cross-domain-obligation.test.js",
       "packages/agentic-system/test/dependency-invalidation.test.js",
       "packages/agentic-system/test/lineage-race.test.js",
@@ -128,165 +105,188 @@
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/objective/**",
-      "docs/blackboard/artifacts/ready-implement-plan/**"
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "docs/living/**",
+      "scripts/**"
     ]
   },
   "implementationSlices": [
-    "C1: DomainWriteAuthorityPolicy + trusted publisher + CAS DomainWriteAuthorityHead",
-    "C2: immutable SemanticClaim + SemanticClaimHead/currentness transitions and immutable CrossDomainObligation + ObligationHead",
-    "C3: cross-domain materialization bridge",
-    "C4: authoritative ProductDerivationEdge persistence + deterministic DependencyImpactAnalysis + currentness transition/reconciliation",
-    "C5: BA -> SA executable slice"
+    "C1 — production domain write authority: implement DomainWriteAuthorityPolicy/current CAS head plus a trusted publication gate adapter for the existing DomainExecutionController; bind publisher principal/domain/allowed semantic and obligation kinds and preserve the current organization lifecycle publication fence.",
+    "C2 — immutable semantic subjects: implement content-addressed SemanticClaim and CrossDomainObligation revisions with separate CAS currentness heads, normalized logical keys, idempotent identical replay and explicit supersession/revocation transitions.",
+    "C3 — authoritative product lineage: persist ProductDerivationEdge only from accepted DomainPublicationReceipt publication, maintain rebuildable reverse-impact indexes, and implement deterministic reverse-transitive DependencyImpactAnalysis over exact semantic subject keys.",
+    "C4 — currentness reconciliation and work invalidation: perform the pre/post consumed-head handshake, mark raced dependents non-current, reject stale obligation materialization, and map an invalidated obligation only to work materialized from that exact obligation subject using existing block/invalidate/fence lifecycle seams.",
+    "C5 — BA -> SA executable vertical: publish an accepted BA requirement claim, issue one authorized SA solution-design obligation, materialize deterministic SA-owned work, prove BA never chooses SA worker/runtime/strategy, and show SA execution mechanics remain resolved by existing ExecutionPolicy/ExecutionStrategyDescriptor infrastructure."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
       "statement": "One accepted BA requirement subject can produce an authorized solution-design obligation that deterministically materializes SA-owned work without the BA domain selecting SA execution mechanics.",
       "verificationIds": [
-        "repository-verification"
+        "ba-sa-vertical",
+        "organization-bridge-regression",
+        "domain-execution-regression"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "BA->SA vertical log proving exact accepted BA semantic subject -> authorized CrossDomainObligation -> deterministic SA-owned OrganizationWorkContract/Board item",
+        "Negative assertions showing BA supplies no worker, runtime, strategy or priority and SA HOW remains ExecutionPolicy/ExecutionStrategyDescriptor-owned"
       ]
     },
     {
       "id": "AC-2",
       "statement": "Accepted SA output can publish architecture subjects and only obligation kinds allowed by current domain write authority.",
       "verificationIds": [
-        "repository-verification"
+        "cross-domain-obligation",
+        "domain-execution-regression"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "DomainWriteAuthority tests covering allowed semantic/obligation kinds and rejected unauthorized SA publication",
+        "Publication receipt/source evidence proving only accepted publication commits authoritative claims/obligations/derivation edges"
       ]
     },
     {
       "id": "AC-3",
       "statement": "Changing one detail requirement makes only its architecture/detail dependents non-current while unrelated list claims and work remain current.",
       "verificationIds": [
-        "repository-verification"
+        "dependency-invalidation"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Selective reverse-transitive invalidation log showing changed detail subject stales only exact dependents",
+        "Assertions that unrelated sibling/list claim heads and materialized work remain current/executable"
       ]
     },
     {
       "id": "AC-4",
       "statement": "A newly published dependent racing upstream supersession cannot remain silently current after the publication currentness handshake.",
       "verificationIds": [
-        "repository-verification"
+        "lineage-race"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Deterministic barrier-controlled race where upstream supersedes between dependent pre-observation and publication completion",
+        "Post-observation/reconciliation assertion proving raced dependent cannot remain ACTIVE/current"
       ]
     },
     {
       "id": "AC-5",
       "statement": "Replaying the same normalized obligation publication converges on one logical immutable obligation revision; semantic change creates a superseding revision instead of mutation in place.",
       "verificationIds": [
-        "repository-verification"
+        "cross-domain-obligation",
+        "ba-sa-vertical"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Idempotent replay test proving identical normalized obligation converges on one logical immutable revision and one deterministic target work item",
+        "Semantic-change test proving a new immutable revision supersedes rather than mutates the previous revision"
       ]
     },
     {
       "id": "AC-6",
       "statement": "Stale or revoked obligations cannot materialize new target work, and already-claimed stale work loses executable capability through canonical invalidation/fencing.",
       "verificationIds": [
-        "repository-verification"
+        "cross-domain-obligation",
+        "dependency-invalidation",
+        "organization-bridge-regression"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Tests rejecting materialization from stale/revoked/superseded obligations",
+        "Existing organization lifecycle evidence plus Integration C assertions proving claimed affected work is invalidated/fenced while unrelated work is untouched"
       ]
     },
     {
       "id": "AC-7",
       "statement": "Authoritative lineage/currentness state can be reconstructed from immutable claims, obligations, publication receipts, edges and transitions without relying on disposable impact caches.",
       "verificationIds": [
-        "repository-verification"
+        "cross-domain-obligation",
+        "dependency-invalidation",
+        "lineage-race"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Fresh-store reconstruction test rebuilding current semantic/obligation heads and dependency impact from immutable artifacts, publication receipts, edges and transitions",
+        "Proof that disposable reverse-impact cache/index deletion does not change reconstructed authoritative currentness"
       ]
     },
     {
       "id": "INV-1",
       "statement": "Obligation != Dispatch",
       "verificationIds": [
-        "repository-verification"
+        "cross-domain-obligation",
+        "ba-sa-vertical"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Schema/constructor negative case rejects worker/runtime/strategy/priority fields and source domain never invokes SA execution selection"
       ]
     },
     {
       "id": "INV-2",
       "statement": "Dependency edge != Work ordering",
       "verificationIds": [
-        "repository-verification"
+        "dependency-invalidation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Test demonstrates ProductDerivationEdge impact is independent from Blackboard dependency/order edges"
       ]
     },
     {
       "id": "INV-3",
       "statement": "Invalidation != Organization reset",
       "verificationIds": [
-        "repository-verification"
+        "dependency-invalidation",
+        "organization-bridge-regression"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Instrumentation proves invalidation invokes only exact affected semantic heads/work items and no organization/global-stage reset path"
       ]
     },
     {
       "id": "INV-4",
       "statement": "Board dependency DAG != product semantic lineage",
       "verificationIds": [
-        "repository-verification"
+        "dependency-invalidation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Separate fixtures for Blackboard dependency DAG and ProductDerivationEdge graph proving one cannot substitute for the other"
       ]
     },
     {
       "id": "INV-5",
       "statement": "raw strategy lineage != authoritative lineage",
       "verificationIds": [
-        "repository-verification"
+        "domain-execution-regression",
+        "cross-domain-obligation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Existing runtime proposedDerivationEdges remain non-authoritative until accepted publication; forged/raw strategy lineage cannot enter ProductDerivationEdge truth"
       ]
     },
     {
       "id": "INV-6",
       "statement": "claim authority != execution policy != domain write authority",
       "verificationIds": [
-        "repository-verification"
+        "organization-bridge-regression",
+        "domain-execution-regression",
+        "cross-domain-obligation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Independent negative cases show organization claim authority, ExecutionPolicy authority and DomainWriteAuthority cannot be substituted for each other"
       ]
     },
     {
       "id": "INV-7",
       "statement": "historical claim validity != currentness for new mutation",
       "verificationIds": [
-        "repository-verification"
+        "cross-domain-obligation",
+        "dependency-invalidation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Historical immutable accepted claim/obligation stays resolvable after its currentness head becomes stale/superseded and cannot authorize new mutation"
       ]
     },
     {
       "id": "INV-8",
       "statement": "no LLM semantic guess may prune required invalidation in v1",
       "verificationIds": [
-        "repository-verification"
+        "dependency-invalidation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Invalidation implementation/test uses explicit subject keys and accepted edges only; no model/equivalence callback can prune the closure"
       ]
     }
   ],
@@ -342,12 +342,307 @@
   ],
   "verificationPlan": [
     {
-      "id": "repository-verification",
-      "command": "npm run verify"
+      "id": "organization-bridge-regression",
+      "command": "node --test packages/agentic-system/test/bb047-organization-bridge.test.js"
+    },
+    {
+      "id": "domain-execution-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js"
+    },
+    {
+      "id": "cross-domain-obligation",
+      "command": "node --test packages/agentic-system/test/cross-domain-obligation.test.js"
+    },
+    {
+      "id": "dependency-invalidation",
+      "command": "node --test packages/agentic-system/test/dependency-invalidation.test.js"
+    },
+    {
+      "id": "lineage-race",
+      "command": "node --test packages/agentic-system/test/lineage-race.test.js"
+    },
+    {
+      "id": "ba-sa-vertical",
+      "command": "node --test packages/agentic-system/test/ba-sa-vertical.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
     }
   ],
-  "researchGaps": [
-    "Confirm architecture/source seams against current delivered dependencies",
-    "Replace generic verification mapping with criterion-specific commands and evidence; no automatic READY during migration"
+  "researchGaps": [],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-052 OBJECTIVE plus delivered BB-048 Living truth at exact researchBaselineSha",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective ref/hash plus exact researchBaselineSha source evidence",
+      "convergence": "all researchGaps are closed and Jev returns SATISFIED for every objective/readiness claim",
+      "forbidden": [
+        "mutate product source",
+        "claim delivery",
+        "self-accept readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY_IMPLEMENT_PLAN ref/content hash plus DONE BB-048 dependency truth",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash, exact candidate SHA/tree, criterion-specific verification logs and Jev candidate judgment",
+      "convergence": "every acceptance/invariant criterion is SATISFIED and exact evaluated candidate is preserved in main",
+      "forbidden": [
+        "redefine objective/plan",
+        "invent cross-domain dispatch authority",
+        "self-accept implementation"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A BA publication that requests an obligation kind or target domain outside current DomainWriteAuthority is rejected before an obligation/head/work item is committed.",
+    "A CrossDomainObligation carrying worker identity, runtime, strategy or priority is rejected; the source domain cannot smuggle dispatch mechanics into WHAT.",
+    "Raw runtime proposedDerivationEdges without an accepted DomainPublicationReceipt never enter authoritative ProductDerivationEdge truth.",
+    "Replaying byte/semantic-equivalent normalized obligation publication does not create a second logical current revision or duplicate Board work.",
+    "Changing obligation semantics creates a new immutable revision and supersedes the prior head; the old historical revision remains resolvable.",
+    "Materialization from STALE, REVOKED or SUPERSEDED obligation currentness fails closed and creates no target work.",
+    "If an upstream subject changes while a dependent publication is in flight, the dependent cannot finish as silently current after the post-publication observation check.",
+    "Superseding one detail requirement invalidates only reverse-transitive detail/architecture dependents; an unrelated sibling/list claim remains ACTIVE and its work stays executable.",
+    "Blackboard task dependency edges alone never participate in product semantic invalidation.",
+    "Invalidation never resets the whole organization/stage and never reopens unrelated Board work.",
+    "Already-claimed work sourced from an invalidated obligation loses executable capability through canonical organization-claim invalidation/release fencing.",
+    "No model-produced semantic-equivalence guess may remove an edge or prune a required invalidation path."
+  ],
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Accepted BA requirement can create only an authorized SA solution-design obligation and deterministic SA-owned work without selecting SA execution mechanics.",
+      "planElements": [
+        "architectureDecisions",
+        "implementationSlices.C1/C2/C5",
+        "negativeVerificationCases"
+      ],
+      "verificationIds": [
+        "ba-sa-vertical",
+        "organization-bridge-regression",
+        "domain-execution-regression"
+      ]
+    },
+    {
+      "objectiveCriterion": "Accepted SA output can publish architecture subjects and only obligation kinds allowed by current domain write authority.",
+      "planElements": [
+        "architectureDecisions",
+        "implementationSlices.C1/C2"
+      ],
+      "verificationIds": [
+        "cross-domain-obligation",
+        "domain-execution-regression"
+      ]
+    },
+    {
+      "objectiveCriterion": "Changing one detail requirement invalidates only exact semantic dependents and leaves unrelated claims/work current.",
+      "planElements": [
+        "implementationSlices.C3/C4",
+        "negativeVerificationCases"
+      ],
+      "verificationIds": [
+        "dependency-invalidation"
+      ]
+    },
+    {
+      "objectiveCriterion": "A racing dependent publication cannot remain silently current after upstream supersession.",
+      "planElements": [
+        "architectureDecisions.currentness-handshake",
+        "implementationSlices.C4"
+      ],
+      "verificationIds": [
+        "lineage-race"
+      ]
+    },
+    {
+      "objectiveCriterion": "Identical normalized obligation replay is idempotent; semantic change supersedes immutably.",
+      "planElements": [
+        "architectureDecisions.logical-obligation-identity",
+        "implementationSlices.C2"
+      ],
+      "verificationIds": [
+        "cross-domain-obligation",
+        "ba-sa-vertical"
+      ]
+    },
+    {
+      "objectiveCriterion": "Stale/revoked obligations cannot materialize new work and already-claimed affected work is fenced.",
+      "planElements": [
+        "implementationSlices.C4",
+        "negativeVerificationCases"
+      ],
+      "verificationIds": [
+        "cross-domain-obligation",
+        "dependency-invalidation",
+        "organization-bridge-regression"
+      ]
+    },
+    {
+      "objectiveCriterion": "Authoritative lineage/currentness is reconstructable without disposable impact caches.",
+      "planElements": [
+        "architectureDecisions.authoritative-lineage",
+        "implementationSlices.C2/C3"
+      ],
+      "verificationIds": [
+        "cross-domain-obligation",
+        "dependency-invalidation",
+        "lineage-race"
+      ]
+    }
+  ],
+  "sourceSeamResponsibilities": [
+    {
+      "ref": "packages/agentic-system/src/domain-execution-control.js",
+      "responsibility": "Existing generic HOW boundary and publicationGate seam; consume a production Integration C publication gate, do not duplicate execution control.",
+      "verificationIds": [
+        "domain-execution-regression",
+        "ba-sa-vertical"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/organization-work.js",
+      "responsibility": "Existing deterministic materialization; Integration C must bind it to one exact current authorized CrossDomainObligation.",
+      "verificationIds": [
+        "organization-bridge-regression",
+        "ba-sa-vertical"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/organization-claim.js",
+      "responsibility": "Existing claim invalidation/publication fence used to revoke executable capability for work whose obligation becomes non-current.",
+      "verificationIds": [
+        "organization-bridge-regression",
+        "dependency-invalidation"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/organization-artifact-store.js",
+      "responsibility": "Extend immutable organization artifact registry with semantic/obligation publication evidence needed across materialization.",
+      "verificationIds": [
+        "cross-domain-obligation",
+        "ba-sa-vertical"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/application-orchestrator.js",
+      "responsibility": "Reuse exact Board block/invalidate lifecycle transitions; no global reset or cross-domain dispatch.",
+      "verificationIds": [
+        "organization-bridge-regression",
+        "dependency-invalidation"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/domain-write-authority.js",
+      "responsibility": "New CAS-headed domain writer authority and production publicationGate implementation.",
+      "verificationIds": [
+        "cross-domain-obligation",
+        "domain-execution-regression"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/cross-domain-obligation.js",
+      "responsibility": "New immutable typed obligation/revision/currentness and deterministic logical identity.",
+      "verificationIds": [
+        "cross-domain-obligation",
+        "ba-sa-vertical"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/product-lineage.js",
+      "responsibility": "New immutable SemanticClaim/ProductDerivationEdge/currentness authority and rebuildable lineage views.",
+      "verificationIds": [
+        "dependency-invalidation",
+        "lineage-race"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/dependency-invalidation.js",
+      "responsibility": "New exact reverse-transitive impact analysis, handshake reconciliation and affected-work invalidation bridge.",
+      "verificationIds": [
+        "dependency-invalidation",
+        "lineage-race"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/index.js",
+      "responsibility": "Export only the concrete Integration C public surfaces after their semantics are proven.",
+      "verificationIds": [
+        "agentic-regression"
+      ]
+    }
+  ],
+  "verificationMatrix": [
+    {
+      "id": "organization-bridge-regression",
+      "command": "node --test packages/agentic-system/test/bb047-organization-bridge.test.js",
+      "criterionIds": [
+        "AC-1",
+        "AC-6",
+        "INV-3",
+        "INV-6"
+      ]
+    },
+    {
+      "id": "domain-execution-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "criterionIds": [
+        "AC-1",
+        "AC-2",
+        "INV-5",
+        "INV-6"
+      ]
+    },
+    {
+      "id": "cross-domain-obligation",
+      "command": "node --test packages/agentic-system/test/cross-domain-obligation.test.js",
+      "criterionIds": [
+        "AC-2",
+        "AC-5",
+        "AC-6",
+        "AC-7",
+        "INV-1",
+        "INV-5",
+        "INV-6",
+        "INV-7"
+      ]
+    },
+    {
+      "id": "dependency-invalidation",
+      "command": "node --test packages/agentic-system/test/dependency-invalidation.test.js",
+      "criterionIds": [
+        "AC-3",
+        "AC-6",
+        "AC-7",
+        "INV-2",
+        "INV-3",
+        "INV-4",
+        "INV-7",
+        "INV-8"
+      ]
+    },
+    {
+      "id": "lineage-race",
+      "command": "node --test packages/agentic-system/test/lineage-race.test.js",
+      "criterionIds": [
+        "AC-4",
+        "AC-7"
+      ]
+    },
+    {
+      "id": "ba-sa-vertical",
+      "command": "node --test packages/agentic-system/test/ba-sa-vertical.test.js",
+      "criterionIds": [
+        "AC-1",
+        "AC-5",
+        "INV-1"
+      ]
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "criterionIds": []
+    }
   ]
 }
