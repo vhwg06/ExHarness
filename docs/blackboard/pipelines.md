@@ -19,6 +19,8 @@ Research/SA output is implementation input, not delivered system truth.
 
 ```text
 canonical IMPLEMENTATION_INPUT
+        +
+optional canonical IMPLEMENTATION_SPEC
         |
         v
 JUDGMENT / READINESS
@@ -52,6 +54,7 @@ and is overwritten in place as the lane changes.
 ```text
 current.json
   -> semanticArtifactRef
+  -> implementationSpecRef when a canonical worker-ready spec exists
   -> authority.ref / implementationResultRef as needed
 
 READINESS_DECISION
@@ -74,6 +77,7 @@ state.md
   -> current-context.ref
   -> exact lane/action
   -> explicit required refs
+  -> load IMPLEMENTATION_INPUT + IMPLEMENTATION_SPEC when declared
   -> execute only that lane
 ```
 
@@ -89,10 +93,11 @@ npm run start:blackboard-implementation -- WEAK_BOUNDED [WORK_ID]
 
 ## Accepted semantic input queue
 
-Accepted implementation inputs may exist without active work. `state.md` names the current queue membership.
+Accepted implementation inputs may exist without active work. A semantic input may have one canonical retained `IMPLEMENTATION_SPEC` that preserves worker-ready source seams/slices/negative tests without allocating work. `state.md` names the current queue membership and paired spec when present.
 
 ```text
 accepted semantic input
+  + optional implementation spec
   != active work
   != source mutation authority
   != priority/order
