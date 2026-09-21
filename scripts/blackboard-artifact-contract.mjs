@@ -24,6 +24,11 @@ const RESULT_JUDGMENT_FORBIDDEN_KEYS=new Set([
 const JUDGMENT_KEYS=new Set([
   "kind","version","artifactType","artifactId","status","subject","assessments","findings","verdict","provenance"
 ]);
+const IMPLEMENTATION_SPEC_KEYS=new Set([
+  "kind","version","artifactType","artifactId","status","subject","semanticInputRef","objective",
+  "architectureDecisions","sourceSeams","implementationSlices","hardInvariants","acceptanceCriteria",
+  "mandatoryNegativeTests","forbidden","activation","provenance"
+]);
 
 function fail(message){throw new Error(`BLACKBOARD_ARTIFACT_INVALID: ${message}`);}
 function nonEmptyString(value,label){if(typeof value!=="string"||!value.trim())fail(label);}
@@ -83,6 +88,44 @@ function assertImplementationInput(artifact){
   if(!["INDEPENDENT_REVIEW","PROMOTED_DECISION","USER_DIRECTIVE","MIGRATION_ADAPTER"].includes(artifact.provenance.acceptance.kind))
     fail("provenance.acceptance.kind");
   nonEmptyString(artifact.provenance.acceptance.ref,"provenance.acceptance.ref");
+}
+function assertImplementationSpec(artifact){
+  exactKeys(artifact,IMPLEMENTATION_SPEC_KEYS,"IMPLEMENTATION_SPEC");
+  if(!["ACCEPTED","DELIVERED"].includes(artifact.status))fail("IMPLEMENTATION_SPEC status");
+  exactKeys(artifact.subject,new Set(["id","title"]),"subject");
+  nonEmptyString(artifact.subject.id,"subject.id");
+  nonEmptyString(artifact.subject.title,"subject.title");
+  nonEmptyString(artifact.semanticInputRef,"semanticInputRef");
+  nonEmptyString(artifact.objective,"objective");
+  stringArray(artifact.architectureDecisions,"architectureDecisions",{allowEmpty:false});
+
+  exactKeys(artifact.sourceSeams,new Set(["requiredExisting","expectedNew","expectedTests"]),"sourceSeams");
+  stringArray(artifact.sourceSeams.requiredExisting,"sourceSeams.requiredExisting",{allowEmpty:false});
+  stringArray(artifact.sourceSeams.expectedNew,"sourceSeams.expectedNew");
+  stringArray(artifact.sourceSeams.expectedTests,"sourceSeams.expectedTests");
+
+  if(!Array.isArray(artifact.implementationSlices)||!artifact.implementationSlices.length)fail("implementationSlices");
+  for(const slice of artifact.implementationSlices){
+    exactKeys(slice,new Set(["id","output","requirements"]),"implementation slice");
+    nonEmptyString(slice.id,"implementationSlices.id");
+    nonEmptyString(slice.output,"implementationSlices.output");
+    stringArray(slice.requirements,"implementationSlices.requirements",{allowEmpty:false});
+  }
+  stringArray(artifact.hardInvariants,"hardInvariants",{allowEmpty:false});
+  stringArray(artifact.acceptanceCriteria,"acceptanceCriteria",{allowEmpty:false});
+  stringArray(artifact.mandatoryNegativeTests,"mandatoryNegativeTests",{allowEmpty:false});
+  stringArray(artifact.forbidden,"forbidden");
+
+  exactKeys(artifact.activation,new Set(["mode","prerequisiteSubjects","baselinePolicy","routingAuthority"]),"activation");
+  if(!["ALLOCATE_ON_GROUNDED_TRIGGER","RETAINED_DELIVERED"].includes(artifact.activation.mode))fail("activation.mode");
+  stringArray(artifact.activation.prerequisiteSubjects,"activation.prerequisiteSubjects");
+  nonEmptyString(artifact.activation.baselinePolicy,"activation.baselinePolicy");
+  if(artifact.activation.routingAuthority!==false)fail("IMPLEMENTATION_SPEC cannot be routing authority");
+
+  exactKeys(artifact.provenance,new Set(["originWorkId","sourceRef","sourceBlobSha"]),"provenance");
+  if(!/^BB-\d+$/.test(artifact.provenance.originWorkId||""))fail("provenance.originWorkId");
+  nonEmptyString(artifact.provenance.sourceRef,"provenance.sourceRef");
+  if(!/^[0-9a-f]{40}$/.test(artifact.provenance.sourceBlobSha||""))fail("provenance.sourceBlobSha");
 }
 function assertReadinessDecision(artifact){
   exactKeys(artifact,READINESS_KEYS,"READINESS_DECISION");
@@ -178,6 +221,7 @@ export function readSemanticArtifact(path){
 export function assertBlackboardArtifact(artifact){
   assertBase(artifact);
   if(artifact.artifactType==="IMPLEMENTATION_INPUT")assertImplementationInput(artifact);
+  else if(artifact.artifactType==="IMPLEMENTATION_SPEC")assertImplementationSpec(artifact);
   else if(artifact.artifactType==="READINESS_DECISION")assertReadinessDecision(artifact);
   else if(artifact.artifactType==="IMPLEMENTATION_RESULT")assertImplementationResult(artifact);
   else if(artifact.artifactType==="JUDGMENT")assertJudgment(artifact);
