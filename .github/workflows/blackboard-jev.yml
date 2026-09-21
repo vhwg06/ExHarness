@@ -36,12 +36,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+          path: trusted
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.candidate_sha || github.event.workflow_run.head_sha || github.sha }}
+          path: subject
+          fetch-depth: 0
           persist-credentials: false
       - id: select
         env:
           WORK_ID: ${{ inputs.work_id }}
-          CANDIDATE_SHA: ${{ inputs.candidate_sha || github.event.workflow_run.head_sha }}
-        run: node scripts/blackboard-jev-ci.mjs select
+          CANDIDATE_SHA: ${{ inputs.candidate_sha || github.event.workflow_run.head_sha || github.sha }}
+          TRUSTED_ROOT: trusted
+          SUBJECT_ROOT: subject
+        run: node trusted/scripts/blackboard-jev-ci.mjs select
 
   evidence:
     needs: select
