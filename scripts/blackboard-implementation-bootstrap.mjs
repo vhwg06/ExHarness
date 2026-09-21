@@ -24,7 +24,7 @@ export function bootstrapImplementationSession({
   const spec=JSON.parse(fs.readFileSync(`${root}/${verified.binding.ref}`,"utf8"));
   const context=materializeContext(spec,{root,profile});
   const lane=spec.lane;
-  if(task.contract) return {workId:selected,taskId:selected,pipeline:lane,lane,phase:spec.phase,intent:lane==='RESEARCH_SA'?'BUILD_READY_IMPLEMENT_PLAN':'IMPLEMENT_EXACT_READY_PLAN',rules:['Jev is the semantic judge','Do not redefine upstream input','Do not claim delivery before exact candidate exists in main'],context};
+  if(task.contract) return {workId:selected,taskId:selected,pipeline:"IMPLEMENTATION_WORKER",lane,phase:spec.phase,intent:lane==='RESEARCH_SA'?'BUILD_READY_IMPLEMENT_PLAN':'IMPLEMENT_EXACT_READY_PLAN',rules:['Jev is the semantic judge','Do not redefine upstream input','Do not claim delivery before exact candidate exists in main'],context};
 
   let intent;
   let rules;

@@ -17,7 +17,11 @@ const b=deriveTaskContext("BB-052");
 
 run("one-schedulable-task-from-direct-dependencies",()=>{
   const ready=schedulableTasks(graph);
-  if(JSON.stringify(ready)!==JSON.stringify(["BB-052","BB-056"]))throw Error("unexpected schedulable set");
+  const bb056=graph.tasks.find(task=>task.id==="BB-056");
+  const expected=bb056.status==="ACTIVE" || bb056.phase==="MERGE_PENDING"
+    ? ["BB-052"]
+    : ["BB-052","BB-056"];
+  if(JSON.stringify(ready)!==JSON.stringify(expected))throw Error("unexpected schedulable set");
 });
 run("multi-component-task-still-one-context",()=>{
   if(a.taskId!=="BB-052"||a.components.length!==3)throw Error("task/component projection mismatch");

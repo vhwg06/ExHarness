@@ -125,6 +125,19 @@ test('current main cannot have reverted an otherwise merged and accepted candida
   fs.writeFileSync(path.join(f.root,'source.js'),'export const answer = 1;');f.git('add','source.js');f.git('commit','-m','revert');
   assert.throws(()=>verifyDelivery(f.root,'BB-1',{mainRef:'refs/heads/main',mergeSha:c.candidateSha}),/no longer exists/);
 });
+test('delivery permits regenerated control-plane projections after the exact candidate merge',async t=>{
+  const f=fixture(t);
+  const plan=read(f.root,'plan.json');plan.sourceScope.read.push('docs/blackboard/context/**');plan.sourceScope.write.push('docs/blackboard/context/**');write(f.root,'plan.json',plan);
+  await f.ready();
+  fs.mkdirSync(path.join(f.root,'docs/blackboard/context/BB-1'),{recursive:true});
+  write(f.root,'docs/blackboard/context/BB-1/current.json',{phase:'EXECUTION'});
+  f.git('add','docs/blackboard/context/BB-1/current.json');f.git('commit','-m','context projection');
+  const c=f.candidate();publishEvaluation(f.root,'BB-1',await f.ev());
+  fs.rmSync(path.join(f.root,'docs/blackboard/context/BB-1'),{recursive:true,force:true});
+  f.git('add','.');f.git('commit','-m','publication projection');
+  const result=verifyDelivery(f.root,'BB-1',{mainRef:'refs/heads/main',mergeSha:c.candidateSha});
+  assert.equal(result.receipt.candidateSha,c.candidateSha);
+});
 test('unresolved research gaps block readiness and verification cannot inherit the provider key',t=>{
   const f=fixture(t);const p=read(f.root,'plan.json');p.researchGaps=['Missing architecture choice'];write(f.root,'plan.json',p);
   assert.throws(()=>materialize(f.root,'BB-1'),/unresolved research/);
