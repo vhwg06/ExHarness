@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { assertWorkContext } from "./blackboard-context-contract.mjs";
-import { assertSemanticArtifact } from "./blackboard-artifact-contract.mjs";
+import { assertSemanticArtifact, assertBlackboardArtifact } from "./blackboard-artifact-contract.mjs";
 import { resolveContext } from "./blackboard-context-resolver.mjs";
 
 export const CONTEXT_PROFILES=Object.freeze({
@@ -15,9 +15,19 @@ export function materializeContext(spec,{root=".",profile=CONTEXT_PROFILES.GENER
   const artifact=spec.semanticArtifactRef
     ? assertSemanticArtifact(JSON.parse(fs.readFileSync(`${root}/${spec.semanticArtifactRef}`,"utf8")))
     : null;
+  const implementationSpec=spec.implementationSpecRef
+    ? assertBlackboardArtifact(JSON.parse(fs.readFileSync(`${root}/${spec.implementationSpecRef}`,"utf8")))
+    : null;
+  if(implementationSpec&&implementationSpec.artifactType!=="IMPLEMENTATION_SPEC")
+    throw new Error("CONTEXT_MATERIALIZATION_INVALID: implementationSpecRef is not IMPLEMENTATION_SPEC");
 
   const common={
     itemId:spec.itemId,
+    taskId:spec.taskId??spec.itemId,
+    topicId:spec.topicId??null,
+    featureId:spec.featureId??null,
+    components:[...(spec.components??[])],
+    dependencyContext:[...(spec.dependencyContext??[])],
     pipeline:spec.pipeline,
     stage:spec.stage,
     action:spec.action.kind,
@@ -27,8 +37,11 @@ export function materializeContext(spec,{root=".",profile=CONTEXT_PROFILES.GENER
     implementationResultRef:spec.implementationResultRef??null,
     semanticArtifactRef:spec.semanticArtifactRef??null,
     semanticArtifact:artifact,
+    implementationSpecRef:spec.implementationSpecRef??null,
+    implementationSpec,
     invariants:[...(spec.hardInvariants??[])],
     expectedOutputs:[...(spec.expectedOutputs??[])],
+    progressiveDiscovery:spec.progressiveDiscovery??null,
     claimPolicy:spec.lane==="EXECUTION"
       ?"OBSERVATIONS_ONLY_NO_CORRECTNESS_CLAIM"
       :spec.lane==="JUDGMENT"
