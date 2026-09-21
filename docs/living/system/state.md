@@ -4,6 +4,30 @@ Source-synchronized system checkpoint. Open work is intentionally excluded; see 
 
 Outer repository-development tooling is separate from the Agentic Application runtime. Its current contract routes OBJECTIVE through RESEARCH_SA to READY_IMPLEMENT_PLAN, then through WORKER to DELIVERED_FEATURE. The scripts validate exact semantic bindings, collect candidate evidence, integrate typed Jev evaluation and verify candidate presence/tree identity on main. Live provider judgment and actual delivery require their own evidence; offline tooling tests do not establish either. Operational details are in `docs/blackboard/jev.md`.
 
+## Repository-development outer Blackboard
+
+The repository-development Blackboard has exactly two lanes and keeps their semantic boundary explicit:
+
+```text
+OBJECTIVE
+  -> RESEARCH_SA
+  -> READY_IMPLEMENT_PLAN
+  -> Jev readiness judgment
+  -> WORKER (exact plan binding)
+  -> implementation + verification evidence
+  -> Jev candidate judgment
+  -> merge/tree verification
+  -> DELIVERED_FEATURE
+```
+
+`RESEARCH_SA` consumes an `OBJECTIVE` and can converge only when the plan makes scope, constraints, invariants, acceptance criteria, architecture decisions, source seams and verification (including negative cases) explicit enough that a worker need not infer them. `WORKER` consumes the exact current `READY_IMPLEMENT_PLAN`; it cannot redefine the objective or plan, and it can converge only when the candidate, evidence, Jev result and delivery identity all bind to that plan. Implementation defects return to worker repair. A plan/input contradiction returns upstream to research.
+
+Jev uses one bounded `{model,state,questions}` request. The state contains the objective, semantic plan and bounded source/evidence contents rather than a conversation transcript or bare references. Each acceptance criterion is an independent typed Choice question, and every choice must be `SATISFIED` for the gate to pass. The cache key covers semantic state, question/spec, model, policy and lane; unchanged semantic input reuses the result, while changed objective, plan, evidence or candidate content invalidates it. Evaluations retain attempts, latency, payload size, usage, cache and pricing metadata, and the separate stability benchmark never publishes acceptance.
+
+The TypeSafe adapter pins the Jev model, validates the typed response and bounds transport retries. Local and CI verification execute without the provider key; a separate CI evaluation job calls the API with `TYPESAFE_API_KEY`, validates the result and publishes the typed evaluation artifact. Live evaluation and stability runs remain outside the normal test matrix.
+
+The current artifact layout stores lane inputs under `docs/blackboard/artifacts/objective/` and `docs/blackboard/artifacts/ready-implement-plan/`. Retained implementation results, Jev evaluations and the delivery receipt stay beside the plan, while detailed verification logs live under `docs/blackboard/evidence/`. Delivery is publishable only after the evaluated candidate is committed, its ancestry and tree match the merge on `main`, and the evaluated source remains present there. Legacy artifact locations are rejected after idempotent migration.
+
 ## Current composition
 
 Concrete execution path:
