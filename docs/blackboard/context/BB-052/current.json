@@ -1,0 +1,148 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-052",
+  "taskId": "BB-052",
+  "featureId": "FEATURE-INTEGRATION-C",
+  "topicId": "TOPIC-INTEGRATION",
+  "components": [
+    "agentic/organization-work",
+    "agentic/domain-execution-control",
+    "agentic/product-lineage"
+  ],
+  "pipeline": "RESEARCH_SA",
+  "lane": "RESEARCH_SA",
+  "phase": "RESEARCH",
+  "stage": "RESEARCH",
+  "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-052.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-052.json",
+  "planHash": "9046b135c3cc3bb05ff0e1564d09615547d14abae01393e0309454195d95c61e",
+  "action": {
+    "kind": "RESEARCH",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-048",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/agentic-application/capabilities.md",
+        "docs/living/system/agentic-application/contracts.md",
+        "docs/living/system/agentic-application/state.md"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/agentic-application/contracts.md",
+    "docs/living/system/agentic-application/state.md",
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-052.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-052.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "write": [
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/domain-write-authority.js",
+      "packages/agentic-system/src/cross-domain-obligation.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/test/cross-domain-obligation.test.js",
+      "packages/agentic-system/test/dependency-invalidation.test.js",
+      "packages/agentic-system/test/lineage-race.test.js",
+      "packages/agentic-system/test/ba-sa-vertical.test.js"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "docs/living/**",
+      "scripts/**"
+    ]
+  },
+  "artifactWriteScope": [
+    "docs/blackboard/artifacts/ready-implement-plan/BB-052.json"
+  ],
+  "hardInvariants": [
+    "Obligation != Dispatch",
+    "Dependency edge != Work ordering",
+    "Invalidation != Organization reset",
+    "Board dependency DAG != product semantic lineage",
+    "raw strategy lineage != authoritative lineage",
+    "claim authority != execution policy != domain write authority",
+    "historical claim validity != currentness for new mutation",
+    "no LLM semantic guess may prune required invalidation in v1"
+  ],
+  "verification": [
+    {
+      "id": "organization-bridge-regression",
+      "command": "node --test packages/agentic-system/test/bb047-organization-bridge.test.js"
+    },
+    {
+      "id": "domain-execution-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js"
+    },
+    {
+      "id": "cross-domain-obligation",
+      "command": "node --test packages/agentic-system/test/cross-domain-obligation.test.js"
+    },
+    {
+      "id": "dependency-invalidation",
+      "command": "node --test packages/agentic-system/test/dependency-invalidation.test.js"
+    },
+    {
+      "id": "lineage-race",
+      "command": "node --test packages/agentic-system/test/lineage-race.test.js"
+    },
+    {
+      "id": "ba-sa-vertical",
+      "command": "node --test packages/agentic-system/test/ba-sa-vertical.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    }
+  ],
+  "expectedOutputs": [
+    "READY_IMPLEMENT_PLAN"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "contractRefs": [
+      "OrganizationWorkContract",
+      "ClaimReleaseReceipt",
+      "ExecutionPolicy",
+      "ExecutionStrategy",
+      "ExecutionAttemptBinding",
+      "DomainPublicationReceipt",
+      "CrossDomainObligation",
+      "SemanticClaim",
+      "ProductDerivationEdge"
+    ]
+  }
+}
