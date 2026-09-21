@@ -232,3 +232,40 @@ test('migration normalizes legacy directories and rewrites graph bindings',t=>{
   assert.equal(read(root,'docs/blackboard/artifacts/ready-implement-plan/BB-052.json').objective.ref,'docs/blackboard/artifacts/objective/BB-052.json');
   assert.doesNotThrow(()=>migrate(root));
 });
+
+
+test('CI selector routes exact research plan candidates from PR heads and merged main commits',t=>{
+  const f=fixture(t);
+  f.git('add','.');f.git('commit','-m','record research control plane');
+
+  const ciScript=path.resolve('scripts/blackboard-jev-ci.mjs');
+  const runSelect=(trustedRoot,subjectRoot,candidateSha)=>{
+    const output=path.join(subjectRoot,'jev-select.out');
+    fs.rmSync(output,{force:true});
+    execFileSync(process.execPath,[ciScript,'select'],{
+      cwd:process.cwd(),
+      env:{...process.env,WORK_ID:'',CANDIDATE_SHA:candidateSha,TRUSTED_ROOT:trustedRoot,SUBJECT_ROOT:subjectRoot,GITHUB_OUTPUT:output},
+      stdio:['ignore','pipe','pipe']
+    });
+    const line=fs.readFileSync(output,'utf8').trim().split('\n').find(x=>x.startsWith('work='));
+    return JSON.parse(line.slice('work='.length));
+  };
+
+  const subject=fs.mkdtempSync(path.join(os.tmpdir(),'bb-jev-subject-'));
+  t.after(()=>removeFixture(subject));
+  fs.cpSync(f.root,subject,{recursive:true});
+  const subjectGit=(...args)=>execFileSync('git',args,{cwd:subject,encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
+  const branchPlan=read(subject,'plan.json');
+  branchPlan.architectureDecisions.push('Bind research CI to the exact plan candidate');
+  write(subject,'plan.json',branchPlan);
+  subjectGit('add','plan.json');subjectGit('commit','-m','research plan candidate');
+  const branchSha=subjectGit('rev-parse','HEAD');
+  assert.deepEqual(runSelect(f.root,subject,branchSha),[{id:'BB-1',sha:branchSha}]);
+
+  const mainPlan=read(f.root,'plan.json');
+  mainPlan.architectureDecisions.push('Trigger research judgment after merge');
+  write(f.root,'plan.json',mainPlan);
+  f.git('add','plan.json');f.git('commit','-m','merge research plan');
+  const mainSha=f.git('rev-parse','HEAD');
+  assert.deepEqual(runSelect(f.root,f.root,mainSha),[{id:'BB-1',sha:mainSha}]);
+});
