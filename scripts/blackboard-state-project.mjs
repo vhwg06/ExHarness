@@ -94,7 +94,13 @@ export function verifyStateProjection(path="docs/blackboard/state.md"){
 
 if(process.argv[1]?.endsWith("blackboard-state-project.mjs")){
   const write=process.argv.includes("--write");
-  const rendered=renderStateProjection();
-  if(write)fs.writeFileSync("docs/blackboard/state.md",rendered);
-  else process.stdout.write(rendered);
+  const verify=process.argv.includes("--verify");
+  if(verify){
+    verifyStateProjection();
+    console.log(JSON.stringify({ok:true,state:"docs/blackboard/state.md"}));
+  }else{
+    const rendered=renderStateProjection();
+    if(write)fs.writeFileSync("docs/blackboard/state.md",rendered);
+    else process.stdout.write(rendered);
+  }
 }
