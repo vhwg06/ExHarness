@@ -21,14 +21,14 @@ next-work-id: BB-057
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: NONE
+  active: BB-052
 
 WORKER
   active: NONE
@@ -36,11 +36,18 @@ WORKER
 
 ## Active work
 
-NONE
+
+BB-052
+task: Implement cross-domain obligations and selective semantic invalidation
+lane: RESEARCH_SA
+phase: RESEARCH
+current-context: docs/blackboard/context/BB-052/current.json
+components: agentic/organization-work, agentic/domain-execution-control, agentic/product-lineage
+worker: chatgpt-research-sa
 
 ## Schedulable tasks
 
-- BB-052 [RESEARCH_SA/RESEARCH] — Implement cross-domain obligations and selective semantic invalidation
+NONE
 
 ## Jev decisions
 
@@ -53,7 +60,7 @@ NONE
 
 ```text
 BB-048 [DONE] <- ROOT
-BB-052 [RESEARCH_SCHEDULABLE] <- BB-048
+BB-052 [ACTIVE] <- BB-048
 BB-053 [BLOCKED_BY BB-052] <- BB-052
 BB-054 [BLOCKED_BY BB-053] <- BB-053
 BB-055 [BLOCKED_BY BB-054] <- BB-054
