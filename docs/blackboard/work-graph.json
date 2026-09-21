@@ -1,0 +1,253 @@
+{
+  "kind": "OUTER_BLACKBOARD_WORK_GRAPH",
+  "version": 1,
+  "phase": "INTEGRATION",
+  "topics": [
+    {
+      "id": "TOPIC-INTEGRATION",
+      "title": "End-to-end organizational integration",
+      "status": "ACTIVE",
+      "featureIds": [
+        "FEATURE-INTEGRATION-C",
+        "FEATURE-INTEGRATION-D",
+        "FEATURE-INTEGRATION-EF",
+        "FEATURE-INTEGRATION-G"
+      ],
+      "artifactRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "FEATURE-INTEGRATION-C",
+      "topicId": "TOPIC-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Cross-domain obligation and semantic lineage",
+      "status": "ACTIVE",
+      "taskIds": [
+        "BB-052"
+      ],
+      "artifactRefs": []
+    },
+    {
+      "id": "FEATURE-INTEGRATION-D",
+      "topicId": "TOPIC-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Autonomous domain activation and FE/BE parallelism",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-053"
+      ],
+      "artifactRefs": []
+    },
+    {
+      "id": "FEATURE-INTEGRATION-EF",
+      "topicId": "TOPIC-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Exact deployment identity and Product QA",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-054"
+      ],
+      "artifactRefs": []
+    },
+    {
+      "id": "FEATURE-INTEGRATION-G",
+      "topicId": "TOPIC-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Product completeness and closure currentness",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-055"
+      ],
+      "artifactRefs": []
+    }
+  ],
+  "tasks": [
+    {
+      "id": "BB-048",
+      "featureId": null,
+      "title": "Deliver bounded domain execution control",
+      "kind": "IMPLEMENTATION",
+      "status": "DONE",
+      "complexity": "L",
+      "components": [
+        "agentic/organization-work",
+        "agentic/domain-execution-control"
+      ],
+      "dependencies": [],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/implementation-input/BB-048-domain-execution-control.json",
+          "docs/blackboard/artifacts/implementation-spec/integration-b-domain-execution-control.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/artifacts/implementation-result/BB-048.json",
+          "docs/blackboard/artifacts/judgment/BB-048.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/capabilities.md",
+          "docs/living/system/agentic-application/contracts.md",
+          "docs/living/system/agentic-application/state.md"
+        ]
+      },
+      "expectedOutputs": [],
+      "currentContextRef": null,
+      "claim": null
+    },
+    {
+      "id": "BB-052",
+      "featureId": "FEATURE-INTEGRATION-C",
+      "title": "Implement cross-domain obligations and selective semantic invalidation",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/organization-work",
+        "agentic/domain-execution-control",
+        "agentic/product-lineage"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-048",
+          "requires": [
+            "DELIVERED_SYSTEM_TRUTH"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage.json",
+          "docs/blackboard/artifacts/implementation-spec/integration-c-cross-domain-obligation-lineage.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "authoritative cross-domain obligation publication",
+        "selective semantic invalidation",
+        "BA -> SA executable handoff"
+      ],
+      "currentContextRef": null,
+      "claim": null
+    },
+    {
+      "id": "BB-053",
+      "featureId": "FEATURE-INTEGRATION-D",
+      "title": "Implement domain activation and FE/BE parallel autonomy",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/organization-work",
+        "agentic/domain-execution-control",
+        "agentic/product-lineage",
+        "agentic/domain-activation"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-052",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy.json",
+          "docs/blackboard/artifacts/implementation-spec/integration-d-domain-activation-parallel-autonomy.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "level-triggered domain activation",
+        "restart scan recovery",
+        "independent FE/BE progress"
+      ],
+      "currentContextRef": null,
+      "claim": null
+    },
+    {
+      "id": "BB-054",
+      "featureId": "FEATURE-INTEGRATION-EF",
+      "title": "Implement exact deployment identity and Product QA acceptance",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/product-lineage",
+        "agentic/domain-activation",
+        "agentic/deployment",
+        "agentic/product-qa"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-053",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot.json",
+          "docs/blackboard/artifacts/implementation-spec/integration-ef-deployment-acceptance-snapshot.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "exact DeploymentRelease",
+        "deterministic AcceptanceSnapshot",
+        "independent runtime observation",
+        "QualityAcceptance"
+      ],
+      "currentContextRef": null,
+      "claim": null
+    },
+    {
+      "id": "BB-055",
+      "featureId": "FEATURE-INTEGRATION-G",
+      "title": "Implement product completeness and closure currentness",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/product-lineage",
+        "agentic/deployment",
+        "agentic/product-qa",
+        "agentic/product-closure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-054",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "trusted ProductStateProjection",
+        "closure currentness revalidation",
+        "immutable ProductOutcomeClaim"
+      ],
+      "currentContextRef": null,
+      "claim": null
+    }
+  ],
+  "allocation": {
+    "nextWorkId": "BB-056",
+    "executionUnit": "TASK",
+    "contextRoutingUnit": "COMPONENT",
+    "workerOwnership": "ONE_TASK_PER_CLAIM"
+  }
+}

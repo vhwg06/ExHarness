@@ -1,59 +1,68 @@
 # Outer Blackboard contracts
 
-Status: **CURRENT DEVELOPMENT COORDINATION CONTRACT**
+Status: **CURRENT TYPED WORK / CONTEXT CONTRACT**
 
-## Namespace
+## Authority boundaries
 
-1. `docs/living/*` owns current system truth/current durable knowledge.
-2. `docs/blackboard/state.md` owns current development state/routing.
-3. Blackboard context is helpful loading/routing only and does not duplicate Living Docs semantics.
+1. `docs/living/*` owns current delivered system truth.
+2. `docs/blackboard/work-graph.json` owns outer planning, task dependency, lifecycle and task-claim state.
+3. `docs/blackboard/component-registry.json` owns component context-routing metadata.
+4. `docs/blackboard/state.md` is a derived human projection and is never semantic authority.
+5. `context/<TASK_ID>/current.json` is a rebuildable task-context projection and is never planning or acceptance authority.
 
-## Current context
+## Work graph
 
-4. Every active work item has one exact `current-context.ref`.
-5. The canonical active context path is `docs/blackboard/context/<WORK_ID>/current.json`.
-6. Helpful context is updated in place. It has no generation, parent chain, stale marker or audit-history refs.
-7. A fresh session loads only the refs declared by the current context.
-8. Missing/mismatched current-context ref fails closed.
-9. Multiple active work items are valid; selection is explicit when more than one exists.
+6. The hierarchy is `Topic -> Feature|Bug -> Task`.
+7. Task is the scheduling, claim and execution unit.
+8. A Task declares only direct Task dependencies; transitive closure is derived.
+9. Executable subtasks must be Task nodes. Embedded subtasks may only be non-schedulable checklists.
+10. A non-ACTIVE Task has no worker claim and no `currentContextRef`.
+11. An ACTIVE Task has exactly one current worker claim and one canonical `currentContextRef`.
+12. One Task may reference many Components without creating multiple workers.
+13. Work ids are globally reserved identities and may not be reused for a different work subject.
+
+## Components and context routing
+
+14. Component is a context-routing unit, not execution ownership or authorization.
+15. Every referenced Component resolves through one canonical Context Profile.
+16. Context Profiles may declare current-system refs, source roots, test roots, contracts and progressive-search roots.
+17. Component metadata must not grant source mutation, acceptance or runtime authority.
+18. Task-specific `IMPLEMENTATION_SPEC` may narrow/extend worker-ready source seams without changing the semantic `IMPLEMENTATION_INPUT`.
+
+## Context derivation
+
+19. A fresh worker starts from the exact Task node, never from repository-wide search.
+20. Context resolution order is Task -> Topic/Feature -> Components -> explicit task artifacts -> direct dependencies -> deterministic WorkerContext.
+21. DONE direct dependencies contribute their canonical `consolidatedRefs`; terminal implementation transcript is not default context.
+22. Non-DONE direct dependencies block executable task context.
+23. Broad grep/search is progressive discovery only after deterministic context is insufficient.
+24. Progressive search is bounded by component-declared search roots.
+25. Deleting `current.json` must not destroy semantic continuation state; the resolver must reconstruct the base context from canonical graph/catalog/artifacts.
+26. Helpful context has no generation, parent chain, stale marker or audit-history refs.
 
 ## Research / implementation boundary
 
-10. `RESEARCH_SA` turns an explicit problem/question into a current accepted `IMPLEMENTATION_INPUT`.
-11. Research/SA does not mutate product source in its normal lane.
-12. `IMPLEMENTATION_WORKER` consumes one exact implementation input plus explicit current-system/source/test refs.
-13. Worker does not silently redefine semantic input; architecture gaps return to Research/SA.
+27. `RESEARCH_SA` turns an explicit problem/question into an accepted `IMPLEMENTATION_INPUT`.
+28. `IMPLEMENTATION_INPUT` owns WHAT/WHY/required behavior/invariants/acceptance.
+29. `IMPLEMENTATION_SPEC` owns worker-ready HOW/source seams/slices/negative tests; it is not routing, acceptance or allocation authority.
+30. `IMPLEMENTATION_WORKER` consumes the exact Task, its semantic input/spec, graph-derived component context and exact dependency truth.
+31. Worker may not silently redefine semantic input; architecture gaps return to Research/SA.
 
-## Artifact semantics
+## Implementation lanes and artifacts
 
-14. `IMPLEMENTATION_INPUT` records WHAT/WHY/required behavior/invariants/acceptance, not executor procedure.
-15. `READINESS_DECISION` binds directly to `itemId + semanticArtifactRef`.
-16. `IMPLEMENTATION_RESULT` binds directly to `itemId + semanticArtifactRef + sourceBaseline + candidateRef + executionAuthorityRef`.
-17. `JUDGMENT` binds directly to `itemId + semanticArtifactRef + implementationResultRef + candidateRef + sourceBaseline`.
-18. Helper-context identity is never an authority subject.
-19. Current artifact files use canonical filenames and are updated in place when the current pipeline subject changes; Git carries revision history.
-20. Artifact existence alone is never completion. Current work/queue membership comes from `state.md`.
+32. `IMPLEMENTATION_WORKER` has `JUDGMENT/READINESS -> EXECUTION -> JUDGMENT/CANDIDATE -> REPAIR?`.
+33. Readiness context carries a graph-derived execution source scope; accepted execution reuses that scope instead of inventing one later.
+34. `READINESS_DECISION` binds `taskId + semanticArtifactRef`.
+35. `IMPLEMENTATION_RESULT` binds `taskId + semanticArtifactRef + sourceBaseline + candidateRef + executionAuthorityRef` and records facts only.
+36. `JUDGMENT` independently binds semantic input/result/candidate and owns correctness assessment.
+37. `ACCEPT` cannot authorize repair; `FINDINGS` may authorize only bounded repair.
+38. Helper-context identity is never an authority subject.
 
-## Implementation lanes
+## Retention and consolidation
 
-21. `IMPLEMENTATION_WORKER` has `EXECUTION` and `JUDGMENT` lanes.
-22. `EXECUTION` may mutate only bounded source scope and may publish observations/results, never correctness verdicts.
-23. `JUDGMENT` is read-only for product source and owns correctness assessment.
-24. `JUDGMENT/READINESS` may publish `READINESS_DECISION`.
-25. `JUDGMENT/CANDIDATE` evaluates the exact semantic input/result/candidate and publishes `ACCEPT | FINDINGS`.
-26. `FINDINGS` may authorize bounded repair through the exact current judgment artifact.
-27. `ACCEPT` cannot authorize repair.
-28. No `CONTEXT_STALE` finding exists. Context is explicitly rewritten when current delivery information changes.
-
-## Currentness
-
-29. `state.md` is the only current outer-Blackboard state SoT.
-30. Currentness is never inferred from timestamps, filename suffixes, generations, history files, newest commits or artifact directory scans.
-31. There is no Blackboard history directory requirement. Previous Board/context revisions are available through Git only.
-32. Queue order is non-semantic. `state.md` names the currently accepted unallocated semantic inputs.
-33. If an implementation input changes before allocation, update the canonical input file and `state.md` explicitly; do not create `v2/v3` siblings.
-
-## Living Docs reconciliation
-
-34. Delivery that changes current system semantics updates the canonical `docs/living/*` files in place.
-35. Living Docs keep no stale/version-sibling files for current knowledge. Git history is the revision history.
+39. `current-only` means one canonical artifact per semantic subject, not active-work-only.
+40. Work completion removes active routing/context but does not delete canonical delivery artifacts.
+41. Artifact deletion requires explicit semantic retirement/supersession.
+42. Task outputs aggregate through Feature/Bug and Topic consolidation into Living Docs.
+43. Once a dependency is DONE and consolidated, future context prefers Living/current truth over historical task transcript.
+44. Git retains revision history; fresh workers do not reconstruct context from Git history.

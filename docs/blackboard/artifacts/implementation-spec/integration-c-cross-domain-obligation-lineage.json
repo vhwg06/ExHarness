@@ -1,0 +1,144 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_SPEC",
+  "artifactId": "integration-c-cross-domain-obligation-lineage-implementation-spec",
+  "status": "ACCEPTED",
+  "subject": {
+    "id": "agentic-application.cross-domain-obligation-lineage.integration-c",
+    "title": "Cross-domain obligations and selective semantic invalidation"
+  },
+  "semanticInputRef": "docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage.json",
+  "objective": "Make accepted BA output create authorized SA obligations and make upstream semantic changes stale only the exact reverse-dependent claims/obligations/work, without hidden dispatch or stage resets.",
+  "architectureDecisions": [
+    "CrossDomainObligation states WHAT another domain owes; it is never a dispatch command",
+    "source domain cannot choose target worker, strategy, runtime or priority",
+    "only accepted lineage from DomainPublicationReceipt enters product dependency truth",
+    "dependency invalidation follows exact semantic subjects and reverse transitive closure, not artifact containers/stages",
+    "semantic claim/obligation payloads are immutable; currentness lives in separate heads/transitions",
+    "precision comes from stable RequirementClaim/AcceptanceCriterion/etc subject keys and exact assertion refs",
+    "downstream publication uses pre/post input-currentness handshake so upstream invalidation cannot miss a racing new edge",
+    "historical claims remain reconstructable after becoming STALE/REVOKED/SUPERSEDED"
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/index.js",
+      "delivered Integration B domain-execution-control source"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/domain-write-authority.js",
+      "packages/agentic-system/src/cross-domain-obligation.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/src/sa-execution-strategy.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/cross-domain-obligation.test.js",
+      "packages/agentic-system/test/dependency-invalidation.test.js",
+      "packages/agentic-system/test/lineage-race.test.js",
+      "packages/agentic-system/test/ba-sa-vertical.test.js"
+    ]
+  },
+  "implementationSlices": [
+    {
+      "id": "C1",
+      "output": "DomainWriteAuthorityPolicy + trusted publisher + CAS DomainWriteAuthorityHead",
+      "requirements": [
+        "separate from claim authority and ExecutionPolicy",
+        "explicit publish artifact/claim kinds, obligation kinds, allowed target domains/workload types and forbidden mutations"
+      ]
+    },
+    {
+      "id": "C2",
+      "output": "immutable SemanticClaim + SemanticClaimHead/currentness transitions and immutable CrossDomainObligation + ObligationHead",
+      "requirements": [
+        "same normalized obligation payload replays to same revision/ref",
+        "semantic change creates new superseding revision; old payload is never mutated"
+      ]
+    },
+    {
+      "id": "C3",
+      "output": "cross-domain materialization bridge",
+      "requirements": [
+        "target verifies issuance receipt, historical authority and current obligation/input subjects",
+        "ordinary scoped MATERIALIZATION_AUTHORIZATION remains required",
+        "introduce ORGANIZATION_WORK_CONTRACT v2 for cross-domain materialization if needed to bind sourceObligationRef/key/head generation; preserve v1 interpretation/compatibility",
+        "source domain never calls target DomainExecutionController"
+      ]
+    },
+    {
+      "id": "C4",
+      "output": "authoritative ProductDerivationEdge persistence + deterministic DependencyImpactAnalysis + currentness transition/reconciliation",
+      "requirements": [
+        "only DomainPublicationReceipt.acceptedDerivationEdges are authoritative",
+        "impact analysis is derived proposal state; mutation uses exact CAS/currentness authority",
+        "reverse dependent closure invalidates only affected semantic claims/obligations"
+      ]
+    },
+    {
+      "id": "C5",
+      "output": "BA -> SA executable slice",
+      "requirements": [
+        "RequirementSet publishes stable RequirementClaim and acceptance-criterion subjects",
+        "typed SOLUTION_DESIGN_REQUIRED obligation materializes SA-owned work",
+        "SA executes through BB-048 execution-control semantics and publishes ArchitecturePackage/ArchitectureClaim refs",
+        "SA may issue only allowed FE/BE/DevOps obligation kinds under DomainWriteAuthority"
+      ]
+    }
+  ],
+  "hardInvariants": [
+    "Obligation != Dispatch",
+    "Dependency edge != Work ordering",
+    "Invalidation != Organization reset",
+    "Board dependency DAG != product semantic lineage",
+    "raw strategy lineage != authoritative lineage",
+    "claim authority != execution policy != domain write authority",
+    "historical claim validity != currentness for new mutation",
+    "no LLM semantic guess may prune required invalidation in v1"
+  ],
+  "acceptanceCriteria": [
+    "accepted BA RequirementClaim can issue one authorized SOLUTION_DESIGN_REQUIRED obligation and deterministically materialize SA work",
+    "SA execution publishes ArchitectureClaim/interface subjects and only authorized downstream obligation kinds",
+    "REQ-DETAIL revision change stales only ARCH-DETAIL and dependent FE-DETAIL while REQ-LIST/ARCH-LIST/BE-LIST/FE-LIST remain current",
+    "downstream publication racing upstream supersession cannot leave a silently-current new dependent edge",
+    "claimed work made stale uses canonical organization-claim invalidation/release fencing, not direct Board mutation",
+    "impact/projection caches are rebuildable from immutable claims/heads/transitions"
+  ],
+  "mandatoryNegativeTests": [
+    "source domain selects target ExecutionStrategy/worker/runtime in obligation",
+    "unsupported obligation kind/target domain/workload is published",
+    "raw proposedDerivationEdges enter dependency graph",
+    "RequirementSet container revision stales unrelated semantic subjects",
+    "stale/revoked obligation materializes new work",
+    "impact analysis computed at head H1 commits against changed H2",
+    "history is rewritten in place on supersession",
+    "race between new dependency publication and upstream invalidation escapes currentness reconciliation"
+  ],
+  "forbidden": [
+    "global organization scheduler",
+    "workflow-stage reset",
+    "generic graph database requirement",
+    "semantic-equivalence LLM judge for pruning",
+    "autonomous DOMAIN_ACTIVATION",
+    "ProductStateProjection completeness model",
+    "self-improvement/policy promotion"
+  ],
+  "activation": {
+    "mode": "ALLOCATE_ON_GROUNDED_TRIGGER",
+    "prerequisiteSubjects": [
+      "agentic-application.domain-execution-control.integration-b"
+    ],
+    "baselinePolicy": "Resolve the exact current source baseline at allocation time and bind both semanticInputRef and this implementation spec from current.json. Do not reuse the origin planning baseline.",
+    "routingAuthority": false
+  },
+  "provenance": {
+    "originWorkId": "BB-049",
+    "sourceRef": "git:7fffca8bd8c8d9cbdd10202816617e4a9bb544ad:docs/living/work-artifacts/BB-049/implementation.json",
+    "sourceBlobSha": "6b9f644db204d801f9bc2887c21ff4eaab5e80ea"
+  }
+}

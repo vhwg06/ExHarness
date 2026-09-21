@@ -1,37 +1,29 @@
 import fs from "node:fs";
 import { verifyCurrentContext } from "./blackboard-context-verify.mjs";
-import { parseItemScalar } from "./blackboard-context-board.mjs";
 import { materializeContext, CONTEXT_PROFILES } from "./blackboard-context-materialize.mjs";
-
-function activeSection(board){
-  const after=board.split("## Active work")[1]??"";
-  return after.split(/\n##\s+/)[0]??"";
-}
-function activeItems(board){
-  return [...activeSection(board).matchAll(/^BB-\d+\s*$/gm)].map(m=>m[0].trim());
-}
+import { readWorkGraph, readComponentRegistry, assertWorkGraph } from "./blackboard-work-graph.mjs";
 
 export function bootstrapImplementationSession({
-  boardPath="docs/blackboard/state.md",
   root=".",
   itemId,
-  profile=CONTEXT_PROFILES.GENERIC_INTERACTIVE
+  profile=CONTEXT_PROFILES.GENERIC_INTERACTIVE,
+  graphPath="docs/blackboard/work-graph.json",
+  registryPath="docs/blackboard/component-registry.json"
 }={}){
-  const board=fs.readFileSync(`${root}/${boardPath}`,"utf8");
-  const implementationItems=activeItems(board).filter(id=>{
-    try{return parseItemScalar(board,id,"pipeline")==="IMPLEMENTATION_WORKER";}
-    catch{return false;}
-  });
-  if(!implementationItems.length)throw new Error("BLACKBOARD_BOOTSTRAP_INVALID: no active IMPLEMENTATION_WORKER item");
-  const selected=itemId??(implementationItems.length===1?implementationItems[0]:null);
-  if(!selected)throw new Error(`BLACKBOARD_BOOTSTRAP_INVALID: multiple implementation items require work id: ${implementationItems.join(",")}`);
-  if(!implementationItems.includes(selected))throw new Error(`BLACKBOARD_BOOTSTRAP_INVALID: ${selected} is not an active implementation item`);
+  const graph=readWorkGraph(`${root}/${graphPath}`);
+  const registry=readComponentRegistry(`${root}/${registryPath}`);
+  assertWorkGraph(graph,registry);
+  const implementationItems=graph.tasks.filter(t=>t.status==="ACTIVE"&&["IMPLEMENTATION","BUGFIX"].includes(t.kind));
+  if(!implementationItems.length)throw new Error("BLACKBOARD_BOOTSTRAP_INVALID: no active implementation task");
+  const selected=itemId??(implementationItems.length===1?implementationItems[0].id:null);
+  if(!selected)throw new Error(`BLACKBOARD_BOOTSTRAP_INVALID: multiple implementation tasks require task id: ${implementationItems.map(t=>t.id).join(",")}`);
+  const task=implementationItems.find(t=>t.id===selected);
+  if(!task)throw new Error(`BLACKBOARD_BOOTSTRAP_INVALID: ${selected} is not an active implementation task`);
 
-  const verified=verifyCurrentContext({boardPath,root,itemId:selected});
+  const verified=verifyCurrentContext({root,itemId:selected,graphPath,registryPath});
   const spec=JSON.parse(fs.readFileSync(`${root}/${verified.binding.ref}`,"utf8"));
   const context=materializeContext(spec,{root,profile});
-  const lane=parseItemScalar(board,selected,"lane");
-  if(lane!==spec.lane)throw new Error("BLACKBOARD_BOOTSTRAP_INVALID: Board/context lane mismatch");
+  const lane=spec.lane;
 
   let intent;
   let rules;
@@ -59,7 +51,7 @@ export function bootstrapImplementationSession({
       "bind any decision to the exact semantic input being judged"
     ];
   }
-  return {workId:selected,pipeline:"IMPLEMENTATION_WORKER",lane,mode:spec.executionMode??spec.judgmentKind,intent,rules,context};
+  return {workId:selected,taskId:selected,pipeline:"IMPLEMENTATION_WORKER",lane,mode:spec.executionMode??spec.judgmentKind,intent,rules,context};
 }
 
 if(process.argv[1]?.endsWith("blackboard-implementation-bootstrap.mjs")){

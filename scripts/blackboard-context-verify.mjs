@@ -1,16 +1,12 @@
 import fs from "node:fs";
 import { readJson, assertWorkContext } from "./blackboard-context-contract.mjs";
-import { parseCurrentContext, parseItemRef, parseItemScalar, assertBoardBinding } from "./blackboard-context-board.mjs";
 import { resolveContext } from "./blackboard-context-resolver.mjs";
 import { assertSemanticArtifact, assertBlackboardArtifact } from "./blackboard-artifact-contract.mjs";
+import { readWorkGraph, readComponentRegistry, assertWorkGraph } from "./blackboard-work-graph.mjs";
+import { deriveTaskContext } from "./blackboard-task-context-resolver.mjs";
 
-function activeSection(board){
-  const after=board.split("## Active work")[1] ?? "";
-  return after.split(/\n##\s+/)[0] ?? "";
-}
-function activeItems(board){
-  return [...activeSection(board).matchAll(/^BB-\d+\s*$/gm)].map(m=>m[0].trim());
-}
+const fail=(m)=>{throw new Error(m);};
+const containsAll=(actual,expected)=>expected.every(x=>actual.includes(x));
 
 export function assertCandidateJudgmentBinding({spec,result,itemId}) {
   if(result.artifactType!=="IMPLEMENTATION_RESULT")
@@ -42,64 +38,81 @@ function verifyExecutionAuthority({spec,root}){
   }
 }
 
-function verifyOne({board,boardPath,root,itemId}) {
-  const binding=parseCurrentContext(board,itemId);
-  const expectedRef=`docs/blackboard/context/${itemId}/current.json`;
-  if(binding.ref!==expectedRef) throw new Error(`BOARD_BINDING_INVALID: expected current context ref ${expectedRef}`);
-  const spec=readJson(`${root}/${binding.ref}`);
+function verifyTaskProjection({task,spec,root,graph,registry}){
+  const seed=deriveTaskContext(task.id,{root,graph,registry});
+  if(spec.itemId!==task.id||spec.taskId!==task.id)
+    fail("TASK_CONTEXT_BINDING_INVALID: task identity mismatch");
+  if(JSON.stringify(spec.components??[])!==JSON.stringify(task.components))
+    fail("TASK_CONTEXT_BINDING_INVALID: component set mismatch");
+  if(spec.semanticArtifactRef!==seed.semanticArtifactRef)
+    fail("TASK_CONTEXT_BINDING_INVALID: semantic artifact mismatch");
+  if((spec.implementationSpecRef??null)!==(seed.implementationSpecRef??null))
+    fail("TASK_CONTEXT_BINDING_INVALID: implementation spec mismatch");
+  if(!containsAll(spec.requiredCurrentSystemRefs,seed.requiredCurrentSystemRefs))
+    fail("TASK_CONTEXT_BINDING_INVALID: missing graph-derived current-system refs");
+  if(!containsAll(spec.requiredInputRefs,seed.requiredInputRefs))
+    fail("TASK_CONTEXT_BINDING_INVALID: missing graph-derived input refs");
+  if(JSON.stringify(spec.dependencyContext??[])!==JSON.stringify(seed.dependencyContext))
+    fail("TASK_CONTEXT_BINDING_INVALID: direct dependency projection mismatch");
+  return seed;
+}
+
+function verifyOne({root,task,graph,registry}) {
+  const ref=task.currentContextRef;
+  const expectedRef=`docs/blackboard/context/${task.id}/current.json`;
+  if(ref!==expectedRef) throw new Error(`TASK_CONTEXT_BINDING_INVALID: expected current context ref ${expectedRef}`);
+  const spec=readJson(`${root}/${ref}`);
   assertWorkContext(spec);
-  assertBoardBinding(binding,spec,binding.ref);
-  if(spec.itemId!==itemId) throw new Error("BOARD_BINDING_INVALID: item mismatch");
+  verifyTaskProjection({task,spec,root,graph,registry});
 
   if(spec.pipeline==="IMPLEMENTATION_WORKER"){
-    const boardArtifactRef=parseItemRef(board,itemId,"implementation-input");
-    if(boardArtifactRef!==spec.semanticArtifactRef)
-      throw new Error("SEMANTIC_ARTIFACT_BINDING_INVALID: Board/context mismatch");
-    const boardLane=parseItemScalar(board,itemId,"lane");
-    if(boardLane!==spec.lane)
-      throw new Error("IMPLEMENTATION_LANE_BINDING_INVALID: Board/context mismatch");
     const artifact=JSON.parse(fs.readFileSync(`${root}/${spec.semanticArtifactRef}`,"utf8"));
     assertSemanticArtifact(artifact);
-
     if(spec.lane==="EXECUTION") verifyExecutionAuthority({spec,root});
-
     if(spec.lane==="JUDGMENT"&&spec.judgmentKind==="CANDIDATE"){
-      const boardResultRef=parseItemRef(board,itemId,"implementation-result");
-      if(boardResultRef!==spec.implementationResultRef)
-        throw new Error("IMPLEMENTATION_RESULT_BINDING_INVALID: Board/context mismatch");
       const result=JSON.parse(fs.readFileSync(`${root}/${spec.implementationResultRef}`,"utf8"));
       assertBlackboardArtifact(result);
-      assertCandidateJudgmentBinding({spec,result,itemId});
+      assertCandidateJudgmentBinding({spec,result,itemId:task.id});
     }
   }
 
   const pack=resolveContext(spec,{root});
-  return {itemId,binding,pack,boardPath};
+  return {itemId:task.id,binding:{ref},pack,graphRef:"docs/blackboard/work-graph.json"};
 }
 
-export function verifyCurrentContexts({boardPath="docs/blackboard/state.md",root="."}={}) {
-  const board=fs.readFileSync(`${root}/${boardPath}`,"utf8");
-  const items=activeItems(board);
-  if(!items.length) return [];
-  const missing=[];
-  for(const id of items){
-    try { parseCurrentContext(board,id); }
-    catch(e) { if(/expected one current-context/.test(e.message)) missing.push(id); else throw e; }
-  }
-  if(missing.length) throw new Error(`BOARD_BINDING_INVALID: active item(s) missing current-context: ${missing.join(",")}`);
-  return items.map(itemId=>verifyOne({board,boardPath,root,itemId}));
+function load({root,graphPath,registryPath}){
+  const graph=readWorkGraph(`${root}/${graphPath}`);
+  const registry=readComponentRegistry(`${root}/${registryPath}`);
+  assertWorkGraph(graph,registry);
+  return {graph,registry};
 }
 
-export function verifyCurrentContext({boardPath="docs/blackboard/state.md",root=".",itemId=process.env.BLACKBOARD_CONTEXT_ITEM}={}) {
-  const board=fs.readFileSync(`${root}/${boardPath}`,"utf8");
-  const items=activeItems(board);
-  if(itemId) {
-    if(!items.includes(itemId)) throw new Error(`BOARD_BINDING_INVALID: ${itemId} is not active`);
-    return verifyOne({board,boardPath,root,itemId});
+export function verifyCurrentContexts({
+  root=".",
+  graphPath="docs/blackboard/work-graph.json",
+  registryPath="docs/blackboard/component-registry.json"
+}={}) {
+  const {graph,registry}=load({root,graphPath,registryPath});
+  const active=graph.tasks.filter(t=>t.status==="ACTIVE");
+  return active.map(task=>verifyOne({root,task,graph,registry}));
+}
+
+export function verifyCurrentContext({
+  root=".",
+  itemId=process.env.BLACKBOARD_CONTEXT_ITEM,
+  graphPath="docs/blackboard/work-graph.json",
+  registryPath="docs/blackboard/component-registry.json"
+}={}) {
+  const {graph,registry}=load({root,graphPath,registryPath});
+  const active=graph.tasks.filter(t=>t.status==="ACTIVE");
+  if(itemId){
+    const task=active.find(t=>t.id===itemId);
+    if(!task)throw new Error(`TASK_CONTEXT_BINDING_INVALID: ${itemId} is not ACTIVE`);
+    return verifyOne({root,task,graph,registry});
   }
-  if(items.length===0) return {binding:null,pack:{itemId:null,action:"NONE",resolved:[]}};
-  if(items.length>1) throw new Error(`BOARD_BINDING_INVALID: multiple active items require BLACKBOARD_CONTEXT_ITEM: ${items.join(",")}`);
-  return verifyOne({board,boardPath,root,itemId:items[0]});
+  if(active.length===0)return {binding:null,pack:{itemId:null,action:"NONE",resolved:[]}};
+  if(active.length>1)throw new Error(`TASK_CONTEXT_BINDING_INVALID: multiple active tasks require BLACKBOARD_CONTEXT_ITEM: ${active.map(t=>t.id).join(",")}`);
+  return verifyOne({root,task:active[0],graph,registry});
 }
 
 if (process.argv[1]?.endsWith("blackboard-context-verify.mjs")) {

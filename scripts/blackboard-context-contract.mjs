@@ -27,6 +27,12 @@ export function assertWorkContext(spec) {
       fail("IMPLEMENTATION_WORKER requires semanticArtifactRef JSON");
     if (!spec.requiredInputRefs.includes(spec.semanticArtifactRef))
       fail("semanticArtifactRef must be a required input");
+    if (spec.implementationSpecRef != null) {
+      if (typeof spec.implementationSpecRef !== "string" || !spec.implementationSpecRef.endsWith(".json"))
+        fail("implementationSpecRef must be JSON");
+      if (!spec.requiredInputRefs.includes(spec.implementationSpecRef))
+        fail("implementationSpecRef must be a required input");
+    }
     if (!["EXECUTION","JUDGMENT"].includes(spec.lane))
       fail("IMPLEMENTATION_WORKER requires lane EXECUTION or JUDGMENT");
     if (spec.lane === "EXECUTION") {
@@ -53,6 +59,13 @@ export function assertWorkContext(spec) {
   }
   if (spec.stage != null && (typeof spec.stage !== "string" || !spec.stage.trim())) fail("stage");
   for (const k of ["read","write","forbiddenWrite"]) if (!Array.isArray(spec.sourceScope?.[k])) fail(`sourceScope.${k}`);
+  if(spec.executionSourceScope!=null){
+    for(const k of ["read","write","forbiddenWrite"])if(!Array.isArray(spec.executionSourceScope?.[k]))fail(`executionSourceScope.${k}`);
+    for(const w of spec.executionSourceScope.write)for(const x of spec.executionSourceScope.forbiddenWrite)if(overlap(w,x))fail(`execution write/forbidden overlap: ${w} <> ${x}`);
+  }
+  if(spec.taskId!=null&&spec.taskId!==spec.itemId)fail("taskId must equal itemId");
+  if(spec.components!=null&&(!Array.isArray(spec.components)||!spec.components.length))fail("components");
+  if(spec.dependencyContext!=null&&!Array.isArray(spec.dependencyContext))fail("dependencyContext");
   for (const w of spec.sourceScope.write) for (const x of spec.sourceScope.forbiddenWrite) if (overlap(w,x)) fail(`write/forbidden overlap: ${w} <> ${x}`);
   if (["RESEARCH","SYNTHESIZE"].includes(spec.action.kind) && spec.sourceScope.write.length)
     fail("Research/SA may not write product source");
