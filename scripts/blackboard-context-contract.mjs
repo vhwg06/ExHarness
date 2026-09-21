@@ -27,6 +27,12 @@ export function assertWorkContext(spec) {
       fail("IMPLEMENTATION_WORKER requires semanticArtifactRef JSON");
     if (!spec.requiredInputRefs.includes(spec.semanticArtifactRef))
       fail("semanticArtifactRef must be a required input");
+    if (spec.implementationSpecRef != null) {
+      if (typeof spec.implementationSpecRef !== "string" || !spec.implementationSpecRef.endsWith(".json"))
+        fail("implementationSpecRef must be JSON");
+      if (!spec.requiredInputRefs.includes(spec.implementationSpecRef))
+        fail("implementationSpecRef must be a required input");
+    }
     if (!["EXECUTION","JUDGMENT"].includes(spec.lane))
       fail("IMPLEMENTATION_WORKER requires lane EXECUTION or JUDGMENT");
     if (spec.lane === "EXECUTION") {
