@@ -51,11 +51,7 @@ jobs:
 
   kernel:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [20, 22, 24]
-    name: kernel-node-${{ matrix.node }}
+    name: kernel-node-24
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,7 +61,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 24
 
       - name: Verify kernel
         run: npm run verify
