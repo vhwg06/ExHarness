@@ -1,12 +1,13 @@
 import { assertWorkContext } from "./blackboard-context-contract.mjs";
 import { assertBlackboardArtifact } from "./blackboard-artifact-contract.mjs";
 
-export function nextImplementationContext({ parent, decisionRef, sourceBaseline, sourceScope, verification }) {
+export function nextImplementationContext({ parent, decisionRef, sourceBaseline, sourceScope=parent?.executionSourceScope, verification }) {
   assertWorkContext(parent);
   if (parent.action.kind !== "REVIEW") throw new Error("CONTEXT_GENERATION_INVALID: current context must be REVIEW");
   if (parent.pipeline === "IMPLEMENTATION_WORKER" && parent.lane !== "JUDGMENT")
     throw new Error("CONTEXT_GENERATION_INVALID: implementation current context must be JUDGMENT lane");
   if (!decisionRef) throw new Error("CONTEXT_GENERATION_INVALID: decision required");
+  if (!sourceScope) throw new Error("CONTEXT_GENERATION_INVALID: execution source scope required");
   if (parent.pipeline === "IMPLEMENTATION_WORKER" && !parent.semanticArtifactRef)
     throw new Error("CONTEXT_GENERATION_INVALID: implementation current context requires semantic artifact");
 
@@ -76,12 +77,13 @@ export function nextRepairContext({
   judgmentRef,
   judgment,
   sourceBaseline,
-  sourceScope,
+  sourceScope=parent?.executionSourceScope,
   verification
 }) {
   assertWorkContext(parent);
   if(parent.pipeline!=="IMPLEMENTATION_WORKER"||parent.lane!=="JUDGMENT"||parent.judgmentKind!=="CANDIDATE")
     throw new Error("CONTEXT_GENERATION_INVALID: current context must be candidate JUDGMENT");
+  if(!sourceScope)throw new Error("CONTEXT_GENERATION_INVALID: repair source scope required");
   assertBlackboardArtifact(judgment);
   if(judgment.artifactType!=="JUDGMENT"||judgment.verdict!=="FINDINGS")
     throw new Error("CONTEXT_GENERATION_INVALID: repair requires FINDINGS judgment");
