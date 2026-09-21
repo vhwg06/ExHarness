@@ -1,0 +1,183 @@
+{
+  "kind": "OUTER_BLACKBOARD_COMPONENT_REGISTRY",
+  "version": 1,
+  "components": [
+    {
+      "id": "agentic/organization-work",
+      "contextOwner": "agentic-application/organization-work",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/agentic-application/contracts.md",
+          "docs/living/system/agentic-application/state.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/organization-work.js",
+          "packages/agentic-system/src/organization-claim.js",
+          "packages/agentic-system/src/organization-authority.js",
+          "packages/agentic-system/src/application-orchestrator.js"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/bb047-organization-bridge.test.js"
+        ],
+        "contractRefs": [
+          "OrganizationWorkContract",
+          "ClaimReleaseReceipt"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**"
+        ]
+      }
+    },
+    {
+      "id": "agentic/domain-execution-control",
+      "contextOwner": "agentic-application/domain-execution-control",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/agentic-application/capabilities.md",
+          "docs/living/system/agentic-application/contracts.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/domain-execution-control.js"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/bb048-domain-execution-control.test.js"
+        ],
+        "contractRefs": [
+          "ExecutionPolicy",
+          "ExecutionStrategy",
+          "ExecutionAttemptBinding",
+          "DomainPublicationReceipt"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**"
+        ]
+      }
+    },
+    {
+      "id": "agentic/product-lineage",
+      "contextOwner": "agentic-application/product-lineage",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/agentic-application/contracts.md",
+          "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/**"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/**"
+        ],
+        "contractRefs": [
+          "CrossDomainObligation",
+          "SemanticClaim",
+          "ProductDerivationEdge"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**"
+        ]
+      }
+    },
+    {
+      "id": "agentic/domain-activation",
+      "contextOwner": "agentic-application/domain-activation",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/agentic-application/capabilities.md",
+          "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/**"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/**"
+        ],
+        "contractRefs": [
+          "ActivationKey",
+          "OrganizationWorkContract"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**"
+        ]
+      }
+    },
+    {
+      "id": "agentic/deployment",
+      "contextOwner": "agentic-application/deployment",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/**"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/**"
+        ],
+        "contractRefs": [
+          "BuildProvenance",
+          "DeploymentRelease",
+          "DeployableArtifactRef"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**"
+        ]
+      }
+    },
+    {
+      "id": "agentic/product-qa",
+      "contextOwner": "agentic-application/product-qa",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/agentic-application/project-acceptance.md",
+          "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/qa-worker.js",
+          "packages/agentic-system/src/qa-application.js",
+          "packages/agentic-system/src/**"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/**"
+        ],
+        "contractRefs": [
+          "AcceptanceSnapshot",
+          "RuntimeObservation",
+          "QualityAcceptance"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**"
+        ]
+      }
+    },
+    {
+      "id": "agentic/product-closure",
+      "contextOwner": "agentic-application/product-closure",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/**"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/**"
+        ],
+        "contractRefs": [
+          "ProductHistoryHead",
+          "ProductStateProjection",
+          "ProductOutcomeClaim"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**"
+        ]
+      }
+    }
+  ]
+}
