@@ -22,6 +22,7 @@ When the current artifact changes, update the canonical file in place. Git histo
 `current-only` applies to revisions of the same artifact subject; it does not mean `active-work-only`.
 
 Closing a work item removes its `context/<WORK_ID>/current.json` and active routing entry, but does **not** delete its canonical semantic delivery artifacts merely because the work became terminal. Accepted `IMPLEMENTATION_INPUT`, produced `IMPLEMENTATION_RESULT`, and recorded `JUDGMENT` remain addressable delivery evidence at their canonical paths. A later correction updates the same canonical file in place; it does not create a `vN` or `gNNNN` sibling.
+Deleting a canonical delivery artifact requires an explicit semantic retirement/supersession reason; work completion alone is not such a reason.
 
 
 ## Separation
