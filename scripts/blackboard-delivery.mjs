@@ -4,6 +4,15 @@ import { spawnSync } from 'node:child_process';
 import { assertDeliveryArtifact, assertBinding, read, write, localPath, hash, canonical, planHash, loadSubject, fail } from './blackboard-delivery-contract.mjs';
 import { materialize, validateEvaluation, assertReady, git } from './blackboard-jev.mjs';
 
+// These projections are rebuilt by the trusted controller during publication.
+// They are bindings/evidence, not product source that a merge must preserve.
+export const isMutableControlRef = ref =>
+  ref === 'docs/blackboard/state.md' ||
+  ref === 'docs/blackboard/work-graph.json' ||
+  ref.startsWith('docs/blackboard/context/') ||
+  ref.startsWith('docs/blackboard/evidence/') ||
+  /^docs\/blackboard\/artifacts\/ready-implement-plan\/[^/]+\.(?:candidate-jev-evaluation|implementation-result|judgment)\.json$/.test(ref);
+
 export function transaction(root, fn) {
   const ref = localPath(root, 'docs/blackboard/.publication.lock');
   let fd;
@@ -130,7 +139,7 @@ export function verifyDelivery(root, id, { mainRef = 'refs/remotes/origin/main',
   git(root, 'merge-base', '--is-ancestor', candidateSha, mergeSha);
   git(root, 'merge-base', '--is-ancestor', mergeSha, observedMainSha);
   if (git(root, 'rev-parse', `${mergeSha}^{tree}`) !== candidateTree) fail('merged tree differs from evaluated candidate');
-  for(const source of currentInput.payload.state.sources) {
+  for(const source of currentInput.payload.state.sources.filter(source => !isMutableControlRef(source.ref))) {
     const atCandidate=git(root,'ls-tree',candidateSha,'--',source.ref);
     const atMain=git(root,'ls-tree',observedMainSha,'--',source.ref);
     if(atCandidate!==atMain)fail(`evaluated source no longer exists unchanged in main: ${source.ref}`);
