@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { readWorkGraph, readComponentRegistry, assertWorkGraph } from "./blackboard-work-graph.mjs";
+import { verifyStateProjection } from "./blackboard-state-project.mjs";
 
 const root=process.cwd();
 const fail=(message)=>{throw new Error(`CURRENT_DOCS_INVALID: ${message}`);};
@@ -16,6 +18,16 @@ function walk(rel){
 const blackboardFiles=walk("docs/blackboard");
 const livingFiles=walk("docs/living");
 const docsFiles=[...blackboardFiles,...livingFiles];
+
+for(const required of [
+  "docs/blackboard/work-graph.json",
+  "docs/blackboard/component-registry.json",
+  "docs/blackboard/state.md"
+]){
+  if(!blackboardFiles.includes(required))fail(`missing canonical outer Blackboard file: ${required}`);
+}
+assertWorkGraph(readWorkGraph("docs/blackboard/work-graph.json"),readComponentRegistry("docs/blackboard/component-registry.json"));
+verifyStateProjection("docs/blackboard/state.md");
 
 const requiredImplementationSpecs=[
   "docs/blackboard/artifacts/implementation-spec/integration-b-domain-execution-control.json",
