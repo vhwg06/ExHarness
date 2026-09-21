@@ -1,0 +1,36 @@
+
+> verify:blackboard-artifacts
+> node scripts/blackboard-artifact-verify.mjs && npm run test:blackboard-artifacts
+
+{"ok":true,"blackboardArtifacts":24,"files":["docs/blackboard/artifacts/objective/BB-048.json","docs/blackboard/artifacts/objective/BB-048.source.json","docs/blackboard/artifacts/objective/BB-052.json","docs/blackboard/artifacts/objective/BB-052.source.json","docs/blackboard/artifacts/objective/BB-053.json","docs/blackboard/artifacts/objective/BB-053.source.json","docs/blackboard/artifacts/objective/BB-054.json","docs/blackboard/artifacts/objective/BB-054.source.json","docs/blackboard/artifacts/objective/BB-055.json","docs/blackboard/artifacts/objective/BB-055.source.json","docs/blackboard/artifacts/objective/BB-056.json","docs/blackboard/artifacts/ready-implement-plan/BB-048.implementation-result.json","docs/blackboard/artifacts/ready-implement-plan/BB-048.json","docs/blackboard/artifacts/ready-implement-plan/BB-048.judgment.json","docs/blackboard/artifacts/ready-implement-plan/BB-048.source.json","docs/blackboard/artifacts/ready-implement-plan/BB-052.json","docs/blackboard/artifacts/ready-implement-plan/BB-052.source.json","docs/blackboard/artifacts/ready-implement-plan/BB-053.json","docs/blackboard/artifacts/ready-implement-plan/BB-053.source.json","docs/blackboard/artifacts/ready-implement-plan/BB-054.json","docs/blackboard/artifacts/ready-implement-plan/BB-054.source.json","docs/blackboard/artifacts/ready-implement-plan/BB-055.json","docs/blackboard/artifacts/ready-implement-plan/BB-056.json","docs/blackboard/artifacts/ready-implement-plan/BB-056.readiness-jev-evaluation.json"]}
+
+> test:blackboard-artifacts
+> node --test test/blackboard-artifact-*.test.mjs
+
+✔ accepted implementation input is semantic and valid (1.7132ms)
+✔ procedural command field is rejected (0.3636ms)
+✔ source scope cannot leak into semantic artifact (0.1318ms)
+✔ implementation input must be accepted (0.1128ms)
+✔ readiness decision binds work directly without helper-context identity (0.1218ms)
+✔ implementation result records facts and exact execution authority (0.1463ms)
+✔ implementation result cannot claim a verdict (0.1817ms)
+✔ independent judgment may accept only fully satisfied assessments (0.2543ms)
+✔ judgment subject rejects helper-context identity (0.1776ms)
+✔ accept judgment with a finding fails closed (0.2229ms)
+✔ FINDINGS judgment requires a concrete finding (0.0994ms)
+✔ CONTEXT_STALE is not a valid finding type (0.1074ms)
+✔ implementation spec preserves worker-ready HOW without becoming routing authority (0.165ms)
+✔ implementation spec cannot become routing authority (0.0855ms)
+✔ implementation spec preserves origin work id as provenance only (0.0924ms)
+✔ artifact validator rejects legacy top-level directories (4.821ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 129.6054
+
+
+exitCode=0
