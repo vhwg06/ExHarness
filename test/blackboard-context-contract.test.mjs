@@ -69,3 +69,9 @@ test("board lane parses as an exact scalar",()=>{
   const board="BB-X\npipeline: IMPLEMENTATION_WORKER\nlane: EXECUTION\ncurrent-context:\n  ref: x.json\n";
   assert.equal(parseItemScalar(board,"BB-X","lane"),"EXECUTION");
 });
+
+test("implementation worker may bind canonical implementation spec as explicit input",()=>{
+  const ctx={...base,pipeline:"IMPLEMENTATION_WORKER",lane:"EXECUTION",executionMode:"INITIAL",action:{kind:"IMPLEMENT"},authority:{ref:"decision.json"},semanticArtifactRef:"input.json",implementationSpecRef:"spec.json",requiredInputRefs:["b","input.json","spec.json"]};
+  assert.doesNotThrow(()=>assertWorkContext(ctx));
+  assert.throws(()=>assertWorkContext({...ctx,requiredInputRefs:["b","input.json"]}),/implementationSpecRef must be a required input/);
+});
