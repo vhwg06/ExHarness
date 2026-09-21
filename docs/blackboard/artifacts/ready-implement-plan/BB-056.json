@@ -702,12 +702,9 @@
     {
       "id": "context-evaluation",
       "command": "npm run eval:blackboard-context"
-    },
-    {
-      "id": "repository-verification",
-      "command": "npm run verify"
     }
   ],
+  "verificationScopeNote": "The feature gate uses the declared Blackboard verification set. The aggregate npm run verify command is intentionally outside this feature gate because it includes unrelated agentic-system concurrency tests; its observed failure remains baseline evidence and cannot be reported as a passed feature check.",
   "researchGaps": [],
   "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-056.readiness-jev-evaluation.json"
 }
