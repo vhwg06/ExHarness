@@ -73,9 +73,13 @@ Allowed finding types:
 
 There is no `CONTEXT_STALE` finding.
 
-## Queue
+## Work-graph binding
 
-This directory does not define queue membership. Current accepted unallocated inputs are named only by `docs/blackboard/state.md`.
+This directory does not define task membership, scheduling or priority.
+
+Canonical Task nodes in `docs/blackboard/work-graph.json` bind the exact artifact refs they consume/produce. Schedulability is derived from direct Task dependencies; `state.md` only projects that graph for humans.
+
+An accepted artifact that is not referenced by a Task may be durable knowledge/evidence, but it is not implicitly queued work.
 
 
 ## Implementation-spec identity
@@ -84,13 +88,15 @@ Implementation specs are keyed by semantic subject, not by mutable Blackboard ro
 
 A migrated spec may retain an `originWorkId` only in provenance. That id never reactivates work, consumes `next-work-id`, or becomes current routing authority. This avoids collisions when an old delivery work id was later reused by a different Research/SA item.
 
-For an active implementation session:
+For an implementation Task:
 
 ```text
-current.json
+work-graph Task
   -> IMPLEMENTATION_INPUT   # semantic authority / WHAT
   -> IMPLEMENTATION_SPEC    # worker-ready HOW
-  -> current system refs
+  -> components[]
+  -> direct dependencies
+  -> derived current.json when ACTIVE
 ```
 
 The worker may repair the implementation spec in place when current source seams change, but may not use that repair to change the semantic input or acceptance criteria.
