@@ -12,7 +12,7 @@ This file is the single current-state source of truth for outer-Blackboard routi
 phase: INTEGRATION
 started: 2026-09-18
 current-active-debt: 0
-next-work-id: BB-050
+next-work-id: BB-052
 living-system-root: docs/living/system/state.md
 integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness.md
 ```
@@ -39,12 +39,14 @@ NONE
 
 Research/SA has completed semantic handoff for four future slices. These are accepted artifacts, not active work and not ordered backlog:
 
-- `docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage.json`
-- `docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy.json`
-- `docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot.json`
-- `docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure.json`
+- Integration C: `docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage.json` + `docs/blackboard/artifacts/implementation-spec/integration-c-cross-domain-obligation-lineage.json`
+- Integration D: `docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy.json` + `docs/blackboard/artifacts/implementation-spec/integration-d-domain-activation-parallel-autonomy.json`
+- Integration E/F: `docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot.json` + `docs/blackboard/artifacts/implementation-spec/integration-ef-deployment-acceptance-snapshot.json`
+- Integration G: `docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure.json`
 
-They do not consume work ids or `current-active-debt`. A future grounded trigger allocates a new IMPLEMENTATION_WORKER item and binds exactly one queued semantic input.
+They do not consume work ids or `current-active-debt`. A future grounded trigger allocates a new IMPLEMENTATION_WORKER item and binds exactly one queued semantic input plus its canonical implementation spec when one exists.
+
+Retained `IMPLEMENTATION_SPEC.provenance.originWorkId` values are globally reserved identity evidence and must not be reused for a different work subject. The current allocator therefore advances past the retained BB-050/BB-051 identities.
 
 ## Allocation rules
 
