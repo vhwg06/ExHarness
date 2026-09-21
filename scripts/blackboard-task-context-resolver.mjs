@@ -108,6 +108,11 @@ export function deriveTaskContext(taskId,{root=".",graph=readWorkGraph(`${root}/
     expectedOutputs:[...task.expectedOutputs],
     sourceBaseline:null,
     sourceScope:{read:sourceRead,write:[],forbiddenWrite:["**"]},
+    executionSourceScope:{
+      read:sourceRead,
+      write:sourceWrite,
+      forbiddenWrite:["docs/living/**","docs/blackboard/artifacts/implementation-input/**"]
+    },
     verification:[],
     progressiveDiscovery:{
       mode:"ON_DEMAND_ONLY",
