@@ -145,6 +145,7 @@ export function materialize(root, id, { readiness = false } = {}) {
       'scripts/blackboard-implementation-bootstrap.mjs',
       'scripts/blackboard-jev-cli.mjs',
       'scripts/blackboard-env.mjs',
+      'scripts/blackboard-jev-stability.mjs',
       // The worker evidence already contains the exact test and migration logs;
       // keep their candidate hashes/byte sizes in state without duplicating
       // their full bodies in the model input.
