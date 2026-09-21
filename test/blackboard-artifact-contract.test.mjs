@@ -55,3 +55,24 @@ test("judgment subject rejects helper-context identity",()=>assert.throws(()=>as
 test("accept judgment with a finding fails closed",()=>assert.throws(()=>assertBlackboardArtifact({...judgmentArtifact,findings:[{id:"F-1",type:"IMPLEMENTATION_FINDING",severity:"P1",statement:"Broken.",evidenceRefs:["e"]}]}),/ACCEPT requires/));
 test("FINDINGS judgment requires a concrete finding",()=>assert.throws(()=>assertBlackboardArtifact({...judgmentArtifact,verdict:"FINDINGS"}),/requires at least one finding/));
 test("CONTEXT_STALE is not a valid finding type",()=>assert.throws(()=>assertBlackboardArtifact({...judgmentArtifact,verdict:"FINDINGS",findings:[{id:"F-1",type:"CONTEXT_STALE",severity:"P1",statement:"Old context.",evidenceRefs:["e"]}]}),/finding.type/));
+
+
+const implementationSpec={
+  kind:"BLACKBOARD_ARTIFACT",version:1,artifactType:"IMPLEMENTATION_SPEC",artifactId:"integration-c-implementation-spec",status:"ACCEPTED",
+  subject:{id:"capability.x",title:"Capability X"},
+  semanticInputRef:"docs/blackboard/artifacts/implementation-input/x.json",
+  objective:"Implement X without widening authority.",
+  architectureDecisions:["X owns HOW only."],
+  sourceSeams:{requiredExisting:["src/existing.js"],expectedNew:["src/x.js"],expectedTests:["test/x.test.js"]},
+  implementationSlices:[{id:"S1",output:"X implementation",requirements:["preserve authority boundary"]}],
+  hardInvariants:["X cannot schedule unrelated work."],
+  acceptanceCriteria:["X is reconstructable after restart."],
+  mandatoryNegativeTests:["stale authority cannot execute."],
+  forbidden:["global scheduler"],
+  activation:{mode:"ALLOCATE_ON_GROUNDED_TRIGGER",prerequisiteSubjects:["capability.y"],baselinePolicy:"Resolve exact current source baseline at allocation.",routingAuthority:false},
+  provenance:{originWorkId:"BB-049",sourceRef:"git:"+"a".repeat(40)+":docs/living/work-artifacts/BB-049/implementation.json",sourceBlobSha:"b".repeat(40)}
+};
+
+test("implementation spec preserves worker-ready HOW without becoming routing authority",()=>assert.equal(assertBlackboardArtifact(implementationSpec),implementationSpec));
+test("implementation spec cannot become routing authority",()=>assert.throws(()=>assertBlackboardArtifact({...implementationSpec,activation:{...implementationSpec.activation,routingAuthority:true}}),/cannot be routing authority/));
+test("implementation spec preserves origin work id as provenance only",()=>assert.throws(()=>assertBlackboardArtifact({...implementationSpec,provenance:{...implementationSpec.provenance,originWorkId:"integration-c"}}),/originWorkId/));
