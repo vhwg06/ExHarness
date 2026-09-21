@@ -19,7 +19,11 @@ test("fresh implementation bootstrap obeys canonical graph or fails closed with 
   assert.equal(session.context.taskId,active[0].id);
   assert.deepEqual(session.context.components,active[0].components);
 
-  if(session.lane==="EXECUTION"){
+  if(session.lane==="WORKER"){
+    assert.equal(session.phase,"EXECUTION");
+    assert.equal(session.intent,"IMPLEMENT_EXACT_READY_PLAN");
+    assert.equal(session.context.claimPolicy,null);
+  }else if(session.lane==="EXECUTION"){
     assert.equal(session.intent,session.mode==="REPAIR"
       ?"REPAIR_GROUNDED_FINDINGS_AND_PUBLISH_IMPLEMENTATION_RESULT"
       :"EXECUTE_AND_PUBLISH_IMPLEMENTATION_RESULT");

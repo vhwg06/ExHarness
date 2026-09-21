@@ -69,6 +69,55 @@ Current implementation facts:
 
 `ApplicationOrchestrator` is concrete application workflow/Blackboard control, not a generic workflow graph/DSL or a second runtime.
 
+## Repository development Blackboard
+
+The repository also has an **outer Blackboard** for development work. It is separate from the Agentic Application Blackboard described above. The outer Blackboard routes implementation work through exactly two lanes:
+
+```text
+OBJECTIVE
+  -> RESEARCH_SA
+  -> READY_IMPLEMENT_PLAN
+  -> WORKER
+  -> DELIVERED_FEATURE
+```
+
+`RESEARCH_SA` consumes an `OBJECTIVE` and may change only the current draft plan. It converges only when the plan has explicit scope, constraints, invariants, architecture decisions, source seams, acceptance criteria and verification. `WORKER` consumes the exact `READY_IMPLEMENT_PLAN`; it cannot reinterpret the plan or claim delivery before the candidate, evidence, Jev judgment and merge identity are verified. Execution, judgment, repair and merge-pending are phases within these two lanes, not additional lanes.
+
+The canonical task artifact tree has only these two directories:
+
+```text
+docs/blackboard/artifacts/objective/
+docs/blackboard/artifacts/ready-implement-plan/
+```
+
+The unsuffixed `BB-<id>.json` in each directory is the current lane input. Retained source, Jev evaluation, implementation-result and judgment evidence is co-located beside the plan with explicit suffixes; legacy `implementation-input/`, `implementation-spec/`, `implementation-result/` and `judgment/` directories are not valid current routing paths. Run `npm run migrate:blackboard-delivery` when importing an older checkout.
+
+Jev is the semantic judge for both lane contracts. The local evaluator batches atomic questions, validates the typed response, caches by semantic state/spec/model hash and records usage. Configure the key in a local `.env` file or the process environment; `.env` is ignored by Git:
+
+```powershell
+# One-time setup, then edit .env and fill the value after the equals sign.
+Copy-Item .env.example .env
+# TYPESAFE_API_KEY=<your TypeSafe key>
+
+# Or set it for the current PowerShell process.
+$env:TYPESAFE_API_KEY = "<your TypeSafe key>"
+npm run materialize:blackboard-evaluation -- BB-056
+npm run eval:blackboard-jev -- BB-056
+```
+
+`materialize` prepares the payload and does not call the provider. A live evaluation reports `cacheHit: false` and `attempts: 1`; `cacheHit: true` means the unchanged semantic input reused a cached result. `RESEARCH_REQUIRED` means Jev found missing plan evidence and keeps the task in `RESEARCH_SA`; it is not an API-key failure. Publish a trusted result with:
+
+```powershell
+npm run publish:blackboard-evaluation -- BB-056 artifacts/blackboard-jev/BB-056.json
+```
+
+Live provider calls are separate from the normal test matrix. Local `eval` and the Jev workflow require the key; CI reads the repository secret named `TYPESAFE_API_KEY` from `.github/workflows/blackboard-jev.yml`. Blackboard-specific checks are available through:
+
+```bash
+npm run verify:blackboard-context
+npm run verify:current-docs
+```
+
 ## Role topology
 
 Current authority topology separates horizontal governance from vertical context-bound execution:

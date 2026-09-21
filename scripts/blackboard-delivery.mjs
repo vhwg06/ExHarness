@@ -29,6 +29,7 @@ export function publishEvaluation(root, id, evaluation) {
     if (existing?.cacheKey === evaluation.cacheKey && canonical(existing.subject) === canonical(evaluation.subject) && existing.verdict !== evaluation.verdict) fail('unstable replay cannot replace current judgment');
     write(root, ref, evaluation);
     task.contract.evaluationRef = ref;
+    delete task.contract.lastResearchEvaluationRef;
     if (evaluation.lane === 'RESEARCH_SA') {
       if (evaluation.verdict === 'SATISFIED') {
         plan.status = 'READY'; plan.readinessRef = ref;

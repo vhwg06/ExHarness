@@ -4,7 +4,7 @@ The outer Blackboard has two contracts: OBJECTIVE -> READY_IMPLEMENT_PLAN throug
 
 ## API and evidence
 
-The trusted Node evaluator calls `POST https://api.typesafe.ai/v1/systemone` using `TYPESAFE_API_KEY`. It sends one `{model,state,questions}` batch. Model is pinned to `jev-1.13.0`; aliases and unexpected returned models fail closed. See the [provider API](https://docs.typesafe.ai/api) and [atomic question guidance](https://docs.typesafe.ai/primitives).
+The trusted Node evaluator calls `POST https://api.typesafe.ai/v1/systemone` using `TYPESAFE_API_KEY`. For local use, copy `.env.example` to `.env` and fill the value after `TYPESAFE_API_KEY=`; `.env` is ignored by Git. An already exported shell or CI variable takes precedence. It sends one `{model,state,questions}` batch. Model is pinned to `jev-1.13.0`; aliases and unexpected returned models fail closed. See the [provider API](https://docs.typesafe.ai/api) and [atomic question guidance](https://docs.typesafe.ai/primitives).
 
 The state includes the objective, semantic plan and bounded source/evidence contents, not a whole conversation or bare references. Readiness reads source at `contract.researchBaselineSha`; updating that exact baseline is an explicit research change. Worker reads source from the exact candidate commit, includes changed surfaces and required seams/tests, and checks plan scope. Verification logs bind command, successful exit, candidate identity and content hash. Additional criterion evidence is attached through `contract.claimEvidence`.
 
@@ -28,10 +28,10 @@ Metrics include request attempts, cache hit, payload bytes, token usage, latency
 
 1. Resolve current work from the graph. Claim a schedulable task with `npm run claim:blackboard -- <WORK_ID> <WORKER_ID>`, then materialize its context using the compatibility bootstrap command.
 2. Research edits the current plan draft and resolves its recorded gaps. Materialize with `npm run materialize:blackboard-evaluation -- <WORK_ID>`.
-3. Set TYPESAFE_API_KEY in the process environment and run `npm run eval:blackboard-jev -- <WORK_ID>`. Output is `artifacts/blackboard-jev/<WORK_ID>.json`; exit 2 means findings, not API failure.
+3. Copy `.env.example` to `.env` and fill `TYPESAFE_API_KEY`, or set it in the process environment. Run `npm run eval:blackboard-jev -- <WORK_ID>`. Output is `artifacts/blackboard-jev/<WORK_ID>.json`; exit 2 means findings, not API failure.
 4. Publish an evaluation produced by the trusted evaluator with `npm run publish:blackboard-evaluation -- <WORK_ID> <ARTIFACT>`. The publisher rereads current bindings and serializes publication with an exclusive lock. It updates current canonical artifacts and graph in place; completed publications are idempotent. An interrupted multi-file publication fails closed and requires reconciliation of the current files before work resumes. No lock is stolen on a timeout.
 5. After readiness, set exact candidateSha/baselineSha and evidenceRef on the current task. The candidate must be committed. Run `npm run collect:blackboard-evidence -- <WORK_ID>` without provider credentials. Verification runs execute plan commands; attach domain observations via claimEvidence when logs are insufficient.
-6. Evaluate/publish worker claims. SATISFIED advances only to MERGE_PENDING. Merge using a merge commit or fast-forward, preserving candidate SHA. If the integrated tree changes, verify and evaluate a new candidate first.
+6. Evaluate/publish worker claims. SATISFIED advances only to MERGE_PENDING. The publisher stores the canonical Jev evaluation beside the current plan as `docs/blackboard/artifacts/ready-implement-plan/<WORK_ID>.<readiness|candidate>-jev-evaluation.json`. Merge using a merge commit or fast-forward, preserving candidate SHA. If the integrated tree changes, verify and evaluate a new candidate first.
 7. Fetch main. Record exact mergeSha and current consolidatedRefs, then run `npm run verify:blackboard-delivery -- <WORK_ID> <MERGE_SHA>`. Verify checks candidate ancestry, tree identity and evaluated source still present on main.
 8. `npm run publish:blackboard-delivery -- <WORK_ID> <MERGE_SHA>` writes the canonical receipt and completes routing. Commit the canonical publication changes through the repository's normal change process. Artifact upload alone never marks work DONE.
 

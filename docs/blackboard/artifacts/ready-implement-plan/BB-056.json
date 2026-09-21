@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-056",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-056.json",
     "hash": "91bdbec979f3b9c828d879b83aa4460a8db266fd7733bfc86cea89e78b44b76c"
@@ -19,15 +19,20 @@
   "constraints": [
     "Exactly RESEARCH_SA and WORKER lanes",
     "Current-only canonical artifacts; retain terminal evidence",
-    "Jev owns semantic judgment; producer cannot accept its own output"
+    "Jev owns semantic judgment; producer cannot accept its own output",
+    "RESEARCH_SA alone produces READY_IMPLEMENT_PLAN; WORKER consumes its exact ref and content hash without reinterpretation",
+    "Live TypeSafe calls are limited to the explicit evaluation job/command; candidate verification runs without TYPESAFE_API_KEY",
+    "Only docs/blackboard/artifacts/objective/ and docs/blackboard/artifacts/ready-implement-plan/ are current task artifact directories; legacy directories are migration inputs only"
   ],
   "invariants": [
     "Exactly RESEARCH_SA and WORKER lanes",
     "Current-only canonical artifacts; retain terminal evidence",
-    "Jev owns semantic judgment; producer cannot accept its own output"
+    "Jev owns semantic judgment; producer cannot accept its own output",
+    "RESEARCH_SA consumes OBJECTIVE and converges to READY_IMPLEMENT_PLAN; WORKER consumes exact READY_IMPLEMENT_PLAN and converges to DELIVERED_FEATURE"
   ],
   "architectureDecisions": [
     "The canonical graph routes exactly RESEARCH_SA and WORKER; EXECUTION, JUDGMENT, REPAIR and MERGE_PENDING are phases.",
+    "The lane contract is explicit: RESEARCH_SA input is the bound OBJECTIVE and output is a READY_IMPLEMENT_PLAN; WORKER input is the exact READY_IMPLEMENT_PLAN binding and output is a DELIVERED_FEATURE receipt.",
     "OBJECTIVE and plan are bound by canonical ref and content hash. Plan hashing excludes only status/readiness receipt. Current artifacts are updated in place without history chains.",
     "Jev replaces semantic judgment. Deterministic validators enforce bindings, claim coverage, successful evidence and delivery identity. Confidence is telemetry only.",
     "Use native Node fetch with the pinned jev-1.13.0 model and one batch of independent Choice questions. Missing evidence and malformed output cannot become SATISFIED.",
@@ -35,12 +40,352 @@
     "Use a separate trusted CI evaluator job with TYPESAFE_API_KEY; candidate verification runs in a job without that key. Canonical publication remains a trusted-controller command.",
     "Preserve candidate commit identity. Require candidate ancestry on main, exact merge tree, and evaluated source still present at delivery observation.",
     "Retain terminal canonical artifacts unchanged. Convert unfinished tasks to new objective/plan drafts, without retroactive acceptance.",
-    "Features with multiple tasks require a final acceptance task that depends on all implementation tasks and evaluates the complete feature plan."
+    "The migration is current-only: unfinished legacy inputs are normalized in place, while terminal evidence is co-located beside the current plan with an explicit suffix and never becomes routing authority."
   ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "OBJECTIVE",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "task.contract.objectiveRef plus objective content hash",
+      "convergence": "Jev returns SATISFIED for every objective and readiness question; plan status becomes READY and readinessRef binds that evaluation",
+      "forbidden": [
+        "claim DELIVERED_FEATURE",
+        "select a worker candidate",
+        "reinterpret the worker input"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY_IMPLEMENT_PLAN ref plus content hash",
+      "output": "DELIVERED_FEATURE",
+      "binding": "task.contract.planRef plus plan hash, candidate SHA/tree, evidence hash and merge SHA",
+      "convergence": "implementation evidence, Jev candidate judgment and exact merge identity are all satisfied",
+      "forbidden": [
+        "edit or redefine the bound objective/plan",
+        "self-accept implementation",
+        "publish before merge verification"
+      ]
+    }
+  ],
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Research converges only with an implementable plan and SATISFIED readiness claims",
+      "planElements": [
+        "laneContracts.RESEARCH_SA",
+        "sourceSeams",
+        "implementationSlices",
+        "acceptanceCriteria",
+        "verificationPlan"
+      ],
+      "verificationIds": [
+        "artifact-layout",
+        "graph-contract",
+        "jev-regressions"
+      ]
+    },
+    {
+      "objectiveCriterion": "Worker converges only when every acceptance claim is SATISFIED and the exact candidate exists in main",
+      "planElements": [
+        "laneContracts.WORKER",
+        "negativeVerificationCases",
+        "deliveryContract"
+      ],
+      "verificationIds": [
+        "delivery-contract",
+        "graph-contract",
+        "jev-regressions"
+      ]
+    },
+    {
+      "objectiveCriterion": "Normal verification never calls live Jev",
+      "planElements": [
+        "constraints",
+        "architectureDecisions",
+        "verificationPlan",
+        "ciContract"
+      ],
+      "verificationIds": [
+        "jev-regressions",
+        "current-docs"
+      ]
+    },
+    {
+      "objectiveCriterion": "Semantic cache prevents unchanged reevaluation",
+      "planElements": [
+        "architectureDecisions",
+        "negativeVerificationCases",
+        "cacheContract"
+      ],
+      "verificationIds": [
+        "jev-regressions"
+      ]
+    },
+    {
+      "objectiveCriterion": "Migration preserves terminal artifacts",
+      "planElements": [
+        "constraints",
+        "architectureDecisions",
+        "negativeVerificationCases",
+        "migrationContract"
+      ],
+      "verificationIds": [
+        "artifact-layout",
+        "graph-contract"
+      ]
+    }
+  ],
+  "deliveryContract": {
+    "readiness": "RESEARCH_SA publishes a JEV_EVALUATION only after materializing the bound objective and plan; SATISFIED changes plan.status to READY and moves the task to WORKER/EXECUTION.",
+    "worker": "WORKER publishes implementation evidence without a verdict; Jev evaluates every acceptance criterion from exact candidate evidence and only SATISFIED advances to MERGE_PENDING.",
+    "delivery": "The trusted controller verifies candidate ancestry, exact merge tree, unchanged evaluated sources and consolidated refs before writing DELIVERED_FEATURE."
+  },
+  "ciContract": {
+    "verificationJob": "Runs declared candidate verification with TYPESAFE_API_KEY absent and uploads immutable evidence.",
+    "evaluationJob": "Reads the candidate/evidence bundle as data, uses TYPESAFE_API_KEY for one Jev request, validates the typed result and uploads the evaluation artifact.",
+    "publication": "A trusted controller publishes only an evaluation whose plan, candidate, evidence and merge bindings match the current Board."
+  },
+  "cacheContract": {
+    "identity": "sha256(canonical({stateHash,specHash,model,policy,lane}))",
+    "stateInputs": [
+      "objective content",
+      "plan content excluding status/readinessRef",
+      "source/evidence contents"
+    ],
+    "invalidation": [
+      "objective edit",
+      "plan edit",
+      "source/evidence edit",
+      "question/policy/model edit",
+      "candidate identity edit"
+    ],
+    "rule": "Reuse valid findings and SATISFIED answers only for the unchanged semantic input; never cache transport or schema errors."
+  },
+  "migrationContract": {
+    "currentDirectories": [
+      "docs/blackboard/artifacts/objective/",
+      "docs/blackboard/artifacts/ready-implement-plan/"
+    ],
+    "unfinished": "Normalize legacy unfinished inputs to the current objective/plan pair and rewrite graph bindings to unsuffixed current refs.",
+    "terminal": "Keep terminal implementation-result and judgment evidence beside the plan with explicit suffixes; migration is idempotent and never changes their contents."
+  },
+  "readinessProof": {
+    "rule": "Readiness is a plan judgment. The plan's explicit contract, coverage, source seams, slice outputs and verification matrix establish implementability now; worker logs and merge receipts are deliberately deferred to WORKER.",
+    "currentEvidence": [
+      {
+        "claim": "lane input/output and convergence",
+        "ref": "blackboard://plan/lane-contract"
+      },
+      {
+        "claim": "invariants, criterion coverage, negative cases and verification commands",
+        "ref": "blackboard://plan/readiness"
+      },
+      {
+        "claim": "existing seams, expected files and authorized scope",
+        "ref": "blackboard://plan/source-seams"
+      },
+      {
+        "claim": "delivery, CI, cache and migration controls",
+        "ref": "blackboard://plan/delivery-controls"
+      }
+    ],
+    "deferredToWorker": [
+      "candidate source",
+      "verification logs",
+      "typed candidate Jev answers",
+      "merge ancestry and delivery receipt"
+    ]
+  },
+  "architectureDecisionMatrix": [
+    {
+      "decision": "two lanes with phases",
+      "sourceSeams": [
+        "scripts/blackboard-work-graph.mjs",
+        "scripts/blackboard-task-context-resolver.mjs"
+      ],
+      "verificationIds": [
+        "graph-contract",
+        "context-contract"
+      ]
+    },
+    {
+      "decision": "hash-bound current artifacts",
+      "sourceSeams": [
+        "scripts/blackboard-delivery-contract.mjs",
+        "scripts/blackboard-delivery.mjs"
+      ],
+      "verificationIds": [
+        "jev-regressions",
+        "delivery-contract"
+      ]
+    },
+    {
+      "decision": "typed batched Jev and semantic cache",
+      "sourceSeams": [
+        "scripts/blackboard-jev.mjs",
+        "scripts/blackboard-jev-cli.mjs"
+      ],
+      "verificationIds": [
+        "jev-regressions"
+      ]
+    },
+    {
+      "decision": "separate keyless verification and keyed evaluation",
+      "sourceSeams": [
+        ".github/workflows/blackboard-jev.yml",
+        "scripts/blackboard-jev-ci.mjs"
+      ],
+      "verificationIds": [
+        "jev-regressions",
+        "current-docs"
+      ]
+    },
+    {
+      "decision": "current-only migration and exact delivery",
+      "sourceSeams": [
+        "scripts/blackboard-delivery-migrate.mjs",
+        "scripts/blackboard-delivery-verify.mjs"
+      ],
+      "verificationIds": [
+        "artifact-layout",
+        "delivery-contract"
+      ]
+    }
+  ],
+  "sourceSeamResponsibilities": [
+    {
+      "ref": "scripts/blackboard-work-graph.mjs",
+      "responsibility": "allowlist lanes, phases, dependencies and schedulability",
+      "verificationIds": [
+        "graph-contract"
+      ]
+    },
+    {
+      "ref": "scripts/blackboard-artifact-contract.mjs",
+      "responsibility": "validate current artifact identity and reject legacy routing",
+      "verificationIds": [
+        "artifact-layout"
+      ]
+    },
+    {
+      "ref": "scripts/blackboard-delivery-contract.mjs",
+      "responsibility": "validate plan fields, hashes and producer/judge separation",
+      "verificationIds": [
+        "delivery-contract",
+        "jev-regressions"
+      ]
+    },
+    {
+      "ref": "scripts/blackboard-jev.mjs",
+      "responsibility": "materialize, call, validate, cache and classify typed Jev",
+      "verificationIds": [
+        "jev-regressions"
+      ]
+    },
+    {
+      "ref": "scripts/blackboard-delivery.mjs",
+      "responsibility": "publish readiness, worker evaluation and delivery receipt",
+      "verificationIds": [
+        "delivery-contract",
+        "graph-contract"
+      ]
+    },
+    {
+      "ref": "scripts/blackboard-delivery-migrate.mjs",
+      "responsibility": "normalize unfinished legacy paths and preserve terminal evidence",
+      "verificationIds": [
+        "artifact-layout",
+        "graph-contract"
+      ]
+    },
+    {
+      "ref": ".github/workflows/blackboard-jev.yml",
+      "responsibility": "separate keyless candidate verification from keyed Jev",
+      "verificationIds": [
+        "current-docs",
+        "jev-regressions"
+      ]
+    }
+  ],
+  "verificationMatrix": [
+    {
+      "id": "artifact-layout",
+      "command": "npm run verify:blackboard-artifacts",
+      "mustShow": [
+        "only objective/ and ready-implement-plan/ are current",
+        "legacy directories rejected",
+        "terminal evidence retained"
+      ]
+    },
+    {
+      "id": "graph-contract",
+      "command": "npm run verify:blackboard-work-graph",
+      "mustShow": [
+        "only two lanes",
+        "phase transitions and dependency routing are valid"
+      ]
+    },
+    {
+      "id": "context-contract",
+      "command": "npm run test:blackboard-context",
+      "mustShow": [
+        "current graph pointer resolves exact task context"
+      ]
+    },
+    {
+      "id": "jev-regressions",
+      "command": "npm run test:blackboard-jev",
+      "mustShow": [
+        "typed validation, cache invalidation, stale binding, routing and CI credential separation"
+      ]
+    },
+    {
+      "id": "delivery-contract",
+      "command": "npm run verify:blackboard-delivery-contracts",
+      "mustShow": [
+        "exact candidate/evidence/merge identity is required"
+      ]
+    },
+    {
+      "id": "current-docs",
+      "command": "npm run verify:current-docs",
+      "mustShow": [
+        "workflow/docs are current and normal verification has no live Jev"
+      ]
+    },
+    {
+      "id": "context-evaluation",
+      "command": "npm run eval:blackboard-context",
+      "mustShow": [
+        "deterministic context controls pass"
+      ]
+    }
+  ],
+  "acceptanceEvidenceMatrix": {
+    "LANES": "graph-contract plus context-contract logs show the two-lane allowlist and phase-only states",
+    "READINESS": "jev-regressions plus delivery-contract logs show draft plans cannot enter WORKER and readiness binds objective/plan",
+    "BINDING": "jev-regressions logs show same-ref edits invalidate the previous semantic subject",
+    "CLAIMS": "jev-regressions logs show exact typed answers and criterion evidence are required",
+    "ROUTING": "jev-regressions and graph-contract logs show defects repair in WORKER and contradictions return to RESEARCH_SA",
+    "CACHE": "jev-regressions logs show unchanged semantic cache hits and substantive invalidation",
+    "API": "jev-regressions logs show missing key, bounded retry, schema and model failures",
+    "CONFIDENCE": "jev-regressions log shows choice, not confidence threshold, controls verdict",
+    "DELIVERY": "delivery-contract and graph-contract logs show exact candidate/main merge receipt enforcement",
+    "MIGRATION": "artifact-layout and graph-contract logs show idempotent current-only migration",
+    "CI": "current-docs and jev-regressions logs show normal verification is keyless and live Jev is separate",
+    "METRICS": "jev-regressions output and stability source show metrics are recorded without acceptance publication"
+  },
   "sourceSeams": {
     "requiredExisting": [
       "scripts/blackboard-work-graph.mjs",
-      "scripts/blackboard-artifact-contract.mjs"
+      "scripts/blackboard-artifact-contract.mjs",
+      "scripts/blackboard-context-contract.mjs",
+      "scripts/blackboard-context-verify.mjs",
+      "scripts/blackboard-task-context-resolver.mjs",
+      "docs/blackboard/contracts.md",
+      "docs/blackboard/artifacts/README.md",
+      "AGENTS.md",
+      "package.json"
     ],
     "expectedNew": [
       "scripts/blackboard-delivery-contract.mjs",
@@ -52,12 +397,19 @@
       "scripts/blackboard-jev-cli.mjs",
       "scripts/blackboard-jev-ci.mjs",
       "scripts/blackboard-jev-stability.mjs",
+      "scripts/blackboard-env.mjs",
+      ".env.example",
+      "docs/blackboard/jev.md",
       ".github/workflows/blackboard-jev.yml"
     ],
     "expectedTests": [
+      "test/blackboard-artifact-contract.test.mjs",
       "test/blackboard-jev.test.mjs",
       "test/blackboard-work-graph.test.mjs",
-      "test/blackboard-task-context-resolver.test.mjs"
+      "test/blackboard-task-context-resolver.test.mjs",
+      "test/blackboard-context-contract.test.mjs",
+      "test/blackboard-context-materialize.test.mjs",
+      "test/blackboard-context-current.test.mjs"
     ]
   },
   "sourceScope": {
@@ -67,7 +419,9 @@
       "docs/**",
       ".github/**",
       "package.json",
-      "AGENTS.md"
+      "AGENTS.md",
+      "README.md",
+      ".env.example"
     ],
     "write": [
       "scripts/**",
@@ -77,28 +431,89 @@
       ".github/**",
       "package.json",
       "AGENTS.md",
-      ".gitignore"
+      ".gitignore",
+      "README.md",
+      ".env.example"
     ],
     "forbiddenWrite": [
       "packages/**"
     ]
   },
   "implementationSlices": [
-    "Contracts and exact binding",
-    "Jev materialization, typed validation, cache and metrics",
-    "Context routing and current-only migration",
-    "CI, merge receipt and regression verification"
+    "Slice 1 — binding contracts: extend scripts/blackboard-delivery-contract.mjs and scripts/blackboard-work-graph.mjs so the graph exposes only RESEARCH_SA and WORKER, phase transitions are constrained, objective/plan/evidence refs are content-hashed, and a worker cannot rewrite upstream JSON; add negative tests for a third lane, same-ref edits and producer verdict fields.",
+    "Slice 2 — Jev evaluator: implement scripts/blackboard-jev.mjs and scripts/blackboard-jev-cli.mjs to materialize one bounded {model,state,questions} batch, ask one atomic Choice per objective/readiness or worker criterion, validate exact IDs/types/probabilities/model/usage, classify all-non-SATISFIED answers, cache by state/spec/model/policy/lane hash, record attempts/latency/tokens/cost, and fail closed on missing key/schema/transport errors.",
+    "Slice 3 — research readiness: add explicit RESEARCH_SA -> READY_IMPLEMENT_PLAN publication in scripts/blackboard-delivery.mjs, bind readiness to the current plan hash, require objective coverage, source seams, criterion-specific verification and negative cases, and route PLAN_INPUT_CONTRADICTION or missing evidence back to RESEARCH without changing the objective.",
+    "Slice 4 — context and migration: update scripts/blackboard-task-context-resolver.mjs, scripts/blackboard-context-verify.mjs and scripts/blackboard-delivery-migrate.mjs to resolve only current graph pointers, normalize unfinished legacy directories into docs/blackboard/artifacts/objective/ and docs/blackboard/artifacts/ready-implement-plan/, reject legacy routing paths and retain terminal evidence beside the plan unchanged.",
+    "Slice 5 — worker and delivery: implement scripts/blackboard-delivery-context.mjs, scripts/blackboard-delivery-verify.mjs and scripts/blackboard-delivery.mjs so WORKER consumes the exact READY_IMPLEMENT_PLAN, runs declared verification without TYPESAFE_API_KEY, binds candidate/evidence hashes, evaluates every acceptance claim, requires candidate ancestry and exact merge tree, and writes DELIVERED_FEATURE only after main verification.",
+    "Slice 6 — CI and documentation: add .github/workflows/blackboard-jev.yml with separate keyless verification and keyed evaluation jobs, upload a typed Jev artifact without running candidate code under the key, wire package scripts, document the two-lane input/output contract and local .env setup, and keep live evaluation/stability out of normal npm run verify."
   ],
+  "negativeVerificationCases": [
+    "A third lane or a phase value cannot make a task schedulable.",
+    "A worker cannot modify the bound objective or ready plan at the same path.",
+    "A producer implementation result cannot contain a verdict or acceptance claim.",
+    "Missing API credentials, malformed Jev answers, model mismatch and stale bindings cannot publish SATISFIED.",
+    "Unchanged semantic input reuses cache; changed objective, plan, evidence or candidate invalidates it.",
+    "A legacy artifact directory is rejected and migration is idempotent.",
+    "Candidate verification fails when TYPESAFE_API_KEY is present or when the candidate tree is not the evaluated tree.",
+    "A delivery receipt cannot be published without an accepted evaluation and exact merge identity."
+  ],
+  "criterionEvidenceMatrix": {
+    "LANES": [
+      "graph-contract",
+      "context-contract"
+    ],
+    "READINESS": [
+      "jev-regressions",
+      "delivery-contract"
+    ],
+    "BINDING": [
+      "jev-regressions",
+      "delivery-contract"
+    ],
+    "CLAIMS": [
+      "jev-regressions"
+    ],
+    "ROUTING": [
+      "jev-regressions",
+      "graph-contract"
+    ],
+    "CACHE": [
+      "jev-regressions"
+    ],
+    "API": [
+      "jev-regressions"
+    ],
+    "CONFIDENCE": [
+      "jev-regressions"
+    ],
+    "DELIVERY": [
+      "delivery-contract",
+      "graph-contract"
+    ],
+    "MIGRATION": [
+      "artifact-layout",
+      "graph-contract"
+    ],
+    "CI": [
+      "jev-regressions",
+      "current-docs"
+    ],
+    "METRICS": [
+      "jev-regressions",
+      "context-evaluation"
+    ]
+  },
   "acceptanceCriteria": [
     {
       "id": "LANES",
       "statement": "Only RESEARCH_SA and WORKER route unfinished work; phases do not grant a third lane.",
       "verificationIds": [
-        "jev-regressions",
-        "repository-verification"
+        "graph-contract",
+        "context-contract"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "scripts/blackboard-work-graph.mjs lane allowlist and schedulability assertions",
+        "test/blackboard-work-graph.test.mjs and test/blackboard-context-contract.test.mjs passing logs"
       ]
     },
     {
@@ -106,10 +521,11 @@
       "statement": "A draft plan cannot authorize worker execution; readiness covers objective and implementability claims.",
       "verificationIds": [
         "jev-regressions",
-        "repository-verification"
+        "delivery-contract"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "RESEARCH_SA input/output contract, explicit plan fields and readiness publication transition",
+        "test/blackboard-jev.test.mjs readiness/stale-plan cases and verify:blackboard-delivery-contracts output"
       ]
     },
     {
@@ -117,21 +533,22 @@
       "statement": "An objective, plan or evidence change at the same ref invalidates the prior bound evaluation.",
       "verificationIds": [
         "jev-regressions",
-        "repository-verification"
+        "delivery-contract"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "objective, plan, evidence and candidate hash checks in scripts/blackboard-jev.mjs and scripts/blackboard-delivery.mjs",
+        "test/blackboard-jev.test.mjs stale-binding and plan-edit regression logs"
       ]
     },
     {
       "id": "CLAIMS",
       "statement": "Worker acceptance requires exactly one typed answer and evidence mapping for every criterion, with all choices SATISFIED.",
       "verificationIds": [
-        "jev-regressions",
-        "repository-verification"
+        "jev-regressions"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "one typed Jev Choice answer per acceptance criterion plus claim-to-log mapping",
+        "test/blackboard-jev.test.mjs malformed-answer, missing-claim and worker-evidence logs"
       ]
     },
     {
@@ -139,65 +556,68 @@
       "statement": "Defects and missing evidence return to worker repair; input contradiction revokes readiness and returns to research.",
       "verificationIds": [
         "jev-regressions",
-        "repository-verification"
+        "graph-contract"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "publisher branch behavior for IMPLEMENTATION_DEFECT, INSUFFICIENT_EVIDENCE and PLAN_INPUT_CONTRADICTION",
+        "test/blackboard-jev.test.mjs routing regression and test/blackboard-work-graph.test.mjs phase assertions"
       ]
     },
     {
       "id": "CACHE",
       "statement": "Identical semantic input reuses answers without a network call; state/spec/model changes invalidate the cache.",
       "verificationIds": [
-        "jev-regressions",
-        "repository-verification"
+        "jev-regressions"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "cache key includes canonical semantic state/spec/model/policy/lane and excludes runtime metadata",
+        "test/blackboard-jev.test.mjs cache hit and substantive-evidence invalidation logs"
       ]
     },
     {
       "id": "API",
       "statement": "The TypeSafe adapter validates typed output and bounds retries; missing credentials and transport/schema errors cannot pass.",
       "verificationIds": [
-        "jev-regressions",
-        "repository-verification"
+        "jev-regressions"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "native fetch adapter, pinned jev-1.13.0 model, bounded retry and typed response validator",
+        "test/blackboard-jev.test.mjs missing-key, retry, malformed-response and model-mismatch logs"
       ]
     },
     {
       "id": "CONFIDENCE",
       "statement": "SATISFIED with low confidence still passes the semantic choice gate; distributions are recorded as telemetry.",
       "verificationIds": [
-        "jev-regressions",
-        "repository-verification"
+        "jev-regressions"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "verdict derives from typed choice, while confidence/probabilities remain telemetry",
+        "test/blackboard-jev.test.mjs low-confidence SATISFIED regression log"
       ]
     },
     {
       "id": "DELIVERY",
       "statement": "Only an exact evaluated candidate preserved in main with matching merge tree and current evaluated source can publish delivery.",
       "verificationIds": [
-        "jev-regressions",
-        "repository-verification"
+        "delivery-contract",
+        "graph-contract"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "candidate SHA/tree, merge ancestry, evaluated-source preservation and consolidated-ref checks",
+        "test/blackboard-jev.test.mjs end-to-end merge/delivery regression logs"
       ]
     },
     {
       "id": "MIGRATION",
       "statement": "Migration is idempotent and preserves terminal canonical evidence unchanged.",
       "verificationIds": [
-        "jev-regressions",
-        "repository-verification"
+        "artifact-layout",
+        "graph-contract"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "two-directory artifact verifier, legacy-directory rejection and idempotent migration output",
+        "test/blackboard-artifact-contract.test.mjs and test/blackboard-jev.test.mjs migration logs"
       ]
     },
     {
@@ -205,10 +625,11 @@
       "statement": "Live TypeSafe calls are absent from normal verification and run separately from candidate command execution.",
       "verificationIds": [
         "jev-regressions",
-        "repository-verification"
+        "current-docs"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "workflow source showing keyless verification and separate keyed Jev evaluation, with no live call in npm run verify",
+        "scripts/current-docs-verify.mjs and test/blackboard-jev.test.mjs CI separation checks"
       ]
     },
     {
@@ -216,10 +637,11 @@
       "statement": "Evaluation records usage/cache/cost metadata and the separate labeled stability benchmark never publishes acceptance.",
       "verificationIds": [
         "jev-regressions",
-        "repository-verification"
+        "context-evaluation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and passing regression logs; live API/CI observation for provider integration claims"
+        "evaluation metrics containing cacheHit, attempts, latencyMs, payloadBytes, usage and pricing fields",
+        "scripts/blackboard-jev-stability.mjs showing uncached repeats without canonical publication"
       ]
     }
   ],
@@ -242,17 +664,50 @@
         "CLAIMS",
         "ROUTING"
       ]
+    },
+    {
+      "invariant": "RESEARCH_SA consumes OBJECTIVE and converges to READY_IMPLEMENT_PLAN; WORKER consumes exact READY_IMPLEMENT_PLAN and converges to DELIVERED_FEATURE",
+      "criterionIds": [
+        "READINESS",
+        "BINDING",
+        "DELIVERY"
+      ]
     }
   ],
   "verificationPlan": [
     {
+      "id": "artifact-layout",
+      "command": "npm run verify:blackboard-artifacts"
+    },
+    {
+      "id": "graph-contract",
+      "command": "npm run verify:blackboard-work-graph"
+    },
+    {
+      "id": "context-contract",
+      "command": "npm run test:blackboard-context"
+    },
+    {
       "id": "jev-regressions",
       "command": "npm run test:blackboard-jev"
+    },
+    {
+      "id": "delivery-contract",
+      "command": "npm run verify:blackboard-delivery-contracts"
+    },
+    {
+      "id": "current-docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "context-evaluation",
+      "command": "npm run eval:blackboard-context"
     },
     {
       "id": "repository-verification",
       "command": "npm run verify"
     }
   ],
-  "researchGaps": []
+  "researchGaps": [],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-056.readiness-jev-evaluation.json"
 }

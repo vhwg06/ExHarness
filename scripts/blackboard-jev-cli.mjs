@@ -5,6 +5,7 @@ import { materialize, evaluate } from './blackboard-jev.mjs';
 import { publishEvaluation, collectEvidence, verifyDelivery, publishDelivery, importEvaluationEvidence } from './blackboard-delivery.mjs';
 import { renderStateProjection } from './blackboard-state-project.mjs';
 import { deriveTaskContext } from './blackboard-task-context-resolver.mjs';
+import { loadDotEnv } from './blackboard-env.mjs';
 
 const [command,id,arg] = process.argv.slice(2);
 const root=process.cwd();
@@ -13,6 +14,7 @@ if(!id) fail('usage: blackboard-jev-cli <materialize|evaluate|publish|collect|ve
 let result;
 if(command==='materialize') result=materialize(root,id);
 else if(command==='evaluate') {
+  loadDotEnv(root);
   const input=materialize(root,id);
   result=await evaluate(input,{root});
   const ref=arg??`artifacts/blackboard-jev/${id}.json`;write(root,ref,result);

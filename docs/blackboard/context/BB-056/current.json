@@ -1,0 +1,142 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-056",
+  "taskId": "BB-056",
+  "featureId": null,
+  "topicId": null,
+  "components": [
+    "outer/blackboard"
+  ],
+  "pipeline": "WORKER",
+  "lane": "WORKER",
+  "phase": "EXECUTION",
+  "stage": "EXECUTION",
+  "semanticArtifactRef": "docs/blackboard/artifacts/ready-implement-plan/BB-056.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-056.json",
+  "planHash": "75bd0435419d4bb30e590691f1a361426dea461c75c3b699ec7448948eafc7cb",
+  "action": {
+    "kind": "IMPLEMENT",
+    "summary": "Implement the exact ready plan and produce evidence."
+  },
+  "dependencyContext": [],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/state.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-056.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-056.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-056.readiness-jev-evaluation.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "scripts/**",
+      "test/**",
+      "docs/**",
+      ".github/**",
+      "package.json",
+      "AGENTS.md",
+      "README.md",
+      ".env.example"
+    ],
+    "write": [
+      "scripts/**",
+      "test/**",
+      "docs/blackboard/**",
+      "docs/living/system/**",
+      ".github/**",
+      "package.json",
+      "AGENTS.md",
+      ".gitignore",
+      "README.md",
+      ".env.example"
+    ],
+    "forbiddenWrite": [
+      "packages/**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "scripts/**",
+      "test/**",
+      "docs/**",
+      ".github/**",
+      "package.json",
+      "AGENTS.md",
+      "README.md",
+      ".env.example"
+    ],
+    "write": [
+      "scripts/**",
+      "test/**",
+      "docs/blackboard/**",
+      "docs/living/system/**",
+      ".github/**",
+      "package.json",
+      "AGENTS.md",
+      ".gitignore",
+      "README.md",
+      ".env.example"
+    ],
+    "forbiddenWrite": [
+      "packages/**"
+    ]
+  },
+  "artifactWriteScope": [],
+  "hardInvariants": [
+    "Exactly RESEARCH_SA and WORKER lanes",
+    "Current-only canonical artifacts; retain terminal evidence",
+    "Jev owns semantic judgment; producer cannot accept its own output",
+    "RESEARCH_SA consumes OBJECTIVE and converges to READY_IMPLEMENT_PLAN; WORKER consumes exact READY_IMPLEMENT_PLAN and converges to DELIVERED_FEATURE"
+  ],
+  "verification": [
+    {
+      "id": "artifact-layout",
+      "command": "npm run verify:blackboard-artifacts"
+    },
+    {
+      "id": "graph-contract",
+      "command": "npm run verify:blackboard-work-graph"
+    },
+    {
+      "id": "context-contract",
+      "command": "npm run test:blackboard-context"
+    },
+    {
+      "id": "jev-regressions",
+      "command": "npm run test:blackboard-jev"
+    },
+    {
+      "id": "delivery-contract",
+      "command": "npm run verify:blackboard-delivery-contracts"
+    },
+    {
+      "id": "current-docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "context-evaluation",
+      "command": "npm run eval:blackboard-context"
+    },
+    {
+      "id": "repository-verification",
+      "command": "npm run verify"
+    }
+  ],
+  "expectedOutputs": [
+    "DELIVERED_FEATURE"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "scripts/**",
+      "test/**",
+      "docs/blackboard/**",
+      ".github/workflows/**"
+    ],
+    "contractRefs": [
+      "docs/blackboard/contracts.md"
+    ]
+  }
+}
