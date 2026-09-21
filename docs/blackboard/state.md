@@ -1,20 +1,27 @@
 # Outer Blackboard
 
-Status: **DEVELOPMENT CONTEXT ROUTER**
+Status: **DERIVED ROUTING PROJECTION**
 
-The Blackboard describes how ExHarness is currently being developed. It does not describe what ExHarness is; current system truth is under `docs/living/`.
+> Generated from `docs/blackboard/work-graph.json` and `docs/blackboard/component-registry.json`. Routing facts are derived; edit the canonical graph/catalog, not this projection.
 
-This file is the single current-state source of truth for outer-Blackboard routing. It contains only current delivery state. Previous revisions live in Git history, not in parallel context/history files.
+## Canonical sources
+
+```text
+work-graph: docs/blackboard/work-graph.json
+component-registry: docs/blackboard/component-registry.json
+living-system-root: docs/living/system/state.md
+integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness.md
+```
 
 ## Project
 
 ```text
 phase: INTEGRATION
-started: 2026-09-18
+next-work-id: BB-056
+execution-unit: TASK
+context-routing-unit: COMPONENT
+worker-ownership: ONE_TASK_PER_CLAIM
 current-active-debt: 0
-next-work-id: BB-052
-living-system-root: docs/living/system/state.md
-integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-implementation-readiness.md
 ```
 
 ## Pipeline lanes
@@ -22,36 +29,45 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 ```text
 RESEARCH_SA
   active: NONE
-  terminal-output: ACCEPTED IMPLEMENTATION_INPUT
 
 IMPLEMENTATION_WORKER
   active: NONE
-  terminal-output: RECORDED JUDGMENT
 ```
-
-The lanes are independent. Future Research/SA work does not need to reconstruct implementation history; future Worker work does not need to reconstruct research history. Each follows its exact context and declared refs.
 
 ## Active work
 
 NONE
 
-## Accepted semantic input queue
+## Schedulable tasks
 
-Research/SA has completed semantic handoff for four future slices. These are accepted artifacts, not active work and not ordered backlog:
+- BB-052 — Implement cross-domain obligations and selective semantic invalidation
 
-- Integration C: `docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage.json` + `docs/blackboard/artifacts/implementation-spec/integration-c-cross-domain-obligation-lineage.json`
-- Integration D: `docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy.json` + `docs/blackboard/artifacts/implementation-spec/integration-d-domain-activation-parallel-autonomy.json`
-- Integration E/F: `docs/blackboard/artifacts/implementation-input/integration-ef-deployment-acceptance-snapshot.json` + `docs/blackboard/artifacts/implementation-spec/integration-ef-deployment-acceptance-snapshot.json`
-- Integration G: `docs/blackboard/artifacts/implementation-input/integration-g-product-completeness-closure.json`
+## Dependency graph
 
-They do not consume work ids or `current-active-debt`. A future grounded trigger allocates a new IMPLEMENTATION_WORKER item and binds exactly one queued semantic input plus its canonical implementation spec when one exists.
+```text
+BB-048 [DONE] <- ROOT
+BB-052 [READY] <- BB-048
+BB-053 [BLOCKED_BY BB-052] <- BB-052
+BB-054 [BLOCKED_BY BB-053] <- BB-053
+BB-055 [BLOCKED_BY BB-054] <- BB-054
+```
 
-Retained `IMPLEMENTATION_SPEC.provenance.originWorkId` values are globally reserved identity evidence and must not be reused for a different work subject. The current allocator therefore advances past the retained BB-050/BB-051 identities.
+## Context semantics
 
-## Allocation rules
+```text
+Task = scheduling / claim / execution unit
+Component = context-routing unit
+Worker = temporary owner of exactly one claimed Task
+current.json = rebuildable TaskContext projection
 
-New Research/SA work is allocated from an explicit problem/question/research need.
+Task
+  -> components[]
+  -> Component Registry / Context Profiles
+  -> task artifacts
+  -> direct dependencies
+       DONE -> consolidated Living refs
+  -> deterministic WorkerContext
+  -> progressive search only for unresolved context
+```
 
-New Implementation/Worker work requires an accepted implementation-input artifact from Research/SA, a bounded current-system baseline and an exact current context.
-
-Promoted research knowledge alone is not future backlog. Living Docs never become the work queue.
+No task is selected by scanning artifact directories or repository history. Transitive dependency closure is derived from direct graph edges; it is not duplicated into task records.
