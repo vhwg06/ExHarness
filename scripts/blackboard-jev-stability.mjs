@@ -1,5 +1,8 @@
 import { read, write, hash } from './blackboard-delivery-contract.mjs';
 import { evaluate, MODEL } from './blackboard-jev.mjs';
+import { loadDotEnv } from './blackboard-env.mjs';
+
+loadDotEnv();
 
 // Deliberately separate from normal verification and canonical publication.
 const fixtures=read('.', 'test/fixtures/blackboard-jev-stability.json');

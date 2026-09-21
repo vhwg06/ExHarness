@@ -1,7 +1,28 @@
 import fs from "node:fs";
+import path from "node:path";
 import { readWorkGraph, readComponentRegistry, assertWorkGraph, schedulableTasks, taskReadiness } from "./blackboard-work-graph.mjs";
 
-export function renderStateProjection({graph=readWorkGraph(),registry=readComponentRegistry()}={}){
+function readJevEvaluation(root, ref) {
+  if (typeof ref !== "string" || !ref) return null;
+  const target = path.resolve(root, ref);
+  if (!fs.existsSync(target)) return null;
+  try {
+    const evaluation = JSON.parse(fs.readFileSync(target, "utf8"));
+    if (evaluation?.artifactType !== "JEV_EVALUATION" || !evaluation.answers) return null;
+    const answers = Object.entries(evaluation.answers);
+    return {
+      ref,
+      lane: evaluation.lane,
+      verdict: evaluation.verdict,
+      satisfied: answers.filter(([, answer]) => answer.choice === "SATISFIED").map(([id]) => id),
+      unresolved: answers.filter(([, answer]) => answer.choice !== "SATISFIED").map(([id]) => id)
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function renderStateProjection({graph=readWorkGraph(),registry=readComponentRegistry(),root=process.cwd()}={}){
   assertWorkGraph(graph,registry);
   const active=graph.tasks.filter(t=>t.status==="ACTIVE");
   const schedulable=schedulableTasks(graph);
@@ -55,6 +76,24 @@ export function renderStateProjection({graph=readWorkGraph(),registry=readCompon
   else for(const id of schedulable){
     const task=graph.tasks.find(t=>t.id===id);
     lines.push(`- ${id} [${task.lane??'WORKER'}/${task.phase??'LEGACY'}] — ${task.title}`);
+  }
+
+  const jevDecisions = graph.tasks
+    .map(task => ({
+      task,
+      historical: !task.contract?.evaluationRef && Boolean(task.contract?.lastResearchEvaluationRef),
+      evaluation: readJevEvaluation(root, task.contract?.evaluationRef ?? task.contract?.lastResearchEvaluationRef)
+    }))
+    .filter(entry => entry.evaluation);
+  lines.push("", "## Jev decisions", "");
+  if (!jevDecisions.length) lines.push("NONE");
+  else for (const { task, historical, evaluation } of jevDecisions) {
+    lines.push(
+      `- ${task.id} [${evaluation.lane}/${evaluation.verdict}${historical ? "/STALE_AFTER_PLAN_EDIT" : ""}]`,
+      `  satisfied: ${evaluation.satisfied.join(", ") || "NONE"}`,
+      `  unresolved: ${evaluation.unresolved.join(", ") || "NONE"}`,
+      `  evaluation: ${evaluation.ref}`
+    );
   }
 
   lines.push("","## Dependency graph","","```text");

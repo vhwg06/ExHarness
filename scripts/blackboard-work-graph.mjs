@@ -137,6 +137,10 @@ export function taskReadiness(graph,taskId){
   const task=graph.tasks.find(t=>t.id===taskId);
   if(!task)fail(`unknown task: ${taskId}`);
   if(task.status!=="PLANNED")return {taskId,ready:false,reason:`STATUS_${task.status}`};
+  if(task.contract){
+    const schedulablePhases=task.lane==='RESEARCH_SA'?['RESEARCH']:['EXECUTION','REPAIR'];
+    if(!schedulablePhases.includes(task.phase))return {taskId,ready:false,reason:`PHASE_${task.phase}`};
+  }
   const byId=new Map(graph.tasks.map(t=>[t.id,t]));
   const blockedBy=task.dependencies.filter(d=>byId.get(d.taskId)?.status!=="DONE").map(d=>d.taskId);
   return blockedBy.length?{taskId,ready:false,reason:"DEPENDENCIES_NOT_DONE",blockedBy}:{taskId,ready:true,reason:"DIRECT_DEPENDENCIES_DONE",blockedBy:[]};
