@@ -1,4 +1,4 @@
-import { read, assertDeliveryArtifact, assertBinding, planHash, fail } from './blackboard-delivery-contract.mjs';
+import { read, assertDeliveryArtifact, assertBinding, assertLivingDocs, planHash, fail } from './blackboard-delivery-contract.mjs';
 import { assertReady } from './blackboard-jev.mjs';
 
 export function verifyDeliveryContracts(root='.') {
@@ -17,6 +17,11 @@ export function verifyDeliveryContracts(root='.') {
       assertBinding(root,receipt.evaluation);
       const evaluation=assertDeliveryArtifact(read(root,receipt.evaluation.ref));
       if(evaluation.verdict!=='SATISFIED'||evaluation.subject.workId!==task.id||evaluation.subject.candidateSha!==receipt.candidateSha||evaluation.subject.candidateTree!==receipt.candidateTree)fail('delivery evaluation mismatch');
+      if (plan.livingDocs) {
+        const livingDocs = assertLivingDocs(plan);
+        if (evaluation.answers?.[livingDocs.questionId]?.choice !== 'SATISFIED') fail('Living Docs claim was not accepted by Jev');
+        if (!livingDocs.refs.every(ref => receipt.consolidatedRefs.includes(ref))) fail('delivery receipt missing consolidated Living Docs');
+      }
     }
   }
   return true;

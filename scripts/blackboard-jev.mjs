@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
-import { assertDeliveryArtifact, assertBinding, canonical, hash, read, write, localPath, loadSubject, planHash, planContent, outcomes, verdict, fail, scopeContains } from './blackboard-delivery-contract.mjs';
+import { assertDeliveryArtifact, assertBinding, assertLivingDocs, canonical, hash, read, write, localPath, loadSubject, planHash, planContent, outcomes, verdict, fail, scopeContains } from './blackboard-delivery-contract.mjs';
 
 export const MODEL = 'jev-1.13.0';
 export const POLICY = 'atomic-claims-1';
@@ -20,6 +20,8 @@ function checkedFile(root, ref) {
 }
 export function assertReady(root, task, plan) {
   check(plan.status === 'READY', 'plan is not READY');
+  const livingDocs = assertLivingDocs(plan);
+  check(livingDocs.refs.every(ref => task.artifacts?.consolidatedRefs?.includes(ref)), 'Living Docs are not declared as consolidated refs');
   const evaluation = assertDeliveryArtifact(read(root, plan.readinessRef));
   check(evaluation.lane === 'RESEARCH_SA' && evaluation.verdict === 'SATISFIED' && evaluation.subject.workId === task.id && evaluation.subject.plan.ref === task.contract.planRef && evaluation.subject.plan.hash === planHash(plan), 'stale/mismatched readiness');
   assertBinding(root, evaluation.subject.objective);
@@ -52,6 +54,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     ciContract: plan.ciContract,
     cacheContract: plan.cacheContract,
     migrationContract: plan.migrationContract,
+    livingDocs: plan.livingDocs,
     sourceSeams: plan.sourceSeams,
     sourceScope: plan.sourceScope,
     implementationSlices: plan.implementationSlices,
@@ -134,8 +137,10 @@ export function materialize(root, id, { readiness = false } = {}) {
       }
     }
     const changed = git(root, 'diff', '--name-only', '--no-renames', evidence.baselineSha, evidence.candidateSha).split('\n').filter(Boolean);
+    const livingDocs = assertLivingDocs(plan);
+    for (const ref of livingDocs.refs) check(changed.includes(ref), `Living Doc was not updated by candidate: ${ref}`);
     for (const ref of changed) check(plan.sourceScope.write.some(p => scopeContains(p, ref)) && !plan.sourceScope.forbiddenWrite.some(p => scopeContains(p, ref)), `out of plan scope: ${ref}`);
-    const sourceRefs = [...new Set([...changed, ...plan.sourceSeams.requiredExisting, ...plan.sourceSeams.expectedTests, ...plan.sourceSeams.expectedNew])];
+    const sourceRefs = [...new Set([...changed, ...livingDocs.refs, ...plan.sourceSeams.requiredExisting, ...plan.sourceSeams.expectedTests, ...plan.sourceSeams.expectedNew])];
     const fullSourceRefs = new Set([
       'scripts/blackboard-jev.mjs',
       'scripts/blackboard-delivery.mjs',
@@ -150,6 +155,8 @@ export function materialize(root, id, { readiness = false } = {}) {
       // keep their candidate hashes/byte sizes in state without duplicating
       // their full bodies in the model input.
     ]);
+    for (const ref of livingDocs.refs) fullSourceRefs.add(ref);
+    for (const ref of livingDocs.refs) check(git(root, 'ls-tree', evidence.candidateSha, '--', ref), `Living Doc missing from candidate: ${ref}`);
     state.sources = sourceRefs.map(ref => {
       const deleted = !git(root, 'ls-tree', evidence.candidateSha, '--', ref);
       check(!deleted || changed.includes(ref), `missing source seam: ${ref}`);
@@ -188,6 +195,7 @@ export function materialize(root, id, { readiness = false } = {}) {
       check(claimIds.has(c.id), `missing evidence claim: ${c.id}`);
       question(c.id, `${c.statement} Required evidence: ${c.evidenceRequired.join('; ')}`, `\`state.evidence\` entry with id ${c.id}, its referenced contents in \`state.evidenceFiles\`, \`state.sources\`, and \`state.verification\` runs ${c.verificationIds.join(', ')}`);
     }
+    question(livingDocs.questionId, livingDocs.statement, `the Living Docs in \`state.sources\` at ${livingDocs.refs.join(', ')}, plus the exact candidate and verification evidence`);
     subject.evidence = { ref: task.contract.evidenceRef, hash: hash(evidence) };
     subject.candidateSha = evidence.candidateSha; subject.candidateTree = evidence.candidateTree;
     subject.baselineSha = evidence.baselineSha;

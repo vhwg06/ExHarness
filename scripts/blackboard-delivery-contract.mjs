@@ -80,8 +80,24 @@ export function assertPlan(plan) {
     list(mapping.criterionIds, 'invariant criterionIds');
     for (const id of mapping.criterionIds) if (!ids.has(id)) fail('unknown invariant criterion');
   }
+  if (plan.livingDocs !== undefined) assertLivingDocs(plan);
   if (plan.status === 'READY') nonempty(plan.readinessRef, 'readinessRef');
   return plan;
+}
+export function assertLivingDocs(plan) {
+  const docs = plan?.livingDocs;
+  if (!docs || typeof docs !== 'object' || Array.isArray(docs)) fail('livingDocs');
+  list(docs.refs, 'livingDocs.refs');
+  nonempty(docs.questionId, 'livingDocs.questionId');
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(docs.questionId)) fail('unsafe livingDocs.questionId');
+  nonempty(docs.statement, 'livingDocs.statement');
+  for (const ref of docs.refs) {
+    if (!/^docs\/living\/.+\.md$/.test(ref)) fail(`livingDocs ref is not a Living Doc: ${ref}`);
+    if (!plan.sourceScope?.write?.some(pattern => scopeContains(pattern, ref))) fail(`livingDocs ref outside write scope: ${ref}`);
+  }
+  const criterionIds = new Set((plan.acceptanceCriteria ?? []).map(c => c.id));
+  if (criterionIds.has(docs.questionId)) fail(`livingDocs.questionId collides with acceptance criterion: ${docs.questionId}`);
+  return docs;
 }
 export const outcomes = ['SATISFIED', 'IMPLEMENTATION_DEFECT', 'INSUFFICIENT_EVIDENCE', 'PLAN_INPUT_CONTRADICTION'];
 export function verdict(answers, lane) {

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { assertDeliveryArtifact, assertBinding, read, write, localPath, hash, canonical, planHash, loadSubject, fail } from './blackboard-delivery-contract.mjs';
+import { assertDeliveryArtifact, assertBinding, assertLivingDocs, read, write, localPath, hash, canonical, planHash, loadSubject, fail } from './blackboard-delivery-contract.mjs';
 import { materialize, validateEvaluation, assertReady, git } from './blackboard-jev.mjs';
 
 // These projections are rebuilt by the trusted controller during publication.
@@ -36,6 +36,10 @@ export function publishEvaluation(root, id, evaluation) {
     const expected = materialize(root, id, { readiness: evaluation.lane === 'RESEARCH_SA' });
     validateEvaluation(evaluation, expected);
     if (existing?.cacheKey === evaluation.cacheKey && canonical(existing.subject) === canonical(evaluation.subject) && existing.verdict !== evaluation.verdict) fail('unstable replay cannot replace current judgment');
+    if (evaluation.lane === 'RESEARCH_SA' && evaluation.verdict === 'SATISFIED') {
+      const livingDocs = assertLivingDocs(plan);
+      if (!livingDocs.refs.every(doc => task.artifacts?.consolidatedRefs?.includes(doc))) fail('readiness missing consolidated Living Docs');
+    }
     write(root, ref, evaluation);
     task.contract.evaluationRef = ref;
     delete task.contract.lastResearchEvaluationRef;
@@ -132,6 +136,9 @@ export function verifyDelivery(root, id, { mainRef = 'refs/remotes/origin/main',
   const currentInput=materialize(root,id);
   validateEvaluation(evaluation, currentInput);
   if (evaluation.verdict !== 'SATISFIED') fail('claims not all SATISFIED');
+  const livingDocs = assertLivingDocs(plan);
+  if (evaluation.answers?.[livingDocs.questionId]?.choice !== 'SATISFIED') fail('Living Docs claim was not accepted by Jev');
+  if (!livingDocs.refs.every(doc => task.artifacts?.consolidatedRefs?.includes(doc))) fail('delivery missing consolidated Living Docs');
   const candidateSha = evaluation.subject.candidateSha, candidateTree = evaluation.subject.candidateTree;
   const observedMainSha = git(root, 'rev-parse', mainRef);
   mergeSha ??= task.contract.mergeSha;

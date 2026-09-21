@@ -45,7 +45,7 @@ Status: **CURRENT TYPED WORK / CONTEXT CONTRACT**
 27. `RESEARCH_SA` consumes `OBJECTIVE` and converges only to a Jev-satisfied `READY_IMPLEMENT_PLAN`.
 28. The plan contains scope, constraints, invariants, architecture decisions, source seams, slices, acceptance criteria and verification. A draft is not executable.
 29. Plan content binds the exact objective ref/hash. Readiness evaluates source at the exact recorded research baseline; worker source changes do not rewrite that baseline.
-30. `WORKER` consumes the exact ready plan ref/content hash and dependency truth. It converges only to `DELIVERED_FEATURE`.
+30. `WORKER` consumes the exact ready plan ref/content hash and dependency truth. Its plan must declare the current Living Doc refs that describe the implementation. It converges only to `DELIVERED_FEATURE` after those refs are changed in the candidate and accepted by Jev.
 31. Worker cannot redefine its plan. Plan/input contradictions return to Research/SA and revoke readiness. Research cannot claim delivery.
 
 ## Implementation lanes and artifacts
@@ -56,7 +56,7 @@ Status: **CURRENT TYPED WORK / CONTEXT CONTRACT**
 35. Worker evidence records exact verification commands, exit codes, candidate SHA, hashed logs and criterion evidence. Producer observations are not acceptance.
 36. Jev owns semantic judgment. All typed choices must be SATISFIED; confidence is telemetry only. Schema, evidence, binding and merge checks remain deterministic.
 37. Defects and insufficient evidence authorize bounded repair. Input contradiction returns upstream. Unchanged input reuses its judgment; no rerolling for pass.
-38. DELIVERED_FEATURE requires all claims satisfied, exact candidate ancestor of main, merge tree equality, and evaluated source still present in main. Helper-context identity is never an authority subject.
+38. DELIVERED_FEATURE requires all claims satisfied, including the plan's Living Docs claim, exact candidate ancestor of main, merge tree equality, consolidated Living Doc refs and evaluated source still present in main. Helper-context identity is never an authority subject.
 
 ## Retention and consolidation
 

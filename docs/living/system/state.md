@@ -28,6 +28,8 @@ The TypeSafe adapter pins the Jev model, validates the typed response and bounds
 
 The current artifact layout stores lane inputs under `docs/blackboard/artifacts/objective/` and `docs/blackboard/artifacts/ready-implement-plan/`. Retained implementation results, Jev evaluations and the delivery receipt stay beside the plan, while detailed verification logs live under `docs/blackboard/evidence/`. Delivery is publishable only after the evaluated candidate is committed, its ancestry and tree match the merge on `main`, and the evaluated source remains present there. Legacy artifact locations are rejected after idempotent migration.
 
+Worker exit also has a documentation gate: each ready worker plan declares the Living Docs refs that describe its implementation. The candidate must update those docs within the authorized scope, Jev receives their full contents and judges a dedicated implementation-description claim, and delivery requires that claim to be `SATISFIED` plus the refs to be consolidated and preserved on `main`.
+
 ## Current composition
 
 Concrete execution path:

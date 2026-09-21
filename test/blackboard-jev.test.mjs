@@ -22,18 +22,22 @@ function fixture(t) {
   git('init','-b','main');git('config','user.name','Fixture');git('config','user.email','fixture@example.invalid');
   fs.writeFileSync(path.join(root,'source.js'),'export const answer = 1;\n');
   fs.writeFileSync(path.join(root,'test.js'),'// meaningful fixture source\n');
+  fs.mkdirSync(path.join(root,'docs/living/system'),{recursive:true});
+  fs.writeFileSync(path.join(root,'docs/living/system/state.md'),'# Current system\n\nThe baseline implementation is answer one.\n');
   git('add','.');git('commit','-m','baseline');const baseline=git('rev-parse','HEAD');
   const objective={kind:'BLACKBOARD_ARTIFACT',version:1,artifactType:'OBJECTIVE',artifactId:'BB-1',outcome:'Return two',currentProblem:'Returns one',scope:['answer'],constraints:['Keep interface'],successCriteria:['answer is two'],currentSourceRefs:['source.js']};
-  const plan={kind:'BLACKBOARD_ARTIFACT',version:1,artifactType:'READY_IMPLEMENT_PLAN',artifactId:'BB-1',status:'DRAFT',objective:{ref:'objective.json',hash:hash(objective)},scope:['answer'],outOfScope:[],constraints:['Keep interface'],invariants:['export remains'],architectureDecisions:['Change constant'],sourceSeams:{requiredExisting:['source.js'],expectedNew:[],expectedTests:['test.js']},sourceScope:{read:['source.js','test.js'],write:['source.js','test.js'],forbiddenWrite:[]},implementationSlices:['Change constant'],acceptanceCriteria:[{id:'AC1',statement:'answer is two and remains exported',verificationIds:['unit'],evidenceRequired:['unit output']}],invariantCoverage:[{invariant:'export remains',criterionIds:['AC1']}],verificationPlan:[{id:'unit',command:'node --test test.js'}]};
-  const task={id:'BB-1',status:'PLANNED',lane:'RESEARCH_SA',phase:'RESEARCH',dependencies:[],components:['outer/blackboard'],artifacts:{inputRefs:['objective.json','plan.json'],outputRefs:[],consolidatedRefs:['source.js']},contract:{objectiveRef:'objective.json',planRef:'plan.json',researchBaselineSha:baseline}};
+  const plan={kind:'BLACKBOARD_ARTIFACT',version:1,artifactType:'READY_IMPLEMENT_PLAN',artifactId:'BB-1',status:'DRAFT',objective:{ref:'objective.json',hash:hash(objective)},scope:['answer'],outOfScope:[],constraints:['Keep interface'],invariants:['export remains'],architectureDecisions:['Change constant'],sourceSeams:{requiredExisting:['source.js'],expectedNew:[],expectedTests:['test.js']},sourceScope:{read:['source.js','test.js','docs/living/**'],write:['source.js','test.js','docs/living/**'],forbiddenWrite:[]},implementationSlices:['Change constant'],livingDocs:{refs:['docs/living/system/state.md'],questionId:'LIVING_DOCS',statement:'Current Living Docs accurately describe the delivered implementation.'},acceptanceCriteria:[{id:'AC1',statement:'answer is two and remains exported',verificationIds:['unit'],evidenceRequired:['unit output']}],invariantCoverage:[{invariant:'export remains',criterionIds:['AC1']}],verificationPlan:[{id:'unit',command:'node --test test.js'}]};
+  const task={id:'BB-1',status:'PLANNED',lane:'RESEARCH_SA',phase:'RESEARCH',dependencies:[],components:['outer/blackboard'],artifacts:{inputRefs:['objective.json','plan.json'],outputRefs:[],consolidatedRefs:['docs/living/system/state.md']},contract:{objectiveRef:'objective.json',planRef:'plan.json',researchBaselineSha:baseline}};
   write(root,'objective.json',objective);write(root,'plan.json',plan);write(root,'docs/blackboard/work-graph.json',{tasks:[task],features:[]});
   write(root,'docs/blackboard/jev-policy.json',{model:'jev-1.13.0',policy:'atomic-claims-1',maxPayloadBytes:524288,pricing:null});
   const response=(payload,choice='SATISFIED')=>({model:payload.model,answers:Object.fromEntries(Object.keys(payload.questions).map(id=>[id,{type:'choice',choice,confidence:0.01,probabilities:Object.fromEntries(['SATISFIED','IMPLEMENTATION_DEFECT','INSUFFICIENT_EVIDENCE','PLAN_INPUT_CONTRADICTION'].map(o=>[o,o===choice?1:0]))}])),usage:{input_tokens:100,output_tokens:20}});
   const mock=(choice='SATISFIED')=>async(_url,init)=>new Response(JSON.stringify(response(JSON.parse(init.body),choice)),{status:200});
   const ev=async(choice='SATISFIED')=>evaluate(materialize(root,'BB-1'),{root,apiKey:'fixture',fetchImpl:mock(choice),bypassCache:true});
   const ready=async()=>publishEvaluation(root,'BB-1',await ev());
-  const candidate=()=>{
-    fs.writeFileSync(path.join(root,'source.js'),'export const answer = 2;\n');git('add','source.js');git('commit','-m','candidate');
+  const candidate=({updateLivingDocs=true}={})=>{
+    fs.writeFileSync(path.join(root,'source.js'),'export const answer = 2;\n');
+    if(updateLivingDocs) fs.writeFileSync(path.join(root,'docs/living/system/state.md'),'# Current system\n\nThe delivered implementation returns answer two.\n');
+    git('add','source.js','docs/living/system/state.md');git('commit','-m','candidate');
     const candidateSha=git('rev-parse','HEAD');const candidateTree=git('rev-parse','HEAD^{tree}');
     fs.writeFileSync(path.join(root,'run.txt'),'assert.equal(answer, 2): passed\n');
     const p=read(root,'plan.json');
@@ -80,6 +84,14 @@ test('worker evidence binds exact plan, source tree, logs and all claims',async 
   const evidence=read(f.root,'evidence.json');evidence.claims=[];write(f.root,'evidence.json',evidence);
   assert.throws(()=>materialize(f.root,'BB-1'),/evidence claims/);
 });
+test('worker exit requires a Living Doc update and Jev claim',async t=>{
+  const f=fixture(t);await f.ready();f.candidate({updateLivingDocs:false});
+  assert.throws(()=>materialize(f.root,'BB-1'),/Living Doc was not updated/);
+});
+test('readiness cannot authorize a worker without a Living Docs contract',async t=>{
+  const f=fixture(t);const plan=read(f.root,'plan.json');delete plan.livingDocs;write(f.root,'plan.json',plan);
+  await assert.rejects(()=>f.ready(),/livingDocs/);
+});
 test('implementation defect repairs worker; plan contradiction returns research and revokes readiness',async t=>{
   const f=fixture(t);await f.ready();f.candidate();
   publishEvaluation(f.root,'BB-1',await f.ev('IMPLEMENTATION_DEFECT'));
@@ -106,7 +118,9 @@ test('API has bounded retry, no auth retry and missing key fails without network
 });
 test('end-to-end only exact candidate in main may publish delivery',async t=>{
   const f=fixture(t);await f.ready();const c=f.candidate();
-  publishEvaluation(f.root,'BB-1',await f.ev());
+  const evaluation=await f.ev();
+  assert.equal(evaluation.answers.LIVING_DOCS.choice,'SATISFIED');
+  publishEvaluation(f.root,'BB-1',evaluation);
   assert.throws(()=>verifyDelivery(f.root,'BB-1',{mainRef:f.baseline,mergeSha:c.candidateSha}));
   const result=publishDelivery(f.root,'BB-1',{mainRef:'refs/heads/main',mergeSha:c.candidateSha});
   assert.equal(result.receipt.candidateSha,c.candidateSha);assert.equal(read(f.root,'docs/blackboard/work-graph.json').tasks[0].status,'DONE');
@@ -147,7 +161,8 @@ test('unresolved research gaps block readiness and verification cannot inherit t
 });
 test('collector executes the declared command and retains canonical evidence for fresh checkouts',async t=>{
   const f=fixture(t);await f.ready();
-  f.git('add','.');f.git('commit','-m','record current plan');
+  fs.writeFileSync(path.join(f.root,'docs/living/system/state.md'),'# Current system\n\nThe delivered implementation returns answer two.\n');
+  f.git('add','objective.json','plan.json','docs/living/system/state.md');f.git('commit','-m','record current plan');
   const candidateSha=f.git('rev-parse','HEAD');
   const graph=read(f.root,'docs/blackboard/work-graph.json');
   Object.assign(graph.tasks[0].contract,{candidateSha,baselineSha:candidateSha});write(f.root,'docs/blackboard/work-graph.json',graph);
