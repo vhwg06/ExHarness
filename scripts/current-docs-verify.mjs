@@ -17,6 +17,16 @@ const blackboardFiles=walk("docs/blackboard");
 const livingFiles=walk("docs/living");
 const docsFiles=[...blackboardFiles,...livingFiles];
 
+const requiredImplementationSpecs=[
+  "docs/blackboard/artifacts/implementation-spec/integration-b-domain-execution-control.json",
+  "docs/blackboard/artifacts/implementation-spec/integration-c-cross-domain-obligation-lineage.json",
+  "docs/blackboard/artifacts/implementation-spec/integration-d-domain-activation-parallel-autonomy.json",
+  "docs/blackboard/artifacts/implementation-spec/integration-ef-deployment-acceptance-snapshot.json"
+];
+for(const file of requiredImplementationSpecs){
+  if(!blackboardFiles.includes(file))fail(`missing canonical implementation spec: ${file}`);
+}
+
 for(const file of docsFiles){
   const base=path.basename(file);
   if(/(?:^|[-_])g\d{4}(?:[-_.]|$)/i.test(base))
