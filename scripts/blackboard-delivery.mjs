@@ -11,7 +11,7 @@ export const isMutableControlRef = ref =>
   ref === 'docs/blackboard/work-graph.json' ||
   ref.startsWith('docs/blackboard/context/') ||
   ref.startsWith('docs/blackboard/evidence/') ||
-  /^docs\/blackboard\/artifacts\/ready-implement-plan\/[^/]+\.(?:candidate-jev-evaluation|implementation-result|judgment)\.json$/.test(ref);
+  /^docs\/blackboard\/artifacts\/ready-implement-plan\/[^/]+\.(?:candidate-jev-evaluation|implementation-result|judgment|delivered-feature)\.json$/.test(ref);
 
 export function transaction(root, fn) {
   const ref = localPath(root, 'docs/blackboard/.publication.lock');
@@ -160,7 +160,7 @@ export function publishDelivery(root, id, options = {}) {
       return {ref:current.contract.deliveryRef,receipt};
     }
     const { graph, task, receipt } = verifyDelivery(root, id, options);
-    const ref = `docs/blackboard/artifacts/delivered-feature/${id}.json`;
+    const ref = `docs/blackboard/artifacts/ready-implement-plan/${id}.delivered-feature.json`;
     write(root, ref, receipt);
     task.contract.deliveryRef = ref; task.status = 'DONE'; task.phase = 'DELIVERED';
     task.claim = null; task.currentContextRef = null;

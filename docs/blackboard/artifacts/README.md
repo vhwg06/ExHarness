@@ -14,6 +14,7 @@ docs/blackboard/artifacts/ready-implement-plan/
   BB-<id>.candidate-jev-evaluation.json
   BB-<id>.implementation-result.json
   BB-<id>.judgment.json      # retained terminal evidence, when applicable
+  BB-<id>.delivered-feature.json # trusted delivery receipt
 ```
 
 There are no canonical `implementation-input/`, `implementation-spec/`, `implementation-result/` or `judgment/` directories. Those names belonged to the previous multi-lane layout. Retained terminal evidence is co-located under the task's ready-plan directory so current routing has one path vocabulary.

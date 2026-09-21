@@ -10,7 +10,7 @@ test("outer Blackboard is a typed dependency graph with task scheduling and comp
   assert.equal(graph.allocation.contextRoutingUnit,"COMPONENT");
   assert.equal(graph.allocation.workerOwnership,"ONE_TASK_PER_CLAIM");
   const bb056=graph.tasks.find(task=>task.id==="BB-056");
-  const expectedSchedulable=bb056.status==="ACTIVE" || bb056.phase==="MERGE_PENDING"
+  const expectedSchedulable=bb056.status==="ACTIVE" || bb056.status==="DONE" || bb056.phase==="MERGE_PENDING"
     ? ["BB-052"]
     : ["BB-052","BB-056"];
   assert.deepEqual(schedulableTasks(graph),expectedSchedulable);
