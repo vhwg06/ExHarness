@@ -139,11 +139,11 @@
   "implementationSlices": [
     "D1 — DomainExecutionInput bridge [AC-5, AC-6]: add domain-execution-input.js with immutable schema {kind:'DOMAIN_EXECUTION_INPUT',version:1,owningDomain,workloadType,repository:{ref,revision},requiredFiles[],constraints[]} and content-addressed ref domain-execution-input:sha256:<digest>. A WorkContract is executable only when requiredArtifactRefs contains exactly one such ref whose domain/workload matches the contract. Add registry put/resolve over the existing immutable artifact store.",
     "D2 — Generic execution adapter seam [AC-2, AC-3, AC-4, INV-4, INV-5]: extend DomainExecutionController runtimeAdapter calls from {binding,input,runtimeInvocationKey} to {binding,contract,input,runtimeInvocationKey}; contract is the exact immutable OrganizationWorkContract already resolved from the released claim. Existing policy/strategy resolution and attempt binding stay authoritative. Activation never supplies strategy/runtime/domain input.",
-    "D3 — Activation + post-release currentness fence [AC-1, AC-2, AC-3, AC-4, AC-8]: domain-activation-source.scan({owningDomain}) wraps createOrganizationWorkDiscovery.listEligible. reconcile({projectId,workId,owningDomain}) re-reads the exact work, owningDomain and the exact BB-052 obligation currentness head bound by the WorkContract/materialization provenance; the pre-claim observation is {obligationSubjectKey,revision,status}. After canonical claim/release and immediately before DomainExecutionController.execute, reconcile reads that same obligationSubjectKey again. If status is not ACTIVE or revision differs, it calls canonical organization-claim invalidation/fencing for that item+claimGeneration, returns NOOP, and must leave executionAttemptStore empty and runtime dispatch count zero. Only an unchanged observation may call execute({itemId,claimGeneration,receiptRef}).",
+    "D3 — Activation + domain/admission/currentness fence [AC-1, AC-2, AC-3, AC-4, AC-8, INV-1, INV-3, INV-4, INV-5, INV-8]: domain-activation-source.scan({owningDomain}) wraps listEligible. reconcile(key={projectId,workId,owningDomain}) first resolves the exact WorkContract and requires key.owningDomain === host.owningDomain === contract.owningDomain; mismatch returns REJECTED/NOOP before any claimController call. Trigger payload fields are never used as principal/strategy/obligation authority. For a valid domain, capture exact {obligationSubjectKey,revision,status}; claim/release canonically; reread the same head immediately before execute. Non-ACTIVE or revision drift invalidates/fences that exact claim, returns NOOP, leaves no execution attempt and dispatch count zero. Only unchanged currentness may call execute({itemId,claimGeneration,receiptRef}).",
     "D4 — Backend adapter [AC-5, AC-6]: backend-execution-strategy resolves the single DomainExecutionInput from contract.requiredArtifactRefs, validates BACKEND/workload match, builds BackendObjective {id:contract.boardItemId,task:contract.summary,repository:input.repository,requiredFiles:input.requiredFiles,constraints:input.constraints}, then delegates to existing prepare/run/recover Backend application primitives. It emits DomainExecutionController runtime-result shape and never invokes runBackendThenQaObjective.",
     "D5 — Frontend domain [AC-5, AC-6, INV-6, INV-7]: frontend-contracts defines FrontendObjective/WorkOrder/Context/WorkResult/Completion with the same id/task/repository/requiredFiles/constraints input shape and FE-specific evidence claims; frontend-worker/application provide execute/recover; frontend-execution-strategy performs the same deterministic WorkContract+DomainExecutionInput mapping for FRONTEND only.",
-    "D6 — Independent domain hosts + runtime composition [AC-5, AC-6, AC-7, INV-6, INV-7]: add domain-activation-host.js. One host owns exactly one owningDomain/principal/controller and has private loop/timer/error state. start() performs an immediate canonical scan; scanOnce() calls listEligible({owningDomain}) and Promise.allSettled(reconcile(exactKey)) so one item/domain failure cannot cancel sibling work; periodic scans are latency/recovery mechanics only and persist no authority. domain-runtime-composition starts BACKEND and FRONTEND hosts without awaiting either and gives each a separate DomainExecutionController/runtimeAdapter. There is no nextRole/nextDomain/stage API, shared mutex, or cross-domain completion dependency.",
-    "D7 — Temporal/isolation proofs [AC-1..AC-8]: (a) race: pause after claim release, supersede the exact obligation head, resume, assert claim fenced + zero execution attempt + zero dispatch; control sibling remains executable. (b) parallelism: persist unrelated BACKEND and FRONTEND work with empty semantic dependency edges, distinct DomainExecutionInputs, ACTIVE policies and strategy descriptors; Promise.all starts both hosts, each adapter emits dispatchStarted and waits on its own barrier; before either release assert both started plus distinct workContractRef/policyRef/strategyRef/attemptId/runtimeInvocationKey. (c) outage: reject one adapter after both started; host uses allSettled/local error state so the other domain independently reaches TERMINAL/current completion. (d) selective invalidation: invalidate one exact obligationSubjectKey, feed a stale hint for it and prove NOOP/no attempt, while a different obligationSubjectKey remains listEligible and executes."
+    "D6 — Independent domain hosts + runtime composition [AC-5, AC-6, AC-7, INV-2, INV-3, INV-6, INV-7]: domain-activation-host.js owns exactly one domain/principal/controller plus private loop/timer/error state. start() immediately scans canonical listEligible(domain); scanOnce() uses Promise.allSettled(reconcile(exactKey)); periodic scan/notify state is disposable latency state, never work truth or ordering authority. BACKEND and FRONTEND hosts start independently with separate DomainExecutionController/runtimeAdapter. No ranking, nextRole/nextDomain/stage API, shared mutex or other-domain completion dependency exists.",
+    "D7 — Acceptance + invariant proofs [AC-1..AC-8, INV-1..INV-8]: domain-activation tests prove trigger fields cannot authorize and wrong-domain mismatch causes zero claim/attempt/dispatch; recovery tests delete hint state and prove startup scan rediscovery plus duplicate convergence; race test pauses after release, supersedes exact obligation, then proves claim fence + zero attempt/dispatch; FE/BE fixture requires both dispatchStarted before either completion and distinct contract/policy/strategy/attempt/invocation identities; outage fixture rejects one adapter while sibling reaches TERMINAL via host-local allSettled containment; selective invalidation makes stale hint for exact invalidated obligation NOOP while unrelated obligation remains listEligible and executes."
   ],
   "acceptanceCriteria": [
     {
@@ -176,7 +176,8 @@
         "organization-bridge-regression"
       ],
       "evidenceRequired": [
-        "Wrong-domain principal/controller is rejected before executable claim or execution entry."
+        "Construct a host bound to BACKEND and present an exact work key/WorkContract owned by FRONTEND (and the converse).",
+        "reconcile must compare key.owningDomain, host.owningDomain and contract.owningDomain before claim; mismatch returns REJECTED/NOOP with claimController calls=0, executionAttemptStore empty and runtime dispatch=0."
       ]
     },
     {
@@ -246,88 +247,88 @@
     },
     {
       "id": "INV-1",
-      "statement": "event != authority",
+      "statement": "Wake-up event or hint data cannot grant principal, claim, execution, strategy, obligation or publication authority.",
       "verificationIds": [
         "domain-activation"
       ],
       "evidenceRequired": [
-        "Event payload cannot authorize claim/execution/publication."
+        "Inject spoofed principal/strategy/runtime fields in notify payload; reconcile derives authority only from configured host + canonical stores and the spoofed fields change no claim/attempt/publication."
       ]
     },
     {
       "id": "INV-2",
-      "statement": "queue != source of truth",
+      "statement": "Queue, cursor, timer and hint state are disposable latency state and never canonical work truth.",
       "verificationIds": [
         "domain-host-autonomy",
         "activation-recovery"
       ],
       "evidenceRequired": [
-        "Deleting hint state changes no canonical truth; restart scan rediscovers work."
+        "Delete all host hint/cursor/timer state, restart, and prove immediate canonical domain scan rediscovers the same actionable work."
       ]
     },
     {
       "id": "INV-3",
-      "statement": "Activation != Scheduling",
+      "statement": "Activation operates on exact work identities and cannot rank, schedule or choose a next role/domain.",
       "verificationIds": [
         "domain-activation"
       ],
       "evidenceRequired": [
-        "Activation accepts exact work keys and exposes no ranking/next-work API."
+        "Public activation/host APIs expose exact-key reconcile + domain scan only; no priority/ranking/nextRole/nextDomain/stage transition path exists."
       ]
     },
     {
       "id": "INV-4",
-      "statement": "activation != strategy selection",
+      "statement": "Activation cannot select or override ExecutionPolicy, ExecutionStrategyDescriptor or runtime adapter.",
       "verificationIds": [
         "domain-activation",
         "domain-execution-regression"
       ],
       "evidenceRequired": [
-        "Activation cannot supply strategy; DomainExecutionController policy remains required."
+        "Activation execution entry contains only itemId+claimGeneration+receiptRef; DomainExecutionController current policy/strategy and prebound adapter remain mandatory."
       ]
     },
     {
       "id": "INV-5",
-      "statement": "activation != obligation creation",
+      "statement": "Activation cannot create, mutate or make current a CrossDomainObligation.",
       "verificationIds": [
         "domain-activation",
         "partial-invalidation"
       ],
       "evidenceRequired": [
-        "Activation cannot create/mutate CrossDomainObligation."
+        "No obligation write API is injected into activation; forged obligation data in a hint cannot change obligation state."
       ]
     },
     {
       "id": "INV-6",
-      "statement": "no implicit FE/BE stage barrier",
+      "statement": "Frontend and Backend have no implicit stage barrier; only explicit semantic work dependencies may block actionability.",
       "verificationIds": [
         "domain-host-autonomy",
         "fe-be-parallel"
       ],
       "evidenceRequired": [
-        "Frontend is blocked only by explicit semantic dependencies, not Backend stage state."
+        "Unrelated FE/BE work has no dependency edge and both enter dispatch before either completes; Backend stage/session/completion is absent from Frontend inputs."
       ]
     },
     {
       "id": "INV-7",
-      "statement": "one domain outage must not block unrelated domain work",
+      "statement": "Failure of one owning-domain host cannot cancel, gate or pause unrelated domain progress.",
       "verificationIds": [
         "domain-host-autonomy",
         "fe-be-parallel"
       ],
       "evidenceRequired": [
-        "One-domain failure leaves unrelated domain progress running."
+        "One adapter rejects after both hosts start; allSettled/local host error state contains failure and sibling reaches its own terminal completion."
       ]
     },
     {
       "id": "INV-8",
-      "statement": "queued stale hints cannot resurrect invalidated work",
+      "statement": "A stale hint cannot resurrect work whose exact obligation/currentness became non-current.",
       "verificationIds": [
         "partial-invalidation",
         "activation-recovery"
       ],
       "evidenceRequired": [
-        "Stale hint after invalidation cannot claim/execute."
+        "After exact obligation invalidation, stale notify produces NOOP with zero claim/attempt/dispatch while unrelated obligation remains executable."
       ]
     }
   ],
