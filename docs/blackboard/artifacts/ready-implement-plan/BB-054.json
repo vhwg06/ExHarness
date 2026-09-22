@@ -39,24 +39,29 @@
     "RuntimeObservation != QualityAcceptance",
     "QA strategy SUCCEEDED != QualityAcceptance ACCEPT",
     "caller-selected ref list cannot omit mandatory snapshot components",
-    "deployment change during QA cannot produce current acceptance for newer release"
+    "deployment change during QA cannot produce current acceptance for newer release",
+    "DevOps deployment authority != Product QA judgment authority"
   ],
   "architectureDecisions": [
-    "source revision, build artifact, image tag, immutable artifact digest, DeploymentRelease and observed runtime identity are distinct",
-    "DeploymentRelease is DevOps authoritative publication of exact deployables/configuration/evidence; it is not Product QA truth",
-    "AcceptanceSnapshot is deterministic/immutable and derived from one exact DeploymentRelease plus current acceptance subjects",
-    "caller/QA cannot omit mandatory components or mix component refs from different releases unless explicit policy permits",
-    "QA independently observes runtime identity; DevOps/app self-report alone is insufficient",
-    "mixed old/new rollout blocks/inconclusive by default",
-    "QA revalidates deployment/currentness and runtime identity before effects and before QualityAcceptance publication",
-    "old snapshots/acceptances remain historical after newer release; they are not current for the new release"
+    "DeployableArtifactRef pins component + immutable artifact digest; BuildProvenance links it to accepted source delivery. Commit/tag are metadata, not deployable identity.",
+    "BB-054 may research BB-053's READY plan, but WORKER waits for BB-053 DONE and then consumes delivered current truth, never the plan as runtime authority.",
+    "DevOps uses DomainExecutionController with a DEVOPS WorkContract/input; strategy success is deployment evidence, not quality acceptance.",
+    "DeploymentRelease is immutable and requires accepted DevOps completion/publication plus exact FE/BE deployables, environment/config and rollout evidence.",
+    "DeploymentReleaseHead(environmentRef) is CAS currentness with one mutation guard shared by release publication and QA final-currentness validation.",
+    "AcceptanceSnapshot is deterministic from one current DeploymentRelease + acceptance policy; mandatory FE/BE refs and verifier policy are derived, not caller-selected.",
+    "RuntimeObservationEvidence comes from an independent observer and binds expected vs observed runtime identities; self-report is insufficient.",
+    "Mixed/unknown/mismatched runtime identities are non-accepted by default unless the pinned policy explicitly permits a bounded set.",
+    "QA execution binds one snapshot and emits evidence only; QualityAcceptance requires separate ACCEPT completion/publication authority.",
+    "Final QualityAcceptance holds the exact release-head guard, so deployment drift during QA cannot become current acceptance.",
+    "Release/snapshot/observation/acceptance artifacts remain immutable and resolvable after current heads advance."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "delivered Integration C semantic lineage/currentness source",
-      "delivered Integration D FE/BE domain delivery/publication source",
-      "packages/agentic-system/src/qa-worker.js",
-      "packages/agentic-system/src/qa-application.js",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-053.json",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/backend-qa-project-acceptance.js",
       "packages/agentic-system/src/trust-artifact-store.js",
       "packages/agentic-system/src/index.js"
     ],
@@ -69,204 +74,222 @@
       "packages/agentic-system/src/product-qa.js"
     ],
     "expectedTests": [
+      "packages/agentic-system/test/deployable-provenance.test.js",
       "packages/agentic-system/test/deployment-release.test.js",
       "packages/agentic-system/test/acceptance-snapshot.test.js",
       "packages/agentic-system/test/runtime-observation.test.js",
-      "packages/agentic-system/test/product-qa-race.test.js"
+      "packages/agentic-system/test/product-qa.test.js",
+      "packages/agentic-system/test/product-qa-race.test.js",
+      "packages/agentic-system/test/deployment-provenance-chain.test.js"
     ]
   },
   "sourceScope": {
     "read": [
       "packages/agentic-system/src/**",
-      "packages/agentic-system/src/qa-worker.js",
-      "packages/agentic-system/src/qa-application.js",
       "packages/agentic-system/test/**",
-      "delivered Integration C semantic lineage/currentness source",
-      "delivered Integration D FE/BE domain delivery/publication source",
-      "packages/agentic-system/src/trust-artifact-store.js",
-      "packages/agentic-system/src/index.js",
-      "packages/agentic-system/src/deployable-artifact.js",
-      "packages/agentic-system/src/devops-execution-strategy.js",
-      "packages/agentic-system/src/deployment-release.js",
-      "packages/agentic-system/src/acceptance-snapshot.js",
-      "packages/agentic-system/src/runtime-observation.js",
-      "packages/agentic-system/src/product-qa.js",
-      "packages/agentic-system/test/deployment-release.test.js",
-      "packages/agentic-system/test/acceptance-snapshot.test.js",
-      "packages/agentic-system/test/runtime-observation.test.js",
-      "packages/agentic-system/test/product-qa-race.test.js"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-053.json",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/project-acceptance.md",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
     ],
     "write": [
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/src/qa-worker.js",
-      "packages/agentic-system/src/qa-application.js",
-      "packages/agentic-system/test/**",
-      "delivered Integration C semantic lineage/currentness source",
-      "delivered Integration D FE/BE domain delivery/publication source",
-      "packages/agentic-system/src/trust-artifact-store.js",
-      "packages/agentic-system/src/index.js",
       "packages/agentic-system/src/deployable-artifact.js",
       "packages/agentic-system/src/devops-execution-strategy.js",
       "packages/agentic-system/src/deployment-release.js",
       "packages/agentic-system/src/acceptance-snapshot.js",
       "packages/agentic-system/src/runtime-observation.js",
       "packages/agentic-system/src/product-qa.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/deployable-provenance.test.js",
       "packages/agentic-system/test/deployment-release.test.js",
       "packages/agentic-system/test/acceptance-snapshot.test.js",
       "packages/agentic-system/test/runtime-observation.test.js",
-      "packages/agentic-system/test/product-qa-race.test.js"
+      "packages/agentic-system/test/product-qa.test.js",
+      "packages/agentic-system/test/product-qa-race.test.js",
+      "packages/agentic-system/test/deployment-provenance-chain.test.js",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/project-acceptance.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/objective/**",
-      "docs/blackboard/artifacts/ready-implement-plan/**"
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "scripts/**",
+      ".github/**"
     ]
   },
   "implementationSlices": [
-    "EF1: DeployableArtifactRef + BuildProvenance resolution for exact FE/BE immutable digests",
-    "EF2: DevOps domain-local deployment execution + immutable DeploymentRelease/currentness",
-    "EF3: deterministic AcceptanceSnapshot builder",
-    "EF4: RuntimeObservation verifier/adapters",
-    "EF5: Product QA WorkContract bound to AcceptanceSnapshot + immutable QualityAcceptance"
+    "EF1 — Provenance [AC-1, AC-7, INV-1, INV-2]: in deployable-artifact.js implement defineBuildProvenance({componentKind,sourceDeliveryRef,sourceRevision,buildEvidenceRefs,artifactDigest,artifactUri?,mutableTag?}) and defineDeployableArtifactRef({componentKind,artifactDigest,buildProvenanceRef}). FRONTEND|BACKEND and artifactDigest are mandatory; commit/tag/URI are metadata. Persist both through a deployment artifact registry backed by createJsonImmutableArtifactStore. Verify commit-only/tag-only rejection plus exact provenance reconstruction in deployable-provenance and deployment-provenance-chain.",
+    "EF2 — Release publication/currentness [AC-1, AC-5, AC-6, INV-8]: in devops-execution-strategy.js map one delivered DEVOPS WorkContract+DomainExecutionInput to deployment execution evidence only. In deployment-release.js implement deploymentReleaseSubjectKey(environmentRef) and createDeploymentReleaseController({artifactRegistry,releaseHeadStore,domainArtifactRegistry,mutationGuard}) with publish(...) + current(environmentRef) + withCurrentReleaseGuard(...). publish resolves an ACCEPT DevOps DomainCompletionDecision and its DomainPublicationReceipt, validates exact FE+BE deployable refs/config/evidence, stores immutable DeploymentRelease, then CAS-advances DeploymentReleaseHead under the environment mutation guard. Verify deployment-release + bb048 regression.",
+    "EF3 — Snapshot [AC-2, AC-6, INV-6]: in acceptance-snapshot.js implement createAcceptanceSnapshotBuilder({deploymentReleaseController,artifactRegistry,acceptancePolicyResolver}). build({releaseRef,acceptancePolicyRef}) rereads current release head, resolves policy, derives mandatory FRONTEND+BACKEND refs, criteria refs, environment and verifierPolicyRef, and stores a content-addressed AcceptanceSnapshot containing releaseRef + observed releaseHeadRevision. API accepts no componentRefs/subset argument. Verify deterministic replay, omission/mixed-release resistance and historical resolution in acceptance-snapshot.",
+    "EF4 — Runtime observation [AC-3, AC-4, INV-3]: in runtime-observation.js implement createRuntimeObserver({observerRef,observerPolicyRef,adapter,artifactRegistry}). observe({snapshotRef}) resolves the snapshot and calls only adapter.observe({environmentRef,components}); normalize one observed identity set per required component into immutable RuntimeObservationEvidence with expectedDigest, observedDigests and status MATCH|MISMATCH|MIXED|UNKNOWN. DeploymentRelease self-report is never accepted as observation input. Default policy makes every status except MATCH non-acceptable. Verify runtime-observation.",
+    "EF5 — QA execution vs acceptance [AC-3, AC-4, AC-7, INV-4, INV-5, INV-8]: in product-qa.js implement createProductQaExecutionStrategy({snapshotResolver,deploymentReleaseController,runtimeObserver,criterionVerifier}) for DomainExecutionController. dispatch/recover are bound to one snapshot ref from DomainExecutionInput, recheck snapshot release/head before effects, produce criterion + RuntimeObservationEvidence refs, and never write QualityAcceptance. Separately implement createQualityAcceptancePublisher({domainArtifactRegistry,deploymentReleaseController,artifactRegistry,qualityAcceptanceHeadStore}) whose publish({judgmentBundleRef,snapshotRef}) resolves the exact QA judgment bundle, requires DomainCompletionDecision ACCEPT plus non-null DomainPublicationReceipt and matching evidence/snapshot identity before any acceptance write. Verify product-qa + bb019/bb048 regressions.",
+    "EF6 — Drift-safe final commit [AC-5, INV-7]: QualityAcceptance publisher calls withCurrentReleaseGuard({environmentRef,releaseRef,headRevision}, action) using the snapshot observation. Inside the guard, action stores immutable QualityAcceptance and CAS-advances qualityAcceptanceSubjectKey(environmentRef) to that acceptance. If release ref/revision differs before guard entry, fail with no write; while inside the guard, DevOps release-head publication for that environment cannot commit. product-qa-race uses barriers to prove both pre-start drift and in-flight drift fail closed without accepting the newer release.",
+    "EF7 — Fresh-session chain [AC-6, AC-7]: expose resolvers/exports from index.js and use createJsonImmutableArtifactStore + createJsonCasHeadStore for durable artifact/head state. deployment-provenance-chain creates accepted source-delivery/publication refs, FE/BE BuildProvenance+Deployables, Release, Snapshot, Observations and QualityAcceptance; reconstruct stores/controllers from disk and resolve every exact cross-reference. Then advance release/acceptance heads and prove prior immutable subjects still resolve unchanged."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
       "statement": "Exact Frontend and Backend deployable identities are traceable from accepted delivery/build provenance into one immutable DeploymentRelease.",
       "verificationIds": [
-        "repository-verification"
+        "deployable-provenance",
+        "deployment-release",
+        "deployment-provenance-chain"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Exact source-delivery -> BuildProvenance -> FE/BE digests -> one release; commit/tag-only rejected."
       ]
     },
     {
       "id": "AC-2",
       "statement": "AcceptanceSnapshot deterministically pins the exact required components, release, acceptance criteria, environment and verifier policy without omission or cross-release substitution.",
       "verificationIds": [
-        "repository-verification"
+        "acceptance-snapshot"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Same release+policy yields same complete snapshot; omission/mixed-release inputs rejected."
       ]
     },
     {
       "id": "AC-3",
       "statement": "Independent runtime observation detects mismatch between expected and actually served component identity and prevents current acceptance.",
       "verificationIds": [
-        "repository-verification"
+        "runtime-observation",
+        "product-qa"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Independent observer mismatch yields no QualityAcceptance."
       ]
     },
     {
       "id": "AC-4",
       "statement": "A mixed old/new rollout is blocked or inconclusive by default rather than silently accepted.",
       "verificationIds": [
-        "repository-verification"
+        "runtime-observation",
+        "product-qa"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Mixed runtime digest set is non-accepted by default."
       ]
     },
     {
       "id": "AC-5",
       "statement": "Deployment change before QA starts invalidates the current verification target; deployment change during QA prevents current QualityAcceptance publication for the changed release.",
       "verificationIds": [
-        "repository-verification"
+        "deployment-release",
+        "product-qa-race"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Stale precheck rejects; barrier test proves final acceptance cannot cross release-head drift."
       ]
     },
     {
       "id": "AC-6",
       "statement": "Old snapshots and acceptances remain reconstructable historical evidence after a newer release becomes current.",
       "verificationIds": [
-        "repository-verification"
+        "deployment-release",
+        "acceptance-snapshot",
+        "deployment-provenance-chain"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "After head advance, old immutable release/snapshot/acceptance refs still resolve in a fresh process."
       ]
     },
     {
       "id": "AC-7",
       "statement": "A fresh consumer can trace source delivery to build provenance, exact deployable, DeploymentRelease, AcceptanceSnapshot, RuntimeObservation and QualityAcceptance without prior conversation state.",
       "verificationIds": [
-        "repository-verification"
+        "deployment-provenance-chain",
+        "product-qa"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "Fresh process resolves and validates every exact provenance link through QualityAcceptance."
       ]
     },
     {
       "id": "INV-1",
-      "statement": "source commit != deployable digest",
+      "statement": "Source revision cannot satisfy deployable identity without an immutable artifact digest.",
       "verificationIds": [
-        "repository-verification"
+        "deployable-provenance"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Commit-only provenance rejected."
       ]
     },
     {
       "id": "INV-2",
-      "statement": "image tag != immutable image identity",
+      "statement": "Mutable image tag or alias cannot satisfy immutable deployment identity.",
       "verificationIds": [
-        "repository-verification"
+        "deployable-provenance"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Tag-only deployable identity rejected."
       ]
     },
     {
       "id": "INV-3",
-      "statement": "DeploymentRelease != RuntimeObservation",
+      "statement": "DeploymentRelease cannot be used as RuntimeObservationEvidence.",
       "verificationIds": [
-        "repository-verification"
+        "runtime-observation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Observation must come from independent observer and bind observed identities."
       ]
     },
     {
       "id": "INV-4",
-      "statement": "RuntimeObservation != QualityAcceptance",
+      "statement": "RuntimeObservationEvidence cannot itself authorize QualityAcceptance.",
       "verificationIds": [
-        "repository-verification"
+        "product-qa"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Matching observation without ACCEPT completion/publication creates no QualityAcceptance."
       ]
     },
     {
       "id": "INV-5",
-      "statement": "QA strategy SUCCEEDED != QualityAcceptance ACCEPT",
+      "statement": "QA strategy SUCCEEDED cannot self-authorize QualityAcceptance ACCEPT.",
       "verificationIds": [
-        "repository-verification"
+        "product-qa",
+        "domain-execution-regression"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "QA SUCCEEDED with non-ACCEPT completion creates no QualityAcceptance."
       ]
     },
     {
       "id": "INV-6",
-      "statement": "caller-selected ref list cannot omit mandatory snapshot components",
+      "statement": "Caller-selected component refs cannot omit mandatory AcceptanceSnapshot components.",
       "verificationIds": [
-        "repository-verification"
+        "acceptance-snapshot"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Snapshot API derives mandatory components and has no caller subset path."
       ]
     },
     {
       "id": "INV-7",
-      "statement": "deployment change during QA cannot produce current acceptance for newer release",
+      "statement": "Deployment change during QA cannot produce current acceptance for the newer release.",
       "verificationIds": [
-        "repository-verification"
+        "product-qa-race"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "Race serializes on exact release guard; stale snapshot cannot publish current acceptance."
+      ]
+    },
+    {
+      "id": "INV-8",
+      "statement": "DevOps deployment publication authority is distinct from Product QA quality-judgment authority.",
+      "verificationIds": [
+        "deployment-release",
+        "product-qa",
+        "project-acceptance-regression"
+      ],
+      "evidenceRequired": [
+        "DevOps can advance release only; QA judgment needs separate acceptance authority and cannot mutate release."
       ]
     }
   ],
@@ -312,16 +335,327 @@
       "criterionIds": [
         "INV-7"
       ]
+    },
+    {
+      "invariant": "DevOps deployment authority != Product QA judgment authority",
+      "criterionIds": [
+        "INV-8"
+      ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "repository-verification",
-      "command": "npm run verify"
+      "id": "deployable-provenance",
+      "command": "node --test packages/agentic-system/test/deployable-provenance.test.js"
+    },
+    {
+      "id": "deployment-release",
+      "command": "node --test packages/agentic-system/test/deployment-release.test.js"
+    },
+    {
+      "id": "acceptance-snapshot",
+      "command": "node --test packages/agentic-system/test/acceptance-snapshot.test.js"
+    },
+    {
+      "id": "runtime-observation",
+      "command": "node --test packages/agentic-system/test/runtime-observation.test.js"
+    },
+    {
+      "id": "product-qa",
+      "command": "node --test packages/agentic-system/test/product-qa.test.js"
+    },
+    {
+      "id": "product-qa-race",
+      "command": "node --test packages/agentic-system/test/product-qa-race.test.js"
+    },
+    {
+      "id": "deployment-provenance-chain",
+      "command": "node --test packages/agentic-system/test/deployment-provenance-chain.test.js"
+    },
+    {
+      "id": "domain-execution-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js"
+    },
+    {
+      "id": "project-acceptance-regression",
+      "command": "node --test packages/agentic-system/test/bb019-project-acceptance.test.js"
     }
   ],
-  "researchGaps": [
-    "Confirm architecture/source seams against current delivered dependencies",
-    "Replace generic verification mapping with criterion-specific commands and evidence; no automatic READY during migration"
+  "researchGaps": [],
+  "negativeVerificationCases": [
+    "Commit/tag without immutable deployable digest is rejected.",
+    "Snapshot omission or mixed-release substitution is rejected.",
+    "Deployment/app self-report cannot replace RuntimeObservationEvidence.",
+    "Mixed runtime identities are non-accepted by default.",
+    "Runtime match or QA SUCCEEDED alone cannot create QualityAcceptance.",
+    "Pre-QA or in-QA release drift prevents current acceptance.",
+    "DevOps cannot issue QA verdict; QA cannot mutate DeploymentReleaseHead."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-054 objective + delivered truth + BB-053 planned contract",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product mutation",
+        "treat BB-053 plan as delivered truth",
+        "self-accept"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-053 truth",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criteria + Living Docs SATISFIED",
+      "forbidden": [
+        "execute before BB-053 DONE",
+        "redefine plan",
+        "QA as deployment authority",
+        "self-accept"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/project-acceptance.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The delivered Integration E/F Living Docs accurately describe exact deployable provenance, DevOps DeploymentRelease/currentness, deterministic AcceptanceSnapshot, independent runtime observation and separate Product QA QualityAcceptance authority."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "bb053DependencyContract": {
+    "workId": "BB-053",
+    "graphRequirement": "BB-054 WORKER requires BB-053 DONE.",
+    "researchUse": "RESEARCH_SA may inspect the exact READY plan only as PLANNED_DEPENDENCY.",
+    "deliveredUse": "After DONE, consume current delivered domain-input/activation/FE-BE publication truth, not the plan."
+  },
+  "deploymentAcceptanceContract": {
+    "identity": "Deployable=component+digest; BuildProvenance links accepted source delivery.",
+    "release": "CAS DeploymentReleaseHead(environment) under shared mutation guard.",
+    "snapshot": "Deterministic release+policy subject; mandatory components derived.",
+    "observation": "Independent expected-vs-observed runtime identities.",
+    "acceptance": "QA evidence != acceptance; ACCEPT completion/publication + final release-head guard required."
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Exact Frontend and Backend deployable identities are traceable from accepted delivery/build provenance into one immutable DeploymentRelease.",
+      "criterionIds": [
+        "AC-1",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "EF1",
+        "EF2"
+      ],
+      "verificationIds": [
+        "deployable-provenance",
+        "deployment-release",
+        "deployment-provenance-chain"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-053.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-053.json",
+          "match": "DomainExecutionInput is immutable/content-addressed and must match WorkContract domain/workload."
+        }
+      ],
+      "supportingPlanFields": [
+        "bb053DependencyContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "AcceptanceSnapshot deterministically pins the exact required components, release, acceptance criteria, environment and verifier policy without omission or cross-release substitution.",
+      "criterionIds": [
+        "AC-2",
+        "INV-6"
+      ],
+      "planElements": [
+        "EF3"
+      ],
+      "verificationIds": [
+        "acceptance-snapshot"
+      ],
+      "decisionIndexes": [
+        5
+      ],
+      "sourceRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "QA must bind one deterministic AcceptanceSnapshot and independently observe runtime identity."
+        }
+      ],
+      "supportingPlanFields": [
+        "deploymentAcceptanceContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Independent runtime observation detects mismatch between expected and actually served component identity and prevents current acceptance.",
+      "criterionIds": [
+        "AC-3",
+        "INV-3",
+        "INV-4"
+      ],
+      "planElements": [
+        "EF4",
+        "EF5"
+      ],
+      "verificationIds": [
+        "runtime-observation",
+        "product-qa"
+      ],
+      "decisionIndexes": [
+        6,
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/backend-qa-project-acceptance.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/backend-qa-project-acceptance.js",
+          "match": "const evidence = await projectVerifier.verify"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "A mixed old/new rollout is blocked or inconclusive by default rather than silently accepted.",
+      "criterionIds": [
+        "AC-4"
+      ],
+      "planElements": [
+        "EF4",
+        "EF5"
+      ],
+      "verificationIds": [
+        "runtime-observation",
+        "product-qa"
+      ],
+      "decisionIndexes": [
+        7
+      ],
+      "sourceRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "Mixed/unknown/mismatched runtime identity blocks current acceptance unless explicit product policy says otherwise."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Deployment change before QA starts invalidates the current verification target; deployment change during QA prevents current QualityAcceptance publication for the changed release.",
+      "criterionIds": [
+        "AC-5",
+        "INV-7"
+      ],
+      "planElements": [
+        "EF2",
+        "EF6"
+      ],
+      "verificationIds": [
+        "deployment-release",
+        "product-qa-race"
+      ],
+      "decisionIndexes": [
+        4,
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "Deployment or acceptance subject changes during the verification window require re-evaluation of the exact current subject;"
+        }
+      ],
+      "supportingPlanFields": [
+        "deploymentAcceptanceContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Old snapshots and acceptances remain reconstructable historical evidence after a newer release becomes current.",
+      "criterionIds": [
+        "AC-6"
+      ],
+      "planElements": [
+        "EF2",
+        "EF3",
+        "EF7"
+      ],
+      "verificationIds": [
+        "deployment-release",
+        "acceptance-snapshot",
+        "deployment-provenance-chain"
+      ],
+      "decisionIndexes": [
+        10
+      ],
+      "sourceRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "historical releases/snapshots/acceptances remain immutable evidence but do not define current readiness."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "A fresh consumer can trace source delivery to build provenance, exact deployable, DeploymentRelease, AcceptanceSnapshot, RuntimeObservation and QualityAcceptance without prior conversation state.",
+      "criterionIds": [
+        "AC-7"
+      ],
+      "planElements": [
+        "EF1",
+        "EF2",
+        "EF3",
+        "EF4",
+        "EF5",
+        "EF7"
+      ],
+      "verificationIds": [
+        "deployment-provenance-chain",
+        "product-qa"
+      ],
+      "decisionIndexes": [
+        0,
+        3,
+        5,
+        6,
+        9,
+        10
+      ],
+      "sourceRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "BuildProvenance"
+        }
+      ]
+    }
   ]
 }
