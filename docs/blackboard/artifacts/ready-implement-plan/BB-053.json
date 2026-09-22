@@ -489,5 +489,123 @@
       "input workloadType mismatch",
       "non-content-addressed input ref"
     ]
-  }
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Persisted actionable work is rediscovered and processed after controller restart even when its original notification was lost.",
+      "criterionIds": [
+        "AC-1"
+      ],
+      "planElements": [
+        "D3",
+        "D7"
+      ],
+      "verificationIds": [
+        "activation-recovery"
+      ]
+    },
+    {
+      "objectiveCriterion": "Concurrent duplicate hints for one work item converge to one current claim/execution path.",
+      "criterionIds": [
+        "AC-2"
+      ],
+      "planElements": [
+        "D3",
+        "D7"
+      ],
+      "verificationIds": [
+        "domain-activation",
+        "activation-recovery"
+      ]
+    },
+    {
+      "objectiveCriterion": "A wrong-domain activation attempt cannot claim or execute the work.",
+      "criterionIds": [
+        "AC-3"
+      ],
+      "planElements": [
+        "D3"
+      ],
+      "verificationIds": [
+        "domain-activation",
+        "organization-bridge-regression"
+      ]
+    },
+    {
+      "objectiveCriterion": "Obligation supersession between activation pre-check and execution entry prevents execution through the post-release currentness recheck.",
+      "criterionIds": [
+        "AC-4"
+      ],
+      "planElements": [
+        "D2",
+        "D3",
+        "D7"
+      ],
+      "verificationIds": [
+        "partial-invalidation",
+        "domain-activation"
+      ]
+    },
+    {
+      "objectiveCriterion": "Frontend and Backend work can progress concurrently and independently under their own domain execution strategies.",
+      "criterionIds": [
+        "AC-5"
+      ],
+      "planElements": [
+        "D1",
+        "D4",
+        "D5",
+        "D6",
+        "D7"
+      ],
+      "verificationIds": [
+        "fe-be-parallel",
+        "domain-execution-regression"
+      ]
+    },
+    {
+      "objectiveCriterion": "An outage in one domain leaves unrelated work in another domain actionable and able to progress.",
+      "criterionIds": [
+        "AC-6"
+      ],
+      "planElements": [
+        "D4",
+        "D5",
+        "D6",
+        "D7"
+      ],
+      "verificationIds": [
+        "fe-be-parallel"
+      ]
+    },
+    {
+      "objectiveCriterion": "Removing a manual next-role dispatcher does not stop progress for persisted actionable work.",
+      "criterionIds": [
+        "AC-7"
+      ],
+      "planElements": [
+        "D3",
+        "D6",
+        "D7"
+      ],
+      "verificationIds": [
+        "activation-recovery",
+        "fe-be-parallel"
+      ]
+    },
+    {
+      "objectiveCriterion": "Partial upstream invalidation suppresses only affected activation subjects while unrelated domain work remains actionable.",
+      "criterionIds": [
+        "AC-8"
+      ],
+      "planElements": [
+        "D3",
+        "D7"
+      ],
+      "verificationIds": [
+        "partial-invalidation",
+        "activation-recovery"
+      ]
+    }
+  ]
 }
