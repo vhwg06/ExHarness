@@ -129,15 +129,16 @@
     ]
   },
   "implementationSlices": [
-    "D1 — Execution input artifact [AC-5, AC-6]: implement immutable content-addressed DomainExecutionInput in domain-execution-input.js plus organization-artifact-store.js/index.js integration; exactly one WorkContract requiredArtifactRef must resolve to matching owningDomain/workloadType, otherwise fail before dispatch. Verify with frontend-domain + fe-be-parallel.",
-    "D2 — Controller adapter contract [AC-2, AC-3, AC-4, INV-4]: extend domain-execution-control.js so the prebound runtime adapter receives the exact released-claim WorkContract with binding/input; keep policy/strategy selection, attempt currentness, release validation and runtime attestation inside DomainExecutionController. Verify with domain-activation + domain-execution-regression.",
-    "D3A — Canonical activation/recovery [AC-1, AC-2, AC-7, INV-1, INV-2, INV-3]: add domain-activation-source.js/domain-activation.js; scan exact owning-domain eligible work, reread canonical WorkContract before claim, treat notify as key-only latency hint, and converge scan/notify duplicates through existing claim/release + attempt currentness. Verify with domain-activation + activation-recovery.",
-    "D3B — Authority/domain admission [AC-3, INV-1, INV-3, INV-4, INV-5]: in domain-activation.js require configured host domain, key domain and resolved WorkContract domain to match before claim; hints grant no principal/obligation/policy/strategy/runtime authority; mismatch has zero claim/attempt/dispatch side effects. Verify with domain-activation + organization-bridge-regression.",
-    "D3C — BB-052 currentness consumption [AC-4, AC-8, INV-8]: integrate activation read-only with the delivered BB-052 exact obligation revision/currentness seam; recheck the same obligation after release and immediately before execute, suppress execution on drift/non-current status, and rely on BB-052-owned canonical invalidation/release fencing so unrelated obligations remain actionable. Verify with partial-invalidation + activation-recovery.",
-    "D4 — Backend execution adapter [AC-5, AC-6]: add backend-execution-strategy.js to map exact WorkContract+DomainExecutionInput into existing Backend prepare/runPrepared/recoverPrepared flow and map WorkResult/artifact/evidence refs back to DomainExecutionController without invoking the Backend→QA composite path. Verify with fe-be-parallel + domain-execution-regression.",
-    "D5 — Frontend execution domain [AC-5, AC-6, INV-6, INV-7]: add frontend contracts/completion/worker/application/execution-strategy modules with Backend-parallel prepare/runPrepared/recoverPrepared semantics; Frontend consumes only its exact WorkContract+DomainExecutionInput and has no Backend stage/session/completion dependency. Verify with frontend-domain + fe-be-parallel.",
-    "D6 — Autonomous domain hosts and composition [AC-1, AC-2, AC-5, AC-6, AC-7, INV-2, INV-3, INV-6, INV-7]: add domain-activation-host.js + domain-runtime-composition.js; each host performs immediate/periodic canonical scans, same-domain exact-key notify, allSettled reconcile and local stop/drain; compose independent FE/BE hosts with allSettled and no shared queue/lock/stage/ordered dispatcher. Verify with domain-host-autonomy + activation-recovery + fe-be-parallel.",
-    "D7 — Acceptance proof matrix [AC-1..AC-8, INV-1..INV-8]: add domain-activation, activation-recovery, domain-host-autonomy, frontend-domain, fe-be-parallel and partial-invalidation tests with observable claim/attempt/dispatch counters, dispatch-start barriers and exact identity refs; run bb047/bb048 regressions plus npm run test:agentic."
+    "D1 — Execution input artifact [AC-5, AC-6]: implement domain-execution-input.js with createDomainExecutionInput(raw), putDomainExecutionInput(raw) and resolveDomainExecutionInput(ref), wired through organization-artifact-store.js/index.js. WorkContract execution requires exactly one requiredArtifactRef resolving to matching owningDomain/workloadType; zero/multiple/mismatch fails pre-dispatch. Verify frontend-domain + fe-be-parallel.",
+    "D2 — Controller adapter contract [AC-2, AC-3, AC-4, INV-4]: in domain-execution-control.js define adapter dispatch/recover input {binding,contract,input,runtimeInvocationKey}; contract is the exact released-claim WorkContract. Controller alone resolves current policy/strategy, binds attempt, revalidates release and attests runtime. Activation cannot supply HOW. Verify domain-activation + bb048 regression.",
+    "D3A — Canonical activation/recovery [AC-1, AC-2, AC-7, INV-1, INV-2, INV-3]: add domain-activation-source.js/domain-activation.js. scan({owningDomain}) delegates to listEligible({owningDomain}); reconcile({projectId,workId,owningDomain}) rereads canonical WorkContract before claim. Notify carries only that exact key; lost hints recover by scan; duplicate scan/notify converges via existing claim/release + attempt currentness. Verify domain-activation + activation-recovery.",
+    "D3B — Domain/authority admission [AC-3, INV-1, INV-3, INV-4, INV-5]: before claim require configured host domain === key domain === WorkContract.owningDomain. Principal comes from host configuration, obligation provenance from WorkContract, policy/strategy/runtime from DomainExecutionController; hint fields cannot override them. Mismatch => NOOP/REJECTED with claim=0, attempt=0, dispatch=0. Verify domain-activation + bb047 regression.",
+    "D3C — BB-052 currentness port [AC-4, AC-8, INV-8]: domain-activation defines a read-only ObligationCurrentnessPort.current(obligationRef)->{subjectKey,revision,status}; composition binds that port to whatever exact authoritative BB-052 seam is delivered. Resolve the WorkContract-bound obligation, observe ACTIVE before claim, release canonically, reread the same subject immediately before execute, and suppress execute on revision/status drift. BB-052 remains sole owner of canonical invalidation/release fencing. If delivered BB-052 cannot satisfy this port without widening authority, stop and return BB-053 to RESEARCH_SA. Verify partial-invalidation + activation-recovery.",
+    "D4 — Backend execution adapter [AC-5, AC-6]: add createBackendExecutionStrategy(...) in backend-execution-strategy.js. Resolve exact DomainExecutionInput, map WorkContract+input to BackendObjective, dispatch via prepareBackendObjective + runPreparedBackendObjective, recover via recoverPreparedBackendObjective, and map APPLIED/BLOCKED/FAILED plus output/evidence refs to DomainExecutionController. Never call the Backend→QA composite flow. Verify fe-be-parallel + bb048 regression.",
+    "D5 — Frontend execution domain [AC-5, AC-6, INV-6, INV-7]: add frontend-contracts/completion/worker/application/execution-strategy modules. Frontend application exposes prepareFrontendObjective, runPreparedFrontendObjective and recoverPreparedFrontendObjective; completion requires frontend.mutation, frontend.typecheck and frontend.tests evidence. createFrontendExecutionStrategy(...) consumes only exact Frontend WorkContract+DomainExecutionInput and has no Backend stage/session/completion dependency. Verify frontend-domain + fe-be-parallel.",
+    "D6A — DomainActivationHost [AC-1, AC-2, AC-7, INV-2, INV-3]: add createDomainActivationHost({owningDomain,discovery,activation,scanIntervalMs,timer}) -> {start,scanOnce,notify,stop}. start is idempotent and runs immediate then periodic scans; scanOnce does listEligible(domain) then Promise.allSettled(reconcile(exactKey)); notify accepts same-domain exact-key hint only; stop cancels/drains only that host. No priority/nextRole/nextDomain/stage API. Verify domain-host-autonomy + activation-recovery.",
+    "D6B — Independent FE/BE composition [AC-5, AC-6, INV-6, INV-7]: add createFrontendBackendDomainRuntime({backendHost,frontendHost})->{startAll,stopAll}; both use Promise.allSettled over separate hosts/controllers/policy subjects/prebound adapters/currentness ports and no shared queue, lock, strategy switch or ordered dispatcher. fe-be-parallel uses distinct BACKEND/FRONTEND contracts, inputs, policies, strategies and barriers proving both dispatchStarted before either completes; reject one adapter after both starts and prove sibling reaches terminal. Verify fe-be-parallel + domain-host-autonomy.",
+    "D7 — Acceptance proof matrix [AC-1..AC-8, INV-1..INV-8]: add domain-activation, activation-recovery, domain-host-autonomy, frontend-domain, fe-be-parallel and partial-invalidation tests exposing claimCalls, attemptCount, dispatchCount, dispatchStarted barriers and exact identity refs. Run bb047/bb048 regressions + npm run test:agentic; no criterion relies on narrative-only evidence."
   ],
   "acceptanceCriteria": [
     {
@@ -460,7 +461,7 @@
       ],
       "planElements": [
         "D3A",
-        "D6"
+        "D6A"
       ],
       "verificationIds": [
         "activation-recovery"
@@ -485,7 +486,7 @@
       "planElements": [
         "D2",
         "D3A",
-        "D6"
+        "D6A"
       ],
       "verificationIds": [
         "domain-activation",
@@ -565,7 +566,7 @@
         "D2",
         "D4",
         "D5",
-        "D6"
+        "D6B"
       ],
       "verificationIds": [
         "domain-host-autonomy",
@@ -584,6 +585,10 @@
       ],
       "sourceAnchors": [
         {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "export function executionPolicySubjectKey(domain,workloadType)"
+        },
+        {
           "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
           "match": "No central actor selects “run BA now, then SA, then BE”. Each domain sees only actionable obligations it owns."
         }
@@ -597,7 +602,7 @@
       "planElements": [
         "D4",
         "D5",
-        "D6"
+        "D6B"
       ],
       "verificationIds": [
         "domain-host-autonomy",
@@ -626,7 +631,7 @@
       ],
       "planElements": [
         "D3A",
-        "D6"
+        "D6A"
       ],
       "verificationIds": [
         "activation-recovery",
@@ -651,7 +656,7 @@
       ],
       "planElements": [
         "D3C",
-        "D6"
+        "D6A"
       ],
       "verificationIds": [
         "partial-invalidation",
@@ -678,12 +683,15 @@
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "parallelDomainExecutionContract": {
     "independenceKey": "WorkContract identity + owningDomain",
-    "domains": "each domain owns policy, adapter and matching DomainExecutionInput",
-    "proof": "both dispatchStarted before either completion; identities differ",
+    "construction": "separate BACKEND/FRONTEND host + DomainExecutionController + executionPolicySubjectKey(domain,workloadType) + prebound adapter + DomainExecutionInput",
+    "start": "createFrontendBackendDomainRuntime.startAll uses Promise.allSettled with no cross-domain completion prerequisite",
+    "proof": "both dispatchStarted before either completion; contract/policy/strategy/attempt/runtimeInvocation identities differ",
+    "outage": "after both dispatchStarted, one adapter may fail while sibling reaches its own terminal result",
     "forbidden": [
       "global stage",
+      "shared queue/lock",
       "shared strategy switch",
-      "ordered dispatcher"
+      "ordered FE/BE dispatcher"
     ]
   },
   "domainOutageIsolationContract": {
