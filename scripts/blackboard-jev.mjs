@@ -208,7 +208,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     state.evidence = [...planEvidence, ...refs.map(ref => {
       check(/^[a-f0-9]{40}$/.test(task.contract.researchBaselineSha??''),'exact research baseline required');
       const body=gitFile(root, task.contract.researchBaselineSha, ref);
-      return boundedResearchEvidence(ref,body,objectiveScopedResearch?768:RESEARCH_EVIDENCE_CHARS);
+      return boundedResearchEvidence(ref,body,objectiveScopedResearch?384:RESEARCH_EVIDENCE_CHARS);
     })];
   } else {
     assertReady(root, task, plan);
