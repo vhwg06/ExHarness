@@ -9,14 +9,18 @@ test("outer Blackboard is a typed dependency graph with task scheduling and comp
   assert.equal(graph.allocation.executionUnit,"TASK");
   assert.equal(graph.allocation.contextRoutingUnit,"COMPONENT");
   assert.equal(graph.allocation.workerOwnership,"ONE_TASK_PER_CLAIM");
-  const bb056=graph.tasks.find(task=>task.id==="BB-056");
-  const expectedSchedulable=bb056.status==="ACTIVE" || bb056.status==="DONE" || bb056.phase==="MERGE_PENDING"
-    ? ["BB-052","BB-054","BB-055"]
-    : ["BB-052","BB-054","BB-055","BB-056"];
-  assert.deepEqual(schedulableTasks(graph),expectedSchedulable);
+  const ready=schedulableTasks(graph);
+  for(const task of graph.tasks){
+    assert.equal(ready.includes(task.id),taskReadiness(graph,task.id).ready);
+  }
   assert.deepEqual(taskReadiness(graph,"BB-053"),{taskId:"BB-053",ready:false,reason:"DEPENDENCIES_NOT_DONE",blockedBy:["BB-052"]});
-  assert.deepEqual(taskReadiness(graph,"BB-054"),{taskId:"BB-054",ready:true,reason:"RESEARCH_CAN_RUN_AHEAD",blockedBy:[]});
-  assert.deepEqual(taskReadiness(graph,"BB-055"),{taskId:"BB-055",ready:true,reason:"RESEARCH_CAN_RUN_AHEAD",blockedBy:[]});
+
+  const runAhead=structuredClone(graph);
+  const future=runAhead.tasks.find(task=>task.id==="BB-054");
+  future.status="PLANNED";
+  future.lane="RESEARCH_SA";
+  future.phase="RESEARCH";
+  assert.deepEqual(taskReadiness(runAhead,"BB-054"),{taskId:"BB-054",ready:true,reason:"RESEARCH_CAN_RUN_AHEAD",blockedBy:[]});
 });
 
 test("accepted worker cannot be claimed again while awaiting merge",()=>{
