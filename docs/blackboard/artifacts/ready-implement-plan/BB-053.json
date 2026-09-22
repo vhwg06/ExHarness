@@ -81,14 +81,16 @@
       "packages/agentic-system/src/frontend-application.js",
       "packages/agentic-system/src/frontend-execution-strategy.js",
       "packages/agentic-system/src/domain-runtime-composition.js",
-      "packages/agentic-system/src/frontend-completion.js"
+      "packages/agentic-system/src/frontend-completion.js",
+      "packages/agentic-system/src/domain-activation-host.js"
     ],
     "expectedTests": [
       "packages/agentic-system/test/domain-activation.test.js",
       "packages/agentic-system/test/activation-recovery.test.js",
       "packages/agentic-system/test/fe-be-parallel.test.js",
       "packages/agentic-system/test/partial-invalidation.test.js",
-      "packages/agentic-system/test/frontend-domain.test.js"
+      "packages/agentic-system/test/frontend-domain.test.js",
+      "packages/agentic-system/test/domain-host-autonomy.test.js"
     ]
   },
   "sourceScope": {
@@ -125,7 +127,9 @@
       "docs/living/system/agentic-application/state.md",
       "packages/agentic-system/src/domain-runtime-composition.js",
       "packages/agentic-system/src/frontend-completion.js",
-      "packages/agentic-system/test/frontend-domain.test.js"
+      "packages/agentic-system/test/frontend-domain.test.js",
+      "packages/agentic-system/src/domain-activation-host.js",
+      "packages/agentic-system/test/domain-host-autonomy.test.js"
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/objective/**",
@@ -135,22 +139,24 @@
     ]
   },
   "implementationSlices": [
-    "D1 — Activation [AC-1, AC-2, AC-3, INV-1..3]: implement exact DomainActivationKey, canonical scan and reconcile. Reconcile re-reads current work/owningDomain, returns NOOP for stale/wrong-domain work, never ranks work and never reads strategy policy.",
-    "D2 — Admission [AC-2..4, INV-1,4,5,8]: a domain-bound activation controller uses the existing claim/release authority, rechecks the exact BB-052 obligation/currentness after release, fences drift, then calls executeReleasedClaim({itemId,claimGeneration,receiptRef}) only.",
-    "D3 — Backend runtime [AC-5, AC-6, INV-4,7]: backend-execution-strategy implements the existing runtimeAdapter dispatch/recover contract over current Backend application/worker primitives. It emits Backend-owned outputs/evidence only; durable-backend-qa/composition is not the execution strategy.",
-    "D4 — Frontend runtime [AC-5, AC-6, INV-6,7]: frontend-contracts defines the exact FrontendWorkOrder/Context/Result in domainAutonomyContract.frontend; frontend-worker + frontend-application execute that contract; frontend-completion evaluates acceptanceRefs/evidence; frontend-execution-strategy maps dispatch/recover to the existing runtimeAdapter result. No Backend state is an input.",
-    "D5 — Domain composition + concurrency [AC-5..7, INV-6,7]: domain-runtime-composition creates separate BACKEND and FRONTEND activation/controller/runtimeAdapter instances sharing only canonical stores. fe-be-parallel.test uses two independent dispatch barriers and must observe both dispatches plus distinct policy/strategy/attempt/runtime invocation identities before either completes; one adapter failure cannot block the other.",
-    "D6 — Recovery/invalidation [AC-1,2,4,8, INV-2,8]: restart with no hints must rediscover canonical work; duplicate hints converge through claim/attempt currentness; obligation supersession before execution entry fences only that subject while unrelated domain work remains executable."
+    "D1 — Exact activation subject [AC-2, AC-3, INV-1, INV-3]: domain-activation.js defines DomainActivationKey={projectId,workId,owningDomain} and a domain-bound reconcile(key). reconcile re-reads the exact current Board/WorkContract, rejects wrong-domain or non-actionable/stale subjects as NOOP, and never accepts role, stage, policyRef, strategyRef or runtime adapter from a trigger.",
+    "D2 — Autonomous domain host [AC-1, AC-6, AC-7, INV-2, INV-6, INV-7]: domain-activation-host.js implements activationHostContract exactly. start() immediately calls discovery.listEligible({owningDomain}); scanOnce() independently reconcile()s every exact eligible subject with Promise.allSettled; then the same host arms its next scan. notify(key) only invokes the same reconcile early. BACKEND and FRONTEND hosts own separate loop/timer/error state, so one rejected scan/dispatch cannot cancel or gate the other. No next-role/domain dispatcher exists.",
+    "D3 — Authorized execution admission [AC-2, AC-3, AC-4, INV-4, INV-5, INV-8]: after activation pre-check, use existing organization claim/release with the host's trusted domain principal; re-read exact BB-052 obligation/currentness after release; on drift invalidate/fence that claim and return NOOP. On success call the already-bound DomainExecutionController only with {itemId,claimGeneration,receiptRef}; existing policy keyed by owningDomain+workloadType remains sole strategy authority.",
+    "D4 — Backend domain runtime [AC-5, AC-6, INV-4, INV-7]: backend-execution-strategy.js implements the existing runtimeAdapter dispatch/recover boundary over current Backend prepare/run/recover primitives. It produces Backend-owned result/evidence only. composition.js/runBackendThenQaObjective and durable-backend-qa are explicitly not activation or Backend strategy because they encode a serial cross-domain handoff.",
+    "D5 — First-class Frontend domain runtime [AC-5, AC-6, INV-6, INV-7]: frontend-contracts/worker/application/completion implement domainAutonomyContract.frontend exactly from the bound OrganizationWorkContract: order from contract fields, context from exact requiredArtifactRefs, result mapped to runtimeAdapter outputs/evidence, completion from acceptanceRefs/evidence, recovery from the same attempt binding. No Backend session/stage/completion field is an input.",
+    "D6 — Independent composition + overlap proof [AC-5, AC-6, AC-7, INV-6, INV-7]: domain-runtime-composition constructs and starts separate BACKEND and FRONTEND host/controller/execution-controller/runtime-adapter graphs. domain-host-autonomy.test proves both hosts continue scans independently and no manual dispatcher API exists. fe-be-parallel.test persists unrelated FE/BE work, starts both hosts, blocks each adapter on its own barrier, and before either barrier is released requires both dispatchStarted plus distinct workContractRef, executionPolicyRef, executionStrategyRef, executionAttemptId and runtimeInvocationKey; then one adapter is failed while the other must still reach its own current completion.",
+    "D7 — Restart, duplicate and invalidation convergence [AC-1, AC-2, AC-4, AC-8, INV-2, INV-8]: activation-recovery.test recreates a host with no hint/cursor state and proves immediate canonical scan rediscovers persisted work; duplicate notify+scan converge through existing claim/attempt currentness. partial-invalidation.test supersedes one exact obligation between pre-check and execution entry and proves only that subject is fenced/NOOP while unrelated domain work remains discoverable/executable."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
       "statement": "Persisted actionable work is rediscovered and processed after controller restart even when its original notification was lost.",
       "verificationIds": [
+        "domain-host-autonomy",
         "activation-recovery"
       ],
       "evidenceRequired": [
-        "Restart fixture drops the original hint, reconstructs from canonical scan, and enters one current claim/execution path."
+        "A fresh DomainActivationHost starts with empty in-memory hint/timer state, immediately calls canonical listEligible({owningDomain}), derives exact keys and enters the current claim/execution path without waiting for an event."
       ]
     },
     {
@@ -190,6 +196,7 @@
       "id": "AC-5",
       "statement": "Frontend and Backend work can progress concurrently and independently under their own domain execution strategies.",
       "verificationIds": [
+        "domain-host-autonomy",
         "frontend-domain",
         "fe-be-parallel",
         "domain-execution-regression"
@@ -204,22 +211,25 @@
       "id": "AC-6",
       "statement": "An outage in one domain leaves unrelated work in another domain actionable and able to progress.",
       "verificationIds": [
+        "domain-host-autonomy",
         "fe-be-parallel"
       ],
       "evidenceRequired": [
-        "With both domains independently actionable, inject a dispatch/recovery failure into one domain runtime and prove the unrelated domain still discovers, claims, dispatches and reaches its own current completion path.",
-        "The failed domain's attempt/claim state is not used as a prerequisite or lock by the progressing domain."
+        "domain-host-autonomy starts separate BACKEND and FRONTEND hosts; a forced BACKEND scan/reconcile/adapter rejection is captured by BACKEND allSettled/host observation and does not reject, cancel or delay FRONTEND scanOnce().",
+        "While BACKEND remains failed, FRONTEND independently rediscovers its eligible work and reaches its own current execution/completion path without reading BACKEND host/attempt state."
       ]
     },
     {
       "id": "AC-7",
       "statement": "Removing a manual next-role dispatcher does not stop progress for persisted actionable work.",
       "verificationIds": [
+        "domain-host-autonomy",
         "activation-recovery",
         "fe-be-parallel"
       ],
       "evidenceRequired": [
-        "Fixture has no manual next-role dispatcher and still progresses persisted actionable FE/BE work from canonical reconciliation."
+        "domain-host-autonomy constructs only per-domain hosts; there is no nextRole, nextDomain, stage-transition or central dispatch API in the acceptance path.",
+        "After persisted actionable FE/BE work is present and no notify/event is delivered, start()/periodic canonical listEligible({owningDomain}) scans discover and reconcile the work to progress."
       ]
     },
     {
@@ -247,6 +257,7 @@
       "id": "INV-2",
       "statement": "queue != source of truth",
       "verificationIds": [
+        "domain-host-autonomy",
         "activation-recovery"
       ],
       "evidenceRequired": [
@@ -289,6 +300,7 @@
       "id": "INV-6",
       "statement": "no implicit FE/BE stage barrier",
       "verificationIds": [
+        "domain-host-autonomy",
         "fe-be-parallel"
       ],
       "evidenceRequired": [
@@ -299,6 +311,7 @@
       "id": "INV-7",
       "statement": "one domain outage must not block unrelated domain work",
       "verificationIds": [
+        "domain-host-autonomy",
         "fe-be-parallel"
       ],
       "evidenceRequired": [
@@ -385,6 +398,10 @@
       "command": "node --test packages/agentic-system/test/activation-recovery.test.js"
     },
     {
+      "id": "domain-host-autonomy",
+      "command": "node --test packages/agentic-system/test/domain-host-autonomy.test.js"
+    },
+    {
       "id": "frontend-domain",
       "command": "node --test packages/agentic-system/test/frontend-domain.test.js"
     },
@@ -403,18 +420,16 @@
   ],
   "researchGaps": [],
   "negativeVerificationCases": [
-    "An event payload that contains principal/domain/strategy fields cannot directly authorize claim, execution or publication.",
-    "A request to activate a BACKEND/FRONTEND role or workflow stage without an exact projectId/workId/owningDomain key is rejected.",
-    "A controller configured for the wrong owning domain cannot claim or execute the work.",
-    "Deleting or losing queue/cursor/hint state cannot strand canonical actionable work; restart scan rediscovers it.",
-    "Concurrent duplicate event and scan hints cannot create two current claim generations or two current execution attempts for one work item.",
-    "Activation cannot resolve, choose or override ExecutionStrategy; existing execution-policy authority remains mandatory.",
-    "Activation cannot create a CrossDomainObligation or make a non-current obligation current.",
-    "Frontend cannot be forced to wait for a whole Backend stage when its exact semantic dependencies are satisfied.",
-    "A stale queued hint after obligation/selective invalidation becomes NOOP/fenced and cannot resurrect executable capability.",
-    "A Backend activation outage cannot prevent unrelated Frontend work from being discovered and executed.",
-    "FrontendWorkOrder/context/completion that reads Backend stage/session/completion state is rejected; only the bound Frontend WorkContract and its exact semantic dependencies may gate Frontend.",
-    "A parallel fixture that starts one domain only after the other completes is rejected even if both eventually succeed."
+    "Trigger payload fields cannot authorize claim, execution, strategy choice or publication.",
+    "A request to activate a role/stage/domain without exact projectId/workId/owningDomain is rejected.",
+    "A wrong-domain host/controller cannot claim or execute the work.",
+    "Deleting all hint/queue/cursor state cannot strand canonical actionable work; a fresh host's startup scan must rediscover it.",
+    "Duplicate notify + scan for one subject cannot create two current claims or execution attempts.",
+    "Activation cannot create obligations or resolve/override ExecutionStrategy.",
+    "Frontend order/context/completion cannot read Backend stage/session/completion state; only exact semantic dependencies may block it.",
+    "A host implementation that awaits BACKEND completion before starting FRONTEND, or shares a failure-cancelling supervisor between domains, fails AC-5/6/7.",
+    "Array order from listEligible cannot be used as priority/authority; each discovered exact subject is reconciled independently.",
+    "A stale hint after selective invalidation cannot resurrect, claim or execute invalidated work."
   ],
   "objectiveCoverage": [
     {
@@ -478,14 +493,16 @@
         "AC-5"
       ],
       "verificationIds": [
+        "domain-host-autonomy",
         "frontend-domain",
         "fe-be-parallel",
         "domain-execution-regression"
       ],
       "planElements": [
-        "D3 Backend runtime adapter",
-        "D4 Frontend runtime adapter",
-        "D5 concurrent barrier proof"
+        "D2 autonomous hosts",
+        "D4 Backend runtime",
+        "D5 Frontend runtime",
+        "D6 overlap proof"
       ],
       "coverageArgument": "D3 binds the current Backend primitives to one domain runtime. D4 defines a complete Frontend order/context/result/completion/recovery contract and its own runtime adapter. D5 composes separate controllers and proves actual dispatch overlap with distinct policy/strategy/attempt/runtime identities before either domain completes."
     },
@@ -495,12 +512,12 @@
         "AC-6"
       ],
       "verificationIds": [
+        "domain-host-autonomy",
         "fe-be-parallel"
       ],
       "planElements": [
-        "D3 Backend runtime adapter",
-        "D4 Frontend runtime adapter",
-        "D5 failure-isolation proof"
+        "D2 isolated host loops",
+        "D6 one-domain failure proof"
       ]
     },
     {
@@ -509,12 +526,14 @@
         "AC-7"
       ],
       "verificationIds": [
+        "domain-host-autonomy",
         "activation-recovery",
         "fe-be-parallel"
       ],
       "planElements": [
-        "D1",
-        "D5"
+        "D2 canonical autonomous scan loop",
+        "D6 no-dispatcher composition",
+        "D7 restart proof"
       ]
     },
     {
@@ -601,5 +620,14 @@
       "proof": "Promise.all starts both reconciles. Each runtime adapter emits dispatchStarted then waits on its own deferred barrier. Before releasing either barrier assert both dispatchStarted plus distinct workContractRef, executionPolicyRef, executionStrategyRef, executionAttemptId and runtimeInvocationKey.",
       "isolation": "Reject one domain adapter/barrier and prove the other still discovers, claims, dispatches and reaches its own current completion path."
     }
+  },
+  "activationHostContract": {
+    "instance": "Exactly one DomainActivationHost per owningDomain. It is constructed with a fixed owningDomain, that domain's trusted principal binding, createOrganizationWorkDiscovery(...), and that domain's DomainActivationController. It cannot switch domains.",
+    "startup": "start() performs scanOnce() immediately before arming any later timer. Restart therefore needs no remembered queue/cursor and cannot wait for a new event to recover persisted actionable work.",
+    "scan": "scanOnce() calls discovery.listEligible({owningDomain}); for every returned {item,contract} it derives the exact DomainActivationKey from contract.projectId + item.id + contract.owningDomain and invokes controller.reconcile(key). It uses Promise.allSettled over exact subjects. Array order is not priority, ownership, or execution authority.",
+    "hints": "notify(key) is only an early reconcile request for one exact key. A lost or duplicate notify changes latency only because the next canonical scan re-reads current eligibility and reconcile is idempotent/fenced.",
+    "continuation": "After each scan the host arms its own next scan. A reconcile rejection is recorded as non-authoritative observation and does not stop later scans or reject sibling reconciles in the same scan.",
+    "isolation": "BACKEND and FRONTEND hosts have separate loop/timer/error state. domain-runtime-composition starts both without awaiting either host's completion. A BACKEND scan/dispatch failure may affect only BACKEND retries; it cannot cancel, pause, or become a prerequisite of FRONTEND scan/reconcile.",
+    "noDispatcher": "There is no nextRole/nextDomain/stage transition API. Progress after work persistence comes from each domain host's immediate/periodic canonical scan; events can only reduce wake-up latency."
   }
 }
