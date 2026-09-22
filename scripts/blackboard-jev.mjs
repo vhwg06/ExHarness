@@ -19,6 +19,20 @@ function checkedFile(root, ref) {
   return { ref, hash: hash(body), body };
 }
 const RESEARCH_EVIDENCE_CHARS = 2048;
+function anchoredResearchEvidence(ref, body, anchors) {
+  const digest=hash(body),bytes=Buffer.byteLength(body),seen=new Set();
+  const excerpts=anchors.map((raw,index)=>{
+    check(raw&&typeof raw==='object'&&!Array.isArray(raw), `source anchor ${index} must be an object`);
+    const match=String(raw.match??'').trim();
+    check(match.length>0, `source anchor ${index} match required`);
+    check(!seen.has(match), `duplicate source anchor: ${match}`);seen.add(match);
+    const at=body.indexOf(match);
+    check(at>=0, `source anchor not found in ${ref}: ${match}`);
+    const start=Math.max(0,at-160),end=Math.min(body.length,at+match.length+160);
+    return {match,excerpt:body.slice(start,end)};
+  });
+  return {ref,hash:digest,bytes,anchors:excerpts};
+}
 function boundedResearchEvidence(ref, body, maxChars = RESEARCH_EVIDENCE_CHARS) {
   const digest=hash(body),bytes=Buffer.byteLength(body);
   if(body.length<=maxChars)return {ref,hash:digest,bytes,body,excerpted:false};
@@ -124,6 +138,13 @@ export function materialize(root, id, { readiness = false } = {}) {
         const decisionIndexes = [...new Set(coverage?.decisionIndexes ?? [])]
           .filter(index => Number.isInteger(index) && index >= 0 && index < plan.architectureDecisions.length);
         const sourceRefs = [...new Set(coverage?.sourceRefs ?? [])];
+        const sourceAnchors = (coverage?.sourceAnchors ?? []).map((entry,index)=>{
+          check(entry&&typeof entry==='object'&&!Array.isArray(entry), `objective sourceAnchors[${index}] must be an object`);
+          const ref=String(entry.ref??'').trim(),match=String(entry.match??'').trim();
+          check(ref.length>0&&match.length>0, `objective sourceAnchors[${index}] requires ref + match`);
+          return {ref,match};
+        });
+        check(sourceAnchors.length<=4,'objective sourceAnchors exceeds bounded limit');
         const supportingPlanFields = [...new Set(coverage?.supportingPlanFields ?? [])];
         const supportingPlanEvidence = Object.fromEntries(
           supportingPlanFields
@@ -145,6 +166,8 @@ export function materialize(root, id, { readiness = false } = {}) {
           decisionIndexes,
           architectureDecisions: decisionIndexes.map(index => plan.architectureDecisions[index]),
           sourceRefs,
+          sourceAnchors,
+          groundedSources: [],
           supportingPlanFields,
           supportingPlanEvidence
         };
@@ -159,7 +182,7 @@ export function materialize(root, id, { readiness = false } = {}) {
   };
   if (lane === 'RESEARCH_SA') {
     if(plan.researchGaps?.length) fail('unresolved research gaps; complete the current plan before Jev readiness');
-    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, objectiveScopedResearch ? `\`state.objectiveEvidence[${i}]\` for exact criterion/slice/decision IDs, then resolve those IDs from \`state.plan.acceptanceCriteria\`, \`state.plan.implementationSlices\` and \`state.plan.architectureDecisions\`; inspect only listed sourceRefs from \`state.evidence\`` : '`state.objective` and `state.plan`');
+    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, objectiveScopedResearch ? `\`state.objectiveEvidence[${i}]\` for exact criterion/slice/decision IDs and harness-extracted groundedSources; resolve IDs from \`state.plan.acceptanceCriteria\`, \`state.plan.implementationSlices\` and \`state.plan.architectureDecisions\`` : '`state.objective` and `state.plan`');
     const readinessStatements = {
       scope: 'Scope and exclusions are unambiguous.',
       constraints: 'Constraints are explicit and compatible with the objective.',
@@ -173,14 +196,25 @@ export function materialize(root, id, { readiness = false } = {}) {
     for (const [key, statement] of Object.entries(readinessStatements)) question(`readiness-${key}`, statement, `\`state.plan.${key}\` and \`state.evidence\``);
     const refs = [...new Set([...objective.currentSourceRefs, ...plan.sourceSeams.requiredExisting])];
     if (objectiveScopedResearch) {
+      const sourceBodies=new Map();
       for (const entry of objectiveEvidence) {
         for (const ref of entry.sourceRefs) check(refs.includes(ref), `objective sourceRef is outside research evidence: ${ref}`);
+        const anchorsByRef=new Map();
+        for (const anchor of entry.sourceAnchors) {
+          check(entry.sourceRefs.includes(anchor.ref), `objective source anchor ref not declared in sourceRefs: ${anchor.ref}`);
+          check(refs.includes(anchor.ref), `objective source anchor is outside research evidence: ${anchor.ref}`);
+          const list=anchorsByRef.get(anchor.ref)??[];list.push(anchor);anchorsByRef.set(anchor.ref,list);
+        }
+        entry.groundedSources=[...anchorsByRef.entries()].map(([ref,anchors])=>{
+          if(!sourceBodies.has(ref)) sourceBodies.set(ref,gitFile(root,task.contract.researchBaselineSha,ref));
+          return anchoredResearchEvidence(ref,sourceBodies.get(ref),anchors);
+        });
       }
     }
     const planEvidence = [
       ['blackboard://plan/lane-contract', {
         laneContracts: plan.laneContracts?.map(({ lane, input, output, binding, convergence, forbidden }) => ({ lane, input, output, binding, convergence, forbidden })),
-        objectiveCoverage: objectiveScopedResearch ? plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs, supportingPlanFields }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs, supportingPlanFields })) : plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
+        objectiveCoverage: objectiveScopedResearch ? plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs, sourceAnchors, supportingPlanFields }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs, sourceAnchors, supportingPlanFields })) : plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
       }],
       ['blackboard://plan/readiness', {
         invariants: plan.invariants,
