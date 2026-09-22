@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { deriveTaskContext, deriveTaskContextSummary } from "../scripts/blackboard-task-context-resolver.mjs";
+import { readWorkGraph } from "../scripts/blackboard-work-graph.mjs";
 
 test("task context is deterministically derived from one task and its components",()=>{
   const ctx=deriveTaskContext("BB-052");
@@ -13,9 +14,14 @@ test("task context is deterministically derived from one task and its components
     "agentic/domain-execution-control",
     "agentic/product-lineage"
   ]);
-  assert.equal(ctx.lane,"RESEARCH_SA");
-  assert.equal(ctx.semanticArtifactRef,"docs/blackboard/artifacts/objective/BB-052.json");
-  assert.equal(ctx.planRef,"docs/blackboard/artifacts/ready-implement-plan/BB-052.json");
+  const task=readWorkGraph().tasks.find(item=>item.id==="BB-052");
+  assert.equal(ctx.lane,task.lane);
+  assert.equal(ctx.phase,task.phase);
+  assert.equal(
+    ctx.semanticArtifactRef,
+    task.lane==="RESEARCH_SA" ? task.contract.objectiveRef : task.contract.planRef
+  );
+  assert.equal(ctx.planRef,task.contract.planRef);
 });
 
 test("DONE dependency contributes consolidated Living truth, not historical delivery transcript",()=>{
