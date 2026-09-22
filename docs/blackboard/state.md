@@ -41,6 +41,8 @@ NONE
 ## Schedulable tasks
 
 - BB-052 [WORKER/EXECUTION] — Implement cross-domain obligations and selective semantic invalidation
+- BB-054 [RESEARCH_SA/RESEARCH] — Implement exact deployment identity and Product QA acceptance
+- BB-055 [RESEARCH_SA/RESEARCH] — Implement product completeness and closure currentness
 
 ## Jev decisions
 
@@ -63,8 +65,8 @@ NONE
 BB-048 [DONE] <- ROOT
 BB-052 [WORKER_SCHEDULABLE] <- BB-048
 BB-053 [BLOCKED_BY BB-052] <- BB-052
-BB-054 [BLOCKED_BY BB-053] <- BB-053
-BB-055 [BLOCKED_BY BB-054] <- BB-054
+BB-054 [RESEARCH_SCHEDULABLE] <- BB-053
+BB-055 [RESEARCH_SCHEDULABLE] <- BB-054
 BB-056 [DONE] <- ROOT
 ```
 

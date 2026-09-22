@@ -15,12 +15,12 @@ function run(name,fn){
 const a=deriveTaskContext("BB-052");
 const b=deriveTaskContext("BB-052");
 
-run("one-schedulable-task-from-direct-dependencies",()=>{
+run("lane-aware-schedulable-tasks-from-direct-dependencies",()=>{
   const ready=schedulableTasks(graph);
   const bb056=graph.tasks.find(task=>task.id==="BB-056");
   const expected=bb056.status==="ACTIVE" || bb056.status==="DONE" || bb056.phase==="MERGE_PENDING"
-    ? ["BB-052"]
-    : ["BB-052","BB-056"];
+    ? ["BB-052","BB-054","BB-055"]
+    : ["BB-052","BB-054","BB-055","BB-056"];
   if(JSON.stringify(ready)!==JSON.stringify(expected))throw Error("unexpected schedulable set");
 });
 run("multi-component-task-still-one-context",()=>{

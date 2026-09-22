@@ -69,13 +69,17 @@ Tasks declare only **direct** dependencies. Transitive closure is derived by the
 Task A -> Task B
 ```
 
-means B cannot become schedulable until the exact direct dependency required by B is terminal/current according to the graph.
+means B cannot enter WORKER execution until the exact direct dependency required by B is terminal/current according to the graph. RESEARCH_SA may run ahead so a later implementation plan can converge before its execution dependency is delivered.
 
 For context resolution:
 
 ```text
-direct dependency ACTIVE/non-DONE
-  -> blocks execution context
+RESEARCH_SA + direct dependency non-DONE
+  -> load only the dependency objective/plan as PLANNED_DEPENDENCY context
+  -> never treat planned dependency output as delivered/current system truth
+
+WORKER + direct dependency non-DONE
+  -> block execution context
 
 direct dependency DONE
   -> load dependency consolidatedRefs from Living/current system truth
