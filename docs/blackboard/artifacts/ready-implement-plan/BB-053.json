@@ -75,6 +75,7 @@
       "packages/agentic-system/src/domain-execution-input.js",
       "packages/agentic-system/src/domain-activation.js",
       "packages/agentic-system/src/domain-activation-source.js",
+      "packages/agentic-system/src/domain-activation-host.js",
       "packages/agentic-system/src/domain-runtime-composition.js",
       "packages/agentic-system/src/backend-execution-strategy.js",
       "packages/agentic-system/src/frontend-contracts.js",
@@ -140,11 +141,11 @@
   "implementationSlices": [
     "D1 — DomainExecutionInput bridge [AC-5, AC-6]: add domain-execution-input.js with immutable schema {kind:'DOMAIN_EXECUTION_INPUT',version:1,owningDomain,workloadType,repository:{ref,revision},requiredFiles[],constraints[]} and content-addressed ref domain-execution-input:sha256:<digest>. A WorkContract is executable only when requiredArtifactRefs contains exactly one such ref whose domain/workload matches the contract. Add registry put/resolve over the existing immutable artifact store.",
     "D2 — Generic execution adapter seam [AC-2, AC-3, AC-4, INV-4, INV-5]: extend DomainExecutionController runtimeAdapter calls from {binding,input,runtimeInvocationKey} to {binding,contract,input,runtimeInvocationKey}; contract is the exact immutable OrganizationWorkContract already resolved from the released claim. Existing policy/strategy resolution and attempt binding stay authoritative. Activation never supplies strategy/runtime/domain input.",
-    "D3 — Activation [AC-1, AC-2, AC-3, AC-4, AC-8]: domain-activation-source.scan({owningDomain}) wraps createOrganizationWorkDiscovery.listEligible. domain-activation.reconcile({projectId,workId,owningDomain}) re-reads the exact eligible subject, binds the controller's configured principal/domain, uses existing claim/release, rechecks BB-052 currentness immediately before execution, fences drift, then calls the prebuilt DomainExecutionController with only {itemId,claimGeneration,receiptRef}.",
+    "D3 — Activation + post-release currentness fence [AC-1, AC-2, AC-3, AC-4, AC-8]: domain-activation-source.scan({owningDomain}) wraps createOrganizationWorkDiscovery.listEligible. reconcile({projectId,workId,owningDomain}) re-reads the exact work, owningDomain and the exact BB-052 obligation currentness head bound by the WorkContract/materialization provenance; the pre-claim observation is {obligationSubjectKey,revision,status}. After canonical claim/release and immediately before DomainExecutionController.execute, reconcile reads that same obligationSubjectKey again. If status is not ACTIVE or revision differs, it calls canonical organization-claim invalidation/fencing for that item+claimGeneration, returns NOOP, and must leave executionAttemptStore empty and runtime dispatch count zero. Only an unchanged observation may call execute({itemId,claimGeneration,receiptRef}).",
     "D4 — Backend adapter [AC-5, AC-6]: backend-execution-strategy resolves the single DomainExecutionInput from contract.requiredArtifactRefs, validates BACKEND/workload match, builds BackendObjective {id:contract.boardItemId,task:contract.summary,repository:input.repository,requiredFiles:input.requiredFiles,constraints:input.constraints}, then delegates to existing prepare/run/recover Backend application primitives. It emits DomainExecutionController runtime-result shape and never invokes runBackendThenQaObjective.",
     "D5 — Frontend domain [AC-5, AC-6, INV-6, INV-7]: frontend-contracts defines FrontendObjective/WorkOrder/Context/WorkResult/Completion with the same id/task/repository/requiredFiles/constraints input shape and FE-specific evidence claims; frontend-worker/application provide execute/recover; frontend-execution-strategy performs the same deterministic WorkContract+DomainExecutionInput mapping for FRONTEND only.",
-    "D6 — Independent runtime composition [AC-5, AC-6, AC-7]: domain-runtime-composition constructs two independent runtime objects: {owningDomain:'BACKEND',principal,activation,executionController,backendAdapter} and {owningDomain:'FRONTEND',principal,activation,executionController,frontendAdapter}. There is no switch on owningDomain that chooses a strategy and no Backend-first/Frontend-first control edge.",
-    "D7 — Proofs [AC-1..AC-8]: fe-be-parallel.test creates unrelated BACKEND/FRONTEND WorkContracts, DomainExecutionInputs, ACTIVE policies and distinct strategy descriptors; Promise.all starts both reconciles, each adapter raises dispatchStarted then waits on its own barrier; assert both dispatchStarted and distinct contract/policy/strategy/attempt/invocation identities before either barrier is released. Reject one adapter and prove the other completes. activation-recovery and partial-invalidation prove lost-hint rediscovery, duplicate convergence and stale-hint fencing."
+    "D6 — Independent domain hosts + runtime composition [AC-5, AC-6, AC-7, INV-6, INV-7]: add domain-activation-host.js. One host owns exactly one owningDomain/principal/controller and has private loop/timer/error state. start() performs an immediate canonical scan; scanOnce() calls listEligible({owningDomain}) and Promise.allSettled(reconcile(exactKey)) so one item/domain failure cannot cancel sibling work; periodic scans are latency/recovery mechanics only and persist no authority. domain-runtime-composition starts BACKEND and FRONTEND hosts without awaiting either and gives each a separate DomainExecutionController/runtimeAdapter. There is no nextRole/nextDomain/stage API, shared mutex, or cross-domain completion dependency.",
+    "D7 — Temporal/isolation proofs [AC-1..AC-8]: (a) race: pause after claim release, supersede the exact obligation head, resume, assert claim fenced + zero execution attempt + zero dispatch; control sibling remains executable. (b) parallelism: persist unrelated BACKEND and FRONTEND work with empty semantic dependency edges, distinct DomainExecutionInputs, ACTIVE policies and strategy descriptors; Promise.all starts both hosts, each adapter emits dispatchStarted and waits on its own barrier; before either release assert both started plus distinct workContractRef/policyRef/strategyRef/attemptId/runtimeInvocationKey. (c) outage: reject one adapter after both started; host uses allSettled/local error state so the other domain independently reaches TERMINAL/current completion. (d) selective invalidation: invalidate one exact obligationSubjectKey, feed a stale hint for it and prove NOOP/no attempt, while a different obligationSubjectKey remains listEligible and executes."
   ],
   "acceptanceCriteria": [
     {
@@ -188,7 +189,9 @@
         "domain-activation"
       ],
       "evidenceRequired": [
-        "Supersede the exact obligation after pre-check; post-release recheck fences claim and prevents dispatch."
+        "Barrier pauses reconcile after RELEASED claim but before execution entry. Record the exact pre-check {obligationSubjectKey, revision, ACTIVE}.",
+        "Supersede that exact obligation head while paused; post-release reread of the same subject must detect revision/status drift, invoke canonical claim invalidation/fencing, return NOOP, and leave both executionAttemptStore and runtime dispatch count at zero.",
+        "A sibling work item bound to a different obligationSubjectKey remains eligible/executable in the same fixture."
       ]
     },
     {
@@ -201,9 +204,9 @@
         "domain-execution-regression"
       ],
       "evidenceRequired": [
-        "Fixture has two unrelated WorkContracts and two content-addressed DomainExecutionInputs, one BACKEND and one FRONTEND, each matched to a distinct ACTIVE execution policy/strategy descriptor.",
-        "Promise.all starts both domain reconciles; both adapters must emit dispatchStarted and distinct workContractRef/executionPolicyRef/executionStrategyRef/executionAttemptId/runtimeInvocationKey before either barrier is released.",
-        "Each adapter maps only its own exact WorkContract + DomainExecutionInput; activation contains no strategy switch or domain application mapping."
+        "Persist unrelated BACKEND and FRONTEND WorkContracts with no semantic dependency edge, distinct DomainExecutionInputs and distinct ACTIVE execution-policy/strategy bindings.",
+        "Start both DomainActivationHosts without awaiting one before the other. Each adapter raises dispatchStarted and waits on an independent deferred barrier.",
+        "Before releasing either barrier assert both dispatchStarted signals plus distinct workContractRef, executionPolicyRef, executionStrategyRef, executionAttemptId and runtimeInvocationKey; sequential start after the other domain completes does not satisfy AC-5."
       ]
     },
     {
@@ -214,8 +217,8 @@
         "fe-be-parallel"
       ],
       "evidenceRequired": [
-        "Reject/fail one domain runtime adapter after both domains are independently admitted; the unrelated domain still reaches its own current terminal/completion state.",
-        "No shared stage flag, adapter lock or other-domain completion state participates in discovery, claim, attempt creation or dispatch."
+        "After both independent domain dispatches have started, reject one runtime adapter. The failing host records only local failure/recovery state; its scan uses Promise.allSettled and cannot reject/cancel the sibling host.",
+        "Release the unrelated domain barrier and assert that domain reaches its own TERMINAL/current completion path without reading the failed domain claim, attempt, session, stage or completion state."
       ]
     },
     {
@@ -238,7 +241,9 @@
         "activation-recovery"
       ],
       "evidenceRequired": [
-        "Invalidate one exact subject; only it becomes NOOP/fenced while unrelated domain work executes."
+        "Create two actionable work items with different obligationSubjectKey values. Invalidate/supersede exactly one subject and preserve the other ACTIVE.",
+        "A stale notify/reconcile for the invalidated subject must become NOOP/fenced with no new execution attempt or dispatch.",
+        "The next canonical scan still returns the unrelated subject; it may claim, dispatch and complete. No organization-wide/stage reset is invoked."
       ]
     },
     {
@@ -427,7 +432,11 @@
     "Zero/multiple/mismatched DomainExecutionInput refs fail before domain application execution.",
     "A FE/BE test is not parallel unless both dispatchStarted observations exist before either completion barrier is released.",
     "Frontend cannot read Backend stage/session/completion as an implicit barrier.",
-    "A stale queued hint after selective invalidation cannot resurrect executable capability."
+    "A stale queued hint after selective invalidation cannot resurrect executable capability.",
+    "Post-release currentness validation against a different obligation subject or only a status value without the observed revision is rejected.",
+    "A DomainActivationHost using Promise.all such that one reconcile rejection cancels sibling progress is rejected; per-item/domain isolation requires allSettled or equivalent local containment.",
+    "Starting Frontend only after Backend resolves fails the concurrency criterion even when both eventually succeed.",
+    "Selective invalidation that removes or blocks an unrelated obligationSubjectKey fails AC-8."
   ],
   "laneContracts": [
     {
