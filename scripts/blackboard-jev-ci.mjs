@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { read, write, fail, localPath } from './blackboard-delivery-contract.mjs';
+import { read, write, fail, localPath, planHash } from './blackboard-delivery-contract.mjs';
 import { git, materialize, evaluate } from './blackboard-jev.mjs';
 import { collectEvidence } from './blackboard-delivery.mjs';
 import { taskReadiness } from './blackboard-work-graph.mjs';
@@ -9,12 +9,37 @@ const [command]=process.argv.slice(2);
 const id=process.env.WORK_ID,sha=process.env.CANDIDATE_SHA;
 const trustedRoot=process.env.TRUSTED_ROOT||'.',subjectRoot=process.env.SUBJECT_ROOT||trustedRoot;
 
+function canonicalReadinessPublication(task,candidate){
+  if(candidate.lane!=='WORKER'||candidate.phase!=='EXECUTION'||candidate.status!=='PLANNED')return false;
+  if(candidate.claim!==null||candidate.currentContextRef!==null)return false;
+  if(candidate.contract?.objectiveRef!==task.contract.objectiveRef||
+     candidate.contract?.planRef!==task.contract.planRef||
+     candidate.contract?.researchBaselineSha!==task.contract.researchBaselineSha)return false;
+  const trustedPlan=read(trustedRoot,task.contract.planRef);
+  const candidatePlan=read(subjectRoot,task.contract.planRef);
+  if(candidatePlan.status!=='READY'||planHash(candidatePlan)!==planHash(trustedPlan))return false;
+  const evaluationRef=candidate.contract?.evaluationRef;
+  if(!evaluationRef||candidatePlan.readinessRef!==evaluationRef||
+     candidate.contract?.lastEvaluatedInput===undefined)return false;
+  let evaluation;
+  try{evaluation=read(subjectRoot,evaluationRef);}catch{return false;}
+  return evaluation?.artifactType==='JEV_EVALUATION' &&
+    evaluation.lane==='RESEARCH_SA' &&
+    evaluation.verdict==='SATISFIED' &&
+    evaluation.subject?.workId===task.id &&
+    evaluation.subject?.plan?.ref===task.contract.planRef &&
+    evaluation.subject?.plan?.hash===planHash(candidatePlan) &&
+    evaluation.cacheKey===candidate.contract.lastEvaluatedInput;
+}
 function candidateResearchTask(graph,task){
   const candidateGraph=read(subjectRoot,'docs/blackboard/work-graph.json');
   const candidate=candidateGraph.tasks.find(t=>t.id===task.id);
   if(!candidate)fail('research candidate task missing');
-  if(candidate.lane!==task.lane||
-     candidate.contract?.objectiveRef!==task.contract.objectiveRef||
+  if(candidate.lane!==task.lane){
+    if(canonicalReadinessPublication(task,candidate))return null;
+    fail('research candidate changed trusted routing contract');
+  }
+  if(candidate.contract?.objectiveRef!==task.contract.objectiveRef||
      candidate.contract?.planRef!==task.contract.planRef)fail('research candidate changed trusted routing contract');
   if(!/^[a-f0-9]{40}$/.test(candidate.contract?.researchBaselineSha??''))fail('research candidate requires exact baseline');
   return candidate;
@@ -22,6 +47,7 @@ function candidateResearchTask(graph,task){
 function researchChanged(graph,task){
   if(task.status==='DONE'||task.lane!=='RESEARCH_SA'||!taskReadiness(graph,task.id).ready)return false;
   const candidate=candidateResearchTask(graph,task);
+  if(!candidate)return false;
   const trustedPlan=fs.readFileSync(localPath(trustedRoot,task.contract.planRef),'utf8');
   const candidatePlan=fs.readFileSync(localPath(subjectRoot,task.contract.planRef),'utf8');
   if(trustedPlan!==candidatePlan||candidate.contract.researchBaselineSha!==task.contract.researchBaselineSha)return true;
