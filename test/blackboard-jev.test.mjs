@@ -64,6 +64,8 @@ test('research objective questions receive bounded objective-to-criterion-to-sli
   write(f.root,'plan.json',plan);
   const input=materialize(f.root,'BB-1');
   assert.equal(input.payload.questions['objective-0'].instructions.includes('state.objectiveEvidence[0]'),true);
+  assert.equal(input.payload.questions['objective-0'].instructions.includes('state.plan.acceptanceCriteria'),true);
+  assert.equal(input.payload.questions['objective-0'].instructions.includes('state.plan.implementationSlices'),true);
   assert.deepEqual(input.payload.state.objectiveEvidence,[{
     objectiveCriterion:'answer is two',
     criterionIds:['AC1'],
@@ -73,9 +75,7 @@ test('research objective questions receive bounded objective-to-criterion-to-sli
     architectureDecisions:['Change constant'],
     sourceRefs:['source.js'],
     supportingPlanFields:['supportingContract'],
-    supportingPlanEvidence:{supportingContract:{mode:'bounded'}},
-    acceptanceCriteria:[{id:'AC1',statement:'answer is two and remains exported',verificationIds:['unit'],evidenceRequired:['unit output']}],
-    implementationSlices:['D1 — Change constant']
+    supportingPlanEvidence:{supportingContract:{mode:'bounded'}}
   }]);
   const laneContract=input.payload.state.evidence.find(item=>item.ref==='blackboard://plan/lane-contract');
   const parsed=JSON.parse(laneContract.body);
