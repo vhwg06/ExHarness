@@ -133,7 +133,7 @@
     "D2 — Controller adapter contract [AC-2, AC-3, AC-4, INV-4]: in domain-execution-control.js define adapter dispatch/recover input {binding,contract,input,runtimeInvocationKey}; contract is the exact released-claim WorkContract. Controller alone resolves current policy/strategy, binds attempt, revalidates release and attests runtime. Activation cannot supply HOW. Verify domain-activation + bb048 regression.",
     "D3A — Canonical activation/recovery [AC-1, AC-2, AC-7, INV-1, INV-2, INV-3]: add domain-activation-source.js/domain-activation.js. scan({owningDomain}) delegates to listEligible({owningDomain}); reconcile({projectId,workId,owningDomain}) rereads canonical WorkContract before claim. Notify carries only that exact key; lost hints recover by scan; duplicate scan/notify converges via existing claim/release + attempt currentness. Verify domain-activation + activation-recovery.",
     "D3B — Domain/authority admission [AC-3, INV-1, INV-3, INV-4, INV-5]: before claim require configured host domain === key domain === WorkContract.owningDomain. Principal comes from host configuration, obligation provenance from WorkContract, policy/strategy/runtime from DomainExecutionController; hint fields cannot override them. Mismatch => NOOP/REJECTED with claim=0, attempt=0, dispatch=0. Verify domain-activation + bb047 regression.",
-    "D3C — BB-052 currentness port [AC-4, AC-8, INV-8]: domain-activation defines a read-only ObligationCurrentnessPort.current(obligationRef)->{subjectKey,revision,status}; composition binds that port to whatever exact authoritative BB-052 seam is delivered. Resolve the WorkContract-bound obligation, observe ACTIVE before claim, release canonically, reread the same subject immediately before execute, and suppress execute on revision/status drift. BB-052 remains sole owner of canonical invalidation/release fencing. If delivered BB-052 cannot satisfy this port without widening authority, stop and return BB-053 to RESEARCH_SA. Verify partial-invalidation + activation-recovery.",
+    "D3C — BB-052 currentness adapter [AC-4, AC-8, INV-8]: in domain-activation-source.js define createObligationCurrentnessReader({resolveObligation,currentHead}) exposing current(obligationRef)->{subjectKey,revision,status}; this adapter is read-only and binds the exact WorkContract-required CrossDomainObligation revision to BB-052 currentness after the BB-052 TASK_OUTPUT dependency is satisfied. domain-activation observes ACTIVE before claim, releases canonically, rereads the same subject immediately before execute, and returns NOOP before DomainExecutionController.execute on revision/status drift. BB-052 alone owns canonical invalidation/release fencing; unrelated current obligations remain scan-eligible. Verify partial-invalidation + activation-recovery.",
     "D4 — Backend execution adapter [AC-5, AC-6]: add createBackendExecutionStrategy(...) in backend-execution-strategy.js. Resolve exact DomainExecutionInput, map WorkContract+input to BackendObjective, dispatch via prepareBackendObjective + runPreparedBackendObjective, recover via recoverPreparedBackendObjective, and map APPLIED/BLOCKED/FAILED plus output/evidence refs to DomainExecutionController. Never call the Backend→QA composite flow. Verify fe-be-parallel + bb048 regression.",
     "D5 — Frontend execution domain [AC-5, AC-6, INV-6, INV-7]: add frontend-contracts/completion/worker/application/execution-strategy modules. Frontend application exposes prepareFrontendObjective, runPreparedFrontendObjective and recoverPreparedFrontendObjective; completion requires frontend.mutation, frontend.typecheck and frontend.tests evidence. createFrontendExecutionStrategy(...) consumes only exact Frontend WorkContract+DomainExecutionInput and has no Backend stage/session/completion dependency. Verify frontend-domain + fe-be-parallel.",
     "D6A — DomainActivationHost [AC-1, AC-2, AC-7, INV-2, INV-3]: add createDomainActivationHost({owningDomain,discovery,activation,scanIntervalMs,timer}) -> {start,scanOnce,notify,stop}. start is idempotent and runs immediate then periodic scans; scanOnce does listEligible(domain) then Promise.allSettled(reconcile(exactKey)); notify accepts same-domain exact-key hint only; stop cancels/drains only that host. No priority/nextRole/nextDomain/stage API. Verify domain-host-autonomy + activation-recovery.",
@@ -499,9 +499,19 @@
       ],
       "sourceAnchors": [
         {
+          "ref": "packages/agentic-system/src/organization-claim.js",
+          "match": "async function publishRelease("
+        },
+        {
           "ref": "packages/agentic-system/src/domain-execution-control.js",
           "match": "export function executionAttemptSubjectKey({projectId,itemId,workContractRef})"
         }
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        5
       ]
     },
     {
@@ -589,9 +599,19 @@
           "match": "export function executionPolicySubjectKey(domain,workloadType)"
         },
         {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "export function createDomainExecutionController("
+        },
+        {
           "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
           "match": "No central actor selects “run BA now, then SA, then BE”. Each domain sees only actionable obligations it owns."
         }
+      ],
+      "decisionIndexes": [
+        4,
+        5,
+        6,
+        8
       ]
     },
     {
@@ -710,9 +730,12 @@
   },
   "bb052DependencyContract": {
     "workId": "BB-052",
-    "precondition": "DONE before BB-053 WORKER",
-    "requiredTruth": "WorkContract.requiredArtifactRefs preserves exact CrossDomainObligation revision; a read-only currentness lookup exposes subject revision/status; BB-052 owns canonical invalidation/fencing and sibling preservation",
-    "ownership": "BB-053 may read obligation currentness but never writes it or directly performs BB-052 invalidation",
-    "onDrift": "return BB-053 to RESEARCH_SA"
+    "graphRequirement": "BB-053 WORKER starts only after BB-052 TASK_OUTPUT",
+    "consumedSemantics": [
+      "WorkContract binds the exact CrossDomainObligation revision that authorized materialization",
+      "CrossDomainObligation currentness exposes exact subject revision + ACTIVE/non-current status",
+      "BB-052 selective invalidation/fencing affects the exact semantic closure and preserves unrelated siblings"
+    ],
+    "adapterBoundary": "BB-053 consumes those semantics only through createObligationCurrentnessReader(...).current(obligationRef); it never mutates obligation currentness or owns invalidation."
   }
 }
