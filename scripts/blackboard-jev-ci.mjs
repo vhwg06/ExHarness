@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { read, write, fail, localPath, planHash } from './blackboard-delivery-contract.mjs';
-import { git, materialize, evaluate } from './blackboard-jev.mjs';
+import { git, materialize, evaluate, validateEvaluation } from './blackboard-jev.mjs';
 import { collectEvidence } from './blackboard-delivery.mjs';
 import { taskReadiness } from './blackboard-work-graph.mjs';
 
@@ -36,18 +36,19 @@ function candidateResearchTask(graph,task){
   const candidate=candidateGraph.tasks.find(t=>t.id===task.id);
   if(!candidate)fail('research candidate task missing');
   if(candidate.lane!==task.lane){
-    if(canonicalReadinessPublication(task,candidate))return null;
+    if(canonicalReadinessPublication(task,candidate))return {candidate,publication:true};
     fail('research candidate changed trusted routing contract');
   }
   if(candidate.contract?.objectiveRef!==task.contract.objectiveRef||
      candidate.contract?.planRef!==task.contract.planRef)fail('research candidate changed trusted routing contract');
   if(!/^[a-f0-9]{40}$/.test(candidate.contract?.researchBaselineSha??''))fail('research candidate requires exact baseline');
-  return candidate;
+  return {candidate,publication:false};
 }
-function researchChanged(graph,task){
+function researchChanged(graph,task,candidateOverride){
   if(task.status==='DONE'||task.lane!=='RESEARCH_SA'||!taskReadiness(graph,task.id).ready)return false;
-  const candidate=candidateResearchTask(graph,task);
-  if(!candidate)return false;
+  const inspected=candidateOverride ? {candidate:candidateOverride,publication:false} : candidateResearchTask(graph,task);
+  if(inspected.publication)return false;
+  const candidate=inspected.candidate;
   const trustedPlan=fs.readFileSync(localPath(trustedRoot,task.contract.planRef),'utf8');
   const candidatePlan=fs.readFileSync(localPath(subjectRoot,task.contract.planRef),'utf8');
   if(trustedPlan!==candidatePlan||candidate.contract.researchBaselineSha!==task.contract.researchBaselineSha)return true;
@@ -64,19 +65,45 @@ if(command==='select') {
   if(id && !/^BB-\d+$/.test(id))fail('invalid work id');
   if(sha && !/^[a-f0-9]{40}$/.test(sha))fail('invalid candidate SHA');
   const graph=read(trustedRoot,'docs/blackboard/work-graph.json');
+  const publications=[];
+  const research=[];
+  if(!id){
+    for(const task of graph.tasks){
+      if(task.status==='DONE'||task.lane!=='RESEARCH_SA'||!taskReadiness(graph,task.id).ready)continue;
+      const inspected=candidateResearchTask(graph,task);
+      if(inspected.publication)publications.push({id:task.id,sha});
+      else if(researchChanged(graph,task,inspected.candidate))research.push(task);
+    }
+  }
   const selected=id
     ? graph.tasks.filter(t=>t.id===id&&t.status!=='DONE')
     : [
         ...graph.tasks.filter(t=>t.status!=='DONE'&&t.lane==='WORKER'&&t.contract.candidateSha===sha),
-        ...graph.tasks.filter(t=>researchChanged(graph,t))
+        ...research
       ];
   if(id&&selected.length!==1)fail('work is not current');
   const work=[...new Map(selected.map(t=>[t.id,{id:t.id,sha:sha??t.contract.candidateSha}])).values()];
-  if(work.some(w=>!w.sha))fail('candidate SHA required');
-  fs.appendFileSync(process.env.GITHUB_OUTPUT,`work=${JSON.stringify(work)}\n`);
+  if(work.some(w=>!w.sha)||publications.some(w=>!w.sha))fail('candidate SHA required');
+  const trustedSha=git(trustedRoot,'rev-parse','HEAD');
+  fs.appendFileSync(process.env.GITHUB_OUTPUT,`work=${JSON.stringify(work)}\npublications=${JSON.stringify(publications)}\ntrusted_sha=${trustedSha}\n`);
+} else if(command==='verify-publication') {
+  if(!/^BB-\d+$/.test(id??'')||!/^[a-f0-9]{40}$/.test(sha??''))fail('invalid CI subject');
+  const trusted=path.resolve(trustedRoot),root=path.resolve(subjectRoot);
+  const trustedGraph=read(trusted,'docs/blackboard/work-graph.json');
+  const trustedTask=trustedGraph.tasks.find(t=>t.id===id);
+  const candidateGraph=read(root,'docs/blackboard/work-graph.json');
+  const candidate=candidateGraph.tasks.find(t=>t.id===id);
+  if(!trustedTask||trustedTask.lane!=='RESEARCH_SA'||!candidate||!canonicalReadinessPublication(trustedTask,candidate))
+    fail('subject is not a canonical readiness publication');
+  if(git(root,'rev-parse','HEAD')!==sha)fail('subject checkout differs from CI subject');
+  const evaluation=read(root,candidate.contract.evaluationRef);
+  const expected=materialize(trusted,id,{readiness:true});
+  validateEvaluation(evaluation,expected);
+  if(evaluation.verdict!=='SATISFIED')fail('readiness publication is not SATISFIED');
+  console.log(JSON.stringify({workId:id,publication:'READINESS',verdict:evaluation.verdict,cacheKey:evaluation.cacheKey}));
 } else {
   if(!/^BB-\d+$/.test(id??'')||!/^[a-f0-9]{40}$/.test(sha??''))fail('invalid CI subject');
-  const trusted=path.resolve('trusted'),root=path.resolve('subject');
+  const trusted=path.resolve(trustedRoot),root=path.resolve(subjectRoot);
   const trustedGraph=read(trusted,'docs/blackboard/work-graph.json');
   const trustedTask=trustedGraph.tasks.find(t=>t.id===id);
   let researchCandidate=null;
