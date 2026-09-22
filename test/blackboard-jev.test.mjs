@@ -304,9 +304,10 @@ test('CI selector routes exact research plan candidates from PR heads and merged
   assert.deepEqual(runSelect(f.root,f.root,mainSha),[{id:'BB-1',sha:mainSha}]);
 });
 
-test('CI selector skips only a canonical SATISFIED readiness publication transition',t=>{
+test('CI selector verifies canonical SATISFIED readiness publication instead of reporting fake Jev success',async t=>{
   const f=fixture(t);
   f.git('add','.');f.git('commit','-m','record research control plane');
+  const readiness=await f.ev();
 
   const ciScript=path.resolve('scripts/blackboard-jev-ci.mjs');
   const runSelect=(trustedRoot,subjectRoot,candidateSha)=>{
@@ -317,8 +318,9 @@ test('CI selector skips only a canonical SATISFIED readiness publication transit
       env:{...process.env,WORK_ID:'',CANDIDATE_SHA:candidateSha,TRUSTED_ROOT:trustedRoot,SUBJECT_ROOT:subjectRoot,GITHUB_OUTPUT:output},
       stdio:['ignore','pipe','pipe']
     });
-    const line=fs.readFileSync(output,'utf8').trim().split('\n').find(x=>x.startsWith('work='));
-    return JSON.parse(line.slice('work='.length));
+    return Object.fromEntries(fs.readFileSync(output,'utf8').trim().split('\n').filter(Boolean).map(line=>{
+      const i=line.indexOf('=');return [line.slice(0,i),line.slice(i+1)];
+    }));
   };
 
   const subject=fs.mkdtempSync(path.join(os.tmpdir(),'bb-jev-subject-'));
@@ -329,21 +331,25 @@ test('CI selector skips only a canonical SATISFIED readiness publication transit
   const plan=read(subject,'plan.json');
   const evaluationRef='docs/blackboard/artifacts/ready-implement-plan/BB-1.readiness-jev-evaluation.json';
   plan.status='READY';plan.readinessRef=evaluationRef;write(subject,'plan.json',plan);
-  const evaluation={
-    kind:'BLACKBOARD_ARTIFACT',version:1,artifactType:'JEV_EVALUATION',artifactId:'BB-1-readiness',
-    lane:'RESEARCH_SA',verdict:'SATISFIED',cacheKey:'a'.repeat(64),
-    subject:{workId:'BB-1',plan:{ref:'plan.json',hash:planHash(plan)}}
-  };
-  write(subject,evaluationRef,evaluation);
+  write(subject,evaluationRef,readiness);
   const graph=read(subject,'docs/blackboard/work-graph.json'),task=graph.tasks[0];
   Object.assign(task,{lane:'WORKER',phase:'EXECUTION',status:'PLANNED',claim:null,currentContextRef:null});
-  Object.assign(task.contract,{evaluationRef,lastEvaluatedInput:evaluation.cacheKey,evidenceRef:'docs/blackboard/artifacts/ready-implement-plan/BB-1.implementation-result.json'});
+  Object.assign(task.contract,{evaluationRef,lastEvaluatedInput:readiness.cacheKey,evidenceRef:'docs/blackboard/artifacts/ready-implement-plan/BB-1.implementation-result.json'});
   write(subject,'docs/blackboard/work-graph.json',graph);
   subjectGit('add','.');subjectGit('commit','-m','publish readiness');
   const publicationSha=subjectGit('rev-parse','HEAD');
-  assert.deepEqual(runSelect(f.root,subject,publicationSha),[]);
 
-  evaluation.verdict='RESEARCH_REQUIRED';write(subject,evaluationRef,evaluation);
+  const selected=runSelect(f.root,subject,publicationSha);
+  assert.deepEqual(JSON.parse(selected.work),[]);
+  assert.deepEqual(JSON.parse(selected.publications),[{id:'BB-1',sha:publicationSha}]);
+  assert.equal(selected.trusted_sha,f.git('rev-parse','HEAD'));
+  assert.doesNotThrow(()=>execFileSync(process.execPath,[ciScript,'verify-publication'],{
+    cwd:process.cwd(),
+    env:{...process.env,WORK_ID:'BB-1',CANDIDATE_SHA:publicationSha,TRUSTED_ROOT:f.root,SUBJECT_ROOT:subject},
+    stdio:['ignore','pipe','pipe']
+  }));
+
+  const forged=read(subject,evaluationRef);forged.verdict='RESEARCH_REQUIRED';write(subject,evaluationRef,forged);
   subjectGit('add',evaluationRef);subjectGit('commit','-m','forge readiness publication');
   const forgedSha=subjectGit('rev-parse','HEAD');
   assert.throws(()=>runSelect(f.root,subject,forgedSha),/research candidate changed trusted routing contract|Command failed/);
