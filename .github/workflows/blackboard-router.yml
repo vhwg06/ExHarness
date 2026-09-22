@@ -25,7 +25,7 @@ jobs:
     outputs:
       work: ${{ steps.select.outputs.work }}
       publications: ${{ steps.select.outputs.publications }}
-      trusted_sha: ${{ steps.select.outputs.trusted_sha }}
+      trusted_sha: ${{ steps.trusted.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,7 +39,8 @@ jobs:
           path: subject
           fetch-depth: 0
           persist-credentials: false
-      - name: Pin trusted checkout to exact PR base
+      - id: trusted
+        name: Pin trusted checkout to exact PR base
         env:
           GH_TOKEN: ${{ github.token }}
           CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
@@ -51,7 +52,7 @@ jobs:
           test -n "$trusted_sha" || { echo "No exact PR base found for $CANDIDATE_SHA"; exit 1; }
           git -C trusted fetch --no-tags origin "$trusted_sha"
           git -C trusted checkout --detach "$trusted_sha"
-          echo "trusted_sha=$trusted_sha" >> "$GITHUB_ENV"
+          echo "sha=$trusted_sha" >> "$GITHUB_OUTPUT"
       - id: select
         env:
           CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
