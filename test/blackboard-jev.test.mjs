@@ -304,6 +304,51 @@ test('CI selector routes exact research plan candidates from PR heads and merged
   assert.deepEqual(runSelect(f.root,f.root,mainSha),[{id:'BB-1',sha:mainSha}]);
 });
 
+
+test('CI selector judges RESEARCH_SA even when execution dependencies are not DONE',t=>{
+  const f=fixture(t);
+  const graph=read(f.root,'docs/blackboard/work-graph.json');
+  graph.tasks[0].dependencies=[{taskId:'BB-0',requires:['TASK_OUTPUT']}];
+  graph.tasks.unshift({
+    id:'BB-0',
+    status:'PLANNED',
+    lane:'WORKER',
+    phase:'EXECUTION',
+    dependencies:[],
+    components:['outer/blackboard'],
+    artifacts:{inputRefs:[],outputRefs:[],consolidatedRefs:[]},
+    contract:{candidateSha:null}
+  });
+  write(f.root,'docs/blackboard/work-graph.json',graph);
+  f.git('add','.');f.git('commit','-m','record blocked research control plane');
+
+  const ciScript=path.resolve('scripts/blackboard-jev-ci.mjs');
+  const runSelect=(trustedRoot,subjectRoot,candidateSha)=>{
+    const output=path.join(subjectRoot,'jev-select.out');
+    fs.rmSync(output,{force:true});
+    execFileSync(process.execPath,[ciScript,'select'],{
+      cwd:process.cwd(),
+      env:{...process.env,WORK_ID:'',CANDIDATE_SHA:candidateSha,TRUSTED_ROOT:trustedRoot,SUBJECT_ROOT:subjectRoot,GITHUB_OUTPUT:output},
+      stdio:['ignore','pipe','pipe']
+    });
+    const line=fs.readFileSync(output,'utf8').trim().split('\n').find(x=>x.startsWith('work='));
+    return JSON.parse(line.slice('work='.length));
+  };
+
+  const subject=fs.mkdtempSync(path.join(os.tmpdir(),'bb-jev-subject-'));
+  t.after(()=>removeFixture(subject));
+  fs.cpSync(f.root,subject,{recursive:true});
+  const subjectGit=(...args)=>execFileSync('git',args,{cwd:subject,encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
+  const plan=read(subject,'plan.json');
+  plan.architectureDecisions.push('Research may converge before execution dependencies are DONE');
+  write(subject,'plan.json',plan);
+  subjectGit('add','plan.json');subjectGit('commit','-m','blocked research plan candidate');
+  const candidateSha=subjectGit('rev-parse','HEAD');
+
+  assert.deepEqual(runSelect(f.root,subject,candidateSha),[{id:'BB-1',sha:candidateSha}]);
+});
+
+
 test('CI selector verifies canonical SATISFIED readiness publication instead of reporting fake Jev success',async t=>{
   const f=fixture(t);
   f.git('add','.');f.git('commit','-m','record research control plane');

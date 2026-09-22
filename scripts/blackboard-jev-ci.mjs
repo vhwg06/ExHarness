@@ -3,7 +3,6 @@ import path from 'node:path';
 import { read, write, fail, localPath, planHash } from './blackboard-delivery-contract.mjs';
 import { git, materialize, evaluate, validateEvaluation } from './blackboard-jev.mjs';
 import { collectEvidence } from './blackboard-delivery.mjs';
-import { taskReadiness } from './blackboard-work-graph.mjs';
 
 const [command]=process.argv.slice(2);
 const id=process.env.WORK_ID,sha=process.env.CANDIDATE_SHA;
@@ -45,7 +44,7 @@ function candidateResearchTask(graph,task){
   return {candidate,publication:false};
 }
 function researchChanged(graph,task,candidateOverride){
-  if(task.status==='DONE'||task.lane!=='RESEARCH_SA'||!taskReadiness(graph,task.id).ready)return false;
+  if(task.status==='DONE'||task.lane!=='RESEARCH_SA')return false;
   const inspected=candidateOverride ? {candidate:candidateOverride,publication:false} : candidateResearchTask(graph,task);
   if(inspected.publication)return false;
   const candidate=inspected.candidate;
@@ -69,7 +68,7 @@ if(command==='select') {
   const research=[];
   if(!id){
     for(const task of graph.tasks){
-      if(task.status==='DONE'||task.lane!=='RESEARCH_SA'||!taskReadiness(graph,task.id).ready)continue;
+      if(task.status==='DONE'||task.lane!=='RESEARCH_SA')continue;
       const inspected=candidateResearchTask(graph,task);
       if(inspected.publication)publications.push({id:task.id,sha});
       else if(researchChanged(graph,task,inspected.candidate))research.push(task);
