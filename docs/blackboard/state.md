@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-060
+next-work-id: BB-065
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -42,6 +42,11 @@ NONE
 
 - BB-052 [WORKER/EXECUTION] — Implement cross-domain obligations and selective semantic invalidation
 - BB-059 [RESEARCH_SA/RESEARCH] — Research evidence-gated HOW evolution and Jev evaluation pipeline
+- BB-060 [RESEARCH_SA/RESEARCH] — Reconcile Oracle physical ownership and package boundary
+- BB-061 [RESEARCH_SA/RESEARCH] — Define Application to Oracle semantic port and dependency direction
+- BB-062 [RESEARCH_SA/RESEARCH] — Define concrete Oracle source connectivity and adapter topology
+- BB-063 [RESEARCH_SA/RESEARCH] — Preserve Oracle provenance durability and migration compatibility
+- BB-064 [RESEARCH_SA/RESEARCH] — Close Oracle reconciliation with end-to-end connectivity and drift guards
 
 ## Jev decisions
 
@@ -86,6 +91,11 @@ BB-056 [DONE] <- ROOT
 BB-057 [BLOCKED_BY BB-055] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
 BB-059 [RESEARCH_SCHEDULABLE] <- BB-058
+BB-060 [RESEARCH_SCHEDULABLE] <- ROOT
+BB-061 [RESEARCH_SCHEDULABLE] <- BB-060
+BB-062 [RESEARCH_SCHEDULABLE] <- BB-061
+BB-063 [RESEARCH_SCHEDULABLE] <- BB-062
+BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
 ```
 
 ## Context semantics
