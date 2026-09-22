@@ -124,6 +124,12 @@ export function materialize(root, id, { readiness = false } = {}) {
         const decisionIndexes = [...new Set(coverage?.decisionIndexes ?? [])]
           .filter(index => Number.isInteger(index) && index >= 0 && index < plan.architectureDecisions.length);
         const sourceRefs = [...new Set(coverage?.sourceRefs ?? [])];
+        const supportingPlanFields = [...new Set(coverage?.supportingPlanFields ?? [])];
+        const supportingPlanEvidence = Object.fromEntries(
+          supportingPlanFields
+            .filter(key => typeof key === 'string' && key.length > 0 && Object.prototype.hasOwnProperty.call(plan, key))
+            .map(key => [key, plan[key]])
+        );
         const elementIds = planElements
           .map(value => String(value).match(/^([A-Za-z]+\d+[A-Za-z]?)/)?.[1] ?? null)
           .filter(Boolean);
@@ -139,6 +145,8 @@ export function materialize(root, id, { readiness = false } = {}) {
           decisionIndexes,
           architectureDecisions: decisionIndexes.map(index => plan.architectureDecisions[index]),
           sourceRefs,
+          supportingPlanFields,
+          supportingPlanEvidence,
           acceptanceCriteria: criteria.map(({ id, statement, verificationIds, evidenceRequired }) => ({ id, statement, verificationIds, evidenceRequired })),
           implementationSlices
         };
@@ -174,7 +182,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     const planEvidence = [
       ['blackboard://plan/lane-contract', {
         laneContracts: plan.laneContracts?.map(({ lane, input, output, binding, convergence, forbidden }) => ({ lane, input, output, binding, convergence, forbidden })),
-        objectiveCoverage: objectiveScopedResearch ? plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs })) : plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
+        objectiveCoverage: objectiveScopedResearch ? plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs, supportingPlanFields }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs, supportingPlanFields })) : plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
       }],
       ['blackboard://plan/readiness', {
         invariants: plan.invariants,
@@ -200,7 +208,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     state.evidence = [...planEvidence, ...refs.map(ref => {
       check(/^[a-f0-9]{40}$/.test(task.contract.researchBaselineSha??''),'exact research baseline required');
       const body=gitFile(root, task.contract.researchBaselineSha, ref);
-      return boundedResearchEvidence(ref,body,objectiveScopedResearch?1024:RESEARCH_EVIDENCE_CHARS);
+      return boundedResearchEvidence(ref,body,objectiveScopedResearch?768:RESEARCH_EVIDENCE_CHARS);
     })];
   } else {
     assertReady(root, task, plan);
