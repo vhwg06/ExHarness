@@ -1,0 +1,47 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-058",
+  "outcome": "A fresh observer can deterministically reconstruct why one product is or is not complete, who owns each remaining blocker, which semantic obligation/currentness transition caused it, and the exact execution policy/strategy/config/attempt/runtime/evidence lineage behind accepted claims, using only durable canonical provenance and without gaining acceptance or scheduling authority.",
+  "currentProblem": "Integration B through H define durable execution, semantic lineage, deployment/QA, closure and recovery semantics, but there is not yet one canonical observation boundary that reconstructs the causal explanation of current product state across those artifacts without relying on conversation context, caller-selected evidence, model inference or a new authoritative event ledger.",
+  "scope": [
+    "observe.product-currentness",
+    "observe.causal-reconstruction",
+    "observe.remaining-work-ownership",
+    "observe.semantic-obligation-lineage",
+    "observe.execution-provenance",
+    "observe.wait-vs-execute-time",
+    "observe.acceptance-evidence",
+    "observe.fresh-process-rebuild"
+  ],
+  "constraints": [
+    "Observation is derived/read-only and cannot accept, reject, schedule, claim, publish, close or invalidate product work.",
+    "Canonical domain/product artifacts and currentness heads remain authority; observation indexes/snapshots are disposable rebuildable views.",
+    "The observer must not infer missing execution-attempt, strategy, config, runtime or evidence identity from prose/model reasoning.",
+    "Every causal statement must bind exact durable refs and currentness observations; UNKNOWN is required when provenance is absent.",
+    "Current explanation is based on one exact ProductProjectionSubject/currentness basis so mixed-time narratives are rejected.",
+    "Ownership is derived from canonical OrganizationWorkContract/obligation/domain state, not guessed from role names.",
+    "Waiting time and execution time are computed only from durable lifecycle/attempt timestamps that belong to the same causal chain.",
+    "Historical accepted evidence remains queryable but is distinguished from current blockers/current accepted claims.",
+    "Fresh-process reconstruction must produce the same normalized causal result for the same pinned subject.",
+    "Integration I does not optimize or promote strategy/policy; that remains Integration J."
+  ],
+  "successCriteria": [
+    "For a NOT_READY product, a fresh observer returns the exact current blockers and the owning domain/work item for each remaining actionable obligation.",
+    "For a blocked downstream subject, the observer traces the exact accepted semantic obligation and upstream derivation/currentness transition that caused the block without inventing ordering authority.",
+    "For an accepted domain output, the observer traces WorkContract, claim/release, ExecutionPolicy, immutable ExecutionStrategyRef, ExecutionAttemptBinding, runtime attestation/invocation, completion decision and authoritative publication refs.",
+    "For current QualityAcceptance and ProductOutcomeClaim, the observer traces the exact DeploymentRelease/AcceptanceSnapshot/runtime evidence/product projection and acceptance evidence that support them.",
+    "If required execution strategy/config/attempt/runtime/evidence provenance is missing, reconstruction returns UNKNOWN/INCOMPLETE with the missing ref class instead of backfilling by inference.",
+    "A reconstruction pinned to product subject Hn is rejected as current after Hn+1 changes product/currentness state; historical Hn reconstruction remains resolvable.",
+    "Deleting any observation cache/index and rebuilding from the same pinned canonical subject yields an identical normalized causal graph and answer set.",
+    "A fresh process with only durable stores can answer why-not-done, owner, failed obligation, execution identity, wait-vs-execute duration and supporting evidence without prior conversation state.",
+    "Observation code cannot mutate authoritative stores or make acceptance/scheduling decisions; attempts to use observation output as authority fail closed.",
+    "The observer can reconstruct one adversarially recovered path from Integration H without losing the original attempt/binding versus later runtime invocation distinction."
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/system/agentic-application/contracts.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+  ]
+}
