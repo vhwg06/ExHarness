@@ -110,7 +110,7 @@ jobs:
           fi
 
   blackboard-jev:
-    name: blackboard-jev (${{ matrix.work.id }})
+    name: blackboard-jev
     needs: blackboard
     if: needs.blackboard.outputs.work != '[]'
     strategy:
@@ -126,7 +126,7 @@ jobs:
     secrets: inherit
 
   readiness-verify:
-    name: readiness-verify (${{ matrix.work.id }})
+    name: readiness-verify
     needs: blackboard
     if: needs.blackboard.outputs.publications != '[]'
     strategy:
