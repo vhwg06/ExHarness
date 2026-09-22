@@ -1,0 +1,215 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-069",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-069.json",
+    "hash": "74f3173bd0d772468a73f11d1d1e63455d453be46e33b87455efc1159e8fcf85"
+  },
+  "scope": [
+    "delivery.first-slice"
+  ],
+  "outOfScope": [
+    "Unbounded autonomous product decisions and expansion beyond the supported delivery profile.",
+    "Replacing delivered Integration or Oracle authority contracts.",
+    "Treating this research allocation as implementation readiness or product delivery."
+  ],
+  "constraints": [
+    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
+    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
+    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments."
+  ],
+  "invariants": [
+    "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+    "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+    "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
+  ],
+  "architectureDecisions": [
+    "Candidate direction, not selected architecture: Define the smallest real Backend/QA delivery path using delivered Oracle and SCM adapters without claiming the full organization lifecycle.",
+    "Candidate direction, not selected architecture: Choose deterministic API/browser checks and independent semantic acceptance; define release identity evidence.",
+    "Candidate direction, not selected architecture: Design three reset live runs, one interrupted run and one seeded defect; distinguish feasibility from reliability."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "docs/living/system/state.md"
+    ],
+    "expectedNew": [
+      "scripts/delivery/bb-069-probe.mjs"
+    ],
+    "expectedTests": [
+      "test/delivery/bb-069.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "docs/living/**",
+      "docs/blackboard/process/delivery-product-roadmap.md",
+      "docs/blackboard/process/delivery-research/BB-069.md",
+      "scripts/**",
+      "test/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "scripts/delivery/**",
+      "test/delivery/**",
+      "docs/living/system/**",
+      "package.json"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "Resolve task-specific research decisions and narrow source scope before readiness.",
+    "Implement the selected bounded capability and concrete adapter/fixture seams.",
+    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "The real feature uses Oracle-resolved exact input refs, produces a real candidate and runs in an isolated preview whose release identity is recorded.",
+      "verificationIds": [
+        "live-probe"
+      ],
+      "evidenceRequired": [
+        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "Independent QA observes functional behavior and rejects a seeded defect even when the producer says success.",
+      "verificationIds": [
+        "live-probe"
+      ],
+      "evidenceRequired": [
+        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "At least three reset live runs and one kill/resume path have complete evidence, budgets and failure records; feasibility is reported separately from pilot value.",
+      "verificationIds": [
+        "live-probe"
+      ],
+      "evidenceRequired": [
+        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "A negative or boundary case that would fail if this invariant were violated."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "A negative or boundary case that would fail if this invariant were violated."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "A negative or boundary case that would fail if this invariant were violated."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "criterionIds": [
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "criterionIds": [
+        "INV-3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-069-probe.mjs"
+    },
+    {
+      "id": "boundary-probe",
+      "command": "node --test test/delivery/bb-069.test.mjs"
+    }
+  ],
+  "researchGaps": [
+    "Define the smallest real Backend/QA delivery path using delivered Oracle and SCM adapters without claiming the full organization lifecycle.",
+    "Choose deterministic API/browser checks and independent semantic acceptance; define release identity evidence.",
+    "Design three reset live runs, one interrupted run and one seeded defect; distinguish feasibility from reliability.",
+    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
+    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
+    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
+  ],
+  "negativeVerificationCases": [
+    "Producer success with failing independent acceptance.",
+    "Missing or stale source/runtime identity represented as current evidence.",
+    "Unresolved external effect retried as if confirmed safe."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "docs/blackboard/artifacts/objective/BB-069.json + docs/blackboard/process/delivery-research/BB-069.md",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-acceptance",
+        "invented live evidence"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE direct dependencies",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "forbidden": [
+        "redefine plan",
+        "self-acceptance"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "BB-069 Living truth describes only the implemented and independently verified supported capability and limitations."
+  }
+}
