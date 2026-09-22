@@ -116,11 +116,15 @@
     ]
   },
   "implementationSlices": [
-    "C1 — production domain write authority: implement DomainWriteAuthorityPolicy/current CAS head plus a trusted publication gate adapter for the existing DomainExecutionController; bind publisher principal/domain/allowed semantic and obligation kinds and preserve the current organization lifecycle publication fence.",
-    "C2 — immutable semantic subjects: implement content-addressed SemanticClaim and CrossDomainObligation revisions with separate CAS currentness heads, normalized logical keys, idempotent identical replay and explicit supersession/revocation transitions.",
-    "C3 — authoritative product lineage: persist ProductDerivationEdge only from accepted DomainPublicationReceipt publication, maintain rebuildable reverse-impact indexes, and implement deterministic reverse-transitive DependencyImpactAnalysis over exact semantic subject keys.",
-    "C4 — currentness reconciliation and work invalidation: perform the pre/post consumed-head handshake, mark raced dependents non-current, reject stale obligation materialization, and map an invalidated obligation only to work materialized from that exact obligation subject using existing block/invalidate/fence lifecycle seams.",
-    "C5 — BA -> SA executable vertical: publish an accepted BA requirement claim, issue one authorized SA solution-design obligation, materialize deterministic SA-owned work, prove BA never chooses SA worker/runtime/strategy, and show SA execution mechanics remain resolved by existing ExecutionPolicy/ExecutionStrategyDescriptor infrastructure."
+    "C1 — Domain write authority [AC-1A, AC-2A, AC-2B, AC-2C, INV-6B, INV-6C]: implement CAS-headed DomainWriteAuthorityPolicy and the production publicationGate adapter in domain-write-authority.js; gate publisher principal/domain plus allowed semantic kind, obligation kind and target domain before authoritative publication. Verify with cross-domain-obligation + domain-execution-regression.",
+    "C2 — Immutable semantic and obligation currentness [AC-5A, AC-5C, AC-6A, INV-7A, INV-7B]: implement content-addressed SemanticClaim/CrossDomainObligation revisions plus separate CAS currentness heads in cross-domain-obligation.js/product-lineage.js; identical content resolves one revision, semantic change supersedes immutably, non-current revisions cannot authorize mutation. Verify with cross-domain-obligation.",
+    "C3 — Authoritative product lineage [AC-2C, AC-7A, AC-7B, INV-4, INV-5]: persist ProductDerivationEdge only from an accepted DomainPublicationReceipt in product-lineage.js; rebuild reverse adjacency from immutable records and treat indexes as disposable. Verify with dependency-invalidation + lineage-race.",
+    "C4A — Selective semantic invalidation [AC-3A, AC-3B, INV-2, INV-3, INV-8]: in dependency-invalidation.js start from the exact superseded semantic subject key, compute reverse-transitive closure only across accepted ProductDerivationEdge records, transition only closure heads non-current, and leave outside siblings current. Verify the changed-detail and unrelated-sibling assertions in dependency-invalidation.",
+    "C4B — Invalidation-to-work bridge [AC-6A, AC-6B]: bind each materialized Board item to the exact obligation revision that authorized it; reject new materialization from a non-current obligation, block unclaimed affected work, and route claimed affected work through existing organization claim invalidation/release fencing without touching unrelated work. Verify with dependency-invalidation + organization-bridge-regression.",
+    "C4C — Publication/currentness race [AC-4]: capture exact consumed currentness heads before dependent publication, publish under the existing lifecycle/write-authority guard, re-read the same heads after publication, and deterministically reconcile the dependent non-current on drift. Verify with the barrier-controlled lineage-race test.",
+    "C5A — BA→SA obligation publication [AC-1A]: ba-sa-vertical creates one accepted BA requirement SemanticClaim, passes that exact subject plus a solution-design obligation request through DomainWriteAuthority, and commits one authorized SA-targeted CrossDomainObligation revision only after accepted publication.",
+    "C5B — Deterministic SA work materialization [AC-1B, AC-5B]: organization-work.js consumes the exact ACTIVE SA obligation revision and existing materialization authorization to derive one deterministic SA-owned OrganizationWorkContract/Board identity; replay of that same revision converges on the same work. Verify with ba-sa-vertical + organization-bridge-regression.",
+    "C5C — BA/SA execution separation [AC-1C, INV-1, INV-6A]: the obligation constructor rejects worker/runtime/strategy/priority fields; BA code never invokes SA execution selection; after SA work is claimed, existing DomainExecutionController resolves HOW from SA-owned ExecutionPolicy/ExecutionStrategyDescriptor. Verify with ba-sa-vertical + domain-execution-regression."
   ],
   "acceptanceCriteria": [
     {
@@ -551,9 +555,11 @@
         "domain-execution-regression"
       ],
       "planElements": [
-        "architectureDecisions",
-        "implementationSlices.C1/C2/C5",
-        "negativeVerificationCases"
+        "C1",
+        "C2",
+        "C5A",
+        "C5B",
+        "C5C"
       ]
     },
     {
@@ -582,8 +588,9 @@
         "dependency-invalidation"
       ],
       "planElements": [
-        "implementationSlices.C3/C4",
-        "negativeVerificationCases"
+        "C3",
+        "C4A",
+        "C4B"
       ]
     },
     {
@@ -595,8 +602,7 @@
         "lineage-race"
       ],
       "planElements": [
-        "architectureDecisions.currentness-handshake",
-        "implementationSlices.C4"
+        "C4C"
       ]
     },
     {
@@ -611,8 +617,8 @@
         "ba-sa-vertical"
       ],
       "planElements": [
-        "architectureDecisions.logical-obligation-identity",
-        "implementationSlices.C2"
+        "C2",
+        "C5B"
       ]
     },
     {
@@ -627,8 +633,8 @@
         "organization-bridge-regression"
       ],
       "planElements": [
-        "implementationSlices.C4",
-        "negativeVerificationCases"
+        "C2",
+        "C4B"
       ]
     },
     {
@@ -643,8 +649,8 @@
         "lineage-race"
       ],
       "planElements": [
-        "architectureDecisions.authoritative-lineage",
-        "implementationSlices.C2/C3"
+        "C2",
+        "C3"
       ]
     }
   ],
