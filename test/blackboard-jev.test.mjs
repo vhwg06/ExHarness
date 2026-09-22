@@ -356,9 +356,10 @@ test('CI selector verifies canonical SATISFIED readiness publication instead of 
 });
 
 
-test('CI separates Blackboard routing from evaluation-only blackboard-jev workflow',()=>{
+test('CI keeps Blackboard routing inside the PR test workflow and Jev evaluation reusable',()=>{
   const jev=fs.readFileSync('.github/workflows/blackboard-jev.yml','utf8');
-  const router=fs.readFileSync('.github/workflows/blackboard-router.yml','utf8');
+  const testWorkflow=fs.readFileSync('.github/workflows/test.yml','utf8');
+  assert.equal(fs.existsSync('.github/workflows/blackboard-router.yml'),false);
   assert.match(jev,/name: blackboard-jev/);
   assert.match(jev,/workflow_call:/);
   assert.match(jev,/workflow_dispatch:/);
@@ -366,22 +367,11 @@ test('CI separates Blackboard routing from evaluation-only blackboard-jev workfl
   assert.match(jev,/name: collect Jev evidence/);
   assert.match(jev,/name: Jev evaluate/);
   assert.doesNotMatch(jev,/no Jev evaluation required|verify published Jev readiness/);
-  assert.match(router,/name: blackboard-router/);
-  assert.match(router,/workflow_run:/);
-  assert.match(router,/name: dispatch Jev/);
-  assert.match(router,/gh api --method GET/);
-  assert.match(router,/trusted_sha: \$\{\{ steps\.trusted\.outputs\.sha \}\}/);
-  assert.match(router,/controller_sha: \$\{\{ steps\.controller\.outputs\.sha \}\}/);
-  assert.match(router,/id: trusted/);
-  assert.match(router,/node controller\/scripts\/blackboard-jev-ci\.mjs select/);
-  assert.match(jev,/controller_sha:/);
-  assert.match(jev,/node controller\/scripts\/blackboard-jev-ci\.mjs collect/);
-  assert.match(jev,/node controller\/scripts\/blackboard-jev-ci\.mjs evaluate/);
-  assert.match(router,/select\(\.head\.sha == \$sha\)/);
-  assert.doesNotMatch(router,/git -C trusted merge-base HEAD/);
-  assert.doesNotMatch(router,/pull_requests\[0\]\.base\.sha/);
-  assert.match(jev,/steps\.trusted\.outputs\.sha/);
-  assert.match(router,/blackboard-jev\.yml\/dispatches/);
-  assert.match(router,/name: verify published Jev readiness/);
-  assert.match(router,/name: no Blackboard judgment required/);
+  assert.match(testWorkflow,/name: blackboard-gate/);
+  assert.match(testWorkflow,/uses: vhwg06\/ExHarness\/\.github\/workflows\/blackboard-jev\.yml@main/);
+  assert.match(testWorkflow,/name: readiness-verify/);
+  assert.doesNotMatch(testWorkflow,/gh api .*dispatches|blackboard-router/);
+  assert.match(testWorkflow,/needs: \[living-doc-impact, kernel\]/);
+  assert.match(testWorkflow,/trusted_sha: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
+  assert.match(testWorkflow,/candidate_sha: \$\{\{ matrix\.work\.sha \}\}/);
 });
