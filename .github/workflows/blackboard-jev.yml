@@ -12,7 +12,11 @@ on:
         required: false
         type: string
       trusted_sha:
-        description: Exact trusted control-plane/evaluator commit
+        description: Exact trusted control-plane commit
+        required: false
+        type: string
+      controller_sha:
+        description: Exact trusted evaluator/controller implementation commit
         required: false
         type: string
 
@@ -31,7 +35,16 @@ jobs:
     outputs:
       work: ${{ steps.select.outputs.work }}
       trusted_sha: ${{ steps.trusted.outputs.sha }}
+      controller_sha: ${{ steps.controller.outputs.sha }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.controller_sha || 'main' }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+      - id: controller
+        run: echo "sha=$(git -C controller rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.trusted_sha || 'main' }}
@@ -54,7 +67,7 @@ jobs:
           CANDIDATE_SHA: ${{ steps.subject.outputs.sha }}
           TRUSTED_ROOT: trusted
           SUBJECT_ROOT: subject
-        run: node trusted/scripts/blackboard-jev-ci.mjs select
+        run: node controller/scripts/blackboard-jev-ci.mjs select
       - name: Require exactly one evaluation subject
         env:
           WORK: ${{ steps.select.outputs.work }}
@@ -71,6 +84,11 @@ jobs:
         work: ${{ fromJSON(needs.select.outputs.work) }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.select.outputs.controller_sha }}
+          path: controller
+          persist-credentials: false
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.select.outputs.trusted_sha }}
@@ -91,7 +109,7 @@ jobs:
           CANDIDATE_SHA: ${{ matrix.work.sha }}
           TRUSTED_ROOT: trusted
           SUBJECT_ROOT: subject
-        run: node trusted/scripts/blackboard-jev-ci.mjs collect
+        run: node controller/scripts/blackboard-jev-ci.mjs collect
       - uses: actions/upload-artifact@v4
         with:
           name: jev-input-${{ matrix.work.id }}
@@ -107,6 +125,11 @@ jobs:
         work: ${{ fromJSON(needs.select.outputs.work) }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.select.outputs.controller_sha }}
+          path: controller
+          persist-credentials: false
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.select.outputs.trusted_sha }}
@@ -137,7 +160,7 @@ jobs:
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
           TRUSTED_ROOT: trusted
           SUBJECT_ROOT: subject
-        run: node trusted/scripts/blackboard-jev-ci.mjs evaluate
+        run: node controller/scripts/blackboard-jev-ci.mjs evaluate
       - uses: actions/upload-artifact@v4
         if: always()
         with:
