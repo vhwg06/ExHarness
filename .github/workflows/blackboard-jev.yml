@@ -8,59 +8,61 @@ on:
         required: true
         type: string
       candidate_sha:
-        description: Exact candidate commit (empty for research)
+        description: Exact subject commit
         required: false
         type: string
-  workflow_run:
-    workflows: [test]
-    types: [completed]
+      trusted_sha:
+        description: Exact trusted control-plane/evaluator commit
+        required: false
+        type: string
 
 permissions:
   contents: read
   actions: read
 
 concurrency:
-  group: blackboard-jev-${{ inputs.work_id || github.event.workflow_run.head_sha }}
+  group: blackboard-jev-${{ inputs.work_id }}-${{ inputs.candidate_sha || 'current' }}
   cancel-in-progress: false
 
 jobs:
   select:
-    name: route Jev work
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.event == 'pull_request' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_repository.full_name == github.repository)
+    name: validate Jev subject
     runs-on: ubuntu-latest
     outputs:
       work: ${{ steps.select.outputs.work }}
-      publications: ${{ steps.select.outputs.publications }}
       trusted_sha: ${{ steps.select.outputs.trusted_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.event.workflow_run.pull_requests[0].base.sha }}
+          ref: ${{ inputs.trusted_sha || 'main' }}
           path: trusted
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.candidate_sha || github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ inputs.candidate_sha || inputs.trusted_sha || 'main' }}
           path: subject
           fetch-depth: 0
           persist-credentials: false
+      - id: subject
+        run: echo "sha=$(git -C subject rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - id: select
         env:
           WORK_ID: ${{ inputs.work_id }}
-          CANDIDATE_SHA: ${{ inputs.candidate_sha || github.event.workflow_run.head_sha || github.sha }}
+          CANDIDATE_SHA: ${{ steps.subject.outputs.sha }}
           TRUSTED_ROOT: trusted
           SUBJECT_ROOT: subject
         run: node trusted/scripts/blackboard-jev-ci.mjs select
+      - name: Require exactly one evaluation subject
+        env:
+          WORK: ${{ steps.select.outputs.work }}
+        run: |
+          count="$(jq 'length' <<<"$WORK")"
+          test "$count" = "1" || { echo "Expected exactly one Jev subject, got $count"; exit 1; }
 
   evidence:
     name: collect Jev evidence (${{ matrix.work.id }})
     needs: select
-    if: needs.select.outputs.work != '[]'
     strategy:
       fail-fast: false
       matrix:
@@ -97,7 +99,6 @@ jobs:
   evaluate:
     name: Jev evaluate (${{ matrix.work.id }})
     needs: [select, evidence]
-    if: needs.select.outputs.work != '[]'
     strategy:
       fail-fast: false
       matrix:
@@ -146,43 +147,3 @@ jobs:
         with:
           path: subject/.cache/blackboard-jev
           key: jev-${{ matrix.work.id }}-${{ github.run_id }}
-
-  verify-publication:
-    name: verify published Jev readiness (${{ matrix.work.id }})
-    needs: select
-    if: needs.select.outputs.publications != '[]'
-    strategy:
-      fail-fast: false
-      matrix:
-        work: ${{ fromJSON(needs.select.outputs.publications) }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.select.outputs.trusted_sha }}
-          path: trusted
-          persist-credentials: false
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.work.sha }}
-          path: subject
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Verify canonical readiness publication against exact trusted input
-        env:
-          WORK_ID: ${{ matrix.work.id }}
-          CANDIDATE_SHA: ${{ matrix.work.sha }}
-          TRUSTED_ROOT: trusted
-          SUBJECT_ROOT: subject
-        run: node trusted/scripts/blackboard-jev-ci.mjs verify-publication
-
-  no-evaluation:
-    name: no Jev evaluation required
-    needs: select
-    if: needs.select.outputs.work == '[]' && needs.select.outputs.publications == '[]'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "::notice::No current Blackboard subject on this PR requires Jev evaluation or readiness-publication verification."
