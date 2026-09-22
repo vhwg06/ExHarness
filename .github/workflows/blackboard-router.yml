@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.pull_requests[0].base.sha }}
+          ref: main
           path: trusted
           fetch-depth: 0
           persist-credentials: false
@@ -38,6 +38,15 @@ jobs:
           path: subject
           fetch-depth: 0
           persist-credentials: false
+      - name: Pin trusted checkout to exact merge-base
+        env:
+          CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          git -C trusted fetch --no-tags origin "$CANDIDATE_SHA"
+          trusted_sha="$(git -C trusted merge-base HEAD "$CANDIDATE_SHA")"
+          test -n "$trusted_sha"
+          git -C trusted checkout --detach "$trusted_sha"
+          echo "trusted_sha=$trusted_sha" >> "$GITHUB_ENV"
       - id: select
         env:
           CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
