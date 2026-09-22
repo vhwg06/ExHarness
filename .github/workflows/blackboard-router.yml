@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   actions: write
+  pull-requests: read
 
 concurrency:
   group: blackboard-router-${{ github.event.workflow_run.head_sha }}
@@ -38,13 +39,17 @@ jobs:
           path: subject
           fetch-depth: 0
           persist-credentials: false
-      - name: Pin trusted checkout to exact merge-base
+      - name: Pin trusted checkout to exact PR base
         env:
+          GH_TOKEN: ${{ github.token }}
           CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          REPO_OWNER: ${{ github.repository_owner }}
         run: |
-          git -C trusted fetch --no-tags origin "$CANDIDATE_SHA"
-          trusted_sha="$(git -C trusted merge-base HEAD "$CANDIDATE_SHA")"
-          test -n "$trusted_sha"
+          pulls="$(gh api --method GET "repos/${GITHUB_REPOSITORY}/pulls"             -f state=all             -f head="${REPO_OWNER}:${HEAD_BRANCH}"             -f per_page=100)"
+          trusted_sha="$(jq -r --arg sha "$CANDIDATE_SHA" '[.[] | select(.head.sha == $sha) | .base.sha][0] // empty' <<<"$pulls")"
+          test -n "$trusted_sha" || { echo "No exact PR base found for $CANDIDATE_SHA"; exit 1; }
+          git -C trusted fetch --no-tags origin "$trusted_sha"
           git -C trusted checkout --detach "$trusted_sha"
           echo "trusted_sha=$trusted_sha" >> "$GITHUB_ENV"
       - id: select

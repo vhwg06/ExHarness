@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       work: ${{ steps.select.outputs.work }}
-      trusted_sha: ${{ steps.select.outputs.trusted_sha }}
+      trusted_sha: ${{ steps.trusted.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,6 +38,8 @@ jobs:
           path: trusted
           fetch-depth: 0
           persist-credentials: false
+      - id: trusted
+        run: echo "sha=$(git -C trusted rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.candidate_sha || inputs.trusted_sha || 'main' }}
