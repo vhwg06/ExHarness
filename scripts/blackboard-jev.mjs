@@ -81,7 +81,35 @@ export function materialize(root, id, { readiness = false } = {}) {
     verificationPlan: plan.verificationPlan,
     researchGaps: plan.researchGaps
   };
-  const state = { objective, plan: lane === 'WORKER' ? workerPlan : planContent(plan), evidence: [] };
+  const researchPlan = lane === 'RESEARCH_SA' ? planContent(plan) : null;
+  const objectiveEvidence = lane === 'RESEARCH_SA'
+    ? objective.successCriteria.map((objectiveCriterion) => {
+        const coverage = (plan.objectiveCoverage ?? []).find(entry => entry.objectiveCriterion === objectiveCriterion) ?? null;
+        const criterionIds = [...new Set(coverage?.criterionIds ?? [])];
+        const criteria = plan.acceptanceCriteria.filter(entry => criterionIds.includes(entry.id));
+        const verificationIds = [...new Set([
+          ...(coverage?.verificationIds ?? []),
+          ...criteria.flatMap(entry => entry.verificationIds ?? [])
+        ])];
+        const planElements = [...new Set(coverage?.planElements ?? [])];
+        const elementIds = planElements
+          .map(value => String(value).match(/^([A-Za-z]+\d+[A-Za-z]?)/)?.[1] ?? null)
+          .filter(Boolean);
+        const implementationSlices = plan.implementationSlices.filter(slice => {
+          const body = typeof slice === 'string' ? slice : canonical(slice);
+          return elementIds.some(id => body.startsWith(id + ' ') || body.startsWith(id + ' —') || body.includes('"id":"' + id + '"'));
+        });
+        return {
+          objectiveCriterion,
+          criterionIds,
+          planElements,
+          verificationIds,
+          acceptanceCriteria: criteria.map(({ id, statement, verificationIds, evidenceRequired }) => ({ id, statement, verificationIds, evidenceRequired })),
+          implementationSlices
+        };
+      })
+    : [];
+  const state = { objective, plan: lane === 'WORKER' ? workerPlan : researchPlan, evidence: [], ...(lane === 'RESEARCH_SA' ? { objectiveEvidence } : {}) };
   const question = (id, statement, evidencePath) => {
     const laneRule = lane === 'RESEARCH_SA'
       ? 'This is a RESEARCH_SA readiness judgment: the explicit plan fields and plan-derived evidence are the evidence of implementability. Do not require future worker code, candidate commits, runtime logs or delivery receipts at this lane.'
@@ -90,7 +118,7 @@ export function materialize(root, id, { readiness = false } = {}) {
   };
   if (lane === 'RESEARCH_SA') {
     if(plan.researchGaps?.length) fail('unresolved research gaps; complete the current plan before Jev readiness');
-    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, '`state.objective` and `state.plan`');
+    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, `\`state.objectiveEvidence[${i}]\` plus the matching criterion in \`state.objective.successCriteria\``);
     const readinessStatements = {
       scope: 'Scope and exclusions are unambiguous.',
       constraints: 'Constraints are explicit and compatible with the objective.',
@@ -106,7 +134,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     const planEvidence = [
       ['blackboard://plan/lane-contract', {
         laneContracts: plan.laneContracts?.map(({ lane, input, output, binding, convergence, forbidden }) => ({ lane, input, output, binding, convergence, forbidden })),
-        objectiveCoverage: plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
+        objectiveCoverage: plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds }))
       }],
       ['blackboard://plan/readiness', {
         invariants: plan.invariants,
