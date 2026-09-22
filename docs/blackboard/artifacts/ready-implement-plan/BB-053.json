@@ -571,6 +571,9 @@
         "packages/agentic-system/src/composition.js",
         "packages/agentic-system/src/contracts.js",
         "packages/agentic-system/src/backend-worker.js"
+      ],
+      "supportingPlanFields": [
+        "parallelDomainExecutionContract"
       ]
     },
     {
@@ -602,6 +605,10 @@
         "packages/agentic-system/src/composition.js",
         "packages/agentic-system/src/contracts.js",
         "packages/agentic-system/src/backend-worker.js"
+      ],
+      "supportingPlanFields": [
+        "parallelDomainExecutionContract",
+        "domainOutageIsolationContract"
       ]
     },
     {
@@ -645,8 +652,67 @@
         "packages/agentic-system/src/organization-work.js",
         "packages/agentic-system/src/application-orchestrator.js",
         "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "supportingPlanFields": [
+        "partialInvalidationContract"
       ]
     }
   ],
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "parallelDomainExecutionContract": {
+    "independenceKey": "OrganizationWorkContract identity + owningDomain",
+    "backend": {
+      "owningDomain": "BACKEND",
+      "policySubject": "executionPolicySubjectKey(BACKEND, backendWorkloadType)",
+      "adapter": "prebound Backend runtimeAdapter",
+      "input": "exact WorkContract + one matching DomainExecutionInput"
+    },
+    "frontend": {
+      "owningDomain": "FRONTEND",
+      "policySubject": "executionPolicySubjectKey(FRONTEND, frontendWorkloadType)",
+      "adapter": "prebound Frontend runtimeAdapter",
+      "input": "exact WorkContract + one matching DomainExecutionInput"
+    },
+    "start": "startAll() invokes BACKEND and FRONTEND hosts with Promise.allSettled; neither host awaits the other before reconcile/dispatch",
+    "overlapProof": [
+      "both adapters emit dispatchStarted before either completion barrier is released",
+      "workContractRef differs",
+      "executionPolicyRef differs",
+      "executionStrategyRef differs",
+      "executionAttemptId differs",
+      "runtimeInvocationKey differs"
+    ],
+    "forbidden": [
+      "global stage flag",
+      "shared strategy switch",
+      "Backend-first dispatcher",
+      "Frontend-first dispatcher"
+    ]
+  },
+  "domainOutageIsolationContract": {
+    "precondition": "BACKEND and FRONTEND each reached independent dispatchStarted under their own current attempt",
+    "inject": "reject one domain runtime adapter/barrier after admission",
+    "failedDomain": "failure remains inside that host's allSettled result and its own attempt lifecycle",
+    "siblingDomain": "release sibling barrier; sibling controller reaches its own current TERMINAL/completion without reading or awaiting failed-domain claim, attempt, session, stage or completion state",
+    "sharedStateAllowed": [
+      "immutable artifacts",
+      "CAS/currentness stores"
+    ],
+    "sharedStateForbidden": [
+      "global execution lock",
+      "cross-domain stage state",
+      "other-domain completion prerequisite"
+    ]
+  },
+  "partialInvalidationContract": {
+    "setup": "two actionable work items A and B with distinct obligationSubjectKey values and no semantic dependency edge",
+    "invalidate": "supersede/invalidate only A's exact obligation head",
+    "staleA": "a stale notify/reconcile for A must fail currentness, fence/invalidate only A's released capability, create no new execution attempt and perform no runtime dispatch",
+    "preserveB": "canonical owning-domain scan still returns B; B may claim, dispatch and complete",
+    "forbidden": [
+      "organization-wide reset",
+      "stage-wide reset",
+      "fencing B because A changed"
+    ]
+  }
 }
