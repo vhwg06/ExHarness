@@ -43,86 +43,62 @@
     "queued stale hints cannot resurrect invalidated work"
   ],
   "architectureDecisions": [
-    "DOMAIN_ACTIVATION is domain-local level-triggered reconciliation",
-    "event/watch/poll/restart inputs are wake-up hints only; canonical state is re-read on every reconcile",
-    "Activation != Scheduling and does not rank multiple actionable work items",
-    "activation works on exact projectId/workId/owningDomain keys, never role/stage names",
-    "duplicate triggers converge through canonical lifecycle/claim fencing",
-    "missed triggers are recovered by domain-specific canonical scans; event queue/cache is disposable",
-    "no transactional outbox is required for correctness in D v1",
-    "activation never resolves ExecutionStrategy; BB-048 remains the HOW boundary",
-    "post-claim/post-release source-obligation currentness is revalidated before execution entry",
-    "FE and BE are independently activatable and may use different strategy kinds/versions"
+    "Activation is level-triggered per owning domain; hints/scans only discover exact work and canonical state is reread before claim.",
+    "Key={projectId,workId,owningDomain}; trigger data grants no principal/claim/strategy/runtime/obligation/publication authority.",
+    "Canonical scans are recovery truth; disposable hint state cannot strand work; duplicates converge through claim/release + attempt currentness.",
+    "BB-052 must preserve requiredArtifactRefs and exact obligation-head currentness or BB-053 returns to RESEARCH_SA.",
+    "DomainExecutionInput is immutable content-addressed execution data; exactly one ref must match WorkContract owningDomain/workloadType.",
+    "DomainExecutionController resolves policy/strategy and passes exact WorkContract to its prebound adapter; activation never selects HOW.",
+    "BACKEND/FRONTEND have separate principals, hosts, controllers and adapters; shared stores provide CAS/currentness only.",
+    "Post-release reread of the same obligationSubjectKey+revision gates execution; drift fences claim with no attempt.",
+    "Parallel proof requires both FE/BE dispatch entered before either completes; host-local failure and exact invalidation cannot affect siblings."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "packages/agentic-system/src/organization-claim.js",
       "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/domain-execution-store.js",
       "packages/agentic-system/src/backend-worker.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/durable-backend-qa.js",
-      "delivered Integration B domain-execution-control source",
-      "delivered Integration C obligation/currentness source"
+      "packages/agentic-system/src/backend-application.js"
     ],
     "expectedNew": [
+      "packages/agentic-system/src/domain-execution-input.js",
       "packages/agentic-system/src/domain-activation.js",
       "packages/agentic-system/src/domain-activation-source.js",
+      "packages/agentic-system/src/domain-activation-host.js",
+      "packages/agentic-system/src/domain-runtime-composition.js",
       "packages/agentic-system/src/backend-execution-strategy.js",
       "packages/agentic-system/src/frontend-contracts.js",
       "packages/agentic-system/src/frontend-worker.js",
       "packages/agentic-system/src/frontend-application.js",
+      "packages/agentic-system/src/frontend-completion.js",
       "packages/agentic-system/src/frontend-execution-strategy.js"
     ],
     "expectedTests": [
       "packages/agentic-system/test/domain-activation.test.js",
       "packages/agentic-system/test/activation-recovery.test.js",
       "packages/agentic-system/test/fe-be-parallel.test.js",
-      "packages/agentic-system/test/partial-invalidation.test.js"
+      "packages/agentic-system/test/partial-invalidation.test.js",
+      "packages/agentic-system/test/frontend-domain.test.js",
+      "packages/agentic-system/test/domain-host-autonomy.test.js"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/src/organization-work.js",
-      "packages/agentic-system/src/organization-claim.js",
-      "packages/agentic-system/src/organization-authority.js",
-      "packages/agentic-system/src/application-orchestrator.js",
-      "packages/agentic-system/src/domain-execution-control.js",
       "packages/agentic-system/src/**",
-      "packages/agentic-system/test/bb047-organization-bridge.test.js",
-      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
       "packages/agentic-system/test/**",
-      "packages/agentic-system/src/backend-worker.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/durable-backend-qa.js",
-      "delivered Integration B domain-execution-control source",
-      "delivered Integration C obligation/currentness source",
-      "packages/agentic-system/src/domain-activation.js",
-      "packages/agentic-system/src/domain-activation-source.js",
-      "packages/agentic-system/src/backend-execution-strategy.js",
-      "packages/agentic-system/src/frontend-contracts.js",
-      "packages/agentic-system/src/frontend-worker.js",
-      "packages/agentic-system/src/frontend-application.js",
-      "packages/agentic-system/src/frontend-execution-strategy.js",
-      "packages/agentic-system/test/domain-activation.test.js",
-      "packages/agentic-system/test/activation-recovery.test.js",
-      "packages/agentic-system/test/fe-be-parallel.test.js",
-      "packages/agentic-system/test/partial-invalidation.test.js"
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md"
     ],
     "write": [
       "packages/agentic-system/src/organization-work.js",
       "packages/agentic-system/src/organization-claim.js",
-      "packages/agentic-system/src/organization-authority.js",
       "packages/agentic-system/src/application-orchestrator.js",
       "packages/agentic-system/src/domain-execution-control.js",
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/test/bb047-organization-bridge.test.js",
-      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
-      "packages/agentic-system/test/**",
-      "packages/agentic-system/src/backend-worker.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/durable-backend-qa.js",
-      "delivered Integration B domain-execution-control source",
-      "delivered Integration C obligation/currentness source",
       "packages/agentic-system/src/domain-activation.js",
       "packages/agentic-system/src/domain-activation-source.js",
       "packages/agentic-system/src/backend-execution-strategy.js",
@@ -130,182 +106,217 @@
       "packages/agentic-system/src/frontend-worker.js",
       "packages/agentic-system/src/frontend-application.js",
       "packages/agentic-system/src/frontend-execution-strategy.js",
+      "packages/agentic-system/src/index.js",
       "packages/agentic-system/test/domain-activation.test.js",
       "packages/agentic-system/test/activation-recovery.test.js",
       "packages/agentic-system/test/fe-be-parallel.test.js",
-      "packages/agentic-system/test/partial-invalidation.test.js"
+      "packages/agentic-system/test/partial-invalidation.test.js",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "packages/agentic-system/src/domain-runtime-composition.js",
+      "packages/agentic-system/src/frontend-completion.js",
+      "packages/agentic-system/test/frontend-domain.test.js",
+      "packages/agentic-system/src/domain-activation-host.js",
+      "packages/agentic-system/test/domain-host-autonomy.test.js",
+      "packages/agentic-system/src/domain-execution-input.js"
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/objective/**",
-      "docs/blackboard/artifacts/ready-implement-plan/**"
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "scripts/**",
+      ".github/**"
     ]
   },
   "implementationSlices": [
-    "D1: DomainActivationKey + DomainActivationSource + DomainActivationController.reconcile",
-    "D2: activation -> claim/release -> execution admission handshake",
-    "D3: Backend domain-local strategy adapter",
-    "D4: first real Frontend domain + domain-local strategy using same organization/execution contracts",
-    "D5: parallel autonomy fixture + activation observations"
+    "D1 — DomainExecutionInput [AC-5,AC-6]: immutable content-addressed {owningDomain,workloadType,repository,requiredFiles,constraints}; execution requires exactly one matching WorkContract artifact ref.",
+    "D2 — Controller seam [AC-2,AC-3,AC-4,INV-4]: pass exact WorkContract to the prebound runtime adapter; policy/strategy resolution, release validation, attempt binding and runtime attestation remain controller-owned.",
+    "D3A — Recovery/dedup [AC-1,AC-2,AC-7,INV-1,INV-2,INV-3]: scan listEligible(domain), reconcile exact key, recover via immediate/periodic scans, and converge duplicate hints through canonical claim/release + attempt currentness.",
+    "D3B — Domain admission [AC-3,INV-1,INV-3,INV-4,INV-5]: require host.domain=key.domain=WorkContract.domain before claim; hint fields grant no authority; mismatch has zero claim/attempt/dispatch.",
+    "D3C — Post-release fence [AC-4,INV-8]: reread the exact obligation subject+revision immediately before execute; non-ACTIVE/drift invalidates/fences only that claim and creates no attempt/dispatch.",
+    "D3D — Selective invalidation [AC-8,INV-8]: stale exact subject is NOOP/fenced; no global reset; unrelated current obligation remains scan-eligible/executable.",
+    "D4 — Backend adapter [AC-5,AC-6]: exact WorkContract+DomainExecutionInput -> BackendObjective; BackendApplication dispatch/recover; map WorkResult/artifacts/evidence to controller result.",
+    "D5 — Frontend adapter [AC-5,AC-6,INV-6,INV-7]: same adapter contract and recovery semantics as Backend, using only exact Frontend WorkContract+input and no Backend stage/session state.",
+    "D6A — Domain host [AC-1,AC-2,AC-7,INV-2,INV-3]: immediate+periodic canonical scan; notify is exact-domain latency hint; allSettled reconcile; stop drains only that host.",
+    "D6B — FE/BE composition [AC-5,AC-6,INV-6,INV-7]: independent hosts/controllers/adapters start with Promise.allSettled; neither awaits sibling completion; one host failure stays local.",
+    "D7 — Proofs [AC-1..AC-8,INV-1..INV-8]: barriers/counters prove parallel dispatch, zero-side-effect wrong-domain rejection, duplicate convergence, restart recovery, currentness drift fencing and sibling survival."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
       "statement": "Persisted actionable work is rediscovered and processed after controller restart even when its original notification was lost.",
       "verificationIds": [
-        "repository-verification"
+        "domain-host-autonomy",
+        "activation-recovery"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "fresh host/no hints -> immediate scan -> claim/execute"
       ]
     },
     {
       "id": "AC-2",
       "statement": "Concurrent duplicate hints for one work item converge to one current claim/execution path.",
       "verificationIds": [
-        "repository-verification"
+        "domain-activation",
+        "activation-recovery"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "concurrent scan+notify -> one current claim/attempt; duplicate NOOP/replay"
       ]
     },
     {
       "id": "AC-3",
       "statement": "A wrong-domain activation attempt cannot claim or execute the work.",
       "verificationIds": [
-        "repository-verification"
+        "domain-activation",
+        "organization-bridge-regression"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "wrong host/key/contract domain -> claim=0, attempt=0, dispatch=0"
       ]
     },
     {
       "id": "AC-4",
       "statement": "Obligation supersession between activation pre-check and execution entry prevents execution through the post-release currentness recheck.",
       "verificationIds": [
-        "repository-verification"
+        "partial-invalidation",
+        "domain-activation"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "pause after release; supersede same subject; recheck fences; attempt=dispatch=0; sibling executes"
       ]
     },
     {
       "id": "AC-5",
       "statement": "Frontend and Backend work can progress concurrently and independently under their own domain execution strategies.",
       "verificationIds": [
-        "repository-verification"
+        "domain-host-autonomy",
+        "frontend-domain",
+        "fe-be-parallel",
+        "domain-execution-regression"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "distinct FE/BE contracts+policies+adapters; both dispatchStarted before either completes; identities differ"
       ]
     },
     {
       "id": "AC-6",
       "statement": "An outage in one domain leaves unrelated work in another domain actionable and able to progress.",
       "verificationIds": [
-        "repository-verification"
+        "domain-host-autonomy",
+        "fe-be-parallel"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "after both dispatchStarted, fail one adapter; sibling still reaches terminal without failed-domain state"
       ]
     },
     {
       "id": "AC-7",
       "statement": "Removing a manual next-role dispatcher does not stop progress for persisted actionable work.",
       "verificationIds": [
-        "repository-verification"
+        "domain-host-autonomy",
+        "activation-recovery",
+        "fe-be-parallel"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "no nextRole/nextDomain/stage API; startup/periodic scans progress persisted work without event"
       ]
     },
     {
       "id": "AC-8",
       "statement": "Partial upstream invalidation suppresses only affected activation subjects while unrelated domain work remains actionable.",
       "verificationIds": [
-        "repository-verification"
+        "partial-invalidation",
+        "activation-recovery"
       ],
       "evidenceRequired": [
-        "Passing exact-candidate verification logs and relevant source evidence"
+        "invalidate only A; stale A NOOP/fenced; next scan executes unrelated B"
       ]
     },
     {
       "id": "INV-1",
-      "statement": "event != authority",
+      "statement": "Wake-up event or hint data cannot grant principal, claim, execution, strategy, obligation or publication authority.",
       "verificationIds": [
-        "repository-verification"
+        "domain-activation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "spoofed hint authority fields cannot alter principal/claim/attempt/publication"
       ]
     },
     {
       "id": "INV-2",
-      "statement": "queue != source of truth",
+      "statement": "Queue, cursor, timer and hint state are disposable latency state and never canonical work truth.",
       "verificationIds": [
-        "repository-verification"
+        "domain-host-autonomy",
+        "activation-recovery"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "delete hint/timer state; restart scan rediscovers same work"
       ]
     },
     {
       "id": "INV-3",
-      "statement": "Activation != Scheduling",
+      "statement": "Activation operates on exact work identities and cannot rank, schedule or choose a next role/domain.",
       "verificationIds": [
-        "repository-verification"
+        "domain-activation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "activation exposes exact-key reconcile/domain scan only; no ranking/next-role/stage API"
       ]
     },
     {
       "id": "INV-4",
-      "statement": "activation != strategy selection",
+      "statement": "Activation cannot select or override ExecutionPolicy, ExecutionStrategyDescriptor or runtime adapter.",
       "verificationIds": [
-        "repository-verification"
+        "domain-activation",
+        "domain-execution-regression"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "activation passes only released-claim identity; controller still resolves policy/strategy/adapter"
       ]
     },
     {
       "id": "INV-5",
-      "statement": "activation != obligation creation",
+      "statement": "Activation cannot create, mutate or make current a CrossDomainObligation.",
       "verificationIds": [
-        "repository-verification"
+        "domain-activation",
+        "partial-invalidation"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "activation has no obligation-write capability; forged obligation hint data is inert"
       ]
     },
     {
       "id": "INV-6",
-      "statement": "no implicit FE/BE stage barrier",
+      "statement": "Frontend and Backend have no implicit stage barrier; only explicit semantic work dependencies may block actionability.",
       "verificationIds": [
-        "repository-verification"
+        "domain-host-autonomy",
+        "fe-be-parallel"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "unrelated FE/BE both dispatch before completion; Frontend reads no Backend stage/session state"
       ]
     },
     {
       "id": "INV-7",
-      "statement": "one domain outage must not block unrelated domain work",
+      "statement": "Failure of one owning-domain host cannot cancel, gate or pause unrelated domain progress.",
       "verificationIds": [
-        "repository-verification"
+        "domain-host-autonomy",
+        "fe-be-parallel"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "one adapter failure stays host-local; sibling reaches terminal"
       ]
     },
     {
       "id": "INV-8",
-      "statement": "queued stale hints cannot resurrect invalidated work",
+      "statement": "A stale hint cannot resurrect work whose exact obligation/currentness became non-current.",
       "verificationIds": [
-        "repository-verification"
+        "partial-invalidation",
+        "activation-recovery"
       ],
       "evidenceRequired": [
-        "Exact candidate source and negative verification evidence"
+        "non-current exact subject + stale hint -> no new claim/attempt/dispatch; unrelated work remains executable"
       ]
     }
   ],
@@ -361,12 +372,381 @@
   ],
   "verificationPlan": [
     {
-      "id": "repository-verification",
-      "command": "npm run verify"
+      "id": "organization-bridge-regression",
+      "command": "node --test packages/agentic-system/test/bb047-organization-bridge.test.js"
+    },
+    {
+      "id": "domain-execution-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js"
+    },
+    {
+      "id": "domain-activation",
+      "command": "node --test packages/agentic-system/test/domain-activation.test.js"
+    },
+    {
+      "id": "activation-recovery",
+      "command": "node --test packages/agentic-system/test/activation-recovery.test.js"
+    },
+    {
+      "id": "domain-host-autonomy",
+      "command": "node --test packages/agentic-system/test/domain-host-autonomy.test.js"
+    },
+    {
+      "id": "frontend-domain",
+      "command": "node --test packages/agentic-system/test/frontend-domain.test.js"
+    },
+    {
+      "id": "fe-be-parallel",
+      "command": "node --test packages/agentic-system/test/fe-be-parallel.test.js"
+    },
+    {
+      "id": "partial-invalidation",
+      "command": "node --test packages/agentic-system/test/partial-invalidation.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
     }
   ],
-  "researchGaps": [
-    "Confirm architecture/source seams against current delivered dependencies",
-    "Replace generic verification mapping with criterion-specific commands and evidence; no automatic READY during migration"
-  ]
+  "researchGaps": [],
+  "negativeVerificationCases": [
+    "Spoofed hint authority, role/stage activation, wrong-domain claim, strategy selection and obligation mutation fail closed.",
+    "Lost/duplicate hints cannot strand work or create duplicate current claim/attempt.",
+    "Missing/multiple/mismatched DomainExecutionInput and adapterRef mismatch fail before dispatch.",
+    "Post-release admission is bound to the same obligation subject+revision.",
+    "FE/BE concurrency requires both dispatchStarted before either completion; serial or shared-router execution fails.",
+    "One host failure and one invalidated subject cannot block or fence an unrelated sibling."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-053 OBJECTIVE + current BB-048 Living truth + BB-052 dependency contract",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective/hash + researchBaselineSha",
+      "convergence": "researchGaps=[] and Jev SATISFIED",
+      "forbidden": [
+        "product-source mutation",
+        "delivery claim",
+        "unfinished BB-052 treated as delivered",
+        "self-accept readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-052 consolidated truth",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate SHA/tree + criterion evidence + Jev judgment",
+      "convergence": "all criteria and Living Docs SATISFIED on exact candidate",
+      "forbidden": [
+        "redefine objective/plan",
+        "hidden scheduler/dispatcher",
+        "run while BB-052 non-DONE",
+        "self-accept implementation"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The delivered Integration D Living Docs accurately describe domain-local level-triggered activation, claim/execution admission, FE/BE independent domain strategies, recovery and non-authoritative wake-up hints."
+  },
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-053.readiness-jev-evaluation.json",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Persisted actionable work is rediscovered and processed after controller restart even when its original notification was lost.",
+      "criterionIds": [
+        "AC-1"
+      ],
+      "planElements": [
+        "D3A",
+        "D6A"
+      ],
+      "verificationIds": [
+        "activation-recovery"
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/organization-work.js",
+        "docs/living/system/agentic-application/capabilities.md",
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/organization-work.js",
+          "match": "async listEligible({owningDomain})"
+        },
+        {
+          "ref": "docs/living/system/agentic-application/capabilities.md",
+          "match": "createOrganizationWorkDiscovery(...)"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Concurrent duplicate hints for one work item converge to one current claim/execution path.",
+      "criterionIds": [
+        "AC-2"
+      ],
+      "planElements": [
+        "D2",
+        "D3A",
+        "D6A"
+      ],
+      "verificationIds": [
+        "domain-activation",
+        "activation-recovery"
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/organization-work.js",
+        "packages/agentic-system/src/organization-claim.js",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/organization-claim.js",
+          "match": "async function publishRelease("
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "export function executionAttemptSubjectKey({projectId,itemId,workContractRef})"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "A wrong-domain activation attempt cannot claim or execute the work.",
+      "criterionIds": [
+        "AC-3"
+      ],
+      "planElements": [
+        "D3B"
+      ],
+      "verificationIds": [
+        "domain-activation",
+        "organization-bridge-regression"
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/organization-work.js",
+        "packages/agentic-system/src/organization-claim.js",
+        "docs/living/system/agentic-application/capabilities.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/organization-claim.js",
+          "match": "export function createOrganizationWorkClaimController("
+        },
+        {
+          "ref": "packages/agentic-system/src/organization-work.js",
+          "match": "async listEligible({owningDomain})"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Obligation supersession between activation pre-check and execution entry prevents execution through the post-release currentness recheck.",
+      "criterionIds": [
+        "AC-4"
+      ],
+      "planElements": [
+        "D2",
+        "D3C"
+      ],
+      "verificationIds": [
+        "partial-invalidation",
+        "domain-activation"
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/organization-claim.js",
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "supportingPlanFields": [
+        "bb052DependencyContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/organization-claim.js",
+          "match": "async function fenceRelease("
+        },
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "publication revalidates consumed input currentness across the commit window;"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Frontend and Backend work can progress concurrently and independently under their own domain execution strategies.",
+      "criterionIds": [
+        "AC-5"
+      ],
+      "planElements": [
+        "D1",
+        "D2",
+        "D4",
+        "D5",
+        "D6B"
+      ],
+      "verificationIds": [
+        "domain-host-autonomy",
+        "frontend-domain",
+        "fe-be-parallel",
+        "domain-execution-regression"
+      ],
+      "supportingPlanFields": [
+        "parallelDomainExecutionContract"
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js",
+        "packages/agentic-system/src/backend-application.js",
+        "docs/living/system/agentic-application/capabilities.md",
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "export function executionPolicySubjectKey(domain,workloadType)"
+        },
+        {
+          "ref": "packages/agentic-system/src/backend-application.js",
+          "match": "export async function runPreparedBackendObjective("
+        },
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "No central actor selects “run BA now, then SA, then BE”. Each domain sees only actionable obligations it owns."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "An outage in one domain leaves unrelated work in another domain actionable and able to progress.",
+      "criterionIds": [
+        "AC-6"
+      ],
+      "planElements": [
+        "D4",
+        "D5",
+        "D6B"
+      ],
+      "verificationIds": [
+        "domain-host-autonomy",
+        "fe-be-parallel"
+      ],
+      "supportingPlanFields": [
+        "parallelDomainExecutionContract",
+        "domainOutageIsolationContract"
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js",
+        "packages/agentic-system/src/backend-application.js",
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "export function createDomainExecutionController("
+        },
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "No central actor selects “run BA now, then SA, then BE”. Each domain sees only actionable obligations it owns."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Removing a manual next-role dispatcher does not stop progress for persisted actionable work.",
+      "criterionIds": [
+        "AC-7"
+      ],
+      "planElements": [
+        "D3A",
+        "D6A"
+      ],
+      "verificationIds": [
+        "activation-recovery",
+        "fe-be-parallel"
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/organization-work.js",
+        "docs/living/system/agentic-application/capabilities.md",
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/organization-work.js",
+          "match": "async listEligible({owningDomain})"
+        },
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "## Integration D — autonomous domain activation"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Partial upstream invalidation suppresses only affected activation subjects while unrelated domain work remains actionable.",
+      "criterionIds": [
+        "AC-8"
+      ],
+      "planElements": [
+        "D3D",
+        "D6A"
+      ],
+      "verificationIds": [
+        "partial-invalidation",
+        "activation-recovery"
+      ],
+      "supportingPlanFields": [
+        "bb052DependencyContract",
+        "partialInvalidationContract"
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/organization-claim.js",
+        "packages/agentic-system/src/application-orchestrator.js",
+        "docs/living/system/agentic-application/capabilities.md",
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/application-orchestrator.js",
+          "match": "async function invalidateOrganizationClaim("
+        },
+        {
+          "ref": "packages/agentic-system/src/organization-claim.js",
+          "match": "async function fenceRelease("
+        },
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "## Integration C — cross-domain obligations and selective semantic invalidation"
+        }
+      ]
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "parallelDomainExecutionContract": {
+    "independenceKey": "WorkContract identity + owningDomain",
+    "domains": "BACKEND and FRONTEND each use own current policy + prebound adapter + matching DomainExecutionInput",
+    "proof": "startAll/allSettled; both dispatchStarted before either completion; contract/policy/strategy/attempt/invocation ids differ",
+    "forbidden": [
+      "global stage",
+      "shared strategy switch",
+      "ordered FE/BE dispatcher"
+    ]
+  },
+  "domainOutageIsolationContract": {
+    "precondition": "both domains dispatchStarted",
+    "failure": "reject one adapter; failure remains host-local",
+    "sibling": "other domain reaches terminal without failed-domain claim/attempt/stage/completion state"
+  },
+  "partialInvalidationContract": {
+    "setup": "A/B distinct obligation subjects, no dependency edge",
+    "result": "supersede A => stale A NOOP/fenced/no attempt/dispatch; scan still executes B",
+    "forbidden": [
+      "organization reset",
+      "stage reset",
+      "fence B because A changed"
+    ]
+  },
+  "bb052DependencyContract": {
+    "workId": "BB-052",
+    "precondition": "BB-052 DONE before BB-053 WORKER",
+    "requiredTruth": "work binds exact obligation revision; CAS currentness marks ACTIVE/non-current; non-current claimed work uses canonical claim invalidation/fencing; unrelated siblings survive",
+    "onDrift": "return BB-053 to RESEARCH_SA"
+  }
 }
