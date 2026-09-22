@@ -12,7 +12,8 @@
         "FEATURE-INTEGRATION-D",
         "FEATURE-INTEGRATION-EF",
         "FEATURE-INTEGRATION-G",
-        "FEATURE-INTEGRATION-H"
+        "FEATURE-INTEGRATION-H",
+        "FEATURE-INTEGRATION-I"
       ],
       "artifactRefs": [
         "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
@@ -79,6 +80,18 @@
       ],
       "artifactRefs": [],
       "acceptanceTaskId": "BB-057"
+    },
+    {
+      "id": "FEATURE-INTEGRATION-I",
+      "topicId": "TOPIC-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Causal reconstruction and observation",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-058"
+      ],
+      "artifactRefs": [],
+      "acceptanceTaskId": "BB-058"
     }
   ],
   "tasks": [
@@ -423,10 +436,58 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-058",
+      "featureId": "FEATURE-INTEGRATION-I",
+      "title": "Implement deterministic causal reconstruction and observation",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "agentic/organization-work",
+        "agentic/domain-execution-control",
+        "agentic/product-lineage",
+        "agentic/domain-activation",
+        "agentic/deployment",
+        "agentic/product-qa",
+        "agentic/product-closure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-057",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-058.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-058.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "deterministic causal observation snapshot",
+        "why-not-done and remaining-owner reconstruction",
+        "exact execution and acceptance provenance with durable timing"
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-058.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+        "researchBaselineSha": "a139444c58fd75be6992bf3a2529d9a78bb8cb7b",
+        "baselineSha": "a139444c58fd75be6992bf3a2529d9a78bb8cb7b"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-058",
+    "nextWorkId": "BB-059",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
