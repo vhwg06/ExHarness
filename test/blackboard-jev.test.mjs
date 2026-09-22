@@ -360,6 +360,7 @@ test('CI separates Blackboard routing from evaluation-only blackboard-jev workfl
   const jev=fs.readFileSync('.github/workflows/blackboard-jev.yml','utf8');
   const router=fs.readFileSync('.github/workflows/blackboard-router.yml','utf8');
   assert.match(jev,/name: blackboard-jev/);
+  assert.match(jev,/workflow_call:/);
   assert.match(jev,/workflow_dispatch:/);
   assert.doesNotMatch(jev,/workflow_run:/);
   assert.match(jev,/name: collect Jev evidence/);
