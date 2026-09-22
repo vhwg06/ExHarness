@@ -18,11 +18,12 @@ function checkedFile(root, ref) {
   const body = fs.readFileSync(localPath(root, ref), 'utf8');
   return { ref, hash: hash(body), body };
 }
-const RESEARCH_EVIDENCE_CHARS = 1024;
-function boundedResearchEvidence(ref, body) {
+const RESEARCH_EVIDENCE_CHARS = 2048;
+function boundedResearchEvidence(ref, body, maxChars = RESEARCH_EVIDENCE_CHARS) {
   const digest=hash(body),bytes=Buffer.byteLength(body);
-  if(body.length<=RESEARCH_EVIDENCE_CHARS)return {ref,hash:digest,bytes,body,excerpted:false};
-  const headChars=192,tailChars=192,outlineChars=384;
+  if(body.length<=maxChars)return {ref,hash:digest,bytes,body,excerpted:false};
+  const compact=maxChars<RESEARCH_EVIDENCE_CHARS;
+  const headChars=compact?192:384,tailChars=compact?192:384,outlineChars=compact?384:768;
   const head=body.slice(0,headChars),tail=body.slice(-tailChars);
   const outline=body.split('\n').filter(line=>
     /^#{1,6}\s/.test(line) ||
@@ -82,7 +83,8 @@ export function materialize(root, id, { readiness = false } = {}) {
     researchGaps: plan.researchGaps
   };
   const researchPlan = lane === 'RESEARCH_SA' ? planContent(plan) : null;
-  const objectiveEvidence = lane === 'RESEARCH_SA'
+  const objectiveScopedResearch = lane === 'RESEARCH_SA' && plan.jevEvidenceRouting === 'OBJECTIVE_SCOPED_V1';
+  const objectiveEvidence = objectiveScopedResearch
     ? objective.successCriteria.map((objectiveCriterion) => {
         const coverage = (plan.objectiveCoverage ?? []).find(entry => entry.objectiveCriterion === objectiveCriterion) ?? null;
         const criterionIds = [...new Set(coverage?.criterionIds ?? [])];
@@ -109,7 +111,7 @@ export function materialize(root, id, { readiness = false } = {}) {
         };
       })
     : [];
-  const state = { objective, plan: lane === 'WORKER' ? workerPlan : researchPlan, evidence: [], ...(lane === 'RESEARCH_SA' ? { objectiveEvidence } : {}) };
+  const state = { objective, plan: lane === 'WORKER' ? workerPlan : researchPlan, evidence: [], ...(objectiveScopedResearch ? { objectiveEvidence } : {}) };
   const question = (id, statement, evidencePath) => {
     const laneRule = lane === 'RESEARCH_SA'
       ? 'This is a RESEARCH_SA readiness judgment: the explicit plan fields and plan-derived evidence are the evidence of implementability. Do not require future worker code, candidate commits, runtime logs or delivery receipts at this lane.'
@@ -118,7 +120,7 @@ export function materialize(root, id, { readiness = false } = {}) {
   };
   if (lane === 'RESEARCH_SA') {
     if(plan.researchGaps?.length) fail('unresolved research gaps; complete the current plan before Jev readiness');
-    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, `\`state.objectiveEvidence[${i}]\` plus the matching criterion in \`state.objective.successCriteria\``);
+    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, objectiveScopedResearch ? `\`state.objectiveEvidence[${i}]\` plus the matching criterion in \`state.objective.successCriteria\`` : '`state.objective` and `state.plan`');
     const readinessStatements = {
       scope: 'Scope and exclusions are unambiguous.',
       constraints: 'Constraints are explicit and compatible with the objective.',
@@ -134,7 +136,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     const planEvidence = [
       ['blackboard://plan/lane-contract', {
         laneContracts: plan.laneContracts?.map(({ lane, input, output, binding, convergence, forbidden }) => ({ lane, input, output, binding, convergence, forbidden })),
-        objectiveCoverage: plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds }))
+        objectiveCoverage: objectiveScopedResearch ? plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds })) : plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
       }],
       ['blackboard://plan/readiness', {
         invariants: plan.invariants,
@@ -160,7 +162,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     state.evidence = [...planEvidence, ...refs.map(ref => {
       check(/^[a-f0-9]{40}$/.test(task.contract.researchBaselineSha??''),'exact research baseline required');
       const body=gitFile(root, task.contract.researchBaselineSha, ref);
-      return boundedResearchEvidence(ref,body);
+      return boundedResearchEvidence(ref,body,objectiveScopedResearch?1024:RESEARCH_EVIDENCE_CHARS);
     })];
   } else {
     assertReady(root, task, plan);
