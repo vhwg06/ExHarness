@@ -11,7 +11,8 @@
         "FEATURE-INTEGRATION-C",
         "FEATURE-INTEGRATION-D",
         "FEATURE-INTEGRATION-EF",
-        "FEATURE-INTEGRATION-G"
+        "FEATURE-INTEGRATION-G",
+        "FEATURE-INTEGRATION-H"
       ],
       "artifactRefs": [
         "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
@@ -66,6 +67,18 @@
       ],
       "artifactRefs": [],
       "acceptanceTaskId": "BB-055"
+    },
+    {
+      "id": "FEATURE-INTEGRATION-H",
+      "topicId": "TOPIC-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Adversarial recovery and bounded remediation",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-057"
+      ],
+      "artifactRefs": [],
+      "acceptanceTaskId": "BB-057"
     }
   ],
   "tasks": [
@@ -354,10 +367,58 @@
       },
       "lane": "WORKER",
       "phase": "DELIVERED"
+    },
+    {
+      "id": "BB-057",
+      "featureId": "FEATURE-INTEGRATION-H",
+      "title": "Prove adversarial recovery across the end-to-end organization",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "agentic/organization-work",
+        "agentic/domain-execution-control",
+        "agentic/product-lineage",
+        "agentic/domain-activation",
+        "agentic/deployment",
+        "agentic/product-qa",
+        "agentic/product-closure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-055",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-057.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-057.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "adversarial recovery proof across Integration B-G",
+        "same-attempt recovery and stale-capability fencing",
+        "bounded local remediation without global reset"
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-057.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
+        "researchBaselineSha": "1049ab951068dbf3dea7671c8e24582804d8c728",
+        "baselineSha": "1049ab951068dbf3dea7671c8e24582804d8c728"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-057",
+    "nextWorkId": "BB-058",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

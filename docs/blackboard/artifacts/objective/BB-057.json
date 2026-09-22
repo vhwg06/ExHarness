@@ -1,0 +1,47 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-057",
+  "outcome": "The end-to-end organization survives adversarial crash, race, duplicate-recovery and stale-currentness scenarios by reconstructing from durable canonical authority, fencing stale capability, reusing the same semantic attempt where required, and remediating only the affected downstream product state without a global recovery scheduler or whole-organization reset.",
+  "currentProblem": "Integration B provides bounded execution recovery and C through G now have accepted implementation plans for semantic lineage, autonomous activation, exact deployment/QA, and product closure, but there is no single adversarial proof that these local recovery/currentness guarantees compose across crash windows and concurrent supersession without duplicate effects, stale acceptance, hidden central sequencing, or global reruns.",
+  "scope": [
+    "recovery.execution-attempt",
+    "recovery.claim-generation-fencing",
+    "recovery.publication-continuation",
+    "recovery.semantic-currentness",
+    "recovery.qa-deployment-race",
+    "recovery.closure-supersession",
+    "recovery.product-history-reconciliation",
+    "recovery.bounded-impact"
+  ],
+  "constraints": [
+    "Recovery authority stays with the boundary owning the affected authority/currentness subject; no central recovery scheduler chooses work or roles.",
+    "Durable canonical refs/CAS heads are recovery truth; process memory, queues, hints and conversation state are not authority.",
+    "Recovering an in-flight semantic attempt reuses its immutable ExecutionAttemptBinding; repair cannot silently mint a new semantic attempt.",
+    "Stale claim/release/input/release-head/QA/projection subjects cannot authorize new effects or current acceptance.",
+    "Committed authoritative publication is reused/idempotently reconciled after continuation loss, not duplicated.",
+    "Invalidation/remediation is reverse-dependent and bounded; unrelated work remains current.",
+    "Historical evidence is immutable; currentness changes through new canonical transitions/revalidation.",
+    "Tests may pause production boundaries but cannot add stronger serialization than production.",
+    "Fresh-process recovery reconstructs from durable state without conversation context.",
+    "Forbidden fallback: whole-organization reset, rerun-all-roles, rebuild-all-artifacts, or manual global recovery order."
+  ],
+  "successCriteria": [
+    "Crash after domain output/before publication: fresh recovery reuses the same semantic attempt/binding and publishes at most once.",
+    "Crash after publication/before continuation: restart reuses the publication, continues downstream at most once, and does not rerun accepted work.",
+    "After claim-generation takeover, the old worker cannot dispatch or publish with stale claim/release authority.",
+    "Semantic input drift during execution blocks stale publication, invalidates only reverse dependents, and leaves an unrelated sibling current.",
+    "Deployment drift during QA blocks current QualityAcceptance from the old snapshot while preserving historical QA evidence.",
+    "Closure racing upstream supersession never leaves stale closure current: closure either commits first then becomes historical, or aborts as stale.",
+    "Duplicate recovery workers converge on one logical attempt/publication/continuation with no duplicate semantic output.",
+    "Recover/repair of an existing semantic attempt cannot create a second semantic attempt; only new authorized work/input may.",
+    "Authority ahead of ProductHistoryHead yields RECOVERY_REQUIRED/NOT_READY until deterministic history/projection reconciliation.",
+    "Recovery stays local across the matrix: no global reset/rerun/manual ordering, and unaffected actionable work continues."
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/system/agentic-application/contracts.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+  ]
+}

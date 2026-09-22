@@ -1,0 +1,714 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-057",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-057.json",
+    "hash": "5345255690b682015f190d44b1bafebeaaccc67ff3aee20d708ed68d0313e228"
+  },
+  "scope": [
+    "recovery.execution-attempt",
+    "recovery.claim-generation-fencing",
+    "recovery.publication-continuation",
+    "recovery.semantic-currentness",
+    "recovery.qa-deployment-race",
+    "recovery.closure-supersession",
+    "recovery.product-history-reconciliation",
+    "recovery.bounded-impact"
+  ],
+  "outOfScope": [
+    "Central RecoveryManager/global scheduler or manual next-role dispatcher.",
+    "Integration I causal observability and Integration J strategy optimization/promotion.",
+    "Whole-organization reset, replay-all-roles, full artifact rebuild, or test-only recovery authority."
+  ],
+  "constraints": [
+    "Recovery authority stays with the boundary owning the affected authority/currentness subject; no central recovery scheduler chooses work or roles.",
+    "Durable canonical refs/CAS heads are recovery truth; process memory, queues, hints and conversation state are not authority.",
+    "Recovering an in-flight semantic attempt reuses its immutable ExecutionAttemptBinding; repair cannot silently mint a new semantic attempt.",
+    "Stale claim/release/input/release-head/QA/projection subjects cannot authorize new effects or current acceptance.",
+    "Committed authoritative publication is reused/idempotently reconciled after continuation loss, not duplicated.",
+    "Invalidation/remediation is reverse-dependent and bounded; unrelated work remains current.",
+    "Historical evidence is immutable; currentness changes through new canonical transitions/revalidation.",
+    "Tests may pause production boundaries but cannot add stronger serialization than production.",
+    "Fresh-process recovery reconstructs from durable state without conversation context.",
+    "Forbidden fallback: whole-organization reset, rerun-all-roles, rebuild-all-artifacts, or manual global recovery order."
+  ],
+  "invariants": [
+    "Recovery authority stays with the boundary owning the affected authority/currentness subject; no central recovery scheduler chooses work or roles.",
+    "Durable canonical refs/CAS heads are recovery truth; process memory, queues, hints and conversation state are not authority.",
+    "Recovering an in-flight semantic attempt reuses its immutable ExecutionAttemptBinding; repair cannot silently mint a new semantic attempt.",
+    "Stale claim/release/input/release-head/QA/projection subjects cannot authorize new effects or current acceptance.",
+    "Committed authoritative publication is reused/idempotently reconciled after continuation loss, not duplicated.",
+    "Invalidation/remediation is reverse-dependent and bounded; unrelated work remains current.",
+    "Historical evidence is immutable; currentness changes through new canonical transitions/revalidation.",
+    "Tests may pause production boundaries but cannot add stronger serialization than production."
+  ],
+  "architectureDecisions": [
+    "H adds no RecoveryManager: each failure is recovered by the production owner of the affected claim, attempt, semantic-currentness, deployment/QA or product-history subject.",
+    "Failure injection uses deterministic barriers at durable boundaries; it cannot replace production CAS/currentness guards or add stronger serialization.",
+    "Execution recovery preserves semantic executionAttemptId + immutable binding; runtime invocation may change, but same-attempt recover/repair cannot re-resolve HOW or mint a new attempt.",
+    "Claim takeover is fenced by current claimGeneration/release; stale workers fail before dispatch/publication.",
+    "Committed DomainPublicationReceipt is continuation truth; restart derives downstream effects idempotently instead of rerunning accepted domain work.",
+    "Semantic-input drift uses delivered currentness + selective reverse invalidation; unrelated state is not widened into recovery scope.",
+    "Deployment/QA and closure recovery revalidate their exact release/projection heads; old evidence remains immutable history, not current acceptance.",
+    "Duplicate recovery converges through existing CAS heads and stable materialization/publication keys; any need for central sequencing/global reset is an architecture failure."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-052.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-053.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-054.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/application-orchestrator.js"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/agentic-system/test/adversarial-execution-recovery.test.js",
+      "packages/agentic-system/test/adversarial-publication-recovery.test.js",
+      "packages/agentic-system/test/adversarial-currentness-races.test.js",
+      "packages/agentic-system/test/adversarial-qa-closure-recovery.test.js",
+      "packages/agentic-system/test/adversarial-product-history-recovery.test.js",
+      "packages/agentic-system/test/adversarial-recovery-e2e.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "docs/living/system/agentic-application/**",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+    ],
+    "write": [
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/src/domain-activation.js",
+      "packages/agentic-system/src/deployment-release.js",
+      "packages/agentic-system/src/product-qa.js",
+      "packages/agentic-system/src/product-history.js",
+      "packages/agentic-system/src/product-state-projection.js",
+      "packages/agentic-system/src/product-closure.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/adversarial-*.test.js",
+      "packages/agentic-system/test/helpers/**",
+      "docs/living/system/agentic-application/**"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "scripts/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "H1 — Failure harness [AC-1..AC-10, INV-8]: deterministic test-only kill/pause barriers around production durable writes/guards; no sleeps or test-only stronger locks.",
+    "H2 — Claim/attempt recovery [AC-1, AC-3, AC-7, AC-8]: prove same-binding fresh-process recovery, stale-generation fencing, duplicate convergence and no repair-minted semantic attempt.",
+    "H3 — Publication/input-currentness recovery [AC-2, AC-4, AC-7, AC-10]: kill after publication and race semantic-input drift; reuse committed publication, converge one downstream continuation and invalidate only reverse dependents.",
+    "H4 — QA/closure races [AC-5, AC-6]: race DeploymentRelease with QA and upstream supersession with closure; preserve historical evidence while blocking stale current acceptance/outcome.",
+    "H5 — Product-history divergence [AC-9]: kill between closure-relevant authority movement and ProductHistory append; expose NOT_READY until deterministic fresh-process reconciliation.",
+    "H6 — End-to-end matrix [AC-1..AC-10]: reconstruct from durable stores, run all failures + B–G regressions, and require unaffected work to continue without global reset/manual order."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "Crash after domain output/before publication: fresh recovery reuses the same semantic attempt/binding and publishes at most once.",
+      "verificationIds": [
+        "execution-recovery",
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "Kill before publication; restart keeps the exact attempt/binding and <=1 canonical publication."
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "Crash after publication/before continuation: restart reuses the publication, continues downstream at most once, and does not rerun accepted work.",
+      "verificationIds": [
+        "publication-recovery",
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "Kill after publication; restart yields <=1 downstream obligation/work without rerunning accepted work."
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "After claim-generation takeover, the old worker cannot dispatch or publish with stale claim/release authority.",
+      "verificationIds": [
+        "execution-recovery",
+        "currentness-races"
+      ],
+      "evidenceRequired": [
+        "Stale generation resumes after takeover and is fenced before dispatch/publication."
+      ]
+    },
+    {
+      "id": "AC-4",
+      "statement": "Semantic input drift during execution blocks stale publication, invalidates only reverse dependents, and leaves an unrelated sibling current.",
+      "verificationIds": [
+        "currentness-races",
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "Input drift blocks stale publication and invalidates only reverse dependents."
+      ]
+    },
+    {
+      "id": "AC-5",
+      "statement": "Deployment drift during QA blocks current QualityAcceptance from the old snapshot while preserving historical QA evidence.",
+      "verificationIds": [
+        "qa-closure-recovery",
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "Release drift blocks current acceptance from the old QA snapshot."
+      ]
+    },
+    {
+      "id": "AC-6",
+      "statement": "Closure racing upstream supersession never leaves stale closure current: closure either commits first then becomes historical, or aborts as stale.",
+      "verificationIds": [
+        "qa-closure-recovery",
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "Closure/supersession race never leaves a stale outcome current."
+      ]
+    },
+    {
+      "id": "AC-7",
+      "statement": "Duplicate recovery workers converge on one logical attempt/publication/continuation with no duplicate semantic output.",
+      "verificationIds": [
+        "execution-recovery",
+        "publication-recovery",
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "Concurrent recovery converges one attempt/publication/continuation."
+      ]
+    },
+    {
+      "id": "AC-8",
+      "statement": "Recover/repair of an existing semantic attempt cannot create a second semantic attempt; only new authorized work/input may.",
+      "verificationIds": [
+        "execution-recovery"
+      ],
+      "evidenceRequired": [
+        "Same-work repair/recover cannot create another semantic attempt."
+      ]
+    },
+    {
+      "id": "AC-9",
+      "statement": "Authority ahead of ProductHistoryHead yields RECOVERY_REQUIRED/NOT_READY until deterministic history/projection reconciliation.",
+      "verificationIds": [
+        "product-history-recovery",
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "Authority/history drift is NOT_READY until reconciliation."
+      ]
+    },
+    {
+      "id": "AC-10",
+      "statement": "Recovery stays local across the matrix: no global reset/rerun/manual ordering, and unaffected actionable work continues.",
+      "verificationIds": [
+        "adversarial-e2e",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "No global reset/rerun/manual ordering; unaffected work continues."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Recovery authority stays with the boundary owning the affected authority/currentness subject; no central recovery scheduler chooses work or roles.",
+      "verificationIds": [
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "No new central recovery/scheduling authority."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Durable canonical refs/CAS heads are recovery truth; process memory, queues, hints and conversation state are not authority.",
+      "verificationIds": [
+        "execution-recovery",
+        "product-history-recovery"
+      ],
+      "evidenceRequired": [
+        "Fresh process uses durable canonical refs/heads only."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "Recovering an in-flight semantic attempt reuses its immutable ExecutionAttemptBinding; repair cannot silently mint a new semantic attempt.",
+      "verificationIds": [
+        "execution-recovery"
+      ],
+      "evidenceRequired": [
+        "Same attempt reuses immutable binding; repair cannot silently re-resolve HOW."
+      ]
+    },
+    {
+      "id": "INV-4",
+      "statement": "Stale claim/release/input/release-head/QA/projection subjects cannot authorize new effects or current acceptance.",
+      "verificationIds": [
+        "execution-recovery",
+        "currentness-races",
+        "qa-closure-recovery"
+      ],
+      "evidenceRequired": [
+        "Stale authority/currentness cannot authorize new effects/current acceptance."
+      ]
+    },
+    {
+      "id": "INV-5",
+      "statement": "Committed authoritative publication is reused/idempotently reconciled after continuation loss, not duplicated.",
+      "verificationIds": [
+        "publication-recovery"
+      ],
+      "evidenceRequired": [
+        "Committed publication is reused, not duplicated."
+      ]
+    },
+    {
+      "id": "INV-6",
+      "statement": "Invalidation/remediation is reverse-dependent and bounded; unrelated work remains current.",
+      "verificationIds": [
+        "currentness-races",
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "Recovery/invalidation remains reverse-dependent and bounded."
+      ]
+    },
+    {
+      "id": "INV-7",
+      "statement": "Historical evidence is immutable; currentness changes through new canonical transitions/revalidation.",
+      "verificationIds": [
+        "qa-closure-recovery",
+        "product-history-recovery"
+      ],
+      "evidenceRequired": [
+        "Historical evidence stays immutable; currentness moves by new transition/revalidation."
+      ]
+    },
+    {
+      "id": "INV-8",
+      "statement": "Tests may pause production boundaries but cannot add stronger serialization than production.",
+      "verificationIds": [
+        "adversarial-e2e"
+      ],
+      "evidenceRequired": [
+        "Harness does not strengthen production synchronization."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Recovery authority stays with the boundary owning the affected authority/currentness subject; no central recovery scheduler chooses work or roles.",
+      "criterionIds": [
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "Durable canonical refs/CAS heads are recovery truth; process memory, queues, hints and conversation state are not authority.",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "Recovering an in-flight semantic attempt reuses its immutable ExecutionAttemptBinding; repair cannot silently mint a new semantic attempt.",
+      "criterionIds": [
+        "INV-3"
+      ]
+    },
+    {
+      "invariant": "Stale claim/release/input/release-head/QA/projection subjects cannot authorize new effects or current acceptance.",
+      "criterionIds": [
+        "INV-4"
+      ]
+    },
+    {
+      "invariant": "Committed authoritative publication is reused/idempotently reconciled after continuation loss, not duplicated.",
+      "criterionIds": [
+        "INV-5"
+      ]
+    },
+    {
+      "invariant": "Invalidation/remediation is reverse-dependent and bounded; unrelated work remains current.",
+      "criterionIds": [
+        "INV-6"
+      ]
+    },
+    {
+      "invariant": "Historical evidence is immutable; currentness changes through new canonical transitions/revalidation.",
+      "criterionIds": [
+        "INV-7"
+      ]
+    },
+    {
+      "invariant": "Tests may pause production boundaries but cannot add stronger serialization than production.",
+      "criterionIds": [
+        "INV-8"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "execution-recovery",
+      "command": "node --test packages/agentic-system/test/adversarial-execution-recovery.test.js"
+    },
+    {
+      "id": "publication-recovery",
+      "command": "node --test packages/agentic-system/test/adversarial-publication-recovery.test.js"
+    },
+    {
+      "id": "currentness-races",
+      "command": "node --test packages/agentic-system/test/adversarial-currentness-races.test.js"
+    },
+    {
+      "id": "qa-closure-recovery",
+      "command": "node --test packages/agentic-system/test/adversarial-qa-closure-recovery.test.js"
+    },
+    {
+      "id": "product-history-recovery",
+      "command": "node --test packages/agentic-system/test/adversarial-product-history-recovery.test.js"
+    },
+    {
+      "id": "adversarial-e2e",
+      "command": "node --test packages/agentic-system/test/adversarial-recovery-e2e.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    }
+  ],
+  "researchGaps": [],
+  "negativeVerificationCases": [
+    "Same-work recovery mints a new semantic attempt or stale generation dispatches/publishes.",
+    "Restart duplicates committed publication/downstream effects or duplicate recoverers create duplicate logical output.",
+    "Input drift widens invalidation to unrelated work or requires global reset.",
+    "Deployment/closure drift leaves stale QA/outcome current.",
+    "Authority/ProductHistory drift exposes eligible closure before reconciliation, or a test passes only via stronger test-only synchronization."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-057 objective + B truth + BB-052..055 READY plans",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product mutation",
+        "planned dependency as delivered truth",
+        "self-accept"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-055 truth",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "adversarial matrix + regressions + Living Docs SATISFIED",
+      "forbidden": [
+        "run before BB-055 DONE",
+        "central recovery scheduler",
+        "global reset/rerun",
+        "self-accept"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Integration H Living Docs describe local recovery ownership, same-attempt reuse, stale-capability fencing, idempotent continuation, bounded invalidation and QA/closure/product-history recovery without central scheduling."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Crash after domain output/before publication: fresh recovery reuses the same semantic attempt/binding and publishes at most once.",
+      "criterionIds": [
+        "AC-1",
+        "INV-3"
+      ],
+      "planElements": [
+        "H1",
+        "H2"
+      ],
+      "verificationIds": [
+        "execution-recovery",
+        "adversarial-e2e"
+      ],
+      "decisionIndexes": [
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-048.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+          "match": "ACTIVE/RECOVERY_REQUIRED reuses the existing immutable binding"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Crash after publication/before continuation: restart reuses the publication, continues downstream at most once, and does not rerun accepted work.",
+      "criterionIds": [
+        "AC-2",
+        "INV-5"
+      ],
+      "planElements": [
+        "H1",
+        "H3"
+      ],
+      "verificationIds": [
+        "publication-recovery",
+        "adversarial-e2e"
+      ],
+      "decisionIndexes": [
+        4,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-053.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-053.json",
+          "match": "Canonical scans recover missed hints; duplicates converge via claim/release + attempt currentness."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "After claim-generation takeover, the old worker cannot dispatch or publish with stale claim/release authority.",
+      "criterionIds": [
+        "AC-3",
+        "INV-4"
+      ],
+      "planElements": [
+        "H2"
+      ],
+      "verificationIds": [
+        "execution-recovery",
+        "currentness-races"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/organization-claim.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/organization-claim.js",
+          "match": "recoverClaim"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Semantic input drift during execution blocks stale publication, invalidates only reverse dependents, and leaves an unrelated sibling current.",
+      "criterionIds": [
+        "AC-4",
+        "INV-6"
+      ],
+      "planElements": [
+        "H3"
+      ],
+      "verificationIds": [
+        "currentness-races",
+        "adversarial-e2e"
+      ],
+      "decisionIndexes": [
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-052.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-052.json",
+          "match": "Selective invalidation starts from exact superseded semantic subject keys"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Deployment drift during QA blocks current QualityAcceptance from the old snapshot while preserving historical QA evidence.",
+      "criterionIds": [
+        "AC-5",
+        "INV-4",
+        "INV-7"
+      ],
+      "planElements": [
+        "H4"
+      ],
+      "verificationIds": [
+        "qa-closure-recovery",
+        "adversarial-e2e"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-054.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-054.json",
+          "match": "Final QualityAcceptance holds the exact release-head guard"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Closure racing upstream supersession never leaves stale closure current: closure either commits first then becomes historical, or aborts as stale.",
+      "criterionIds": [
+        "AC-6",
+        "INV-7"
+      ],
+      "planElements": [
+        "H4"
+      ],
+      "verificationIds": [
+        "qa-closure-recovery",
+        "adversarial-e2e"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-055.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+          "match": "ProductOutcomeClaim is immutable evidence outside ProductHistory."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Duplicate recovery workers converge on one logical attempt/publication/continuation with no duplicate semantic output.",
+      "criterionIds": [
+        "AC-7",
+        "INV-5"
+      ],
+      "planElements": [
+        "H2",
+        "H3"
+      ],
+      "verificationIds": [
+        "execution-recovery",
+        "publication-recovery",
+        "adversarial-e2e"
+      ],
+      "decisionIndexes": [
+        4,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-053.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-053.json",
+          "match": "duplicates converge via claim/release + attempt currentness"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Recover/repair of an existing semantic attempt cannot create a second semantic attempt; only new authorized work/input may.",
+      "criterionIds": [
+        "AC-8",
+        "INV-3"
+      ],
+      "planElements": [
+        "H2"
+      ],
+      "verificationIds": [
+        "execution-recovery"
+      ],
+      "decisionIndexes": [
+        2
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-048.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+          "match": "semantic executionAttemptId is distinct from runtime invocation id"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Authority ahead of ProductHistoryHead yields RECOVERY_REQUIRED/NOT_READY until deterministic history/projection reconciliation.",
+      "criterionIds": [
+        "AC-9",
+        "INV-2"
+      ],
+      "planElements": [
+        "H5"
+      ],
+      "verificationIds": [
+        "product-history-recovery",
+        "adversarial-e2e"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-055.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+          "match": "Authority/history mismatch after crash is RECOVERY_REQUIRED/NOT_READY until deterministic reconciliation."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Recovery stays local across the matrix: no global reset/rerun/manual ordering, and unaffected actionable work continues.",
+      "criterionIds": [
+        "AC-10",
+        "INV-1",
+        "INV-6"
+      ],
+      "planElements": [
+        "H6"
+      ],
+      "verificationIds": [
+        "adversarial-e2e",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        7
+      ],
+      "sourceRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "reset whole organization"
+        }
+      ]
+    }
+  ]
+}
