@@ -41,7 +41,6 @@ NONE
 ## Schedulable tasks
 
 - BB-052 [WORKER/EXECUTION] — Implement cross-domain obligations and selective semantic invalidation
-- BB-057 [RESEARCH_SA/RESEARCH] — Prove adversarial recovery across the end-to-end organization
 
 ## Jev decisions
 
@@ -65,6 +64,10 @@ NONE
   satisfied: LANES, READINESS, BINDING, CLAIMS, ROUTING, CACHE, API, CONFIDENCE, DELIVERY, MIGRATION, CI, METRICS
   unresolved: NONE
   evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-056.candidate-jev-evaluation.json
+- BB-057 [RESEARCH_SA/SATISFIED]
+  satisfied: objective-0, objective-1, objective-2, objective-3, objective-4, objective-5, objective-6, objective-7, objective-8, objective-9, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
+  unresolved: NONE
+  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-057.readiness-jev-evaluation.json
 
 ## Dependency graph
 
@@ -75,7 +78,7 @@ BB-053 [BLOCKED_BY BB-052] <- BB-052
 BB-054 [BLOCKED_BY BB-053] <- BB-053
 BB-055 [BLOCKED_BY BB-054] <- BB-054
 BB-056 [DONE] <- ROOT
-BB-057 [RESEARCH_SCHEDULABLE] <- BB-055
+BB-057 [BLOCKED_BY BB-055] <- BB-055
 ```
 
 ## Context semantics
