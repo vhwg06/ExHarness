@@ -101,11 +101,15 @@ export function materialize(root, id, { readiness = false } = {}) {
           const body = typeof slice === 'string' ? slice : canonical(slice);
           return elementIds.some(id => body.startsWith(id + ' ') || body.startsWith(id + ' —') || body.includes('"id":"' + id + '"'));
         });
+        const supportingPlanFields = [...new Set(coverage?.supportingPlanFields ?? [])];
+        const supportingPlanEvidence = Object.fromEntries(supportingPlanFields.map(key => [key, plan[key]]).filter(([,value]) => value !== undefined));
         return {
           objectiveCriterion,
           criterionIds,
           planElements,
           verificationIds,
+          supportingPlanFields,
+          supportingPlanEvidence,
           acceptanceCriteria: criteria.map(({ id, statement, verificationIds, evidenceRequired }) => ({ id, statement, verificationIds, evidenceRequired })),
           implementationSlices
         };
@@ -136,7 +140,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     const planEvidence = [
       ['blackboard://plan/lane-contract', {
         laneContracts: plan.laneContracts?.map(({ lane, input, output, binding, convergence, forbidden }) => ({ lane, input, output, binding, convergence, forbidden })),
-        objectiveCoverage: objectiveScopedResearch ? plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds })) : plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
+        objectiveCoverage: objectiveScopedResearch ? plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds, supportingPlanFields }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds, supportingPlanFields })) : plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
       }],
       ['blackboard://plan/readiness', {
         invariants: plan.invariants,
