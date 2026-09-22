@@ -370,7 +370,12 @@ test('CI separates Blackboard routing from evaluation-only blackboard-jev workfl
   assert.match(router,/name: dispatch Jev/);
   assert.match(router,/gh api --method GET/);
   assert.match(router,/trusted_sha: \$\{\{ steps\.trusted\.outputs\.sha \}\}/);
+  assert.match(router,/controller_sha: \$\{\{ steps\.controller\.outputs\.sha \}\}/);
   assert.match(router,/id: trusted/);
+  assert.match(router,/node controller\/scripts\/blackboard-jev-ci\.mjs select/);
+  assert.match(jev,/controller_sha:/);
+  assert.match(jev,/node controller\/scripts\/blackboard-jev-ci\.mjs collect/);
+  assert.match(jev,/node controller\/scripts\/blackboard-jev-ci\.mjs evaluate/);
   assert.match(router,/select\(\.head\.sha == \$sha\)/);
   assert.doesNotMatch(router,/git -C trusted merge-base HEAD/);
   assert.doesNotMatch(router,/pull_requests\[0\]\.base\.sha/);
