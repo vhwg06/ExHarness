@@ -26,7 +26,7 @@ function fixture(t) {
   fs.writeFileSync(path.join(root,'docs/living/system/state.md'),'# Current system\n\nThe baseline implementation is answer one.\n');
   git('add','.');git('commit','-m','baseline');const baseline=git('rev-parse','HEAD');
   const objective={kind:'BLACKBOARD_ARTIFACT',version:1,artifactType:'OBJECTIVE',artifactId:'BB-1',outcome:'Return two',currentProblem:'Returns one',scope:['answer'],constraints:['Keep interface'],successCriteria:['answer is two'],currentSourceRefs:['source.js']};
-  const plan={kind:'BLACKBOARD_ARTIFACT',version:1,artifactType:'READY_IMPLEMENT_PLAN',artifactId:'BB-1',status:'DRAFT',objective:{ref:'objective.json',hash:hash(objective)},scope:['answer'],outOfScope:[],constraints:['Keep interface'],invariants:['export remains'],architectureDecisions:['Change constant'],sourceSeams:{requiredExisting:['source.js'],expectedNew:[],expectedTests:['test.js']},sourceScope:{read:['source.js','test.js','docs/living/**'],write:['source.js','test.js','docs/living/**'],forbiddenWrite:[]},implementationSlices:['Change constant'],livingDocs:{refs:['docs/living/system/state.md'],questionId:'LIVING_DOCS',statement:'Current Living Docs accurately describe the delivered implementation.'},acceptanceCriteria:[{id:'AC1',statement:'answer is two and remains exported',verificationIds:['unit'],evidenceRequired:['unit output']}],invariantCoverage:[{invariant:'export remains',criterionIds:['AC1']}],verificationPlan:[{id:'unit',command:'node --test test.js'}]};
+  const plan={kind:'BLACKBOARD_ARTIFACT',version:1,artifactType:'READY_IMPLEMENT_PLAN',artifactId:'BB-1',status:'DRAFT',objective:{ref:'objective.json',hash:hash(objective)},scope:['answer'],outOfScope:[],constraints:['Keep interface'],invariants:['export remains'],architectureDecisions:['Change constant'],sourceSeams:{requiredExisting:['source.js'],expectedNew:[],expectedTests:['test.js']},sourceScope:{read:['source.js','test.js','docs/living/**'],write:['source.js','test.js','docs/living/**'],forbiddenWrite:[]},implementationSlices:['Change constant'],livingDocs:{refs:['docs/living/system/state.md'],questionId:'LIVING_DOCS',statement:'Current Living Docs accurately describe the delivered implementation.'},acceptanceCriteria:[{id:'AC1',statement:'answer is two and remains exported',verificationIds:['unit'],evidenceRequired:['unit output']}],invariantCoverage:[{invariant:'export remains',criterionIds:['AC1']}],verificationPlan:[{id:'unit',command:'node --test test.js'}],objectiveCoverage:[{objectiveCriterion:'answer is two',criterionIds:['AC1'],planElements:['D1'],verificationIds:['unit']}]};
   const task={id:'BB-1',status:'PLANNED',lane:'RESEARCH_SA',phase:'RESEARCH',dependencies:[],components:['outer/blackboard'],artifacts:{inputRefs:['objective.json','plan.json'],outputRefs:[],consolidatedRefs:['docs/living/system/state.md']},contract:{objectiveRef:'objective.json',planRef:'plan.json',researchBaselineSha:baseline}};
   write(root,'objective.json',objective);write(root,'plan.json',plan);write(root,'docs/blackboard/work-graph.json',{tasks:[task],features:[]});
   write(root,'docs/blackboard/jev-policy.json',{model:'jev-1.13.0',policy:'atomic-claims-1',maxPayloadBytes:524288,pricing:null});
@@ -48,6 +48,26 @@ function fixture(t) {
   };
   return {root,git,baseline,plan,response,mock,ev,ready,candidate};
 }
+
+test('research objective questions receive bounded objective-to-criterion-to-slice evidence',t=>{
+  const f=fixture(t);
+  const plan=read(f.root,'plan.json');
+  plan.implementationSlices=['D1 — Change constant'];
+  write(f.root,'plan.json',plan);
+  const input=materialize(f.root,'BB-1');
+  assert.equal(input.payload.questions['objective-0'].instructions.includes('state.objectiveEvidence[0]'),true);
+  assert.deepEqual(input.payload.state.objectiveEvidence,[{
+    objectiveCriterion:'answer is two',
+    criterionIds:['AC1'],
+    planElements:['D1'],
+    verificationIds:['unit'],
+    acceptanceCriteria:[{id:'AC1',statement:'answer is two and remains exported',verificationIds:['unit'],evidenceRequired:['unit output']}],
+    implementationSlices:['D1 — Change constant']
+  }]);
+  const laneContract=input.payload.state.evidence.find(item=>item.ref==='blackboard://plan/lane-contract');
+  const parsed=JSON.parse(laneContract.body);
+  assert.deepEqual(parsed.objectiveCoverage,[{objectiveCriterion:'answer is two',criterionIds:['AC1'],planElements:['D1'],verificationIds:['unit']}]);
+});
 
 test('readiness batches atomic questions, honors low-confidence typed SATISFIED and caches semantic input',async t=>{
   const f=fixture(t);const input=materialize(f.root,'BB-1');let calls=0;
