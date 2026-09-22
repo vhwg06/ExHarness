@@ -43,19 +43,16 @@
     "Cryptographic Merkle inclusion/consistency proofs are not required for Integration G v1; exact generation/digest commitment and durable CAS/recovery are sufficient for the current trusted-store threat model."
   ],
   "architectureDecisions": [
-    "ProductHistoryHead is the sole product-completeness/currentness cursor for one product/root intent. It is a CAS head {generation, commitRef, historyDigest}; each immutable ProductHistoryCommit binds its predecessor plus the complete ordered closure-relevant transition set admitted at that generation.",
-    "Closure-relevant transitions are accepted product-semantic changes only: SemanticClaim/CrossDomainObligation currentness from Integration C, accepted DeploymentRelease/QualityAcceptance currentness from Integration E/F, accepted product artifact revisions, and canonical acceptance-policy/waiver revisions. ExecutionPolicy, ExecutionStrategy, attempt/runtime and scheduler/activation changes are excluded unless they change accepted product semantic lineage.",
-    "BB-055 may research BB-052 and BB-054 READY plans as PLANNED_DEPENDENCY contracts. WORKER remains dependency-gated and must bind the delivered C and E/F source/truth after BB-054 is DONE; planned files are never treated as current authority.",
-    "Every closure-relevant publisher participates in one project-scoped ProductHistory mutation guard. The authoritative currentness mutation and ProductHistoryHead advancement occur inside the same guarded window; ProductStateProjection and closure currentness checks use the same guard so no stable projection can observe a newer closure-relevant head behind an older ProductHistoryHead.",
-    "Crash recovery is fail-closed. ProductHistory commits preserve exact authority-head observations; if a fresh process detects a closure-relevant authority head not committed by the current history head, projection returns RECOVERY_REQUIRED/NOT_READY and reconcileProductHistory deterministically appends the missing canonical transition before readiness can be exposed.",
-    "ProductHistoryCommit is append-only evidence, not a mutable snapshot. historyDigest is deterministic from predecessor digest plus normalized transition identity; generation must advance by exactly one and the chain is revalidated on fresh reconstruction.",
-    "ProductAcceptanceAuthority is separate canonical authority: immutable policy/waiver artifacts plus a CAS current head. The trusted resolver derives the full applicable waiver set; callers cannot provide a convenient waiver subset. ProductProjectionSubject pins exact history head generation/digest plus acceptance-policy head revision/ref and waiverSetDigest.",
-    "ProductStateProjection is a deterministic disposable reduction over one ProductProjectionSubject. It resolves the complete history chain and canonical acceptance authority, computes current active claims/obligations/releases/quality facts, unresolved blocking obligations and blockers, and emits ELIGIBLE_FOR_CLOSURE only when every required current condition is satisfied.",
-    "The projection builder accepts productId/root intent only; it has no API for caller-selected claimRefs, obligationRefs, qualityRefs or waiverRefs. Completeness comes from canonical history/authority traversal, not caller enumeration.",
-    "ProductOutcomeClaim is immutable historical closure evidence bound to exact projectionRef/projectionDigest/ProductProjectionSubject and supporting evidence refs. It is stored separately from ProductHistory so creating a claim does not invalidate its own readiness basis.",
-    "Closure publication acquires the same product-history mutation guard plus acceptance-authority currentness guard, re-resolves the exact projection subject immediately before commit, requires ELIGIBLE_FOR_CLOSURE, stores ProductOutcomeClaim and optionally advances a latest-outcome pointer. Any history/policy/waiver drift fails with no current closure.",
-    "A historical ProductOutcomeClaim is current only by revalidation: currentOutcome resolves the current ProductProjectionSubject and compares it to the claim subject. Later accepted Backend/FE/QA/obligation/policy transitions retain the old claim artifact but make it non-current until a fresh eligible projection is closed.",
-    "Historical SemanticClaim, CrossDomainObligation, ProductHistoryTransition/Commit, acceptance-policy/waiver artifacts, ProductStateProjection and ProductOutcomeClaim are immutable. Correction is represented by a new authoritative transition/head advance; in-place overwrite conflicts fail closed."
+    "ProductHistoryHead is the canonical completeness cursor per product: CAS {generation, commitRef, historyDigest} over immutable ProductHistoryCommit records.",
+    "History contains accepted closure-relevant product transitions (semantic claim/obligation currentness, release/quality currentness, accepted product revisions, acceptance-policy/waiver revisions), not execution policy/strategy/attempt changes.",
+    "RESEARCH_SA may inspect BB-052/BB-054 READY plans only as PLANNED_DEPENDENCY; WORKER waits for BB-054 DONE and consumes delivered truth.",
+    "Closure-relevant publishers, projection reads and closure commit share a project mutation guard. Authority/history mismatch after crash is RECOVERY_REQUIRED/NOT_READY until deterministic reconciliation.",
+    "Each history commit binds predecessor generation/digest and exact authority-head observations; fresh reconstruction validates chain continuity.",
+    "ProductAcceptanceAuthority stores immutable policy/waiver artifacts behind a CAS head and derives the complete applicable waiver set; callers cannot supply a subset.",
+    "ProductProjectionSubject pins exact history generation/digest plus acceptance-policy head/ref and waiverSetDigest.",
+    "ProductStateProjection is a deterministic disposable reduction of the complete canonical subject; its API accepts no selected claim/obligation/quality/waiver refs.",
+    "ProductOutcomeClaim is immutable evidence outside ProductHistory. Closure revalidates the exact projection subject under history/policy guards immediately before commit.",
+    "A historical outcome is current only if its pinned subject still equals current history/policy/waiver state; later product changes stale it, while strategy-only changes do not."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -131,13 +128,12 @@
     ]
   },
   "implementationSlices": [
-    "G1 — Canonical product history [AC-1, AC-2, AC-5, AC-7, AC-8, INV-1, INV-2, INV-4]: implement ProductHistoryTransition/Commit plus createProductHistoryController({artifactStore,headStore,mutationGuard,authorityReaders}) in product-history.js. Each commit binds previous generation/digest and exact canonical authority-head observations. Integrate C semantic currentness and E/F release/quality publication through the project mutation guard; execution-policy/strategy changes do not append history. Verify product-history + dependency regressions.",
-    "G2 — Crash-safe completeness reconciliation [AC-5, INV-4, INV-8]: implement reconcileProductHistory(projectId) that compares the current history commit observations with every registered closure-relevant authority head. Missing/newer canonical authority transitions force RECOVERY_REQUIRED and are deterministically appended from immutable canonical refs before projection can become eligible. Verify kill/restart points in product-history-recovery.",
-    "G3 — Canonical acceptance authority [AC-6, INV-6, AC-8]: in product-acceptance-policy.js persist immutable ProductAcceptancePolicy/ProductWaiver artifacts behind a CAS ProductAcceptanceAuthorityHead. resolveCurrent(productId) returns exact policy ref/head revision plus the complete applicable waiver set and waiverSetDigest; no caller subset API. Historical artifacts are immutable. Verify product-state-projection + product-revalidation.",
-    "G4 — Deterministic ProductStateProjection [AC-1, AC-2, AC-4, AC-5, AC-6, INV-1, INV-2, INV-3, INV-6]: implement createProductStateProjectionBuilder({productHistory,acceptanceAuthority,artifactResolvers}). build({productId,rootIntentRef}) acquires the product guard, resolves one ProductProjectionSubject, traverses/validates the exact ProductHistory chain, derives complete current active claims/obligations/releases/quality facts and unresolved blockers, and stores a content-addressed projection. The API accepts no selected claim/obligation/waiver refs. Verify omission resistance and deterministic rebuild in product-state-projection.",
-    "G5 — Currentness-fenced closure [AC-3, AC-6, INV-5, INV-6]: in product-closure.js implement createProductClosureController({projectionBuilder,productHistory,acceptanceAuthority,artifactStore,outcomeHeadStore}). close({projectionRef}) re-resolves the projection, acquires exact history+acceptance guards, rechecks ProductProjectionSubject and ELIGIBLE_FOR_CLOSURE immediately before immutable ProductOutcomeClaim publication. Drift produces no current closure. Verify pre-start and barrier-controlled races in product-closure-race.",
-    "G6 — Historical claim/current outcome semantics [AC-7, AC-9, INV-5, INV-7]: currentOutcome({productId}) resolves the latest ProductOutcomeClaim but returns current only when its exact ProductProjectionSubject equals the current history/policy/waiver subject and current projection remains eligible. A newer accepted product transition makes old closure historical; an ExecutionStrategy/ExecutionPolicy-only change leaves history subject unchanged. Verify product-revalidation.",
-    "G7 — Fresh-process end-to-end completeness proof [AC-1..AC-9, INV-1..INV-8]: export stores/controllers from index.js and use durable JSON immutable/CAS stores. product-completeness-chain reconstructs from disk, proves omitted rejected claim/obligation cannot be hidden, closes an eligible subject, advances product history and policy independently, proves historical claim retention/non-currentness, rebuilds identical projections for identical pinned subjects, and rejects in-place artifact mutation."
+    "G1 — History/currentness [AC-1, AC-2, AC-5, AC-7, AC-8, INV-1, INV-2, INV-4, INV-8]: implement ProductHistoryTransition/Commit + CAS ProductHistoryHead and project mutation guard; integrate delivered C and E/F currentness. Detect authority/history drift on restart and reconcile from immutable canonical refs before readiness.",
+    "G2 — Acceptance authority [AC-6, AC-8, INV-6]: implement immutable ProductAcceptancePolicy/ProductWaiver plus CAS authority head; resolve the full applicable waiver set and deterministic waiverSetDigest.",
+    "G3 — Projection [AC-1, AC-2, AC-4, AC-5, AC-6, INV-1, INV-3, INV-6]: build ProductStateProjection only from productId/root intent -> exact ProductProjectionSubject -> validated history + acceptance authority; derive complete active facts/blockers with no caller-selected subset.",
+    "G4 — Closure fence [AC-3, AC-6, INV-5]: close({projectionRef}) re-resolves the projection, holds exact history/policy guards, requires ELIGIBLE_FOR_CLOSURE, then writes immutable ProductOutcomeClaim; any subject drift fails with no current closure.",
+    "G5 — Revalidation [AC-7, AC-9, INV-5, INV-7]: currentOutcome compares the claim subject with current product subject. New accepted product/policy transitions stale historical closure; execution strategy/policy-only change does not.",
+    "G6 — Durable proof [AC-1..AC-9, INV-1..INV-8]: export durable JSON immutable/CAS stores and prove fresh-process reconstruction, omission resistance, crash recovery, deterministic rebuild and immutable-history conflicts."
   ],
   "acceptanceCriteria": [
     {
@@ -148,7 +144,7 @@
         "product-completeness-chain"
       ],
       "evidenceRequired": [
-        "Builder derives current QUALITY_REJECTED from canonical history even when caller supplies no claim refs; readiness is NOT_READY."
+        "Canonical history derives rejected claim; caller omission stays NOT_READY."
       ]
     },
     {
@@ -159,7 +155,7 @@
         "product-completeness-chain"
       ],
       "evidenceRequired": [
-        "Builder derives every current blocking obligation from canonical history/lineage; caller omission cannot remove blocker."
+        "Canonical history/lineage derives blocking obligation; caller omission stays NOT_READY."
       ]
     },
     {
@@ -169,7 +165,7 @@
         "product-closure-race"
       ],
       "evidenceRequired": [
-        "Projection at Hn is rejected after guarded Hn+1 transition before closure commit."
+        "Hn projection cannot close after Hn+1 transition."
       ]
     },
     {
@@ -180,7 +176,7 @@
         "product-completeness-chain"
       ],
       "evidenceRequired": [
-        "Delete cached projection, rebuild exact pinned subject, compare readiness, active-set digest and blockers byte-for-byte."
+        "Same pinned subject rebuilds identical readiness, active-set digest and blockers."
       ]
     },
     {
@@ -191,7 +187,7 @@
         "product-completeness-chain"
       ],
       "evidenceRequired": [
-        "Fresh process reconstructs canonical history head/chain and identical projection from durable stores; uncommitted authority drift is fail-closed then reconciled."
+        "Fresh process reconstructs history/projection; authority drift is fail-closed then reconciled."
       ]
     },
     {
@@ -202,7 +198,7 @@
         "product-revalidation"
       ],
       "evidenceRequired": [
-        "Acceptance policy/waiver authority revision changes ProductProjectionSubject and invalidates old projection currentness."
+        "Policy/waiver revision changes projection subject and forces re-evaluation."
       ]
     },
     {
@@ -213,7 +209,7 @@
         "product-completeness-chain"
       ],
       "evidenceRequired": [
-        "New accepted product revision advances history, preserves old ProductOutcomeClaim artifact, and makes it non-current pending rebuild/reclosure."
+        "New accepted product revision preserves old claim artifact but makes it non-current."
       ]
     },
     {
@@ -224,7 +220,7 @@
         "product-revalidation"
       ],
       "evidenceRequired": [
-        "Immutable artifact conflict is rejected for claim/obligation/history/policy/outcome; correction uses new immutable transition/head revision."
+        "Historical artifact overwrite conflicts; correction uses a new immutable transition."
       ]
     },
     {
@@ -234,7 +230,7 @@
         "product-revalidation"
       ],
       "evidenceRequired": [
-        "ExecutionStrategy/ExecutionPolicy-only revision does not advance ProductHistoryHead or change current closure when accepted product lineage is unchanged."
+        "Strategy-only change leaves ProductHistoryHead/current closure unchanged."
       ]
     },
     {
@@ -244,7 +240,7 @@
         "product-state-projection"
       ],
       "evidenceRequired": [
-        "Projection API has no caller-selected claim/obligation subset and derives facts from canonical history."
+        "Projection has no caller-selected completeness-ref API."
       ]
     },
     {
@@ -254,7 +250,7 @@
         "product-history"
       ],
       "evidenceRequired": [
-        "ProductHistory APIs expose completeness/currentness only and contain no scheduling/claim/execution dispatch surface."
+        "ProductHistory has no scheduling/claim/dispatch authority."
       ]
     },
     {
@@ -264,7 +260,7 @@
         "product-state-projection"
       ],
       "evidenceRequired": [
-        "Projection is content-addressed/rebuildable and cannot mutate canonical history or authority heads."
+        "Projection cannot mutate canonical authority."
       ]
     },
     {
@@ -275,7 +271,7 @@
         "product-closure-race"
       ],
       "evidenceRequired": [
-        "Shared mutation guard plus recovery detection prevents a stable eligible projection behind a newer authoritative transition."
+        "Stable eligible projection cannot sit behind newer authoritative product state."
       ]
     },
     {
@@ -285,7 +281,7 @@
         "product-revalidation"
       ],
       "evidenceRequired": [
-        "Historical ProductOutcomeClaim remains immutable but currentOutcome fails after subject drift."
+        "Historical outcome is not a permanent current DONE bit."
       ]
     },
     {
@@ -296,7 +292,7 @@
         "product-revalidation"
       ],
       "evidenceRequired": [
-        "Policy and full applicable waiver set are resolved from ProductAcceptanceAuthority and pinned into ProductProjectionSubject."
+        "Policy and full applicable waivers come from canonical authority."
       ]
     },
     {
@@ -306,7 +302,7 @@
         "product-revalidation"
       ],
       "evidenceRequired": [
-        "Strategy-only revision leaves ProductHistoryHead and projection subject unchanged."
+        "Strategy-only revision does not advance product history."
       ]
     },
     {
@@ -317,7 +313,7 @@
         "product-history-recovery"
       ],
       "evidenceRequired": [
-        "v1 uses durable generation/digest CAS + recovery only; no Merkle/CT dependency is introduced."
+        "v1 uses durable generation/digest CAS + recovery, not Merkle/CT."
       ]
     }
   ],
@@ -415,31 +411,31 @@
   ],
   "researchGaps": [],
   "negativeVerificationCases": [
-    "Caller provides no rejected-claim ref; canonical history still derives QUALITY_REJECTED and closure stays NOT_READY.",
-    "Caller provides no blocking-obligation ref; canonical history/lineage still derives the blocker.",
-    "History Hn projection cannot close after Hn+1 product transition.",
-    "Crash after closure-relevant authority movement cannot expose ELIGIBLE until history reconciliation commits exact canonical transition.",
-    "Acceptance-policy or applicable-waiver revision invalidates old projection even with unchanged product history.",
-    "Old ProductOutcomeClaim remains resolvable but is not current after product/policy drift.",
-    "Attempted overwrite of historical claim/obligation/history/policy/outcome artifact is rejected.",
-    "ExecutionPolicy/ExecutionStrategy-only revision does not advance ProductHistoryHead."
+    "Omitted rejected claim still blocks.",
+    "Omitted blocking obligation still blocks.",
+    "Hn projection cannot close after Hn+1.",
+    "Crash authority/history drift is NOT_READY until reconciliation.",
+    "Policy/waiver drift invalidates old projection.",
+    "Old outcome stays historical but non-current after product drift.",
+    "Historical artifact overwrite is rejected.",
+    "Strategy-only change does not advance product history."
   ],
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-055 objective + delivered current truth + BB-052/BB-054 planned dependency contracts",
+      "input": "BB-055 objective + current truth + BB-052/BB-054 planned dependency contracts",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + Jev SATISFIED",
       "forbidden": [
         "product mutation",
-        "treat planned dependency outputs as delivered truth",
+        "planned dependency as delivered truth",
         "self-accept"
       ]
     },
     {
       "lane": "WORKER",
-      "input": "exact READY plan + DONE BB-054 delivered truth (therefore C through E/F delivered)",
+      "input": "exact READY plan + DONE BB-054 delivered truth",
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash + candidate/evidence + Jev",
       "convergence": "criteria + Living Docs SATISFIED",
@@ -447,7 +443,6 @@
         "execute before BB-054 DONE",
         "redefine plan",
         "caller-selected completeness",
-        "make ProductStateProjection authority",
         "self-accept"
       ]
     }
@@ -463,30 +458,6 @@
     "statement": "The delivered Integration G Living Docs accurately describe canonical ProductHistory completeness, deterministic ProductStateProjection, canonical acceptance-policy/waiver currentness, currentness-fenced ProductOutcomeClaim publication and revalidation of historical closure."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
-  "bb052DependencyContract": {
-    "workId": "BB-052",
-    "researchUse": "RESEARCH_SA may inspect the READY plan as PLANNED_DEPENDENCY semantic input.",
-    "workerUse": "BB-055 WORKER consumes delivered product-lineage/currentness and obligation truth transitively only after BB-054 dependency chain is DONE.",
-    "requiredSemantics": [
-      "immutable SemanticClaim/CrossDomainObligation currentness",
-      "accepted ProductDerivationEdge",
-      "selective semantic invalidation"
-    ]
-  },
-  "bb054DependencyContract": {
-    "workId": "BB-054",
-    "graphRequirement": "BB-055 WORKER requires BB-054 DONE.",
-    "researchUse": "RESEARCH_SA may inspect the exact READY E/F plan only as PLANNED_DEPENDENCY.",
-    "deliveredUse": "After DONE, consume exact DeploymentRelease/AcceptanceSnapshot/RuntimeObservation/QualityAcceptance currentness truth, not the plan."
-  },
-  "productCompletenessContract": {
-    "history": "ProductHistoryHead(project) = generation + immutable commitRef + deterministic historyDigest over accepted closure-relevant transitions.",
-    "projectionSubject": "exact ProductHistoryHead + exact ProductAcceptanceAuthority head + complete waiverSetDigest.",
-    "projection": "deterministic disposable reduction; no caller-selected completeness refs.",
-    "closure": "ProductOutcomeClaim binds exact eligible projection subject and is published only after guarded subject revalidation.",
-    "currentness": "historical closure remains evidence; current closure is recomputed against current history/policy/waiver subject.",
-    "recovery": "authority/history mismatch => RECOVERY_REQUIRED/NOT_READY until deterministic reconciliation."
-  },
   "objectiveCoverage": [
     {
       "objectiveCriterion": "Omitting a current QUALITY_REJECTED claim from caller input cannot make the product eligible; the builder derives it from canonical history and returns NOT_READY.",
@@ -497,7 +468,7 @@
       ],
       "planElements": [
         "G1",
-        "G4"
+        "G3"
       ],
       "verificationIds": [
         "product-state-projection",
@@ -506,8 +477,7 @@
       "decisionIndexes": [
         0,
         1,
-        7,
-        8
+        7
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-052.json"
@@ -517,10 +487,6 @@
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-052.json",
           "match": "Only a trusted accepted DomainPublicationReceipt may commit SemanticClaim revisions"
         }
-      ],
-      "supportingPlanFields": [
-        "bb052DependencyContract",
-        "productCompletenessContract"
       ]
     },
     {
@@ -531,7 +497,7 @@
       ],
       "planElements": [
         "G1",
-        "G4"
+        "G3"
       ],
       "verificationIds": [
         "product-state-projection",
@@ -539,8 +505,7 @@
       ],
       "decisionIndexes": [
         1,
-        7,
-        8
+        7
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-052.json"
@@ -560,7 +525,7 @@
       ],
       "planElements": [
         "G1",
-        "G5"
+        "G4"
       ],
       "verificationIds": [
         "product-closure-race"
@@ -568,7 +533,7 @@
       "decisionIndexes": [
         0,
         3,
-        10
+        8
       ],
       "sourceRefs": [
         "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
@@ -587,13 +552,13 @@
         "INV-3"
       ],
       "planElements": [
-        "G4"
+        "G3"
       ],
       "verificationIds": [
         "product-state-projection"
       ],
       "decisionIndexes": [
-        5,
+        6,
         7
       ],
       "sourceRefs": [
@@ -617,8 +582,7 @@
         "G1",
         "G2",
         "G3",
-        "G4",
-        "G7"
+        "G6"
       ],
       "verificationIds": [
         "product-history-recovery",
@@ -626,20 +590,15 @@
       ],
       "decisionIndexes": [
         0,
+        3,
         4,
         5,
-        6,
-        7
+        6
       ],
       "sourceRefs": [
-        "packages/agentic-system/src/organization-artifact-store.js",
         "packages/agentic-system/src/organization-authority-store.js"
       ],
       "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/organization-artifact-store.js",
-          "match": "createJsonImmutableArtifactStore"
-        },
         {
           "ref": "packages/agentic-system/src/organization-authority-store.js",
           "match": "createJsonCasHeadStore"
@@ -653,18 +612,18 @@
         "INV-6"
       ],
       "planElements": [
+        "G2",
         "G3",
-        "G4",
-        "G5"
+        "G4"
       ],
       "verificationIds": [
         "product-state-projection",
         "product-revalidation"
       ],
       "decisionIndexes": [
+        5,
         6,
-        7,
-        10
+        8
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-054.json"
@@ -684,8 +643,8 @@
       ],
       "planElements": [
         "G1",
-        "G5",
-        "G6"
+        "G4",
+        "G5"
       ],
       "verificationIds": [
         "product-revalidation",
@@ -693,8 +652,8 @@
       ],
       "decisionIndexes": [
         1,
-        9,
-        11
+        8,
+        9
       ],
       "sourceRefs": [
         "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
@@ -713,16 +672,16 @@
       ],
       "planElements": [
         "G1",
-        "G3",
-        "G5"
+        "G2",
+        "G4"
       ],
       "verificationIds": [
         "product-history",
         "product-revalidation"
       ],
       "decisionIndexes": [
-        5,
-        12
+        4,
+        9
       ],
       "sourceRefs": [
         "packages/agentic-system/src/organization-artifact-store.js"
@@ -742,14 +701,14 @@
       ],
       "planElements": [
         "G1",
-        "G6"
+        "G5"
       ],
       "verificationIds": [
         "product-revalidation"
       ],
       "decisionIndexes": [
         1,
-        11
+        9
       ],
       "sourceRefs": [
         "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
