@@ -146,9 +146,7 @@ export function materialize(root, id, { readiness = false } = {}) {
           architectureDecisions: decisionIndexes.map(index => plan.architectureDecisions[index]),
           sourceRefs,
           supportingPlanFields,
-          supportingPlanEvidence,
-          acceptanceCriteria: criteria.map(({ id, statement, verificationIds, evidenceRequired }) => ({ id, statement, verificationIds, evidenceRequired })),
-          implementationSlices
+          supportingPlanEvidence
         };
       })
     : [];
@@ -161,7 +159,7 @@ export function materialize(root, id, { readiness = false } = {}) {
   };
   if (lane === 'RESEARCH_SA') {
     if(plan.researchGaps?.length) fail('unresolved research gaps; complete the current plan before Jev readiness');
-    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, objectiveScopedResearch ? `\`state.objectiveEvidence[${i}]\`, the matching criterion in \`state.objective.successCriteria\`, and only the refs listed by \`state.objectiveEvidence[${i}].sourceRefs\` from \`state.evidence\`` : '`state.objective` and `state.plan`');
+    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, objectiveScopedResearch ? `\`state.objectiveEvidence[${i}]\` for exact criterion/slice/decision IDs, then resolve those IDs from \`state.plan.acceptanceCriteria\`, \`state.plan.implementationSlices\` and \`state.plan.architectureDecisions\`; inspect only listed sourceRefs from \`state.evidence\`` : '`state.objective` and `state.plan`');
     const readinessStatements = {
       scope: 'Scope and exclusions are unambiguous.',
       constraints: 'Constraints are explicit and compatible with the objective.',
