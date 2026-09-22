@@ -59,6 +59,8 @@ test('research objective questions receive bounded objective-to-criterion-to-sli
   const plan=read(f.root,'plan.json');
   plan.jevEvidenceRouting='OBJECTIVE_SCOPED_V1';
   plan.implementationSlices=['D1 — Change constant'];
+  plan.supportingContract={mode:'bounded'};
+  plan.objectiveCoverage[0].supportingPlanFields=['supportingContract'];
   write(f.root,'plan.json',plan);
   const input=materialize(f.root,'BB-1');
   assert.equal(input.payload.questions['objective-0'].instructions.includes('state.objectiveEvidence[0]'),true);
@@ -67,12 +69,14 @@ test('research objective questions receive bounded objective-to-criterion-to-sli
     criterionIds:['AC1'],
     planElements:['D1'],
     verificationIds:['unit'],
+    supportingPlanFields:['supportingContract'],
+    supportingPlanEvidence:{supportingContract:{mode:'bounded'}},
     acceptanceCriteria:[{id:'AC1',statement:'answer is two and remains exported',verificationIds:['unit'],evidenceRequired:['unit output']}],
     implementationSlices:['D1 — Change constant']
   }]);
   const laneContract=input.payload.state.evidence.find(item=>item.ref==='blackboard://plan/lane-contract');
   const parsed=JSON.parse(laneContract.body);
-  assert.deepEqual(parsed.objectiveCoverage,[{objectiveCriterion:'answer is two',criterionIds:['AC1'],planElements:['D1'],verificationIds:['unit']}]);
+  assert.deepEqual(parsed.objectiveCoverage,[{objectiveCriterion:'answer is two',criterionIds:['AC1'],planElements:['D1'],verificationIds:['unit'],supportingPlanFields:['supportingContract']}]);
 });
 
 test('readiness batches atomic questions, honors low-confidence typed SATISFIED and caches semantic input',async t=>{
