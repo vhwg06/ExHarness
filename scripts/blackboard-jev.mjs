@@ -37,7 +37,22 @@ function boundedResearchEvidence(ref, body, maxChars = RESEARCH_EVIDENCE_CHARS) 
   const digest=hash(body),bytes=Buffer.byteLength(body);
   if(body.length<=maxChars)return {ref,hash:digest,bytes,body,excerpted:false};
   const compact=maxChars<RESEARCH_EVIDENCE_CHARS;
-  const headChars=compact?192:384,tailChars=compact?192:384,outlineChars=compact?384:768;
+  if(compact){
+    const middle='\n...[bounded research evidence]...\n',tailMarker='\n...[tail]...\n';
+    const contentBudget=Math.max(0,maxChars-middle.length-tailMarker.length);
+    const headChars=Math.floor(contentBudget/4),tailChars=Math.floor(contentBudget/4);
+    const outlineChars=contentBudget-headChars-tailChars;
+    const head=body.slice(0,headChars),tail=body.slice(-tailChars);
+    const outline=body.split('\n').filter(line=>
+      /^#{1,6}\s/.test(line) ||
+      /^\s*(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+[A-Za-z_$][\w$]*/.test(line) ||
+      /^\s*(?:async\s+)?[A-Za-z_$][\w$]*\([^)]*\)\s*\{/.test(line)
+    ).join('\n').slice(0,outlineChars);
+    const excerpt=`${head}${middle}${outline}${tailMarker}${tail}`;
+    check(excerpt.length<=maxChars,'bounded research evidence exceeded declared maxChars');
+    return {ref,hash:digest,bytes,excerpted:true,omittedChars:Math.max(0,body.length-head.length-tail.length-outline.length),body:excerpt};
+  }
+  const headChars=384,tailChars=384,outlineChars=768;
   const head=body.slice(0,headChars),tail=body.slice(-tailChars);
   const outline=body.split('\n').filter(line=>
     /^#{1,6}\s/.test(line) ||
