@@ -5,7 +5,6 @@ on:
 
 jobs:
   living-doc-impact:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     name: living-doc-impact
     steps:
@@ -64,3 +63,93 @@ jobs:
 
       - name: Verify kernel
         run: npm run verify
+
+  blackboard:
+    name: blackboard-gate
+    needs: [living-doc-impact, kernel]
+    runs-on: ubuntu-latest
+    outputs:
+      work: ${{ steps.select.outputs.work }}
+      publications: ${{ steps.select.outputs.publications }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: subject
+          fetch-depth: 0
+          persist-credentials: false
+      - id: select
+        env:
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+          TRUSTED_ROOT: trusted
+          SUBJECT_ROOT: subject
+        run: node trusted/scripts/blackboard-jev-ci.mjs select
+      - name: Report Blackboard gate mode
+        env:
+          WORK: ${{ steps.select.outputs.work }}
+          PUBLICATIONS: ${{ steps.select.outputs.publications }}
+        run: |
+          work_count="$(jq 'length' <<<"$WORK")"
+          publication_count="$(jq 'length' <<<"$PUBLICATIONS")"
+          if [ "$work_count" -gt 0 ]; then
+            echo "::notice::Blackboard semantic judgment required for $work_count subject(s)."
+          elif [ "$publication_count" -gt 0 ]; then
+            echo "::notice::Blackboard readiness publication verification required for $publication_count subject(s)."
+          else
+            echo "::notice::No Blackboard semantic judgment required."
+          fi
+
+  blackboard-jev:
+    name: blackboard-jev (${{ matrix.work.id }})
+    needs: blackboard
+    if: needs.blackboard.outputs.work != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        work: ${{ fromJSON(needs.blackboard.outputs.work) }}
+    uses: vhwg06/ExHarness/.github/workflows/blackboard-jev.yml@main
+    with:
+      work_id: ${{ matrix.work.id }}
+      candidate_sha: ${{ matrix.work.sha }}
+      trusted_sha: ${{ github.event.pull_request.base.sha }}
+      controller_sha: ${{ github.event.pull_request.base.sha }}
+    secrets: inherit
+
+  readiness-verify:
+    name: readiness-verify (${{ matrix.work.id }})
+    needs: blackboard
+    if: needs.blackboard.outputs.publications != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        work: ${{ fromJSON(needs.blackboard.outputs.publications) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.work.sha }}
+          path: subject
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify canonical readiness publication
+        env:
+          WORK_ID: ${{ matrix.work.id }}
+          CANDIDATE_SHA: ${{ matrix.work.sha }}
+          TRUSTED_ROOT: trusted
+          SUBJECT_ROOT: subject
+        run: node trusted/scripts/blackboard-jev-ci.mjs verify-publication
