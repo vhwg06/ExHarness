@@ -18,6 +18,22 @@ function checkedFile(root, ref) {
   const body = fs.readFileSync(localPath(root, ref), 'utf8');
   return { ref, hash: hash(body), body };
 }
+const RESEARCH_EVIDENCE_CHARS = 3072;
+function boundedResearchEvidence(ref, body) {
+  const digest=hash(body),bytes=Buffer.byteLength(body);
+  if(body.length<=RESEARCH_EVIDENCE_CHARS)return {ref,hash:digest,bytes,body,excerpted:false};
+  const head=body.slice(0,768),tail=body.slice(-768);
+  const outline=body.split('\n').filter(line=>
+    /^#{1,6}\s/.test(line) ||
+    /^\s*(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+[A-Za-z_$][\w$]*/.test(line) ||
+    /^\s*(?:async\s+)?[A-Za-z_$][\w$]*\([^)]*\)\s*\{/.test(line)
+  ).join('\n').slice(0,1200);
+  const omitted=Math.max(0,body.length-head.length-tail.length-outline.length);
+  return {
+    ref,hash:digest,bytes,excerpted:true,
+    body:`${head}\n...[bounded research evidence; ${omitted} chars omitted, full content bound by hash]...\n${outline}\n...[tail]...\n${tail}`
+  };
+}
 export function assertReady(root, task, plan) {
   check(plan.status === 'READY', 'plan is not READY');
   const livingDocs = assertLivingDocs(plan);
@@ -115,7 +131,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     state.evidence = [...planEvidence, ...refs.map(ref => {
       check(/^[a-f0-9]{40}$/.test(task.contract.researchBaselineSha??''),'exact research baseline required');
       const body=gitFile(root, task.contract.researchBaselineSha, ref);
-      return {ref,hash:hash(body),body};
+      return boundedResearchEvidence(ref,body);
     })];
   } else {
     assertReady(root, task, plan);
@@ -204,7 +220,9 @@ export function materialize(root, id, { readiness = false } = {}) {
   const stateHash = hash(state), specHash = hash({ policy:spec.policy, questions });
   const cacheKey = hash({ stateHash, specHash, model: spec.model, policy: POLICY, lane });
   const payload = { model: spec.model, state, questions };
-  check(Buffer.byteLength(canonical(payload)) <= spec.maxPayloadBytes, 'payload exceeds budget; refine evidence without dropping required coverage');
+  const payloadBytes=Buffer.byteLength(canonical(payload));
+  const maxPayloadBytes=lane==='RESEARCH_SA'?Math.min(spec.maxPayloadBytes,spec.maxResearchPayloadBytes??98304):spec.maxPayloadBytes;
+  check(payloadBytes <= maxPayloadBytes, 'payload exceeds budget; refine evidence without dropping required coverage');
   return { lane, subject, payload, stateHash, specHash, cacheKey };
 }
 export function validateResponse(response, payload) {
@@ -222,6 +240,12 @@ export function validateResponse(response, payload) {
   for (const k of ['input_tokens', 'output_tokens']) check(Number.isInteger(response.usage?.[k]) && response.usage[k] >= 0, 'invalid usage');
   return response;
 }
+async function errorDetail(response) {
+  try {
+    const body=(await response.text()).replace(/\s+/g,' ').trim();
+    return body?body.slice(0,2000):'';
+  } catch { return ''; }
+}
 export async function callJev(payload, { apiKey = process.env.TYPESAFE_API_KEY, fetchImpl = fetch, timeoutMs = 30000, sleep = ms => new Promise(r => setTimeout(r, ms)) } = {}) {
   check(apiKey, 'TYPESAFE_API_KEY is missing');
   const deadline = Date.now() + timeoutMs;
@@ -237,13 +261,19 @@ export async function callJev(payload, { apiKey = process.env.TYPESAFE_API_KEY, 
       continue;
     }
     if (response.status === 429 || response.status >= 500) {
-      if (attempts === 2) fail(`Jev HTTP ${response.status}`);
+      if (attempts === 2) {
+        const detail=await errorDetail(response);
+        fail(`Jev HTTP ${response.status}${detail?`: ${detail}`:''}`);
+      }
       const retry = response.headers.get('retry-after');
       const wait = retry ? (/^\d+$/.test(retry) ? Number(retry) * 1000 : Math.max(0, Date.parse(retry) - Date.now())) : 500;
       check(Number.isFinite(wait) && wait < deadline - Date.now(), 'retry exceeds deadline');
       await sleep(wait); continue;
     }
-    check(response.ok, `Jev HTTP ${response.status}`);
+    if(!response.ok){
+      const detail=await errorDetail(response);
+      fail(`Jev HTTP ${response.status}${detail?`: ${detail}`:''}`);
+    }
     let body;
     try { body = await response.json(); } catch { fail('Jev invalid JSON'); }
     return { response: validateResponse(body, payload), attempts };
