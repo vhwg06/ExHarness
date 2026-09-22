@@ -147,9 +147,10 @@ test('research evidence is bounded while full-source changes still invalidate se
   const largeA='export const answer = 1;\n'+('A'.repeat(12000))+'\nexport function tailMarker() { return 1; }\n';
   fs.writeFileSync(path.join(f.root,'source.js'),largeA);f.git('add','source.js');f.git('commit','-m','large baseline a');
   let graph=read(f.root,'docs/blackboard/work-graph.json');graph.tasks[0].contract.researchBaselineSha=f.git('rev-parse','HEAD');write(f.root,'docs/blackboard/work-graph.json',graph);
+  const plan=read(f.root,'plan.json');plan.jevEvidenceRouting='OBJECTIVE_SCOPED_V1';write(f.root,'plan.json',plan);
   const a=materialize(f.root,'BB-1');
   const sourceA=a.payload.state.evidence.find(item=>item.ref==='source.js');
-  assert.equal(sourceA.excerpted,true);assert.ok(sourceA.body.length<2048);assert.equal(sourceA.bytes,Buffer.byteLength(largeA.trimEnd()));
+  assert.equal(sourceA.excerpted,true);assert.ok(sourceA.body.length<1024);assert.equal(sourceA.bytes,Buffer.byteLength(largeA.trimEnd()));
 
   const middle=5000,changed=2000;const largeB=largeA.slice(0,middle)+'B'.repeat(changed)+largeA.slice(middle+changed);
   fs.writeFileSync(path.join(f.root,'source.js'),largeB);f.git('add','source.js');f.git('commit','-m','large baseline b');
