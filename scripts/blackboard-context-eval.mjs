@@ -39,9 +39,14 @@ run("progressive-search-is-not-default-context",()=>{
 run("context-seed-is-deterministic",()=>{
   if(JSON.stringify(a)!==JSON.stringify(b))throw Error("resolver is non-deterministic");
 });
-run("execution-scope-is-derived-before-worker-execution",()=>{
+run("source-mutation-scope-matches-current-lane-phase",()=>{
   if(!a.executionSourceScope?.write?.length)throw Error("missing derived execution write scope");
-  if(a.sourceScope.write.length)throw Error("readiness review gained source mutation");
+  const task=graph.tasks.find(item=>item.id==="BB-052");
+  const executing=task.lane==="WORKER"&&["EXECUTION","REPAIR"].includes(task.phase);
+  if(executing){
+    if(JSON.stringify(a.sourceScope.write)!==JSON.stringify(a.executionSourceScope.write))
+      throw Error("worker execution did not receive exact plan write scope");
+  }else if(a.sourceScope.write.length)throw Error("non-execution context gained source mutation");
 });
 
 const deterministicLoaded=[...new Set([...a.requiredCurrentSystemRefs,...a.requiredInputRefs])];
