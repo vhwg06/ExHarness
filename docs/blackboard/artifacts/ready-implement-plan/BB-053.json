@@ -482,7 +482,8 @@
         "D3 Backend runtime adapter",
         "D4 Frontend runtime adapter",
         "D5 concurrent barrier proof"
-      ]
+      ],
+      "coverageArgument": "D3 and D4 construct separate domain-bound execution controllers/runtime adapters while current execution policy resolves a distinct strategy per owningDomain/workloadType. D5 starts both reconciles together and requires both dispatchStarted plus distinct attempt/strategy/runtime invocation identities before either may complete, proving actual overlap and absence of a cross-domain stage barrier."
     },
     {
       "objectiveCriterion": "An outage in one domain leaves unrelated work in another domain actionable and able to progress.",
@@ -565,182 +566,31 @@
     "questionId": "LIVING_DOCS",
     "statement": "The delivered Integration D Living Docs accurately describe domain-local level-triggered activation, claim/execution admission, FE/BE independent domain strategies, recovery and non-authoritative wake-up hints."
   },
-  "sourceSeamResponsibilities": [
-    {
-      "ref": "packages/agentic-system/src/organization-work.js",
-      "responsibility": "Canonical actionable work and exact owning-domain/work identity consumed by activation; no activation queue truth.",
-      "verificationIds": [
-        "domain-activation",
-        "activation-recovery"
-      ]
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-053.readiness-jev-evaluation.json",
+  "parallelDomainExecutionContract": {
+    "independenceUnit": "One exact OrganizationWork subject. BACKEND and FRONTEND have separate activation instances, trusted principals, DomainExecutionController instances, runtime adapters and execution-attempt subjects; neither domain lifecycle is a prerequisite for the other.",
+    "strategyBinding": {
+      "backend": "DomainExecutionController resolves executionPolicySubjectKey('BACKEND', backendWorkloadType) -> BACKEND strategyRef, then verifies that descriptor against the Backend runtimeAdapter. Activation supplies no strategy input.",
+      "frontend": "DomainExecutionController resolves executionPolicySubjectKey('FRONTEND', frontendWorkloadType) -> FRONTEND strategyRef, then verifies that descriptor against the Frontend runtimeAdapter. Activation supplies no strategy input.",
+      "invariant": "BACKEND and FRONTEND strategyRef values and runtimeInvocationKey values must be distinct in the parallel fixture; a switch/case in activation that chooses a domain strategy is forbidden."
     },
-    {
-      "ref": "packages/agentic-system/src/organization-claim.js",
-      "responsibility": "Existing claim/release/invalidation fence; duplicate and stale activation must converge/fail closed here rather than inventing authority.",
-      "verificationIds": [
-        "organization-bridge-regression",
-        "domain-activation",
-        "partial-invalidation"
-      ]
+    "executionEntry": {
+      "activationToExecution": "executeReleasedClaim({itemId, claimGeneration, receiptRef})",
+      "controllerResolution": "The existing controller derives owningDomain/workloadType/workContractRef from the immutable released WorkContract, resolves current policy/strategy itself, and creates executionAttemptSubjectKey({projectId,itemId,workContractRef}).",
+      "noCrossDomainState": "No Backend completion/session/stage field is read by Frontend activation/execution and no Frontend completion/session/stage field is read by Backend activation/execution."
     },
-    {
-      "ref": "packages/agentic-system/src/domain-execution-control.js",
-      "responsibility": "Existing HOW boundary. Activation may admit an exact released claim but cannot choose strategy or publish by itself.",
-      "verificationIds": [
-        "domain-execution-regression",
-        "domain-activation"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/backend-worker.js",
-      "responsibility": "Existing Backend execution primitive adapted into a domain-local strategy without inheriting QA orchestration.",
-      "verificationIds": [
-        "fe-be-parallel"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/durable-backend-qa.js",
-      "responsibility": "Reference boundary showing QA cross-domain orchestration that must not become the Backend execution strategy.",
-      "verificationIds": [
-        "fe-be-parallel"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/domain-activation.js",
-      "responsibility": "New exact-key level-triggered reconciliation and admission controller.",
-      "verificationIds": [
-        "domain-activation",
-        "activation-recovery",
-        "partial-invalidation"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/domain-activation-source.js",
-      "responsibility": "New canonical domain scan plus optional wake-up hint adapter; disposable hint state only.",
-      "verificationIds": [
-        "activation-recovery"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/backend-execution-strategy.js",
-      "responsibility": "New Backend domain-local strategy adapter over existing Backend primitives.",
-      "verificationIds": [
-        "fe-be-parallel",
-        "domain-execution-regression"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/frontend-contracts.js",
-      "responsibility": "New explicit Frontend work/result/context/completion semantics independent of Backend conversation/stage state.",
-      "verificationIds": [
-        "fe-be-parallel"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/frontend-worker.js",
-      "responsibility": "New Frontend worker primitive.",
-      "verificationIds": [
-        "fe-be-parallel"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/frontend-application.js",
-      "responsibility": "New Frontend application composition boundary.",
-      "verificationIds": [
-        "fe-be-parallel"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/frontend-execution-strategy.js",
-      "responsibility": "New Frontend domain-local execution strategy.",
-      "verificationIds": [
-        "fe-be-parallel",
-        "domain-execution-regression"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/composition.js",
-      "responsibility": "Existing runBackendThenQaObjective is an explicit serial Backend→QA composition and serves as a negative seam: Integration D must not reuse it as a global next-role/domain dispatcher.",
-      "verificationIds": [
-        "fe-be-parallel"
-      ]
-    },
-    {
-      "ref": "packages/agentic-system/src/domain-runtime-composition.js",
-      "responsibility": "New composition root that builds separate BACKEND and FRONTEND activation + DomainExecutionController instances with domain-bound principal/runtimeAdapter while leaving strategy choice to current execution policy.",
-      "verificationIds": [
-        "fe-be-parallel",
-        "domain-execution-regression"
-      ]
+    "concurrencyProof": {
+      "setup": "Create unrelated actionable BACKEND and FRONTEND work with no semantic dependency edge; publish one ACTIVE execution policy + immutable strategy descriptor for each owningDomain/workloadType.",
+      "start": "Invoke both domain reconcile calls with Promise.all. Each runtime adapter emits dispatchStarted and waits on its own deferred barrier.",
+      "requiredBeforeRelease": [
+        "BACKEND dispatchStarted",
+        "FRONTEND dispatchStarted",
+        "two distinct current executionAttemptId values",
+        "two distinct executionStrategyRef values",
+        "two distinct runtimeInvocationKey values"
+      ],
+      "pass": "Assert every requiredBeforeRelease observation before releasing either barrier. Then release independently and prove each domain can advance without observing the other domain's completion.",
+      "outage": "Reject one domain barrier/adapter and prove the other domain still reaches its own terminal/current completion path."
     }
-  ],
-  "verificationMatrix": [
-    {
-      "id": "organization-bridge-regression",
-      "command": "node --test packages/agentic-system/test/bb047-organization-bridge.test.js",
-      "criterionIds": [
-        "AC-3"
-      ]
-    },
-    {
-      "id": "domain-execution-regression",
-      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
-      "criterionIds": [
-        "AC-5",
-        "INV-4"
-      ]
-    },
-    {
-      "id": "domain-activation",
-      "command": "node --test packages/agentic-system/test/domain-activation.test.js",
-      "criterionIds": [
-        "AC-2",
-        "AC-3",
-        "AC-4",
-        "INV-1",
-        "INV-3",
-        "INV-4",
-        "INV-5"
-      ]
-    },
-    {
-      "id": "activation-recovery",
-      "command": "node --test packages/agentic-system/test/activation-recovery.test.js",
-      "criterionIds": [
-        "AC-1",
-        "AC-2",
-        "AC-7",
-        "AC-8",
-        "INV-2",
-        "INV-8"
-      ]
-    },
-    {
-      "id": "fe-be-parallel",
-      "command": "node --test packages/agentic-system/test/fe-be-parallel.test.js",
-      "criterionIds": [
-        "AC-5",
-        "AC-6",
-        "AC-7",
-        "INV-6",
-        "INV-7"
-      ]
-    },
-    {
-      "id": "partial-invalidation",
-      "command": "node --test packages/agentic-system/test/partial-invalidation.test.js",
-      "criterionIds": [
-        "AC-4",
-        "AC-8",
-        "INV-5",
-        "INV-8"
-      ]
-    },
-    {
-      "id": "agentic-regression",
-      "command": "npm run test:agentic",
-      "criterionIds": []
-    }
-  ],
-  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-053.readiness-jev-evaluation.json"
+  }
 }
