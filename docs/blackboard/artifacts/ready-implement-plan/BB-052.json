@@ -549,6 +549,11 @@
         "ba-sa-vertical",
         "organization-bridge-regression",
         "domain-execution-regression"
+      ],
+      "planElements": [
+        "architectureDecisions",
+        "implementationSlices.C1/C2/C5",
+        "negativeVerificationCases"
       ]
     },
     {
@@ -561,6 +566,10 @@
       "verificationIds": [
         "cross-domain-obligation",
         "domain-execution-regression"
+      ],
+      "planElements": [
+        "architectureDecisions",
+        "implementationSlices.C1/C2"
       ]
     },
     {
@@ -571,6 +580,10 @@
       ],
       "verificationIds": [
         "dependency-invalidation"
+      ],
+      "planElements": [
+        "implementationSlices.C3/C4",
+        "negativeVerificationCases"
       ]
     },
     {
@@ -580,6 +593,10 @@
       ],
       "verificationIds": [
         "lineage-race"
+      ],
+      "planElements": [
+        "architectureDecisions.currentness-handshake",
+        "implementationSlices.C4"
       ]
     },
     {
@@ -592,6 +609,10 @@
       "verificationIds": [
         "cross-domain-obligation",
         "ba-sa-vertical"
+      ],
+      "planElements": [
+        "architectureDecisions.logical-obligation-identity",
+        "implementationSlices.C2"
       ]
     },
     {
@@ -604,6 +625,10 @@
         "cross-domain-obligation",
         "dependency-invalidation",
         "organization-bridge-regression"
+      ],
+      "planElements": [
+        "implementationSlices.C4",
+        "negativeVerificationCases"
       ]
     },
     {
@@ -616,6 +641,10 @@
         "cross-domain-obligation",
         "dependency-invalidation",
         "lineage-race"
+      ],
+      "planElements": [
+        "architectureDecisions.authoritative-lineage",
+        "implementationSlices.C2/C3"
       ]
     }
   ],
@@ -628,5 +657,175 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "The delivered Integration C Living Docs accurately describe cross-domain obligation authority, semantic lineage/currentness, selective invalidation and the BA-to-SA handoff."
-  }
+  },
+  "sourceSeamResponsibilities": [
+    {
+      "ref": "packages/agentic-system/src/domain-execution-control.js",
+      "responsibility": "Existing generic HOW boundary and publicationGate seam; consume a production Integration C publication gate, do not duplicate execution control.",
+      "verificationIds": [
+        "domain-execution-regression",
+        "ba-sa-vertical"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/organization-work.js",
+      "responsibility": "Existing deterministic materialization; Integration C must bind it to one exact current authorized CrossDomainObligation.",
+      "verificationIds": [
+        "organization-bridge-regression",
+        "ba-sa-vertical"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/organization-claim.js",
+      "responsibility": "Existing claim invalidation/publication fence used to revoke executable capability for work whose obligation becomes non-current.",
+      "verificationIds": [
+        "organization-bridge-regression",
+        "dependency-invalidation"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/organization-artifact-store.js",
+      "responsibility": "Extend immutable organization artifact registry with semantic/obligation publication evidence needed across materialization.",
+      "verificationIds": [
+        "cross-domain-obligation",
+        "ba-sa-vertical"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/application-orchestrator.js",
+      "responsibility": "Reuse exact Board block/invalidate lifecycle transitions; no global reset or cross-domain dispatch.",
+      "verificationIds": [
+        "organization-bridge-regression",
+        "dependency-invalidation"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/domain-write-authority.js",
+      "responsibility": "New CAS-headed domain writer authority and production publicationGate implementation.",
+      "verificationIds": [
+        "cross-domain-obligation",
+        "domain-execution-regression"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/cross-domain-obligation.js",
+      "responsibility": "New immutable typed obligation/revision/currentness and deterministic logical identity.",
+      "verificationIds": [
+        "cross-domain-obligation",
+        "ba-sa-vertical"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/product-lineage.js",
+      "responsibility": "New immutable SemanticClaim/ProductDerivationEdge/currentness authority and rebuildable lineage views.",
+      "verificationIds": [
+        "dependency-invalidation",
+        "lineage-race"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/dependency-invalidation.js",
+      "responsibility": "New exact reverse-transitive impact analysis, handshake reconciliation and affected-work invalidation bridge.",
+      "verificationIds": [
+        "dependency-invalidation",
+        "lineage-race"
+      ]
+    },
+    {
+      "ref": "packages/agentic-system/src/index.js",
+      "responsibility": "Export only the concrete Integration C public surfaces after their semantics are proven.",
+      "verificationIds": [
+        "agentic-regression"
+      ]
+    }
+  ],
+  "verificationMatrix": [
+    {
+      "id": "organization-bridge-regression",
+      "command": "node --test packages/agentic-system/test/bb047-organization-bridge.test.js",
+      "criterionIds": [
+        "AC-1B",
+        "AC-5B",
+        "AC-6B",
+        "INV-3",
+        "INV-6A",
+        "INV-6C"
+      ]
+    },
+    {
+      "id": "domain-execution-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "criterionIds": [
+        "AC-1C",
+        "AC-2A",
+        "AC-2C",
+        "INV-5",
+        "INV-6A",
+        "INV-6B"
+      ]
+    },
+    {
+      "id": "cross-domain-obligation",
+      "command": "node --test packages/agentic-system/test/cross-domain-obligation.test.js",
+      "criterionIds": [
+        "AC-1A",
+        "AC-2A",
+        "AC-2B",
+        "AC-2C",
+        "AC-5A",
+        "AC-5C",
+        "AC-6A",
+        "AC-7A",
+        "INV-1",
+        "INV-5",
+        "INV-6B",
+        "INV-6C",
+        "INV-7A",
+        "INV-7B"
+      ]
+    },
+    {
+      "id": "dependency-invalidation",
+      "command": "node --test packages/agentic-system/test/dependency-invalidation.test.js",
+      "criterionIds": [
+        "AC-3A",
+        "AC-3B",
+        "AC-6A",
+        "AC-6B",
+        "AC-7A",
+        "AC-7B",
+        "INV-2",
+        "INV-3",
+        "INV-4",
+        "INV-7A",
+        "INV-7B",
+        "INV-8"
+      ]
+    },
+    {
+      "id": "lineage-race",
+      "command": "node --test packages/agentic-system/test/lineage-race.test.js",
+      "criterionIds": [
+        "AC-4",
+        "AC-7A"
+      ]
+    },
+    {
+      "id": "ba-sa-vertical",
+      "command": "node --test packages/agentic-system/test/ba-sa-vertical.test.js",
+      "criterionIds": [
+        "AC-1A",
+        "AC-1B",
+        "AC-1C",
+        "AC-5A",
+        "AC-5B",
+        "INV-1"
+      ]
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "criterionIds": []
+    }
+  ]
 }
