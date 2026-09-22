@@ -1,6 +1,27 @@
 name: blackboard-jev
 
 on:
+  workflow_call:
+    inputs:
+      work_id:
+        description: Exact current Blackboard work id
+        required: true
+        type: string
+      candidate_sha:
+        description: Exact subject commit
+        required: true
+        type: string
+      trusted_sha:
+        description: Exact trusted control-plane commit
+        required: true
+        type: string
+      controller_sha:
+        description: Exact trusted evaluator/controller implementation commit
+        required: false
+        type: string
+    secrets:
+      TYPESAFE_API_KEY:
+        required: true
   workflow_dispatch:
     inputs:
       work_id:
