@@ -18,11 +18,11 @@ function checkedFile(root, ref) {
   const body = fs.readFileSync(localPath(root, ref), 'utf8');
   return { ref, hash: hash(body), body };
 }
-const RESEARCH_EVIDENCE_CHARS = 2048;
+const RESEARCH_EVIDENCE_CHARS = 1024;
 function boundedResearchEvidence(ref, body) {
   const digest=hash(body),bytes=Buffer.byteLength(body);
   if(body.length<=RESEARCH_EVIDENCE_CHARS)return {ref,hash:digest,bytes,body,excerpted:false};
-  const headChars=384,tailChars=384,outlineChars=768;
+  const headChars=192,tailChars=192,outlineChars=384;
   const head=body.slice(0,headChars),tail=body.slice(-tailChars);
   const outline=body.split('\n').filter(line=>
     /^#{1,6}\s/.test(line) ||
