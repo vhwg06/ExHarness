@@ -1,0 +1,40 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-064",
+  "outcome": "The Oracle Reconciliation phase closes only when end-to-end connectivity and architecture alignment are both proven: logical Oracle infrastructure ownership matches physical module/dependency ownership, current concrete context flows still work, external/internal source seams are reachable, and closure machinery detects future architecture-to-source placement drift.",
+  "currentProblem": "The prior Oracle-detail closure declared zero debt because it checked generic-abstraction pressure rather than logical-to-physical architecture alignment. Without a phase-level acceptance task and a durable closure invariant, the same debt can recur even after moving files.",
+  "scope": [
+    "oracle.phase-acceptance",
+    "oracle.end-to-end-connectivity",
+    "oracle.architecture-drift-guard",
+    "oracle.closure-invariant",
+    "oracle.regression-proof"
+  ],
+  "constraints": [
+    "Phase acceptance consumes delivered outputs from BB-060 through BB-063; it cannot replace them with one monolithic refactor.",
+    "Declared logical ownership and physical package/dependency ownership must be mechanically or deterministically checkable.",
+    "Acceptance must exercise real Backend repository-context and QA accepted-artifact context paths through the extracted Oracle boundary.",
+    "Architecture checks must detect Oracle implementation leaking back into Agentic Application/Core packages.",
+    "Closure must not require a generic Resolver framework, third source class, MCP deployment or unrelated feature work."
+  ],
+  "successCriteria": [
+    "Phase acceptance proves current Backend and QA flows cross the infrastructure-owned Oracle boundary end to end.",
+    "A deterministic architecture check fails when Oracle implementation is placed back under Agentic Application/Core ownership or dependency direction reverses.",
+    "Repository and application-artifact connectivity preserve exact source/provenance semantics after extraction.",
+    "All BB-060..063 obligations are represented by durable delivered evidence before the topic can be considered closed.",
+    "Living Oracle architecture/state and physical source topology converge on the same ownership model with no known reconciliation debt."
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "packages/agentic-system/src/oracle.js",
+    "packages/agentic-system/src/backend-application.js",
+    "packages/agentic-system/src/qa-application.js",
+    "packages/agentic-system/src/index.js",
+    "docs/blackboard/contracts.md"
+  ]
+}

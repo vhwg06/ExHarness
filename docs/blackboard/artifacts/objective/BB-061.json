@@ -1,0 +1,41 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-061",
+  "outcome": "Application ↔ Oracle dependency direction is explicit and enforceable: Application owns WHAT context/schema is required, Oracle owns WHERE/HOW declared source data is read/adapted, and neither side leaks lifecycle or acceptance authority across the boundary.",
+  "currentProblem": "Logical semantics are documented, but current colocation obscures the compile-time dependency direction. A package split without a precise semantic port can simply move the same coupling into circular imports or force Oracle to import application implementation internals.",
+  "scope": [
+    "oracle.semantic-port",
+    "oracle.dependency-inversion",
+    "oracle.schema-ownership",
+    "oracle.authority-boundary",
+    "oracle.compile-time-dependencies"
+  ],
+  "constraints": [
+    "Application remains authority for work-order/context schemas and required context selection.",
+    "Oracle owns source IO/adaptation only and must not claim work, schedule, accept, evaluate, recover or mutate product truth.",
+    "Prefer concrete Backend/QA ports earned by current use cases over a generic resolver abstraction.",
+    "Cross-package dependencies must be acyclic and testable.",
+    "Schema ownership may be shared only through a deliberately named contracts seam; Oracle must not depend on application orchestration implementation."
+  ],
+  "successCriteria": [
+    "Research defines the exact semantic/compile-time port used by Backend and QA after physical extraction.",
+    "Dependency direction is acyclic and maps directly to documented authority: Application WHAT, Oracle WHERE/HOW.",
+    "Oracle can validate/assemble application-owned shapes without importing application orchestration runtime.",
+    "Negative cases prove Oracle cannot gain scheduling/acceptance/recovery/product-currentness authority.",
+    "Concrete ports remain sufficient for current repository/artifact sources; generic abstraction is explicitly deferred unless evidenced."
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "packages/agentic-system/src/oracle.js",
+    "packages/agentic-system/src/backend-application.js",
+    "packages/agentic-system/src/qa-application.js",
+    "packages/agentic-system/src/index.js",
+    "docs/living/system/agentic-application/contracts.md",
+    "docs/living/system/agentic-application/architecture.md"
+  ]
+}

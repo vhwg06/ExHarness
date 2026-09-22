@@ -1,0 +1,41 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-063",
+  "outcome": "Oracle extraction preserves durability, provenance and recovery semantics across process boundaries and migration: manifest-protected artifact reads, stable source refs, validation failures and durable Backend→QA continuation remain correct after package ownership changes.",
+  "currentProblem": "Oracle behavior matured through manifest validation and durable Backend→QA continuation while still colocated. Moving code without reconciling these durability/provenance seams risks silently weakening accepted-artifact identity, crash recovery, or compatibility even if simple resolver tests still pass.",
+  "scope": [
+    "oracle.provenance",
+    "oracle.manifest-validation",
+    "oracle.durable-continuation",
+    "oracle.migration-compatibility",
+    "oracle.failure-semantics"
+  ],
+  "constraints": [
+    "Physical extraction must not weaken producer/revision/acceptance/content-digest checks for manifest-protected artifacts.",
+    "Durable Backend→QA continuation must persist and recover the exact refs it already relies on.",
+    "Default direct-reader behavior remains supported unless explicitly superseded by accepted research.",
+    "Migration cannot fabricate provenance or silently reinterpret missing durable state.",
+    "Compatibility shims, if needed, are temporary and have explicit removal/closure criteria."
+  ],
+  "successCriteria": [
+    "Research identifies every durability/provenance seam crossing the new package boundary.",
+    "Manifest-protected QA reads remain fail-closed on identity/provenance/content mismatch.",
+    "Fresh-process Backend→QA continuation resolves the same accepted artifact refs after extraction.",
+    "Existing direct-reader callers either continue unchanged or have an explicit bounded migration path.",
+    "Failure/recovery evidence is sufficient to detect semantic regressions that package-level unit tests would miss."
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "packages/agentic-system/src/oracle.js",
+    "packages/agentic-system/src/backend-application.js",
+    "packages/agentic-system/src/qa-application.js",
+    "packages/agentic-system/src/index.js",
+    "docs/living/system/oracle/artifact-manifest.md",
+    "docs/living/system/agentic-application/state.md"
+  ]
+}

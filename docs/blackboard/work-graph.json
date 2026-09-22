@@ -19,6 +19,21 @@
       "artifactRefs": [
         "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
       ]
+    },
+    {
+      "id": "TOPIC-ORACLE-RECONCILIATION",
+      "title": "Oracle infrastructure reconciliation phase",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-ORACLE-PHYSICAL",
+        "FEATURE-ORACLE-PORT",
+        "FEATURE-ORACLE-CONNECTIVITY",
+        "FEATURE-ORACLE-DURABILITY",
+        "FEATURE-ORACLE-ACCEPTANCE"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/oracle-reconciliation-phase.md"
+      ]
     }
   ],
   "features": [
@@ -105,6 +120,66 @@
       ],
       "artifactRefs": [],
       "acceptanceTaskId": "BB-059"
+    },
+    {
+      "id": "FEATURE-ORACLE-PHYSICAL",
+      "topicId": "TOPIC-ORACLE-RECONCILIATION",
+      "kind": "FEATURE",
+      "title": "Physical ownership and package boundary",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-060"
+      ],
+      "artifactRefs": [],
+      "acceptanceTaskId": "BB-060"
+    },
+    {
+      "id": "FEATURE-ORACLE-PORT",
+      "topicId": "TOPIC-ORACLE-RECONCILIATION",
+      "kind": "FEATURE",
+      "title": "Application to Oracle semantic port and dependency direction",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-061"
+      ],
+      "artifactRefs": [],
+      "acceptanceTaskId": "BB-061"
+    },
+    {
+      "id": "FEATURE-ORACLE-CONNECTIVITY",
+      "topicId": "TOPIC-ORACLE-RECONCILIATION",
+      "kind": "FEATURE",
+      "title": "Concrete source connectivity and adapter topology",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-062"
+      ],
+      "artifactRefs": [],
+      "acceptanceTaskId": "BB-062"
+    },
+    {
+      "id": "FEATURE-ORACLE-DURABILITY",
+      "topicId": "TOPIC-ORACLE-RECONCILIATION",
+      "kind": "FEATURE",
+      "title": "Provenance durability and migration compatibility",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-063"
+      ],
+      "artifactRefs": [],
+      "acceptanceTaskId": "BB-063"
+    },
+    {
+      "id": "FEATURE-ORACLE-ACCEPTANCE",
+      "topicId": "TOPIC-ORACLE-RECONCILIATION",
+      "kind": "FEATURE",
+      "title": "Oracle phase acceptance and architecture drift guard",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-064"
+      ],
+      "artifactRefs": [],
+      "acceptanceTaskId": "BB-064"
     }
   ],
   "tasks": [
@@ -548,10 +623,232 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-060",
+      "featureId": "FEATURE-ORACLE-PHYSICAL",
+      "title": "Reconcile Oracle physical ownership and package boundary",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "oracle/infrastructure"
+      ],
+      "dependencies": [],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-060.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-060.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "infrastructure-owned Oracle package boundary",
+        "concrete Backend/QA resolver migration map",
+        "no-generic-abstraction extraction contract"
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-060.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+        "researchBaselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
+        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-061",
+      "featureId": "FEATURE-ORACLE-PORT",
+      "title": "Define Application to Oracle semantic port and dependency direction",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-060",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-061.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-061.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "acyclic Application-to-Oracle dependency contract",
+        "schema and authority ownership boundary",
+        "compile-time dependency verification"
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-061.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+        "researchBaselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
+        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-062",
+      "featureId": "FEATURE-ORACLE-CONNECTIVITY",
+      "title": "Define concrete Oracle source connectivity and adapter topology",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-061",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-062.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-062.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "repository and application-artifact adapter topology",
+        "bounded external/MCP adapter contract",
+        "end-to-end declared-context ingress semantics"
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-062.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+        "researchBaselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
+        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-063",
+      "featureId": "FEATURE-ORACLE-DURABILITY",
+      "title": "Preserve Oracle provenance durability and migration compatibility",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-062",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-063.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-063.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "manifest/provenance-preserving package migration",
+        "fresh-process Backend-to-QA compatibility proof",
+        "fail-closed source identity semantics"
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-063.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+        "researchBaselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
+        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-064",
+      "featureId": "FEATURE-ORACLE-ACCEPTANCE",
+      "title": "Close Oracle reconciliation with end-to-end connectivity and drift guards",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "oracle/infrastructure",
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-060",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-061",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-062",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-063",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-064.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-064.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "Oracle phase end-to-end acceptance",
+        "architecture-to-source alignment guard",
+        "zero known Oracle reconciliation debt"
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-064.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+        "researchBaselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
+        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-060",
+    "nextWorkId": "BB-065",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

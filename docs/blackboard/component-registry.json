@@ -275,6 +275,46 @@
           ".github/workflows/**"
         ]
       }
+    },
+    {
+      "id": "oracle/infrastructure",
+      "contextOwner": "oracle/infrastructure",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/oracle/architecture.md",
+          "docs/living/system/oracle/state.md",
+          "docs/living/system/oracle/semantics.md",
+          "docs/living/system/oracle/workflow.md",
+          "docs/blackboard/process/oracle-reconciliation-phase.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/oracle.js",
+          "packages/agentic-system/src/backend-application.js",
+          "packages/agentic-system/src/qa-application.js",
+          "packages/oracle/**"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/**",
+          "packages/oracle/test/**",
+          "test/oracle-*.test.mjs"
+        ],
+        "contractRefs": [
+          "resolveBackendContext",
+          "resolveQaContext",
+          "repositoryReader.readFile",
+          "artifactReader.readArtifact",
+          "BackendContextSchema",
+          "QaContextSchema"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/**",
+          "packages/oracle/**",
+          "docs/living/system/oracle/**",
+          "docs/living/system/agentic-application/**",
+          "scripts/**",
+          "test/**"
+        ]
+      }
     }
   ]
 }
