@@ -41,6 +41,17 @@ test("repository-wide discovery is progressive only and absent from deterministi
   assert.ok(!summary.requiredInputRefs.includes("packages/agentic-system/src/**"));
 });
 
-test("blocked task cannot materialize execution context before direct dependencies are done",()=>{
+test("blocked worker cannot materialize execution context before direct dependencies are done",()=>{
   assert.throws(()=>deriveTaskContext("BB-053"),/DEPENDENCIES_NOT_DONE/);
+});
+
+test("research may materialize ahead of an unfinished execution dependency without treating it as delivered truth",()=>{
+  const ctx=deriveTaskContext("BB-054");
+  const dep=ctx.dependencyContext.find(d=>d.taskId==="BB-053");
+  assert.equal(ctx.lane,"RESEARCH_SA");
+  assert.equal(dep.source,"PLANNED_DEPENDENCY");
+  assert.ok(dep.refs.includes("docs/blackboard/artifacts/objective/BB-053.json"));
+  assert.ok(dep.refs.includes("docs/blackboard/artifacts/ready-implement-plan/BB-053.json"));
+  assert.ok(ctx.requiredInputRefs.includes("docs/blackboard/artifacts/ready-implement-plan/BB-053.json"));
+  assert.ok(!ctx.requiredCurrentSystemRefs.some(ref=>ref===dep.refs[0]||ref===dep.refs[1]));
 });
