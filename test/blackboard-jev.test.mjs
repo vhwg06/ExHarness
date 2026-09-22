@@ -61,6 +61,7 @@ test('research objective questions receive bounded objective-to-criterion-to-sli
   plan.implementationSlices=['D1 — Change constant'];
   plan.supportingContract={mode:'bounded'};
   plan.objectiveCoverage[0].supportingPlanFields=['supportingContract'];
+  plan.objectiveCoverage[0].sourceAnchors=[{ref:'source.js',match:'export const answer = 1;'}];
   write(f.root,'plan.json',plan);
   const input=materialize(f.root,'BB-1');
   assert.equal(input.payload.questions['objective-0'].instructions.includes('state.objectiveEvidence[0]'),true);
@@ -74,12 +75,21 @@ test('research objective questions receive bounded objective-to-criterion-to-sli
     decisionIndexes:[0],
     architectureDecisions:['Change constant'],
     sourceRefs:['source.js'],
+    sourceAnchors:[{ref:'source.js',match:'export const answer = 1;'}],
+    groundedSources:[{
+      ref:'source.js',
+      hash:hash('export const answer = 1;'),
+      bytes:Buffer.byteLength('export const answer = 1;'),
+      anchors:[{match:'export const answer = 1;',excerpt:'export const answer = 1;'}]
+    }],
     supportingPlanFields:['supportingContract'],
     supportingPlanEvidence:{supportingContract:{mode:'bounded'}}
   }]);
   const laneContract=input.payload.state.evidence.find(item=>item.ref==='blackboard://plan/lane-contract');
   const parsed=JSON.parse(laneContract.body);
-  assert.deepEqual(parsed.objectiveCoverage,[{objectiveCriterion:'answer is two',criterionIds:['AC1'],planElements:['D1'],verificationIds:['unit'],decisionIndexes:[0],sourceRefs:['source.js'],supportingPlanFields:['supportingContract']}]);
+  assert.deepEqual(parsed.objectiveCoverage,[{objectiveCriterion:'answer is two',criterionIds:['AC1'],planElements:['D1'],verificationIds:['unit'],decisionIndexes:[0],sourceRefs:['source.js'],sourceAnchors:[{ref:'source.js',match:'export const answer = 1;'}],supportingPlanFields:['supportingContract']}]);
+  const bad=read(f.root,'plan.json');bad.objectiveCoverage[0].sourceAnchors=[{ref:'source.js',match:'missing anchor'}];write(f.root,'plan.json',bad);
+  assert.throws(()=>materialize(f.root,'BB-1'),/source anchor not found/);
 });
 
 test('readiness batches atomic questions, honors low-confidence typed SATISFIED and caches semantic input',async t=>{
