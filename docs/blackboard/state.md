@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-059
+next-work-id: BB-060
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -41,6 +41,7 @@ NONE
 ## Schedulable tasks
 
 - BB-052 [WORKER/EXECUTION] — Implement cross-domain obligations and selective semantic invalidation
+- BB-059 [RESEARCH_SA/RESEARCH] — Research evidence-gated HOW evolution and Jev evaluation pipeline
 
 ## Jev decisions
 
@@ -84,6 +85,7 @@ BB-055 [BLOCKED_BY BB-054] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [BLOCKED_BY BB-055] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
+BB-059 [RESEARCH_SCHEDULABLE] <- BB-058
 ```
 
 ## Context semantics
