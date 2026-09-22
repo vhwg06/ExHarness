@@ -1,0 +1,22 @@
+name: push-test
+
+on:
+  push:
+
+jobs:
+  kernel:
+    runs-on: ubuntu-latest
+    name: kernel-node-24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Verify kernel
+        run: npm run verify
