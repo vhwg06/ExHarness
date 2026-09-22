@@ -22,12 +22,13 @@ const RESEARCH_EVIDENCE_CHARS = 2048;
 function boundedResearchEvidence(ref, body) {
   const digest=hash(body),bytes=Buffer.byteLength(body);
   if(body.length<=RESEARCH_EVIDENCE_CHARS)return {ref,hash:digest,bytes,body,excerpted:false};
-  const head=body.slice(0,768),tail=body.slice(-768);
+  const headChars=384,tailChars=384,outlineChars=768;
+  const head=body.slice(0,headChars),tail=body.slice(-tailChars);
   const outline=body.split('\n').filter(line=>
     /^#{1,6}\s/.test(line) ||
     /^\s*(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+[A-Za-z_$][\w$]*/.test(line) ||
     /^\s*(?:async\s+)?[A-Za-z_$][\w$]*\([^)]*\)\s*\{/.test(line)
-  ).join('\n').slice(0,1200);
+  ).join('\n').slice(0,outlineChars);
   const omitted=Math.max(0,body.length-head.length-tail.length-outline.length);
   return {
     ref,hash:digest,bytes,excerpted:true,
