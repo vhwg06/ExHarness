@@ -43,15 +43,15 @@
     "queued stale hints cannot resurrect invalidated work"
   ],
   "architectureDecisions": [
-    "DOMAIN_ACTIVATION is level-triggered per owning domain: scans/hints only discover exact work; canonical OrganizationWork + currentness are reread before claim.",
-    "Activation key is {projectId,workId,owningDomain}; trigger payload cannot grant principal, claim, strategy, runtime, obligation or publication authority.",
-    "Canonical scans are recovery truth; queue/cursor/backoff state is disposable. Duplicate hints converge through existing claim/release and ExecutionAttempt currentness.",
-    "BB-052 is a hard WORKER dependency: it must preserve requiredArtifactRefs and expose exact obligation-head currentness or BB-053 returns to RESEARCH_SA.",
-    "DomainExecutionInput is immutable content-addressed execution data in requiredArtifactRefs; adapters require exactly one ref matching WorkContract owningDomain/workloadType.",
-    "DomainExecutionController resolves current policy/strategy and passes the exact WorkContract to its prebound runtime adapter; activation never selects HOW.",
-    "BACKEND and FRONTEND use separate principals, hosts, controllers and adapters. Shared stores provide CAS/currentness only, never stage ordering or a cross-domain lock.",
-    "A post-release reread of the same obligationSubjectKey+revision gates execution; drift fences the exact claim and creates no execution attempt.",
-    "Parallel proof requires both FE/BE dispatches entered before either completes; host-local failure cannot cancel the sibling; selective invalidation affects only the exact obligation subject."
+    "Activation is level-triggered per owning domain; hints/scans only discover exact work and canonical state is reread before claim.",
+    "Key={projectId,workId,owningDomain}; trigger data grants no principal/claim/strategy/runtime/obligation/publication authority.",
+    "Canonical scans are recovery truth; disposable hint state cannot strand work; duplicates converge through claim/release + attempt currentness.",
+    "BB-052 must preserve requiredArtifactRefs and exact obligation-head currentness or BB-053 returns to RESEARCH_SA.",
+    "DomainExecutionInput is immutable content-addressed execution data; exactly one ref must match WorkContract owningDomain/workloadType.",
+    "DomainExecutionController resolves policy/strategy and passes exact WorkContract to its prebound adapter; activation never selects HOW.",
+    "BACKEND/FRONTEND have separate principals, hosts, controllers and adapters; shared stores provide CAS/currentness only.",
+    "Post-release reread of the same obligationSubjectKey+revision gates execution; drift fences claim with no attempt.",
+    "Parallel proof requires both FE/BE dispatch entered before either completes; host-local failure and exact invalidation cannot affect siblings."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -141,10 +141,10 @@
     "D1 — DomainExecutionInput bridge [AC-5, AC-6]: add domain-execution-input.js with immutable schema {kind:'DOMAIN_EXECUTION_INPUT',version:1,owningDomain,workloadType,repository:{ref,revision},requiredFiles[],constraints[]} and content-addressed ref domain-execution-input:sha256:<digest>. A WorkContract is executable only when requiredArtifactRefs contains exactly one such ref whose domain/workload matches the contract. Add registry put/resolve over the existing immutable artifact store.",
     "D2 — Generic execution adapter seam [AC-2, AC-3, AC-4, INV-4, INV-5]: extend DomainExecutionController runtimeAdapter calls from {binding,input,runtimeInvocationKey} to {binding,contract,input,runtimeInvocationKey}; contract is the exact immutable OrganizationWorkContract already resolved from the released claim. Existing policy/strategy resolution and attempt binding stay authoritative. Activation never supplies strategy/runtime/domain input.",
     "D3 — Activation + domain/admission/currentness fence [AC-1, AC-2, AC-3, AC-4, AC-8, INV-1, INV-3, INV-4, INV-5, INV-8]: domain-activation-source.scan({owningDomain}) wraps listEligible. reconcile(key={projectId,workId,owningDomain}) first resolves the exact WorkContract and requires key.owningDomain === host.owningDomain === contract.owningDomain; mismatch returns REJECTED/NOOP before any claimController call. Trigger payload fields are never used as principal/strategy/obligation authority. For a valid domain, capture exact {obligationSubjectKey,revision,status}; claim/release canonically; reread the same head immediately before execute. Non-ACTIVE or revision drift invalidates/fences that exact claim, returns NOOP, leaves no execution attempt and dispatch count zero. Only unchanged currentness may call execute({itemId,claimGeneration,receiptRef}).",
-    "D4 — Backend runtime adapter [AC-5, AC-6]: backend-execution-strategy.js exports createBackendExecutionStrategy({organizationArtifactRegistry,repositoryReader,backendWorker,completionPolicy}). It exposes the runtimeAdapter contract {adapterRef,runtimeKind,runtimeDeploymentRef,producerAuthorityRef,dispatch,recover}. dispatch({contract,binding,runtimeInvocationKey}) resolves exactly one matching DomainExecutionInput, builds BackendObjective {id:contract.boardItemId,task:contract.summary,repository:input.repository,requiredFiles:input.requiredFiles,constraints:input.constraints}, then prepareBackendObjective + runPreparedBackendObjective. recover uses the same pinned contract/input and recoverPreparedBackendObjective. Adapter result mapping is fixed: BackendWorkResult APPLIED→SUCCEEDED, BLOCKED→BLOCKED, FAILED→FAILED; result.artifacts become outputArtifactRefs, result.evidence become verificationCandidateRefs, runtimeInvocationId=runtimeInvocationKey. It never calls runBackendThenQaObjective.",
-    "D5 — Frontend domain + runtime adapter [AC-5, AC-6, INV-6, INV-7]: frontend-contracts.js defines FrontendObjective/WorkOrder/Context and FrontendWorkResult {status:APPLIED|BLOCKED|FAILED,summary,revision,artifacts,evidence,gaps,blockers}; frontend-completion.js defines the domain-local completion policy with frontend.mutation/frontend.typecheck/frontend.tests claims; frontend-worker.js exposes execute/recover; frontend-application.js exposes prepareFrontendObjective/runPreparedFrontendObjective/recoverPreparedFrontendObjective. frontend-execution-strategy.js exports createFrontendExecutionStrategy with the same runtimeAdapter interface and the same APPLIED→SUCCEEDED, BLOCKED→BLOCKED, FAILED→FAILED mapping. It accepts only its exact WorkContract + matching DomainExecutionInput and has no Backend session/stage/completion input.",
-    "D6 — Domain host API + independent composition [AC-5, AC-6, AC-7, INV-2, INV-3, INV-6, INV-7]: domain-activation-host.js exports createDomainActivationHost({owningDomain,discovery,activation,scanIntervalMs,timer}). Host API is {start,scanOnce,notify,stop}; scanOnce=listEligible({owningDomain}) then Promise.allSettled(exact-key reconcile); start is idempotent, launches the immediate scan and periodic scan without serializing another domain; notify validates exact owningDomain and invokes only that host's reconcile; stop cancels only that host and drains its own in-flight scan. domain-runtime-composition.js exports createFrontendBackendDomainRuntime({backendHost,frontendHost}) with startAll/stopAll implemented via Promise.allSettled on both hosts. It is lifecycle composition only: no work routing, strategy switch, nextRole/nextDomain/stage state, shared mutex or other-domain completion dependency.",
-    "D7 — Acceptance + invariant proofs [AC-1..AC-8, INV-1..INV-8]: frontend-domain.test validates Frontend schema/completion/recovery and exact adapter status/output/evidence mapping. fe-be-parallel.test publishes distinct executionPolicySubjectKey(BACKEND,type) and executionPolicySubjectKey(FRONTEND,type), descriptors whose adapterRef matches only their prebound domain adapter, starts startAll(), blocks both dispatches independently, and requires both dispatchStarted plus distinct workContractRef/policyRef/strategyRef/attemptId/runtimeInvocationKey before either release. It then rejects one adapter and requires the sibling to reach TERMINAL. Other fixtures prove trigger/wrong-domain fail-closed, lost-hint recovery, post-release currentness fencing and exact selective invalidation."
+    "D4 — Backend adapter [AC-5,AC-6]: createBackendExecutionStrategy({organizationArtifactRegistry,repositoryReader,backendWorker,completionPolicy}) exposes runtimeAdapter metadata + dispatch/recover. Resolve exactly one matching DomainExecutionInput; map to BackendObjective {id:boardItemId,task:summary,repository,requiredFiles,constraints}; dispatch=prepare+runPrepared, recover=recoverPrepared. Map WorkResult APPLIED/BLOCKED/FAILED→SUCCEEDED/BLOCKED/FAILED; artifacts→outputArtifactRefs; evidence→verificationCandidateRefs; runtimeInvocationId=runtimeInvocationKey. Never call runBackendThenQaObjective.",
+    "D5 — Frontend adapter [AC-5,AC-6,INV-6,INV-7]: frontend-contracts defines Objective/WorkOrder/Context/WorkResult(APPLIED|BLOCKED|FAILED); frontend-completion requires frontend.mutation/typecheck/tests; frontend-worker execute/recover; frontend-application exports prepare/runPrepared/recoverPrepared; createFrontendExecutionStrategy exposes the same runtimeAdapter contract/status mapping as D4. Inputs are only exact WorkContract+matching DomainExecutionInput; no Backend state.",
+    "D6 — Host/composition [AC-5,AC-6,AC-7,INV-2,INV-3,INV-6,INV-7]: createDomainActivationHost({owningDomain,discovery,activation,scanIntervalMs,timer})→{start,scanOnce,notify,stop}. scanOnce=listEligible(domain)+Promise.allSettled(reconcile(exactKey)); start idempotently launches immediate+periodic scan; notify is exact-domain latency hint; stop cancels/drains only that host. createFrontendBackendDomainRuntime({backendHost,frontendHost})→{startAll,stopAll}, both via Promise.allSettled. No routing/strategy switch/stage/shared lock.",
+    "D7 — Proofs [AC-1..AC-8,INV-1..INV-8]: frontend-domain validates FE schema/completion/recovery/adapter mapping. fe-be-parallel publishes distinct BACKEND/FRONTEND policy subjects+descriptors, startAll(), blocks both adapters, asserts both dispatchStarted and distinct contract/policy/strategy/attempt/invocation ids before release; then one adapter rejects while sibling reaches TERMINAL. Other tests cover wrong-domain/trigger authority, lost hints/duplicates, post-release supersession fence, exact selective invalidation."
   ],
   "acceptanceCriteria": [
     {
@@ -424,20 +424,12 @@
   ],
   "researchGaps": [],
   "negativeVerificationCases": [
-    "Trigger/event authority fields are ignored/rejected.",
-    "Role/stage activation without exact work key is rejected.",
-    "Wrong-domain controller cannot claim/execute.",
-    "Lost hint state cannot strand canonical work.",
-    "Duplicate hints cannot create duplicate current claims/attempts.",
-    "Activation cannot select strategy or create obligation.",
-    "Zero/multiple/mismatched DomainExecutionInput refs fail closed.",
-    "Post-release recheck must compare the same obligation subject and observed revision.",
-    "Backend/Frontend descriptor adapterRef mismatch fails before dispatch.",
-    "FE/BE concurrency fails unless both dispatchStarted before either completion.",
-    "startAll implemented as await backend.start(); await frontend.start() is rejected.",
-    "One host failure cannot cancel sibling progress.",
-    "Stale hint after invalidation cannot execute.",
-    "Selective invalidation cannot block an unrelated obligation subject."
+    "Trigger authority spoofing, role/stage activation, wrong-domain claim, strategy/obligation selection all fail closed.",
+    "Lost/duplicate hints do not change canonical work or create duplicate current claim/attempt.",
+    "Zero/multiple/mismatched DomainExecutionInput or descriptor adapterRef mismatch fails before dispatch.",
+    "Post-release recheck must bind same obligation subject+observed revision.",
+    "Concurrency requires both dispatchStarted before either completion; serial startAll is rejected.",
+    "One host failure cannot cancel sibling; stale invalidated hint cannot execute; unrelated obligation remains executable."
   ],
   "laneContracts": [
     {
@@ -467,7 +459,6 @@
       ]
     }
   ],
-  "verificationScopeNote": "Criterion-specific tests are semantic evidence; workspace npm run verify is regression CI only.",
   "livingDocs": {
     "refs": [
       "docs/living/system/agentic-application/capabilities.md",
