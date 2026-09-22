@@ -46,11 +46,11 @@
     "Activation is level-triggered per owning domain; hints/scans only discover exact work and canonical state is reread before claim.",
     "Key={projectId,workId,owningDomain}; trigger data grants no principal/claim/strategy/runtime/obligation/publication authority.",
     "Canonical scans are recovery truth; disposable hint state cannot strand work; duplicates converge through claim/release + attempt currentness.",
-    "BB-052 must preserve requiredArtifactRefs and exact obligation-head currentness or BB-053 returns to RESEARCH_SA.",
+    "BB-052 owns obligation currentness plus canonical work invalidation/release fencing; BB-053 consumes that truth read-only and returns to RESEARCH_SA if the delivered contract drifts.",
     "DomainExecutionInput is immutable content-addressed execution data; exactly one ref must match WorkContract owningDomain/workloadType.",
     "DomainExecutionController resolves policy/strategy and passes exact WorkContract to its prebound adapter; activation never selects HOW.",
     "BACKEND/FRONTEND have separate principals, hosts, controllers and adapters; shared stores provide CAS/currentness only.",
-    "Post-release reread of the same obligationSubjectKey+revision gates execution; drift fences claim with no attempt.",
+    "Activation rereads the exact obligation subject+revision after release and before DomainExecutionController.execute; drift blocks execution with no attempt, while BB-052 remains owner of canonical invalidation/fencing.",
     "Parallel proof requires both FE/BE dispatch entered before either completes; host-local failure and exact invalidation cannot affect siblings."
   ],
   "sourceSeams": {
@@ -133,12 +133,12 @@
     "D2 — Controller seam [AC-2,AC-3,AC-4,INV-4]. File: domain-execution-control.js. runtimeAdapter receives {binding,contract,input,runtimeInvocationKey}; contract is the exact released-claim WorkContract. Controller still owns current policy/strategy resolution, attempt binding, release recheck and runtime attestation; activation cannot override HOW. Test: bb048 regression.",
     "D3A — Recovery/dedup [AC-1,AC-2,AC-7,INV-1,INV-2,INV-3]. Files: domain-activation-source.js, domain-activation.js. scan(domain)->listEligible(domain); reconcile(exact key) rereads canonical WorkContract before claim. Immediate/periodic scans recover lost hints; concurrent scan+notify converges through existing claim/release + execution-attempt currentness. Tests: domain-activation, activation-recovery.",
     "D3B — Domain admission [AC-3,INV-1,INV-3,INV-4,INV-5]. File: domain-activation.js. Before claim require host.domain=key.domain=WorkContract.domain. Hint contains exact key only; principal/obligation/policy/strategy/runtime come from trusted config/canonical stores. Mismatch => NOOP/REJECTED with claim=0, attempt=0, dispatch=0. Tests: domain-activation + bb047 regression.",
-    "D3C — Post-release fence [AC-4,INV-8]. File: domain-activation.js. Capture exact obligation subject+revision ACTIVE before claim; after canonical release and immediately before execute reread same head. Drift/non-ACTIVE invokes existing exact-claim invalidation/fencing, returns NOOP, attempt=0, dispatch=0. Barrier test: partial-invalidation/domain-activation.",
-    "D3D — Selective invalidation [AC-8,INV-8]. File: domain-activation.js. Non-current exact obligation suppresses/fences only that activation; no organization/stage reset. Unrelated ACTIVE obligation remains returned by next scan and executable. Tests: partial-invalidation, activation-recovery.",
+    "D3C — Post-release obligation fence [AC-4,INV-8]. File: domain-activation.js. From WorkContract.requiredArtifactRefs resolve exactly one BB-052 CrossDomainObligation revision and its {subjectKey,revision}; consume an injected read-only obligationCurrentness.current(subjectKey)->{revision,status}. Observe ACTIVE before claim, release canonically, reread same subject immediately before execute. Drift/non-ACTIVE => NOOP before DomainExecutionController.execute, so attempt=0/dispatch=0. BB-052, not activation, owns canonical claim invalidation/release fencing. Barrier tests: partial-invalidation/domain-activation.",
+    "D3D — Selective invalidation [AC-8,INV-8]. File: domain-activation.js. Activation never mutates obligation/work currentness: it suppresses stale exact subjects using the D3C read-only port. BB-052 invalidation bridge owns affected Board transition + release fencing; unrelated ACTIVE obligation remains returned by scan and executable. No organization/stage reset. Tests: partial-invalidation, activation-recovery.",
     "D4 — Backend adapter [AC-5,AC-6]. File: backend-execution-strategy.js. createBackendExecutionStrategy(...) resolves matching DomainExecutionInput, maps exact WorkContract+input -> BackendObjective, dispatches prepare+runPrepared, recovers recoverPrepared, maps APPLIED/BLOCKED/FAILED -> SUCCEEDED/BLOCKED/FAILED and output/evidence refs; no Backend->QA composite call. Tests: fe-be-parallel + Backend regression.",
     "D5 — Frontend domain [AC-5,AC-6,INV-6,INV-7]. Files: frontend-contracts.js, frontend-completion.js, frontend-worker.js, frontend-application.js, frontend-execution-strategy.js, index.js. Define Objective/WorkOrder/Context/WorkResult; completion requires frontend.mutation/typecheck/tests; application exposes prepare/runPrepared/recoverPrepared; strategy uses only exact Frontend WorkContract+input and no Backend state. Tests: frontend-domain, fe-be-parallel.",
     "D6A — Domain host [AC-1,AC-2,AC-7,INV-2,INV-3]. File: domain-activation-host.js. createDomainActivationHost(...) -> start/scanOnce/notify/stop. start=idempotent immediate+periodic scan; scanOnce=listEligible(domain)+allSettled(reconcile key); notify=same-domain exact-key hint; stop drains only host. No priority/nextRole/nextDomain/stage API. Tests: domain-host-autonomy, activation-recovery.",
-    "D6B — FE/BE composition [AC-5,AC-6,INV-6,INV-7]. File: domain-runtime-composition.js. startAll/stopAll use Promise.allSettled over independent BACKEND/FRONTEND hosts; no shared queue/lock/strategy switch/order. Fixture uses distinct policies/descriptors/adapters/inputs; both dispatchStarted before either completes; one adapter may fail while sibling reaches terminal. Tests: fe-be-parallel, domain-host-autonomy.",
+    "D6B — FE/BE composition [AC-5,AC-6,INV-6,INV-7]. File: domain-runtime-composition.js. Compose each host with its domain principal, DomainExecutionController, prebound adapter and the BB-052 read-only obligation-currentness port; startAll/stopAll use Promise.allSettled. No shared queue/lock/strategy switch/order. Fixture uses distinct policies/descriptors/adapters/inputs; both dispatchStarted before either completes; one adapter may fail while sibling reaches terminal. Tests: fe-be-parallel, domain-host-autonomy.",
     "D7 — Proof matrix [AC-1..AC-8,INV-1..INV-8]. Tests: domain-activation, activation-recovery, domain-host-autonomy, frontend-domain, fe-be-parallel, partial-invalidation, bb047, bb048, npm test:agentic. Fixtures expose claimCalls/attemptCount/dispatchCount/dispatchStarted + exact refs for zero-side-effect, overlap, replay, fencing and sibling-survival assertions."
   ],
   "acceptanceCriteria": [
@@ -745,7 +745,8 @@
   "bb052DependencyContract": {
     "workId": "BB-052",
     "precondition": "DONE before BB-053 WORKER",
-    "requiredTruth": "exact obligation revision/currentness + canonical claim invalidation/fencing + sibling preservation",
+    "requiredTruth": "WorkContract.requiredArtifactRefs preserves exact CrossDomainObligation revision; a read-only currentness lookup exposes subject revision/status; BB-052 owns canonical invalidation/fencing and sibling preservation",
+    "ownership": "BB-053 may read obligation currentness but never writes it or directly performs BB-052 invalidation",
     "onDrift": "return BB-053 to RESEARCH_SA"
   }
 }
