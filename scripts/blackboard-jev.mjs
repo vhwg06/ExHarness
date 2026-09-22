@@ -18,7 +18,7 @@ function checkedFile(root, ref) {
   const body = fs.readFileSync(localPath(root, ref), 'utf8');
   return { ref, hash: hash(body), body };
 }
-const RESEARCH_EVIDENCE_CHARS = 3072;
+const RESEARCH_EVIDENCE_CHARS = 2048;
 function boundedResearchEvidence(ref, body) {
   const digest=hash(body),bytes=Buffer.byteLength(body);
   if(body.length<=RESEARCH_EVIDENCE_CHARS)return {ref,hash:digest,bytes,body,excerpted:false};
