@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { deriveTaskContext, deriveTaskContextSummary } from "../scripts/blackboard-task-context-resolver.mjs";
-import { readWorkGraph } from "../scripts/blackboard-work-graph.mjs";
+import { readWorkGraph, readComponentRegistry } from "../scripts/blackboard-work-graph.mjs";
 
 test("task context is deterministically derived from one task and its components",()=>{
   const ctx=deriveTaskContext("BB-052");
@@ -46,12 +49,39 @@ test("blocked worker cannot materialize execution context before direct dependen
 });
 
 test("research may materialize ahead of an unfinished execution dependency without treating it as delivered truth",()=>{
-  const ctx=deriveTaskContext("BB-054");
+  const root=mkdtempSync(join(tmpdir(),"bb-research-context-"));
+  const graph=structuredClone(readWorkGraph());
+  const registry=readComponentRegistry();
+  const task=graph.tasks.find(item=>item.id==="BB-054");
+  task.status="PLANNED";
+  task.lane="RESEARCH_SA";
+  task.phase="RESEARCH";
+  delete task.contract.evaluationRef;
+  delete task.contract.evidenceRef;
+  delete task.contract.lastEvaluatedInput;
+
+  const objectiveRef=task.contract.objectiveRef;
+  const planRef=task.contract.planRef;
+  const plan=JSON.parse(readFileSync(planRef,"utf8"));
+  plan.status="DRAFT";
+  delete plan.readinessRef;
+
+  for(const [ref,body] of [
+    ["docs/blackboard/work-graph.json",JSON.stringify(graph,null,2)+"\n"],
+    [objectiveRef,readFileSync(objectiveRef,"utf8")],
+    [planRef,JSON.stringify(plan,null,2)+"\n"]
+  ]){
+    const target=join(root,ref);
+    mkdirSync(dirname(target),{recursive:true});
+    writeFileSync(target,body);
+  }
+
+  const ctx=deriveTaskContext("BB-054",{root,graph,registry});
   const dep=ctx.dependencyContext.find(d=>d.taskId==="BB-053");
   assert.equal(ctx.lane,"RESEARCH_SA");
   assert.equal(dep.source,"PLANNED_DEPENDENCY");
   assert.ok(dep.refs.includes("docs/blackboard/artifacts/objective/BB-053.json"));
   assert.ok(dep.refs.includes("docs/blackboard/artifacts/ready-implement-plan/BB-053.json"));
   assert.ok(ctx.requiredInputRefs.includes("docs/blackboard/artifacts/ready-implement-plan/BB-053.json"));
-  assert.ok(!ctx.requiredCurrentSystemRefs.some(ref=>ref===dep.refs[0]||ref===dep.refs[1]));
+  assert.ok(!ctx.requiredCurrentSystemRefs.some(ref=>dep.refs.includes(ref)));
 });
