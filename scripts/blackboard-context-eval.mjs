@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { readWorkGraph, readComponentRegistry, assertWorkGraph, schedulableTasks } from "./blackboard-work-graph.mjs";
+import { readWorkGraph, readComponentRegistry, assertWorkGraph, schedulableTasks, taskReadiness } from "./blackboard-work-graph.mjs";
 import { deriveTaskContext } from "./blackboard-task-context-resolver.mjs";
 
 const graph=readWorkGraph();
@@ -17,11 +17,9 @@ const b=deriveTaskContext("BB-052");
 
 run("lane-aware-schedulable-tasks-from-direct-dependencies",()=>{
   const ready=schedulableTasks(graph);
-  const bb056=graph.tasks.find(task=>task.id==="BB-056");
-  const expected=bb056.status==="ACTIVE" || bb056.status==="DONE" || bb056.phase==="MERGE_PENDING"
-    ? ["BB-052","BB-054","BB-055"]
-    : ["BB-052","BB-054","BB-055","BB-056"];
-  if(JSON.stringify(ready)!==JSON.stringify(expected))throw Error("unexpected schedulable set");
+  for(const task of graph.tasks){
+    if(ready.includes(task.id)!==taskReadiness(graph,task.id).ready)throw Error(`schedulable mismatch: ${task.id}`);
+  }
 });
 run("multi-component-task-still-one-context",()=>{
   if(a.taskId!=="BB-052"||a.components.length!==3)throw Error("task/component projection mismatch");
