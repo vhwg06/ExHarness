@@ -166,6 +166,11 @@ export function materialize(root, id, { readiness = false } = {}) {
     };
     for (const [key, statement] of Object.entries(readinessStatements)) question(`readiness-${key}`, statement, `\`state.plan.${key}\` and \`state.evidence\``);
     const refs = [...new Set([...objective.currentSourceRefs, ...plan.sourceSeams.requiredExisting])];
+    if (objectiveScopedResearch) {
+      for (const entry of objectiveEvidence) {
+        for (const ref of entry.sourceRefs) check(refs.includes(ref), `objective sourceRef is outside research evidence: ${ref}`);
+      }
+    }
     const planEvidence = [
       ['blackboard://plan/lane-contract', {
         laneContracts: plan.laneContracts?.map(({ lane, input, output, binding, convergence, forbidden }) => ({ lane, input, output, binding, convergence, forbidden })),
