@@ -82,8 +82,35 @@ export function materialize(root, id, { readiness = false } = {}) {
     verificationPlan: plan.verificationPlan,
     researchGaps: plan.researchGaps
   };
-  const researchPlan = lane === 'RESEARCH_SA' ? planContent(plan) : null;
   const objectiveScopedResearch = lane === 'RESEARCH_SA' && plan.jevEvidenceRouting === 'OBJECTIVE_SCOPED_V1';
+  const researchPlan = lane !== 'RESEARCH_SA' ? null : objectiveScopedResearch ? {
+    kind: plan.kind,
+    version: plan.version,
+    artifactType: plan.artifactType,
+    artifactId: plan.artifactId,
+    objective: plan.objective,
+    scope: plan.scope,
+    outOfScope: plan.outOfScope,
+    constraints: plan.constraints,
+    invariants: plan.invariants,
+    architectureDecisions: plan.architectureDecisions,
+    laneContracts: plan.laneContracts,
+    deliveryContract: plan.deliveryContract,
+    ciContract: plan.ciContract,
+    cacheContract: plan.cacheContract,
+    migrationContract: plan.migrationContract,
+    livingDocs: plan.livingDocs,
+    sourceSeams: plan.sourceSeams,
+    sourceScope: plan.sourceScope,
+    implementationSlices: plan.implementationSlices,
+    negativeVerificationCases: plan.negativeVerificationCases,
+    acceptanceCriteria: plan.acceptanceCriteria,
+    invariantCoverage: plan.invariantCoverage,
+    verificationPlan: plan.verificationPlan,
+    researchGaps: plan.researchGaps,
+    objectiveCoverage: plan.objectiveCoverage,
+    jevEvidenceRouting: plan.jevEvidenceRouting
+  } : planContent(plan);
   const objectiveEvidence = objectiveScopedResearch
     ? objective.successCriteria.map((objectiveCriterion) => {
         const coverage = (plan.objectiveCoverage ?? []).find(entry => entry.objectiveCriterion === objectiveCriterion) ?? null;
@@ -94,6 +121,9 @@ export function materialize(root, id, { readiness = false } = {}) {
           ...criteria.flatMap(entry => entry.verificationIds ?? [])
         ])];
         const planElements = [...new Set(coverage?.planElements ?? [])];
+        const decisionIndexes = [...new Set(coverage?.decisionIndexes ?? [])]
+          .filter(index => Number.isInteger(index) && index >= 0 && index < plan.architectureDecisions.length);
+        const sourceRefs = [...new Set(coverage?.sourceRefs ?? [])];
         const elementIds = planElements
           .map(value => String(value).match(/^([A-Za-z]+\d+[A-Za-z]?)/)?.[1] ?? null)
           .filter(Boolean);
@@ -106,6 +136,9 @@ export function materialize(root, id, { readiness = false } = {}) {
           criterionIds,
           planElements,
           verificationIds,
+          decisionIndexes,
+          architectureDecisions: decisionIndexes.map(index => plan.architectureDecisions[index]),
+          sourceRefs,
           acceptanceCriteria: criteria.map(({ id, statement, verificationIds, evidenceRequired }) => ({ id, statement, verificationIds, evidenceRequired })),
           implementationSlices
         };
@@ -120,7 +153,7 @@ export function materialize(root, id, { readiness = false } = {}) {
   };
   if (lane === 'RESEARCH_SA') {
     if(plan.researchGaps?.length) fail('unresolved research gaps; complete the current plan before Jev readiness');
-    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, objectiveScopedResearch ? `\`state.objectiveEvidence[${i}]\` plus the matching criterion in \`state.objective.successCriteria\`` : '`state.objective` and `state.plan`');
+    for (let i = 0; i < objective.successCriteria.length; i++) question(`objective-${i}`, `The plan fully covers objective success criterion: ${objective.successCriteria[i]}`, objectiveScopedResearch ? `\`state.objectiveEvidence[${i}]\`, the matching criterion in \`state.objective.successCriteria\`, and only the refs listed by \`state.objectiveEvidence[${i}].sourceRefs\` from \`state.evidence\`` : '`state.objective` and `state.plan`');
     const readinessStatements = {
       scope: 'Scope and exclusions are unambiguous.',
       constraints: 'Constraints are explicit and compatible with the objective.',
@@ -133,10 +166,15 @@ export function materialize(root, id, { readiness = false } = {}) {
     };
     for (const [key, statement] of Object.entries(readinessStatements)) question(`readiness-${key}`, statement, `\`state.plan.${key}\` and \`state.evidence\``);
     const refs = [...new Set([...objective.currentSourceRefs, ...plan.sourceSeams.requiredExisting])];
+    if (objectiveScopedResearch) {
+      for (const entry of objectiveEvidence) {
+        for (const ref of entry.sourceRefs) check(refs.includes(ref), `objective sourceRef is outside research evidence: ${ref}`);
+      }
+    }
     const planEvidence = [
       ['blackboard://plan/lane-contract', {
         laneContracts: plan.laneContracts?.map(({ lane, input, output, binding, convergence, forbidden }) => ({ lane, input, output, binding, convergence, forbidden })),
-        objectiveCoverage: objectiveScopedResearch ? plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds })) : plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
+        objectiveCoverage: objectiveScopedResearch ? plan.objectiveCoverage?.map(({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs }) => ({ objectiveCriterion, criterionIds, planElements, verificationIds, decisionIndexes, sourceRefs })) : plan.objectiveCoverage?.map(({ objectiveCriterion, verificationIds }) => ({ objectiveCriterion, verificationIds }))
       }],
       ['blackboard://plan/readiness', {
         invariants: plan.invariants,
