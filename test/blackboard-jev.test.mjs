@@ -51,7 +51,13 @@ function fixture(t) {
 
 test('research objective questions receive bounded objective-to-criterion-to-slice evidence',t=>{
   const f=fixture(t);
+  const legacy=materialize(f.root,'BB-1');
+  assert.equal('objectiveEvidence' in legacy.payload.state,false);
+  const legacyLane=JSON.parse(legacy.payload.state.evidence.find(item=>item.ref==='blackboard://plan/lane-contract').body);
+  assert.deepEqual(legacyLane.objectiveCoverage,[{objectiveCriterion:'answer is two',verificationIds:['unit']}]);
+
   const plan=read(f.root,'plan.json');
+  plan.jevEvidenceRouting='OBJECTIVE_SCOPED_V1';
   plan.implementationSlices=['D1 — Change constant'];
   write(f.root,'plan.json',plan);
   const input=materialize(f.root,'BB-1');
