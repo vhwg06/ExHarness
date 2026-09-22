@@ -17,20 +17,19 @@
     "parallel.domain-autonomy"
   ],
   "outOfScope": [
-    "Global scheduler, role registry or organization workflow graph.",
-    "Exactly-once event transport or transactional outbox as a correctness prerequisite.",
-    "Deployment, AcceptanceSnapshot or Product QA semantics.",
-    "Global product-completeness or closure projection.",
-    "Execution-policy or strategy selection inside the activation boundary."
+    "Global scheduler/role registry/workflow graph.",
+    "Exactly-once transport/outbox as correctness authority.",
+    "Deployment/Product QA/product-closure semantics.",
+    "Strategy selection inside activation."
   ],
   "constraints": [
     "Activation is not scheduling.",
-    "Event or queue delivery is not lifecycle, claim or execution authority.",
-    "Activation is not strategy selection and is not obligation creation.",
-    "Queue, cursor and local backoff state are disposable and reconstructable from canonical work state.",
-    "A stale queued hint cannot resurrect invalidated work.",
-    "Frontend and Backend independence is governed by exact semantic dependencies, not global development stages.",
-    "A durable runtime such as Restate may host activation mechanics but cannot become organizational source of truth or hidden scheduler."
+    "Events/hints are not lifecycle, claim, execution or publication authority.",
+    "Activation neither selects strategy nor creates obligations.",
+    "Hint/timer/cursor state is disposable; canonical work is recovery truth.",
+    "Stale hints cannot resurrect non-current work.",
+    "FE/BE independence follows semantic dependencies, not stages.",
+    "A durable host may run activation but cannot become source of truth or hidden scheduler."
   ],
   "invariants": [
     "event != authority",
@@ -43,15 +42,15 @@
     "queued stale hints cannot resurrect invalidated work"
   ],
   "architectureDecisions": [
-    "Activation is level-triggered per owning domain; hints/scans only discover exact work and canonical state is reread before claim.",
-    "Key={projectId,workId,owningDomain}; trigger data grants no principal/claim/strategy/runtime/obligation/publication authority.",
-    "Canonical scans are recovery truth; disposable hint state cannot strand work; duplicates converge through claim/release + attempt currentness.",
-    "BB-052 owns obligation currentness plus canonical work invalidation/release fencing; BB-053 consumes that truth read-only and returns to RESEARCH_SA if the delivered contract drifts.",
-    "DomainExecutionInput is immutable content-addressed execution data; exactly one ref must match WorkContract owningDomain/workloadType.",
-    "DomainExecutionController resolves policy/strategy and passes exact WorkContract to its prebound adapter; activation never selects HOW.",
-    "BACKEND/FRONTEND have separate principals, hosts, controllers and adapters; shared stores provide CAS/currentness only.",
-    "Activation rereads the exact obligation subject+revision after release and before DomainExecutionController.execute; drift blocks execution with no attempt, while BB-052 remains owner of canonical invalidation/fencing.",
-    "Parallel proof requires both FE/BE dispatch entered before either completes; host-local failure and exact invalidation cannot affect siblings."
+    "Level-triggered per-domain activation; every reconcile rereads canonical work.",
+    "Key={projectId,workId,owningDomain}; hint data grants no authority.",
+    "Canonical scans recover missed hints; duplicates converge via claim/release + attempt currentness.",
+    "BB-052 owns obligation currentness and canonical work invalidation/fencing; BB-053 reads it only.",
+    "DomainExecutionInput is immutable/content-addressed and must match WorkContract domain/workload.",
+    "DomainExecutionController owns policy/strategy/attempt/runtime binding; activation never selects HOW.",
+    "BACKEND/FRONTEND use separate principals, hosts, controllers and adapters; shared stores provide only canonical CAS/currentness.",
+    "Post-release exact obligation subject+revision recheck gates execute; drift yields no attempt while BB-052 handles invalidation/fencing.",
+    "Parallel proof requires both domains to enter dispatch before either completes; host failure/invalidation stays local."
   ],
   "sourceSeams": {
     "requiredExisting": [
