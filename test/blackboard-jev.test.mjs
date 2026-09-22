@@ -368,6 +368,8 @@ test('CI separates Blackboard routing from evaluation-only blackboard-jev workfl
   assert.match(router,/name: blackboard-router/);
   assert.match(router,/workflow_run:/);
   assert.match(router,/name: dispatch Jev/);
+  assert.match(router,/git -C trusted merge-base HEAD/);
+  assert.doesNotMatch(router,/pull_requests\[0\]\.base\.sha/);
   assert.match(router,/blackboard-jev\.yml\/dispatches/);
   assert.match(router,/name: verify published Jev readiness/);
   assert.match(router,/name: no Blackboard judgment required/);
