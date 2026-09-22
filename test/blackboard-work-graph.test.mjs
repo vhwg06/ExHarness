@@ -11,10 +11,12 @@ test("outer Blackboard is a typed dependency graph with task scheduling and comp
   assert.equal(graph.allocation.workerOwnership,"ONE_TASK_PER_CLAIM");
   const bb056=graph.tasks.find(task=>task.id==="BB-056");
   const expectedSchedulable=bb056.status==="ACTIVE" || bb056.status==="DONE" || bb056.phase==="MERGE_PENDING"
-    ? ["BB-052"]
-    : ["BB-052","BB-056"];
+    ? ["BB-052","BB-054","BB-055"]
+    : ["BB-052","BB-054","BB-055","BB-056"];
   assert.deepEqual(schedulableTasks(graph),expectedSchedulable);
   assert.deepEqual(taskReadiness(graph,"BB-053"),{taskId:"BB-053",ready:false,reason:"DEPENDENCIES_NOT_DONE",blockedBy:["BB-052"]});
+  assert.deepEqual(taskReadiness(graph,"BB-054"),{taskId:"BB-054",ready:true,reason:"RESEARCH_CAN_RUN_AHEAD",blockedBy:[]});
+  assert.deepEqual(taskReadiness(graph,"BB-055"),{taskId:"BB-055",ready:true,reason:"RESEARCH_CAN_RUN_AHEAD",blockedBy:[]});
 });
 
 test("accepted worker cannot be claimed again while awaiting merge",()=>{
