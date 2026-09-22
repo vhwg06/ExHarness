@@ -48,14 +48,14 @@ NONE
   satisfied: objective-0, objective-1, objective-2, objective-3, objective-4, objective-5, objective-6, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
   unresolved: NONE
   evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-052.readiness-jev-evaluation.json
-- BB-056 [WORKER/SATISFIED]
-  satisfied: LANES, READINESS, BINDING, CLAIMS, ROUTING, CACHE, API, CONFIDENCE, DELIVERY, MIGRATION, CI, METRICS
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-056.candidate-jev-evaluation.json
 - BB-053 [RESEARCH_SA/SATISFIED]
   satisfied: objective-0, objective-1, objective-2, objective-3, objective-4, objective-5, objective-6, objective-7, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
   unresolved: NONE
   evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-053.readiness-jev-evaluation.json
+- BB-056 [WORKER/SATISFIED]
+  satisfied: LANES, READINESS, BINDING, CLAIMS, ROUTING, CACHE, API, CONFIDENCE, DELIVERY, MIGRATION, CI, METRICS
+  unresolved: NONE
+  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-056.candidate-jev-evaluation.json
 
 ## Dependency graph
 
