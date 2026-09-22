@@ -160,7 +160,7 @@ test('research evidence is bounded while full-source changes still invalidate se
   const plan=read(f.root,'plan.json');plan.jevEvidenceRouting='OBJECTIVE_SCOPED_V1';write(f.root,'plan.json',plan);
   const a=materialize(f.root,'BB-1');
   const sourceA=a.payload.state.evidence.find(item=>item.ref==='source.js');
-  assert.equal(sourceA.excerpted,true);assert.ok(sourceA.body.length<1024);assert.equal(sourceA.bytes,Buffer.byteLength(largeA.trimEnd()));
+  assert.equal(sourceA.excerpted,true);assert.ok(sourceA.body.length<=384);assert.ok(sourceA.omittedChars>0);assert.equal(sourceA.bytes,Buffer.byteLength(largeA.trimEnd()));
 
   const middle=5000,changed=2000;const largeB=largeA.slice(0,middle)+'B'.repeat(changed)+largeA.slice(middle+changed);
   fs.writeFileSync(path.join(f.root,'source.js'),largeB);f.git('add','source.js');f.git('commit','-m','large baseline b');
