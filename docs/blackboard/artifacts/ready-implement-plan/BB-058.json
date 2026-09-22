@@ -1,0 +1,744 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-058",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-058.json",
+    "hash": "52e845cad9d65ceca90b28c7473b81231944b8595a78085a028963a1fc60bf03"
+  },
+  "scope": [
+    "observe.product-currentness",
+    "observe.causal-reconstruction",
+    "observe.remaining-work-ownership",
+    "observe.semantic-obligation-lineage",
+    "observe.execution-provenance",
+    "observe.wait-vs-execute-time",
+    "observe.acceptance-evidence",
+    "observe.fresh-process-rebuild"
+  ],
+  "outOfScope": [
+    "Acceptance, review verdict, scheduling, claim, publication, invalidation or closure authority.",
+    "A new authoritative event-sourcing/provenance ledger replacing B-G canonical artifacts.",
+    "Model-generated explanations that fill missing durable provenance.",
+    "Integration J strategy/policy candidate generation, scoring, promotion or rollback."
+  ],
+  "constraints": [
+    "Observation is derived/read-only and cannot accept, reject, schedule, claim, publish, close or invalidate product work.",
+    "Canonical domain/product artifacts and currentness heads remain authority; observation indexes/snapshots are disposable rebuildable views.",
+    "The observer must not infer missing execution-attempt, strategy, config, runtime or evidence identity from prose/model reasoning.",
+    "Every causal statement must bind exact durable refs and currentness observations; UNKNOWN is required when provenance is absent.",
+    "Current explanation is based on one exact ProductProjectionSubject/currentness basis so mixed-time narratives are rejected.",
+    "Ownership is derived from canonical OrganizationWorkContract/obligation/domain state, not guessed from role names.",
+    "Waiting time and execution time are computed only from durable lifecycle/attempt timestamps that belong to the same causal chain.",
+    "Historical accepted evidence remains queryable but is distinguished from current blockers/current accepted claims.",
+    "Fresh-process reconstruction must produce the same normalized causal result for the same pinned subject.",
+    "Integration I does not optimize or promote strategy/policy; that remains Integration J."
+  ],
+  "invariants": [
+    "Observation is derived/read-only and cannot accept, reject, schedule, claim, publish, close or invalidate product work.",
+    "Canonical domain/product artifacts and currentness heads remain authority; observation indexes/snapshots are disposable rebuildable views.",
+    "The observer must not infer missing execution-attempt, strategy, config, runtime or evidence identity from prose/model reasoning.",
+    "Every causal statement must bind exact durable refs and currentness observations; UNKNOWN is required when provenance is absent.",
+    "Current explanation is based on one exact ProductProjectionSubject/currentness basis so mixed-time narratives are rejected.",
+    "Ownership is derived from canonical OrganizationWorkContract/obligation/domain state, not guessed from role names.",
+    "Waiting time and execution time are computed only from durable lifecycle/attempt timestamps that belong to the same causal chain.",
+    "Historical accepted evidence remains queryable but is distinguished from current blockers/current accepted claims.",
+    "Fresh-process reconstruction must produce the same normalized causal result for the same pinned subject."
+  ],
+  "architectureDecisions": [
+    "CausalObservation is a derived immutable snapshot/read model, never an authority object; production authority remains in B-G artifacts and currentness heads.",
+    "Current observation pins one exact ProductProjectionSubject plus the canonical heads needed for unresolved work. A mixed-time graph cannot be labeled CURRENT.",
+    "The causal graph contains typed nodes/edges backed by exact refs: obligation/derivation/currentness, work/claim/release, execution policy/strategy/binding/attestation/outcome/decision/publication, deployment/QA and product closure.",
+    "Remaining-work ownership resolves from current CrossDomainObligation + OrganizationWorkContract/Board subject; observer never derives next-role ordering.",
+    "Execution provenance is reconstructed from ExecutionJudgmentBundle and re-resolved pinned artifacts; executionAttemptId and runtimeInvocationId remain distinct across recovery.",
+    "Quality/closure provenance is reconstructed through DeploymentRelease -> AcceptanceSnapshot -> RuntimeObservationEvidence -> QualityAcceptance -> ProductProjectionSubject/ProductStateProjection -> ProductOutcomeClaim.",
+    "Missing required provenance is a typed MISSING_PROVENANCE node and yields UNKNOWN/INCOMPLETE answers; no LLM/prose inference participates in factual reconstruction.",
+    "Waiting/execution metrics use producer-owned durable timing facts. A first-write-wins CausalTimingMarker keyed by canonical event subject captures materialization/release milestones; runtime startedAt/finishedAt come from RuntimeExecutionAttestation. Old subjects without timing markers remain UNKNOWN.",
+    "Observation indexes are rebuildable accelerators only. Deleting indexes/caches and replaying exact canonical refs must reconstruct the same normalized graph.",
+    "BB-058 research may consume BB-057 READY as planned dependency; WORKER waits for BB-057 DONE and validates the delivered recovered-path provenance before claiming observation completeness."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-052.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-054.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/domain-execution-control.js"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/causal-timing.js",
+      "packages/agentic-system/src/causal-observation.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/causal-currentness.test.js",
+      "packages/agentic-system/test/causal-lineage.test.js",
+      "packages/agentic-system/test/causal-execution-provenance.test.js",
+      "packages/agentic-system/test/causal-acceptance-provenance.test.js",
+      "packages/agentic-system/test/causal-timing.test.js",
+      "packages/agentic-system/test/causal-recovery.test.js",
+      "packages/agentic-system/test/causal-observation-e2e.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "docs/living/system/agentic-application/**",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+    ],
+    "write": [
+      "packages/agentic-system/src/causal-timing.js",
+      "packages/agentic-system/src/causal-observation.js",
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/causal-*.test.js",
+      "docs/living/system/agentic-application/**"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "scripts/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "I1 — Timing provenance [AC-8, INV-7]: add causal-timing.js with stable event subject keys and first-write-wins immutable timing markers using an injected trusted clock. Organization materialization/release producers record markers without changing semantic artifact identity; retries reuse the existing marker. Runtime duration uses existing attestation startedAt/finishedAt. Missing legacy markers remain UNKNOWN.",
+    "I2 — Pinned observation subject [AC-1, AC-6, AC-7, INV-2, INV-5, INV-9]: add causal-observation.js build({productId,rootIntentRef}) that pins the exact ProductProjectionSubject and current unresolved-work heads, rejects mixed-time current graphs, and stores a content-addressed CausalObservation snapshot.",
+    "I3 — Product/ownership causality [AC-1, AC-2, INV-4, INV-6]: traverse current ProductStateProjection, SemanticClaim/CrossDomainObligation heads, ProductDerivationEdge and OrganizationWorkContract/Board state to derive why-not-done, exact blocker cause and owning work/domain. No next-role/priority/order output.",
+    "I4 — Execution provenance [AC-3, AC-5, AC-10, INV-3]: resolve ExecutionJudgmentBundle pins through WorkContract, claim release, policy, strategy, binding, runtime attestations, outcome, completion, publication and transition history. Preserve semantic attempt vs runtime invocation and emit MISSING_PROVENANCE instead of inference.",
+    "I5 — Acceptance/closure provenance [AC-4, AC-5, INV-3, INV-8]: resolve DeploymentRelease, AcceptanceSnapshot, RuntimeObservationEvidence, QualityAcceptance, ProductProjectionSubject/Projection and ProductOutcomeClaim into typed supporting-evidence edges while distinguishing historical from current evidence.",
+    "I6 — Answers + deterministic rebuild [AC-1..AC-10, INV-1..INV-9]: expose read-only queries whyNotDone/remainingOwners/failedObligations/executionProvenance/timing/supportingEvidence; rebuild from durable stores in a fresh process, delete caches/indexes, and compare normalized graph/answers exactly. Run B-H regressions."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "For a NOT_READY product, a fresh observer returns the exact current blockers and the owning domain/work item for each remaining actionable obligation.",
+      "verificationIds": [
+        "causal-currentness",
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "NOT_READY reconstruction lists canonical blockers plus exact owning domain/work item."
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "For a blocked downstream subject, the observer traces the exact accepted semantic obligation and upstream derivation/currentness transition that caused the block without inventing ordering authority.",
+      "verificationIds": [
+        "causal-lineage",
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Blocked subject traces obligation + accepted derivation/currentness cause without adding order."
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "For an accepted domain output, the observer traces WorkContract, claim/release, ExecutionPolicy, immutable ExecutionStrategyRef, ExecutionAttemptBinding, runtime attestation/invocation, completion decision and authoritative publication refs.",
+      "verificationIds": [
+        "causal-execution",
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Accepted output resolves exact WorkContract→claim/release→policy→strategy→binding→runtime→decision→publication chain."
+      ]
+    },
+    {
+      "id": "AC-4",
+      "statement": "For current QualityAcceptance and ProductOutcomeClaim, the observer traces the exact DeploymentRelease/AcceptanceSnapshot/runtime evidence/product projection and acceptance evidence that support them.",
+      "verificationIds": [
+        "causal-acceptance",
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Quality/closure reconstruction resolves exact deployment, snapshot, runtime evidence, product projection and acceptance refs."
+      ]
+    },
+    {
+      "id": "AC-5",
+      "statement": "If required execution strategy/config/attempt/runtime/evidence provenance is missing, reconstruction returns UNKNOWN/INCOMPLETE with the missing ref class instead of backfilling by inference.",
+      "verificationIds": [
+        "causal-execution",
+        "causal-acceptance",
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Deliberately missing provenance returns typed UNKNOWN/INCOMPLETE; no synthesized identity."
+      ]
+    },
+    {
+      "id": "AC-6",
+      "statement": "A reconstruction pinned to product subject Hn is rejected as current after Hn+1 changes product/currentness state; historical Hn reconstruction remains resolvable.",
+      "verificationIds": [
+        "causal-currentness"
+      ],
+      "evidenceRequired": [
+        "Hn observation becomes non-current after Hn+1 while historical Hn remains resolvable."
+      ]
+    },
+    {
+      "id": "AC-7",
+      "statement": "Deleting any observation cache/index and rebuilding from the same pinned canonical subject yields an identical normalized causal graph and answer set.",
+      "verificationIds": [
+        "causal-currentness",
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Delete cache/index and rebuild produces identical normalized graph/answers for same subject."
+      ]
+    },
+    {
+      "id": "AC-8",
+      "statement": "A fresh process with only durable stores can answer why-not-done, owner, failed obligation, execution identity, wait-vs-execute duration and supporting evidence without prior conversation state.",
+      "verificationIds": [
+        "causal-timing",
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Fresh process computes why/owner/obligation/execution/evidence plus waiting and execution durations from durable timing facts."
+      ]
+    },
+    {
+      "id": "AC-9",
+      "statement": "Observation code cannot mutate authoritative stores or make acceptance/scheduling decisions; attempts to use observation output as authority fail closed.",
+      "verificationIds": [
+        "causal-e2e",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "Observer receives read-only resolver ports only; observation output cannot authorize lifecycle/product mutation."
+      ]
+    },
+    {
+      "id": "AC-10",
+      "statement": "The observer can reconstruct one adversarially recovered path from Integration H without losing the original attempt/binding versus later runtime invocation distinction.",
+      "verificationIds": [
+        "causal-recovery",
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Recovered path preserves one semantic attempt/binding and exact runtime invocation history."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Observation is derived/read-only and cannot accept, reject, schedule, claim, publish, close or invalidate product work.",
+      "verificationIds": [
+        "causal-e2e",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "Observer has no authority mutation ports."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Canonical domain/product artifacts and currentness heads remain authority; observation indexes/snapshots are disposable rebuildable views.",
+      "verificationIds": [
+        "causal-currentness",
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Observation cache/index deletion does not alter canonical truth."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "The observer must not infer missing execution-attempt, strategy, config, runtime or evidence identity from prose/model reasoning.",
+      "verificationIds": [
+        "causal-execution",
+        "causal-acceptance"
+      ],
+      "evidenceRequired": [
+        "Missing provenance yields UNKNOWN rather than inference."
+      ]
+    },
+    {
+      "id": "INV-4",
+      "statement": "Every causal statement must bind exact durable refs and currentness observations; UNKNOWN is required when provenance is absent.",
+      "verificationIds": [
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Every answer edge carries exact durable refs/currentness pins."
+      ]
+    },
+    {
+      "id": "INV-5",
+      "statement": "Current explanation is based on one exact ProductProjectionSubject/currentness basis so mixed-time narratives are rejected.",
+      "verificationIds": [
+        "causal-currentness"
+      ],
+      "evidenceRequired": [
+        "Mixed-time current narrative is rejected."
+      ]
+    },
+    {
+      "id": "INV-6",
+      "statement": "Ownership is derived from canonical OrganizationWorkContract/obligation/domain state, not guessed from role names.",
+      "verificationIds": [
+        "causal-lineage"
+      ],
+      "evidenceRequired": [
+        "Owner derives from canonical contract/obligation/work state."
+      ]
+    },
+    {
+      "id": "INV-7",
+      "statement": "Waiting time and execution time are computed only from durable lifecycle/attempt timestamps that belong to the same causal chain.",
+      "verificationIds": [
+        "causal-timing"
+      ],
+      "evidenceRequired": [
+        "Durations use producer-owned stable timing facts plus runtime attestations, never observer wall clock."
+      ]
+    },
+    {
+      "id": "INV-8",
+      "statement": "Historical accepted evidence remains queryable but is distinguished from current blockers/current accepted claims.",
+      "verificationIds": [
+        "causal-currentness",
+        "causal-acceptance"
+      ],
+      "evidenceRequired": [
+        "Historical/current evidence are explicitly separated."
+      ]
+    },
+    {
+      "id": "INV-9",
+      "statement": "Fresh-process reconstruction must produce the same normalized causal result for the same pinned subject.",
+      "verificationIds": [
+        "causal-e2e"
+      ],
+      "evidenceRequired": [
+        "Same pinned subject reconstructs deterministically in a fresh process."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Observation is derived/read-only and cannot accept, reject, schedule, claim, publish, close or invalidate product work.",
+      "criterionIds": [
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "Canonical domain/product artifacts and currentness heads remain authority; observation indexes/snapshots are disposable rebuildable views.",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "The observer must not infer missing execution-attempt, strategy, config, runtime or evidence identity from prose/model reasoning.",
+      "criterionIds": [
+        "INV-3"
+      ]
+    },
+    {
+      "invariant": "Every causal statement must bind exact durable refs and currentness observations; UNKNOWN is required when provenance is absent.",
+      "criterionIds": [
+        "INV-4"
+      ]
+    },
+    {
+      "invariant": "Current explanation is based on one exact ProductProjectionSubject/currentness basis so mixed-time narratives are rejected.",
+      "criterionIds": [
+        "INV-5"
+      ]
+    },
+    {
+      "invariant": "Ownership is derived from canonical OrganizationWorkContract/obligation/domain state, not guessed from role names.",
+      "criterionIds": [
+        "INV-6"
+      ]
+    },
+    {
+      "invariant": "Waiting time and execution time are computed only from durable lifecycle/attempt timestamps that belong to the same causal chain.",
+      "criterionIds": [
+        "INV-7"
+      ]
+    },
+    {
+      "invariant": "Historical accepted evidence remains queryable but is distinguished from current blockers/current accepted claims.",
+      "criterionIds": [
+        "INV-8"
+      ]
+    },
+    {
+      "invariant": "Fresh-process reconstruction must produce the same normalized causal result for the same pinned subject.",
+      "criterionIds": [
+        "INV-9"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "causal-currentness",
+      "command": "node --test packages/agentic-system/test/causal-currentness.test.js"
+    },
+    {
+      "id": "causal-lineage",
+      "command": "node --test packages/agentic-system/test/causal-lineage.test.js"
+    },
+    {
+      "id": "causal-execution",
+      "command": "node --test packages/agentic-system/test/causal-execution-provenance.test.js"
+    },
+    {
+      "id": "causal-acceptance",
+      "command": "node --test packages/agentic-system/test/causal-acceptance-provenance.test.js"
+    },
+    {
+      "id": "causal-timing",
+      "command": "node --test packages/agentic-system/test/causal-timing.test.js"
+    },
+    {
+      "id": "causal-recovery",
+      "command": "node --test packages/agentic-system/test/causal-recovery.test.js"
+    },
+    {
+      "id": "causal-e2e",
+      "command": "node --test packages/agentic-system/test/causal-observation-e2e.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    }
+  ],
+  "researchGaps": [],
+  "negativeVerificationCases": [
+    "Missing strategy/config/attempt/runtime/evidence is reported UNKNOWN, never inferred.",
+    "Observation pinned to Hn cannot be presented as current after Hn+1.",
+    "Caller-selected refs cannot omit a current blocker or substitute ownership.",
+    "Observation output cannot be passed as acceptance/scheduling/publication authority.",
+    "Deleting caches/indexes cannot change the normalized answer.",
+    "Timing cannot use observer wall-clock or fabricate a legacy timestamp.",
+    "Recovered execution cannot collapse semantic attempt identity into a later runtime invocation."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-058 objective + delivered B truth + BB-052..057 READY dependency contracts",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product mutation",
+        "planned dependency as delivered truth",
+        "observer authority",
+        "self-accept"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-057 delivered truth",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + exact candidate/evidence + Jev",
+      "convergence": "causal answers + fresh-process rebuild + Living Docs SATISFIED",
+      "forbidden": [
+        "execute before BB-057 DONE",
+        "infer missing provenance",
+        "turn observer into authority",
+        "self-accept"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Integration I Living Docs describe read-only causal reconstruction, pinned currentness, exact ownership/execution/acceptance provenance, durable timing semantics, explicit UNKNOWN for missing provenance, and deterministic fresh-process rebuild."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "For a NOT_READY product, a fresh observer returns the exact current blockers and the owning domain/work item for each remaining actionable obligation.",
+      "criterionIds": [
+        "AC-1",
+        "INV-2",
+        "INV-6"
+      ],
+      "planElements": [
+        "I2",
+        "I3",
+        "I6"
+      ],
+      "verificationIds": [
+        "causal-currentness",
+        "causal-e2e"
+      ],
+      "decisionIndexes": [
+        1,
+        3
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-055.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+          "match": "ProductStateProjection is a deterministic disposable reduction"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "For a blocked downstream subject, the observer traces the exact accepted semantic obligation and upstream derivation/currentness transition that caused the block without inventing ordering authority.",
+      "criterionIds": [
+        "AC-2",
+        "INV-6"
+      ],
+      "planElements": [
+        "I3"
+      ],
+      "verificationIds": [
+        "causal-lineage",
+        "causal-e2e"
+      ],
+      "decisionIndexes": [
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-052.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-052.json",
+          "match": "ProductDerivationEdge is a product-semantic dependency, not a Blackboard dependency."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "For an accepted domain output, the observer traces WorkContract, claim/release, ExecutionPolicy, immutable ExecutionStrategyRef, ExecutionAttemptBinding, runtime attestation/invocation, completion decision and authoritative publication refs.",
+      "criterionIds": [
+        "AC-3",
+        "INV-3"
+      ],
+      "planElements": [
+        "I4"
+      ],
+      "verificationIds": [
+        "causal-execution",
+        "causal-e2e"
+      ],
+      "decisionIndexes": [
+        4
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-048.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+          "match": "ExecutionAttemptBinding pins exact WorkContract, release receipt, policy, strategy, runtime/config/context refs before effects"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "For current QualityAcceptance and ProductOutcomeClaim, the observer traces the exact DeploymentRelease/AcceptanceSnapshot/runtime evidence/product projection and acceptance evidence that support them.",
+      "criterionIds": [
+        "AC-4",
+        "INV-8"
+      ],
+      "planElements": [
+        "I5"
+      ],
+      "verificationIds": [
+        "causal-acceptance",
+        "causal-e2e"
+      ],
+      "decisionIndexes": [
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-054.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-054.json",
+          "match": "RuntimeObservationEvidence comes from an independent observer"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "If required execution strategy/config/attempt/runtime/evidence provenance is missing, reconstruction returns UNKNOWN/INCOMPLETE with the missing ref class instead of backfilling by inference.",
+      "criterionIds": [
+        "AC-5",
+        "INV-3"
+      ],
+      "planElements": [
+        "I4",
+        "I5"
+      ],
+      "verificationIds": [
+        "causal-execution",
+        "causal-acceptance",
+        "causal-e2e"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "I must not backfill it by model inference."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "A reconstruction pinned to product subject Hn is rejected as current after Hn+1 changes product/currentness state; historical Hn reconstruction remains resolvable.",
+      "criterionIds": [
+        "AC-6",
+        "INV-5",
+        "INV-8"
+      ],
+      "planElements": [
+        "I2",
+        "I5"
+      ],
+      "verificationIds": [
+        "causal-currentness"
+      ],
+      "decisionIndexes": [
+        1,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-055.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+          "match": "A historical outcome is current only if its pinned subject still equals current history/policy/waiver state"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Deleting any observation cache/index and rebuilding from the same pinned canonical subject yields an identical normalized causal graph and answer set.",
+      "criterionIds": [
+        "AC-7",
+        "INV-2",
+        "INV-9"
+      ],
+      "planElements": [
+        "I2",
+        "I6"
+      ],
+      "verificationIds": [
+        "causal-currentness",
+        "causal-e2e"
+      ],
+      "decisionIndexes": [
+        0,
+        8
+      ],
+      "sourceRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "Observation is not acceptance authority."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "A fresh process with only durable stores can answer why-not-done, owner, failed obligation, execution identity, wait-vs-execute duration and supporting evidence without prior conversation state.",
+      "criterionIds": [
+        "AC-8",
+        "INV-7",
+        "INV-9"
+      ],
+      "planElements": [
+        "I1",
+        "I6"
+      ],
+      "verificationIds": [
+        "causal-timing",
+        "causal-e2e"
+      ],
+      "decisionIndexes": [
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "startedAt:txt(result.startedAt,\"startedAt\")"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Observation code cannot mutate authoritative stores or make acceptance/scheduling decisions; attempts to use observation output as authority fail closed.",
+      "criterionIds": [
+        "AC-9",
+        "INV-1"
+      ],
+      "planElements": [
+        "I6"
+      ],
+      "verificationIds": [
+        "causal-e2e",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        0
+      ],
+      "sourceRefs": [
+        "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+          "match": "Observation is not acceptance authority."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "The observer can reconstruct one adversarially recovered path from Integration H without losing the original attempt/binding versus later runtime invocation distinction.",
+      "criterionIds": [
+        "AC-10",
+        "INV-3"
+      ],
+      "planElements": [
+        "I4",
+        "I6"
+      ],
+      "verificationIds": [
+        "causal-recovery",
+        "causal-e2e"
+      ],
+      "decisionIndexes": [
+        4,
+        9
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-057.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
+          "match": "same executionAttemptId/binding on recover"
+        }
+      ]
+    }
+  ]
+}
