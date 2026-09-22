@@ -1,0 +1,46 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-058",
+  "outcome": "A fresh read-only observer can reconstruct why a product is or is not complete, who owns remaining work, which semantic obligation and authority chain led to the current state, which exact execution policy/strategy/config/attempt/runtime produced evidence, and how long work waited versus executed, using only durable canonical provenance and never model inference or acceptance authority.",
+  "currentProblem": "Integration B through H establish durable execution, lineage, deployment/QA, closure and recovery semantics, but the system has no canonical read-only causal reconstruction boundary that joins those refs into one evidence-backed explanation. Some lifecycle timing is not durably represented, so waiting/executing metrics cannot be guessed from process logs or conversation history.",
+  "scope": [
+    "observe.causal-reconstruction",
+    "observe.current-blockers",
+    "observe.owner-attribution",
+    "observe.execution-identity",
+    "observe.lifecycle-timing",
+    "observe.evidence-chain",
+    "observe.historical-query"
+  ],
+  "constraints": [
+    "Observation is read-only and cannot accept/reject work, mutate product currentness, claim work, select execution strategy or trigger recovery.",
+    "Every reported fact binds durable artifact/head refs; missing provenance is reported as UNKNOWN/MISSING_PROVENANCE rather than inferred.",
+    "Execution policy, strategy, context/tool/model/harness config, semantic attempt and runtime invocation identity come from exact ExecutionAttemptBinding/RuntimeExecutionAttestation refs.",
+    "Why-not-done and remaining-work facts derive from canonical ProductStateProjection plus current obligations/work, not caller-selected subsets.",
+    "Ownership derives from canonical WorkContract/current lifecycle authority; observer does not choose or reassign owner.",
+    "Waiting/executing durations use owner-recorded durable boundary timestamps only; process logs and wall-clock inference are not evidence.",
+    "Causal observation records are immutable evidence, not product authority and not ProductHistory transitions.",
+    "Current and historical queries are explicit: current resolves canonical heads; historical reconstruction pins exact subject refs.",
+    "Observer output carries evidenceRefs for each fact so a fresh consumer can independently resolve the chain.",
+    "No generic telemetry platform, log warehouse, tracing backend or LLM-generated causal explanation is required for Integration I."
+  ],
+  "successCriteria": [
+    "For a NOT_READY product, a fresh observer identifies the exact blocker reason and evidence refs from canonical product/lineage state without caller-supplied blocker refs.",
+    "For each remaining actionable work item, the observer identifies the exact owning domain and current lifecycle/claim state without choosing a next domain.",
+    "For a failed or non-current semantic obligation, the observer traces the issuing semantic subject, obligation revision, affected downstream work and invalidation evidence.",
+    "For an executed work item, the observer resolves exact ExecutionPolicy, ExecutionStrategyDescriptor and pinned context/tool/model/harness/runtime configuration from the immutable attempt binding.",
+    "The observer identifies the exact semantic executionAttemptId and runtimeInvocationId/attestation that produced execution evidence.",
+    "The observer reports waiting and executing durations from durable boundary timestamps; if required timestamps are absent it reports MISSING_PROVENANCE rather than estimating.",
+    "For each accepted product/quality claim surfaced in the explanation, the observer returns the exact evidence/publication/acceptance refs supporting it.",
+    "Deleting cached observation projections and reconstructing in a fresh process from the same pinned subject yields the same causal facts and evidence identities.",
+    "A historical query remains reconstructable after newer product transitions while a current query follows the newer canonical heads.",
+    "Observation APIs cannot mutate acceptance/currentness, dispatch work, resolve a new strategy or act as recovery/scheduling authority."
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/agentic-application/contracts.md",
+    "docs/living/system/agentic-application/state.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+  ]
+}
