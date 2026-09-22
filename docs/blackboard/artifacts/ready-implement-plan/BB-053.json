@@ -410,38 +410,37 @@
   ],
   "researchGaps": [],
   "negativeVerificationCases": [
-    "Spoofed hint authority, role/stage activation, wrong-domain claim, strategy selection and obligation mutation fail closed.",
-    "Lost/duplicate hints cannot strand work or create duplicate current claim/attempt.",
-    "Missing/multiple/mismatched DomainExecutionInput and adapterRef mismatch fail before dispatch.",
-    "Post-release admission is bound to the same obligation subject+revision.",
-    "FE/BE concurrency requires both dispatchStarted before either completion; serial or shared-router execution fails.",
-    "One host failure and one invalidated subject cannot block or fence an unrelated sibling."
+    "Hint authority/domain/strategy/obligation spoofing fails before side effects.",
+    "Lost/duplicate hints recover/converge without duplicate current claim/attempt.",
+    "Missing/multiple/mismatched DomainExecutionInput or adapter mismatch fails before dispatch.",
+    "Post-release obligation drift fences exact claim; sibling remains executable.",
+    "FE/BE proof requires overlapping dispatch; one host failure cannot block sibling."
   ],
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-053 OBJECTIVE + current BB-048 Living truth + BB-052 dependency contract",
+      "input": "BB-053 OBJECTIVE + delivered truth + BB-052 dependency contract",
       "output": "READY_IMPLEMENT_PLAN",
-      "binding": "objective/hash + researchBaselineSha",
-      "convergence": "researchGaps=[] and Jev SATISFIED",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
       "forbidden": [
-        "product-source mutation",
+        "product mutation",
         "delivery claim",
-        "unfinished BB-052 treated as delivered",
-        "self-accept readiness"
+        "treat unfinished BB-052 as delivered",
+        "self-accept"
       ]
     },
     {
       "lane": "WORKER",
-      "input": "exact READY plan + DONE BB-052 consolidated truth",
+      "input": "exact READY plan + DONE BB-052 truth",
       "output": "DELIVERED_FEATURE",
-      "binding": "plan hash + candidate SHA/tree + criterion evidence + Jev judgment",
-      "convergence": "all criteria and Living Docs SATISFIED on exact candidate",
+      "binding": "plan hash + candidate SHA/tree + evidence + Jev",
+      "convergence": "criteria + Living Docs SATISFIED",
       "forbidden": [
         "redefine objective/plan",
-        "hidden scheduler/dispatcher",
-        "run while BB-052 non-DONE",
-        "self-accept implementation"
+        "hidden dispatcher",
+        "run before BB-052 DONE",
+        "self-accept"
       ]
     }
   ],
@@ -721,32 +720,32 @@
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "parallelDomainExecutionContract": {
     "independenceKey": "WorkContract identity + owningDomain",
-    "domains": "BACKEND and FRONTEND each use own current policy + prebound adapter + matching DomainExecutionInput",
-    "proof": "startAll/allSettled; both dispatchStarted before either completion; contract/policy/strategy/attempt/invocation ids differ",
+    "domains": "each domain owns policy, adapter and matching DomainExecutionInput",
+    "proof": "both dispatchStarted before either completion; identities differ",
     "forbidden": [
       "global stage",
       "shared strategy switch",
-      "ordered FE/BE dispatcher"
+      "ordered dispatcher"
     ]
   },
   "domainOutageIsolationContract": {
     "precondition": "both domains dispatchStarted",
-    "failure": "reject one adapter; failure remains host-local",
-    "sibling": "other domain reaches terminal without failed-domain claim/attempt/stage/completion state"
+    "failure": "one adapter rejects host-locally",
+    "sibling": "other reaches terminal without failed-domain state"
   },
   "partialInvalidationContract": {
     "setup": "A/B distinct obligation subjects, no dependency edge",
-    "result": "supersede A => stale A NOOP/fenced/no attempt/dispatch; scan still executes B",
+    "result": "supersede A => A fenced/NOOP/no dispatch; scan still executes B",
     "forbidden": [
-      "organization reset",
+      "global reset",
       "stage reset",
       "fence B because A changed"
     ]
   },
   "bb052DependencyContract": {
     "workId": "BB-052",
-    "precondition": "BB-052 DONE before BB-053 WORKER",
-    "requiredTruth": "work binds exact obligation revision; CAS currentness marks ACTIVE/non-current; non-current claimed work uses canonical claim invalidation/fencing; unrelated siblings survive",
+    "precondition": "DONE before BB-053 WORKER",
+    "requiredTruth": "exact obligation revision/currentness + canonical claim invalidation/fencing + sibling preservation",
     "onDrift": "return BB-053 to RESEARCH_SA"
   }
 }
