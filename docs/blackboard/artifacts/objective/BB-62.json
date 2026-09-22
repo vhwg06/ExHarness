@@ -1,0 +1,40 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-62",
+  "outcome": "Oracle has a researched connectivity topology for concrete source adapters so the system can reach required external/internal information through explicit, replaceable infrastructure seams; MCP is evaluated only as a source/capability adapter, not as an Oracle lifecycle or generic framework.",
+  "currentProblem": "Current Oracle has two concrete readers injected by callers and no MCP path. After physical extraction, source connectivity needs an explicit topology that says where repository, application-artifact, and future concrete external adapters live, how identity/provenance is preserved, and which protocol concerns stay below application lifecycle.",
+  "scope": [
+    "oracle.source-adapters",
+    "oracle.repository-source",
+    "oracle.application-artifact-source",
+    "oracle.external-connectivity",
+    "oracle.mcp-adapter-boundary"
+  ],
+  "constraints": [
+    "Repository and application-artifact sources remain distinct where their identity/provenance semantics differ.",
+    "Adding connectivity must not create an Oracle agent loop, provider lifecycle, generic registry or background refresh system without evidence.",
+    "MCP, if used, is a protocol/source adapter below the Oracle/Application semantic boundary and owns no work/task lifecycle.",
+    "Every resolved input retains stable source identity/provenance sufficient for downstream evidence.",
+    "Source failures fail closed with exact requested source/path/ref context."
+  ],
+  "successCriteria": [
+    "Research maps current repositoryReader and artifactReader into the extracted Oracle package with explicit adapter ownership.",
+    "A future concrete external/MCP-backed source has a bounded adapter contract and cannot inject lifecycle/acceptance authority.",
+    "Adapter topology preserves source identity/provenance and distinguishes external repository vs internal accepted application artifacts.",
+    "No generic provider registry is required to add one concrete adapter.",
+    "An end-to-end ingress path from declared application need to validated Worker context is specified with failure semantics."
+  ],
+  "currentSourceRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "packages/agentic-system/src/oracle.js",
+    "packages/agentic-system/src/backend-application.js",
+    "packages/agentic-system/src/qa-application.js",
+    "packages/agentic-system/src/index.js",
+    "docs/living/system/oracle/artifact-manifest.md"
+  ]
+}
