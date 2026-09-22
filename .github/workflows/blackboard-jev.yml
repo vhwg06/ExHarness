@@ -25,17 +25,21 @@ concurrency:
 
 jobs:
   select:
+    name: route Jev work
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.event == 'pull_request' &&
+       github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     outputs:
       work: ${{ steps.select.outputs.work }}
+      publications: ${{ steps.select.outputs.publications }}
+      trusted_sha: ${{ steps.select.outputs.trusted_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.event.workflow_run.pull_requests[0].base.sha }}
           path: trusted
           fetch-depth: 0
           persist-credentials: false
@@ -54,6 +58,7 @@ jobs:
         run: node trusted/scripts/blackboard-jev-ci.mjs select
 
   evidence:
+    name: collect Jev evidence (${{ matrix.work.id }})
     needs: select
     if: needs.select.outputs.work != '[]'
     strategy:
@@ -64,7 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ needs.select.outputs.trusted_sha }}
           path: trusted
           persist-credentials: false
       - uses: actions/checkout@v4
@@ -80,6 +85,8 @@ jobs:
         env:
           WORK_ID: ${{ matrix.work.id }}
           CANDIDATE_SHA: ${{ matrix.work.sha }}
+          TRUSTED_ROOT: trusted
+          SUBJECT_ROOT: subject
         run: node trusted/scripts/blackboard-jev-ci.mjs collect
       - uses: actions/upload-artifact@v4
         with:
@@ -88,6 +95,7 @@ jobs:
           if-no-files-found: error
 
   evaluate:
+    name: Jev evaluate (${{ matrix.work.id }})
     needs: [select, evidence]
     if: needs.select.outputs.work != '[]'
     strategy:
@@ -98,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ needs.select.outputs.trusted_sha }}
           path: trusted
           persist-credentials: false
       - uses: actions/checkout@v4
@@ -124,6 +132,8 @@ jobs:
           WORK_ID: ${{ matrix.work.id }}
           CANDIDATE_SHA: ${{ matrix.work.sha }}
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          TRUSTED_ROOT: trusted
+          SUBJECT_ROOT: subject
         run: node trusted/scripts/blackboard-jev-ci.mjs evaluate
       - uses: actions/upload-artifact@v4
         if: always()
@@ -136,3 +146,43 @@ jobs:
         with:
           path: subject/.cache/blackboard-jev
           key: jev-${{ matrix.work.id }}-${{ github.run_id }}
+
+  verify-publication:
+    name: verify published Jev readiness (${{ matrix.work.id }})
+    needs: select
+    if: needs.select.outputs.publications != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        work: ${{ fromJSON(needs.select.outputs.publications) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.select.outputs.trusted_sha }}
+          path: trusted
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.work.sha }}
+          path: subject
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify canonical readiness publication against exact trusted input
+        env:
+          WORK_ID: ${{ matrix.work.id }}
+          CANDIDATE_SHA: ${{ matrix.work.sha }}
+          TRUSTED_ROOT: trusted
+          SUBJECT_ROOT: subject
+        run: node trusted/scripts/blackboard-jev-ci.mjs verify-publication
+
+  no-evaluation:
+    name: no Jev evaluation required
+    needs: select
+    if: needs.select.outputs.work == '[]' && needs.select.outputs.publications == '[]'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "::notice::No current Blackboard subject on this PR requires Jev evaluation or readiness-publication verification."
