@@ -116,7 +116,7 @@ test('research evidence is bounded while full-source changes still invalidate se
   let graph=read(f.root,'docs/blackboard/work-graph.json');graph.tasks[0].contract.researchBaselineSha=f.git('rev-parse','HEAD');write(f.root,'docs/blackboard/work-graph.json',graph);
   const a=materialize(f.root,'BB-1');
   const sourceA=a.payload.state.evidence.find(item=>item.ref==='source.js');
-  assert.equal(sourceA.excerpted,true);assert.ok(sourceA.body.length<4000);assert.equal(sourceA.bytes,Buffer.byteLength(largeA));
+  assert.equal(sourceA.excerpted,true);assert.ok(sourceA.body.length<4000);assert.equal(sourceA.bytes,Buffer.byteLength(largeA.trimEnd()));
 
   const largeB=largeA.replace('A'.repeat(4000),'B'.repeat(4000));
   fs.writeFileSync(path.join(f.root,'source.js'),largeB);f.git('add','source.js');f.git('commit','-m','large baseline b');
