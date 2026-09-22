@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-065
+next-work-id: BB-077
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -47,6 +47,18 @@ NONE
 - BB-062 [RESEARCH_SA/RESEARCH] — Define concrete Oracle source connectivity and adapter topology
 - BB-063 [RESEARCH_SA/RESEARCH] — Preserve Oracle provenance durability and migration compatibility
 - BB-064 [RESEARCH_SA/RESEARCH] — Close Oracle reconciliation with end-to-end connectivity and drift guards
+- BB-065 [RESEARCH_SA/RESEARCH] — Define delivery profile and executable value baseline
+- BB-066 [RESEARCH_SA/RESEARCH] — Integrate a real coding-agent execution strategy
+- BB-067 [RESEARCH_SA/RESEARCH] — Enforce bounded workspace and tool capabilities
+- BB-068 [RESEARCH_SA/RESEARCH] — Connect real repository changes to CI and review evidence
+- BB-069 [RESEARCH_SA/RESEARCH] — Prove first useful agent delivery through Oracle and independent QA
+- BB-070 [RESEARCH_SA/RESEARCH] — Deliver product from goal and partial artifacts across owned domains
+- BB-071 [RESEARCH_SA/RESEARCH] — Prove requirement change and failure recovery on a live product
+- BB-072 [RESEARCH_SA/RESEARCH] — Make delivery runs observable recoverable and cost bounded
+- BB-073 [RESEARCH_SA/RESEARCH] — Ship an installable supported delivery profile
+- BB-074 [RESEARCH_SA/RESEARCH] — Measure real delivery value against direct-agent baseline
+- BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
+- BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
 
 ## Jev decisions
 
@@ -96,6 +108,18 @@ BB-061 [RESEARCH_SCHEDULABLE] <- BB-060
 BB-062 [RESEARCH_SCHEDULABLE] <- BB-061
 BB-063 [RESEARCH_SCHEDULABLE] <- BB-062
 BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
+BB-065 [RESEARCH_SCHEDULABLE] <- ROOT
+BB-066 [RESEARCH_SCHEDULABLE] <- BB-065, BB-048
+BB-067 [RESEARCH_SCHEDULABLE] <- BB-065
+BB-068 [RESEARCH_SCHEDULABLE] <- BB-066, BB-067
+BB-069 [RESEARCH_SCHEDULABLE] <- BB-068, BB-064
+BB-070 [RESEARCH_SCHEDULABLE] <- BB-069, BB-055
+BB-071 [RESEARCH_SCHEDULABLE] <- BB-070, BB-057
+BB-072 [RESEARCH_SCHEDULABLE] <- BB-068, BB-058
+BB-073 [RESEARCH_SCHEDULABLE] <- BB-070, BB-072
+BB-074 [RESEARCH_SCHEDULABLE] <- BB-071, BB-073
+BB-075 [RESEARCH_SCHEDULABLE] <- BB-074, BB-059
+BB-076 [RESEARCH_SCHEDULABLE] <- BB-074, BB-075
 ```
 
 ## Context semantics

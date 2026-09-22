@@ -1,0 +1,215 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-073",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-073.json",
+    "hash": "6add90369903c1c121bc304b2c2a92c6e0962d5d021febbf0322ba564f66c057"
+  },
+  "scope": [
+    "delivery.distribution"
+  ],
+  "outOfScope": [
+    "Unbounded autonomous product decisions and expansion beyond the supported delivery profile.",
+    "Replacing delivered Integration or Oracle authority contracts.",
+    "Treating this research allocation as implementation readiness or product delivery."
+  ],
+  "constraints": [
+    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
+    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
+    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments."
+  ],
+  "invariants": [
+    "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+    "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+    "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
+  ],
+  "architectureDecisions": [
+    "Candidate direction, not selected architecture: Choose single-tenant local/container packaging and minimal operational prerequisites; defer Kubernetes tenancy unless required.",
+    "Candidate direction, not selected architecture: Define runtime/model/SCM compatibility policy, credential configuration and clean-room installation path.",
+    "Candidate direction, not selected architecture: Compare CLI-first operation with an operator UI; require a demonstrated workflow need before adding UI scope."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "package.json",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "docs/living/system/state.md"
+    ],
+    "expectedNew": [
+      "scripts/delivery/bb-073-probe.mjs"
+    ],
+    "expectedTests": [
+      "test/delivery/bb-073.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "docs/living/**",
+      "docs/blackboard/process/delivery-product-roadmap.md",
+      "docs/blackboard/process/delivery-research/BB-073.md",
+      "scripts/**",
+      "test/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "scripts/delivery/**",
+      "test/delivery/**",
+      "docs/living/system/**",
+      "package.json"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "Resolve task-specific research decisions and narrow source scope before readiness.",
+    "Implement the selected bounded capability and concrete adapter/fixture seams.",
+    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "A fresh environment installs a pinned release and completes the reference delivery with documented configuration.",
+      "verificationIds": [
+        "live-probe"
+      ],
+      "evidenceRequired": [
+        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "Health checks and actionable errors cover missing credentials, unsupported runtime and incompatible persisted state.",
+      "verificationIds": [
+        "live-probe"
+      ],
+      "evidenceRequired": [
+        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "Upgrade and rollback exercises preserve or explicitly gate ongoing attempt compatibility; runbooks document support boundaries.",
+      "verificationIds": [
+        "live-probe"
+      ],
+      "evidenceRequired": [
+        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "A negative or boundary case that would fail if this invariant were violated."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "A negative or boundary case that would fail if this invariant were violated."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "A negative or boundary case that would fail if this invariant were violated."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "criterionIds": [
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "criterionIds": [
+        "INV-3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-073-probe.mjs"
+    },
+    {
+      "id": "boundary-probe",
+      "command": "node --test test/delivery/bb-073.test.mjs"
+    }
+  ],
+  "researchGaps": [
+    "Choose single-tenant local/container packaging and minimal operational prerequisites; defer Kubernetes tenancy unless required.",
+    "Define runtime/model/SCM compatibility policy, credential configuration and clean-room installation path.",
+    "Compare CLI-first operation with an operator UI; require a demonstrated workflow need before adding UI scope.",
+    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
+    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
+    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
+  ],
+  "negativeVerificationCases": [
+    "Producer success with failing independent acceptance.",
+    "Missing or stale source/runtime identity represented as current evidence.",
+    "Unresolved external effect retried as if confirmed safe."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "docs/blackboard/artifacts/objective/BB-073.json + docs/blackboard/process/delivery-research/BB-073.md",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-acceptance",
+        "invented live evidence"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE direct dependencies",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "forbidden": [
+        "redefine plan",
+        "self-acceptance"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "BB-073 Living truth describes only the implemented and independently verified supported capability and limitations."
+  }
+}

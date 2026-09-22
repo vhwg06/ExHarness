@@ -505,3 +505,7 @@ docs/living/system/*
 ```
 
 Do not reconstruct prior research/review history to decide what is current.
+
+## Delivery product continuation
+
+Integration is the organization contract foundation for the [delivery product roadmap](../../blackboard/process/delivery-product-roadmap.md). The continuation covers real agent and repository execution, independent live QA, supported installation, matched pilot value and release acceptance. Oracle reconciliation retains its own phase contract. These are planned capabilities, not delivered system truth. The canonical outer Blackboard owns scheduling and exact task dependencies.
