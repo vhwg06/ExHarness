@@ -141,6 +141,9 @@ export function taskReadiness(graph,taskId){
     const schedulablePhases=task.lane==='RESEARCH_SA'?['RESEARCH']:['EXECUTION','REPAIR'];
     if(!schedulablePhases.includes(task.phase))return {taskId,ready:false,reason:`PHASE_${task.phase}`};
   }
+  if(task.contract?.lane==="RESEARCH_SA"||task.lane==="RESEARCH_SA"){
+    return {taskId,ready:true,reason:"RESEARCH_CAN_RUN_AHEAD",blockedBy:[]};
+  }
   const byId=new Map(graph.tasks.map(t=>[t.id,t]));
   const blockedBy=task.dependencies.filter(d=>byId.get(d.taskId)?.status!=="DONE").map(d=>d.taskId);
   return blockedBy.length?{taskId,ready:false,reason:"DEPENDENCIES_NOT_DONE",blockedBy}:{taskId,ready:true,reason:"DIRECT_DEPENDENCIES_DONE",blockedBy:[]};
