@@ -354,3 +354,21 @@ test('CI selector verifies canonical SATISFIED readiness publication instead of 
   const forgedSha=subjectGit('rev-parse','HEAD');
   assert.throws(()=>runSelect(f.root,subject,forgedSha),/research candidate changed trusted routing contract|Command failed/);
 });
+
+
+test('CI separates Blackboard routing from evaluation-only blackboard-jev workflow',()=>{
+  const jev=fs.readFileSync('.github/workflows/blackboard-jev.yml','utf8');
+  const router=fs.readFileSync('.github/workflows/blackboard-router.yml','utf8');
+  assert.match(jev,/name: blackboard-jev/);
+  assert.match(jev,/workflow_dispatch:/);
+  assert.doesNotMatch(jev,/workflow_run:/);
+  assert.match(jev,/name: collect Jev evidence/);
+  assert.match(jev,/name: Jev evaluate/);
+  assert.doesNotMatch(jev,/no Jev evaluation required|verify published Jev readiness/);
+  assert.match(router,/name: blackboard-router/);
+  assert.match(router,/workflow_run:/);
+  assert.match(router,/name: dispatch Jev/);
+  assert.match(router,/blackboard-jev\.yml\/dispatches/);
+  assert.match(router,/name: verify published Jev readiness/);
+  assert.match(router,/name: no Blackboard judgment required/);
+});
