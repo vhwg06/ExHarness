@@ -232,6 +232,49 @@
           "packages/agentic-system/test/**"
         ]
       }
+    },
+    {
+      "id": "agentic/how-evolution",
+      "contextOwner": "agentic-application/how-evolution",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/agentic-application/evaluation.md",
+          "docs/living/system/agentic-application/self-upgrade.md",
+          "docs/living/reference/architecture/trust-pipeline.md",
+          "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+        ],
+        "sourceRoots": [
+          "packages/core-harness/src/verification-assessment.js",
+          "packages/core-harness/src/evaluation-freshness.js",
+          "packages/core-harness/src/trust-boundary.js",
+          "packages/agentic-system/src/self-upgrade-pilot.js",
+          "packages/agentic-system/src/domain-execution-control.js",
+          "scripts/blackboard-jev.mjs",
+          "scripts/blackboard-jev-ci.mjs"
+        ],
+        "testRoots": [
+          "packages/core-harness/test/**",
+          "packages/agentic-system/test/**",
+          "test/**"
+        ],
+        "contractRefs": [
+          "Evaluator.evaluate",
+          "VerificationPolicy",
+          "TrustBoundary",
+          "SelfUpgradeExperimentProtocol",
+          "ExecutionPolicy",
+          "ExecutionStrategyDescriptor",
+          "ExecutionAttemptBinding"
+        ],
+        "progressiveSearchRoots": [
+          "packages/core-harness/src/**",
+          "packages/core-harness/test/**",
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**",
+          "scripts/**",
+          ".github/workflows/**"
+        ]
+      }
     }
   ]
 }

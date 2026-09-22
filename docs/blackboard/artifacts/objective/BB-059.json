@@ -1,0 +1,52 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-059",
+  "outcome": "The organization has a researched, implementation-ready design for an evidence-gated HOW-evolution loop that consumes durable causal observation, evaluates a pinned baseline against a pinned candidate under fixed work semantics, integrates Jev as an independently identifiable evaluator in the pipeline, and permits promotion or rollback only through separate currentness-fenced authority without changing accepted product truth.",
+  "currentProblem": "The repository already has Core evaluation/trust primitives, a deterministic application evaluation gate, a bounded self-upgrade pilot, durable execution-policy/strategy binding, and Integration I causal observation. These pieces are not yet composed into one production organization-level evaluation pipeline: Jev currently judges the outer Blackboard delivery process, while the internal system lacks a contract that turns causal findings into bounded HOW candidates, evaluates them with authenticated evidence/evaluator identity, and safely promotes a new ExecutionPolicy/ExecutionStrategy version without self-acceptance or moving WHAT/product semantics.",
+  "scope": [
+    "evolution.causal-finding",
+    "evolution.fixed-work-semantics",
+    "evolution.baseline-candidate",
+    "evolution.jev-evaluator-adapter",
+    "evolution.independent-evaluation",
+    "evolution.promotion-currentness",
+    "evolution.attempt-pinning",
+    "evolution.rollback-provenance"
+  ],
+  "constraints": [
+    "Jev may produce evaluation evidence/judgment but cannot itself become product acceptance, root authority, work scheduler or automatic promotion authority.",
+    "HOW evolution may change versioned execution strategy/policy/context/tool/model/harness configuration only; accepted WHAT, WorkContract semantics and product acceptance requirements remain fixed for the evaluated subject.",
+    "Baseline, candidate, evaluator identity/policy, scenario set, evidence inputs and semantic subject are immutable and pinned before evaluation.",
+    "Observation from Integration I is evidence input only; causal observation cannot authorize candidate generation, promotion, rollback or product currentness changes.",
+    "Promotion is a separate independently authorized action that publishes a new immutable current policy/strategy generation through existing CAS/currentness semantics.",
+    "Existing ACTIVE/RECOVERY_REQUIRED attempts remain pinned to their original ExecutionAttemptBinding; a promoted HOW version affects only eligible new attempts.",
+    "Evaluation/currentness drift fails closed: changed work semantics, acceptance policy, protocol, evaluator policy or relevant evidence requires re-evaluation before promotion.",
+    "Failed, inconclusive or unauthorized evaluation keeps the accepted baseline current.",
+    "Rollback preserves history and publishes an explicit successor policy/version referencing the exact previously accepted baseline rather than rewriting prior artifacts.",
+    "No generic optimizer, autonomous self-modifying runtime, organization-wide experiment platform or product-truth mutation is required."
+  ],
+  "successCriteria": [
+    "A fixed evaluation protocol can compare one pinned baseline and one pinned HOW candidate for the same semantic work/acceptance subject using exact causal/runtime evidence and an authenticated evaluator identity.",
+    "Jev integration has an explicit adapter/contract: its input, output, policy identity, evidence refs, freshness rules and trust verification are durable and independently checkable.",
+    "A candidate producer cannot evaluate or promote its own candidate, and a Jev PASS alone cannot mutate ExecutionPolicy, ProductHistory, QualityAcceptance or ProductOutcome currentness.",
+    "PASS may produce an independently reviewable promotion proposal; FAIL, INCONCLUSIVE, stale evidence or authority mismatch deterministically keeps the baseline.",
+    "An accepted promotion creates a new immutable ExecutionPolicy/ExecutionStrategy version for the exact domain/workload scope, while an already-bound in-flight/recovery attempt continues using its old binding.",
+    "Promotion racing with changed semantics, acceptance/evaluator policy or evidence currentness fails closed and requires a fresh evaluation.",
+    "Rollback creates a new auditable policy generation pointing to the exact accepted baseline and preserves the candidate/evaluation/promotion history.",
+    "A fresh process can reconstruct baseline, candidate, evaluator/policy, evidence, decision, promotion/rollback authority and resulting current policy from durable refs without conversation history."
+  ],
+  "currentSourceRefs": [
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+    "docs/living/system/agentic-application/evaluation.md",
+    "docs/living/system/agentic-application/self-upgrade.md",
+    "docs/living/reference/architecture/trust-pipeline.md",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+    "packages/core-harness/src/verification-assessment.js",
+    "packages/core-harness/src/evaluation-freshness.js",
+    "packages/core-harness/src/trust-boundary.js",
+    "packages/agentic-system/src/self-upgrade-pilot.js",
+    "packages/agentic-system/src/domain-execution-control.js"
+  ]
+}

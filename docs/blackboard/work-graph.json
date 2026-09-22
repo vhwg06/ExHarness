@@ -13,7 +13,8 @@
         "FEATURE-INTEGRATION-EF",
         "FEATURE-INTEGRATION-G",
         "FEATURE-INTEGRATION-H",
-        "FEATURE-INTEGRATION-I"
+        "FEATURE-INTEGRATION-I",
+        "FEATURE-INTEGRATION-J"
       ],
       "artifactRefs": [
         "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
@@ -92,6 +93,18 @@
       ],
       "artifactRefs": [],
       "acceptanceTaskId": "BB-058"
+    },
+    {
+      "id": "FEATURE-INTEGRATION-J",
+      "topicId": "TOPIC-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Evidence-gated HOW evolution and Jev evaluation pipeline",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-059"
+      ],
+      "artifactRefs": [],
+      "acceptanceTaskId": "BB-059"
     }
   ],
   "tasks": [
@@ -491,10 +504,54 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-059",
+      "featureId": "FEATURE-INTEGRATION-J",
+      "title": "Research evidence-gated HOW evolution and Jev evaluation pipeline",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "agentic/domain-execution-control",
+        "agentic/causal-observation",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-058",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-059.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-059.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "production HOW-evolution evaluation contract",
+        "Jev evaluator adapter with independent authority separation",
+        "promotion/rollback currentness semantics"
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-059.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+        "researchBaselineSha": "cb5bec6e080c26525fa380f51b60e2ec4814a238",
+        "baselineSha": "cb5bec6e080c26525fa380f51b60e2ec4814a238"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-059",
+    "nextWorkId": "BB-060",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
