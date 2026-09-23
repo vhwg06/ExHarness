@@ -56,8 +56,7 @@
       "packages/agentic-system/test/bb048-domain-execution-control.test.js",
       "docs/living/system/state.md",
       "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
-      "docs/blackboard/process/delivery-product-roadmap.md"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-048.json"
     ],
     "expectedNew": [
       "packages/agentic-system/src/openhands-runtime-adapter.js",
@@ -89,8 +88,7 @@
       "scripts/delivery/baseline/fixture/tasks.json",
       "scripts/delivery/baseline/fixture/acceptance.mjs",
       "packages/agentic-system/test/bb066-domain-execution-integration.test.js",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
-      "docs/blackboard/process/delivery-product-roadmap.md"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-048.json"
     ],
     "write": [
       "packages/agentic-system/src/domain-execution-control.js",
@@ -511,16 +509,7 @@
         "docs/blackboard/artifacts/ready-implement-plan/BB-048.json"
       ],
       "supportingPlanFields": [
-        "selectedRuntimeEvidence",
-        "fixtureDependencyEvidence",
-        "realDispatchImplementationEvidence",
-        "dependencyFixtureContract",
-        "agentStrategyContract",
-        "driverProtocol",
-        "runtimeResultContract",
-        "liveProbeContract",
-        "liveEvidenceContract",
-        "verificationSetup"
+        "objective0Evidence"
       ],
       "sourceAnchors": [
         {
@@ -616,13 +605,7 @@
         "docs/blackboard/artifacts/ready-implement-plan/BB-048.json"
       ],
       "supportingPlanFields": [
-        "selectedRuntimeEvidence",
-        "agentStrategyContract",
-        "recoveryProtocol",
-        "runtimeResultContract",
-        "modelProfileContract",
-        "liveEvidenceContract",
-        "verificationSetup"
+        "objective2Evidence"
       ],
       "sourceAnchors": [
         {
@@ -869,6 +852,31 @@
       "domain-regression",
       "lock-audit",
       "live-probe"
+    ]
+  },
+  "objective0Evidence": {
+    "selectedRuntime": "OpenHands software-agent-sdk/openhands-tools 1.49.4 pinned to commit 3f47426e6af4681aacab735c781426aae58a3bac; inspected Agent+TerminalTool/FileEditorTool, LocalConversation fixed workspace/persistence/conversation identity and standalone send_message/run seam.",
+    "dispatchChain": "DomainExecutionController keeps the immutable ExecutionAttemptBinding/runtimeInvocationKey and calls runtimeAdapter.dispatch. The Node adapter resolves exact workspace/model refs, writes one immutable manifest, spawns the pinned Python driver, and rejects identity/tool/workspace drift before provider activity.",
+    "fixture": "Worker is blocked until BB-065 is DONE and request-tracker-baseline-v1 matches. Dispatch resolves exact NORM-01; OpenHands may write only fixture server/index/client while acceptance.mjs and manifests stay protected in a separate verifier workspace.",
+    "resultEvidence": "Adapter accepts only bounded canonical driver output and publishes content-addressed candidate-source/output/effect/trace/counterevidence refs plus derivation edges, all bound to executionAttemptId/runtimeInvocationKey, SDK/profile/toolset hashes, starting/result tree hashes and changed paths.",
+    "independentAcceptance": "Runtime SUCCEEDED is only a candidate. Candidate source is copied to the protected verifier workspace and BB-065 API/browser/restart-persistence acceptance runs independently before DomainExecutionController completion/publication authority may accept.",
+    "verification": [
+      "unit-adapter",
+      "domain-regression",
+      "lock-audit",
+      "live-probe"
+    ]
+  },
+  "objective2Evidence": {
+    "inFlightPinning": "Accepted BB-048 contract requires ExecutionAttemptHead lookup before policy resolution and immutable ExecutionAttemptBinding pins release receipt, policy, strategy and runtime/config/context refs before effects; a later policy promotion cannot rewrite the active binding.",
+    "scopeAndSupplyChain": "Strategy descriptor pins coding-agent-sdk, adapter/runtime code identity, toolset/model/harness refs and OpenHands 1.49.4+commit. Workspace resolver must match the immutable starting tree and allowed write paths; any drift is BLOCKED before fresh dispatch.",
+    "timeoutCancellation": "AbortSignal is process control outside semantic input. Timeout/cancel persists process counterevidence, TERM then bounded KILL, throws OpenHandsRecoveryRequiredError and leaves the canonical attempt RECOVERY_REQUIRED; recover reuses the same binding/session and only recover may return UNKNOWN after reconciliation fails.",
+    "authority": "OpenHands/driver cannot accept or publish. Controller validates runtime result, completionEvaluator returns the domain completion verdict, and publicationGate plus executable/current write authority guards authoritative publication.",
+    "verification": [
+      "unit-adapter",
+      "domain-regression",
+      "lock-audit",
+      "living-docs"
     ]
   }
 }
