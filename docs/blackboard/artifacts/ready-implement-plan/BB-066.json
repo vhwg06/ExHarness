@@ -490,7 +490,6 @@
       ],
       "decisionIndexes": [
         0,
-        1,
         2,
         3,
         4,
@@ -498,12 +497,12 @@
         6,
         7,
         8,
-        9
+        9,
+        10,
+        12
       ],
       "sourceRefs": [
         "packages/agentic-system/src/domain-execution-control.js",
-        "packages/agentic-system/src/index.js",
-        "packages/agentic-system/test/bb048-domain-execution-control.test.js",
         "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
       ],
       "supportingPlanFields": [
@@ -517,6 +516,24 @@
         "recoveryProtocol",
         "dependencyFixtureContract",
         "researchEvidence"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "inv(typeof runtimeAdapter.dispatch===\"function\"&&typeof runtimeAdapter.recover===\"function\",\"runtime dispatch/recover required\")"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "runtimeInvocationKey:\"execution-invocation:\"+hash({id,adapterRef:runtime.adapterRef,runtimeDeploymentRef:runtime.runtimeDeploymentRef})"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "Starter intentionally accepts whitespace-only or >120-code-point titles and omits matching browser feedback. Task NORM-01 adds validation to create/update and UI; preserves valid CRUD and stored data. No pre-solved candidate is dispatched."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "Trusted orchestrator creates separate agent and verifier directories; only fixture source and task prompt enter the tool container. Acceptance suite and manifests remain outside; copy candidate source to verifier directory and hash before and after observation. Changes to protected files, symlink escapes or tree drift invalidate the run."
+        }
       ]
     },
     {
@@ -536,9 +553,13 @@
       ],
       "decisionIndexes": [
         0,
-        1,
+        2,
         3,
-        4
+        5,
+        6,
+        7,
+        9,
+        11
       ],
       "sourceRefs": [
         "packages/agentic-system/src/domain-execution-control.js"
@@ -548,7 +569,18 @@
         "agentStrategyContract",
         "driverProtocol",
         "runtimeResultContract",
-        "liveProbeContract"
+        "liveProbeContract",
+        "researchEvidence"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "inv(typeof runtimeAdapter.dispatch===\"function\"&&typeof runtimeAdapter.recover===\"function\",\"runtime dispatch/recover required\")"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "runtimeInvocationKey:\"execution-invocation:\"+hash({id,adapterRef:runtime.adapterRef,runtimeDeploymentRef:runtime.runtimeDeploymentRef})"
+        }
       ]
     },
     {
@@ -572,9 +604,12 @@
       ],
       "decisionIndexes": [
         1,
+        2,
         5,
         6,
-        7
+        10,
+        11,
+        12
       ],
       "sourceRefs": [
         "packages/agentic-system/src/domain-execution-control.js",
@@ -585,7 +620,23 @@
         "agentStrategyContract",
         "runtimeResultContract",
         "modelProfileContract",
-        "liveEvidenceContract"
+        "liveEvidenceContract",
+        "researchEvidence",
+        "verificationSetup"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "inv(typeof completionEvaluator?.evaluate===\"function\",\"completion evaluator required\")"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "inv(typeof publicationGate?.withCurrentWriteAuthority===\"function\",\"publication write-authority guard required\")"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "inv(STRATEGY_KINDS.has(d.strategyKind),\"unsupported strategy kind\")"
+        }
       ]
     }
   ],
@@ -770,5 +821,6 @@
       ]
     },
     "workspaceIsolation": "Trusted orchestration prepares separate agent and verifier workspaces. Only agentWritablePaths plus the canonical NORM-01 prompt are exposed to OpenHands; acceptance code and manifests remain outside the agent workspace. Candidate source is copied to the verifier workspace and hashed before and after acceptance."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
