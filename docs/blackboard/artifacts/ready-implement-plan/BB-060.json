@@ -221,25 +221,30 @@
     {
       "invariant": "Preserve current resolveBackendContext/resolveQaContext behavior and application-owned schemas.",
       "criterionIds": [
-        "INV-1"
+        "INV-1",
+        "AC-2"
       ]
     },
     {
       "invariant": "Oracle must be physically owned outside @exharness/agentic-system after delivery.",
       "criterionIds": [
-        "INV-2"
+        "INV-2",
+        "AC-1",
+        "AC-4"
       ]
     },
     {
       "invariant": "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
       "criterionIds": [
-        "INV-3"
+        "INV-3",
+        "AC-5"
       ]
     },
     {
       "invariant": "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized.",
       "criterionIds": [
-        "INV-4"
+        "INV-4",
+        "AC-5"
       ]
     }
   ],
@@ -354,16 +359,24 @@
       ],
       "decisionIndexes": [
         2,
-        5
+        4,
+        5,
+        6
       ],
       "sourceRefs": [
         "packages/agentic-system/src/oracle.js",
-        "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js"
+        "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+        "packages/agentic-system/src/backend-application.js",
+        "packages/agentic-system/src/qa-application.js"
       ],
       "sourceAnchors": [
         {
           "ref": "packages/agentic-system/src/oracle.js",
           "match": "const order = parseBackendWorkOrder(rawOrder);"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "const order = parseQaWorkOrder(rawOrder);"
         },
         {
           "ref": "packages/agentic-system/src/oracle.js",
@@ -374,7 +387,9 @@
           "match": "async function expectOracleManifestError(promiseFactory, code) {"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "negativeVerificationCases"
+      ]
     },
     {
       "objectiveCriterion": "No generic resolver/provider framework is required unless separate evidence proves pressure beyond the two concrete source classes.",
@@ -409,14 +424,18 @@
       ],
       "planElements": [
         "O11",
-        "O12"
+        "O12",
+        "O14"
       ],
       "verificationIds": [
         "oracle-architecture"
       ],
       "decisionIndexes": [
+        0,
         1,
-        3
+        2,
+        3,
+        7
       ],
       "sourceRefs": [
         "packages/agentic-system/src/oracle.js",
@@ -437,7 +456,9 @@
           "match": "\"packages/*\""
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "sourceSeams"
+      ]
     },
     {
       "objectiveCriterion": "Migration plan names exact imports/exports/tests/docs that move or remain and a worker can implement it without rediscovering ownership.",
@@ -447,24 +468,48 @@
         "INV-4"
       ],
       "planElements": [
-        "O11"
+        "O11",
+        "O12",
+        "O13",
+        "O14"
       ],
       "verificationIds": [
-        "oracle-unit"
+        "oracle-unit",
+        "oracle-integration",
+        "oracle-architecture",
+        "agentic-regression"
       ],
       "decisionIndexes": [
-        0
+        0,
+        1,
+        2,
+        3,
+        6,
+        7
       ],
       "sourceRefs": [
-        "packages/agentic-system/src/backend-application.js"
+        "packages/agentic-system/src/backend-application.js",
+        "packages/agentic-system/src/qa-application.js",
+        "packages/agentic-system/src/index.js"
       ],
       "sourceAnchors": [
         {
           "ref": "packages/agentic-system/src/backend-application.js",
           "match": "import { resolveBackendContext } from \"./oracle.js\";"
+        },
+        {
+          "ref": "packages/agentic-system/src/qa-application.js",
+          "match": "import { resolveQaContext } from \"./oracle.js\";"
+        },
+        {
+          "ref": "packages/agentic-system/src/index.js",
+          "match": "} from \"./oracle.js\";"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "sourceSeams",
+        "livingDocs"
+      ]
     }
   ]
 }
