@@ -40,7 +40,8 @@
     "Use the BB-065 request-tracker workspace prepared by the caller. The adapter accepts a canonical workspace root, immutable starting tree/hash, task ID, prompt ref/hash and output directory; it does not clone repositories, select work, or publish source.",
     "Construct the adapter with explicit modelProfileResolver and workspaceResolver ports. dispatch resolves binding.modelProfileRef and the input workspace descriptor, hashes both canonical documents, and records them before Python starts; recover resolves them again and requires exact equality with the immutable manifest.",
     "Store an immutable attempt manifest before launching Python under <output>/attempts/<sha256(runtimeInvocationKey)>/manifest.json. It pins executionAttemptId, runtimeInvocationKey hash, workspace root and starting tree, strategy/toolset/model/harness refs, SDK commit/version, profile hash, conversation UUID and persistence directory.",
-    "Dispatch uses exclusive manifest creation. If a manifest already exists it returns UNKNOWN with recoveryRequired=true and performs no provider call. Recover validates the exact manifest and workspace identity, then reopens the same conversation ID/persistence directory; mismatch returns BLOCKED and never creates another conversation.",
+    "Dispatch uses exclusive manifest creation. If a manifest already exists, it records collision evidence and throws OpenHandsRecoveryRequiredError without spawning Python or calling a provider; controller recovery must reconcile the existing attempt. Recover validates the exact manifest and workspace identity, then reopens the same conversation ID/persistence directory; mismatch returns BLOCKED and never creates another conversation.",
+    "At pinned OpenHands commit 3f47426e6af4681aacab735c781426aae58a3bac, Agent accepts TerminalTool and FileEditorTool; FileEditorTool constructs FileEditorExecutor with workspace_root=conv_state.workspace.working_dir; standalone SDK examples create Conversation(agent=agent, workspace=...), send_message and run. This is the concrete execution/editing seam used by the adapter, not an inferred capability.",
     "Dispatch sends the task prompt exactly once after creating the conversation. Recover constructs LocalConversation(agent=None, same conversation_id, same persistence_dir, same workspace) and never resends the prompt; a complete atomically published driver result is replayed without calling conversation.run again.",
     "OpenHands owns conversation events and tool execution state inside the adapter. ExHarness owns attempt lifecycle, policy pins, runtime attestation, completion evaluation and publication authority. OpenHands completion maps only to a runtime result candidate.",
     "Timeout or AbortSignal cancellation sends SIGTERM to the driver, waits a bounded grace period, then SIGKILL if required and throws OpenHandsRecoveryRequiredError after durable process evidence. DomainExecutionController therefore commits RECOVERY_REQUIRED. A later recover may return UNKNOWN only after it has conclusively failed to reconcile the prior effect. Process exit, signal, stdout/stderr digests and recovery decision are captured without secrets.",
@@ -83,8 +84,8 @@
       "docs/living/system/state.md",
       "package.json",
       "scripts/delivery/baseline/profile.json",
-      "scripts/delivery/baseline/tasks.json",
-      "scripts/delivery/baseline/acceptance.mjs",
+      "scripts/delivery/baseline/fixture/tasks.json",
+      "scripts/delivery/baseline/fixture/acceptance.mjs",
       "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     ],
     "write": [
@@ -93,7 +94,7 @@
       "packages/agentic-system/src/index.js",
       "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
       "scripts/delivery/runtime/openhands_driver.py",
-      "scripts/delivery/runtime/requirements.in",
+      "scripts/delivery/runtime/pyproject.toml",
       "scripts/delivery/runtime/uv.lock",
       "scripts/delivery/bb-066-probe.mjs",
       "test/delivery/bb-066-live-contract.test.mjs",
@@ -118,14 +119,15 @@
   "acceptanceCriteria": [
     {
       "id": "REAL_DISPATCH",
-      "statement": "A credential-bearing live probe routes one released DomainExecutionController claim through runtimeAdapter.dispatch into OpenHands SDK 1.49.4 at the pinned commit, edits the delivered BB-065 fixture, and produces bounded raw runtime evidence plus independent BB-065 acceptance evidence.",
+      "statement": "After BB-065 is DONE and matches dependencyFixtureContract, a credential-bearing live probe routes one released DomainExecutionController claim through runtimeAdapter.dispatch into OpenHands SDK 1.49.4 at the pinned commit, edits only the declared NORM-01 fixture source, and produces bounded runtime/source evidence plus independent protected BB-065 acceptance evidence.",
       "verificationIds": [
         "unit-adapter",
         "live-probe"
       ],
       "evidenceRequired": [
-        "Exact candidate/tree, work and executionAttempt IDs, runtimeInvocationKey hash, SDK commit/version, model/profile/toolset hashes, starting and resulting workspace tree hashes, process result, redacted stdout/stderr digests and independent fixture acceptance report.",
-        "Exact controller outcome fields: runtimeInvocationId, timestamps, content-addressed output/effect/trace/verification refs and derivation edges accepted by the delivered controller contract."
+        "Exact candidate/tree, work and executionAttempt IDs, runtimeInvocationKey hash, SDK commit/version, model/profile/toolset hashes, NORM-01 task/prompt hash, starting and resulting workspace tree hashes, sorted changed paths, process result, redacted stdout/stderr digests and independent fixture acceptance report.",
+        "Exact controller outcome fields: runtimeInvocationId, timestamps, content-addressed output/effect/trace/verification refs and derivation edges accepted by the delivered controller contract.",
+        "Proof every changed path is one of dependencyFixtureContract.agentWritablePaths and protected acceptance/manifests were unchanged."
       ]
     },
     {
@@ -141,7 +143,7 @@
     },
     {
       "id": "FAIL_CLOSED_RECOVERY",
-      "statement": "Missing/corrupt persistence, starting-tree drift, profile/tool/strategy mismatch and an ambiguous killed process return BLOCKED or UNKNOWN with recoveryRequired and perform no fresh dispatch.",
+      "statement": "During recover, missing/corrupt persistence, starting-tree drift, profile/tool/strategy mismatch or an unreconcilable killed process returns BLOCKED or UNKNOWN without any fresh dispatch or second provider session.",
       "verificationIds": [
         "unit-adapter"
       ],
@@ -156,7 +158,8 @@
         "unit-adapter"
       ],
       "evidenceRequired": [
-        "TERM/KILL trace, exit/signal data, bounded elapsed time and UNKNOWN result assertions."
+        "TERM/KILL trace, exit/signal data and bounded elapsed time.",
+        "Canonical attempt-head assertion proving ambiguous dispatch/cancellation becomes RECOVERY_REQUIRED, plus a recover-only UNKNOWN assertion when exact prior effects cannot be reconciled."
       ]
     },
     {
@@ -229,7 +232,7 @@
     },
     {
       "id": "living-docs",
-      "command": "git diff --exit-code \"$BASELINE_SHA\"...\"$CANDIDATE_SHA\" -- docs/living/system/state.md"
+      "command": "test -n \"$(git diff --name-only \\\"$BASELINE_SHA\\\"...\\\"$CANDIDATE_SHA\\\" -- docs/living/system/state.md)\""
     }
   ],
   "researchGaps": [],
@@ -237,7 +240,7 @@
     "A second dispatch for an existing runtimeInvocationKey must not spawn Python or call a provider.",
     "Recover with missing/corrupt OpenHands base state or a different conversation ID must fail closed.",
     "Workspace starting tree, SDK commit, model profile, toolset, harness or strategy drift must not resume.",
-    "SIGTERM timeout or cancellation with no conclusive driver result must produce UNKNOWN, never SUCCEEDED.",
+    "SIGTERM timeout or cancellation after possible activity with no conclusive driver result must throw OpenHandsRecoveryRequiredError and leave the canonical attempt RECOVERY_REQUIRED; only a later recover may return UNKNOWN after reconciliation fails.",
     "A driver payload containing acceptance, publication or Blackboard mutation fields must be rejected.",
     "Secrets present in environment or provider exceptions must not appear in manifest, stdout/stderr evidence or result JSON.",
     "Agent-declared success with failing BB-065 independent acceptance must remain a rejected completion candidate.",
@@ -337,20 +340,25 @@
     "dependencyWorkspace": {
       "requiredAfterBB065Done": [
         "scripts/delivery/baseline/profile.json",
-        "scripts/delivery/baseline/tasks.json",
-        "scripts/delivery/baseline/acceptance.mjs",
-        "scripts/delivery/baseline/fixture/**"
+        "scripts/delivery/baseline/fixture/server.mjs",
+        "scripts/delivery/baseline/fixture/index.html",
+        "scripts/delivery/baseline/fixture/client.js",
+        "scripts/delivery/baseline/fixture/tasks.json",
+        "scripts/delivery/baseline/fixture/acceptance.mjs"
       ],
       "workspaceDescriptor": {
         "fixtureId": "request-tracker-baseline-v1",
         "root": "canonical prepared agent workspace",
         "startingTree": "git tree SHA-1 or explicit SHA-256 tree manifest",
         "allowedWriteGlobs": [
-          "fixture source paths declared by BB-065"
+          "scripts/delivery/baseline/fixture/server.mjs",
+          "scripts/delivery/baseline/fixture/index.html",
+          "scripts/delivery/baseline/fixture/client.js"
         ],
         "protectedAcceptanceRef": "acceptance suite retained in verifier workspace"
       },
-      "prompt": "Resolve taskId from BB-065 tasks.json, canonicalize the task payload and verify promptHash before first send."
+      "prompt": "Resolve NORM-01 from scripts/delivery/baseline/fixture/tasks.json, canonicalize that task payload, verify promptHash before first send, and reject any task/profile/fixture identity drift from delivered BB-065.",
+      "protectedAcceptanceRef": "scripts/delivery/baseline/fixture/acceptance.mjs"
     },
     "strategyDescriptor": {
       "strategyId": "openhands-sdk-local-v1",
@@ -384,7 +392,7 @@
   },
   "liveEvidenceContract": {
     "prerequisites": [
-      "BB-065 status DONE and its fixture/profile paths resolved from canonical artifacts.",
+      "BB-065 status DONE; delivered fixture identity request-tracker-baseline-v1, NORM-01 task, profile and protected acceptance paths must match dependencyFixtureContract.",
       "Python 3.12 and uv available.",
       "Operator supplies EXHARNESS_BB066_PROFILE, WORKSPACE and OUTPUT; provider credentials are environment-only.",
       "Workspace starts at the exact BB-065 fixture tree and contains no unrelated credentials."
@@ -402,8 +410,20 @@
     {
       "source": "https://github.com/OpenHands/software-agent-sdk/tree/3f47426e6af4681aacab735c781426aae58a3bac",
       "kind": "primary-source",
-      "observed": "1,155 GitHub stars at research time; MIT; SDK 1.49.4; Python >=3.12. LocalConversation fixes conversation_id and persistence_dir, ConversationState create-or-resume restores base state/events and verifies tool compatibility, and agent=None supports fresh-process resume.",
-      "decision": "Selected integrated runtime."
+      "observed": "At commit 3f47426e6af4681aacab735c781426aae58a3bac the pinned source directly exposes both coding execution and workspace editing: Agent uses TerminalTool/FileEditorTool, FileEditorTool is rooted at the conversation workspace, a standalone example sends a task and runs the conversation, and LocalConversation binds explicit workspace/persistence/conversation identity for resume. SDK 1.49.4 requires Python >=3.12 and is MIT.",
+      "decision": "Selected integrated runtime because the pinned source directly exposes both bounded workspace editing and persisted same-conversation recovery seams required by BB-066.",
+      "inspected": [
+        "openhands-sdk/openhands/sdk/agent/agent.py",
+        "openhands-sdk/openhands/sdk/conversation/impl/local_conversation.py",
+        "openhands-tools/openhands/tools/file_editor/definition.py",
+        "examples/01_standalone_sdk/56_structured_output.py"
+      ],
+      "sourceAssertions": [
+        "agent.py constructs Agent with TerminalTool and FileEditorTool.",
+        "file_editor/definition.py constructs FileEditorExecutor(workspace_root=conv_state.workspace.working_dir).",
+        "56_structured_output.py creates Conversation(agent=agent, workspace=os.getcwd()), then calls send_message() and run().",
+        "local_conversation.py accepts workspace, persistence_dir and conversation_id; its resume path supports agent=None."
+      ]
     },
     {
       "source": "https://github.com/SWE-agent/mini-swe-agent/tree/04d809ceab9df28f9adaed044884180159172930",
@@ -494,7 +514,9 @@
         "liveProbeContract",
         "liveEvidenceContract",
         "verificationSetup",
-        "recoveryProtocol"
+        "recoveryProtocol",
+        "dependencyFixtureContract",
+        "researchEvidence"
       ]
     },
     {
@@ -694,10 +716,10 @@
   },
   "liveProbeContract": {
     "setup": "Instantiate production createDomainExecutionController with JSON immutable artifact, claim-release, execution-policy and attempt stores plus a content-addressed runtimeEvidenceStore; publish the exact coding-agent-sdk strategy descriptor and compatible policy; create/release one authorized DELIVERY_FIXTURE_CHANGE claim; point modelProfileRef and harnessRef at exact BB-065 artifacts.",
-    "dispatch": "Call controller.execute once. The adapter resolves the delivered fixture workspace and exact NORM-01 task, publishes manifest/session marker, sends prompt once and begins OpenHands execution.",
+    "dispatch": "Call controller.execute once for exact NORM-01 resolved from scripts/delivery/baseline/fixture/tasks.json. The adapter verifies the delivered BB-065 fixture/profile identities, publishes manifest/session marker, sends the canonical NORM-01 prompt exactly once and begins OpenHands execution in the bounded agent workspace.",
     "fault": "A test-only driver hook named EXHARNESS_BB066_FAULT_AFTER_DURABLE_EVENT=<N> terminates the first Python process only after N>=1 events are durable. Adapter persists process evidence, throws OpenHandsRecoveryRequiredError, and the probe asserts the canonical attempt head is RECOVERY_REQUIRED. The hook is rejected outside dispatch-interrupt-recover mode.",
     "recover": "Start a fresh Node process with the same JSON stores/evidence/output/workspace and call controller.execute; controller selects runtimeAdapter.recover with the same ExecutionAttemptBinding/invocation key and forwards a fresh AbortSignal separately.",
-    "assessment": "Copy candidate source to BB-065 verifier workspace, verify candidate hashes before/after, run BB-065 independent API/browser/persistence acceptance, and attach its report without exposing it to the agent.",
+    "assessment": "Copy only the resulting candidate fixture source into the verifier workspace, verify candidate and protected-acceptance hashes before/after, run scripts/delivery/baseline/fixture/acceptance.mjs for API/browser/restart-persistence acceptance, and attach its report without exposing verifier code to the agent.",
     "proof": [
       "one semantic executionAttemptId",
       "one session-created marker",
@@ -713,5 +735,40 @@
     "deterministic": "Unit tests inject a fake driver command and real temp files/processes to exercise exclusive manifest creation, process termination, schema mapping, redaction and recovery identity. They do not count as real-agent evidence.",
     "live": "Worker runs the live probe only after BB-065 is DONE, using its exact fixture/tasks/profile and an operator-authorized provider credential. Missing Python 3.12, uv, dependency lock, profile, credential or browser is a BLOCKED prerequisite and cannot pass.",
     "credentialSeparation": "The credential-bearing probe produces bounded evidence first. Canonical collector runs credential-free audit over exact hashes, candidate, manifests, result and independent acceptance."
+  },
+  "dependencyFixtureContract": {
+    "sourceWorkId": "BB-065",
+    "sourcePlanRef": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+    "deliveryRule": "BB-065 must be DONE before worker execution. The fields below copy its READY expected contract for implementation planning only; at worker start the delivered BB-065 artifact and files must be resolved and matched exactly. Drift blocks execution and returns to research.",
+    "fixtureIdentity": "request-tracker-baseline-v1",
+    "requiredPaths": [
+      "scripts/delivery/baseline/profile.json",
+      "scripts/delivery/baseline/fixture/server.mjs",
+      "scripts/delivery/baseline/fixture/index.html",
+      "scripts/delivery/baseline/fixture/client.js",
+      "scripts/delivery/baseline/fixture/tasks.json",
+      "scripts/delivery/baseline/fixture/acceptance.mjs"
+    ],
+    "agentWritablePaths": [
+      "scripts/delivery/baseline/fixture/server.mjs",
+      "scripts/delivery/baseline/fixture/index.html",
+      "scripts/delivery/baseline/fixture/client.js"
+    ],
+    "protectedVerifierPaths": [
+      "scripts/delivery/baseline/fixture/acceptance.mjs"
+    ],
+    "task": {
+      "id": "NORM-01",
+      "startingDefect": "Starter accepts whitespace-only or titles longer than 120 Unicode code points and omits matching browser feedback.",
+      "requiredChange": "Add title normalization and 1..120-code-point validation to create/update API and UI while preserving valid CRUD and stored data.",
+      "mandatoryAcceptance": [
+        "Valid create/update round-trips normalized title and exact data through API and UI.",
+        "Reject empty, whitespace-only and 121-code-point title; accept exactly 120 code points including a non-BMP Unicode boundary case.",
+        "Restart against the same SQLite database and preserve rows unchanged.",
+        "Failed update preserves original fields; unknown id remains 404; create/list behavior remains intact.",
+        "UI shows changed values after reload and renders malicious HTML content as text."
+      ]
+    },
+    "workspaceIsolation": "Trusted orchestration prepares separate agent and verifier workspaces. Only agentWritablePaths plus the canonical NORM-01 prompt are exposed to OpenHands; acceptance code and manifests remain outside the agent workspace. Candidate source is copied to the verifier workspace and hashed before and after acceptance."
   }
 }

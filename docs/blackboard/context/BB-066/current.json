@@ -15,7 +15,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-066.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
-  "planHash": "8cb52b39802c596dfbe8484def8c5ad6e8879ec753fca44d5cd33f650268f7de",
+  "planHash": "be0baebccf8b7f30cb464745973341644175546a684067b000c3fa78e4080f51",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -66,8 +66,8 @@
       "docs/living/system/state.md",
       "package.json",
       "scripts/delivery/baseline/profile.json",
-      "scripts/delivery/baseline/tasks.json",
-      "scripts/delivery/baseline/acceptance.mjs",
+      "scripts/delivery/baseline/fixture/tasks.json",
+      "scripts/delivery/baseline/fixture/acceptance.mjs",
       "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     ],
     "write": [],
@@ -89,8 +89,8 @@
       "docs/living/system/state.md",
       "package.json",
       "scripts/delivery/baseline/profile.json",
-      "scripts/delivery/baseline/tasks.json",
-      "scripts/delivery/baseline/acceptance.mjs",
+      "scripts/delivery/baseline/fixture/tasks.json",
+      "scripts/delivery/baseline/fixture/acceptance.mjs",
       "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     ],
     "write": [
@@ -99,7 +99,7 @@
       "packages/agentic-system/src/index.js",
       "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
       "scripts/delivery/runtime/openhands_driver.py",
-      "scripts/delivery/runtime/requirements.in",
+      "scripts/delivery/runtime/pyproject.toml",
       "scripts/delivery/runtime/uv.lock",
       "scripts/delivery/bb-066-probe.mjs",
       "test/delivery/bb-066-live-contract.test.mjs",
@@ -146,7 +146,7 @@
     },
     {
       "id": "living-docs",
-      "command": "git diff --exit-code \"$BASELINE_SHA\"...\"$CANDIDATE_SHA\" -- docs/living/system/state.md"
+      "command": "test -n \"$(git diff --name-only \\\"$BASELINE_SHA\\\"...\\\"$CANDIDATE_SHA\\\" -- docs/living/system/state.md)\""
     }
   ],
   "expectedOutputs": [
