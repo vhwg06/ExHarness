@@ -296,6 +296,7 @@ export function materialize(root, id, { readiness = false } = {}) {
       // their full bodies in the model input.
     ]);
     for (const ref of livingDocs.refs) fullSourceRefs.add(ref);
+    for (const ref of [...plan.sourceSeams.expectedNew, ...plan.sourceSeams.expectedTests]) fullSourceRefs.add(ref);
     for (const ref of livingDocs.refs) check(git(root, 'ls-tree', evidence.candidateSha, '--', ref), `Living Doc missing from candidate: ${ref}`);
     state.sources = sourceRefs.map(ref => {
       const deleted = !git(root, 'ls-tree', evidence.candidateSha, '--', ref);
@@ -406,29 +407,156 @@ export async function callJev(payload, { apiKey = process.env.TYPESAFE_API_KEY, 
     return { response: validateResponse(body, payload), attempts };
   }
 }
+const WORKER_BATCH_MAX_BYTES = 60000;
+function integrationExcerpt(source) {
+  if (typeof source.body !== 'string') return source;
+  const sections = source.body.split(/(?=^#{2,3} )/m);
+  const selected = sections.filter(section =>
+    /^## A17\b/m.test(section) ||
+    /^### Integration C\b/m.test(section) ||
+    /^## Integration C\b/m.test(section)
+  );
+  check(selected.length > 0, `Living Doc has no Integration C section: ${source.ref}`);
+  return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), body: selected.join('\n'), excerpted: true, deleted: source.deleted };
+}
+export function workerQuestionPayload(fullPayload, id) {
+  check(fullPayload?.state?.evidenceFiles && fullPayload.questions?.[id], 'worker batch requires a materialized question and evidence');
+  const state = fullPayload.state;
+  const claim = state.evidence.find(entry => entry.id === id);
+  const criterion = state.plan.acceptanceCriteria.find(entry => entry.id === id);
+  const livingDocsQuestion = id === state.plan.livingDocs.questionId;
+  check(Boolean(claim) === Boolean(criterion), `worker criterion/evidence mismatch: ${id}`);
+  const evidenceRefs = new Set(claim?.evidenceRefs ?? []);
+  const checkIds = new Set(criterion?.verificationIds ?? []);
+  const selectedRuns = state.verification.filter(run => checkIds.has(run.id) || evidenceRefs.has(run.logRef) ||
+    (livingDocsQuestion && state.plan.sourceSeams.expectedTests.some(ref => run.command === `node --test ${ref}`)));
+  const selectedFiles = state.evidenceFiles.filter(file => evidenceRefs.has(file.ref) ||
+    (livingDocsQuestion && selectedRuns.some(run => run.logRef === file.ref)));
+  check([...evidenceRefs].every(ref => selectedFiles.some(file => file.ref === ref)), `worker batch omits criterion evidence: ${id}`);
+  const testRefs = new Set(selectedRuns
+    .map(run => run.command.match(/^node --test (packages\/agentic-system\/test\/[^ ]+\.test\.js)$/)?.[1])
+    .filter(Boolean));
+  const relevantSourceRefs = new Set([
+    ...testRefs,
+    ...state.plan.sourceSeams.expectedNew.filter(ref => [...checkIds].some(checkId => ref.endsWith(`/${checkId}.js`)))
+  ]);
+  const projectedPlan = livingDocsQuestion ? {
+    kind: state.plan.kind,
+    artifactType: state.plan.artifactType,
+    artifactId: state.plan.artifactId,
+    objective: state.plan.objective,
+    scope: state.plan.scope,
+    sourceSeams: state.plan.sourceSeams,
+    livingDocs: state.plan.livingDocs,
+    verificationPlan: state.plan.verificationPlan.filter(run => selectedRuns.some(selected => selected.id === run.id))
+  } : {
+    kind: state.plan.kind,
+    artifactType: state.plan.artifactType,
+    artifactId: state.plan.artifactId,
+    objective: state.plan.objective,
+    scope: state.plan.scope,
+    outOfScope: state.plan.outOfScope,
+    constraints: state.plan.constraints,
+    invariants: state.plan.invariants,
+    architectureDecisions: state.plan.architectureDecisions,
+    implementationSlices: state.plan.implementationSlices,
+    negativeVerificationCases: state.plan.negativeVerificationCases,
+    sourceSeams: state.plan.sourceSeams,
+    livingDocs: state.plan.livingDocs,
+    acceptanceCriteria: criterion ? [criterion] : state.plan.acceptanceCriteria,
+    verificationPlan: state.plan.verificationPlan.filter(run => checkIds.has(run.id))
+  };
+  const batchState = {
+    objective: state.objective,
+    plan: projectedPlan,
+    evidence: claim ? [claim] : [],
+    sources: state.sources.map(source => {
+      if (source.body == null) return source;
+      if (relevantSourceRefs.has(source.ref)) return source;
+      if (source.ref.startsWith('docs/living/')) return integrationExcerpt(source);
+      return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), omitted: true, deleted: source.deleted };
+    }),
+    verification: selectedRuns,
+    evidenceFiles: selectedFiles
+  };
+  const payload = { model: fullPayload.model, state: batchState, questions: { [id]: fullPayload.questions[id] } };
+  check(Buffer.byteLength(canonical(payload)) <= WORKER_BATCH_MAX_BYTES, `worker batch exceeds bounded input: ${id}`);
+  return payload;
+}
+export function workerBatchManifest(fullPayload) {
+  return Object.keys(fullPayload.questions).map(id => {
+    const payload = workerQuestionPayload(fullPayload, id);
+    return { id, payloadHash: hash(payload), payloadBytes: Buffer.byteLength(canonical(payload)) };
+  });
+}
+async function evaluateWorkerBatches(fullPayload, { root, cacheDir, fetchImpl, apiKey, bypassCache }) {
+  const manifest = workerBatchManifest(fullPayload);
+  const answers = {};
+  let inputTokens = 0, outputTokens = 0, attempts = 0, retryAttempts = 0, cacheHits = 0;
+  for (const batch of manifest) {
+    const payload = workerQuestionPayload(fullPayload, batch.id);
+    const ref = `${cacheDir}/batches/${batch.payloadHash}.json`;
+    let response;
+    if (!bypassCache && fs.existsSync(localPath(root, ref))) {
+      const saved = read(root, ref);
+      check(saved.payloadHash === batch.payloadHash, 'worker batch cache hash mismatch');
+      response = validateResponse(saved.response, payload);
+      cacheHits += 1;
+    } else {
+      const result = await callJev(payload, { fetchImpl, apiKey });
+      response = result.response;
+      attempts += result.attempts;
+      retryAttempts += result.attempts - 1;
+      if (!bypassCache) write(root, ref, { payloadHash: batch.payloadHash, response });
+    }
+    answers[batch.id] = response.answers[batch.id];
+    inputTokens += response.usage.input_tokens;
+    outputTokens += response.usage.output_tokens;
+  }
+  return {
+    response: validateResponse({ model: fullPayload.model, answers, usage: { input_tokens: inputTokens, output_tokens: outputTokens } }, fullPayload),
+    manifest, attempts, retryAttempts, cacheHits
+  };
+}
 export async function evaluate(materialized, { root = '.', cacheDir = '.cache/blackboard-jev', fetchImpl, apiKey, bypassCache = false } = {}) {
   const { payload, cacheKey, lane } = materialized;
   const cacheRef = `${cacheDir}/${cacheKey}.json`;
-  let response, attempts = 0, cacheHit = false;
+  let response, attempts = 0, retryAttempts = 0, cacheHit = false, batching = null;
   const start = performance.now();
   if (!bypassCache && fs.existsSync(localPath(root, cacheRef))) {
     const cached = read(root, cacheRef);
     check(cached.cacheKey === cacheKey, 'cache key mismatch');
     response = validateResponse(cached.response, payload); cacheHit = true;
+    if (cached.batching) {
+      check(lane === 'WORKER' && canonical(cached.batching.manifest) === canonical(workerBatchManifest(payload)), 'worker batch cache manifest mismatch');
+      batching = cached.batching;
+    }
   } else {
-    ({ response, attempts } = await callJev(payload, { fetchImpl, apiKey }));
-    if (!bypassCache) write(root, cacheRef, { cacheKey, response });
+    if (lane === 'WORKER' && Buffer.byteLength(canonical(payload)) > WORKER_BATCH_MAX_BYTES) {
+      const result = await evaluateWorkerBatches(payload, { root, cacheDir, fetchImpl, apiKey, bypassCache });
+      ({ response, attempts } = result);
+      retryAttempts = result.retryAttempts;
+      batching = { strategy: 'WORKER_ATOMIC_QUESTIONS_V1', manifest: result.manifest, cacheHits: result.cacheHits };
+    } else {
+      ({ response, attempts } = await callJev(payload, { fetchImpl, apiKey }));
+      retryAttempts = attempts - 1;
+    }
+    if (!bypassCache) write(root, cacheRef, { cacheKey, response, ...(batching ? { batching } : {}) });
   }
   const policy = read(root, 'docs/blackboard/jev-policy.json');
   const rate = policy.pricing;
   const cost = rate && rate.model === payload.model && rate.source && rate.date && Number.isFinite(rate.inputPerMillion) && Number.isFinite(rate.outputPerMillion)
     ? (response.usage.input_tokens * rate.inputPerMillion + response.usage.output_tokens * rate.outputPerMillion) / 1e6 : null;
-  return { ...artifact(`${materialized.subject.workId}-${lane.toLowerCase()}`, 'JEV_EVALUATION'), lane, subject: materialized.subject, stateHash: materialized.stateHash, specHash: materialized.specHash, cacheKey, model: response.model, answers: response.answers, verdict: verdict(response.answers, lane), usage: response.usage, metrics: { cacheHit, attempts, latencyMs: performance.now() - start, payloadBytes: Buffer.byteLength(canonical(payload)), estimatedCost: cacheHit ? 0 : attempts>1 ? null : cost, unreportedRetryUsage:attempts>1, pricing: rate ?? null }, policy: POLICY };
+  return { ...artifact(`${materialized.subject.workId}-${lane.toLowerCase()}`, 'JEV_EVALUATION'), lane, subject: materialized.subject, stateHash: materialized.stateHash, specHash: materialized.specHash, cacheKey, model: response.model, answers: response.answers, verdict: verdict(response.answers, lane), usage: response.usage, metrics: { cacheHit, attempts, latencyMs: performance.now() - start, payloadBytes: Buffer.byteLength(canonical(payload)), estimatedCost: cacheHit ? 0 : retryAttempts || batching?.cacheHits ? null : cost, unreportedRetryUsage:retryAttempts > 0, pricing: rate ?? null, ...(batching ? { batching } : {}) }, policy: POLICY };
 }
 export function validateEvaluation(evaluation, expected) {
   assertDeliveryArtifact(evaluation);
   check(canonical(evaluation.subject) === canonical(expected.subject) && evaluation.lane === expected.lane, 'evaluation subject mismatch');
   for (const key of ['stateHash', 'specHash', 'cacheKey']) check(evaluation[key] === expected[key], `stale evaluation ${key}`);
   validateResponse({ model: evaluation.model, answers: evaluation.answers, usage: evaluation.usage }, expected.payload);
+  if (evaluation.metrics?.batching) {
+    check(expected.lane === 'WORKER' && evaluation.metrics.batching.strategy === 'WORKER_ATOMIC_QUESTIONS_V1', 'invalid worker batch strategy');
+    check(canonical(evaluation.metrics.batching.manifest) === canonical(workerBatchManifest(expected.payload)), 'worker batch manifest mismatch');
+  }
   return evaluation;
 }
