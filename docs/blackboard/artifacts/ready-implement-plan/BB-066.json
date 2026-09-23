@@ -506,16 +506,8 @@
         "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
       ],
       "supportingPlanFields": [
-        "agentStrategyContract",
-        "driverProtocol",
-        "runtimeResultContract",
-        "modelProfileContract",
-        "liveProbeContract",
-        "liveEvidenceContract",
-        "verificationSetup",
-        "recoveryProtocol",
-        "dependencyFixtureContract",
-        "researchEvidence"
+        "selectedRuntimeEvidence",
+        "fixtureDependencyEvidence"
       ],
       "sourceAnchors": [
         {
@@ -565,12 +557,7 @@
         "packages/agentic-system/src/domain-execution-control.js"
       ],
       "supportingPlanFields": [
-        "recoveryProtocol",
-        "agentStrategyContract",
-        "driverProtocol",
-        "runtimeResultContract",
-        "liveProbeContract",
-        "researchEvidence"
+        "selectedRuntimeEvidence"
       ],
       "sourceAnchors": [
         {
@@ -615,15 +602,7 @@
         "packages/agentic-system/src/domain-execution-control.js",
         "docs/living/system/state.md"
       ],
-      "supportingPlanFields": [
-        "recoveryProtocol",
-        "agentStrategyContract",
-        "runtimeResultContract",
-        "modelProfileContract",
-        "liveEvidenceContract",
-        "researchEvidence",
-        "verificationSetup"
-      ],
+      "supportingPlanFields": [],
       "sourceAnchors": [
         {
           "ref": "packages/agentic-system/src/domain-execution-control.js",
@@ -822,5 +801,33 @@
     },
     "workspaceIsolation": "Trusted orchestration prepares separate agent and verifier workspaces. Only agentWritablePaths plus the canonical NORM-01 prompt are exposed to OpenHands; acceptance code and manifests remain outside the agent workspace. Candidate source is copied to the verifier workspace and hashed before and after acceptance."
   },
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "selectedRuntimeEvidence": {
+    "source": "OpenHands/software-agent-sdk@3f47426e6af4681aacab735c781426aae58a3bac",
+    "version": "1.49.4",
+    "inspected": [
+      "openhands-sdk/openhands/sdk/agent/agent.py",
+      "openhands-sdk/openhands/sdk/conversation/impl/local_conversation.py",
+      "openhands-tools/openhands/tools/file_editor/definition.py",
+      "examples/01_standalone_sdk/56_structured_output.py"
+    ],
+    "established": [
+      "Agent accepts TerminalTool and FileEditorTool.",
+      "FileEditorTool roots FileEditorExecutor at conv_state.workspace.working_dir.",
+      "Standalone Conversation(agent, workspace) accepts a message and run().",
+      "LocalConversation accepts fixed workspace/persistence_dir/conversation_id and supports agent=None resume."
+    ]
+  },
+  "fixtureDependencyEvidence": {
+    "source": "BB-065 READY plan at research baseline",
+    "deliveryGate": "Worker remains blocked until BB-065 is DONE and the delivered fixture matches this identity.",
+    "fixtureIdentity": "request-tracker-baseline-v1",
+    "task": "NORM-01: fix title normalization/1..120 Unicode-code-point validation in create/update API and UI without pre-solving the candidate.",
+    "writable": [
+      "scripts/delivery/baseline/fixture/server.mjs",
+      "scripts/delivery/baseline/fixture/index.html",
+      "scripts/delivery/baseline/fixture/client.js"
+    ],
+    "protectedVerifier": "scripts/delivery/baseline/fixture/acceptance.mjs"
+  }
 }
