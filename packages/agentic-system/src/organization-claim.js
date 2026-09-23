@@ -210,7 +210,8 @@ export function createOrganizationWorkClaimController({
   claimReleaseStore,
   artifactRegistry,
   executionPrincipalProvider,
-  executionAuthorityPolicyId
+  executionAuthorityPolicyId,
+  lineage
 }){
   const policyId=requireText(executionAuthorityPolicyId,"executionAuthorityPolicyId");
   invariant(orchestrator&&typeof orchestrator.readBlackboard==="function"&&typeof orchestrator.claim==="function","claim controller requires ApplicationOrchestrator");
@@ -236,6 +237,13 @@ export function createOrganizationWorkClaimController({
     invariant(contract.contractRef===ref,"work contract artifact ref mismatch: "+ref);
     assertBoardContract(item,contract,project);
     return {board,item,contract,project};
+  }
+
+  async function assertObligationCurrent(contract){
+    if(!contract.crossDomainObligationRef)return;
+    invariant(lineage,"cross-domain claim requires semantic currentness");
+    const current=await lineage.assertCurrent(contract.crossDomainObligationRef);
+    invariant(current.subjectKey===contract.crossDomainObligationSubjectKey,"claim obligation subject mismatch");
   }
 
   async function fenceRelease(projectId,itemId,generation,invalidationRef){
@@ -410,6 +418,7 @@ export function createOrganizationWorkClaimController({
       expectedClaimGeneration:claimGeneration
     },async(lifecycleObservation)=>{
       const {item,contract}=await resolveContractForItem(itemId);
+      await assertObligationCurrent(contract);
       invariant(item.status==="CLAIMED"&&item.owner===preReceipt.boardOwner&&item.claimGeneration===claimGeneration,"Board claim tuple changed before publication");
       const key=claimReleaseSubjectKey(contract.projectId,itemId,claimGeneration);
       const releaseHead=await claimReleaseStore.current(key);
@@ -451,6 +460,7 @@ export function createOrganizationWorkClaimController({
   return Object.freeze({
     async claim({itemId,principalContext}){
       const {item:before,contract}=await resolveContractForItem(itemId);
+      await assertObligationCurrent(contract);
       const principal=await resolveExecutionPrincipal(executionPrincipalProvider,principalContext);
       let observed;
       try{
@@ -503,6 +513,7 @@ export function createOrganizationWorkClaimController({
     async release({itemId,claimGeneration,principalContext}){
       invariant(Number.isInteger(claimGeneration)&&claimGeneration>0,"claimGeneration must be positive");
       const {item,contract}=await resolveContractForItem(itemId);
+      await assertObligationCurrent(contract);
       const principal=await resolveExecutionPrincipal(executionPrincipalProvider,principalContext);
       invariant(
         item.status==="CLAIMED"&&item.owner===principal.identity&&item.claimGeneration===claimGeneration,
@@ -556,6 +567,7 @@ export function createOrganizationWorkClaimController({
 
     async assertExecutable({itemId,claimGeneration,receiptRef}){
       const {item,contract}=await resolveContractForItem(itemId);
+      await assertObligationCurrent(contract);
       invariant(item.status==="CLAIMED"&&item.claimGeneration===claimGeneration,"Board claim tuple no longer matches released capability");
       const key=claimReleaseSubjectKey(contract.projectId,itemId,claimGeneration);
       const current=await claimReleaseStore.current(key);
