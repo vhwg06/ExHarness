@@ -15,7 +15,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-060.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
-  "planHash": "3eee795349ca5da7621a84369020baf00659b72144fecf80c5e1e9a010053494",
+  "planHash": "406afe6593ef173ac160413a66f4618bfbef9a9d2d42c19a0086313bf2d9d2c7",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -71,7 +71,8 @@
       "packages/agentic-system/test/oracle-integration.test.js",
       "test/oracle-architecture-boundary.test.mjs",
       "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/**"
+      "docs/living/system/agentic-application/**",
+      "packages/agentic-system/package.json"
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/objective/**",
@@ -97,7 +98,7 @@
     },
     {
       "id": "oracle-integration",
-      "command": "node --test packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/durable-backend-qa.test.js"
+      "command": "node --test packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js"
     },
     {
       "id": "oracle-architecture",
