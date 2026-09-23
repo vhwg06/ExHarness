@@ -34,6 +34,8 @@
   ],
   "architectureDecisions": [
     "Select a thin Node runtimeAdapter over a Python OpenHands SDK driver. DomainExecutionController continues to create and pin the semantic execution attempt; the adapter maps its runtimeInvocationKey to exactly one durable OpenHands conversation.",
+    "Extend the delivered execution-strategy enum with coding-agent-sdk and extend controller.execute with an optional AbortSignal passed out-of-band to dispatch/recover. The signal is process control only: it is not cloned into semantic input, binding or evidence identity.",
+    "Use strategy descriptor {strategyId: openhands-sdk-local-v1, strategyVersion: 1.49.4+3f47426, strategyKind: coding-agent-sdk, runtimeBindingMode: EXACT_PERSISTED_CONVERSATION}; adapterRef and expectedRuntimeCodeRef must equal the constructed runtime adapter identities.",
     "Pin OpenHands software-agent-sdk 1.49.4 and openhands-tools from monorepo commit 3f47426e6af4681aacab735c781426aae58a3bac. Its LocalConversation create-or-resume path persists base state and events, supports a fixed conversation_id, and can resume with agent=None in a fresh process.",
     "Use the BB-065 request-tracker workspace prepared by the caller. The adapter accepts a canonical workspace root, immutable starting tree/hash, task ID, prompt ref/hash and output directory; it does not clone repositories, select work, or publish source.",
     "Construct the adapter with explicit modelProfileResolver and workspaceResolver ports. dispatch resolves binding.modelProfileRef and the input workspace descriptor, hashes both canonical documents, and records them before Python starts; recover resolves them again and requires exact equality with the immutable manifest.",
@@ -41,7 +43,7 @@
     "Dispatch uses exclusive manifest creation. If a manifest already exists it returns UNKNOWN with recoveryRequired=true and performs no provider call. Recover validates the exact manifest and workspace identity, then reopens the same conversation ID/persistence directory; mismatch returns BLOCKED and never creates another conversation.",
     "Dispatch sends the task prompt exactly once after creating the conversation. Recover constructs LocalConversation(agent=None, same conversation_id, same persistence_dir, same workspace) and never resends the prompt; a complete atomically published driver result is replayed without calling conversation.run again.",
     "OpenHands owns conversation events and tool execution state inside the adapter. ExHarness owns attempt lifecycle, policy pins, runtime attestation, completion evaluation and publication authority. OpenHands completion maps only to a runtime result candidate.",
-    "Timeout sends SIGTERM to the driver, waits a bounded grace period, then SIGKILL if required and returns UNKNOWN/recoveryRequired. Cancellation uses AbortSignal with the same sequence. Process exit, signal, stdout/stderr digests and recovery decision are captured without secrets.",
+    "Timeout or AbortSignal cancellation sends SIGTERM to the driver, waits a bounded grace period, then SIGKILL if required and throws OpenHandsRecoveryRequiredError after durable process evidence. DomainExecutionController therefore commits RECOVERY_REQUIRED. A later recover may return UNKNOWN only after it has conclusively failed to reconcile the prior effect. Process exit, signal, stdout/stderr digests and recovery decision are captured without secrets.",
     "Use only TerminalTool and FileEditorTool in the selected profile. The driver rejects additional tool names, workspace escape, mutable branch/ref dependencies, and a model/profile different from the immutable manifest.",
     "Reject Restate at eda4cf97ec8794614329d97078a3c8c3a8701c4f because a new BSL server duplicates delivered attempt recovery authority; reject Temporal server at 543367eec690da3c23e536cf5dfe76928af11b2c and LangGraph at 1211af45b18cab9c0a7efe366ba12f51ad2a9996 because their workflow/checkpoint authorities add a second lifecycle for this single domain-local adapter.",
     "Reject mini-SWE-agent at 04d809ceab9df28f9adaed044884180159172930 as the integrated strategy: it is the direct baseline selected by BB-065 and intentionally runs independent subprocess actions, while its documented saved history is not a durable fresh-process conversation resume contract. Reject SWE-agent at 3ea751c087f32b16e039a2233dd6eefecef325d5 because trajectory replay is inspection/re-execution rather than continuation of the same live attempt."
@@ -63,7 +65,8 @@
     ],
     "expectedTests": [
       "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
-      "test/delivery/bb-066-live-contract.test.mjs"
+      "test/delivery/bb-066-live-contract.test.mjs",
+      "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     ]
   },
   "sourceScope": {
@@ -81,9 +84,11 @@
       "package.json",
       "scripts/delivery/baseline/profile.json",
       "scripts/delivery/baseline/tasks.json",
-      "scripts/delivery/baseline/acceptance.mjs"
+      "scripts/delivery/baseline/acceptance.mjs",
+      "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     ],
     "write": [
+      "packages/agentic-system/src/domain-execution-control.js",
       "packages/agentic-system/src/openhands-runtime-adapter.js",
       "packages/agentic-system/src/index.js",
       "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
@@ -92,7 +97,8 @@
       "scripts/delivery/runtime/uv.lock",
       "scripts/delivery/bb-066-probe.mjs",
       "test/delivery/bb-066-live-contract.test.mjs",
-      "docs/living/system/state.md"
+      "docs/living/system/state.md",
+      "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
@@ -104,7 +110,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Add the strict Node adapter contract, immutable attempt-manifest codec, runtime result mapping and export; test collision, identity mismatch, policy drift, timeout, cancellation, secret redaction and the no-second-session invariant with a fake driver.",
+    "S1 — Extend DomainExecutionController with coding-agent-sdk descriptor support and out-of-band AbortSignal forwarding; add the strict Node adapter, immutable attempt-manifest/evidence codec and export. Test collision, identity mismatch, policy drift, timeout/cancellation recovery transition, secret redaction and no-second-session invariant with a fake driver.",
     "S2 — Add the pinned Python 3.12 OpenHands driver and uv lock. Construct only the allowed tools, create a new conversation on dispatch, resume with agent=None on recover, persist events under the exact conversation ID and emit one bounded JSON result.",
     "S3 — Connect the delivered BB-065 fixture/profile to the live probe after the dependency is DONE. Run dispatch, deliberately interrupt after a persisted tool event, start a fresh Node/Python process, call recover and independently assess the workspace through BB-065 acceptance.",
     "S4 — Record exact source/SDK/model/config/process/evidence identities, document the supported strategy and limitations in Living Docs, then submit the exact candidate and evidence to Jev."
@@ -118,7 +124,8 @@
         "live-probe"
       ],
       "evidenceRequired": [
-        "Exact candidate/tree, work and executionAttempt IDs, runtimeInvocationKey hash, SDK commit/version, model/profile/toolset hashes, starting and resulting workspace tree hashes, process result, redacted stdout/stderr digests and independent fixture acceptance report."
+        "Exact candidate/tree, work and executionAttempt IDs, runtimeInvocationKey hash, SDK commit/version, model/profile/toolset hashes, starting and resulting workspace tree hashes, process result, redacted stdout/stderr digests and independent fixture acceptance report.",
+        "Exact controller outcome fields: runtimeInvocationId, timestamps, content-addressed output/effect/trace/verification refs and derivation edges accepted by the delivered controller contract."
       ]
     },
     {
@@ -144,7 +151,7 @@
     },
     {
       "id": "BOUNDED_TERMINATION",
-      "statement": "Timeout and AbortSignal cancellation terminate the child through bounded TERM/KILL handling, retain process/evidence metadata and never map an ambiguous external effect to SUCCEEDED.",
+      "statement": "Timeout and out-of-band AbortSignal cancellation terminate the child through bounded TERM/KILL handling, persist process/counterevidence and throw so DomainExecutionController commits RECOVERY_REQUIRED; ambiguous initial execution is never terminalized as SUCCEEDED or UNKNOWN.",
       "verificationIds": [
         "unit-adapter"
       ],
@@ -202,7 +209,7 @@
   "verificationPlan": [
     {
       "id": "unit-adapter",
-      "command": "node --test packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js"
+      "command": "node --test packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     },
     {
       "id": "domain-regression",
@@ -233,7 +240,10 @@
     "SIGTERM timeout or cancellation with no conclusive driver result must produce UNKNOWN, never SUCCEEDED.",
     "A driver payload containing acceptance, publication or Blackboard mutation fields must be rejected.",
     "Secrets present in environment or provider exceptions must not appear in manifest, stdout/stderr evidence or result JSON.",
-    "Agent-declared success with failing BB-065 independent acceptance must remain a rejected completion candidate."
+    "Agent-declared success with failing BB-065 independent acceptance must remain a rejected completion candidate.",
+    "Returning UNKNOWN from initial dispatch must fail the adapter contract test; ambiguous dispatch must throw and leave the canonical attempt RECOVERY_REQUIRED.",
+    "AbortSignal must be forwarded outside the structured-cloned semantic input; aborted execution must preserve the original binding and invocation identity.",
+    "A strategy kind other than the exact coding-agent-sdk descriptor or a mismatched adapter/runtime code ref must be rejected before driver spawn."
   ],
   "laneContracts": [
     {
@@ -303,7 +313,7 @@
         "BLOCKED",
         "UNKNOWN"
       ],
-      "constructor": "createOpenHandsRuntimeAdapter({adapterRef, runtimeDeploymentRef, producerAuthorityRef, driverCommand, modelProfileResolver, workspaceResolver, maxEvidenceBytes})",
+      "constructor": "createOpenHandsRuntimeAdapter({adapterRef, runtimeDeploymentRef, producerAuthorityRef, driverCommand, modelProfileResolver, workspaceResolver, runtimeEvidenceStore, maxEvidenceBytes})",
       "dispatchSignature": "dispatch({binding,input,runtimeInvocationKey,signal})",
       "recoverSignature": "recover({binding,input,runtimeInvocationKey,signal})",
       "inputSchema": {
@@ -341,7 +351,20 @@
         "protectedAcceptanceRef": "acceptance suite retained in verifier workspace"
       },
       "prompt": "Resolve taskId from BB-065 tasks.json, canonicalize the task payload and verify promptHash before first send."
-    }
+    },
+    "strategyDescriptor": {
+      "strategyId": "openhands-sdk-local-v1",
+      "strategyVersion": "1.49.4+3f47426",
+      "strategyKind": "coding-agent-sdk",
+      "runtimeBindingMode": "EXACT_PERSISTED_CONVERSATION",
+      "compatibleWorkloadTypes": [
+        "DELIVERY_FIXTURE_CHANGE"
+      ],
+      "compatibleWorkContractVersions": [
+        1
+      ]
+    },
+    "controllerChange": "execute({itemId,claimGeneration,receiptRef,input,signal}) validates signal as AbortSignal|null and forwards it separately; input remains structured-cloned semantic data."
   },
   "recoveryProtocol": {
     "dispatch": [
@@ -356,8 +379,8 @@
       "Start a fresh Python process with agent=None and the same workspace/persistence directory.",
       "Continue event sequence; never send the original task again or allocate another conversation."
     ],
-    "timeoutCancellation": "Send SIGTERM, wait at most 5 seconds, then SIGKILL. Record signals and return UNKNOWN unless the driver had atomically published a complete result.",
-    "missingEvidence": "BLOCKED for identity/config/persistence mismatch; UNKNOWN for potentially executed but unresolved external effect."
+    "timeoutCancellation": "Adapter persists bounded process/counterevidence, sends SIGTERM, waits at most 5 seconds, then SIGKILL, and throws OpenHandsRecoveryRequiredError. DomainExecutionController commits RECOVERY_REQUIRED. Recover returns a terminal result only after reconciliation.",
+    "missingEvidence": "BLOCKED only when preflight or recovery proves no ambiguous effect; UNKNOWN only from recover when the exact prior effect cannot be reconciled; dispatch ambiguity always throws for canonical RECOVERY_REQUIRED."
   },
   "liveEvidenceContract": {
     "prerequisites": [
@@ -459,6 +482,8 @@
       ],
       "sourceRefs": [
         "packages/agentic-system/src/domain-execution-control.js",
+        "packages/agentic-system/src/index.js",
+        "packages/agentic-system/test/bb048-domain-execution-control.test.js",
         "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
       ],
       "supportingPlanFields": [
@@ -468,7 +493,8 @@
         "modelProfileContract",
         "liveProbeContract",
         "liveEvidenceContract",
-        "verificationSetup"
+        "verificationSetup",
+        "recoveryProtocol"
       ]
     },
     {
@@ -593,8 +619,9 @@
     "mapping": {
       "SUCCEEDED": "exit 0 + FINISHED + complete identity/evidence + all changed paths allowed; still only a completion candidate",
       "FAILED": "conclusive agent/tool failure with no ambiguous in-flight effect",
-      "BLOCKED": "preflight identity/config/workspace/persistence violation before provider/tool execution",
-      "UNKNOWN": "timeout, cancellation, signal, corrupt/incomplete output after possible activity, or unresolved external effect; recoveryRequired=true"
+      "UNKNOWN": "Only adapter.recover may return UNKNOWN after examining the exact persisted conversation/effects and concluding they cannot be reconciled; completionEvaluator must map it to INCONCLUSIVE.",
+      "RECOVERY_REQUIRED_EXCEPTION": "If dispatch/recover ends after possible activity without an atomic complete result, persist process/counterevidence then throw OpenHandsRecoveryRequiredError. Controller catch moves ACTIVE to RECOVERY_REQUIRED and rethrows.",
+      "BLOCKED": "Conclusive preflight identity/config/workspace/persistence violation before provider/tool execution, or recover proves continuation is impossible without ambiguity."
     },
     "forbiddenFields": [
       "accepted",
@@ -612,7 +639,32 @@
       "stderr.sha256",
       "workspace-tree.json",
       "independent-acceptance.json"
-    ]
+    ],
+    "controllerResult": {
+      "requiredFields": [
+        "status",
+        "runtimeInvocationId",
+        "startedAt",
+        "finishedAt",
+        "effectRefs",
+        "traceRefs",
+        "outputArtifactRefs",
+        "verificationCandidateRefs",
+        "counterevidenceRefs",
+        "proposedDerivationEdges"
+      ],
+      "runtimeInvocationId": "openhands-invocation:sha256:<sha256(runtimeInvocationKey + manifestHash)>",
+      "outputArtifactRefs": "One candidate-source ref content-addressed by result tree/manifest digest, published by runtimeEvidenceStore with matching digest.",
+      "verificationCandidateRefs": [
+        "content-addressed manifest/process/driver-result/source-diff refs",
+        "independent acceptance ref is added by completionEvaluator, never fabricated by adapter"
+      ],
+      "effectRefs": "Content-addressed OpenHands conversation event-log ref and workspace-write effect refs.",
+      "traceRefs": "Content-addressed process trace ref.",
+      "counterevidenceRefs": "Timeout, cancellation, stderr, schema rejection and drift evidence refs.",
+      "proposedDerivationEdges": "Candidate-source output derived from exact starting workspace descriptor, task prompt and ExecutionAttemptBinding refs."
+    },
+    "evidencePublication": "runtimeEvidenceStore.put(kind, canonicalBody) returns <kind>:sha256:<digest>; adapter re-resolves each ref and digest before returning. Filesystem paths alone are never evidence refs."
   },
   "modelProfileContract": {
     "source": "The exact BB-065 live profile is reused so direct baseline and ExHarness strategy use the same provider/model cohort.",
@@ -641,10 +693,10 @@
     "secretHandling": "Only credentialEnvName is serialized. Node passes an allowlist environment containing the named credential and required runtime variables; evidence redaction replaces exact secret values before bounding/hashing diagnostic text."
   },
   "liveProbeContract": {
-    "setup": "Instantiate the production createDomainExecutionController with JSON immutable artifact, claim-release, execution-policy and attempt stores; publish a compatible OPENHANDS_LOCAL_SDK strategy descriptor and policy; create/release one authorized claim; point its modelProfileRef and harnessRef at exact BB-065 artifacts.",
+    "setup": "Instantiate production createDomainExecutionController with JSON immutable artifact, claim-release, execution-policy and attempt stores plus a content-addressed runtimeEvidenceStore; publish the exact coding-agent-sdk strategy descriptor and compatible policy; create/release one authorized DELIVERY_FIXTURE_CHANGE claim; point modelProfileRef and harnessRef at exact BB-065 artifacts.",
     "dispatch": "Call controller.execute once. The adapter resolves the delivered fixture workspace and exact NORM-01 task, publishes manifest/session marker, sends prompt once and begins OpenHands execution.",
-    "fault": "A test-only driver hook named EXHARNESS_BB066_FAULT_AFTER_DURABLE_EVENT=<N> exits the first Python process only after N>=1 events are durable. The hook is rejected unless probe mode is dispatch-interrupt-recover and is recorded in process evidence.",
-    "recover": "Start a fresh Node process with the same JSON stores/output/workspace and call controller.execute; controller selects runtimeAdapter.recover with the existing ExecutionAttemptBinding and invocation key.",
+    "fault": "A test-only driver hook named EXHARNESS_BB066_FAULT_AFTER_DURABLE_EVENT=<N> terminates the first Python process only after N>=1 events are durable. Adapter persists process evidence, throws OpenHandsRecoveryRequiredError, and the probe asserts the canonical attempt head is RECOVERY_REQUIRED. The hook is rejected outside dispatch-interrupt-recover mode.",
+    "recover": "Start a fresh Node process with the same JSON stores/evidence/output/workspace and call controller.execute; controller selects runtimeAdapter.recover with the same ExecutionAttemptBinding/invocation key and forwards a fresh AbortSignal separately.",
     "assessment": "Copy candidate source to BB-065 verifier workspace, verify candidate hashes before/after, run BB-065 independent API/browser/persistence acceptance, and attach its report without exposing it to the agent.",
     "proof": [
       "one semantic executionAttemptId",

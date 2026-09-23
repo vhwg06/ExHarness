@@ -15,7 +15,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-066.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
-  "planHash": "c6fc222c5849d000110cef7b13d82836b86252c357b455ebcf293dce8c4f865f",
+  "planHash": "8cb52b39802c596dfbe8484def8c5ad6e8879ec753fca44d5cd33f650268f7de",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -67,7 +67,8 @@
       "package.json",
       "scripts/delivery/baseline/profile.json",
       "scripts/delivery/baseline/tasks.json",
-      "scripts/delivery/baseline/acceptance.mjs"
+      "scripts/delivery/baseline/acceptance.mjs",
+      "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     ],
     "write": [],
     "forbiddenWrite": [
@@ -89,9 +90,11 @@
       "package.json",
       "scripts/delivery/baseline/profile.json",
       "scripts/delivery/baseline/tasks.json",
-      "scripts/delivery/baseline/acceptance.mjs"
+      "scripts/delivery/baseline/acceptance.mjs",
+      "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     ],
     "write": [
+      "packages/agentic-system/src/domain-execution-control.js",
       "packages/agentic-system/src/openhands-runtime-adapter.js",
       "packages/agentic-system/src/index.js",
       "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
@@ -100,7 +103,8 @@
       "scripts/delivery/runtime/uv.lock",
       "scripts/delivery/bb-066-probe.mjs",
       "test/delivery/bb-066-live-contract.test.mjs",
-      "docs/living/system/state.md"
+      "docs/living/system/state.md",
+      "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
@@ -122,7 +126,7 @@
   "verification": [
     {
       "id": "unit-adapter",
-      "command": "node --test packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js"
+      "command": "node --test packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js packages/agentic-system/test/bb066-domain-execution-integration.test.js"
     },
     {
       "id": "domain-regression",
