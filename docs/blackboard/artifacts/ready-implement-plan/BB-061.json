@@ -16,9 +16,10 @@
     "oracle.compile-time-dependencies"
   ],
   "outOfScope": [
-    "Generic Resolver<T>/provider registry/retrieval framework without concrete evidence.",
-    "Oracle ownership of work scheduling, product acceptance, recovery authority or Core deliberation.",
-    "Unrelated Integration-J HOW-evolution work."
+    "A generic Resolver<T>, provider registry, retrieval framework, shared contracts package or source-discovery DSL.",
+    "Changing BackendContextSchema, QaContextSchema, WorkOrder lifecycle, acceptance, evaluation, recovery or product-currentness authority.",
+    "Implementing BB-062 concrete connectivity or BB-063 provenance storage beyond the request/response seams BB-061 must preserve.",
+    "Treating the planned packages/oracle boundary as already delivered before BB-060 produces a DONE delivery receipt."
   ],
   "constraints": [
     "Application remains authority for work-order/context schemas and required context selection.",
@@ -34,24 +35,33 @@
     "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized."
   ],
   "architectureDecisions": [
-    "O2 keeps Oracle as infrastructure and treats current packages/agentic-system/src/oracle.js placement as reconciliation debt rather than evidence that Oracle belongs to Agentic Application.",
-    "O2 preserves the two concrete current source classes and resolver behavior unless source evidence requires a narrower change; package separation is independent from generic abstraction.",
-    "O2 makes authority/dependency direction explicit: Application owns required semantic shape/WHAT; Oracle owns source IO/adaptation WHERE/HOW; Core receives resolved context.",
-    "O2 requires exact provenance/source identity and fail-closed behavior to survive any package/import/adapter migration.",
-    "O2 closes only with executable regression evidence and synchronized Living Oracle docs, not narrative package ownership alone."
+    "Application owns WHAT: Backend/QA parse their WorkOrder, choose required context paths/artifact requests, map returned source values into BackendContext/QaContext, validate those application-owned schemas, and attach APPLICATION_ARTIFACT provenance.",
+    "Oracle owns WHERE/HOW only through two concrete ports: pullRepositoryFiles({repositoryRef, revision, paths}, {repositoryReader}) and pullApplicationArtifacts({requests}, {artifactReader}). Oracle invokes the supplied reader for each declared request in order and returns raw content plus exact sourceRef; it never accepts WorkOrder or application Context objects.",
+    "Repository input is application-owned {repositoryRef, revision, paths}; Oracle forwards repositoryRef/revision/path unchanged to repositoryReader.readFile and returns one value per requested path in stable request order.",
+    "Artifact input is application-owned requests carrying artifactId and optional sourceRef; Oracle forwards each request unchanged to artifactReader.readArtifact and returns raw content plus the reader's exact sourceRef in stable request order.",
+    "Reader failures propagate with their original cause and no partial application Context is assembled. Missing/malformed values fail in Application schema parsing; Oracle does not invent defaults, acceptance or currentness.",
+    "No shared contracts package is earned. The ports use plain data request/response records owned at the call site; Application imports Oracle, while Oracle has no import from packages/agentic-system.",
+    "Keep package wiring compatible with the current no-install CI topology: packages/agentic-system uses a relative import to packages/oracle and package.json retains file:../oracle for install consumers. Do not switch runtime tests to a bare @exharness/oracle specifier until workspace installation exists.",
+    "BB-061 execution is gated on BB-060 DONE. If the delivered BB-060 seam differs from the inspected baseline, stop with PLAN_INPUT_CONTRADICTION instead of silently redesigning this plan."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/state.md",
-      "docs/living/system/oracle/semantics.md",
-      "docs/living/system/oracle/workflow.md",
-      "packages/agentic-system/src/oracle.js",
       "packages/agentic-system/src/backend-application.js",
       "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/oracle.js",
       "packages/agentic-system/src/index.js",
-      "docs/living/system/agentic-application/contracts.md",
-      "docs/living/system/agentic-application/architecture.md"
+      "packages/agentic-system/package.json",
+      "packages/agentic-system/test/oracle-integration.test.js",
+      "packages/agentic-system/test/wave-a.test.js",
+      "packages/agentic-system/test/wave-c.test.js",
+      "packages/oracle/package.json",
+      "packages/oracle/src/index.js",
+      "packages/oracle/test/oracle.test.js",
+      "test/oracle-architecture-boundary.test.mjs",
+      "docs/living/system/oracle/architecture.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/oracle/workflow.md",
+      "docs/living/system/agentic-application/contracts.md"
     ],
     "expectedNew": [],
     "expectedTests": [
@@ -62,21 +72,29 @@
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agentic-system/package.json",
       "packages/oracle/**",
+      "package.json",
       "docs/living/system/oracle/**",
       "docs/living/system/agentic-application/**",
       "docs/blackboard/process/oracle-reconciliation-phase.md",
       "scripts/**",
       "test/**",
-      ".github/workflows/**"
+      ".github/workflows/test.yml"
     ],
     "write": [
       "packages/oracle/**",
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/test/**",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/oracle-integration.test.js",
+      "packages/agentic-system/package.json",
+      "test/oracle-architecture-boundary.test.mjs",
       "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/**"
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/architecture.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/objective/**",
@@ -87,100 +105,107 @@
     ]
   },
   "implementationSlices": [
-    "O21 — Inspect and pin current Oracle ownership/source/dependency/provenance seams for this workstream.",
-    "O22 — Resolve the workstream-specific architecture choices and remove every research gap before Jev readiness.",
-    "O23 — Implement only the concrete boundary changes authorized by the resolved plan; preserve current semantic behavior unless the objective explicitly changes it.",
-    "O24 — Run Oracle boundary, Agentic regression and architecture-placement checks; update Living Oracle truth."
+    "O21 — Revalidate the BB-060 DONE receipt and delivered package/export/import topology. Abort with PLAN_INPUT_CONTRADICTION if it is not the inspected concrete seam.",
+    "O22 — In packages/oracle, expose only pullRepositoryFiles and pullApplicationArtifacts as async ordered source-read functions over injected repositoryReader/artifactReader ports. Preserve exact requests, raw content, sourceRef and error cause.",
+    "O23 — Refactor Backend and QA Application resolvers so they parse WorkOrder and select required requests before calling Oracle, then map returned values, attach APPLICATION_ARTIFACT provenance and validate BackendContextSchema/QaContextSchema after the call.",
+    "O24 — Remove any Application runtime import from Oracle and any Oracle acceptance/lifecycle/schema ownership. Preserve the relative source import plus file:../oracle package dependency until an install-backed workspace exists.",
+    "O25 — Extend unit, integration and architecture-boundary tests for request ordering, exact forwarding, sourceRef preservation, fail-closed errors, schema ownership and the prohibited reverse dependency; synchronize Living Oracle and Agentic Application docs."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
-      "statement": "Research defines the exact semantic/compile-time port used by Backend and QA after physical extraction.",
+      "statement": "Backend and QA call the exact concrete Oracle ports pullRepositoryFiles and pullApplicationArtifacts after Application parses the WorkOrder and chooses required requests.",
       "verificationIds": [
-        "oracle-agentic-regression"
+        "oracle-unit",
+        "oracle-integration"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 1 is bound to exact Oracle/package/source refs and verification output."
+        "Tests name both port functions and prove Backend/QA request construction and final application-owned schema parsing."
       ]
     },
     {
       "id": "AC-2",
-      "statement": "Dependency direction is acyclic and maps directly to documented authority: Application WHAT, Oracle WHERE/HOW.",
+      "statement": "Compile-time direction is packages/agentic-system -> packages/oracle only; Oracle has no import from Application and accepts neither WorkOrder nor BackendContext/QaContext.",
       "verificationIds": [
-        "oracle-contract"
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 2 is bound to exact Oracle/package/source refs and verification output."
+        "Architecture test inspects imports/exports and rejects reverse imports or lifecycle/context parameters."
       ]
     },
     {
       "id": "AC-3",
-      "statement": "Oracle can validate/assemble application-owned shapes without importing application orchestration runtime.",
+      "statement": "Repository reads forward repositoryRef, revision and each path exactly; artifact reads forward each declared request exactly; outputs retain stable request order, raw content and exact sourceRef.",
       "verificationIds": [
-        "oracle-agentic-regression"
+        "oracle-unit",
+        "oracle-integration"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 3 is bound to exact Oracle/package/source refs and verification output."
+        "Positive and spy-based tests cover exact arguments, order, content and sourceRef for both source classes."
       ]
     },
     {
       "id": "AC-4",
-      "statement": "Negative cases prove Oracle cannot gain scheduling/acceptance/recovery/product-currentness authority.",
+      "statement": "Oracle reader failures propagate with original cause and no partial Context, default, acceptance or currentness decision is produced.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-unit",
+        "oracle-integration"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 4 is bound to exact Oracle/package/source refs and verification output."
+        "Negative tests inject repository and artifact failures and assert fail-closed behavior."
       ]
     },
     {
       "id": "AC-5",
-      "statement": "Concrete ports remain sufficient for current repository/artifact sources; generic abstraction is explicitly deferred unless evidenced.",
+      "statement": "No generic resolver/provider registry/shared contracts package is added; package imports work in the repository's current no-install CI topology.",
       "verificationIds": [
-        "oracle-agentic-regression"
+        "oracle-boundary",
+        "agentic-regression"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 5 is bound to exact Oracle/package/source refs and verification output."
+        "Boundary assertions reject generic/reverse seams and the full Agentic suite passes without node_modules."
       ]
     },
     {
       "id": "INV-1",
       "statement": "Application remains authority for work-order/context schemas and required context selection.",
       "verificationIds": [
-        "oracle-contract"
+        "oracle-integration",
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Invariant 1 is exercised by a negative or boundary verification case."
+        "Application tests own request selection, mapping, provenance and Context schema validation."
       ]
     },
     {
       "id": "INV-2",
       "statement": "Oracle owns source IO/adaptation only and must not claim work, schedule, accept, evaluate, recover or mutate product truth.",
       "verificationIds": [
-        "oracle-contract"
+        "oracle-unit",
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Invariant 2 is exercised by a negative or boundary verification case."
+        "Oracle API and tests are limited to injected source IO/adaptation."
       ]
     },
     {
       "id": "INV-3",
       "statement": "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Invariant 3 is exercised by a negative or boundary verification case."
+        "Worker checks the BB-060 DONE receipt and delivered topology before editing."
       ]
     },
     {
       "id": "INV-4",
       "statement": "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized.",
       "verificationIds": [
-        "oracle-contract"
+        "living-docs"
       ],
       "evidenceRequired": [
-        "Invariant 4 is exercised by a negative or boundary verification case."
+        "Living Oracle and Agentic Application docs match delivered imports, ports and authority."
       ]
     }
   ],
@@ -188,13 +213,17 @@
     {
       "invariant": "Application remains authority for work-order/context schemas and required context selection.",
       "criterionIds": [
-        "INV-1"
+        "INV-1",
+        "AC-1",
+        "AC-2"
       ]
     },
     {
       "invariant": "Oracle owns source IO/adaptation only and must not claim work, schedule, accept, evaluate, recover or mutate product truth.",
       "criterionIds": [
-        "INV-2"
+        "INV-2",
+        "AC-2",
+        "AC-4"
       ]
     },
     {
@@ -212,28 +241,35 @@
   ],
   "verificationPlan": [
     {
-      "id": "oracle-contract",
-      "command": "node --test packages/agentic-system/test/*oracle*.test.js packages/oracle/test/*.test.js"
+      "id": "oracle-unit",
+      "command": "node --test packages/oracle/test/oracle.test.js"
     },
     {
-      "id": "oracle-agentic-regression",
+      "id": "oracle-integration",
+      "command": "node --test packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js"
+    },
+    {
+      "id": "oracle-boundary",
+      "command": "node --test test/oracle-architecture-boundary.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
       "command": "npm run test:agentic"
     },
     {
-      "id": "oracle-architecture",
-      "command": "node --test test/oracle-architecture-boundary.test.mjs"
+      "id": "living-docs",
+      "command": "npm run verify:blackboard-artifacts && npm run verify:blackboard-work-graph && npm run verify:blackboard-context"
     }
   ],
-  "researchGaps": [
-    "Resolve exact oracle.semantic-port design against current source, imports, package ownership and tests.",
-    "Identify the minimum concrete migration/compatibility seam for BB-061 without introducing generic Oracle abstractions.",
-    "Define negative verification that would have caught the historical logical-vs-physical ownership drift for this workstream."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Oracle implementation remains physically owned by Agentic Application while docs claim infrastructure ownership.",
-    "Package extraction introduces a generic resolver/provider framework with no concrete source pressure.",
-    "Oracle gains scheduling/acceptance/recovery authority through the new boundary.",
-    "SourceRef/provenance or fail-closed behavior is weakened while simple happy-path tests still pass."
+    "An Oracle API accepts a WorkOrder, BackendContext, QaContext, acceptance flag, lifecycle state or currentness decision.",
+    "packages/oracle imports any runtime module under packages/agentic-system or a circular package edge appears.",
+    "A repositoryRef/revision/path or artifact request is rewritten, deduplicated or reordered across the port.",
+    "A reader failure is swallowed, wrapped without its cause, or yields a partially assembled Context.",
+    "The worker introduces Resolver<T>, a provider registry or shared contracts package without a new objective.",
+    "A bare @exharness/oracle import is required in no-install CI although node_modules is absent.",
+    "BB-060 is not DONE or its delivered seam contradicts this plan and implementation proceeds anyway."
   ],
   "laneContracts": [
     {
@@ -272,5 +308,140 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-061 Living Oracle docs must describe delivered ownership, dependency, connectivity and provenance semantics exactly as implemented."
-  }
+  },
+  "experimentEvidence": {
+    "baselineSha": "8674b7f02a16b372efa1d1d87cc7aa2b32391eb9",
+    "currentProbe": [
+      "Current Backend/QA resolvers parse WorkOrder, call repositoryReader.readFile or artifactReader.readArtifact, attach APPLICATION_ARTIFACT provenance and parse application-owned Context schemas.",
+      "packages/oracle exists as the planned BB-060 package seam; relative ESM import resolves in the no-install checkout while the bare package specifier returns ERR_MODULE_NOT_FOUND because node_modules and package-lock.json are absent.",
+      "Oracle contracts, package and workflow seams are unchanged from the BB-060 inspected baseline 7a266fc."
+    ],
+    "interpretation": "The smallest acyclic port extracts ordered injected source reads only. Application must retain semantic selection, mapping, provenance and schema authority."
+  },
+  "dependencyContract": {
+    "prerequisiteTaskId": "BB-060",
+    "requiredState": "DONE",
+    "requiredEvidence": "BB-060 delivery receipt and consolidated Living Oracle refs",
+    "contradictionRule": "If the delivered package/export/import topology differs materially from this plan's inspected seam, emit PLAN_INPUT_CONTRADICTION and return to Research; do not broaden Worker scope."
+  },
+  "semanticPortContract": {
+    "applicationOwns": [
+      "WorkOrder parsing and required-context selection",
+      "repository paths and artifact request construction",
+      "mapping raw Oracle values into BackendContext/QaContext",
+      "APPLICATION_ARTIFACT provenance attachment",
+      "BackendContextSchema and QaContextSchema validation",
+      "lifecycle, acceptance, recovery and product-currentness"
+    ],
+    "oracleOwns": [
+      "ordered invocation of injected repositoryReader.readFile",
+      "ordered invocation of injected artifactReader.readArtifact",
+      "exact request forwarding",
+      "return of raw content and exact sourceRef",
+      "failure propagation preserving original cause"
+    ],
+    "ports": [
+      "pullRepositoryFiles({repositoryRef, revision, paths}, {repositoryReader})",
+      "pullApplicationArtifacts({requests}, {artifactReader})"
+    ],
+    "forbidden": [
+      "WorkOrder or application Context parameters",
+      "Application runtime imports",
+      "provenance, acceptance or lifecycle decisions",
+      "generic provider registry or shared contracts package"
+    ]
+  },
+  "objectiveCoverage": [
+    {
+      "criterion": 1,
+      "decisionRefs": [
+        "architectureDecisions[0]",
+        "architectureDecisions[1]"
+      ],
+      "sliceRefs": [
+        "O22",
+        "O23"
+      ],
+      "verificationIds": [
+        "oracle-unit",
+        "oracle-integration"
+      ]
+    },
+    {
+      "criterion": 2,
+      "decisionRefs": [
+        "architectureDecisions[0]",
+        "architectureDecisions[5]"
+      ],
+      "sliceRefs": [
+        "O23",
+        "O24"
+      ],
+      "verificationIds": [
+        "oracle-boundary"
+      ]
+    },
+    {
+      "criterion": 3,
+      "decisionRefs": [
+        "architectureDecisions[1]",
+        "architectureDecisions[5]"
+      ],
+      "sliceRefs": [
+        "O22",
+        "O24"
+      ],
+      "verificationIds": [
+        "oracle-unit",
+        "oracle-boundary"
+      ]
+    },
+    {
+      "criterion": 4,
+      "decisionRefs": [
+        "architectureDecisions[0]",
+        "architectureDecisions[4]"
+      ],
+      "sliceRefs": [
+        "O23",
+        "O25"
+      ],
+      "verificationIds": [
+        "oracle-integration",
+        "oracle-boundary"
+      ]
+    },
+    {
+      "criterion": 5,
+      "decisionRefs": [
+        "architectureDecisions[5]",
+        "architectureDecisions[6]"
+      ],
+      "sliceRefs": [
+        "O24",
+        "O25"
+      ],
+      "verificationIds": [
+        "oracle-boundary",
+        "agentic-regression"
+      ]
+    }
+  ],
+  "primaryReferences": [
+    {
+      "title": "Hexagonal architecture",
+      "url": "https://alistair.cockburn.us/hexagonal-architecture/",
+      "use": "Application defines use-case semantics while driven adapters implement external IO behind explicit ports."
+    },
+    {
+      "title": "Node.js packages: package entry points",
+      "url": "https://nodejs.org/api/packages.html#package-entry-points",
+      "use": "Keep explicit exports and acyclic package entry points."
+    },
+    {
+      "title": "npm workspaces",
+      "url": "https://docs.npmjs.com/cli/using-npm/workspaces",
+      "use": "A bare workspace package import requires an install/link step; current CI does not provide it."
+    }
+  ]
 }
