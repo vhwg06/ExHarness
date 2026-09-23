@@ -55,7 +55,9 @@
       "packages/agentic-system/src/index.js",
       "packages/agentic-system/test/bb048-domain-execution-control.test.js",
       "docs/living/system/state.md",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+      "docs/blackboard/process/delivery-product-roadmap.md"
     ],
     "expectedNew": [
       "packages/agentic-system/src/openhands-runtime-adapter.js",
@@ -86,7 +88,9 @@
       "scripts/delivery/baseline/profile.json",
       "scripts/delivery/baseline/fixture/tasks.json",
       "scripts/delivery/baseline/fixture/acceptance.mjs",
-      "packages/agentic-system/test/bb066-domain-execution-integration.test.js"
+      "packages/agentic-system/test/bb066-domain-execution-integration.test.js",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+      "docs/blackboard/process/delivery-product-roadmap.md"
     ],
     "write": [
       "packages/agentic-system/src/domain-execution-control.js",
@@ -111,10 +115,10 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Controller + Node adapter contract. In packages/agentic-system/src/domain-execution-control.js add coding-agent-sdk descriptor compatibility and out-of-band AbortSignal forwarding without changing semantic input identity. Add packages/agentic-system/src/openhands-runtime-adapter.js and export it from index.js. Adapter must resolve immutable workspace/model refs, create one manifest/session per runtimeInvocationKey, publish content-addressed runtime evidence, map only canonical result fields, and throw OpenHandsRecoveryRequiredError for ambiguous dispatch. Exit: unit-adapter and domain-regression pass including collision, drift, cancellation, result-schema, evidence-digest and no-second-session negatives.",
-    "S2 — Pinned OpenHands driver + supply chain. Add scripts/delivery/runtime/pyproject.toml, uv.lock and openhands_driver.py pinned to software-agent-sdk/openhands-tools 1.49.4 at commit 3f47426e6af4681aacab735c781426aae58a3bac. Driver constructs only TerminalTool/FileEditorTool, binds LocalConversation to exact workspace/persistence/conversation ID, sends prompt once on dispatch, resumes with agent=None on recover, and emits one bounded JSON envelope. Exit: lock-audit proves exact resolved dependencies and unit-adapter rejects extra tools, workspace escape and unpinned identities.",
-    "S3 — Real NORM-01 dispatch/recovery probe. In scripts/delivery/bb-066-probe.mjs and test/delivery/bb-066-live-contract.test.mjs require BB-065 DONE and exact request-tracker-baseline-v1 paths, dispatch NORM-01 through production DomainExecutionController, fault only after at least one durable OpenHands event, assert the canonical attempt becomes RECOVERY_REQUIRED, restart Node/Python and recover the same conversation, then run protected scripts/delivery/baseline/fixture/acceptance.mjs against copied candidate source. Exit: live-probe records exact task/prompt/profile/tool/SDK/session/tree/change/evidence identities; any missing credential/prerequisite is explicit non-pass.",
-    "S4 — Candidate-bound evidence + consolidation. Update docs/living/system/state.md with the supported coding-agent strategy and limitations; bind exact candidate/tree, lock audit, unit/domain tests, live probe, independent acceptance, process/counterevidence and content-addressed refs to worker evidence for Jev. Exit: living-docs check proves the consolidated doc changed, every acceptance criterion maps to declared verification, and worker Jev receives no producer self-acceptance."
+    "S1 — Controller + Node adapter [REAL_DISPATCH, SAME_SESSION_RECOVERY, FAIL_CLOSED_RECOVERY, BOUNDED_TERMINATION, AUTHORITY_BOUNDARY; invariants 1–3]: extend DomainExecutionController only for coding-agent-sdk descriptor compatibility and out-of-band AbortSignal forwarding; add the OpenHands Node adapter and export. Preserve immutable ExecutionAttemptBinding/runtimeInvocationKey, one manifest/session per invocation, content-addressed evidence, completion/publication authority separation and RECOVERY_REQUIRED on ambiguous dispatch. Exit: unit-adapter + domain-regression cover collision, drift, cancellation, authority bypass, result schema/evidence digests and no-second-session.",
+    "S2 — Pinned OpenHands driver [REAL_DISPATCH, SAME_SESSION_RECOVERY, FAIL_CLOSED_RECOVERY, SUPPLY_CHAIN; invariant 2]: add pyproject.toml, uv.lock and openhands_driver.py pinned to SDK/tools 1.49.4 at commit 3f47426e6af4681aacab735c781426aae58a3bac. Construct only TerminalTool/FileEditorTool, bind workspace/persistence/conversation IDs from the immutable manifest, send NORM-01 once on dispatch and use agent=None on recover. Exit: lock-audit plus adapter tests reject extra tools, workspace escape, floating dependency/model/profile or identity drift.",
+    "S3 — Real fixture dispatch/recovery [REAL_DISPATCH, SAME_SESSION_RECOVERY, FAIL_CLOSED_RECOVERY, BOUNDED_TERMINATION; invariant 2]: require BB-065 DONE and exact request-tracker-baseline-v1; dispatch NORM-01 through production DomainExecutionController, interrupt only after durable OpenHands activity, assert RECOVERY_REQUIRED, restart Node/Python, recover the exact same conversation, and independently verify copied candidate source with protected BB-065 acceptance. Exit: live-probe binds task/prompt/profile/tool/SDK/session/tree/change/process/evidence identities and treats missing live prerequisites as non-pass.",
+    "S4 — Evidence + consolidation [REAL_DISPATCH, AUTHORITY_BOUNDARY, SUPPLY_CHAIN; invariants 1–3]: bind exact candidate/tree, runtime attestations, output/effect/trace/counterevidence refs, lock audit, unit/domain tests, live probe and protected acceptance into worker evidence; update Living state with supported strategy and limitations. Exit: Living Docs changed, every criterion maps to declared verification, OpenHands success remains only a runtime candidate and worker Jev receives exact candidate-bound evidence."
   ],
   "acceptanceCriteria": [
     {
@@ -503,7 +507,9 @@
       ],
       "sourceRefs": [
         "packages/agentic-system/src/domain-execution-control.js",
-        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+        "docs/blackboard/process/delivery-product-roadmap.md"
       ],
       "supportingPlanFields": [
         "selectedRuntimeEvidence",
@@ -516,16 +522,16 @@
           "match": "runtimeAdapter.dispatch({binding:x.binding,input:fr(input),runtimeInvocationKey:x.binding.runtimeBinding.runtimeInvocationKey})"
         },
         {
-          "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "const outputs=arr(result.outputArtifactRefs??[],\"outputArtifactRefs\")"
-        },
-        {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
           "match": "Starter intentionally accepts whitespace-only or >120-code-point titles and omits matching browser feedback. Task NORM-01 adds validation to create/update and UI; preserves valid CRUD and stored data. No pre-solved candidate is dispatched."
         },
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-          "match": "Trusted orchestrator creates separate agent and verifier directories; only fixture source and task prompt enter the tool container. Acceptance suite and manifests remain outside; copy candidate source to verifier directory and hash before and after observation. Changes to protected files, symlink escapes or tree drift invalidate the run."
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+          "match": "ExecutionAttemptBinding pins exact WorkContract, release receipt, policy, strategy, runtime/config/context refs before effects"
+        },
+        {
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "MIT coding-agent SDK with agent/server/workspace separation and Python, TypeScript and REST interfaces. First adapter candidate."
         }
       ]
     },
@@ -601,21 +607,27 @@
       ],
       "sourceRefs": [
         "packages/agentic-system/src/domain-execution-control.js",
-        "docs/living/system/state.md"
+        "docs/blackboard/artifacts/ready-implement-plan/BB-048.json"
       ],
-      "supportingPlanFields": [],
+      "supportingPlanFields": [
+        "selectedRuntimeEvidence"
+      ],
       "sourceAnchors": [
         {
-          "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "inv(typeof completionEvaluator?.evaluate===\"function\",\"completion evaluator required\")"
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+          "match": "ExecutionAttemptBinding pins exact WorkContract, release receipt, policy, strategy, runtime/config/context refs before effects"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+          "match": "strategy result is not runtime fact, runtime fact is not verification evidence, and execution success is not domain acceptance"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-048.json",
+          "match": "domain acceptance is distinct from authoritative domain publication"
         },
         {
           "ref": "packages/agentic-system/src/domain-execution-control.js",
           "match": "inv(typeof publicationGate?.withCurrentWriteAuthority===\"function\",\"publication write-authority guard required\")"
-        },
-        {
-          "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "inv(STRATEGY_KINDS.has(d.strategyKind),\"unsupported strategy kind\")"
         }
       ]
     }
