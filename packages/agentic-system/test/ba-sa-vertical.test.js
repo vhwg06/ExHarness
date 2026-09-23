@@ -43,6 +43,8 @@ test("BA obligation deterministically materializes SA work and SA policy alone c
   const strategy=defineExecutionStrategyDescriptor({strategyId:"sa-design",strategyVersion:"1",strategyKind:"application-core-loop",compatibleWorkloadTypes:["solution-design"],compatibleWorkContractVersions:[1],adapterRef:"sa-adapter:1",runtimeBindingMode:"IMMUTABLE_LOCAL",expectedRuntimeCodeRef:"git:sa-v1",contextRefs:[]});
   const strategyRef=await f.registry.putExecutionStrategyDescriptor(strategy);
   const policyPublisher=createDomainExecutionPolicyPublisher({policyAuthority:{async verifyExecutionPolicyPublisher({publisher}){assert.equal(publisher,"sa-admin");return {authorityRef:"sa-policy-authority"};}},artifactRegistry:f.registry,executionPolicyStore:policyStore});
+  await assert.rejects(policyPublisher.publish({publisher:{identity:"sa-worker",principalRef:"principal:SA"},policy:{policyId:executionPolicySubjectKey("SA","solution-design"),domain:"SA",workloadType:"solution-design",generation:1,strategyRef,compatibleWorkContractVersions:[1]}}));
+  assert.equal(await policyStore.current(executionPolicySubjectKey("SA","solution-design")),null);
   await policyPublisher.publish({publisher:"sa-admin",policy:{policyId:executionPolicySubjectKey("SA","solution-design"),domain:"SA",workloadType:"solution-design",generation:1,strategyRef,compatibleWorkContractVersions:[1]}});
   const architecture=productRevision(claim("architecture","design","SA"));
   await f.artifactStore.put("semantic-claim",architecture.value);
@@ -72,4 +74,46 @@ test("semantic invalidation fences exact claimed obligation work and preserves u
   await f.invalidator.invalidate({subjectKeys:[productRevision(b).subjectKey],status:"REVOKED",reasonRef:"revocation:test"});
   await assert.rejects(f.materializer.materializeCrossDomain({authorizationId:"authorization:list-design",obligationRef:productRevision(b).ref}),/not ACTIVE/);
   assert.equal((await f.orchestrator.readBlackboard()).items.find(i=>i.id===wb.item.id).status,"BLOCKED");
+});
+
+test("STALE, REVOKED and SUPERSEDED obligations cannot create new Board work",async t=>{
+  const f=await boardFixture(t);
+  for(const status of ["STALE","REVOKED","SUPERSEDED"]){
+    const requirement=claim("requirement-"+status);
+    await f.publish([requirement]);
+    const original=obligation(requirement,{obligationKey:"design-"+status});
+    await f.publish([original],{inputs:[productRevision(requirement).ref]});
+    if(status==="SUPERSEDED"){
+      const changed=obligation(requirement,{obligationKey:original.obligationKey,requiredOutcome:"Revised design"});
+      await f.publish([changed],{inputs:[productRevision(requirement).ref]});
+    }else await f.lineage.invalidate([productRevision(original).subjectKey],{status,reasonRef:"test:"+status});
+    const before=(await f.orchestrator.readBlackboard()).items.length;
+    await assert.rejects(f.materialize(original,"authorization:"+status),/not ACTIVE/);
+    assert.equal((await f.orchestrator.readBlackboard()).items.length,before);
+    const snapshot=await f.lineage.snapshot();
+    if(status==="SUPERSEDED")assert.ok(snapshot.transitions.some(entry=>entry.subjectKey===productRevision(original).subjectKey&&entry.next.status==="SUPERSEDED"));
+    else assert.equal(snapshot.heads[productRevision(original).subjectKey].status,status);
+  }
+});
+
+test("product lineage changes do not create Board dependencies, and Board dependencies are not semantic edges",async t=>{
+  const f=await boardFixture(t),detail=claim("detail"),list=claim("list");
+  await f.publish([detail,list]);
+  const a=obligation(detail),b=obligation(list,{obligationKey:"list-design"});
+  await f.publish([a],{inputs:[productRevision(detail).ref]});
+  await f.publish([b],{inputs:[productRevision(list).ref]});
+  const wa=await f.materialize(a),wb=await f.materialize(b);
+  const boardBefore=(await f.orchestrator.readBlackboard()).items.map(item=>({id:item.id,dependsOn:item.dependsOn}));
+  const before=await f.lineage.snapshot();
+  const design=claim("detail-design","v1","SA");
+  await f.publish([design],{domain:"SA",inputs:[productRevision(detail).ref]});
+  const after=await f.lineage.snapshot();
+  assert.ok(after.edges.length>before.edges.length);
+  assert.deepEqual((await f.orchestrator.readBlackboard()).items.map(item=>({id:item.id,dependsOn:item.dependsOn})),boardBefore);
+  assert.ok(boardBefore.some(item=>item.id===wa.item.id&&item.dependsOn.length));
+  const impacted=await f.lineage.invalidate([productRevision(detail).subjectKey],{reasonRef:"test:detail"});
+  assert.ok(impacted.includes(productRevision(a).subjectKey));
+  assert.ok(!impacted.includes(productRevision(b).subjectKey));
+  assert.equal((await f.lineage.assertCurrent(productRevision(b).ref)).head.status,"ACTIVE");
+  assert.deepEqual((await f.orchestrator.readBlackboard()).items.find(item=>item.id===wb.item.id).dependsOn,wb.item.dependsOn);
 });

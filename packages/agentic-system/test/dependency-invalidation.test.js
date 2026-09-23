@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import {join} from "node:path";
 import {fixture,claim,obligation} from "./cross-domain-obligation.test.js";
-import {productRevision,reverseSemanticClosure} from "../src/product-lineage.js";
+import {createProductLineageStore,productRevision,reverseSemanticClosure} from "../src/product-lineage.js";
 
 test("exact reverse-transitive invalidation leaves unrelated sibling current and preserves history",async t=>{
   const f=await fixture(t),detail=claim("detail"),list=claim("list");
@@ -19,4 +20,10 @@ test("exact reverse-transitive invalidation leaves unrelated sibling current and
   assert.deepEqual(await f.lineage.resolve(productRevision(detail).ref),productRevision(detail).value);
   assert.deepEqual(reverseSemanticClosure(await f.lineage.snapshotAt(await f.lineage.journalRef()),[productRevision(detail).subjectKey]),keys);
   assert.deepEqual(after.edges,before.edges);
+  // The fresh process has no reverse-impact index: closure is rebuilt solely
+  // from the immutable journal selected by the original store's root.
+  const fresh=createProductLineageStore({path:join(f.dir,"empty-reverse-index.json"),artifactStore:f.artifactStore});
+  const rebuilt=await fresh.snapshotAt(await f.lineage.journalRef());
+  assert.deepEqual(rebuilt,after);
+  assert.deepEqual(reverseSemanticClosure(rebuilt,[productRevision(detail).subjectKey]),keys);
 });
