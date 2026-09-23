@@ -319,44 +319,24 @@
         "INV-2"
       ],
       "planElements": [
-        "O11",
-        "O12",
-        "O14"
+        "O11"
       ],
       "verificationIds": [
-        "oracle-unit",
-        "oracle-integration",
-        "oracle-architecture"
+        "oracle-unit"
       ],
       "decisionIndexes": [
-        0,
-        1,
-        2,
-        3,
-        7
+        0
       ],
       "sourceRefs": [
-        "packages/agentic-system/src/oracle.js",
-        "packages/agentic-system/src/index.js",
-        "docs/living/system/oracle/state.md"
+        "packages/agentic-system/src/oracle.js"
       ],
       "sourceAnchors": [
         {
           "ref": "packages/agentic-system/src/oracle.js",
           "match": "import { BackendContextSchema, parseBackendWorkOrder } from \"./contracts.js\";"
-        },
-        {
-          "ref": "packages/agentic-system/src/index.js",
-          "match": "} from \"./oracle.js\";"
-        },
-        {
-          "ref": "docs/living/system/oracle/state.md",
-          "match": "`packages/agentic-system/src/oracle.js` exposes two concrete resolution functions:"
         }
       ],
-      "supportingPlanFields": [
-        "sourceSeams"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Backend and QA concrete context resolution behavior remains semantically unchanged after extraction.",
@@ -374,23 +354,16 @@
       ],
       "decisionIndexes": [
         2,
-        4,
         5
       ],
       "sourceRefs": [
         "packages/agentic-system/src/oracle.js",
-        "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
-        "packages/agentic-system/src/backend-application.js",
-        "packages/agentic-system/src/qa-application.js"
+        "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js"
       ],
       "sourceAnchors": [
         {
           "ref": "packages/agentic-system/src/oracle.js",
           "match": "const order = parseBackendWorkOrder(rawOrder);"
-        },
-        {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "const order = parseQaWorkOrder(rawOrder);"
         },
         {
           "ref": "packages/agentic-system/src/oracle.js",
@@ -401,9 +374,7 @@
           "match": "async function expectOracleManifestError(promiseFactory, code) {"
         }
       ],
-      "supportingPlanFields": [
-        "negativeVerificationCases"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "No generic resolver/provider framework is required unless separate evidence proves pressure beyond the two concrete source classes.",
@@ -411,35 +382,24 @@
         "AC-3"
       ],
       "planElements": [
-        "O11",
-        "O14"
+        "O11"
       ],
       "verificationIds": [
-        "oracle-unit",
-        "oracle-architecture"
+        "oracle-unit"
       ],
       "decisionIndexes": [
-        1,
-        7
+        1
       ],
       "sourceRefs": [
-        "packages/agentic-system/src/oracle.js",
-        "docs/living/system/oracle/architecture.md",
-        "docs/blackboard/process/oracle-reconciliation-phase.md"
+        "packages/agentic-system/src/oracle.js"
       ],
       "sourceAnchors": [
         {
           "ref": "docs/living/system/oracle/architecture.md",
           "match": "The two implemented source classes intentionally remain distinct"
-        },
-        {
-          "ref": "docs/blackboard/process/oracle-reconciliation-phase.md",
-          "match": "It is intentionally larger than one file move or one implementation task."
         }
       ],
-      "supportingPlanFields": [
-        "outOfScope"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Dependency graph has no application implementation package owning Oracle infrastructure source.",
@@ -449,24 +409,19 @@
       ],
       "planElements": [
         "O11",
-        "O12",
-        "O14"
+        "O12"
       ],
       "verificationIds": [
         "oracle-architecture"
       ],
       "decisionIndexes": [
-        0,
         1,
-        2,
-        3,
-        7
+        3
       ],
       "sourceRefs": [
         "packages/agentic-system/src/oracle.js",
         "packages/agentic-system/package.json",
-        "package.json",
-        "docs/living/system/oracle/architecture.md"
+        "package.json"
       ],
       "sourceAnchors": [
         {
@@ -480,16 +435,9 @@
         {
           "ref": "package.json",
           "match": "\"packages/*\""
-        },
-        {
-          "ref": "docs/living/system/oracle/architecture.md",
-          "match": "Oracle is the concrete infrastructure boundary"
         }
       ],
-      "supportingPlanFields": [
-        "sourceSeams",
-        "negativeVerificationCases"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Migration plan names exact imports/exports/tests/docs that move or remain and a worker can implement it without rediscovering ownership.",
@@ -499,53 +447,24 @@
         "INV-4"
       ],
       "planElements": [
-        "O11",
-        "O12",
-        "O13",
-        "O14"
+        "O11"
       ],
       "verificationIds": [
-        "oracle-unit",
-        "oracle-integration",
-        "oracle-architecture",
-        "agentic-regression"
+        "oracle-unit"
       ],
       "decisionIndexes": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
+        0
       ],
       "sourceRefs": [
-        "packages/agentic-system/src/oracle.js",
-        "packages/agentic-system/src/backend-application.js",
-        "packages/agentic-system/src/qa-application.js",
-        "packages/agentic-system/src/index.js"
+        "packages/agentic-system/src/oracle.js"
       ],
       "sourceAnchors": [
         {
           "ref": "packages/agentic-system/src/backend-application.js",
           "match": "import { resolveBackendContext } from \"./oracle.js\";"
-        },
-        {
-          "ref": "packages/agentic-system/src/qa-application.js",
-          "match": "import { resolveQaContext } from \"./oracle.js\";"
-        },
-        {
-          "ref": "packages/agentic-system/src/index.js",
-          "match": "} from \"./oracle.js\";"
         }
       ],
-      "supportingPlanFields": [
-        "sourceSeams",
-        "sourceScope",
-        "verificationPlan",
-        "livingDocs"
-      ]
+      "supportingPlanFields": []
     }
   ]
 }
