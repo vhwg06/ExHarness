@@ -474,9 +474,7 @@
     {
       "objectiveCriterion": "A real agent edits the declared fixture through runtimeAdapter.dispatch and reports exact execution and source evidence.",
       "criterionIds": [
-        "REAL_DISPATCH",
-        "SUPPLY_CHAIN",
-        "AUTHORITY_BOUNDARY"
+        "REAL_DISPATCH"
       ],
       "planElements": [
         "S1",
@@ -486,22 +484,16 @@
       ],
       "verificationIds": [
         "unit-adapter",
-        "lock-audit",
-        "live-probe",
-        "domain-regression"
+        "live-probe"
       ],
       "decisionIndexes": [
         0,
-        2,
         3,
         4,
         5,
         6,
-        7,
         8,
-        9,
-        10,
-        12
+        10
       ],
       "sourceRefs": [
         "packages/agentic-system/src/domain-execution-control.js",
@@ -865,7 +857,14 @@
       "domain-regression",
       "lock-audit",
       "live-probe"
-    ]
+    ],
+    "atomicCoverage": {
+      "realAgent": "Pinned OpenHands Agent uses TerminalTool/FileEditorTool; live-probe is credential-bearing and missing provider credentials is a hard non-pass, never a mock success.",
+      "throughDispatch": "Production DomainExecutionController calls runtimeAdapter.dispatch with the immutable ExecutionAttemptBinding and runtimeInvocationKey; unit-adapter verifies the same contract.",
+      "editsDeclaredFixture": "Exact BB-065 NORM-01 is resolved only after BB-065 DONE; agent writes are restricted to the three declared fixture source files, with protected acceptance outside the agent workspace.",
+      "exactExecutionEvidence": "Live evidence must bind executionAttemptId, runtimeInvocationId/runtimeInvocationKey, conversation UUID, SDK/driver/model/profile/toolset hashes, process exit/signal/timestamps, effect/trace/counterevidence refs.",
+      "exactSourceEvidence": "Live evidence must bind starting and resulting workspace tree hashes, sorted changed paths and a content-addressed candidate-source ref; protected verifier hashes before/after and independently checks the candidate."
+    }
   },
   "objective2Evidence": {
     "inFlightPinning": "Accepted BB-048 contract requires ExecutionAttemptHead lookup before policy resolution and immutable ExecutionAttemptBinding pins release receipt, policy, strategy and runtime/config/context refs before effects; a later policy promotion cannot rewrite the active binding.",
