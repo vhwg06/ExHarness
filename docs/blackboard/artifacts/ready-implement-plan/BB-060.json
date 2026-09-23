@@ -41,8 +41,9 @@
     "At baseline 7a266fc, packages/agentic-system/src/oracle.js owns both loops, imports ./contracts.js and ./qa-contracts.js, and is reached by backend-application.js, qa-application.js, src/index.js and scripts/artifact-manifest-eval.mjs. This is the physical ownership debt; packages/oracle does not yet exist.",
     "Create packages/oracle as a private ESM workspace package with src/oracle.js and src/index.js. Move only the concrete repositoryReader.readFile and artifactReader.readArtifact iteration, error wrapping, sourceRef copying and QA APPLICATION_ARTIFACT provenance assembly there. The infrastructure package imports no agentic-system/core module, defines no work-order/context schemas, and owns no lifecycle, scheduling or acceptance decision.",
     "Keep packages/agentic-system/src/oracle.js as a thin compatibility/application semantic adapter: parseBackendWorkOrder/parseQaWorkOrder before any read, call the two concrete package functions with the parsed order and injected reader, then BackendContextSchema.parse/QaContextSchema.parse on the returned shape. Preserve resolveBackendContext and resolveQaContext names, signatures, index exports and direct relative-path callers. There is no duplicate read loop in the adapter.",
-    "Use an explicit relative ESM import ../../oracle/src/index.js from the existing adapter for this no-install repository test workflow; npm workspace auto linking requires npm install and the current test.yml runs npm run verify without an install step. packages/oracle/package.json declares its own private ESM export; BB-061 owns the later decision on public package specifier/dependency wiring. Do not introduce a reverse Oracle -> Application import or a circular package edge.",
+    "Declare packages/agentic-system/package.json dependencies.@exharness/oracle as file:../oracle so the package graph explicitly records Application -> Oracle, never the reverse. Keep an explicit relative ESM import ../../oracle/src/index.js in the compatibility adapter for the current no-install CI workflow (test.yml executes npm run verify directly); the private Oracle package exports its concrete API. BB-061 will decide whether/when to switch to package-specifier imports and install/lock wiring. Node/npm package metadata and the actual source import graph must both point Application -> Oracle, with no Oracle import from Application/Core.",
     "Maintain exact observable contract: parse invalid work orders before invoking a reader; demand readFile/readArtifact methods before iterating; read each declared item in order; preserve request field names/null path and sourceRef; wrap reader exceptions with the existing Backend or QA error text and cause; preserve schema failure for malformed/absent content or sourceRef. The application remains owner of parsers and schema checks; Oracle assembles only requested data.",
+    "Preservation matrix at baseline 7a266fc: (a) parseBackendWorkOrder/parseQaWorkOrder rejects invalid order before any reader call; (b) reader method guard throws the exact existing TypeError; (c) Backend readFile receives repositoryRef/revision/path in requiredFiles order and wraps failures with path, ref, revision and cause; (d) QA readArtifact receives ref, path|null, upstream workOrderId/revision/acceptanceDecision in requiredArtifacts order and wraps failures with ref and cause; (e) sourceRef and content pass unchanged to application schemas, and QA adds APPLICATION_ARTIFACT producerWorkOrderId/acceptanceDecision provenance; (f) malformed/absent sourceRef/content still fails the same ContextSchema; (g) optional manifest reader remains injected before resolution and rejects manifest/provenance/digest mismatch; (h) durable Backend->QA consumes exact manifest ref after QA_PENDING. Each row must have before/after characterization evidence, not only a happy-path result.",
     "Do not move createManifestArtifactReader, manifest store or captureAcceptedBackendArtifactManifest from packages/agentic-system/src/artifact-manifest.js in BB-060. That application-owned accepted-artifact/provenance validation happens before the injected reader reaches Oracle; BB-062 and BB-063 own concrete adapter topology and durable migration review.",
     "Mark this as planned extraction only. After worker delivery update docs/living/system/oracle/{architecture,state,semantics,workflow}.md and affected Agentic Application docs to reflect observed source placement. Architecture tests should reject Oracle loops left in agentic-system or reverse package imports; BB-064 later owns the full end-to-end phase closure guard."
   ],
@@ -64,7 +65,8 @@
       "docs/living/system/oracle/state.md",
       "docs/living/system/oracle/semantics.md",
       "docs/living/system/oracle/workflow.md",
-      "docs/blackboard/process/oracle-reconciliation-phase.md"
+      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js"
     ],
     "expectedNew": [
       "packages/oracle/package.json",
@@ -97,7 +99,8 @@
       "packages/agentic-system/test/oracle-integration.test.js",
       "test/oracle-architecture-boundary.test.mjs",
       "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/**"
+      "docs/living/system/agentic-application/**",
+      "packages/agentic-system/package.json"
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/objective/**",
@@ -108,10 +111,10 @@
     ]
   },
   "implementationSlices": [
-    "O11 — Add private ESM packages/oracle/package.json (name @exharness/oracle, exports . -> ./src/index.js) and src/index.js re-exporting the two concrete pull functions. Implement pullBackendFiles(parsedOrder,{repositoryReader}) and pullQaArtifacts(parsedOrder,{artifactReader}) in src/oracle.js, moving only the two existing read loops plus reader method check, catch/cause and QA provenance assembly. Inputs are already parsed by the caller; output is a plain object with exactly the preexisting repository/files or upstream/artifacts/acceptanceCriteria shape. No Oracle import from agentic-system.",
+    "O11 — Add private ESM packages/oracle/package.json (name @exharness/oracle, exports . -> ./src/index.js) and src/index.js re-exporting the two concrete pull functions. Declare the app's file:../oracle dependency in packages/agentic-system/package.json. Implement pullBackendFiles(parsedOrder,{repositoryReader}) and pullQaArtifacts(parsedOrder,{artifactReader}) in src/oracle.js, moving only the two existing read loops plus reader method check, catch/cause and QA provenance assembly. Inputs are already parsed by the caller; output is a plain object with exactly the preexisting repository/files or upstream/artifacts/acceptanceCriteria shape. No Oracle import from agentic-system.",
     "O12 — Replace packages/agentic-system/src/oracle.js with two small application adapters. Each parses the raw order first, calls its corresponding infrastructure pull via ../../oracle/src/index.js, and validates the returned object with the existing application-owned ContextSchema.parse. Keep backend-application.js, qa-application.js, index.js and scripts/artifact-manifest-eval.mjs imports and observable exported APIs unchanged. Keep artifact-manifest.js above the injected reader and outside the new package.",
-    "O13 — Add packages/oracle/test/oracle.test.js and packages/agentic-system/test/oracle-integration.test.js. Cover read ordering and exact reader arguments; invalid work order and missing reader with zero IO; sourceRef and accepted QA provenance; reader rejection with error message and original cause; malformed bytes/sourceRef fail through the same application schemas; manifest-protected QA still fails on producer/revision/acceptance/content mismatch.",
-    "O14 — Add test/oracle-architecture-boundary.test.mjs with a reusable placement/import scan and negative fixtures for an Oracle read loop copied back into agentic-system/oracle.js and for an Oracle -> agentic-system or Core import. Run concrete unit/integration/regression commands; update current Oracle and affected application Living Docs with actual new physical topology. This slice establishes a BB-060 placement check, while BB-064 independently tests full phase drift and closure."
+    "O13 — Add packages/oracle/test/oracle.test.js and packages/agentic-system/test/oracle-integration.test.js with a before/after golden characterization matrix against baseline 7a266fc oracle.js: parse invalid order before IO; missing reader; exact Backend and QA reader arguments/order; sourceRef/content and QA provenance; wrapped error message and original cause; missing/malformed content or sourceRef schema failures; optional manifest wrong producer/revision/acceptance/content rejection; durable QA_PENDING recovery on same manifest ref. Keep existing BB-043 and BB-045 tests. The fixtures compare value and failure shape at the exported resolver APIs, not solely the new pull functions.",
+    "O14 — Add test/oracle-architecture-boundary.test.mjs with a reusable placement/import scan and negative fixtures for an Oracle read loop copied back into agentic-system/oracle.js; an Oracle -> agentic-system/Core import; a missing app package dependency or a reverse package dependency; and application schema imports from Oracle. Check both package.json dependency and actual ESM import directions. Run concrete unit/integration/regression commands; update current Oracle and affected application Living Docs with actual new physical topology. This slice establishes a BB-060 placement check, while BB-064 independently tests full phase drift and closure."
   ],
   "acceptanceCriteria": [
     {
@@ -247,7 +250,7 @@
     },
     {
       "id": "oracle-integration",
-      "command": "node --test packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/durable-backend-qa.test.js"
+      "command": "node --test packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js"
     },
     {
       "id": "oracle-architecture",
@@ -265,7 +268,9 @@
     "QA manifest reader returns wrong producer/revision/acceptance or tampered content; Oracle must pass no fabricated artifact and the existing manifest error remains as cause.",
     "A concrete read loop remains in agentic-system/src/oracle.js or new Oracle source imports agentic-system/Core; architecture guard must fail on a dedicated negative fixture.",
     "A new generic Resolver/provider registry, scheduling or acceptance import enters packages/oracle without a corresponding concrete objective; plan disallows this scope.",
-    "Package split edits application contracts or creates a package-name import requiring npm install while the existing CI runs verification without install; execution must fail until compatible."
+    "Package split edits application contracts or creates a package-name import requiring npm install while the existing CI runs verification without install; execution must fail until compatible.",
+    "The app package manifest omits its file:../oracle dependency, or Oracle's package manifest depends on agentic-system; architecture guard must reject both even if relative imports make tests pass.",
+    "The source migration reorders reads, loses original cause, omits accepted QA producer/decision provenance, or changes return/error shapes for the exported resolver API; before/after characterization matrix must fail."
   ],
   "laneContracts": [
     {
