@@ -28,6 +28,8 @@ for(const required of [
 }
 assertWorkGraph(readWorkGraph("docs/blackboard/work-graph.json"),readComponentRegistry("docs/blackboard/component-registry.json"));
 verifyStateProjection("docs/blackboard/state.md");
+const blackboardState=fs.readFileSync(path.join(root,"docs/blackboard/state.md"),"utf8");
+if(blackboardState.includes("## Jev decisions"))fail("Jev evaluator transcript leaked into routing state projection");
 
 const requiredTaskArtifacts=[
   "docs/blackboard/artifacts/objective/BB-048.json",
