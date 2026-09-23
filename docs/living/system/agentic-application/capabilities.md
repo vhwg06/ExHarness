@@ -162,3 +162,13 @@ Application must not turn Oracle into workflow authority or Core into project li
 **Failure semantics:** lifecycle change, writer revoke, duplicate recovery publication, or transition-revision mismatch fails closed or converges to the already-committed canonical result.
 
 **Does not imply:** new organizational authority, cross-domain continuation, or a generic transactional workflow engine.
+
+## A17 — Cross-domain obligations and selective semantic currentness
+
+The Integration C publication adapter authorizes semantic kinds and obligation kind/target pairs against a separately published, CAS-headed domain write policy. Accepted BA requirement revisions can issue immutable SA solution-design obligations. `materializeCrossDomain` binds the exact ACTIVE revision and its publication receipt to a deterministic SA work contract under existing materialization authorization. SA execution uses its own execution policy after claim/release.
+
+Semantic revisions, obligations, accepted derivation edges and currentness transitions persist in a content-addressed journal. One CAS journal root commits each publication and its selective invalidation together. Superseding a subject follows exact reverse-transitive product lineage; unrelated sibling subjects remain current. Consumed heads are observed before receipt publication and checked after commit, with drift reconciling the dependent STALE. A fresh reader reconstructs the same heads and edges from the journal root without an impact cache.
+
+The invalidation controller blocks affected eligible work and routes claimed work through canonical organization invalidation and release fencing. Claim/release, execution entry and publication also reject non-current obligation revisions. Reconciliation can be rerun after interruption using durable work-contract provenance. Product lineage does not add Board dependencies or choose workers, runtimes, strategies or priorities.
+
+Evidence: `cross-domain-obligation.test.js`, `dependency-invalidation.test.js`, `lineage-race.test.js`, and `ba-sa-vertical.test.js`. Autonomous activation and global product closure remain outside this capability.

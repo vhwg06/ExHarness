@@ -206,7 +206,13 @@ ORGANIZATION_WORK_CONTRACT + CLAIM_RELEASE_RECEIPT
  -> EXECUTION_JUDGMENT_BUNDLE
 ```
 
-The current concrete proof surface is BUSINESS_ANALYSIS-owned work only. No global execution scheduler, cross-domain dispatcher or ProductStateProjection is introduced.
+The concrete proof surface includes accepted BA requirement publication, authorized SA solution-design obligation materialization, and SA execution through its own execution policy. No global execution scheduler, cross-domain dispatcher or ProductStateProjection is introduced.
+
+## Integration C semantic currentness
+
+`domain-write-authority.js` supplies the production domain publication adapter and separate CAS-headed writer policy. `cross-domain-obligation.js` defines normalized immutable WHAT obligations. `product-lineage.js` persists accepted semantic revisions, edges and head transitions behind an atomic journal root. `dependency-invalidation.js` reconciles non-current obligations with exact Board work and canonical claim-release fencing.
+
+The focused Integration C tests cover authorization rejection, immutable/idempotent obligation revisions, fresh journal reconstruction, selective reverse-transitive invalidation, an interleaved BA/SA publication race, deterministic SA materialization, SA-owned HOW selection, and affected-work release fencing. Integration C does not implement autonomous domain activation; that remains a separate work item. These are implementation facts; delivery status is owned by the outer Blackboard's Jev and exact-main gates.
 
 ## Domain execution post-merge repair
 

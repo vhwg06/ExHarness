@@ -51,6 +51,16 @@ async function strategy({artifactRegistry,p,contract,runtime}){const raw=await a
 async function transition(reg,{workId,id,from,to,reason,decisionRef,observedHeadRevision}){return reg.putExecutionAttemptTransition(fr({kind:"EXECUTION_ATTEMPT_TRANSITION",version:1,workId,fromAttemptId:from==="ABSENT"?null:id,toAttemptId:id,fromStatus:from,toStatus:to,reasonKind:reason,decisionRef:txt(decisionRef,"transition decision ref"),observedHeadRevision:observedHeadRevision??null}));}
 
 export function createDomainExecutionController({claimController,claimReleaseStore,organizationArtifactRegistry,artifactRegistry,executionPolicyStore,executionAttemptStore,runtimeAdapter,completionEvaluator,publicationGate}){
+  const attemptCas=executionAttemptStore.compareAndSwap.bind(executionAttemptStore);
+  executionAttemptStore={...executionAttemptStore,async compareAndSwap(...args){
+    for(let attempt=0;;attempt++){
+      try{return await attemptCas(...args);}
+      catch(error){
+        if(attempt>=100||error.message!=="CAS head store mutation already in progress")throw error;
+        await new Promise(resolve=>setTimeout(resolve,2));
+      }
+    }
+  }};
   inv(typeof claimController?.assertExecutable==="function","claim execution gate required");
   inv(typeof claimController?.withExecutablePublicationGuard==="function","claim publication guard required");
   inv(typeof completionEvaluator?.evaluate==="function","completion evaluator required");
@@ -108,7 +118,7 @@ export function createDomainExecutionController({claimController,claimReleaseSto
             completionDecision:decision,
             completionDecisionRef:decisionRef,
             lifecycleObservation,
-            writeAuthorityObservation:fr({authorityRef:writeAuthorityRef,revision:writeAuthorityRevision})
+            writeAuthorityObservation
           });
           return {p,writeAuthorityRef,writeAuthorityRevision,lifecycleObservation};
         });
@@ -134,6 +144,7 @@ export function createDomainExecutionController({claimController,claimReleaseSto
         publicationStoreRevision:txt(p.publicationStoreRevision,"publication revision")
       }));
     }
+    if(publicationRef&&publicationGate.reconcileWork)await publicationGate.reconcileWork();
     const cur=await executionAttemptStore.current(x.key);inv(cur?.value?.executionAttemptId===x.binding.executionAttemptId,"attempt changed before terminal commit");const tr=await transition(artifactRegistry,{workId:itemId,id:x.binding.executionAttemptId,from:cur.value.status,to:ExecutionAttemptStatus.TERMINAL,reason:a.verdict==="ACCEPT"?(recovery?"RECOVERY_RESOLVED":"TERMINAL_SUCCESS"):"TERMINAL_FAILURE",decisionRef,observedHeadRevision:cur.revision}),trs=[...cur.value.transitionRefs,tr],bundle=fr({kind:"EXECUTION_JUDGMENT_BUNDLE",version:1,subject:{workId:itemId,executionAttemptId:x.binding.executionAttemptId},pins:{workContract:pin(s.contract.contractRef),claimReleaseReceipt:pin(x.binding.claimReleaseReceiptRef),executionPolicy:pin(x.binding.executionPolicyRef),executionStrategy:pin(x.binding.executionStrategyRef),binding:pin(x.bindingRef),runtimeAttestations:[pin(attRef)],outcome:pin(outcomeRef),completionDecision:pin(decisionRef),publicationReceipt:publicationRef?pin(publicationRef):null,transitionHistory:trs.map(pin)},evidenceRefs:[...new Set([...outcome.verificationCandidateRefs,...criteria.flatMap(c=>c.evidenceRefs),attRef,...outcome.effectRefs,...decision.counterevidenceRefs])],telemetryLinks:{traceRefs:att.traceRefs},counterevidenceRefs:decision.counterevidenceRefs,currentnessModes:{claimReleaseReceipt:"EXECUTION_TIME_PIN",executionPolicy:"EXECUTION_TIME_PIN",binding:"REVIEW_INTEGRITY_PIN",runtimeAttestations:"REVIEW_INTEGRITY_PIN",outcome:"REVIEW_INTEGRITY_PIN",completionDecision:"REVIEW_INTEGRITY_PIN",publicationReceipt:"REVIEW_INTEGRITY_PIN",transitionHistory:"REVIEW_INTEGRITY_PIN"}}),bundleRef=await artifactRegistry.putExecutionJudgmentBundle(bundle),terminalHead={...cur.value,status:ExecutionAttemptStatus.TERMINAL,transitionRefs:trs,outcomeRef,completionDecisionRef:decisionRef,publicationReceiptRef:publicationRef,judgmentBundleRef:bundleRef};if(await executionAttemptStore.compareAndSwap(x.key,cur.revision,terminalHead))return fr({state:ExecutionAttemptStatus.TERMINAL,replayed:false,recovered:recovery,executionAttemptId:x.binding.executionAttemptId,bindingRef:x.bindingRef,outcomeRef,completionDecisionRef:decisionRef,publicationReceiptRef:publicationRef,judgmentBundleRef:bundleRef});
     const winner=await executionAttemptStore.current(x.key);
     inv(winner?.value?.status===ExecutionAttemptStatus.TERMINAL&&winner.value.executionAttemptId===x.binding.executionAttemptId,"terminal attempt CAS conflict");

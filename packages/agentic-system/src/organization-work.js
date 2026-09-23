@@ -68,6 +68,11 @@ export function defineOrganizationWorkContract(raw){
     expectedOutputRefs:textArray(raw.expectedOutputRefs??[],"OrganizationWorkContract.expectedOutputRefs"),
     acceptanceRefs:textArray(raw.acceptanceRefs??[],"OrganizationWorkContract.acceptanceRefs",{min:1})
   };
+  if(raw.crossDomainObligationRef!=null){
+    contract.crossDomainObligationRef=requireText(raw.crossDomainObligationRef,"crossDomainObligationRef");
+    contract.crossDomainObligationSubjectKey=requireText(raw.crossDomainObligationSubjectKey,"crossDomainObligationSubjectKey");
+    contract.crossDomainPublicationReceiptRef=requireText(raw.crossDomainPublicationReceiptRef,"crossDomainPublicationReceiptRef");
+  }
   invariant(
     Number.isInteger(contract.materializationAuthorizationGeneration)&&contract.materializationAuthorizationGeneration>0,
     "OrganizationWorkContract.materializationAuthorizationGeneration must be positive"
@@ -160,7 +165,7 @@ function materializationReceipt(contract){
   });
 }
 
-export function createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore,artifactRegistry}){
+export function createOrganizationWorkMaterializer({orchestrator,materializationAuthorizationStore,artifactRegistry,lineage}){
   invariant(orchestrator&&typeof orchestrator.materializeAcceptedWork==="function","materializer requires orchestrator.materializeAcceptedWork");
   invariant(orchestrator&&typeof orchestrator.blockOrganizationMaterialization==="function","materializer requires orchestrator.blockOrganizationMaterialization");
   invariant(orchestrator&&typeof orchestrator.readBlackboard==="function","materializer requires orchestrator.readBlackboard");
@@ -169,7 +174,26 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
   invariant(typeof artifactRegistry.putMaterializationReceipt==="function","materializer requires materialization receipt registry");
 
   return Object.freeze({
+    async materializeCrossDomain({authorizationId,obligationRef}){
+      invariant(lineage,"cross-domain materialization requires semantic currentness");
+      const current=await lineage.assertCurrent(obligationRef),o=current.artifact;
+      invariant(o.kind==="CROSS_DOMAIN_OBLIGATION","cross-domain obligation required");
+      const publication=await artifactRegistry.resolveDomainPublicationReceipt(current.head.publicationReceiptRef);
+      invariant(publication?.publishedClaimRefs.includes(obligationRef),"obligation issuance receipt mismatch");
+      const project=organizationProjectBindingFromBoard(await orchestrator.readBlackboard());
+      invariant(o.projectId===project.projectId&&o.rootIntentId===project.rootIntentId,"obligation project mismatch");
+      return this.materialize({authorizationId,decision:{ref:publication.completionDecisionRef,obligationKeys:[o.obligationKey]},obligation:{key:o.obligationKey,sliceId:o.obligationKey,owningDomain:o.targetDomain,workloadType:o.workloadType,summary:o.requiredOutcome,requiredArtifactRefs:[obligationRef,...o.requiredArtifactRefs],expectedArtifactKind:o.expectedArtifactKind,acceptanceRefs:o.acceptanceRefs,crossDomainObligationRef:obligationRef,crossDomainObligationSubjectKey:current.subjectKey,crossDomainPublicationReceiptRef:current.head.publicationReceiptRef}});
+    },
     async materialize({authorizationId,decision,obligation}){
+      if(obligation?.crossDomainObligationRef){
+        invariant(lineage,"cross-domain materialization requires semantic currentness");
+        const current=await lineage.assertCurrent(obligation.crossDomainObligationRef),o=current.artifact;
+        invariant(o.kind==="CROSS_DOMAIN_OBLIGATION"&&current.subjectKey===obligation.crossDomainObligationSubjectKey&&current.head.publicationReceiptRef===obligation.crossDomainPublicationReceiptRef,"obligation binding mismatch");
+        invariant(o.targetDomain===obligation.owningDomain&&o.workloadType===obligation.workloadType&&o.obligationKey===obligation.key&&o.requiredOutcome===obligation.summary&&o.expectedArtifactKind===obligation.expectedArtifactKind,"obligation work content mismatch");
+        invariant(JSON.stringify(o.acceptanceRefs)===JSON.stringify(obligation.acceptanceRefs),"obligation acceptance mismatch");
+        const receipt=await artifactRegistry.resolveDomainPublicationReceipt(current.head.publicationReceiptRef);
+        invariant(receipt?.completionDecisionRef===decision.ref&&receipt.publishedClaimRefs.includes(obligation.crossDomainObligationRef),"obligation decision mismatch");
+      }
       const normalizedAuthorizationId=requireText(authorizationId,"authorizationId");
       invariant(decision&&typeof decision==="object","accepted decision is required");
       invariant(Array.isArray(decision.obligationKeys),"accepted decision obligationKeys are required");
@@ -195,6 +219,8 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
       });
       const observed=resolvedAuthorization.observation;
       const implementationArtifactRef=requireText(resolvedAuthorization.value.implementationArtifactRef,"materialization authorization implementationArtifactRef");
+      if(implementationArtifactRef.startsWith("cross-domain-obligation:sha256:"))invariant(obligation.crossDomainObligationRef===implementationArtifactRef,"cross-domain authorization requires exact semantic binding");
+      if(obligation.crossDomainObligationRef)invariant(implementationArtifactRef===obligation.crossDomainObligationRef,"materialization authorization must bind exact obligation revision");
       const authorityPolicyRevision=requireText(resolvedAuthorization.value.authorityPolicyRevision,"materialization authorization authorityPolicyRevision");
 
       const logicalSubjectKey=obligationSubjectKey({
@@ -231,12 +257,14 @@ export function createOrganizationWorkMaterializer({orchestrator,materialization
         requiredArtifactRefs:obligation.requiredArtifactRefs??obligation.inputRefs??[],
         expectedArtifactKind:obligation.expectedArtifactKind,
         expectedOutputRefs:obligation.expectedOutputRefs??[],
-        acceptanceRefs:obligation.acceptanceRefs
+        acceptanceRefs:obligation.acceptanceRefs,
+        ...(obligation.crossDomainObligationRef?{crossDomainObligationRef:obligation.crossDomainObligationRef,crossDomainObligationSubjectKey:obligation.crossDomainObligationSubjectKey,crossDomainPublicationReceiptRef:obligation.crossDomainPublicationReceiptRef}:{})
       });
       const persistedContractRef=await artifactRegistry.putWorkContract(contract);
       invariant(persistedContractRef===contract.contractRef,"persisted work contract ref mismatch");
 
       const revalidateAuthorization=async()=>{
+        if(obligation.crossDomainObligationRef)await lineage.assertCurrent(obligation.crossDomainObligationRef);
         const current=await materializationAuthorizationStore.current(normalizedAuthorizationId);
         const resolved=await resolveAuthorization(current,{
           artifactRegistry,
