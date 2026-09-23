@@ -1112,7 +1112,7 @@
       "featureId": "FEATURE-DELIVERY-RUNTIME",
       "title": "Integrate a real coding-agent execution strategy",
       "kind": "IMPLEMENTATION",
-      "status": "PLANNED",
+      "status": "ACTIVE",
       "complexity": "L",
       "components": [
         "agentic/domain-execution-control"
@@ -1145,8 +1145,10 @@
         "Fresh-process recover reuses the same attempt/session or reports an explicit unresolved outcome; it cannot silently create a second semantic attempt.",
         "Pinned strategy/config and authorized scope survive policy change, timeout and cancellation; runtime success never self-accepts delivery."
       ],
-      "currentContextRef": null,
-      "claim": null,
+      "currentContextRef": "docs/blackboard/context/BB-066/current.json",
+      "claim": {
+        "workerId": "codex-research-bb066"
+      },
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-066.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
