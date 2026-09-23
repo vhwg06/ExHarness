@@ -48,7 +48,6 @@ NONE
 - BB-063 [RESEARCH_SA/RESEARCH] — Preserve Oracle provenance durability and migration compatibility
 - BB-064 [RESEARCH_SA/RESEARCH] — Close Oracle reconciliation with end-to-end connectivity and drift guards
 - BB-065 [WORKER/EXECUTION] — Define delivery profile and executable value baseline
-- BB-067 [RESEARCH_SA/RESEARCH] — Enforce bounded workspace and tool capabilities
 - BB-068 [RESEARCH_SA/RESEARCH] — Connect real repository changes to CI and review evidence
 - BB-069 [RESEARCH_SA/RESEARCH] — Prove first useful agent delivery through Oracle and independent QA
 - BB-070 [RESEARCH_SA/RESEARCH] — Deliver product from goal and partial artifacts across owned domains
@@ -97,6 +96,10 @@ NONE
   satisfied: objective-0, objective-1, objective-2, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
   unresolved: NONE
   evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-066.readiness-jev-evaluation.json
+- BB-067 [RESEARCH_SA/SATISFIED]
+  satisfied: objective-0, objective-1, objective-2, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
+  unresolved: NONE
+  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-067.readiness-jev-evaluation.json
 
 ## Dependency graph
 
@@ -117,7 +120,7 @@ BB-063 [RESEARCH_SCHEDULABLE] <- BB-062
 BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
 BB-065 [WORKER_SCHEDULABLE] <- ROOT
 BB-066 [BLOCKED_BY BB-065] <- BB-065, BB-048
-BB-067 [RESEARCH_SCHEDULABLE] <- BB-065, BB-066
+BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
 BB-068 [RESEARCH_SCHEDULABLE] <- BB-066, BB-067
 BB-069 [RESEARCH_SCHEDULABLE] <- BB-068, BB-064
 BB-070 [RESEARCH_SCHEDULABLE] <- BB-069, BB-055
