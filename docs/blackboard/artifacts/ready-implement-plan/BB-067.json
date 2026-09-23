@@ -10,48 +10,44 @@
   },
   "scope": [
     "delivery.sandbox.gvisor-runtime",
-    "delivery.sandbox.workspace-network-resource-policy",
     "delivery.sandbox.credential-budget-proxy",
-    "delivery.sandbox.tool-capability-authority",
-    "delivery.sandbox.recovery-and-evidence"
+    "delivery.sandbox.capability-policy",
+    "delivery.sandbox.recovery-evidence"
   ],
   "outOfScope": [
-    "BB-068 repository publication, pull-request, CI and review mutations; BB-067 may define protected capability authorization but does not ship SCM delivery.",
-    "Replacing the delivered Integration, Oracle or DomainExecutionController authority model.",
-    "Giving the agent direct Docker-daemon, host-network, raw credential, verifier or Blackboard/Oracle access.",
-    "A weaker local-process/container fallback when Docker Engine, gVisor or exact policy prerequisites are unavailable.",
-    "Organization-wide sandbox fleet governance, Kubernetes multi-tenant scheduling and managed OpenHands/Docker Sandboxes services."
+    "BB-068 SCM/CI/review mutation implementation.",
+    "Changing Oracle, DomainExecutionController or core-harness authority semantics.",
+    "Managed sandbox services or a weaker local-process fallback.",
+    "Cluster-wide multi-tenant sandbox orchestration."
   ],
   "constraints": [
-    "Worker execution requires BB-065 and BB-066 DONE. It must consume their delivered fixture/runtime artifacts and fail closed on drift; READY plans are not delivery evidence.",
-    "Use Docker Engine 29.8.1 and gVisor runsc release-20260914.0 for the initial Linux supported profile; record exact runtime identities and reject a non-runsc container.",
-    "Reuse OpenHands Software Agent SDK 1.49.4 at commit 3f47426e6af4681aacab735c781426aae58a3bac selected by BB-066; BB-067 changes where/how its driver executes, not agent semantics.",
-    "No raw provider, SCM or MCP credential may be serialized into the agent workspace, container environment, command line, manifest, persisted conversation, log or evidence artifact.",
-    "The model, repository content, shell commands, MCP metadata/catalogs and tool annotations are untrusted inputs. Authorization is derived only from trusted attempt policy, claim generation, capability grants and approval receipts.",
-    "Runtime image construction may resolve pinned dependencies before an attempt; the task container itself has no arbitrary internet/package/Git access.",
-    "Real-provider evidence is distinct from deterministic negative tests. Missing Docker/runsc/provider credentials or a prerequisite runtime is BLOCKED, never simulated as pass."
+    "Worker requires BB-065 and BB-066 DONE and consumes their delivered fixture/runtime artifacts.",
+    "Initial supported host profile is Linux with Docker Engine 29.8.1 and gVisor runsc release-20260914.0; mismatch is BLOCKED.",
+    "Reuse OpenHands SDK 1.49.4 commit 3f47426e6af4681aacab735c781426aae58a3bac from BB-066.",
+    "Raw provider/SCM/MCP credentials never enter the sandbox, workspace, argv, conversation persistence or evidence.",
+    "Model, repository text, shell commands and MCP metadata are untrusted and cannot modify policy/grants.",
+    "Missing runtime/provider prerequisites produce BLOCKED evidence, never synthetic success."
   ],
   "invariants": [
-    "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
-    "Every result binds exact source, attempt, sandbox image/policy, capability grant, configuration and evidence; unknown effects or missing evidence cannot be called success.",
-    "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
-    "Untrusted agent execution cannot expand its own filesystem, network, credential or tool authority."
+    "Application owns work/acceptance authority; Oracle owns source IO; runtime success is only candidate evidence.",
+    "Every outcome binds exact attempt, source, runtime image/policy, grant, budget and evidence; unknown effects fail closed.",
+    "Outer Blackboard scheduling authority is separate from product runtime coordination.",
+    "Untrusted execution cannot widen filesystem, network, credential or tool authority."
   ],
   "architectureDecisions": [
-    "Select Docker Engine 29.8.1 plus gVisor runsc release-20260914.0 as the first sandbox runtime. gVisor is the OCI isolation boundary; Docker is the lifecycle/resource/network substrate. Missing runsc or version drift is BLOCKED with no local-process fallback.",
-    "Reject an isolated local process because TerminalTool is arbitrary shell execution against the host. Reject bare OpenHands DockerWorkspace as the enforcement boundary because the pinned implementation forwards selected environment values and does not itself pin the required read-only/capability/resource/egress policy. Reject Docker Sandboxes 0.43.0 as a dependency because the release implementation is proprietary and its public release repository is below the project source threshold; retain it only as an architectural benchmark.",
-    "Build a content-addressed BB-067 runtime image from the delivered BB-066 uv lock, OpenHands driver and exact SDK/tools commit before an attempt. The task runtime performs no dependency or Git downloads.",
-    "Launch one sandbox process context per runtimeInvocationKey with --runtime=runsc, read-only root, no privileged mode, no Docker socket, no host PID/IPC, cap-drop=ALL, no-new-privileges, bounded CPU/memory/PIDs, declared tmpfs scratch and only two writable mounts: the prepared agent workspace and attempt state.",
-    "Place the sandbox on an attempt-specific Docker internal bridge network. The only reachable host service is the attempt-scoped provider proxy; the sandbox has no direct route to arbitrary internet, sibling sandboxes or host services.",
-    "Keep the real provider credential in a trusted host-side credential/budget proxy. The sandbox receives only proxy origin plus a random attempt capability token. The proxy validates executionAttemptId/generation/profile, strips caller authorization, injects the real upstream credential, restricts exact provider origin/path/model and revokes the capability on terminal/invalidation.",
-    "Enforce maxModelCalls, maxTotalTokens and maxUsd at the host proxy before each subsequent model dispatch using observed provider usage and the immutable pricing/profile contract; keep OpenHands maxIterations and DomainExecutionController wall-clock AbortSignal as independent ceilings. A limit hit prevents further model dispatch and drives bounded process termination/recovery semantics.",
-    "Introduce an immutable ExecutionCapabilityGrant resolved by the runtime adapter outside the agent workspace. It pins allowed OpenHands tool names and any host/MCP capability tuples {serverRef, method, name, audience, approvalMode}. Repository instructions, tools/list results, descriptions or annotations cannot add or widen grants.",
-    "Keep Oracle read adapters on the trusted host/materialization side. The sandbox receives only the already prepared source/context workspace; Oracle clients, tokens and artifact-store credentials are not mounted. Mutating external effects use explicit host capability adapters rather than Oracle reads.",
-    "Pin MCP authorization semantics to specification 2026-07-28. There is no Mcp-Session-Id security identity in that revision; authorize each protected call from ExHarness executionAttemptId + claim generation + capabilityGrantRef + exact Mcp-Method/Mcp-Name/audience and required approval receipt. Self-reported clientInfo and tool annotations are never authority.",
-    "Bind sandboxInvocationId, runtime image digest, runsc release, Docker policy digest, network ID, workspace/state volume identities, capabilityGrantRef and credential-proxy policy hash into the BB-066 immutable attempt manifest/evidence. Recover may recreate a process/container but may not change any of those semantic/runtime pins.",
-    "On timeout, cancellation, proxy budget denial or ambiguous process loss, stop model dispatch, TERM then bounded KILL the sandbox process, persist counterevidence and leave DomainExecutionController RECOVERY_REQUIRED whenever prior effects are not conclusively reconciled. Recovery uses the same conversation/workspace/state and never creates a second semantic attempt.",
-    "Treat sandbox/runtime output as untrusted candidate evidence. Trusted host code re-resolves mounts, changed paths, image/runtime identities, budget counters and content-addressed evidence before completionEvaluator/publicationGate may act; forged accepted/published/authority fields are rejected.",
-    "Correct the outer work graph so BB-067 worker depends on BB-066 as well as BB-065. Research stays schedulable ahead of delivery, but the sandbox implementation cannot claim the real-agent objective until the runtime it constrains is delivered."
+    "Use Docker Engine 29.8.1 with gVisor runsc release-20260914.0 as the sandbox boundary; no host-process or runc fallback.",
+    "Reject local process and bare OpenHands DockerWorkspace as enforcement: TerminalTool is arbitrary shell and the pinned DockerWorkspace forwards selected env values without BB-067's full hardening/resource policy. Docker Sandboxes 0.43.0 is only a proprietary benchmark.",
+    "Build one content-addressed runtime image from the delivered BB-066 uv lock/driver before execution; no dependency or Git download occurs inside an attempt.",
+    "Run with --runtime=runsc, read-only root, cap-drop=ALL, no-new-privileges, no privileged/Docker socket/host PID/IPC, CPU-memory-PID ceilings, declared tmpfs, and only attempt workspace/state writable mounts.",
+    "Use an attempt-specific Docker --internal network. A host provider proxy is the only intended reachable host service; the sandbox has no arbitrary external route.",
+    "Keep the real provider key only in the host proxy. The sandbox gets a short-lived attempt capability token plus proxy URL; proxy validates attempt/profile/model/path, injects upstream auth, meters calls/tokens/cost and revokes on terminal/invalidation.",
+    "Resolve an immutable ExecutionCapabilityGrant outside the workspace. Only TerminalTool/FileEditorTool plus exact granted host/MCP tuples may execute; repository/model/tools-list/annotations cannot expand it.",
+    "For MCP 2026-07-28, authorize protected calls by executionAttemptId + claim generation + grant + exact serverRef/Mcp-Method/Mcp-Name/audience + approval. Mcp-Session-Id and clientInfo are not security identity.",
+    "Keep Oracle adapters/credentials host-side; sandbox receives only materialized source/context. External mutation is via explicit host capabilities, with concrete SCM mutation deferred to BB-068.",
+    "Bind conversation/workspace/state plus image/runsc/policy/network/grant/profile identities to one semantic attempt. Recover may recreate only the process/container under identical pins; drift fails closed.",
+    "Host controller/proxy enforce wall-clock, iteration, model-call, token and USD ceilings; limit/cancel stops further dispatch and leaves RECOVERY_REQUIRED when prior effects are ambiguous.",
+    "Host re-resolves runtime identity, mount/path diff, budget and content-addressed evidence. Sandbox output cannot self-accept, publish or mutate Blackboard/Oracle authority.",
+    "BB-067 worker depends on BB-065 and BB-066; research may complete earlier but implementation cannot claim a sandboxed real agent before BB-066 delivery."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -85,10 +81,6 @@
       "packages/agentic-system/src/domain-execution-control.js",
       "packages/agentic-system/src/openhands-runtime-adapter.js",
       "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/index.js",
-      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
-      "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
-      "packages/agentic-system/test/bb066-domain-execution-integration.test.js",
       "packages/core-harness/src/execution.js",
       "packages/core-harness/README.md",
       "scripts/delivery/runtime/openhands_driver.py",
@@ -107,9 +99,7 @@
       "packages/agentic-system/src/model-credential-proxy.js",
       "packages/agentic-system/src/execution-capability-gateway.js",
       "packages/agentic-system/src/index.js",
-      "packages/agentic-system/test/bb067-sandbox-policy.test.js",
-      "packages/agentic-system/test/bb067-capability-gateway.test.js",
-      "packages/agentic-system/test/bb067-openhands-sandbox-integration.test.js",
+      "packages/agentic-system/test/bb067-*.test.js",
       "scripts/delivery/runtime/openhands_driver.py",
       "scripts/delivery/runtime/Dockerfile",
       "scripts/delivery/sandbox/bb-067-profile.json",
@@ -127,158 +117,138 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Capability and sandbox policy [FS_ISOLATION, TOOL_GRANT_AUTHORITY, MCP_AUTHORITY, AUTHORITY_BOUNDARY; invariants 1–4]: add canonical SandboxPolicy and ExecutionCapabilityGrant schemas/resolvers in agentic-system, bind them to executionAttemptId/claim generation/strategy/profile refs, reject unknown tools, mutable/floating policy, grant widening and all authority fields originating from repository/MCP/model content. Keep Oracle and core-harness unchanged. Exit: policy + capability unit tests and BB-048 authority regression.",
-    "S2 — gVisor runtime boundary [FS_ISOLATION, SUPPLY_CHAIN, RECOVERY_BINDING; invariants 2,4]: build the pinned runtime image from delivered BB-066 lock/driver, implement gvisor-sandbox-launcher with exact Docker/runsc preflight, read-only/cap-drop/no-new-privileges/resource policy, internal network and declared workspace/state mounts only. Bind image/runsc/Docker/policy/mount/network identities into the attempt manifest. Exit: deterministic launcher tests plus runtime preflight reject non-runsc, extra mount, Docker socket, privileged/capability/network drift.",
-    "S3 — Credential and budget proxy [NETWORK_SECRET_ISOLATION, BUDGET_TERMINATION, EVIDENCE_SECRET_HYGIENE; invariants 2,4]: implement a host-side attempt-scoped provider proxy that alone receives credentialEnvName value, validates capability token + attempt/profile/model/path, strips inbound auth, injects upstream credential and meters model calls/tokens/cost. Configure the sandbox driver with proxy URL and placeholder key only. Exit: proxy tests prove forbidden origin/path/auth, token replay after revoke, budget stop and raw-secret absence.",
-    "S4 — OpenHands dispatch/recovery integration [RECOVERY_BINDING, BUDGET_TERMINATION, TOOL_GRANT_AUTHORITY, AUTHORITY_BOUNDARY; invariants 1–4]: adapt delivered BB-066 runtime so Python/OpenHands executes inside the sandbox under the same executionAttemptId/conversation/workspace/state identities; only TerminalTool/FileEditorTool are constructed from the trusted grant. Forward AbortSignal to bounded sandbox termination; recover may recreate only the process/container with exact pinned state and must never create a second semantic attempt. Exit: BB-066 recovery tests continue to pass plus BB-067 integration drift/cancellation cases.",
-    "S5 — Adversarial live proof and consolidation [FS_ISOLATION, NETWORK_SECRET_ISOLATION, BUDGET_TERMINATION, TOOL_GRANT_AUTHORITY, MCP_AUTHORITY, RECOVERY_BINDING, EVIDENCE_SECRET_HYGIENE, SUPPLY_CHAIN; invariants 1–4]: run path/sibling/host/Docker-socket escape, arbitrary egress, raw-secret search, injected tool, fake MCP protected-call, budget and interruption/recovery fixtures against exact BB-065 NORM-01 and delivered BB-066 runtime. Capture content-addressed Docker/runsc/image/policy/grant/process/source/budget evidence and independent fixture acceptance; update Living state only with verified supported profile/limits. Exit: live contract + probe + secret scan + Living Docs."
+    "S1 — Policy [FS_ISOLATION, CAPABILITY_AUTHORITY, AUTHORITY_BOUNDARY]: add immutable SandboxPolicy/ExecutionCapabilityGrant bound to attempt/generation/strategy; deny grant widening from agent/repository/MCP data.",
+    "S2 — Runtime [FS_ISOLATION, SUPPLY_CHAIN, RECOVERY_BINDING]: add runsc launcher and pinned image with exact mounts, hardening, internal network and runtime identity binding.",
+    "S3 — Proxy [NETWORK_CREDENTIAL, BUDGET_STOP, EVIDENCE_HYGIENE]: host-only credential proxy validates attempt/profile/model/path, injects auth, meters calls/tokens/cost and redacts persisted diagnostics.",
+    "S4 — OpenHands [BUDGET_STOP, RECOVERY_BINDING, CAPABILITY_AUTHORITY]: run delivered BB-066 driver inside sandbox, keep same conversation/state on recover, forward cancellation, reject policy/image/grant drift.",
+    "S5 — Proof [FS_ISOLATION, NETWORK_CREDENTIAL, BUDGET_STOP, CAPABILITY_AUTHORITY, RECOVERY_BINDING, EVIDENCE_HYGIENE, SUPPLY_CHAIN]: run adversarial escape/egress/secret/tool/MCP/budget/recovery probe on BB-065 fixture and consolidate verified Living truth."
   ],
   "acceptanceCriteria": [
     {
       "id": "FS_ISOLATION",
-      "statement": "With arbitrary TerminalTool commands, the BB-067 runtime can modify only the declared attempt workspace/state paths; reads/writes of sibling workspace, host/control-plane/verifier paths, Docker socket and undeclared mounts fail, and the container is verified to use runsc with the pinned hardening/resource policy.",
+      "statement": "Arbitrary TerminalTool commands cannot read/write sibling/host/control-plane/verifier paths or Docker socket, and all mutations stay in declared attempt paths under the pinned runsc hardening/resource policy.",
       "verificationIds": [
         "unit-sandbox",
         "runtime-preflight",
         "live-probe"
       ],
       "evidenceRequired": [
-        "Exact Docker/runsc/image/policy/mount identities and negative path/host/Docker-socket outputs bound to one executionAttemptId.",
-        "Changed-path report proving all source mutations remain inside the delivered BB-065 agentWritablePaths."
+        "runsc/image/mount/policy identities plus negative escape outputs and changed-path report."
       ]
     },
     {
-      "id": "NETWORK_SECRET_ISOLATION",
-      "statement": "The task sandbox has no arbitrary external egress and never receives the raw provider credential; only the attempt-scoped host proxy can reach the pinned provider origin and inject the upstream credential after validating attempt/profile/model/path authority.",
+      "id": "NETWORK_CREDENTIAL",
+      "statement": "Sandbox has no arbitrary external egress and never receives the raw provider credential; only the attempt-scoped host proxy can call the pinned provider/model/path.",
       "verificationIds": [
         "unit-proxy",
         "live-probe",
         "secret-scan"
       ],
       "evidenceRequired": [
-        "Network-policy/route evidence showing forbidden target failure and successful provider traffic only through the proxy.",
-        "Raw-secret sentinel absent from container env/args/files, conversation persistence, stdout/stderr, manifests and evidence; proxy audit binds upstream origin without recording the credential."
+        "forbidden-egress evidence, proxy audit, and empty raw-secret sentinel scan across sandbox/persisted outputs."
       ]
     },
     {
-      "id": "BUDGET_TERMINATION",
-      "statement": "Wall-clock, model-call, total-token and USD ceilings are immutable attempt inputs; crossing any ceiling prevents further model dispatch, performs bounded termination and preserves a recoverable RECOVERY_REQUIRED outcome when prior effects may be ambiguous.",
+      "id": "BUDGET_STOP",
+      "statement": "Wall-clock, model-call, token and USD ceilings are immutable attempt inputs; a hit prevents further model dispatch and produces bounded termination/recoverable outcome rather than successful delivery.",
       "verificationIds": [
         "unit-proxy",
         "integration-runtime",
         "live-probe"
       ],
       "evidenceRequired": [
-        "Per-limit counters and denial event proving provider call count does not advance after the ceiling.",
-        "TERM/KILL and canonical attempt-head evidence showing no budget/timeout path is reported as successful terminal delivery."
+        "per-limit counters/denial plus process and canonical attempt-head evidence."
       ]
     },
     {
-      "id": "TOOL_GRANT_AUTHORITY",
-      "statement": "Only tools/capabilities present in the immutable ExecutionCapabilityGrant can execute; repository instructions, model output, tool descriptions or runtime-discovered metadata cannot create, widen or replace that grant.",
+      "id": "CAPABILITY_AUTHORITY",
+      "statement": "Only immutable granted OpenHands/host/MCP capabilities execute; repository/model/catalog/annotations/clientInfo/Mcp-Session-Id cannot add authority or bypass required approval.",
       "verificationIds": [
         "unit-capability",
         "integration-runtime"
       ],
       "evidenceRequired": [
-        "Negative injected-tool fixtures and immutable grant hash before/after execution.",
-        "Driver construction evidence proving only grant-authorized OpenHands tools are installed."
-      ]
-    },
-    {
-      "id": "MCP_AUTHORITY",
-      "statement": "For MCP 2026-07-28 semantics, protected calls require exact {serverRef, Mcp-Method, Mcp-Name, audience} grant plus configured approval; Mcp-Session-Id, clientInfo, annotations and tools/list content cannot supply or widen authority.",
-      "verificationIds": [
-        "unit-capability"
-      ],
-      "evidenceRequired": [
-        "Fake untrusted MCP catalog/call cases covering forged tool annotations, clientInfo, undeclared tool, wrong audience and missing/stale approval, all denied before transport side effect.",
-        "Positive granted fixture proving the gateway forwards only the exact method/name/audience tuple with attempt/generation binding."
+        "injected-tool and fake-MCP denied fixtures plus positive exact-grant/approval case."
       ]
     },
     {
       "id": "RECOVERY_BINDING",
-      "statement": "Dispatch and fresh-process recovery remain bound to one semantic executionAttemptId/conversation/workspace/state plus exact sandbox image/policy/grant identities; container recreation under those pins is allowed, but drift or a second semantic/provider attempt fails closed.",
+      "statement": "Dispatch/recover remain one semantic attempt/conversation/workspace/state with exact image/policy/grant/profile pins; process/container recreation is allowed only under identical pins and never replays as a second semantic attempt.",
       "verificationIds": [
         "integration-runtime",
         "live-probe"
       ],
       "evidenceRequired": [
-        "Same attempt/conversation/state identities across forced interruption and recovery, with one semantic dispatch and no prompt replay.",
-        "Negative image/policy/grant/workspace drift cases proving no fresh provider session or replacement semantic attempt is created."
+        "same identities across forced interruption/recovery and negative drift cases."
       ]
     },
     {
-      "id": "EVIDENCE_SECRET_HYGIENE",
-      "statement": "Persisted runtime evidence is content-addressed, bounded and secret-free; it records runtime/policy/grant/source/budget/process identities and redacted diagnostics without storing raw credential values or reusable host authority.",
+      "id": "EVIDENCE_HYGIENE",
+      "statement": "Persisted evidence is bounded, content-addressed and secret-free while recording runtime/policy/grant/source/budget/process identity sufficient for independent verification.",
       "verificationIds": [
         "unit-proxy",
         "secret-scan",
         "live-probe"
       ],
       "evidenceRequired": [
-        "Credential sentinel scan over every persisted attempt/evidence file plus redaction tests for provider errors/stdout/stderr.",
-        "Re-resolution of content-addressed runtime evidence and exact source tree/change digests."
+        "secret scan/redaction tests plus content-addressed runtime/source evidence."
       ]
     },
     {
       "id": "AUTHORITY_BOUNDARY",
-      "statement": "Sandbox/OpenHands/proxy output cannot accept delivery, publish source, mutate Blackboard/Oracle authority, change claim/execution policy or forge capability/approval authority; DomainExecutionController completionEvaluator/publicationGate remain the only acceptance/publication path.",
+      "statement": "Sandbox/runtime output cannot accept/publish delivery or mutate Blackboard/Oracle/claim/policy/grant/approval authority; existing completionEvaluator/publicationGate remain authoritative.",
       "verificationIds": [
         "unit-capability",
         "integration-runtime",
         "domain-regression"
       ],
       "evidenceRequired": [
-        "Forged accepted/published/blackboardMutation/oracleMutation/grant/approval fields are rejected.",
-        "Existing BB-048/BB-066 authority regressions pass with sandbox integration enabled."
+        "forged authority fields rejected and BB-048/BB-066 regressions pass."
       ]
     },
     {
       "id": "SUPPLY_CHAIN",
-      "statement": "The supported sandbox profile is reproducible from Docker Engine 29.8.1, gVisor release-20260914.0, the exact BB-066 OpenHands/uv lock and a content-addressed runtime image; runtime startup rejects version/image/lock drift and performs no dependency download.",
+      "statement": "Supported profile resolves exact Docker 29.8.1, gVisor release-20260914.0, BB-066 OpenHands/uv lock and runtime image digest; drift or runtime dependency download fails preflight.",
       "verificationIds": [
         "runtime-preflight",
         "integration-runtime"
       ],
       "evidenceRequired": [
-        "Exact Docker/runsc/OpenHands/lock/image identities and image build digest.",
-        "Negative startup with non-runsc runtime, wrong image digest or lock mismatch, and network evidence showing no runtime package/Git fetch."
+        "exact version/digest/lock evidence and negative non-runsc/image-drift case."
       ]
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "invariant": "Application owns work/acceptance authority; Oracle owns source IO; runtime success is only candidate evidence.",
       "criterionIds": [
-        "AUTHORITY_BOUNDARY",
-        "MCP_AUTHORITY"
+        "CAPABILITY_AUTHORITY",
+        "AUTHORITY_BOUNDARY"
       ]
     },
     {
-      "invariant": "Every result binds exact source, attempt, sandbox image/policy, capability grant, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "invariant": "Every outcome binds exact attempt, source, runtime image/policy, grant, budget and evidence; unknown effects fail closed.",
       "criterionIds": [
         "FS_ISOLATION",
-        "NETWORK_SECRET_ISOLATION",
-        "BUDGET_TERMINATION",
+        "NETWORK_CREDENTIAL",
+        "BUDGET_STOP",
         "RECOVERY_BINDING",
-        "EVIDENCE_SECRET_HYGIENE",
+        "EVIDENCE_HYGIENE",
         "SUPPLY_CHAIN"
       ]
     },
     {
-      "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "invariant": "Outer Blackboard scheduling authority is separate from product runtime coordination.",
       "criterionIds": [
         "AUTHORITY_BOUNDARY"
       ]
     },
     {
-      "invariant": "Untrusted agent execution cannot expand its own filesystem, network, credential or tool authority.",
+      "invariant": "Untrusted execution cannot widen filesystem, network, credential or tool authority.",
       "criterionIds": [
         "FS_ISOLATION",
-        "NETWORK_SECRET_ISOLATION",
-        "TOOL_GRANT_AUTHORITY",
-        "MCP_AUTHORITY"
+        "NETWORK_CREDENTIAL",
+        "CAPABILITY_AUTHORITY"
       ]
     }
   ],
@@ -293,7 +263,7 @@
     },
     {
       "id": "unit-proxy",
-      "command": "node --test packages/agentic-system/test/bb067-capability-gateway.test.js packages/agentic-system/test/bb067-sandbox-policy.test.js"
+      "command": "node --test packages/agentic-system/test/bb067-sandbox-policy.test.js packages/agentic-system/test/bb067-capability-gateway.test.js"
     },
     {
       "id": "integration-runtime",
@@ -322,40 +292,39 @@
   ],
   "researchGaps": [],
   "negativeVerificationCases": [
-    "Absolute and relative path escape plus sibling-workspace sentinel access must fail even when issued through TerminalTool.",
-    "Docker socket, host PID/proc, verifier/control-plane files and undeclared host mounts must be unavailable inside the sandbox.",
-    "Arbitrary external HTTPS/DNS target must fail; changing proxy/base URL/provider origin in agent input must not widen egress.",
-    "Raw credential sentinel must not appear in container env, argv, files, conversation state, logs, manifests or evidence even when the model explicitly asks to print/search secrets.",
-    "A repository instruction or forged driver payload that requests a new tool/capability must not change ExecutionCapabilityGrant.",
-    "A fake MCP tools/list response with a destructive tool marked readOnly, forged clientInfo or stale/missing approval must not cross the capability gateway.",
-    "Mcp-Session-Id must not be accepted as authorization identity for the selected MCP 2026-07-28 contract.",
-    "Model-call/token/USD/time ceiling hit must leave provider call count unchanged after denial and must not terminalize ambiguous execution as success.",
-    "Recover with different image digest, runsc release, sandbox policy, grant, workspace/state identity or model profile must fail closed without a second semantic attempt.",
-    "Runtime output containing accepted, published, blackboardMutation, oracleMutation, capabilityGrant or approvalReceipt authority fields must be rejected.",
-    "Non-runsc Docker runtime, privileged mode, extra capability/mount, non-internal network or runtime dependency download must fail preflight."
+    "path/sibling/host/Docker-socket escape fails;",
+    "arbitrary egress and provider-origin rewrite fail;",
+    "raw credential sentinel is absent from sandbox and persisted traces;",
+    "repository/tool-catalog injection cannot widen grant;",
+    "fake MCP undeclared/wrong-audience/missing-approval call is denied;",
+    "Mcp-Session-Id/clientInfo/annotations do not authorize;",
+    "time/call/token/cost limit prevents next model dispatch;",
+    "recovery with image/policy/grant/workspace/profile drift fails without second semantic attempt;",
+    "forged accepted/published/Blackboard/Oracle/grant/approval output is rejected;",
+    "non-runsc/privileged/extra-mount/capability/network or runtime dependency fetch fails preflight."
   ],
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "docs/blackboard/artifacts/objective/BB-067.json + docs/blackboard/process/delivery-research/BB-067.md + delivered/current BB-065/BB-066 plans as dependency assumptions",
+      "input": "BB-067 objective + research brief + BB-065/066 dependency contracts",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + Jev SATISFIED",
       "forbidden": [
         "product implementation",
         "self-acceptance",
-        "invented live Docker/runsc/provider evidence"
+        "invented live evidence"
       ]
     },
     {
       "lane": "WORKER",
       "input": "exact READY plan + BB-065 DONE + BB-066 DONE",
       "output": "DELIVERED_FEATURE",
-      "binding": "plan hash + candidate + sandbox/runtime/source/evidence identities + Jev",
-      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "binding": "plan hash + candidate + runtime/source/evidence identities + Jev",
+      "convergence": "all claims SATISFIED + evaluated source merged",
       "forbidden": [
-        "redefine sandbox threat model",
-        "weaken runsc/network/credential policy",
+        "weaken sandbox policy",
+        "redefine threat model",
         "self-acceptance"
       ]
     }
@@ -365,143 +334,16 @@
       "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-067 Living truth describes only the implemented and independently verified sandbox profile, supported host/runtime prerequisites, enforcement guarantees and known limits."
+    "statement": "BB-067 Living truth records only independently verified supported sandbox prerequisites, guarantees and limits."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
-  "selectedTechnologyEvidence": {
-    "openHands": {
-      "source": "OpenHands/software-agent-sdk",
-      "version": "1.49.4",
-      "commit": "3f47426e6af4681aacab735c781426aae58a3bac",
-      "license": "MIT",
-      "inspected": [
-        "openhands-sdk/openhands/sdk/conversation/conversation.py",
-        "openhands-sdk/openhands/sdk/workspace/remote/base.py",
-        "openhands-workspace/openhands/workspace/docker/workspace.py",
-        "openhands-tools/openhands/tools/terminal/impl.py"
-      ],
-      "established": [
-        "Conversation selects a RemoteConversation for RemoteWorkspace; BB-067 therefore does not assume local cognition plus remote tools without an explicit adapter.",
-        "TerminalTool is arbitrary shell execution; working_dir is not a host security boundary.",
-        "DockerWorkspace forwards configured host environment values and composes a general docker run without the full BB-067 hardening/resource policy."
-      ]
-    },
-    "sandbox": {
-      "source": "google/gvisor",
-      "release": "release-20260914.0",
-      "license": "Apache-2.0",
-      "dockerEngine": "29.8.1",
-      "established": [
-        "gVisor runsc is a Docker-compatible OCI runtime and isolates application syscalls from the host kernel surface.",
-        "gVisor supports disabling external networking; Docker internal networks have no default route to other networks while retaining host-gateway communication needed for the trusted proxy.",
-        "Docker resource flags and security options are explicit rather than assumed defaults."
-      ]
-    },
-    "rejectedBenchmark": {
-      "source": "docker/sbx-releases",
-      "release": "0.43.0",
-      "reason": "Strong microVM/network/credential-proxy reference design, but proprietary release implementation and public repository below the project's >=1,000-star source threshold."
-    },
-    "mcp": {
-      "specification": "2026-07-28",
-      "established": [
-        "Protocol core is stateless and Mcp-Session-Id is removed.",
-        "Mcp-Method and Mcp-Name expose operation identity for gateway routing/authorization.",
-        "Application authorization must use its own trusted identity/grant model; protocol metadata and tool annotations are not authority."
-      ]
-    }
-  },
-  "threatModel": {
-    "untrusted": [
-      "model output",
-      "repository/source content",
-      "TerminalTool commands",
-      "MCP server/catalog/tool metadata",
-      "sandbox process output"
-    ],
-    "protected": [
-      "host filesystem outside attempt workspace",
-      "sibling workspaces",
-      "verifier/control-plane files",
-      "Docker daemon/socket",
-      "raw provider/SCM/MCP credentials",
-      "capability grants and approval receipts",
-      "Blackboard/Oracle/domain publication authority"
-    ],
-    "trusted": [
-      "DomainExecutionController and runtime adapter",
-      "Docker Engine host daemon",
-      "gVisor runsc pinned runtime",
-      "host credential/budget proxy",
-      "host capability gateway",
-      "independent verifier"
-    ],
-    "failClosed": "Any missing/drifting trusted identity, unknown side effect, stale approval/grant or incomplete evidence is BLOCKED/RECOVERY_REQUIRED/INCONCLUSIVE according to the existing DomainExecutionController lifecycle; never successful delivery."
-  },
-  "dependencyContract": {
-    "requiredBeforeWorker": [
-      "BB-065",
-      "BB-066"
-    ],
-    "bb065": "Provides the protected request-tracker fixture, writable source set and independent acceptance baseline.",
-    "bb066": "Provides the real OpenHands runtime adapter/driver, one semantic attempt/conversation recovery contract and exact SDK/tool/profile pins that BB-067 constrains.",
-    "researchRule": "Research may complete while dependencies are not DONE; worker resolves delivered artifacts at start and fails closed if they differ from the assumptions recorded here."
-  },
-  "capabilityContract": {
-    "grantIdentity": "content-addressed ExecutionCapabilityGrant bound to executionAttemptId + claim generation + execution strategy/profile",
-    "openHandsTools": [
-      "TerminalTool",
-      "FileEditorTool"
-    ],
-    "mcp": "No MCP server/tool becomes callable merely because it is discovered. A call requires exact serverRef + method + name + audience and configured approvalMode/receipt.",
-    "oracle": "Oracle read adapters remain host-side source/context materializers and are not exported as mutating sandbox tools.",
-    "mutation": "External mutation is only through a trusted host capability adapter; BB-068 owns concrete SCM/CI mutation integration."
-  },
-  "budgetContract": {
-    "wallClock": "DomainExecutionController/adapter AbortSignal with bounded TERM/KILL and RECOVERY_REQUIRED on ambiguous prior effect.",
-    "iterations": "OpenHands max_iteration_per_run from immutable profile.",
-    "modelCalls": "Host provider proxy checks maxModelCalls before dispatch.",
-    "tokens": "Host provider proxy accumulates provider usage and denies the next call once maxTotalTokens is reached; per-request input/output ceilings remain in the model profile.",
-    "cost": "Host provider proxy computes observed cost from immutable pricing provenance/profile and denies the next call once maxUsd is reached.",
-    "recovery": "Counters are persisted in trusted attempt state and reused on recover; restart never resets budget."
-  },
-  "liveProbeContract": {
-    "prerequisites": "Linux host with Docker Engine 29.8.1, gVisor runsc release-20260914.0 installed, BB-065 DONE fixture, BB-066 DONE runtime, exact provider profile and operator-authorized credential. Missing prerequisite is BLOCKED.",
-    "workspace": "Create isolated agent and verifier workspaces plus a sibling sentinel outside the agent mount. Mount only agent workspace + attempt state into runsc sandbox.",
-    "network": "Create an attempt-specific Docker --internal bridge. Start host provider proxy on the bridge gateway; no other outbound route is accepted.",
-    "credential": "Set a random raw provider secret sentinel only in the host proxy environment. Container receives proxy URL, placeholder provider key if SDK requires one, and a revocable attempt capability token.",
-    "attackSequence": [
-      "attempt path traversal/absolute host and sibling reads/writes plus Docker socket access",
-      "attempt arbitrary network target and provider-origin rewrite",
-      "search environment/process/files/state for raw provider sentinel",
-      "inject repository instruction requesting additional tool/authority",
-      "present fake MCP catalog/protected call with forged annotations/clientInfo and missing approval",
-      "cross model-call/token/cost/time ceilings",
-      "interrupt only after durable OpenHands activity and recover with same identities; separately try policy/image/grant drift"
-    ],
-    "success": "All unauthorized effects fail outside model instructions, provider traffic works only through proxy, raw secret scan is empty, limits stop further dispatch, same semantic attempt recovers, and independent BB-065 acceptance evaluates only the candidate source.",
-    "evidence": [
-      "docker/runsc versions",
-      "runtime image digest",
-      "sandbox policy and inspect digest",
-      "network/mount identities",
-      "executionAttempt/conversation/grant/profile hashes",
-      "budget events/counters",
-      "bounded process outputs",
-      "starting/result tree hashes and changed paths",
-      "negative-case outputs",
-      "secret-scan report",
-      "independent acceptance report"
-    ]
-  },
   "objectiveCoverage": [
     {
       "objectiveCriterion": "Forbidden file, cross-workspace and credential access fail under the selected sandbox threat model, including indirect tool calls.",
       "criterionIds": [
         "FS_ISOLATION",
-        "NETWORK_SECRET_ISOLATION",
-        "TOOL_GRANT_AUTHORITY",
-        "MCP_AUTHORITY",
+        "NETWORK_CREDENTIAL",
+        "CAPABILITY_AUTHORITY",
         "SUPPLY_CHAIN"
       ],
       "planElements": [
@@ -521,13 +363,12 @@
       "decisionIndexes": [
         0,
         1,
+        2,
         3,
         4,
         5,
-        7,
-        8,
-        9,
-        12
+        6,
+        7
       ],
       "sourceRefs": [
         "docs/blackboard/process/delivery-research/BB-067.md",
@@ -552,20 +393,15 @@
           "match": "Use only TerminalTool and FileEditorTool in the selected profile."
         }
       ],
-      "supportingPlanFields": [
-        "selectedTechnologyEvidence",
-        "threatModel",
-        "capabilityContract",
-        "liveProbeContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Time/token/cost ceilings stop further dispatch and preserve a recoverable outcome; secrets are absent from persisted traces.",
       "criterionIds": [
-        "BUDGET_TERMINATION",
+        "BUDGET_STOP",
         "RECOVERY_BINDING",
-        "EVIDENCE_SECRET_HYGIENE",
-        "NETWORK_SECRET_ISOLATION"
+        "EVIDENCE_HYGIENE",
+        "NETWORK_CREDENTIAL"
       ],
       "planElements": [
         "S3",
@@ -580,10 +416,10 @@
       ],
       "decisionIndexes": [
         5,
-        6,
+        8,
+        9,
         10,
-        11,
-        12
+        11
       ],
       "sourceRefs": [
         "docs/blackboard/process/delivery-research/BB-067.md",
@@ -608,17 +444,12 @@
           "match": "OpenHandsRecoveryRequiredError"
         }
       ],
-      "supportingPlanFields": [
-        "budgetContract",
-        "threatModel",
-        "liveProbeContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Untrusted repository/MCP content cannot grant tools, change authorized domains or bypass approval for configured protected operations.",
       "criterionIds": [
-        "TOOL_GRANT_AUTHORITY",
-        "MCP_AUTHORITY",
+        "CAPABILITY_AUTHORITY",
         "AUTHORITY_BOUNDARY"
       ],
       "planElements": [
@@ -633,10 +464,10 @@
         "live-probe"
       ],
       "decisionIndexes": [
+        6,
         7,
         8,
-        9,
-        12
+        11
       ],
       "sourceRefs": [
         "docs/blackboard/process/delivery-research/BB-067.md",
@@ -661,12 +492,7 @@
           "match": "resolveBackendContext"
         }
       ],
-      "supportingPlanFields": [
-        "capabilityContract",
-        "selectedTechnologyEvidence",
-        "threatModel",
-        "dependencyContract"
-      ]
+      "supportingPlanFields": []
     }
   ]
 }
