@@ -93,7 +93,6 @@ NONE
   satisfied: objective-0, objective-1, objective-2, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
   unresolved: NONE
   evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-065.readiness-jev-evaluation.json
-
 - BB-066 [RESEARCH_SA/SATISFIED]
   satisfied: objective-0, objective-1, objective-2, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
   unresolved: NONE
