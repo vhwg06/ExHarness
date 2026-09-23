@@ -358,7 +358,10 @@ export function validateResponse(response, payload) {
     check(Number.isFinite(a.confidence) && a.confidence >= 0 && a.confidence <= 1, 'invalid confidence');
     check(a.probabilities && canonical(Object.keys(a.probabilities).sort()) === canonical(Object.keys(q.criteria).sort()), 'probability options mismatch');
     const values = Object.values(a.probabilities);
-    check(values.every(x => Number.isFinite(x) && x >= 0 && x <= 1) && Math.abs(values.reduce((x, y) => x + y, 0) - 1) < 1e-5, 'invalid probabilities');
+    const validRange = values.every(x => Number.isFinite(x) && x >= 0 && x <= 1);
+    const sum = validRange ? values.reduce((x, y) => x + y, 0) : null;
+    // Only report trusted question IDs and numeric aggregates; never echo provider text.
+    check(validRange && Math.abs(sum - 1) < 1e-5, `invalid probabilities: ${id}; validRange=${validRange}; sum=${sum}; count=${values.length}`);
     check(a.probabilities[a.choice] >= Math.max(...values) - 1e-8, 'choice is not maximum probability');
   }
   for (const k of ['input_tokens', 'output_tokens']) check(Number.isInteger(response.usage?.[k]) && response.usage[k] >= 0, 'invalid usage');
