@@ -21,14 +21,14 @@ next-work-id: BB-077
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: NONE
+  active: BB-060
 
 WORKER
   active: NONE
@@ -36,13 +36,19 @@ WORKER
 
 ## Active work
 
-NONE
+
+BB-060
+task: Reconcile Oracle physical ownership and package boundary
+lane: RESEARCH_SA
+phase: RESEARCH
+current-context: docs/blackboard/context/BB-060/current.json
+components: oracle/infrastructure
+worker: codex-research-bb060
 
 ## Schedulable tasks
 
 - BB-052 [WORKER/EXECUTION] — Implement cross-domain obligations and selective semantic invalidation
 - BB-059 [RESEARCH_SA/RESEARCH] — Research evidence-gated HOW evolution and Jev evaluation pipeline
-- BB-060 [RESEARCH_SA/RESEARCH] — Reconcile Oracle physical ownership and package boundary
 - BB-061 [RESEARCH_SA/RESEARCH] — Define Application to Oracle semantic port and dependency direction
 - BB-062 [RESEARCH_SA/RESEARCH] — Define concrete Oracle source connectivity and adapter topology
 - BB-063 [RESEARCH_SA/RESEARCH] — Preserve Oracle provenance durability and migration compatibility
@@ -70,7 +76,7 @@ BB-056 [DONE] <- ROOT
 BB-057 [BLOCKED_BY BB-055] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
 BB-059 [RESEARCH_SCHEDULABLE] <- BB-058
-BB-060 [RESEARCH_SCHEDULABLE] <- ROOT
+BB-060 [ACTIVE] <- ROOT
 BB-061 [RESEARCH_SCHEDULABLE] <- BB-060
 BB-062 [RESEARCH_SCHEDULABLE] <- BB-061
 BB-063 [RESEARCH_SCHEDULABLE] <- BB-062

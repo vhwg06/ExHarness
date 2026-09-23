@@ -1,0 +1,122 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-060",
+  "taskId": "BB-060",
+  "featureId": "FEATURE-ORACLE-PHYSICAL",
+  "topicId": "TOPIC-ORACLE-RECONCILIATION",
+  "components": [
+    "oracle/infrastructure"
+  ],
+  "pipeline": "RESEARCH_SA",
+  "lane": "RESEARCH_SA",
+  "phase": "RESEARCH",
+  "stage": "RESEARCH",
+  "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-060.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+  "planHash": "3e07582b93c48f43a46fdec1327f9760d35d8fda938d8e301bd3e12c1fe4b090",
+  "action": {
+    "kind": "RESEARCH",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "docs/blackboard/process/oracle-reconciliation-phase.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-060.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-060.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "scripts/**",
+      "test/**",
+      ".github/workflows/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "scripts/**",
+      "test/**",
+      ".github/workflows/**"
+    ],
+    "write": [
+      "packages/oracle/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/state.md"
+    ]
+  },
+  "artifactWriteScope": [
+    "docs/blackboard/artifacts/ready-implement-plan/BB-060.json"
+  ],
+  "hardInvariants": [
+    "Preserve current resolveBackendContext/resolveQaContext behavior and application-owned schemas.",
+    "Oracle must be physically owned outside @exharness/agentic-system after delivery.",
+    "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
+    "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized."
+  ],
+  "verification": [
+    {
+      "id": "oracle-contract",
+      "command": "node --test packages/agentic-system/test/*oracle*.test.js packages/oracle/test/*.test.js"
+    },
+    {
+      "id": "oracle-agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "oracle-architecture",
+      "command": "node --test test/oracle-architecture-boundary.test.mjs"
+    }
+  ],
+  "expectedOutputs": [
+    "READY_IMPLEMENT_PLAN"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "scripts/**",
+      "test/**"
+    ],
+    "contractRefs": [
+      "resolveBackendContext",
+      "resolveQaContext",
+      "repositoryReader.readFile",
+      "artifactReader.readArtifact",
+      "BackendContextSchema",
+      "QaContextSchema"
+    ]
+  }
+}
