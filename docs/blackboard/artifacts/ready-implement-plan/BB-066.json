@@ -111,10 +111,10 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Extend DomainExecutionController with coding-agent-sdk descriptor support and out-of-band AbortSignal forwarding; add the strict Node adapter, immutable attempt-manifest/evidence codec and export. Test collision, identity mismatch, policy drift, timeout/cancellation recovery transition, secret redaction and no-second-session invariant with a fake driver.",
-    "S2 — Add the pinned Python 3.12 OpenHands driver and uv lock. Construct only the allowed tools, create a new conversation on dispatch, resume with agent=None on recover, persist events under the exact conversation ID and emit one bounded JSON result.",
-    "S3 — Connect the delivered BB-065 fixture/profile to the live probe after the dependency is DONE. Run dispatch, deliberately interrupt after a persisted tool event, start a fresh Node/Python process, call recover and independently assess the workspace through BB-065 acceptance.",
-    "S4 — Record exact source/SDK/model/config/process/evidence identities, document the supported strategy and limitations in Living Docs, then submit the exact candidate and evidence to Jev."
+    "S1 — Controller + Node adapter contract. In packages/agentic-system/src/domain-execution-control.js add coding-agent-sdk descriptor compatibility and out-of-band AbortSignal forwarding without changing semantic input identity. Add packages/agentic-system/src/openhands-runtime-adapter.js and export it from index.js. Adapter must resolve immutable workspace/model refs, create one manifest/session per runtimeInvocationKey, publish content-addressed runtime evidence, map only canonical result fields, and throw OpenHandsRecoveryRequiredError for ambiguous dispatch. Exit: unit-adapter and domain-regression pass including collision, drift, cancellation, result-schema, evidence-digest and no-second-session negatives.",
+    "S2 — Pinned OpenHands driver + supply chain. Add scripts/delivery/runtime/pyproject.toml, uv.lock and openhands_driver.py pinned to software-agent-sdk/openhands-tools 1.49.4 at commit 3f47426e6af4681aacab735c781426aae58a3bac. Driver constructs only TerminalTool/FileEditorTool, binds LocalConversation to exact workspace/persistence/conversation ID, sends prompt once on dispatch, resumes with agent=None on recover, and emits one bounded JSON envelope. Exit: lock-audit proves exact resolved dependencies and unit-adapter rejects extra tools, workspace escape and unpinned identities.",
+    "S3 — Real NORM-01 dispatch/recovery probe. In scripts/delivery/bb-066-probe.mjs and test/delivery/bb-066-live-contract.test.mjs require BB-065 DONE and exact request-tracker-baseline-v1 paths, dispatch NORM-01 through production DomainExecutionController, fault only after at least one durable OpenHands event, assert the canonical attempt becomes RECOVERY_REQUIRED, restart Node/Python and recover the same conversation, then run protected scripts/delivery/baseline/fixture/acceptance.mjs against copied candidate source. Exit: live-probe records exact task/prompt/profile/tool/SDK/session/tree/change/evidence identities; any missing credential/prerequisite is explicit non-pass.",
+    "S4 — Candidate-bound evidence + consolidation. Update docs/living/system/state.md with the supported coding-agent strategy and limitations; bind exact candidate/tree, lock audit, unit/domain tests, live probe, independent acceptance, process/counterevidence and content-addressed refs to worker evidence for Jev. Exit: living-docs check proves the consolidated doc changed, every acceptance criterion maps to declared verification, and worker Jev receives no producer self-acceptance."
   ],
   "acceptanceCriteria": [
     {
@@ -507,16 +507,17 @@
       ],
       "supportingPlanFields": [
         "selectedRuntimeEvidence",
-        "fixtureDependencyEvidence"
+        "fixtureDependencyEvidence",
+        "realDispatchImplementationEvidence"
       ],
       "sourceAnchors": [
         {
           "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "inv(typeof runtimeAdapter.dispatch===\"function\"&&typeof runtimeAdapter.recover===\"function\",\"runtime dispatch/recover required\")"
+          "match": "runtimeAdapter.dispatch({binding:x.binding,input:fr(input),runtimeInvocationKey:x.binding.runtimeBinding.runtimeInvocationKey})"
         },
         {
           "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "runtimeInvocationKey:\"execution-invocation:\"+hash({id,adapterRef:runtime.adapterRef,runtimeDeploymentRef:runtime.runtimeDeploymentRef})"
+          "match": "const outputs=arr(result.outputArtifactRefs??[],\"outputArtifactRefs\")"
         },
         {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
@@ -829,5 +830,21 @@
       "scripts/delivery/baseline/fixture/client.js"
     ],
     "protectedVerifier": "scripts/delivery/baseline/fixture/acceptance.mjs"
+  },
+  "realDispatchImplementationEvidence": {
+    "executionChain": [
+      "DomainExecutionController.execute validates the pinned strategy/binding and calls runtimeAdapter.dispatch with binding, immutable input and the pinned runtimeInvocationKey.",
+      "openhands-runtime-adapter resolves the exact BB-065 workspace/profile, creates the immutable manifest, then spawns the pinned Python driver in dispatch mode.",
+      "Python constructs the pinned OpenHands Agent with TerminalTool/FileEditorTool and LocalConversation bound to the manifest workspace/conversation identity, sends canonical NORM-01 once and runs.",
+      "Driver result is schema-validated; Node publishes content-addressed source/output/effect/trace refs and returns only a runtime result candidate.",
+      "The live probe copies candidate source into the protected verifier workspace and runs BB-065 acceptance; DomainExecutionController completion authority, not OpenHands, decides acceptance/publication."
+    ],
+    "failClosed": "Any identity drift, protected-path change, extra tool, malformed result, ambiguous dispatch or missing evidence blocks/recovers; it cannot be reported as SUCCEEDED.",
+    "verification": [
+      "unit-adapter",
+      "domain-regression",
+      "lock-audit",
+      "live-probe"
+    ]
   }
 }
