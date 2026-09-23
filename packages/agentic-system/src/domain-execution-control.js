@@ -56,7 +56,9 @@ export function createDomainExecutionController({claimController,claimReleaseSto
     for(let attempt=0;;attempt++){
       try{return await attemptCas(...args);}
       catch(error){
-        if(attempt>=100||error.message!=="CAS head store mutation already in progress")throw error;
+        const transientLock=error.message==="CAS head store mutation already in progress"||
+          (["EPERM","EACCES"].includes(error.code)&&String(error.path??"").endsWith(".lock"));
+        if(attempt>=100||!transientLock)throw error;
         await new Promise(resolve=>setTimeout(resolve,2));
       }
     }
