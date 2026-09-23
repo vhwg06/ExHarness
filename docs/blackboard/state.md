@@ -58,49 +58,6 @@ NONE
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
 
-## Jev decisions
-
-- BB-052 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, objective-3, objective-4, objective-5, objective-6, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-052.readiness-jev-evaluation.json
-- BB-053 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, objective-3, objective-4, objective-5, objective-6, objective-7, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-053.readiness-jev-evaluation.json
-- BB-054 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, objective-3, objective-4, objective-5, objective-6, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-054.readiness-jev-evaluation.json
-- BB-055 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, objective-3, objective-4, objective-5, objective-6, objective-7, objective-8, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-055.readiness-jev-evaluation.json
-- BB-056 [WORKER/SATISFIED]
-  satisfied: LANES, READINESS, BINDING, CLAIMS, ROUTING, CACHE, API, CONFIDENCE, DELIVERY, MIGRATION, CI, METRICS
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-056.candidate-jev-evaluation.json
-- BB-057 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, objective-3, objective-4, objective-5, objective-6, objective-7, objective-8, objective-9, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-057.readiness-jev-evaluation.json
-- BB-058 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, objective-3, objective-4, objective-5, objective-6, objective-7, objective-8, objective-9, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-058.readiness-jev-evaluation.json
-- BB-065 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-065.readiness-jev-evaluation.json
-- BB-066 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-066.readiness-jev-evaluation.json
-- BB-067 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-067.readiness-jev-evaluation.json
-
 ## Dependency graph
 
 ```text
