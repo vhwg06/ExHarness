@@ -15,7 +15,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-060.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
-  "planHash": "3e07582b93c48f43a46fdec1327f9760d35d8fda938d8e301bd3e12c1fe4b090",
+  "planHash": "2b73e7d9fe502de68333f6b7db20423e3b358c0b94b60ff6dc1ef4d1ebc7a03b",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -34,14 +34,17 @@
   ],
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agentic-system/package.json",
       "packages/oracle/**",
+      "package.json",
+      "scripts/artifact-manifest-eval.mjs",
       "docs/living/system/oracle/**",
       "docs/living/system/agentic-application/**",
       "docs/blackboard/process/oracle-reconciliation-phase.md",
-      "scripts/**",
       "test/**",
-      ".github/workflows/**"
+      ".github/workflows/test.yml"
     ],
     "write": [],
     "forbiddenWrite": [
@@ -50,21 +53,26 @@
   },
   "executionSourceScope": {
     "read": [
-      "packages/agentic-system/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agentic-system/package.json",
       "packages/oracle/**",
+      "package.json",
+      "scripts/artifact-manifest-eval.mjs",
       "docs/living/system/oracle/**",
       "docs/living/system/agentic-application/**",
       "docs/blackboard/process/oracle-reconciliation-phase.md",
-      "scripts/**",
       "test/**",
-      ".github/workflows/**"
+      ".github/workflows/test.yml"
     ],
     "write": [
       "packages/oracle/**",
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/test/**",
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/test/oracle-integration.test.js",
+      "test/oracle-architecture-boundary.test.mjs",
       "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/**"
+      "docs/living/system/agentic-application/**",
+      "packages/agentic-system/package.json"
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/objective/**",
@@ -85,16 +93,20 @@
   ],
   "verification": [
     {
-      "id": "oracle-contract",
-      "command": "node --test packages/agentic-system/test/*oracle*.test.js packages/oracle/test/*.test.js"
+      "id": "oracle-unit",
+      "command": "node --test packages/oracle/test/oracle.test.js"
     },
     {
-      "id": "oracle-agentic-regression",
-      "command": "npm run test:agentic"
+      "id": "oracle-integration",
+      "command": "node --test packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js"
     },
     {
       "id": "oracle-architecture",
       "command": "node --test test/oracle-architecture-boundary.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
     }
   ],
   "expectedOutputs": [
