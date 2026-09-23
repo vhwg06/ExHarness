@@ -45,8 +45,7 @@
     "Maintain exact observable contract: parse invalid work orders before invoking a reader; demand readFile/readArtifact methods before iterating; read each declared item in order; preserve request field names/null path and sourceRef; wrap reader exceptions with the existing Backend or QA error text and cause; preserve schema failure for malformed/absent content or sourceRef. The application remains owner of parsers and schema checks; Oracle assembles only requested data.",
     "Preservation matrix at baseline 7a266fc: (a) parseBackendWorkOrder/parseQaWorkOrder rejects invalid order before any reader call; (b) reader method guard throws the exact existing TypeError; (c) Backend readFile receives repositoryRef/revision/path in requiredFiles order and wraps failures with path, ref, revision and cause; (d) QA readArtifact receives ref, path|null, upstream workOrderId/revision/acceptanceDecision in requiredArtifacts order and wraps failures with ref and cause; (e) sourceRef and content pass unchanged to application schemas, and QA adds APPLICATION_ARTIFACT producerWorkOrderId/acceptanceDecision provenance; (f) malformed/absent sourceRef/content still fails the same ContextSchema; (g) optional manifest reader remains injected before resolution and rejects manifest/provenance/digest mismatch; (h) durable Backend->QA consumes exact manifest ref after QA_PENDING. Each row must have before/after characterization evidence, not only a happy-path result.",
     "Do not move createManifestArtifactReader, manifest store or captureAcceptedBackendArtifactManifest from packages/agentic-system/src/artifact-manifest.js in BB-060. That application-owned accepted-artifact/provenance validation happens before the injected reader reaches Oracle; BB-062 and BB-063 own concrete adapter topology and durable migration review.",
-    "Mark this as planned extraction only. After worker delivery update docs/living/system/oracle/{architecture,state,semantics,workflow}.md and affected Agentic Application docs to reflect observed source placement. Architecture tests should reject Oracle loops left in agentic-system or reverse package imports; BB-064 later owns the full end-to-end phase closure guard.",
-    "Behavior parity is a migration gate, not a worker-authored expectation: the pre-existing Wave-A Backend and Wave-C QA resolver characterization tests at research baseline 7a266fc are read-only under BB-060 sourceScope and must run unchanged against the preserved resolveBackendContext/resolveQaContext exports after extraction. New oracle-integration tests add only the uncovered parse-before-IO, reader-guard, original-cause, schema-failure and manifest/durable cases; they cannot replace or weaken those legacy assertions."
+    "Mark this as planned extraction only. After worker delivery update docs/living/system/oracle/{architecture,state,semantics,workflow}.md and affected Agentic Application docs to reflect observed source placement. Architecture tests should reject Oracle loops left in agentic-system or reverse package imports; BB-064 later owns the full end-to-end phase closure guard."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -116,7 +115,7 @@
   "implementationSlices": [
     "O11 — Add private ESM packages/oracle/package.json (name @exharness/oracle, exports . -> ./src/index.js) and src/index.js re-exporting the two concrete pull functions. Declare the app's file:../oracle dependency in packages/agentic-system/package.json. Implement pullBackendFiles(parsedOrder,{repositoryReader}) and pullQaArtifacts(parsedOrder,{artifactReader}) in src/oracle.js, moving only the two existing read loops plus reader method check, catch/cause and QA provenance assembly. Inputs are already parsed by the caller; output is a plain object with exactly the preexisting repository/files or upstream/artifacts/acceptanceCriteria shape. No Oracle import from agentic-system.",
     "O12 — Replace packages/agentic-system/src/oracle.js with two small application adapters. Each parses the raw order first, calls its corresponding infrastructure pull via ../../oracle/src/index.js, and validates the returned object with the existing application-owned ContextSchema.parse. Keep backend-application.js, qa-application.js, index.js and scripts/artifact-manifest-eval.mjs imports and observable exported APIs unchanged. Keep artifact-manifest.js above the injected reader and outside the new package.",
-    "O13 — Preserve the pre-existing read-only characterization tests packages/agentic-system/test/wave-a.test.js and wave-c.test.js unchanged and run their exact Backend S2 / QA S8 resolver assertions after extraction. Add packages/oracle/test/oracle.test.js and packages/agentic-system/test/oracle-integration.test.js only for uncovered parity rows: invalid order rejects before IO; missing reader method and null/non-object reader result retain the same TypeError; exact Backend/QA request arguments/order and path-null omission; sourceRef/content and APPLICATION_ARTIFACT provenance; wrapped error text plus original cause; malformed/missing content or sourceRef still fails application-owned ContextSchema; manifest wrong producer/revision/acceptance/digest rejection; durable QA_PENDING recovery reuses the same manifest ref. Compare value/error shape at exported resolveBackendContext/resolveQaContext, not only the new pull functions; worker may not edit Wave-A/Wave-C expectations.",
+    "O13 — Add packages/oracle/test/oracle.test.js and packages/agentic-system/test/oracle-integration.test.js with a before/after golden characterization matrix against baseline 7a266fc oracle.js: parse invalid order before IO; missing reader; exact Backend and QA reader arguments/order; sourceRef/content and QA provenance; wrapped error message and original cause; missing/malformed content or sourceRef schema failures; optional manifest wrong producer/revision/acceptance/content rejection; durable QA_PENDING recovery on same manifest ref. Keep existing BB-043 and BB-045 tests. The fixtures compare value and failure shape at the exported resolver APIs, not solely the new pull functions.",
     "O14 — Add test/oracle-architecture-boundary.test.mjs with a reusable placement/import scan and negative fixtures for an Oracle read loop copied back into agentic-system/oracle.js; an Oracle -> agentic-system/Core import; a missing app package dependency or a reverse package dependency; and application schema imports from Oracle. Check both package.json dependency and actual ESM import directions. Run concrete unit/integration/regression commands; update current Oracle and affected application Living Docs with actual new physical topology. This slice establishes a BB-060 placement check, while BB-064 independently tests full phase drift and closure."
   ],
   "acceptanceCriteria": [
@@ -140,7 +139,7 @@
         "agentic-regression"
       ],
       "evidenceRequired": [
-        "AC-2: unchanged baseline Wave-A S2 and Wave-C S8 resolver characterization tests must pass on the candidate, plus oracle-integration must pass the uncovered parse/guard/request-order/path-null/sourceRef/provenance/error-cause/schema/manifest/durable parity matrix at the unchanged exported resolveBackendContext/resolveQaContext API."
+        "AC-2: exact candidate file diff and successful named verification output, including a boundary/negative assertion tied to Backend and QA concrete context resolution behavior remains semantically unchanged after extraction."
       ]
     },
     {
@@ -184,7 +183,7 @@
         "agentic-regression"
       ],
       "evidenceRequired": [
-        "INV-1: candidate must leave Wave-A/Wave-C characterization files unmodified (they are outside sourceScope.write), pass them unchanged, and demonstrate BackendContextSchema/QaContextSchema parsing remains in the Agentic Application adapter after the concrete read loops move."
+        "INV-1: exact candidate file diff and successful named verification output, including a boundary/negative assertion tied to Preserve current resolveBackendContext/resolveQaContext behavior and application-owned schemas."
       ]
     },
     {
@@ -364,8 +363,7 @@
         2,
         4,
         5,
-        6,
-        8
+        6
       ],
       "sourceRefs": [
         "packages/agentic-system/test/wave-a.test.js",
@@ -390,8 +388,7 @@
         }
       ],
       "supportingPlanFields": [
-        "behaviorPreservationContract",
-        "negativeVerificationCases"
+        "behaviorPreservationContract"
       ]
     },
     {
@@ -556,34 +553,13 @@
         "verificationId": "oracle-integration"
       }
     ],
-    "legacyCharacterization": {
-      "baselineSha": "7a266fc4621e5c900a49f2e0a840e484a92d87af",
-      "readOnlyRefs": [
-        "packages/agentic-system/test/wave-a.test.js",
-        "packages/agentic-system/test/wave-c.test.js"
-      ],
-      "protectedBy": "Neither ref is permitted by sourceScope.write; worker changes to either file are out-of-plan and fail candidate scope validation.",
-      "directVerification": "oracle-integration executes both files explicitly before the new parity test and existing manifest/durable regression tests.",
-      "requiredExistingAssertions": [
-        "Wave-A S2 exact requiredFiles order/sourceRef and backend source-boundary failure text",
-        "Wave-C S8 exact requiredArtifacts dereference/provenance/sourceRef and QA source-boundary failure text"
-      ]
-    },
     "gate": {
-      "verificationCommand": "node --test packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js",
-      "immutableLegacyTests": [
+      "legacyTests": [
         "packages/agentic-system/test/wave-a.test.js",
         "packages/agentic-system/test/wave-c.test.js"
       ],
-      "writeAuthorization": "BB-060 sourceScope.write does not authorize either legacy test file; changing their expectations is out-of-plan and fails candidate scope validation.",
-      "exportedApiUnderTest": [
-        "resolveBackendContext",
-        "resolveQaContext"
-      ],
-      "acceptanceBinding": [
-        "AC-2",
-        "INV-1"
-      ]
+      "immutable": "sourceScope.write excludes both legacy tests; changing either is out-of-plan.",
+      "verification": "oracle-integration runs both unchanged against resolveBackendContext/resolveQaContext before the new parity/manifest/durable tests."
     }
   }
 }
