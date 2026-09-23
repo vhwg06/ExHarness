@@ -66,7 +66,9 @@
       "docs/living/system/oracle/semantics.md",
       "docs/living/system/oracle/workflow.md",
       "docs/blackboard/process/oracle-reconciliation-phase.md",
-      "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js"
+      "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
+      "packages/agentic-system/test/wave-a.test.js",
+      "packages/agentic-system/test/wave-c.test.js"
     ],
     "expectedNew": [
       "packages/oracle/package.json",
@@ -365,29 +367,30 @@
       ],
       "sourceRefs": [
         "packages/agentic-system/src/oracle.js",
-        "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
-        "packages/agentic-system/src/backend-application.js",
-        "packages/agentic-system/src/qa-application.js"
+        "packages/agentic-system/test/wave-a.test.js",
+        "packages/agentic-system/test/wave-c.test.js",
+        "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js"
       ],
       "sourceAnchors": [
         {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "const order = parseBackendWorkOrder(rawOrder);"
+          "ref": "packages/agentic-system/test/wave-a.test.js",
+          "match": "test(\"S2 resolves only the Backend files declared by the concrete order\""
         },
         {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "const order = parseQaWorkOrder(rawOrder);"
+          "ref": "packages/agentic-system/test/wave-a.test.js",
+          "match": "test(\"S2 resolution failure names the declared file and source boundary\""
         },
         {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "sourceClass: \"APPLICATION_ARTIFACT\""
+          "ref": "packages/agentic-system/test/wave-c.test.js",
+          "match": "test(\"S8 Oracle dereferences only declared internal application artifacts and preserves provenance\""
         },
         {
-          "ref": "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
-          "match": "async function expectOracleManifestError(promiseFactory, code) {"
+          "ref": "packages/agentic-system/test/wave-c.test.js",
+          "match": "test(\"S8 reports the internal artifact source boundary on dereference failure\""
         }
       ],
       "supportingPlanFields": [
+        "behaviorPreservationContract",
         "negativeVerificationCases"
       ]
     },
@@ -511,5 +514,41 @@
         "livingDocs"
       ]
     }
-  ]
+  ],
+  "behaviorPreservationContract": {
+    "baselineSha": "7a266fc4621e5c900a49f2e0a840e484a92d87af",
+    "ownershipRule": "Agentic Application continues to parse raw work orders and validate BackendContext/QaContext schemas; packages/oracle performs only the concrete ordered source reads and plain context assembly.",
+    "rows": [
+      {
+        "id": "backend-selection-and-order",
+        "baseline": "resolveBackendContext reads exactly order.requiredFiles in declared order with repositoryRef, revision and path; returned content/sourceRef are copied unchanged.",
+        "target": "pullBackendFiles preserves the same ordered read arguments and plain values; the application adapter preserves the exported resolver result shape.",
+        "verificationId": "oracle-integration"
+      },
+      {
+        "id": "backend-validation-and-errors",
+        "baseline": "Backend work-order parsing and reader-method guard happen before reads; reader failures retain the declared path/source boundary and original cause; malformed content/sourceRef fails BackendContextSchema.",
+        "target": "The application adapter parses before calling Oracle, Oracle keeps the reader guard/error wrapper, and BackendContextSchema.parse remains application-owned after the pull.",
+        "verificationId": "oracle-integration"
+      },
+      {
+        "id": "qa-selection-provenance-and-order",
+        "baseline": "resolveQaContext reads only requiredArtifacts in order with ref, path|null and upstream workOrder/revision/acceptanceDecision, preserves sourceRef/content, and assembles APPLICATION_ARTIFACT provenance.",
+        "target": "pullQaArtifacts preserves those exact reads and provenance fields; the application adapter preserves the exported resolver result shape.",
+        "verificationId": "oracle-integration"
+      },
+      {
+        "id": "qa-validation-and-errors",
+        "baseline": "QA work-order parsing and reader-method guard happen before reads; reader failures retain the application-artifact boundary and original cause; malformed content/sourceRef fails QaContextSchema.",
+        "target": "The application adapter parses before calling Oracle, Oracle keeps the reader guard/error wrapper, and QaContextSchema.parse remains application-owned after the pull.",
+        "verificationId": "oracle-integration"
+      },
+      {
+        "id": "manifest-and-durable-handoff",
+        "baseline": "Manifest provenance/digest checks remain above the injected artifactReader and durable Backend-to-QA recovery consumes the exact accepted manifest ref.",
+        "target": "BB-060 does not move artifact-manifest ownership; existing BB-043/BB-045/durable-backend-qa checks remain in the integration verification set.",
+        "verificationId": "oracle-integration"
+      }
+    ]
+  }
 }
