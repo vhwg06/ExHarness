@@ -366,27 +366,25 @@
         6
       ],
       "sourceRefs": [
-        "packages/agentic-system/src/oracle.js",
         "packages/agentic-system/test/wave-a.test.js",
-        "packages/agentic-system/test/wave-c.test.js",
-        "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js"
+        "packages/agentic-system/test/wave-c.test.js"
       ],
       "sourceAnchors": [
         {
           "ref": "packages/agentic-system/test/wave-a.test.js",
-          "match": "test(\"S2 resolves only the Backend files declared by the concrete order\""
+          "match": "assert.deepEqual(seen, [\"src/server.js\", \"test/server.test.js\"]);"
         },
         {
           "ref": "packages/agentic-system/test/wave-a.test.js",
-          "match": "test(\"S2 resolution failure names the declared file and source boundary\""
+          "match": "backend context resolution failed for test\\/server\\.test\\.js from repo:\\/\\/example-backend@rev-1: not found"
         },
         {
           "ref": "packages/agentic-system/test/wave-c.test.js",
-          "match": "test(\"S8 Oracle dereferences only declared internal application artifacts and preserves provenance\""
+          "match": "assert.deepEqual(seen.map((request) => request.ref), handoff.artifacts.map((artifact) => artifact.ref));"
         },
         {
           "ref": "packages/agentic-system/test/wave-c.test.js",
-          "match": "test(\"S8 reports the internal artifact source boundary on dereference failure\""
+          "match": "qa context resolution failed for workspace:\\/\\/rev-2\\/src\\/server\\.js from application artifact store: gone:"
         }
       ],
       "supportingPlanFields": [
@@ -520,33 +518,39 @@
     "ownershipRule": "Agentic Application continues to parse raw work orders and validate BackendContext/QaContext schemas; packages/oracle performs only the concrete ordered source reads and plain context assembly.",
     "rows": [
       {
-        "id": "backend-selection-and-order",
-        "baseline": "resolveBackendContext reads exactly order.requiredFiles in declared order with repositoryRef, revision and path; returned content/sourceRef are copied unchanged.",
-        "target": "pullBackendFiles preserves the same ordered read arguments and plain values; the application adapter preserves the exported resolver result shape.",
+        "id": "parse-and-reader-guard-order",
+        "baseline": "Both resolvers parse the raw work order before checking the injected reader. Missing readFile/readArtifact is the same TypeError and no source IO occurs.",
+        "target": "The compatibility adapter performs parseBackendWorkOrder/parseQaWorkOrder before calling packages/oracle; the concrete pull keeps the same reader-method TypeError guard before iteration.",
         "verificationId": "oracle-integration"
       },
       {
-        "id": "backend-validation-and-errors",
-        "baseline": "Backend work-order parsing and reader-method guard happen before reads; reader failures retain the declared path/source boundary and original cause; malformed content/sourceRef fails BackendContextSchema.",
-        "target": "The application adapter parses before calling Oracle, Oracle keeps the reader guard/error wrapper, and BackendContextSchema.parse remains application-owned after the pull.",
+        "id": "backend-read-and-output-shape",
+        "baseline": "For every requiredFiles entry, readFile receives {repositoryRef,revision,path} in order; repository {ref,revision} plus file {path,content,sourceRef} values are preserved.",
+        "target": "pullBackendFiles reproduces those arguments/order and plain shape; BackendContextSchema.parse remains the final application-owned validation.",
         "verificationId": "oracle-integration"
       },
       {
-        "id": "qa-selection-provenance-and-order",
-        "baseline": "resolveQaContext reads only requiredArtifacts in order with ref, path|null and upstream workOrder/revision/acceptanceDecision, preserves sourceRef/content, and assembles APPLICATION_ARTIFACT provenance.",
-        "target": "pullQaArtifacts preserves those exact reads and provenance fields; the application adapter preserves the exported resolver result shape.",
+        "id": "backend-failure-shape",
+        "baseline": "A thrown readFile error is wrapped with the exact backend path/ref/revision boundary and original cause; a null/non-object reader result keeps the existing repositoryReader.readFile() object TypeError; malformed content/sourceRef reaches BackendContextSchema and fails closed.",
+        "target": "Move those guards and catch/cause semantics with the read loop; do not normalize or fabricate reader results.",
         "verificationId": "oracle-integration"
       },
       {
-        "id": "qa-validation-and-errors",
-        "baseline": "QA work-order parsing and reader-method guard happen before reads; reader failures retain the application-artifact boundary and original cause; malformed content/sourceRef fails QaContextSchema.",
-        "target": "The application adapter parses before calling Oracle, Oracle keeps the reader guard/error wrapper, and QaContextSchema.parse remains application-owned after the pull.",
+        "id": "qa-read-and-output-shape",
+        "baseline": "For every requiredArtifacts entry, readArtifact receives ref, path ?? null, producerWorkOrderId, revision and acceptanceDecision in order; returned artifact omits path when the declared path is null while preserving content/sourceRef.",
+        "target": "pullQaArtifacts reproduces those exact request/output rules and order; QaContextSchema.parse remains the final application-owned validation.",
+        "verificationId": "oracle-integration"
+      },
+      {
+        "id": "qa-provenance-and-failure-shape",
+        "baseline": "QA adds APPLICATION_ARTIFACT provenance with producerWorkOrderId and acceptanceDecision. Thrown reader errors keep the exact application-artifact boundary and original cause; null/non-object reader results keep the existing readArtifact() object TypeError.",
+        "target": "The concrete QA pull owns only that assembly/read behavior and preserves exact failure shape; it gains no acceptance authority.",
         "verificationId": "oracle-integration"
       },
       {
         "id": "manifest-and-durable-handoff",
-        "baseline": "Manifest provenance/digest checks remain above the injected artifactReader and durable Backend-to-QA recovery consumes the exact accepted manifest ref.",
-        "target": "BB-060 does not move artifact-manifest ownership; existing BB-043/BB-045/durable-backend-qa checks remain in the integration verification set.",
+        "baseline": "Manifest producer/revision/acceptance/digest validation happens in the injected application-owned reader before Oracle data reaches QaContextSchema; durable QA_PENDING recovery consumes the same accepted manifest ref.",
+        "target": "artifact-manifest.js remains outside packages/oracle and existing BB-043/BB-045/durable-backend-qa regression checks stay in the integration verification command.",
         "verificationId": "oracle-integration"
       }
     ]
