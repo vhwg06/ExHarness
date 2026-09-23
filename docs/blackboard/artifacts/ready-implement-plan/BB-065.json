@@ -9,12 +9,17 @@
     "hash": "3405c3cb591120caf9e8290fc19acba43931ceb62503fafc2e913ee0d3d78f8b"
   },
   "scope": [
-    "delivery.baseline"
+    "delivery.baseline.fixture",
+    "delivery.baseline.direct-agent-runner",
+    "delivery.baseline.independent-acceptance",
+    "delivery.baseline.measurement",
+    "delivery.baseline.preregistration"
   ],
   "outOfScope": [
-    "Unbounded autonomous product decisions and expansion beyond the supported delivery profile.",
-    "Replacing delivered Integration or Oracle authority contracts.",
-    "Treating this research allocation as implementation readiness or product delivery."
+    "Production ExHarness runtime adapter (BB-066), production sandbox guarantee (BB-067), SCM write/merge (BB-068), deployed product proof (BB-069) and full pilot execution (BB-074).",
+    "Changing any packages/ source, existing evaluator, role scheduling, Oracle package layout or acceptance authority.",
+    "Claiming a value uplift from calibration runs, deterministic doubles or existing reference evals.",
+    "Selecting the universally best model or framework; model choice is a required pinned run-profile input identical across matched arms."
   ],
   "constraints": [
     "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
@@ -27,112 +32,177 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Which bounded existing-repository change gives a useful first result before full lifecycle integration?",
-    "Candidate direction, not selected architecture: Compare mini-SWE-agent direct execution with an OpenHands direct baseline; isolate model/tool differences from ExHarness overhead.",
-    "Candidate direction, not selected architecture: Choose fixture stack, acceptance scenarios, human-effort accounting, resource ceilings and predeclared pilot thresholds."
+    "D1 \u2014 Build a development-only fixture and measurement harness under scripts/delivery/baseline, not a product runtime module. Current domain-execution-control.js exposes dispatch/recover and separate completion/publication; baseline must record that future seam without invoking or rewriting it. Existing agentic-backend-qa-eval.mjs uses synthetic repo/artifact contents and PASS verifiers: reuse its scenario separation only, never its results as live delivery evidence.",
+    "D2 \u2014 Use a Node 24.19.0 HTTP application with node:sqlite persistent storage and vanilla HTML/JS for the initial request-tracker fixture. This is a small reproducible measurement workload compatible with the repository Node runtime; it does not validate Go/PostgreSQL/React delivery. A later stack profile requires separate pilot evidence. Existing fixture implements CRUD; the first agent task corrects whitespace-only and length validation across API and UI while preserving persisted rows.",
+    "D3 \u2014 Primary direct baseline is mini-SWE-agent at 04d809ceab9df28f9adaed044884180159172930. Its DefaultAgent.run/query/save and DockerEnvironment.execute are inspected source seams. Use a thin Python driver importing DefaultAgent, DockerEnvironment and get_model; keep upstream source unmodified. OpenHands SDK at cd02db3a181c0bed5ee34711b46c06c88288854e is a compared alternative, not a second implementation obligation here. Its remote workspace example adds runtime credentials/server lifecycle beyond the minimal baseline; reconsider in BB-066. Rebuilding a custom Core coding loop is rejected for this baseline because it confounds harness overhead with an entirely different agent.",
+    "D4 \u2014 An ExHarness comparison arm is an external runner adapter contract accepted by the measurement schema, not fabricated integration in BB-065. Only direct-mini live calibration is required now; ExHarness live cohorts run after BB-066 onward. Arm identity includes exact agent commit, model snapshot, prompt/tool hashes, fixture digest, budgets, starting git tree and dependency lock/container digest. A model alias, absent price metadata or mismatched matched-arm profile prevents dispatch/comparison.",
+    "D5 \u2014 Verification executes outside the agent workspace against a copied candidate with a frozen acceptance-suite digest. The agent cannot mount or edit verification code, expected results, profile manifest, accounting ledger or output evidence. Completion marker and exit code are execution facts only; ACCEPTED requires all independent API/browser/persistence/regression checks on the same candidate tree. Evaluator failure means INCONCLUSIVE, not PASS.",
+    "D6 \u2014 mini cost_limit is checked between calls and may overshoot, and default step/time limits can be unlimited. Configure nonzero step/time limits and enforce an outer provider-request reservation budget with a per-call maximum output, bounded input context and pinned price table. Reserve worst-case cost/tokens before each call, settle actual usage after it, and preserve uncertain reservations after an ambiguous response. Driver runs outside the tool container; credentials and provider HTTP access remain there. This experiment wrapper is not the production sandbox promised by BB-067.",
+    "D7 \u2014 Record all attempts before provider dispatch using append-only JSONL plus fsync; write final summaries atomically. Deduplicate usage by provider request ID and human intervals by event identity. Unknown usage is null with an uncertainty flag, never zero; unknown monetary total blocks cost/value comparison. Retry attempts retain taskId and increment attemptNumber; their costs and human repair time remain in the task denominator.",
+    "D8 \u2014 Freeze protocol and manifest digest before the first provider call. Use 20 matched pairs across two eligible repository contexts, 10 per context; pair IDs are P01\u2013P20, P07\u2013P10 and P17\u2013P20 held out (four/context), remaining 12 development. Select contexts/tasks before any outcomes and counterbalance arm order by pair parity. Research fixes eligibility, selection and thresholds; actual repository SHAs, model snapshot and operator identity are required operational registration values, not design gaps.",
+    "D9 \u2014 Primary value target is >=20% reduction in median paired human active-time ratio, with ExHarness accepted-rate at least the direct rate, zero critical escaped defects, <=10% total-cost-per-accepted-task increase and no extra major escaped defects over a 7-day observation window. Apply gates only to complete registered cohorts; report uncertainty and no-go/inconclusive explicitly. These thresholds are product hypotheses retained from the roadmap, not empirical findings. No post-result threshold relaxation.",
+    "D10 \u2014 Live calibration for BB-065 requires three independently reset direct-mini runs (the validation change plus two distinct seeded changes), an acceptance rejection of a deliberate defect and a timeout/usage-unknown case. Never require an agent to succeed to prove accounting: record failures accurately. Deterministic CI is separate and never carries LIVE evidence. Running the whole pilot, choosing customer repositories, or proving ExHarness improvement belongs to BB-074."
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "package.json",
       "packages/agentic-system/src/domain-execution-control.js",
+      "scripts/agentic-backend-qa-eval.mjs",
       "docs/living/system/state.md"
     ],
     "expectedNew": [
-      "scripts/delivery/bb-065-probe.mjs"
+      "scripts/delivery/baseline/contract.mjs",
+      "scripts/delivery/baseline/run.mjs",
+      "scripts/delivery/baseline/report.mjs",
+      "scripts/delivery/baseline/mini_driver.py",
+      "scripts/delivery/baseline/provider_budget.py",
+      "scripts/delivery/baseline/verify.mjs",
+      "scripts/delivery/baseline/profile.json",
+      "scripts/delivery/baseline/fixture/server.mjs",
+      "scripts/delivery/baseline/fixture/index.html",
+      "scripts/delivery/baseline/fixture/client.js",
+      "scripts/delivery/baseline/fixture/tasks.json",
+      "scripts/delivery/baseline/fixture/acceptance.mjs",
+      "scripts/delivery/baseline/Dockerfile",
+      "scripts/delivery/baseline/requirements.lock",
+      "scripts/delivery/baseline/package.json",
+      "scripts/delivery/baseline/package-lock.json"
     ],
     "expectedTests": [
-      "test/delivery/bb-065.test.mjs"
+      "test/delivery/baseline-contract.test.mjs",
+      "test/delivery/baseline-fixture.test.mjs",
+      "test/delivery/baseline-report.test.mjs",
+      "test/delivery/baseline-runner.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
+      "package.json",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "scripts/agentic-backend-qa-eval.mjs",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
       "docs/blackboard/process/delivery-product-roadmap.md",
       "docs/blackboard/process/delivery-research/BB-065.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "scripts/delivery/baseline/**",
+      "test/delivery/**"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "scripts/delivery/baseline/**",
+      "test/delivery/baseline-contract.test.mjs",
+      "test/delivery/baseline-fixture.test.mjs",
+      "test/delivery/baseline-report.test.mjs",
+      "test/delivery/baseline-runner.test.mjs",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
+      "packages/**",
+      ".github/**",
       "docs/blackboard/**",
-      ".github/**"
+      "package.json",
+      "scripts/blackboard-jev.mjs",
+      "scripts/agentic-backend-qa-eval.mjs"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S1 \u2014 Add fixture/profile/contracts and registration validation. Implement concrete record/routes/first-change tasks from fixtureContract; pin runtime/dependency identities and preserve stable acceptance outside agent workspace.",
+    "S2 \u2014 Add direct-mini driver and Node supervisor. Implement real dispatch, per-call reservation/accounting, timeout/cleanup, immutable manifest and append-only attempt/usage events. No product packages are changed.",
+    "S3 \u2014 Add independent API/browser/persistence verifier and report calculator. Implement exact candidate binding, missing-data rules, human interval accounting, complete denominators and predeclared value verdicts.",
+    "S4 \u2014 Add deterministic boundary tests plus three reset direct live calibration runs; prove deliberately defective output is rejected. Persist raw/redacted hashed evidence, report truthful failures, and update Living state with supported baseline capability and limits. Comparative ExHarness pilot remains deferred."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "A versioned fixture specifies create/list/update/validation/persistence/browser acceptance and a smaller first change; external credentials are referenced, never embedded.",
+      "id": "FIXTURE",
+      "statement": "Frozen fixture and first change implement the declared CRUD, Unicode validation, browser and restart-persistence acceptance contract.",
       "verificationIds": [
-        "live-probe"
+        "fixture"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Reset baseline and candidate digests; API boundary results; browser trace; same-database restart results."
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "A reproducible baseline runner records attempted/accepted/failed tasks, human active time, lead time, total cost and model/tool identities; no precomputed success is substituted.",
+      "id": "REGISTRATION",
+      "statement": "Invalid/floating profile pins, missing secrets references, insufficient task sample, mutable protocol or mismatched arm identity fail before provider dispatch.",
       "verificationIds": [
-        "live-probe"
+        "contract"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Valid registration manifest digest; negative cases for each preflight rejection and zero provider calls."
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "Pilot selection, held-out partition, budgets, quality and value thresholds are fixed before comparative results; unresolved stakeholder choices are explicit.",
+      "id": "REAL_RUN",
+      "statement": "Three reset direct-mini calibration runs use the pinned upstream agent and real provider; submitted/failed/timeout results and provider request identities are recorded truthfully.",
       "verificationIds": [
-        "live-probe"
+        "live"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Three run manifests, provider usage/request records, candidate trees and independent verification outputs; no mock-labelled evidence accepted as LIVE."
       ]
     },
     {
-      "id": "INV-1",
-      "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "id": "QA_AUTHORITY",
+      "statement": "A deliberate title/status defect is rejected by frozen independent verification despite agent success; evaluator or tree drift yields inconclusive/invalid evidence.",
       "verificationIds": [
-        "boundary-probe"
+        "fixture",
+        "runner",
+        "live"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Seeded bad candidate checks; protected-suite digest before/after; producer-success versus rejected acceptance."
       ]
     },
     {
-      "id": "INV-2",
-      "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "id": "BUDGET",
+      "statement": "Per-request reservations and outer process/container supervision enforce finite shared task budgets, including retries and unknown usage.",
       "verificationIds": [
-        "boundary-probe"
+        "runner"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Boundary/overshoot simulation, two-attempt shared budget, missing-usage reservation, timeout process/container cleanup and zero extra dispatch after exhaustion."
       ]
     },
     {
-      "id": "INV-3",
-      "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "id": "ACCOUNTING",
+      "statement": "Report includes every registered task and billed attempt; missing values never become zero and zero accepted tasks cannot produce a finite cost-per-accepted value.",
       "verificationIds": [
-        "boundary-probe"
+        "report"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Hand-calculated fixture outputs for success/failure/retry/missing/censored cases; deterministic report bytes and denominator reconciliation."
+      ]
+    },
+    {
+      "id": "HUMAN",
+      "statement": "Person-minute accounting merges same-task overlapping intervals and rejects incomplete or conflicting allocation; paired ratios preserve zero/missing denominator uncertainty.",
+      "verificationIds": [
+        "report"
+      ],
+      "evidenceRequired": [
+        "Interval union/duplicate event tests and paired ratio null/inconclusive cases."
+      ]
+    },
+    {
+      "id": "PROTOCOL",
+      "statement": "The 20-pair two-context stratified holdout, counterbalanced order, fixed budgets and 7-day quality/value gates are immutable after registration.",
+      "verificationIds": [
+        "contract",
+        "report"
+      ],
+      "evidenceRequired": [
+        "Frozen protocol hash; partition/order validation; threshold mutation rejection; PASS/NO_GO/INCONCLUSIVE examples."
+      ]
+    },
+    {
+      "id": "BOUNDARY",
+      "statement": "The baseline runner has no product package mutation, organization scheduling, Oracle or acceptance-publication authority.",
+      "verificationIds": [
+        "runner"
+      ],
+      "evidenceRequired": [
+        "Changed-path audit and malicious fixture/protected-file attempts rejected; baseline output cannot emit a product outcome receipt."
       ]
     }
   ],
@@ -140,44 +210,60 @@
     {
       "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
       "criterionIds": [
-        "INV-1"
+        "QA_AUTHORITY",
+        "BOUNDARY"
       ]
     },
     {
       "invariant": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
       "criterionIds": [
-        "INV-2"
+        "REGISTRATION",
+        "REAL_RUN",
+        "QA_AUTHORITY",
+        "BUDGET",
+        "ACCOUNTING"
       ]
     },
     {
       "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
       "criterionIds": [
-        "INV-3"
+        "BOUNDARY",
+        "PROTOCOL"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-065-probe.mjs"
+      "id": "contract",
+      "command": "node --test test/delivery/baseline-contract.test.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-065.test.mjs"
+      "id": "fixture",
+      "command": "node --test test/delivery/baseline-fixture.test.mjs"
+    },
+    {
+      "id": "report",
+      "command": "node --test test/delivery/baseline-report.test.mjs"
+    },
+    {
+      "id": "runner",
+      "command": "node --test test/delivery/baseline-runner.test.mjs"
+    },
+    {
+      "id": "live",
+      "command": "node scripts/delivery/baseline/run.mjs --mode audit-live --profile \"$EXHARNESS_BASELINE_PROFILE\" --output \"$EXHARNESS_BASELINE_OUTPUT\""
     }
   ],
-  "researchGaps": [
-    "Which bounded existing-repository change gives a useful first result before full lifecycle integration?",
-    "Compare mini-SWE-agent direct execution with an OpenHands direct baseline; isolate model/tool differences from ExHarness overhead.",
-    "Choose fixture stack, acceptance scenarios, human-effort accounting, resource ceilings and predeclared pilot thresholds.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Producer success with failing independent acceptance.",
-    "Missing or stale source/runtime identity represented as current evidence.",
-    "Unresolved external effect retried as if confirmed safe."
+    "Submitted exit with wrong API result must reject.",
+    "Edited acceptance suite, symlink escape or candidate-tree change invalidates verification.",
+    "Missing cost/timing data cannot be zero-filled.",
+    "Duplicate request/interval IDs cannot double-count; inconsistent duplicate payload fails.",
+    "Timeout or ambiguous provider completion cannot be silently retried without reserving original cost.",
+    "Changed model/profile/acceptance after results rejects the entire comparison.",
+    "Removing failed tasks or using development examples as heldout rejects report.",
+    "Missing credentials causes an explicit live prerequisite failure, never a skipped passing live gate."
   ],
   "laneContracts": [
     {
@@ -209,6 +295,151 @@
       "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-065 Living truth describes only the implemented and independently verified supported capability and limitations."
-  }
+    "statement": "Living state documents the implemented development baseline runner, independent verification and measured evidence limitations; it does not claim a real ExHarness adapter, supported deployment or product-value uplift."
+  },
+  "fixtureContract": {
+    "identity": "request-tracker-baseline-v1; content digest covers fixture source, tasks, acceptance and lockfiles; version is a test profile identity, not a Blackboard history chain.",
+    "runtime": "Node 24.19.0, SQLite file in a per-run temp directory, HTTP bound to 127.0.0.1 on an allocated port, bundled vanilla UI; container and all installed packages pinned by digest/lock before LIVE.",
+    "record": {
+      "id": "server-created positive integer",
+      "title": "trimmed string, 1..120 Unicode code points",
+      "description": "string, 0..2000 Unicode code points",
+      "status": "OPEN or CLOSED; default OPEN"
+    },
+    "routes": [
+      "POST /requests returns 201 and created record; invalid body returns 400 with stable field error and inserts no row.",
+      "GET /requests returns 200 JSON records ordered by ascending id.",
+      "PATCH /requests/:id accepts title/description/status updates, returns 200; unknown id returns 404; invalid patch returns 400 without partial mutation.",
+      "GET / serves UI for create/list/edit/status change with visible validation errors and keyboard-operable controls."
+    ],
+    "firstChange": "Starter intentionally accepts whitespace-only or >120-code-point titles and omits matching browser feedback. Task NORM-01 adds validation to create/update and UI; preserves valid CRUD and stored data. No pre-solved candidate is dispatched.",
+    "calibrationTasks": [
+      "NORM-01 title normalization/length boundary fix",
+      "STATUS-01 reject invalid status without partial update",
+      "ORDER-01 stable list order after close/reopen"
+    ],
+    "acceptance": [
+      "Create a valid request, verify normalized title and exact round-trip data through API and UI.",
+      "Reject empty, whitespace-only, 121-code-point title and invalid status; accept exactly 120 code points; use a non-BMP Unicode boundary case.",
+      "Update a title and status, then restart the application process against the same database and assert unchanged persisted rows.",
+      "Failed update preserves original fields; unknown id is 404; create/list behavior remains intact.",
+      "Verify UI displays new and changed values after reload; malicious HTML content is displayed as text."
+    ],
+    "workspaceIsolation": "Trusted orchestrator creates separate agent and verifier directories; only fixture source and task prompt enter the tool container. Acceptance suite and manifests remain outside; copy candidate source to verifier directory and hash before and after observation. Changes to protected files, symlink escapes or tree drift invalidate the run."
+  },
+  "runnerContract": {
+    "cli": [
+      "node scripts/delivery/baseline/run.mjs --mode validate --profile <path>",
+      "node scripts/delivery/baseline/run.mjs --mode deterministic --output <directory>",
+      "node scripts/delivery/baseline/run.mjs --mode live --profile <path> --output <directory>",
+      "node scripts/delivery/baseline/report.mjs --input <directory> --output <report.json>",
+      "node scripts/delivery/baseline/run.mjs --mode audit-live --profile <path> --output <directory>"
+    ],
+    "lifecycle": "REGISTERED (fsync manifest/attempt) -> PREFLIGHT -> RUNNING -> VERIFYING -> ACCEPTED|REJECTED|INCONCLUSIVE|FAILED|TIMED_OUT|CANCELLED. Missing credentials/profile pins fail preflight before dispatch and yield no live-success claim. Every terminal state stores reason/evidence identities.",
+    "driver": "Node spawns Python using an argument array, not shell interpolation. Python imports upstream classes at pinned commit, builds a DockerEnvironment with only the candidate workspace, constructs the selected model through get_model, wraps its query with provider_budget reservation/usage capture, runs DefaultAgent, saves trajectory and emits structured exit metadata. Submitted never sets acceptance.",
+    "budgets": {
+      "maxWallSeconds": 1200,
+      "maxModelCalls": 100,
+      "maxTotalTokens": 100000,
+      "maxApiUsd": 5,
+      "maxToolCommandSeconds": 30,
+      "maxOutputTokensPerCall": 4096,
+      "maxInputTokensPerCall": 16384,
+      "maxAttemptsPerTask": 2
+    },
+    "budgetSemantics": "Shared per-task budget includes both attempts, failed/format-error/retried model requests and verification/model costs. Admit each call only if worst-case reserved input/output cost and tokens fit remaining budget. Disable hidden provider retries or instrument each actual request. Unknown token count uses conservative reservation and marks totals unknown; abort further calls if uncertainty cannot be reconciled. Wall limit terminates child process group and owned container; retain evidence of unfinished operations.",
+    "modelProfile": "Required immutable provider model snapshot ID, endpoint origin, provider-request pricing provenance/date/unit rates, max context/tokenizer profile and credential environment-variable name. Reject latest/auto/current aliases and missing limits; secrets never serialized. The exact same profile hash is required within a matched pair; a profile change starts a new cohort.",
+    "dependencyLock": "Pin mini commit above; generate requirements.lock with exact transitive versions and hashes at implementation, preserving upstream excluded versions. Pin Node base-image digest and Playwright version/browser digest in local package-lock/profile. Validate installed versions/image against profile before each run. No floating main/latest during measurement.",
+    "acceptance": "Run frozen acceptance code using trusted Node runner and Playwright Chromium installed from lock, outside agent environment. Save checks, screenshots/trace, process identity and candidate digest. No evaluator source is writable by the agent. A failing mandatory check rejects; missing evidence or verifier infrastructure failure is inconclusive.",
+    "resume": "A restarted measurement runner marks interrupted calls UNKNOWN until provider/trajectory evidence resolves them. It may start a new recorded attempt within remaining task budget; it never pretends to resume a durable ExHarness attempt. Domain execution integration is deferred to BB-066.",
+    "outputs": "manifest.json, attempts.jsonl, usage.jsonl, human-events.jsonl, candidate.json, verification.json, trajectory.json, browser-trace.zip where available, report.json; each semantic record contains schemaVersion, experimentId, taskId, arm, attemptId, sequence, timestamp and content identity. Published evidence is redacted then hashed; pre-redaction secrets are never uploaded.",
+    "exitCodes": "0 valid completed command (including truthful report of rejected runs); 2 invalid profile/manifest/evidence; 3 unavailable live prerequisite; 4 runner infrastructure failure. Delivery acceptance is read from verification.json and report status, never inferred from process exit 0."
+  },
+  "measurementContract": {
+    "identity": "Experiment manifest hashes protocol, registered task set, repository/base trees, fixture/acceptance versions, matched arms, model/tool/profile, budgets, task-order schedule and operator/reviewer IDs before any outcome. Root manifest remains immutable during a cohort.",
+    "taskAccounting": "Attempt count is count of registered dispatch attempts, including failed/cancelled/timeouts. Task success is at most one accepted final candidate within its original total budget. All attempts remain chargeable. Missing tasks remain in registered denominator as incomplete; they cannot be silently excluded.",
+    "humanTime": "Human events are START/STOP with eventId, personId, taskId, activity REVIEW|REPAIR|COORDINATION|SETUP and UTC timestamp. Sum interval union per person/task to avoid double count, then sum across people as person-minutes. Missing/unclosed/overlapping cross-task allocation is invalid until reconciled; missing human time is null, never zero. Include repair/review of rejected attempts.",
+    "metrics": [
+      "acceptedTaskRate=accepted registered tasks / all registered tasks",
+      "humanActiveMinutes=sum validated person-minutes per task including failed attempts",
+      "leadTimeSeconds=terminalTaskTimestamp - registeredStartTimestamp, with unfinished tasks censored and counted",
+      "totalTaskCost=sum API settled charges + infrastructure allocation + evaluator charges over every attempt; unknown component means total null",
+      "costPerAcceptedTask=sum costs of ALL tasks including failures / accepted task count; zero accepted tasks => null and no-go, never zero",
+      "pairedHumanRatio=ExHarness person-minutes / direct person-minutes per registered matched pair; direct zero => pair ratio undefined and value conclusion INCONCLUSIVE",
+      "escapedDefects=independently recorded CRITICAL|MAJOR|MINOR issues during 7 days after final acceptance; unresolved window => no final value verdict"
+    ],
+    "uncertainty": "Report all paired observations, median paired ratio, median lead time, accepted counts/rates, and deterministic paired bootstrap 95% interval (10,000 resamples, seed 65074) as descriptive uncertainty. No statistical-significance claim from the small proposed sample. Report setup separately and both included/amortized totals; primary cost includes setup allocated equally to registered cohort tasks.",
+    "promotionRule": "No benefit declaration for missing/incomplete cohorts or unknown costs/human intervals. Value gate evaluates full registered sample, not only successful pairs. Held-out results cannot be used to tune the candidate and then reported as untouched holdout."
+  },
+  "pilotProtocol": {
+    "sample": "20 matched pairs / 40 task executions before retries, 10 pairs from each of two repository contexts. Each context has an independently frozen base tree and meaningful API/UI/persistence changes. Exclude tasks already solved by experiment participants or visible in the agent prompt/trajectory; freeze exclusions before outcomes.",
+    "selection": "At registration, enumerate eligible tasks sorted by repository identifier then task ID. Within each context take first 10 after deterministic shuffle using seed 65074. Task list must contain at least 10 eligible items per context; otherwise reject registration. Repository choices and task descriptions require a recorded product-owner registration decision before execution, never agent-invented customer authority.",
+    "partition": "Heldout P07\u2013P10 and P17\u2013P20 (8 pairs, four/context), development remaining 12. Each context appears in both partitions.",
+    "order": "Odd pair direct then ExHarness; even pair ExHarness then direct. Same starting tree/profile, separate reset workspaces, separate hidden acceptance copies. Different reviewers or blinded order where feasible; record familiarity/order effects rather than asserting they are eliminated.",
+    "gate": "Median paired human-time ratio <=0.80; accepted-task rate not lower than direct; no critical escaped defect and no excess major escaped defects; total cost per accepted task <=1.10 times direct; 7-day observation completed. Direct cost-per-accepted null/zero, missing intervals or incomplete sample => INCONCLUSIVE. Failing any observed gate => NO_GO.",
+    "changeControl": "Thresholds, tasks and profiles cannot be changed within a started cohort. A changed protocol receives a new experiment identity and a fresh untouched cohort; earlier results remain included and labelled. No completed Blackboard artifact is rewritten to retroactively claim benefit.",
+    "prerequisites": "BB-074 executes comparative arms only after relevant delivery dependencies; BB-065 delivers registration validation and direct calibration, not the future ExHarness adapter or pilot."
+  },
+  "researchEvidence": [
+    {
+      "source": "https://github.com/SWE-agent/mini-swe-agent/tree/04d809ceab9df28f9adaed044884180159172930",
+      "inspected": [
+        "src/minisweagent/agents/default.py",
+        "src/minisweagent/environments/docker.py",
+        "pyproject.toml"
+      ],
+      "finding": "Direct loop and serialization are sufficient for the baseline; configured cost checks happen between calls, defaults allow unlimited time/steps, Docker completion marker is self-report. Add external accounting and independent verification; do not credit upstream benchmark scores as our quality."
+    },
+    {
+      "source": "https://github.com/OpenHands/software-agent-sdk/tree/cd02db3a181c0bed5ee34711b46c06c88288854e",
+      "inspected": [
+        "README.md",
+        "examples/02_remote_agent_server/04_convo_with_api_sandboxed_server.py"
+      ],
+      "finding": "Workspace/conversation/events/cost seams are usable for the future adapter; remote example needs distinct runtime credentials and server-image identity. More operational surface than required for one direct baseline."
+    },
+    {
+      "source": "https://metr.org/blog/2026-02-24-uplift-update/",
+      "finding": "Use matched, predeclared measurement and record task selection/familiarity limits; do not extrapolate earlier productivity findings to this system."
+    },
+    {
+      "source": "scripts/agentic-backend-qa-eval.mjs",
+      "finding": "Current reference uses synthetic source bodies, version increments and PASS verification doubles, so its success is contract evidence only."
+    }
+  ],
+  "verificationSetup": {
+    "offline": "Use Node 24.19.0 built-ins and child processes for deterministic tests; Python/agent/model doubles are permitted only in runner contract tests and tagged DETERMINISTIC. Fixture tests install pinned local Playwright package/browser and require real local HTTP/SQLite behavior; no model call.",
+    "live": "Worker creates an EXHARNESS_BASELINE_PROFILE file conforming to the fixed schema and an EXHARNESS_BASELINE_OUTPUT directory before collect. Model/provider identity and prices are operational inputs, same for all calibration runs; agent credentials remain in the external environment and are excluded from evidence. Docker, Python >=3.10 with locked upstream dependencies and installed browser are required. If unavailable, report prerequisite blocked; never mark live gate passed.",
+    "credentialSeparation": "Repository evidence collection normally has no provider credentials. Run live calibration in a separately authorized credential-bearing environment first; verification command consumes the resulting profile/evidence via an offline audit mode when run by credential-free collector. See liveEvidenceContract for exact split."
+  },
+  "liveEvidenceContract": {
+    "produce": "Before candidate collection, an authorized live operator runs --mode live with secrets outside CI collection. Final live bundle binds exact worker candidate SHA/tree, immutable manifest, pinned tool/model/fixture identities, provider request IDs, independently captured usage, and verification outputs. Three tasks plus seeded negative/timeout evidence are required.",
+    "audit": "--mode audit-live is read-only, credential-free and never dispatches. It verifies schema, all content digests, candidate SHA against collector subject, complete registered calibration task IDs, LIVE labels, independent verifier identity and raw/provider records. It fails on absent, stale, deterministic or incomplete evidence. Attach exact bundle files via contract.claimEvidence for Jev to inspect; hashes alone or producer narrative cannot establish real execution.",
+    "authority": "A live label is not authentication; evidence requires independently sourced provider request/usage records and verifier output bound to candidate identity. If provenance cannot be established, audit and Jev must report insufficient evidence. Product integration/acceptance remains outside this baseline."
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A versioned fixture specifies create/list/update/validation/persistence/browser acceptance and a smaller first change; external credentials are referenced, never embedded.",
+      "criterionIds": [
+        "FIXTURE",
+        "REGISTRATION"
+      ]
+    },
+    {
+      "objectiveCriterion": "A reproducible baseline runner records attempted/accepted/failed tasks, human active time, lead time, total cost and model/tool identities; no precomputed success is substituted.",
+      "criterionIds": [
+        "REAL_RUN",
+        "QA_AUTHORITY",
+        "BUDGET",
+        "ACCOUNTING",
+        "HUMAN"
+      ]
+    },
+    {
+      "objectiveCriterion": "Pilot selection, held-out partition, budgets, quality and value thresholds are fixed before comparative results; unresolved stakeholder choices are explicit.",
+      "criterionIds": [
+        "PROTOCOL"
+      ]
+    }
+  ]
 }

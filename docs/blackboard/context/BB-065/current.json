@@ -15,7 +15,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-065.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-  "planHash": "d722d1594447aced177ff4017858f076ca8016fe891969f42fa946484045737b",
+  "planHash": "eadc21556f84132749e384e832db6884f6260be29bc942f4b7324baaa15e487c",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -31,15 +31,16 @@
   ],
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
+      "package.json",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "scripts/agentic-backend-qa-eval.mjs",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
       "docs/blackboard/process/delivery-product-roadmap.md",
       "docs/blackboard/process/delivery-research/BB-065.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "scripts/delivery/baseline/**",
+      "test/delivery/**"
     ],
     "write": [],
     "forbiddenWrite": [
@@ -48,28 +49,32 @@
   },
   "executionSourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
+      "package.json",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "scripts/agentic-backend-qa-eval.mjs",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
       "docs/blackboard/process/delivery-product-roadmap.md",
       "docs/blackboard/process/delivery-research/BB-065.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "scripts/delivery/baseline/**",
+      "test/delivery/**"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "scripts/delivery/baseline/**",
+      "test/delivery/baseline-contract.test.mjs",
+      "test/delivery/baseline-fixture.test.mjs",
+      "test/delivery/baseline-report.test.mjs",
+      "test/delivery/baseline-runner.test.mjs",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
+      "packages/**",
+      ".github/**",
       "docs/blackboard/**",
-      ".github/**"
+      "package.json",
+      "scripts/blackboard-jev.mjs",
+      "scripts/agentic-backend-qa-eval.mjs"
     ]
   },
   "artifactWriteScope": [
@@ -82,12 +87,24 @@
   ],
   "verification": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-065-probe.mjs"
+      "id": "contract",
+      "command": "node --test test/delivery/baseline-contract.test.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-065.test.mjs"
+      "id": "fixture",
+      "command": "node --test test/delivery/baseline-fixture.test.mjs"
+    },
+    {
+      "id": "report",
+      "command": "node --test test/delivery/baseline-report.test.mjs"
+    },
+    {
+      "id": "runner",
+      "command": "node --test test/delivery/baseline-runner.test.mjs"
+    },
+    {
+      "id": "live",
+      "command": "node scripts/delivery/baseline/run.mjs --mode audit-live --profile \"$EXHARNESS_BASELINE_PROFILE\" --output \"$EXHARNESS_BASELINE_OUTPUT\""
     }
   ],
   "expectedOutputs": [
