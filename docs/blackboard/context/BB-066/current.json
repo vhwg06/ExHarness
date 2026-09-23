@@ -15,7 +15,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-066.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
-  "planHash": "0ce65d617ae8fa441eea8281615258adaa9ff932b30c01cdbcdb33010cfb0f6b",
+  "planHash": "d6e6c9e89c7b7b53b57f4e241bf69556e385e3178d05254af1ce1cbcf9f987ba",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -54,14 +54,16 @@
   ],
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
-      "docs/blackboard/process/delivery-research/BB-066.md",
-      "scripts/**",
-      "test/**",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
+      "scripts/delivery/runtime/**",
+      "scripts/delivery/bb-066-probe.mjs",
+      "test/delivery/bb-066-live-contract.test.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/living/system/state.md",
       "package.json"
     ],
     "write": [],
@@ -71,28 +73,36 @@
   },
   "executionSourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
-      "docs/blackboard/process/delivery-research/BB-066.md",
-      "scripts/**",
-      "test/**",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
+      "scripts/delivery/runtime/**",
+      "scripts/delivery/bb-066-probe.mjs",
+      "test/delivery/bb-066-live-contract.test.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/living/system/state.md",
       "package.json"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
+      "scripts/delivery/runtime/openhands_driver.py",
+      "scripts/delivery/runtime/requirements.in",
+      "scripts/delivery/runtime/uv.lock",
+      "scripts/delivery/bb-066-probe.mjs",
+      "test/delivery/bb-066-live-contract.test.mjs",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "package.json",
+      "docs/living/system/agentic-application/**"
     ]
   },
   "artifactWriteScope": [
@@ -105,12 +115,28 @@
   ],
   "verification": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-066-probe.mjs"
+      "id": "unit-adapter",
+      "command": "node --test packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-066.test.mjs"
+      "id": "domain-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js"
+    },
+    {
+      "id": "live-contract",
+      "command": "node --test test/delivery/bb-066-live-contract.test.mjs"
+    },
+    {
+      "id": "lock-audit",
+      "command": "uv lock --check --project scripts/delivery/runtime && uv export --frozen --project scripts/delivery/runtime --no-emit-project | node scripts/delivery/bb-066-probe.mjs --audit-lock"
+    },
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-066-probe.mjs --mode dispatch-interrupt-recover --profile \"$EXHARNESS_BB066_PROFILE\" --workspace \"$EXHARNESS_BB066_WORKSPACE\" --output \"$EXHARNESS_BB066_OUTPUT\""
+    },
+    {
+      "id": "living-docs",
+      "command": "git diff --exit-code \"$BASELINE_SHA\"...\"$CANDIDATE_SHA\" -- docs/living/system/state.md"
     }
   ],
   "expectedOutputs": [

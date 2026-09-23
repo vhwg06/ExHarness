@@ -9,17 +9,23 @@
     "hash": "dc0108b9f2a99c4d8546e5304e7cbf2d85d191b694df0a248ae53f38f7de79b2"
   },
   "scope": [
-    "delivery.runtime"
+    "delivery.runtime.openhands-adapter",
+    "delivery.runtime.durable-session-binding",
+    "delivery.runtime.fresh-process-recovery",
+    "delivery.runtime.live-probe"
   ],
   "outOfScope": [
-    "Unbounded autonomous product decisions and expansion beyond the supported delivery profile.",
-    "Replacing delivered Integration or Oracle authority contracts.",
-    "Treating this research allocation as implementation readiness or product delivery."
+    "Implementing BB-065 fixture/baseline, BB-067 sandbox enforcement, BB-068 SCM/CI delivery, BB-069 deployed product proof or the BB-074 comparative pilot.",
+    "Creating a second workflow/attempt authority with Restate, Temporal or LangGraph; the delivered DomainExecutionController remains attempt and recovery authority.",
+    "Production repository materialization or source publication before the Oracle phase is delivered; this adapter receives an already prepared bounded workspace.",
+    "Letting agent completion, OpenHands conversation status or the live probe accept delivery."
   ],
   "constraints": [
-    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
-    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
-    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments."
+    "Reuse OpenHands Software Agent SDK version 1.49.4 at commit 3f47426e6af4681aacab735c781426aae58a3bac under MIT and require Python 3.12; install the SDK and tools from that same immutable monorepo commit through a generated uv lock.",
+    "Bind one OpenHands conversation ID and persistence directory deterministically to the existing runtimeInvocationKey; dispatch may create it once and recover may only reopen that identity.",
+    "BB-065 is READY but not delivered: worker execution remains blocked until BB-065 is DONE and consumes its implemented fixture/profile rather than restating the dependency plan.",
+    "The live provider/model/profile and credentials are operator inputs; credentials never enter manifests, logs, artifacts or git.",
+    "Real-provider evidence is separate from deterministic adapter tests. Missing credentials, incomplete SDK usage, an unresolved interruption or failed independent fixture acceptance fails closed."
   ],
   "invariants": [
     "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
@@ -27,112 +33,140 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Compare OpenHands SDK adapter, minimal CLI adapter and reuse of the existing Core loop; select one primary implementation.",
-    "Candidate direction, not selected architecture: Compare existing Core recovery with Restate/Temporal and LangGraph only for domain-local runtime needs; document complexity and licensing tradeoffs.",
-    "Candidate direction, not selected architecture: Define binding of runtime session, workspace revision, model/config, cancellation and unknown outcome to the existing attempt."
+    "Select a thin Node runtimeAdapter over a Python OpenHands SDK driver. DomainExecutionController continues to create and pin the semantic execution attempt; the adapter maps its runtimeInvocationKey to exactly one durable OpenHands conversation.",
+    "Pin OpenHands software-agent-sdk 1.49.4 and openhands-tools from monorepo commit 3f47426e6af4681aacab735c781426aae58a3bac. Its LocalConversation create-or-resume path persists base state and events, supports a fixed conversation_id, and can resume with agent=None in a fresh process.",
+    "Use the BB-065 request-tracker workspace prepared by the caller. The adapter accepts a canonical workspace root, immutable starting tree/hash, task ID, prompt ref/hash and output directory; it does not clone repositories, select work, or publish source.",
+    "Store an immutable attempt manifest before launching Python under <output>/attempts/<sha256(runtimeInvocationKey)>/manifest.json. It pins executionAttemptId, runtimeInvocationKey hash, workspace root and starting tree, strategy/toolset/model/harness refs, SDK commit/version, profile hash, conversation UUID and persistence directory.",
+    "Dispatch uses exclusive manifest creation. If a manifest already exists it returns UNKNOWN with recoveryRequired=true and performs no provider call. Recover validates the exact manifest and workspace identity, then reopens the same conversation ID/persistence directory; mismatch returns BLOCKED and never creates another conversation.",
+    "OpenHands owns conversation events and tool execution state inside the adapter. ExHarness owns attempt lifecycle, policy pins, runtime attestation, completion evaluation and publication authority. OpenHands completion maps only to a runtime result candidate.",
+    "Timeout sends SIGTERM to the driver, waits a bounded grace period, then SIGKILL if required and returns UNKNOWN/recoveryRequired. Cancellation uses AbortSignal with the same sequence. Process exit, signal, stdout/stderr digests and recovery decision are captured without secrets.",
+    "Use only TerminalTool and FileEditorTool in the selected profile. The driver rejects additional tool names, workspace escape, mutable branch/ref dependencies, and a model/profile different from the immutable manifest.",
+    "Reject Restate at eda4cf97ec8794614329d97078a3c8c3a8701c4f because a new BSL server duplicates delivered attempt recovery authority; reject Temporal server at 543367eec690da3c23e536cf5dfe76928af11b2c and LangGraph at 1211af45b18cab9c0a7efe366ba12f51ad2a9996 because their workflow/checkpoint authorities add a second lifecycle for this single domain-local adapter.",
+    "Reject mini-SWE-agent at 04d809ceab9df28f9adaed044884180159172930 as the integrated strategy: it is the direct baseline selected by BB-065 and intentionally runs independent subprocess actions, while its documented saved history is not a durable fresh-process conversation resume contract. Reject SWE-agent at 3ea751c087f32b16e039a2233dd6eefecef325d5 because trajectory replay is inspection/re-execution rather than continuation of the same live attempt."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agentic-system/src/domain-execution-control.js",
-      "docs/living/system/state.md"
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "docs/living/system/state.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
     ],
     "expectedNew": [
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "scripts/delivery/runtime/openhands_driver.py",
+      "scripts/delivery/runtime/requirements.in",
+      "scripts/delivery/runtime/uv.lock",
       "scripts/delivery/bb-066-probe.mjs"
     ],
     "expectedTests": [
-      "test/delivery/bb-066.test.mjs"
+      "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
+      "test/delivery/bb-066-live-contract.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
-      "docs/blackboard/process/delivery-research/BB-066.md",
-      "scripts/**",
-      "test/**",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb048-domain-execution-control.test.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
+      "scripts/delivery/runtime/**",
+      "scripts/delivery/bb-066-probe.mjs",
+      "test/delivery/bb-066-live-contract.test.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/living/system/state.md",
       "package.json"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js",
+      "scripts/delivery/runtime/openhands_driver.py",
+      "scripts/delivery/runtime/requirements.in",
+      "scripts/delivery/runtime/uv.lock",
+      "scripts/delivery/bb-066-probe.mjs",
+      "test/delivery/bb-066-live-contract.test.mjs",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "package.json",
+      "docs/living/system/agentic-application/**"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S1 — Add the strict Node adapter contract, immutable attempt-manifest codec, runtime result mapping and export; test collision, identity mismatch, policy drift, timeout, cancellation, secret redaction and the no-second-session invariant with a fake driver.",
+    "S2 — Add the pinned Python 3.12 OpenHands driver and uv lock. Construct only the allowed tools, create a new conversation on dispatch, resume with agent=None on recover, persist events under the exact conversation ID and emit one bounded JSON result.",
+    "S3 — Connect the delivered BB-065 fixture/profile to the live probe after the dependency is DONE. Run dispatch, deliberately interrupt after a persisted tool event, start a fresh Node/Python process, call recover and independently assess the workspace through BB-065 acceptance.",
+    "S4 — Record exact source/SDK/model/config/process/evidence identities, document the supported strategy and limitations in Living Docs, then submit the exact candidate and evidence to Jev."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "A real agent edits the declared fixture through runtimeAdapter.dispatch and reports exact execution and source evidence.",
+      "id": "REAL_DISPATCH",
+      "statement": "A credential-bearing live probe routes one released DomainExecutionController claim through runtimeAdapter.dispatch into OpenHands SDK 1.49.4 at the pinned commit, edits the delivered BB-065 fixture, and produces bounded raw runtime evidence plus independent BB-065 acceptance evidence.",
       "verificationIds": [
+        "unit-adapter",
         "live-probe"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Exact candidate/tree, work and executionAttempt IDs, runtimeInvocationKey hash, SDK commit/version, model/profile/toolset hashes, starting and resulting workspace tree hashes, process result, redacted stdout/stderr digests and independent fixture acceptance report."
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Fresh-process recover reuses the same attempt/session or reports an explicit unresolved outcome; it cannot silently create a second semantic attempt.",
+      "id": "SAME_SESSION_RECOVERY",
+      "statement": "After deliberate interruption following durable OpenHands activity, a fresh Node and Python process recovers the same executionAttemptId, conversation UUID, persistence directory and workspace; no second provider session or semantic attempt is created.",
       "verificationIds": [
+        "unit-adapter",
         "live-probe"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Pre-interruption durable event marker, process identities, manifest hash, identical conversation/attempt IDs before and after recovery, event sequence continuation and a session-creation count of exactly one."
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "Pinned strategy/config and authorized scope survive policy change, timeout and cancellation; runtime success never self-accepts delivery.",
+      "id": "FAIL_CLOSED_RECOVERY",
+      "statement": "Missing/corrupt persistence, starting-tree drift, profile/tool/strategy mismatch and an ambiguous killed process return BLOCKED or UNKNOWN with recoveryRequired and perform no fresh dispatch.",
       "verificationIds": [
-        "live-probe"
+        "unit-adapter"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Deterministic negative-case logs and assertions proving provider spawn count does not increase."
       ]
     },
     {
-      "id": "INV-1",
-      "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "id": "BOUNDED_TERMINATION",
+      "statement": "Timeout and AbortSignal cancellation terminate the child through bounded TERM/KILL handling, retain process/evidence metadata and never map an ambiguous external effect to SUCCEEDED.",
       "verificationIds": [
-        "boundary-probe"
+        "unit-adapter"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "TERM/KILL trace, exit/signal data, bounded elapsed time and UNKNOWN result assertions."
       ]
     },
     {
-      "id": "INV-2",
-      "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "id": "AUTHORITY_BOUNDARY",
+      "statement": "OpenHands status and driver output cannot publish, accept, mutate Blackboard/Oracle authority, change the pinned ExecutionAttemptBinding or bypass completionEvaluator/publicationGate.",
       "verificationIds": [
-        "boundary-probe"
+        "unit-adapter",
+        "domain-regression"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Boundary tests with forged success/publication fields plus passing existing domain execution control regression."
       ]
     },
     {
-      "id": "INV-3",
-      "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "id": "SUPPLY_CHAIN",
+      "statement": "The Python environment is reproducible from an immutable uv lock whose OpenHands SDK and tools resolve to the selected monorepo commit; runtime startup verifies Python, SDK and driver identities against the attempt manifest.",
       "verificationIds": [
-        "boundary-probe"
+        "lock-audit",
+        "unit-adapter"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "uv lock audit output, resolved commit/version and startup mismatch rejection."
       ]
     }
   ],
@@ -140,44 +174,61 @@
     {
       "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
       "criterionIds": [
-        "INV-1"
+        "AUTHORITY_BOUNDARY"
       ]
     },
     {
       "invariant": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
       "criterionIds": [
-        "INV-2"
+        "REAL_DISPATCH",
+        "SAME_SESSION_RECOVERY",
+        "FAIL_CLOSED_RECOVERY",
+        "BOUNDED_TERMINATION",
+        "SUPPLY_CHAIN"
       ]
     },
     {
       "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
       "criterionIds": [
-        "INV-3"
+        "AUTHORITY_BOUNDARY"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-066-probe.mjs"
+      "id": "unit-adapter",
+      "command": "node --test packages/agentic-system/test/bb066-openhands-runtime-adapter.test.js"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-066.test.mjs"
+      "id": "domain-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js"
+    },
+    {
+      "id": "live-contract",
+      "command": "node --test test/delivery/bb-066-live-contract.test.mjs"
+    },
+    {
+      "id": "lock-audit",
+      "command": "uv lock --check --project scripts/delivery/runtime && uv export --frozen --project scripts/delivery/runtime --no-emit-project | node scripts/delivery/bb-066-probe.mjs --audit-lock"
+    },
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-066-probe.mjs --mode dispatch-interrupt-recover --profile \"$EXHARNESS_BB066_PROFILE\" --workspace \"$EXHARNESS_BB066_WORKSPACE\" --output \"$EXHARNESS_BB066_OUTPUT\""
+    },
+    {
+      "id": "living-docs",
+      "command": "git diff --exit-code \"$BASELINE_SHA\"...\"$CANDIDATE_SHA\" -- docs/living/system/state.md"
     }
   ],
-  "researchGaps": [
-    "Compare OpenHands SDK adapter, minimal CLI adapter and reuse of the existing Core loop; select one primary implementation.",
-    "Compare existing Core recovery with Restate/Temporal and LangGraph only for domain-local runtime needs; document complexity and licensing tradeoffs.",
-    "Define binding of runtime session, workspace revision, model/config, cancellation and unknown outcome to the existing attempt.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Producer success with failing independent acceptance.",
-    "Missing or stale source/runtime identity represented as current evidence.",
-    "Unresolved external effect retried as if confirmed safe."
+    "A second dispatch for an existing runtimeInvocationKey must not spawn Python or call a provider.",
+    "Recover with missing/corrupt OpenHands base state or a different conversation ID must fail closed.",
+    "Workspace starting tree, SDK commit, model profile, toolset, harness or strategy drift must not resume.",
+    "SIGTERM timeout or cancellation with no conclusive driver result must produce UNKNOWN, never SUCCEEDED.",
+    "A driver payload containing acceptance, publication or Blackboard mutation fields must be rejected.",
+    "Secrets present in environment or provider exceptions must not appear in manifest, stdout/stderr evidence or result JSON.",
+    "Agent-declared success with failing BB-065 independent acceptance must remain a rejected completion candidate."
   ],
   "laneContracts": [
     {
@@ -209,6 +260,235 @@
       "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-066 Living truth describes only the implemented and independently verified supported capability and limitations."
-  }
+    "statement": "BB-066 Living truth describes only the implemented and independently verified OpenHands runtime strategy, exact recovery behavior, operator inputs and limitations."
+  },
+  "agentStrategyContract": {
+    "selected": {
+      "name": "OpenHands Software Agent SDK",
+      "version": "1.49.4",
+      "commit": "3f47426e6af4681aacab735c781426aae58a3bac",
+      "license": "MIT",
+      "python": ">=3.12",
+      "packages": [
+        "openhands-sdk",
+        "openhands-tools"
+      ],
+      "tools": [
+        "TerminalTool",
+        "FileEditorTool"
+      ]
+    },
+    "nodeAdapter": {
+      "adapterRef": "runtime-adapter:openhands-sdk-v1",
+      "runtimeKind": "OPENHANDS_LOCAL_SDK",
+      "dispatch": "create exact manifest and one conversation; run driver once",
+      "recover": "validate manifest/workspace and reopen same persisted conversation with agent=None",
+      "inputFields": [
+        "workspaceRoot",
+        "startingTree",
+        "taskId",
+        "promptRef",
+        "promptHash",
+        "outputRoot",
+        "timeoutMs"
+      ],
+      "resultStatuses": [
+        "SUCCEEDED",
+        "FAILED",
+        "BLOCKED",
+        "UNKNOWN"
+      ]
+    },
+    "identity": {
+      "attemptDirectory": "<outputRoot>/attempts/<sha256(runtimeInvocationKey)>",
+      "conversationId": "UUIDv5(namespace fixed by adapter, runtimeInvocationKey)",
+      "manifestPublication": "temporary file + fsync + exclusive rename/link; immutable after creation",
+      "persistenceDirectory": "<attemptDirectory>/conversation",
+      "sessionCreationRule": "exactly one per runtimeInvocationKey"
+    },
+    "boundary": "Caller prepares bounded workspace. Adapter/SDK may modify only that workspace. DomainExecutionController remains lifecycle and judgment authority."
+  },
+  "recoveryProtocol": {
+    "dispatch": [
+      "Validate canonical absolute workspace/output paths and starting git tree.",
+      "Create immutable manifest exclusively before provider activity.",
+      "Spawn pinned driver with manifest path; send secrets only through process environment.",
+      "Map a complete driver result to runtime candidate; on ambiguity retain UNKNOWN and require recover."
+    ],
+    "recover": [
+      "Load and hash immutable manifest; validate attempt, runtimeInvocationKey, configuration and workspace identity.",
+      "Require persisted OpenHands base state/events for the exact conversation UUID.",
+      "Start a fresh Python process with agent=None and the same workspace/persistence directory.",
+      "Continue event sequence; never send the original task again or allocate another conversation."
+    ],
+    "timeoutCancellation": "Send SIGTERM, wait at most 5 seconds, then SIGKILL. Record signals and return UNKNOWN unless the driver had atomically published a complete result.",
+    "missingEvidence": "BLOCKED for identity/config/persistence mismatch; UNKNOWN for potentially executed but unresolved external effect."
+  },
+  "liveEvidenceContract": {
+    "prerequisites": [
+      "BB-065 status DONE and its fixture/profile paths resolved from canonical artifacts.",
+      "Python 3.12 and uv available.",
+      "Operator supplies EXHARNESS_BB066_PROFILE, WORKSPACE and OUTPUT; provider credentials are environment-only.",
+      "Workspace starts at the exact BB-065 fixture tree and contains no unrelated credentials."
+    ],
+    "procedure": [
+      "Dispatch a normalization task through DomainExecutionController.",
+      "After the driver has durably recorded at least one tool/action event, terminate the first driver at the controlled fault point.",
+      "Launch a fresh Node process that invokes controller recovery and therefore adapter.recover.",
+      "Run BB-065 independent API/browser/persistence acceptance outside the agent workspace.",
+      "Audit exact one-session identity, hashes, event continuation, cost/usage if provider reports it and all failure records."
+    ],
+    "passRule": "All acceptance criteria have candidate-bound evidence and Jev returns SATISFIED. Any missing live prerequisite or inconclusive recovery is INCONCLUSIVE/UNKNOWN, not skipped pass."
+  },
+  "researchEvidence": [
+    {
+      "source": "https://github.com/OpenHands/software-agent-sdk/tree/3f47426e6af4681aacab735c781426aae58a3bac",
+      "kind": "primary-source",
+      "observed": "1,155 GitHub stars at research time; MIT; SDK 1.49.4; Python >=3.12. LocalConversation fixes conversation_id and persistence_dir, ConversationState create-or-resume restores base state/events and verifies tool compatibility, and agent=None supports fresh-process resume.",
+      "decision": "Selected integrated runtime."
+    },
+    {
+      "source": "https://github.com/SWE-agent/mini-swe-agent/tree/04d809ceab9df28f9adaed044884180159172930",
+      "kind": "primary-source",
+      "observed": "7,890 stars; MIT; Python >=3.10; independent subprocess actions and saved run history.",
+      "decision": "Retained as BB-065 direct baseline; rejected for BB-066 same-session recovery."
+    },
+    {
+      "source": "https://github.com/SWE-agent/SWE-agent/tree/3ea751c087f32b16e039a2233dd6eefecef325d5",
+      "kind": "primary-source",
+      "observed": "20,385 stars; MIT; trajectory output/replay supports inspection and re-execution.",
+      "decision": "Rejected because replay is not continuation of the same persisted provider conversation."
+    },
+    {
+      "source": "packages/agentic-system/src/domain-execution-control.js@0791c21bb4b0bc61b7c02024d74987dfbfe43970",
+      "kind": "current-source",
+      "observed": "DomainExecutionController already pins one ExecutionAttemptBinding/runtimeInvocationKey and invokes dispatch or recover under current claim/policy checks.",
+      "decision": "Preserve it as semantic attempt/recovery authority; implement only runtime adapter."
+    },
+    {
+      "source": "packages/core-harness/src/resumable-agent-runtime.js@0791c21bb4b0bc61b7c02024d74987dfbfe43970",
+      "kind": "current-source",
+      "observed": "Core snapshots preserve ExHarness runtime configuration/state but do not provide the selected external coding-agent conversation, tools and workspace implementation.",
+      "decision": "Do not replace or extend Core in BB-066."
+    },
+    {
+      "source": "https://github.com/restatedev/restate/tree/eda4cf97ec8794614329d97078a3c8c3a8701c4f",
+      "kind": "primary-source",
+      "observed": "4,460 stars; BSL 1.1 server with managed-service restriction.",
+      "decision": "Rejected: extra server and lifecycle authority are unnecessary for one adapter."
+    },
+    {
+      "source": "https://github.com/temporalio/temporal/tree/543367eec690da3c23e536cf5dfe76928af11b2c",
+      "kind": "primary-source",
+      "observed": "23,245 stars; MIT durable workflow platform.",
+      "decision": "Rejected: duplicates current attempt/recovery authority and adds infrastructure outside the first product slice."
+    },
+    {
+      "source": "https://github.com/langchain-ai/langgraph/tree/1211af45b18cab9c0a7efe366ba12f51ad2a9996",
+      "kind": "primary-source",
+      "observed": "42,153 stars; MIT stateful agent orchestration framework.",
+      "decision": "Rejected: OpenHands already owns conversation persistence while ExHarness owns the attempt lifecycle."
+    }
+  ],
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A real agent edits the declared fixture through runtimeAdapter.dispatch and reports exact execution and source evidence.",
+      "criterionIds": [
+        "REAL_DISPATCH",
+        "SUPPLY_CHAIN",
+        "AUTHORITY_BOUNDARY"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "unit-adapter",
+        "lock-audit",
+        "live-probe",
+        "domain-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        5,
+        7
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+      ],
+      "supportingPlanFields": [
+        "agentStrategyContract",
+        "liveEvidenceContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Fresh-process recover reuses the same attempt/session or reports an explicit unresolved outcome; it cannot silently create a second semantic attempt.",
+      "criterionIds": [
+        "SAME_SESSION_RECOVERY",
+        "FAIL_CLOSED_RECOVERY"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "unit-adapter",
+        "live-probe"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        3,
+        4
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "supportingPlanFields": [
+        "recoveryProtocol",
+        "agentStrategyContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Pinned strategy/config and authorized scope survive policy change, timeout and cancellation; runtime success never self-accepts delivery.",
+      "criterionIds": [
+        "FAIL_CLOSED_RECOVERY",
+        "BOUNDED_TERMINATION",
+        "AUTHORITY_BOUNDARY",
+        "SUPPLY_CHAIN"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S4"
+      ],
+      "verificationIds": [
+        "unit-adapter",
+        "domain-regression",
+        "lock-audit",
+        "living-docs"
+      ],
+      "decisionIndexes": [
+        1,
+        5,
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/living/system/state.md"
+      ],
+      "supportingPlanFields": [
+        "recoveryProtocol",
+        "agentStrategyContract",
+        "liveEvidenceContract"
+      ]
+    }
+  ]
 }
