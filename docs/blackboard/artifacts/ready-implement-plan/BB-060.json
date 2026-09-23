@@ -366,25 +366,24 @@
         6
       ],
       "sourceRefs": [
-        "packages/agentic-system/test/wave-a.test.js",
-        "packages/agentic-system/test/wave-c.test.js"
+        "packages/agentic-system/src/oracle.js"
       ],
       "sourceAnchors": [
         {
-          "ref": "packages/agentic-system/test/wave-a.test.js",
-          "match": "assert.deepEqual(seen, [\"src/server.js\", \"test/server.test.js\"]);"
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "const order = parseBackendWorkOrder(rawOrder);"
         },
         {
-          "ref": "packages/agentic-system/test/wave-a.test.js",
-          "match": "backend context resolution failed for test\\/server\\.test\\.js from repo:\\/\\/example-backend@rev-1: not found"
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "return BackendContextSchema.parse({"
         },
         {
-          "ref": "packages/agentic-system/test/wave-c.test.js",
-          "match": "assert.deepEqual(seen.map((request) => request.ref), handoff.artifacts.map((artifact) => artifact.ref));"
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "const order = parseQaWorkOrder(rawOrder);"
         },
         {
-          "ref": "packages/agentic-system/test/wave-c.test.js",
-          "match": "qa context resolution failed for workspace:\\/\\/rev-2\\/src\\/server\\.js from application artifact store: gone:"
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "return QaContextSchema.parse({"
         }
       ],
       "supportingPlanFields": [
