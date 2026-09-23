@@ -15,7 +15,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-066.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
-  "planHash": "d6e6c9e89c7b7b53b57f4e241bf69556e385e3178d05254af1ce1cbcf9f987ba",
+  "planHash": "c6fc222c5849d000110cef7b13d82836b86252c357b455ebcf293dce8c4f865f",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -64,7 +64,10 @@
       "test/delivery/bb-066-live-contract.test.mjs",
       "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
       "docs/living/system/state.md",
-      "package.json"
+      "package.json",
+      "scripts/delivery/baseline/profile.json",
+      "scripts/delivery/baseline/tasks.json",
+      "scripts/delivery/baseline/acceptance.mjs"
     ],
     "write": [],
     "forbiddenWrite": [
@@ -83,7 +86,10 @@
       "test/delivery/bb-066-live-contract.test.mjs",
       "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
       "docs/living/system/state.md",
-      "package.json"
+      "package.json",
+      "scripts/delivery/baseline/profile.json",
+      "scripts/delivery/baseline/tasks.json",
+      "scripts/delivery/baseline/acceptance.mjs"
     ],
     "write": [
       "packages/agentic-system/src/openhands-runtime-adapter.js",
@@ -128,7 +134,7 @@
     },
     {
       "id": "lock-audit",
-      "command": "uv lock --check --project scripts/delivery/runtime && uv export --frozen --project scripts/delivery/runtime --no-emit-project | node scripts/delivery/bb-066-probe.mjs --audit-lock"
+      "command": "uv lock --check --project scripts/delivery/runtime && uv export --frozen --project scripts/delivery/runtime --no-emit-project > \"$EXHARNESS_BB066_OUTPUT/resolved-requirements.txt\" && node scripts/delivery/bb-066-probe.mjs --audit-lock \"$EXHARNESS_BB066_OUTPUT/resolved-requirements.txt\""
     },
     {
       "id": "live-probe",
