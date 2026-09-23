@@ -5,7 +5,7 @@ import { readWorkGraph } from "../scripts/blackboard-work-graph.mjs";
 
 test("fresh implementation bootstrap obeys canonical graph or fails closed with no active implementation task",()=>{
   const graph=readWorkGraph();
-  const active=graph.tasks.filter(t=>t.status==="ACTIVE"&&["IMPLEMENTATION","BUGFIX"].includes(t.kind));
+  const active=graph.tasks.filter(t=>t.status==="ACTIVE"&&(t.contract ? ["RESEARCH_SA","WORKER"].includes(t.lane) : ["IMPLEMENTATION","BUGFIX"].includes(t.kind)));
 
   if(!active.length){
     assert.throws(()=>bootstrapImplementationSession(),/no active implementation task/);
@@ -23,6 +23,12 @@ test("fresh implementation bootstrap obeys canonical graph or fails closed with 
     assert.equal(session.phase,"EXECUTION");
     assert.equal(session.intent,"IMPLEMENT_EXACT_READY_PLAN");
     assert.equal(session.context.claimPolicy,null);
+  }else if(session.lane==="RESEARCH_SA"){
+    assert.equal(session.phase,active[0].phase);
+    assert.equal(session.intent,"BUILD_READY_IMPLEMENT_PLAN");
+    assert.equal(session.context.action,"RESEARCH");
+    assert.deepEqual(session.context.sourceScope.write,[]);
+    assert.deepEqual(session.context.artifactWriteScope,[active[0].contract.planRef]);
   }else if(session.lane==="EXECUTION"){
     assert.equal(session.intent,session.mode==="REPAIR"
       ?"REPAIR_GROUNDED_FINDINGS_AND_PUBLISH_IMPLEMENTATION_RESULT"

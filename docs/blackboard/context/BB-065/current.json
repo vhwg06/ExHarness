@@ -1,0 +1,109 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-065",
+  "taskId": "BB-065",
+  "featureId": "FEATURE-DELIVERY-BASELINE",
+  "topicId": "TOPIC-DELIVERY-FOUNDATION",
+  "components": [
+    "agentic/domain-execution-control"
+  ],
+  "pipeline": "RESEARCH_SA",
+  "lane": "RESEARCH_SA",
+  "phase": "RESEARCH",
+  "stage": "RESEARCH",
+  "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-065.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+  "planHash": "d722d1594447aced177ff4017858f076ca8016fe891969f42fa946484045737b",
+  "action": {
+    "kind": "RESEARCH",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/system/agentic-application/contracts.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-065.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "docs/living/**",
+      "docs/blackboard/process/delivery-product-roadmap.md",
+      "docs/blackboard/process/delivery-research/BB-065.md",
+      "scripts/**",
+      "test/**",
+      "package.json"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "docs/living/**",
+      "docs/blackboard/process/delivery-product-roadmap.md",
+      "docs/blackboard/process/delivery-research/BB-065.md",
+      "scripts/**",
+      "test/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "scripts/delivery/**",
+      "test/delivery/**",
+      "docs/living/system/**",
+      "package.json"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "artifactWriteScope": [
+    "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+  ],
+  "hardInvariants": [
+    "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+    "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+    "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
+  ],
+  "verification": [
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-065-probe.mjs"
+    },
+    {
+      "id": "boundary-probe",
+      "command": "node --test test/delivery/bb-065.test.mjs"
+    }
+  ],
+  "expectedOutputs": [
+    "READY_IMPLEMENT_PLAN"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "contractRefs": [
+      "ExecutionPolicy",
+      "ExecutionStrategy",
+      "ExecutionAttemptBinding",
+      "DomainPublicationReceipt"
+    ]
+  }
+}

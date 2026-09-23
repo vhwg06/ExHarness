@@ -21,14 +21,14 @@ next-work-id: BB-077
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: NONE
+  active: BB-065
 
 WORKER
   active: NONE
@@ -36,7 +36,14 @@ WORKER
 
 ## Active work
 
-NONE
+
+BB-065
+task: Define delivery profile and executable value baseline
+lane: RESEARCH_SA
+phase: RESEARCH
+current-context: docs/blackboard/context/BB-065/current.json
+components: agentic/domain-execution-control
+worker: codex-research-bb065
 
 ## Schedulable tasks
 
@@ -47,7 +54,6 @@ NONE
 - BB-062 [RESEARCH_SA/RESEARCH] — Define concrete Oracle source connectivity and adapter topology
 - BB-063 [RESEARCH_SA/RESEARCH] — Preserve Oracle provenance durability and migration compatibility
 - BB-064 [RESEARCH_SA/RESEARCH] — Close Oracle reconciliation with end-to-end connectivity and drift guards
-- BB-065 [RESEARCH_SA/RESEARCH] — Define delivery profile and executable value baseline
 - BB-066 [RESEARCH_SA/RESEARCH] — Integrate a real coding-agent execution strategy
 - BB-067 [RESEARCH_SA/RESEARCH] — Enforce bounded workspace and tool capabilities
 - BB-068 [RESEARCH_SA/RESEARCH] — Connect real repository changes to CI and review evidence
@@ -108,7 +114,7 @@ BB-061 [RESEARCH_SCHEDULABLE] <- BB-060
 BB-062 [RESEARCH_SCHEDULABLE] <- BB-061
 BB-063 [RESEARCH_SCHEDULABLE] <- BB-062
 BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
-BB-065 [RESEARCH_SCHEDULABLE] <- ROOT
+BB-065 [ACTIVE] <- ROOT
 BB-066 [RESEARCH_SCHEDULABLE] <- BB-065, BB-048
 BB-067 [RESEARCH_SCHEDULABLE] <- BB-065
 BB-068 [RESEARCH_SCHEDULABLE] <- BB-066, BB-067
