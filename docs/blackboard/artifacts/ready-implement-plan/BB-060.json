@@ -391,9 +391,6 @@
       ],
       "supportingPlanFields": [
         "behaviorPreservationContract",
-        "verificationPlan",
-        "sourceScope",
-        "sourceSeams",
         "negativeVerificationCases"
       ]
     },
@@ -570,6 +567,22 @@
       "requiredExistingAssertions": [
         "Wave-A S2 exact requiredFiles order/sourceRef and backend source-boundary failure text",
         "Wave-C S8 exact requiredArtifacts dereference/provenance/sourceRef and QA source-boundary failure text"
+      ]
+    },
+    "gate": {
+      "verificationCommand": "node --test packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js",
+      "immutableLegacyTests": [
+        "packages/agentic-system/test/wave-a.test.js",
+        "packages/agentic-system/test/wave-c.test.js"
+      ],
+      "writeAuthorization": "BB-060 sourceScope.write does not authorize either legacy test file; changing their expectations is out-of-plan and fails candidate scope validation.",
+      "exportedApiUnderTest": [
+        "resolveBackendContext",
+        "resolveQaContext"
+      ],
+      "acceptanceBinding": [
+        "AC-2",
+        "INV-1"
       ]
     }
   }
