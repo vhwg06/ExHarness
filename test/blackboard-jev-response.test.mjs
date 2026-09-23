@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { callJev, validateResponse } from '../scripts/blackboard-jev.mjs';
+import { callJev, validateResponse, evaluate, validateEvaluation, workerBatchManifest } from '../scripts/blackboard-jev.mjs';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const payload = { model: 'jev-1.13.0', questions: {
   'objective-0': { type: 'choice', criteria: { SATISFIED: 'yes', INSUFFICIENT_EVIDENCE: 'no' } }
@@ -30,4 +33,47 @@ test('malformed probability data is not echoed or retried', async () => {
     return true;
   });
   assert.equal(calls, 1);
+});
+
+test('worker batches retain every atomic answer, exact evidence and cache binding', async t => {
+  const root = mkdtempSync(join(tmpdir(), 'blackboard-jev-batches-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(join(root, 'docs/blackboard'), { recursive: true });
+  writeFileSync(join(root, 'docs/blackboard/jev-policy.json'), JSON.stringify({ model: payload.model, policy: 'atomic-claims-1' }));
+  const criteria = id => ({ id, verificationIds: ['check'], statement: `Claim ${id}` });
+  const question = { type: 'choice', instructions: 'Judge the evidence', criteria: { SATISFIED: 'Supported', INSUFFICIENT_EVIDENCE: 'Missing' } };
+  const evidenceFiles = ['A', 'B'].map(id => ({ ref: `evidence/${id}.txt`, hash: `hash-${id}`, body: id.repeat(33000) }));
+  const fullPayload = {
+    model: payload.model,
+    state: {
+      objective: { successCriteria: ['A and B'] },
+      plan: { kind: 'BLACKBOARD_ARTIFACT', artifactType: 'READY_IMPLEMENT_PLAN', artifactId: 'BB-T', objective: {}, scope: [], outOfScope: [], constraints: [], invariants: [], architectureDecisions: [], implementationSlices: [], negativeVerificationCases: [], sourceSeams: { expectedNew: [], expectedTests: [] }, livingDocs: {}, acceptanceCriteria: ['A', 'B'].map(criteria), verificationPlan: [{ id: 'check', command: 'node --test unrelated.test.js' }] },
+      evidence: ['A', 'B'].map(id => ({ id, evidenceRefs: [`evidence/${id}.txt`] })),
+      sources: [],
+      verification: [{ id: 'check', command: 'node --test unrelated.test.js', exitCode: 0 }],
+      evidenceFiles
+    },
+    questions: { A: question, B: question }
+  };
+  const subject = { workId: 'BB-T', plan: { ref: 'plan.json', hash: 'a'.repeat(64) } };
+  const materialized = { lane: 'WORKER', subject, payload: fullPayload, stateHash: 'b'.repeat(64), specHash: 'c'.repeat(64), cacheKey: 'd'.repeat(64) };
+  let calls = 0;
+  const fetchImpl = async (_url, options) => {
+    calls += 1;
+    const sent = JSON.parse(options.body);
+    const [id] = Object.keys(sent.questions);
+    assert.deepEqual(sent.state.evidence.map(entry => entry.id), [id]);
+    assert.deepEqual(sent.state.evidenceFiles.map(entry => entry.ref), [`evidence/${id}.txt`]);
+    return new Response(JSON.stringify({ model: sent.model, answers: { [id]: { type: 'choice', choice: 'SATISFIED', confidence: 0.9, probabilities: { SATISFIED: 0.9, INSUFFICIENT_EVIDENCE: 0.1 } } }, usage: { input_tokens: 100, output_tokens: 10 } }), { status: 200 });
+  };
+  const first = await evaluate(materialized, { root, fetchImpl, apiKey: 'fixture-key' });
+  assert.equal(calls, 2);
+  assert.equal(first.verdict, 'SATISFIED');
+  assert.deepEqual(first.metrics.batching.manifest, workerBatchManifest(fullPayload));
+  assert.deepEqual(first.usage, { input_tokens: 200, output_tokens: 20 });
+  assert.equal(validateEvaluation(first, materialized), first);
+  const second = await evaluate(materialized, { root, fetchImpl, apiKey: 'fixture-key' });
+  assert.equal(calls, 2);
+  assert.equal(second.metrics.cacheHit, true);
+  assert.throws(() => validateEvaluation({ ...first, metrics: { ...first.metrics, batching: { ...first.metrics.batching, manifest: [] } } }, materialized), /worker batch manifest mismatch/);
 });
