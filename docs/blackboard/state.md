@@ -21,14 +21,14 @@ next-work-id: BB-077
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: NONE
+  active: BB-066
 
 WORKER
   active: NONE
@@ -36,7 +36,14 @@ WORKER
 
 ## Active work
 
-NONE
+
+BB-066
+task: Integrate a real coding-agent execution strategy
+lane: RESEARCH_SA
+phase: RESEARCH
+current-context: docs/blackboard/context/BB-066/current.json
+components: agentic/domain-execution-control
+worker: codex-research-bb066
 
 ## Schedulable tasks
 
@@ -93,10 +100,6 @@ NONE
   satisfied: objective-0, objective-1, objective-2, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
   unresolved: NONE
   evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-065.readiness-jev-evaluation.json
-- BB-066 [RESEARCH_SA/SATISFIED]
-  satisfied: objective-0, objective-1, objective-2, readiness-scope, readiness-constraints, readiness-invariants, readiness-acceptanceCriteria, readiness-architectureDecisions, readiness-sourceSeams, readiness-verificationPlan, readiness-implementationSlices
-  unresolved: NONE
-  evaluation: docs/blackboard/artifacts/ready-implement-plan/BB-066.readiness-jev-evaluation.json
 
 ## Dependency graph
 
@@ -116,7 +119,7 @@ BB-062 [RESEARCH_SCHEDULABLE] <- BB-061
 BB-063 [RESEARCH_SCHEDULABLE] <- BB-062
 BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
 BB-065 [WORKER_SCHEDULABLE] <- ROOT
-BB-066 [BLOCKED_BY BB-065] <- BB-065, BB-048
+BB-066 [ACTIVE] <- BB-065, BB-048
 BB-067 [RESEARCH_SCHEDULABLE] <- BB-065
 BB-068 [RESEARCH_SCHEDULABLE] <- BB-066, BB-067
 BB-069 [RESEARCH_SCHEDULABLE] <- BB-068, BB-064
