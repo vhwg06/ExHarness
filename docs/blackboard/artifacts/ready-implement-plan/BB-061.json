@@ -51,19 +51,17 @@
       "packages/agentic-system/src/oracle.js",
       "packages/agentic-system/src/index.js",
       "packages/agentic-system/package.json",
-      "packages/agentic-system/test/oracle-integration.test.js",
       "packages/agentic-system/test/wave-a.test.js",
       "packages/agentic-system/test/wave-c.test.js",
-      "packages/oracle/package.json",
-      "packages/oracle/src/index.js",
-      "packages/oracle/test/oracle.test.js",
-      "test/oracle-architecture-boundary.test.mjs",
       "docs/living/system/oracle/architecture.md",
       "docs/living/system/oracle/semantics.md",
       "docs/living/system/oracle/workflow.md",
       "docs/living/system/agentic-application/contracts.md"
     ],
-    "expectedNew": [],
+    "expectedNew": [
+      "packages/oracle/package.json",
+      "packages/oracle/src/index.js"
+    ],
     "expectedTests": [
       "packages/oracle/test/oracle.test.js",
       "packages/agentic-system/test/oracle-integration.test.js",
@@ -313,7 +311,7 @@
     "baselineSha": "8674b7f02a16b372efa1d1d87cc7aa2b32391eb9",
     "currentProbe": [
       "Current Backend/QA resolvers parse WorkOrder, call repositoryReader.readFile or artifactReader.readArtifact, attach APPLICATION_ARTIFACT provenance and parse application-owned Context schemas.",
-      "packages/oracle exists as the planned BB-060 package seam; relative ESM import resolves in the no-install checkout while the bare package specifier returns ERR_MODULE_NOT_FOUND because node_modules and package-lock.json are absent.",
+      "packages/oracle and the new Oracle boundary tests are absent at baseline because BB-060 is not yet delivered; a bounded temporary package probe showed a relative ESM import works in a no-install checkout while the bare package specifier returns ERR_MODULE_NOT_FOUND when node_modules and package-lock.json are absent.",
       "Oracle contracts, package and workflow seams are unchanged from the BB-060 inspected baseline 7a266fc."
     ],
     "interpretation": "The smallest acyclic port extracts ordered injected source reads only. Application must retain semantic selection, mapping, provenance and schema authority."
