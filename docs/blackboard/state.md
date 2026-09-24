@@ -21,14 +21,14 @@ next-work-id: BB-082
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: BB-059
+  active: NONE
 
 WORKER
   active: NONE
@@ -36,14 +36,7 @@ WORKER
 
 ## Active work
 
-
-BB-059
-task: Research evidence-gated HOW evolution and Jev evaluation pipeline
-lane: RESEARCH_SA
-phase: RESEARCH
-current-context: docs/blackboard/context/BB-059/current.json
-components: agentic/domain-execution-control, agentic/causal-observation, agentic/how-evolution
-worker: chatgpt-research-bb059
+NONE
 
 ## Schedulable tasks
 
@@ -76,7 +69,7 @@ BB-055 [BLOCKED_BY BB-054] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [BLOCKED_BY BB-055] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
-BB-059 [ACTIVE] <- BB-058
+BB-059 [BLOCKED_BY BB-058] <- BB-058
 BB-060 [WORKER_SCHEDULABLE] <- ROOT
 BB-061 [BLOCKED_BY BB-060] <- BB-060
 BB-062 [BLOCKED_BY BB-061] <- BB-061
