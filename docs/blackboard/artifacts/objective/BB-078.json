@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-078",
+  "outcome": "Long-running tool effects can execute independently of the active model turn while preserving ExHarness effect identity, recovery and authority semantics.",
+  "currentProblem": "AgentRuntime.invoke currently awaits capability.execute, so a long capability call blocks strategy progress. Core already has durable effect identity and reconciliation, but no detached operation scheduling surface that can return RUNNING and later deliver terminal state.",
+  "scope": [
+    "core.async-operations",
+    "core.effect-identity",
+    "core.operation-manager",
+    "core.event-delivery"
+  ],
+  "constraints": [
+    "Async scheduling is transport/scheduling only; EffectOperation remains the authority for external-effect identity and confirmation.",
+    "Detached execution must never permit duplicate non-idempotent effects after restart, cancellation or concurrent wakeup.",
+    "Existing synchronous capability behavior remains supported as a baseline/fallback.",
+    "Operation handles and terminal updates must be deterministic, durable enough for recovery and attributable to exact call/turn/action intent."
+  ],
+  "successCriteria": [
+    "A long-running capability can return a durable RUNNING handle without blocking unrelated strategy work and later publish one terminal result.",
+    "Restart/recovery reconciles the exact existing effect operation and cannot silently dispatch a second semantic effect.",
+    "Cancellation fences new work and either cancels safely or leaves an explicit reconcilable/unknown operation state."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/harness-efficiency-phase.md",
+    "docs/living/system/core-harness/state.md",
+    "docs/living/system/core-harness/workflow.md",
+    "packages/core-harness/src/agent-runtime.js",
+    "packages/core-harness/src/action-effect.js",
+    "packages/core-harness/src/effect-reconciliation.js"
+  ]
+}
