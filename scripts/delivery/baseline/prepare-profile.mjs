@@ -23,7 +23,10 @@ export async function prepareCalibrationProfile({ output, operatorId, reviewerId
   const { chromium } = await import('playwright');
   const nodeImageDigest = (await readFile(join(root, 'Dockerfile'), 'utf8')).match(/FROM\s+\S+@(sha256:[a-f0-9]{64})/)?.[1];
   if (!nodeImageDigest) throw new Error('PROFILE_PREP_INVALID: Dockerfile base digest missing');
-  const image = JSON.parse(execFileSync('docker', ['image', 'inspect', imageTag], { encoding: 'utf8' }))[0];
+  const imageRows = execFileSync('docker', ['image', 'ls', '--no-trunc', '--format', '{{json .}}', imageTag], { encoding: 'utf8' })
+    .trim().split(/\r?\n/).filter(Boolean).map(JSON.parse);
+  if (imageRows.length !== 1) throw new Error('PROFILE_PREP_INVALID: expected one built image for the selected tag');
+  const image = JSON.parse(execFileSync('docker', ['image', 'inspect', imageRows[0].ID], { encoding: 'utf8' }))[0];
   const imageDigest = image.Id;
   const pinnedImage = image.RepoDigests?.find(value => value.endsWith(`@${imageDigest}`));
   if (!/^sha256:[a-f0-9]{64}$/.test(imageDigest) || !pinnedImage)
