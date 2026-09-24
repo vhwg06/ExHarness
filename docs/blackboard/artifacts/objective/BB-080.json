@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-080",
+  "outcome": "ExHarness can accept new input, coalesce operation completions and recover/cancel safely while detached operations are in flight.",
+  "currentProblem": "Detached tools introduce scheduling races: completion storms can trigger redundant model turns, user steering can race with model/tool work, and process failure can lose wakeups unless event ordering and recovery are explicit.",
+  "scope": [
+    "core.async-steering",
+    "core.event-coalescing",
+    "core.cancellation",
+    "core.async-recovery"
+  ],
+  "constraints": [
+    "At most one model generation is active per agent invocation/session unless a future explicit concurrency contract is added.",
+    "Multiple operation updates may be coalesced, but no terminal result or user input may be lost or reordered across its declared causality boundary.",
+    "User steering and stop requests must preempt new dispatch and remain durable across restart where the runtime supports persistence.",
+    "Recovery must derive pending work from durable operation/effect state, not traces or model prose."
+  ],
+  "successCriteria": [
+    "User input received while tools run is accepted and causes bounded next-turn behavior without waiting for unrelated long operations.",
+    "Near-simultaneous terminal updates are deterministically coalesced so they do not create an avoidable model-turn storm.",
+    "Kill/restart and stop/cancel probes preserve exact pending-operation identity, do not duplicate effects and converge to terminal/reconcilable state."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/harness-efficiency-phase.md",
+    "docs/living/system/core-harness/state.md",
+    "docs/living/system/core-harness/workflow.md",
+    "packages/core-harness/src/agent-runtime.js",
+    "packages/core-harness/src/action-effect.js",
+    "packages/core-harness/src/effect-reconciliation.js"
+  ]
+}
