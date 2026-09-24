@@ -1,0 +1,44 @@
+✔ durable CAS authority heads survive restart and stale writers fail closed (16.9381ms)
+✔ materialization is exact-scope, deterministic, and duplicate retries converge (83.513ms)
+✔ domain authorization precedes claim and CLAIMED stays provisional until durable release (129.6617ms)
+✔ real Blackboard mutation fence prevents lifecycle invalidation from committing through publication (185.7696ms)
+✔ claim recovery advances generation and fences the prior released capability (151.5884ms)
+✔ execution-entry policy revocation reopens Board work before fencing the historical release (164.7431ms)
+✔ execution-entry work authorization revocation blocks Board work before fencing release (162.332ms)
+✔ canonical Board invalidation commits before release fencing, so fence failure remains safe (140.953ms)
+✔ work-authorization invalidation blocks canonical work without incrementing generation (116.3128ms)
+✔ fresh process resolves work contract from durable ref and rejects untrusted authority publisher (90.3125ms)
+✔ same invalidation replay reconciles a prior Board-first fence crash (144.7901ms)
+✔ raw CAS self-grant cannot authorize because head must resolve a verified immutable artifact (68.1069ms)
+✔ ACTIVE to ACTIVE policy drift across claim invalidates the provisional claim (125.999ms)
+✔ materialization authority loss across claim blocks work instead of reopening it (130.1474ms)
+✔ post-release stale policy commits Board invalidation before release fencing (156.3882ms)
+✔ caller context cannot impersonate a policy-authorized execution principal (66.9747ms)
+✔ claim release head is project-scoped and ref-only while receipt is immutable (114.6457ms)
+✔ organization invalidation persists exact immutable provenance and reuses it on replay (121.1359ms)
+✔ materialization authorization drift after Board publication blocks the new work (96.7173ms)
+✔ caller cannot substitute a different materialization grant for the grant that created the Board item (108.2838ms)
+✔ fresh process reconciliation completes and reconstructs release for the same claim generation (101.4718ms)
+✔ reauthorization cannot create a second live Board item for the same logical obligation (93.3551ms)
+✔ immutable authority artifacts persist canonical verified publisher provenance (78.4234ms)
+✔ concurrent identical materializations converge on one Board item and one receipt (61.3298ms)
+✔ organization discovery is read-only and filters eligible work by owning domain (77.1571ms)
+✔ organization discovery excludes work whose declared dependency is not DONE (78.7387ms)
+✔ released receipt records pinned authority-policy revisions and canonical principal ref (111.7273ms)
+✔ ACTIVE execution policy with a different pinned authority revision cannot authorize the work (89.2167ms)
+✔ execution entry invalidates and fences when current policy artifact is missing (161.9386ms)
+✔ fresh reconciliation blocks work when materialization authority artifact is missing (140.5797ms)
+✔ release fences its old capability when Board generation drifts after release publication (146.9969ms)
+✔ execution entry final Board re-read rejects concurrent claim recovery and fences old release (143.9079ms)
+✔ reconciliation final Board re-read returns stale claim and fences release after concurrent recovery (138.7635ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3996.1717
+
+
+exitCode=0

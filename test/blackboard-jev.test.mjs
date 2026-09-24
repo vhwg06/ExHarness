@@ -277,22 +277,22 @@ test('migration normalizes legacy directories and rewrites graph bindings',t=>{
   for(const directory of ['implementation-input','implementation-spec','implementation-result','judgment'])
     fs.mkdirSync(path.join(artifacts,directory),{recursive:true});
   fs.renameSync(
-    path.join(artifacts,'objective/BB-052.source.json'),
-    path.join(artifacts,'implementation-input/integration-c-cross-domain-obligation-lineage.json')
+    path.join(artifacts,'objective/BB-053.source.json'),
+    path.join(artifacts,'implementation-input/integration-d-domain-activation-parallel-autonomy.json')
   );
   fs.renameSync(
-    path.join(artifacts,'ready-implement-plan/BB-052.source.json'),
-    path.join(artifacts,'implementation-spec/integration-c-cross-domain-obligation-lineage.json')
+    path.join(artifacts,'ready-implement-plan/BB-053.source.json'),
+    path.join(artifacts,'implementation-spec/integration-d-domain-activation-parallel-autonomy.json')
   );
-  fs.rmSync(path.join(artifacts,'objective/BB-052.json'));
-  fs.rmSync(path.join(artifacts,'ready-implement-plan/BB-052.json'));
+  fs.rmSync(path.join(artifacts,'objective/BB-053.json'));
+  fs.rmSync(path.join(artifacts,'ready-implement-plan/BB-053.json'));
 
   const graph=read(root,'docs/blackboard/work-graph.json');
-  const task=graph.tasks.find(item=>item.id==='BB-052');
+  const task=graph.tasks.find(item=>item.id==='BB-053');
   delete task.contract;delete task.lane;delete task.phase;
   task.artifacts.inputRefs=[
-    'docs/blackboard/artifacts/implementation-input/integration-c-cross-domain-obligation-lineage.json',
-    'docs/blackboard/artifacts/implementation-spec/integration-c-cross-domain-obligation-lineage.json'
+    'docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy.json',
+    'docs/blackboard/artifacts/implementation-spec/integration-d-domain-activation-parallel-autonomy.json'
   ];
   write(root,'docs/blackboard/work-graph.json',graph);
 
@@ -300,14 +300,14 @@ test('migration normalizes legacy directories and rewrites graph bindings',t=>{
 
   for(const directory of ['implementation-input','implementation-spec','implementation-result','judgment'])
     assert.equal(fs.existsSync(path.join(artifacts,directory)),false);
-  assert.equal(fs.existsSync(path.join(artifacts,'objective/BB-052.json')),true);
-  assert.equal(fs.existsSync(path.join(artifacts,'ready-implement-plan/BB-052.json')),true);
-  const migrated=read(root,'docs/blackboard/work-graph.json').tasks.find(item=>item.id==='BB-052');
+  assert.equal(fs.existsSync(path.join(artifacts,'objective/BB-053.json')),true);
+  assert.equal(fs.existsSync(path.join(artifacts,'ready-implement-plan/BB-053.json')),true);
+  const migrated=read(root,'docs/blackboard/work-graph.json').tasks.find(item=>item.id==='BB-053');
   assert.deepEqual(migrated.artifacts.inputRefs,[
-    'docs/blackboard/artifacts/objective/BB-052.json',
-    'docs/blackboard/artifacts/ready-implement-plan/BB-052.json'
+    'docs/blackboard/artifacts/objective/BB-053.json',
+    'docs/blackboard/artifacts/ready-implement-plan/BB-053.json'
   ]);
-  assert.equal(read(root,'docs/blackboard/artifacts/ready-implement-plan/BB-052.json').objective.ref,'docs/blackboard/artifacts/objective/BB-052.json');
+  assert.equal(read(root,'docs/blackboard/artifacts/ready-implement-plan/BB-053.json').objective.ref,'docs/blackboard/artifacts/objective/BB-053.json');
   assert.doesNotThrow(()=>migrate(root));
 });
 

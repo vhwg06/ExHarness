@@ -4,14 +4,15 @@
   "evidenceClass": "DETERMINISTIC_REPOSITORY_FIXTURE",
   "productionEvidence": false,
   "subject": {
-    "taskId": "BB-052",
+    "taskId": "BB-053",
     "components": [
       "agentic/organization-work",
       "agentic/domain-execution-control",
-      "agentic/product-lineage"
+      "agentic/product-lineage",
+      "agentic/domain-activation"
     ],
     "directDependencies": [
-      "BB-048"
+      "BB-052"
     ]
   },
   "budget": {
@@ -27,14 +28,15 @@
       "docs/living/system/agentic-application/state.md",
       "docs/living/system/agentic-application/capabilities.md",
       "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
-      "docs/blackboard/artifacts/objective/BB-052.json",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-052.json",
+      "docs/blackboard/artifacts/objective/BB-053.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-053.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-053.readiness-jev-evaluation.json",
       "repo-scan:packages/**",
       "git-history:delivery-transcripts",
       "blackboard-history:old-context",
       "guess:adjacent-components"
     ],
-    "loadedRefCount": 10
+    "loadedRefCount": 11
   },
   "explicit": {
     "mode": "task-graph-component-resolution",
@@ -43,10 +45,11 @@
       "docs/living/system/agentic-application/state.md",
       "docs/living/system/agentic-application/capabilities.md",
       "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
-      "docs/blackboard/artifacts/objective/BB-052.json",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-052.json"
+      "docs/blackboard/artifacts/objective/BB-053.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-053.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-053.readiness-jev-evaluation.json"
     ],
-    "loadedRefCount": 6,
+    "loadedRefCount": 7,
     "progressiveSearchRoots": [
       "packages/agentic-system/src/**",
       "packages/agentic-system/test/**"
@@ -54,7 +57,7 @@
   },
   "scenarios": [
     {
-      "name": "one-schedulable-task-from-direct-dependencies",
+      "name": "lane-aware-schedulable-tasks-from-direct-dependencies",
       "pass": true
     },
     {
@@ -74,7 +77,7 @@
       "pass": true
     },
     {
-      "name": "execution-scope-is-derived-before-worker-execution",
+      "name": "source-mutation-scope-matches-current-lane-phase",
       "pass": true
     }
   ],

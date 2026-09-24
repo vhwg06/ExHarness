@@ -4,20 +4,27 @@ import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { deriveTaskContext, deriveTaskContextSummary } from "../scripts/blackboard-task-context-resolver.mjs";
-import { readWorkGraph, readComponentRegistry } from "../scripts/blackboard-work-graph.mjs";
+import { readWorkGraph, readComponentRegistry, taskReadiness } from "../scripts/blackboard-work-graph.mjs";
+
+function runnableWorkerWithDeliveredDependency(){
+  const graph=readWorkGraph();
+  const task=graph.tasks.find(item=>
+    item.lane==="WORKER" && item.status!=="DONE" && item.components.length>1 &&
+    item.dependencies.some(dep=>graph.tasks.find(source=>source.id===dep.taskId)?.status==="DONE") &&
+    taskReadiness(graph,item.id).ready
+  );
+  assert.ok(task,"expected a runnable worker with delivered dependency");
+  return {graph,task};
+}
 
 test("task context is deterministically derived from one task and its components",()=>{
-  const ctx=deriveTaskContext("BB-052");
-  assert.equal(ctx.itemId,"BB-052");
-  assert.equal(ctx.taskId,"BB-052");
-  assert.equal(ctx.topicId,"TOPIC-INTEGRATION");
-  assert.equal(ctx.featureId,"FEATURE-INTEGRATION-C");
-  assert.deepEqual(ctx.components,[
-    "agentic/organization-work",
-    "agentic/domain-execution-control",
-    "agentic/product-lineage"
-  ]);
-  const task=readWorkGraph().tasks.find(item=>item.id==="BB-052");
+  const {graph,task}=runnableWorkerWithDeliveredDependency();
+  const ctx=deriveTaskContext(task.id);
+  assert.equal(ctx.itemId,task.id);
+  assert.equal(ctx.taskId,task.id);
+  assert.equal(ctx.featureId,task.featureId);
+  assert.equal(ctx.topicId,graph.features.find(feature=>feature.id===task.featureId)?.topicId);
+  assert.deepEqual(ctx.components,task.components);
   assert.equal(ctx.lane,task.lane);
   assert.equal(ctx.phase,task.phase);
   assert.equal(
@@ -28,24 +35,33 @@ test("task context is deterministically derived from one task and its components
 });
 
 test("DONE dependency contributes consolidated Living truth, not historical delivery transcript",()=>{
-  const ctx=deriveTaskContext("BB-052");
-  const dep=ctx.dependencyContext.find(d=>d.taskId==="BB-048");
+  const {graph,task}=runnableWorkerWithDeliveredDependency();
+  const ctx=deriveTaskContext(task.id);
+  const dep=ctx.dependencyContext.find(d=>graph.tasks.find(source=>source.id===d.taskId)?.status==="DONE");
+  assert.ok(dep);
   assert.equal(dep.source,"LIVING_CONSOLIDATED");
-  assert.ok(dep.refs.includes("docs/living/system/agentic-application/capabilities.md"));
-  assert.ok(ctx.requiredCurrentSystemRefs.includes("docs/living/system/agentic-application/contracts.md"));
-  assert.ok(!ctx.requiredInputRefs.includes("docs/blackboard/artifacts/ready-implement-plan/BB-048.implementation-result.json"));
-  assert.ok(!ctx.requiredInputRefs.includes("docs/blackboard/artifacts/ready-implement-plan/BB-048.judgment.json"));
+  assert.ok(dep.refs.length>0);
+  for(const ref of dep.refs)assert.ok(ctx.requiredCurrentSystemRefs.includes(ref));
+  const delivered=graph.tasks.find(source=>source.id===dep.taskId);
+  for(const ref of delivered.artifacts.outputRefs)assert.ok(!ctx.requiredInputRefs.includes(ref));
 });
 
 test("repository-wide discovery is progressive only and absent from deterministic required refs",()=>{
-  const summary=deriveTaskContextSummary("BB-052");
-  assert.ok(summary.progressiveSearchRoots.includes("packages/agentic-system/src/**"));
-  assert.ok(!summary.requiredCurrentSystemRefs.includes("packages/agentic-system/src/**"));
-  assert.ok(!summary.requiredInputRefs.includes("packages/agentic-system/src/**"));
+  const {task}=runnableWorkerWithDeliveredDependency();
+  const summary=deriveTaskContextSummary(task.id);
+  assert.ok(summary.progressiveSearchRoots.length>0);
+  for(const root of summary.progressiveSearchRoots){
+    assert.ok(!summary.requiredCurrentSystemRefs.includes(root));
+    assert.ok(!summary.requiredInputRefs.includes(root));
+  }
 });
 
 test("blocked worker cannot materialize execution context before direct dependencies are done",()=>{
-  assert.throws(()=>deriveTaskContext("BB-053"),/DEPENDENCIES_NOT_DONE/);
+  const graph=readWorkGraph();
+  const task=graph.tasks.find(item=>item.lane==="WORKER" && item.status!=="DONE" &&
+    item.dependencies.some(dep=>graph.tasks.find(source=>source.id===dep.taskId)?.status!=="DONE"));
+  assert.ok(task,"expected a worker blocked by direct dependency");
+  assert.throws(()=>deriveTaskContext(task.id),/DEPENDENCIES_NOT_DONE/);
 });
 
 test("research may materialize ahead of an unfinished execution dependency without treating it as delivered truth",()=>{

@@ -40,7 +40,7 @@ NONE
 
 ## Schedulable tasks
 
-- BB-052 [WORKER/EXECUTION] — Implement cross-domain obligations and selective semantic invalidation
+- BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
 - BB-059 [RESEARCH_SA/RESEARCH] — Research evidence-gated HOW evolution and Jev evaluation pipeline
 - BB-060 [WORKER/EXECUTION] — Reconcile Oracle physical ownership and package boundary
 - BB-065 [WORKER/EXECUTION] — Define delivery profile and executable value baseline
@@ -58,8 +58,8 @@ NONE
 
 ```text
 BB-048 [DONE] <- ROOT
-BB-052 [WORKER_SCHEDULABLE] <- BB-048
-BB-053 [BLOCKED_BY BB-052] <- BB-052
+BB-052 [DONE] <- BB-048
+BB-053 [WORKER_SCHEDULABLE] <- BB-052
 BB-054 [BLOCKED_BY BB-053] <- BB-053
 BB-055 [BLOCKED_BY BB-054] <- BB-054
 BB-056 [DONE] <- ROOT
