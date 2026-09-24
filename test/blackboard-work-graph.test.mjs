@@ -13,9 +13,16 @@ test("outer Blackboard is a typed dependency graph with task scheduling and comp
   for(const task of graph.tasks){
     assert.equal(ready.includes(task.id),taskReadiness(graph,task.id).ready);
   }
-  assert.deepEqual(taskReadiness(graph,"BB-053"),{taskId:"BB-053",ready:false,reason:"DEPENDENCIES_NOT_DONE",blockedBy:["BB-052"]});
+  const directDependency=structuredClone(graph);
+  directDependency.tasks.find(task=>task.id==="BB-052").status="DONE";
+  directDependency.tasks.find(task=>task.id==="BB-053").status="PLANNED";
+  directDependency.tasks.find(task=>task.id==="BB-053").phase="EXECUTION";
+  assert.deepEqual(taskReadiness(directDependency,"BB-053"),{taskId:"BB-053",ready:true,reason:"DIRECT_DEPENDENCIES_DONE",blockedBy:[]});
+  directDependency.tasks.find(task=>task.id==="BB-052").status="PLANNED";
+  assert.deepEqual(taskReadiness(directDependency,"BB-053"),{taskId:"BB-053",ready:false,reason:"DEPENDENCIES_NOT_DONE",blockedBy:["BB-052"]});
 
   const runAhead=structuredClone(graph);
+  runAhead.tasks.find(task=>task.id==="BB-053").status="PLANNED";
   const future=runAhead.tasks.find(task=>task.id==="BB-054");
   future.status="PLANNED";
   future.lane="RESEARCH_SA";

@@ -12,8 +12,14 @@ function run(name,fn){
   catch(e){scenarios.push({name,pass:false,error:e.message});}
 }
 
-const a=deriveTaskContext("BB-052");
-const b=deriveTaskContext("BB-052");
+const task=graph.tasks.find(item=>
+  item.lane==="WORKER" && item.status!=="DONE" && item.components.length>1 &&
+  item.dependencies.some(dep=>graph.tasks.find(source=>source.id===dep.taskId)?.status==="DONE") &&
+  taskReadiness(graph,item.id).ready
+);
+if(!task)throw Error("no runnable worker with delivered dependency for context evaluation");
+const a=deriveTaskContext(task.id);
+const b=deriveTaskContext(task.id);
 
 run("lane-aware-schedulable-tasks-from-direct-dependencies",()=>{
   const ready=schedulableTasks(graph);
@@ -22,16 +28,18 @@ run("lane-aware-schedulable-tasks-from-direct-dependencies",()=>{
   }
 });
 run("multi-component-task-still-one-context",()=>{
-  if(a.taskId!=="BB-052"||a.components.length!==3)throw Error("task/component projection mismatch");
+  if(a.taskId!==task.id||JSON.stringify(a.components)!==JSON.stringify(task.components))throw Error("task/component projection mismatch");
 });
 run("done-dependency-loads-living-truth-not-transcript",()=>{
-  const dep=a.dependencyContext.find(x=>x.taskId==="BB-048");
+  const dep=a.dependencyContext.find(x=>graph.tasks.find(source=>source.id===x.taskId)?.status==="DONE");
   if(!dep||dep.source!=="LIVING_CONSOLIDATED")throw Error("dependency source mismatch");
-  if(a.requiredInputRefs.some(x=>/ready-implement-plan\/BB-048\.(implementation-result|judgment)\.json/.test(x)))throw Error("terminal transcript leaked");
+  if(dep.refs.some(ref=>!a.requiredCurrentSystemRefs.includes(ref)))throw Error("delivered Living ref missing");
+  const delivered=graph.tasks.find(source=>source.id===dep.taskId);
+  if(delivered.artifacts.outputRefs.some(ref=>a.requiredInputRefs.includes(ref)))throw Error("terminal transcript leaked");
 });
 run("progressive-search-is-not-default-context",()=>{
-  if(!a.progressiveDiscovery.searchRoots.includes("packages/agentic-system/src/**"))throw Error("missing progressive search root");
-  if(a.requiredInputRefs.includes("packages/agentic-system/src/**")||a.requiredCurrentSystemRefs.includes("packages/agentic-system/src/**"))
+  if(!a.progressiveDiscovery.searchRoots.length)throw Error("missing progressive search roots");
+  if(a.progressiveDiscovery.searchRoots.some(root=>a.requiredInputRefs.includes(root)||a.requiredCurrentSystemRefs.includes(root)))
     throw Error("broad search root auto-loaded");
 });
 run("context-seed-is-deterministic",()=>{
@@ -39,7 +47,6 @@ run("context-seed-is-deterministic",()=>{
 });
 run("source-mutation-scope-matches-current-lane-phase",()=>{
   if(!a.executionSourceScope?.write?.length)throw Error("missing derived execution write scope");
-  const task=graph.tasks.find(item=>item.id==="BB-052");
   const executing=task.lane==="WORKER"&&["EXECUTION","REPAIR"].includes(task.phase);
   if(executing){
     if(JSON.stringify(a.sourceScope.write)!==JSON.stringify(a.executionSourceScope.write))
@@ -61,7 +68,7 @@ const artifact={
   version:1,
   evidenceClass:"DETERMINISTIC_REPOSITORY_FIXTURE",
   productionEvidence:false,
-  subject:{taskId:"BB-052",components:a.components,directDependencies:a.dependencyContext.map(x=>x.taskId)},
+  subject:{taskId:task.id,components:a.components,directDependencies:a.dependencyContext.map(x=>x.taskId)},
   budget:{
     failedScenarios:0,
     transcriptReads:0,
@@ -78,7 +85,7 @@ const artifact={
   scenarios,
   result:{
     failedScenarios:scenarios.filter(x=>!x.pass).length,
-    transcriptReads:deterministicLoaded.filter(x=>/ready-implement-plan\/BB-048\.(implementation-result|judgment)\.json/.test(x)).length,
+    transcriptReads:graph.tasks.filter(item=>item.status==="DONE").flatMap(item=>item.artifacts.outputRefs).filter(ref=>deterministicLoaded.includes(ref)).length,
     broadSearchRootsAutoLoaded:deterministicLoaded.filter(x=>x.includes("/**")).length,
     deterministicContextReduction:deterministicLoaded.length<baselineLoaded.length,
     allDeterministicControlsPass:scenarios.every(x=>x.pass)
