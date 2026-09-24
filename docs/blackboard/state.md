@@ -21,14 +21,14 @@ next-work-id: BB-077
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: NONE
+  active: BB-059
 
 WORKER
   active: NONE
@@ -36,12 +36,18 @@ WORKER
 
 ## Active work
 
-NONE
+
+BB-059
+task: Research evidence-gated HOW evolution and Jev evaluation pipeline
+lane: RESEARCH_SA
+phase: RESEARCH
+current-context: docs/blackboard/context/BB-059/current.json
+components: agentic/domain-execution-control, agentic/causal-observation, agentic/how-evolution
+worker: chatgpt-research-bb059
 
 ## Schedulable tasks
 
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
-- BB-059 [RESEARCH_SA/RESEARCH] — Research evidence-gated HOW evolution and Jev evaluation pipeline
 - BB-060 [WORKER/EXECUTION] — Reconcile Oracle physical ownership and package boundary
 - BB-065 [WORKER/EXECUTION] — Define delivery profile and executable value baseline
 - BB-068 [RESEARCH_SA/RESEARCH] — Connect real repository changes to CI and review evidence
@@ -65,7 +71,7 @@ BB-055 [BLOCKED_BY BB-054] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [BLOCKED_BY BB-055] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
-BB-059 [RESEARCH_SCHEDULABLE] <- BB-058
+BB-059 [ACTIVE] <- BB-058
 BB-060 [WORKER_SCHEDULABLE] <- ROOT
 BB-061 [BLOCKED_BY BB-060] <- BB-060
 BB-062 [BLOCKED_BY BB-061] <- BB-061
