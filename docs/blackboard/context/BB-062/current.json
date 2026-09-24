@@ -1,0 +1,156 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-062",
+  "taskId": "BB-062",
+  "featureId": "FEATURE-ORACLE-CONNECTIVITY",
+  "topicId": "TOPIC-ORACLE-RECONCILIATION",
+  "components": [
+    "oracle/infrastructure"
+  ],
+  "pipeline": "RESEARCH_SA",
+  "lane": "RESEARCH_SA",
+  "phase": "RESEARCH",
+  "stage": "RESEARCH",
+  "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-062.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+  "planHash": "373f5edcb54b942a9b5e45daa85a7c1cd62f1ba82bd9a0cf6ffc0dbb80336d22",
+  "action": {
+    "kind": "RESEARCH",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-061",
+      "source": "PLANNED_DEPENDENCY",
+      "refs": [
+        "docs/blackboard/artifacts/objective/BB-061.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-061.json"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "docs/blackboard/process/oracle-reconciliation-phase.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-062.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+    "docs/blackboard/artifacts/objective/BB-061.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-061.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agentic-system/package.json",
+      "packages/oracle/**",
+      "package.json",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "scripts/**",
+      "test/**",
+      ".github/workflows/test.yml"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agentic-system/package.json",
+      "packages/oracle/**",
+      "package.json",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "scripts/**",
+      "test/**",
+      ".github/workflows/test.yml"
+    ],
+    "write": [
+      "packages/agentic-system/test/oracle-source-connectivity.test.js",
+      "packages/agentic-system/test/oracle-integration.test.js",
+      "test/oracle-architecture-boundary.test.mjs",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/architecture.md",
+      "docs/living/system/agentic-application/contracts.md"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/state.md"
+    ]
+  },
+  "artifactWriteScope": [
+    "docs/blackboard/artifacts/ready-implement-plan/BB-062.json"
+  ],
+  "hardInvariants": [
+    "Repository and application-artifact sources remain distinct where their identity/provenance semantics differ.",
+    "Adding connectivity must not create an Oracle agent loop, provider lifecycle, generic registry or background refresh system without evidence.",
+    "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
+    "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized."
+  ],
+  "verification": [
+    {
+      "id": "oracle-connectivity",
+      "command": "node --test packages/agentic-system/test/oracle-source-connectivity.test.js"
+    },
+    {
+      "id": "oracle-unit",
+      "command": "node --test packages/oracle/test/oracle.test.js"
+    },
+    {
+      "id": "oracle-integration",
+      "command": "node --test packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js"
+    },
+    {
+      "id": "manifest-contract",
+      "command": "node --test packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js"
+    },
+    {
+      "id": "oracle-boundary",
+      "command": "node --test test/oracle-architecture-boundary.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "living-docs",
+      "command": "npm run verify:blackboard-artifacts && npm run verify:blackboard-work-graph && npm run verify:blackboard-context"
+    }
+  ],
+  "expectedOutputs": [
+    "READY_IMPLEMENT_PLAN"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "scripts/**",
+      "test/**"
+    ],
+    "contractRefs": [
+      "resolveBackendContext",
+      "resolveQaContext",
+      "repositoryReader.readFile",
+      "artifactReader.readArtifact",
+      "BackendContextSchema",
+      "QaContextSchema"
+    ]
+  }
+}
