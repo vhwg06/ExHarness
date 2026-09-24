@@ -4,7 +4,7 @@ import { CALIBRATION_TASK_IDS, MINI_COMMIT, NODE_VERSION, PLAYWRIGHT_VERSION, PR
 
 const digest = letter => `sha256:${letter.repeat(64)}`;
 function profile(identities) {
-  const model = { snapshot: 'provider/model-2026-09-24', endpointOrigin: 'https://api.example.invalid', apiBaseUrl: 'https://api.example.invalid/v1', credentialEnv: 'OPENAI_API_KEY', tokenizer: 'litellm:provider/model-2026-09-24', maxContextTokens: 30000, pricingDate: '2026-09-24', pricingSource: 'https://example.invalid/pricing', inputUsdPerMillion: 1, cachedInputUsdPerMillion: 0.1, outputUsdPerMillion: 2 };
+  const model = { snapshot: 'provider/model-2026-09-24', reasoningEffort: 'none', endpointOrigin: 'https://api.example.invalid', apiBaseUrl: 'https://api.example.invalid/v1', credentialEnv: 'OPENAI_API_KEY', tokenizer: 'litellm:provider/model-2026-09-24', maxContextTokens: 30000, pricingDate: '2026-09-24', pricingSource: 'https://example.invalid/pricing', inputUsdPerMillion: 1, cachedInputUsdPerMillion: 0.1, outputUsdPerMillion: 2 };
   const tool = { model, nodeVersion: NODE_VERSION, miniCommit: MINI_COMMIT, agentImageDigest: digest('d'), budgets: PROTOCOL.budgets };
   const armHash = sha256(tool);
   return {
@@ -55,6 +55,7 @@ test('preflight rejects mutable protocol, floating profiles, insufficient sample
   const mutate = change => { const value = profile(identities); change(value); return value; };
   assert.throws(() => validateProfile(mutate(value => { value.protocolHash = digest('f').slice(7); }), identities), /protocol hash/);
   assert.throws(() => validateProfile(mutate(value => { value.model.snapshot = 'provider/model-latest'; }), identities), /model snapshot/);
+  assert.throws(() => validateProfile(mutate(value => { value.model.reasoningEffort = 'medium'; }), identities), /model snapshot/);
   assert.throws(() => validateProfile(mutate(value => { value.contexts[0].eligibleTasks.length = 9; }), identities), /ten eligible/);
   assert.throws(() => validateProfile(mutate(value => { value.armProfileHashes.EXHARNESS = 'wrong'; }), identities), /arm profile/);
   assert.throws(() => validateProfile(mutate(value => { value.budgets.maxApiUsd = 50; }), identities), /budgets changed/);

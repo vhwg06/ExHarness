@@ -10,8 +10,12 @@ const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const readLines = async path => (await readFile(path, 'utf8')).split(/\r?\n/).filter(Boolean).map(JSON.parse);
 
 async function createOnce(path, bytes) {
-  const file = await open(path, 'wx');
-  try { await file.writeFile(bytes); await file.sync(); } finally { await file.close(); }
+  try {
+    const file = await open(path, 'wx');
+    try { await file.writeFile(bytes); await file.sync(); } finally { await file.close(); }
+  } catch (error) {
+    if (error.code !== 'EEXIST' || !(await readFile(path)).equals(bytes)) throw error;
+  }
 }
 
 export async function exportProviderRecords({ profilePath, output, reviewerId }) {
@@ -29,6 +33,18 @@ export async function exportProviderRecords({ profilePath, output, reviewerId })
   const settled = usage.filter(row => row.status === 'SETTLED');
   if (!settled.length || settled.some(row => !row.providerRequestId))
     throw new Error('PROVIDER_EXPORT_INVALID: no settled provider requests');
+  const existing = await readFile(join(root, 'provider-export.jsonl'), 'utf8').catch(error => {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  });
+  if (existing !== null) {
+    const records = existing.split(/\r?\n/).filter(Boolean).map(JSON.parse);
+    if (records.length !== settled.length || records.some(record => !settled.some(row => row.providerRequestId === record.providerRequestId) ||
+        record.exportedBy !== reviewerId)) throw new Error('PROVIDER_EXPORT_INVALID: existing export differs from settled usage');
+    for (const record of records) if (sha256(await readFile(join(root, record.rawRecordRef))) !== record.rawRecordHash)
+      throw new Error('PROVIDER_EXPORT_INVALID: existing raw record changed');
+    return { exported: records.length, reviewerId, reused: true };
+  }
   const recordsDir = join(root, 'provider-records');
   await mkdir(recordsDir, { recursive: true });
   const records = [];
@@ -41,7 +57,7 @@ export async function exportProviderRecords({ profilePath, output, reviewerId })
     const bytes = Buffer.from(await response.arrayBuffer());
     if (bytes.length > 2_000_000) throw new Error('PROVIDER_EXPORT_INVALID: provider record too large');
     const raw = JSON.parse(bytes.toString('utf8'));
-    if (raw.id !== row.providerRequestId || raw.model !== profile.model.snapshot || raw.usage?.prompt_tokens !== row.inputTokens ||
+    if (raw.id !== row.providerRequestId || raw.model !== profile.model.snapshot || raw.service_tier !== 'default' || raw.usage?.prompt_tokens !== row.inputTokens ||
         raw.usage?.completion_tokens !== row.outputTokens || (raw.usage?.prompt_tokens_details?.cached_tokens ?? 0) !== row.cachedInputTokens)
       throw new Error('PROVIDER_EXPORT_INVALID: independently retrieved usage differs from ledger');
     const rawRecordRef = `provider-records/${row.providerRequestId}.json`;

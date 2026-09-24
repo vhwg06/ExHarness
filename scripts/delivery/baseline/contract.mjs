@@ -101,7 +101,8 @@ export function validateProfile(profile, { fixtureDigest, acceptanceDigest, requ
   if (![profile.nodeImageDigest, profile.browserDigest, profile.pythonLockDigest, profile.agentImageDigest].every(exactDigest)) fail('runtime/image/lock digests required');
   if (!nonempty(profile.agentImage) || !profile.agentImage.endsWith(`@${profile.agentImageDigest}`)) fail('agent image is not pinned to declared digest');
   const model = profile.model;
-  if (!model || !nonempty(model.snapshot) || aliases.test(model.snapshot) || model.tokenizer !== `litellm:${model.snapshot}` ||
+  if (!model || !nonempty(model.snapshot) || aliases.test(model.snapshot) || model.reasoningEffort !== 'none' ||
+      model.tokenizer !== `litellm:${model.snapshot}` ||
       !positive(model.maxContextTokens) || !/^https:\/\/[^/]+$/.test(model.endpointOrigin ?? '') ||
       !nonempty(model.apiBaseUrl) || !model.apiBaseUrl.startsWith(`${model.endpointOrigin}/`) ||
       !['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'OPENROUTER_API_KEY'].includes(model.credentialEnv) || !/^\d{4}-\d{2}-\d{2}$/.test(model.pricingDate ?? '') ||

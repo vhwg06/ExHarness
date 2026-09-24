@@ -2,7 +2,7 @@
 
 This is a development experiment, not an ExHarness product runtime. The direct arm imports pinned mini-SWE-agent and edits only a copied request-tracker fixture. The verifier runs outside the agent container against a separate candidate copy. The three fixture calibrations are distinct from the later 20-pair pilot; pilot repository selection needs a recorded product-owner decision in BB-074.
 
-The committed `profile.json` is an incomplete template. Its OpenAI model is fixed to `gpt-6-luna` at `https://api.openai.com/v1`, Standard processing, using the [official model price](https://developers.openai.com/api/docs/models/gpt-6-luna) dated 2026-09-24. Only `OPENAI_API_KEY` names the credential; the key value belongs in the operator's environment and must not enter the repository or run artifacts. The run profile and evidence should be written under ignored `runs/` until reviewed for publication.
+The committed `profile.json` is an incomplete template. Its OpenAI model is fixed to `gpt-6-luna` at `https://api.openai.com/v1`, Standard processing, using the [official model price](https://developers.openai.com/api/docs/models/gpt-6-luna) dated 2026-09-24. Chat Completions tool calls use `reasoning_effort=none`, as required by the model page. Only `OPENAI_API_KEY` names the credential; the key value belongs in the operator's environment and must not enter the repository or run artifacts. The run profile and evidence should be written under ignored `runs/` until reviewed for publication.
 
 ## Local preparation
 

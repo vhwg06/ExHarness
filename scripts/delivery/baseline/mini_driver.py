@@ -49,7 +49,7 @@ def run(config: dict) -> dict:
         "model_class": "litellm",
         "model_kwargs": {"num_retries": 0, "max_tokens": profile["budgets"]["maxOutputTokensPerCall"],
                          "api_base": model_profile["apiBaseUrl"], "store": True,
-                         "service_tier": "default"},
+                         "service_tier": "default", "reasoning_effort": model_profile["reasoningEffort"]},
         "cost_tracking": "ignore_errors",
     })
     original_query = model._query

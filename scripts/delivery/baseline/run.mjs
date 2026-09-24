@@ -236,7 +236,7 @@ async function auditLive(profile, identities, output) {
         !record.retrievedAt || exported.has(record.providerRequestId)) fail('invalid independent provider export');
     if (await digestFile(join(output, record.rawRecordRef)) !== record.rawRecordHash) fail('provider raw record digest mismatch');
     const raw = await plainJson(join(output, record.rawRecordRef));
-    if (raw.id !== record.providerRequestId || raw.model !== profile.model.snapshot ||
+    if (raw.id !== record.providerRequestId || raw.model !== profile.model.snapshot || raw.service_tier !== 'default' ||
         raw.usage?.prompt_tokens !== record.inputTokens || raw.usage?.completion_tokens !== record.outputTokens ||
         (raw.usage?.prompt_tokens_details?.cached_tokens ?? 0) !== record.cachedInputTokens)
       fail('provider export/raw mismatch');
