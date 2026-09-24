@@ -1372,7 +1372,7 @@
       "featureId": "FEATURE-DELIVERY-SCM",
       "title": "Connect real repository changes to CI and review evidence",
       "kind": "IMPLEMENTATION",
-      "status": "PLANNED",
+      "status": "ACTIVE",
       "complexity": "L",
       "components": [
         "agentic/domain-execution-control",
@@ -1406,12 +1406,14 @@
         "A deliberate failing check returns bounded repair; stale checks and unrelated branch updates cannot satisfy candidate acceptance.",
         "Retry after lost provider acknowledgement discovers the existing change or blocks on ambiguity; it does not create duplicate review requests or bypass merge policy."
       ],
-      "currentContextRef": null,
-      "claim": null,
+      "currentContextRef": "docs/blackboard/context/BB-068/current.json",
+      "claim": {
+        "workerId": "chatgpt-research-bb068"
+      },
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-068.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
-        "researchBaselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62",
+        "researchBaselineSha": "26052992ad643a0b46d3274fbabb3e0ab6052c36",
         "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62"
       },
       "lane": "RESEARCH_SA",
