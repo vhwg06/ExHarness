@@ -1,0 +1,190 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-068",
+  "taskId": "BB-068",
+  "featureId": "FEATURE-DELIVERY-SCM",
+  "topicId": "TOPIC-DELIVERY-FOUNDATION",
+  "components": [
+    "agentic/domain-execution-control",
+    "agentic/product-lineage"
+  ],
+  "pipeline": "RESEARCH_SA",
+  "lane": "RESEARCH_SA",
+  "phase": "RESEARCH",
+  "stage": "RESEARCH",
+  "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-068.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
+  "planHash": "e2bf5a25b29c6fd518bff549a28701cd51ddadb352d9944fd72ac1939990b15f",
+  "action": {
+    "kind": "RESEARCH",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-066",
+      "source": "PLANNED_DEPENDENCY",
+      "refs": [
+        "docs/blackboard/artifacts/objective/BB-066.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+        "docs/blackboard/process/delivery-research/BB-066.md"
+      ]
+    },
+    {
+      "taskId": "BB-067",
+      "source": "PLANNED_DEPENDENCY",
+      "refs": [
+        "docs/blackboard/artifacts/objective/BB-067.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-067.json",
+        "docs/blackboard/process/delivery-research/BB-067.md"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/living/system/agentic-application/contracts.md",
+    "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-068.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
+    "docs/blackboard/artifacts/objective/BB-066.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+    "docs/blackboard/process/delivery-research/BB-066.md",
+    "docs/blackboard/artifacts/objective/BB-067.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-067.json",
+    "docs/blackboard/process/delivery-research/BB-067.md"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/execution-capability-gateway.js",
+      "packages/agentic-system/src/scm-review-delivery.js",
+      "packages/agentic-system/src/github-scm-provider.js",
+      "packages/agentic-system/test/bb068-*.test.js",
+      "scripts/delivery/bb-066-probe.mjs",
+      "scripts/delivery/bb-067-probe.mjs",
+      "scripts/delivery/bb-068-probe.mjs",
+      "scripts/delivery/baseline/**",
+      "test/delivery/bb-068-live-contract.test.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-067.json",
+      "docs/blackboard/process/delivery-research/BB-068.md",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/execution-capability-gateway.js",
+      "packages/agentic-system/src/scm-review-delivery.js",
+      "packages/agentic-system/src/github-scm-provider.js",
+      "packages/agentic-system/test/bb068-*.test.js",
+      "scripts/delivery/bb-066-probe.mjs",
+      "scripts/delivery/bb-067-probe.mjs",
+      "scripts/delivery/bb-068-probe.mjs",
+      "scripts/delivery/baseline/**",
+      "test/delivery/bb-068-live-contract.test.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-067.json",
+      "docs/blackboard/process/delivery-research/BB-068.md",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "write": [
+      "packages/agentic-system/src/scm-review-delivery.js",
+      "packages/agentic-system/src/github-scm-provider.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb068-scm-review-delivery.test.js",
+      "packages/agentic-system/test/bb068-github-scm-provider.test.js",
+      "scripts/delivery/bb-068-probe.mjs",
+      "test/delivery/bb-068-live-contract.test.mjs",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/execution-capability-gateway.js",
+      "scripts/delivery/baseline/**",
+      "package.json"
+    ]
+  },
+  "artifactWriteScope": [
+    "docs/blackboard/artifacts/ready-implement-plan/BB-068.json"
+  ],
+  "hardInvariants": [
+    "SCM effect identity and exact provider state are evidence; provider success is not product acceptance or merge authority.",
+    "Every review/CI decision binds repository, base SHA, candidate head SHA/tree, changed paths, provider review identity and exact check-run identities.",
+    "Unknown or ambiguous external effects reconcile by read-after-write discovery or BLOCKED; blind mutation retry is forbidden.",
+    "Only CI evidence whose head SHA equals the current candidate head can satisfy that candidate; prior/stale checks remain evidence only.",
+    "Repository credentials and mutation capability remain outside the sandbox and are constrained by the BB-067 host capability grant.",
+    "The outer Blackboard coordinates ExHarness development only; product-runtime SCM effects use runtime/application contracts."
+  ],
+  "verification": [
+    {
+      "id": "unit-provider",
+      "command": "node --test packages/agentic-system/test/bb068-github-scm-provider.test.js"
+    },
+    {
+      "id": "unit-delivery",
+      "command": "node --test packages/agentic-system/test/bb068-scm-review-delivery.test.js"
+    },
+    {
+      "id": "domain-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js"
+    },
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-068-probe.mjs"
+    },
+    {
+      "id": "live-contract",
+      "command": "node --test test/delivery/bb-068-live-contract.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository-verify",
+      "command": "npm run verify"
+    }
+  ],
+  "expectedOutputs": [
+    "READY_IMPLEMENT_PLAN"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "contractRefs": [
+      "ExecutionPolicy",
+      "ExecutionStrategy",
+      "ExecutionAttemptBinding",
+      "DomainPublicationReceipt",
+      "CrossDomainObligation",
+      "SemanticClaim",
+      "ProductDerivationEdge"
+    ]
+  }
+}

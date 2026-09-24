@@ -9,175 +9,276 @@
     "hash": "0de18826d0e9d285eed87880c7cabdda532deeaaff6e6f5622185cb1e07cc2cf"
   },
   "scope": [
-    "delivery.scm"
+    "delivery.scm.github-provider",
+    "delivery.scm.review-candidate",
+    "delivery.scm.exact-ci-evidence",
+    "delivery.scm.effect-reconciliation"
   ],
   "outOfScope": [
-    "Unbounded autonomous product decisions and expansion beyond the supported delivery profile.",
-    "Replacing delivered Integration or Oracle authority contracts.",
-    "Treating this research allocation as implementation readiness or product delivery."
+    "Merging or bypassing repository merge/branch policy.",
+    "Implementing GitLab or a second SCM adapter in BB-068.",
+    "Giving MCP, CI, runtime or SCM provider product-acceptance/publication authority.",
+    "Moving repository credentials into the agent sandbox/workspace.",
+    "Treating BB-066/BB-067 READY plans as delivered dependencies."
   ],
   "constraints": [
-    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
-    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
-    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments."
+    "Primary live provider is GitHub REST API version 2026-03-10; every request sets X-GitHub-Api-Version explicitly.",
+    "Use Node built-in HTTP/fetch and a narrow provider port; do not add an SCM framework dependency.",
+    "GitHub credentials remain host-side and require only metadata read, contents read/write, pull-requests read/write and checks read for the controlled repository.",
+    "BB-066 and BB-067 are planned dependencies during research and must be DONE before WORKER execution.",
+    "The delivered coding runtime may edit a bounded workspace but may not clone, push, create PRs or hold SCM credentials; BB-068 performs external mutation through the trusted host capability.",
+    "Live GitHub evidence is separate from deterministic fake-provider tests; missing token/repository/check-run prerequisites cannot be converted into pass.",
+    "BB-068 creates and evaluates a review candidate only; merge and product publication remain outside this capability."
   ],
   "invariants": [
-    "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
-    "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
-    "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
+    "SCM effect identity and exact provider state are evidence; provider success is not product acceptance or merge authority.",
+    "Every review/CI decision binds repository, base SHA, candidate head SHA/tree, changed paths, provider review identity and exact check-run identities.",
+    "Unknown or ambiguous external effects reconcile by read-after-write discovery or BLOCKED; blind mutation retry is forbidden.",
+    "Only CI evidence whose head SHA equals the current candidate head can satisfy that candidate; prior/stale checks remain evidence only.",
+    "Repository credentials and mutation capability remain outside the sandbox and are constrained by the BB-067 host capability grant.",
+    "The outer Blackboard coordinates ExHarness development only; product-runtime SCM effects use runtime/application contracts."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Compare direct SCM API and MCP adapter for exact SHA/tree handling, idempotency and minimal permissions.",
-    "Candidate direction, not selected architecture: Select one primary SCM; evaluate GitLab parity requirements without building a second adapter unnecessarily.",
-    "Candidate direction, not selected architecture: Define branch divergence, merge conflict, stale CI and ambiguous PR-creation recovery."
+    "D1: Add `scm-review-delivery.js` as the application boundary and `github-scm-provider.js` as the first provider. DomainExecutionController remains execution/evidence authority and is not taught GitHub APIs.",
+    "D2: Select GitHub REST API `2026-03-10` as the production provider contract. Use Git database + refs + pulls + checks endpoints through built-in fetch; explicitly send API version and no raw provider response becomes acceptance by itself.",
+    "D3: One immutable review intent pins repository identity, target branch, exact baseSha, executionAttemptId, workspace result tree/digest, normalized changed paths, reviewKey and a deterministic provider branch derived from reviewKey. The branch is stable across repair iterations.",
+    "D4: Each candidate iteration pins candidateKey, parent/head expectation, resulting commit SHA, tree SHA and changed-path digest. Git blobs/tree/commit are created against the pinned parent; ref update is conditional on the observed expected head and never force-rebases an unknown branch.",
+    "D5: After any lost/ambiguous write acknowledgement, reconcile before mutating: read deterministic branch ref, inspect commit parent/tree/candidate marker, and discover open PR by exact head+base. Exact unique match is replay success; mismatch/multiple possibilities are BLOCKED.",
+    "D6: PR creation follows create-or-discover semantics learned from `peter-evans/create-pull-request`: stable head/base identity, exact lookup after an already-exists/ambiguous response and bounded retry only for known eventual-consistency reads. Never generate a new branch/PR identity merely because acknowledgement was lost.",
+    "D7: CI evidence is collected for the exact candidate commit SHA using GitHub check runs. Persist check-run id, check-suite id, app id/name, name, status, conclusion, started/completed times and details URL plus the queried head SHA.",
+    "D8: A pinned review policy declares required check names and optional expected app ids. PASS requires every required check for the exact current head to reach an allowed terminal success conclusion; failure yields REMEDIATION_REQUIRED and pending/missing/duplicate-ambiguous checks yield INCONCLUSIVE.",
+    "D9: Repair updates the same deterministic review branch with a new immutable candidate iteration. Old failing/passing check runs remain audit evidence but cannot satisfy the new head SHA.",
+    "D10: Re-read target-branch head and PR mergeability/currentness before reporting review readiness. Base movement, merge conflict or provider-required update is bounded repair/currentness evidence; BB-068 never auto-merges or bypasses branch protection.",
+    "D11: GitHub MCP Server v1.12.2 is an optional interaction adapter only. Its push/create tools and exact-head check lookup are useful patterns, but MCP tool output/versioning is not the canonical durable SCM effect contract.",
+    "D12: Keep provider-neutral artifact fields (`providerKind`, repositoryRef, reviewId, baseSha, headSha, ciRunId`) so GitLab can later map MR diff_refs/head pipeline SHA; implement GitHub only in BB-068."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agentic-system/src/domain-execution-control.js",
-      "docs/living/system/state.md"
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/index.js",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-067.json",
+      "docs/blackboard/process/delivery-research/BB-068.md",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
     ],
     "expectedNew": [
+      "packages/agentic-system/src/scm-review-delivery.js",
+      "packages/agentic-system/src/github-scm-provider.js",
       "scripts/delivery/bb-068-probe.mjs"
     ],
     "expectedTests": [
-      "test/delivery/bb-068.test.mjs"
+      "packages/agentic-system/test/bb068-scm-review-delivery.test.js",
+      "packages/agentic-system/test/bb068-github-scm-provider.test.js",
+      "test/delivery/bb-068-live-contract.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/execution-capability-gateway.js",
+      "packages/agentic-system/src/scm-review-delivery.js",
+      "packages/agentic-system/src/github-scm-provider.js",
+      "packages/agentic-system/test/bb068-*.test.js",
+      "scripts/delivery/bb-066-probe.mjs",
+      "scripts/delivery/bb-067-probe.mjs",
+      "scripts/delivery/bb-068-probe.mjs",
+      "scripts/delivery/baseline/**",
+      "test/delivery/bb-068-live-contract.test.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-067.json",
       "docs/blackboard/process/delivery-research/BB-068.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "packages/agentic-system/src/scm-review-delivery.js",
+      "packages/agentic-system/src/github-scm-provider.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb068-scm-review-delivery.test.js",
+      "packages/agentic-system/test/bb068-github-scm-provider.test.js",
+      "scripts/delivery/bb-068-probe.mjs",
+      "test/delivery/bb-068-live-contract.test.mjs",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/execution-capability-gateway.js",
+      "scripts/delivery/baseline/**",
+      "package.json"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S1 — Contract + provider: define immutable review intent/candidate/CI evidence schemas and the narrow ScmReviewProvider; implement GitHub REST 2026-03-10 with exact base/ref/blob/tree/commit/PR/check identities and host-side credentials.",
+    "S2 — Idempotent effect recovery: deterministic review branch/reviewKey, conditional ref update, create-or-discover PR, read-after-write reconciliation and BLOCKED on mismatched/ambiguous provider state.",
+    "S3 — CI/currentness: collect required check runs only for exact candidate head; map fail→REMEDIATION_REQUIRED, pending/missing→INCONCLUSIVE, reject stale old-head evidence, and report base movement/conflict without merging.",
+    "S4 — Real probe: in a controlled GitHub repository create a candidate with a deliberate failing check, repair it to a new head, move the base branch, inject lost acknowledgement after PR creation, restart the process and prove exact replay/no duplicate review.",
+    "S5 — Consolidation: bind provider/version/token-permission profile, base/head/tree/path/PR/check identities, negative cases and live evidence into worker evidence; update Living Docs with the supported GitHub-only boundary and limitations."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
-      "statement": "The candidate records base SHA, exact resulting commit/tree, changed files and CI run identities from the real provider.",
+      "statement": "A real GitHub candidate binds exact repository/base SHA, resulting commit and tree SHA, normalized changed paths, PR identity/head and exact check-run identities.",
       "verificationIds": [
+        "unit-provider",
+        "unit-delivery",
         "live-probe"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Real-provider receipt with repositoryRef, baseSha, headSha, treeSha, changedPaths digest, review id/url/head/base and exact check-run/check-suite/app identities."
       ]
     },
     {
       "id": "AC-2",
-      "statement": "A deliberate failing check returns bounded repair; stale checks and unrelated branch updates cannot satisfy candidate acceptance.",
+      "statement": "A deliberate failing required check produces bounded remediation; only checks for the repaired current head may later satisfy the candidate, while stale checks and unrelated branch updates are rejected.",
       "verificationIds": [
-        "live-probe"
+        "unit-delivery",
+        "live-probe",
+        "live-contract"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Two candidate heads with check evidence showing old-head failure cannot satisfy the repaired head, plus base-movement/unrelated-update negative evidence."
       ]
     },
     {
       "id": "AC-3",
-      "statement": "Retry after lost provider acknowledgement discovers the existing change or blocks on ambiguity; it does not create duplicate review requests or bypass merge policy.",
+      "statement": "After lost provider acknowledgement, a fresh process discovers the exact existing branch/commit/PR or blocks on ambiguity; it never creates a duplicate review identity or bypasses merge policy.",
       "verificationIds": [
-        "live-probe"
+        "unit-provider",
+        "unit-delivery",
+        "live-probe",
+        "live-contract"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Fault-injected post-write acknowledgement loss, fresh-process reconcile trace, stable reviewKey/branch/PR number and mutation counters proving no duplicate PR/unsafe ref update/merge."
       ]
     },
     {
       "id": "INV-1",
-      "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "statement": "SCM/CI success cannot accept product truth, merge source or mutate domain publication authority.",
       "verificationIds": [
-        "boundary-probe"
+        "unit-delivery",
+        "domain-regression"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Boundary tests proving review-ready output is evidence only and existing completion/publication authority remains required."
       ]
     },
     {
       "id": "INV-2",
-      "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "statement": "All SCM results are exact-source/currentness evidence; missing, stale or ambiguous provider state cannot be called success.",
       "verificationIds": [
-        "boundary-probe"
+        "unit-provider",
+        "unit-delivery"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Negatives for wrong base/head/tree, missing checks, duplicate check identity, branch drift and ambiguous PR discovery."
       ]
     },
     {
       "id": "INV-3",
-      "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "statement": "SCM credentials/mutation stay host-side behind the granted external capability; sandbox/repository text cannot widen provider permissions.",
       "verificationIds": [
-        "boundary-probe"
+        "unit-provider",
+        "live-contract"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Credential and capability-boundary assertions plus live evidence showing no provider credential in workspace/process output."
       ]
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "invariant": "SCM effect identity and exact provider state are evidence; provider success is not product acceptance or merge authority.",
       "criterionIds": [
         "INV-1"
       ]
     },
     {
-      "invariant": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "invariant": "Every review/CI decision binds repository, base SHA, candidate head SHA/tree, changed paths, provider review identity and exact check-run identities.",
       "criterionIds": [
+        "AC-1",
         "INV-2"
       ]
     },
     {
-      "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "invariant": "Unknown or ambiguous external effects reconcile by read-after-write discovery or BLOCKED; blind mutation retry is forbidden.",
+      "criterionIds": [
+        "AC-3",
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "Only CI evidence whose head SHA equals the current candidate head can satisfy that candidate; prior/stale checks remain evidence only.",
+      "criterionIds": [
+        "AC-2",
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "Repository credentials and mutation capability remain outside the sandbox and are constrained by the BB-067 host capability grant.",
       "criterionIds": [
         "INV-3"
+      ]
+    },
+    {
+      "invariant": "The outer Blackboard coordinates ExHarness development only; product-runtime SCM effects use runtime/application contracts.",
+      "criterionIds": [
+        "INV-1"
       ]
     }
   ],
   "verificationPlan": [
     {
+      "id": "unit-provider",
+      "command": "node --test packages/agentic-system/test/bb068-github-scm-provider.test.js"
+    },
+    {
+      "id": "unit-delivery",
+      "command": "node --test packages/agentic-system/test/bb068-scm-review-delivery.test.js"
+    },
+    {
+      "id": "domain-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js"
+    },
+    {
       "id": "live-probe",
       "command": "node scripts/delivery/bb-068-probe.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-068.test.mjs"
+      "id": "live-contract",
+      "command": "node --test test/delivery/bb-068-live-contract.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository-verify",
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Compare direct SCM API and MCP adapter for exact SHA/tree handling, idempotency and minimal permissions.",
-    "Select one primary SCM; evaluate GitLab parity requirements without building a second adapter unnecessarily.",
-    "Define branch divergence, merge conflict, stale CI and ambiguous PR-creation recovery.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Producer success with failing independent acceptance.",
-    "Missing or stale source/runtime identity represented as current evidence.",
-    "Unresolved external effect retried as if confirmed safe."
+    "Provider returns success but observed branch head/tree differs from the pinned candidate.",
+    "A check run from the prior candidate SHA is reused to satisfy the repaired candidate.",
+    "A similarly named check from an unapproved app satisfies a pinned required check.",
+    "Base branch moves or PR becomes conflicting and the candidate is still reported current/merge-ready.",
+    "PR-create acknowledgement is lost and recovery creates a new branch/PR instead of discovering the existing effect.",
+    "Ambiguous branch/PR state triggers another mutation instead of BLOCKED.",
+    "SCM token appears in workspace, sandbox env/artifacts or persisted evidence.",
+    "SCM/CI ready state directly publishes product truth or performs merge."
   ],
   "laneContracts": [
     {
@@ -206,9 +307,249 @@
   ],
   "livingDocs": {
     "refs": [
-      "docs/living/system/state.md"
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-068 Living truth describes only the implemented and independently verified supported capability and limitations."
-  }
+    "statement": "Living Docs describe the delivered GitHub SCM review-candidate boundary, exact SHA-bound CI evidence, lost-effect reconciliation, host credential/capability boundary and explicit no-merge/no-product-acceptance limitation."
+  },
+  "researchBasis": {
+    "observedAt": "2026-09-25",
+    "selectionRule": "Public GitHub examples used as architecture evidence have at least 1,000 stars; star count qualifies examples for inspection and is not correctness evidence.",
+    "selectedProvider": {
+      "name": "GitHub REST API",
+      "version": "2026-03-10",
+      "rationale": "ExHarness is hosted on GitHub; REST exposes exact git object/ref/PR/check identities and can be wrapped in a narrow deterministic provider without another lifecycle framework.",
+      "permissionProfile": [
+        "Metadata: read",
+        "Contents: read/write",
+        "Pull requests: read/write",
+        "Checks: read"
+      ],
+      "rejected": [
+        "GitHub MCP as canonical authority",
+        "GitLab second implementation",
+        "Renovate dependency"
+      ]
+    },
+    "examples": [
+      {
+        "repo": "github/github-mcp-server",
+        "starsObserved": 33176,
+        "license": "MIT",
+        "release": "v1.12.2",
+        "commit": "85598ba6e1256f7ebf4867b95d63b833c4549264",
+        "observedPattern": "Separate push/create-PR tools, restricted toolsets and PR check lookup by exact PR head SHA.",
+        "conclusion": "Useful optional interaction/security pattern; not the durable product effect authority because BB-068 requires explicit effect reconciliation and stable exact evidence contracts."
+      },
+      {
+        "repo": "peter-evans/create-pull-request",
+        "starsObserved": 2849,
+        "license": "MIT",
+        "release": "v8.1.1",
+        "commit": "5f6978faf089d4d20b00c7766989d076bb2fc7f1",
+        "observedPattern": "Create-or-update uses stable head/base discovery; known post-create 422 eventual-consistency reads use targeted retry.",
+        "conclusion": "Adopt deterministic head/base discovery and bounded known-error retry for lost acknowledgement; do not blindly retry unknown mutations."
+      },
+      {
+        "repo": "renovatebot/renovate",
+        "starsObserved": 22582,
+        "license": "AGPL-3.0",
+        "release": "44.112.3",
+        "commit": "0efc05f0253933edee5e533a835a62984606a93d",
+        "observedPattern": "Mature automation separates change generation/PR lifecycle from CI-status gating and uses scoped platform permissions.",
+        "conclusion": "Borrow lifecycle/least-privilege pattern only; reject dependency because its product scope and AGPL runtime footprint are unnecessary for this bounded provider."
+      }
+    ],
+    "parity": {
+      "gitlab": "Future adapter can map provider-neutral review/base/head/CI fields to Merge Request diff_refs.head_sha and pipeline.sha; no GitLab implementation is authorized in BB-068."
+    }
+  },
+  "providerContract": {
+    "interface": "ScmReviewProvider",
+    "operations": [
+      "observeBase(repositoryRef,targetBranch) -> exact baseSha",
+      "materializeCandidate(intent,candidate) -> exact commitSha/treeSha/branchRef or AMBIGUOUS",
+      "ensureReview(intent,headSha) -> exact reviewId/head/base or AMBIGUOUS",
+      "collectChecks(reviewId,headSha) -> exact check identities bound to headSha",
+      "observeCurrentness(reviewId,baseSha,headSha) -> base/head/mergeability evidence"
+    ],
+    "mutationRule": "Every mutation is preceded/followed by exact observation. Unknown outcome is reconciled by deterministic identities before any retry.",
+    "secretBoundary": "Credential resolver is host-side only; provider receives no credential from workspace/model payload and persists no secret.",
+    "authority": "Provider can mutate the granted repository branch/review only; it has no merge, product publication or acceptance method."
+  },
+  "candidateContract": {
+    "reviewIntent": [
+      "providerKind",
+      "repositoryRef",
+      "targetBranch",
+      "baseSha",
+      "executionAttemptId",
+      "reviewKey",
+      "deterministicHeadBranch",
+      "reviewPolicyRef+digest"
+    ],
+    "candidateIteration": [
+      "candidateKey",
+      "parentHeadSha",
+      "sourceTreeDigest",
+      "normalized changed paths+digest",
+      "commitSha",
+      "treeSha",
+      "observedHeadRef"
+    ],
+    "reviewReceipt": [
+      "reviewId",
+      "url",
+      "headBranch",
+      "baseBranch",
+      "headSha",
+      "createdOrDiscovered"
+    ],
+    "ciEvidence": [
+      "queriedHeadSha",
+      "checkRunId",
+      "checkSuiteId",
+      "appId/name",
+      "checkName",
+      "status",
+      "conclusion",
+      "startedAt",
+      "completedAt",
+      "detailsUrl"
+    ],
+    "currentness": [
+      "observedBaseSha",
+      "observedReviewHeadSha",
+      "mergeability/update-required state",
+      "observedAt"
+    ],
+    "repair": "A repair is a new immutable candidate iteration on the same review intent/branch; old iterations remain evidence."
+  },
+  "reconciliationContract": {
+    "branch": "Read deterministic ref. Exact candidateKey/tree/parent match => replay; expected predecessor => one conditional update; any other head => BLOCKED.",
+    "review": "Discover open review by exact repository+head branch+base. Unique exact head match => replay. Already-exists/known eventual-consistency => bounded rediscovery. Conflicting/multiple/mismatched result => BLOCKED.",
+    "checks": "Check evidence is valid only when provider-reported check head equals current candidate head; no name-only carry-forward across SHAs.",
+    "failure": "Transport timeout after a possible mutation is UNKNOWN_EFFECT until reconciliation proves exact effect or BLOCKED ambiguity."
+  },
+  "dependencyContract": {
+    "research": "BB-066/BB-067 READY plans are PLANNED_DEPENDENCY evidence only.",
+    "worker": "BB-066 and BB-067 must both be DONE. Consume their delivered runtime/workspace, host capability gateway and credential boundary without redefining them.",
+    "oracle": "No packages/oracle implementation exists at research baseline. BB-068 must not fabricate Oracle delivery or write packages/oracle; provider boundary stays compatible with later source-IO ownership."
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "The candidate records base SHA, exact resulting commit/tree, changed files and CI run identities from the real provider.",
+      "criterionIds": [
+        "AC-1"
+      ],
+      "planElements": [
+        "S1",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "unit-provider",
+        "unit-delivery",
+        "live-probe"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-067.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+          "match": "does not clone repositories, select work, or publish source"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-067.json",
+          "match": "concrete SCM mutation deferred to BB-068"
+        }
+      ],
+      "supportingPlanFields": [
+        "providerContract",
+        "candidateContract",
+        "researchBasis"
+      ]
+    },
+    {
+      "objectiveCriterion": "A deliberate failing check returns bounded repair; stale checks and unrelated branch updates cannot satisfy candidate acceptance.",
+      "criterionIds": [
+        "AC-2"
+      ],
+      "planElements": [
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "unit-delivery",
+        "live-probe",
+        "live-contract"
+      ],
+      "decisionIndexes": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "completion verdict invalid"
+        }
+      ],
+      "supportingPlanFields": [
+        "candidateContract",
+        "reconciliationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Retry after lost provider acknowledgement discovers the existing change or blocks on ambiguity; it does not create duplicate review requests or bypass merge policy.",
+      "criterionIds": [
+        "AC-3"
+      ],
+      "planElements": [
+        "S2",
+        "S4"
+      ],
+      "verificationIds": [
+        "unit-provider",
+        "unit-delivery",
+        "live-probe",
+        "live-contract"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        4,
+        5,
+        9
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/product-lineage.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/product-lineage.js",
+          "match": "publication key reused with different content"
+        }
+      ],
+      "supportingPlanFields": [
+        "reconciliationContract",
+        "providerContract",
+        "dependencyContract"
+      ]
+    }
+  ]
 }

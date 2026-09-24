@@ -21,14 +21,14 @@ next-work-id: BB-082
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: NONE
+  active: BB-068
 
 WORKER
   active: NONE
@@ -36,14 +36,20 @@ WORKER
 
 ## Active work
 
-NONE
+
+BB-068
+task: Connect real repository changes to CI and review evidence
+lane: RESEARCH_SA
+phase: RESEARCH
+current-context: docs/blackboard/context/BB-068/current.json
+components: agentic/domain-execution-control, agentic/product-lineage
+worker: chatgpt-research-bb068
 
 ## Schedulable tasks
 
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
 - BB-060 [WORKER/EXECUTION] — Reconcile Oracle physical ownership and package boundary
 - BB-065 [WORKER/EXECUTION] — Define delivery profile and executable value baseline
-- BB-068 [RESEARCH_SA/RESEARCH] — Connect real repository changes to CI and review evidence
 - BB-069 [RESEARCH_SA/RESEARCH] — Prove first useful agent delivery through Oracle and independent QA
 - BB-070 [RESEARCH_SA/RESEARCH] — Deliver product from goal and partial artifacts across owned domains
 - BB-071 [RESEARCH_SA/RESEARCH] — Prove requirement change and failure recovery on a live product
@@ -78,7 +84,7 @@ BB-064 [BLOCKED_BY BB-060,BB-061,BB-062,BB-063] <- BB-060, BB-061, BB-062, BB-06
 BB-065 [WORKER_SCHEDULABLE] <- ROOT
 BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
-BB-068 [RESEARCH_SCHEDULABLE] <- BB-066, BB-067
+BB-068 [ACTIVE] <- BB-066, BB-067
 BB-069 [RESEARCH_SCHEDULABLE] <- BB-068, BB-064
 BB-070 [RESEARCH_SCHEDULABLE] <- BB-069, BB-055
 BB-071 [RESEARCH_SCHEDULABLE] <- BB-070, BB-057
