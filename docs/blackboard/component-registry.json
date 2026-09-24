@@ -315,6 +315,41 @@
           "test/**"
         ]
       }
+    },
+    {
+      "id": "core/async-runtime-efficiency",
+      "contextOwner": "core-harness/async-runtime-efficiency",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md",
+          "docs/blackboard/process/harness-efficiency-phase.md"
+        ],
+        "sourceRoots": [
+          "packages/core-harness/src/agent-runtime.js",
+          "packages/core-harness/src/action-effect.js",
+          "packages/core-harness/src/effect-reconciliation.js",
+          "packages/core-harness/src/context.js",
+          "packages/core-harness/src/**"
+        ],
+        "testRoots": [
+          "packages/core-harness/test/**",
+          "benchmarks/**"
+        ],
+        "contractRefs": [
+          "AgentRuntime.invoke",
+          "EffectOperation",
+          "EffectReplayPolicy",
+          "AgentEvent",
+          "PromptContext"
+        ],
+        "progressiveSearchRoots": [
+          "packages/core-harness/src/**",
+          "packages/core-harness/test/**",
+          "benchmarks/**",
+          "scripts/**"
+        ]
+      }
     }
   ]
 }
