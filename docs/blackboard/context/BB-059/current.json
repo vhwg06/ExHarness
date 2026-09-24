@@ -109,14 +109,14 @@
     "docs/blackboard/artifacts/ready-implement-plan/BB-059.json"
   ],
   "hardInvariants": [
-    "Evaluation evidence is not promotion authority and promotion authority is not product acceptance authority.",
-    "Baseline and candidate are compared under the same pinned semantic work and acceptance subject; HOW is the only permitted variation.",
-    "Evaluator identity/policy and every evaluation input are immutable, durable and currentness-checked.",
-    "Jev is integrated behind an explicit evaluator adapter/contract and cannot mutate product or execution authority directly.",
-    "Promotion creates a new immutable policy/strategy generation and affects only future eligible attempts.",
-    "Existing ACTIVE/RECOVERY_REQUIRED attempts remain pinned to their original ExecutionAttemptBinding.",
-    "FAIL, INCONCLUSIVE, stale evidence or authority mismatch keeps baseline current.",
-    "Rollback is an auditable successor transition to an exact prior accepted baseline, never history rewrite."
+    "Evaluation evidence != promotion authority != product acceptance authority.",
+    "Baseline/candidate share one fixed semantic and acceptance subject; only HOW varies.",
+    "Evaluator/policy and all evaluation inputs are immutable, durable and freshness-checked.",
+    "Jev is behind an evaluate-only adapter with no product/policy mutation capability.",
+    "Promotion publishes a new immutable policy/strategy generation for future attempts only.",
+    "ACTIVE/RECOVERY_REQUIRED attempts retain their original ExecutionAttemptBinding.",
+    "FAIL/INCONCLUSIVE/stale/unauthorized evaluation leaves baseline current.",
+    "Rollback publishes a successor to an exact prior accepted baseline; it never rewrites history."
   ],
   "verification": [
     {
