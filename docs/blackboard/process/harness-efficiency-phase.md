@@ -1,6 +1,7 @@
 # Async-first Core harness efficiency phase
 
 Status: SCHEDULED RESEARCH; no async-first profile is delivered by this document.
+Living-system impact: CURRENT_SYSTEM_NOT_CHANGED — this phase schedules research and future work only.
 Evidence checked: 2026-09-24.
 ExHarness baseline: aa91ba16548f31772d441f51975917397cbf73d7.
 Primary external reference: Unreal Agent v0.2.0, commit `1b9f778453f411c029b39b85102aaefb95e7e48d`.
