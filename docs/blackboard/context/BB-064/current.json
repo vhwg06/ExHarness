@@ -1,0 +1,206 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-064",
+  "taskId": "BB-064",
+  "featureId": "FEATURE-ORACLE-ACCEPTANCE",
+  "topicId": "TOPIC-ORACLE-RECONCILIATION",
+  "components": [
+    "oracle/infrastructure",
+    "outer/blackboard"
+  ],
+  "pipeline": "RESEARCH_SA",
+  "lane": "RESEARCH_SA",
+  "phase": "RESEARCH",
+  "stage": "RESEARCH",
+  "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-064.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+  "planHash": "9aef626cad3429f67e2120a0cdc31c7c301962282a7394bd60df3683c2c2a52e",
+  "action": {
+    "kind": "RESEARCH",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-060",
+      "source": "PLANNED_DEPENDENCY",
+      "refs": [
+        "docs/blackboard/artifacts/objective/BB-060.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-060.json"
+      ]
+    },
+    {
+      "taskId": "BB-061",
+      "source": "PLANNED_DEPENDENCY",
+      "refs": [
+        "docs/blackboard/artifacts/objective/BB-061.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-061.json"
+      ]
+    },
+    {
+      "taskId": "BB-062",
+      "source": "PLANNED_DEPENDENCY",
+      "refs": [
+        "docs/blackboard/artifacts/objective/BB-062.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-062.json"
+      ]
+    },
+    {
+      "taskId": "BB-063",
+      "source": "PLANNED_DEPENDENCY",
+      "refs": [
+        "docs/blackboard/artifacts/objective/BB-063.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-063.json"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "docs/blackboard/process/oracle-reconciliation-phase.md",
+    "docs/living/system/state.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-064.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+    "docs/blackboard/artifacts/objective/BB-060.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+    "docs/blackboard/artifacts/objective/BB-061.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+    "docs/blackboard/artifacts/objective/BB-062.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+    "docs/blackboard/artifacts/objective/BB-063.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-063.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-060*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-062*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-063*",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "scripts/**",
+      "test/**",
+      "package.json",
+      ".github/workflows/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-060*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-062*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-063*",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "scripts/**",
+      "test/**",
+      "package.json",
+      ".github/workflows/**"
+    ],
+    "write": [
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/architecture.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/workflow.md",
+      "scripts/oracle-architecture-guard.mjs",
+      "test/oracle-architecture-boundary.test.mjs",
+      "packages/agentic-system/test/oracle-phase-acceptance.test.js",
+      "package.json"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/src/**",
+      "packages/agentic-system/src/**",
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/state.md",
+      ".github/workflows/**"
+    ]
+  },
+  "artifactWriteScope": [
+    "docs/blackboard/artifacts/ready-implement-plan/BB-064.json"
+  ],
+  "hardInvariants": [
+    "Phase acceptance consumes delivered outputs from BB-060 through BB-063; it cannot replace them with one monolithic refactor.",
+    "Declared logical ownership and physical package/dependency ownership must be mechanically or deterministically checkable.",
+    "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
+    "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized."
+  ],
+  "verification": [
+    {
+      "id": "oracle-phase-acceptance",
+      "command": "node --test packages/agentic-system/test/oracle-phase-acceptance.test.js"
+    },
+    {
+      "id": "oracle-alignment",
+      "command": "node scripts/oracle-architecture-guard.mjs --verify"
+    },
+    {
+      "id": "oracle-boundary",
+      "command": "node --test test/oracle-architecture-boundary.test.mjs"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test packages/oracle/test/oracle.test.js packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/oracle-source-connectivity.test.js packages/agentic-system/test/oracle-durability-migration.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js packages/agentic-system/test/interrupted-recovery.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "blackboard-contract",
+      "command": "npm run verify:blackboard-artifacts && npm run verify:blackboard-work-graph"
+    },
+    {
+      "id": "living-docs",
+      "command": "npm run verify:current-docs && npm run verify:blackboard-context"
+    },
+    {
+      "id": "repository-verify",
+      "command": "npm run verify"
+    }
+  ],
+  "expectedOutputs": [
+    "READY_IMPLEMENT_PLAN"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "scripts/**",
+      "test/**",
+      "docs/blackboard/**",
+      ".github/workflows/**"
+    ],
+    "contractRefs": [
+      "resolveBackendContext",
+      "resolveQaContext",
+      "repositoryReader.readFile",
+      "artifactReader.readArtifact",
+      "BackendContextSchema",
+      "QaContextSchema",
+      "docs/blackboard/contracts.md"
+    ]
+  }
+}
