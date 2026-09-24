@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "request-tracker-baseline-v1",
+  "tasks": [
+    {
+      "id": "NORM-01",
+      "fault": "NORM-01",
+      "prompt": "Fix title validation in the API and browser UI. Reject empty or whitespace-only titles and titles over 120 Unicode code points on create and update. Preserve valid CRUD, persistence, and existing records. Run the tests you can see, then submit."
+    },
+    {
+      "id": "STATUS-01",
+      "fault": "STATUS-01",
+      "prompt": "Fix PATCH status validation so only OPEN or CLOSED is accepted and a failed update preserves all original fields. Preserve create/list/edit and persistence behavior. Run the tests you can see, then submit."
+    },
+    {
+      "id": "ORDER-01",
+      "fault": "ORDER-01",
+      "prompt": "Fix request listing order so GET /requests returns records by ascending id, including after the process restarts against the same database. Preserve CRUD and validation behavior. Run the tests you can see, then submit."
+    }
+  ]
+}
