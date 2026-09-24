@@ -1046,7 +1046,7 @@
       "featureId": "FEATURE-ORACLE-ACCEPTANCE",
       "title": "Close Oracle reconciliation with end-to-end connectivity and drift guards",
       "kind": "IMPLEMENTATION",
-      "status": "ACTIVE",
+      "status": "PLANNED",
       "complexity": "XL",
       "components": [
         "oracle/infrastructure",
@@ -1084,25 +1084,35 @@
           "docs/blackboard/artifacts/ready-implement-plan/BB-064.json"
         ],
         "outputRefs": [],
-        "consolidatedRefs": []
+        "consolidatedRefs": [
+          "docs/living/system/oracle/architecture.md",
+          "docs/living/system/oracle/state.md",
+          "docs/living/system/oracle/semantics.md",
+          "docs/living/system/oracle/workflow.md",
+          "docs/living/system/oracle/artifact-manifest.md",
+          "docs/living/system/agentic-application/architecture.md",
+          "docs/living/system/agentic-application/contracts.md",
+          "docs/living/system/agentic-application/workflow.md"
+        ]
       },
       "expectedOutputs": [
         "Oracle phase end-to-end acceptance",
         "architecture-to-source alignment guard",
         "zero known Oracle reconciliation debt"
       ],
-      "currentContextRef": "docs/blackboard/context/BB-064/current.json",
-      "claim": {
-        "workerId": "codex-research-bb064"
-      },
+      "currentContextRef": null,
+      "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-064.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
         "researchBaselineSha": "98807682d7450c9298dfd7228e0d6a1eb19bd56b",
-        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029"
+        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.implementation-result.json",
+        "lastEvaluatedInput": "4a9d084845a7460d9564b47377086e2de147179ab5ddd9c927bc43ef6195f81d"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-065",
