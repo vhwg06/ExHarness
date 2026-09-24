@@ -16,9 +16,10 @@
     "oracle.regression-proof"
   ],
   "outOfScope": [
-    "Generic Resolver<T>/provider registry/retrieval framework without concrete evidence.",
-    "Oracle ownership of work scheduling, product acceptance, recovery authority or Core deliberation.",
-    "Unrelated Integration-J HOW-evolution work."
+    "Reimplementing or redesigning BB-060..063 after their accepted delivery; a material contradiction returns to Research.",
+    "A production SCM/MCP adapter, third source class, generic Resolver<T>, provider registry, retrieval/cache lifecycle or Oracle agent.",
+    "Moving Application-owned WorkOrder/Context schemas, manifest publication/store, Blackboard checkpoint, recovery, scheduling or acceptance into packages/oracle.",
+    "Closing unrelated Integration or delivery-product topics."
   ],
   "constraints": [
     "Phase acceptance consumes delivered outputs from BB-060 through BB-063; it cannot replace them with one monolithic refactor.",
@@ -34,30 +35,63 @@
     "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized."
   ],
   "architectureDecisions": [
-    "O5 keeps Oracle as infrastructure and treats current packages/agentic-system/src/oracle.js placement as reconciliation debt rather than evidence that Oracle belongs to Agentic Application.",
-    "O5 preserves the two concrete current source classes and resolver behavior unless source evidence requires a narrower change; package separation is independent from generic abstraction.",
-    "O5 makes authority/dependency direction explicit: Application owns required semantic shape/WHAT; Oracle owns source IO/adaptation WHERE/HOW; Core receives resolved context.",
-    "O5 requires exact provenance/source identity and fail-closed behavior to survive any package/import/adapter migration.",
-    "O5 closes only with executable regression evidence and synchronized Living Oracle docs, not narrative package ownership alone."
+    "At research baseline 98807682, Oracle implementation still lives in packages/agentic-system/src/oracle.js and packages/oracle is absent. BB-060..063 are READY plans, not delivered capability. BB-064 execution therefore begins only after all four tasks are DONE and their implementation-result plus independent ACCEPT judgment artifacts agree with the delivered source; any mismatch is PLAN_INPUT_CONTRADICTION.",
+    "Close the logical/physical gap with one versioned machine-readable current-truth file, docs/living/system/oracle/architecture-alignment.json. It declares oracle/infrastructure as logical owner, packages/oracle as the only pull implementation root, packages/agentic-system/src/oracle.js as the Application semantic adapter, Application -> Oracle as the only dependency direction, the two fixed reader ports, Application-owned manifest/recovery/schema authority, and the four prerequisite delivery-evidence refs.",
+    "Add scripts/oracle-architecture-guard.mjs as a deterministic repository verifier and reusable exported function. It loads the alignment contract, package manifests, production ESM sources, Living Oracle docs and work graph; it rejects an invalid contract, missing/narrowed package exports, pull/read loops outside packages/oracle, Oracle imports of Agentic Application/Core or manifest/recovery modules, reversed/missing dependency metadata or source imports, generic provider/registry exports, stale docs and incomplete BB-060..063 delivery evidence.",
+    "Extend test/oracle-architecture-boundary.test.mjs with isolated temporary-tree mutations that independently prove the guard fails for copied Application read loops, reverse imports/dependencies, Oracle-owned schema/manifest/recovery authority, a falsified logical owner/root, missing accepted prerequisite evidence and docs/source disagreement. Tests call the same exported guard used by CI rather than a test-only checker.",
+    "Add packages/agentic-system/test/oracle-phase-acceptance.test.js around public Application APIs and the delivered manifest-protected durable composition. One scenario must drive exact repositoryRef/revision/path reads through the thin Application adapter and @exharness/oracle pull, accept Backend output, persist the exact manifest ref, discard producer/workflow/store/reader instances, reconstruct fresh persisted state, scope QA with forManifest(exactRef), and assert exact artifact request, sourceRef, APPLICATION_ARTIFACT provenance, no Backend rerun and successful QA submission.",
+    "The phase acceptance test complements rather than replaces BB-060..063 tests: it proves one cross-boundary composition while their unit/connectivity/durability matrices remain mandatory. Direct mode and the absence of a production repository/MCP adapter remain unchanged.",
+    "Wire npm run verify:oracle-architecture into the repository verify path so future ordinary CI cannot claim zero Oracle debt while the guard fails. The command runs the production alignment verifier and its negative-fixture test; no external service or install step is introduced.",
+    "Phase closure evidence is existing immutable delivery evidence, not a new self-authored verdict. The guard requires BB-060..063 status DONE, each graph outputRefs pair, IMPLEMENTATION_RESULT status PRODUCED, JUDGMENT verdict ACCEPT, matching item/candidate linkage and current Living refs before BB-064 can pass. BB-064 still requires its own Worker evidence and Jev judgment through the normal delivery pipeline.",
+    "On delivery, synchronize Oracle architecture/state/semantics/workflow and affected Agentic Application docs to the observed package topology, fixed ports, protected/direct behavior, external-adapter deferral and zero known reconciliation debt. Documentation cannot override a failing executable alignment guard."
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "packages/agentic-system/src/artifact-manifest.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/package.json",
+      "package.json",
       "docs/living/system/oracle/architecture.md",
       "docs/living/system/oracle/state.md",
       "docs/living/system/oracle/semantics.md",
       "docs/living/system/oracle/workflow.md",
-      "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/qa-application.js",
-      "packages/agentic-system/src/index.js",
-      "docs/blackboard/contracts.md"
+      "docs/living/system/oracle/artifact-manifest.md",
+      "docs/living/system/agentic-application/architecture.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/workflow.md",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-063.json"
     ],
-    "expectedNew": [
-      "test/oracle-architecture-boundary.test.mjs"
-    ],
-    "expectedTests": [
+    "expectedFromDependencies": [
+      "packages/oracle/package.json",
+      "packages/oracle/src/index.js",
+      "packages/oracle/src/oracle.js",
       "packages/oracle/test/oracle.test.js",
       "packages/agentic-system/test/oracle-integration.test.js",
+      "packages/agentic-system/test/oracle-source-connectivity.test.js",
+      "packages/agentic-system/test/oracle-durability-migration.test.js",
+      "test/oracle-architecture-boundary.test.mjs",
+      "BB-060..063 implementation-result and judgment artifacts"
+    ],
+    "expectedNew": [
+      "docs/living/system/oracle/architecture-alignment.json",
+      "scripts/oracle-architecture-guard.mjs",
+      "packages/agentic-system/test/oracle-phase-acceptance.test.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/oracle-phase-acceptance.test.js",
+      "packages/oracle/test/oracle.test.js",
+      "packages/agentic-system/test/oracle-integration.test.js",
+      "packages/agentic-system/test/oracle-source-connectivity.test.js",
+      "packages/agentic-system/test/oracle-durability-migration.test.js",
       "test/oracle-architecture-boundary.test.mjs"
     ]
   },
@@ -67,124 +101,143 @@
       "packages/oracle/**",
       "docs/living/system/oracle/**",
       "docs/living/system/agentic-application/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-060*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-062*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-063*",
+      "docs/blackboard/work-graph.json",
       "docs/blackboard/process/oracle-reconciliation-phase.md",
       "scripts/**",
       "test/**",
+      "package.json",
       ".github/workflows/**"
     ],
     "write": [
-      "packages/oracle/**",
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/test/**",
       "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/**",
-      "scripts/**",
-      "test/**",
-      ".github/workflows/**"
+      "docs/living/system/agentic-application/architecture.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/workflow.md",
+      "scripts/oracle-architecture-guard.mjs",
+      "test/oracle-architecture-boundary.test.mjs",
+      "packages/agentic-system/test/oracle-phase-acceptance.test.js",
+      "package.json"
     ],
     "forbiddenWrite": [
+      "packages/oracle/src/**",
+      "packages/agentic-system/src/**",
       "docs/blackboard/artifacts/objective/**",
       "docs/blackboard/artifacts/ready-implement-plan/**",
       "docs/blackboard/work-graph.json",
       "docs/blackboard/component-registry.json",
-      "docs/blackboard/state.md"
+      "docs/blackboard/state.md",
+      ".github/workflows/**"
     ]
   },
   "implementationSlices": [
-    "O51 — Inspect and pin current Oracle ownership/source/dependency/provenance seams for this workstream.",
-    "O52 — Resolve the workstream-specific architecture choices and remove every research gap before Jev readiness.",
-    "O53 — Implement only the concrete boundary changes authorized by the resolved plan; preserve current semantic behavior unless the objective explicitly changes it.",
-    "O54 — Run Oracle boundary, Agentic regression and architecture-placement checks; update Living Oracle truth."
+    "O51 — Require BB-060, BB-061, BB-062 and BB-063 DONE; load each exact implementation-result/judgment plus consolidated Living refs, validate PRODUCED/ACCEPT and candidate linkage, and stop with PLAN_INPUT_CONTRADICTION on any missing or contradictory seam.",
+    "O52 — Add architecture-alignment.json and the reusable oracle-architecture-guard verifier. Pin the exact logical owner, physical roots, two ports, Application adapter/authority, dependency direction, allowed exports and prerequisite evidence; verify production files and package metadata rather than trusting prose.",
+    "O53 — Add the public phase acceptance scenario through repository ingestion, extracted Oracle pulls, accepted Backend artifacts, manifest publication, persisted checkpoint, fresh-process exact-manifest QA resolution and submission. Assert source identities/provenance and zero Backend rerun during post-QA continuation.",
+    "O54 — Extend the architecture boundary suite with independent mutated temporary fixtures for every historical drift class and authority reversal. Add verify:oracle-architecture to package.json and the ordinary npm run verify chain.",
+    "O55 — Run the full BB-060..063 Oracle unit/integration/connectivity/durability/manifest/recovery suite plus Agentic regressions. Update Living Oracle/Application docs from delivered source and record zero known reconciliation debt only after the executable guard succeeds.",
+    "O56 — Submit exact Worker evidence for BB-064 through the normal delivery/Jev pipeline; the phase guard is evidence for acceptance, never a substitute for independent judgment."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
       "statement": "Phase acceptance proves current Backend and QA flows cross the infrastructure-owned Oracle boundary end to end.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-phase-acceptance",
+        "oracle-regression"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 1 is bound to exact Oracle/package/source refs and verification output."
+        "Public Application APIs, delivered Oracle pulls, manifest protection and fresh-process QA are exercised in one exact-ref scenario with call/provenance/stage assertions."
       ]
     },
     {
       "id": "AC-2",
       "statement": "A deterministic architecture check fails when Oracle implementation is placed back under Agentic Application/Core ownership or dependency direction reverses.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-alignment",
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 2 is bound to exact Oracle/package/source refs and verification output."
+        "Production-tree verification and mutated fixtures fail for copied loops, owner/root falsification, reverse imports/dependencies and authority leakage."
       ]
     },
     {
       "id": "AC-3",
       "statement": "Repository and application-artifact connectivity preserve exact source/provenance semantics after extraction.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-phase-acceptance",
+        "oracle-regression"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 3 is bound to exact Oracle/package/source refs and verification output."
+        "Exact Backend read arguments/sourceRef and QA artifact request/sourceRef/APPLICATION_ARTIFACT provenance survive protected fresh-process continuation."
       ]
     },
     {
       "id": "AC-4",
       "statement": "All BB-060..063 obligations are represented by durable delivered evidence before the topic can be considered closed.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-alignment",
+        "blackboard-contract"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 4 is bound to exact Oracle/package/source refs and verification output."
+        "Guard loads graph outputRefs plus PRODUCED implementation results and ACCEPT judgments with matching item/candidate linkage for all four prerequisite tasks."
       ]
     },
     {
       "id": "AC-5",
       "statement": "Living Oracle architecture/state and physical source topology converge on the same ownership model with no known reconciliation debt.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-alignment",
+        "living-docs"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 5 is bound to exact Oracle/package/source refs and verification output."
+        "Machine-readable alignment, current Living docs, package/source graph and the ordinary CI command agree after all regressions pass."
       ]
     },
     {
       "id": "INV-1",
       "statement": "Phase acceptance consumes delivered outputs from BB-060 through BB-063; it cannot replace them with one monolithic refactor.",
       "verificationIds": [
-        "oracle-contract"
+        "oracle-alignment",
+        "blackboard-contract"
       ],
       "evidenceRequired": [
-        "Invariant 1 is exercised by a negative or boundary verification case."
+        "Dependency evidence gate passes and production source roots remain forbidden writes."
       ]
     },
     {
       "id": "INV-2",
       "statement": "Declared logical ownership and physical package/dependency ownership must be mechanically or deterministically checkable.",
       "verificationIds": [
-        "oracle-contract"
+        "oracle-alignment",
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Invariant 2 is exercised by a negative or boundary verification case."
+        "The same exported verifier checks alignment contract, source placement, imports and package manifests in production and negative fixtures."
       ]
     },
     {
       "id": "INV-3",
       "statement": "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-alignment"
       ],
       "evidenceRequired": [
-        "Invariant 3 is exercised by a negative or boundary verification case."
+        "Baseline probe distinguishes current Application colocation from dependency-planned package files and execution refuses missing DONE evidence."
       ]
     },
     {
       "id": "INV-4",
       "statement": "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized.",
       "verificationIds": [
-        "oracle-contract"
+        "living-docs",
+        "oracle-alignment"
       ],
       "evidenceRequired": [
-        "Invariant 4 is exercised by a negative or boundary verification case."
+        "Updated docs are checked beside the alignment file and delivered package graph; prose cannot override guard failure."
       ]
     }
   ],
@@ -216,53 +269,74 @@
   ],
   "verificationPlan": [
     {
-      "id": "oracle-contract",
-      "command": "node --test packages/agentic-system/test/*oracle*.test.js packages/oracle/test/*.test.js"
+      "id": "oracle-phase-acceptance",
+      "command": "node --test packages/agentic-system/test/oracle-phase-acceptance.test.js"
     },
     {
-      "id": "oracle-agentic-regression",
+      "id": "oracle-alignment",
+      "command": "node scripts/oracle-architecture-guard.mjs --verify"
+    },
+    {
+      "id": "oracle-boundary",
+      "command": "node --test test/oracle-architecture-boundary.test.mjs"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test packages/oracle/test/oracle.test.js packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/oracle-source-connectivity.test.js packages/agentic-system/test/oracle-durability-migration.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js packages/agentic-system/test/interrupted-recovery.test.js"
+    },
+    {
+      "id": "agentic-regression",
       "command": "npm run test:agentic"
     },
     {
-      "id": "oracle-architecture",
-      "command": "node --test test/oracle-architecture-boundary.test.mjs"
+      "id": "blackboard-contract",
+      "command": "npm run verify:blackboard-artifacts && npm run verify:blackboard-work-graph"
+    },
+    {
+      "id": "living-docs",
+      "command": "npm run verify:current-docs && npm run verify:blackboard-context"
+    },
+    {
+      "id": "repository-verify",
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Resolve exact oracle.phase-acceptance design against current source, imports, package ownership and tests.",
-    "Identify the minimum concrete migration/compatibility seam for BB-064 without introducing generic Oracle abstractions.",
-    "Define negative verification that would have caught the historical logical-vs-physical ownership drift for this workstream."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Oracle implementation remains physically owned by Agentic Application while docs claim infrastructure ownership.",
-    "Package extraction introduces a generic resolver/provider framework with no concrete source pressure.",
-    "Oracle gains scheduling/acceptance/recovery authority through the new boundary.",
-    "SourceRef/provenance or fail-closed behavior is weakened while simple happy-path tests still pass."
+    "BB-060..063 is not DONE, lacks its graph outputRefs, has no PRODUCED implementation result/ACCEPT judgment, or its result and judgment candidate refs disagree.",
+    "Alignment contract names Agentic Application/Core as Oracle owner, points the implementation root back into packages/agentic-system, removes a fixed port or grants Oracle lifecycle/acceptance/recovery authority.",
+    "A repositoryReader.readFile or artifactReader.readArtifact pull loop is copied into Application/Core while docs still claim infrastructure ownership.",
+    "packages/oracle imports Application/Core schemas, manifest/checkpoint/recovery code, or package metadata/source imports reverse the Application -> Oracle edge.",
+    "Oracle exports a generic resolver/provider/registry or collapses the two source classes without a superseding objective.",
+    "Phase acceptance reuses producer memory after restart, loses exact manifest/artifact/source refs, performs a Backend rerun after QA_PENDING or fabricates provenance.",
+    "Living docs claim zero debt or a production SCM/MCP adapter that the source/alignment contract does not prove.",
+    "Architecture check exists but is not reached by ordinary npm run verify."
   ],
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-064 objective + Oracle phase roadmap + current Oracle/Application source truth",
+      "input": "BB-064 objective + Oracle phase roadmap + BB-060..063 READY contracts + current source truth",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + Jev SATISFIED",
       "forbidden": [
         "product implementation",
+        "treat READY dependencies as delivered",
         "invent generic framework",
-        "treat docs as proof of physical ownership",
         "self-accept"
       ]
     },
     {
       "lane": "WORKER",
-      "input": "exact READY plan + DONE direct dependencies for BB-064",
+      "input": "exact READY plan + DONE BB-060..063 delivery evidence",
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash + candidate/evidence + Jev",
-      "convergence": "Oracle boundary evidence + Living Docs SATISFIED",
+      "convergence": "phase flow + alignment/evidence/drift guards + Living Docs SATISFIED",
       "forbidden": [
-        "redefine plan",
+        "redefine predecessor seams",
+        "edit production runtime",
         "weaken provenance",
-        "cross authority boundary",
+        "close with missing evidence",
         "self-accept"
       ]
     }
@@ -272,9 +346,363 @@
       "docs/living/system/oracle/architecture.md",
       "docs/living/system/oracle/state.md",
       "docs/living/system/oracle/semantics.md",
-      "docs/living/system/oracle/workflow.md"
+      "docs/living/system/oracle/workflow.md",
+      "docs/living/system/oracle/artifact-manifest.md",
+      "docs/living/system/agentic-application/architecture.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/workflow.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-064 Living Oracle docs must describe delivered ownership, dependency, connectivity and provenance semantics exactly as implemented."
-  }
+    "statement": "BB-064 Living Docs and architecture-alignment.json must match delivered physical ownership, dependency, connectivity, protected/direct provenance and zero-debt evidence exactly."
+  },
+  "experimentEvidence": {
+    "baselineSha": "98807682d7450c9298dfd7228e0d6a1eb19bd56b",
+    "currentProbe": [
+      "At 98807682, packages/agentic-system/src/oracle.js still contains both concrete reader loops, imports Application schemas and is called by Backend/QA Application; packages/oracle and the phase guard do not exist because BB-060..063 have not executed.",
+      "BB-060..063 READY plans converge on two concrete pulls, a thin Application adapter, Application -> Oracle only, direct injected readers, Application-owned manifest/recovery and fresh-process exact-manifest continuation.",
+      "Current Oracle Living Docs declare infrastructure ownership but still document physical colocation; no deterministic phase closure evidence check is wired into ordinary repository verification."
+    ],
+    "interpretation": "BB-064 should add acceptance and drift/evidence closure around the delivered predecessor seams, not another source refactor or abstraction."
+  },
+  "dependencyContract": {
+    "prerequisiteTaskIds": [
+      "BB-060",
+      "BB-061",
+      "BB-062",
+      "BB-063"
+    ],
+    "requiredState": "DONE",
+    "requiredEvidencePerTask": [
+      "graph outputRef to IMPLEMENTATION_RESULT",
+      "graph outputRef to JUDGMENT",
+      "IMPLEMENTATION_RESULT status PRODUCED",
+      "JUDGMENT verdict ACCEPT",
+      "matching itemId/candidateRef and source baseline linkage",
+      "consolidated current Living refs"
+    ],
+    "expectedDeliveredSeam": [
+      "@exharness/oracle pullBackendFiles and pullQaArtifacts",
+      "thin Application resolveBackendContext/resolveQaContext adapters",
+      "Application -> Oracle dependency only with current no-install relative runtime import",
+      "distinct injected repositoryReader/artifactReader ports",
+      "Application-owned manifest/checkpoint/recovery/schema/acceptance",
+      "fresh-process protected continuation and direct compatibility",
+      "no production SCM/MCP adapter or provider lifecycle"
+    ],
+    "contradictionRule": "Any missing evidence or material delivered-seam mismatch emits PLAN_INPUT_CONTRADICTION and returns to Research; BB-064 may not repair production runtime or waive a predecessor obligation."
+  },
+  "alignmentContract": {
+    "ref": "docs/living/system/oracle/architecture-alignment.json",
+    "version": 1,
+    "logicalOwner": "oracle/infrastructure",
+    "physicalImplementationRoot": "packages/oracle",
+    "applicationAdapter": "packages/agentic-system/src/oracle.js",
+    "dependencyDirection": "packages/agentic-system -> packages/oracle",
+    "concretePorts": [
+      "repositoryReader.readFile({repositoryRef,revision,path})",
+      "artifactReader.readArtifact({ref,path,producerWorkOrderId,revision,acceptanceDecision})"
+    ],
+    "applicationAuthority": [
+      "raw WorkOrder parsing and required-context semantics",
+      "ContextSchema validation",
+      "reader/client construction and manifest scoping",
+      "manifest publication/store/checkpoint/recovery",
+      "lifecycle and acceptance"
+    ],
+    "oracleAuthority": [
+      "ordered exact injected reads",
+      "content/sourceRef preservation",
+      "APPLICATION_ARTIFACT provenance assembly",
+      "source-boundary errors with original cause"
+    ],
+    "forbidden": [
+      "Oracle -> Agentic Application/Core dependency",
+      "Oracle manifest/recovery/lifecycle/acceptance ownership",
+      "Oracle read loops under Application/Core",
+      "generic Resolver/provider registry",
+      "closure without accepted BB-060..063 evidence"
+    ]
+  },
+  "phaseAcceptanceContract": {
+    "entry": "public Agentic Application/durable composition APIs",
+    "backendPath": "raw objective -> parsed BackendWorkOrder -> thin adapter -> pullBackendFiles -> repositoryReader -> BackendContextSchema -> accepted Backend result",
+    "qaPath": "accepted handoff -> manifest publication/checkpoint -> fresh process -> forManifest(exactRef) -> thin adapter -> pullQaArtifacts -> artifactReader -> QaContextSchema -> QA submission",
+    "requiredIdentity": [
+      "repositoryRef/revision/path and Backend sourceRef",
+      "artifact ref/path and producer work-order/revision/acceptance decision",
+      "exact artifactManifestRef across persisted checkpoint and submission",
+      "underlying artifact sourceRef plus APPLICATION_ARTIFACT provenance"
+    ],
+    "failureBoundary": "No source/schema failure reaches a Worker; no post-QA_PENDING failure reruns Backend; no direct fallback for protected state.",
+    "scopeLimit": "No network service, production adapter, generic source abstraction or new authority."
+  },
+  "closureEvidenceContract": {
+    "tasks": [
+      "BB-060",
+      "BB-061",
+      "BB-062",
+      "BB-063"
+    ],
+    "acceptedArtifacts": [
+      "IMPLEMENTATION_RESULT:PRODUCED",
+      "JUDGMENT:ACCEPT"
+    ],
+    "binding": [
+      "itemId",
+      "candidateRef",
+      "sourceBaseline",
+      "implementationResultRef"
+    ],
+    "executableGate": "scripts/oracle-architecture-guard.mjs --verify",
+    "continuousGate": "npm run verify includes verify:oracle-architecture",
+    "closureRule": "Zero known reconciliation debt may be documented only when dependency evidence, phase flow, production alignment, negative drift fixtures and Living Docs all pass on the same candidate."
+  },
+  "primaryReferences": [
+    {
+      "title": "Node.js package entry points",
+      "url": "https://nodejs.org/api/packages.html#package-entry-points",
+      "use": "Use explicit exports as the mechanically checked public Oracle surface and reject undeclared/generic entry points."
+    },
+    {
+      "title": "Node.js test runner",
+      "url": "https://nodejs.org/api/test.html",
+      "use": "Run the same production verifier against isolated mutated temporary fixtures and phase integration assertions."
+    },
+    {
+      "title": "npm workspaces",
+      "url": "https://docs.npmjs.com/cli/using-npm/workspaces",
+      "use": "Check workspace/package dependency metadata independently from the retained no-install relative runtime import."
+    }
+  ],
+  "deliveryContract": {
+    "precondition": "All four prerequisite tasks are DONE and exact delivery evidence/source topology satisfies dependencyContract.",
+    "candidate": "Alignment contract + reusable guard + negative fixtures + phase-level protected flow + CI wiring + synchronized Living Docs only.",
+    "completion": "Every criterion has exact command/source/evidence refs; ordinary npm run verify reaches the guard; BB-064 candidate receives independent Jev ACCEPT.",
+    "forbidden": "No production runtime rewrite, predecessor waiver, generic framework, authority move, adapter overclaim or self-acceptance."
+  },
+  "ciContract": {
+    "runtime": "Node >=20 in the repository no-install checkout",
+    "packageWiring": "Retain delivered file:../oracle metadata plus relative source import; verify both directions without requiring npm install.",
+    "requiredChecks": [
+      "oracle-phase-acceptance",
+      "oracle-alignment",
+      "oracle-boundary",
+      "oracle-regression",
+      "agentic-regression",
+      "blackboard-contract",
+      "living-docs",
+      "repository-verify"
+    ]
+  },
+  "migrationContract": {
+    "additiveArtifacts": [
+      "architecture-alignment.json",
+      "oracle-architecture-guard.mjs",
+      "oracle-phase-acceptance.test.js",
+      "verify:oracle-architecture script"
+    ],
+    "preservedRuntime": [
+      "resolveBackendContext/resolveQaContext",
+      "pullBackendFiles/pullQaArtifacts",
+      "repositoryReader/artifactReader ports",
+      "direct and protected modes",
+      "manifest/persisted shapes and failures"
+    ],
+    "rollback": "Revert BB-064 guard/test/docs wiring without altering the independently delivered BB-060..063 runtime.",
+    "futureChange": "A later intentional Oracle topology change must update the alignment contract, production verifier, negative fixtures and Living Docs together under a new objective."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Phase acceptance proves current Backend and QA flows cross the infrastructure-owned Oracle boundary end to end.",
+      "criterionIds": [
+        "AC-1"
+      ],
+      "planElements": [
+        "O51",
+        "O53"
+      ],
+      "verificationIds": [
+        "oracle-phase-acceptance",
+        "oracle-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/backend-application.js",
+        "packages/agentic-system/src/qa-application.js",
+        "packages/agentic-system/src/durable-backend-qa.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/backend-application.js",
+          "match": "const context = await resolveBackendContext(order, { repositoryReader });"
+        },
+        {
+          "ref": "packages/agentic-system/src/qa-application.js",
+          "match": "const context = await resolveQaContext(order, { artifactReader });"
+        }
+      ],
+      "supportingPlanFields": [
+        "phaseAcceptanceContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "A deterministic architecture check fails when Oracle implementation is placed back under Agentic Application/Core ownership or dependency direction reverses.",
+      "criterionIds": [
+        "AC-2",
+        "INV-2"
+      ],
+      "planElements": [
+        "O52",
+        "O54"
+      ],
+      "verificationIds": [
+        "oracle-alignment",
+        "oracle-boundary"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3,
+        6
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/oracle.js",
+        "packages/agentic-system/package.json",
+        "docs/blackboard/process/oracle-reconciliation-phase.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "resolved = await repositoryReader.readFile({"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-reconciliation-phase.md",
+          "match": "declared architectural ownership"
+        }
+      ],
+      "supportingPlanFields": [
+        "alignmentContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Repository and application-artifact connectivity preserve exact source/provenance semantics after extraction.",
+      "criterionIds": [
+        "AC-3"
+      ],
+      "planElements": [
+        "O53",
+        "O55"
+      ],
+      "verificationIds": [
+        "oracle-phase-acceptance",
+        "oracle-regression"
+      ],
+      "decisionIndexes": [
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/oracle.js",
+        "packages/agentic-system/src/artifact-manifest.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "sourceRef: resolved.sourceRef"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "sourceClass: \"APPLICATION_ARTIFACT\""
+        }
+      ],
+      "supportingPlanFields": [
+        "phaseAcceptanceContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "All BB-060..063 obligations are represented by durable delivered evidence before the topic can be considered closed.",
+      "criterionIds": [
+        "AC-4",
+        "INV-1"
+      ],
+      "planElements": [
+        "O51",
+        "O52",
+        "O56"
+      ],
+      "verificationIds": [
+        "oracle-alignment",
+        "blackboard-contract"
+      ],
+      "decisionIndexes": [
+        0,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/work-graph.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-063.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/work-graph.json",
+          "match": "\"id\": \"BB-064\""
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+          "match": "\"requiredState\": \"DONE\""
+        }
+      ],
+      "supportingPlanFields": [
+        "closureEvidenceContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Living Oracle architecture/state and physical source topology converge on the same ownership model with no known reconciliation debt.",
+      "criterionIds": [
+        "AC-5",
+        "INV-3",
+        "INV-4"
+      ],
+      "planElements": [
+        "O52",
+        "O54",
+        "O55"
+      ],
+      "verificationIds": [
+        "oracle-alignment",
+        "living-docs",
+        "repository-verify"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        6,
+        8
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/architecture.md",
+        "docs/living/system/oracle/state.md",
+        "docs/blackboard/process/oracle-reconciliation-phase.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/architecture.md",
+          "match": "Oracle is the concrete infrastructure boundary"
+        },
+        {
+          "ref": "docs/living/system/oracle/state.md",
+          "match": "packages/agentic-system/src/oracle.js"
+        }
+      ],
+      "supportingPlanFields": [
+        "closureEvidenceContract"
+      ]
+    }
+  ]
 }
