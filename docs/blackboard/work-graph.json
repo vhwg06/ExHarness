@@ -1372,7 +1372,7 @@
       "featureId": "FEATURE-DELIVERY-SCM",
       "title": "Connect real repository changes to CI and review evidence",
       "kind": "IMPLEMENTATION",
-      "status": "ACTIVE",
+      "status": "PLANNED",
       "complexity": "L",
       "components": [
         "agentic/domain-execution-control",
@@ -1399,25 +1399,29 @@
           "docs/blackboard/process/delivery-research/BB-068.md"
         ],
         "outputRefs": [],
-        "consolidatedRefs": []
+        "consolidatedRefs": [
+          "docs/living/system/state.md",
+          "docs/living/system/agentic-application/capabilities.md"
+        ]
       },
       "expectedOutputs": [
         "The candidate records base SHA, exact resulting commit/tree, changed files and CI run identities from the real provider.",
         "A deliberate failing check returns bounded repair; stale checks and unrelated branch updates cannot satisfy candidate acceptance.",
         "Retry after lost provider acknowledgement discovers the existing change or blocks on ambiguity; it does not create duplicate review requests or bypass merge policy."
       ],
-      "currentContextRef": "docs/blackboard/context/BB-068/current.json",
-      "claim": {
-        "workerId": "chatgpt-research-bb068"
-      },
+      "currentContextRef": null,
+      "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-068.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
         "researchBaselineSha": "26052992ad643a0b46d3274fbabb3e0ab6052c36",
-        "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62"
+        "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.implementation-result.json",
+        "lastEvaluatedInput": "1d3fa0552d8c87fb6aabd051e5078b121c6284dfd8d2fe93f35f5b9e029be33e"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-069",
