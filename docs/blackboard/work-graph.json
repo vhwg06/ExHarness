@@ -993,7 +993,7 @@
       "featureId": "FEATURE-ORACLE-DURABILITY",
       "title": "Preserve Oracle provenance durability and migration compatibility",
       "kind": "IMPLEMENTATION",
-      "status": "ACTIVE",
+      "status": "PLANNED",
       "complexity": "L",
       "components": [
         "oracle/infrastructure"
@@ -1012,25 +1012,34 @@
           "docs/blackboard/artifacts/ready-implement-plan/BB-063.json"
         ],
         "outputRefs": [],
-        "consolidatedRefs": []
+        "consolidatedRefs": [
+          "docs/living/system/oracle/architecture.md",
+          "docs/living/system/oracle/state.md",
+          "docs/living/system/oracle/semantics.md",
+          "docs/living/system/oracle/workflow.md",
+          "docs/living/system/oracle/artifact-manifest.md",
+          "docs/living/system/agentic-application/contracts.md",
+          "docs/living/system/agentic-application/workflow.md"
+        ]
       },
       "expectedOutputs": [
         "manifest/provenance-preserving package migration",
         "fresh-process Backend-to-QA compatibility proof",
         "fail-closed source identity semantics"
       ],
-      "currentContextRef": "docs/blackboard/context/BB-063/current.json",
-      "claim": {
-        "workerId": "codex-research-bb063"
-      },
+      "currentContextRef": null,
+      "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-063.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
         "researchBaselineSha": "3385a0e898751fec831742cf3f752145a0d0aa18",
-        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029"
+        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-063.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-063.implementation-result.json",
+        "lastEvaluatedInput": "1bd2e7acad255bee229f4566d4d5c961eef1f0880b7adb9e8488aa1337d65bde"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-064",
