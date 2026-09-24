@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-081",
+  "outcome": "A matched benchmark decides whether async-first execution becomes the supported Core profile or the synchronous baseline remains current.",
+  "currentProblem": "Implementation of async scheduling is not evidence of product value. ExHarness needs a held-out matched comparison that measures quality-adjusted cost, turn reduction, cache behavior, steering and recovery before changing the supported execution profile.",
+  "scope": [
+    "core.harness-efficiency-acceptance",
+    "core.matched-benchmark",
+    "core.profile-promotion",
+    "core.regression-guard"
+  ],
+  "constraints": [
+    "Baseline and candidate use exact same model/version, task inputs, tool budget, source and acceptance semantics.",
+    "Accepted quality cannot be traded away silently for token savings; the non-inferiority bound and cost gate are fixed before results.",
+    "All attempts, failures, retries and human interventions are reported; selected successful runs cannot decide promotion.",
+    "Promotion changes only a versioned HOW/execution profile; it does not alter product acceptance or external-effect authority."
+  ],
+  "successCriteria": [
+    "Held-out matched runs report accepted quality, total/provider input-output-cached tokens, cost, model turns, tool calls, useful operations per turn, overlap, elapsed time and recovery outcomes.",
+    "The candidate passes a predeclared quality non-regression bound and cost/token improvement gate or the decision is KEEP_SYNC_BASELINE.",
+    "No duplicate external effects, lost terminal results, unsafe cancellation or recovery regressions occur in negative probes."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/harness-efficiency-phase.md",
+    "docs/living/system/core-harness/state.md",
+    "docs/living/system/core-harness/workflow.md",
+    "packages/core-harness/src/agent-runtime.js",
+    "packages/core-harness/src/action-effect.js",
+    "packages/core-harness/src/effect-reconciliation.js"
+  ]
+}
