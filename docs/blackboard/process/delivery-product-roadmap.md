@@ -1,7 +1,7 @@
 # ExHarness: delivery product roadmap
 
 Status: SCHEDULED RESEARCH; future capabilities are not delivered.
-Evidence checked: 2026-09-22. Source baseline: ff85b6c710fc78663ce6e5657f30c5481c61ac62.
+Evidence checked: 2026-09-24. Source baseline: aa91ba16548f31772d441f51975917397cbf73d7.
 Owner of scheduling: docs/blackboard/work-graph.json. This file owns the cross-topic product direction; the existing Integration and Oracle roadmaps retain their narrower contracts.
 
 ## Product outcome
@@ -25,6 +25,7 @@ These are research recommendations, not adoption verdicts or a global ranking. S
 |---|---:|---|---|---|
 | [OpenHands SDK](https://github.com/OpenHands/software-agent-sdk) | 1,155 | MIT coding-agent SDK with agent/server/workspace separation and Python, TypeScript and REST interfaces. First adapter candidate. | Prove dispatch/recover, exact workspace identity, cancellation and telemetry under our attempt binding; SDK success cannot accept product work. | 066–069 |
 | [mini-SWE-agent](https://github.com/SWE-agent/mini-swe-agent) | 7,879 | MIT minimal issue-solving loop. Use as direct-agent baseline and study the smallest sufficient tool loop. | Benchmark claims do not establish product delivery, permissions, independent QA or our repository performance. | 065, 066, 074 |
+| [Unreal Agent](https://github.com/unreallabsai/unreal-agent) | 1,850 | MIT async-first Go harness. Its coordinator/operation/session/context seams are a concrete reference for detached tool work and cache-stable result delivery. | Published cost/pass-rate results are vendor evidence, not ExHarness acceptance. Reproduce the mechanism against the current synchronous Core while preserving EffectOperation authority. | 077–081 |
 | [LangGraph](https://github.com/langchain-ai/langgraph) | 42,137 | MIT checkpoint/stateful workflow machinery; useful reference for domain-local interruption and persistence. | Do we need graph complexity? Checkpoints do not grant organization authority; in-memory persistence does not survive restart. | 066, 070 |
 | [Temporal](https://github.com/temporalio/temporal) | 23,234 | MIT durable service reference; compare operation/recovery model and deployment footprint. | Test same-attempt resume and external-effect ambiguity; decide operational cost versus existing Core and Restate. | 066, 072 |
 | [Restate](https://github.com/restatedev/restate) | 4,454 | Durable steps, persisted results, signals and timers fit an existing domain-strategy direction. | Server is BSL 1.1 source-available, not currently unrestricted OSS. Check intended deployment against license; durable journaling does not eliminate the external write/ack ambiguity. | 066, 072 |
@@ -39,6 +40,8 @@ Additional primary sources:
 - [Playwright trace viewer](https://playwright.dev/docs/trace-viewer): inspect action, network and browser evidence.
 - [Langfuse evaluations](https://langfuse.com/docs/evaluation/overview) and [license](https://github.com/langfuse/langfuse/blob/main/LICENSE): experiment tooling and edition boundaries.
 - [METR productivity study](https://metr.org/Early_2025_AI_Experienced_OS_Devs_Study-paper.pdf) and [2026 design update](https://metr.org/blog/2026-02-24-uplift-update/): task-level productivity needs empirical measurement; older results are not a prediction of current ExHarness performance.
+- [Unreal Agent async-first design](https://unreallabs.ai/blog/unreal-agent/): vendor description and benchmark evidence for detached operations, fewer model turns and prompt-cache stability; not independent ExHarness proof.
+- [HarnessTax / AgentBRANE](https://harnesstax.github.io/): independent harness × model evidence motivating harness cost as a controlled experimental variable rather than a hidden implementation detail.
 
 No surveyed source demonstrates the complete ExHarness authority/currentness/delivery contract. That is a scope observation from this survey, not a claim that no product has solved similar problems. Prefer adapters or borrowed patterns; require a measured reason before building competing agent loops, workflow engines, tracing platforms or generic retrieval frameworks.
 
@@ -48,6 +51,7 @@ No surveyed source demonstrates the complete ExHarness authority/currentness/del
 |---|---|---|---|
 | Existing Integration | 052–059 | Cross-domain authority, activation, exact QA/closure, recovery, observation and HOW evolution | Existing objective-specific delivery gates; do not duplicate or weaken |
 | Existing Oracle reconciliation | 060–064 | Infrastructure-owned context IO with preserved provenance | Existing package/port/connectivity/durability and drift acceptance |
+| Core harness efficiency | 077–081 | Measure and, only if evidence supports it, promote async-first detached tool execution with cache-stable context | Same-model/task matched evidence; no effect/recovery regressions; PROMOTE_ASYNC or KEEP_SYNC_BASELINE |
 | Runnable delivery foundation | 065–069 | First real agent changes a real repo and produces independently verified review/deployment evidence | Fixed baseline; adapter and sandbox contract; real Git/CI path; repeatable first slice |
 | Product lifecycle | 070–071 | Goal/partial artifacts → owned domain work → running web product; requirement changes repaired locally | Three seed completeness levels and kill/resume/change probes |
 | Operable distribution | 072–073 | Another developer installs and operates a bounded single-tenant product | Recovery/telemetry/cost controls; clean-install and upgrade/rollback exercises |
@@ -57,7 +61,8 @@ No surveyed source demonstrates the complete ExHarness authority/currentness/del
 flowchart TD
   I["Integration 052–059"] --> L["Product lifecycle 070–071"]
   O["Oracle 060–064"] --> V["First real delivery 069"]
-  B["Baseline 065"] --> R["Runtime 066"]
+  B["Baseline 065"] --> H["Core harness efficiency 077–081"]
+  H --> R["Runtime 066"]
   B --> S["Sandbox 067"]
   R --> G["Git and CI 068"]
   S --> G
@@ -80,6 +85,8 @@ Diagram shows phase relationships. Canonical direct task edges are in work-graph
 ## Research lane contract
 
 Every new task already has an OBJECTIVE, a DRAFT plan, context routing and a task-specific research brief. Start a fresh research session with an explicit ID. Recommended first: BB-065, then BB-066/067; Oracle 060–064 remains independently researchable.
+
+BB-077–081 are a dedicated Core-efficiency phase because current `AgentRuntime.invoke()` still awaits capability execution while Core already owns durable effect identity/reconciliation. The phase borrows async scheduling/cache-stability patterns without replacing effect authority. BB-066 depends on BB-081 so real coding-agent runtime integration uses an evidence-selected Core profile rather than silently freezing the synchronous shape.
 
 Each brief must converge through:
 1. Read the exact current source seam and dependency objectives/plans; distinguish delivered truth from design assumptions.
