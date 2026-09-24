@@ -21,14 +21,14 @@ next-work-id: BB-077
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: NONE
+  active: BB-064
 
 WORKER
   active: NONE
@@ -36,14 +36,20 @@ WORKER
 
 ## Active work
 
-NONE
+
+BB-064
+task: Close Oracle reconciliation with end-to-end connectivity and drift guards
+lane: RESEARCH_SA
+phase: RESEARCH
+current-context: docs/blackboard/context/BB-064/current.json
+components: oracle/infrastructure, outer/blackboard
+worker: codex-research-bb064
 
 ## Schedulable tasks
 
 - BB-052 [WORKER/EXECUTION] — Implement cross-domain obligations and selective semantic invalidation
 - BB-059 [RESEARCH_SA/RESEARCH] — Research evidence-gated HOW evolution and Jev evaluation pipeline
 - BB-060 [WORKER/EXECUTION] — Reconcile Oracle physical ownership and package boundary
-- BB-064 [RESEARCH_SA/RESEARCH] — Close Oracle reconciliation with end-to-end connectivity and drift guards
 - BB-065 [WORKER/EXECUTION] — Define delivery profile and executable value baseline
 - BB-068 [RESEARCH_SA/RESEARCH] — Connect real repository changes to CI and review evidence
 - BB-069 [RESEARCH_SA/RESEARCH] — Prove first useful agent delivery through Oracle and independent QA
@@ -71,7 +77,7 @@ BB-060 [WORKER_SCHEDULABLE] <- ROOT
 BB-061 [BLOCKED_BY BB-060] <- BB-060
 BB-062 [BLOCKED_BY BB-061] <- BB-061
 BB-063 [BLOCKED_BY BB-062] <- BB-062
-BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
+BB-064 [ACTIVE] <- BB-060, BB-061, BB-062, BB-063
 BB-065 [WORKER_SCHEDULABLE] <- ROOT
 BB-066 [BLOCKED_BY BB-065] <- BB-065, BB-048
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
