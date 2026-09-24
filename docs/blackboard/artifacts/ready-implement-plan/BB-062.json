@@ -546,7 +546,8 @@
       "supportingPlanFields": [
         "mcpResourceAdapterContract",
         "sourceTopologyContract",
-        "primaryReferences"
+        "primaryReferences",
+        "mcpCapabilityGate"
       ]
     },
     {
@@ -679,5 +680,6 @@
         "ciContract"
       ]
     }
-  ]
+  ],
+  "mcpCapabilityGate": "Before any resources/read call, Application composition verifies the named server advertises the resources capability; absence fails closed and does not fall back to tools, Tasks or another provider."
 }
