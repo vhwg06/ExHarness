@@ -16,9 +16,10 @@
     "oracle.mcp-adapter-boundary"
   ],
   "outOfScope": [
-    "Generic Resolver<T>/provider registry/retrieval framework without concrete evidence.",
-    "Oracle ownership of work scheduling, product acceptance, recovery authority or Core deliberation.",
-    "Unrelated Integration-J HOW-evolution work."
+    "Generic Resolver<T>, provider registry, source DSL, cache, retrieval engine or background refresh lifecycle.",
+    "A production repository/SCM or MCP adapter before a named service and revision-to-resource mapping are evidenced; live repository integration belongs to BB-068 or separately researched work.",
+    "MCP tools/tasks/subscriptions for context reads, or Oracle ownership of client lifecycle, credentials, acceptance, recovery or product currentness.",
+    "Changing BackendContextSchema, QaContextSchema or artifact-manifest durability."
   ],
   "constraints": [
     "Repository and application-artifact sources remain distinct where their identity/provenance semantics differ.",
@@ -34,48 +35,65 @@
     "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized."
   ],
   "architectureDecisions": [
-    "O3 keeps Oracle as infrastructure and treats current packages/agentic-system/src/oracle.js placement as reconciliation debt rather than evidence that Oracle belongs to Agentic Application.",
-    "O3 preserves the two concrete current source classes and resolver behavior unless source evidence requires a narrower change; package separation is independent from generic abstraction.",
-    "O3 makes authority/dependency direction explicit: Application owns required semantic shape/WHAT; Oracle owns source IO/adaptation WHERE/HOW; Core receives resolved context.",
-    "O3 requires exact provenance/source identity and fail-closed behavior to survive any package/import/adapter migration.",
-    "O3 closes only with executable regression evidence and synchronized Living Oracle docs, not narrative package ownership alone."
+    "Keep the exact BB-060/061 ports: pullBackendFiles(parsedOrder,{repositoryReader}) calls repositoryReader.readFile({repositoryRef,revision,path}); pullQaArtifacts(parsedOrder,{artifactReader}) calls artifactReader.readArtifact({ref,path,producerWorkOrderId,revision,acceptanceDecision}). Do not rename or unify them.",
+    "packages/oracle owns ordered port calls, source-boundary error wrapping and plain result assembly. Application owns parsing/final ContextSchema validation plus reader/client construction, endpoints, credentials, transport lifetime and direct injection.",
+    "Repository bytes remain an external versioned source. Accepted application artifacts remain internal; createManifestArtifactReader(...).forManifest(manifestRef) stays an Application-owned validating decorator before Oracle and preserves producer/revision/acceptance identity.",
+    "No production SCM/MCP reader exists at baseline. Do not ship a filesystem reader unable to honor arbitrary repositoryRef/revision or an MCP reader based on an invented universal URI. Deliver executable direct-injection topology tests and honest Living Docs.",
+    "A future named MCP repository adapter may implement readFile using resources/read only. Application pins server identity, auth, transport and a server-specific request-to-URI mapping; sourceRef binds server and URI. Oracle owns no tools, Tasks, subscriptions, protocol ids, retries or connection lifecycle.",
+    "Failures are fail-closed: parsing precedes IO; adapter failures preserve cause and receive exact repositoryRef@revision/path or artifact-ref context; schema failure precedes Worker; no partial Context or silent fallback.",
+    "Worker requires BB-061 DONE and verifies its receipt delivers the exact ports and Application -> Oracle direction. Material mismatch is PLAN_INPUT_CONTRADICTION, not permission to broaden BB-062."
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/artifact-manifest.js",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+      "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
       "docs/living/system/oracle/architecture.md",
       "docs/living/system/oracle/state.md",
       "docs/living/system/oracle/semantics.md",
       "docs/living/system/oracle/workflow.md",
-      "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/qa-application.js",
-      "packages/agentic-system/src/index.js",
       "docs/living/system/oracle/artifact-manifest.md"
     ],
-    "expectedNew": [],
-    "expectedTests": [
+    "expectedNew": [
+      "packages/oracle/package.json",
+      "packages/oracle/src/index.js",
       "packages/oracle/test/oracle.test.js",
       "packages/agentic-system/test/oracle-integration.test.js",
+      "test/oracle-architecture-boundary.test.mjs"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/oracle-source-connectivity.test.js",
+      "packages/agentic-system/test/oracle-integration.test.js",
+      "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+      "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
       "test/oracle-architecture-boundary.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agentic-system/package.json",
       "packages/oracle/**",
+      "package.json",
       "docs/living/system/oracle/**",
       "docs/living/system/agentic-application/**",
       "docs/blackboard/process/oracle-reconciliation-phase.md",
       "scripts/**",
       "test/**",
-      ".github/workflows/**"
+      ".github/workflows/test.yml"
     ],
     "write": [
-      "packages/oracle/**",
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/test/**",
+      "packages/agentic-system/test/oracle-source-connectivity.test.js",
+      "packages/agentic-system/test/oracle-integration.test.js",
+      "test/oracle-architecture-boundary.test.mjs",
       "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/**"
+      "docs/living/system/agentic-application/architecture.md",
+      "docs/living/system/agentic-application/contracts.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/objective/**",
@@ -86,100 +104,109 @@
     ]
   },
   "implementationSlices": [
-    "O31 — Inspect and pin current Oracle ownership/source/dependency/provenance seams for this workstream.",
-    "O32 — Resolve the workstream-specific architecture choices and remove every research gap before Jev readiness.",
-    "O33 — Implement only the concrete boundary changes authorized by the resolved plan; preserve current semantic behavior unless the objective explicitly changes it.",
-    "O34 — Run Oracle boundary, Agentic regression and architecture-placement checks; update Living Oracle truth."
+    "O31 — Gate on BB-061 DONE; verify its receipt, exact functions, thin Application adapters and dependency direction against dependencyContract or stop with PLAN_INPUT_CONTRADICTION.",
+    "O32 — Add a direct-injection repository test proving exact ordered {repositoryRef,revision,path} reads, sourceRef preservation, final BackendContext validation and fail-closed errors without registry/fallback.",
+    "O33 — Add a manifest-scoped artifact test proving ref/path + producer/revision/acceptance + digest validation before Oracle and QaContext preservation of sourceRef plus APPLICATION_ARTIFACT provenance.",
+    "O34 — Extend architecture tests to keep fixed ports distinct, Application-owned composition explicit, packages/oracle free of MCP SDK/Application/Core imports and provider/lifecycle authority, and error cause/context intact.",
+    "O35 — Update Living Oracle/Application docs to the tested topology, explicitly state no production repository/MCP adapter exists, and document the future named-server resources/read contract.",
+    "O36 — Run Oracle/connectivity/manifest/boundary/Agentic regressions and bind criterion evidence to exact outputs and source/doc anchors."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
-      "statement": "Research maps current repositoryReader and artifactReader into the extracted Oracle package with explicit adapter ownership.",
+      "statement": "Exact repositoryReader and artifactReader ports remain in packages/oracle with Application-owned direct construction/injection and no generic registry.",
       "verificationIds": [
-        "oracle-agentic-regression"
+        "oracle-connectivity",
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 1 is bound to exact Oracle/package/source refs and verification output."
+        "Tests/checks name both methods, direct injection and Application -> Oracle ownership."
       ]
     },
     {
       "id": "AC-2",
-      "statement": "A future concrete external/MCP-backed source has a bounded adapter contract and cannot inject lifecycle/acceptance authority.",
+      "statement": "Exact ordered repository requests become validated BackendContext while preserving sourceRef and fail-closed request context/original cause.",
       "verificationIds": [
-        "oracle-contract"
+        "oracle-connectivity",
+        "oracle-integration"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 2 is bound to exact Oracle/package/source refs and verification output."
+        "Spy cases cover exact arguments/order, malformed results and thrown errors."
       ]
     },
     {
       "id": "AC-3",
-      "statement": "Adapter topology preserves source identity/provenance and distinguishes external repository vs internal accepted application artifacts.",
+      "statement": "A manifest-scoped Application artifact decorator validates identity/content before Oracle and QaContext retains sourceRef plus APPLICATION_ARTIFACT provenance.",
       "verificationIds": [
-        "oracle-agentic-regression"
+        "oracle-connectivity",
+        "manifest-contract"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 3 is bound to exact Oracle/package/source refs and verification output."
+        "Tests cover manifest, producer, revision, acceptance, stored revision and digest with no fallback."
       ]
     },
     {
       "id": "AC-4",
-      "statement": "No generic provider registry is required to add one concrete adapter.",
+      "statement": "A future MCP repository adapter is bounded to one named server's resources/read with Application-owned server/URI/auth/transport and no Oracle lifecycle/tools/tasks/subscriptions.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-boundary",
+        "living-docs"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 4 is bound to exact Oracle/package/source refs and verification output."
+        "Checks/docs state allowed operation, sourceRef and failure rules and reject SDK wiring or invented URI."
       ]
     },
     {
       "id": "AC-5",
-      "statement": "An end-to-end ingress path from declared application need to validated Worker context is specified with failure semantics.",
+      "statement": "Both declared-need -> parsed order -> injected reader -> Oracle -> ContextSchema -> Worker paths are executable/documented with no partial Context or fallback.",
       "verificationIds": [
-        "oracle-agentic-regression"
+        "oracle-connectivity",
+        "oracle-integration",
+        "living-docs"
       ],
       "evidenceRequired": [
-        "Evidence for objective criterion 5 is bound to exact Oracle/package/source refs and verification output."
+        "End-to-end tests/docs cover success and failure through public resolvers."
       ]
     },
     {
       "id": "INV-1",
       "statement": "Repository and application-artifact sources remain distinct where their identity/provenance semantics differ.",
       "verificationIds": [
-        "oracle-contract"
+        "oracle-connectivity",
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Invariant 1 is exercised by a negative or boundary verification case."
+        "Separate request shapes/provenance assertions prevent collapse."
       ]
     },
     {
       "id": "INV-2",
       "statement": "Adding connectivity must not create an Oracle agent loop, provider lifecycle, generic registry or background refresh system without evidence.",
       "verificationIds": [
-        "oracle-contract"
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Invariant 2 is exercised by a negative or boundary verification case."
+        "Negative checks reject registry, refresh, subscriptions and lifecycle/acceptance authority."
       ]
     },
     {
       "id": "INV-3",
       "statement": "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
       "verificationIds": [
-        "oracle-architecture"
+        "oracle-boundary"
       ],
       "evidenceRequired": [
-        "Invariant 3 is exercised by a negative or boundary verification case."
+        "Precondition distinguishes current readers from expected future files and absent production adapters."
       ]
     },
     {
       "id": "INV-4",
       "statement": "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized.",
       "verificationIds": [
-        "oracle-contract"
+        "living-docs"
       ],
       "evidenceRequired": [
-        "Invariant 4 is exercised by a negative or boundary verification case."
+        "Docs match ports, ownership, absences and MCP deferral."
       ]
     }
   ],
@@ -187,13 +214,17 @@
     {
       "invariant": "Repository and application-artifact sources remain distinct where their identity/provenance semantics differ.",
       "criterionIds": [
-        "INV-1"
+        "INV-1",
+        "AC-2",
+        "AC-3"
       ]
     },
     {
       "invariant": "Adding connectivity must not create an Oracle agent loop, provider lifecycle, generic registry or background refresh system without evidence.",
       "criterionIds": [
-        "INV-2"
+        "INV-2",
+        "AC-1",
+        "AC-4"
       ]
     },
     {
@@ -205,39 +236,56 @@
     {
       "invariant": "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized.",
       "criterionIds": [
-        "INV-4"
+        "INV-4",
+        "AC-5"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "oracle-contract",
-      "command": "node --test packages/agentic-system/test/*oracle*.test.js packages/oracle/test/*.test.js"
+      "id": "oracle-connectivity",
+      "command": "node --test packages/agentic-system/test/oracle-source-connectivity.test.js"
     },
     {
-      "id": "oracle-agentic-regression",
+      "id": "oracle-unit",
+      "command": "node --test packages/oracle/test/oracle.test.js"
+    },
+    {
+      "id": "oracle-integration",
+      "command": "node --test packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js"
+    },
+    {
+      "id": "manifest-contract",
+      "command": "node --test packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js"
+    },
+    {
+      "id": "oracle-boundary",
+      "command": "node --test test/oracle-architecture-boundary.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
       "command": "npm run test:agentic"
     },
     {
-      "id": "oracle-architecture",
-      "command": "node --test test/oracle-architecture-boundary.test.mjs"
+      "id": "living-docs",
+      "command": "npm run verify:blackboard-artifacts && npm run verify:blackboard-work-graph && npm run verify:blackboard-context"
     }
   ],
-  "researchGaps": [
-    "Resolve exact oracle.source-adapters design against current source, imports, package ownership and tests.",
-    "Identify the minimum concrete migration/compatibility seam for BB-062 without introducing generic Oracle abstractions.",
-    "Define negative verification that would have caught the historical logical-vs-physical ownership drift for this workstream."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Oracle implementation remains physically owned by Agentic Application while docs claim infrastructure ownership.",
-    "Package extraction introduces a generic resolver/provider framework with no concrete source pressure.",
-    "Oracle gains scheduling/acceptance/recovery authority through the new boundary.",
-    "SourceRef/provenance or fail-closed behavior is weakened while simple happy-path tests still pass."
+    "Fake production adapter without repositoryRef/revision or named server URI proof.",
+    "Ports collapsed behind Resolver<T>, registry or discovery.",
+    "Manifest reader/store moved into packages/oracle.",
+    "Oracle-owned MCP lifecycle, credentials, retries, subscriptions, tools, Tasks or protocol state.",
+    "MCP bytes without sourceRef binding server and URI.",
+    "Partial Context, fallback, rewritten identity or lost cause.",
+    "BB-061 not DONE/contradicts seam but work proceeds.",
+    "Docs claim absent adapter."
   ],
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-062 objective + Oracle phase roadmap + current Oracle/Application source truth",
+      "input": "BB-062 objective + Oracle roadmap + current source truth",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + Jev SATISFIED",
@@ -267,9 +315,369 @@
       "docs/living/system/oracle/architecture.md",
       "docs/living/system/oracle/state.md",
       "docs/living/system/oracle/semantics.md",
-      "docs/living/system/oracle/workflow.md"
+      "docs/living/system/oracle/workflow.md",
+      "docs/living/system/oracle/artifact-manifest.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-062 Living Oracle docs must describe delivered ownership, dependency, connectivity and provenance semantics exactly as implemented."
-  }
+    "statement": "BB-062 docs must match direct-injection topology, current adapter availability, identity/failure semantics and bounded future MCP resources/read."
+  },
+  "experimentEvidence": {
+    "baselineSha": "b3005b78e495a17ccd7fdc9b20e522475cb30b4a",
+    "currentProbe": [
+      "oracle.js has only injected readers; repository readers in tests/evals are fixtures.",
+      "artifact-manifest.js supplies Application-owned createManifestArtifactReader/forManifest and returns {content,sourceRef}.",
+      "Docs record no MCP client/adapter/registry/lifecycle; MCP Resources defines server URIs/resources/read, not universal repository mapping."
+    ],
+    "interpretation": "Direct injection around two source classes is the smallest truthful topology; production repository/MCP waits for a named contract."
+  },
+  "dependencyContract": {
+    "prerequisiteTaskId": "BB-061",
+    "requiredState": "DONE",
+    "requiredEvidence": "BB-061 receipt plus consolidated Living Oracle refs",
+    "expectedDeliveredSeam": [
+      "pullBackendFiles(parsedOrder,{repositoryReader})",
+      "pullQaArtifacts(parsedOrder,{artifactReader})",
+      "thin Application resolvers",
+      "Application -> Oracle only",
+      "file:../oracle plus relative no-install import"
+    ],
+    "contradictionRule": "Mismatch emits PLAN_INPUT_CONTRADICTION; no port rename, registry or authority move."
+  },
+  "sourceTopologyContract": {
+    "repository": {
+      "class": "EXTERNAL_VERSIONED_REPOSITORY",
+      "port": "readFile({repositoryRef,revision,path}) -> {content,sourceRef}",
+      "current": "fixtures only; no production SCM/MCP adapter"
+    },
+    "applicationArtifact": {
+      "class": "INTERNAL_ACCEPTED_APPLICATION_ARTIFACT",
+      "port": "readArtifact({ref,path,producerWorkOrderId,revision,acceptanceDecision}) -> {content,sourceRef}",
+      "current": "Application-owned createManifestArtifactReader(...).forManifest(manifestRef)"
+    },
+    "applicationOwns": [
+      "parsing/requirements",
+      "client construction/config",
+      "endpoint/credentials/transport/retry",
+      "manifest scoping",
+      "ContextSchema/lifecycle/acceptance"
+    ],
+    "oracleOwns": [
+      "ordered exact calls",
+      "content/sourceRef + QA provenance",
+      "contextual errors with cause",
+      "no partial Context/lifecycle"
+    ],
+    "composition": "Explicit arguments; no registry, discovery, service locator or fallback."
+  },
+  "mcpResourceAdapterContract": {
+    "status": "DEFERRED_UNTIL_NAMED_SERVER_CONTRACT",
+    "operation": "resources/read only",
+    "requiredConfiguration": [
+      "stable server identity",
+      "explicit Streamable HTTP or local stdio",
+      "auth outside WorkOrders/Oracle",
+      "server-specific request-to-URI mapping"
+    ],
+    "output": "String content plus sourceRef binding server and exact URI.",
+    "failure": "Connection/auth/negotiation/protocol/missing/unsupported/identity errors fail closed; Oracle adds request context and cause.",
+    "forbidden": [
+      "tools/call or Tasks",
+      "resources/subscribe/refresh",
+      "Oracle lifecycle/credentials/retries/session",
+      "universal repo URI",
+      "registry/third source class"
+    ]
+  },
+  "ingressContract": {
+    "backend": [
+      "parse BackendWorkOrder",
+      "inject repositoryReader",
+      "ordered reads",
+      "BackendContextSchema",
+      "complete Context to Worker"
+    ],
+    "qa": [
+      "parse QaWorkOrder",
+      "scope manifest reader when protected",
+      "inject artifactReader",
+      "validate identity/content",
+      "QaContextSchema",
+      "complete Context to Worker"
+    ],
+    "failure": "Parse before IO; read errors keep cause/request; schema errors precede Worker; no partial Context/fallback."
+  },
+  "primaryReferences": [
+    {
+      "title": "MCP Resources",
+      "url": "https://modelcontextprotocol.io/specification/2025-11-25/server/resources",
+      "use": "Server-defined URIs and resources/read; list/templates/subscriptions are separate."
+    },
+    {
+      "title": "MCP Architecture",
+      "url": "https://modelcontextprotocol.io/specification/2025-11-25/architecture",
+      "use": "Host/client/server and transport lifecycle stay outside Oracle work authority."
+    },
+    {
+      "title": "MCP TypeScript SDK",
+      "url": "https://github.com/modelcontextprotocol/typescript-sdk",
+      "use": "Clients choose stdio/Streamable HTTP and auth; no dependency before named server."
+    }
+  ],
+  "deliveryContract": {
+    "precondition": "BB-061 DONE and expected seam matches receipt/source.",
+    "candidate": "Tests, boundary checks and Living Docs only; no production adapter/MCP dependency without named contract.",
+    "completion": "All criteria have command/source evidence; both ingress paths proven; docs match.",
+    "forbidden": "No port redefinition, registry, invented URI, manifest authority move, provenance/error weakening or self-accept."
+  },
+  "ciContract": {
+    "runtime": "Node >=20, no-install checkout",
+    "packageWiring": "Use BB-060/061 relative Oracle source import; no external runtime dependency.",
+    "requiredChecks": [
+      "oracle-connectivity",
+      "oracle-unit",
+      "oracle-integration",
+      "manifest-contract",
+      "oracle-boundary",
+      "agentic-regression",
+      "living-docs"
+    ]
+  },
+  "migrationContract": {
+    "preservedPorts": [
+      "repositoryReader.readFile",
+      "artifactReader.readArtifact",
+      "pullBackendFiles",
+      "pullQaArtifacts",
+      "resolveBackendContext",
+      "resolveQaContext"
+    ],
+    "preservedBehavior": [
+      "parse-before-IO",
+      "request order/identity",
+      "content/sourceRef",
+      "QA provenance",
+      "error/cause",
+      "schema failure before Worker"
+    ],
+    "additiveChange": "Topology tests/docs only; production repository/MCP requires separate evidence.",
+    "rollback": "Revert BB-062 tests/docs without changing BB-060/061."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Research maps current repositoryReader and artifactReader into the extracted Oracle package with explicit adapter ownership.",
+      "criterionIds": [
+        "AC-1",
+        "AC-2",
+        "AC-3"
+      ],
+      "planElements": [
+        "O31",
+        "O32",
+        "O33"
+      ],
+      "verificationIds": [
+        "oracle-connectivity",
+        "oracle-integration"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        6
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/oracle.js",
+        "packages/agentic-system/src/artifact-manifest.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "export async function resolveBackendContext(rawOrder, { repositoryReader })"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "export async function resolveQaContext(rawOrder, { artifactReader })"
+        },
+        {
+          "ref": "packages/agentic-system/src/artifact-manifest.js",
+          "match": "export function createManifestArtifactReader({ reader, manifestStore })"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceTopologyContract",
+        "dependencyContract",
+        "ingressContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "A future concrete external/MCP-backed source has a bounded adapter contract and cannot inject lifecycle/acceptance authority.",
+      "criterionIds": [
+        "AC-4",
+        "INV-2"
+      ],
+      "planElements": [
+        "O34",
+        "O35"
+      ],
+      "verificationIds": [
+        "oracle-boundary",
+        "living-docs"
+      ],
+      "decisionIndexes": [
+        1,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/architecture.md",
+        "docs/living/system/oracle/workflow.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/architecture.md",
+          "match": "Current source has **no MCP adapter** and no MCP-owned Oracle lifecycle."
+        },
+        {
+          "ref": "docs/living/system/oracle/workflow.md",
+          "match": "There is no MCP-backed resolution path in current source."
+        }
+      ],
+      "supportingPlanFields": [
+        "mcpResourceAdapterContract",
+        "sourceTopologyContract",
+        "primaryReferences"
+      ]
+    },
+    {
+      "objectiveCriterion": "Adapter topology preserves source identity/provenance and distinguishes external repository vs internal accepted application artifacts.",
+      "criterionIds": [
+        "AC-2",
+        "AC-3",
+        "INV-1"
+      ],
+      "planElements": [
+        "O32",
+        "O33"
+      ],
+      "verificationIds": [
+        "oracle-connectivity",
+        "manifest-contract"
+      ],
+      "decisionIndexes": [
+        0,
+        2,
+        5
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/oracle.js",
+        "packages/agentic-system/src/artifact-manifest.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "sourceClass: \"APPLICATION_ARTIFACT\""
+        },
+        {
+          "ref": "packages/agentic-system/src/artifact-manifest.js",
+          "match": "const sourceRef = requireText(resolved.sourceRef, \"underlying artifact reader sourceRef\")"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceTopologyContract",
+        "ingressContract",
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "No generic provider registry is required to add one concrete adapter.",
+      "criterionIds": [
+        "AC-1",
+        "AC-4",
+        "INV-2"
+      ],
+      "planElements": [
+        "O32",
+        "O34"
+      ],
+      "verificationIds": [
+        "oracle-connectivity",
+        "oracle-boundary"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        3
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/semantics.md",
+        "docs/living/system/oracle/state.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/semantics.md",
+          "match": "There is no generic resolver abstraction in current source."
+        },
+        {
+          "ref": "docs/living/system/oracle/state.md",
+          "match": "Oracle has no agent loop, session lifecycle, generic resolver registry, MCP-first layer, retrieval framework or cache lifecycle in current source;"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceTopologyContract",
+        "mcpResourceAdapterContract",
+        "negativeVerificationCases"
+      ]
+    },
+    {
+      "objectiveCriterion": "An end-to-end ingress path from declared application need to validated Worker context is specified with failure semantics.",
+      "criterionIds": [
+        "AC-2",
+        "AC-3",
+        "AC-5"
+      ],
+      "planElements": [
+        "O32",
+        "O33",
+        "O36"
+      ],
+      "verificationIds": [
+        "oracle-connectivity",
+        "oracle-integration",
+        "living-docs"
+      ],
+      "decisionIndexes": [
+        0,
+        2,
+        5
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/workflow.md",
+        "packages/agentic-system/src/oracle.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/workflow.md",
+          "match": "parse BackendWorkOrder"
+        },
+        {
+          "ref": "docs/living/system/oracle/workflow.md",
+          "match": "parse QaWorkOrder"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "backend context resolution failed for ${path} from ${order.repositoryRef}@${order.revision}: ${detail}"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "qa context resolution failed for ${artifact.ref} from application artifact store: ${detail}"
+        }
+      ],
+      "supportingPlanFields": [
+        "ingressContract",
+        "deliveryContract",
+        "ciContract"
+      ]
+    }
+  ]
 }
