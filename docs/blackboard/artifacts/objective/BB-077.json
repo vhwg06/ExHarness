@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-077",
+  "outcome": "ExHarness has a reproducible same-model, same-task harness-efficiency baseline that isolates orchestration overhead before any async runtime change is promoted.",
+  "currentProblem": "Current Core measures capability calls and model usage but does not isolate harness-induced model turns, input/cache churn, tool-wait turns, polling/heartbeat overhead, operation overlap, or cost per accepted task. Unreal Agent and recent harness studies indicate this overhead can be material, but vendor benchmark claims are not ExHarness evidence.",
+  "scope": [
+    "core.harness-economics",
+    "core.runtime-usage",
+    "core.cache-observation",
+    "core.matched-baseline"
+  ],
+  "constraints": [
+    "Use the same model/version, task fixture, starting source, tool surface and resource ceiling for matched comparisons.",
+    "Treat Unreal Agent benchmark numbers as vendor evidence until independently reproduced; do not promote a design from external claims alone.",
+    "Record failed/retried calls and missing usage explicitly; unknown usage cannot be treated as zero.",
+    "Public GitHub implementation examples must have at least 1,000 stars at evidence check time or be called out as below the eligibility threshold."
+  ],
+  "successCriteria": [
+    "One matched baseline runner records accepted outcome, model identity, input/output/cached tokens when available, model turns, tool calls, elapsed time, cost and failure/retry records.",
+    "The baseline distinguishes model work from harness wait/poll/heartbeat-like overhead and reports prompt-prefix/cache reuse observations without inventing provider metrics.",
+    "A predeclared comparison protocol and non-regression/cost gate are fixed before async implementation results are observed."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/harness-efficiency-phase.md",
+    "docs/living/system/core-harness/state.md",
+    "docs/living/system/core-harness/workflow.md",
+    "packages/core-harness/src/agent-runtime.js",
+    "packages/core-harness/src/action-effect.js",
+    "packages/core-harness/src/effect-reconciliation.js"
+  ]
+}
