@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-077
+next-work-id: BB-082
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -53,6 +53,11 @@ NONE
 - BB-074 [RESEARCH_SA/RESEARCH] — Measure real delivery value against direct-agent baseline
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
+- BB-077 [RESEARCH_SA/RESEARCH] — Measure ExHarness harness tax and pin async-first baseline
+- BB-078 [RESEARCH_SA/RESEARCH] — Implement durable detached operation scheduling
+- BB-079 [RESEARCH_SA/RESEARCH] — Implement cache-stable async result context
+- BB-080 [RESEARCH_SA/RESEARCH] — Integrate async steering, wakeup and recovery
+- BB-081 [RESEARCH_SA/RESEARCH] — Accept an evidence-backed Core harness efficiency profile
 
 ## Dependency graph
 
@@ -72,7 +77,7 @@ BB-062 [BLOCKED_BY BB-061] <- BB-061
 BB-063 [BLOCKED_BY BB-062] <- BB-062
 BB-064 [BLOCKED_BY BB-060,BB-061,BB-062,BB-063] <- BB-060, BB-061, BB-062, BB-063
 BB-065 [WORKER_SCHEDULABLE] <- ROOT
-BB-066 [BLOCKED_BY BB-065] <- BB-065, BB-048
+BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
 BB-068 [RESEARCH_SCHEDULABLE] <- BB-066, BB-067
 BB-069 [RESEARCH_SCHEDULABLE] <- BB-068, BB-064
@@ -83,6 +88,11 @@ BB-073 [RESEARCH_SCHEDULABLE] <- BB-070, BB-072
 BB-074 [RESEARCH_SCHEDULABLE] <- BB-071, BB-073
 BB-075 [RESEARCH_SCHEDULABLE] <- BB-074, BB-059
 BB-076 [RESEARCH_SCHEDULABLE] <- BB-074, BB-075
+BB-077 [RESEARCH_SCHEDULABLE] <- ROOT
+BB-078 [RESEARCH_SCHEDULABLE] <- BB-077
+BB-079 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078
+BB-080 [RESEARCH_SCHEDULABLE] <- BB-078, BB-079
+BB-081 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080
 ```
 
 ## Context semantics
