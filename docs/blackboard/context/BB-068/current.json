@@ -16,7 +16,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-068.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
-  "planHash": "8199758749c014c14a115a5b1e21be4384f6247b2e3e5e1d4708da26a8d14d1d",
+  "planHash": "e2bf5a25b29c6fd518bff549a28701cd51ddadb352d9944fd72ac1939990b15f",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -58,15 +58,24 @@
   ],
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/execution-capability-gateway.js",
+      "packages/agentic-system/src/scm-review-delivery.js",
+      "packages/agentic-system/src/github-scm-provider.js",
+      "packages/agentic-system/test/bb068-*.test.js",
+      "scripts/delivery/bb-066-probe.mjs",
+      "scripts/delivery/bb-067-probe.mjs",
+      "scripts/delivery/bb-068-probe.mjs",
+      "scripts/delivery/baseline/**",
+      "test/delivery/bb-068-live-contract.test.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-067.json",
       "docs/blackboard/process/delivery-research/BB-068.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
     ],
     "write": [],
     "forbiddenWrite": [
@@ -75,46 +84,88 @@
   },
   "executionSourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/execution-capability-gateway.js",
+      "packages/agentic-system/src/scm-review-delivery.js",
+      "packages/agentic-system/src/github-scm-provider.js",
+      "packages/agentic-system/test/bb068-*.test.js",
+      "scripts/delivery/bb-066-probe.mjs",
+      "scripts/delivery/bb-067-probe.mjs",
+      "scripts/delivery/bb-068-probe.mjs",
+      "scripts/delivery/baseline/**",
+      "test/delivery/bb-068-live-contract.test.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-066.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-067.json",
       "docs/blackboard/process/delivery-research/BB-068.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "packages/agentic-system/src/scm-review-delivery.js",
+      "packages/agentic-system/src/github-scm-provider.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb068-scm-review-delivery.test.js",
+      "packages/agentic-system/test/bb068-github-scm-provider.test.js",
+      "scripts/delivery/bb-068-probe.mjs",
+      "test/delivery/bb-068-live-contract.test.mjs",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/openhands-runtime-adapter.js",
+      "packages/agentic-system/src/execution-capability-gateway.js",
+      "scripts/delivery/baseline/**",
+      "package.json"
     ]
   },
   "artifactWriteScope": [
     "docs/blackboard/artifacts/ready-implement-plan/BB-068.json"
   ],
   "hardInvariants": [
-    "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
-    "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
-    "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
+    "SCM effect identity and exact provider state are evidence; provider success is not product acceptance or merge authority.",
+    "Every review/CI decision binds repository, base SHA, candidate head SHA/tree, changed paths, provider review identity and exact check-run identities.",
+    "Unknown or ambiguous external effects reconcile by read-after-write discovery or BLOCKED; blind mutation retry is forbidden.",
+    "Only CI evidence whose head SHA equals the current candidate head can satisfy that candidate; prior/stale checks remain evidence only.",
+    "Repository credentials and mutation capability remain outside the sandbox and are constrained by the BB-067 host capability grant.",
+    "The outer Blackboard coordinates ExHarness development only; product-runtime SCM effects use runtime/application contracts."
   ],
   "verification": [
+    {
+      "id": "unit-provider",
+      "command": "node --test packages/agentic-system/test/bb068-github-scm-provider.test.js"
+    },
+    {
+      "id": "unit-delivery",
+      "command": "node --test packages/agentic-system/test/bb068-scm-review-delivery.test.js"
+    },
+    {
+      "id": "domain-regression",
+      "command": "node --test packages/agentic-system/test/bb048-domain-execution-control.test.js"
+    },
     {
       "id": "live-probe",
       "command": "node scripts/delivery/bb-068-probe.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-068.test.mjs"
+      "id": "live-contract",
+      "command": "node --test test/delivery/bb-068-live-contract.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository-verify",
+      "command": "npm run verify"
     }
   ],
   "expectedOutputs": [
