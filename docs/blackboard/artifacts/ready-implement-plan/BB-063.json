@@ -300,17 +300,15 @@
   ],
   "researchGaps": [],
   "negativeVerificationCases": [
-    "Protected checkpoint has artifactManifestRef but QA proceeds through an ordinary reader or a different manifest.",
-    "Manifest validation checks content only and drops producer, revision, acceptance, availability or stored-revision identity.",
-    "Fresh-process test reuses an in-memory manifest, reader/store/workflow instance or producer bytes.",
+    "Protected checkpoint proceeds without forManifest(exactRef), or silently falls back to direct reads.",
+    "Any producer/revision/acceptance/stored-revision/availability/content check is dropped.",
+    "Fresh-process proof reuses an in-memory manifest, store, reader, workflow or producer bytes.",
     "Publication failure advances to QA_PENDING, or post-QA_PENDING source failure reruns Backend.",
-    "Recovered acceptance with changed policy/evaluator/subject/evidence/claim/verdict metadata reuses an orphan receipt.",
-    "Extraction rewrites sourceRef, artifact ref/path, completion decision or manifest ref.",
-    "Direct mode starts requiring manifest configuration, or protected mode silently downgrades to direct.",
-    "Legacy manifest-<digest>.json files become unreadable after publication-slot migration.",
-    "packages/oracle imports artifact-manifest, durable-backend-qa, Application/Core schemas or recovery/acceptance code.",
-    "Tests claim crash-safe storage or production reliability beyond ordinary persisted filesystem semantics.",
-    "BB-062 is not DONE or its delivered topology contradicts the expected seam and implementation proceeds."
+    "Changed acceptance semantics reuse an orphan receipt.",
+    "Extraction rewrites sourceRef, artifact/manifest refs or persisted decisions.",
+    "Legacy manifest files become unreadable or packages/oracle imports manifest/recovery/Application code.",
+    "Tests overclaim power-loss or production-store durability.",
+    "BB-062 is not DONE/contradicts the seam and work proceeds."
   ],
   "laneContracts": [
     {
@@ -519,16 +517,10 @@
         {
           "ref": "packages/agentic-system/src/durable-backend-qa.js",
           "match": "export function createDurableBackendQaWorkflow({"
-        },
-        {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "export async function resolveQaContext(rawOrder, { artifactReader })"
         }
       ],
       "supportingPlanFields": [
-        "durabilityTopologyContract",
-        "dependencyContract",
-        "migrationContract"
+        "durabilityTopologyContract"
       ]
     },
     {
@@ -563,16 +555,10 @@
         {
           "ref": "packages/agentic-system/src/artifact-manifest.js",
           "match": "if (contentDigest(content) !== candidate.entry.contentDigest)"
-        },
-        {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "qa context resolution failed for ${artifact.ref} from application artifact store: ${detail}"
         }
       ],
       "supportingPlanFields": [
-        "durabilityTopologyContract",
-        "recoveryContract",
-        "negativeVerificationCases"
+        "durabilityTopologyContract"
       ]
     },
     {
@@ -606,16 +592,10 @@
         {
           "ref": "packages/agentic-system/src/durable-backend-qa.js",
           "match": "artifactRefsFromAcceptedBackend(checkpoint.acceptedBackend)"
-        },
-        {
-          "ref": "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
-          "match": "BB-045 fresh protected QA uses manifest-aware reader and submits exact manifest ref"
         }
       ],
       "supportingPlanFields": [
-        "recoveryContract",
-        "compatibilityContract",
-        "migrationContract"
+        "recoveryContract"
       ]
     },
     {
@@ -651,16 +631,10 @@
         {
           "ref": "packages/agentic-system/src/durable-backend-qa.js",
           "match": "const manifestPublisher = normalizeArtifactManifestPublisher(artifactManifestPublisher);"
-        },
-        {
-          "ref": "packages/agentic-system/src/index.js",
-          "match": "export {\n  resolveBackendContext,\n  resolveQaContext\n} from \"./oracle.js\";"
         }
       ],
       "supportingPlanFields": [
-        "compatibilityContract",
-        "migrationContract",
-        "deliveryContract"
+        "compatibilityContract"
       ]
     },
     {
@@ -701,16 +675,10 @@
         {
           "ref": "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
           "match": "BB-045 orphan manifest is idempotently recovered after Board checkpoint interruption"
-        },
-        {
-          "ref": "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
-          "match": "BB-045 changed payload after QA_PENDING blocks QA without reopening Backend execution"
         }
       ],
       "supportingPlanFields": [
-        "recoveryContract",
-        "negativeVerificationCases",
-        "ciContract"
+        "recoveryContract"
       ]
     }
   ],
