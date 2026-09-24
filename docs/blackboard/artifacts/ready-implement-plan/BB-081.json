@@ -1,0 +1,213 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-081",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-081.json",
+    "hash": "f7ef8cbfc2a5bfdeafb32b85a01b1408ff80874962fcbbba359b7aa0f1022165"
+  },
+  "scope": [
+    "core.harness-efficiency-acceptance",
+    "core.matched-benchmark",
+    "core.profile-promotion",
+    "core.regression-guard"
+  ],
+  "outOfScope": [
+    "Changing product WHAT or acceptance semantics to make an efficiency candidate pass.",
+    "Replacing Application domain authority, Oracle source ownership, Jev/QA judgment authority or EffectOperation truth.",
+    "Adopting Unreal Agent wholesale or treating its benchmark as ExHarness acceptance evidence."
+  ],
+  "constraints": [
+    "Baseline and candidate use exact same model/version, task inputs, tool budget, source and acceptance semantics.",
+    "Accepted quality cannot be traded away silently for token savings; the non-inferiority bound and cost gate are fixed before results.",
+    "All attempts, failures, retries and human interventions are reported; selected successful runs cannot decide promotion.",
+    "Promotion changes only a versioned HOW/execution profile; it does not alter product acceptance or external-effect authority."
+  ],
+  "invariants": [
+    "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+    "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+    "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
+  ],
+  "architectureDecisions": [
+    "Treat async-first execution as a candidate HOW profile; promote only from matched ExHarness evidence.",
+    "Use independent acceptance evidence and fixed task semantics; vendor benchmarks and producer-authored success do not decide promotion.",
+    "Make KEEP_SYNC_BASELINE a valid outcome when savings are absent, provider compatibility is poor or quality/recovery regresses."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "packages/core-harness/src/context.js",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/core-harness/test/bb-081-async-efficiency.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "scripts/**",
+      "benchmarks/**",
+      "docs/living/**",
+      "docs/blackboard/process/harness-efficiency-phase.md"
+    ],
+    "write": [
+      "packages/core-harness/**",
+      "scripts/**",
+      "benchmarks/**",
+      "docs/living/system/core-harness/**"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "Research current synchronous Core and pinned public references; isolate the smallest reusable mechanism and measurable gap.",
+    "Define exact durable contracts, provider/runtime boundaries, negative cases and compatibility fallback before implementation.",
+    "Implement or retain baseline only after a matched probe can distinguish quality, cost/token, turn, cache and recovery outcomes."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "Held-out matched runs report accepted quality, total/provider input-output-cached tokens, cost, model turns, tool calls, useful operations per turn, overlap, elapsed time and recovery outcomes.",
+      "verificationIds": [
+        "core-probe"
+      ],
+      "evidenceRequired": [
+        "Exact matched runtime evidence and raw failure/retry records."
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "The candidate passes a predeclared quality non-regression bound and cost/token improvement gate or the decision is KEEP_SYNC_BASELINE.",
+      "verificationIds": [
+        "core-probe"
+      ],
+      "evidenceRequired": [
+        "Exact matched runtime evidence and raw failure/retry records."
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "No duplicate external effects, lost terminal results, unsafe cancellation or recovery regressions occur in negative probes.",
+      "verificationIds": [
+        "core-probe"
+      ],
+      "evidenceRequired": [
+        "Exact matched runtime evidence and raw failure/retry records."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "Negative/boundary evidence proving the authority and recovery invariant."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "Negative/boundary evidence proving the authority and recovery invariant."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "Negative/boundary evidence proving the authority and recovery invariant."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "criterionIds": [
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "criterionIds": [
+        "INV-3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "core-probe",
+      "command": "node --test packages/core-harness/test/bb-081-async-efficiency.test.js"
+    },
+    {
+      "id": "boundary-probe",
+      "command": "npm run test:core"
+    }
+  ],
+  "researchGaps": [
+    "Ratify exact held-out task set, sample size, non-inferiority bound and cost/token threshold before running candidate comparisons.",
+    "Define independent acceptance and failure accounting for matched runs.",
+    "Define the supported profile publication seam and rollback to synchronous execution."
+  ],
+  "negativeVerificationCases": [
+    "A detached operation causes a duplicate non-idempotent external effect after restart or concurrent wakeup.",
+    "A token/cost win is accepted despite degraded fixed quality or missing failed-attempt accounting.",
+    "Prompt text, traces or provider cache state are used as external-effect or product-acceptance authority."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-081 objective + harness-efficiency phase + current Core seams + pinned public evidence",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product mutation",
+        "vendor-benchmark-as-proof",
+        "planned capability as delivered truth"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE direct dependencies",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "forbidden": [
+        "redefine fixed benchmark semantics",
+        "self-acceptance",
+        "unsafe effect replay"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "BB-081 Living Docs describe only the implemented and independently verified async-efficiency behavior, fallback and recovery limitations."
+  }
+}

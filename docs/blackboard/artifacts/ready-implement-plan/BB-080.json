@@ -1,0 +1,213 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-080",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-080.json",
+    "hash": "ac4fbd090b83442adcb2ade8a324a9fe0aa7fed323d18e9639e61a45e4488f78"
+  },
+  "scope": [
+    "core.async-steering",
+    "core.event-coalescing",
+    "core.cancellation",
+    "core.async-recovery"
+  ],
+  "outOfScope": [
+    "Changing product WHAT or acceptance semantics to make an efficiency candidate pass.",
+    "Replacing Application domain authority, Oracle source ownership, Jev/QA judgment authority or EffectOperation truth.",
+    "Adopting Unreal Agent wholesale or treating its benchmark as ExHarness acceptance evidence."
+  ],
+  "constraints": [
+    "At most one model generation is active per agent invocation/session unless a future explicit concurrency contract is added.",
+    "Multiple operation updates may be coalesced, but no terminal result or user input may be lost or reordered across its declared causality boundary.",
+    "User steering and stop requests must preempt new dispatch and remain durable across restart where the runtime supports persistence.",
+    "Recovery must derive pending work from durable operation/effect state, not traces or model prose."
+  ],
+  "invariants": [
+    "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+    "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+    "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
+  ],
+  "architectureDecisions": [
+    "Use one event loop per invocation/session with operation-update and user-input wakeups while retaining the existing one-model-in-flight invariant.",
+    "Coalesce a bounded burst of operation completions before calling the model again unless user input requires earlier wakeup.",
+    "Recover from durable operation/effect records; a lost process wakeup is reconstructed, never guessed."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "packages/core-harness/src/context.js",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/core-harness/test/bb-080-async-efficiency.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "scripts/**",
+      "benchmarks/**",
+      "docs/living/**",
+      "docs/blackboard/process/harness-efficiency-phase.md"
+    ],
+    "write": [
+      "packages/core-harness/**",
+      "scripts/**",
+      "benchmarks/**",
+      "docs/living/system/core-harness/**"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "Research current synchronous Core and pinned public references; isolate the smallest reusable mechanism and measurable gap.",
+    "Define exact durable contracts, provider/runtime boundaries, negative cases and compatibility fallback before implementation.",
+    "Implement or retain baseline only after a matched probe can distinguish quality, cost/token, turn, cache and recovery outcomes."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "User input received while tools run is accepted and causes bounded next-turn behavior without waiting for unrelated long operations.",
+      "verificationIds": [
+        "core-probe"
+      ],
+      "evidenceRequired": [
+        "Exact matched runtime evidence and raw failure/retry records."
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "Near-simultaneous terminal updates are deterministically coalesced so they do not create an avoidable model-turn storm.",
+      "verificationIds": [
+        "core-probe"
+      ],
+      "evidenceRequired": [
+        "Exact matched runtime evidence and raw failure/retry records."
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "Kill/restart and stop/cancel probes preserve exact pending-operation identity, do not duplicate effects and converge to terminal/reconcilable state.",
+      "verificationIds": [
+        "core-probe"
+      ],
+      "evidenceRequired": [
+        "Exact matched runtime evidence and raw failure/retry records."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "Negative/boundary evidence proving the authority and recovery invariant."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "Negative/boundary evidence proving the authority and recovery invariant."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "Negative/boundary evidence proving the authority and recovery invariant."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "criterionIds": [
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "criterionIds": [
+        "INV-3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "core-probe",
+      "command": "node --test packages/core-harness/test/bb-080-async-efficiency.test.js"
+    },
+    {
+      "id": "boundary-probe",
+      "command": "npm run test:core"
+    }
+  ],
+  "researchGaps": [
+    "Define deterministic event ordering and coalescing window semantics without delaying interactive steering excessively.",
+    "Define model-cancel behavior when user steering arrives during generation.",
+    "Specify restart reconstruction for scheduled-but-not-yet-dispatched and dispatched-but-not-terminal operations."
+  ],
+  "negativeVerificationCases": [
+    "A detached operation causes a duplicate non-idempotent external effect after restart or concurrent wakeup.",
+    "A token/cost win is accepted despite degraded fixed quality or missing failed-attempt accounting.",
+    "Prompt text, traces or provider cache state are used as external-effect or product-acceptance authority."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-080 objective + harness-efficiency phase + current Core seams + pinned public evidence",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product mutation",
+        "vendor-benchmark-as-proof",
+        "planned capability as delivered truth"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE direct dependencies",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "forbidden": [
+        "redefine fixed benchmark semantics",
+        "self-acceptance",
+        "unsafe effect replay"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "BB-080 Living Docs describe only the implemented and independently verified async-efficiency behavior, fallback and recovery limitations."
+  }
+}
