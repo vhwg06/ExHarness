@@ -21,14 +21,14 @@ next-work-id: BB-077
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: BB-063
+  active: NONE
 
 WORKER
   active: NONE
@@ -36,14 +36,7 @@ WORKER
 
 ## Active work
 
-
-BB-063
-task: Preserve Oracle provenance durability and migration compatibility
-lane: RESEARCH_SA
-phase: RESEARCH
-current-context: docs/blackboard/context/BB-063/current.json
-components: oracle/infrastructure
-worker: codex-research-bb063
+NONE
 
 ## Schedulable tasks
 
@@ -77,7 +70,7 @@ BB-059 [RESEARCH_SCHEDULABLE] <- BB-058
 BB-060 [WORKER_SCHEDULABLE] <- ROOT
 BB-061 [BLOCKED_BY BB-060] <- BB-060
 BB-062 [BLOCKED_BY BB-061] <- BB-061
-BB-063 [ACTIVE] <- BB-062
+BB-063 [BLOCKED_BY BB-062] <- BB-062
 BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
 BB-065 [WORKER_SCHEDULABLE] <- ROOT
 BB-066 [BLOCKED_BY BB-065] <- BB-065, BB-048
