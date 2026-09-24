@@ -485,11 +485,6 @@
           "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
           "match": "Integration J — one real evolutionary loop"
         }
-      ],
-      "supportingPlanFields": [
-        "evaluationProtocolContract",
-        "metricPolicyContract",
-        "researchBasis"
       ]
     },
     {
@@ -515,10 +510,6 @@
           "ref": "docs/living/reference/architecture/trust-pipeline.md",
           "match": "evaluateTrustBoundary()"
         }
-      ],
-      "supportingPlanFields": [
-        "jevAdapterContract",
-        "durabilityContract"
       ]
     },
     {
@@ -546,10 +537,6 @@
           "ref": "docs/living/system/agentic-application/self-upgrade.md",
           "match": "adoptionAuthority: false"
         }
-      ],
-      "supportingPlanFields": [
-        "authorityContract",
-        "jevAdapterContract"
       ]
     },
     {
@@ -578,10 +565,6 @@
           "ref": "docs/living/system/agentic-application/self-upgrade.md",
           "match": "PROPOSE_FOR_REVIEW"
         }
-      ],
-      "supportingPlanFields": [
-        "metricPolicyContract",
-        "authorityContract"
       ]
     },
     {
@@ -609,9 +592,6 @@
           "ref": "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
           "match": "in-flight/recovered old attempt"
         }
-      ],
-      "supportingPlanFields": [
-        "promotionContract"
       ]
     },
     {
@@ -637,10 +617,6 @@
           "ref": "packages/core-harness/src/evaluation-freshness.js",
           "match": "assertEvaluationInputsFresh"
         }
-      ],
-      "supportingPlanFields": [
-        "promotionContract",
-        "evaluationProtocolContract"
       ]
     },
     {
@@ -665,10 +641,6 @@
           "ref": "docs/living/system/agentic-application/self-upgrade.md",
           "match": "rollback target equal to the accepted baseline"
         }
-      ],
-      "supportingPlanFields": [
-        "rollbackContract",
-        "durabilityContract"
       ]
     },
     {
@@ -697,10 +669,6 @@
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
           "match": "Deleting cached observation projections"
         }
-      ],
-      "supportingPlanFields": [
-        "durabilityContract",
-        "migrationContract"
       ]
     }
   ],
@@ -863,13 +831,12 @@
     "replay": "Re-evaluation requires the original protocol/scenario/evaluator/evidence identities; any drift creates a new protocol/evaluation rather than mutating old evidence."
   },
   "deliveryContract": {
-    "precondition": "BB-058 must be DONE for WORKER execution; research may use its READY contract only as PLANNED_DEPENDENCY evidence.",
-    "candidate": "Only the narrow HOW-evolution boundary, Jev adapter, exact tests, exports and synchronized Living Docs authorized by sourceScope.",
-    "completion": "All criterion-specific tests plus npm run test:agentic and npm run verify pass; evidence proves one end-to-end finding -> paired eval -> proposal -> independent promotion/keep-baseline path and rollback/currentness negatives.",
-    "forbidden": "No generic optimizer, WHAT mutation, self-acceptance, outer-Blackboard authority import, self-upgrade-pilot rewrite or direct policy-head mutation."
+    "precondition": "BB-058 DONE before WORKER execution; its causal observation is evidence only.",
+    "completion": "Criterion-specific tests + agentic regression + repository verify; independent Jev judgment remains required.",
+    "forbidden": "No WHAT mutation, generic optimizer, self-acceptance, pilot rewrite or direct policy-head mutation."
   },
   "ciContract": {
-    "requiredChecks": [
+    "checks": [
       "how-evolution-evaluation",
       "how-evolution-jev-adapter",
       "how-evolution-promotion",
@@ -879,21 +846,20 @@
       "agentic-regression",
       "repository-verify"
     ],
-    "externalEvaluator": "Real Jev tests require TYPESAFE_API_KEY outside the repository; deterministic adapter tests use injected fake transport and still validate exact request/response/currentness contracts.",
-    "failurePolicy": "Provider unavailability cannot be converted into SATISFIED; live-evaluator evidence is required wherever the acceptance criterion claims a Jev-backed semantic decision."
+    "liveJev": "Real semantic Jev evidence requires TYPESAFE_API_KEY outside repo; transport/model failure is INCONCLUSIVE."
   },
   "migrationContract": {
-    "preserved": [
-      "bounded self-upgrade pilot semantics and artifacts",
-      "existing ExecutionPolicyHead publisher/currentness store",
-      "existing ExecutionAttemptBinding recovery semantics",
-      "outer Blackboard Jev gate remains separate development authority"
+    "preserve": [
+      "self-upgrade pilot",
+      "ExecutionPolicy publisher/CAS",
+      "ExecutionAttemptBinding recovery",
+      "outer Blackboard Jev authority"
     ],
-    "additive": [
+    "add": [
       "how-evolution.js",
       "how-evolution-jev-adapter.js",
-      "HOW evolution immutable artifacts and tests"
+      "immutable HOW-evolution artifacts/tests"
     ],
-    "rollback": "Revert additive HOW-evolution boundary/export/docs without rewriting existing domain execution or self-upgrade history."
+    "rollback": "Revert additive HOW-evolution module/export/docs only; do not rewrite existing execution history."
   }
 }
