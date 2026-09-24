@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-079",
+  "outcome": "Model-visible async operation progress and final results are delivered without unnecessary prompt-prefix rewrites or cache invalidation.",
+  "currentProblem": "Async operations only save model cost if their state can be surfaced without repeatedly rebuilding or mutating old prompt history. ExHarness has bounded context rendering but no committed-prefix/staged-suffix contract for RUNNING-to-terminal tool results.",
+  "scope": [
+    "core.context-efficiency",
+    "core.async-result-delivery",
+    "core.prompt-cache-stability",
+    "core.provider-compatibility"
+  ],
+  "constraints": [
+    "Canonical operation/effect state must not be inferred from prompt text.",
+    "Earlier committed prompt content must not be rewritten solely to update a running operation.",
+    "Provider-specific multiple-result behavior must be capability-checked; unsupported semantics require an explicit compatible encoding or synchronous fallback.",
+    "Cache metrics are observational optimization evidence, never correctness authority."
+  ],
+  "successCriteria": [
+    "A RUNNING operation can be surfaced once and its later terminal result appended/advanced without rewriting unrelated committed history.",
+    "Repeated equivalent turns preserve a stable prefix/cache key where the provider supports caching, with cache-hit/input-token evidence captured when available.",
+    "Providers that reject progressive tool-result semantics follow an explicit tested fallback without corrupting tool-call/result pairing."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/harness-efficiency-phase.md",
+    "docs/living/system/core-harness/state.md",
+    "docs/living/system/core-harness/workflow.md",
+    "packages/core-harness/src/agent-runtime.js",
+    "packages/core-harness/src/action-effect.js",
+    "packages/core-harness/src/effect-reconciliation.js"
+  ]
+}
