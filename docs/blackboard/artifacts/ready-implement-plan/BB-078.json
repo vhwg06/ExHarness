@@ -1,0 +1,492 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-078",
+  "status": "READY",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-078.json",
+    "hash": "9ff08432c8ad14b363dc9c2040a9f0583ee28dc4fb932c9fd1612e9c3d079143"
+  },
+  "scope": [
+    "core.async-operations",
+    "core.effect-identity",
+    "core.operation-manager",
+    "core.event-delivery"
+  ],
+  "outOfScope": [
+    "Changing product WHAT or acceptance semantics to make an efficiency candidate pass.",
+    "Replacing Application domain authority, Oracle source ownership, Jev/QA judgment authority or EffectOperation truth.",
+    "Adopting Unreal Agent wholesale or treating its benchmark as ExHarness acceptance evidence."
+  ],
+  "constraints": [
+    "Async scheduling is transport/scheduling only; EffectOperation remains the authority for external-effect identity and confirmation.",
+    "Detached execution must never permit duplicate non-idempotent effects after restart, cancellation or concurrent wakeup.",
+    "Existing synchronous capability behavior remains supported as a baseline/fallback.",
+    "Operation handles and terminal updates must be deterministic, durable enough for recovery and attributable to exact call/turn/action intent."
+  ],
+  "invariants": [
+    "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+    "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+    "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
+  ],
+  "architectureDecisions": [
+    "D1 — Add a Core `createDetachedOperationManager()` plus `manager.capability(name)` wrapper around already-defined effect capabilities. Do not add a second AgentRuntime loop: the existing `invoke()` still awaits capability.execute, but the detached wrapper returns only after the operation record is durably RUNNING; the underlying effect continues independently. BB-080 owns wakeup/steering integration.",
+    "D2 — Each manager is bound to one explicit operation scope and a revision-aware operation store. A durable operation record binds `operationId`, capability name, exact input digest/snapshot, effectOperationId, callId, turn, trace, actionIntentRef/deliberationRef when present, replay policy, generation and protocol version. Reusing an operationId with a different binding fails closed.",
+    "D3 — Scheduling state is transport truth only: RUNNING, CANCEL_REQUESTED, SUCCEEDED, FAILED, CANCELLED or UNKNOWN. Every transition is compare-and-set by persisted revision plus generation. A terminal transition is immutable. `EffectOperation` remains semantic side-effect truth with INTENDED, DISPATCHED, CONFIRMED and UNKNOWN; scheduler status can never confirm an effect by itself.",
+    "D4 — Reuse the existing revision-aware `sessionStore.load/save(expectedRevision)` contract for the first durable adapter rather than inventing a database dependency. Store all records for one operation scope in a dedicated manager state document so creation, generation fencing and monotonic transition sequence are one CAS domain. Provide an in-memory adapter only for deterministic tests; production durability is supplied by the caller's existing SessionStore implementation.",
+    "D5 — The manager registry pairs each detachable effect capability with the exact journal used by `defineEffectCapability`. Before launch, the wrapper computes the existing `effect.operationKey()` and persists that effectOperationId in the scheduling record. Recovery reads that exact journal record; it never derives a replacement semantic effect id from scheduler state.",
+    "D6 — Recovery mapping is fixed. If EffectOperation is CONFIRMED, scheduler converges to SUCCEEDED with the confirmed result. If absent or INTENDED, a current generation may execute the exact capability because no external dispatch is recorded. DISPATCHED/UNKNOWN must call `reconcileEffectOperation()`: CONTINUE -> SUCCEEDED; RETRY may execute only the same effectOperationId under the replay policy and only when cancellation is not fenced; ESCALATE -> scheduler UNKNOWN. No recovery path creates a new semantic operation key.",
+    "D7 — Generation is the scheduler fencing token. Initial schedule writes generation 1 before launching. `recover()`/takeover CAS-increments generation before any work; late callbacks from older generations may record diagnostic evidence but cannot write RUNNING/terminal state or emit an authoritative terminal transition. Concurrent recover calls yield one current generation.",
+    "D8 — Cancellation is a durable fence, not an assertion that an external effect was undone. Before external DISPATCH, all policies may become CANCELLED and no launch/retry is permitted. After DISPATCH: PURE may become CANCELLED once the local attempt is fenced/aborted because no external side effect exists; IDEMPOTENT cannot be called CANCELLED from idempotence alone and remains UNKNOWN unless completion is confirmed; OBSERVABLE may become SUCCEEDED when observation confirms the effect, or CANCELLED only after the in-flight attempt is settled/fenced and observation proves the desired effect absent; NON_RECONCILABLE becomes UNKNOWN/ESCALATE. A CONFIRMED effect always wins a racing cancel as SUCCEEDED.",
+    "D9 — Cancellation delivery uses AbortController/AbortSignal as a cooperative transport hint passed in runtime, but authority stays in durable records. A non-cooperating processor cannot be relabelled CANCELLED merely because abort was requested. No new dispatch or retry may start after CANCEL_REQUESTED for the current or later generation.",
+    "D10 — Operation updates are durable transition envelopes with monotonically increasing sequence and deterministic transitionId. Delivery to observers is at-least-once; consumers deduplicate by transitionId. Exactly one immutable terminal state/result exists in the store even if notifications repeat. BB-079 may project these updates into cache-stable context; BB-080 may wake the model from them.",
+    "D11 — Keep the existing synchronous capability registration as explicit fallback: only capabilities wrapped through `manager.capability(name)` detach. A runtime/profile can mix synchronous and detached capabilities without changing effect identity or acceptance semantics.",
+    "D12 — Public comparison evidence is architectural only. BullMQ at 736262fd07ec08e497f254181b7f3bbdb7b269c7 is an eligible >=1,000-star reference for lock/fencing-style worker ownership and cooperative AbortSignal cancellation; Restate at 9e3008a54086ef3acfd9720883fc6ff71c73b3ce is an eligible >=1,000-star reference for durable invocation status, attach/recovery and cancellation distinctions. Unreal Agent remains a below-threshold vendor reference only. None is a runtime dependency and none proves ExHarness efficiency."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/avo-action-effect.js",
+      "packages/core-harness/src/store.js",
+      "packages/core-harness/src/persistence.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/test/effect-reconciliation.test.js",
+      "packages/core-harness/test/action-intent-effect-recovery.test.js",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md",
+      "docs/blackboard/process/harness-efficiency-phase.md"
+    ],
+    "expectedNew": [
+      "packages/core-harness/src/detached-operation.js",
+      "packages/core-harness/src/detached-operation-store.js"
+    ],
+    "expectedTests": [
+      "packages/core-harness/test/detached-operation.test.js",
+      "packages/core-harness/test/detached-operation-recovery.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/core-harness/src/**",
+      "packages/core-harness/test/**",
+      "docs/living/system/core-harness/**",
+      "docs/blackboard/process/harness-efficiency-phase.md"
+    ],
+    "write": [
+      "packages/core-harness/src/detached-operation.js",
+      "packages/core-harness/src/detached-operation-store.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/test/detached-operation.test.js",
+      "packages/core-harness/test/detached-operation-recovery.test.js",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**",
+      "packages/agentic-system/**",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/avo-action-effect.js",
+      "packages/core-harness/src/store.js",
+      "packages/core-harness/src/persistence.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Implement the session-backed detached-operation store with scope identity, CAS revision, transition sequence, generation fencing, immutable terminal states and deterministic transition IDs. Add conflict/takeover/terminal-replay tests before any executor integration.",
+    "S2 — Implement `createDetachedOperationManager({ store, effectBindings })` and `manager.capability(name)`. The wrapper computes the existing effect operation key, persists the exact binding as RUNNING, launches only after durability, returns the handle immediately and passes an AbortSignal plus scheduler binding to the underlying effect capability runtime.",
+    "S3 — Implement completion and recovery over the existing effect journal/reconciliation contract. Cover absent/INTENDED, DISPATCHED, UNKNOWN and CONFIRMED mappings; prove two manager instances or concurrent recover calls never dispatch a second NON_RECONCILABLE semantic effect and stale generations cannot commit terminal state.",
+    "S4 — Implement durable cancellation fencing and the replay-policy matrix. Cover cancel-before-dispatch, cancel-vs-confirm race, non-cooperating AbortSignal, IDEMPOTENT ambiguity, OBSERVABLE satisfied/unsatisfied/observer-failure, PURE cancellation and NON_RECONCILABLE escalation.",
+    "S5 — Export the new manager/store through the public Core surface and document supported behavior/fallback/recovery limits in Living Docs. Run full Core regression to prove synchronous capability behavior and existing effect/action-intent semantics are unchanged. Do not claim cost/token improvement in BB-078."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "DETACH",
+      "statement": "A detachable effect capability durably records a RUNNING handle before background launch, returns that handle without waiting for the long effect, permits unrelated synchronous/detached capability work to proceed, and later exposes exactly one immutable terminal result.",
+      "verificationIds": [
+        "detached-core"
+      ],
+      "evidenceRequired": [
+        "Deterministic delayed-capability timeline proving handle return precedes effect completion; durable store snapshot; unrelated call completion; one terminal record/transition despite repeated reads/notifications."
+      ]
+    },
+    {
+      "id": "RECOVERY",
+      "statement": "Manager recreation or concurrent recovery binds the exact existing effectOperationId and generation; confirmed work is reused, ambiguous work goes through existing reconciliation, and no recovery path silently dispatches a second NON_RECONCILABLE semantic effect.",
+      "verificationIds": [
+        "detached-recovery",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Restart/takeover fixtures for absent, INTENDED, DISPATCHED, UNKNOWN and CONFIRMED effect states; concurrent takeover fence; dispatch counters and exact operation ids."
+      ]
+    },
+    {
+      "id": "CANCEL",
+      "statement": "Cancellation is persisted before acting, fences every later dispatch/retry, and follows the fixed replay-policy matrix: safe pre-dispatch cancellation, PURE cooperative cancellation, IDEMPOTENT ambiguity remains UNKNOWN unless confirmed, OBSERVABLE resolves only from settled+observed truth, and NON_RECONCILABLE post-dispatch cancellation escalates UNKNOWN.",
+      "verificationIds": [
+        "detached-recovery"
+      ],
+      "evidenceRequired": [
+        "Policy-matrix tests including cancel-before-launch, cancel-vs-confirm race, non-cooperating abort, observation satisfied/absent/error and zero post-cancel dispatch/retry."
+      ]
+    },
+    {
+      "id": "EVENTS",
+      "statement": "Every persisted scheduling transition has monotonic sequence and deterministic transitionId; repeated delivery is deduplicable, stale generations cannot publish authoritative terminal transitions, and one store record has at most one terminal state.",
+      "verificationIds": [
+        "detached-core",
+        "detached-recovery"
+      ],
+      "evidenceRequired": [
+        "Duplicate notification and stale-generation fixtures plus monotonic transition log assertions."
+      ]
+    },
+    {
+      "id": "FALLBACK",
+      "statement": "Unwrapped capabilities retain the existing synchronous AgentRuntime behavior and may coexist with detached wrappers; no AgentRuntime, EffectOperation, ActionIntent or replay-policy source semantics are replaced.",
+      "verificationIds": [
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Existing Core regression plus mixed sync/detached compatibility fixture; changed-path audit limited to authorized files."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "verificationIds": [
+        "detached-core",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "A scheduler SUCCEEDED/terminal value cannot synthesize EffectOperation CONFIRMED or ActionIntent completion; only existing effect/reconciliation authority can supply confirmed effect truth."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "verificationIds": [
+        "detached-recovery"
+      ],
+      "evidenceRequired": [
+        "Binding-mismatch rejection for effectOperationId/capability/input/call/turn/actionIntent and UNKNOWN/ESCALATE evidence for unresolved ambiguity."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "verificationIds": [
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "BB-078 emits no performance promotion or cost/token conclusion; Living Docs mark this as functional scheduling capability pending BB-081 matched evidence."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "criterionIds": [
+        "INV-1",
+        "FALLBACK"
+      ]
+    },
+    {
+      "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "criterionIds": [
+        "INV-2",
+        "RECOVERY",
+        "CANCEL"
+      ]
+    },
+    {
+      "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "criterionIds": [
+        "INV-3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "detached-core",
+      "command": "node --test packages/core-harness/test/detached-operation.test.js"
+    },
+    {
+      "id": "detached-recovery",
+      "command": "node --test packages/core-harness/test/detached-operation-recovery.test.js"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core"
+    }
+  ],
+  "researchGaps": [],
+  "negativeVerificationCases": [
+    "Two manager instances concurrently recover one RUNNING record and both attempt to dispatch a new semantic external effect.",
+    "An older generation completes after takeover and overwrites the current terminal state or emits a second authoritative terminal result.",
+    "A scheduler terminal result marks an EffectOperation confirmed even though the effect journal is DISPATCHED or UNKNOWN.",
+    "Cancellation requested after DISPATCHED is labelled CANCELLED for an IDEMPOTENT or NON_RECONCILABLE effect without confirmed/observable evidence.",
+    "An OBSERVABLE cancellation observes 'not satisfied' while an in-flight attempt is still capable of committing later, yet reports CANCELLED.",
+    "Recovery changes capability, input digest, call/turn/actionIntent binding, replay policy or effectOperationId and still resumes.",
+    "Repeated operation-update delivery is treated as multiple semantic completions.",
+    "Unwrapped synchronous capability behavior changes merely because the detached manager is installed."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-078 objective + harness-efficiency phase + current Core seams + pinned public evidence",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product mutation",
+        "vendor-benchmark-as-proof",
+        "planned capability as delivered truth"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE direct dependencies",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "forbidden": [
+        "redefine fixed benchmark semantics",
+        "self-acceptance",
+        "unsafe effect replay"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "BB-078 Living Docs describe only the implemented and independently verified async-efficiency behavior, fallback and recovery limitations."
+  },
+  "operationContract": {
+    "schemaVersion": 1,
+    "api": [
+      "createSessionDetachedOperationStore({ sessionStore, scopeId })",
+      "createDetachedOperationManager({ store, effectBindings })",
+      "manager.capability(name)",
+      "manager.read(operationId)",
+      "manager.cancel(operationId, { reason })",
+      "manager.recover()",
+      "manager.transitions({ afterSequence })"
+    ],
+    "status": [
+      "RUNNING",
+      "CANCEL_REQUESTED",
+      "SUCCEEDED",
+      "FAILED",
+      "CANCELLED",
+      "UNKNOWN"
+    ],
+    "binding": [
+      "operationId",
+      "scopeId",
+      "capability",
+      "inputDigest",
+      "input",
+      "effectOperationId",
+      "replayPolicy",
+      "callId",
+      "turn",
+      "trace",
+      "actionIntentRef",
+      "deliberationRef",
+      "generation",
+      "protocolVersion"
+    ],
+    "operationId": "Deterministic hash of scopeId + capability + effectOperationId + inputDigest + call/turn/actionIntent binding. Same id with different binding is corruption and fails closed.",
+    "generation": "Every launch/completion is authorized by the persisted current generation. Takeover increments it by CAS before inspecting/reconciling effect truth.",
+    "transitions": "Persist status and append transition envelope in the same CAS. Sequence is monotonic inside the scope; transitionId is derived from operationId+generation+sequence+status. Terminal transition is immutable.",
+    "notifications": "At-least-once only. Polling/wakeup consumers may see a transition more than once and must dedupe by transitionId. The store, not notification count, determines current truth."
+  },
+  "effectMapping": {
+    "ABSENT": "If the scheduler binding is current and not cancellation-fenced, execute exact bound capability; external dispatch cannot have occurred because the effect journal has no operation.",
+    "INTENDED": "Safe to execute the exact same effectOperationId; the existing effect layer will persist DISPATCHED before invoking the external definition.",
+    "DISPATCHED_OR_UNKNOWN": "Never execute directly. Run reconcileEffectOperation on exact capability+journal+effectOperationId. CONTINUE => SUCCEEDED; RETRY => execute exact same operation only when no cancel fence; ESCALATE => UNKNOWN.",
+    "CONFIRMED": "Converge idempotently to SUCCEEDED with the journal-confirmed result even if scheduler was RUNNING/CANCEL_REQUESTED/UNKNOWN.",
+    "schedulerFailure": "FAILED is reserved for deterministic scheduler/pre-dispatch failures where no external effect ambiguity exists. Any unresolved post-DISPATCH outcome is UNKNOWN, not FAILED."
+  },
+  "cancellationContract": {
+    "common": "CAS RUNNING -> CANCEL_REQUESTED before abort/observe. This transition fences all new launches/retries. AbortSignal is cooperative and non-authoritative. CONFIRMED always converges to SUCCEEDED.",
+    "PURE": "If not confirmed, fence/abort local work and converge CANCELLED because replay policy asserts no external side effect; stale completion is generation-fenced.",
+    "IDEMPOTENT": "Before DISPATCH -> CANCELLED. After DISPATCH/UNKNOWN -> do not retry merely because idempotent; settle to SUCCEEDED if confirmed, otherwise UNKNOWN. Idempotence permits safe replay during recovery, not proof that cancellation succeeded.",
+    "OBSERVABLE": "Before DISPATCH -> CANCELLED. After DISPATCH, first fence/settle the active attempt; then observe. satisfied=true -> SUCCEEDED. satisfied=false with active attempt proven settled -> CANCELLED. Observer error or unproven in-flight settlement -> UNKNOWN.",
+    "NON_RECONCILABLE": "Before DISPATCH -> CANCELLED. After DISPATCH/UNKNOWN -> UNKNOWN/ESCALATE; never guess cancellation success."
+  },
+  "researchEvidence": [
+    {
+      "source": "ExHarness research baseline 5f4574b4fb1854e32c89c62a82275187d5e6b080",
+      "finding": "AgentRuntime awaits capability.execute directly. Existing EffectOperation persists INTENDED before DISPATCHED and requires explicit reconciliation after DISPATCHED/UNKNOWN; AVO already demonstrates revision-aware SessionStore persistence for effect-operation state."
+    },
+    {
+      "source": "https://github.com/taskforcesh/bullmq/tree/736262fd07ec08e497f254181b7f3bbdb7b269c7",
+      "eligibility": ">=1,000 stars via GitHub repository search qualifier at research time",
+      "finding": "Eligible reference for durable worker ownership/lock renewal, stalled recovery and cooperative AbortSignal cancellation. Its queue/job lifecycle is not adopted as ExHarness effect authority."
+    },
+    {
+      "source": "https://github.com/restatedev/restate/tree/9e3008a54086ef3acfd9720883fc6ff71c73b3ce",
+      "eligibility": ">=1,000 stars via GitHub repository search qualifier at research time",
+      "finding": "Eligible reference for durable invocation status, attach-to-existing invocation and explicit cancellation/kill distinctions; useful support for separating scheduling state from side-effect truth."
+    },
+    {
+      "source": "https://github.com/unreallabsai/unreal-agent/tree/1b9f778453f411c029b39b85102aaefb95e7e48d",
+      "eligibility": "Below the >=1,000-star public-example threshold at 2026-09-25; vendor/architecture reference only",
+      "finding": "Background operation manager and wake-on-result pattern remains informative but does not satisfy the repository's eligible public-example rule and is not acceptance evidence."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A long-running capability can return a durable RUNNING handle without blocking unrelated strategy work and later publish one terminal result.",
+      "criterionIds": [
+        "DETACH",
+        "EVENTS",
+        "FALLBACK",
+        "INV-1"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S5"
+      ],
+      "verificationIds": [
+        "detached-core",
+        "core-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        8,
+        9,
+        10
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/store.js",
+        "packages/core-harness/src/persistence.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "const output = await capability.execute(parsedInput, runtime);"
+        },
+        {
+          "ref": "packages/core-harness/src/store.js",
+          "match": "supportsRevisions: true"
+        },
+        {
+          "ref": "packages/core-harness/src/persistence.js",
+          "match": "assertPersistedRevision(result, expectedRevision"
+        }
+      ],
+      "supportingPlanFields": [
+        "operationContract",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Restart/recovery reconciles the exact existing effect operation and cannot silently dispatch a second semantic effect.",
+      "criterionIds": [
+        "RECOVERY",
+        "EVENTS",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "detached-recovery",
+        "core-regression"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/effect-reconciliation.js",
+        "packages/core-harness/src/action-effect.js",
+        "packages/core-harness/src/avo-action-effect.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/effect-reconciliation.js",
+          "match": "await journal.markDispatched(operationId);"
+        },
+        {
+          "ref": "packages/core-harness/src/action-effect.js",
+          "match": "throw new EffectRecoveryRequiredError({"
+        },
+        {
+          "ref": "packages/core-harness/src/avo-action-effect.js",
+          "match": "const result = await sessionStore.save(state, { expectedRevision });"
+        }
+      ],
+      "supportingPlanFields": [
+        "operationContract",
+        "effectMapping",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Cancellation fences new work and either cancels safely or leaves an explicit reconcilable/unknown operation state.",
+      "criterionIds": [
+        "CANCEL",
+        "EVENTS",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "detached-recovery"
+      ],
+      "decisionIndexes": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/effect-reconciliation.js",
+        "packages/core-harness/src/action-effect.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/effect-reconciliation.js",
+          "match": "case EffectReplayPolicy.NON_RECONCILABLE:"
+        },
+        {
+          "ref": "packages/core-harness/src/action-effect.js",
+          "match": "EffectOperationStatus.UNKNOWN"
+        }
+      ],
+      "supportingPlanFields": [
+        "effectMapping",
+        "cancellationContract",
+        "researchEvidence"
+      ]
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-078.readiness-jev-evaluation.json"
+}

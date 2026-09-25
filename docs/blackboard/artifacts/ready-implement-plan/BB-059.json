@@ -3,59 +3,61 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-059",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-059.json",
     "hash": "9df1ba8c50c309a4364755c7d8d7d2f7692198918b0df64148c678a270a453d4"
   },
   "scope": [
-    "evolution.causal-finding",
-    "evolution.fixed-work-semantics",
-    "evolution.baseline-candidate",
-    "evolution.jev-evaluator-adapter",
-    "evolution.independent-evaluation",
-    "evolution.promotion-currentness",
-    "evolution.attempt-pinning",
-    "evolution.rollback-provenance"
+    "causal finding",
+    "fixed-WHAT A/B protocol",
+    "Jev evaluator boundary",
+    "independent promotion",
+    "policy currentness",
+    "attempt pinning",
+    "rollback provenance"
   ],
   "outOfScope": [
-    "Changing accepted WHAT, WorkContract semantics, product acceptance criteria or root authority to make a candidate pass.",
-    "Granting Jev direct repository mutation, deployment mutation, product acceptance or automatic promotion authority.",
-    "Generic autonomous optimizer, reinforcement-learning platform, organization-wide A/B experimentation service or telemetry warehouse.",
-    "Retroactively rebinding an existing semantic execution attempt to a newly promoted strategy/policy.",
-    "Treating the outer Blackboard Jev gate as equivalent to internal product/organization acceptance."
+    "Change WHAT/WorkContract/acceptance to make a candidate pass.",
+    "Give Jev or observation mutation/promotion/product-acceptance authority.",
+    "Build a generic optimizer, RL platform, A/B service or telemetry warehouse.",
+    "Rebind an existing attempt to a promoted strategy.",
+    "Treat outer Blackboard Jev as product acceptance."
   ],
   "constraints": [
-    "Jev may produce evaluation evidence/judgment but cannot itself become product acceptance, root authority, work scheduler or automatic promotion authority.",
-    "HOW evolution may change versioned execution strategy/policy/context/tool/model/harness configuration only; accepted WHAT, WorkContract semantics and product acceptance requirements remain fixed for the evaluated subject.",
-    "Baseline, candidate, evaluator identity/policy, scenario set, evidence inputs and semantic subject are immutable and pinned before evaluation.",
-    "Observation from Integration I is evidence input only; causal observation cannot authorize candidate generation, promotion, rollback or product currentness changes.",
-    "Promotion is a separate independently authorized action that publishes a new immutable current policy/strategy generation through existing CAS/currentness semantics.",
-    "Existing ACTIVE/RECOVERY_REQUIRED attempts remain pinned to their original ExecutionAttemptBinding; a promoted HOW version affects only eligible new attempts.",
-    "Evaluation/currentness drift fails closed: changed work semantics, acceptance policy, protocol, evaluator policy or relevant evidence requires re-evaluation before promotion.",
-    "Failed, inconclusive or unauthorized evaluation keeps the accepted baseline current.",
-    "Rollback preserves history and publishes an explicit successor policy/version referencing the exact previously accepted baseline rather than rewriting prior artifacts.",
-    "No generic optimizer, autonomous self-modifying runtime, organization-wide experiment platform or product-truth mutation is required."
+    "Jev evaluates only; it is not scheduler, product acceptance or promotion authority.",
+    "Only versioned HOW may vary; WHAT/WorkContract/acceptance stay fixed.",
+    "Protocol pins baseline, candidate, evaluator/policy, cases, evidence and semantic subject before evaluation.",
+    "Integration-I observation is evidence only and grants no generation/promotion/rollback authority.",
+    "Promotion is independently authorized and uses existing policy generation+1/CAS.",
+    "ACTIVE/RECOVERY_REQUIRED attempts keep their original ExecutionAttemptBinding.",
+    "Semantic/evaluator/protocol/evidence/head drift invalidates promotion and requires reevaluation.",
+    "FAIL/INCONCLUSIVE/unauthorized evaluation keeps baseline current.",
+    "Rollback is a successor generation to an exact prior accepted strategy; history is immutable.",
+    "No generic autonomous optimizer or product-truth mutation."
   ],
   "invariants": [
-    "Evaluation evidence is not promotion authority and promotion authority is not product acceptance authority.",
-    "Baseline and candidate are compared under the same pinned semantic work and acceptance subject; HOW is the only permitted variation.",
-    "Evaluator identity/policy and every evaluation input are immutable, durable and currentness-checked.",
-    "Jev is integrated behind an explicit evaluator adapter/contract and cannot mutate product or execution authority directly.",
-    "Promotion creates a new immutable policy/strategy generation and affects only future eligible attempts.",
-    "Existing ACTIVE/RECOVERY_REQUIRED attempts remain pinned to their original ExecutionAttemptBinding.",
-    "FAIL, INCONCLUSIVE, stale evidence or authority mismatch keeps baseline current.",
-    "Rollback is an auditable successor transition to an exact prior accepted baseline, never history rewrite."
+    "Evaluation evidence != promotion authority != product acceptance authority.",
+    "Baseline/candidate share one fixed semantic and acceptance subject; only HOW varies.",
+    "Evaluator/policy and all evaluation inputs are immutable, durable and freshness-checked.",
+    "Jev is behind an evaluate-only adapter with no product/policy mutation capability.",
+    "Promotion publishes a new immutable policy/strategy generation for future attempts only.",
+    "ACTIVE/RECOVERY_REQUIRED attempts retain their original ExecutionAttemptBinding.",
+    "FAIL/INCONCLUSIVE/stale/unauthorized evaluation leaves baseline current.",
+    "Rollback publishes a successor to an exact prior accepted baseline; it never rewrites history."
   ],
   "architectureDecisions": [
-    "Use Integration I causal reconstruction as a read-only evidence source; introduce a separate HOW-evolution boundary that owns experiment/proposal state but receives no product-acceptance authority.",
-    "Define a fixed evaluation protocol before running a candidate. It pins semantic subject, baseline, candidate, evaluator identity/policy, scenarios, evidence requirements and budgets so the candidate cannot move the goalposts.",
-    "Treat Jev as one concrete implementation of an Evaluator port via a Jev adapter. The adapter must persist exact request/response identity, model/policy identity where available, evidence bindings and freshness metadata; Jev output is evaluation evidence, not an authority shortcut.",
-    "Reuse Core verification/trust/freshness primitives to authenticate evaluator/evidence authority and reject stale evaluation inputs before any promotion proposal is actionable.",
-    "A successful evaluation yields PROPOSE_FOR_PROMOTION or KEEP_BASELINE. Only a separate independent promotion authority may publish a new current ExecutionPolicy/ExecutionStrategy head.",
-    "Promotion reuses existing immutable strategy descriptors and CAS-fenced ExecutionPolicy current-head semantics. New attempts resolve the promoted head; existing semantic attempts keep the binding they already own.",
-    "Rollback is modeled as a new policy/head generation that selects the exact prior accepted strategy/policy refs while preserving experiment, decision and promotion history.",
-    "The research lane must determine whether the production HOW-evolution boundary should extend the existing self-upgrade pilot or be a new application module; no new generic abstraction is accepted without evidence from the current seams."
+    "D1: Add narrow `how-evolution.js`; keep the BB-035 self-upgrade pilot unchanged. Reuse its pinning/independence/budget patterns, not its pilot-specific contract.",
+    "D2: `HOW_EVOLUTION_FINDING` pins Integration-I subject/evidence, domain/workload, baseline policy/strategy and one bounded HOW axis. It is evidence only.",
+    "D3: `HOW_EVOLUTION_EVALUATION_PROTOCOL/v1` pins fixed WHAT/acceptance, finding, baseline/candidate refs+digests, producer, evaluator/policy, case-set digest, metric thresholds, replay/budget, evidence snapshot and expected policy-head tuple.",
+    "D4: Cases are trigger + regression + evaluator-owned holdout. Producer cannot rewrite holdout after protocol creation; baseline/candidate use identical membership.",
+    "D5: Compare paired per-case runs. Hard gates: no new critical failure, policy/evidence completeness, recovery non-regression. Heldout primary metric must meet predeclared minEffect; aggregate gain cannot hide a critical regression.",
+    "D6: Add `how-evolution-jev-adapter.js`: exact model/policy/request/response/evidence identity, typed outcomes, bounded evidence and fail-closed transport/model handling; no mutation methods.",
+    "D7: Reuse trust-boundary + verification-assessment; add HOW-specific freshness over semantic subject, evaluator policy, cases, evidence and expected policy head.",
+    "D8: SATISFIED evaluation creates only a promotion proposal. A distinct promoter revalidates pins/current head, then calls existing `createDomainExecutionPolicyPublisher`; its authority check, generation+1 and CAS remain the only policy-currentness mutation.",
+    "D9: Promotion affects new attempts only; ACTIVE/RECOVERY_REQUIRED attempts reuse their immutable binding.",
+    "D10: Rollback uses the same independent fenced publisher path to create a successor generation selecting an exact prior accepted strategy and linking the reversed promotion/evaluation.",
+    "D11: Findings, protocol, paired runs, Jev receipt, evaluation, proposal and decisions are immutable ref+digest artifacts; mutable heads store only compact current pointers for fresh-process reconstruction."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -69,9 +71,14 @@
       "packages/core-harness/src/trust-boundary.js",
       "packages/agentic-system/src/self-upgrade-pilot.js",
       "packages/agentic-system/src/domain-execution-control.js",
-      "packages/agentic-system/src/domain-execution-store.js"
+      "packages/agentic-system/src/domain-execution-store.js",
+      "packages/agentic-system/src/index.js",
+      "scripts/blackboard-jev.mjs"
     ],
-    "expectedNew": [],
+    "expectedNew": [
+      "packages/agentic-system/src/how-evolution.js",
+      "packages/agentic-system/src/how-evolution-jev-adapter.js"
+    ],
     "expectedTests": [
       "packages/agentic-system/test/how-evolution-evaluation.test.js",
       "packages/agentic-system/test/how-evolution-jev-adapter.test.js",
@@ -87,253 +94,186 @@
       "packages/core-harness/test/**",
       "packages/agentic-system/src/**",
       "packages/agentic-system/test/**",
-      "scripts/**",
-      ".github/workflows/**",
-      "docs/blackboard/**",
+      "scripts/blackboard-jev.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-058*",
       "docs/living/system/agentic-application/**",
       "docs/living/reference/architecture/**",
       "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
     ],
     "write": [
-      "packages/core-harness/src/**",
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/test/**",
-      "scripts/**",
-      ".github/workflows/**",
-      "docs/living/system/agentic-application/**",
-      "docs/living/reference/architecture/**"
+      "packages/agentic-system/src/how-evolution.js",
+      "packages/agentic-system/src/how-evolution-jev-adapter.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/how-evolution-evaluation.test.js",
+      "packages/agentic-system/test/how-evolution-jev-adapter.test.js",
+      "packages/agentic-system/test/how-evolution-promotion.test.js",
+      "packages/agentic-system/test/how-evolution-currentness.test.js",
+      "packages/agentic-system/test/how-evolution-attempt-pinning.test.js",
+      "packages/agentic-system/test/how-evolution-rollback.test.js",
+      "docs/living/system/agentic-application/evaluation.md",
+      "docs/living/system/agentic-application/self-upgrade.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/reference/architecture/trust-pipeline.md"
     ],
     "forbiddenWrite": [
+      "packages/core-harness/src/**",
+      "packages/agentic-system/src/self-upgrade-pilot.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/domain-execution-store.js",
+      "scripts/**",
+      ".github/**",
       "docs/blackboard/artifacts/objective/**",
-      "docs/blackboard/artifacts/ready-implement-plan/**"
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/state.md"
     ]
   },
   "implementationSlices": [
-    "J1 — Research evaluator boundary: map existing Core evaluator/trust/freshness primitives, self-upgrade pilot, Jev transport and Integration I evidence into one explicit authority diagram; decide reuse versus new HOW-evolution module.",
-    "J2 — Fixed experiment contract: define immutable semantic subject, baseline/candidate HOW pins, evaluator/policy pins, scenarios, budgets, evidence requirements and stale-input rules.",
-    "J3 — Jev adapter contract: define exact durable input/output/evidence identity, authentication/freshness behavior and failure semantics without granting mutation or acceptance authority.",
-    "J4 — Independent promotion boundary: define proposal, reviewer/authority separation, CAS currentness checks and exact policy/strategy publication semantics.",
-    "J5 — Attempt pinning and rollback: prove promoted versions only affect new attempts; recovery remains on old binding; rollback is a new auditable generation.",
-    "J6 — End-to-end proof: reconstruct one observed failure -> candidate -> Jev-backed evaluation -> independent promotion/keep-baseline -> new attempt, plus stale/race/rollback/fresh-process negative cases."
+    "J1 — Finding: bind one BB-058 causal projection into immutable evidence-only HOW_EVOLUTION_FINDING.",
+    "J2 — Protocol: pin fixed WHAT, A/B HOW refs, actors, trigger/regression/holdout cases, metrics, replay/budget, evidence and expected policy head.",
+    "J3 — Evaluation: paired same-case runs + hard gates; Jev handles semantic rubric only and persists exact receipt.",
+    "J4 — Promotion: proposal-only evaluation, three-role separation, freshness recheck, existing policy publisher generation+1/CAS.",
+    "J5 — Pinning/rollback: old attempt keeps old binding; new attempt sees promoted head; rollback is another fenced successor generation.",
+    "J6 — Reconstruction: fresh process resolves full ref chain; reject WHAT drift, critical regression, holdout/evaluator/evidence/head drift, unauthorized actors and history rewrite."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
-      "statement": "A fixed evaluation protocol can compare one pinned baseline and one pinned HOW candidate for the same semantic work/acceptance subject using exact causal/runtime evidence and an authenticated evaluator identity.",
+      "statement": "Pinned protocol compares baseline vs candidate for one fixed semantic/acceptance subject.",
       "verificationIds": [
         "how-evolution-evaluation",
         "how-evolution-jev-adapter"
       ],
       "evidenceRequired": [
-        "Pinned baseline/candidate share exact semantic work/acceptance subject and evaluation evidence resolves exact refs."
+        "Protocol + paired runs bind exact subject/HOW/evaluator/cases/evidence refs."
       ]
     },
     {
       "id": "AC-2",
-      "statement": "Jev integration has an explicit adapter/contract: its input, output, policy identity, evidence refs, freshness rules and trust verification are durable and independently checkable.",
+      "statement": "Jev adapter has durable exact input/output/policy/evidence/freshness identity.",
       "verificationIds": [
         "how-evolution-jev-adapter"
       ],
       "evidenceRequired": [
-        "Jev request/response, evaluator policy identity, evidence refs and freshness metadata are durable and independently verifiable."
+        "Receipt proves request/response/model/policy/evidence identity and fail-closed errors."
       ]
     },
     {
       "id": "AC-3",
-      "statement": "A candidate producer cannot evaluate or promote its own candidate, and a Jev PASS alone cannot mutate ExecutionPolicy, ProductHistory, QualityAcceptance or ProductOutcome currentness.",
+      "statement": "Producer, evaluator and promoter are separated; Jev cannot mutate policy/product currentness.",
       "verificationIds": [
         "how-evolution-evaluation",
         "how-evolution-promotion"
       ],
       "evidenceRequired": [
-        "Candidate producer/evaluator/promotion authority are separated and Jev PASS cannot mutate product/execution authority."
+        "Role-collapse negatives fail; adapter has no mutation path."
       ]
     },
     {
       "id": "AC-4",
-      "statement": "PASS may produce an independently reviewable promotion proposal; FAIL, INCONCLUSIVE, stale evidence or authority mismatch deterministically keeps the baseline.",
+      "statement": "Only satisfied hard gates + heldout minEffect produce a proposal; all other outcomes keep baseline.",
       "verificationIds": [
         "how-evolution-evaluation",
         "how-evolution-currentness"
       ],
       "evidenceRequired": [
-        "PASS only creates a proposal; FAIL/INCONCLUSIVE/stale/unauthorized paths keep baseline."
+        "Decision matrix + unchanged-head negatives."
       ]
     },
     {
       "id": "AC-5",
-      "statement": "An accepted promotion creates a new immutable ExecutionPolicy/ExecutionStrategy version for the exact domain/workload scope, while an already-bound in-flight/recovery attempt continues using its old binding.",
+      "statement": "Promotion creates a new immutable policy/strategy for new attempts while old attempts keep old bindings.",
       "verificationIds": [
         "how-evolution-promotion",
         "how-evolution-attempt-pinning"
       ],
       "evidenceRequired": [
-        "Promotion publishes exact new immutable policy/strategy generation and old attempts retain old binding."
+        "Promotion receipt + old-recovery/new-attempt proof."
       ]
     },
     {
       "id": "AC-6",
-      "statement": "Promotion racing with changed semantics, acceptance/evaluator policy or evidence currentness fails closed and requires a fresh evaluation.",
+      "statement": "Semantic/evaluator/case/evidence/head drift makes a proposal non-actionable.",
       "verificationIds": [
         "how-evolution-currentness"
       ],
       "evidenceRequired": [
-        "Race/drift between evaluation and promotion fails closed and requires fresh evaluation."
+        "Each drift race fails before head mutation."
       ]
     },
     {
       "id": "AC-7",
-      "statement": "Rollback creates a new auditable policy generation pointing to the exact accepted baseline and preserves the candidate/evaluation/promotion history.",
+      "statement": "Rollback is a new auditable generation selecting an exact prior accepted strategy.",
       "verificationIds": [
         "how-evolution-rollback"
       ],
       "evidenceRequired": [
-        "Rollback is a new current-head generation to exact prior accepted refs with preserved history."
+        "Rollback links prior strategy and reversed promotion/evaluation; history remains resolvable."
       ]
     },
     {
       "id": "AC-8",
-      "statement": "A fresh process can reconstruct baseline, candidate, evaluator/policy, evidence, decision, promotion/rollback authority and resulting current policy from durable refs without conversation history.",
+      "statement": "Fresh process reconstructs evaluation and promotion/rollback causality from durable refs.",
       "verificationIds": [
         "how-evolution-evaluation",
         "agentic-regression"
       ],
       "evidenceRequired": [
-        "Fresh reconstruction resolves experiment/evaluator/evidence/decision/promotion or rollback provenance from durable refs."
-      ]
-    },
-    {
-      "id": "INV-1",
-      "statement": "Evaluation evidence is not promotion authority and promotion authority is not product acceptance authority.",
-      "verificationIds": [
-        "how-evolution-promotion"
-      ],
-      "evidenceRequired": [
-        "No evaluator path can directly publish product acceptance or policy currentness."
-      ]
-    },
-    {
-      "id": "INV-2",
-      "statement": "Baseline and candidate are compared under the same pinned semantic work and acceptance subject; HOW is the only permitted variation.",
-      "verificationIds": [
-        "how-evolution-evaluation"
-      ],
-      "evidenceRequired": [
-        "Changed WHAT/acceptance subject is rejected before comparison."
-      ]
-    },
-    {
-      "id": "INV-3",
-      "statement": "Evaluator identity/policy and every evaluation input are immutable, durable and currentness-checked.",
-      "verificationIds": [
-        "how-evolution-jev-adapter",
-        "how-evolution-currentness"
-      ],
-      "evidenceRequired": [
-        "Evaluator/evidence drift invalidates previous result."
-      ]
-    },
-    {
-      "id": "INV-4",
-      "statement": "Jev is integrated behind an explicit evaluator adapter/contract and cannot mutate product or execution authority directly.",
-      "verificationIds": [
-        "how-evolution-jev-adapter",
-        "how-evolution-promotion"
-      ],
-      "evidenceRequired": [
-        "Adapter exposes evaluation only and no mutation/promotion method."
-      ]
-    },
-    {
-      "id": "INV-5",
-      "statement": "Promotion creates a new immutable policy/strategy generation and affects only future eligible attempts.",
-      "verificationIds": [
-        "how-evolution-promotion",
-        "how-evolution-attempt-pinning"
-      ],
-      "evidenceRequired": [
-        "New attempt resolves promoted version while previous binding is unchanged."
-      ]
-    },
-    {
-      "id": "INV-6",
-      "statement": "Existing ACTIVE/RECOVERY_REQUIRED attempts remain pinned to their original ExecutionAttemptBinding.",
-      "verificationIds": [
-        "how-evolution-attempt-pinning"
-      ],
-      "evidenceRequired": [
-        "Recovery of pre-promotion attempt keeps old policy/strategy refs."
-      ]
-    },
-    {
-      "id": "INV-7",
-      "statement": "FAIL, INCONCLUSIVE, stale evidence or authority mismatch keeps baseline current.",
-      "verificationIds": [
-        "how-evolution-evaluation",
-        "how-evolution-currentness"
-      ],
-      "evidenceRequired": [
-        "Negative evaluation/currentness paths produce no current-head change."
-      ]
-    },
-    {
-      "id": "INV-8",
-      "statement": "Rollback is an auditable successor transition to an exact prior accepted baseline, never history rewrite.",
-      "verificationIds": [
-        "how-evolution-rollback"
-      ],
-      "evidenceRequired": [
-        "Rollback head links to exact baseline and leaves prior candidate/promotion artifacts immutable."
+        "New process resolves finding→protocol→runs→Jev→decision→policy head."
       ]
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Evaluation evidence is not promotion authority and promotion authority is not product acceptance authority.",
+      "invariant": "Evaluation evidence != promotion authority != product acceptance authority.",
       "criterionIds": [
-        "INV-1"
+        "AC-3"
       ]
     },
     {
-      "invariant": "Baseline and candidate are compared under the same pinned semantic work and acceptance subject; HOW is the only permitted variation.",
+      "invariant": "Baseline/candidate share one fixed semantic and acceptance subject; only HOW varies.",
       "criterionIds": [
-        "INV-2"
+        "AC-1"
       ]
     },
     {
-      "invariant": "Evaluator identity/policy and every evaluation input are immutable, durable and currentness-checked.",
+      "invariant": "Evaluator/policy and all evaluation inputs are immutable, durable and freshness-checked.",
       "criterionIds": [
-        "INV-3"
+        "AC-2",
+        "AC-6"
       ]
     },
     {
-      "invariant": "Jev is integrated behind an explicit evaluator adapter/contract and cannot mutate product or execution authority directly.",
+      "invariant": "Jev is behind an evaluate-only adapter with no product/policy mutation capability.",
       "criterionIds": [
-        "INV-4"
+        "AC-2",
+        "AC-3"
       ]
     },
     {
-      "invariant": "Promotion creates a new immutable policy/strategy generation and affects only future eligible attempts.",
+      "invariant": "Promotion publishes a new immutable policy/strategy generation for future attempts only.",
       "criterionIds": [
-        "INV-5"
+        "AC-5"
       ]
     },
     {
-      "invariant": "Existing ACTIVE/RECOVERY_REQUIRED attempts remain pinned to their original ExecutionAttemptBinding.",
+      "invariant": "ACTIVE/RECOVERY_REQUIRED attempts retain their original ExecutionAttemptBinding.",
       "criterionIds": [
-        "INV-6"
+        "AC-5"
       ]
     },
     {
-      "invariant": "FAIL, INCONCLUSIVE, stale evidence or authority mismatch keeps baseline current.",
+      "invariant": "FAIL/INCONCLUSIVE/stale/unauthorized evaluation leaves baseline current.",
       "criterionIds": [
-        "INV-7"
+        "AC-4",
+        "AC-6"
       ]
     },
     {
-      "invariant": "Rollback is an auditable successor transition to an exact prior accepted baseline, never history rewrite.",
+      "invariant": "Rollback publishes a successor to an exact prior accepted baseline; it never rewrites history.",
       "criterionIds": [
-        "INV-8"
+        "AC-7"
       ]
     }
   ],
@@ -356,7 +296,7 @@
     },
     {
       "id": "how-evolution-attempt-pinning",
-      "command": "node --test packages/agentic-system/test/how-evolution-attempt-pinning.test.js"
+      "command": "node --test packages/agentic-system/test/how-evolution-attempt-pinning.test.js packages/agentic-system/test/bb048-domain-execution-control.test.js"
     },
     {
       "id": "how-evolution-rollback",
@@ -365,35 +305,35 @@
     {
       "id": "agentic-regression",
       "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository-verify",
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Decide the production ownership boundary for HOW evolution: extend the bounded self-upgrade pilot, introduce a new application boundary, or reuse a narrower existing authority without creating a generic optimizer.",
-    "Define the Jev evaluator adapter and trust model: exact request/response contract, evaluator identity/policy pinning, evidence authenticity, freshness and failure semantics outside the outer Blackboard gate.",
-    "Define how Integration I observations become a bounded finding/experiment subject without giving observation routing, candidate-generation or acceptance authority.",
-    "Define the independent promotion authority and currentness fence that publishes a new ExecutionPolicy/ExecutionStrategy generation while preserving existing attempt bindings.",
-    "Define representative evaluation protocol/metrics and replay constraints for success rate, evidence quality, recovery rate, cost/token, latency and policy compliance without moving fixed work semantics.",
-    "Define rollback/reconstruction provenance and the minimum durable artifacts required for a fresh process to prove why a HOW version was promoted or kept."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Jev PASS directly updates ExecutionPolicy or ProductHistory without independent promotion authority.",
-    "Candidate changes WorkContract or acceptance requirements between baseline and candidate evaluation.",
-    "Candidate producer is also accepted as evaluator or promotion authority.",
-    "New evidence or evaluator-policy revision appears after evaluation but stale result is promoted.",
-    "Promotion silently rebinds an ACTIVE/RECOVERY_REQUIRED attempt to the new strategy.",
-    "Rollback overwrites old policy/candidate history instead of publishing a successor generation."
+    "Jev/evaluator directly mutates policy or product truth.",
+    "Candidate changes WHAT/WorkContract/acceptance.",
+    "Producer equals evaluator or promoter.",
+    "A/B case-set/evaluator/metric/evidence identity differs.",
+    "Aggregate gain hides a new critical-case failure.",
+    "Missing case/measurement or evaluator error is treated as PASS.",
+    "Semantic/evaluator/case/evidence drift is promoted.",
+    "Policy head changes after evaluation and stale proposal rebases.",
+    "Promotion rebinds an ACTIVE/RECOVERY_REQUIRED attempt.",
+    "Rollback rewrites prior history."
   ],
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-059 objective + Integration J roadmap + current Core evaluation/trust/self-upgrade/Jev seams + BB-058 planned causal-observation contract",
+      "input": "BB-059 objective + current seams + BB-058 planned contract",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + Jev SATISFIED",
       "forbidden": [
         "product mutation",
         "self-promotion",
-        "Jev as acceptance authority",
         "planned dependency as delivered truth"
       ]
     },
@@ -402,11 +342,11 @@
       "input": "exact READY plan + DONE BB-058 truth",
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash + candidate/evidence + Jev",
-      "convergence": "one evidence-gated HOW evolution loop + Living Docs SATISFIED",
+      "convergence": "one evidence-gated HOW loop + Living Docs",
       "forbidden": [
         "execute before BB-058 DONE",
-        "move WHAT/acceptance goalposts",
-        "rebind old attempts",
+        "move WHAT",
+        "rebind old attempt",
         "self-accept"
       ]
     }
@@ -420,7 +360,7 @@
       "docs/living/reference/architecture/trust-pipeline.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Integration J Living Docs describe the evidence-gated HOW-evolution loop, Jev evaluator boundary, independent promotion authority, freshness/currentness fencing, attempt pinning and rollback provenance without granting evaluator or observation product authority."
+    "statement": "Living Docs describe the HOW-evolution protocol, evaluate-only Jev boundary, independent fenced promotion, old-attempt pinning, rollback and provenance."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
@@ -438,8 +378,10 @@
         "how-evolution-jev-adapter"
       ],
       "decisionIndexes": [
-        0,
-        1
+        1,
+        2,
+        3,
+        4
       ],
       "sourceRefs": [
         "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
@@ -463,8 +405,8 @@
         "how-evolution-jev-adapter"
       ],
       "decisionIndexes": [
-        2,
-        3
+        5,
+        6
       ],
       "sourceRefs": [
         "docs/living/reference/architecture/trust-pipeline.md"
@@ -490,8 +432,8 @@
         "how-evolution-promotion"
       ],
       "decisionIndexes": [
-        2,
-        4
+        5,
+        7
       ],
       "sourceRefs": [
         "docs/living/system/agentic-application/self-upgrade.md"
@@ -517,8 +459,9 @@
         "how-evolution-currentness"
       ],
       "decisionIndexes": [
-        3,
-        4
+        4,
+        6,
+        7
       ],
       "sourceRefs": [
         "docs/living/system/agentic-application/self-upgrade.md"
@@ -544,7 +487,8 @@
         "how-evolution-attempt-pinning"
       ],
       "decisionIndexes": [
-        5
+        7,
+        8
       ],
       "sourceRefs": [
         "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md"
@@ -568,8 +512,8 @@
         "how-evolution-currentness"
       ],
       "decisionIndexes": [
-        3,
-        4
+        6,
+        7
       ],
       "sourceRefs": [
         "packages/core-harness/src/evaluation-freshness.js"
@@ -593,7 +537,7 @@
         "how-evolution-rollback"
       ],
       "decisionIndexes": [
-        6
+        9
       ],
       "sourceRefs": [
         "docs/living/system/agentic-application/self-upgrade.md"
@@ -619,18 +563,221 @@
       ],
       "decisionIndexes": [
         0,
-        6,
-        7
+        7,
+        9,
+        10
       ],
       "sourceRefs": [
-        "docs/blackboard/artifacts/ready-implement-plan/BB-058.json"
+        "docs/living/system/agentic-application/self-upgrade.md",
+        "packages/agentic-system/src/domain-execution-store.js"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
-          "match": "Deleting cached observation projections"
+          "ref": "docs/living/system/agentic-application/self-upgrade.md",
+          "match": "one pinned accepted baseline and one pinned candidate"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-store.js",
+          "match": "createJsonDomainExecutionPolicyStore"
         }
+      ],
+      "supportingPlanFields": [
+        "durabilityContract",
+        "promotionContract",
+        "rollbackContract",
+        "jevAdapterContract"
       ]
     }
-  ]
+  ],
+  "researchBasis": {
+    "observedAt": "2026-09-24",
+    "selectionRule": "Public GitHub examples used as architecture evidence must have at least 1,000 stars; patterns are borrowed, dependencies are not introduced.",
+    "examples": [
+      {
+        "repo": "langfuse/langfuse",
+        "starsObserved": 34979,
+        "license": "MIT for OSS core; ee folders excluded",
+        "communityHealth": "Actively maintained on 2026-09-23 with ~3.8k forks and open contribution workflow.",
+        "claim": "Comparable release experiments pin the same dataset version and evaluator definitions for baseline/candidate; approved baseline artifacts are reviewed rather than auto-replaced by every successful candidate.",
+        "adoptedConclusion": "Pin case-set/evaluator versions, compare per case, preserve an independently approved baseline and reject incomplete/missing cases."
+      },
+      {
+        "repo": "UKGovernmentBEIS/inspect_ai",
+        "starsObserved": 2847,
+        "license": "MIT",
+        "communityHealth": "Active 2026-09-23; 700+ forks and thousands of closed PRs with explicit contribution/review policy.",
+        "claim": "Evaluation is decomposed into task/solver/scorer with durable logs and reproducible run configuration; scoring can be separated from generation.",
+        "adoptedConclusion": "Persist exact run/evaluator configuration and keep execution evidence separate from scoring/judgment so replay/re-score does not rewrite the candidate."
+      },
+      {
+        "repo": "argoproj/argo-rollouts",
+        "starsObserved": 3600,
+        "license": "Apache-2.0",
+        "communityHealth": "Mature Argo/CNCF progressive-delivery project with ~1.2k forks and documented analysis/promotion/rollback workflows.",
+        "claim": "Analysis is a distinct rollout gate; promotion and rollback are separate state transitions around a stable version rather than properties granted to the metric provider.",
+        "adoptedConclusion": "Evaluation creates proposal evidence only; promotion/rollback remain independently authorized currentness mutations."
+      },
+      {
+        "repo": "mlflow/mlflow",
+        "starsObserved": 28119,
+        "license": "Apache-2.0",
+        "communityHealth": "Active 2026-09-23 with ~6.3k forks and hundreds of community contributors.",
+        "claim": "Registry lineage keeps immutable model versions while a mutable alias identifies the serving/champion version and can move back to a prior version.",
+        "adoptedConclusion": "Keep immutable HOW versions and lineage; mutate only a fenced current head/alias and model rollback as another auditable head transition."
+      }
+    ],
+    "nonGoals": [
+      "Do not import an experiment platform, generic optimizer, model registry or Kubernetes rollout controller into ExHarness.",
+      "Do not use star count as correctness evidence; repository maturity only qualifies examples for pattern inspection.",
+      "Do not claim statistical generalization from the bounded BB-059 proof; later held-out real-delivery validation remains separate roadmap work."
+    ]
+  },
+  "evaluationProtocolContract": {
+    "artifact": "HOW_EVOLUTION_EVALUATION_PROTOCOL/v1",
+    "fixedSubject": [
+      "workContractRef+digest and acceptance/product semantic refs+digests",
+      "findingRef+digest and domain/workload scope",
+      "baselinePolicyHead subjectKey/revision/generation/policyRef",
+      "baselineStrategyRef+digest and candidateStrategyRef+digest",
+      "candidateProducer identity",
+      "evaluator identity/revision/model/policyRef/policyDigest",
+      "scenarioSet ref/version/digest with trigger, regression and evaluator-owned holdout partitions",
+      "metricPolicy ref/digest with minEffect and max cost/token/latency regression constraints",
+      "replay policy: provider/model/config refs, stochastic repeatCount and seed policy where supported",
+      "evidenceSnapshot refs+digests and evaluation budget"
+    ],
+    "variationRule": "Only declared HOW surfaces may differ. Any WHAT/WorkContract/acceptance change invalidates the comparison.",
+    "runRule": "Baseline and candidate execute identical pinned cases. Deterministic workloads may run once; stochastic model-backed workloads require at least three paired repeats unless the pinned metric policy explicitly declares a stronger sample plan.",
+    "holdoutRule": "Candidate producer cannot mutate evaluator-owned recorded holdout membership after protocol creation.",
+    "incompleteRule": "Missing case, required measurement, evaluator receipt or evidence ref => INCONCLUSIVE; never coerce to zero/pass."
+  },
+  "metricPolicyContract": {
+    "hardGates": [
+      "no new failure on any pinned critical product/acceptance regression case",
+      "policy/authority compliance = 100% and no forbidden external mutation",
+      "required evidence/currentness completeness = 100%",
+      "recovery success must not regress on pinned recovery cases"
+    ],
+    "valueGate": "heldout primary metric delta candidate-baseline must meet protocol.minEffect; minEffect is fixed before candidate evaluation",
+    "operationalMetrics": [
+      "task/acceptance success per case and aggregate",
+      "evidence completeness and evaluator completeness",
+      "recovery success/rerun/replay counts",
+      "input/output/total tokens and provider/model calls when observable",
+      "cost in provider billing units when observable",
+      "median/p95 latency and runtime invocation duration when observable"
+    ],
+    "comparisonRule": "Store paired case-level deltas first. Aggregate averages are secondary and cannot override a critical-case regression.",
+    "uncertaintyRule": "Provider/evaluator failure or unavailable required usage/latency data makes the affected gate INCONCLUSIVE; bounded evidence does not establish statistical generalization."
+  },
+  "jevAdapterContract": {
+    "module": "packages/agentic-system/src/how-evolution-jev-adapter.js",
+    "port": "Evaluator.evaluate(protocol, evidence) -> immutable semantic evaluation receipt",
+    "pinned": [
+      "adapter identity/revision",
+      "provider endpoint class",
+      "Jev model snapshot",
+      "semantic policy/rubric ref+digest",
+      "canonical request hash and typed question ids",
+      "response model/id/hash and typed outcomes",
+      "evidence refs+digests"
+    ],
+    "trust": "evaluateTrustBoundary verifies evaluator and evidence-producer authority; verification-assessment combines semantic and deterministic evidence.",
+    "failure": "transport error, malformed response, unexpected model/policy, missing atomic outcome or authority failure => INCONCLUSIVE/KEEP_BASELINE",
+    "secretBoundary": "TYPESAFE_API_KEY is supplied by process/CI environment only; never persist or return the key.",
+    "authority": "Adapter has no repository, product, policy-publisher, promotion or rollback capability."
+  },
+  "authorityContract": {
+    "roles": [
+      "finding producer",
+      "candidate producer",
+      "evaluator/holdout owner",
+      "promotion authority"
+    ],
+    "separation": [
+      "candidate producer != evaluator",
+      "candidate producer != promotion authority",
+      "evaluator != promotion authority"
+    ],
+    "findingAuthority": "HOW_EVOLUTION_FINDING is read-only evidence and grants no candidate/evaluation/promotion authority.",
+    "evaluationAuthority": "Evaluation can return PROPOSE_FOR_PROMOTION or KEEP_BASELINE only.",
+    "productAuthority": "No HOW-evolution artifact changes ProductHistory, QualityAcceptance, ProductOutcome or accepted WHAT."
+  },
+  "promotionContract": {
+    "proposal": "HOW_EVOLUTION_PROMOTION_PROPOSAL pins protocol/evaluation refs+digests, proposed strategy/policy, expected current policy head and required authority.",
+    "preconditions": [
+      "evaluation disposition is PROPOSE_FOR_PROMOTION",
+      "all protocol/evaluation/evidence/evaluator artifacts resolve exact digests",
+      "independent promotion authority verifies publisher",
+      "current ExecutionPolicyHead exactly equals protocol evaluated baseline subjectKey/revision/generation/policyRef",
+      "semantic subject, evaluator policy, scenario set and evidence snapshot are still current"
+    ],
+    "mutation": "Store immutable candidate ExecutionStrategyDescriptor, then call existing createDomainExecutionPolicyPublisher with generation=current+1. Existing publisher verifies authority and CAS-fences the head.",
+    "race": "If head or any currentness subject changes before publication, fail closed and require fresh evaluation; never silently rebase proposal.",
+    "attempts": "New attempts may resolve the promoted head; ACTIVE/RECOVERY_REQUIRED attempts retain their immutable ExecutionAttemptBinding."
+  },
+  "rollbackContract": {
+    "trigger": "Independent authority selects an exact previously accepted strategy/policy lineage and supplies rollback reason evidence.",
+    "mutation": "Publish another immutable ExecutionPolicy generation through the same currentness+authority+CAS path with reasonKind=ROLLBACK and exact targetStrategyRef.",
+    "provenance": [
+      "rollback decision ref+digest",
+      "reversed promotion proposal/decision/evaluation refs",
+      "from current head tuple",
+      "target prior accepted policy/strategy refs+digests",
+      "authority ref",
+      "reason evidence refs"
+    ],
+    "history": "No artifact/head history rewrite; the rollback successor remains auditable beside the reverted promotion."
+  },
+  "durabilityContract": {
+    "immutableArtifacts": [
+      "HOW_EVOLUTION_FINDING",
+      "HOW_EVOLUTION_EVALUATION_PROTOCOL",
+      "baseline/candidate EVALUATION_RUN receipts with per-case measurements",
+      "Jev request/response semantic receipt",
+      "HOW_EVOLUTION_EVALUATION_RESULT",
+      "HOW_EVOLUTION_PROMOTION_PROPOSAL",
+      "promotion or rollback decision/receipt",
+      "ExecutionStrategyDescriptor and EXECUTION_POLICY generations"
+    ],
+    "mutableHeads": [
+      "ExecutionPolicyHead only; experiment/evaluation artifacts have immutable refs+digests"
+    ],
+    "storage": "Use an injected artifact-store port with content-addressed immutable refs; local JSON adapter is test/dev only. Large evidence/run bodies stay outside mutable head stores.",
+    "reconstruction": "A fresh process starts from current policy head or a promotion/rollback receipt and resolves the entire provenance chain by exact refs+digests.",
+    "replay": "Re-evaluation requires the original protocol/scenario/evaluator/evidence identities; any drift creates a new protocol/evaluation rather than mutating old evidence."
+  },
+  "deliveryContract": {
+    "precondition": "BB-058 DONE before WORKER execution; its causal observation is evidence only.",
+    "completion": "Criterion-specific tests + agentic regression + repository verify; independent Jev judgment remains required.",
+    "forbidden": "No WHAT mutation, generic optimizer, self-acceptance, pilot rewrite or direct policy-head mutation."
+  },
+  "ciContract": {
+    "checks": [
+      "how-evolution-evaluation",
+      "how-evolution-jev-adapter",
+      "how-evolution-promotion",
+      "how-evolution-currentness",
+      "how-evolution-attempt-pinning",
+      "how-evolution-rollback",
+      "agentic-regression",
+      "repository-verify"
+    ],
+    "liveJev": "Real semantic Jev evidence requires TYPESAFE_API_KEY outside repo; transport/model failure is INCONCLUSIVE."
+  },
+  "migrationContract": {
+    "preserve": [
+      "self-upgrade pilot",
+      "ExecutionPolicy publisher/CAS",
+      "ExecutionAttemptBinding recovery",
+      "outer Blackboard Jev authority"
+    ],
+    "add": [
+      "how-evolution.js",
+      "how-evolution-jev-adapter.js",
+      "immutable HOW-evolution artifacts/tests"
+    ],
+    "rollback": "Revert additive HOW-evolution module/export/docs only; do not rewrite existing execution history."
+  },
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-059.readiness-jev-evaluation.json"
 }

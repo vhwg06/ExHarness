@@ -86,6 +86,21 @@
       "artifactRefs": [
         "docs/blackboard/process/delivery-product-roadmap.md"
       ]
+    },
+    {
+      "id": "TOPIC-CORE-HARNESS-EFFICIENCY",
+      "title": "Async-first Core harness efficiency",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-HARNESS-ECONOMICS",
+        "FEATURE-ASYNC-OPERATIONS",
+        "FEATURE-CACHE-STABLE-CONTEXT",
+        "FEATURE-ASYNC-STEERING-RECOVERY",
+        "FEATURE-HARNESS-EFFICIENCY-ACCEPTANCE"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/harness-efficiency-phase.md"
+      ]
     }
   ],
   "features": [
@@ -400,6 +415,76 @@
         "docs/blackboard/process/delivery-research/BB-076.md"
       ],
       "acceptanceTaskId": "BB-076"
+    },
+    {
+      "id": "FEATURE-HARNESS-ECONOMICS",
+      "topicId": "TOPIC-CORE-HARNESS-EFFICIENCY",
+      "kind": "FEATURE",
+      "title": "Measure harness tax and pin async-first baseline",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-077"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/harness-efficiency-research/BB-077.md"
+      ],
+      "acceptanceTaskId": "BB-077"
+    },
+    {
+      "id": "FEATURE-ASYNC-OPERATIONS",
+      "topicId": "TOPIC-CORE-HARNESS-EFFICIENCY",
+      "kind": "FEATURE",
+      "title": "Durable detached operation scheduling",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-078"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/harness-efficiency-research/BB-078.md"
+      ],
+      "acceptanceTaskId": "BB-078"
+    },
+    {
+      "id": "FEATURE-CACHE-STABLE-CONTEXT",
+      "topicId": "TOPIC-CORE-HARNESS-EFFICIENCY",
+      "kind": "FEATURE",
+      "title": "Cache-stable async result context",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-079"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/harness-efficiency-research/BB-079.md"
+      ],
+      "acceptanceTaskId": "BB-079"
+    },
+    {
+      "id": "FEATURE-ASYNC-STEERING-RECOVERY",
+      "topicId": "TOPIC-CORE-HARNESS-EFFICIENCY",
+      "kind": "FEATURE",
+      "title": "Async steering wakeup and recovery",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-080"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/harness-efficiency-research/BB-080.md"
+      ],
+      "acceptanceTaskId": "BB-080"
+    },
+    {
+      "id": "FEATURE-HARNESS-EFFICIENCY-ACCEPTANCE",
+      "topicId": "TOPIC-CORE-HARNESS-EFFICIENCY",
+      "kind": "FEATURE",
+      "title": "Evidence-backed Core efficiency profile acceptance",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-081"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/harness-efficiency-research/BB-081.md"
+      ],
+      "acceptanceTaskId": "BB-081"
     }
   ],
   "tasks": [
@@ -830,7 +915,13 @@
           "docs/blackboard/artifacts/ready-implement-plan/BB-059.json"
         ],
         "outputRefs": [],
-        "consolidatedRefs": []
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/evaluation.md",
+          "docs/living/system/agentic-application/self-upgrade.md",
+          "docs/living/system/agentic-application/contracts.md",
+          "docs/living/system/agentic-application/state.md",
+          "docs/living/reference/architecture/trust-pipeline.md"
+        ]
       },
       "expectedOutputs": [
         "production HOW-evolution evaluation contract",
@@ -842,11 +933,14 @@
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-059.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
-        "researchBaselineSha": "cb5bec6e080c26525fa380f51b60e2ec4814a238",
-        "baselineSha": "cb5bec6e080c26525fa380f51b60e2ec4814a238"
+        "researchBaselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
+        "baselineSha": "cb5bec6e080c26525fa380f51b60e2ec4814a238",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-059.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-059.implementation-result.json",
+        "lastEvaluatedInput": "af648d17a00024b0150e910efa868e577f23a3c09bb8a8ec511ab2f4f22c65bb"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-060",
@@ -1181,6 +1275,12 @@
           "requires": [
             "TASK_OUTPUT"
           ]
+        },
+        {
+          "taskId": "BB-081",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
         }
       ],
       "artifacts": {
@@ -1299,7 +1399,10 @@
           "docs/blackboard/process/delivery-research/BB-068.md"
         ],
         "outputRefs": [],
-        "consolidatedRefs": []
+        "consolidatedRefs": [
+          "docs/living/system/state.md",
+          "docs/living/system/agentic-application/capabilities.md"
+        ]
       },
       "expectedOutputs": [
         "The candidate records base SHA, exact resulting commit/tree, changed files and CI run identities from the real provider.",
@@ -1311,11 +1414,14 @@
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-068.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
-        "researchBaselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62",
-        "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62"
+        "researchBaselineSha": "26052992ad643a0b46d3274fbabb3e0ab6052c36",
+        "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-068.implementation-result.json",
+        "lastEvaluatedInput": "1d3fa0552d8c87fb6aabd051e5078b121c6284dfd8d2fe93f35f5b9e029be33e"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-069",
@@ -1350,7 +1456,11 @@
           "docs/blackboard/process/delivery-research/BB-069.md"
         ],
         "outputRefs": [],
-        "consolidatedRefs": []
+        "consolidatedRefs": [
+          "docs/living/system/state.md",
+          "docs/living/system/agentic-application/capabilities.md",
+          "docs/living/system/oracle/state.md"
+        ]
       },
       "expectedOutputs": [
         "The real feature uses Oracle-resolved exact input refs, produces a real candidate and runs in an isolated preview whose release identity is recorded.",
@@ -1362,11 +1472,14 @@
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-069.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
-        "researchBaselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62",
-        "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62"
+        "researchBaselineSha": "7a7976f09b27d57a6d220094d6c893b3020b8e57",
+        "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-069.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-069.implementation-result.json",
+        "lastEvaluatedInput": "848731874fab27097354c3863a90cdb1b03218415369f7299b1e7b18d1e0c974"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-070",
@@ -1719,10 +1832,279 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-077",
+      "featureId": "FEATURE-HARNESS-ECONOMICS",
+      "title": "Measure ExHarness harness tax and pin async-first baseline",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "core/async-runtime-efficiency"
+      ],
+      "dependencies": [],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-077.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+          "docs/blackboard/process/harness-efficiency-research/BB-077.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Matched same-model/task harness-efficiency baseline with full attempt accounting.",
+        "Pinned external evidence and explicit vendor-vs-local evidence separation.",
+        "Predeclared quality non-inferiority and cost/token improvement gate."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-077.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+        "researchBaselineSha": "cf59c8f1a8cd8d6211ec9f55d04ef53f772124f9",
+        "baselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.implementation-result.json",
+        "lastEvaluatedInput": "3d5b3ee06e3b1541b499c97adcc51e955b177ec9a58c6b296d7bf88b423b8d92"
+      },
+      "lane": "WORKER",
+      "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-078",
+      "featureId": "FEATURE-ASYNC-OPERATIONS",
+      "title": "Implement durable detached operation scheduling",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "core/async-runtime-efficiency"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-077",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-078.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-078.json",
+          "docs/blackboard/process/harness-efficiency-research/BB-078.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Detached RUNNING-to-terminal operation scheduling over existing EffectOperation identity.",
+        "No duplicate non-idempotent effects across restart/cancel/concurrent wakeup.",
+        "Explicit synchronous compatibility profile."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-078.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-078.json",
+        "researchBaselineSha": "5f4574b4fb1854e32c89c62a82275187d5e6b080",
+        "baselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-078.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-078.implementation-result.json",
+        "lastEvaluatedInput": "bc40e33777064c53ad21f5e5639b5dbe9bd9e8e0d672cd56179b6881c55ec7d3"
+      },
+      "lane": "WORKER",
+      "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-079",
+      "featureId": "FEATURE-CACHE-STABLE-CONTEXT",
+      "title": "Implement cache-stable async result context",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "core/async-runtime-efficiency"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-077",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-078",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-079.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-079.json",
+          "docs/blackboard/process/harness-efficiency-research/BB-079.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Append/advance async operation results without rewriting unrelated committed prompt history.",
+        "Observable prompt-prefix/cache reuse evidence where provider metrics exist.",
+        "Explicit provider compatibility fallback for progressive tool results."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-079.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-079.json",
+        "researchBaselineSha": "5f4574b4fb1854e32c89c62a82275187d5e6b080",
+        "baselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-079.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-079.implementation-result.json",
+        "lastEvaluatedInput": "cce18980af5eb317a2c2276769014a8191f286227669366e498364b8b9d68553"
+      },
+      "lane": "WORKER",
+      "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-080",
+      "featureId": "FEATURE-ASYNC-STEERING-RECOVERY",
+      "title": "Integrate async steering, wakeup and recovery",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "core/async-runtime-efficiency"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-078",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-079",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-080.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-080.json",
+          "docs/blackboard/process/harness-efficiency-research/BB-080.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md"
+        ]
+      },
+      "expectedOutputs": [
+        "User steering while operations run with one-model-in-flight invariant preserved.",
+        "Deterministic completion coalescing that avoids unnecessary model-turn storms.",
+        "Kill/restart and cancellation recovery with exact pending-operation identity."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-080.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-080.json",
+        "researchBaselineSha": "a0a30e0ddc67f14fdc50834a7d3c08696f8aeef8",
+        "baselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-080.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-080.implementation-result.json",
+        "lastEvaluatedInput": "1bc9450cecb28e8ac2fedfc084746fd4ee6af6564129b1307aa3a7667175ac50"
+      },
+      "lane": "WORKER",
+      "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-081",
+      "featureId": "FEATURE-HARNESS-EFFICIENCY-ACCEPTANCE",
+      "title": "Accept an evidence-backed Core harness efficiency profile",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "core/async-runtime-efficiency",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-077",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-078",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-079",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-080",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-081.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+          "docs/blackboard/process/harness-efficiency-research/BB-081.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/core-harness/state.md",
+          "docs/living/system/core-harness/workflow.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Held-out matched sync-vs-async quality/cost/token/turn/cache/recovery evidence.",
+        "PROMOTE_ASYNC or KEEP_SYNC_BASELINE decision from predeclared gates.",
+        "Supported profile and rollback semantics without weakening effect or product authority."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-081.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+        "researchBaselineSha": "45e7f97f01cd904fdee30de48c5add8faf9ea30a",
+        "baselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-081.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-081.implementation-result.json",
+        "lastEvaluatedInput": "76fcd675ad46ccd8399e39bd6c14e5d62100d490eadde080ae292f09afae221e"
+      },
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-077",
+    "nextWorkId": "BB-082",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

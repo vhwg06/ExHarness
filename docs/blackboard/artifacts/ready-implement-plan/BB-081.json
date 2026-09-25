@@ -1,0 +1,681 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-081",
+  "status": "READY",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-081.json",
+    "hash": "f7ef8cbfc2a5bfdeafb32b85a01b1408ff80874962fcbbba359b7aa0f1022165"
+  },
+  "scope": [
+    "core.harness-efficiency-acceptance",
+    "core.matched-benchmark",
+    "core.profile-promotion",
+    "core.regression-guard"
+  ],
+  "outOfScope": [
+    "Changing product WHAT or acceptance semantics to make an efficiency candidate pass.",
+    "Replacing Application domain authority, Oracle source ownership, Jev/QA judgment authority or EffectOperation truth.",
+    "Adopting Unreal Agent wholesale or treating its benchmark as ExHarness acceptance evidence."
+  ],
+  "constraints": [
+    "Baseline and candidate use the exact same BB-077 model/provider identity, task inputs, tool surface, budgets, source fixture semantics and independent acceptance logic.",
+    "The held-out cohort is frozen to HOLD-F01, HOLD-F02, HOLD-C01 and HOLD-C02 from BB-077. No DEV-* task, replacement task or post-result task mutation may enter the acceptance cohort.",
+    "All task executions, retries, failures, timeouts, rate limits, unknown usage and human interventions remain visible. No best-of-k, success-only filtering or outlier deletion is permitted.",
+    "Accepted quality cannot be traded for savings. The exact BB-077 quality/safety and efficiency gates are reused without post-hoc tuning.",
+    "Unknown/missing cost or token accounting, a missing matched arm, or incomplete held-out execution yields INCONCLUSIVE; it is never coerced to zero or to PROMOTE_ASYNC.",
+    "PROMOTE_ASYNC changes only the supported Core HOW profile. EffectOperation truth, product acceptance, Application authority and Jev/QA judgment authority remain unchanged.",
+    "CORE_SYNC remains implemented, exported and regression-tested regardless of the decision. Rollback is a supported profile selection at a new/quiescent session boundary, not a live mid-effect state rewrite.",
+    "Worker execution requires BB-077, BB-078, BB-079 and BB-080 DONE and must bind their exact delivered artifacts/Living refs. Any incompatible delivered contract is PLAN_INPUT_CONTRADICTION.",
+    "Research/public reference benchmarks are motivation only. Only matched ExHarness held-out evidence may choose the supported profile."
+  ],
+  "invariants": [
+    "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+    "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+    "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
+  ],
+  "architectureDecisions": [
+    "D1 — BB-081 is acceptance/publication only. It must not change benchmark task semantics, provider/model identity, BB-077 primary thresholds, effect semantics, async scheduler correctness or the delivered BB-078–080 behavior to make the candidate pass.",
+    "D2 — The acceptance cohort is exactly four pre-registered paired task units: HOLD-F01, HOLD-F02, HOLD-C01 and HOLD-C02. These fixture seeds and expected-output digests were reserved by BB-077 before async candidate work. No extra task may be added after observing candidate results; a new task set requires a new cohort/version.",
+    "D3 — Each paired unit runs both `CORE_SYNC` control and exact delivered `CORE_ASYNC_FIRST_V1` candidate with the BB-077 provider contract: OpenRouter, `anthropic/claude-sonnet-4.6`, Anthropic provider only, fallbacks disabled, same budgets and the frozen 2026-09-25 normalized price table. The async arm is additionally bound to exact DONE BB-078/079/080 artifact hashes.",
+    "D4 — Use deterministic counterbalanced arm order to reduce time/order bias without changing the pair: HOLD-F01 SYNC→ASYNC, HOLD-F02 ASYNC→SYNC, HOLD-C01 SYNC→ASYNC, HOLD-C02 ASYNC→SYNC. Every arm gets a fresh workspace/runtime/executor/event state and unique provider session_id; no provider session or fixture state crosses arms.",
+    "D5 — Sample size is the complete four-task paired holdout cohort. The existing BB-077 `maxAttemptsPerTask=2` remains a failure/retry ceiling, not best-of-k: retries are new recorded attempts, their usage/cost remains in the task total, and no completed failed task is replaced. The cohort is a product gate, not a statistical-significance study; paired ratios and optional bootstrap intervals are descriptive only.",
+    "D6 — Trusted benchmark code independently computes exact expected task results and required call/effect conditions. Model `return_result`, harness exit status and worker-authored summaries are candidate evidence only; they cannot mark a task ACCEPTED.",
+    "D7 — Reuse BB-077 failure accounting unchanged. Every provider request and capability attempt carries task/arm/attempt identity; provider failures, rate limits, retries and unknown fields remain in raw records. Any human intervention beyond starting/restarting the exact frozen runner is recorded and makes the affected pair INCONCLUSIVE unless the protocol explicitly permits it.",
+    "D8 — The quality gate is exactly BB-077: candidate accepted-task rate must be no lower than synchronous control on the complete registered cohort. A missing pair or incomplete acceptance record is INCONCLUSIVE, not a pass.",
+    "D9 — The safety/recovery gate is absolute: candidate duplicate external effects must be zero and all delivered BB-078/080 recovery/cancellation negatives must pass under the held-out profile. Lost terminal result, unsafe cancellation, stale-model dispatch or unresolved non-reconcilable effect blocks promotion and yields KEEP_SYNC_BASELINE when observed conclusively.",
+    "D10 — The efficiency gates are exactly BB-077 and all are conjunctive: median paired normalized provider cost ratio <=0.85, prompt-input-token ratio <=0.90, model-turn ratio <=1.00 and elapsed-time ratio <=1.10. Provider cached/cache-write tokens, useful operations/turn, overlap and latency remain explanatory; none may substitute for a failed primary gate.",
+    "D11 — The gate reducer returns exactly `PROMOTE_ASYNC`, `KEEP_SYNC_BASELINE` or `INCONCLUSIVE`. PROMOTE_ASYNC requires complete matched evidence plus every quality/safety/efficiency gate. Any conclusively observed primary gate failure returns KEEP_SYNC_BASELINE. Missing registered pairs, unknown required accounting or prerequisite blockage returns INCONCLUSIVE and does not publish a new supported profile.",
+    "D12 — Separate measurement, decision and publication. `run.mjs` produces append-only raw evidence; a deterministic `accept.mjs` reducer consumes the frozen cohort/threshold contract and emits a decision artifact; Jev independently evaluates the exact delivered candidate/evidence. Jev validates the delivery claims but does not rewrite the deterministic reducer outcome.",
+    "D13 — Add a narrow package-level `execution-profile.js` contract because the package ships only `src/` and currently exports no supported execution profile. It defines `CoreExecutionProfile.CORE_SYNC`, `CoreExecutionProfile.CORE_ASYNC_FIRST_V1`, the supported selection, evidence binding and `rollbackProfile: CORE_SYNC`. It does not silently alter `createAgentRuntime()` defaults; downstream BB-066 must consume the exported selection explicitly.",
+    "D14 — Profile selection is immutable for an active coordinator/session. Rollback from async to sync applies to new sessions after active async work is quiescent/reconciled; it must not reinterpret in-flight coordinator/effect state or duplicate external effects. CORE_SYNC remains an always-available compatibility profile.",
+    "D15 — The published profile binds exact decision artifact hash, heldout protocol hash, provider/model profile, BB-077–080 delivered artifact hashes and evaluated source SHA. Any later source/profile mutation makes that evidence binding stale and requires a new acceptance cohort/version before claiming the changed async profile remains evidence-backed.",
+    "D16 — If the reducer returns KEEP_SYNC_BASELINE, BB-081 can still be delivered successfully: the supported profile remains CORE_SYNC, async modules remain available only as non-default/experimental capability, and the evidence/limitations are published. If the reducer returns INCONCLUSIVE, BB-081 is not acceptance-complete and no supported-profile change is published.",
+    "D17 — External evidence is methodology/context only. OpenAI eval guidance supports repeatable task-specific datasets, full logging and pass/fail/pairwise grading for variable generative systems; SWE-bench requires isolated reproducible evaluation and warns against multi-attempt pass@k-style result selection. Unreal Agent's benchmark remains external evidence until reproduced by this exact ExHarness cohort."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+      "docs/blackboard/process/harness-efficiency-phase.md",
+      "packages/core-harness/package.json",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "expectedDependencyOutputs": [
+      "BB-077 DONE: frozen benchmark registry/provider/accounting contract plus synchronous control evidence.",
+      "BB-078 DONE: detached-operation scheduling/recovery/cancel implementation and judgment.",
+      "BB-079 DONE: append-only async-result/provider compatibility implementation and judgment.",
+      "BB-080 DONE: steering/coalescing/model-fencing/recovery implementation and judgment."
+    ],
+    "expectedNew": [
+      "benchmarks/harness-efficiency/heldout-contract.mjs",
+      "benchmarks/harness-efficiency/heldout-profile.json",
+      "benchmarks/harness-efficiency/accept.mjs",
+      "packages/core-harness/src/execution-profile.js"
+    ],
+    "expectedTests": [
+      "benchmarks/harness-efficiency/test/bb-081-heldout-contract.test.mjs",
+      "benchmarks/harness-efficiency/test/bb-081-decision.test.mjs",
+      "packages/core-harness/test/execution-profile.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "benchmarks/harness-efficiency/**",
+      "packages/core-harness/src/**",
+      "packages/core-harness/test/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-077*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-078*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-079*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-080*",
+      "docs/blackboard/process/harness-efficiency-phase.md",
+      "docs/living/system/core-harness/**"
+    ],
+    "write": [
+      "benchmarks/harness-efficiency/heldout-contract.mjs",
+      "benchmarks/harness-efficiency/heldout-profile.json",
+      "benchmarks/harness-efficiency/accept.mjs",
+      "benchmarks/harness-efficiency/report.mjs",
+      "benchmarks/harness-efficiency/test/bb-081-heldout-contract.test.mjs",
+      "benchmarks/harness-efficiency/test/bb-081-decision.test.mjs",
+      "packages/core-harness/src/execution-profile.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/test/execution-profile.test.js",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**",
+      "packages/agentic-system/**",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/detached-operation.js",
+      "packages/core-harness/src/async-result-context.js",
+      "packages/core-harness/src/async-agent-coordinator.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — At worker start resolve exact DONE BB-077/078/079/080 implementation-result, judgment and Living refs. Materialize a dependency manifest with exact hashes/profile identities. Any missing/incompatible delivered contract stops as PLAN_INPUT_CONTRADICTION before HOLD-* exposure.",
+    "S2 — Materialize and hash the held-out contract from BB-077: exactly HOLD-F01/F02/C01/C02, hidden expected-output digests, fixed provider/model, budgets, frozen prices, primary gates, deterministic arm order and fresh-reset/session rules. Refuse DEV-* or unregistered task execution in heldout mode.",
+    "S3 — Extend the existing benchmark runner/report path with `--mode heldout` and exact SYNC/ASYNC arm binding. Persist append-only request/attempt/task evidence for both arms; count failures/retries/unknown usage and prevent cross-arm workspace/session/cache-state leakage.",
+    "S4 — Add deterministic independent acceptance for task result/call/effect conditions and `accept.mjs` for the frozen three-way decision. Tests cover every gate independently, missing accounting, missing pair, safety regression, quality regression, success-only filtering attempts and a fully passing synthetic cohort.",
+    "S5 — Execute the full live four-pair held-out cohort using the exact credential-bearing BB-077 provider profile. No task replacement or manual rescue. If credentials/provider prerequisites are absent, emit PREREQUISITE_BLOCKED/INCONCLUSIVE and do not publish a supported-profile change.",
+    "S6 — Produce raw evidence plus paired report: accepted outcomes, all attempts, prompt/output/cached/cache-write tokens, provider/normalized cost, model turns, tool/capability calls, useful operations/turn, overlap, elapsed time, steering latency, recovery results and duplicate-effect count. Preserve unknown fields as null+reason.",
+    "S7 — Compute the deterministic decision. PROMOTE_ASYNC only when every BB-077 quality/safety/efficiency gate passes; any conclusive gate failure yields KEEP_SYNC_BASELINE; incomplete/unknown required evidence yields INCONCLUSIVE.",
+    "S8 — Add/export `execution-profile.js` with both CORE_SYNC and CORE_ASYNC_FIRST_V1 descriptors, evidence binding, supported selection and rollbackProfile CORE_SYNC. For KEEP_SYNC the selection remains sync. For PROMOTE_ASYNC select async explicitly. Never alter active-session state or implicit AgentRuntime defaults.",
+    "S9 — Update Core Living Docs with the supported profile, exact evidence scope, provider compatibility, rollback/quiescence rule and limitations. Run full Core regression plus profile tests and submit exact candidate/evidence to independent Jev delivery evaluation."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "COHORT",
+      "statement": "Held-out mode executes exactly the four BB-077 pre-registered HOLD-* paired tasks with frozen fixture/output digests, provider/model, budgets and deterministic counterbalanced arm order; DEV-* or replacement tasks are rejected.",
+      "verificationIds": [
+        "heldout-contract",
+        "live-heldout"
+      ],
+      "evidenceRequired": [
+        "Heldout manifest/protocol hash and raw records for all four registered pairs, with no unregistered task ids."
+      ]
+    },
+    {
+      "id": "ACCOUNTING",
+      "statement": "Every arm request/attempt/failure/retry is retained with exact task/arm identity and required provider/token/cost/timing fields when available; unknown values remain null+reason and no successful subset can replace the registered denominator.",
+      "verificationIds": [
+        "heldout-contract",
+        "decision-contract",
+        "live-heldout"
+      ],
+      "evidenceRequired": [
+        "Raw append-only evidence plus failure/retry/unknown-accounting fixtures and complete pair accounting."
+      ]
+    },
+    {
+      "id": "QUALITY",
+      "statement": "On the complete registered cohort, candidate accepted-task rate is no lower than CORE_SYNC under trusted exact-result/call/effect acceptance; incomplete acceptance evidence is INCONCLUSIVE.",
+      "verificationIds": [
+        "decision-contract",
+        "live-heldout"
+      ],
+      "evidenceRequired": [
+        "Independent per-task acceptance records for both arms and reducer output for the BB-077 quality gate."
+      ]
+    },
+    {
+      "id": "EFFICIENCY",
+      "statement": "PROMOTE_ASYNC requires all BB-077 primary efficiency gates simultaneously: median paired normalized provider cost ratio <=0.85, prompt-input-token ratio <=0.90, model-turn ratio <=1.00 and elapsed ratio <=1.10.",
+      "verificationIds": [
+        "decision-contract",
+        "live-heldout"
+      ],
+      "evidenceRequired": [
+        "Per-pair ratios, medians, frozen price-table normalization and explicit pass/fail for all four primary efficiency gates."
+      ]
+    },
+    {
+      "id": "SAFETY",
+      "statement": "PROMOTE_ASYNC is impossible unless duplicate external effects are zero and all required recovery/cancel/stale-model/lost-result negatives pass; any conclusive safety regression yields KEEP_SYNC_BASELINE.",
+      "verificationIds": [
+        "decision-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Held-out negative probe records tied to exact operation/effect identities and unchanged Core effect-reconciliation tests."
+      ]
+    },
+    {
+      "id": "DECISION",
+      "statement": "The frozen deterministic reducer returns only PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE and cannot be overridden by worker summaries, vendor benchmarks, cache observations or Jev prose.",
+      "verificationIds": [
+        "decision-contract"
+      ],
+      "evidenceRequired": [
+        "Synthetic fixtures for all three outcomes and mutation tests showing threshold/task/accounting changes invalidate the cohort."
+      ]
+    },
+    {
+      "id": "PROFILE",
+      "statement": "A versioned package-level execution-profile contract exposes both CORE_SYNC and CORE_ASYNC_FIRST_V1, selects async only for PROMOTE_ASYNC, retains sync for KEEP_SYNC_BASELINE, binds exact evidence/dependency hashes and does not silently change AgentRuntime defaults.",
+      "verificationIds": [
+        "profile-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Export/profile tests for both reducer outcomes and evidence freshness binding."
+      ]
+    },
+    {
+      "id": "ROLLBACK",
+      "statement": "CORE_SYNC remains available and supported; rollback affects new/quiescent sessions only and cannot reinterpret or duplicate in-flight async operation/effect state.",
+      "verificationIds": [
+        "profile-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Quiescent rollback fixture plus rejection of mid-flight profile mutation."
+      ]
+    },
+    {
+      "id": "DEPENDENCY",
+      "statement": "Held-out execution cannot begin until exact DONE BB-077/078/079/080 outputs are resolved and bound; incompatible delivered contracts fail as PLAN_INPUT_CONTRADICTION.",
+      "verificationIds": [
+        "dependency-contract"
+      ],
+      "evidenceRequired": [
+        "Exact dependency manifest/hash fixture and missing/mismatched dependency negatives."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Benchmark/profile selection cannot become correctness, product-acceptance or external-effect authority.",
+      "verificationIds": [
+        "decision-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Negative proof that profile decision/cache/cost data cannot confirm EffectOperation or product acceptance."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed during held-out recovery probes.",
+      "verificationIds": [
+        "live-heldout",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Exact identity/reconciliation evidence and NON_RECONCILABLE ambiguity negative."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "Efficiency claims are valid only for the exact matched held-out protocol; any model/provider/task/budget/profile mutation invalidates comparison and requires a new cohort.",
+      "verificationIds": [
+        "heldout-contract",
+        "dependency-contract"
+      ],
+      "evidenceRequired": [
+        "Binding mismatch fixtures for every frozen dimension plus protocol hash change detection."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "criterionIds": [
+        "INV-1",
+        "SAFETY",
+        "DECISION",
+        "PROFILE"
+      ]
+    },
+    {
+      "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "criterionIds": [
+        "INV-2",
+        "SAFETY",
+        "ROLLBACK",
+        "DEPENDENCY"
+      ]
+    },
+    {
+      "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "criterionIds": [
+        "INV-3",
+        "COHORT",
+        "ACCOUNTING",
+        "QUALITY",
+        "EFFICIENCY",
+        "DEPENDENCY"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "heldout-contract",
+      "command": "node --test benchmarks/harness-efficiency/test/bb-081-heldout-contract.test.mjs"
+    },
+    {
+      "id": "decision-contract",
+      "command": "node --test benchmarks/harness-efficiency/test/bb-081-decision.test.mjs"
+    },
+    {
+      "id": "dependency-contract",
+      "command": "node --test benchmarks/harness-efficiency/test/bb-081-heldout-contract.test.mjs --test-name-pattern='dependency|PLAN_INPUT_CONTRADICTION'"
+    },
+    {
+      "id": "profile-contract",
+      "command": "node --test packages/core-harness/test/execution-profile.test.js"
+    },
+    {
+      "id": "live-heldout",
+      "command": "node benchmarks/harness-efficiency/run.mjs --mode heldout --profile benchmarks/harness-efficiency/heldout-profile.json"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core"
+    }
+  ],
+  "researchGaps": [],
+  "negativeVerificationCases": [
+    "A DEV-* task, replacement task or newly authored task enters the held-out denominator after candidate work exists.",
+    "One arm reuses the other arm's workspace, provider session_id, runtime events or fixture state.",
+    "A failed/rate-limited/retried attempt is omitted from token/cost/elapsed totals or denominator.",
+    "A second successful attempt is selected best-of-k while the first failed attempt is hidden.",
+    "Missing cached/input/cost usage is converted to zero or inferred from stable-prefix bytes.",
+    "PROMOTE_ASYNC is emitted when accepted-task rate regresses or any primary BB-077 efficiency threshold fails.",
+    "PROMOTE_ASYNC is emitted with duplicate effects, unsafe cancellation, lost terminal result, stale-model dispatch or unresolved effect ambiguity.",
+    "INCONCLUSIVE evidence publishes CORE_ASYNC_FIRST_V1 as supported.",
+    "Jev prose or worker-authored summary overrides the deterministic reducer decision.",
+    "Supported profile changes to async while one dependency is not DONE or its delivered artifact hash differs.",
+    "Rollback changes the profile of an active async session before pending operations/effects are quiescent/reconciled.",
+    "A later source/profile mutation retains the old evidence binding and still claims the changed async profile is evidence-backed."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-081 objective + harness-efficiency phase + current Core seams + pinned public evidence",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product mutation",
+        "vendor-benchmark-as-proof",
+        "planned capability as delivered truth"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE direct dependencies",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "forbidden": [
+        "redefine fixed benchmark semantics",
+        "self-acceptance",
+        "unsafe effect replay"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "BB-081 Living Docs describe only the implemented and independently verified async-efficiency behavior, fallback and recovery limitations."
+  },
+  "heldoutContract": {
+    "schemaVersion": 1,
+    "tasks": [
+      "HOLD-F01",
+      "HOLD-F02",
+      "HOLD-C01",
+      "HOLD-C02"
+    ],
+    "pairCount": 4,
+    "arms": [
+      "CORE_SYNC",
+      "CORE_ASYNC_FIRST_V1"
+    ],
+    "deterministicOrder": [
+      {
+        "taskId": "HOLD-F01",
+        "order": [
+          "CORE_SYNC",
+          "CORE_ASYNC_FIRST_V1"
+        ]
+      },
+      {
+        "taskId": "HOLD-F02",
+        "order": [
+          "CORE_ASYNC_FIRST_V1",
+          "CORE_SYNC"
+        ]
+      },
+      {
+        "taskId": "HOLD-C01",
+        "order": [
+          "CORE_SYNC",
+          "CORE_ASYNC_FIRST_V1"
+        ]
+      },
+      {
+        "taskId": "HOLD-C02",
+        "order": [
+          "CORE_ASYNC_FIRST_V1",
+          "CORE_SYNC"
+        ]
+      }
+    ],
+    "attempts": "Use BB-077 maxAttemptsPerTask=2 as bounded failure/retry ceiling. Every attempt is recorded; no best-of-k or task replacement.",
+    "provider": "Exact DONE BB-077 provider/model/price/cache contract.",
+    "isolation": "Fresh workspace/runtime/executor/event state and unique provider session_id per arm/task execution.",
+    "statistics": "Complete paired cohort product gate. Pair-level values and medians are primary; bootstrap intervals are descriptive only and no significance claim is made."
+  },
+  "decisionContract": {
+    "schemaVersion": 1,
+    "outcomes": [
+      "PROMOTE_ASYNC",
+      "KEEP_SYNC_BASELINE",
+      "INCONCLUSIVE"
+    ],
+    "quality": "candidate acceptedTaskRate >= CORE_SYNC on complete registered cohort",
+    "safety": "duplicateEffects == 0 and all required recovery/cancel/stale-model/lost-result negatives pass",
+    "efficiency": {
+      "medianNormalizedProviderCostRatio": "<= 0.85",
+      "medianPromptInputTokenRatio": "<= 0.90",
+      "medianModelTurnRatio": "<= 1.00",
+      "medianElapsedRatio": "<= 1.10"
+    },
+    "promote": "Complete matched cohort AND quality pass AND safety pass AND every efficiency gate pass.",
+    "keepSync": "Complete/known cohort with any conclusively failed quality, safety or primary efficiency gate.",
+    "inconclusive": "Missing pair, incomplete heldout execution, unknown required accounting, prerequisite blockage or invalidated protocol binding.",
+    "authority": "Deterministic reducer decision; independent Jev validates exact delivery evidence but cannot rewrite reducer outcome."
+  },
+  "profilePublicationContract": {
+    "schemaVersion": 1,
+    "module": "packages/core-harness/src/execution-profile.js",
+    "profiles": {
+      "CORE_SYNC": "Always supported compatibility/rollback profile.",
+      "CORE_ASYNC_FIRST_V1": "Selectable supported profile only after PROMOTE_ASYNC."
+    },
+    "selection": "PROMOTE_ASYNC => CORE_ASYNC_FIRST_V1; KEEP_SYNC_BASELINE => CORE_SYNC; INCONCLUSIVE => no publication/change.",
+    "noImplicitDefault": "createAgentRuntime behavior is not silently changed by BB-081; consumers such as BB-066 resolve the exported supported profile explicitly.",
+    "evidenceBinding": [
+      "decisionArtifactHash",
+      "heldoutProtocolHash",
+      "evaluatedSourceSha",
+      "BB-077 delivered hash",
+      "BB-078 delivered hash",
+      "BB-079 delivered hash",
+      "BB-080 delivered hash",
+      "provider/model profile hash"
+    ],
+    "rollbackProfile": "CORE_SYNC",
+    "rollbackBoundary": "New/quiescent session after all in-flight async operations/effects are terminal or reconciled."
+  },
+  "researchEvidence": [
+    {
+      "source": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+      "finding": "Canonical READY research pre-registers HOLD-F01/F02/C01/C02, exact OpenRouter/Claude Sonnet 4.6 provider profile, fresh-reset rules, maxAttemptsPerTask=2, accounting semantics and the primary quality/safety/efficiency gates that BB-081 must not tune post hoc."
+    },
+    {
+      "source": "docs/blackboard/process/harness-efficiency-phase.md",
+      "finding": "Phase contract explicitly reserves BB-081 for PROMOTE_ASYNC or KEEP_SYNC_BASELINE from held-out matched evidence and requires failures/retries, quality, cost/token, turns, overlap, recovery and duplicate-effect reporting."
+    },
+    {
+      "source": "packages/core-harness/package.json",
+      "finding": "The package publishes only `src`, so a supported profile intended for downstream BB-066 consumption must live behind a source/export contract rather than an unshipped benchmark-only file."
+    },
+    {
+      "source": "packages/core-harness/src/index.js",
+      "finding": "Current public exports contain AgentRuntime/model/effect surfaces but no supported execution-profile selection seam."
+    },
+    {
+      "source": "packages/core-harness/src/effect-reconciliation.js",
+      "finding": "EffectOperation replay/reconciliation remains the semantic authority that held-out safety probes must preserve; benchmark/profile state cannot substitute for it."
+    },
+    {
+      "source": "https://developers.openai.com/api/docs/guides/evaluation-best-practices",
+      "finding": "Current evaluation guidance emphasizes task-specific repeatable datasets, logging all outcomes and reliable pass/fail or pairwise grading for variable generative systems; this supports a frozen cohort and independent exact acceptance rather than vibe-based selection."
+    },
+    {
+      "source": "https://www.swebench.com/SWE-bench/guides/evaluation/",
+      "finding": "SWE-bench uses isolated reproducible task evaluation with per-instance reports and run identity; result caches require distinct run identities when predictions differ."
+    },
+    {
+      "source": "https://github.com/swe-bench/experiments/blob/main/checklist.md",
+      "eligibility": "SWE-bench/SWE-bench had 5,908 GitHub stars at 2026-09-25 evidence check.",
+      "finding": "Eligible benchmark-discipline reference: multi-attempt pass@k selection is not equivalent to single-attempt evaluation; every attempt/result-selection rule must be explicit. BB-081 therefore forbids best-of-k cherry-picking."
+    },
+    {
+      "source": "https://github.com/unreallabsai/unreal-agent/tree/1b9f778453f411c029b39b85102aaefb95e7e48d",
+      "eligibility": "1,892 GitHub stars at 2026-09-25 evidence check.",
+      "finding": "Eligible async-harness implementation/benchmark reference, but its published savings remain external evidence and cannot decide ExHarness profile promotion."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Held-out matched runs report accepted quality, total/provider input-output-cached tokens, cost, model turns, tool calls, useful operations per turn, overlap, elapsed time and recovery outcomes.",
+      "criterionIds": [
+        "COHORT",
+        "ACCOUNTING",
+        "QUALITY",
+        "SAFETY",
+        "INV-2",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S5",
+        "S6"
+      ],
+      "verificationIds": [
+        "heldout-contract",
+        "live-heldout",
+        "core-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        14,
+        16
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+        "docs/blackboard/process/harness-efficiency-phase.md",
+        "packages/core-harness/src/effect-reconciliation.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+          "match": "\"heldoutTasks\": ["
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-phase.md",
+          "match": "Record all attempts, including failures/retries"
+        },
+        {
+          "ref": "packages/core-harness/src/effect-reconciliation.js",
+          "match": "export async function reconcileEffectOperation({ capability, journal, operationId })"
+        }
+      ],
+      "supportingPlanFields": [
+        "heldoutContract",
+        "decisionContract",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "The candidate passes a predeclared quality non-regression bound and cost/token improvement gate or the decision is KEEP_SYNC_BASELINE.",
+      "criterionIds": [
+        "QUALITY",
+        "EFFICIENCY",
+        "DECISION",
+        "DEPENDENCY",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S4",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "verificationIds": [
+        "decision-contract",
+        "dependency-contract",
+        "live-heldout"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        4,
+        6,
+        7,
+        9,
+        10,
+        11,
+        14,
+        15
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+        "docs/blackboard/process/harness-efficiency-phase.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+          "match": "\"medianNormalizedProviderCostRatio\": \"candidate/control <= 0.85\""
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-phase.md",
+          "match": "BB-081 | Profile acceptance | PROMOTE_ASYNC or KEEP_SYNC_BASELINE from held-out matched evidence"
+        }
+      ],
+      "supportingPlanFields": [
+        "heldoutContract",
+        "decisionContract",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "No duplicate external effects, lost terminal results, unsafe cancellation or recovery regressions occur in negative probes.",
+      "criterionIds": [
+        "SAFETY",
+        "PROFILE",
+        "ROLLBACK",
+        "DEPENDENCY",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S4",
+        "S5",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "verificationIds": [
+        "decision-contract",
+        "profile-contract",
+        "core-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/effect-reconciliation.js",
+        "packages/core-harness/src/index.js",
+        "packages/core-harness/package.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/effect-reconciliation.js",
+          "match": "EffectReplayPolicy.NON_RECONCILABLE"
+        },
+        {
+          "ref": "packages/core-harness/src/index.js",
+          "match": "export { createAgentRuntime, defineCapability } from \"./agent-runtime.js\";"
+        },
+        {
+          "ref": "packages/core-harness/package.json",
+          "match": "\"files\": ["
+        }
+      ],
+      "supportingPlanFields": [
+        "decisionContract",
+        "profilePublicationContract",
+        "researchEvidence"
+      ]
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-081.readiness-jev-evaluation.json"
+}

@@ -5,17 +5,17 @@
     {
       "id": "NORM-01",
       "fault": "NORM-01",
-      "prompt": "Fix title validation in the API and browser UI. Reject empty or whitespace-only titles and titles over 120 Unicode code points on create and update. Preserve valid CRUD, persistence, and existing records. Run the tests you can see, then submit."
+      "prompt": "Fix the NORM-01 seeded defect in title validation in the API and browser UI. Reject empty or whitespace-only titles and titles over 120 Unicode code points on create and update. Preserve valid CRUD, persistence, and existing records. Run `node smoke.mjs --fault NORM-01` to check the API fix; --fault NONE disables the seeded defect and is not a valid task check. Make the smallest source change, run the smoke check, then submit."
     },
     {
       "id": "STATUS-01",
       "fault": "STATUS-01",
-      "prompt": "Fix PATCH status validation so only OPEN or CLOSED is accepted and a failed update preserves all original fields. Preserve create/list/edit and persistence behavior. Run the tests you can see, then submit."
+      "prompt": "Fix the STATUS-01 seeded defect in PATCH status validation so only OPEN or CLOSED is accepted and a failed update preserves all original fields. Preserve create/list/edit and persistence behavior. Run `node smoke.mjs --fault STATUS-01` to check the fix; --fault NONE disables the seeded defect and is not a valid task check. Make the smallest source change, run the smoke check, then submit."
     },
     {
       "id": "ORDER-01",
       "fault": "ORDER-01",
-      "prompt": "Fix request listing order so GET /requests returns records by ascending id, including after the process restarts against the same database. Preserve CRUD and validation behavior. Run the tests you can see, then submit."
+      "prompt": "Fix the ORDER-01 seeded defect so GET /requests returns records by ascending id, including after the process restarts against the same database. Preserve CRUD and validation behavior. Run `node smoke.mjs --fault ORDER-01` to check the fix; --fault NONE disables the seeded defect and is not a valid task check. Make the smallest source change, run the smoke check, then submit."
     }
   ]
 }

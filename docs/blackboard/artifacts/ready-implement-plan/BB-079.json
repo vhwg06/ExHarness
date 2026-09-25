@@ -1,0 +1,581 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-079",
+  "status": "READY",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-079.json",
+    "hash": "554975be16f9e57a9e4043c7aa9790353be94d0dcaa9782a89e209a5581b33b8"
+  },
+  "scope": [
+    "core.context-efficiency",
+    "core.async-result-delivery",
+    "core.prompt-cache-stability",
+    "core.provider-compatibility"
+  ],
+  "outOfScope": [
+    "Changing product WHAT or acceptance semantics to make an efficiency candidate pass.",
+    "Replacing Application domain authority, Oracle source ownership, Jev/QA judgment authority or EffectOperation truth.",
+    "Adopting Unreal Agent wholesale or treating its benchmark as ExHarness acceptance evidence."
+  ],
+  "constraints": [
+    "Canonical operation/effect state must come from the delivered BB-078 operation/effect records, never from prompt text or provider cache state.",
+    "Research may run ahead, but worker execution requires BB-077 and BB-078 DONE and must consume their exact delivered artifacts/Living refs; a dependency shape mismatch is PLAN_INPUT_CONTRADICTION, not permission to silently reinterpret it.",
+    "Earlier model-visible committed content must remain byte-identical and in the same order solely because a RUNNING operation later becomes terminal.",
+    "Duplicate at-least-once operation-transition notifications must not create duplicate model-visible semantic updates.",
+    "Provider-specific async result semantics must be declared at the model-adapter boundary; an unsupported provider/model route must use the explicit synchronous fallback.",
+    "Cache/token telemetry is optimization evidence only. Missing cached/cache-write counters are null/unknown, never inferred from a stable digest or treated as zero.",
+    "Public GitHub implementation examples must have at least 1,000 stars at the evidence check or be explicitly classified below threshold."
+  ],
+  "invariants": [
+    "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+    "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+    "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
+  ],
+  "architectureDecisions": [
+    "D1 — Add a scoped `async-result-context` Core projector that consumes the delivered detached-operation transition stream and produces model-visible immutable context items. It does not schedule operations, wake the model, own provider sessions, persist effects or change AgentRuntime; BB-080 owns steering/wakeup/coalescing integration.",
+    "D2 — Define one provider-neutral `ASYNC_OPERATION_UPDATE/v1` logical item bound to `operationId`, original `callId`, `effectOperationId`, `generation`, transition `sequence`, deterministic `transitionId`, scheduler `status`, and a terminal result/error projection only when the delivered transition is terminal. The item is a view of operation truth, never the truth source.",
+    "D3 — Projection is append-only across submitted turns. A first model-visible RUNNING handle and a later terminal update are distinct immutable items. A terminal update never edits or replaces an item that was already committed to a prior provider request. Duplicate transitionIds are ignored; a binding mismatch for the same transitionId fails closed.",
+    "D4 — Expose a pure, JSON-serializable checkpoint contract rather than a second persistence engine: `createAsyncResultContextState()`, `stageAsyncResultTransitions({ state, transitions, profile })`, and `commitAsyncResultContext({ state, stagedItemIds, submissionId })`. `committedItems` are immutable; `stagedItems` may only append new logical items. BB-080 is responsible for persisting/recovering the checkpoint alongside its model-turn state.",
+    "D5 — Extend `defineModelAdapter` with normalized async-result delivery capability metadata and preserve it through model routing. Supported modes are `NATIVE_PENDING_CALL`, `HANDLE_THEN_EVENT`, and `SYNCHRONOUS`. The default is `SYNCHRONOUS`, so existing adapters remain safe and behaviorally compatible until they opt in.",
+    "D6 — `NATIVE_PENDING_CALL` is for a provider/model route that explicitly supports unresolved async tool calls across later continuations. The provider translator keeps the original provider call pending, allows independent turns, and delivers the terminal output once on the original provider call id. Core must not synthesize an interim tool result merely to make progress.",
+    "D7 — `HANDLE_THEN_EVENT` is for strict client-tool protocols that require an immediate paired tool result. Emit exactly one RUNNING handle as the original tool result, satisfying that provider call; later terminal state is appended as a normal async-operation context event, never as a second tool result for the same provider tool-use id.",
+    "D8 — `SYNCHRONOUS` waits for terminal operation truth before returning the tool result and emits no progressive async context. Routes with unknown capability, an incompatible model, or a translator that cannot preserve pairing must fail closed to this mode rather than guess.",
+    "D9 — Prefix stability is measured independently of provider cache counters. For every staged/committed projection record canonical serialized bytes, item ordering, committed-prefix SHA-256 and byte length, staged-suffix SHA-256 and byte length. Across turns the prior committed byte sequence must be an exact prefix of the next request projection. Provider-reported cached/cache-write token fields, when available, are recorded separately as observational evidence.",
+    "D10 — Reuse BB-077's delivered stable-prefix/dynamic-suffix accounting vocabulary and matched task/profile binding; do not invent a second efficiency metric. A byte-stable prefix is necessary structural evidence but never sufficient proof of a cache hit or cost improvement.",
+    "D11 — The worker must re-resolve DONE BB-077/078 outputs before implementation. BB-077 supplies the exact benchmark/accounting contract; BB-078 supplies the exact transition envelope/store identity. If delivered names/fields differ from the research assumptions here, stop with PLAN_INPUT_CONTRADICTION and re-research instead of adapting silently.",
+    "D12 — Public evidence is architectural/provider compatibility evidence only. Unreal Agent commit `1b9f778453f411c029b39b85102aaefb95e7e48d` is eligible at this research check (1,890 stars) and demonstrates committed-prefix/staged-suffix plus a RUNNING placeholder pattern. OpenAI official async-tool and prompt-cache documentation supports a native pending-call route; Anthropic official client-tool rules require immediate tool-result pairing and therefore motivate HANDLE_THEN_EVENT or synchronous fallback. None proves ExHarness efficiency."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/model.js",
+      "packages/core-harness/src/model-routing.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "packages/core-harness/src/index.js",
+      "docs/living/reference/architecture/turn-context-refresh.md",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md",
+      "docs/blackboard/process/harness-efficiency-phase.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-077.json"
+    ],
+    "expectedDependencyOutputs": [
+      "BB-077 DONE: exact harness-efficiency benchmark/accounting artifacts and Living truth.",
+      "BB-078 DONE: exact detached-operation transition/store API and Living truth."
+    ],
+    "expectedNew": [
+      "packages/core-harness/src/async-result-context.js"
+    ],
+    "expectedTests": [
+      "packages/core-harness/test/async-result-context.test.js",
+      "packages/core-harness/test/async-result-provider-compatibility.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/core-harness/src/**",
+      "packages/core-harness/test/**",
+      "benchmarks/harness-efficiency/**",
+      "docs/living/system/core-harness/**",
+      "docs/living/reference/architecture/turn-context-refresh.md",
+      "docs/blackboard/process/harness-efficiency-phase.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-078.json"
+    ],
+    "write": [
+      "packages/core-harness/src/async-result-context.js",
+      "packages/core-harness/src/model.js",
+      "packages/core-harness/src/model-routing.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/test/async-result-context.test.js",
+      "packages/core-harness/test/async-result-provider-compatibility.test.js",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**",
+      "packages/agentic-system/**",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/effect-reconciliation.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — At worker start verify BB-077 and BB-078 are DONE, load their exact implementation-result/judgment/Living refs, and bind this implementation to their delivered benchmark and detached-transition contracts. Any incompatible dependency shape stops as PLAN_INPUT_CONTRADICTION.",
+    "S2 — Implement `async-result-context.js` with the immutable `ASYNC_OPERATION_UPDATE/v1` schema, JSON-serializable checkpoint, stage/commit API, transitionId dedupe, strict binding validation and canonical prefix/suffix byte/digest metrics. Test RUNNING→terminal, duplicate delivery, out-of-order sequences, generation mismatch and binding corruption without any provider.",
+    "S3 — Extend model adapter normalization/view/routing with the three async-result delivery modes while retaining `SYNCHRONOUS` as the default. Prove old adapters require no code change and route wrappers preserve the declared capability exactly.",
+    "S4 — Implement provider-neutral translation fixtures for `NATIVE_PENDING_CALL`, `HANDLE_THEN_EVENT` and `SYNCHRONOUS`. Native mode must retain original call identity without a placeholder result; handle mode must emit one paired RUNNING result then one later ordinary async update; sync mode must emit one terminal tool result only.",
+    "S5 — Add prefix-stability probes that submit two or more logical turns and prove the previous committed bytes are an exact prefix after late async completion, while mutations of an already committed RUNNING item are rejected. Record provider cache telemetry only when supplied by the fixture and keep unknown fields null.",
+    "S6 — Export the scoped API and update Core Living Docs with supported modes, dependency boundary and non-authority semantics. Run full Core regression; do not wire model wakeups, coalescing or recovery-loop scheduling and do not claim cost/token improvement in BB-079."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "APPEND_ONLY",
+      "statement": "A delivered RUNNING transition can be exposed to the model and a later terminal transition can be exposed without modifying or reordering any previously committed async-result context bytes.",
+      "verificationIds": [
+        "context-contract"
+      ],
+      "evidenceRequired": [
+        "Two-turn RUNNING→terminal fixture with exact prior-prefix byte equality, distinct immutable item ids and committed/staged digest records."
+      ]
+    },
+    {
+      "id": "BINDING",
+      "statement": "Every async context item is bound to the exact delivered operation/call/effect/generation/transition identity; duplicate transition delivery is idempotent and conflicting reuse fails closed.",
+      "verificationIds": [
+        "context-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Duplicate transitionId fixture, out-of-order/generation/binding mismatch negatives, and proof that context projection cannot create or confirm EffectOperation truth."
+      ]
+    },
+    {
+      "id": "PROVIDER",
+      "statement": "The model-adapter boundary declares one of NATIVE_PENDING_CALL, HANDLE_THEN_EVENT or SYNCHRONOUS and routing preserves it; existing adapters default to SYNCHRONOUS.",
+      "verificationIds": [
+        "provider-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Adapter normalization/routing fixtures for all modes plus an unchanged legacy adapter fixture."
+      ]
+    },
+    {
+      "id": "PAIRING",
+      "statement": "Native pending-call translation delivers the late terminal output once on the original call id without an interim tool result; strict handle translation emits one immediate RUNNING tool result and later terminal state only as a separate async event; synchronous fallback preserves one-call/one-result pairing.",
+      "verificationIds": [
+        "provider-contract"
+      ],
+      "evidenceRequired": [
+        "Protocol-shape fixtures for all three modes, including rejection of a second tool result for an already fulfilled HANDLE_THEN_EVENT call."
+      ]
+    },
+    {
+      "id": "PREFIX",
+      "statement": "Each turn reports committed-prefix and staged-suffix digests/byte lengths; a stable digest is structural evidence only, and provider cache-hit/write counters are recorded only when explicitly reported.",
+      "verificationIds": [
+        "context-contract",
+        "provider-contract"
+      ],
+      "evidenceRequired": [
+        "Byte-for-byte prefix assertions across late results, deliberate-prefix-mutation rejection, reported-cache fixture and missing-cache-telemetry fixture retaining null/unknown."
+      ]
+    },
+    {
+      "id": "DEPENDENCY",
+      "statement": "Worker implementation consumes DONE BB-077/078 outputs instead of treating their research plans as delivered capability and stops on incompatible dependency contracts.",
+      "verificationIds": [
+        "dependency-contract"
+      ],
+      "evidenceRequired": [
+        "Dependency manifest check bound to exact DONE implementation-result/judgment/Living refs and a PLAN_INPUT_CONTRADICTION negative fixture."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Async context projection, provider delivery mode and prompt-cache state cannot become correctness, product-acceptance or external-effect authority.",
+      "verificationIds": [
+        "context-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Negative proof that changing projected status/provider cache telemetry cannot synthesize EffectOperation confirmation or accepted product result."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "verificationIds": [
+        "context-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Binding-corruption and unresolved-effect fixtures plus unchanged effect-reconciliation regression."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "Efficiency claims remain governed by the exact matched BB-077 protocol and cannot be inferred from prefix stability or provider feature support alone.",
+      "verificationIds": [
+        "dependency-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "No promotion/cost conclusion in BB-079 output; Living Docs label prefix/cache data observational pending BB-081 matched evaluation."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "criterionIds": [
+        "INV-1",
+        "BINDING"
+      ]
+    },
+    {
+      "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "criterionIds": [
+        "INV-2",
+        "BINDING",
+        "DEPENDENCY"
+      ]
+    },
+    {
+      "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "criterionIds": [
+        "INV-3",
+        "PREFIX",
+        "DEPENDENCY"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "context-contract",
+      "command": "node --test packages/core-harness/test/async-result-context.test.js"
+    },
+    {
+      "id": "provider-contract",
+      "command": "node --test packages/core-harness/test/async-result-provider-compatibility.test.js"
+    },
+    {
+      "id": "dependency-contract",
+      "command": "node --test packages/core-harness/test/async-result-context.test.js --test-name-pattern='dependency|PLAN_INPUT_CONTRADICTION'"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core"
+    }
+  ],
+  "researchGaps": [],
+  "negativeVerificationCases": [
+    "A terminal transition rewrites or replaces a RUNNING item that appeared in an earlier submitted model request.",
+    "The same transitionId arrives twice and becomes two semantic model-visible completions.",
+    "A reused transitionId changes operationId/callId/effectOperationId/generation/status/result binding and is accepted.",
+    "A strict provider route receives a second tool_result for the same client tool-use id after its RUNNING handle already fulfilled the original pair.",
+    "A native async route emits a placeholder tool result and accidentally closes a provider call that was meant to stay pending.",
+    "An adapter omits async capability metadata but progressive delivery is attempted instead of falling back to SYNCHRONOUS.",
+    "A stable prefix digest is reported as a cache hit when the provider supplied no cache telemetry.",
+    "BB-079 implementation proceeds against BB-077/078 plan assumptions even though the DONE dependency artifacts expose a different contract.",
+    "Prompt/context state is used to mark an external effect CONFIRMED or a product result accepted."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-079 objective + harness-efficiency phase + current Core seams + pinned public evidence",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product mutation",
+        "vendor-benchmark-as-proof",
+        "planned capability as delivered truth"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE direct dependencies",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "forbidden": [
+        "redefine fixed benchmark semantics",
+        "self-acceptance",
+        "unsafe effect replay"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "BB-079 Living Docs describe only the implemented and independently verified async-efficiency behavior, fallback and recovery limitations."
+  },
+  "asyncResultContextContract": {
+    "schemaVersion": 1,
+    "logicalItem": "ASYNC_OPERATION_UPDATE/v1",
+    "identityFields": [
+      "operationId",
+      "callId",
+      "effectOperationId",
+      "generation",
+      "sequence",
+      "transitionId"
+    ],
+    "statuses": [
+      "RUNNING",
+      "CANCEL_REQUESTED",
+      "SUCCEEDED",
+      "FAILED",
+      "CANCELLED",
+      "UNKNOWN"
+    ],
+    "itemRules": [
+      "One logical item is derived from one delivered detached-operation transition envelope.",
+      "RUNNING/progress and terminal updates are separate immutable items; committed items are never edited.",
+      "Duplicate transitionId with identical binding is ignored; conflicting binding is corruption and fails closed.",
+      "Result/error payload is exposed only from the delivered transition/effect-derived result; the projector does not execute or reconcile effects."
+    ],
+    "stateApi": [
+      "createAsyncResultContextState()",
+      "stageAsyncResultTransitions({ state, transitions, profile })",
+      "commitAsyncResultContext({ state, stagedItemIds, submissionId })"
+    ],
+    "checkpoint": [
+      "committedItems",
+      "stagedItems",
+      "seenTransitionBindings",
+      "lastSequenceByOperation",
+      "committedPrefixDigest",
+      "committedPrefixBytes",
+      "stagedSuffixDigest",
+      "stagedSuffixBytes"
+    ],
+    "ownership": "Pure Core projection/checkpoint only. BB-080 owns persistence with model-turn state, wakeups, replacement/coalescing and restart orchestration."
+  },
+  "providerCompatibility": {
+    "schemaVersion": 1,
+    "modes": {
+      "NATIVE_PENDING_CALL": {
+        "semantics": "Provider/model explicitly supports continuing conversation while a tool call remains unresolved and later accepting the terminal output on the original provider call id.",
+        "runningRepresentation": "No synthetic provider tool result. The provider-native pending call remains open; optional non-tool async status context may be staged separately.",
+        "terminalRepresentation": "One terminal tool output on the original provider call id.",
+        "evidence": "OpenAI Async tool calling documentation: async tool definitions allow independent work/turns and later function_call_output/custom_tool_call_output on the original call_id while continuing from the latest response id."
+      },
+      "HANDLE_THEN_EVENT": {
+        "semantics": "Provider requires the client tool call to be paired immediately before later conversation can continue.",
+        "runningRepresentation": "Exactly one tool result containing an immutable operation handle/RUNNING status, paired with the original tool call.",
+        "terminalRepresentation": "A later ordinary ASYNC_OPERATION_UPDATE context item, never a second tool result for the already fulfilled provider call.",
+        "evidence": "Anthropic client-tool documentation requires corresponding tool_result blocks immediately after tool_use; Unreal Agent uses a RUNNING tool-result placeholder in a committed-prefix/staged-suffix builder."
+      },
+      "SYNCHRONOUS": {
+        "semantics": "No progressive async result delivery.",
+        "runningRepresentation": "None.",
+        "terminalRepresentation": "Wait for terminal truth and return one ordinary terminal tool result.",
+        "evidence": "Safe default for existing adapters and any provider/model route whose progressive semantics are unknown or incompatible."
+      }
+    },
+    "adapterMetadata": {
+      "field": "asyncResultDelivery",
+      "default": "SYNCHRONOUS",
+      "preservedBy": [
+        "defineModelAdapter",
+        "modelAdapterView",
+        "resolveModelRoute wrapper"
+      ]
+    }
+  },
+  "prefixStabilityContract": {
+    "schemaVersion": 1,
+    "structuralInvariant": "For request N+1, the serialized bytes representing every previously committed async-result item must start with exactly the serialized committed bytes submitted for request N; only new staged suffix bytes may be appended by an operation update.",
+    "measurements": [
+      "committedPrefixSha256",
+      "committedPrefixBytes",
+      "stagedSuffixSha256",
+      "stagedSuffixBytes",
+      "itemIds/order",
+      "provider cached tokens when reported",
+      "provider cache-write tokens when reported"
+    ],
+    "unknownTelemetry": "Missing provider cache fields remain null with an unsupported|missing|ambiguous reason; structural equality never fabricates a cache hit.",
+    "relationshipToBB077": "Reuse the exact DONE BB-077 benchmark/accounting identities and comparison vocabulary. BB-079 adds the structural context contract only; BB-081 owns matched efficiency acceptance."
+  },
+  "researchEvidence": [
+    {
+      "source": "ExHarness main 5f4574b4fb1854e32c89c62a82275187d5e6b080",
+      "finding": "Current Core rerenders prompt context per turn; context history is a bounded projection and model adapters expose only name/version/generate. There is no committed-prefix/staged-suffix async-result contract or provider delivery capability metadata."
+    },
+    {
+      "source": "https://github.com/unreallabsai/unreal-agent/tree/1b9f778453f411c029b39b85102aaefb95e7e48d",
+      "eligibility": "1,890 GitHub stars at 2026-09-25 evidence check; satisfies the >=1,000-star public-example rule.",
+      "finding": "Eligible implementation reference: contextbuilder keeps committedPrefix and stagedSuffix, represents unfinished tool calls with a RUNNING tool-result payload, commits staged suffix explicitly, and recovery tests preserve submitted history/pending completions. This is a pattern reference, not ExHarness benchmark proof."
+    },
+    {
+      "source": "https://developers.openai.com/api/docs/guides/async-tool-calling",
+      "finding": "OpenAI supports explicitly async function/custom tools on compatible models: independent work may continue and the application later supplies the output using the original call_id while continuing from the latest response id."
+    },
+    {
+      "source": "https://developers.openai.com/api/docs/guides/prompt-caching",
+      "finding": "OpenAI cache reuse depends on matching prompt prefixes; multi-turn agents preserve cacheability by appending turns rather than rewriting earlier context, and cached_tokens/cache-write observations are provider telemetry rather than correctness evidence."
+    },
+    {
+      "source": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls",
+      "finding": "Anthropic client tool_result blocks must immediately follow the corresponding tool_use before later messages, so an unresolved client call cannot be carried across ordinary later turns with OpenAI-native semantics."
+    },
+    {
+      "source": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-use-with-prompt-caching",
+      "finding": "Anthropic prompt caching follows a prefix hierarchy and tool/message changes have explicit invalidation behavior; stable tools/system plus append-only later messages are the compatible shape."
+    },
+    {
+      "source": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+      "finding": "Prior READY BB-077 research plan is used only for its predeclared stable-prefix/dynamic-suffix measurement vocabulary and benchmark binding. It is research evidence, not proof that BB-077 implementation has been delivered; BB-079 worker still must bind to exact DONE BB-077 implementation-result/judgment/Living artifacts."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A RUNNING operation can be surfaced once and its later terminal result appended/advanced without rewriting unrelated committed history.",
+      "criterionIds": [
+        "APPEND_ONLY",
+        "BINDING",
+        "PAIRING",
+        "INV-1"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "context-contract",
+        "provider-contract",
+        "dependency-contract"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        10
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/action-effect.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "export async function renderAgentContext({"
+        },
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "latestPromptContext = await renderAgentContext({"
+        },
+        {
+          "ref": "packages/core-harness/src/action-effect.js",
+          "match": "EffectOperationStatus.UNKNOWN"
+        }
+      ],
+      "supportingPlanFields": [
+        "asyncResultContextContract",
+        "providerCompatibility",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Repeated equivalent turns preserve a stable prefix/cache key where the provider supports caching, with cache-hit/input-token evidence captured when available.",
+      "criterionIds": [
+        "PREFIX",
+        "DEPENDENCY",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S5"
+      ],
+      "verificationIds": [
+        "context-contract",
+        "provider-contract",
+        "dependency-contract"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        8,
+        9,
+        10
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/model.js",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-077.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "sourceEventIds: selected.map((event) => event.id)"
+        },
+        {
+          "ref": "packages/core-harness/src/model.js",
+          "match": "export function defineModelAdapter({ name = \"model\", version = null, generate })"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+          "match": "Record SHA-256 and byte length for stable prefix and dynamic suffix on every request."
+        }
+      ],
+      "supportingPlanFields": [
+        "prefixStabilityContract",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Providers that reject progressive tool-result semantics follow an explicit tested fallback without corrupting tool-call/result pairing.",
+      "criterionIds": [
+        "PROVIDER",
+        "PAIRING",
+        "DEPENDENCY",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S3",
+        "S4",
+        "S6"
+      ],
+      "verificationIds": [
+        "provider-contract",
+        "dependency-contract",
+        "core-regression"
+      ],
+      "decisionIndexes": [
+        4,
+        5,
+        6,
+        7,
+        10,
+        11
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/model.js",
+        "packages/core-harness/src/model-routing.js",
+        "packages/core-harness/src/effect-reconciliation.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/model.js",
+          "match": "model adapter requires generate()"
+        },
+        {
+          "ref": "packages/core-harness/src/model-routing.js",
+          "match": "const adapter = defineModelAdapter({"
+        },
+        {
+          "ref": "packages/core-harness/src/effect-reconciliation.js",
+          "match": "NON_RECONCILABLE"
+        }
+      ],
+      "supportingPlanFields": [
+        "providerCompatibility",
+        "asyncResultContextContract",
+        "researchEvidence"
+      ]
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-079.readiness-jev-evaluation.json"
+}

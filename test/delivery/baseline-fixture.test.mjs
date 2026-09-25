@@ -9,7 +9,7 @@ const fixture = 'scripts/delivery/baseline/fixture';
 async function candidate(t) {
   const directory = await mkdtemp(join(tmpdir(), 'baseline-candidate-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
-  for (const name of ['server.mjs', 'index.html', 'client.js']) await copyFile(join(fixture, name), join(directory, name));
+  for (const name of ['server.mjs', 'index.html', 'client.js', 'smoke.mjs']) await copyFile(join(fixture, name), join(directory, name));
   return directory;
 }
 

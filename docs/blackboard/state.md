@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-077
+next-work-id: BB-082
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -41,11 +41,8 @@ NONE
 ## Schedulable tasks
 
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
-- BB-059 [RESEARCH_SA/RESEARCH] — Research evidence-gated HOW evolution and Jev evaluation pipeline
 - BB-060 [WORKER/EXECUTION] — Reconcile Oracle physical ownership and package boundary
 - BB-065 [WORKER/EXECUTION] — Define delivery profile and executable value baseline
-- BB-068 [RESEARCH_SA/RESEARCH] — Connect real repository changes to CI and review evidence
-- BB-069 [RESEARCH_SA/RESEARCH] — Prove first useful agent delivery through Oracle and independent QA
 - BB-070 [RESEARCH_SA/RESEARCH] — Deliver product from goal and partial artifacts across owned domains
 - BB-071 [RESEARCH_SA/RESEARCH] — Prove requirement change and failure recovery on a live product
 - BB-072 [RESEARCH_SA/RESEARCH] — Make delivery runs observable recoverable and cost bounded
@@ -53,6 +50,7 @@ NONE
 - BB-074 [RESEARCH_SA/RESEARCH] — Measure real delivery value against direct-agent baseline
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
+- BB-077 [WORKER/EXECUTION] — Measure ExHarness harness tax and pin async-first baseline
 
 ## Dependency graph
 
@@ -65,17 +63,17 @@ BB-055 [BLOCKED_BY BB-054] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [BLOCKED_BY BB-055] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
-BB-059 [RESEARCH_SCHEDULABLE] <- BB-058
+BB-059 [BLOCKED_BY BB-058] <- BB-058
 BB-060 [WORKER_SCHEDULABLE] <- ROOT
 BB-061 [BLOCKED_BY BB-060] <- BB-060
 BB-062 [BLOCKED_BY BB-061] <- BB-061
 BB-063 [BLOCKED_BY BB-062] <- BB-062
 BB-064 [BLOCKED_BY BB-060,BB-061,BB-062,BB-063] <- BB-060, BB-061, BB-062, BB-063
 BB-065 [WORKER_SCHEDULABLE] <- ROOT
-BB-066 [BLOCKED_BY BB-065] <- BB-065, BB-048
+BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
-BB-068 [RESEARCH_SCHEDULABLE] <- BB-066, BB-067
-BB-069 [RESEARCH_SCHEDULABLE] <- BB-068, BB-064
+BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
+BB-069 [BLOCKED_BY BB-068,BB-064] <- BB-068, BB-064
 BB-070 [RESEARCH_SCHEDULABLE] <- BB-069, BB-055
 BB-071 [RESEARCH_SCHEDULABLE] <- BB-070, BB-057
 BB-072 [RESEARCH_SCHEDULABLE] <- BB-068, BB-058
@@ -83,6 +81,11 @@ BB-073 [RESEARCH_SCHEDULABLE] <- BB-070, BB-072
 BB-074 [RESEARCH_SCHEDULABLE] <- BB-071, BB-073
 BB-075 [RESEARCH_SCHEDULABLE] <- BB-074, BB-059
 BB-076 [RESEARCH_SCHEDULABLE] <- BB-074, BB-075
+BB-077 [WORKER_SCHEDULABLE] <- ROOT
+BB-078 [BLOCKED_BY BB-077] <- BB-077
+BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
+BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
+BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
 ```
 
 ## Context semantics

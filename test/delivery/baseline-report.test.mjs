@@ -19,7 +19,7 @@ function accepted(taskId, attemptNumber = 1) {
   return { taskId, attemptId: `${taskId}-a${attemptNumber}`, attemptNumber, status: 'ACCEPTED', terminalTimestamp: atMinute(20), candidateDigest: `sha256:${'a'.repeat(64)}`, verification: { status: 'ACCEPTED', candidateDigest: `sha256:${'a'.repeat(64)}` } };
 }
 function usage(taskId, attemptNumber = 1, costUsd = 1) {
-  return { taskId, attemptId: `${taskId}-a${attemptNumber}`, requestId: `${taskId}-r${attemptNumber}`, providerRequestId: `${taskId}-provider-${attemptNumber}`, status: 'SETTLED', inputTokens: 100, cachedInputTokens: 0, outputTokens: 20, costUsd };
+  return { taskId, attemptId: `${taskId}-a${attemptNumber}`, requestId: `${taskId}-r${attemptNumber}`, providerRequestId: `${taskId}-provider-${attemptNumber}`, status: 'SETTLED', inputTokens: 100, cachedInputTokens: 0, cacheEvidence: 'REPORTED', outputTokens: 20, costUsd };
 }
 
 test('all registered tasks and failed attempts stay in the denominator and cost', () => {

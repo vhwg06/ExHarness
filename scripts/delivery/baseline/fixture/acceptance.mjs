@@ -6,7 +6,7 @@ import { join, resolve, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const fixtureDirectory = fileURLToPath(new URL('.', import.meta.url));
-const sourceFiles = ['server.mjs', 'index.html', 'client.js'];
+const sourceFiles = ['server.mjs', 'index.html', 'client.js', 'smoke.mjs'];
 const sha256 = data => createHash('sha256').update(data).digest('hex');
 
 export async function candidateDigest(directory) {

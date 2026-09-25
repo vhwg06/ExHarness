@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { CALIBRATION_TASK_IDS, MINI_COMMIT, NODE_VERSION, PLAYWRIGHT_VERSION, PROTOCOL_HASH, canonical, fixtureIdentities, registrationManifest, sha256, validateProfile } from './contract.mjs';
 import { candidateDigest, verifyCandidate } from './fixture/acceptance.mjs';
 import { reportDirectory } from './report.mjs';
-import { reconcileStoredCompletion } from './provider-export.mjs';
+import { exportProviderRecords, reconcileOriginalResponse, reconcileStoredCompletion } from './provider-export.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const fixture = join(root, 'fixture');
@@ -16,6 +16,17 @@ const option = (args, name) => { const index = args.indexOf(name); return index 
 const now = () => new Date().toISOString();
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8', cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 const plainJson = path => readFile(path, 'utf8').then(JSON.parse);
+export function classifyRunResult(child, driverResult, verification) {
+  if (child.timedOut) return 'TIMED_OUT';
+  if (verification.status === 'ACCEPTED') return 'ACCEPTED';
+  if (verification.status === 'INCONCLUSIVE') return 'INCONCLUSIVE';
+  return child.code === 0 && driverResult.exitStatus === 'Submitted' ? 'REJECTED' : 'FAILED';
+}
+export function selectedCalibrationTaskIds(selectedTaskId = null) {
+  if (selectedTaskId === null) return [...CALIBRATION_TASK_IDS];
+  if (!CALIBRATION_TASK_IDS.includes(selectedTaskId)) fail('unknown calibration task');
+  return [selectedTaskId];
+}
 async function jsonIfExists(path) { try { return await plainJson(path); } catch (error) { if (error.code === 'ENOENT') return null; throw error; } }
 async function jsonLinesIfExists(path) { try { return (await readFile(path, 'utf8')).split(/\r?\n/).filter(Boolean).map(JSON.parse); } catch (error) { if (error.code === 'ENOENT') return []; throw error; } }
 const digestFile = async path => `sha256:${createHash('sha256').update(await readFile(path)).digest('hex')}`;
@@ -44,7 +55,7 @@ async function append(path, value) {
 }
 async function copyCandidate(destination) {
   await mkdir(destination, { recursive: true });
-  for (const name of ['server.mjs', 'index.html', 'client.js']) await copyFile(join(fixture, name), join(destination, name));
+  for (const name of ['server.mjs', 'index.html', 'client.js', 'smoke.mjs']) await copyFile(join(fixture, name), join(destination, name));
   return candidateDigest(destination);
 }
 function ensureGitCandidate(profile) {
@@ -109,7 +120,12 @@ async function ledgerUsage(path, taskId) {
     return { schemaVersion: 1, taskId, attemptId: reservations.get(id).attemptId, requestId: id, providerRequestId: outcome?.providerRequestId ?? null,
       status: outcome?.kind === 'SETTLED' ? 'SETTLED' : 'UNKNOWN', inputTokens: outcome?.inputTokens ?? null,
       cachedInputTokens: outcome?.cachedInputTokens ?? null,
-      outputTokens: outcome?.outputTokens ?? null, costUsd: outcome?.costUsd ?? null };
+      cacheEvidence: outcome?.cacheEvidence ?? null,
+      outputTokens: outcome?.outputTokens ?? null, costUsd: outcome?.costUsd ?? null,
+      returnedModelId: outcome?.returnedModelId ?? null,
+      providerEvidenceMode: outcome?.providerEvidenceMode ?? null,
+      providerEvidenceRef: outcome?.providerEvidenceRef ?? null,
+      providerEvidenceHash: outcome?.providerEvidenceHash ?? null };
   });
 }
 
@@ -141,8 +157,7 @@ async function live(profile, identities, output, selectedTaskId = null) {
   await writeOnce(join(output, 'negative-verification.json'), { evidenceClass: 'DETERMINISTIC_NEGATIVE_CONTROL',
     producerKind: 'EXIT_ZERO_DOUBLE', producerCommand: 'node -e process.exit(0)', producerExitCode: producerDouble.code,
     candidateDigest: negativeDigest, verifierDigest: frozenVerifierDigest, ...negative });
-  for (const taskId of CALIBRATION_TASK_IDS) {
-    if (selectedTaskId !== null && taskId !== selectedTaskId) continue;
+  for (const taskId of selectedCalibrationTaskIds(selectedTaskId)) {
     const task = taskList.find(item => item.id === taskId);
     if (!task) fail(`missing calibration task ${taskId}`);
     const taskOutput = join(output, taskId);
@@ -197,7 +212,7 @@ async function live(profile, identities, output, selectedTaskId = null) {
     });
     const recordedUsage = new Set((await jsonLinesIfExists(join(output, 'usage.jsonl'))).map(row => row.requestId));
     for (const row of rawUsage) if (!recordedUsage.has(row.requestId)) await append(join(output, 'usage.jsonl'), row);
-    const status = child.timedOut ? 'TIMED_OUT' : child.code === 0 ? (verification.status === 'ACCEPTED' ? 'ACCEPTED' : verification.status === 'REJECTED' ? 'REJECTED' : 'INCONCLUSIVE') : 'FAILED';
+    const status = classifyRunResult(child, driverResult, verification);
     const attempt = { schemaVersion: 1, experimentId: profile.experimentId, taskId, arm: 'DIRECT', attemptId, attemptNumber,
       status, terminalTimestamp: now(), candidateDigest: candidateHash, verification: { status: verification.status, candidateDigest: verification.candidateDigest },
       producerExitStatus: driverResult.exitStatus, providerDispatched: rawUsage.some(row => row.attemptId === attemptId) };
@@ -227,12 +242,39 @@ async function auditLive(profile, identities, output) {
   if (negativeRecheck.status !== 'REJECTED' || negativeRecheck.candidateDigest !== negative.candidateDigest) fail('seeded defect is not reproducibly rejected');
   const attempts = (await readFile(join(output, 'attempts.jsonl'), 'utf8')).split(/\r?\n/).filter(Boolean).map(JSON.parse);
   const usage = (await readFile(join(output, 'usage.jsonl'), 'utf8')).split(/\r?\n/).filter(Boolean).map(JSON.parse);
+  if (profile.model.provider === 'nvidia_nim') {
+    for (const request of usage) {
+      if (!request.providerEvidenceRef) continue;
+      if (!/^[A-Za-z0-9-]+$/.test(request.taskId ?? '') || !/^[a-f0-9]{32}$/.test(request.requestId ?? '') ||
+          request.providerEvidenceRef !== `${request.taskId}/provider-responses/${request.requestId}.json` ||
+          !/^sha256:[a-f0-9]{64}$/.test(request.providerEvidenceHash ?? '') ||
+          await digestFile(join(output, request.providerEvidenceRef)) !== request.providerEvidenceHash)
+        fail('NIM provider response evidence changed or escaped bundle');
+    }
+  }
   const providerExport = (await readFile(join(output, 'provider-export.jsonl'), 'utf8')).split(/\r?\n/).filter(Boolean).map(JSON.parse);
   if (attempts.length < 3 || !CALIBRATION_TASK_IDS.every(id => attempts.some(item => item.taskId === id)) ||
       !CALIBRATION_TASK_IDS.every(id => usage.some(item => item.taskId === id && item.providerRequestId))) fail('three independently reset provider runs missing');
   const exported = new Map();
   const openRouter = profile.model.credentialEnv === 'OPENROUTER_API_KEY';
+  const nim = profile.model.provider === 'nvidia_nim';
   for (const record of providerExport) {
+    if (nim) {
+      const request = usage.find(item => item.status === 'SETTLED' && item.providerRequestId === record.providerRequestId);
+      if (!request || record.evidenceClass !== 'PROVIDER_EVIDENCE' || record.exportedBy !== profile.operatorId ||
+          !/^[A-Za-z0-9-]+$/.test(request.taskId ?? '') || !/^[a-f0-9]{32}$/.test(request.requestId ?? '') ||
+          record.evidenceMode !== request.providerEvidenceMode || record.rawRecordRef !== request.providerEvidenceRef ||
+          record.rawRecordHash !== request.providerEvidenceHash || record.sourceRef !== `${profile.model.apiBaseUrl}/chat/completions` ||
+          record.rawRecordRef !== `${request.taskId}/provider-responses/${request.requestId}.json` ||
+          exported.has(record.providerRequestId)) fail('invalid NIM provider response evidence');
+      if (await digestFile(join(output, record.rawRecordRef)) !== record.rawRecordHash) fail('NIM provider response digest mismatch');
+      const raw = await plainJson(join(output, record.rawRecordRef));
+      const reconciliation = reconcileOriginalResponse(raw, request, profile.model);
+      if (record.cacheEvidence !== reconciliation.cachedInputVerification || record.capturedAt !== raw.capturedAt ||
+          record.returnedModelId !== request.returnedModelId) fail('NIM provider response export differs from ledger');
+      exported.set(record.providerRequestId, record);
+      continue;
+    }
     const expectedSource = openRouter ? `${profile.model.apiBaseUrl}/generation?id=${encodeURIComponent(record.providerRequestId)}` :
       `${profile.model.apiBaseUrl}/chat/completions/${encodeURIComponent(record.providerRequestId)}`;
     if (record.evidenceClass !== 'PROVIDER_EXPORT' || record.exportedBy !== profile.operatorId ||
@@ -250,9 +292,10 @@ async function auditLive(profile, identities, output) {
   for (const request of usage.filter(item => item.status === 'SETTLED')) {
     const independent = exported.get(request.providerRequestId);
     if (!independent || independent.inputTokens !== request.inputTokens || independent.cachedInputTokens !== request.cachedInputTokens ||
-        independent.outputTokens !== request.outputTokens ||
+        (nim && independent.cacheEvidence !== request.cacheEvidence) || independent.outputTokens !== request.outputTokens ||
         independent.costUsd !== request.costUsd) fail('provider usage lacks matching independent export');
   }
+  if (exported.size !== usage.filter(item => item.status === 'SETTLED').length) fail('provider evidence count differs from settled usage');
   for (const taskId of CALIBRATION_TASK_IDS) {
     const taskAttempts = attempts.filter(item => item.taskId === taskId).sort((a, b) => a.attemptNumber - b.attemptNumber);
     const latest = taskAttempts.at(-1);
@@ -271,7 +314,8 @@ async function auditLive(profile, identities, output) {
   if (canonical(report) !== canonical(await plainJson(join(output, 'report.json')))) fail('report is stale');
   return { mode: 'audit-live', tasks: attempts.length, valueVerdict: report.valueVerdict,
     evidenceClass: 'LIVE', providerExportActor: profile.operatorId, reviewerAction: 'NOT_CLAIMED',
-    cachedInputOriginalResponseOnly: providerExport.filter(record => record.cachedInputVerification === 'ORIGINAL_RESPONSE_ONLY').length };
+    cachedInputNotReported: providerExport.filter(record => record.cacheEvidence === 'NOT_REPORTED').length,
+    providerEvidenceMode: profile.model.evidenceMode ?? 'RETRIEVABLE_RECORD' };
 }
 
 async function deterministic(output) {
@@ -291,13 +335,20 @@ export async function main(args = process.argv.slice(2)) {
   const selectedTaskId = option(args, '--task-id') ?? null;
   if (!['validate', 'deterministic', 'live', 'audit-live'].includes(mode)) fail('unknown mode');
   if (!['pilot', 'calibration'].includes(registration)) fail('unknown registration kind');
-  if (selectedTaskId !== null && (mode !== 'live' || !CALIBRATION_TASK_IDS.includes(selectedTaskId))) fail('task selection must name one LIVE calibration task');
+  if (selectedTaskId !== null && mode !== 'live') fail('--task-id is only valid in live mode');
+  selectedCalibrationTaskIds(selectedTaskId);
   if ((mode !== 'validate' && !output) || (mode !== 'deterministic' && !profilePath)) fail('profile/output required');
   const identities = await fixtureIdentities();
   const profile = profilePath ? await plainJson(resolve(profilePath)) : null;
   if (mode === 'validate') return { mode, registration, ...validateProfile(profile, { ...identities, requirePilot: registration === 'pilot' }) };
   if (mode === 'deterministic') return deterministic(resolve(output));
-  if (mode === 'live') return live(profile, identities, resolve(output), selectedTaskId);
+  if (mode === 'live') {
+    const result = await live(profile, identities, resolve(output), selectedTaskId);
+    if (profile.model.provider !== 'nvidia_nim') return result;
+    const providerEvidence = await exportProviderRecords({ profilePath: resolve(profilePath), output: resolve(output),
+      operatorId: profile.operatorId });
+    return { ...result, providerEvidence };
+  }
   return auditLive(profile, identities, resolve(output));
 }
 

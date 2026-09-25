@@ -1,0 +1,547 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-077",
+  "status": "READY",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-077.json",
+    "hash": "1728f4a54cf9164c79eb549c344570737a7f3380f4c5e1648b1259c6514b5383"
+  },
+  "scope": [
+    "core.harness-economics",
+    "core.runtime-usage",
+    "core.cache-observation",
+    "core.matched-baseline"
+  ],
+  "outOfScope": [
+    "Changing product WHAT or acceptance semantics to make an efficiency candidate pass.",
+    "Replacing Application domain authority, Oracle source ownership, Jev/QA judgment authority or EffectOperation truth.",
+    "Adopting Unreal Agent wholesale or treating its benchmark as ExHarness acceptance evidence."
+  ],
+  "constraints": [
+    "Use the same model/version, task fixture, starting source, tool surface and resource ceiling for matched comparisons.",
+    "Treat Unreal Agent benchmark numbers as vendor evidence until independently reproduced; do not promote a design from external claims alone.",
+    "Record failed/retried calls and missing usage explicitly; unknown usage cannot be treated as zero.",
+    "Public GitHub implementation examples must have at least 1,000 stars at evidence check time or be called out as below the eligibility threshold."
+  ],
+  "invariants": [
+    "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+    "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+    "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
+  ],
+  "architectureDecisions": [
+    "D1 — BB-077 implements measurement only. Do not introduce detached scheduling, change AgentRuntime capability semantics, or promote an async profile in this task. The current synchronous Core is the control arm and remains supported regardless of measured outcome.",
+    "D2 — Use the delivered JavaScript CodeAct path as the smallest existing-Core workload substrate: createAgentRuntime + createJavaScriptCodeActStrategy + the repository reference JavaScript session executor. This exercises real multi-turn model requests, capability invocations, evolving prompt context and bounded execution without inventing a second coding-agent loop.",
+    "D3 — Freeze two live workload families before the first provider request. FANOUT has four independent delayed PURE read capabilities whose exact values must all contribute to the terminal answer; DEPENDENT_CHAIN has three ordered read/transform steps whose later inputs depend on prior outputs. Register DEV-F01..F03 and DEV-C01..C03 for BB-077 and reserve HOLD-F01..F02 plus HOLD-C01..C02, including fixture seeds and expected-output digests, for BB-081 without executing the holdout tasks during BB-077.",
+    "D4 — Define harness tax only through observable matched measurements: accepted outcome, model calls/turns, capability/host calls, provider prompt/completion/cached/cache-write tokens, serialized stable-prefix and dynamic-suffix bytes, elapsed provider time, capability wait time, operation-overlap intervals, retries/failures and charged cost. Do not invent a causal 'overhead token' number by subtracting estimates.",
+    "D5 — Pin the first real route to OpenRouter model anthropic/claude-sonnet-4.6 with the Anthropic provider only and provider fallback disabled. The benchmark adapter uses one stable session_id per task attempt and an explicit cacheable stable prefix; credentials come only from OPENROUTER_API_KEY. Registration rejects aliases, a different resolved model/provider, hidden model fallback, missing usage identity or a changed profile hash.",
+    "D6 — Freeze the 2026-09-25 comparison price table at USD 3.00/M fresh input, 15.00/M output, 0.30/M cache read and 3.75/M five-minute cache write for Claude Sonnet 4.6. Record OpenRouter's provider-reported charged cost as primary billing evidence and independently recompute normalized cohort cost from the frozen table. Missing/unsupported usage or cost is null with an uncertainty reason, never zero.",
+    "D7 — Keep the model-facing prefix byte-stable across turns within an attempt: fixed system instructions, action schema, capability schema and fixture contract first; append turn-specific promptContext/history/observations last. Record SHA-256 and byte length for stable prefix and dynamic suffix on every request. Cache state is optimization evidence only and never acceptance, recovery or effect authority.",
+    "D8 — Fresh-reset every registered run: new temp workspace, executor/session, AgentEvent/TurnEvent stores, fixture state and benchmark attempt id. Reuse no prior model output or fixture state. Provider cache may persist only within the same attempt session_id; different task attempts use different session ids. Retries are new recorded attempts and remain in denominators.",
+    "D9 — Predeclare promotion gates before any async candidate result: accepted-task rate must be no lower than the synchronous control; duplicate external effects must remain zero and recovery negatives must pass; median paired normalized provider cost must be <=0.85x sync; median paired prompt input tokens must be <=0.90x sync; median model turns must be <=1.00x sync; and median elapsed time must be <=1.10x sync. Any missing registered pair, unknown cost/token accounting, safety failure or quality regression makes the efficiency conclusion INCONCLUSIVE or KEEP_SYNC, never PROMOTE_ASYNC.",
+    "D10 — Unreal Agent v0.2.0 commit 1b9f778453f411c029b39b85102aaefb95e7e48d is retained only as a below-threshold vendor/architecture reference: its operation manager and committed-prefix/staged-suffix design are useful patterns, but its published benchmark is not ExHarness evidence and its current GitHub star count is below the repository's >=1,000-star example rule. Eligible comparison references are mini-SWE-agent at 04d809ceab9df28f9adaed044884180159172930 and OpenHands software-agent-sdk at cd02db3a181c0bed5ee34711b46c06c88288854e; neither becomes a BB-077 runtime dependency."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/model-routing.js",
+      "packages/core-harness/src/javascript-codeact-strategy.js",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "scripts/javascript-codeact-worker.mjs",
+      "scripts/reference-javascript-session-executor.mjs",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "expectedNew": [
+      "benchmarks/harness-efficiency/contract.mjs",
+      "benchmarks/harness-efficiency/fixture.mjs",
+      "benchmarks/harness-efficiency/openrouter-model.mjs",
+      "benchmarks/harness-efficiency/run.mjs",
+      "benchmarks/harness-efficiency/report.mjs",
+      "benchmarks/harness-efficiency/profile.example.json"
+    ],
+    "expectedTests": [
+      "benchmarks/harness-efficiency/test/bb-077-baseline.test.mjs",
+      "benchmarks/harness-efficiency/test/bb-077-report.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/core-harness/**",
+      "scripts/javascript-codeact-worker.mjs",
+      "scripts/reference-javascript-session-executor.mjs",
+      "benchmarks/**",
+      "docs/living/system/core-harness/**",
+      "docs/blackboard/process/harness-efficiency-phase.md"
+    ],
+    "write": [
+      "benchmarks/harness-efficiency/**",
+      "docs/living/system/core-harness/**"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/**",
+      ".github/**",
+      "packages/core-harness/src/**",
+      "packages/agentic-system/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Add a benchmark contract and frozen registry for six development tasks plus four untouched holdout tasks. Contract validation hashes task prompt, fixture seed, expected-output digest, model/provider profile, budgets and acceptance semantics before dispatch.",
+    "S2 — Implement the deterministic FANOUT and DEPENDENT_CHAIN fixtures with injected delays, exact hidden expected results, per-capability start/end records and a separate effect-recovery negative probe. Deterministic tests must prove reset isolation and that a duplicate/non-reconcilable effect cannot be counted as accepted.",
+    "S3 — Add a benchmark-only OpenRouter model adapter for anthropic/claude-sonnet-4.6. Serialize a stable cacheable prefix plus dynamic suffix, send a unique stable session_id per attempt, disable provider fallback, request usage, and persist request/generation identity, token/cache fields, charged cost, latency and failure data without serializing credentials.",
+    "S4 — Add the synchronous Core runner around createAgentRuntime/createJavaScriptCodeActStrategy and the existing reference executor. Run the exact same registered task/profile contract that later async candidates must consume; collect runtime reports, turn events, traces, capability intervals and independent acceptance.",
+    "S5 — Add append-only attempt/request accounting and a report reducer. Failed, rate-limited, timed-out and retried calls remain visible; unknown usage/cost is null. Report raw runs plus accepted rate, per-task/provider totals, turns, wait/overlap, cache evidence and normalized cost.",
+    "S6 — Encode the predeclared matched comparison gate without evaluating an async candidate in BB-077. Deterministic report tests cover quality regression, missing pair, unknown cost, token regression, duplicate effects and a passing synthetic matched cohort; BB-081 owns heldout PROMOTE_ASYNC versus KEEP_SYNC."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "BASELINE",
+      "statement": "The synchronous Core benchmark executes all six registered development tasks from clean resets and independently records each task as ACCEPTED, REJECTED, FAILED, TIMED_OUT or INCONCLUSIVE; terminal process success alone cannot imply acceptance.",
+      "verificationIds": [
+        "baseline-contract"
+      ],
+      "evidenceRequired": [
+        "Registered task/profile manifest, raw attempt records, independent expected-result checks and exact run status for every development task."
+      ]
+    },
+    {
+      "id": "ACCOUNTING",
+      "statement": "Every model request and capability execution records identity, timing and outcome; provider prompt/completion/cached/cache-write tokens, charged cost, model turns, capability/host calls, wait/overlap intervals and failures/retries are retained when available, with unknown values represented as null plus a reason.",
+      "verificationIds": [
+        "baseline-contract",
+        "report-contract"
+      ],
+      "evidenceRequired": [
+        "Raw request/attempt JSONL fixtures and report assertions proving failed/retried/unknown records remain in totals and denominators."
+      ]
+    },
+    {
+      "id": "CACHE",
+      "statement": "Each request records the stable-prefix hash/bytes and dynamic-suffix bytes, and live OpenRouter evidence reads cache usage only from provider-reported usage fields; missing cache fields never become inferred hits.",
+      "verificationIds": [
+        "baseline-contract",
+        "provider-profile"
+      ],
+      "evidenceRequired": [
+        "Deterministic stable-prefix test plus one credential-bearing profile validation/live bundle or explicit prerequisite-blocked result; no fabricated cache count."
+      ]
+    },
+    {
+      "id": "RESET",
+      "statement": "Task attempts are isolated by fresh fixture/runtime/executor state and unique attempt/session identity; only turns within one attempt may share its provider session_id.",
+      "verificationIds": [
+        "baseline-contract"
+      ],
+      "evidenceRequired": [
+        "Two reset runs proving no fixture/event/result leakage and contract rejection for reused cross-attempt identity."
+      ]
+    },
+    {
+      "id": "PROTOCOL",
+      "statement": "The six development tasks, four heldout task identities, budgets, provider profile and comparison thresholds are immutable after the first live baseline dispatch; HOLD-* tasks are not executed or exposed through BB-077 result evidence.",
+      "verificationIds": [
+        "baseline-contract",
+        "report-contract"
+      ],
+      "evidenceRequired": [
+        "Pre-dispatch manifest hash, holdout identity/digest registration and mutation/holdout-access rejection tests."
+      ]
+    },
+    {
+      "id": "GATE",
+      "statement": "The comparison reducer encodes fixed quality/safety non-regression plus cost, prompt-token, model-turn and elapsed-time thresholds and returns INCONCLUSIVE or KEEP_SYNC for missing pairs, unknown accounting, quality regression or safety failure.",
+      "verificationIds": [
+        "report-contract"
+      ],
+      "evidenceRequired": [
+        "Synthetic matched-cohort tests for each failing dimension and one passing cohort; no async runtime result is required or accepted as BB-077 evidence."
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "Benchmark instrumentation, provider cache state and efficiency metrics cannot become correctness, product-acceptance or external-effect authority.",
+      "verificationIds": [
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "Core regression tests and benchmark acceptance path showing expected-result/effect truth remains independent from traces and provider metrics."
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "An ambiguous or duplicate external effect is never converted into an accepted benchmark task and existing EffectOperation reconciliation semantics remain unchanged.",
+      "verificationIds": [
+        "baseline-contract",
+        "boundary-probe"
+      ],
+      "evidenceRequired": [
+        "Injected ambiguity/duplicate negative test plus unchanged Core effect-reconciliation suite."
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "Efficiency claims are valid only for exact matched profile/task contracts; a changed model/provider/profile/task/budget binding invalidates comparison.",
+      "verificationIds": [
+        "baseline-contract",
+        "report-contract"
+      ],
+      "evidenceRequired": [
+        "Binding-mismatch tests for model, provider, task digest, budgets and profile hash."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "criterionIds": [
+        "INV-1",
+        "GATE"
+      ]
+    },
+    {
+      "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "criterionIds": [
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "criterionIds": [
+        "INV-3",
+        "PROTOCOL"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "baseline-contract",
+      "command": "node --test benchmarks/harness-efficiency/test/bb-077-baseline.test.mjs"
+    },
+    {
+      "id": "report-contract",
+      "command": "node --test benchmarks/harness-efficiency/test/bb-077-report.test.mjs"
+    },
+    {
+      "id": "provider-profile",
+      "command": "node benchmarks/harness-efficiency/run.mjs --mode validate --profile benchmarks/harness-efficiency/profile.example.json"
+    },
+    {
+      "id": "boundary-probe",
+      "command": "npm run test:core"
+    }
+  ],
+  "researchGaps": [],
+  "negativeVerificationCases": [
+    "A second attempt reuses another attempt's fixture/session/provider session identity and appears cheaper because of leaked state or cache.",
+    "A provider response omits usage/cost/cache details and the report substitutes zero or estimates a cache hit.",
+    "A candidate lowers cost/tokens while one registered task regresses from accepted or an effect-recovery negative fails.",
+    "A matched comparison changes model/provider/task/profile/budget identity between arms but is still summarized.",
+    "A detached or ambiguous operation causes a duplicate non-idempotent external effect and benchmark acceptance still reports success.",
+    "A HOLD-* task is executed, its expected result is exposed, or its result is used to tune a candidate before BB-081."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-077 objective + harness-efficiency phase + current Core seams + pinned public evidence",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "product mutation",
+        "vendor-benchmark-as-proof",
+        "planned capability as delivered truth"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE direct dependencies",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "forbidden": [
+        "redefine fixed benchmark semantics",
+        "self-acceptance",
+        "unsafe effect replay"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "BB-077 Living Docs describe only the implemented and independently verified async-efficiency behavior, fallback and recovery limitations."
+  },
+  "benchmarkContract": {
+    "schemaVersion": 1,
+    "controlArm": "CORE_SYNC",
+    "workloadSubstrate": "createAgentRuntime + createJavaScriptCodeActStrategy + reference JavaScript session executor",
+    "developmentTasks": [
+      "DEV-F01",
+      "DEV-F02",
+      "DEV-F03",
+      "DEV-C01",
+      "DEV-C02",
+      "DEV-C03"
+    ],
+    "heldoutTasks": [
+      "HOLD-F01",
+      "HOLD-F02",
+      "HOLD-C01",
+      "HOLD-C02"
+    ],
+    "families": {
+      "FANOUT": "Four independent delayed PURE reads; exact terminal answer must incorporate every returned value. Capability start/end intervals expose whether useful operation overlap occurred; the model may choose legal concurrency through the existing CodeAct surface.",
+      "DEPENDENT_CHAIN": "Three ordered read/transform steps where each next input depends on the prior output; exact terminal answer and call sequence are independently checked."
+    },
+    "reset": "Fresh temp fixture, Core runtime, event stores, JavaScript executor/session and attempt id per run; no prior model outputs or fixture state. Unique provider session_id per attempt; reuse only across turns inside that attempt.",
+    "budgets": {
+      "maxModelTurns": 4,
+      "maxHostCalls": 12,
+      "maxWallSeconds": 90,
+      "maxProviderInputTokensPerAttempt": 32000,
+      "maxProviderOutputTokensPerAttempt": 4000,
+      "maxProviderUsdPerAttempt": 0.25,
+      "maxAttemptsPerTask": 2
+    },
+    "acceptance": "Trusted benchmark code computes the exact expected result and required call/effect conditions outside model output. A model return_result is only a candidate result.",
+    "liveEvidence": "BB-077 live collection executes only DEV-* tasks. If OPENROUTER_API_KEY or paid credit is unavailable, the worker records PREREQUISITE_BLOCKED; deterministic CI may validate contracts but cannot be relabelled LIVE.",
+    "holdout": "HOLD-* fixture seeds and expected-output digests are committed/hashed before candidate work but runner live mode rejects their execution until the BB-081 evaluation profile explicitly enables heldout."
+  },
+  "providerContract": {
+    "transport": "OpenRouter API",
+    "credentialEnv": "OPENROUTER_API_KEY",
+    "model": "anthropic/claude-sonnet-4.6",
+    "provider": "Anthropic",
+    "allowFallbacks": false,
+    "profileDate": "2026-09-25",
+    "priceUsdPerMillion": {
+      "freshInput": 3,
+      "output": 15,
+      "cacheRead": 0.3,
+      "cacheWrite5m": 3.75
+    },
+    "cache": "Use an explicit cacheable fixed prefix of at least 1,024 tokens and a stable session_id within one attempt. Dynamic task/turn/history/observation data follows the prefix. Provider cache data is observational only.",
+    "requiredUsage": [
+      "prompt_tokens",
+      "completion_tokens",
+      "total_tokens",
+      "prompt_tokens_details.cached_tokens",
+      "prompt_tokens_details.cache_write_tokens",
+      "provider-reported charged cost when available",
+      "request/generation identity"
+    ],
+    "missingUsage": "Store null plus unsupported|missing|ambiguous reason. Unknown monetary or token totals make the matched efficiency gate INCONCLUSIVE."
+  },
+  "comparisonContract": {
+    "unit": "registered task pair with exact task/profile/budget identity",
+    "preregistration": "Hash task registry, fixture seeds, hidden expected-output digests, model/provider profile, budgets and thresholds before the first live control dispatch. Any mutation starts a new cohort and cannot reuse prior outcomes as matched evidence.",
+    "primaryGates": {
+      "acceptedTaskRate": "candidate >= synchronous control",
+      "duplicateEffects": "candidate = 0 and all recovery negatives pass",
+      "medianNormalizedProviderCostRatio": "candidate/control <= 0.85",
+      "medianPromptInputTokenRatio": "candidate/control <= 0.90",
+      "medianModelTurnRatio": "candidate/control <= 1.00",
+      "medianElapsedRatio": "candidate/control <= 1.10"
+    },
+    "explanatoryMetrics": [
+      "cached-token ratio",
+      "cache-write tokens",
+      "useful capability calls per model turn",
+      "capability wait seconds",
+      "operation overlap seconds",
+      "stable-prefix bytes",
+      "dynamic-suffix bytes",
+      "provider latency"
+    ],
+    "decision": "All quality/safety gates and every primary efficiency threshold must pass on a complete registered matched cohort before BB-081 may label PROMOTE_ASYNC. A failed observed gate yields KEEP_SYNC; missing pair/usage/cost or incomplete heldout execution yields INCONCLUSIVE.",
+    "uncertainty": "Report every pair and median ratios. Bootstrap intervals may be descriptive only; the small fixed cohort does not justify a statistical-significance claim."
+  },
+  "researchEvidence": [
+    {
+      "source": "ExHarness research baseline aa91ba16548f31772d441f51975917397cbf73d7",
+      "finding": "AgentRuntime awaits capability.execute; runtime reports capability call count and model generate call count but does not natively expose provider token/cost/cache accounting. Existing CodeAct already supports multi-call JavaScript cells, so operation overlap must be measured rather than assumed absent."
+    },
+    {
+      "source": "https://github.com/unreallabsai/unreal-agent/tree/1b9f778453f411c029b39b85102aaefb95e7e48d",
+      "eligibility": "Below the >=1,000-star public-example threshold at 2026-09-25; architecture/vendor reference only.",
+      "finding": "Serializable operations, operation manager, wake-on-result behavior and committed-prefix/staged-suffix context are useful patterns for later tasks; published benchmark savings are not BB-077 acceptance evidence."
+    },
+    {
+      "source": "https://github.com/SWE-agent/mini-swe-agent/tree/04d809ceab9df28f9adaed044884180159172930",
+      "eligibility": ">=1,000 stars at evidence check",
+      "finding": "Eligible minimal-agent comparison reference already pinned by BB-065; retain as an external control pattern, not a runtime dependency."
+    },
+    {
+      "source": "https://github.com/OpenHands/software-agent-sdk/tree/cd02db3a181c0bed5ee34711b46c06c88288854e",
+      "eligibility": ">=1,000 stars at evidence check",
+      "finding": "Eligible modular-agent comparison reference already pinned by BB-065; useful for event/cost/workspace seams without expanding BB-077 scope."
+    },
+    {
+      "source": "https://openrouter.ai/anthropic/claude-sonnet-4.6/pricing",
+      "finding": "Pinned model route pricing at research time: $3/M input, $15/M output, $0.30/M cache read and $3.75/M 5-minute cache write."
+    },
+    {
+      "source": "https://openrouter.ai/docs/guides/best-practices/prompt-caching",
+      "finding": "OpenRouter exposes cached_tokens/cache_write_tokens and session_id sticky routing; BB-077 records provider fields and keeps cache state non-authoritative."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "One matched baseline runner records accepted outcome, model identity, input/output/cached tokens when available, model turns, tool calls, elapsed time, cost and failure/retry records.",
+      "criterionIds": [
+        "BASELINE",
+        "ACCOUNTING",
+        "RESET",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "baseline-contract",
+        "report-contract",
+        "provider-profile"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        7
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/model-routing.js",
+        "packages/core-harness/src/javascript-codeact-strategy.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "const output = await capability.execute(parsedInput, runtime);"
+        },
+        {
+          "ref": "packages/core-harness/src/model-routing.js",
+          "match": "calls: generateCalls"
+        },
+        {
+          "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
+          "match": "observations: clone(observations)"
+        }
+      ],
+      "supportingPlanFields": [
+        "benchmarkContract",
+        "providerContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "The baseline distinguishes model work from harness wait/poll/heartbeat-like overhead and reports prompt-prefix/cache reuse observations without inventing provider metrics.",
+      "criterionIds": [
+        "ACCOUNTING",
+        "CACHE",
+        "INV-1"
+      ],
+      "planElements": [
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "baseline-contract",
+        "report-contract",
+        "provider-profile"
+      ],
+      "decisionIndexes": [
+        1,
+        3,
+        4,
+        6
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/javascript-codeact-strategy.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "const output = await capability.execute(parsedInput, runtime);"
+        },
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "maxSerializedChars = 32_768"
+        },
+        {
+          "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
+          "match": "const observations = []"
+        }
+      ],
+      "supportingPlanFields": [
+        "benchmarkContract",
+        "providerContract",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "A predeclared comparison protocol and non-regression/cost gate are fixed before async implementation results are observed.",
+      "criterionIds": [
+        "PROTOCOL",
+        "GATE",
+        "INV-2",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S5",
+        "S6"
+      ],
+      "verificationIds": [
+        "baseline-contract",
+        "report-contract",
+        "boundary-probe"
+      ],
+      "decisionIndexes": [
+        0,
+        2,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/action-effect.js",
+        "packages/core-harness/src/effect-reconciliation.js",
+        "docs/blackboard/process/harness-efficiency-phase.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/action-effect.js",
+          "match": "EffectRecoveryRequiredError"
+        },
+        {
+          "ref": "packages/core-harness/src/effect-reconciliation.js",
+          "match": "NON_RECONCILABLE"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-phase.md",
+          "match": "BB-077 must predeclare the non-inferiority bound and improvement threshold before candidate results."
+        }
+      ],
+      "supportingPlanFields": [
+        "benchmarkContract",
+        "comparisonContract",
+        "researchEvidence"
+      ]
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.readiness-jev-evaluation.json"
+}

@@ -70,12 +70,16 @@ function usageByTask(rows, taskIds) {
   const providerSeen = new Map();
   for (const request of requests) {
     if (!grouped.has(request.taskId) || !request.attemptId || !['SETTLED', 'UNKNOWN'].includes(request.status)) fail('invalid usage record');
-    if (request.status === 'SETTLED' && (!finiteNonnegative(request.inputTokens) || !finiteNonnegative(request.cachedInputTokens) ||
-        request.cachedInputTokens > request.inputTokens || !finiteNonnegative(request.outputTokens) || !finiteNonnegative(request.costUsd))) fail('settled usage missing measured values');
+    const cacheReported = request.cacheEvidence === 'REPORTED' && finiteNonnegative(request.cachedInputTokens) &&
+      request.cachedInputTokens <= request.inputTokens;
+    const cacheOmitted = request.cacheEvidence === 'NOT_REPORTED' && request.cachedInputTokens === null;
+    if (request.status === 'SETTLED' && (!finiteNonnegative(request.inputTokens) || !(cacheReported || cacheOmitted) ||
+        !finiteNonnegative(request.outputTokens) || !finiteNonnegative(request.costUsd))) fail('settled usage missing measured values');
     if (request.status === 'SETTLED') {
       if (!request.providerRequestId) fail('settled usage missing provider request id');
       const previous = providerSeen.get(request.providerRequestId);
       const measured = { taskId: request.taskId, inputTokens: request.inputTokens, cachedInputTokens: request.cachedInputTokens,
+        cacheEvidence: request.cacheEvidence,
         outputTokens: request.outputTokens, costUsd: request.costUsd };
       if (previous && canonical(previous) !== canonical(measured)) fail('conflicting provider request usage');
       if (previous) continue;

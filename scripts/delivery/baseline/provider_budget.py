@@ -8,7 +8,9 @@ full reservation and prevents another call until an operator reconciles it.
 from __future__ import annotations
 
 import json
+import hashlib
 import os
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -24,6 +26,8 @@ def _now() -> str:
 
 class ProviderBudget:
     def __init__(self, ledger_path: str | Path, profile: dict, task_id: str, attempt_id: str):
+        if not re.fullmatch(r"[A-Za-z0-9-]+", task_id):
+            raise BudgetError("invalid task id for provider evidence path")
         self.path = Path(ledger_path)
         self.profile = profile
         self.task_id = task_id
@@ -31,6 +35,28 @@ class ProviderBudget:
         self.limits = profile["budgets"]
         self.prices = profile["model"]
         self.path.parent.mkdir(parents=True, exist_ok=True)
+
+    def attest(self, identity: str, response: dict, mode: str, status_trace: list[dict] | None = None,
+               capture_format: str = "LITELLM_MODEL_RESPONSE_V1") -> dict:
+        """Persist the provider completion outside the agent workspace before settlement."""
+        if not any(event["kind"] == "RESERVE" and event["requestId"] == identity for event in self._events()):
+            raise BudgetError("provider response has no reservation")
+        if mode not in {"ORIGINAL_RESPONSE_ATTESTED", "ASYNC_STATUS_RECORD", "RETRIEVABLE_RECORD"}:
+            raise BudgetError("unknown provider evidence mode")
+        record = {"schemaVersion": 1, "evidenceMode": mode, "captureFormat": capture_format,
+                  "requestId": identity, "taskId": self.task_id, "capturedAt": _now(),
+                  "response": response, "statusTrace": status_trace or []}
+        encoded = (json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8")
+        directory = self.path.parent / "provider-responses"
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / f"{identity}.json"
+        with path.open("xb") as stream:
+            stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+        return {"providerEvidenceMode": mode,
+                "providerEvidenceRef": f"{self.task_id}/provider-responses/{identity}.json",
+                "providerEvidenceHash": f"sha256:{hashlib.sha256(encoded).hexdigest()}"}
 
     def _events(self) -> list[dict]:
         if not self.path.exists():
@@ -90,32 +116,44 @@ class ProviderBudget:
         return identity
 
     def settle(self, identity: str, provider_request_id: str, input_tokens: int, output_tokens: int,
-               cached_input_tokens: int = 0) -> dict:
+               cached_input_tokens: int | None = None, evidence: dict | None = None,
+               returned_model_id: str | None = None) -> dict:
         events = self._events()
         reservations = {event["requestId"]: event for event in events if event["kind"] == "RESERVE"}
         if identity not in reservations or not provider_request_id:
             raise BudgetError("unknown reservation/provider request")
         if any(event["requestId"] == identity and event["kind"] != "RESERVE" for event in events):
             raise BudgetError("duplicate settlement")
-        if not all(isinstance(value, int) and value >= 0 for value in [input_tokens, output_tokens, cached_input_tokens]) or cached_input_tokens > input_tokens:
+        if not all(isinstance(value, int) and value >= 0 for value in [input_tokens, output_tokens]) or \
+                (cached_input_tokens is not None and (not isinstance(cached_input_tokens, int) or cached_input_tokens < 0 or cached_input_tokens > input_tokens)):
             raise BudgetError("missing provider usage")
+        if self.prices.get("evidenceMode") == "ORIGINAL_RESPONSE_ATTESTED" and not evidence:
+            self.unknown(identity, "original provider response was not attested")
+            raise BudgetError("original provider response was not attested")
         reservation = reservations[identity]
         if input_tokens > reservation["inputTokensReserved"] or output_tokens > reservation["outputTokensReserved"]:
             self.unknown(identity, "provider usage exceeds reservation")
             raise BudgetError("provider usage exceeds reservation")
         cached_price = self.prices.get("cachedInputUsdPerMillion", self.prices["inputUsdPerMillion"])
-        cost = ((input_tokens - cached_input_tokens) * self.prices["inputUsdPerMillion"] +
-                cached_input_tokens * cached_price + output_tokens * self.prices["outputUsdPerMillion"]) / 1_000_000
+        if cached_input_tokens is None and cached_price != self.prices["inputUsdPerMillion"]:
+            self.unknown(identity, "cache usage not reported with differential pricing", evidence)
+            raise BudgetError("cache usage not reported with differential pricing")
+        priced_cached_tokens = cached_input_tokens if cached_input_tokens is not None else 0
+        cost = ((input_tokens - priced_cached_tokens) * self.prices["inputUsdPerMillion"] +
+                priced_cached_tokens * cached_price + output_tokens * self.prices["outputUsdPerMillion"]) / 1_000_000
         event = {"schemaVersion": 1, "kind": "SETTLED", "requestId": identity, "providerRequestId": provider_request_id,
                  "taskId": self.task_id, "attemptId": self.attempt_id, "timestamp": _now(), "inputTokens": input_tokens,
-                 "cachedInputTokens": cached_input_tokens, "outputTokens": output_tokens, "costUsd": cost}
+                 "cachedInputTokens": cached_input_tokens,
+                 "cacheEvidence": "REPORTED" if cached_input_tokens is not None else "NOT_REPORTED",
+                 "outputTokens": output_tokens, "costUsd": cost, "returnedModelId": returned_model_id,
+                 **(evidence or {})}
         self._append(event)
         self._state()
         return event
 
-    def unknown(self, identity: str, reason: str) -> None:
+    def unknown(self, identity: str, reason: str, evidence: dict | None = None) -> None:
         events = self._events()
         if not any(event["kind"] == "RESERVE" and event["requestId"] == identity for event in events) or any(event["kind"] != "RESERVE" and event["requestId"] == identity for event in events):
             raise BudgetError("unknown or already settled reservation")
         self._append({"schemaVersion": 1, "kind": "UNKNOWN", "requestId": identity, "taskId": self.task_id,
-                      "attemptId": self.attempt_id, "timestamp": _now(), "reason": reason})
+                      "attemptId": self.attempt_id, "timestamp": _now(), "reason": reason, **(evidence or {})})

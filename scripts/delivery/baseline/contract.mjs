@@ -102,17 +102,34 @@ export function validateProfile(profile, { fixtureDigest, acceptanceDigest, requ
   if (![profile.nodeImageDigest, profile.browserDigest, profile.pythonLockDigest, profile.agentImageDigest].every(exactDigest)) fail('runtime/image/lock digests required');
   if (!nonempty(profile.agentImage) || !profile.agentImage.endsWith(`@${profile.agentImageDigest}`)) fail('agent image is not pinned to declared digest');
   const model = profile.model;
-  if (!model || !nonempty(model.snapshot) || aliases.test(model.snapshot) || model.reasoningEffort !== 'none' ||
+  const nim = model?.provider === 'nvidia_nim';
+  if (!model || !nonempty(model.snapshot) || aliases.test(model.snapshot) ||
+      (nim ? model.reasoningEffort !== null : model.reasoningEffort !== 'none') ||
       model.tokenizer !== `litellm:${model.snapshot}` ||
       !positive(model.maxContextTokens) || !/^https:\/\/[^/]+$/.test(model.endpointOrigin ?? '') ||
       !nonempty(model.apiBaseUrl) || !model.apiBaseUrl.startsWith(`${model.endpointOrigin}/`) ||
-      !['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'OPENROUTER_API_KEY'].includes(model.credentialEnv) || !/^\d{4}-\d{2}-\d{2}$/.test(model.pricingDate ?? '') ||
+      !['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'OPENROUTER_API_KEY', 'NVIDIA_NIM_API_KEY'].includes(model.credentialEnv) || !/^\d{4}-\d{2}-\d{2}$/.test(model.pricingDate ?? '') ||
       !nonempty(model.pricingSource) || !nonnegative(model.inputUsdPerMillion) || !nonnegative(model.cachedInputUsdPerMillion) ||
       model.cachedInputUsdPerMillion > model.inputUsdPerMillion || !nonnegative(model.outputUsdPerMillion)) fail('model snapshot, endpoint, pricing and credential reference required');
+  if (nim && (model.credentialEnv !== 'NVIDIA_NIM_API_KEY' ||
+      model.snapshot !== `nvidia_nim/${model.providerModelId}` ||
+      model.providerModelId !== 'nvidia/nemotron-3.5-lightning-30b-a3b' ||
+      model.resolvedModelId !== model.providerModelId ||
+      model.endpointOrigin !== 'https://integrate.api.nvidia.com' ||
+      model.apiBaseUrl !== 'https://integrate.api.nvidia.com/v1' ||
+      model.evidenceMode !== 'ORIGINAL_RESPONSE_ATTESTED' ||
+      model.modelIdentityEvidence !== 'CATALOG_RELEASE' || model.backendRevision !== null ||
+      model.releaseDate !== '2026-08-11' || model.modelVersion !== '1.0-preview' ||
+      model.reasoningBudget !== 256 || model.toolChoice !== 'required' ||
+      model.temperature !== 1 || model.topP !== 0.95 || model.requestTimeoutSeconds !== 180 ||
+      model.pricingEvidence !== 'NVIDIA_FREE_ENDPOINT' || model.pricingDate !== '2026-09-25' ||
+      model.pricingSource !== 'https://build.nvidia.com/nvidia/nemotron-3.5-lightning-30b-a3b' ||
+      model.maxContextTokens !== 1000000 || model.inputUsdPerMillion !== 0 ||
+      model.cachedInputUsdPerMillion !== 0 || model.outputUsdPerMillion !== 0))
+    fail('NVIDIA NIM catalog release, evidence mode or free endpoint pricing changed');
   if (model.credentialEnv === 'OPENROUTER_API_KEY' &&
       (model.endpointOrigin !== 'https://openrouter.ai' || model.apiBaseUrl !== 'https://openrouter.ai/api/v1' ||
-       model.providerModelId !== 'nvidia/nemotron-3-ultra-550b-a55b:free' ||
-       model.snapshot !== `openrouter/${model.providerModelId}` || model.resolvedModelId !== 'nvidia/nemotron-3-ultra-550b-a55b-20260604:free' ||
+       model.snapshot !== `openrouter/${model.providerModelId}` || !/^nvidia\/nemotron-3-ultra-550b-a55b-20260604:free$/.test(model.resolvedModelId ?? '') ||
        model.releaseDate !== '2026-06-04' || model.maxContextTokens !== 1000000 ||
        model.inputUsdPerMillion !== 0 || model.cachedInputUsdPerMillion !== 0 || model.outputUsdPerMillion !== 0))
     fail('OpenRouter free model identity or price changed');
@@ -124,7 +141,8 @@ export function validateProfile(profile, { fixtureDigest, acceptanceDigest, requ
   if (canonical(profile.calibrationTaskIds) !== canonical(CALIBRATION_TASK_IDS)) fail('calibration task set changed');
   const armHash = sha256({ model, nodeVersion: profile.nodeVersion, miniCommit: profile.miniCommit, agentImageDigest: profile.agentImageDigest, budgets: PROTOCOL.budgets });
   if (profile.armProfileHashes?.DIRECT !== armHash || profile.armProfileHashes?.EXHARNESS !== armHash) fail('matched arm profile mismatch');
-  if (requireLive && !process.env[model.credentialEnv]) fail(`missing credential environment variable ${model.credentialEnv}`);
+  if (requireLive && !process.env[model.credentialEnv] && !(nim && process.env.NVIDIA_API_KEY))
+    fail(`missing credential environment variable ${model.credentialEnv}`);
   return { pairs, armHash, profileHash: sha256(profile) };
 }
 
@@ -143,7 +161,7 @@ export function registrationManifest(profile, identities, { calibration = false 
 
 export async function fixtureIdentities() {
   const root = fileURLToPath(new URL('./fixture/', import.meta.url));
-  const fixtureDigest = await directoryDigest(root, ['server.mjs', 'index.html', 'client.js', 'tasks.json']);
+  const fixtureDigest = await directoryDigest(root, ['server.mjs', 'index.html', 'client.js', 'smoke.mjs', 'tasks.json']);
   const acceptanceDigest = await directoryDigest(root, ['acceptance.mjs']);
   return { fixtureDigest, acceptanceDigest };
 }
