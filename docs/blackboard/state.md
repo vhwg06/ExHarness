@@ -51,7 +51,6 @@ NONE
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
 - BB-077 [WORKER/EXECUTION] — Measure ExHarness harness tax and pin async-first baseline
-- BB-081 [RESEARCH_SA/RESEARCH] — Accept an evidence-backed Core harness efficiency profile
 
 ## Dependency graph
 
@@ -86,7 +85,7 @@ BB-077 [WORKER_SCHEDULABLE] <- ROOT
 BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
-BB-081 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080
+BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
 ```
 
 ## Context semantics
