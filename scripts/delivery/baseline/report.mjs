@@ -183,6 +183,151 @@ export function calculateReport({ manifest, attempts = [], usage = [], humanEven
   return { schemaVersion: 1, experimentId: manifest.experimentId, protocolHash: PROTOCOL_HASH, tasks: resultTasks, arms, pairs, medianPairedHumanRatio, pairedBootstrap95: interval, defects, qualityWindowComplete: Boolean(qualityWindowComplete), valueVerdict };
 }
 
+function studyBootstrap(values, seed = 65074) {
+  if (!values.length) return null;
+  let state = seed >>> 0;
+  const draws = [];
+  for (let round = 0; round < 10000; round++) {
+    const sample = [];
+    for (let index = 0; index < values.length; index++) {
+      state ^= state << 13; state ^= state >>> 17; state ^= state << 5;
+      sample.push(values[(state >>> 0) % values.length]);
+    }
+    draws.push(median(sample));
+  }
+  draws.sort((a, b) => a - b);
+  return [draws[249], draws[9749]];
+}
+
+function knownNonnegative(value) { return Number.isFinite(value) && value >= 0; }
+
+/**
+ * Build facts for the six-pair fixture study. This deliberately has no
+ * valueVerdict field: semantic value is supplied only by jev-value.mjs.
+ */
+export function calculateStudyReport({ manifest, executions = [], metrics = null, observationAsOf = null }) {
+  if (manifest?.schemaVersion !== 1 || manifest.studyKind !== 'FIXTURE_VALUE_V1' || !Array.isArray(manifest.tasks))
+    fail('study manifest/schema mismatch');
+  const body = Object.fromEntries(Object.entries(manifest).filter(([key]) => key !== 'digest'));
+  if (manifest.digest !== `sha256:${sha256(body)}`) fail('study manifest changed after registration');
+  const rows = metrics?.executions ?? executions;
+  if (!Array.isArray(rows)) fail('study metrics executions must be an array');
+  const registered = new Map();
+  for (const task of manifest.tasks) {
+    if (!task.executionId || !task.pairId || !['DIRECT', 'EXHARNESS'].includes(task.arm) || registered.has(task.executionId)) fail('invalid study registration row');
+    registered.set(task.executionId, task);
+  }
+  const seen = new Set();
+  const resultTasks = manifest.tasks.map(task => {
+    const row = rows.find(item => item.executionId === task.executionId);
+    if (row) {
+      if (seen.has(row.executionId)) fail('duplicate study metric row');
+      seen.add(row.executionId);
+    }
+    const provider = row?.provider ?? {};
+    const timing = row?.timing ?? {};
+    const checksPassed = Number.isInteger(row?.checksPassed) ? row.checksPassed : null;
+    const checksTotal = Number.isInteger(row?.checksTotal) ? row.checksTotal : null;
+    const accepted = checksPassed != null && checksTotal != null && checksTotal > 0 && checksPassed === checksTotal && row?.verificationStatus === 'ACCEPTED';
+    const usageUnknown = provider.usageUnknown === true || !knownNonnegative(provider.inputTokens) || !knownNonnegative(provider.outputTokens);
+    return {
+      executionId: task.executionId,
+      pairId: task.pairId,
+      taskId: task.taskId,
+      repeat: task.repeat,
+      arm: task.arm,
+      orderIndex: task.orderIndex,
+      attemptCount: row?.attemptCount ?? 0,
+      terminalReason: row?.terminalReason ?? null,
+      verificationStatus: row?.verificationStatus ?? null,
+      checksPassed,
+      checksTotal,
+      accepted,
+      provider: {
+        wireRequests: Number.isInteger(provider.wireRequests) ? provider.wireRequests : null,
+        modelCalls: Number.isInteger(provider.modelCalls) ? provider.modelCalls : null,
+        inputTokens: knownNonnegative(provider.inputTokens) ? provider.inputTokens : null,
+        outputTokens: knownNonnegative(provider.outputTokens) ? provider.outputTokens : null,
+        cachedTokens: provider.cachedTokens == null ? null : (knownNonnegative(provider.cachedTokens) ? provider.cachedTokens : null),
+        usageUnknown,
+        apiUsd: provider.apiUsd == null ? null : (knownNonnegative(provider.apiUsd) ? provider.apiUsd : null)
+      },
+      timing: {
+        registeredAt: timing.registeredAt ?? task.registeredStart ?? null,
+        startedAt: timing.startedAt ?? null,
+        terminalAt: timing.terminalAt ?? null,
+        activeMs: knownNonnegative(timing.activeMs) ? timing.activeMs : null,
+        providerWaitMs: knownNonnegative(timing.providerWaitMs) ? timing.providerWaitMs : null,
+        elapsedMs: knownNonnegative(timing.elapsedMs) ? timing.elapsedMs : null
+      },
+      overheadUsd: row?.overheadUsd == null ? null : (knownNonnegative(row.overheadUsd) ? row.overheadUsd : null),
+      humanIntervals: Array.isArray(row?.humanIntervals) ? row.humanIntervals : [],
+      core: row?.core ?? null,
+      profileHash: row?.profileHash ?? null,
+      resetDigest: row?.resetDigest ?? null,
+      candidateDigest: row?.candidateDigest ?? null,
+      evidenceClass: row?.evidenceClass ?? null
+    };
+  });
+  const missing = resultTasks.filter(task => !seen.has(task.executionId)).map(task => task.executionId);
+  const pairs = [];
+  for (const pair of manifest.pairs ?? []) {
+    const direct = resultTasks.find(row => row.executionId === `${pair.pairId}:DIRECT`);
+    const exharness = resultTasks.find(row => row.executionId === `${pair.pairId}:EXHARNESS`);
+    const activeTimeRatio = direct?.timing.activeMs > 0 && exharness?.timing.activeMs != null ? exharness.timing.activeMs / direct.timing.activeMs : null;
+    const directTokens = direct?.provider.inputTokens != null && direct?.provider.outputTokens != null ? direct.provider.inputTokens + direct.provider.outputTokens : null;
+    const exharnessTokens = exharness?.provider.inputTokens != null && exharness?.provider.outputTokens != null ? exharness.provider.inputTokens + exharness.provider.outputTokens : null;
+    const tokenRatio = directTokens > 0 && exharnessTokens != null ? exharnessTokens / directTokens : null;
+    const directCost = direct?.provider.apiUsd;
+    const exharnessCost = exharness?.provider.apiUsd;
+    const costRatio = directCost > 0 && exharnessCost != null ? exharnessCost / directCost : null;
+    pairs.push({
+      pairId: pair.pairId,
+      taskId: pair.taskId,
+      repeat: pair.repeat,
+      order: pair.order,
+      directExecutionId: direct?.executionId ?? `${pair.pairId}:DIRECT`,
+      exharnessExecutionId: exharness?.executionId ?? `${pair.pairId}:EXHARNESS`,
+      directAccepted: direct?.accepted ?? null,
+      exharnessAccepted: exharness?.accepted ?? null,
+      activeTimeRatio,
+      tokenRatio,
+      costRatio,
+      directActiveMs: direct?.timing.activeMs ?? null,
+      exharnessActiveMs: exharness?.timing.activeMs ?? null
+    });
+  }
+  const ratios = pairs.map(pair => pair.activeTimeRatio).filter(value => value != null);
+  const allSettled = resultTasks.length === manifest.tasks.length && resultTasks.every(row => row.terminalReason != null && !row.provider.usageUnknown && row.timing.activeMs != null);
+  const evidenceClasses = new Set(resultTasks.filter(row => seen.has(row.executionId)).map(row => row.evidenceClass));
+  const evidenceClass = evidenceClasses.size === 1 && evidenceClasses.has('LIVE') ? 'LIVE' : evidenceClasses.has('DETERMINISTIC') ? 'DETERMINISTIC' : 'UNMEASURED';
+  const hasLiveEvidence = resultTasks.every(row => row.evidenceClass === 'LIVE' && row.provider.wireRequests > 0);
+  const reasons = [];
+  if (missing.length) reasons.push('MISSING_EXECUTIONS');
+  if (!allSettled) reasons.push('UNSETTLED_OR_UNKNOWN_USAGE');
+  if (!hasLiveEvidence) reasons.push('LIVE_PROVIDER_EVIDENCE_MISSING');
+  return {
+    schemaVersion: 1,
+    studyId: manifest.studyId,
+    studyKind: manifest.studyKind,
+    protocolHash: manifest.protocolHash,
+    profileHash: manifest.profileHash,
+    candidateSha: manifest.candidateSha,
+    candidateTree: manifest.candidateTree,
+    evidenceClass,
+    registeredExecutionCount: manifest.tasks.length,
+    measuredExecutionCount: seen.size,
+    complete: reasons.length === 0,
+    completenessReasons: reasons,
+    executions: resultTasks,
+    pairs,
+    medianActiveTimeRatio: ratios.length === pairs.length ? median(ratios) : null,
+    pairedBootstrap95: ratios.length === pairs.length ? studyBootstrap(ratios, manifest.seed ?? 65074) : null,
+    observationAsOf,
+    valueEvaluationRef: null
+  };
+}
+
 async function jsonl(path) {
   try { const body = await readFile(path, 'utf8'); return body.split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line)); }
   catch (error) { if (error.code === 'ENOENT') return []; throw error; }
@@ -192,6 +337,14 @@ export async function reportDirectory(directory) {
   const manifest = JSON.parse(await readFile(join(root, 'manifest.json'), 'utf8'));
   const observation = JSON.parse(await readFile(join(root, 'observation.json'), 'utf8'));
   return calculateReport({ manifest, attempts: await jsonl(join(root, 'attempts.jsonl')), usage: await jsonl(join(root, 'usage.jsonl')), humanEvents: await jsonl(join(root, 'human-events.jsonl')), defects: await jsonl(join(root, 'defects.jsonl')), observationAsOf: observation.asOf });
+}
+
+export async function studyReportDirectory(directory) {
+  const root = resolve(directory);
+  const manifest = JSON.parse(await readFile(join(root, 'manifest.json'), 'utf8'));
+  const metrics = JSON.parse(await readFile(join(root, 'metrics.json'), 'utf8'));
+  const observation = await readFile(join(root, 'observation.json'), 'utf8').then(JSON.parse).catch(() => ({ asOf: null }));
+  return calculateStudyReport({ manifest, metrics, observationAsOf: observation.asOf });
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

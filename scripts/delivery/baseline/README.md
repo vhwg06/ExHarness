@@ -32,3 +32,18 @@ When provider quota requires spreading work across resets, pass `--task-id NORM-
 The NIM transport captures each original Chat Completions JSON response outside the agent workspace, fsyncs it, and binds its hash to the provider ledger before settlement. A completed HTTP 200 needs no retrieval call; a pending HTTP 202 is polled by `requestId` at `/v1/status/{requestId}`. The live command builds the NIM provider evidence export from those captures automatically. `audit-live` checks the captured bytes, returned model ID, usage, candidate digest, frozen verifier and report without credentials. Missing cache detail remains `null`; missing usage is `UNKNOWN` and fences later calls for that task. The report cannot assert pilot value from these three calibrations.
 
 Run `node --test test/delivery/baseline-*.test.mjs` for deterministic contract, fixture, accounting and runner checks. Those tests are labelled deterministic and do not count as LIVE evidence.
+
+## FIXTURE_VALUE_V1 Core study
+
+The six-pair study is a separate registration from calibration and the future pilot. After preparing a profile from the frozen candidate, register the cohort before dispatch:
+
+```sh
+node study.mjs --mode register --profile runs/BB-065/profile.study.json --output runs/BB-065/study
+node study.mjs --mode live --profile runs/BB-065/profile.study.json --output runs/BB-065/study
+node study.mjs --mode export --output runs/BB-065/study
+node study.mjs --mode audit --profile runs/BB-065/profile.study.json --output runs/BB-065/study
+node jev-value.mjs --mode evaluate --output runs/BB-065/study
+node jev-value.mjs --mode audit --output runs/BB-065/study
+```
+
+The study persists a hash-chained resource journal and a portable `handoff.json`. A proven provider non-admission (429/503/529) is recorded with its bounded proof and retry wait; an accepted send that cannot be reconciled remains `UNKNOWN` and fences the execution. `report.json` contains factual paired metrics and `valueEvaluationRef`, never a code-authored value verdict. Only the trusted Jev controller may create `value.json`; its signing key and public-key registration stay outside the study output.

@@ -40,6 +40,8 @@ Provider calls reserve a budget before dispatch. The NVIDIA NIM Chat Completions
 
 This runner has no real ExHarness candidate adapter, supported deployment or measured ExHarness-versus-direct value uplift. LIVE calibration requires fresh provider, agent, verifier and accounting evidence followed by independent judgment; source code and earlier diagnostic runs alone do not establish delivery.
 
+BB-065 now contains a separate `FIXTURE_VALUE_V1` study path for the six-pair, twelve-execution Core comparison. Its registration is distinct from the old three-task calibration and future twenty-pair pilot. `resource-state.mjs` persists hash-chained request/attempt/recovery events, bounded waits, non-admission proofs, UNKNOWN reconciliation and portable current handoff; the existing provider ledger also supports explicit non-admission settlement and bounded wire accounting. `study.mjs` reconstructs registered executions before dispatch, uses one common mini-SWE-agent executor for DIRECT and EXHARNESS, and records factual paired metrics only. `core-arm.mjs` uses the current Core `observe`, `act`, `recordVerification`, `evaluate` and `promote` APIs with file-backed session state; a no-op cannot promote the baseline. `jev-value.mjs` materializes independent stage-one dimensions and a dependent final Choice, signs only actual trusted Jev responses, and fails closed when evidence, credentials, signing identity or bindings are unavailable. The study report contains no code-authored value verdict; it exposes `valueEvaluationRef` for the trusted Jev receipt. No live six-pair cohort, real Jev value conclusion or product-wide claim is established by deterministic tests or these source changes.
+
 ## Current composition
 
 Concrete execution path:

@@ -17,7 +17,7 @@ import urllib.request
 from uuid import UUID
 from pathlib import Path
 
-from provider_budget import BudgetError, ProviderBudget
+from provider_budget import BudgetError, ProviderBudget, ProviderNotAdmittedError
 
 
 def _completion_dict(response) -> dict:
@@ -75,6 +75,9 @@ def _nim_chat_completion(model_profile: dict, messages: list[dict], tools: list[
             status = reply.status
             encoded = reply.read(2_000_001)
     except urllib.error.HTTPError as error:
+        body = error.read(2049).decode("utf-8", errors="replace")
+        if error.code in {429, 503, 529}:
+            raise ProviderNotAdmittedError(error.code, error.headers.get("Retry-After"), body) from error
         raise BudgetError(f"NIM chat completion failed with HTTP {error.code}") from error
     if len(encoded) > 2_000_000:
         raise BudgetError("NIM completion exceeds evidence size limit")
@@ -181,6 +184,10 @@ def run(config: dict) -> dict:
                 response = original_query(messages, **kwargs)
                 raw = _completion_dict(response)
                 status_trace = []
+        except ProviderNotAdmittedError as error:
+            proof = budget.record_non_admission(request_id, error.status, error.retry_after, error.body)
+            budget.not_admitted(request_id, f"HTTP_{error.status}_NOT_ADMITTED", proof)
+            raise
         except BaseException as error:
             budget.unknown(request_id, f"provider completion ambiguous: {type(error).__name__}")
             raise
@@ -232,6 +239,9 @@ def main() -> int:
     except Exception as error:
         result = {"schemaVersion": 1, "exitStatus": "FAILED", "errorType": type(error).__name__,
                   "error": str(error), "traceback": traceback.format_exc(limit=4)}
+        if isinstance(error, ProviderNotAdmittedError):
+            result.update({"providerAdmission": "NOT_ADMITTED", "httpStatus": error.status,
+                           "retryAfter": error.retry_after, "retryAfterSeconds": error.retry_after})
         _write(result_path, result)
         return 1
     _write(result_path, result)

@@ -179,8 +179,11 @@ async function live(profile, identities, output, selectedTaskId = null) {
         taskId, arm: 'DIRECT', attemptId: prior.attemptId, sequence: 2, timestamp: interrupted.terminalTimestamp });
       completed.push(interrupted);
     }
-    if (completed.some(item => item.status !== 'TIMED_OUT' || item.producerExitStatus !== 'INTERRUPTED')) continue;
-    const attemptNumber = registered.length + 1;
+    // A terminal FAILED/REJECTED/INCONCLUSIVE attempt is evidence of an
+    // attempt, not proof that the task is complete.  Resume may spend the
+    // remaining bounded attempt after a provider/resource interruption.
+    if (completed.some(item => item.status === 'ACCEPTED')) continue;
+    const attemptNumber = completed.length + 1;
     if (attemptNumber > profile.budgets.maxAttemptsPerTask) continue;
     const attemptOutput = join(taskOutput, `attempt-${attemptNumber}`);
     const candidateDir = join(attemptOutput, 'candidate');

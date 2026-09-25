@@ -75,6 +75,10 @@ export async function verifyCandidate({ candidateDir, fault = 'NONE', browser = 
     check(exact120.status === 201 && [...exact120.body.title].length === 120, 'accept 120 Unicode code points', results);
     const tooLong = await json(`${base}/requests`, 'POST', { title: '😀'.repeat(121) });
     check(tooLong.status === 400 && tooLong.body.error?.field === 'title', 'reject 121 Unicode code points', results);
+    const longDescription = await json(`${base}/requests`, 'POST', { title: 'Description boundary', description: 'x'.repeat(2001) });
+    check(longDescription.status === 400 && longDescription.body.error?.field === 'description', 'reject description over 2000 code points without insert', results);
+    const afterLongDescription = await json(`${base}/requests`);
+    check(!afterLongDescription.body.some(row => row.title === 'Description boundary'), 'overlong description does not insert a row', results);
     for (const title of ['', '   ']) {
       const rejected = await json(`${base}/requests`, 'POST', { title });
       check(rejected.status === 400 && rejected.body.error?.field === 'title', `reject blank title ${JSON.stringify(title)}`, results);
@@ -85,6 +89,14 @@ export async function verifyCandidate({ candidateDir, fault = 'NONE', browser = 
     const afterInvalid = await json(`${base}/requests`);
     const current = afterInvalid.body.find(row => row.id === id);
     check(invalidStatus.status === 400 && current?.title === 'Updated' && current?.status === 'CLOSED', 'invalid status has no partial mutation', results);
+    const invalidTitle = await json(`${base}/requests/${id}`, 'PATCH', { title: '😀'.repeat(121) });
+    const invalidDescription = await json(`${base}/requests/${id}`, 'PATCH', { description: 'x'.repeat(2001) });
+    const afterBoundaries = await json(`${base}/requests`);
+    const boundaryCurrent = afterBoundaries.body.find(row => row.id === id);
+    check(invalidTitle.status === 400 && invalidTitle.body.error?.field === 'title' && invalidDescription.status === 400 && invalidDescription.body.error?.field === 'description' && boundaryCurrent?.title === 'Updated' && boundaryCurrent?.description === 'A description', 'invalid title and description patches have no partial mutation', results);
+    const emptyPatch = await json(`${base}/requests/${id}`, 'PATCH', {});
+    const illegalPatch = await json(`${base}/requests/${id}`, 'PATCH', { title: 'Safe', unexpected: true });
+    check(emptyPatch.status === 400 && illegalPatch.status === 400, 'empty and illegal patches are rejected', results);
     const unknown = await json(`${base}/requests/999999`, 'PATCH', { title: 'Missing' });
     check(unknown.status === 404, 'unknown id returns 404', results);
     check(afterInvalid.body.every((row, index, rows) => index === 0 || rows[index - 1].id < row.id), 'list ordered by ascending id', results);
@@ -111,6 +123,10 @@ export async function verifyCandidate({ candidateDir, fault = 'NONE', browser = 
           const browserUpdated = await json(`${base}/requests`);
           check(browserUpdated.body.find(row => row.id === browserCreated.id)?.status === 'CLOSED', 'browser updates status through API', results);
         }
+        await page.getByLabel('Title', { exact: true }).fill('Keyboard created');
+        await page.getByRole('button', { name: 'Create request' }).focus();
+        await page.keyboard.press('Enter');
+        check(Boolean((await json(`${base}/requests`)).body.find(row => row.title === 'Keyboard created')), 'keyboard reaches and activates create control', results);
         await page.getByLabel('Title', { exact: true }).fill('   ');
         await page.getByRole('button', { name: 'Create request' }).click();
         check((await page.getByRole('alert').textContent() ?? '').includes('Title'), 'browser shows title validation error', results);
@@ -119,10 +135,11 @@ export async function verifyCandidate({ candidateDir, fault = 'NONE', browser = 
         check(await page.getByLabel(`Title ${id}`).inputValue() === 'Updated', 'browser reload preserves edited row', results);
       } finally { await browserProcess.close(); }
     }
+    const beforeRestart = await json(`${base}/requests`);
     await process.stop(); process = null;
     process = await startServer(copy, databasePath, fault);
     const reopened = await json(`${process.url}/requests`);
-    check(reopened.body.find(row => row.id === id)?.status === 'CLOSED', 'same database persists across restart', results);
+    check(JSON.stringify(reopened.body) === JSON.stringify(beforeRestart.body), 'same database persists across restart', results);
     check(reopened.body.every((row, index, rows) => index === 0 || rows[index - 1].id < row.id), 'restart preserves ascending order', results);
     const after = await candidateDigest(copy);
     const originalAfter = await candidateDigest(candidateDir);

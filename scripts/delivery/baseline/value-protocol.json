@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "protocolId": "FIXTURE_VALUE_V1",
+  "studyId": "BB065-CORE-FIXTURE-VALUE-1",
+  "evidenceClass": "LIVE",
+  "seed": 65074,
+  "pairs": [
+    { "pairId": "P01", "taskId": "NORM-01", "repeat": 1, "order": ["DIRECT", "EXHARNESS"] },
+    { "pairId": "P02", "taskId": "STATUS-01", "repeat": 1, "order": ["EXHARNESS", "DIRECT"] },
+    { "pairId": "P03", "taskId": "ORDER-01", "repeat": 1, "order": ["DIRECT", "EXHARNESS"] },
+    { "pairId": "P04", "taskId": "NORM-01", "repeat": 2, "order": ["EXHARNESS", "DIRECT"] },
+    { "pairId": "P05", "taskId": "STATUS-01", "repeat": 2, "order": ["DIRECT", "EXHARNESS"] },
+    { "pairId": "P06", "taskId": "ORDER-01", "repeat": 2, "order": ["EXHARNESS", "DIRECT"] }
+  ],
+  "limits": {
+    "maxConcurrentProviderRequests": 1,
+    "minRequestIntervalSeconds": 10,
+    "maxWireRequestsPerExecution": 24,
+    "maxModelCallsPerExecution": 12,
+    "maxInputTokensPerCall": 16384,
+    "maxOutputTokensPerCall": 4096,
+    "maxTotalTokensPerExecution": 50000,
+    "maxAttemptsPerExecution": 2,
+    "maxExecutionActiveSeconds": 1200,
+    "maxToolCommandSeconds": 30,
+    "maxCohortWallSeconds": 259200,
+    "maxProviderWaitSeconds": 86400,
+    "maxWireRetriesPerLogicalRequest": 2,
+    "maxApiUsdPerExecution": 5,
+    "maxCohortApiUsd": 60,
+    "maxProbeRequests": 2,
+    "maxProbeOutputTokens": 128,
+    "maxProbeUsd": 0.1,
+    "maxJevStageCalls": 2,
+    "maxJevTransportAttemptsPerStage": 2,
+    "maxJevTotalInputTokens": 128000,
+    "maxJevUsd": 0.02
+  },
+  "commonPolicy": {
+    "executor": "mini-swe-agent@04d809ceab9df28f9adaed044884180159172930",
+    "nodeVersion": "24.19.0",
+    "playwrightVersion": "1.63.0",
+    "maxAttemptsPerExecution": 2,
+    "samePromptToolsBudgetsVerifier": true,
+    "independentReset": true,
+    "coreTreatment": "observe-act-recordVerification-evaluate-promote"
+  },
+  "rubric": {
+    "quality": "ExHarness accepted count is not lower than DIRECT and no protected verifier boundary is violated.",
+    "time": "At least 20 percent lower median paired active execution time.",
+    "tokens": "No more than 10 percent additional total provider tokens.",
+    "alternative": "At least one additional accepted execution with no more than 10 percent additional total provider tokens.",
+    "cost": "When positive known costs exist, no more than 10 percent increase in known total cost.",
+    "zeroPrice": "Zero-price routes require measured token/call totals; unknown infrastructure cost forbids a financial claim.",
+    "scope": "Current ExHarness Core fixture operation only; not human productivity, customer productivity or long-term escaped defects."
+  },
+  "jev": {
+    "model": "jev-1.13.0",
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "credentialEnv": "TYPESAFE_API_KEY",
+    "stageOne": ["evidence", "comparison", "quality", "efficiency"],
+    "stageTwo": ["VALUE_DEMONSTRATED", "NO_VALUE_DEMONSTRATED", "INCONCLUSIVE"],
+    "semanticAuthority": "JEV_ONLY",
+    "evidenceByteLimit": 24000
+  }
+}

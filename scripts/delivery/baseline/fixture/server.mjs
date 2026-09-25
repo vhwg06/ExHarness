@@ -1,4 +1,5 @@
 import { createServer as createHttpServer } from 'node:http';
+import { realpathSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -109,7 +110,7 @@ export function createRequestTracker({ databasePath, fault = 'NORM-01' }) {
   };
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+if (process.argv[1] && realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1])) {
   const args = process.argv.slice(2);
   const option = name => { const index = args.indexOf(name); return index < 0 ? undefined : args[index + 1]; };
   const app = createRequestTracker({ databasePath: option('--database'), fault: option('--fault') ?? 'NORM-01' });

@@ -20,6 +20,16 @@ class BudgetError(RuntimeError):
     pass
 
 
+class ProviderNotAdmittedError(BudgetError):
+    """The provider rejected admission before a model request was accepted."""
+
+    def __init__(self, status: int, retry_after: str | None, body: str):
+        super().__init__(f"provider request was not admitted with HTTP {status}")
+        self.status = status
+        self.retry_after = retry_after
+        self.body = body
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -58,6 +68,25 @@ class ProviderBudget:
                 "providerEvidenceRef": f"{self.task_id}/provider-responses/{identity}.json",
                 "providerEvidenceHash": f"sha256:{hashlib.sha256(encoded).hexdigest()}"}
 
+    def record_non_admission(self, identity: str, status: int, retry_after: str | None, body: str = "") -> dict:
+        """Capture bounded provider proof before releasing a reservation."""
+        if not any(event["kind"] == "RESERVE" and event["requestId"] == identity for event in self._events()):
+            raise BudgetError("non-admission has no reservation")
+        record = {"schemaVersion": 1, "evidenceClass": "PROVIDER_NON_ADMISSION", "requestId": identity,
+                  "taskId": self.task_id, "capturedAt": _now(), "httpStatus": int(status),
+                  "retryAfter": retry_after, "body": str(body or "")[:2048]}
+        encoded = (json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8")
+        directory = self.path.parent / "provider-admission"
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / f"{identity}.json"
+        with path.open("xb") as stream:
+            stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+        return {"ref": f"{self.task_id}/provider-admission/{identity}.json",
+                "hash": f"sha256:{hashlib.sha256(encoded).hexdigest()}", "httpStatus": int(status),
+                "retryAfter": retry_after}
+
     def _events(self) -> list[dict]:
         if not self.path.exists():
             return []
@@ -79,7 +108,7 @@ class ProviderBudget:
                 if identity in reservations:
                     raise BudgetError("duplicate reservation")
                 reservations[identity] = event
-            elif event["kind"] in {"SETTLED", "UNKNOWN"}:
+            elif event["kind"] in {"SETTLED", "UNKNOWN", "NOT_ADMITTED"}:
                 if identity not in reservations or identity in settled:
                     raise BudgetError("settlement without unique reservation")
                 settled[identity] = event
@@ -92,8 +121,9 @@ class ProviderBudget:
             final = settled.get(identity)
             if final is None or final["kind"] == "UNKNOWN":
                 raise BudgetError("unresolved provider request reservation")
-            tokens += final["inputTokens"] + final["outputTokens"]
-            cost += final["costUsd"]
+            if final["kind"] == "SETTLED":
+                tokens += final["inputTokens"] + final["outputTokens"]
+                cost += final["costUsd"]
         return reservations, calls, tokens, cost
 
     def reserve(self, input_tokens: int, output_tokens: int) -> str:
@@ -107,7 +137,8 @@ class ProviderBudget:
         reserve_tokens = self.limits["maxInputTokensPerCall"] + self.limits["maxOutputTokensPerCall"]
         reserve_cost = (self.limits["maxInputTokensPerCall"] * self.prices["inputUsdPerMillion"] +
                         self.limits["maxOutputTokensPerCall"] * self.prices["outputUsdPerMillion"]) / 1_000_000
-        if calls + 1 > self.limits["maxModelCalls"] or used_tokens + reserve_tokens > self.limits["maxTotalTokens"] or used_cost + reserve_cost > self.limits["maxApiUsd"]:
+        max_wire = self.limits.get("maxWireRequestsPerExecution", self.limits["maxModelCalls"])
+        if calls + 1 > max_wire or calls + 1 > self.limits["maxModelCalls"] or used_tokens + reserve_tokens > self.limits["maxTotalTokens"] or used_cost + reserve_cost > self.limits["maxApiUsd"]:
             raise BudgetError("shared task budget exhausted")
         identity = uuid.uuid4().hex
         self._append({"schemaVersion": 1, "kind": "RESERVE", "requestId": identity, "taskId": self.task_id,
@@ -157,3 +188,13 @@ class ProviderBudget:
             raise BudgetError("unknown or already settled reservation")
         self._append({"schemaVersion": 1, "kind": "UNKNOWN", "requestId": identity, "taskId": self.task_id,
                       "attemptId": self.attempt_id, "timestamp": _now(), "reason": reason, **(evidence or {})})
+
+    def not_admitted(self, identity: str, reason: str, proof: dict) -> None:
+        """Release a reservation only with durable proof that no provider call was admitted."""
+        events = self._events()
+        if not any(event["kind"] == "RESERVE" and event["requestId"] == identity for event in events) or any(event["kind"] != "RESERVE" and event["requestId"] == identity for event in events):
+            raise BudgetError("unknown or already settled reservation")
+        if not isinstance(proof, dict) or not proof.get("ref") or not proof.get("hash"):
+            raise BudgetError("non-admission proof ref/hash required")
+        self._append({"schemaVersion": 1, "kind": "NOT_ADMITTED", "requestId": identity, "taskId": self.task_id,
+                      "attemptId": self.attempt_id, "timestamp": _now(), "reason": reason, "proof": proof})
