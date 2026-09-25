@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Request Tracker</title></head>
+<body>
+  <main>
+    <h1>Request Tracker</h1>
+    <form id="new-request">
+      <label>Title <input id="title" name="title" required maxlength="120"></label>
+      <label>Description <textarea id="description" name="description" maxlength="2000"></textarea></label>
+      <button type="submit">Create request</button>
+    </form>
+    <p id="error" role="alert" aria-live="polite"></p>
+    <ul id="requests" aria-label="Requests"></ul>
+  </main>
+  <!-- FIXTURE_CONFIG -->
+  <script src="/client.js" defer></script>
+</body>
+</html>
