@@ -5,6 +5,19 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { main } from '../../scripts/delivery/baseline/run.mjs';
+import { reconcileStoredCompletion } from '../../scripts/delivery/baseline/provider-export.mjs';
+
+test('stored provider retrieval confirms totals without inventing omitted cache details', () => {
+  const row = { providerRequestId: 'chatcmpl-example', inputTokens: 3598, outputTokens: 355, cachedInputTokens: 2964 };
+  const raw = { id: row.providerRequestId, model: 'gpt-6-luna', service_tier: 'default',
+    usage: { prompt_tokens: 3598, completion_tokens: 355, total_tokens: 3953 } };
+  assert.deepEqual(reconcileStoredCompletion(raw, row, { snapshot: 'gpt-6-luna' }),
+    { cachedInputVerification: 'ORIGINAL_RESPONSE_ONLY' });
+  assert.throws(() => reconcileStoredCompletion({ ...raw, usage: { ...raw.usage, prompt_tokens: 3599 } }, row,
+    { snapshot: 'gpt-6-luna' }), /differs from ledger/);
+  assert.throws(() => reconcileStoredCompletion({ ...raw, usage: { ...raw.usage, prompt_tokens_details: { cached_tokens: 0 } } }, row,
+    { snapshot: 'gpt-6-luna' }), /cache usage differs/);
+});
 
 test('deterministic mode runs real verifier and is never labelled LIVE', async t => {
   const output = await mkdtemp(join(tmpdir(), 'baseline-deterministic-'));

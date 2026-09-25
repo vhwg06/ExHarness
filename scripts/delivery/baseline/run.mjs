@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { CALIBRATION_TASK_IDS, MINI_COMMIT, NODE_VERSION, PLAYWRIGHT_VERSION, PROTOCOL_HASH, canonical, fixtureIdentities, registrationManifest, sha256, validateProfile } from './contract.mjs';
 import { candidateDigest, verifyCandidate } from './fixture/acceptance.mjs';
 import { reportDirectory } from './report.mjs';
+import { reconcileStoredCompletion } from './provider-export.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const fixture = join(root, 'fixture');
@@ -237,10 +238,9 @@ async function auditLive(profile, identities, output) {
         !record.retrievedAt || exported.has(record.providerRequestId)) fail('invalid independent provider export');
     if (await digestFile(join(output, record.rawRecordRef)) !== record.rawRecordHash) fail('provider raw record digest mismatch');
     const raw = await plainJson(join(output, record.rawRecordRef));
-    if (raw.id !== record.providerRequestId || raw.model !== profile.model.snapshot || raw.service_tier !== 'default' ||
-        raw.usage?.prompt_tokens !== record.inputTokens || raw.usage?.completion_tokens !== record.outputTokens ||
-        (raw.usage?.prompt_tokens_details?.cached_tokens ?? 0) !== record.cachedInputTokens)
-      fail('provider export/raw mismatch');
+    const reconciliation = reconcileStoredCompletion(raw, record, profile.model);
+    if (record.cachedInputVerification !== reconciliation.cachedInputVerification)
+      fail('provider cache verification provenance mismatch');
     exported.set(record.providerRequestId, record);
   }
   for (const request of usage.filter(item => item.status === 'SETTLED')) {
@@ -266,7 +266,8 @@ async function auditLive(profile, identities, output) {
   const report = await reportDirectory(output);
   if (canonical(report) !== canonical(await plainJson(join(output, 'report.json')))) fail('report is stale');
   return { mode: 'audit-live', tasks: attempts.length, valueVerdict: report.valueVerdict,
-    evidenceClass: 'LIVE', providerExportActor: profile.operatorId, reviewerAction: 'NOT_CLAIMED' };
+    evidenceClass: 'LIVE', providerExportActor: profile.operatorId, reviewerAction: 'NOT_CLAIMED',
+    cachedInputOriginalResponseOnly: providerExport.filter(record => record.cachedInputVerification === 'ORIGINAL_RESPONSE_ONLY').length };
 }
 
 async function deterministic(output) {

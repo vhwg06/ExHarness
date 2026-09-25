@@ -9,6 +9,16 @@ const sha256 = bytes => `sha256:${createHash('sha256').update(bytes).digest('hex
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const readLines = async path => (await readFile(path, 'utf8')).split(/\r?\n/).filter(Boolean).map(JSON.parse);
 
+export function reconcileStoredCompletion(raw, row, model) {
+  if (raw.id !== row.providerRequestId || raw.model !== model.snapshot || raw.service_tier !== 'default' ||
+      raw.usage?.prompt_tokens !== row.inputTokens || raw.usage?.completion_tokens !== row.outputTokens)
+    throw new Error('PROVIDER_EXPORT_INVALID: independently retrieved usage differs from ledger');
+  const cached = raw.usage?.prompt_tokens_details?.cached_tokens;
+  if (cached != null && cached !== row.cachedInputTokens)
+    throw new Error('PROVIDER_EXPORT_INVALID: retrieved cache usage differs from original response');
+  return { cachedInputVerification: cached == null ? 'ORIGINAL_RESPONSE_ONLY' : 'RETRIEVED_RECORD' };
+}
+
 async function createOnce(path, bytes) {
   try {
     const file = await open(path, 'wx');
@@ -58,15 +68,14 @@ export async function exportProviderRecords({ profilePath, output, operatorId })
     const bytes = Buffer.from(await response.arrayBuffer());
     if (bytes.length > 2_000_000) throw new Error('PROVIDER_EXPORT_INVALID: provider record too large');
     const raw = JSON.parse(bytes.toString('utf8'));
-    if (raw.id !== row.providerRequestId || raw.model !== profile.model.snapshot || raw.service_tier !== 'default' || raw.usage?.prompt_tokens !== row.inputTokens ||
-        raw.usage?.completion_tokens !== row.outputTokens || (raw.usage?.prompt_tokens_details?.cached_tokens ?? 0) !== row.cachedInputTokens)
-      throw new Error('PROVIDER_EXPORT_INVALID: independently retrieved usage differs from ledger');
+    const reconciliation = reconcileStoredCompletion(raw, row, profile.model);
     const rawRecordRef = `provider-records/${row.providerRequestId}.json`;
     await createOnce(join(root, rawRecordRef), bytes);
     records.push({ evidenceClass: 'PROVIDER_EXPORT', exportedBy: operatorId,
       retrievalMethod: 'OPENAI_CHAT_COMPLETIONS_GET', retrievedAt: new Date().toISOString(),
       sourceRef, providerRequestId: row.providerRequestId, rawRecordRef, rawRecordHash: sha256(bytes),
-      inputTokens: raw.usage.prompt_tokens, cachedInputTokens: raw.usage.prompt_tokens_details?.cached_tokens ?? 0,
+      inputTokens: raw.usage.prompt_tokens, cachedInputTokens: row.cachedInputTokens,
+      cachedInputVerification: reconciliation.cachedInputVerification,
       outputTokens: raw.usage.completion_tokens, costUsd: row.costUsd });
   }
   await createOnce(join(root, 'provider-export.jsonl'), Buffer.from(records.map(row => JSON.stringify(row)).join('\n') + '\n'));
