@@ -3,28 +3,31 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-063",
-  "outcome": "Oracle extraction preserves durability, provenance and recovery semantics across process boundaries and migration: manifest-protected artifact reads, stable source refs, validation failures and durable Backend→QA continuation remain correct after package ownership changes.",
-  "currentProblem": "Oracle behavior matured through manifest validation and durable Backend→QA continuation while still colocated. Moving code without reconciling these durability/provenance seams risks silently weakening accepted-artifact identity, crash recovery, or compatibility even if simple resolver tests still pass.",
+  "outcome": "Define durable ContextResolution identity, provenance, currentness and materialization semantics so Oracle results can be cached, replayed and recovered safely while preserving existing manifest-protected artifact guarantees.",
+  "currentProblem": "Runtime resolutions may span multiple providers, staged retrieval and cached materializations. Without first-class identity/currentness, a changed repository head, artifact, index or graph can silently reuse stale context; crash recovery can also replay an incompatible resolution even if individual source reads remain correct.",
   "scope": [
+    "oracle.resolution-identity",
     "oracle.provenance",
-    "oracle.manifest-validation",
-    "oracle.durable-continuation",
-    "oracle.migration-compatibility",
-    "oracle.failure-semantics"
+    "oracle.currentness",
+    "oracle.materialization",
+    "oracle.cache-validity",
+    "oracle.recovery",
+    "oracle.manifest-compatibility"
   ],
   "constraints": [
-    "Physical extraction must not weaken producer/revision/acceptance/content-digest checks for manifest-protected artifacts.",
-    "Durable Backend→QA continuation must persist and recover the exact refs it already relies on.",
-    "Default direct-reader behavior remains supported unless explicitly superseded by accepted research.",
-    "Migration cannot fabricate provenance or silently reinterpret missing durable state.",
-    "Compatibility shims, if needed, are temporary and have explicit removal/closure criteria."
+    "Resolution identity binds the requirement plus source/currentness inputs and the relevant planner/provider configuration.",
+    "Derived or graph context retains traceable source provenance rather than replacing source identity with an opaque summary.",
+    "Existing manifest-protected QA artifact reads remain fail-closed on producer, revision, acceptance and content mismatch.",
+    "Recovery may reuse a resolution only when its currentness fences still match; ambiguous external outcomes cannot be treated as current.",
+    "Invalidation is explicit and selective; cache reuse is an optimization and never acceptance authority.",
+    "Persistence technology is selected only after identity/update/recovery experiments establish the required semantics."
   ],
   "successCriteria": [
-    "Research identifies every durability/provenance seam crossing the new package boundary.",
-    "Manifest-protected QA reads remain fail-closed on identity/provenance/content mismatch.",
-    "Fresh-process Backend→QA continuation resolves the same accepted artifact refs after extraction.",
-    "Existing direct-reader callers either continue unchanged or have an explicit bounded migration path.",
-    "Failure/recovery evidence is sufficient to detect semantic regressions that package-level unit tests would miss."
+    "The same requirement against the same authoritative source/currentness state has deterministic reuse identity; relevant source change invalidates it.",
+    "Every materialized context item can be traced to source provenance and currentness evidence, including graph-derived context.",
+    "Crash/replay and concurrent refresh cannot promote a stale ContextResolution to current.",
+    "Manifest-protected Backend-to-QA continuation remains at least as strict as the existing behavior.",
+    "Failure-injection tests cover stale source, partial provider failure, interrupted materialization and recovery."
   ],
   "currentSourceRefs": [
     "docs/living/system/oracle/architecture.md",
@@ -34,7 +37,9 @@
     "packages/agentic-system/src/oracle.js",
     "packages/agentic-system/src/backend-application.js",
     "packages/agentic-system/src/qa-application.js",
-    "packages/agentic-system/src/index.js",
+    "packages/core-harness/src",
+    "docs/blackboard/process/oracle-reconciliation-phase.md",
+    "docs/blackboard/process/oracle-context-intelligence-research.md",
     "docs/living/system/oracle/artifact-manifest.md",
     "docs/living/system/agentic-application/state.md"
   ]
