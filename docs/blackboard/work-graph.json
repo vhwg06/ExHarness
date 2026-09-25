@@ -22,7 +22,7 @@
     },
     {
       "id": "TOPIC-ORACLE-RECONCILIATION",
-      "title": "Oracle infrastructure reconciliation phase",
+      "title": "Oracle Context Intelligence Plane foundation",
       "status": "PLANNED",
       "featureIds": [
         "FEATURE-ORACLE-PHYSICAL",
@@ -32,7 +32,8 @@
         "FEATURE-ORACLE-ACCEPTANCE"
       ],
       "artifactRefs": [
-        "docs/blackboard/process/oracle-reconciliation-phase.md"
+        "docs/blackboard/process/oracle-reconciliation-phase.md",
+        "docs/blackboard/process/oracle-context-intelligence-research.md"
       ]
     },
     {
@@ -192,60 +193,70 @@
       "id": "FEATURE-ORACLE-PHYSICAL",
       "topicId": "TOPIC-ORACLE-RECONCILIATION",
       "kind": "FEATURE",
-      "title": "Physical ownership and package boundary",
+      "title": "Oracle runtime architecture and physical ownership",
       "status": "PLANNED",
       "taskIds": [
         "BB-060"
       ],
-      "artifactRefs": [],
+      "artifactRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research.md"
+      ],
       "acceptanceTaskId": "BB-060"
     },
     {
       "id": "FEATURE-ORACLE-PORT",
       "topicId": "TOPIC-ORACLE-RECONCILIATION",
       "kind": "FEATURE",
-      "title": "Application to Oracle semantic port and dependency direction",
+      "title": "ContextRequirement and ContextResolution semantic contract",
       "status": "PLANNED",
       "taskIds": [
         "BB-061"
       ],
-      "artifactRefs": [],
+      "artifactRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research.md"
+      ],
       "acceptanceTaskId": "BB-061"
     },
     {
       "id": "FEATURE-ORACLE-CONNECTIVITY",
       "topicId": "TOPIC-ORACLE-RECONCILIATION",
       "kind": "FEATURE",
-      "title": "Concrete source connectivity and adapter topology",
+      "title": "Source provider topology and semantic code retrieval",
       "status": "PLANNED",
       "taskIds": [
         "BB-062"
       ],
-      "artifactRefs": [],
+      "artifactRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research.md"
+      ],
       "acceptanceTaskId": "BB-062"
     },
     {
       "id": "FEATURE-ORACLE-DURABILITY",
       "topicId": "TOPIC-ORACLE-RECONCILIATION",
       "kind": "FEATURE",
-      "title": "Provenance durability and migration compatibility",
+      "title": "Durable resolution identity provenance currentness and materialization",
       "status": "PLANNED",
       "taskIds": [
         "BB-063"
       ],
-      "artifactRefs": [],
+      "artifactRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research.md"
+      ],
       "acceptanceTaskId": "BB-063"
     },
     {
       "id": "FEATURE-ORACLE-ACCEPTANCE",
       "topicId": "TOPIC-ORACLE-RECONCILIATION",
       "kind": "FEATURE",
-      "title": "Oracle phase acceptance and architecture drift guard",
+      "title": "Oracle foundation acceptance",
       "status": "PLANNED",
       "taskIds": [
         "BB-064"
       ],
-      "artifactRefs": [],
+      "artifactRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research.md"
+      ],
       "acceptanceTaskId": "BB-064"
     },
     {
@@ -945,7 +956,7 @@
     {
       "id": "BB-060",
       "featureId": "FEATURE-ORACLE-PHYSICAL",
-      "title": "Reconcile Oracle physical ownership and package boundary",
+      "title": "Define Oracle runtime architecture and physical ownership",
       "kind": "IMPLEMENTATION",
       "status": "PLANNED",
       "complexity": "L",
@@ -956,7 +967,8 @@
       "artifacts": {
         "inputRefs": [
           "docs/blackboard/artifacts/objective/BB-060.json",
-          "docs/blackboard/artifacts/ready-implement-plan/BB-060.json"
+          "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+          "docs/blackboard/process/oracle-context-intelligence-research.md"
         ],
         "outputRefs": [],
         "consolidatedRefs": [
@@ -967,28 +979,25 @@
         ]
       },
       "expectedOutputs": [
-        "infrastructure-owned Oracle package boundary",
-        "concrete Backend/QA resolver migration map",
-        "no-generic-abstraction extraction contract"
+        "infrastructure-owned Oracle Context Intelligence runtime boundary",
+        "acyclic Core/Application-to-Oracle semantic dependency",
+        "retained-versus-superseded architecture evidence"
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-060.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
-        "researchBaselineSha": "7a266fc4621e5c900a49f2e0a840e484a92d87af",
-        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-060.readiness-jev-evaluation.json",
-        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-060.implementation-result.json",
-        "lastEvaluatedInput": "a32bd1ecc79ed19596e917e945c7fa56488866f5f8c14d241e6b7855e17f976b"
+        "researchBaselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109",
+        "baselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109"
       },
-      "lane": "WORKER",
-      "phase": "EXECUTION"
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     },
     {
       "id": "BB-061",
       "featureId": "FEATURE-ORACLE-PORT",
-      "title": "Define Application to Oracle semantic port and dependency direction",
+      "title": "Define ContextRequirement and ContextResolution semantic contract",
       "kind": "IMPLEMENTATION",
       "status": "PLANNED",
       "complexity": "L",
@@ -1006,7 +1015,8 @@
       "artifacts": {
         "inputRefs": [
           "docs/blackboard/artifacts/objective/BB-061.json",
-          "docs/blackboard/artifacts/ready-implement-plan/BB-061.json"
+          "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+          "docs/blackboard/process/oracle-context-intelligence-research.md"
         ],
         "outputRefs": [],
         "consolidatedRefs": [
@@ -1017,28 +1027,25 @@
         ]
       },
       "expectedOutputs": [
-        "acyclic Application-to-Oracle dependency contract",
-        "schema and authority ownership boundary",
-        "compile-time dependency verification"
+        "provider-neutral ContextRequirement contract",
+        "durable ContextResolution contract",
+        "explicit budget/currentness/failure semantics"
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-061.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
-        "researchBaselineSha": "8674b7f02a16b372efa1d1d87cc7aa2b32391eb9",
-        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-061.readiness-jev-evaluation.json",
-        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-061.implementation-result.json",
-        "lastEvaluatedInput": "aed9d09fbe1e89b67c93b32c9dca104890d26d7690d3e76db894f5be5a3fcfb9"
+        "researchBaselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109",
+        "baselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109"
       },
-      "lane": "WORKER",
-      "phase": "EXECUTION"
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     },
     {
       "id": "BB-062",
       "featureId": "FEATURE-ORACLE-CONNECTIVITY",
-      "title": "Define concrete Oracle source connectivity and adapter topology",
+      "title": "Define Oracle source provider topology and semantic code retrieval",
       "kind": "IMPLEMENTATION",
       "status": "PLANNED",
       "complexity": "L",
@@ -1056,7 +1063,8 @@
       "artifacts": {
         "inputRefs": [
           "docs/blackboard/artifacts/objective/BB-062.json",
-          "docs/blackboard/artifacts/ready-implement-plan/BB-062.json"
+          "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+          "docs/blackboard/process/oracle-context-intelligence-research.md"
         ],
         "outputRefs": [],
         "consolidatedRefs": [
@@ -1068,28 +1076,25 @@
         ]
       },
       "expectedOutputs": [
-        "repository and application-artifact adapter topology",
-        "bounded external/MCP adapter contract",
-        "end-to-end declared-context ingress semantics"
+        "repository artifact semantic-code lexical and graph provider topology",
+        "bounded Retrieval Planner seam",
+        "same-corpus retrieval and graph feasibility evidence"
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-062.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
-        "researchBaselineSha": "b3005b78e495a17ccd7fdc9b20e522475cb30b4a",
-        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-062.readiness-jev-evaluation.json",
-        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-062.implementation-result.json",
-        "lastEvaluatedInput": "eee1eff3f5d55c8e1d50a59422f21fbf56074038b5d8abda48e2ff85741a955c"
+        "researchBaselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109",
+        "baselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109"
       },
-      "lane": "WORKER",
-      "phase": "EXECUTION"
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     },
     {
       "id": "BB-063",
       "featureId": "FEATURE-ORACLE-DURABILITY",
-      "title": "Preserve Oracle provenance durability and migration compatibility",
+      "title": "Define durable ContextResolution identity provenance currentness and materialization",
       "kind": "IMPLEMENTATION",
       "status": "PLANNED",
       "complexity": "L",
@@ -1107,7 +1112,8 @@
       "artifacts": {
         "inputRefs": [
           "docs/blackboard/artifacts/objective/BB-063.json",
-          "docs/blackboard/artifacts/ready-implement-plan/BB-063.json"
+          "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+          "docs/blackboard/process/oracle-context-intelligence-research.md"
         ],
         "outputRefs": [],
         "consolidatedRefs": [
@@ -1121,28 +1127,25 @@
         ]
       },
       "expectedOutputs": [
-        "manifest/provenance-preserving package migration",
-        "fresh-process Backend-to-QA compatibility proof",
-        "fail-closed source identity semantics"
+        "durable resolution/materialization identity",
+        "source provenance and currentness invalidation semantics",
+        "crash/replay and manifest compatibility proof"
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-063.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
-        "researchBaselineSha": "3385a0e898751fec831742cf3f752145a0d0aa18",
-        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-063.readiness-jev-evaluation.json",
-        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-063.implementation-result.json",
-        "lastEvaluatedInput": "1bd2e7acad255bee229f4566d4d5c961eef1f0880b7adb9e8488aa1337d65bde"
+        "researchBaselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109",
+        "baselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109"
       },
-      "lane": "WORKER",
-      "phase": "EXECUTION"
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     },
     {
       "id": "BB-064",
       "featureId": "FEATURE-ORACLE-ACCEPTANCE",
-      "title": "Close Oracle reconciliation with end-to-end connectivity and drift guards",
+      "title": "Accept Oracle Context Intelligence foundation",
       "kind": "IMPLEMENTATION",
       "status": "PLANNED",
       "complexity": "XL",
@@ -1179,7 +1182,8 @@
       "artifacts": {
         "inputRefs": [
           "docs/blackboard/artifacts/objective/BB-064.json",
-          "docs/blackboard/artifacts/ready-implement-plan/BB-064.json"
+          "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+          "docs/blackboard/process/oracle-context-intelligence-research.md"
         ],
         "outputRefs": [],
         "consolidatedRefs": [
@@ -1194,23 +1198,20 @@
         ]
       },
       "expectedOutputs": [
-        "Oracle phase end-to-end acceptance",
-        "architecture-to-source alignment guard",
-        "zero known Oracle reconciliation debt"
+        "bounded Oracle foundation runtime proof",
+        "architecture/currentness failure guards",
+        "benchmark/profile handoff and post-foundation efficiency continuation"
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-064.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
-        "researchBaselineSha": "98807682d7450c9298dfd7228e0d6a1eb19bd56b",
-        "baselineSha": "a88f74ac7907ab903c3a0ef2618efd671de68029",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.readiness-jev-evaluation.json",
-        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.implementation-result.json",
-        "lastEvaluatedInput": "4a9d084845a7460d9564b47377086e2de147179ab5ddd9c927bc43ef6195f81d"
+        "researchBaselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109",
+        "baselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109"
       },
-      "lane": "WORKER",
-      "phase": "EXECUTION"
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     },
     {
       "id": "BB-065",
