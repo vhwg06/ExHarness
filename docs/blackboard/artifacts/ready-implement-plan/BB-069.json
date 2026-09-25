@@ -9,176 +9,358 @@
     "hash": "74f3173bd0d772468a73f11d1d1e63455d453be46e33b87455efc1159e8fcf85"
   },
   "scope": [
-    "delivery.first-slice"
+    "delivery.first-slice.oracle-context",
+    "delivery.first-slice.real-agent-execution",
+    "delivery.first-slice.scm-review-candidate",
+    "delivery.first-slice.isolated-preview",
+    "delivery.first-slice.independent-qa",
+    "delivery.first-slice.live-recovery-proof"
   ],
   "outOfScope": [
-    "Unbounded autonomous product decisions and expansion beyond the supported delivery profile.",
-    "Replacing delivered Integration or Oracle authority contracts.",
-    "Treating this research allocation as implementation readiness or product delivery."
+    "Creating a generic preview platform, deployment controller, QA framework or second workflow engine.",
+    "Implementing or redesigning BB-064 Oracle closure or BB-068 SCM delivery.",
+    "Changing the selected coding-agent/runtime strategy from the exact delivered BB-066/BB-067 profile.",
+    "Merging the review candidate, publishing product truth or claiming full organization lifecycle completion.",
+    "Claiming productivity, ROI or comparative product value; BB-069 proves feasibility only and BB-074 owns value comparison."
   ],
   "constraints": [
-    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
-    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
-    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments."
+    "Worker execution requires BB-064 and BB-068 DONE and consumes their exact delivered artifacts/Living refs; READY plans are assumptions during research only.",
+    "BB-068 delivery transitively depends on BB-065..067. BB-069 consumes the exact delivered request-tracker fixture, runtime/sandbox profile and SCM provider rather than repinning or silently upgrading them.",
+    "The first slice is the delivered `request-tracker-baseline-v1` NORM-01 task unless dependency delivery changes that fixture identity; any mismatch is PLAN_INPUT_CONTRADICTION.",
+    "Preview and QA use a verifier-owned copy/release of the exact candidate; agent workspace cannot read or modify acceptance code, seed-defect transform, QA policy or evidence store.",
+    "Repository/model/SCM credentials remain outside the preview and QA browser process; missing live prerequisites produce BLOCKED/INCONCLUSIVE evidence, never synthetic success.",
+    "All live runs bind exact provider/model/runtime/browser/repository/candidate/preview identities and budgets. Process exit, agent completion or SCM success alone cannot satisfy acceptance."
   ],
   "invariants": [
-    "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
-    "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
-    "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
+    "Application owns work/acceptance semantics; Oracle owns source IO; runtime, SCM and preview success are evidence only and never acceptance/publication authority.",
+    "Every delivery result binds exact Oracle source refs, semantic execution attempt, candidate commit/tree, preview release/instance and QA evidence; missing or stale identity fails closed.",
+    "Independent QA receives only exact accepted candidate/release inputs and cannot mutate product lineage; producer claims cannot satisfy QA evidence.",
+    "Reset/recovery evidence is durable and reconstructable without conversation history; kill/resume must continue the same semantic execution identity where the delivered runtime contract requires it.",
+    "Feasibility and pilot value are distinct: BB-069 may establish a bounded usable delivery path but cannot claim comparative value uplift.",
+    "The outer Blackboard schedules ExHarness development only; first-slice runtime coordination remains inside delivered Application/Core/Oracle contracts."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Define the smallest real Backend/QA delivery path using delivered Oracle and SCM adapters without claiming the full organization lifecycle.",
-    "Candidate direction, not selected architecture: Choose deterministic API/browser checks and independent semantic acceptance; define release identity evidence.",
-    "Candidate direction, not selected architecture: Design three reset live runs, one interrupted run and one seeded defect; distinguish feasibility from reliability."
+    "D1: Implement BB-069 as a bounded integration/evidence harness under `scripts/delivery/first-slice/**`; do not add a generic product runtime abstraction. The harness composes delivered Oracle, DomainExecutionController/runtime adapter, SCM review delivery and existing QA/acceptance APIs.",
+    "D2: At worker start require BB-064 and BB-068 DONE, load their exact implementation-result/judgment refs and consolidated Living truth, and fail with PLAN_INPUT_CONTRADICTION if delivered package/API identities do not satisfy this plan. BB-068 transitively supplies the delivered BB-065 request-tracker fixture and BB-066/067 runtime/sandbox capability.",
+    "D3: Freeze one `FIRST_SLICE_PROTOCOL/v1` before live execution. It pins fixture/task, repository/base SHA, exact Oracle-required paths, prompt/profile/tool/runtime refs, acceptance-suite/browser digest, SCM review policy, preview policy, budgets, run matrix and seeded-defect transform digest.",
+    "D4: Backend context must be resolved through the delivered Oracle path using exact repositoryRef + base revision + required file paths. Persist every returned `sourceRef`; the coding runtime receives only the resolved/materialized bounded workspace and protocol prompt, never hidden QA assets.",
+    "D5: Execute NORM-01 through the delivered DomainExecutionController + coding-agent runtime/sandbox profile. Record executionAttemptId, runtimeInvocationKey hash, strategy/model/tool/profile hashes, conversation/session identity, starting/resulting workspace tree and all provider/budget evidence. Runtime SUCCEEDED is only a candidate-producing fact.",
+    "D6: Materialize the review candidate through delivered BB-068 SCM capability. Persist exact baseSha, commitSha, treeSha, changed-path digest, reviewId/head, currentness and check-run identities. BB-069 does not merge or bypass repository policy.",
+    "D7: Launch an isolated preview from the exact candidate tree using the delivered Docker/gVisor runtime primitives rather than adding Testcontainers/Dagger as a dependency. Candidate source is read-only; only a fresh per-run SQLite data volume and declared temp paths are writable; no model/SCM credentials or Docker socket enter the preview.",
+    "D8: Define a content-addressed `PREVIEW_RELEASE_RECEIPT` over candidate head/tree, runtime image digest, runsc/runtime version, preview-policy digest, application command/env digest, data-seed digest and verifier-facing endpoint contract. Record container/process instance id, mapped loopback port, start/ready/stop timestamps separately as an instance receipt; instance id is observation, not semantic release identity.",
+    "D9: Preview readiness is a bounded HTTP probe against the fixture API (`GET /requests` expected 200) plus process/container liveness; a listening port alone is insufficient. Startup timeout or early exit is preview failure evidence.",
+    "D10: Reuse the exact Playwright/browser lock delivered by BB-065 for browser QA and Node built-in fetch for API/persistence checks. QA acceptance code lives outside agent/candidate workspaces; Playwright trace is retained on failure and screenshots are captured on failure for bounded diagnostics.",
+    "D11: Independent QA feeds verifier-produced behavior/regression evidence into the existing non-mutating `QaWorker`/`QaCompletion` boundary (or its exact delivered successor). QA must bind the candidate revision + PREVIEW_RELEASE_RECEIPT and cannot use producer prose, runtime status or PR checks as behavior evidence.",
+    "D12: Calibrate QA sensitivity with a separate trusted seeded-defect control derived from the accepted candidate after the producer has already emitted success. The transform has a frozen digest and intentionally reintroduces one NORM-01 defect in a verifier-only copy; QA must reject it. The negative control never replaces/mutates the real candidate or its review.",
+    "D13: Execute four live evidence runs: three clean reset runs from the same frozen base/protocol and one interruption run. Each gets a fresh worktree, database volume, execution claim/attempt and review identity; reset means no source, DB, conversation or preview state is reused across runs.",
+    "D14: In the interruption run, kill the coding runtime only after durable OpenHands activity is observed. Fresh process recovery must reuse the exact semantic attempt/runtime binding/conversation required by BB-066 and continue through SCM candidate, preview and QA without a second semantic attempt/provider session.",
+    "D15: Each run has the same predeclared budget ceilings. Evidence includes wall time, model calls/tokens/API cost when known, tool/process limits, SCM operations, preview runtime and verifier duration. Missing cost/usage remains UNKNOWN and prevents a complete-feasibility claim for that run; it is never zero-filled.",
+    "D16: Report `FEASIBLE | NOT_FEASIBLE | INCONCLUSIVE` only. FEASIBLE requires all three clean runs plus kill/resume to produce independently accepted real candidates/previews within protocol and the seeded-defect control to be rejected. Comparative productivity/value fields are explicitly `NOT_EVALUATED` and deferred to BB-074."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agentic-system/src/oracle.js",
       "packages/agentic-system/src/domain-execution-control.js",
-      "docs/living/system/state.md"
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/qa-worker.js",
+      "packages/agentic-system/src/qa-completion.js",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/blackboard/process/delivery-research/BB-069.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/project-acceptance.md",
+      "docs/living/system/oracle/state.md"
+    ],
+    "expectedFromDependencies": [
+      "packages/oracle/** from BB-060..064 delivery",
+      "scripts/delivery/baseline/** from BB-065 delivery",
+      "packages/agentic-system/src/openhands-runtime-adapter.js from BB-066 delivery",
+      "packages/agentic-system/src/gvisor-sandbox-launcher.js and execution-capability-gateway.js from BB-067 delivery",
+      "packages/agentic-system/src/scm-review-delivery.js and github-scm-provider.js from BB-068 delivery",
+      "BB-064 and BB-068 implementation-result + ACCEPT judgment artifacts"
     ],
     "expectedNew": [
+      "scripts/delivery/first-slice/contract.mjs",
+      "scripts/delivery/first-slice/preview.mjs",
+      "scripts/delivery/first-slice/qa-verifier.mjs",
       "scripts/delivery/bb-069-probe.mjs"
     ],
     "expectedTests": [
-      "test/delivery/bb-069.test.mjs"
+      "test/delivery/bb-069-contract.test.mjs",
+      "test/delivery/bb-069-live-contract.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
       "packages/agentic-system/**",
-      "packages/core-harness/**",
       "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "packages/core-harness/**",
+      "scripts/delivery/baseline/**",
+      "scripts/delivery/first-slice/**",
+      "scripts/delivery/bb-066-probe.mjs",
+      "scripts/delivery/bb-067-probe.mjs",
+      "scripts/delivery/bb-068-probe.mjs",
+      "scripts/delivery/bb-069-probe.mjs",
+      "test/delivery/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-064*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-066*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-067*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-068*",
       "docs/blackboard/process/delivery-research/BB-069.md",
-      "scripts/**",
-      "test/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/living/system/state.md",
       "package.json"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "scripts/delivery/first-slice/contract.mjs",
+      "scripts/delivery/first-slice/preview.mjs",
+      "scripts/delivery/first-slice/qa-verifier.mjs",
+      "scripts/delivery/bb-069-probe.mjs",
+      "test/delivery/bb-069-contract.test.mjs",
+      "test/delivery/bb-069-live-contract.test.mjs",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/oracle/state.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "packages/core-harness/**",
+      "packages/oracle/src/**",
+      "packages/agentic-system/src/**",
+      "scripts/delivery/baseline/**",
+      "package.json"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S1 — Dependency/protocol gate: require BB-064 and BB-068 DONE, load exact delivered evidence/Living refs, resolve delivered request-tracker/runtime/SCM/browser identities, and materialize immutable FIRST_SLICE_PROTOCOL/v1. Exit: contract tests reject any dependency/profile/fixture drift or missing live prerequisite.",
+    "S2 — Oracle→agent→SCM path: from a reset controlled repository resolve exact Backend inputs through Oracle, execute NORM-01 through delivered DomainExecutionController/OpenHands/gVisor capability, and create the BB-068 review candidate without merge. Exit: one content-addressed run record binds Oracle sourceRefs → execution attempt/runtime → resulting tree → commit/tree/review/check identities.",
+    "S3 — Isolated preview: start the exact candidate in a separate runsc preview using read-only source and fresh SQLite volume, wait on GET /requests readiness, and emit PREVIEW_RELEASE_RECEIPT + instance receipt. Exit: drift/credential/socket/extra-mount/startup negatives fail before QA.",
+    "S4 — Independent QA + defect control: run verifier-owned API/persistence checks and Playwright browser checks, feed grounded evidence through existing QA completion, restart preview against the same run volume for persistence, then run a separate frozen seeded-defect variant and prove QA rejects it despite a producer-success claim. Exit: real candidate accepted and negative control rejected with distinct identities.",
+    "S5 — Repetition/recovery: perform three fully reset clean live runs plus one kill/resume run after durable agent activity. Fresh-process recovery must reuse exact semantic runtime binding and still reach candidate/preview/QA; every run records budgets/failures and no state leaks across reset boundaries.",
+    "S6 — Audit/consolidation: credential-free audit validates all content digests, run matrix, candidate/release/QA relations, provider request/usage evidence and negative controls; emit feasibility report separate from pilot value and update Living Docs only with actually demonstrated first-slice guarantees/limits."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "The real feature uses Oracle-resolved exact input refs, produces a real candidate and runs in an isolated preview whose release identity is recorded.",
+      "id": "REAL_FIRST_SLICE",
+      "statement": "A reset real request-tracker NORM-01 run resolves exact Backend inputs through delivered Oracle, executes through the delivered real coding-agent runtime, materializes an exact SCM review candidate and serves that exact candidate in an isolated preview with a durable release identity.",
       "verificationIds": [
-        "live-probe"
+        "contract",
+        "deterministic",
+        "live-probe",
+        "audit-live"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Exact Oracle repositoryRef/base revision/required paths/sourceRefs.",
+        "ExecutionAttempt/runtime binding/session/model/tool/profile identities plus resulting workspace tree.",
+        "SCM base/commit/tree/changed-path/review/check identities.",
+        "PREVIEW_RELEASE_RECEIPT and runtime instance receipt bound to the candidate head/tree."
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Independent QA observes functional behavior and rejects a seeded defect even when the producer says success.",
+      "id": "INDEPENDENT_QA",
+      "statement": "Verifier-owned API/browser/persistence checks provide independent QA evidence for the exact preview; producer success cannot satisfy QA and a frozen seeded NORM-01 defect is rejected without mutating the real candidate.",
       "verificationIds": [
-        "live-probe"
+        "contract",
+        "deterministic",
+        "live-probe",
+        "audit-live"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Frozen acceptance-suite/browser/seed-transform digests and verifier identity.",
+        "API response evidence, restart/persistence evidence and Playwright trace/screenshot refs bound to exact preview release.",
+        "Separate negative-control candidate digest showing expected QA rejection while producer-success claim remains present."
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "At least three reset live runs and one kill/resume path have complete evidence, budgets and failure records; feasibility is reported separately from pilot value.",
+      "id": "RESET_REPETITION",
+      "statement": "Three clean live runs begin from the same frozen base/protocol with fresh worktree/database/runtime/review identities and independently reach accepted preview evidence without cross-run state reuse.",
       "verificationIds": [
-        "live-probe"
+        "live-probe",
+        "audit-live",
+        "live-contract"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Run registry for three clean runs with reset receipts, distinct attempt/review/preview instance identities, identical frozen protocol/base identities, terminal QA decisions and budgets."
+      ]
+    },
+    {
+      "id": "KILL_RESUME",
+      "statement": "A fourth live run killed after durable agent activity recovers in fresh processes using the exact prior semantic runtime binding/session and proceeds to independently accepted candidate/preview evidence without a second semantic attempt/provider session.",
+      "verificationIds": [
+        "live-probe",
+        "audit-live",
+        "live-contract"
+      ],
+      "evidenceRequired": [
+        "Durable pre-kill activity marker, kill/process evidence, identical executionAttempt/runtimeInvocation/conversation identities across recovery, provider-session count, and final candidate/preview/QA refs."
+      ]
+    },
+    {
+      "id": "FEASIBILITY_ONLY",
+      "statement": "The report distinguishes technical feasibility from comparative product value and never infers ROI/uplift from BB-069 runs.",
+      "verificationIds": [
+        "contract",
+        "audit-live"
+      ],
+      "evidenceRequired": [
+        "Feasibility verdict inputs and explicit `pilotValue: NOT_EVALUATED` / BB-074 handoff."
       ]
     },
     {
       "id": "INV-1",
-      "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "statement": "Application owns work/acceptance semantics; Oracle owns source IO; runtime, SCM and preview success are evidence only and never acceptance/publication authority.",
       "verificationIds": [
-        "boundary-probe"
+        "contract",
+        "deterministic",
+        "agentic-regression"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Boundary tests proving runtime/SCM/preview status cannot directly ACCEPT QA, merge source or publish product truth."
       ]
     },
     {
       "id": "INV-2",
-      "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "statement": "Every delivery result binds exact Oracle source refs, semantic execution attempt, candidate commit/tree, preview release/instance and QA evidence; missing or stale identity fails closed.",
       "verificationIds": [
-        "boundary-probe"
+        "contract",
+        "audit-live"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Relation audit fails on any wrong/stale Oracle source, attempt, candidate head/tree, preview release or QA evidence ref."
       ]
     },
     {
       "id": "INV-3",
-      "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "statement": "Independent QA receives only exact accepted candidate/release inputs and cannot mutate product lineage; producer claims cannot satisfy QA evidence.",
       "verificationIds": [
-        "boundary-probe"
+        "deterministic",
+        "live-contract"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "QA environment has no mutation action/provider credentials/hidden producer authority; producer-only claim with failing verifier remains rejected."
+      ]
+    },
+    {
+      "id": "INV-4",
+      "statement": "Reset/recovery evidence is durable and reconstructable without conversation history; kill/resume must continue the same semantic execution identity where the delivered runtime contract requires it.",
+      "verificationIds": [
+        "deterministic",
+        "live-probe",
+        "audit-live"
+      ],
+      "evidenceRequired": [
+        "Fresh-process audit reconstructs reset and kill/resume relations entirely from durable run records."
+      ]
+    },
+    {
+      "id": "INV-5",
+      "statement": "Feasibility and pilot value are distinct: BB-069 may establish a bounded usable delivery path but cannot claim comparative value uplift.",
+      "verificationIds": [
+        "contract",
+        "audit-live"
+      ],
+      "evidenceRequired": [
+        "Schema/validator rejects any BB-069 report that populates comparative value/uplift fields."
+      ]
+    },
+    {
+      "id": "INV-6",
+      "statement": "The outer Blackboard schedules ExHarness development only; first-slice runtime coordination remains inside delivered Application/Core/Oracle contracts.",
+      "verificationIds": [
+        "contract",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "No Blackboard runtime mutation path exists in first-slice harness; existing Application/Core/Oracle authority tests remain green."
       ]
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "invariant": "Application owns work/acceptance semantics; Oracle owns source IO; runtime, SCM and preview success are evidence only and never acceptance/publication authority.",
       "criterionIds": [
         "INV-1"
       ]
     },
     {
-      "invariant": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "invariant": "Every delivery result binds exact Oracle source refs, semantic execution attempt, candidate commit/tree, preview release/instance and QA evidence; missing or stale identity fails closed.",
       "criterionIds": [
         "INV-2"
       ]
     },
     {
-      "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "invariant": "Independent QA receives only exact accepted candidate/release inputs and cannot mutate product lineage; producer claims cannot satisfy QA evidence.",
       "criterionIds": [
         "INV-3"
+      ]
+    },
+    {
+      "invariant": "Reset/recovery evidence is durable and reconstructable without conversation history; kill/resume must continue the same semantic execution identity where the delivered runtime contract requires it.",
+      "criterionIds": [
+        "INV-4"
+      ]
+    },
+    {
+      "invariant": "Feasibility and pilot value are distinct: BB-069 may establish a bounded usable delivery path but cannot claim comparative value uplift.",
+      "criterionIds": [
+        "INV-5"
+      ]
+    },
+    {
+      "invariant": "The outer Blackboard schedules ExHarness development only; first-slice runtime coordination remains inside delivered Application/Core/Oracle contracts.",
+      "criterionIds": [
+        "INV-6"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-069-probe.mjs"
+      "id": "contract",
+      "command": "node --test test/delivery/bb-069-contract.test.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-069.test.mjs"
+      "id": "deterministic",
+      "command": "node scripts/delivery/bb-069-probe.mjs --mode deterministic"
+    },
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-069-probe.mjs --mode live --output \"$EXHARNESS_BB069_OUTPUT\""
+    },
+    {
+      "id": "audit-live",
+      "command": "node scripts/delivery/bb-069-probe.mjs --mode audit-live --input \"$EXHARNESS_BB069_OUTPUT\""
+    },
+    {
+      "id": "live-contract",
+      "command": "node --test test/delivery/bb-069-live-contract.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository-verify",
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Define the smallest real Backend/QA delivery path using delivered Oracle and SCM adapters without claiming the full organization lifecycle.",
-    "Choose deterministic API/browser checks and independent semantic acceptance; define release identity evidence.",
-    "Design three reset live runs, one interrupted run and one seeded defect; distinguish feasibility from reliability.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Producer success with failing independent acceptance.",
-    "Missing or stale source/runtime identity represented as current evidence.",
-    "Unresolved external effect retried as if confirmed safe."
+    "Oracle sourceRef/repository revision differs from the frozen base or required path set.",
+    "Agent/runtime reports success but resulting source tree or BB-068 candidate relation differs.",
+    "Preview runs a tree/image/policy other than the exact release receipt or exposes undeclared mounts/credentials/Docker socket.",
+    "Port is open but GET /requests readiness/behavior fails and preview is still called ready.",
+    "QA consumes producer prose, PR status or runtime completion instead of verifier-owned behavior/regression evidence.",
+    "Seeded-defect control passes QA, mutates the real candidate, or is not distinguishable by exact digest.",
+    "A clean reset run reuses workspace, SQLite volume, conversation/session, execution attempt, review identity or preview instance from another run.",
+    "Kill/resume creates a second semantic attempt/provider session or loses the original runtime binding.",
+    "Missing provider usage/cost is recorded as zero or omitted from run completeness.",
+    "Three successful runs are used to claim productivity/ROI or BB-074 value before comparative protocol execution.",
+    "Live credentials/prerequisites are absent but audit marks the run matrix satisfied."
   ],
   "laneContracts": [
     {
@@ -207,9 +389,271 @@
   ],
   "livingDocs": {
     "refs": [
-      "docs/living/system/state.md"
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/oracle/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-069 Living truth describes only the implemented and independently verified supported capability and limitations."
-  }
+    "statement": "Living truth may record only the demonstrated bounded first-slice: exact Oracle input, real coding runtime, exact SCM candidate, isolated preview, independent QA, reset/recovery evidence and explicit feasibility-only limits."
+  },
+  "researchBasis": {
+    "observedAt": "2026-09-25",
+    "selectionRule": "Public GitHub repositories used as examples have at least 1,000 stars. Stars qualify examples for inspection only; correctness comes from inspected contracts/source.",
+    "examples": [
+      {
+        "repo": "microsoft/playwright",
+        "starsObserved": 96639,
+        "license": "Apache-2.0",
+        "release": "v1.63.0",
+        "commit": "1b025d7e20a026371cd5f98ba0cdce48892737c8",
+        "observedPattern": "Web-server readiness/timeout plus failure-retained traces and failure screenshots provide bounded independently inspectable browser evidence.",
+        "decision": "Reuse the exact Playwright/browser lock delivered by BB-065; BB-069 does not add or float a second browser version."
+      },
+      {
+        "repo": "testcontainers/testcontainers-node",
+        "starsObserved": 2616,
+        "license": "MIT",
+        "release": "v12.1.0",
+        "commit": "cdd8c898420c59747aa9390d97284e038e44e0fb",
+        "observedPattern": "Ephemeral containers expose mapped ports and use explicit HTTP/listening/log readiness strategies with bounded startup.",
+        "decision": "Borrow readiness/lifecycle semantics only; reject dependency because BB-067 already supplies the trusted Docker/gVisor launcher and adding another container authority duplicates lifecycle."
+      },
+      {
+        "repo": "OpenHands/software-agent-sdk",
+        "starsObserved": 1165,
+        "license": "MIT",
+        "releaseInspected": "v1.49.5",
+        "commitInspected": "5b36cacccc2bbe6f8fbce9e1d3ff4b0a3dcddadb",
+        "observedPattern": "Durable conversation/workspace execution remains the relevant coding-runtime seam.",
+        "decision": "Do not upgrade in BB-069. Consume the exact BB-066 delivered strategy/runtime identity (planned as SDK 1.49.4 at 3f47426e...) so first-slice proof does not mix integration validation with runtime upgrade."
+      }
+    ],
+    "smallestExistingCore": "Use existing Oracle pull boundary, DomainExecutionController/runtime recovery, BB-068 SCM effect contract, existing QaWorker/QaCompletion and BB-065 verifier assets. New code is an integration/evidence harness only."
+  },
+  "firstSliceProtocol": {
+    "version": "FIRST_SLICE_PROTOCOL/v1",
+    "fixture": "dependency-delivered request-tracker-baseline-v1",
+    "task": "NORM-01",
+    "frozenBeforeRun": [
+      "repositoryRef + baseSha",
+      "Oracle required paths and expected source classes",
+      "task/prompt digest",
+      "runtime strategy/model/tool/profile refs",
+      "acceptance-suite + Playwright/browser digest",
+      "SCM review policy",
+      "preview runtime/policy/image digest",
+      "seeded-defect transform digest",
+      "budget ceilings",
+      "four-run matrix"
+    ],
+    "prohibitedChange": "Any protocol identity change after first live dispatch starts a new experiment identity; prior runs remain evidence and cannot be silently pooled."
+  },
+  "previewContract": {
+    "authority": "Preview launch is observation infrastructure only; it cannot accept QA, mutate SCM or publish product truth.",
+    "releaseIdentity": [
+      "candidate commitSha/treeSha",
+      "runtime image digest",
+      "runsc/runtime identity",
+      "preview policy digest",
+      "application command/env digest",
+      "data-seed digest",
+      "endpoint contract"
+    ],
+    "instanceEvidence": [
+      "releaseRef",
+      "container/process id",
+      "loopback host + mapped port",
+      "data volume identity",
+      "startedAt/readyAt/stoppedAt",
+      "stdout/stderr digests",
+      "exit/signal"
+    ],
+    "isolation": "Read-only candidate source; fresh writable SQLite volume only; no SCM/model credentials, host Docker socket or unrelated host mounts.",
+    "readiness": "GET /requests returns expected 200/schema within bounded timeout while process/container remains alive."
+  },
+  "qaContract": {
+    "inputs": "Exact accepted candidate revision + PREVIEW_RELEASE_RECEIPT + verifier-owned frozen acceptance policy.",
+    "evidence": [
+      "API create/list/update/invalid-boundary responses",
+      "persistence after preview restart against same run DB volume",
+      "Playwright UI behavior, malicious-content text rendering, trace/screenshot refs",
+      "candidate/release identity and verifier code/browser digests"
+    ],
+    "independence": "Verifier code/profile/seed transform are outside agent workspace and not writable by producer; QA is non-mutating and has no SCM/model credential.",
+    "negativeControl": "After producer-success record, apply frozen verifier-owned transform to a separate candidate copy that reintroduces one NORM-01 failure. QA must reject; control result is evaluator-sensitivity evidence, not the real candidate result."
+  },
+  "runMatrix": {
+    "cleanRuns": 3,
+    "interruptionRuns": 1,
+    "resetRule": "Every run begins from identical protocol/base but fresh worktree, database volume, semantic attempt/claim, agent runtime state, SCM review identity and preview instance.",
+    "interruptionRule": "Kill after durable coding-runtime activity; recover from fresh Node/Python process using the delivered exact binding/session semantics; no second semantic attempt/provider session.",
+    "perRunEvidence": [
+      "reset receipt",
+      "Oracle inputs",
+      "execution/runtime",
+      "SCM candidate",
+      "preview release/instance",
+      "QA decision",
+      "budgets/usage",
+      "failures/counterevidence"
+    ],
+    "successRule": "FEASIBLE only if all 4 required live runs are complete and accepted plus the seeded-defect control is rejected."
+  },
+  "feasibilityContract": {
+    "verdicts": [
+      "FEASIBLE",
+      "NOT_FEASIBLE",
+      "INCONCLUSIVE"
+    ],
+    "completeRun": "All required identity/evidence/budget fields resolved; unknown provider effect/cost or missing QA/preview evidence makes run incomplete.",
+    "feasible": "Three clean runs + one kill/resume run independently accepted under unchanged protocol and QA negative control rejected.",
+    "notFeasible": "Any completed required run violates a mandatory criterion or the seeded-defect control is accepted.",
+    "inconclusive": "Missing live prerequisite, unresolved provider effect/usage/cost, verifier infrastructure failure or incomplete run matrix.",
+    "pilotValue": "NOT_EVALUATED; BB-074 owns comparative delivery-value measurement."
+  },
+  "dependencyContract": {
+    "research": {
+      "BB-064": "READY plan only; packages/oracle physical closure and phase acceptance are not delivered truth yet.",
+      "BB-068": "READY plan only; SCM provider/review contract is not delivered truth yet.",
+      "transitive": "BB-068 planned lineage requires BB-065..067; their future runtime/fixture artifacts are assumptions until delivered."
+    },
+    "worker": "Require BB-064 and BB-068 DONE and validate exact result/judgment/consolidated refs. Through BB-068 delivery, require the exact delivered BB-065 fixture/browser profile and BB-066/067 coding-runtime/sandbox identities.",
+    "contradiction": "Missing, drifted or semantically incompatible delivered dependency output returns PLAN_INPUT_CONTRADICTION; BB-069 does not patch dependencies in-place."
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "The real feature uses Oracle-resolved exact input refs, produces a real candidate and runs in an isolated preview whose release identity is recorded.",
+      "criterionIds": [
+        "REAL_FIRST_SLICE"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "contract",
+        "deterministic",
+        "live-probe",
+        "audit-live"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/oracle.js",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-068.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "repositoryReader.readFile"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
+          "match": "PREVIEW"
+        }
+      ],
+      "supportingPlanFields": [
+        "firstSliceProtocol",
+        "previewContract",
+        "dependencyContract",
+        "researchBasis"
+      ]
+    },
+    {
+      "objectiveCriterion": "Independent QA observes functional behavior and rejects a seeded defect even when the producer says success.",
+      "criterionIds": [
+        "INDEPENDENT_QA"
+      ],
+      "planElements": [
+        "S4"
+      ],
+      "verificationIds": [
+        "contract",
+        "deterministic",
+        "live-probe",
+        "audit-live"
+      ],
+      "decisionIndexes": [
+        9,
+        10,
+        11
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/qa-worker.js",
+        "packages/agentic-system/src/qa-completion.js",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/qa-worker.js",
+          "match": "QaWorker is non-mutating"
+        },
+        {
+          "ref": "packages/agentic-system/src/qa-completion.js",
+          "match": "MISSING_EVIDENCE"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "Verification executes outside the agent workspace"
+        }
+      ],
+      "supportingPlanFields": [
+        "qaContract",
+        "researchBasis"
+      ]
+    },
+    {
+      "objectiveCriterion": "At least three reset live runs and one kill/resume path have complete evidence, budgets and failure records; feasibility is reported separately from pilot value.",
+      "criterionIds": [
+        "RESET_REPETITION",
+        "KILL_RESUME",
+        "FEASIBILITY_ONLY"
+      ],
+      "planElements": [
+        "S5",
+        "S6"
+      ],
+      "verificationIds": [
+        "live-probe",
+        "audit-live",
+        "live-contract",
+        "contract"
+      ],
+      "decisionIndexes": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "RECOVERY_REQUIRED"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "Missing cost/timing data cannot be zero-filled"
+        }
+      ],
+      "supportingPlanFields": [
+        "runMatrix",
+        "feasibilityContract",
+        "dependencyContract"
+      ]
+    }
+  ]
 }
