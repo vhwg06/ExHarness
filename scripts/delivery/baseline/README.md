@@ -17,17 +17,17 @@ docker build -f scripts/delivery/baseline/Dockerfile -t exharness-bb065-agent:no
 npm exec --yes --package=node@24.19.0 -- node scripts/delivery/baseline/prepare-profile.mjs --output scripts/delivery/baseline/runs/BB-065/profile.local.json --operator OPERATOR_ID --reviewer REVIEWER_ID --python scripts/delivery/baseline/.venv/Scripts/python.exe --image exharness-bb065-agent:node24
 ```
 
-The operator and reviewer must be different people. The profile builder checks the exact candidate commit/tree, fixture and acceptance digests, Python and mini-SWE-agent commit, Chromium executable, lockfile, and Docker image digest. It rejects uncommitted candidate source. A changed candidate requires a new profile and fresh calibration runs.
+The profile registers distinct operator and reviewer IDs before any result; this calibration does not claim a human review action. The profile builder checks the exact candidate commit/tree, fixture and acceptance digests, Python and mini-SWE-agent commit, Chromium executable, lockfile, and Docker image digest. It rejects uncommitted candidate source. A changed candidate requires a new profile and fresh calibration runs.
 
 ## Run and review
 
 ```powershell
 npm exec --yes --package=node@24.19.0 -- node scripts/delivery/baseline/run.mjs --mode validate --registration calibration --profile scripts/delivery/baseline/runs/BB-065/profile.local.json
 npm exec --yes --package=node@24.19.0 -- node scripts/delivery/baseline/run.mjs --mode live --profile scripts/delivery/baseline/runs/BB-065/profile.local.json --output scripts/delivery/baseline/runs/BB-065/evidence
-node scripts/delivery/baseline/provider-export.mjs --profile scripts/delivery/baseline/runs/BB-065/profile.local.json --output scripts/delivery/baseline/runs/BB-065/evidence --reviewer REVIEWER_ID
+node scripts/delivery/baseline/provider-export.mjs --profile scripts/delivery/baseline/runs/BB-065/profile.local.json --output scripts/delivery/baseline/runs/BB-065/evidence --operator OPERATOR_ID
 npm exec --yes --package=node@24.19.0 -- node scripts/delivery/baseline/run.mjs --mode audit-live --profile scripts/delivery/baseline/runs/BB-065/profile.local.json --output scripts/delivery/baseline/runs/BB-065/evidence
 ```
 
-The reviewer export independently retrieves stored Chat Completions by provider ID. OpenAI [requires `store: true` for retrieval](https://developers.openai.com/api/reference/cli/resources/chat/subresources/completions/methods/retrieve); the driver sets this explicitly. A project that disallows storage cannot pass this evidence route. Unknown usage stays unknown and fences further requests for that task. The audit checks the provider records, candidate digest, frozen verifier and deterministic report. The report cannot assert pilot value from these three calibrations.
+The operator export retrieves stored Chat Completions directly from OpenAI by provider ID, independently of the agent's local usage ledger. It is labelled as an operator action; no human reviewer action is claimed. OpenAI [requires `store: true` for retrieval](https://developers.openai.com/api/reference/cli/resources/chat/subresources/completions/methods/retrieve); the driver sets this explicitly. A project that disallows storage cannot pass this evidence route. Unknown usage stays unknown and fences further requests for that task. The audit checks the provider records, candidate digest, frozen verifier and deterministic report. The report cannot assert pilot value from these three calibrations.
 
 Run `node --test test/delivery/baseline-*.test.mjs` for deterministic contract, fixture, accounting and runner checks. Those tests are labelled deterministic and do not count as LIVE evidence.

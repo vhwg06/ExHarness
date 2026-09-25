@@ -18,13 +18,13 @@ async function createOnce(path, bytes) {
   }
 }
 
-export async function exportProviderRecords({ profilePath, output, reviewerId }) {
+export async function exportProviderRecords({ profilePath, output, operatorId }) {
   const profile = await readJson(resolve(profilePath));
   validateProfile(profile, { ...await fixtureIdentities(), requireLive: true, requirePilot: false });
   if (profile.model.endpointOrigin !== 'https://api.openai.com' || profile.model.snapshot !== 'gpt-6-luna')
     throw new Error('PROVIDER_EXPORT_INVALID: this exporter supports pinned OpenAI GPT Luna only');
-  if (reviewerId !== profile.reviewerId || reviewerId === profile.operatorId)
-    throw new Error('PROVIDER_EXPORT_INVALID: independent reviewer identity required');
+  if (operatorId !== profile.operatorId)
+    throw new Error('PROVIDER_EXPORT_INVALID: export actor must match registered operator');
   const root = resolve(output);
   const manifest = await readJson(join(root, 'manifest.json'));
   if (manifest.profileHash !== (await import('./contract.mjs')).sha256(profile))
@@ -40,10 +40,11 @@ export async function exportProviderRecords({ profilePath, output, reviewerId })
   if (existing !== null) {
     const records = existing.split(/\r?\n/).filter(Boolean).map(JSON.parse);
     if (records.length !== settled.length || records.some(record => !settled.some(row => row.providerRequestId === record.providerRequestId) ||
-        record.exportedBy !== reviewerId)) throw new Error('PROVIDER_EXPORT_INVALID: existing export differs from settled usage');
+        record.exportedBy !== operatorId || record.retrievalMethod !== 'OPENAI_CHAT_COMPLETIONS_GET'))
+      throw new Error('PROVIDER_EXPORT_INVALID: existing export differs from settled usage');
     for (const record of records) if (sha256(await readFile(join(root, record.rawRecordRef))) !== record.rawRecordHash)
       throw new Error('PROVIDER_EXPORT_INVALID: existing raw record changed');
-    return { exported: records.length, reviewerId, reused: true };
+    return { exported: records.length, operatorId, reused: true };
   }
   const recordsDir = join(root, 'provider-records');
   await mkdir(recordsDir, { recursive: true });
@@ -62,17 +63,18 @@ export async function exportProviderRecords({ profilePath, output, reviewerId })
       throw new Error('PROVIDER_EXPORT_INVALID: independently retrieved usage differs from ledger');
     const rawRecordRef = `provider-records/${row.providerRequestId}.json`;
     await createOnce(join(root, rawRecordRef), bytes);
-    records.push({ evidenceClass: 'PROVIDER_EXPORT', exportedBy: reviewerId, retrievedAt: new Date().toISOString(),
+    records.push({ evidenceClass: 'PROVIDER_EXPORT', exportedBy: operatorId,
+      retrievalMethod: 'OPENAI_CHAT_COMPLETIONS_GET', retrievedAt: new Date().toISOString(),
       sourceRef, providerRequestId: row.providerRequestId, rawRecordRef, rawRecordHash: sha256(bytes),
       inputTokens: raw.usage.prompt_tokens, cachedInputTokens: raw.usage.prompt_tokens_details?.cached_tokens ?? 0,
       outputTokens: raw.usage.completion_tokens, costUsd: row.costUsd });
   }
   await createOnce(join(root, 'provider-export.jsonl'), Buffer.from(records.map(row => JSON.stringify(row)).join('\n') + '\n'));
-  return { exported: records.length, reviewerId };
+  return { exported: records.length, operatorId };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const profilePath = option(process.argv, '--profile'), output = option(process.argv, '--output'), reviewerId = option(process.argv, '--reviewer');
-  if (!profilePath || !output || !reviewerId) throw new Error('usage: provider-export.mjs --profile <path> --output <dir> --reviewer <id>');
-  console.log(JSON.stringify(await exportProviderRecords({ profilePath, output, reviewerId })));
+  const profilePath = option(process.argv, '--profile'), output = option(process.argv, '--output'), operatorId = option(process.argv, '--operator');
+  if (!profilePath || !output || !operatorId) throw new Error('usage: provider-export.mjs --profile <path> --output <dir> --operator <id>');
+  console.log(JSON.stringify(await exportProviderRecords({ profilePath, output, operatorId })));
 }

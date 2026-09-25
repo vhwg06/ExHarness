@@ -230,7 +230,8 @@ async function auditLive(profile, identities, output) {
       !CALIBRATION_TASK_IDS.every(id => usage.some(item => item.taskId === id && item.providerRequestId))) fail('three independently reset provider runs missing');
   const exported = new Map();
   for (const record of providerExport) {
-    if (record.evidenceClass !== 'PROVIDER_EXPORT' || record.exportedBy !== profile.reviewerId ||
+    if (record.evidenceClass !== 'PROVIDER_EXPORT' || record.exportedBy !== profile.operatorId ||
+        record.retrievalMethod !== 'OPENAI_CHAT_COMPLETIONS_GET' ||
         record.sourceRef !== `${profile.model.apiBaseUrl}/chat/completions/${encodeURIComponent(record.providerRequestId)}` || !record.providerRequestId ||
         !record.rawRecordRef?.startsWith('provider-records/') || record.rawRecordRef.includes('..') || record.rawRecordRef.includes('\\') ||
         !record.retrievedAt || exported.has(record.providerRequestId)) fail('invalid independent provider export');
@@ -264,7 +265,8 @@ async function auditLive(profile, identities, output) {
   }
   const report = await reportDirectory(output);
   if (canonical(report) !== canonical(await plainJson(join(output, 'report.json')))) fail('report is stale');
-  return { mode: 'audit-live', tasks: attempts.length, valueVerdict: report.valueVerdict, evidenceClass: 'LIVE' };
+  return { mode: 'audit-live', tasks: attempts.length, valueVerdict: report.valueVerdict,
+    evidenceClass: 'LIVE', providerExportActor: profile.operatorId, reviewerAction: 'NOT_CLAIMED' };
 }
 
 async function deterministic(output) {
