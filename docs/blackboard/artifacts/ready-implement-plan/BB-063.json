@@ -3,685 +3,233 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-063",
-  "status": "READY",
+  "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-063.json",
-    "hash": "83d44fd8337a4f53233bdc14539e83375c838c743492234844472d0fa4b5c14e"
+    "hash": "14a3f6b497aa6e05f2e961c4728c7502609c5ca6b2a16816301da745c03a7574"
   },
   "scope": [
+    "oracle.resolution-identity",
     "oracle.provenance",
-    "oracle.manifest-validation",
-    "oracle.durable-continuation",
-    "oracle.migration-compatibility",
-    "oracle.failure-semantics"
+    "oracle.currentness",
+    "oracle.materialization",
+    "oracle.cache-validity",
+    "oracle.recovery",
+    "oracle.manifest-compatibility"
   ],
   "outOfScope": [
-    "Moving artifact-manifest capture/store/publisher, Blackboard checkpoints or recovery authority into packages/oracle.",
-    "Changing ApplicationArtifactManifest v1, retention lifecycle, artifact authenticity model or acceptance semantics.",
-    "A generic Resolver<T>, provider registry, cache/retrieval framework or new production repository/MCP adapter.",
-    "Claiming power-loss/filesystem durability beyond the current JSON store and ordinary persisted filesystem semantics."
+    "Moving product/domain scheduling, acceptance, publication or recovery authority into Oracle.",
+    "Treating historical BB-060..064 READY/Jev artifacts as current implementation authority.",
+    "Claiming live coding-agent or product value from deterministic research prototypes or source inspection."
   ],
   "constraints": [
-    "Physical extraction must not weaken producer/revision/acceptance/content-digest checks for manifest-protected artifacts.",
-    "Durable Backend→QA continuation must persist and recover the exact refs it already relies on.",
-    "Default direct-reader behavior remains supported unless explicitly superseded by accepted research.",
-    "Migration cannot fabricate provenance or silently reinterpret missing durable state.",
-    "Compatibility shims, if needed, are temporary and have explicit removal/closure criteria."
+    "Research must inspect current source plus primary external evidence, distinguish retained findings from superseded assumptions, and compare reuse with the smallest ExHarness-owned seam.",
+    "Application/domain authority remains outside Oracle; Core consumes semantic context but does not own provider/source-specific retrieval.",
+    "Required context is budgeted, provenance-bound and currentness-checked; missing or ambiguous required evidence fails closed.",
+    "Worker execution is unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
   ],
   "invariants": [
-    "Physical extraction must not weaken producer/revision/acceptance/content-digest checks for manifest-protected artifacts.",
-    "Durable Backend→QA continuation must persist and recover the exact refs it already relies on.",
-    "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
-    "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized."
+    "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
+    "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
+    "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership."
   ],
   "architectureDecisions": [
-    "Preserve the BB-060/061/062 boundary: packages/oracle receives parsed orders plus injected readers and preserves ordered requests/content/sourceRef/QA provenance; packages/agentic-system owns WorkOrder/Context schemas, artifact-manifest policy, durable workflow checkpoints, recovery and acceptance.",
-    "createManifestArtifactReader, createJsonArtifactManifestStore, createAcceptedBackendArtifactManifestPublisher and ApplicationArtifactManifest v1 remain in Agentic Application. They decorate artifactReader before pullQaArtifacts; moving them into Oracle would invert authority and is forbidden.",
-    "The durable continuation identity is the tuple already persisted in acceptedBackend: handoff (artifact ref/path, producer work-order, revision, acceptance decision), completionDecision and optional exact artifactManifestRef. The manifest ref is continuation provenance and an artifactRef, not a replacement for the underlying reader sourceRef.",
-    "Protected and direct modes remain explicitly distinct. No publisher means the checkpoint omits artifactManifestRef and existing direct artifactReader callers continue unchanged. Presence of artifactManifestRef requires artifactReader.forManifest(exactRef); absence of that capability fails closed and never downgrades to direct reads.",
-    "Preserve manifest migration compatibility already implemented by createJsonArtifactManifestStore: immutable APPLICATION_ARTIFACT_MANIFEST v1 refs remain content-addressed; legacy manifest-<digest>.json files remain readable; current publication-<identity>.json single-winner slots may reuse only semantically equivalent acceptance/payload receipts.",
-    "Fresh-process proof must reconstruct a new JSON Blackboard store/orchestrator, manifest store and manifest-aware reader from persisted filesystem state only. It must not reuse producer-side maps, manifest objects, reader instances or in-memory checkpoints.",
-    "Failure phase remains meaningful: publication failure before QA_PENDING persists backendRecoveryRequired=true and returns through Backend/Core recovery; protected read/identity/content failure after QA_PENDING blocks the same QA checkpoint without reopening Backend execution or losing the exact manifest ref.",
-    "Public compatibility remains the Application adapter: resolveBackendContext/resolveQaContext signatures and agentic-system index exports stay unchanged; @exharness/oracle exposes the two pull functions only. No compatibility shim is needed unless the BB-062 DONE receipt contradicts this seam.",
-    "Execution requires BB-062 DONE and verifies the full BB-060→062 delivered topology. A missing/renamed port, moved manifest boundary or altered direct/protected behavior is PLAN_INPUT_CONTRADICTION, not permission to redesign within BB-063."
+    "ContextResolution reuse identity binds semantic requirement, authoritative source/currentness identities and the relevant provider/planner configuration.",
+    "Derived/graph context is never opaque authority: every resolved item retains a provenance path to authoritative source.",
+    "Cache/materialization reuse is an optimization; currentness is checked independently and stale required context fails closed.",
+    "Existing manifest-protected accepted-artifact validation is preserved as a lower-bound compatibility invariant.",
+    "Persistence backend choice follows identity/currentness/recovery experiments rather than preceding them."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/artifact-manifest.js",
-      "packages/agentic-system/src/durable-backend-qa.js",
-      "packages/agentic-system/src/blackboard-json-payload.js",
       "packages/agentic-system/src/backend-application.js",
       "packages/agentic-system/src/qa-application.js",
-      "packages/agentic-system/src/index.js",
-      "packages/agentic-system/test/durable-backend-qa.test.js",
-      "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
-      "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
-      "packages/agentic-system/test/interrupted-recovery.test.js",
-      "docs/living/system/oracle/artifact-manifest.md",
-      "docs/living/system/oracle/state.md",
-      "docs/living/system/oracle/workflow.md",
-      "docs/living/system/agentic-application/contracts.md",
-      "docs/living/system/agentic-application/workflow.md"
+      "docs/living/system/oracle/architecture.md",
+      "docs/living/system/oracle/semantics.md"
     ],
     "expectedNew": [
-      "packages/oracle/package.json",
-      "packages/oracle/src/index.js",
-      "packages/oracle/src/oracle.js",
-      "packages/oracle/test/oracle.test.js",
-      "packages/agentic-system/test/oracle-integration.test.js",
-      "packages/agentic-system/test/oracle-source-connectivity.test.js",
-      "test/oracle-architecture-boundary.test.mjs"
+      "packages/oracle/src/context-resolution.js",
+      "scripts/oracle-context-intelligence/README.md"
     ],
     "expectedTests": [
-      "packages/agentic-system/test/oracle-durability-migration.test.js",
-      "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
-      "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
-      "packages/agentic-system/test/durable-backend-qa.test.js",
-      "packages/agentic-system/test/interrupted-recovery.test.js",
-      "test/oracle-architecture-boundary.test.mjs"
+      "test/oracle-context-resolution-durability.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/test/**",
-      "packages/agentic-system/package.json",
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
       "packages/oracle/**",
-      "package.json",
-      "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/**",
+      "docs/living/**",
       "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "docs/blackboard/process/oracle-context-intelligence-research.md",
+      "scripts/delivery/baseline/**",
       "scripts/**",
       "test/**",
-      ".github/workflows/test.yml"
+      "package.json"
     ],
     "write": [
-      "packages/agentic-system/test/oracle-durability-migration.test.js",
-      "packages/agentic-system/test/oracle-integration.test.js",
-      "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
-      "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
-      "packages/agentic-system/test/durable-backend-qa.test.js",
-      "test/oracle-architecture-boundary.test.mjs",
-      "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/artifact-manifest.js",
-      "packages/agentic-system/src/durable-backend-qa.js",
-      "packages/oracle/src/oracle.js",
-      "packages/oracle/src/index.js",
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "scripts/oracle-context-intelligence/**",
+      "test/**",
       "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/contracts.md",
-      "docs/living/system/agentic-application/workflow.md",
-      "docs/living/system/agentic-application/state.md"
+      "docs/living/system/core-harness/**",
+      "package.json"
     ],
     "forbiddenWrite": [
-      "docs/blackboard/artifacts/objective/**",
-      "docs/blackboard/artifacts/ready-implement-plan/**",
-      "docs/blackboard/work-graph.json",
-      "docs/blackboard/component-registry.json",
-      "docs/blackboard/state.md"
+      "docs/blackboard/**",
+      ".github/**"
     ]
   },
   "implementationSlices": [
-    "O41 — Require BB-062 DONE, load its delivery receipt/consolidated refs, and verify the exact pull ports, thin Application resolvers, direct-injection topology and Application-owned manifest decorator. Stop with PLAN_INPUT_CONTRADICTION on material mismatch.",
-    "O42 — Add oracle-durability-migration integration coverage through the public resolveQaContext path, pinning exact artifactReader arguments, returned sourceRef, APPLICATION_ARTIFACT provenance and the full ArtifactManifestError code/cause matrix after package extraction.",
-    "O43 — Prove protected fresh-process continuation end to end: persist Backend ACCEPT + exact manifestRef in JSON Blackboard, discard every producer/workflow/store instance, reconstruct new Blackboard/manifest/reader instances from filesystem state, scope forManifest(exactRef), complete QA and submit the same manifest/artifact refs.",
-    "O44 — Prove phase-correct failures and recovery: missing forManifest, missing/wrong manifest, producer/revision/acceptance/stored-revision/content drift block the same QA_PENDING checkpoint without Backend rerun; publication failure sets backendRecoveryRequired; orphan receipt recovery reuses the exact ref only for equivalent acceptance and conflicts on semantic drift.",
-    "O45 — Prove migration compatibility: direct mode omits artifactManifestRef and preserves existing callers/exports; legacy manifest-<digest>.json remains readable beside publication slots; manifest v1/ref/digest and sourceRef are not rewritten; architecture checks keep manifest/recovery imports out of packages/oracle.",
-    "O46 — Run Oracle unit/integration, durability, manifest, recovery, architecture and full Agentic regressions; update Living Oracle/Application docs with the exact delivered boundary and its ordinary-filesystem durability limit."
+    "Define canonical resolution/materialization identity and currentness fences for repository, artifact and derived context.",
+    "Prototype durable store/replay semantics with changed-source invalidation and exact provenance paths.",
+    "Inject crashes, partial provider failures and concurrent refresh to prove stale results cannot become current."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
-      "statement": "Every durability/provenance seam is assigned across the package boundary: Oracle preserves reader IO/sourceRef/provenance/errors; Application owns manifest v1, publication/store, checkpoint, recovery, schema and acceptance.",
+      "statement": "Same requirement plus same authoritative currentness/configuration has stable reusable resolution identity; relevant source change invalidates old materialization.",
       "verificationIds": [
-        "oracle-durability",
-        "oracle-boundary"
+        "currentness-probe"
       ],
       "evidenceRequired": [
-        "Boundary assertions and source anchors cover manifest capture/store/reader/publisher, workflow checkpoint/submission and Oracle pull/adapters."
+        "Identity fixtures across unchanged and changed source states."
       ]
     },
     {
       "id": "AC-2",
-      "statement": "Manifest-protected QA remains fail-closed for missing/conflicting manifest, producer, producer revision, acceptance id/digest, stored revision, availability and content digest, preserving the typed source error as resolver cause.",
+      "statement": "Every materialized item, including graph-derived context, retains traceable provenance and currentness evidence.",
       "verificationIds": [
-        "oracle-durability",
-        "manifest-contract"
+        "durability-test"
       ],
       "evidenceRequired": [
-        "Negative matrix asserts every ArtifactManifestErrorCode through the public resolver and proves no underlying read/fallback where validation fails."
+        "Provenance-chain assertions and malformed/missing provenance negatives."
       ]
     },
     {
       "id": "AC-3",
-      "statement": "A fresh process reconstructs protected Backend→QA continuation from persisted Blackboard and manifest filesystem state, scopes the exact manifest ref, resolves the same accepted artifact refs and submits that ref without producer memory.",
+      "statement": "Crash/replay, concurrent refresh and partial provider failure cannot promote stale/ambiguous context; manifest-protected QA remains fail-closed.",
       "verificationIds": [
-        "oracle-durability",
-        "protected-workflow"
+        "durability-test",
+        "currentness-probe"
       ],
       "evidenceRequired": [
-        "Test creates wholly new orchestrator/store/reader/workflow instances and asserts exact checkpoint, source and submission identities."
-      ]
-    },
-    {
-      "id": "AC-4",
-      "statement": "Existing direct-reader callers and public resolveBackendContext/resolveQaContext exports remain unchanged; legacy manifest filenames stay readable and no compatibility shim or manifest API moves into packages/oracle.",
-      "verificationIds": [
-        "oracle-durability",
-        "oracle-boundary"
-      ],
-      "evidenceRequired": [
-        "Direct-mode golden test, index/package checks and legacy-store reconstruction prove the bounded migration path."
-      ]
-    },
-    {
-      "id": "AC-5",
-      "statement": "Cross-boundary failure/recovery evidence detects regressions missed by Oracle unit tests: publication interruption/recovery, protected QA blocking, no Backend rerun, exact receipt reuse and semantic-conflict rejection.",
-      "verificationIds": [
-        "protected-workflow",
-        "recovery-contract",
-        "agentic-regression"
-      ],
-      "evidenceRequired": [
-        "Counters/spies and durable checkpoints prove which stage executed and which exact refs survived each failure."
+        "Failure-injection logs and compatibility assertions for existing manifest semantics."
       ]
     },
     {
       "id": "INV-1",
-      "statement": "Physical extraction must not weaken producer/revision/acceptance/content-digest checks for manifest-protected artifacts.",
+      "statement": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "verificationIds": [
-        "oracle-durability",
-        "manifest-contract"
+        "durability-test"
       ],
       "evidenceRequired": [
-        "All producer/revision/acceptance/content checks execute before protected bytes reach QA."
+        "A negative or boundary case that would fail if this invariant were violated."
       ]
     },
     {
       "id": "INV-2",
-      "statement": "Durable Backend→QA continuation must persist and recover the exact refs it already relies on.",
+      "statement": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "verificationIds": [
-        "oracle-durability",
-        "protected-workflow"
+        "durability-test"
       ],
       "evidenceRequired": [
-        "Fresh instances recover the exact accepted handoff, decision and manifest/artifact refs."
+        "A negative or boundary case that would fail if this invariant were violated."
       ]
     },
     {
       "id": "INV-3",
-      "statement": "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
+      "statement": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "verificationIds": [
-        "oracle-boundary"
+        "durability-test"
       ],
       "evidenceRequired": [
-        "Dependency precondition and baseline evidence distinguish current Application files from expected BB-060→062 outputs."
-      ]
-    },
-    {
-      "id": "INV-4",
-      "statement": "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized.",
-      "verificationIds": [
-        "living-docs"
-      ],
-      "evidenceRequired": [
-        "Living docs match delivered package ownership, protected/direct flows, compatibility and durability limits."
+        "A negative or boundary case that would fail if this invariant were violated."
       ]
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Physical extraction must not weaken producer/revision/acceptance/content-digest checks for manifest-protected artifacts.",
+      "invariant": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "criterionIds": [
-        "INV-1",
-        "AC-1",
-        "AC-2"
+        "INV-1"
       ]
     },
     {
-      "invariant": "Durable Backend→QA continuation must persist and recover the exact refs it already relies on.",
+      "invariant": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "criterionIds": [
-        "INV-2",
-        "AC-3",
-        "AC-5"
+        "INV-2"
       ]
     },
     {
-      "invariant": "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
+      "invariant": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "criterionIds": [
-        "INV-3",
-        "AC-4"
-      ]
-    },
-    {
-      "invariant": "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized.",
-      "criterionIds": [
-        "INV-4"
+        "INV-3"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "oracle-durability",
-      "command": "node --test packages/agentic-system/test/oracle-durability-migration.test.js"
+      "id": "durability-test",
+      "command": "node --test test/oracle-context-resolution-durability.test.mjs"
     },
     {
-      "id": "oracle-unit",
-      "command": "node --test packages/oracle/test/oracle.test.js"
-    },
-    {
-      "id": "oracle-integration",
-      "command": "node --test packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/oracle-source-connectivity.test.js"
-    },
-    {
-      "id": "manifest-contract",
-      "command": "node --test packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js"
-    },
-    {
-      "id": "protected-workflow",
-      "command": "node --test packages/agentic-system/test/bb045-manifest-protected-workflow.test.js packages/agentic-system/test/durable-backend-qa.test.js"
-    },
-    {
-      "id": "recovery-contract",
-      "command": "node --test packages/agentic-system/test/interrupted-recovery.test.js"
-    },
-    {
-      "id": "oracle-boundary",
-      "command": "node --test test/oracle-architecture-boundary.test.mjs"
-    },
-    {
-      "id": "agentic-regression",
-      "command": "npm run test:agentic"
-    },
-    {
-      "id": "living-docs",
-      "command": "npm run verify:blackboard-artifacts && npm run verify:blackboard-work-graph && npm run verify:blackboard-context"
+      "id": "currentness-probe",
+      "command": "node scripts/oracle-context-intelligence/probe-currentness.mjs"
     }
   ],
-  "researchGaps": [],
-  "negativeVerificationCases": [
-    "Protected checkpoint proceeds without forManifest(exactRef), or silently falls back to direct reads.",
-    "Any producer/revision/acceptance/stored-revision/availability/content check is dropped.",
-    "Fresh-process proof reuses an in-memory manifest, store, reader, workflow or producer bytes.",
-    "Publication failure advances to QA_PENDING, or post-QA_PENDING source failure reruns Backend.",
-    "Changed acceptance semantics reuse an orphan receipt.",
-    "Extraction rewrites sourceRef, artifact/manifest refs or persisted decisions.",
-    "Legacy manifest files become unreadable or packages/oracle imports manifest/recovery/Application code.",
-    "Tests overclaim power-loss or production-store durability.",
-    "BB-062 is not DONE/contradicts the seam and work proceeds."
+  "researchGaps": [
+    "Define exact canonical identity inputs for requirement, source snapshots, provider/index/graph versions and materialization configuration.",
+    "Compare persistence choices only after required replay/currentness semantics are fixed.",
+    "Specify selective invalidation and refresh rules for repo revision, accepted artifact, semantic index and graph-derived context.",
+    "Map existing Backend-to-QA durable continuation and manifest checks into the new ContextResolution model.",
+    "Finalize crash/concurrency/failure fixtures and new Jev readiness evidence."
   ],
+  "negativeVerificationCases": [
+    "A caller embeds provider/tool commands in ContextRequirement or bypasses the semantic resolution seam.",
+    "A stale or provenance-incomplete required context item is represented as current.",
+    "Oracle/provider/planner code attempts to claim work, accept product output, publish product truth or own domain recovery."
+  ],
+  "supersededAuthority": {
+    "rule": "Historical readiness/Jev artifacts remain evidence only; changed objective/plan bindings make them non-authoritative for execution.",
+    "priorReadinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-063.readiness-jev-evaluation.json"
+  },
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-063 objective + Oracle phase roadmap + current Oracle/Application source truth",
+      "input": "docs/blackboard/artifacts/objective/BB-063.json + docs/blackboard/process/oracle-context-intelligence-research.md",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
-      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "convergence": "researchGaps=[] + new Jev SATISFIED",
       "forbidden": [
         "product implementation",
-        "invent generic framework",
-        "treat docs as proof of physical ownership",
-        "self-accept"
+        "self-acceptance",
+        "reuse of stale readiness authority",
+        "invented live evidence"
       ]
     },
     {
       "lane": "WORKER",
-      "input": "exact READY plan + DONE direct dependencies for BB-063",
+      "input": "exact rebound READY plan + DONE direct dependencies",
       "output": "DELIVERED_FEATURE",
-      "binding": "plan hash + candidate/evidence + Jev",
-      "convergence": "Oracle boundary evidence + Living Docs SATISFIED",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
       "forbidden": [
-        "redefine plan",
-        "weaken provenance",
-        "cross authority boundary",
-        "self-accept"
+        "redefine rebound plan",
+        "self-acceptance",
+        "expand into post-foundation continuation"
       ]
     }
   ],
   "livingDocs": {
     "refs": [
       "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/state.md",
-      "docs/living/system/oracle/semantics.md",
-      "docs/living/system/oracle/workflow.md",
-      "docs/living/system/oracle/artifact-manifest.md",
-      "docs/living/system/agentic-application/contracts.md",
-      "docs/living/system/agentic-application/workflow.md"
+      "docs/living/system/oracle/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-063 docs must match delivered package ownership, manifest v1/store compatibility, protected/direct continuation, failure phase, source identity and ordinary-filesystem durability limits."
-  },
-  "experimentEvidence": {
-    "baselineSha": "3385a0e898751fec831742cf3f752145a0d0aa18",
-    "currentProbe": [
-      "artifact-manifest.js defines immutable APPLICATION_ARTIFACT_MANIFEST v1, validates persisted JSON, binds producer/revision/acceptance/stored revision/content digest, preserves underlying sourceRef and exposes a manifest-scoped reader.",
-      "durable-backend-qa.js persists optional acceptedBackend.artifactManifestRef, adds it to artifactRefs/submission, requires forManifest(exactRef) on protected QA and separates pre-QA publication recovery from post-QA source blocking.",
-      "BB-043/045 tests already prove fresh store reconstruction, exact ref scoping, changed payload rejection, orphan publication recovery and semantic acceptance conflict; current Oracle extraction files are expected outputs until BB-060→062 execute."
-    ],
-    "interpretation": "The safe migration moves only Oracle pull mechanics. Application manifest/checkpoint/recovery code remains physically and authoritatively above Oracle; BB-063 closes the risk with cross-package fresh-process and compatibility evidence, not another runtime abstraction."
-  },
-  "dependencyContract": {
-    "prerequisiteTaskId": "BB-062",
-    "requiredState": "DONE",
-    "requiredEvidence": "BB-062 delivery receipt plus consolidated Living Oracle/Application refs",
-    "expectedDeliveredSeam": [
-      "pullBackendFiles/pullQaArtifacts in packages/oracle",
-      "thin resolveBackendContext/resolveQaContext Application adapters",
-      "two distinct direct-injected reader ports",
-      "Application-owned createManifestArtifactReader(...).forManifest(manifestRef)",
-      "no production MCP/SCM adapter or provider lifecycle"
-    ],
-    "contradictionRule": "Any material mismatch emits PLAN_INPUT_CONTRADICTION and returns to Research; Worker may not move manifest/recovery authority or invent a shim."
-  },
-  "durabilityTopologyContract": {
-    "oracle": [
-      "exact ordered artifactReader.readArtifact request",
-      "content/sourceRef preservation",
-      "APPLICATION_ARTIFACT provenance assembly",
-      "contextual failure with original cause"
-    ],
-    "application": [
-      "manifest v1 capture/publisher/store/reader",
-      "Blackboard acceptedBackend checkpoint and artifactRefs",
-      "exact forManifest scoping",
-      "Backend recovery and QA blocking",
-      "ContextSchema and acceptance"
-    ],
-    "persistedIdentity": [
-      "handoff artifact ref/path",
-      "producer work-order id",
-      "accepted revision",
-      "acceptance decision id/digest",
-      "optional exact artifactManifestRef",
-      "manifest content digest/stored revision/availability",
-      "underlying sourceRef after validated read"
-    ],
-    "forbiddenMoves": [
-      "manifest store/publisher/retention to Oracle",
-      "checkpoint/recovery to Oracle",
-      "manifestRef synthesized from sourceRef",
-      "sourceRef replaced by manifestRef"
-    ]
-  },
-  "compatibilityContract": {
-    "directMode": "No artifactManifestPublisher means no artifactManifestRef; ordinary artifactReader and public resolver signatures behave unchanged.",
-    "protectedMode": "Persisted artifactManifestRef mandates artifactReader.forManifest(exactRef); missing capability or state fails closed.",
-    "storeMigration": "Read both legacy manifest-<digest>.json and current publication-<identity>.json; preserve APPLICATION_ARTIFACT_MANIFEST v1 content/ref semantics.",
-    "publicApi": [
-      "agentic-system resolveBackendContext",
-      "agentic-system resolveQaContext",
-      "@exharness/oracle pullBackendFiles",
-      "@exharness/oracle pullQaArtifacts"
-    ],
-    "shimPolicy": "No shim is currently justified. Any delivered incompatibility is a plan contradiction; a temporary shim would require exact callers, removal criterion and tests."
-  },
-  "recoveryContract": {
-    "beforeQaPending": "Manifest publication failure persists BLOCKED with backendRecoveryRequired=true; recovery re-enters BackendWorker.recover and may reuse an exact semantically equivalent durable receipt.",
-    "afterQaPending": "Manifest/source/provenance/content failure keeps the exact QA_PENDING checkpoint and manifest ref blocked; it does not rerun Backend.",
-    "orphanReceipt": "Lookup key is producer work-order + producer revision + artifact ref/path set; reuse preserves original acceptance provenance and requires semantic equivalence.",
-    "conflict": "Changed acceptance semantics or publication payload fails with ARTIFACT_MANIFEST_CONFLICT.",
-    "durabilityLimit": "Fresh-process reconstruction from ordinary filesystem persistence is required; power-loss durability, production store reliability and independent authenticity are not claimed."
-  },
-  "primaryReferences": [
-    {
-      "title": "Node.js file system flags and promises",
-      "url": "https://nodejs.org/api/fs.html",
-      "use": "The current store uses exclusive wx creation and hard-link publication; tests must not overclaim guarantees beyond the filesystem API and persisted state."
-    },
-    {
-      "title": "Node.js package entry points",
-      "url": "https://nodejs.org/api/packages.html#package-entry-points",
-      "use": "Keep explicit @exharness/oracle exports narrow while preserving the Application public resolver compatibility surface."
-    }
-  ],
-  "deliveryContract": {
-    "precondition": "BB-062 DONE and its delivered topology matches dependencyContract.",
-    "candidate": "Add cross-package durability/migration evidence and only repair runtime files when those tests expose a regression; preserve public and persisted shapes.",
-    "completion": "All criteria have exact command/source evidence, fresh-process reconstruction passes, and Living Docs match.",
-    "forbidden": "No manifest/recovery move into Oracle, provenance weakening, silent downgrade, schema/version redesign, durability overclaim or self-acceptance."
-  },
-  "ciContract": {
-    "runtime": "Node >=20 in the repository no-install checkout",
-    "packageWiring": "Use delivered relative Oracle source import plus unchanged Agentic public exports; no external runtime dependency.",
-    "requiredChecks": [
-      "oracle-durability",
-      "oracle-unit",
-      "oracle-integration",
-      "manifest-contract",
-      "protected-workflow",
-      "recovery-contract",
-      "oracle-boundary",
-      "agentic-regression",
-      "living-docs"
-    ]
-  },
-  "migrationContract": {
-    "preservedExports": [
-      "resolveBackendContext",
-      "resolveQaContext",
-      "pullBackendFiles",
-      "pullQaArtifacts",
-      "createManifestArtifactReader",
-      "createJsonArtifactManifestStore",
-      "createAcceptedBackendArtifactManifestPublisher"
-    ],
-    "preservedPersistedShapes": [
-      "APPLICATION_ARTIFACT_MANIFEST v1",
-      "acceptedBackend.handoff",
-      "acceptedBackend.completionDecision",
-      "acceptedBackend.artifactManifestRef",
-      "submission.artifactManifestRef",
-      "artifactRefs"
-    ],
-    "preservedFailures": [
-      "all ArtifactManifestErrorCode values",
-      "resolver wrapper message and cause",
-      "backendRecoveryRequired publication fence",
-      "QA_PENDING block without Backend rerun"
-    ],
-    "legacyRead": "Legacy content-addressed manifest filenames remain readable; no rewrite-on-read.",
-    "rollback": "Revert BB-063 tests/docs/targeted repairs without reversing BB-060→062 accepted boundaries."
-  },
-  "objectiveCoverage": [
-    {
-      "objectiveCriterion": "Research identifies every durability/provenance seam crossing the new package boundary.",
-      "criterionIds": [
-        "AC-1",
-        "INV-3"
-      ],
-      "planElements": [
-        "O41",
-        "O42",
-        "O43"
-      ],
-      "verificationIds": [
-        "oracle-durability",
-        "oracle-boundary"
-      ],
-      "decisionIndexes": [
-        0,
-        1,
-        2,
-        8
-      ],
-      "sourceRefs": [
-        "packages/agentic-system/src/artifact-manifest.js",
-        "packages/agentic-system/src/durable-backend-qa.js",
-        "packages/agentic-system/src/oracle.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/artifact-manifest.js",
-          "match": "export function createManifestArtifactReader({ reader, manifestStore })"
-        },
-        {
-          "ref": "packages/agentic-system/src/durable-backend-qa.js",
-          "match": "export function createDurableBackendQaWorkflow({"
-        }
-      ],
-      "supportingPlanFields": [
-        "durabilityTopologyContract"
-      ]
-    },
-    {
-      "objectiveCriterion": "Manifest-protected QA reads remain fail-closed on identity/provenance/content mismatch.",
-      "criterionIds": [
-        "AC-2",
-        "INV-1"
-      ],
-      "planElements": [
-        "O42",
-        "O44"
-      ],
-      "verificationIds": [
-        "oracle-durability",
-        "manifest-contract"
-      ],
-      "decisionIndexes": [
-        1,
-        2,
-        3,
-        6
-      ],
-      "sourceRefs": [
-        "packages/agentic-system/src/artifact-manifest.js",
-        "packages/agentic-system/src/oracle.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/artifact-manifest.js",
-          "match": "export const ArtifactManifestErrorCode = Object.freeze({"
-        },
-        {
-          "ref": "packages/agentic-system/src/artifact-manifest.js",
-          "match": "if (contentDigest(content) !== candidate.entry.contentDigest)"
-        }
-      ],
-      "supportingPlanFields": [
-        "durabilityTopologyContract"
-      ]
-    },
-    {
-      "objectiveCriterion": "Fresh-process Backend→QA continuation resolves the same accepted artifact refs after extraction.",
-      "criterionIds": [
-        "AC-3",
-        "INV-2"
-      ],
-      "planElements": [
-        "O43",
-        "O44"
-      ],
-      "verificationIds": [
-        "oracle-durability",
-        "protected-workflow"
-      ],
-      "decisionIndexes": [
-        2,
-        5,
-        6
-      ],
-      "sourceRefs": [
-        "packages/agentic-system/src/durable-backend-qa.js",
-        "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/durable-backend-qa.js",
-          "match": "artifactReader.forManifest(checkpoint.acceptedBackend.artifactManifestRef)"
-        },
-        {
-          "ref": "packages/agentic-system/src/durable-backend-qa.js",
-          "match": "artifactRefsFromAcceptedBackend(checkpoint.acceptedBackend)"
-        }
-      ],
-      "supportingPlanFields": [
-        "recoveryContract"
-      ]
-    },
-    {
-      "objectiveCriterion": "Existing direct-reader callers either continue unchanged or have an explicit bounded migration path.",
-      "criterionIds": [
-        "AC-4",
-        "INV-3"
-      ],
-      "planElements": [
-        "O41",
-        "O45"
-      ],
-      "verificationIds": [
-        "oracle-durability",
-        "oracle-boundary"
-      ],
-      "decisionIndexes": [
-        0,
-        3,
-        4,
-        7
-      ],
-      "sourceRefs": [
-        "packages/agentic-system/src/artifact-manifest.js",
-        "packages/agentic-system/src/durable-backend-qa.js",
-        "packages/agentic-system/src/index.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/artifact-manifest.js",
-          "match": "// Legacy BB-043/045 stores used content-addressed manifest filenames."
-        },
-        {
-          "ref": "packages/agentic-system/src/durable-backend-qa.js",
-          "match": "const manifestPublisher = normalizeArtifactManifestPublisher(artifactManifestPublisher);"
-        }
-      ],
-      "supportingPlanFields": [
-        "compatibilityContract"
-      ]
-    },
-    {
-      "objectiveCriterion": "Failure/recovery evidence is sufficient to detect semantic regressions that package-level unit tests would miss.",
-      "criterionIds": [
-        "AC-5",
-        "INV-1",
-        "INV-2"
-      ],
-      "planElements": [
-        "O43",
-        "O44",
-        "O46"
-      ],
-      "verificationIds": [
-        "oracle-durability",
-        "protected-workflow",
-        "recovery-contract",
-        "agentic-regression"
-      ],
-      "decisionIndexes": [
-        5,
-        6
-      ],
-      "sourceRefs": [
-        "packages/agentic-system/src/durable-backend-qa.js",
-        "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/durable-backend-qa.js",
-          "match": "Backend artifact manifest publication failed:"
-        },
-        {
-          "ref": "packages/agentic-system/src/durable-backend-qa.js",
-          "match": "manifest-protected QA checkpoint requires artifactReader.forManifest()"
-        },
-        {
-          "ref": "packages/agentic-system/test/bb045-manifest-protected-workflow.test.js",
-          "match": "BB-045 orphan manifest is idempotently recovered after Board checkpoint interruption"
-        }
-      ],
-      "supportingPlanFields": [
-        "recoveryContract"
-      ]
-    }
-  ],
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
-  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-063.readiness-jev-evaluation.json"
+    "statement": "BB-063 Living Oracle truth describes only the implemented and independently verified rebound capability and limitations."
+  }
 }
