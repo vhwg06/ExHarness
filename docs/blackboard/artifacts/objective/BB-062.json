@@ -3,28 +3,31 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-062",
-  "outcome": "Oracle has a researched connectivity topology for concrete source adapters so the system can reach required external/internal information through explicit, replaceable infrastructure seams; MCP is evaluated only as a source/capability adapter, not as an Oracle lifecycle or generic framework.",
-  "currentProblem": "Current Oracle has two concrete readers injected by callers and no MCP path. After physical extraction, source connectivity needs an explicit topology that says where repository, application-artifact, and future concrete external adapters live, how identity/provenance is preserved, and which protocol concerns stay below application lifecycle.",
+  "outcome": "Define Oracle's source-provider topology for repository, accepted artifact, semantic-code, lexical-search, context-graph and future external sources, including a bounded retrieval-planner seam that avoids model-visible provider/tool explosion.",
+  "currentProblem": "The old BB-062 only mapped repositoryReader and artifactReader and treated MCP as a possible adapter. Runtime Context Intelligence needs evidence-backed semantic code retrieval, indexed search and graph/context sources while preserving distinct source identity and avoiding a generic provider registry that becomes an uncontrolled tool surface.",
   "scope": [
-    "oracle.source-adapters",
-    "oracle.repository-source",
-    "oracle.application-artifact-source",
-    "oracle.external-connectivity",
-    "oracle.mcp-adapter-boundary"
+    "oracle.source-catalog",
+    "oracle.semantic-code-provider",
+    "oracle.lexical-code-provider",
+    "oracle.artifact-provider",
+    "oracle.context-graph-provider",
+    "oracle.external-adapter",
+    "oracle.retrieval-planner-boundary"
   ],
   "constraints": [
-    "Repository and application-artifact sources remain distinct where their identity/provenance semantics differ.",
-    "Adding connectivity must not create an Oracle agent loop, provider lifecycle, generic registry or background refresh system without evidence.",
-    "MCP, if used, is a protocol/source adapter below the Oracle/Application semantic boundary and owns no work/task lifecycle.",
-    "Every resolved input retains stable source identity/provenance sufficient for downstream evidence.",
-    "Source failures fail closed with exact requested source/path/ref context."
+    "Provider capability metadata stays below Oracle; Core/Application request semantics rather than selecting concrete tools.",
+    "Repository, accepted artifact, semantic-code/index and graph sources preserve their distinct source identity, provenance and currentness semantics.",
+    "Research must evaluate LSP/symbol retrieval, indexed lexical search and graph/context approaches rather than assuming one retrieval family is sufficient.",
+    "MCP, if used, is a transport/capability adapter below Oracle and owns no work lifecycle, acceptance or planning authority.",
+    "Public GitHub examples used as reusable evidence must have at least 1,000 stars at the research check; otherwise the exception must be explicit.",
+    "Reuse, adaptation and in-house seams must be compared on licensing, integration cost, update/currentness behavior and failure modes."
   ],
   "successCriteria": [
-    "Research maps current repositoryReader and artifactReader into the extracted Oracle package with explicit adapter ownership.",
-    "A future concrete external/MCP-backed source has a bounded adapter contract and cannot inject lifecycle/acceptance authority.",
-    "Adapter topology preserves source identity/provenance and distinguishes external repository vs internal accepted application artifacts.",
-    "No generic provider registry is required to add one concrete adapter.",
-    "An end-to-end ingress path from declared application need to validated Worker context is specified with failure semantics."
+    "Research defines a provider capability model that can add one source without expanding the caller-facing semantic contract.",
+    "Serena/LSP, Zoekt-style indexed search, Aider repo-map patterns and graph/context approaches are compared on the same representative retrieval problems.",
+    "A retrieval-planner seam consumes ContextRequirement plus budget and emits bounded provider work without becoming application scheduling authority.",
+    "An executable experiment measures relevance/recall, context bytes or tokens, latency, setup/update cost and provenance completeness.",
+    "Future external/MCP-backed sources can be adapted without bypassing source identity/currentness checks."
   ],
   "currentSourceRefs": [
     "docs/living/system/oracle/architecture.md",
@@ -34,7 +37,8 @@
     "packages/agentic-system/src/oracle.js",
     "packages/agentic-system/src/backend-application.js",
     "packages/agentic-system/src/qa-application.js",
-    "packages/agentic-system/src/index.js",
-    "docs/living/system/oracle/artifact-manifest.md"
+    "packages/core-harness/src",
+    "docs/blackboard/process/oracle-reconciliation-phase.md",
+    "docs/blackboard/process/oracle-context-intelligence-research.md"
   ]
 }

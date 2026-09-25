@@ -3,614 +3,230 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-061",
-  "status": "READY",
+  "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-061.json",
-    "hash": "dc2948afc943888e5ca473e7dae75f3fb6f3f1da6d6292a501e3345721ad67bb"
+    "hash": "220e7adad1864f38f3fffe04a9f395e0cbb63fbb5fa26a0ac685e0536da20175"
   },
   "scope": [
-    "oracle.semantic-port",
-    "oracle.dependency-inversion",
-    "oracle.schema-ownership",
-    "oracle.authority-boundary",
-    "oracle.compile-time-dependencies"
+    "oracle.context-requirement",
+    "oracle.context-resolution",
+    "oracle.semantic-contract",
+    "oracle.context-budget-contract",
+    "oracle.provider-neutrality",
+    "oracle.failure-semantics"
   ],
   "outOfScope": [
-    "A generic Resolver<T>, provider registry, retrieval framework, shared contracts package or source-discovery DSL.",
-    "Changing BackendContextSchema, QaContextSchema, WorkOrder lifecycle, acceptance, evaluation, recovery or product-currentness authority.",
-    "Implementing BB-062 concrete connectivity or BB-063 provenance storage beyond the request/response seams BB-061 must preserve.",
-    "Treating the planned packages/oracle boundary as already delivered before BB-060 produces a DONE delivery receipt."
+    "Moving product/domain scheduling, acceptance, publication or recovery authority into Oracle.",
+    "Treating historical BB-060..064 READY/Jev artifacts as current implementation authority.",
+    "Claiming live coding-agent or product value from deterministic research prototypes or source inspection."
   ],
   "constraints": [
-    "Application remains authority for work-order/context schemas and required context selection.",
-    "Oracle owns source IO/adaptation only and must not claim work, schedule, accept, evaluate, recover or mutate product truth.",
-    "Prefer concrete Backend/QA ports earned by current use cases over a generic resolver abstraction.",
-    "Cross-package dependencies must be acyclic and testable.",
-    "Schema ownership may be shared only through a deliberately named contracts seam; Oracle must not depend on application orchestration implementation."
+    "Research must inspect current source plus primary external evidence, distinguish retained findings from superseded assumptions, and compare reuse with the smallest ExHarness-owned seam.",
+    "Application/domain authority remains outside Oracle; Core consumes semantic context but does not own provider/source-specific retrieval.",
+    "Required context is budgeted, provenance-bound and currentness-checked; missing or ambiguous required evidence fails closed.",
+    "Worker execution is unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
   ],
   "invariants": [
-    "Application remains authority for work-order/context schemas and required context selection.",
-    "Oracle owns source IO/adaptation only and must not claim work, schedule, accept, evaluate, recover or mutate product truth.",
-    "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
-    "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized."
+    "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
+    "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
+    "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership."
   ],
   "architectureDecisions": [
-    "Application owns WHAT: packages/agentic-system/src/oracle.js parses raw Backend/Qa WorkOrders, selects the declared requirements already carried by those parsed orders, calls Oracle, then validates the returned plain object with BackendContextSchema/QaContextSchema. Application retains lifecycle, acceptance, recovery and product-currentness authority.",
-    "Adopt the exact concrete seam already authorized by BB-060: @exharness/oracle exports pullBackendFiles(parsedOrder,{repositoryReader}) and pullQaArtifacts(parsedOrder,{artifactReader}). BB-061 must not rename them to a generic or source-class API unless a new Research plan explicitly supersedes this contract.",
-    "pullBackendFiles accepts the application-parsed plain order without importing its runtime schema, checks repositoryReader.readFile, invokes it once per requiredFiles entry in order with exact repositoryRef/revision/path, preserves content and sourceRef, and assembles the plain {repository,files} object that the Application adapter validates.",
-    "pullQaArtifacts accepts the application-parsed plain order without importing its runtime schema, checks artifactReader.readArtifact, forwards each required artifact plus upstream identity exactly in order, preserves content/sourceRef, attaches the existing APPLICATION_ARTIFACT producer/acceptance provenance, and assembles the plain {upstream,artifacts,acceptanceCriteria} object that the Application adapter validates.",
-    "The application-owned adapter is the deliberate semantic port: it supplies a parsed application shape and owns final schema validation; Oracle only structurally consumes fields and assembles source results. This lets Oracle assemble application-required shapes without importing application orchestration or schema modules.",
-    "Reader failures keep the existing Backend/QA message and original cause; invalid raw orders fail before IO; malformed returned content/sourceRef fails only at the Application ContextSchema boundary. Oracle never fabricates defaults, acceptance or currentness.",
-    "Dependency direction is both metadata and runtime source: packages/agentic-system declares file:../oracle and its thin adapter imports ../../oracle/src/index.js; packages/oracle imports no packages/agentic-system or Core module. Keep relative runtime wiring for current no-install CI.",
-    "BB-061 execution is gated on a BB-060 DONE receipt. The worker first verifies the delivered functions, adapter and dependency edges against the BB-060 READY plan; any material difference is PLAN_INPUT_CONTRADICTION and returns to Research instead of broadening implementation."
+    "ContextRequirement is caller-facing and provider-neutral: semantic need, required/optional evidence, currentness constraints, consumer identity and budget.",
+    "ContextResolution is durable evidence: requirement identity, source/currentness identities, materialization identity, provenance, budget consumed, resolved items and explicit missing/partial state.",
+    "Current Backend repository and QA accepted-artifact flows are compatibility examples, not separate final APIs.",
+    "Provider-specific queries and planning stay below the semantic contract; a ContextRequirement cannot grant scheduling, acceptance, publication or recovery authority."
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "packages/agentic-system/src/oracle.js",
       "packages/agentic-system/src/backend-application.js",
       "packages/agentic-system/src/qa-application.js",
-      "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/index.js",
-      "packages/agentic-system/package.json",
-      "packages/agentic-system/test/wave-a.test.js",
-      "packages/agentic-system/test/wave-c.test.js",
       "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/semantics.md",
-      "docs/living/system/oracle/workflow.md",
-      "docs/living/system/agentic-application/contracts.md"
+      "docs/living/system/oracle/semantics.md"
     ],
     "expectedNew": [
-      "packages/oracle/package.json",
-      "packages/oracle/src/index.js"
+      "packages/oracle/src/context-resolution.js",
+      "scripts/oracle-context-intelligence/README.md"
     ],
     "expectedTests": [
-      "packages/oracle/test/oracle.test.js",
-      "packages/agentic-system/test/oracle-integration.test.js",
-      "test/oracle-architecture-boundary.test.mjs"
+      "test/oracle-context-contract.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/src/**",
-      "packages/agentic-system/test/**",
-      "packages/agentic-system/package.json",
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
       "packages/oracle/**",
-      "package.json",
-      "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/**",
+      "docs/living/**",
       "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "docs/blackboard/process/oracle-context-intelligence-research.md",
+      "scripts/delivery/baseline/**",
       "scripts/**",
       "test/**",
-      ".github/workflows/test.yml"
+      "package.json"
     ],
     "write": [
       "packages/oracle/**",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/qa-application.js",
-      "packages/agentic-system/src/index.js",
-      "packages/agentic-system/test/oracle-integration.test.js",
-      "packages/agentic-system/package.json",
-      "test/oracle-architecture-boundary.test.mjs",
+      "packages/core-harness/**",
+      "scripts/oracle-context-intelligence/**",
+      "test/**",
       "docs/living/system/oracle/**",
-      "docs/living/system/agentic-application/contracts.md",
-      "docs/living/system/agentic-application/architecture.md"
+      "docs/living/system/core-harness/**",
+      "package.json"
     ],
     "forbiddenWrite": [
-      "docs/blackboard/artifacts/objective/**",
-      "docs/blackboard/artifacts/ready-implement-plan/**",
-      "docs/blackboard/work-graph.json",
-      "docs/blackboard/component-registry.json",
-      "docs/blackboard/state.md"
+      "docs/blackboard/**",
+      ".github/**"
     ]
   },
   "implementationSlices": [
-    "O21 — Require BB-060 DONE, load its delivery receipt and consolidated Living Oracle refs, and verify that pullBackendFiles, pullQaArtifacts, the thin Application adapters and Application -> Oracle dependency were delivered exactly. On mismatch stop with PLAN_INPUT_CONTRADICTION.",
-    "O22 — Stabilize the BB-060 concrete semantic port without renaming it: Oracle consumes parsed plain orders, performs only ordered injected reads/error preservation/provenance assembly, and returns the two exact pre-schema plain objects. Remove any Oracle import of Application/Core runtime or any lifecycle/acceptance decision.",
-    "O23 — Keep packages/agentic-system/src/oracle.js as the application-owned semantic adapter: parse before IO, call the matching concrete Oracle function, then run BackendContextSchema.parse or QaContextSchema.parse. Preserve resolveBackendContext/resolveQaContext signatures and index exports used by Backend and QA.",
-    "O24 — Enforce the acyclic compile-time seam in package metadata and actual ESM imports, retaining file:../oracle plus ../../oracle/src/index.js for no-install CI. Add negative fixtures for reverse imports, raw-order parsing or ContextSchema ownership moved into Oracle, generic resolver/provider seams, and lifecycle/acceptance leakage.",
-    "O25 — Run Oracle unit, Application integration, architecture-boundary and full Agentic regression checks; update Living Oracle and Agentic Application docs to the delivered seam and record exact verification evidence."
+    "Derive the semantic fields and identity rules from current Backend/QA flows plus runtime needs.",
+    "Implement a deterministic contract prototype and compatibility fixture for repository and accepted-artifact requirements.",
+    "Exercise required/optional, budget exhaustion, stale currentness and authority-negative cases before narrowing worker scope."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
-      "statement": "Backend and QA retain resolveBackendContext/resolveQaContext application adapters that parse first, call the exact BB-060 ports pullBackendFiles/pullQaArtifacts, and validate final application-owned Context schemas.",
+      "statement": "ContextRequirement and ContextResolution have explicit deterministic fields and identity semantics independent of concrete provider commands.",
       "verificationIds": [
-        "oracle-integration",
-        "oracle-boundary"
+        "contract-test"
       ],
       "evidenceRequired": [
-        "Integration tests name both concrete Oracle functions and prove parse-before-IO, adapter mapping, final schema validation and unchanged public resolver exports."
+        "Contract fixtures and identity/currentness examples."
       ]
     },
     {
       "id": "AC-2",
-      "statement": "Compile-time direction is packages/agentic-system -> packages/oracle only; Oracle imports no Application/Core runtime or schemas and owns no lifecycle, acceptance, recovery or currentness decision.",
+      "statement": "Repository and accepted-artifact compatibility cases can be expressed through the same semantic contract without weakening existing provenance checks.",
       "verificationIds": [
-        "oracle-boundary"
+        "compatibility-probe"
       ],
       "evidenceRequired": [
-        "Architecture test checks package metadata and ESM imports, with negative fixtures for every prohibited reverse/authority edge."
+        "Before/after compatibility fixture with exact source/provenance identity."
       ]
     },
     {
       "id": "AC-3",
-      "statement": "pullBackendFiles and pullQaArtifacts consume parsed plain application orders, forward every source request exactly in stable order, preserve content/sourceRef and assemble the exact pre-schema plain objects defined by the Application adapters.",
+      "statement": "Required missing/stale context and exhausted budgets fail closed; optional/partial context is explicit and bounded.",
       "verificationIds": [
-        "oracle-unit",
-        "oracle-integration"
+        "contract-test"
       ],
       "evidenceRequired": [
-        "Spy and golden tests cover exact inputs, ordered reader calls, output shapes, QA provenance and subsequent ContextSchema parsing."
-      ]
-    },
-    {
-      "id": "AC-4",
-      "statement": "Invalid raw orders fail before IO; reader failures preserve existing messages and original causes; malformed content/sourceRef fails at Application schema validation; no partial Context or authority decision is produced.",
-      "verificationIds": [
-        "oracle-unit",
-        "oracle-integration"
-      ],
-      "evidenceRequired": [
-        "Negative tests cover both source classes and distinguish parse, reader and schema failures."
-      ]
-    },
-    {
-      "id": "AC-5",
-      "statement": "The two concrete Backend/QA ports remain sufficient; no Resolver<T>, provider registry, shared contracts package or bare-package install assumption is introduced.",
-      "verificationIds": [
-        "oracle-boundary",
-        "agentic-regression"
-      ],
-      "evidenceRequired": [
-        "Boundary scans and full regression prove the narrow seam and current no-install runtime wiring."
+        "Negative fixtures for stale, missing, partial and budget exhaustion."
       ]
     },
     {
       "id": "INV-1",
-      "statement": "Application remains authority for work-order/context schemas and required context selection.",
+      "statement": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "verificationIds": [
-        "oracle-integration",
-        "oracle-boundary"
+        "contract-test"
       ],
       "evidenceRequired": [
-        "Application adapter tests own parsers, schema validation and requirement selection."
+        "A negative or boundary case that would fail if this invariant were violated."
       ]
     },
     {
       "id": "INV-2",
-      "statement": "Oracle owns source IO/adaptation only and must not claim work, schedule, accept, evaluate, recover or mutate product truth.",
+      "statement": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "verificationIds": [
-        "oracle-unit",
-        "oracle-boundary"
+        "contract-test"
       ],
       "evidenceRequired": [
-        "Oracle API/tests remain limited to injected source IO, error preservation and plain-object assembly."
+        "A negative or boundary case that would fail if this invariant were violated."
       ]
     },
     {
       "id": "INV-3",
-      "statement": "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
+      "statement": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "verificationIds": [
-        "oracle-boundary"
+        "contract-test"
       ],
       "evidenceRequired": [
-        "Precondition evidence binds the worker to the BB-060 DONE receipt and delivered topology."
-      ]
-    },
-    {
-      "id": "INV-4",
-      "statement": "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized.",
-      "verificationIds": [
-        "living-docs"
-      ],
-      "evidenceRequired": [
-        "Living docs state the same functions, imports, schemas and authority as delivered source."
+        "A negative or boundary case that would fail if this invariant were violated."
       ]
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Application remains authority for work-order/context schemas and required context selection.",
+      "invariant": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "criterionIds": [
-        "INV-1",
-        "AC-1",
-        "AC-3"
+        "INV-1"
       ]
     },
     {
-      "invariant": "Oracle owns source IO/adaptation only and must not claim work, schedule, accept, evaluate, recover or mutate product truth.",
+      "invariant": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "criterionIds": [
-        "INV-2",
-        "AC-2",
-        "AC-4"
+        "INV-2"
       ]
     },
     {
-      "invariant": "Research must bind implementation decisions to current source seams and must not treat planned future structure as delivered truth.",
+      "invariant": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "criterionIds": [
         "INV-3"
-      ]
-    },
-    {
-      "invariant": "Delivery must update Oracle Living Docs so logical ownership and delivered physical topology remain synchronized.",
-      "criterionIds": [
-        "INV-4"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "oracle-unit",
-      "command": "node --test packages/oracle/test/oracle.test.js"
+      "id": "contract-test",
+      "command": "node --test test/oracle-context-contract.test.mjs"
     },
     {
-      "id": "oracle-integration",
-      "command": "node --test packages/agentic-system/test/oracle-integration.test.js packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js"
-    },
-    {
-      "id": "oracle-boundary",
-      "command": "node --test test/oracle-architecture-boundary.test.mjs"
-    },
-    {
-      "id": "agentic-regression",
-      "command": "npm run test:agentic"
-    },
-    {
-      "id": "living-docs",
-      "command": "npm run verify:blackboard-artifacts && npm run verify:blackboard-work-graph && npm run verify:blackboard-context"
+      "id": "compatibility-probe",
+      "command": "node scripts/oracle-context-intelligence/probe-contract-compatibility.mjs"
     }
   ],
-  "researchGaps": [],
-  "negativeVerificationCases": [
-    "Oracle imports packages/agentic-system/Core contracts or parses raw WorkOrders/Context schemas itself.",
-    "Application bypasses the thin resolver adapter or moves final ContextSchema validation below the infrastructure boundary.",
-    "Repository/artifact reader arguments are rewritten, deduplicated or reordered; content/sourceRef, QA provenance, error message or cause changes.",
-    "Oracle accepts or returns lifecycle, acceptance, recovery or product-currentness decisions.",
-    "pullBackendFiles/pullQaArtifacts are renamed to a generic resolver/provider seam without a new plan.",
-    "A bare @exharness/oracle import is required in no-install CI although node_modules is absent.",
-    "BB-060 is not DONE or its delivery receipt contradicts the expected seam and implementation proceeds anyway."
+  "researchGaps": [
+    "Select exact ContextRequirement and ContextResolution fields and canonical identity/hash inputs.",
+    "Define required versus optional evidence and the semantics of a partial resolution under a hard context budget.",
+    "Map current Backend/QA source shapes into compatibility fixtures without preserving application-specific final ports.",
+    "Decide whether a small contracts package is needed or the semantic contract belongs entirely under packages/oracle.",
+    "Obtain a new Jev readiness judgment after contract experiments close all gaps."
   ],
+  "negativeVerificationCases": [
+    "A caller embeds provider/tool commands in ContextRequirement or bypasses the semantic resolution seam.",
+    "A stale or provenance-incomplete required context item is represented as current.",
+    "Oracle/provider/planner code attempts to claim work, accept product output, publish product truth or own domain recovery."
+  ],
+  "supersededAuthority": {
+    "rule": "Historical readiness/Jev artifacts remain evidence only; changed objective/plan bindings make them non-authoritative for execution.",
+    "priorReadinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-061.readiness-jev-evaluation.json"
+  },
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-061 objective + Oracle phase roadmap + current Oracle/Application source truth",
+      "input": "docs/blackboard/artifacts/objective/BB-061.json + docs/blackboard/process/oracle-context-intelligence-research.md",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
-      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "convergence": "researchGaps=[] + new Jev SATISFIED",
       "forbidden": [
         "product implementation",
-        "invent generic framework",
-        "treat docs as proof of physical ownership",
-        "self-accept"
+        "self-acceptance",
+        "reuse of stale readiness authority",
+        "invented live evidence"
       ]
     },
     {
       "lane": "WORKER",
-      "input": "exact READY plan + DONE direct dependencies for BB-061",
+      "input": "exact rebound READY plan + DONE direct dependencies",
       "output": "DELIVERED_FEATURE",
-      "binding": "plan hash + candidate/evidence + Jev",
-      "convergence": "Oracle boundary evidence + Living Docs SATISFIED",
+      "binding": "plan hash + candidate + evidence + Jev",
+      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
       "forbidden": [
-        "redefine plan",
-        "weaken provenance",
-        "cross authority boundary",
-        "self-accept"
+        "redefine rebound plan",
+        "self-acceptance",
+        "expand into post-foundation continuation"
       ]
     }
   ],
   "livingDocs": {
     "refs": [
       "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/state.md",
-      "docs/living/system/oracle/semantics.md",
-      "docs/living/system/oracle/workflow.md"
+      "docs/living/system/oracle/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-061 Living Oracle docs must describe delivered ownership, dependency, connectivity and provenance semantics exactly as implemented."
-  },
-  "experimentEvidence": {
-    "baselineSha": "8674b7f02a16b372efa1d1d87cc7aa2b32391eb9",
-    "currentProbe": [
-      "Current Backend/QA resolvers parse WorkOrder, call repositoryReader.readFile or artifactReader.readArtifact, attach APPLICATION_ARTIFACT provenance and parse application-owned Context schemas.",
-      "packages/oracle and the new Oracle boundary tests are absent at baseline because BB-060 is not yet delivered; a bounded temporary package probe showed a relative ESM import works in a no-install checkout while the bare package specifier returns ERR_MODULE_NOT_FOUND when node_modules and package-lock.json are absent.",
-      "Oracle contracts, package and workflow seams are unchanged from the BB-060 inspected baseline 7a266fc."
-    ],
-    "interpretation": "The smallest acyclic port extracts ordered injected source reads only. Application must retain semantic selection, mapping, provenance and schema authority."
-  },
-  "dependencyContract": {
-    "prerequisiteTaskId": "BB-060",
-    "requiredState": "DONE",
-    "requiredEvidence": "BB-060 delivery receipt plus consolidated Living Oracle refs",
-    "expectedDeliveredSeam": [
-      "pullBackendFiles",
-      "pullQaArtifacts",
-      "packages/agentic-system/src/oracle.js thin adapters",
-      "file:../oracle",
-      "../../oracle/src/index.js"
-    ],
-    "contradictionRule": "Any material mismatch emits PLAN_INPUT_CONTRADICTION and returns to Research; Worker may not rename or invent a replacement seam."
-  },
-  "semanticPortContract": {
-    "applicationOwns": [
-      "raw WorkOrder parsing before IO",
-      "required context semantics carried by parsed Backend/Qa orders",
-      "resolveBackendContext and resolveQaContext adapters",
-      "BackendContextSchema and QaContextSchema validation",
-      "lifecycle, acceptance, recovery and product-currentness"
-    ],
-    "oracleOwns": [
-      "pullBackendFiles(parsedOrder,{repositoryReader})",
-      "pullQaArtifacts(parsedOrder,{artifactReader})",
-      "ordered exact reader invocation",
-      "existing error message and original-cause preservation",
-      "plain pre-schema object assembly including existing QA provenance fields"
-    ],
-    "dependencyDirection": "packages/agentic-system -> packages/oracle; never reverse",
-    "compatibility": [
-      "resolveBackendContext",
-      "resolveQaContext",
-      "agentic-system index exports",
-      "file:../oracle metadata",
-      "../../oracle/src/index.js no-install import"
-    ],
-    "forbidden": [
-      "raw-order parsing in Oracle",
-      "Application schema/runtime imports in Oracle",
-      "lifecycle or acceptance authority",
-      "generic provider registry",
-      "shared contracts package"
-    ]
-  },
-  "objectiveCoverage": [
-    {
-      "objectiveCriterion": "Research defines the exact semantic/compile-time port used by Backend and QA after physical extraction.",
-      "criterionIds": [
-        "AC-1",
-        "AC-3"
-      ],
-      "planElements": [
-        "O22",
-        "O23"
-      ],
-      "verificationIds": [
-        "oracle-unit",
-        "oracle-integration"
-      ],
-      "decisionIndexes": [
-        1,
-        2,
-        3,
-        4
-      ],
-      "sourceRefs": [
-        "packages/agentic-system/src/oracle.js",
-        "packages/agentic-system/src/backend-application.js",
-        "packages/agentic-system/src/qa-application.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "export async function resolveBackendContext(rawOrder, { repositoryReader })"
-        },
-        {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "export async function resolveQaContext(rawOrder, { artifactReader })"
-        }
-      ],
-      "supportingPlanFields": [
-        "semanticPortContract",
-        "dependencyContract",
-        "deliveryContract"
-      ]
-    },
-    {
-      "objectiveCriterion": "Dependency direction is acyclic and maps directly to documented authority: Application WHAT, Oracle WHERE/HOW.",
-      "criterionIds": [
-        "AC-2",
-        "INV-1",
-        "INV-2"
-      ],
-      "planElements": [
-        "O22",
-        "O24"
-      ],
-      "verificationIds": [
-        "oracle-boundary"
-      ],
-      "decisionIndexes": [
-        0,
-        4,
-        6
-      ],
-      "sourceRefs": [
-        "docs/living/system/oracle/semantics.md"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "docs/living/system/oracle/semantics.md",
-          "match": "Application code owns **what** context is required and the validated shape."
-        },
-        {
-          "ref": "docs/living/system/oracle/semantics.md",
-          "match": "Oracle owns **where/how** declared source data is read and adapted."
-        }
-      ],
-      "supportingPlanFields": [
-        "semanticPortContract",
-        "dependencyContract",
-        "ciContract"
-      ]
-    },
-    {
-      "objectiveCriterion": "Oracle can validate/assemble application-owned shapes without importing application orchestration runtime.",
-      "criterionIds": [
-        "AC-1",
-        "AC-3",
-        "INV-1"
-      ],
-      "planElements": [
-        "O22",
-        "O23"
-      ],
-      "verificationIds": [
-        "oracle-unit",
-        "oracle-integration",
-        "oracle-boundary"
-      ],
-      "decisionIndexes": [
-        2,
-        3,
-        4
-      ],
-      "sourceRefs": [
-        "packages/agentic-system/src/oracle.js",
-        "docs/living/system/oracle/architecture.md"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "return BackendContextSchema.parse({"
-        },
-        {
-          "ref": "packages/agentic-system/src/oracle.js",
-          "match": "return QaContextSchema.parse({"
-        },
-        {
-          "ref": "docs/living/system/oracle/architecture.md",
-          "match": "Application schemas/contracts stay above the source adapters."
-        }
-      ],
-      "supportingPlanFields": [
-        "semanticPortContract",
-        "migrationContract"
-      ]
-    },
-    {
-      "objectiveCriterion": "Negative cases prove Oracle cannot gain scheduling/acceptance/recovery/product-currentness authority.",
-      "criterionIds": [
-        "AC-2",
-        "AC-4",
-        "INV-2"
-      ],
-      "planElements": [
-        "O22",
-        "O24"
-      ],
-      "verificationIds": [
-        "oracle-unit",
-        "oracle-integration",
-        "oracle-boundary"
-      ],
-      "decisionIndexes": [
-        0,
-        5,
-        6
-      ],
-      "sourceRefs": [
-        "docs/living/system/oracle/semantics.md",
-        "docs/living/system/agentic-application/contracts.md"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "docs/living/system/oracle/semantics.md",
-          "match": "Oracle is not an agent, Advisor, Worker, correctness authority, semantic-memory system or runtime context lifecycle."
-        },
-        {
-          "ref": "docs/living/system/agentic-application/contracts.md",
-          "match": "A Worker submission cannot transition directly to `DONE`."
-        }
-      ],
-      "supportingPlanFields": [
-        "semanticPortContract",
-        "deliveryContract",
-        "negativeVerificationCases"
-      ]
-    },
-    {
-      "objectiveCriterion": "Concrete ports remain sufficient for current repository/artifact sources; generic abstraction is explicitly deferred unless evidenced.",
-      "criterionIds": [
-        "AC-5"
-      ],
-      "planElements": [
-        "O24"
-      ],
-      "verificationIds": [
-        "oracle-boundary",
-        "agentic-regression"
-      ],
-      "decisionIndexes": [
-        1,
-        6
-      ],
-      "sourceRefs": [
-        "docs/living/system/oracle/semantics.md",
-        "docs/living/system/agentic-application/contracts.md"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "docs/living/system/oracle/semantics.md",
-          "match": "There is no generic resolver abstraction in current source."
-        },
-        {
-          "ref": "docs/living/system/agentic-application/contracts.md",
-          "match": "No generic abstraction before concrete repeated semantics justify it."
-        }
-      ],
-      "supportingPlanFields": [
-        "semanticPortContract",
-        "ciContract",
-        "outOfScope"
-      ]
-    }
-  ],
-  "primaryReferences": [
-    {
-      "title": "Hexagonal architecture",
-      "url": "https://alistair.cockburn.us/hexagonal-architecture/",
-      "use": "Application defines use-case semantics while driven adapters implement external IO behind explicit ports."
-    },
-    {
-      "title": "Node.js packages: package entry points",
-      "url": "https://nodejs.org/api/packages.html#package-entry-points",
-      "use": "Keep explicit exports and acyclic package entry points."
-    },
-    {
-      "title": "npm workspaces",
-      "url": "https://docs.npmjs.com/cli/using-npm/workspaces",
-      "use": "A bare workspace package import requires an install/link step; current CI does not provide it."
-    }
-  ],
-  "deliveryContract": {
-    "precondition": "BB-060 DONE and delivered seam matches dependencyContract.expectedDeliveredSeam",
-    "candidate": "Changes remain inside sourceScope.write and preserve public resolver compatibility.",
-    "completion": "Every acceptance criterion has bound verification evidence and Living Docs match the candidate.",
-    "forbidden": "Worker may not redefine the port, weaken provenance/error cause, or self-accept."
-  },
-  "ciContract": {
-    "runtime": "Node >=20 in the repository's current no-install checkout",
-    "packageWiring": "file:../oracle metadata plus relative source import until install-backed workspace wiring is delivered",
-    "requiredChecks": [
-      "oracle-unit",
-      "oracle-integration",
-      "oracle-boundary",
-      "agentic-regression",
-      "living-docs"
-    ]
-  },
-  "migrationContract": {
-    "preservedExports": [
-      "resolveBackendContext",
-      "resolveQaContext"
-    ],
-    "preservedBehavior": [
-      "parse-before-IO",
-      "reader argument order",
-      "content/sourceRef",
-      "QA APPLICATION_ARTIFACT provenance",
-      "error message and cause",
-      "ContextSchema failure"
-    ],
-    "rollback": "Revert BB-061 refinements without reversing the independently accepted BB-060 physical extraction."
-  },
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
-  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-061.readiness-jev-evaluation.json"
+    "statement": "BB-061 Living Oracle truth describes only the implemented and independently verified rebound capability and limitations."
+  }
 }

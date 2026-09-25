@@ -60,3 +60,20 @@ A candidate is not accepted because it is asynchronous. BB-077 must predeclare t
 ## Integration point
 
 The phase is inserted before BB-066 real coding-agent runtime integration. This prevents ExHarness from locking the delivery product onto an unmeasured synchronous harness shape, while preserving research-ahead semantics: all BB-077–081 research can proceed before worker dependencies are delivered.
+
+## Oracle Context Intelligence continuation
+
+Oracle BB-060..064 has been rebound to Research/SA because its prior thin-IO premise no longer matches the runtime context-efficiency direction. The rebound foundation defines the ContextRequirement/ContextResolution boundary, source-provider topology and durable provenance/currentness semantics before Worker execution resumes.
+
+The Oracle efficiency continuation is intentionally **not** folded into BB-077..081. Those IDs keep their existing Core async-harness semantics and supply measurement/runtime constraints. After the Oracle foundation stabilizes, allocate `BB-082+` work for:
+
+```text
+Context Graph
+  -> Retrieval Planner
+  -> Progressive runtime resolution
+  -> Context budgeting
+  -> Runtime async integration
+  -> Benchmark / profile acceptance
+```
+
+The later benchmark should reuse the matched same-model/task/source/budget discipline from BB-077/081 and the delivery baseline. It must compare all attempts and keep independent acceptance authoritative; neither asynchronous execution nor richer context is accepted from architecture claims alone.

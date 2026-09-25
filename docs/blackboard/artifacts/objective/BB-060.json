@@ -3,29 +3,30 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-060",
-  "outcome": "Oracle's declared infrastructure ownership is reconciled with physical package/module ownership: concrete Oracle resolution code moves behind an infrastructure-owned package boundary without introducing an unproven generic resolver framework or changing current Backend/QA semantics.",
-  "currentProblem": "Living architecture says Oracle is infrastructure and not Agentic Application/Core, but current implementation is physically colocated in packages/agentic-system/src/oracle.js. The temporary Wave-A colocation became persistent and closure machinery never checked logical ownership against source/package ownership.",
+  "outcome": "Redefine Oracle as an infrastructure-owned runtime Context Intelligence Plane: Core requests semantic context through an explicit requirement seam, Oracle resolves bounded context from governed providers, and Application/domain authority remains outside Oracle.",
+  "currentProblem": "The previous BB-060 premise reduced Oracle to extracting two concrete IO loops and explicitly rejected runtime resolution, retrieval lifecycle and generic context semantics. New efficiency and context-grounding evidence makes that premise stale: ExHarness needs semantic code retrieval, graph-backed context assembly, provenance/currentness mapping and bounded runtime resolution without moving application control into Oracle.",
   "scope": [
+    "oracle.runtime-architecture",
     "oracle.physical-ownership",
-    "oracle.package-boundary",
-    "oracle.concrete-resolvers",
-    "oracle.dependency-surface",
-    "oracle.no-premature-generic"
+    "oracle.context-intelligence-plane",
+    "oracle.core-runtime-seam",
+    "oracle.authority-boundary",
+    "oracle.superseded-readiness-reassessment"
   ],
   "constraints": [
-    "Preserve current resolveBackendContext/resolveQaContext behavior and application-owned schemas.",
-    "Oracle must be physically owned outside @exharness/agentic-system after delivery.",
-    "Do not invent Resolver<T>, provider registry, lifecycle framework, retrieval engine or cache abstraction merely to justify extraction.",
-    "Dependency direction must not make Oracle own application semantics or lifecycle authority.",
-    "Package extraction must preserve stable sourceRef/provenance/error semantics and existing callers during migration.",
-    "Research must identify exact import/export/package changes and compatibility seam before worker execution."
+    "Oracle remains infrastructure-owned outside Agentic Application and Core implementation packages, with acyclic dependency direction.",
+    "Application/domain controllers retain work semantics, acceptance, publication, recovery and product authority.",
+    "Core may request and consume resolved context but must not own source-specific retrieval, provider catalogs or Oracle planning.",
+    "Retain valid prior findings about physical ownership, sourceRef/provenance and fail-closed source handling; supersede the assumption that two concrete pull functions are the final Oracle boundary.",
+    "Do not select a context-graph, search/LSP or persistence technology before primary-source inspection and a discriminating experiment.",
+    "Research must define a benchmarkable runtime boundary before Worker authority can be restored."
   ],
   "successCriteria": [
-    "A package/module topology is specified where Oracle is infrastructure-owned and Agentic Application consumes it through explicit concrete seams.",
-    "Backend and QA concrete context resolution behavior remains semantically unchanged after extraction.",
-    "No generic resolver/provider framework is required unless separate evidence proves pressure beyond the two concrete source classes.",
-    "Dependency graph has no application implementation package owning Oracle infrastructure source.",
-    "Migration plan names exact imports/exports/tests/docs that move or remain and a worker can implement it without rediscovering ownership."
+    "Research specifies the runtime path Application semantic need -> ContextRequirement -> Core runtime -> Oracle -> governed providers/planner -> ContextResolution.",
+    "Physical package ownership and compile-time dependency direction are mechanically testable and keep Oracle outside Application/Core implementation ownership.",
+    "Retained findings and superseded assumptions from the prior BB-060..064 readiness cycle are explicitly recorded.",
+    "At least two relevant retrieval/context approaches are compared from primary sources; public GitHub examples meet the 1,000-star evidence rule when used.",
+    "A falsifiable prototype and benchmark handoff are defined so the next READY plan does not rely on architecture prose alone."
   ],
   "currentSourceRefs": [
     "docs/living/system/oracle/architecture.md",
@@ -35,6 +36,8 @@
     "packages/agentic-system/src/oracle.js",
     "packages/agentic-system/src/backend-application.js",
     "packages/agentic-system/src/qa-application.js",
-    "packages/agentic-system/src/index.js"
+    "packages/core-harness/src",
+    "docs/blackboard/process/oracle-reconciliation-phase.md",
+    "docs/blackboard/process/oracle-context-intelligence-research.md"
   ]
 }
