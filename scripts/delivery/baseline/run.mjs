@@ -113,7 +113,7 @@ async function ledgerUsage(path, taskId) {
   });
 }
 
-async function live(profile, identities, output) {
+async function live(profile, identities, output, selectedTaskId = null) {
   await preflight(profile, identities, { credential: true });
   await mkdir(output, { recursive: true });
   const registration = registrationManifest(profile, identities, { calibration: true });
@@ -142,6 +142,7 @@ async function live(profile, identities, output) {
     producerKind: 'EXIT_ZERO_DOUBLE', producerCommand: 'node -e process.exit(0)', producerExitCode: producerDouble.code,
     candidateDigest: negativeDigest, verifierDigest: frozenVerifierDigest, ...negative });
   for (const taskId of CALIBRATION_TASK_IDS) {
+    if (selectedTaskId !== null && taskId !== selectedTaskId) continue;
     const task = taskList.find(item => item.id === taskId);
     if (!task) fail(`missing calibration task ${taskId}`);
     const taskOutput = join(output, taskId);
@@ -287,14 +288,16 @@ async function deterministic(output) {
 export async function main(args = process.argv.slice(2)) {
   const mode = option(args, '--mode'), output = option(args, '--output'), profilePath = option(args, '--profile');
   const registration = option(args, '--registration') ?? 'pilot';
+  const selectedTaskId = option(args, '--task-id') ?? null;
   if (!['validate', 'deterministic', 'live', 'audit-live'].includes(mode)) fail('unknown mode');
   if (!['pilot', 'calibration'].includes(registration)) fail('unknown registration kind');
+  if (selectedTaskId !== null && (mode !== 'live' || !CALIBRATION_TASK_IDS.includes(selectedTaskId))) fail('task selection must name one LIVE calibration task');
   if ((mode !== 'validate' && !output) || (mode !== 'deterministic' && !profilePath)) fail('profile/output required');
   const identities = await fixtureIdentities();
   const profile = profilePath ? await plainJson(resolve(profilePath)) : null;
   if (mode === 'validate') return { mode, registration, ...validateProfile(profile, { ...identities, requirePilot: registration === 'pilot' }) };
   if (mode === 'deterministic') return deterministic(resolve(output));
-  if (mode === 'live') return live(profile, identities, resolve(output));
+  if (mode === 'live') return live(profile, identities, resolve(output), selectedTaskId);
   return auditLive(profile, identities, resolve(output));
 }
 

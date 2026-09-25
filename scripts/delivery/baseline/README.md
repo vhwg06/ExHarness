@@ -28,6 +28,8 @@ node scripts/delivery/baseline/provider-export.mjs --profile scripts/delivery/ba
 npm exec --yes --package=node@24.19.0 -- node scripts/delivery/baseline/run.mjs --mode audit-live --profile scripts/delivery/baseline/runs/BB-065/profile.local.json --output scripts/delivery/baseline/runs/BB-065/evidence
 ```
 
+On a free account, OpenRouter currently limits `:free` requests per day. The LIVE command accepts `--task-id NORM-01`, `--task-id STATUS-01`, or `--task-id ORDER-01` so the same immutable registration can be completed across daily resets. Keep the profile and output directory identical for every task, then export and audit only after all three have settled provider requests. A 429 is recorded as a failed attempt with unknown usage; start a fresh output bundle after the quota resets rather than treating it as provider evidence.
+
 The operator export retrieves [generation metadata](https://openrouter.ai/docs/api/api-reference/generations/get-generation) from OpenRouter by provider ID, independently of the agent's local usage ledger. It compares native token counts, cached tokens, resolved model ID, and total cost. It is labelled as an operator action; no human reviewer action is claimed. Unknown usage stays unknown and fences further requests for that task. The audit checks the provider records, candidate digest, frozen verifier and deterministic report. The report cannot assert pilot value from these three calibrations.
 
 Run `node --test test/delivery/baseline-*.test.mjs` for deterministic contract, fixture, accounting and runner checks. Those tests are labelled deterministic and do not count as LIVE evidence.
