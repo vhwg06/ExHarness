@@ -10,6 +10,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
 import traceback
 import urllib.error
@@ -18,6 +19,28 @@ from uuid import UUID
 from pathlib import Path
 
 from provider_budget import BudgetError, ProviderBudget, ProviderNotAdmittedError
+
+
+def _read_url(request: urllib.request.Request, timeout_seconds: float, max_bytes: int) -> tuple[int, bytes]:
+    """Apply an absolute deadline even if a provider drips response bytes."""
+    result: dict[str, object] = {}
+
+    def read() -> None:
+        try:
+            with urllib.request.urlopen(request, timeout=timeout_seconds) as reply:
+                result["status"] = reply.status
+                result["body"] = reply.read(max_bytes)
+        except BaseException as error:  # hand the exact transport error to the caller
+            result["error"] = error
+
+    worker = threading.Thread(target=read, daemon=True)
+    worker.start()
+    worker.join(timeout=max(0.001, timeout_seconds))
+    if worker.is_alive():
+        raise TimeoutError(f"NIM request exceeded absolute deadline of {timeout_seconds:g}s")
+    if "error" in result:
+        raise result["error"]
+    return int(result["status"]), bytes(result["body"])
 
 
 def _completion_dict(response) -> dict:
@@ -41,9 +64,7 @@ def _poll_nim_status(api_base: str, request_id: str, api_key: str, *, initial_pa
     while time.monotonic() < deadline:
         request = urllib.request.Request(url, headers={"Authorization": f"Bearer {api_key}",
                                                        "Accept": "application/json"})
-        with urllib.request.urlopen(request, timeout=30) as reply:
-            status = reply.status
-            body = reply.read(2_000_001)
+        status, body = _read_url(request, min(30, max(0.001, deadline - time.monotonic())), 2_000_001)
         if len(body) > 2_000_000:
             raise BudgetError("NIM status response exceeds evidence size limit")
         payload = json.loads(body)
@@ -71,9 +92,7 @@ def _nim_chat_completion(model_profile: dict, messages: list[dict], tools: list[
                                      headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json",
                                               "Accept": "application/json"})
     try:
-        with urllib.request.urlopen(request, timeout=model_profile["requestTimeoutSeconds"]) as reply:
-            status = reply.status
-            encoded = reply.read(2_000_001)
+        status, encoded = _read_url(request, model_profile["requestTimeoutSeconds"], 2_000_001)
     except urllib.error.HTTPError as error:
         body = error.read(2049).decode("utf-8", errors="replace")
         if error.code in {429, 503, 529}:
