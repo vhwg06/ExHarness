@@ -19,6 +19,17 @@ test('stored provider retrieval confirms totals without inventing omitted cache 
     { snapshot: 'gpt-6-luna' }), /cache usage differs/);
 });
 
+test('OpenRouter generation metadata reconciles native usage and free cost', () => {
+  const model = { credentialEnv: 'OPENROUTER_API_KEY', resolvedModelId: 'nvidia/nemotron-3-ultra-550b-a55b-20260604:free' };
+  const row = { providerRequestId: 'gen-example', inputTokens: 21, outputTokens: 16, cachedInputTokens: 0, costUsd: 0 };
+  const raw = { data: { id: row.providerRequestId, model: model.resolvedModelId,
+    tokens_prompt: 6, tokens_completion: 34, native_tokens_prompt: 21,
+    native_tokens_completion: 16, native_tokens_cached: 0, total_cost: 0 } };
+  assert.deepEqual(reconcileStoredCompletion(raw, row, model), { cachedInputVerification: 'RETRIEVED_RECORD' });
+  assert.throws(() => reconcileStoredCompletion({ data: { ...raw.data, native_tokens_completion: 17 } }, row, model), /differs from ledger/);
+  assert.throws(() => reconcileStoredCompletion({ data: { ...raw.data, total_cost: 0.01 } }, row, model), /differs from ledger/);
+});
+
 test('deterministic mode runs real verifier and is never labelled LIVE', async t => {
   const output = await mkdtemp(join(tmpdir(), 'baseline-deterministic-'));
   t.after(() => rm(output, { recursive: true, force: true }));

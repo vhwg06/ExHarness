@@ -41,6 +41,7 @@ const exactSha = value => typeof value === 'string' && /^[a-f0-9]{40}$/.test(val
 const exactDigest = value => typeof value === 'string' && /^sha256:[a-f0-9]{64}$/.test(value);
 const nonempty = value => typeof value === 'string' && value.trim().length > 0;
 const positive = value => Number.isFinite(value) && value > 0;
+const nonnegative = value => Number.isFinite(value) && value >= 0;
 const aliases = /(?:^|[\/-])(latest|auto|current|default)(?:$|[\/-])/i;
 
 export async function directoryDigest(directory, names) {
@@ -106,8 +107,14 @@ export function validateProfile(profile, { fixtureDigest, acceptanceDigest, requ
       !positive(model.maxContextTokens) || !/^https:\/\/[^/]+$/.test(model.endpointOrigin ?? '') ||
       !nonempty(model.apiBaseUrl) || !model.apiBaseUrl.startsWith(`${model.endpointOrigin}/`) ||
       !['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'OPENROUTER_API_KEY'].includes(model.credentialEnv) || !/^\d{4}-\d{2}-\d{2}$/.test(model.pricingDate ?? '') ||
-      !nonempty(model.pricingSource) || !positive(model.inputUsdPerMillion) || !positive(model.cachedInputUsdPerMillion) ||
-      model.cachedInputUsdPerMillion > model.inputUsdPerMillion || !positive(model.outputUsdPerMillion)) fail('model snapshot, endpoint, pricing and credential reference required');
+      !nonempty(model.pricingSource) || !nonnegative(model.inputUsdPerMillion) || !nonnegative(model.cachedInputUsdPerMillion) ||
+      model.cachedInputUsdPerMillion > model.inputUsdPerMillion || !nonnegative(model.outputUsdPerMillion)) fail('model snapshot, endpoint, pricing and credential reference required');
+  if (model.credentialEnv === 'OPENROUTER_API_KEY' &&
+      (model.endpointOrigin !== 'https://openrouter.ai' || model.apiBaseUrl !== 'https://openrouter.ai/api/v1' ||
+       model.snapshot !== `openrouter/${model.providerModelId}` || !/^nvidia\/nemotron-3-ultra-550b-a55b-20260604:free$/.test(model.resolvedModelId ?? '') ||
+       model.releaseDate !== '2026-06-04' || model.maxContextTokens !== 1000000 ||
+       model.inputUsdPerMillion !== 0 || model.cachedInputUsdPerMillion !== 0 || model.outputUsdPerMillion !== 0))
+    fail('OpenRouter free model identity or price changed');
   if (Object.keys(model).some(key => /(?:apiKey|secret|password|credentialValue)/i.test(key))) fail('secrets must not be in profile');
   if (model.maxContextTokens < PROTOCOL.budgets.maxInputTokensPerCall + PROTOCOL.budgets.maxOutputTokensPerCall) fail('model context below reservation bound');
   if (profile.budgets && canonical(profile.budgets) !== canonical(PROTOCOL.budgets)) fail('budgets changed');

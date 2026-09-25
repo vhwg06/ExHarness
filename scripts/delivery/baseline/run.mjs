@@ -230,10 +230,13 @@ async function auditLive(profile, identities, output) {
   if (attempts.length < 3 || !CALIBRATION_TASK_IDS.every(id => attempts.some(item => item.taskId === id)) ||
       !CALIBRATION_TASK_IDS.every(id => usage.some(item => item.taskId === id && item.providerRequestId))) fail('three independently reset provider runs missing');
   const exported = new Map();
+  const openRouter = profile.model.credentialEnv === 'OPENROUTER_API_KEY';
   for (const record of providerExport) {
+    const expectedSource = openRouter ? `${profile.model.apiBaseUrl}/generation?id=${encodeURIComponent(record.providerRequestId)}` :
+      `${profile.model.apiBaseUrl}/chat/completions/${encodeURIComponent(record.providerRequestId)}`;
     if (record.evidenceClass !== 'PROVIDER_EXPORT' || record.exportedBy !== profile.operatorId ||
-        record.retrievalMethod !== 'OPENAI_CHAT_COMPLETIONS_GET' ||
-        record.sourceRef !== `${profile.model.apiBaseUrl}/chat/completions/${encodeURIComponent(record.providerRequestId)}` || !record.providerRequestId ||
+        record.retrievalMethod !== (openRouter ? 'OPENROUTER_GENERATION_GET' : 'OPENAI_CHAT_COMPLETIONS_GET') ||
+        record.sourceRef !== expectedSource || !record.providerRequestId ||
         !record.rawRecordRef?.startsWith('provider-records/') || record.rawRecordRef.includes('..') || record.rawRecordRef.includes('\\') ||
         !record.retrievedAt || exported.has(record.providerRequestId)) fail('invalid independent provider export');
     if (await digestFile(join(output, record.rawRecordRef)) !== record.rawRecordHash) fail('provider raw record digest mismatch');

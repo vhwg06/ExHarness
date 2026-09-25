@@ -45,11 +45,14 @@ def run(config: dict) -> dict:
         raise RuntimeError("candidate workspace is not a plain directory")
     attempt_id = config["attemptId"]
     budget = ProviderBudget(config["ledgerPath"], profile, config["taskId"], attempt_id)
+    model_kwargs = {"num_retries": 0, "max_tokens": profile["budgets"]["maxOutputTokensPerCall"],
+                    "api_base": model_profile["apiBaseUrl"],
+                    "reasoning_effort": model_profile["reasoningEffort"]}
+    if model_profile["credentialEnv"] == "OPENAI_API_KEY":
+        model_kwargs.update({"store": True, "service_tier": "default"})
     model = get_model(model_profile["snapshot"], config={
         "model_class": "litellm",
-        "model_kwargs": {"num_retries": 0, "max_tokens": profile["budgets"]["maxOutputTokensPerCall"],
-                         "api_base": model_profile["apiBaseUrl"], "store": True,
-                         "service_tier": "default", "reasoning_effort": model_profile["reasoningEffort"]},
+        "model_kwargs": model_kwargs,
         "cost_tracking": "ignore_errors",
     })
     original_query = model._query
