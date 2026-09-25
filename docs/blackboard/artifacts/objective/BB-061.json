@@ -3,28 +3,30 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-061",
-  "outcome": "Application ↔ Oracle dependency direction is explicit and enforceable: Application owns WHAT context/schema is required, Oracle owns WHERE/HOW declared source data is read/adapted, and neither side leaks lifecycle or acceptance authority across the boundary.",
-  "currentProblem": "Logical semantics are documented, but current colocation obscures the compile-time dependency direction. A package split without a precise semantic port can simply move the same coupling into circular imports or force Oracle to import application implementation internals.",
+  "outcome": "Define source-agnostic ContextRequirement and ContextResolution semantics that express runtime context need, budget, provenance, currentness and materialization without leaking provider or application lifecycle authority.",
+  "currentProblem": "The old semantic boundary was two application-specific pull functions. That shape cannot express runtime semantic retrieval, progressive resolution, explicit context budgets, multiple provider capabilities or durable resolution identity while keeping provider details below Oracle.",
   "scope": [
-    "oracle.semantic-port",
-    "oracle.dependency-inversion",
-    "oracle.schema-ownership",
-    "oracle.authority-boundary",
-    "oracle.compile-time-dependencies"
+    "oracle.context-requirement",
+    "oracle.context-resolution",
+    "oracle.semantic-contract",
+    "oracle.context-budget-contract",
+    "oracle.provider-neutrality",
+    "oracle.failure-semantics"
   ],
   "constraints": [
-    "Application remains authority for work-order/context schemas and required context selection.",
-    "Oracle owns source IO/adaptation only and must not claim work, schedule, accept, evaluate, recover or mutate product truth.",
-    "Prefer concrete Backend/QA ports earned by current use cases over a generic resolver abstraction.",
-    "Cross-package dependencies must be acyclic and testable.",
-    "Schema ownership may be shared only through a deliberately named contracts seam; Oracle must not depend on application orchestration implementation."
+    "ContextRequirement describes semantic need and limits; it does not contain provider/tool commands or task lifecycle instructions.",
+    "ContextResolution binds exact requirement identity, source snapshot/currentness, provenance, materialization identity and consumed budget.",
+    "The contract must support current Backend repository and QA accepted-artifact context without hard-coding those as the only provider classes.",
+    "Oracle cannot claim, schedule, accept, publish, recover or mutate product truth through the semantic contract.",
+    "Required missing, stale or ambiguous context fails closed; partial/optional context must be explicit and bounded.",
+    "The contract must be testable deterministically without a live model."
   ],
   "successCriteria": [
-    "Research defines the exact semantic/compile-time port used by Backend and QA after physical extraction.",
-    "Dependency direction is acyclic and maps directly to documented authority: Application WHAT, Oracle WHERE/HOW.",
-    "Oracle can validate/assemble application-owned shapes without importing application orchestration runtime.",
-    "Negative cases prove Oracle cannot gain scheduling/acceptance/recovery/product-currentness authority.",
-    "Concrete ports remain sufficient for current repository/artifact sources; generic abstraction is explicitly deferred unless evidenced."
+    "Research defines concrete ContextRequirement and ContextResolution fields, identity rules and lifecycle examples for repository and accepted-artifact use cases.",
+    "Budget and progressive-resolution semantics are explicit enough to prevent unbounded retrieval or silent context growth.",
+    "Currentness and provenance can be checked deterministically at consumption/replay boundaries.",
+    "Negative cases prove the semantic contract cannot confer application/domain authority.",
+    "The contract admits semantic-code, lexical-search, graph and artifact providers without exposing provider-specific commands to callers."
   ],
   "currentSourceRefs": [
     "docs/living/system/oracle/architecture.md",
@@ -34,8 +36,10 @@
     "packages/agentic-system/src/oracle.js",
     "packages/agentic-system/src/backend-application.js",
     "packages/agentic-system/src/qa-application.js",
-    "packages/agentic-system/src/index.js",
-    "docs/living/system/agentic-application/contracts.md",
-    "docs/living/system/agentic-application/architecture.md"
+    "packages/core-harness/src",
+    "docs/blackboard/process/oracle-reconciliation-phase.md",
+    "docs/blackboard/process/oracle-context-intelligence-research.md",
+    "docs/living/system/oracle/artifact-manifest.md",
+    "docs/living/system/agentic-application/contracts.md"
   ]
 }
