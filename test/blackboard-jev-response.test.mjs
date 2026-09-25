@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { callJev, validateResponse, evaluate, validateEvaluation, workerBatchManifest } from '../scripts/blackboard-jev.mjs';
+import { callJev, validateResponse, evaluate, validateEvaluation, workerBatchManifest, workerQuestionPayload } from '../scripts/blackboard-jev.mjs';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -76,4 +76,50 @@ test('worker batches retain every atomic answer, exact evidence and cache bindin
   assert.equal(calls, 2);
   assert.equal(second.metrics.cacheHit, true);
   assert.throws(() => validateEvaluation({ ...first, metrics: { ...first.metrics, batching: { ...first.metrics.batching, manifest: [] } } }, materialized), /worker batch manifest mismatch/);
+});
+
+test('worker batch includes scoped Living Docs without an Integration C heading', () => {
+  const body = '# Current state\nDelivery baseline summary.\n## Oracle\nUnrelated source.\n## Delivery baseline\nCurrent baseline boundary.';
+  const state = {
+    objective: {},
+    plan: { kind: 'BLACKBOARD_ARTIFACT', artifactType: 'READY_IMPLEMENT_PLAN', artifactId: 'BB-065', objective: {},
+      scope: ['delivery.baseline'], sourceSeams: { expectedNew: [], expectedTests: [] },
+      livingDocs: { questionId: 'LIVING_DOCS' }, acceptanceCriteria: [], verificationPlan: [] },
+    evidence: [], verification: [], evidenceFiles: [],
+    sources: [{ ref: 'docs/living/system/state.md', hash: 'bound-hash', body }]
+  };
+  const result = workerQuestionPayload({ model: payload.model, state,
+    questions: { LIVING_DOCS: { type: 'choice', criteria: { SATISFIED: 'yes' } } } }, 'LIVING_DOCS');
+  const excerpt = result.state.sources[0];
+  assert.match(excerpt.body, /Delivery baseline summary/);
+  assert.match(excerpt.body, /Current baseline boundary/);
+  assert.doesNotMatch(excerpt.body, /Unrelated source/);
+  assert.equal(excerpt.hash, 'bound-hash');
+  assert.equal(excerpt.excerpted, true);
+});
+
+test('worker batch includes bounded source for its verification and omits unrelated tests', () => {
+  const longBody = ['import test from "node:test";', ...Array(500).fill('// filler'), 'test("registration rejects invalid profile", () => {});'].join('\n');
+  const state = {
+    objective: {},
+    plan: { kind: 'BLACKBOARD_ARTIFACT', artifactType: 'READY_IMPLEMENT_PLAN', artifactId: 'BB-065', objective: {},
+      scope: ['delivery.baseline'], sourceSeams: { expectedNew: [], expectedTests: [] }, livingDocs: { questionId: 'LIVING_DOCS' },
+      acceptanceCriteria: [{ id: 'REGISTRATION', statement: 'Invalid profile must be rejected', verificationIds: ['contract'], evidenceRequired: [] }],
+      verificationPlan: [{ id: 'contract', command: 'node --test test/delivery/baseline-contract.test.mjs' }] },
+    evidence: [{ id: 'REGISTRATION', evidenceRefs: ['evidence/contract.txt'] }],
+    verification: [{ id: 'contract', command: 'node --test test/delivery/baseline-contract.test.mjs', logRef: 'evidence/contract.txt' }],
+    evidenceFiles: [{ ref: 'evidence/contract.txt', body: 'passed' }],
+    sources: [
+      { ref: 'test/delivery/baseline-contract.test.mjs', hash: 'bound-test', body: longBody },
+      { ref: 'test/delivery/baseline-runner.test.mjs', hash: 'unrelated-test', body: longBody }
+    ]
+  };
+  const result = workerQuestionPayload({ model: payload.model, state,
+    questions: { REGISTRATION: { type: 'choice', criteria: { SATISFIED: 'yes' } } } }, 'REGISTRATION');
+  const selected = result.state.sources[0];
+  assert.equal(selected.hash, 'bound-test');
+  assert.equal(selected.excerpted, true);
+  assert.match(selected.body, /registration rejects invalid profile/);
+  assert.ok(selected.body.length < longBody.length);
+  assert.equal(result.state.sources[1].omitted, true);
 });

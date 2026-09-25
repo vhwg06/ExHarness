@@ -408,16 +408,39 @@ export async function callJev(payload, { apiKey = process.env.TYPESAFE_API_KEY, 
   }
 }
 const WORKER_BATCH_MAX_BYTES = 60000;
-function integrationExcerpt(source) {
+function livingExcerpt(source, scope = []) {
   if (typeof source.body !== 'string') return source;
   const sections = source.body.split(/(?=^#{2,3} )/m);
-  const selected = sections.filter(section =>
+  const integrationSections = sections.filter(section =>
     /^## A17\b/m.test(section) ||
     /^### Integration C\b/m.test(section) ||
     /^## Integration C\b/m.test(section)
   );
-  check(selected.length > 0, `Living Doc has no Integration C section: ${source.ref}`);
+  const terms = [...new Set(scope.flatMap(value => String(value).toLowerCase().split(/[^a-z0-9]+/)).filter(value => value.length >= 5))];
+  const scopedSections = sections.slice(1).filter(section => {
+    const heading = section.split('\n', 1)[0].toLowerCase();
+    return terms.some(term => heading.includes(term));
+  }).slice(0, 2);
+  const selected = integrationSections.length ? integrationSections : [sections[0], ...scopedSections];
   return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), body: selected.join('\n'), excerpted: true, deleted: source.deleted };
+}
+function boundedWorkerSource(source, terms) {
+  if (typeof source.body !== 'string' || source.body.length <= 2800) return source;
+  const lines = source.body.split(/\r?\n/);
+  const selected = new Set([0, 1, 2]);
+  for (let index = 0; index < lines.length; index++) {
+    if (terms.some(term => lines[index].toLowerCase().includes(term))) {
+      for (let nearby = Math.max(0, index - 1); nearby <= Math.min(lines.length - 1, index + 2); nearby++) selected.add(nearby);
+    }
+  }
+  const excerpts = [];
+  let used = 0;
+  for (const index of [...selected].sort((a, b) => a - b)) {
+    const line = `${index + 1}: ${lines[index].slice(0, 500)}`;
+    if (used + line.length > 2800) break;
+    excerpts.push(line); used += line.length + 1;
+  }
+  return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), body: excerpts.join('\n'), excerpted: true, deleted: source.deleted };
 }
 export function workerQuestionPayload(fullPayload, id) {
   check(fullPayload?.state?.evidenceFiles && fullPayload.questions?.[id], 'worker batch requires a materialized question and evidence');
@@ -434,12 +457,24 @@ export function workerQuestionPayload(fullPayload, id) {
     (livingDocsQuestion && selectedRuns.some(run => run.logRef === file.ref)));
   check([...evidenceRefs].every(ref => selectedFiles.some(file => file.ref === ref)), `worker batch omits criterion evidence: ${id}`);
   const testRefs = new Set(selectedRuns
-    .map(run => run.command.match(/^node --test (packages\/agentic-system\/test\/[^ ]+\.test\.js)$/)?.[1])
+    .map(run => run.command.match(/^node --test ([^ ]+\.test\.(?:js|mjs))$/)?.[1])
     .filter(Boolean));
-  const relevantSourceRefs = new Set([
-    ...testRefs,
-    ...state.plan.sourceSeams.expectedNew.filter(ref => [...checkIds].some(checkId => ref.endsWith(`/${checkId}.js`)))
-  ]);
+  const terms = [...new Set([id, criterion?.statement ?? '', ...(criterion?.evidenceRequired ?? []), ...checkIds]
+    .flatMap(value => String(value).toLowerCase().match(/[a-z0-9]{3,}/g) ?? []))];
+  const sourceScores = state.sources.filter(source => typeof source.body === 'string' && !source.ref.startsWith('docs/living/'))
+    .map(source => {
+      const filename = source.ref.toLowerCase().split('/').at(-1);
+      const parts = filename.match(/[a-z0-9]+/g) ?? [];
+      const fixtureMatch = checkIds.has('fixture') && source.ref.includes('/fixture/') ? 3 : 0;
+      const isTest = /\.test\.(?:js|mjs)$/.test(filename);
+      const score = isTest ? (testRefs.has(source.ref) ? 100 : 0) :
+        fixtureMatch + (checkIds.has('runner') && filename === 'run.mjs' ? 20 : 0) +
+        (checkIds.has('live') && filename === 'provider-export.mjs' ? 20 : 0) +
+        3 * terms.filter(term => parts.some(part => part.includes(term) || (part.length >= 3 && term.includes(part)))).length;
+      return { ref: source.ref, score };
+    }).filter(source => source.score > 0)
+    .sort((a, b) => b.score - a.score || a.ref.localeCompare(b.ref)).slice(0, 5);
+  const relevantSourceRefs = new Set(sourceScores.map(source => source.ref));
   const projectedPlan = livingDocsQuestion ? {
     kind: state.plan.kind,
     artifactType: state.plan.artifactType,
@@ -472,8 +507,8 @@ export function workerQuestionPayload(fullPayload, id) {
     evidence: claim ? [claim] : [],
     sources: state.sources.map(source => {
       if (source.body == null) return source;
-      if (relevantSourceRefs.has(source.ref)) return source;
-      if (source.ref.startsWith('docs/living/')) return integrationExcerpt(source);
+      if (relevantSourceRefs.has(source.ref)) return boundedWorkerSource(source, terms);
+      if (source.ref.startsWith('docs/living/')) return livingExcerpt(source, state.plan.scope);
       return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), omitted: true, deleted: source.deleted };
     }),
     verification: selectedRuns,
