@@ -20,10 +20,15 @@
     "Adopting Unreal Agent wholesale or treating its benchmark as ExHarness acceptance evidence."
   ],
   "constraints": [
-    "At most one model generation is active per agent invocation/session unless a future explicit concurrency contract is added.",
-    "Multiple operation updates may be coalesced, but no terminal result or user input may be lost or reordered across its declared causality boundary.",
-    "User steering and stop requests must preempt new dispatch and remain durable across restart where the runtime supports persistence.",
-    "Recovery must derive pending work from durable operation/effect state, not traces or model prose."
+    "At most one model generation is active per coordinator session. New steering may cancel/fence a generation, but may not create overlapping authoritative model responses.",
+    "Every user/control input and detached-operation transition is durably accepted before it can influence scheduling; a process crash cannot erase an acknowledged input or terminal transition.",
+    "Canonical event order is the monotonically increasing durable ingress sequence. Scheduling priority may change when the next model turn starts, but may not reorder committed input/history semantics.",
+    "Completion coalescing must be bounded and deterministic, and user steering/stop bypasses any completion grace or idle window.",
+    "User steering cancels/fences model generation only; it does not cancel detached operations unless an explicit stop/cancel control is durably accepted.",
+    "Stop/cancel authority is a durable fence. Local AbortSignal delivery is a transport hint and cannot relabel an unresolved external effect as cancelled.",
+    "Recovery derives pending work from exact BB-078 detached-operation/effect truth plus BB-079 async-context checkpoints, never from traces, prompt prose or provider cache state.",
+    "Research may run ahead of BB-078/079 delivery. Worker start must resolve exact DONE dependency artifacts; incompatible delivered contracts are PLAN_INPUT_CONTRADICTION.",
+    "Efficiency observations in BB-080 are development evidence only. BB-081 owns held-out matched acceptance and PROMOTE_ASYNC/KEEP_SYNC."
   ],
   "invariants": [
     "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
@@ -31,108 +36,207 @@
     "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
   ],
   "architectureDecisions": [
-    "Use one event loop per invocation/session with operation-update and user-input wakeups while retaining the existing one-model-in-flight invariant.",
-    "Coalesce a bounded burst of operation completions before calling the model again unless user input requires earlier wakeup.",
-    "Recover from durable operation/effect records; a lost process wakeup is reconstructed, never guessed."
+    "D1 — Add a scoped Core `createAsyncAgentCoordinator()` outside AgentRuntime. It owns durable ingress/wake/model-generation coordination only and composes the delivered BB-078 detached-operation manager plus BB-079 async-result projector; it does not become effect, acceptance or product authority.",
+    "D2 — Persist one coordinator document per explicit session scope through the existing revision-aware SessionStore CAS contract. The document contains revision, nextIngressSeq, accepted ingress envelopes, dedupe bindings, wake state, modelGeneration, currentSubmission, stopFence, async-result checkpoint reference/snapshot and last committed model-turn identity.",
+    "D3 — Every accepted event becomes an immutable `ASYNC_AGENT_INGRESS/v1` envelope with monotonic `ingressSeq`, deterministic/deduplicable source identity and one kind: USER_INPUT, STOP, OPERATION_TRANSITION or EXPLICIT_WAKE. BB-078 transitionId is the dedupe key for operation updates; caller-supplied inputId is required for retry-safe user/control ingestion.",
+    "D4 — Enqueue, dedupe/coalesce decision and one-active-wake claim occur inside the same CAS revision domain. Never decide 'no active wake' from an unlocked snapshot and insert later. This explicitly avoids the wake-coalescing TOCTOU failure documented in Paperclip issue #10598.",
+    "D5 — Persisted ingressSeq defines semantic order. STOP and USER_INPUT have scheduling priority over completion-only wakes, but the coordinator never reorders their durable envelopes relative to already accepted input. USER_INPUT and STOP bypass completion coalescing immediately.",
+    "D6 — Preserve the existing one-model-in-flight invariant with a durable `modelGeneration` fencing token. Each submitted model request binds `submissionId`, modelGeneration and the exact accepted-ingress/high-water mark it covers. Only the current generation may persist/dispatch its response.",
+    "D7 — Add an explicit model-generation cancellation capability: `ABORT_SIGNAL` or safe-default `FENCE_ONLY`. AgentRuntime/strategy passes an AbortSignal to model.generate when the selected adapter declares ABORT_SIGNAL; FENCE_ONLY adapters may ignore cancellation, but any late response from a fenced generation is discarded before action normalization, tool dispatch or result publication.",
+    "D8 — User steering path is persist-first: CAS-accept USER_INPUT, cancel any completion grace, fence/increment modelGeneration, signal AbortController when supported, then schedule exactly one replacement model turn. Detached operations continue unless the user separately issues STOP/cancel.",
+    "D9 — STOP path is persist-first and stronger: CAS the stopFence before aborting the model or requesting BB-078 cancellations. After the fence, no new model/tool dispatch or detached-operation launch/retry may begin. Recovery re-applies the same fence until every in-flight operation is terminal/reconcilable.",
+    "D10 — Operation completions never preempt an active model generation. While a model is active, BB-078 transitions are durably accepted and staged through BB-079 for the next turn. When idle, the coordinator drains a deterministic completion burst until `completionIdleMs` expires or `maxCoalescedTransitions` is reached, then creates one wake. Default research profile: 1 ms idle drain and max 100 transitions, matching Unreal Agent's bounded slurp pattern; both values are explicit/injected for deterministic tests.",
+    "D11 — After dispatching detached operations, an optional `quickCompletionGraceMs` delays only a completion-only follow-up wake so fast operations may finish together. Default research profile: 1000 ms, matching Unreal Agent's tool-call grace. USER_INPUT or STOP cancels this grace immediately, so interactive steering is never delayed by it.",
+    "D12 — Do not add autonomous model heartbeats. A model turn requires semantic work: accepted USER_INPUT, unseen operation transition/result, explicit caller wake or restart reconstruction that proves pending work. Liveness timers may inspect state but cannot call the model solely because time elapsed.",
+    "D13 — Recovery loads the durable coordinator first, re-establishes the stop fence, asks delivered BB-078 recovery to reconcile every nonterminal operation, then stages unseen BB-078 transitions through delivered BB-079 state. A model request recorded in-flight at crash is marked ABANDONED, modelGeneration advances, and at most one replacement wake is scheduled from durable pending ingress/context.",
+    "D14 — Scheduled-before-dispatch and dispatched-before-terminal are not coordinator guesses. BB-078 owns both cases: absent/INTENDED work may execute exact same semantic effect identity under its replay policy; DISPATCHED/UNKNOWN goes through effect reconciliation. The coordinator only decides whether new model work is needed after that truth converges.",
+    "D15 — `createResumableAgentRuntime().snapshot()` remains an idle runtime snapshot and is not repurposed as in-flight coordinator durability because current Core explicitly rejects snapshot while activeCalls > 0. Coordinator state is persisted separately and can reference an idle runtime snapshot when available.",
+    "D16 — Reuse BB-077's exact development benchmark/accounting contract for BB-080 probes. Record steering-to-next-turn latency, coalesced transition count, model-generation abort/fence outcomes, replacement turns, restart recovery turns, duplicate effects and unknown provider usage; do not open HOLD-* tasks or make the BB-081 promotion decision.",
+    "D17 — Public implementations are pattern evidence only: Unreal Agent demonstrates one loop, bounded slurp, generation cancellation and a quick tool-call grace; Paperclip specifies DB-backed coalesced wakeups and also documents a real TOCTOU failure when coalescing happens before locking; Restate demonstrates durable single-writer keyed state and durable wait/signal/recovery patterns. None becomes a runtime dependency or proves ExHarness efficiency."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/resumable-agent-runtime.js",
+      "packages/core-harness/src/javascript-codeact-strategy.js",
+      "packages/core-harness/src/model.js",
+      "packages/core-harness/src/model-routing.js",
       "packages/core-harness/src/action-effect.js",
       "packages/core-harness/src/effect-reconciliation.js",
-      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/store.js",
+      "packages/core-harness/src/persistence.js",
+      "packages/core-harness/src/index.js",
+      "docs/blackboard/process/harness-efficiency-phase.md",
       "docs/living/system/core-harness/state.md",
       "docs/living/system/core-harness/workflow.md"
     ],
-    "expectedNew": [],
+    "expectedDependencyOutputs": [
+      "BB-077 DONE: exact development benchmark/accounting registry and control profile.",
+      "BB-078 DONE: exact detached-operation store/transition/recovery/cancel API.",
+      "BB-079 DONE: exact append-only async-result context checkpoint and provider async-delivery capability API."
+    ],
+    "expectedNew": [
+      "packages/core-harness/src/async-agent-coordinator.js"
+    ],
     "expectedTests": [
-      "packages/core-harness/test/bb-080-async-efficiency.test.js"
+      "packages/core-harness/test/async-agent-coordinator.test.js",
+      "packages/core-harness/test/async-agent-coordinator-recovery.test.js",
+      "benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/core-harness/**",
-      "packages/agentic-system/**",
-      "scripts/**",
-      "benchmarks/**",
-      "docs/living/**",
-      "docs/blackboard/process/harness-efficiency-phase.md"
+      "packages/core-harness/src/**",
+      "packages/core-harness/test/**",
+      "benchmarks/harness-efficiency/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-078.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-079.json",
+      "docs/blackboard/process/harness-efficiency-phase.md",
+      "docs/living/system/core-harness/**"
     ],
     "write": [
-      "packages/core-harness/**",
-      "scripts/**",
-      "benchmarks/**",
-      "docs/living/system/core-harness/**"
+      "packages/core-harness/src/async-agent-coordinator.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/javascript-codeact-strategy.js",
+      "packages/core-harness/src/model.js",
+      "packages/core-harness/src/model-routing.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/test/async-agent-coordinator.test.js",
+      "packages/core-harness/test/async-agent-coordinator-recovery.test.js",
+      "benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "packages/agentic-system/**",
+      "packages/core-harness/src/action-effect.js",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/resumable-agent-runtime.js"
     ]
   },
   "implementationSlices": [
-    "Research current synchronous Core and pinned public references; isolate the smallest reusable mechanism and measurable gap.",
-    "Define exact durable contracts, provider/runtime boundaries, negative cases and compatibility fallback before implementation.",
-    "Implement or retain baseline only after a matched probe can distinguish quality, cost/token, turn, cache and recovery outcomes."
+    "S1 — At worker start resolve exact DONE BB-077/078/079 implementation-result, judgment and Living refs. Bind the coordinator implementation to their delivered benchmark/transition/context contracts; any incompatible field/identity/capability shape stops as PLAN_INPUT_CONTRADICTION.",
+    "S2 — Implement `async-agent-coordinator.js` with revision-aware SessionStore state, immutable ingress envelopes, input/transition dedupe, monotonic ingressSeq, modelGeneration/submission fencing, durable stopFence and one-active-wake CAS. Prove concurrent enqueue/coalesce decisions cannot create two current wakes.",
+    "S3 — Add model cancellation plumbing for the JavaScript CodeAct async profile: normalize `generationCancellation` capability, preserve it through model routing, propagate run AbortSignal through AgentRuntime, pass it to model.generate for ABORT_SIGNAL routes and fence every response before action/tool dispatch. Legacy adapters default to FENCE_ONLY and remain compatible.",
+    "S4 — Implement persist-first USER_INPUT and STOP handling plus bounded operation-completion drain/quick-completion grace with injected clock/timers. Steering bypasses both windows; operation completion does not abort a model in flight; STOP prevents all later dispatch/retry starts.",
+    "S5 — Implement restore: reload coordinator, reapply stopFence, invoke delivered BB-078 recovery, stage unseen transitions through delivered BB-079, abandon/fence any crash-time model submission and schedule at most one replacement wake. Do not use active resumable-runtime snapshot as the source of pending async work.",
+    "S6 — Add deterministic race/restart tests: simultaneous wakeups, steering during model generation, non-abortable late model response, stop during dispatch, scheduled-before-dispatch crash, dispatched-before-terminal crash, duplicate transition delivery and process restart during completion grace.",
+    "S7 — Run BB-077 DEV-only matched probes for synchronous vs BB-080 async coordination and record model turns, steering latency, coalescing, recovery, failures/retries, token/cost/cache fields when available and duplicate-effect count. No HOLD-* execution and no PROMOTE_ASYNC/KEEP_SYNC conclusion.",
+    "S8 — Export only the scoped coordinator/capability surface and update Core Living Docs with the one-model invariant, event order, persistence/recovery boundary, cancellation fallback and known provider limitations."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "User input received while tools run is accepted and causes bounded next-turn behavior without waiting for unrelated long operations.",
+      "id": "STEERING",
+      "statement": "A retry-safe USER_INPUT accepted while a detached operation and/or model generation is active is durably ordered immediately, bypasses completion coalescing, fences the old model generation and causes exactly one bounded replacement turn without waiting for unrelated operations.",
       "verificationIds": [
-        "core-probe"
+        "coordinator-contract",
+        "async-profile"
       ],
       "evidenceRequired": [
-        "Exact matched runtime evidence and raw failure/retry records."
+        "Injected slow-operation/slow-model fixture showing durable inputId+ingressSeq, old generation fenced/aborted, replacement submission high-water mark includes the input, and unrelated operation remains RUNNING."
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Near-simultaneous terminal updates are deterministically coalesced so they do not create an avoidable model-turn storm.",
+      "id": "STALE_MODEL",
+      "statement": "A provider that ignores cancellation cannot make a fenced model response authoritative: the late response is rejected before action normalization, capability dispatch or result publication.",
       "verificationIds": [
-        "core-probe"
+        "coordinator-contract",
+        "core-regression"
       ],
       "evidenceRequired": [
-        "Exact matched runtime evidence and raw failure/retry records."
+        "FENCE_ONLY model fixture returning after steering, with zero action/tool dispatch from the stale submission and exactly one accepted successor generation."
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "Kill/restart and stop/cancel probes preserve exact pending-operation identity, do not duplicate effects and converge to terminal/reconcilable state.",
+      "id": "COALESCE",
+      "statement": "Concurrent/near-simultaneous operation transitions are durably deduped and coalesced into at most one current completion wake/model turn per drained burst, while semantic order remains ingressSeq and concurrent enqueue cannot create two active wakes.",
       "verificationIds": [
-        "core-probe"
+        "coordinator-contract",
+        "async-profile"
       ],
       "evidenceRequired": [
-        "Exact matched runtime evidence and raw failure/retry records."
+        "Concurrent Promise.all ingress fixture, duplicate transitionId fixture, injected 1ms/100-item drain boundary, and one-wake assertion under CAS conflicts."
+      ]
+    },
+    {
+      "id": "STOP",
+      "statement": "STOP is persisted before cancellation side effects, immediately blocks new model/tool/operation dispatch, survives restart and cannot label an unresolved external effect cancelled without BB-078/effect reconciliation truth.",
+      "verificationIds": [
+        "coordinator-contract",
+        "recovery-contract",
+        "core-regression"
+      ],
+      "evidenceRequired": [
+        "Stop-during-model and stop-during-effect fixtures, crash after fence before abort, restart proof, and NON_RECONCILABLE/UNKNOWN negative case."
+      ]
+    },
+    {
+      "id": "RECOVERY",
+      "statement": "Crashes at scheduled-before-dispatch, dispatched-before-terminal and model-in-flight boundaries reconstruct exact pending identity, invoke BB-078 recovery, stage BB-079 context once, abandon stale model generations and schedule at most one replacement wake without duplicate effects.",
+      "verificationIds": [
+        "recovery-contract",
+        "async-profile"
+      ],
+      "evidenceRequired": [
+        "Fresh-process recovery fixtures for all three crash points with exact operationId/effectOperationId/generation/transitionId binding and duplicate-effect count zero."
+      ]
+    },
+    {
+      "id": "NO_HEARTBEAT",
+      "statement": "No autonomous timer may create a model turn when there is no new durable semantic work; liveness inspection is non-model by default.",
+      "verificationIds": [
+        "coordinator-contract",
+        "async-profile"
+      ],
+      "evidenceRequired": [
+        "Fake-clock idle interval proving zero model calls until accepted input, unseen operation transition, explicit wake or restart-pending work exists."
+      ]
+    },
+    {
+      "id": "DEPENDENCY",
+      "statement": "Implementation consumes exact DONE BB-077/078/079 outputs and rejects incompatible dependency contracts instead of silently adapting research assumptions.",
+      "verificationIds": [
+        "dependency-contract"
+      ],
+      "evidenceRequired": [
+        "Exact dependency manifest/hash binding plus PLAN_INPUT_CONTRADICTION fixture."
       ]
     },
     {
       "id": "INV-1",
-      "statement": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "statement": "Coordinator wake, cancellation, prompt/context and cache state cannot become correctness, product-acceptance or external-effect authority.",
       "verificationIds": [
-        "boundary-probe"
+        "coordinator-contract",
+        "core-regression"
       ],
       "evidenceRequired": [
-        "Negative/boundary evidence proving the authority and recovery invariant."
+        "Negative tests proving coordinator state cannot mark EffectOperation CONFIRMED or accepted product result."
       ]
     },
     {
       "id": "INV-2",
-      "statement": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "statement": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed through BB-078/effect reconciliation.",
       "verificationIds": [
-        "boundary-probe"
+        "recovery-contract",
+        "core-regression"
       ],
       "evidenceRequired": [
-        "Negative/boundary evidence proving the authority and recovery invariant."
+        "Binding corruption and unresolved-effect restart fixtures plus unchanged effect reconciliation suite."
       ]
     },
     {
       "id": "INV-3",
-      "statement": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "statement": "BB-080 development metrics cannot authorize async promotion; matched efficiency claims remain bound to BB-077 protocol and BB-081 held-out acceptance.",
       "verificationIds": [
-        "boundary-probe"
+        "async-profile",
+        "dependency-contract"
       ],
       "evidenceRequired": [
-        "Negative/boundary evidence proving the authority and recovery invariant."
+        "DEV-only report with no HOLD-* task output and no promotion verdict."
       ]
     }
   ],
@@ -140,41 +244,61 @@
     {
       "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
       "criterionIds": [
-        "INV-1"
+        "INV-1",
+        "STOP",
+        "STALE_MODEL"
       ]
     },
     {
       "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
       "criterionIds": [
-        "INV-2"
+        "INV-2",
+        "RECOVERY",
+        "DEPENDENCY"
       ]
     },
     {
       "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
       "criterionIds": [
-        "INV-3"
+        "INV-3",
+        "DEPENDENCY"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "core-probe",
-      "command": "node --test packages/core-harness/test/bb-080-async-efficiency.test.js"
+      "id": "coordinator-contract",
+      "command": "node --test packages/core-harness/test/async-agent-coordinator.test.js"
     },
     {
-      "id": "boundary-probe",
+      "id": "recovery-contract",
+      "command": "node --test packages/core-harness/test/async-agent-coordinator-recovery.test.js"
+    },
+    {
+      "id": "dependency-contract",
+      "command": "node --test packages/core-harness/test/async-agent-coordinator-recovery.test.js --test-name-pattern='dependency|PLAN_INPUT_CONTRADICTION'"
+    },
+    {
+      "id": "async-profile",
+      "command": "node --test benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs"
+    },
+    {
+      "id": "core-regression",
       "command": "npm run test:core"
     }
   ],
-  "researchGaps": [
-    "Define deterministic event ordering and coalescing window semantics without delaying interactive steering excessively.",
-    "Define model-cancel behavior when user steering arrives during generation.",
-    "Specify restart reconstruction for scheduled-but-not-yet-dispatched and dispatched-but-not-terminal operations."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "A detached operation causes a duplicate non-idempotent external effect after restart or concurrent wakeup.",
-    "A token/cost win is accepted despite degraded fixed quality or missing failed-attempt accounting.",
-    "Prompt text, traces or provider cache state are used as external-effect or product-acceptance authority."
+    "Two concurrent completion/user wake requests both read no active wake before locking and create two current model runs.",
+    "USER_INPUT waits behind a completion coalescing/grace timer.",
+    "USER_INPUT implicitly cancels unrelated detached operations.",
+    "A late response from a fenced/non-abortable model generation dispatches a capability or terminal result.",
+    "STOP is delivered to AbortController before the durable stopFence commits and a crash permits new dispatch after restart.",
+    "A detached operation causes a duplicate non-idempotent external effect after scheduled-before-dispatch or dispatched-before-terminal recovery.",
+    "A duplicate BB-078 transitionId becomes two BB-079 context items or two model wakes.",
+    "An idle liveness timer creates model calls without new semantic work.",
+    "An active createResumableAgentRuntime snapshot is treated as durable in-flight operation truth despite RUNTIME_SNAPSHOT_ACTIVE_CALL.",
+    "A DEV cost/token/turn win is used to label PROMOTE_ASYNC or HOLD-* tasks are executed before BB-081."
   ],
   "laneContracts": [
     {
@@ -209,5 +333,274 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-080 Living Docs describe only the implemented and independently verified async-efficiency behavior, fallback and recovery limitations."
-  }
+  },
+  "coordinatorContract": {
+    "schemaVersion": 1,
+    "state": "ASYNC_AGENT_COORDINATOR_STATE/v1",
+    "ingress": "ASYNC_AGENT_INGRESS/v1",
+    "ingressKinds": [
+      "USER_INPUT",
+      "STOP",
+      "OPERATION_TRANSITION",
+      "EXPLICIT_WAKE"
+    ],
+    "durableIdentity": [
+      "sessionId",
+      "revision",
+      "nextIngressSeq",
+      "dedupeBindings",
+      "modelGeneration",
+      "currentSubmission",
+      "stopFence"
+    ],
+    "ordering": "ingressSeq is the semantic total order within one coordinator session; scheduling priority cannot rewrite it.",
+    "oneActiveModel": "Every request binds submissionId + modelGeneration + coveredIngressSeq. Only current generation may dispatch/publish.",
+    "oneActiveWake": "Wake/coalesce claim is decided in the same revision-aware CAS transaction/update as accepted ingress.",
+    "persistenceBoundary": "Dedicated coordinator state through existing revision-aware SessionStore. Runtime snapshots remain idle snapshots only."
+  },
+  "coalescingPolicy": {
+    "schemaVersion": 1,
+    "completionIdleMs": 1,
+    "maxCoalescedTransitions": 100,
+    "quickCompletionGraceMs": 1000,
+    "immediateKinds": [
+      "USER_INPUT",
+      "STOP"
+    ],
+    "rules": [
+      "While model is active, operation transitions are persisted/staged but do not preempt the current generation.",
+      "When idle, completion-only work drains until completionIdleMs of quiet or maxCoalescedTransitions.",
+      "A quick-completion grace may delay only a completion-only follow-up after detached dispatch.",
+      "USER_INPUT and STOP cancel/bypass all completion windows immediately.",
+      "No autonomous model heartbeat exists in the default profile."
+    ]
+  },
+  "generationCancellation": {
+    "schemaVersion": 1,
+    "modes": {
+      "ABORT_SIGNAL": "Adapter/provider route declares cooperative cancellation; pass AbortSignal and still enforce generation fencing.",
+      "FENCE_ONLY": "Safe default. Abort may be unavailable/ignored; late response is discarded before action/tool/result authority."
+    },
+    "persistFirst": [
+      "USER_INPUT",
+      "STOP"
+    ],
+    "staleResponseRule": "submission.modelGeneration !== coordinator.modelGeneration => discard before action normalization or dispatch"
+  },
+  "recoveryContract": {
+    "schemaVersion": 1,
+    "order": [
+      "load coordinator CAS state",
+      "reapply stopFence if present",
+      "recover/reconcile exact BB-078 nonterminal operations",
+      "stage unseen BB-078 transitions through exact BB-079 checkpoint",
+      "mark crash-time model submission ABANDONED and increment modelGeneration",
+      "derive whether durable pending semantic work requires exactly one replacement wake"
+    ],
+    "scheduledBeforeDispatch": "Delegated to BB-078 exact operation/effect identity and replay policy.",
+    "dispatchedBeforeTerminal": "Delegated to BB-078 effect reconciliation; coordinator cannot infer success/cancel.",
+    "modelInFlightCrash": "Old provider response has no authority after process loss; replacement may incur model cost but cannot duplicate an external effect through stale-response dispatch.",
+    "resumableRuntime": "Active runtime snapshot is not used because current Core rejects snapshot while activeCalls > 0."
+  },
+  "researchEvidence": [
+    {
+      "source": "ExHarness main a0a30e0ddc67f14fdc50834a7d3c08696f8aeef8",
+      "finding": "Current AgentRuntime already rejects concurrent model turns, but no run AbortSignal is passed into strategies/providers. Model routing calls resolvedAdapter.generate(request) without forwarding options. createResumableAgentRuntime refuses snapshots while active calls exist, so in-flight async durability requires a separate coordinator checkpoint."
+    },
+    {
+      "source": "https://github.com/unreallabsai/unreal-agent/tree/1b9f778453f411c029b39b85102aaefb95e7e48d",
+      "eligibility": "1,890 GitHub stars at 2026-09-25 live GitHub API evidence check; satisfies >=1,000-star example rule.",
+      "finding": "Eligible implementation reference: one coordinator loop persists input/session updates, cancels/fences model turns, drains event bursts with 1ms idle/100 max items, and uses a 1s tool-call completion grace. Pattern evidence only."
+    },
+    {
+      "source": "https://github.com/paperclipai/paperclip/blob/master/doc/spec/agent-runs.md",
+      "eligibility": "83,125 GitHub stars at 2026-09-25 live GitHub API evidence check.",
+      "finding": "Eligible architecture reference: one active run per agent, DB-backed restart-safe queue and duplicate wake coalescing."
+    },
+    {
+      "source": "https://github.com/paperclipai/paperclip/issues/10598",
+      "eligibility": "Same >=1,000-star repository.",
+      "finding": "Negative production/community evidence: checking coalesce targets before taking the per-agent lock creates a TOCTOU race and parallel duplicate runs; decision and insert must share one durable lock/CAS boundary."
+    },
+    {
+      "source": "https://docs.restate.dev/concepts/services/",
+      "eligibility": "Restate repository had 4,470 GitHub stars at 2026-09-25 live GitHub API evidence check.",
+      "finding": "Eligible durability pattern: keyed state can enforce a single writer while workflow instances accept concurrent signals/queries, useful as a conceptual model for serialized coordinator state plus external steering."
+    },
+    {
+      "source": "https://docs.restate.dev/develop/python/awakeables/",
+      "eligibility": "Restate >=1,000-star project documentation.",
+      "finding": "Durable callback/awakeable pattern shows external work can be triggered once, suspended, then resumed by a durable result instead of polling/heartbeat model turns."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "User input received while tools run is accepted and causes bounded next-turn behavior without waiting for unrelated long operations.",
+      "criterionIds": [
+        "STEERING",
+        "STALE_MODEL",
+        "STOP",
+        "INV-1"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S6"
+      ],
+      "verificationIds": [
+        "coordinator-contract",
+        "async-profile",
+        "core-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        11,
+        14
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/javascript-codeact-strategy.js",
+        "packages/core-harness/src/model-routing.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "cannot prepare a turn while a model generation is active"
+        },
+        {
+          "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
+          "match": "() => withinTime(\"model\", () => activeModel.generate(request))"
+        },
+        {
+          "ref": "packages/core-harness/src/model-routing.js",
+          "match": "return resolvedAdapter.generate(request);"
+        }
+      ],
+      "supportingPlanFields": [
+        "coordinatorContract",
+        "coalescingPolicy",
+        "generationCancellation",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Near-simultaneous terminal updates are deterministically coalesced so they do not create an avoidable model-turn storm.",
+      "criterionIds": [
+        "COALESCE",
+        "NO_HEARTBEAT",
+        "INV-3"
+      ],
+      "planElements": [
+        "S2",
+        "S4",
+        "S6",
+        "S7"
+      ],
+      "verificationIds": [
+        "coordinator-contract",
+        "async-profile"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3,
+        4,
+        9,
+        10,
+        11,
+        15
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/store.js",
+        "packages/core-harness/src/model-routing.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "concurrent model turns are not supported in one agent invocation"
+        },
+        {
+          "ref": "packages/core-harness/src/store.js",
+          "match": "supportsRevisions: true"
+        },
+        {
+          "ref": "packages/core-harness/src/model-routing.js",
+          "match": "let generateCalls = 0;"
+        }
+      ],
+      "supportingPlanFields": [
+        "coordinatorContract",
+        "coalescingPolicy",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Kill/restart and stop/cancel probes preserve exact pending-operation identity, do not duplicate effects and converge to terminal/reconcilable state.",
+      "criterionIds": [
+        "STOP",
+        "RECOVERY",
+        "DEPENDENCY",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S4",
+        "S5",
+        "S6"
+      ],
+      "verificationIds": [
+        "recovery-contract",
+        "dependency-contract",
+        "core-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        8,
+        12,
+        13,
+        14
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/resumable-agent-runtime.js",
+        "packages/core-harness/src/effect-reconciliation.js",
+        "packages/core-harness/src/store.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/resumable-agent-runtime.js",
+          "match": "runtime snapshot cannot be created while an agent invocation is active"
+        },
+        {
+          "ref": "packages/core-harness/src/effect-reconciliation.js",
+          "match": "export async function reconcileEffectOperation({ capability, journal, operationId })"
+        },
+        {
+          "ref": "packages/core-harness/src/store.js",
+          "match": "async save(session, { expectedRevision = session?.revision ?? 0 } = {})"
+        }
+      ],
+      "supportingPlanFields": [
+        "coordinatorContract",
+        "recoveryContract",
+        "generationCancellation",
+        "researchEvidence"
+      ]
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-080.readiness-jev-evaluation.json"
 }
