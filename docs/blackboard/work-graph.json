@@ -1428,7 +1428,7 @@
       "featureId": "FEATURE-DELIVERY-FIRST-SLICE",
       "title": "Prove first useful agent delivery through Oracle and independent QA",
       "kind": "IMPLEMENTATION",
-      "status": "ACTIVE",
+      "status": "PLANNED",
       "complexity": "XL",
       "components": [
         "oracle/infrastructure",
@@ -1456,25 +1456,30 @@
           "docs/blackboard/process/delivery-research/BB-069.md"
         ],
         "outputRefs": [],
-        "consolidatedRefs": []
+        "consolidatedRefs": [
+          "docs/living/system/state.md",
+          "docs/living/system/agentic-application/capabilities.md",
+          "docs/living/system/oracle/state.md"
+        ]
       },
       "expectedOutputs": [
         "The real feature uses Oracle-resolved exact input refs, produces a real candidate and runs in an isolated preview whose release identity is recorded.",
         "Independent QA observes functional behavior and rejects a seeded defect even when the producer says success.",
         "At least three reset live runs and one kill/resume path have complete evidence, budgets and failure records; feasibility is reported separately from pilot value."
       ],
-      "currentContextRef": "docs/blackboard/context/BB-069/current.json",
-      "claim": {
-        "workerId": "chatgpt-research-bb069"
-      },
+      "currentContextRef": null,
+      "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-069.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
         "researchBaselineSha": "7a7976f09b27d57a6d220094d6c893b3020b8e57",
-        "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62"
+        "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-069.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-069.implementation-result.json",
+        "lastEvaluatedInput": "848731874fab27097354c3863a90cdb1b03218415369f7299b1e7b18d1e0c974"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-070",
