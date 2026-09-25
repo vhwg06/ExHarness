@@ -111,7 +111,8 @@ export function validateProfile(profile, { fixtureDigest, acceptanceDigest, requ
       model.cachedInputUsdPerMillion > model.inputUsdPerMillion || !nonnegative(model.outputUsdPerMillion)) fail('model snapshot, endpoint, pricing and credential reference required');
   if (model.credentialEnv === 'OPENROUTER_API_KEY' &&
       (model.endpointOrigin !== 'https://openrouter.ai' || model.apiBaseUrl !== 'https://openrouter.ai/api/v1' ||
-       model.snapshot !== `openrouter/${model.providerModelId}` || !/^nvidia\/nemotron-3-ultra-550b-a55b-20260604:free$/.test(model.resolvedModelId ?? '') ||
+       model.providerModelId !== 'nvidia/nemotron-3-ultra-550b-a55b:free' ||
+       model.snapshot !== `openrouter/${model.providerModelId}` || model.resolvedModelId !== 'nvidia/nemotron-3-ultra-550b-a55b-20260604:free' ||
        model.releaseDate !== '2026-06-04' || model.maxContextTokens !== 1000000 ||
        model.inputUsdPerMillion !== 0 || model.cachedInputUsdPerMillion !== 0 || model.outputUsdPerMillion !== 0))
     fail('OpenRouter free model identity or price changed');
