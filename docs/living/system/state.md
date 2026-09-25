@@ -30,6 +30,14 @@ The current artifact layout stores lane inputs under `docs/blackboard/artifacts/
 
 Worker exit also has a documentation gate: each ready worker plan declares the Living Docs refs that describe its implementation. The candidate must update those docs within the authorized scope, Jev receives their full contents and judges a dedicated implementation-description claim, and delivery requires that claim to be `SATISFIED` plus the refs to be consolidated and preserved on `main`.
 
+## Development delivery baseline
+
+`scripts/delivery/baseline/` implements a development-only baseline runner for the request-tracker fixture. It registers a fixed task and environment profile, resets each task independently, runs a direct mini-SWE-agent arm, and checks outcomes with a verifier outside the agent workspace. The NORM-01, STATUS-01 and ORDER-01 calibration tasks exercise the runner before any larger comparison. Registration keeps the prospective twenty-pair comparison protocol explicit; calibration results do not stand in for those pairs or establish product value.
+
+Provider calls reserve a budget before dispatch. The NVIDIA NIM Chat Completions path captures each original completed response outside the agent workspace, flushes it to disk, hashes it, and binds its request ID, model and reported usage to the provider ledger. HTTP 202 requests are polled to a final response; missing usage or an uncertain call remains UNKNOWN and prevents another dispatch under that task budget. Cached input tokens remain unknown when the provider does not report them. The offline evidence auditor verifies the captured response hash and ledger binding; it does not assume a completed Chat Completion can be retrieved later by ID. The public model release and free endpoint catalog identify the calibration route, while the hosted backend revision is unobservable. Zero API charge does not include infrastructure, evaluator or setup cost.
+
+This runner has no real ExHarness candidate adapter, supported deployment or measured ExHarness-versus-direct value uplift. LIVE calibration requires fresh provider, agent, verifier and accounting evidence followed by independent judgment; source code and earlier diagnostic runs alone do not establish delivery.
+
 ## Current composition
 
 Concrete execution path:
