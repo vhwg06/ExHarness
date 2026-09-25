@@ -170,3 +170,7 @@ Each rebound task must convert this evidence into a DRAFT plan, close its task-s
 
 The historical READY/Jev artifacts are useful evidence about the old problem; because their objective/plan bindings no longer match the rebound semantics, they cannot authorize implementation.
 
+## Control-plane authority check
+
+While BB-060..064 are rebound to research, their task contracts must not carry the historical `evaluationRef`, `evidenceRef` or `lastEvaluatedInput` fields. The plans remain `DRAFT` without `readinessRef`. Historical evaluation files may stay in the repository for audit/evidence, but execution routing must be derivable only from the rebound objective/plan and a future new readiness publication.
+
