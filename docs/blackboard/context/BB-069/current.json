@@ -17,7 +17,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-069.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
-  "planHash": "baadccee338de94eda55e164b7ce7f1ac6d5cd1c6f314217cc26476315ebd2ed",
+  "planHash": "fc1b3e689110bc408682d8c5ed2548fcabc604ef95bbeeee4da022e4ed597602",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -64,13 +64,24 @@
   "sourceScope": {
     "read": [
       "packages/agentic-system/**",
-      "packages/core-harness/**",
       "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "packages/core-harness/**",
+      "scripts/delivery/baseline/**",
+      "scripts/delivery/first-slice/**",
+      "scripts/delivery/bb-066-probe.mjs",
+      "scripts/delivery/bb-067-probe.mjs",
+      "scripts/delivery/bb-068-probe.mjs",
+      "scripts/delivery/bb-069-probe.mjs",
+      "test/delivery/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-064*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-066*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-067*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-068*",
       "docs/blackboard/process/delivery-research/BB-069.md",
-      "scripts/**",
-      "test/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/living/system/state.md",
       "package.json"
     ],
     "write": [],
@@ -81,45 +92,86 @@
   "executionSourceScope": {
     "read": [
       "packages/agentic-system/**",
-      "packages/core-harness/**",
       "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "packages/core-harness/**",
+      "scripts/delivery/baseline/**",
+      "scripts/delivery/first-slice/**",
+      "scripts/delivery/bb-066-probe.mjs",
+      "scripts/delivery/bb-067-probe.mjs",
+      "scripts/delivery/bb-068-probe.mjs",
+      "scripts/delivery/bb-069-probe.mjs",
+      "test/delivery/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-064*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-066*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-067*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-068*",
       "docs/blackboard/process/delivery-research/BB-069.md",
-      "scripts/**",
-      "test/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/living/system/state.md",
       "package.json"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "scripts/delivery/first-slice/contract.mjs",
+      "scripts/delivery/first-slice/preview.mjs",
+      "scripts/delivery/first-slice/qa-verifier.mjs",
+      "scripts/delivery/bb-069-probe.mjs",
+      "test/delivery/bb-069-contract.test.mjs",
+      "test/delivery/bb-069-live-contract.test.mjs",
+      "docs/living/system/state.md",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/oracle/state.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "packages/core-harness/**",
+      "packages/oracle/src/**",
+      "packages/agentic-system/src/**",
+      "scripts/delivery/baseline/**",
+      "package.json"
     ]
   },
   "artifactWriteScope": [
     "docs/blackboard/artifacts/ready-implement-plan/BB-069.json"
   ],
   "hardInvariants": [
-    "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
-    "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
-    "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
+    "Application owns work/acceptance semantics; Oracle owns source IO; runtime, SCM and preview success are evidence only and never acceptance/publication authority.",
+    "Every delivery result binds exact Oracle source refs, semantic execution attempt, candidate commit/tree, preview release/instance and QA evidence; missing or stale identity fails closed.",
+    "Independent QA receives only exact accepted candidate/release inputs and cannot mutate product lineage; producer claims cannot satisfy QA evidence.",
+    "Reset/recovery evidence is durable and reconstructable without conversation history; kill/resume must continue the same semantic execution identity where the delivered runtime contract requires it.",
+    "Feasibility and pilot value are distinct: BB-069 may establish a bounded usable delivery path but cannot claim comparative value uplift.",
+    "The outer Blackboard schedules ExHarness development only; first-slice runtime coordination remains inside delivered Application/Core/Oracle contracts."
   ],
   "verification": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-069-probe.mjs"
+      "id": "contract",
+      "command": "node --test test/delivery/bb-069-contract.test.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-069.test.mjs"
+      "id": "deterministic",
+      "command": "node scripts/delivery/bb-069-probe.mjs --mode deterministic"
+    },
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-069-probe.mjs --mode live --output \"$EXHARNESS_BB069_OUTPUT\""
+    },
+    {
+      "id": "audit-live",
+      "command": "node scripts/delivery/bb-069-probe.mjs --mode audit-live --input \"$EXHARNESS_BB069_OUTPUT\""
+    },
+    {
+      "id": "live-contract",
+      "command": "node --test test/delivery/bb-069-live-contract.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository-verify",
+      "command": "npm run verify"
     }
   ],
   "expectedOutputs": [
