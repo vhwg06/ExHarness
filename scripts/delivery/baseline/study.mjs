@@ -88,7 +88,7 @@ export async function executeMiniAttempt({ profile, task, output, executionId, a
   const ledgerPath = join(output, 'executions', executionId, 'provider-ledger.jsonl');
   const config = {
     profile,
-    taskId: task.taskId,
+    taskId: task.taskId ?? task.id,
     attemptId,
     taskPrompt: task.prompt,
     candidateDir,
