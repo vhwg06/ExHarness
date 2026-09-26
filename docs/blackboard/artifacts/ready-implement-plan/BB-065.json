@@ -34,24 +34,11 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "D0 — 2026-09-27 benchmark-program reset: BB-065 is benchmark substrate calibration, not evidence that ExHarness beats a direct agent. The previous custom DIRECT-vs-Core study remains historical/provisional until the neutral harness adapter, task/oracle controls and common run record are researched.",
-    "D1 — Extend c0b895f59d060a845f836a8e089e1f67ef268bde; CORE_VALUE_V2 is new evidence. Preserve V1 protocol and terminal runs; never retrofit outcomes.",
-    "D2 — Retain Node24.19.0/Python3.12.13/Playwright1.63.0/mini04d809ceab9df28f9adaed044884180159172930. Register inspected Docker image ID separately from OCI digest and actual OS runtime paths.",
-    "D3 — Reuse createCoreHarness around the same mini executor. Only Core lifecycle/persistence differs. No packages edits; candidate version is source digest and no-op preserves identity.",
-    "D4 — Identical prompt/model/tools/verifier/feedback/limits in both arms; preserve DIRECT safeguards. No alternative coding loop or Core rebuild. A definitive negative is valid.",
-    "D5 — Qualify existing NVIDIA before registration using resourceContract.qualification; first two-probe pass wins. No implicit capacity purchase, key rotation, UNKNOWN bypass or mid-cohort switch.",
-    "D6 — Reserve before every wire send. Proven non-admission alone releases reservation; UNKNOWN remains held until evidence-bound reconciliation or terminal deadline. Never clear ledgers.",
-    "D7 — Count every fresh mini launch as another attempt; never claim conversation resume. Adopt captured results without repeating effects; preserve original active-time/wait budgets.",
-    "D8 — Single-owner immutable manifest and append-only journal; current.json is rebuildable. Hash-validated portable incremental export/import; never steal a lock.",
-    "D9 — Freeze six alternating-order live pairs with independent resets and 24 separate controlled trials. Three task families repeated, not six independent problems.",
-    "D10 — Code computes facts only; actual Jev-1.13.0 responses own every semantic value choice. No operator/agent verdict, hidden weighting or override.",
-    "D11 — Independent typed dimensions then dependent Jev net-value Choice. No confidence gate, voting or semantic reroll. Sign exact responses with preregistered trusted key.",
-    "D12 — Efficiency thresholds are one dimension. Jev weighs attributable control/recovery benefits against measured overhead; shared protection is not Core benefit. No full-product/customer/incident-frequency claim.",
-    "D13 — Finite limits are not provider availability guarantees. Retain charges and failure facts; incomplete evidence is not a definitive value result.",
-    "D14 — Freeze exact candidate/tree before measurement. Credential-free audits and independent outer Jev must pass before exact evaluated main-tree delivery.",
-    "D15 — Settled independently verified task-budget stops count as measured failures; provider/verification gaps remain incomplete. Receipt-valid is not benchmark-complete.",
-    "D16 — Canary admission is OPERABILITY, not submission. Exact CANARY_OPERABILITY_V2 causal, accounting and failure policy is in resourceContract.canary; preregister policy/prompt hashes, preserve r6 FAIL, new evidence only.",
-    "D17 — Retain implemented S1-S4: cumulative waits, single POST/poll deadline, cohort sessions, phase timings, shared DIRECT seam and 24 real fault trials; file-backed factual audits, no consistencyCheck semantic override, plan-verbatim value criteria, full stage-two answers within24KB and dual export. Add regression evidence rather than rewrite these behaviors."
+    "D1 — BB-065 is benchmark-substrate calibration only. It does not decide whether ExHarness creates value.",
+    "D2 — Research a neutral harness adapter/execution substrate, preferring Harbor if it preserves native harness behavior and exact evidence identities; adoption is not pre-decided.",
+    "D3 — Fix model snapshot, task/prompt input, starting workspace, tool/resource envelope, artifact extraction, evaluator and reset policy before any harness comparison.",
+    "D4 — Execution/provider/termination status and independent quality verdict are orthogonal fields; timeout, 429, UNKNOWN usage or budget exhaustion cannot be silently converted into quality failure.",
+    "D5 — The common run record must preserve candidate/artifact identity, trace, validator result and token/tool/cost/time accounting for downstream BB-077/081/074."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -129,118 +116,47 @@
     ]
   },
   "implementationSlices": [
-    "S0 — Canary [REGISTRATION]: implement resourceContract.canary in canary.mjs; nonce-free prompt, native call/result identity, later-turn FIRST-write audit; shared evaluator register/live/audit, policy/prompt bindings; preserve canaryDigest and driver/timing capture; test every positive/negative gate.",
-    "S1 — Qualification and registration [REGISTRATION,RESOURCE_RECOVERY]: add qualification.mjs, CORE_VALUE_V2 protocol, V1-compatible dispatch and profile support for thinking disabled/required or named bash. Use four bounded requests before registration; persist all failures and campaign budgets, bind selected profile and qualification. Zero-dispatch negative tests.",
-    "S2 — Execution completeness [RESOURCE_RECOVERY,HANDOFF,ACCOUNTING]: study/driver/report distinguish measured task-budget stops from unresolved provider gaps, continue after settled task failure, send identical bounded repair feedback, preserve original reservations/attempts, phase timings and durable current-stage/deadline. Keep all 12 execution slots and portable exports.",
-    "S3 — Actual Core and controlled study [ARMS,FIXTURE,BOUNDARY]: reuse current Core and unchanged DIRECT policy; fix cohort-scoped session and durable state hash verification. Add controlled-trials.mjs for four frozen fault scenarios x three families x two arms =24; exercise production seams and independent oracle, no model calls. Attribute shared protection to COMMON.",
-    "S4 — Jev-only multidimensional value [JEV_AUTHORITY,ACCOUNTING]: jev-value.mjs adds candidate_control/recovery dimensions and dependent net-value Choice. Validate complete identity/provenance/key chain, bounded evidence includes failures and both experiments; preserve V1 audit. Receipt-valid is separate from benchmark-complete; no all-dimensions gate or mutable signed report.",
-    "S5 — Live proof and delivery [LIVE_COMPARISON,VALUE_CONCLUSION]: freeze actual candidate, qualify existing route then register/run six live pairs plus controlled study within budgets. Freeze factual evidence before real Jev evaluation, export full hash-bound bundle and update Living docs. Positive or negative definitive evidence can pass; unavailable/INCONCLUSIVE cannot. Outer Jev and exact evaluated main tree remain required."
+    "S1 — Select and pin the neutral benchmark substrate/adapter seam; document Harbor compatibility or exact rejection.",
+    "S2 — Define calibration workloads, oracle/no-op controls, reset semantics and independent verifier behavior.",
+    "S3 — Define the common run-record schema and complete accounting/failure taxonomy.",
+    "S4 — Implement executable substrate/calibration probes and produce fresh readiness evidence."
   ],
   "acceptanceCriteria": [
     {
-      "id": "FIXTURE",
-      "statement": "Frozen seeded fixture and independent API/browser/restart verification remain bound to each candidate; deliberate defects and source drift cannot become accepted results.",
+      "id": "SUBSTRATE",
+      "statement": "A pinned neutral substrate/adapter can execute the calibration workload with fixed model/task/workspace/budget/evaluator controls.",
       "verificationIds": [
-        "fixture"
+        "benchmark-contract"
       ],
       "evidenceRequired": [
-        "Reset/candidate/verifier digests, actual API/Unicode/browser/persistence observations and negative control results."
+        "pinned substrate/adapter identity",
+        "fixed-factor run manifest",
+        "fresh-reset evidence"
       ]
     },
     {
-      "id": "REGISTRATION",
-      "statement": "Calibration, six-pair study and future pilot have distinct immutable registrations; identical arm inputs, quota policy and budget fields are validated before task dispatch.",
+      "id": "EVIDENCE",
+      "statement": "Every calibration run binds exact artifact, trace, independent validator result and token/tool/cost/time accounting.",
       "verificationIds": [
-        "contract",
-        "canary"
+        "benchmark-evidence"
       ],
       "evidenceRequired": [
-        "Positive manifest; zero-dispatch rejection cases for mismatched arms, incomplete resource fields, unsupported route, edited protocol and stale source.",
-        "Qualification before registration, all failed probes retained, selected profile identical across arms, campaign restart cannot reset budget.",
-        "File-backed CANARY_OPERABILITY_V2 policy/prompt bindings, causal trace, actual driver exit, resolved usage/timing and zero-dispatch failures; submission telemetry only."
+        "run record",
+        "artifact/trace refs",
+        "validator output",
+        "usage/accounting evidence"
       ]
     },
     {
-      "id": "RESOURCE_RECOVERY",
-      "statement": "Provider waits, ambiguous calls and process interruption have finite, durable transitions with shared limits and no duplicate dispatch or ledger reset.",
+      "id": "FAILURE_SEMANTICS",
+      "statement": "Provider/infra/termination status is recorded separately from independent quality and UNKNOWN usage never becomes zero.",
       "verificationIds": [
-        "recovery",
-        "runner"
+        "benchmark-failures"
       ],
       "evidenceRequired": [
-        "Fake-clock boundary traces; crash-before/after-send cases; non-admission versus ambiguous outcomes; append-only reconciliation; deadline and retry exhaustion."
-      ]
-    },
-    {
-      "id": "HANDOFF",
-      "statement": "Fresh processes reconstruct all task states and incremental evidence exports from a portable hash-bound bundle without credentials or rewritten prior evidence.",
-      "verificationIds": [
-        "recovery"
-      ],
-      "evidenceRequired": [
-        "Three partial invocations with growing export; duplicate/edited imports; UNKNOWN reconciliation; interrupted candidate capture; read-only audit."
-      ]
-    },
-    {
-      "id": "ARMS",
-      "statement": "DIRECT and EXHARNESS use the same mini coding loop and common orchestration policy, while EXHARNESS actually invokes the pinned Core candidate/verification/evaluation/lineage APIs.",
-      "verificationIds": [
-        "arms"
-      ],
-      "evidenceRequired": [
-        "Real Core event/state traces with no-op and changed candidates, direct control traces, paired profile hashes, independent checks and no fabricated PASS evaluator.",
-        "24 frozen controlled trials through production adapters, independent oracle, hashes and COMMON versus CORE attribution; unchanged DIRECT safeguards."
-      ]
-    },
-    {
-      "id": "ACCOUNTING",
-      "statement": "Every registered execution and request remains in denominators; metrics and paired uncertainty are reproducible and contain no agent/operator/code-authored value judgment.",
-      "verificationIds": [
-        "report"
-      ],
-      "evidenceRequired": [
-        "Hand-calculated retries, unfinished/unknown costs, zero-price, zero-accepted, real timestamps and deduplicated human intervals; report has valueEvaluationRef only."
-      ]
-    },
-    {
-      "id": "JEV_AUTHORITY",
-      "statement": "Only real Jev typed answers bound to the exact evidence/rubric/model determine semantic value; caller-supplied verdicts, mock LIVE evidence, stale hashes and unavailable provider fail closed.",
-      "verificationIds": [
-        "jev"
-      ],
-      "evidenceRequired": [
-        "Deterministic transport doubles labelled as such; forged/stale receipt rejection, cache reuse and changed-state invalidation, missing key/429/deadline, atomic questions and stage-two binding."
-      ]
-    },
-    {
-      "id": "LIVE_COMPARISON",
-      "statement": "All twelve registered executions settle within original limits and include real-provider evidence plus independent candidate verification, even when task outcomes are failures.",
-      "verificationIds": [
-        "live"
-      ],
-      "evidenceRequired": [
-        "Six matched pairs, two repeats per task, both arms, provider attestations/usage, complete terminal accounting, immutable order and candidate trees."
-      ]
-    },
-    {
-      "id": "VALUE_CONCLUSION",
-      "statement": "A real Jev result concludes VALUE_DEMONSTRATED or NO_VALUE_DEMONSTRATED from twelve complete live executions plus twenty-four separately labelled controlled trials and measured overhead; INCONCLUSIVE cannot satisfy completion and benefit is not required.",
-      "verificationIds": [
-        "value"
-      ],
-      "evidenceRequired": [
-        "Credential-free receipt audit, both Jev stage payloads and responses, deterministic metrics, actual Core treatment traces, provenance and benchmark-only scope."
-      ]
-    },
-    {
-      "id": "BOUNDARY",
-      "statement": "Worker changes only baseline development scripts, declared tests and Living state; neither benchmark judgment nor runtime promotion grants outer delivery authority.",
-      "verificationIds": [
-        "arms",
-        "contract"
-      ],
-      "evidenceRequired": [
-        "Changed-path audit; protected verifier and ledger escape rejection; distinct benchmark receipt and outer Jev/delivery gates."
+        "negative-path records",
+        "unknown-usage record",
+        "quality/termination separation proof"
       ]
     }
   ],
@@ -248,69 +164,40 @@
     {
       "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
       "criterionIds": [
-        "ARMS",
-        "JEV_AUTHORITY",
-        "BOUNDARY"
+        "SUBSTRATE",
+        "EVIDENCE",
+        "FAILURE_SEMANTICS"
       ]
     },
     {
       "invariant": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
       "criterionIds": [
-        "REGISTRATION",
-        "RESOURCE_RECOVERY",
-        "HANDOFF",
-        "ACCOUNTING",
-        "LIVE_COMPARISON",
-        "VALUE_CONCLUSION"
+        "SUBSTRATE",
+        "EVIDENCE",
+        "FAILURE_SEMANTICS"
       ]
     },
     {
       "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
       "criterionIds": [
-        "BOUNDARY"
+        "SUBSTRATE",
+        "EVIDENCE",
+        "FAILURE_SEMANTICS"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "contract",
-      "command": "node --test test/delivery/baseline-contract.test.mjs"
+      "id": "benchmark-contract",
+      "command": "node --test test/delivery/benchmark-substrate-contract.test.mjs"
     },
     {
-      "id": "fixture",
-      "command": "node --test test/delivery/baseline-fixture.test.mjs"
+      "id": "benchmark-evidence",
+      "command": "node --test test/delivery/benchmark-substrate-evidence.test.mjs"
     },
     {
-      "id": "report",
-      "command": "node --test test/delivery/baseline-report.test.mjs"
-    },
-    {
-      "id": "runner",
-      "command": "node --test test/delivery/baseline-runner.test.mjs"
-    },
-    {
-      "id": "recovery",
-      "command": "node --test test/delivery/baseline-recovery.test.mjs"
-    },
-    {
-      "id": "arms",
-      "command": "node --test test/delivery/baseline-arms.test.mjs"
-    },
-    {
-      "id": "jev",
-      "command": "node --test test/delivery/baseline-jev-value.test.mjs"
-    },
-    {
-      "id": "live",
-      "command": "node scripts/delivery/baseline/study.mjs --mode audit --profile \"$EXHARNESS_BASELINE_PROFILE\" --output \"$EXHARNESS_BASELINE_OUTPUT\""
-    },
-    {
-      "id": "value",
-      "command": "node scripts/delivery/baseline/jev-value.mjs --mode complete --profile \"$EXHARNESS_BASELINE_PROFILE\" --output \"$EXHARNESS_BASELINE_OUTPUT\""
-    },
-    {
-      "id": "canary",
-      "command": "node --test test/delivery/baseline-canary.test.mjs"
+      "id": "benchmark-failures",
+      "command": "node --test test/delivery/benchmark-substrate-failures.test.mjs"
     }
   ],
   "researchGaps": [
@@ -367,288 +254,6 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living state accurately describes the resource-bounded paired Core fixture benchmark, Jev-only value authority, actual evidence status and limitations; it never claims general productivity or delivery from an incomplete experiment."
-  },
-  "fixtureContract": {
-    "identity": "request-tracker-baseline-v1 task families retained; study registration binds exact fixture/task/prompt/verifier/lock hashes, not version label alone.",
-    "runtime": "Node 24.19.0; per-verifier SQLite file; loopback HTTP allocated port; locked Playwright Chromium; pins checked before dispatch.",
-    "record": {
-      "id": "server-created positive integer",
-      "title": "trimmed string, 1..120 Unicode code points",
-      "description": "string, 0..2000 Unicode code points",
-      "status": "OPEN or CLOSED; default OPEN"
-    },
-    "routes": [
-      "POST /requests ->201 or field error 400; GET /requests ->200 ascending records; PATCH /requests/:id ->200,400,404; GET / -> keyboard-operable CRUD UI."
-    ],
-    "firstChange": "The existing starter selects an explicit --fault for each task. NORM-01 skips title limits, STATUS-01 accepts invalid patched status, ORDER-01 sorts descending. Copy unchanged server/index/client/smoke source into each execution, run with the registered fault, never NONE for a live task. NONE is allowed only as a deterministic verifier positive control and never as a live agent candidate.",
-    "calibrationTasks": [
-      "NORM-01 title normalization/length boundary fix",
-      "STATUS-01 reject invalid status without partial update",
-      "ORDER-01 stable list order after close/reopen"
-    ],
-    "workspaceIsolation": "Only four candidate files enter tool container. Frozen verifier/profile/ledger remain outside. Candidate copies and source hashes checked before/after; symlinks, unexpected files and drift reject.",
-    "reset": "Before each of twelve executions copy only server.mjs,index.html,client.js,smoke.mjs from the frozen candidate commit into a new empty agent workspace and verify source digest. Keep tasks.json and acceptance.mjs outside the mount. Each verifier uses an isolated temp SQLite database and a second process restart on that same database. A repair attempt retains its own execution's changed candidate and rows; another pair/arm always resets.",
-    "checkMatrix": [
-      "POST trimmed valid title => 201, default OPEN; exact 120 non-BMP Unicode points accepted; 121, empty, whitespace rejected with field title and no inserted row.",
-      "PATCH title/status persists; invalid status, whitespace/overlong title or description >2000 points => 400 with no field changed. Unknown id => 404; illegal keys and empty patch =>400.",
-      "GET list ascending id after create, close/reopen and server restart. Restart checks every saved field/id against a snapshot, not status alone.",
-      "Real Chromium creates, edits title/status, reloads and shows corresponding API data; keyboard can reach and activate controls; field errors visible for blank/overlong input; literal hostile HTML creates no element/script.",
-      "Mandatory negative controls run each seeded fault and a deliberately wrong title/status candidate under the fixed verifier and must fail. Tool smoke/exit 0 never supplies verifier acceptance.",
-      "Before/after hashes of candidate and acceptance; symlink, extra protected file or changing candidate bytes => invalid/inconclusive. Browser/process error => INCONCLUSIVE, never PASS."
-    ],
-    "implementationDelta": "Extend existing acceptance.mjs and baseline-fixture.test.mjs to cover missing PATCH title/description boundaries, no-insert counts, all persisted fields, close/reopen and keyboard/long-title UI cases. Freeze acceptance source before live runs. Record text check evidence and hashed trace/screenshot auxiliary artifacts. Do not send deterministic reference repairs or acceptance source to coding agent."
-  },
-  "resourceContract": {
-    "schema": "CORE_VALUE_V2; preserve V1 audit semantics",
-    "limits": {
-      "maxConcurrentProviderRequests": 1,
-      "minRequestIntervalSeconds": 10,
-      "maxWireRequestsPerExecution": 24,
-      "maxModelCallsPerExecution": 12,
-      "maxInputTokensPerCall": 16384,
-      "maxOutputTokensPerCall": 4096,
-      "maxTotalTokensPerExecution": 50000,
-      "maxAttemptsPerExecution": 2,
-      "maxExecutionActiveSeconds": 1200,
-      "maxToolCommandSeconds": 30,
-      "maxCohortWallSeconds": 259200,
-      "maxProviderWaitSeconds": 86400,
-      "maxWireRetriesPerLogicalRequest": 2,
-      "maxApiUsdPerExecution": 5,
-      "maxCohortApiUsd": 60,
-      "maxProbeRequests": 4,
-      "maxProbeOutputTokens": 512,
-      "maxProbeUsd": 0.1,
-      "maxJevStageCalls": 2,
-      "maxJevTransportAttemptsPerStage": 2,
-      "maxJevTotalInputTokens": 128000,
-      "maxJevUsd": 0.02
-    },
-    "admission": "D5 — Before live registration qualify existing NVIDIA route: A disables thinking with required tools; B disables thinking with named bash only after resolved A failure. First profile passing two probes wins before task outcomes. Four qualification wire attempts total, output 512, request timeout 300s/supervisor 310s, pacing 10s/concurrency one, USD 0.10. No UNKNOWN bypass, key rotation or capacity purchase.",
-    "transport": "Reserve every wire attempt before fsynced INTENT/SEND_STARTED. Persist actual response hash/usage on SETTLED; documented NOT_ADMITTED releases reservation only, not wire count. UNKNOWN holds worst-case budget. Redact auth/cookies. No hidden retries.",
-    "backoff": "Non-admission persists nextEligibleAt=max(now+min(60*2^retryIndex,3600),Retry-After)+seeded 0..5s jitter. Honor original deadline/wait cap; exit10 while waiting, zero early sends. Single owner/shared scheduler includes probes and both arms.",
-    "reconciliation": "Append evidence-bound RECONCILED against original request/attempt hash once. Identical replay no-op; conflicting replay fails. UNKNOWN keeps reservation until proof or terminal deadline, never assumes zero charge.",
-    "resume": "Fold durable journal before dispatch; finish RESULT_CAPTURED deterministic suffix without provider calls. Preserve attempts, active time and absolute deadlines. SEND_STARTED crash fences UNKNOWN. Kill only owned processes/containers and record cleanup errors.",
-    "handoff": "Portable hash manifest covers journal, probes, responses, candidates, verification, Core traces, metrics and receipts. Rebuild current stage/request/deadline/reservations/missing facts; no secrets/absolute paths. Import can remap runtime paths only.",
-    "termination": "Exit 0 completed facts/audit; 10 persisted wait; 11 unresolved provider; 12 resource exhausted; 2 invalid inputs; 3 missing prerequisite; 4 infrastructure failure. None is a value verdict. CLI status exposes required remaining executions, outstanding reservations, earliest retry and deadline. A blocked cohort can be retained as terminal and a separately authorized new cohort registered; never drop old charges.",
-    "journalSchema": "Retain current hash-chained fsynced events.jsonl schema and single-owner lock. Unique identical event replay only; fold is authority, current.json projection only. Preserve profile, reservation, response, retry, terminal bindings.",
-    "transitionTable": [
-      "REQUEST_INTENT -> SEND_STARTED (fsynced before wire), then SETTLED | NOT_ADMITTED | UNKNOWN. Ambiguous crash after SEND_STARTED -> UNKNOWN even if no wire actually left.",
-      "NOT_ADMITTED -> WAITING_PROVIDER without new semantic attempt if no agent steps executed and current driver can stop before query; otherwise end attempt with explicit reason. Every later launch counts toward maxAttemptsPerExecution; reject third launch.",
-      "UNKNOWN -> RECONCILED_SETTLED or RECONCILED_NOT_ADMITTED only with proof; unresolved -> TERMINAL_UNRESOLVED at deadline. Original UNKNOWN remains in journal and fold uses the one matching reconciliation.",
-      "RESULT_CAPTURED -> VERIFIED -> CORE_ADOPTED (EXHARNESS only) -> ATTEMPT_TERMINAL. Recovery performs missing deterministic suffix only; provider calls are not part of suffix.",
-      "WAITING_PROVIDER -> eligible ADMISSION only when now >= nextEligibleAt and all shared limits allow it; otherwise remain waiting or terminate exhausted. Any nonterminal -> resource terminal on absolute deadline."
-    ],
-    "recoveryTests": "Fresh-process/fake-clock tests: 429 wait/early resume zero sends; disconnect UNKNOWN/fenced resume/proof reconciliation; captured-result adoption without new calls; growing portable export; conflicting reconciliation, third attempt, expired deadline and second owner rejection. Assert exact dispatch, budget and candidate identities.",
-    "qualification": {
-      "profiles": [
-        {
-          "id": "A",
-          "enableThinking": false,
-          "toolChoice": "required"
-        },
-        {
-          "id": "B",
-          "enableThinking": false,
-          "toolChoice": {
-            "type": "function",
-            "function": {
-              "name": "bash"
-            }
-          }
-        }
-      ],
-      "reasoningBudget": null,
-      "probeOutputTokens": 512,
-      "requestTimeoutSeconds": 300,
-      "supervisorTimeoutSeconds": 310,
-      "deadlineSeconds": 1800,
-      "maxWireAttempts": 4,
-      "maxUsd": 0.1,
-      "selection": "Two valid structured bash calls with settled usage/model attestation; first passing profile. Record every failure. No live cohort registration until qualification succeeds; bind qualification hash and selected profile. Shared campaign identity owns budgets across process/output restarts. No second cohort or semantic reroll automatically."
-    },
-    "canary": {
-      "gatePolicyId": "CANARY_OPERABILITY_V2",
-      "purpose": "OPERABILITY",
-      "submissionRequired": false,
-      "gate": "D16 — CANARY_OPERABILITY_V2: OPERABILITY, submissionRequired=false (telemetry). Nonce only in nonce.txt, never prompt. Require successful native read, exact tool result, FIRST successful marker write in strictly later assistant turn and exact disk marker; map tool call IDs to original SETTLED request/response and results; >=2 causal native turns. Shared file-backed evaluator register/live/audit. PASS needs complete capture/digest/measured timing, resolved wires and 4wire/50k/1200active seconds/USD5 caps. Submitted or journal-backed LimitsExceeded after full chain may PASS. Recovered settled malformed/truncated responses remain charged telemetry. UNKNOWN/reserved => UNRESOLVED; infra/capture/timing/caps/incomplete chain => FAIL. Pin policy/prompt hashes in profile/canary/registration/Jev; new discriminator, old pinned and r6 FAIL unchanged."
-    }
-  },
-  "comparisonContract": {
-    "studyId": "BB065-CORE-VALUE-2",
-    "pairs": [
-      {
-        "pairId": "P01",
-        "taskId": "NORM-01",
-        "repeat": 1,
-        "order": [
-          "DIRECT",
-          "EXHARNESS"
-        ]
-      },
-      {
-        "pairId": "P02",
-        "taskId": "STATUS-01",
-        "repeat": 1,
-        "order": [
-          "EXHARNESS",
-          "DIRECT"
-        ]
-      },
-      {
-        "pairId": "P03",
-        "taskId": "ORDER-01",
-        "repeat": 1,
-        "order": [
-          "DIRECT",
-          "EXHARNESS"
-        ]
-      },
-      {
-        "pairId": "P04",
-        "taskId": "NORM-01",
-        "repeat": 2,
-        "order": [
-          "EXHARNESS",
-          "DIRECT"
-        ]
-      },
-      {
-        "pairId": "P05",
-        "taskId": "STATUS-01",
-        "repeat": 2,
-        "order": [
-          "DIRECT",
-          "EXHARNESS"
-        ]
-      },
-      {
-        "pairId": "P06",
-        "taskId": "ORDER-01",
-        "repeat": 2,
-        "order": [
-          "EXHARNESS",
-          "DIRECT"
-        ]
-      }
-    ],
-    "executionIdentity": "executionId=pairId:arm; taskId retains family. All ledgers/report joins key executionId and attemptId, not task family alone. Twelve independent resets; no workspace, trajectory, feedback or solution transfer across pairs/arms.",
-    "commonPolicy": "Same mini, profile, prompt, tools, Docker, verifier, two attempts and budgets. Both arms receive identical bounded failure feedback without verifier source/reference repairs. Infrastructure verifier error is INCONCLUSIVE. Acceptance from mandatory checks; semantic value from Jev.",
-    "corePorts": "Reuse createCoreHarness environment/evaluator/sessionStore. Common executor returns candidate-bound facts; actual independent verifier maps to imported VALID/PASS, VALID/GAP, or INCONCLUSIVE/null enums. Atomic store load/save; optional supervisor/context/dosage disabled identically, no synthetic PASS.",
-    "coreLifecycle": "SessionId=cohortId:executionId; seed={id:executionId,version:resetDigest}. Observe/act then recordVerification on result candidate, check digest, evaluate and promote only valid PASS changed candidate. No-op keeps identity and never re-promotes baseline. Persist/audit actual events and durable state hash; recovery adopts journaled results once. DIRECT retains common durable acceptance/recovery safeguards.",
-    "metrics": "Retain all twelve raw rows and six paired rows with provider calls/tokens/usage certainty, every attempt/check/outcome, active/elapsed/wait and phase times, known/unknown USD, actual human intervals and Core events/storage. Zero denominator => null; no fabricated productivity.",
-    "rubric": "Only Jev judges scoped net value. Require complete comparable live and controlled evidence and preserved quality for VALUE_DEMONSTRATED; an attributable benefit in efficiency OR candidate_control OR recovery may justify measured overhead. Efficiency retains V1 20% median active-time gain OR one extra accepted execution, <=10% tokens, and <=10% known positive cost. These thresholds apply only to efficiency, not every value dimension. Candidate control/recovery must exceed unchanged DIRECT safeguards; equal protection is no incremental Core benefit. Jev weighs overhead with no agent/operator weights. Adequate data showing absent or outweighed benefit permits NO_VALUE_DEMONSTRATED. Missing essential evidence or unresolved confounds requires INCONCLUSIVE. Replay demonstrates only the injected scenario, never field incident prevalence/customer productivity. Unknown infrastructure cost forbids financial claims.",
-    "uncertainty": "Show paired observations and descriptive bootstrap interval for median active-time ratio, seed 65074, 10000 resamples; repeated task families and six pairs are explicitly not independent generalization evidence. Missing/zero ratios remain null and cannot be sampled away. Human time is telemetry unless complete; no seven-day or customer holdout claims.",
-    "pilotCompatibility": "Preserve existing 20-pair protocol registration and cohort selection as FUTURE_PILOT, never count fixture repeats as held-out customer tasks. Remove agent/code value decisions there too; old numeric thresholds become facts/rubric inputs to a future independently bound Jev evaluation.",
-    "metricSchema": "metrics.executions[12]: {executionId,pairId,taskId,repeat,arm,profileHash,promptHash,resetDigest,candidateDigest,attemptCount,terminalReason,checksPassed,checksTotal,accepted,provider:{wireRequests,modelCalls,inputTokens,outputTokens,cachedTokens,usageUnknown,apiUsd},timing:{registeredAt,startedAt,terminalAt,activeMs,providerWaitMs,elapsedMs},overheadUsd,humanIntervals,core:{eventCounts,stateBytes}}. Use null plus reason for unknown fields. metrics.pairs[6] join executionId by pairId, retain both raw rows and computed ratios. accepted means independent mandatory checks all passed, not a value judgment. V2 additionally records cohortId, phase durations (provider active/wait, tool, verification, Core controller/persistence), qualification/probe outcomes and separate controlledTrials with source/trace hashes. Missing executions remain explicit rows with null facts and reason.",
-    "timeAndCost": "Active sums measured executor/provider response, verifier and Core work; excludes persisted quota waits only. Elapsed includes queue/waits. Use monotonic intervals with start/stop events; unrecoverable gaps null. Sum all attempts; infrastructure USD only from registered rate, human intervals only actual events.",
-    "controlledTrials": {
-      "evidenceClass": "CONTROLLED_REPLAY",
-      "count": 24,
-      "families": [
-        "NORM-01",
-        "STATUS-01",
-        "ORDER-01"
-      ],
-      "arms": [
-        "DIRECT",
-        "EXHARNESS"
-      ],
-      "scenarios": [
-        "STALE_CANDIDATE_VERIFICATION",
-        "PRODUCER_SUCCESS_VERIFIER_REJECTION",
-        "CRASH_AFTER_DURABLE_RESULT",
-        "RESTART_AFTER_FINALIZATION"
-      ],
-      "method": "Frozen deterministic controls through actual production controller/adapter seams; same fault schedule and independent oracle. No model dispatch, no reference repair sent to coding agent. Record current/cited candidate hashes, unsafe finalization, duplicate-effect intents, lost results, recovery work, timings and safeguard owner COMMON or CORE. DIRECT retains all existing checks. Verify failed and inconclusive verifier variants within producer-success trial. Controlled results cannot satisfy 12 live execution requirement."
-    }
-  },
-  "jevValueContract": {
-    "model": "jev-1.13.0",
-    "endpoint": "https://api.typesafe.ai/v1/systemone",
-    "credentialEnv": "TYPESAFE_API_KEY",
-    "authority": "Semantic value judgments come only from actual TypeSafe responses. Operator and worker cannot supply choice, select a preferred cached result, modify rubric after outcomes or replace provider error with a choice. Deterministic checks enforce identity/schema/completeness and numeric computation, never author the semantic verdict.",
-    "stageOne": {
-      "questions": [
-        {
-          "id": "evidence",
-          "claim": "Do actual records establish all twelve live execution outcomes and all twenty-four separately labelled controlled trials with complete traceable accounting?",
-          "choices": [
-            "SATISFIED",
-            "INSUFFICIENT_EVIDENCE",
-            "CONTRADICTED"
-          ]
-        },
-        {
-          "id": "comparison",
-          "claim": "Are the two arms matched except for the declared real Core treatment, with scope/confounds adequately recorded?",
-          "choices": [
-            "SATISFIED",
-            "INSUFFICIENT_EVIDENCE",
-            "CONTRADICTED"
-          ]
-        },
-        {
-          "id": "quality",
-          "claim": "Does ExHarness preserve accepted fixture quality and protected verification boundaries?",
-          "choices": [
-            "SATISFIED",
-            "INSUFFICIENT_EVIDENCE",
-            "CONTRADICTED"
-          ]
-        },
-        {
-          "id": "efficiency",
-          "claim": "Does the observed accepted-outcome/time/token/cost tradeoff satisfy the preregistered fixture-benefit rubric?",
-          "choices": [
-            "SATISFIED",
-            "INSUFFICIENT_EVIDENCE",
-            "CONTRADICTED"
-          ]
-        },
-        {
-          "id": "candidate_control",
-          "claim": "Does controlled evidence establish incremental candidate-boundary protection from Core beyond the unchanged DIRECT/shared safeguards?",
-          "choices": [
-            "SATISFIED",
-            "INSUFFICIENT_EVIDENCE",
-            "CONTRADICTED"
-          ]
-        },
-        {
-          "id": "recovery",
-          "claim": "Does controlled evidence establish incremental recovery benefit from Core beyond unchanged DIRECT/shared safeguards?",
-          "choices": [
-            "SATISFIED",
-            "INSUFFICIENT_EVIDENCE",
-            "CONTRADICTED"
-          ]
-        }
-      ],
-      "instructions": "Each typed Choice independently reads named facts and rubric, never another same-batch answer. Criteria define SATISFIED as evidence establishes that single claim, CONTRADICTED as adequate evidence refutes it, INSUFFICIENT_EVIDENCE as facts missing or unresolved. Confidence is retained telemetry only."
-    },
-    "stageTwo": {
-      "questionId": "value",
-      "choices": {
-        "VALUE_DEMONSTRATED": "Complete comparable evidence and preserved quality plus attributable efficiency OR candidate-control OR recovery benefit justify measured overhead according to Jev. Efficiency need not be SATISFIED when another benefit justifies overhead.",
-        "NO_VALUE_DEMONSTRATED": "Adequate comparable evidence establishes no incremental benefit, worsened quality, or overhead outweighing benefits. Shared safeguards and ties are not Core benefit.",
-        "INCONCLUSIVE": "Essential evidence/comparability is missing or unresolved confounds prevent a supported scoped conclusion; no availability failure may become a negative value conclusion."
-      },
-      "instructions": "Jev alone weighs the exact stage-one answers, raw evidence and frozen rubric. Validate typed/schema/binding and prerequisite consistency only; do not encode all-dimensions SATISFIED, force positive from dimensions, reroll, weight choices or substitute agent judgment. Confidence remains telemetry."
-    },
-    "state": "Supply immutable registration/rubric; all twelve row-level metrics; independent verification checks; selected bounded original provider request/usage facts and original record hashes; actual Core lifecycle excerpts; all unknowns/failures and denominators; time/order/model identity limitations. Include raw evidence content needed for each claim, not hash-only claims. Deterministically bound excerpts with full-file hashes; exceeding 24000 UTF-8 bytes per stage is an explicit materialization error, not silent dropped coverage. Stage two adds exact stage-one response/hash.",
-    "receipt": "Use Node built-in crypto Ed25519, no new dependency. Persist exact redacted request/validated response and detached signed receipt per stage with issuer public-key fingerprint, state/question/rubric hashes, candidate SHA/tree, manifest/profile/evidence root and stage dependency. Final value.json is atomic pointer to stage two. Cache is keyed by all bound inputs and model; signatures revalidated on read. Active controller signing key is outside agent mounts/output; register trusted public key before dispatch. Missing signing key/Jev credential is explicit prerequisite, never an unsigned LIVE receipt.",
-    "trust": "The trusted evaluator process, isolated from both coding-agent containers, alone has TYPESAFE_API_KEY and an Ed25519 receipt signing key. Registration pins its trusted public-key fingerprint before any study result; public key is supplied independently to audit, never trusted from the bundle alone. Sign canonical {requestHash,responseHash,model,usage,evidenceRoot,stage,parentReceiptHash} only after callJev returns and validates a real response. Audit verifies Ed25519 signature and all re-materialized input hashes. Mock transport uses a distinct test key and evidenceClass DETERMINISTIC; production audit rejects it. Raw provider request/response and trusted execution provenance remain available to outer Jev; a signature proves controller provenance, not model correctness. No CLI option imports operator judgments or signs arbitrary supplied responses.",
-    "limits": "Use existing callJev bounded two transport attempts within 30 seconds per stage, no semantic reroll. Register current price provenance and reserve worst-case 64000 input tokens per stage at documented 0.042 USD/Mtok, output free, observed 2026-09-25; max 0.02 USD covers four wire attempts at that bound. If price changes, require new registered pricing. Count failed/unknown usage conservatively and isolate benchmark-judgment cost from both coding arms while including it in study total.",
-    "completion": "VALUE_CONCLUSION requires a valid real definitive Jev result, positive or negative. INCONCLUSIVE routes additional evidence/explicit new authorized cohort while preserving the old one; service unavailable remains a finite prerequisite failure. No claim of delivered benefit is necessary to deliver a trustworthy negative benchmark finding.",
-    "negativeTests": "Deterministic doubles never LIVE. Reject tampered evidence, answer/receipt/key/stage substitution, stale candidate, missing/duplicate execution or question. Exact cache replay only; changed evidence cannot reuse receipt. Missing key/429/timeout is unavailable, never a semantic answer.",
-    "evidenceIntegrity": "Bind immutable protocol/version/hash, unique cohortId, qualification and fault schedule hashes, exact profile/candidate tree, 12 unique registered executions, 24 controlled trials and trusted preregistered key fingerprint before dispatch and offline audit. Persist failed probes instead of null. Missing rows remain explicit. A derived value pointer is outside signed factual report. Expose receipt-valid separately from benchmark-complete; INCONCLUSIVE never satisfies completion. Preserve V1 audit according to original rubric."
-  },
-  "verificationSetup": {
-    "offline": "Use exact registered Node/Python/Playwright dependencies; tests resolve Python from configured executable or python3, not Windows-only paths. Tests have deterministic provider doubles and real local fixture/Core behavior, no real provider dispatch. Fake clocks cover multi-day waits without sleeping.",
-    "live": "Worker: all deterministic/regression checks first -> freeze SHA/tree/profile/protocol/policy/prompt/trusted key -> bounded A/B qualification -> one fresh canary -> PASS then exactly one cohort -> 12 LIVE + 24 real-fault controlled -> factual complete audit -> two real Jev stages -> dual export/offline audit. Research calls real readiness Jev only. INCONCLUSIVE is not complete, no reroll or cohort escape. Provider capacity not guaranteed.",
-    "candidate": "Commit the exact research publication before worker edits and use that commit as worker baselineSha; researchBaselineSha and implementedSourceSha retain the inspected implementation identity. The candidate includes the exact READY plan/objective, authorized source deltas and Living update. Model route changes require a new cohort. No operator judgment is required.",
-    "evidence": "Attach textual pair metrics, Core traces, response attestations, Jev payloads/replies/signatures/trusted-controller provenance and audit logs via contract.claimEvidence. Binary traces are auxiliary; text evidence must suffice for Jev."
   },
   "researchEvidence": [
     {
