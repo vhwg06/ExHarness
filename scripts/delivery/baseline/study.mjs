@@ -675,6 +675,62 @@ async function assertQualification({ profile, profilePath, value }) {
   return { artifact, artifactPath };
 }
 
+function safeEvidenceRef(output, ref) {
+  if (typeof ref !== 'string' || !ref || ref.startsWith('/') || ref.split('/').includes('..'))
+    fail('qualification evidence reference is not portable');
+  const path = resolve(output, ref);
+  if (relative(resolve(output), path).startsWith('..')) fail('qualification evidence reference escapes study output');
+  return path;
+}
+
+async function materializeQualificationSetup({ output, profileRoot, artifact }) {
+  const selected = artifact.attempts?.find(item => item.profileId === artifact.selectedProfileId);
+  if (!selected?.outputRef) fail('qualification artifact lacks selected setup output', 3);
+  const sourceRoot = resolve(profileRoot, selected.outputRef);
+  const sourceManifest = await plainJson(join(sourceRoot, 'setup', 'probes.json')).catch(() => null);
+  if (!sourceManifest) fail('qualification setup probe manifest is missing', 3);
+  const targetManifestPath = join(output, 'setup', 'probes.json');
+  const targetManifest = { ...sourceManifest, qualificationHash: artifact.qualificationHash,
+    selectedProfileId: artifact.selectedProfileId };
+  for (const probe of sourceManifest.probes ?? []) {
+    const probeId = probe.probeId;
+    const resultRef = `setup/${String(probeId).toLowerCase()}/result.json`;
+    const sourceResult = resolve(sourceRoot, resultRef);
+    const targetResult = safeEvidenceRef(output, resultRef);
+    await mkdir(dirname(targetResult), { recursive: true });
+    await copyFile(sourceResult, targetResult);
+    if (!probe.providerEvidenceRef) fail(`qualification probe lacks provider evidence: ${probeId}`, 3);
+    const sourceEvidence = resolve(sourceRoot, probe.providerEvidenceRef);
+    const targetEvidence = safeEvidenceRef(output, probe.providerEvidenceRef);
+    await mkdir(dirname(targetEvidence), { recursive: true });
+    await copyFile(sourceEvidence, targetEvidence);
+  }
+  await writeOnce(targetManifestPath, targetManifest);
+  return { ...targetManifest, qualificationHash: artifact.qualificationHash };
+}
+
+async function loadMaterializedQualificationSetup({ output, profile, value }) {
+  if (value.protocolId !== 'CORE_VALUE_V2') return null;
+  const manifest = await plainJson(join(output, 'setup', 'probes.json')).catch(error => {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  });
+  if (!manifest) fail('CORE_VALUE_V2 registration is missing materialized qualification probes', 3);
+  const required = value.qualification.requiredSuccessfulProbes;
+  if (manifest.evidenceClass !== 'LIVE_PROVIDER_PROBES' || manifest.modelId !== profile.model.providerModelId ||
+      manifest.selectedProfileId !== profile.qualificationProfileId || manifest.qualificationHash !== profile.qualificationHash ||
+      manifest.probes?.length < required || (manifest.failures ?? []).length > 0)
+    fail('materialized qualification probes are not bound to the selected profile', 3);
+  for (const probe of manifest.probes) {
+    if (probe.providerEvidenceRef && await digestFile(safeEvidenceRef(output, probe.providerEvidenceRef)) !== probe.providerEvidenceHash)
+      fail(`materialized qualification evidence changed: ${probe.probeId}`, 3);
+    const result = await plainJson(safeEvidenceRef(output, `setup/${String(probe.probeId).toLowerCase()}/result.json`));
+    if (result.status !== 'PASS' || result.toolCall?.toolName !== 'bash' || result.toolCall?.command !== `printf 'EXHARNESS_PROBE_${String(probe.probeId).match(/(\d+)$/)?.[1]}'`)
+      fail(`materialized qualification result is invalid: ${probe.probeId}`, 3);
+  }
+  return { ...manifest, ready: true, prerequisiteMissing: false, selectedProfileId: profile.qualificationProfileId, failures: [] };
+}
+
 async function registerStudy({ profile, profilePath, output }) {
   const identities = await fixtureIdentities();
   const value = await protocolFor({ profile });
@@ -687,7 +743,10 @@ async function registerStudy({ profile, profilePath, output }) {
   await mkdir(output, { recursive: true });
   const existing = await readFile(join(output, 'manifest.json'), 'utf8').then(JSON.parse).catch(() => null);
   if (existing && canonical(existing) !== canonical(manifest)) fail('study registration is immutable; changed input requires a new cohort');
-  if (qualification) await writeOnce(join(output, 'qualification.json'), qualification.artifact);
+  if (qualification) {
+    await writeOnce(join(output, 'qualification.json'), qualification.artifact);
+    await materializeQualificationSetup({ output, profileRoot: dirname(resolve(profilePath)), artifact: qualification.artifact });
+  }
   validateStudyManifest(manifest, { protocol: value, profileHash: checked.profileHash, candidateSha: profile.candidateSha, candidateTree: profile.candidateTree });
   if (!existing) await writeOnce(join(output, 'manifest.json'), manifest);
   const resource = new ResourceState({ journalPath: join(output, 'events.jsonl'), experimentId: manifest.studyId, profileHash: manifest.profileHash, candidateSha: manifest.candidateSha, candidateTree: manifest.candidateTree, protocolHash: manifest.protocolHash, limits: value.limits });
@@ -1013,7 +1072,8 @@ export async function runStudy({ profile, output, executor = executeMiniAttempt,
   let setupStatus = null;
   try {
     await recoverProviderJournal({ output, resource });
-    setupStatus = await runProviderProbes({ profile: executionProfile, output, manifest, resource, clock });
+    setupStatus = await loadMaterializedQualificationSetup({ output, profile: executionProfile, value }) ??
+      await runProviderProbes({ profile: executionProfile, output, manifest, resource, clock });
     for (const task of setupStatus.ready ? manifest.tasks : []) {
       const state = await resource.state();
       if (state.cohortTerminalReason) break;
@@ -1171,26 +1231,41 @@ export async function auditStudy({ profile, profilePath = null, output }) {
   }
   const probeManifest = await plainJson(join(output, 'setup', 'probes.json')).catch(() => null);
   const requiredProbeCount = value.qualification?.requiredSuccessfulProbes ?? value.limits.maxProbeRequests;
-  const anyTaskDispatch = Object.values(resourceState.requests).some(row => !row.executionId.startsWith('SETUP:PROBE-'));
-  if (anyTaskDispatch && (!probeManifest || probeManifest.probes?.length < requiredProbeCount))
+  const qualificationBacked = value.protocolId === 'CORE_VALUE_V2' &&
+    probeManifest?.qualificationHash === profile.qualificationHash &&
+    probeManifest?.selectedProfileId === profile.qualificationProfileId;
+  const anyTaskDispatch = Object.values(resourceState.requests).some(row => !row.executionId.startsWith('SETUP:'));
+  if (anyTaskDispatch && (!probeManifest || probeManifest.probes?.length < requiredProbeCount ||
+      value.protocolId === 'CORE_VALUE_V2' && !qualificationBacked))
     fail('task provider dispatch occurred before the required successful registered probes');
   if (probeManifest) {
     if (probeManifest.evidenceClass !== 'LIVE_PROVIDER_PROBES' || probeManifest.modelId !== profile.model.providerModelId ||
-        probeManifest.probes?.length < requiredProbeCount) fail('provider probe manifest identity/count mismatch');
+        probeManifest.probes?.length < requiredProbeCount ||
+        value.protocolId === 'CORE_VALUE_V2' && !qualificationBacked)
+      fail('provider probe manifest identity/count mismatch');
     for (const probe of probeManifest.probes ?? []) {
       const probeId = probe.probeId;
       const index = Number(probeId?.match(/(\d+)$/)?.[1]);
       if (!Number.isInteger(index)) fail(`provider probe id is invalid: ${probeId}`);
-      const executionId = `SETUP:${probeId}`;
-      const setupExecution = resourceState.executions[executionId];
-      const request = Object.values(resourceState.requests).find(item => item.executionId === executionId);
-      if (!probe || setupExecution?.status !== 'COMPLETED' || request?.status !== 'SETTLED' ||
-          probe.requestId !== request.requestId || probe.providerEvidenceHash !== request.responseHash ||
-          probe.inputTokens !== request.usage?.inputTokens || probe.outputTokens !== request.usage?.outputTokens ||
-          probe.costUsd !== request.usage?.costUsd || probe.outputTokens > value.limits.maxProbeOutputTokens)
+      if (!probe || !probe.providerEvidenceRef || !probe.providerEvidenceHash ||
+          await digestFile(safeEvidenceRef(output, probe.providerEvidenceRef)).catch(() => null) !== probe.providerEvidenceHash ||
+          probe.outputTokens > value.limits.maxProbeOutputTokens)
         fail(`provider probe evidence incomplete: ${probeId}`);
-      const probeResult = await plainJson(join(output, 'setup', probeId.toLowerCase(), 'result.json'));
-      if (probeResult.status !== 'PASS' || probeResult.toolCall?.command !== `printf 'EXHARNESS_PROBE_${index}'`)
+      if (!qualificationBacked) {
+        const executionId = `SETUP:${probeId}`;
+        const setupExecution = resourceState.executions[executionId];
+        const request = Object.values(resourceState.requests).find(item => item.executionId === executionId);
+        if (setupExecution?.status !== 'COMPLETED' || request?.status !== 'SETTLED' ||
+            probe.requestId !== request.requestId || probe.providerEvidenceHash !== request.responseHash ||
+            probe.inputTokens !== request.usage?.inputTokens || probe.outputTokens !== request.usage?.outputTokens ||
+            probe.costUsd !== request.usage?.costUsd)
+          fail(`provider probe resource evidence incomplete: ${probeId}`);
+      }
+      const probeResult = await plainJson(safeEvidenceRef(output, `setup/${probeId.toLowerCase()}/result.json`));
+      if (probeResult.status !== 'PASS' || probeResult.providerEvidenceRef !== probe.providerEvidenceRef ||
+          probeResult.providerEvidenceHash !== probe.providerEvidenceHash ||
+          probeResult.toolCall?.toolName !== 'bash' || probeResult.toolCall?.command !== `printf 'EXHARNESS_PROBE_${index}'` ||
+          probeResult.usage?.outputTokens !== probe.outputTokens)
         fail(`provider probe tool-call result invalid: ${probeId}`);
     }
   }
