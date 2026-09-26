@@ -393,6 +393,14 @@ async function finalizeProbeResult({ output, probeId, executionId, resultPath, e
   return { result: stored, accepted, unresolvedProvider: false, resourceExhausted: stored.resourceCode === 'RESOURCE_LIMIT_EXCEEDED' };
 }
 
+export function buildProviderProbeConfig({ profile, probeId, probeCommand, attemptId, ledgerPath, evidenceRoot,
+  resourceContext, resourceBridgePath, nodeExecutable, resultPath }) {
+  if (!profile || !probeId || !probeCommand || !attemptId || !ledgerPath || !evidenceRoot || !resourceContext ||
+      !resourceBridgePath || !nodeExecutable || !resultPath) fail('provider probe configuration is incomplete');
+  return { profile, probeId, probeCommand, attemptId, ledgerPath, evidenceRoot, resourceContext,
+    resourceBridgePath, nodeExecutable, resultPath };
+}
+
 async function runProviderProbes({ profile, output, manifest, resource, clock }) {
   const value = await protocol();
   const successful = [];
@@ -456,9 +464,9 @@ async function runProviderProbes({ profile, output, manifest, resource, clock })
     const ledgerPath = join(probeDir, 'provider-ledger.jsonl');
     const configPath = join(probeDir, 'probe-config.json');
     const childResultPath = join(probeDir, 'driver-result.json');
-    await writeOnce(configPath, { profile: probeProfile, probeId, probeCommand: expectedCommand,
-      ledgerPath, evidenceRoot: output, resourceContext,
-      resourceBridgePath: join(root, 'resource-bridge.mjs'), nodeExecutable: process.execPath, resultPath: childResultPath });
+    await writeOnce(configPath, buildProviderProbeConfig({ profile: probeProfile, probeId, probeCommand: expectedCommand,
+      attemptId, ledgerPath, evidenceRoot: output, resourceContext,
+      resourceBridgePath: join(root, 'resource-bridge.mjs'), nodeExecutable: process.execPath, resultPath: childResultPath }));
     const startedAt = performance.now();
     const wallStart = clock();
     const child = await runChild(profile.pythonExecutable, [join(root, 'probe_driver.py'), configPath],

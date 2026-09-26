@@ -8,6 +8,7 @@ import { classifyRunResult, main, selectedCalibrationTaskIds } from '../../scrip
 import { CALIBRATION_TASK_IDS, MINI_COMMIT, NODE_VERSION, PLAYWRIGHT_VERSION, PROTOCOL, PROTOCOL_HASH, fixtureIdentities, sha256 } from '../../scripts/delivery/baseline/contract.mjs';
 import { exportProviderRecords, reconcileOriginalResponse, reconcileStoredCompletion } from '../../scripts/delivery/baseline/provider-export.mjs';
 import { ResourceState } from '../../scripts/delivery/baseline/resource-state.mjs';
+import { buildProviderProbeConfig } from '../../scripts/delivery/baseline/study.mjs';
 
 const PYTHON = (() => {
   for (const candidate of [process.env.EXHARNESS_TEST_PYTHON, 'python3', 'python'].filter(Boolean)) {
@@ -180,6 +181,16 @@ for invalid in [
 print('probe-contract-ok')
 `;
   assert.match(execFileSync(PYTHON, ['-c', script], { encoding: 'utf8' }), /probe-contract-ok/);
+});
+
+test('provider probe driver config binds the registered attempt before launch', () => {
+  const attemptId = 'SETUP:PROBE-1:attempt-1';
+  const config = buildProviderProbeConfig({ profile: { model: {}, budgets: {} }, probeId: 'PROBE-1',
+    probeCommand: "printf 'EXHARNESS_PROBE_1'", attemptId, ledgerPath: '/tmp/provider-ledger.jsonl',
+    evidenceRoot: '/tmp/study', resourceContext: { executionId: 'SETUP:PROBE-1' },
+    resourceBridgePath: '/tmp/resource-bridge.mjs', nodeExecutable: process.execPath, resultPath: '/tmp/result.json' });
+  assert.equal(config.attemptId, attemptId);
+  assert.throws(() => buildProviderProbeConfig({ ...config, attemptId: '' }), /configuration is incomplete/);
 });
 
 test('proven 429 admission failure releases reservation but keeps the wire attempt', async t => {
