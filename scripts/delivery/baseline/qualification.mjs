@@ -2,7 +2,6 @@ import { readFile } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { canonical, fixtureIdentities, sha256, validateProfile } from './contract.mjs';
-import { loadValueProtocol, runProviderProbes } from './study.mjs';
 import { ResourceState, portableResourceState, writeAtomicJson } from './resource-state.mjs';
 
 const fail = (message, code = 2) => {
@@ -157,6 +156,7 @@ async function writeCurrentArtifact(path, artifact) {
 
 export async function runQualification({ profile: baseProfile, profilePath = null, output, clock = () => new Date() } = {}) {
   if (!baseProfile || !output) fail('profile and output are required');
+  const { loadValueProtocol, runProviderProbes } = await import('./study.mjs');
   const value = await loadValueProtocol('CORE_VALUE_V2');
   const identities = await fixtureIdentities();
   const baseProfileHash = `sha256:${sha256(baseProfile)}`;

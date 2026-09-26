@@ -122,12 +122,12 @@ print('resource-exhaustion-explicit')
   assert.match(execFileSync(PYTHON, ['-c', script], { encoding: 'utf8' }), /resource-exhaustion-explicit/);
 });
 
-test('Python provider calls reserve and settle individually in the shared resource journal', async t => {
+test('Python provider pacing keeps one attempt alive and settles each request in the shared journal', async t => {
   const output = await mkdtemp(join(tmpdir(), 'baseline-resource-bridge-'));
   t.after(() => rm(output, { recursive: true, force: true }));
   const journalPath = join(output, 'events.jsonl');
   const identity = { profileHash: 'sha256:profile', candidateSha: 'a'.repeat(40), candidateTree: 'b'.repeat(40), protocolHash: 'sha256:protocol' };
-  const limits = { maxConcurrentProviderRequests: 1, minRequestIntervalSeconds: 0, maxWireRequestsPerExecution: 8,
+  const limits = { maxConcurrentProviderRequests: 1, minRequestIntervalSeconds: 1, maxWireRequestsPerExecution: 8,
     maxTotalTokensPerExecution: 50, maxApiUsdPerExecution: 1, maxAttemptsPerExecution: 2,
     maxProviderWaitSeconds: 3600, maxExecutionActiveSeconds: 1200, maxCohortWallSeconds: 3600 };
   const resource = new ResourceState({ journalPath, experimentId: 'bridge-test', ...identity, limits });
@@ -142,6 +142,7 @@ sys.path.insert(0, ${JSON.stringify(source)})
 from provider_budget import ProviderBudget
 root = Path(${JSON.stringify(output.replaceAll('\\', '/'))})
 profile = {'budgets': {'maxInputTokensPerCall': 10, 'maxOutputTokensPerCall': 5, 'maxModelCalls': 8, 'maxWireRequestsPerExecution': 8, 'maxTotalTokens': 50, 'maxApiUsd': 1, 'maxProviderWaitSeconds': 3600}, 'model': {'maxContextTokens': 20, 'inputUsdPerMillion': 0, 'outputUsdPerMillion': 0}}
+profile['budgets']['maxWallSeconds'] = 30
 resource = json.loads(${JSON.stringify(JSON.stringify(context))})
 budget = ProviderBudget(root/'provider-ledger.jsonl', profile, 'NORM-01', 'P01:DIRECT:attempt-1', root, resource, ${JSON.stringify(join(resolve('scripts/delivery/baseline'), 'resource-bridge.mjs').replaceAll('\\', '/'))}, ${JSON.stringify(process.execPath)})
 for index in range(3):
@@ -150,6 +151,7 @@ for index in range(3):
     raw = {'id': 'provider-'+str(index), 'model': 'model', 'usage': {'input_tokens': 2, 'output_tokens': 1}}
     proof = budget.attest(request, raw, 'RETRIEVABLE_RECORD')
     budget.settle(request, raw['id'], 2, 1, evidence=proof)
+assert budget.provider_wait_seconds > 0
 print('resource-bridge-ok')
 `;
   assert.match(execFileSync(PYTHON, ['-c', script], { encoding: 'utf8' }), /resource-bridge-ok/);
@@ -157,9 +159,28 @@ print('resource-bridge-ok')
   assert.equal(state.counters.wireRequests, 3);
   assert.equal(state.counters.settled, 3);
   assert.equal(state.executions['P01:DIRECT'].status, 'RUNNING');
+  assert.equal(state.executions['P01:DIRECT'].attempts, 1);
+  assert.ok(state.executions['P01:DIRECT'].providerWaitMs > 0);
+  assert.equal(state.executions['P01:DIRECT'].waitStartedAt, null);
   assert.equal(Object.values(state.requests).reduce((sum, row) => sum + row.usage.inputTokens + row.usage.outputTokens, 0), 9);
   assert.ok(Object.values(state.requests).every(row => row.inputTokensReserved === 10 && row.outputTokensReserved === 5));
   assert.ok(Object.values(state.requests).every(row => row.proof.providerEvidenceRef));
+});
+
+test('mini retry wall limit is a positive integer and never disables the deadline', () => {
+  const source = resolve('scripts/delivery/baseline');
+  const script = `import sys
+sys.path.insert(0, ${JSON.stringify(source)})
+from mini_driver import mini_wall_seconds
+from provider_budget import BudgetError
+assert mini_wall_seconds(1189.61002225) == 1189
+assert type(mini_wall_seconds(1200)) is int
+for seconds in [0, 0.9, -1, float('nan'), float('inf')]:
+    try: mini_wall_seconds(seconds)
+    except BudgetError as error: assert error.code == 'RESOURCE_LIMIT_EXCEEDED'
+    else: raise AssertionError('unsafe deadline accepted')
+`;
+  execFileSync(PYTHON, ['-c', script]);
 });
 
 test('provider preflight accepts only the one exact bounded bash tool call', () => {

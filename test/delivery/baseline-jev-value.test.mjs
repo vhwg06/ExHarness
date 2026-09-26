@@ -4,7 +4,7 @@ import { generateKeyPairSync } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { completeValue, evaluateValue, auditValue } from '../../scripts/delivery/baseline/jev-value.mjs';
+import { buildStageOnePayload, completeValue, evaluateValue, auditValue } from '../../scripts/delivery/baseline/jev-value.mjs';
 import { runControlledTrials } from '../../scripts/delivery/baseline/controlled-trials.mjs';
 import { sha256 } from '../../scripts/delivery/baseline/contract.mjs';
 
@@ -212,10 +212,43 @@ test('CORE_VALUE_V2 sends controlled evidence to Jev and permits attributable co
   assert.deepEqual(Object.keys(payloads[0].questions).sort(), ['candidate_control', 'comparison', 'efficiency', 'evidence', 'quality', 'recovery']);
   assert.equal(payloads[0].state.study.controlledTrials.count, 24);
   assert.equal(payloads[0].state.study.controlledTrials.evidenceClass, 'CONTROLLED_REPLAY');
+  for (const payload of payloads) {
+    assert.equal(payload.state.study.executions.length, 12);
+    assert.equal(payload.state.study.controlledTrials.trials.length, 24);
+    assert.equal(payload.state.study.providerProbes.probes.length, 2);
+    assert.equal(payload.state.study.report.complete, true);
+    assert.ok(payload.state.study.executions.some(row => row[0] === 'P01:DIRECT'));
+    assert.equal(payload.state.evidenceRoot, `sha256:${sha256((await import('../../scripts/delivery/baseline/contract.mjs')).canonical(payload.state.study))}`);
+  }
   assert.ok(Buffer.byteLength(JSON.stringify(payloads[0])) < fixture.protocol.jev.evidenceByteLimit);
   assert.ok(Buffer.byteLength(JSON.stringify(payloads[1])) < fixture.protocol.jev.evidenceByteLimit);
   const audited = await auditValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true });
   assert.equal(audited.finalChoice, 'VALUE_DEMONSTRATED');
   const complete = await completeValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true });
   assert.equal(complete.benchmarkComplete, true);
+});
+
+test('full live request ledgers fit the Jev transport with bound factual summaries and explicit failures', async t => {
+  const f = await coreFixture(t);
+  const metrics = structuredClone(f.metrics);
+  for (const row of metrics.executions) row.provider.rows = Array.from({ length: 12 }, (_, i) => ({
+    requestId: `${row.executionId}-${i}`, status: 'SETTLED', inputTokens: 100, outputTokens: 20,
+    providerEvidenceRef: `executions/${row.executionId}/provider-responses/${i}.json`, providerEvidenceHash: `sha256:${'d'.repeat(64)}`
+  }));
+  const args = { ...f, protocol: f.protocol, metrics, allowDeterministic: true,
+    setupProbes: JSON.parse(await readFile(join(f.output, 'setup/probes.json'), 'utf8')),
+    controlledTrials: JSON.parse(await readFile(join(f.output, 'controlled-trials.json'), 'utf8')) };
+  const payload = buildStageOnePayload(args);
+  assert.equal(payload.state.study.executions[0][10].count, 12);
+  assert.equal(payload.state.study.executions[0][10].knownInputTokens, 1200);
+  assert.equal(payload.state.study.executions[0][10].evidenceBoundCount, 12);
+  assert.deepEqual(payload.state.study.executions[0][10].statuses, { SETTLED: 12 });
+  const root = payload.state.study.executions[0][10].root;
+  metrics.executions[0].provider.rows[0].status = 'UNKNOWN';
+  metrics.executions[0].provider.rows[0].reason = 'provider timeout';
+  const changed = buildStageOnePayload(args);
+  assert.notEqual(changed.state.study.executions[0][10].root, root);
+  assert.deepEqual(changed.state.study.executions[0][10].failures, [['P01:DIRECT-0', 'UNKNOWN', 'provider timeout']]);
+  metrics.executions[0].provider.rows[0].reason = 'x'.repeat(24000);
+  assert.throws(() => buildStageOnePayload(args), /materialization bound/);
 });

@@ -296,6 +296,16 @@ async function validateControlledArtifactIfPresent({ controlledTrials, manifest,
 export function evidenceText({ manifest, report, metrics, value, setupProbes = null, controlledTrials = null }) {
   const checkCatalog = [...new Set((metrics.executions ?? []).flatMap(row => (row.verificationChecks ?? []).map(item => item.check)).filter(label => typeof label === 'string'))].sort();
   const compactExecution = row => {
+    const requests = row.provider?.rows ?? [];
+    const requestSummary = {
+      count: requests.length,
+      root: hashBody(requests),
+      statuses: requests.reduce((counts, item) => { counts[item.status] = (counts[item.status] ?? 0) + 1; return counts; }, {}),
+      evidenceBoundCount: requests.filter(item => item.providerEvidenceRef && item.providerEvidenceHash).length,
+      knownInputTokens: requests.reduce((sum, item) => sum + (item.inputTokens ?? 0), 0),
+      knownOutputTokens: requests.reduce((sum, item) => sum + (item.outputTokens ?? 0), 0),
+      failures: requests.filter(item => item.status !== 'SETTLED').map(item => [item.requestId, item.status, item.reason ?? null])
+    };
     const checkMask = checkCatalog.map(name => {
       const check = (row.verificationChecks ?? []).find(item => item.check === name);
       return check == null ? '?' : check.pass ? '1' : '0';
@@ -305,7 +315,7 @@ export function evidenceText({ manifest, report, metrics, value, setupProbes = n
       row.checksPassed, row.checksTotal, checkMask, row.verificationHash ?? null, row.accepted,
       [row.provider?.wireRequests ?? null, row.provider?.modelCalls ?? null, row.provider?.inputTokens ?? null,
         row.provider?.outputTokens ?? null, row.provider?.cachedTokens ?? null, row.provider?.apiUsd ?? null, row.provider?.usageUnknown ?? null],
-      (row.provider?.rows ?? []).map(item => [item.requestId, item.status, item.inputTokens, item.outputTokens, item.providerEvidenceRef, item.providerEvidenceHash]),
+      requestSummary,
       [row.timing?.activeMs ?? null, row.timing?.providerWaitMs ?? null, row.timing?.elapsedMs ?? null],
       row.overheadUsd ?? null,
       row.core ? [row.core.eventCounts, row.core.stateBytes] : null,
@@ -418,6 +428,17 @@ export function evidenceText({ manifest, report, metrics, value, setupProbes = n
       observationAsOf: report.observationAsOf
     },
     checkCatalog,
+    ...(value.protocolId === 'CORE_VALUE_V2' ? { columns: {
+      executions: ['executionId', 'attemptCount', 'terminalReason', 'verificationStatus', 'checksPassed', 'checksTotal', 'checkMask', 'verificationHash', 'accepted', 'provider', 'requests', 'timing', 'overheadUsd', 'core', 'resetDigest', 'candidateDigest'],
+      provider: ['wireRequests', 'modelCalls', 'inputTokens', 'outputTokens', 'cachedTokens', 'apiUsd', 'usageUnknown'],
+      requestFailures: ['requestId', 'status', 'reason'],
+      timing: ['activeMs', 'providerWaitMs', 'elapsedMs'], core: ['eventCounts', 'stateBytes'],
+      trials: ['trialId', 'family', 'arm', 'scenario', 'outcome', 'unsafeAcceptance', 'duplicateEffect', 'lostResult', 'recoveryWork', 'attribution', 'oracleHash', 'traceHash'],
+      manifestPairs: ['pairId', 'taskId', 'repeat', 'order'],
+      reportPairs: ['pairId', 'taskId', 'repeat', 'order', 'directAccepted', 'exharnessAccepted', 'activeTimeRatio', 'tokenRatio', 'costRatio', 'directActiveMs', 'exharnessActiveMs'],
+      probes: ['probeId', 'requestId', 'providerRequestId', 'inputTokens', 'outputTokens', 'evidenceRef', 'evidenceHash', 'command'],
+      failures: ['probeId', 'profileId', 'reason', 'status', 'evidenceHash']
+    } } : {}),
     executions: (metrics.executions ?? []).map(compactExecution),
     ...(value.protocolId !== 'CORE_VALUE_V2' ? { rubric: value.rubric } : {})
   };
@@ -430,17 +451,9 @@ export function evidenceText({ manifest, report, metrics, value, setupProbes = n
 export function buildStageOnePayload({ manifest, report, metrics, protocol: value, setupProbes = null, controlledTrials = null, allowDeterministic = false } = {}) {
   ensureBoundStudy(manifest, report, value, { allowDeterministic, setupProbes, controlledTrials });
   const evidence = evidenceText({ manifest, report, metrics, value, setupProbes, controlledTrials });
-  const studyState = value.protocolId === 'CORE_VALUE_V2' ? {
-    studyId: manifest.studyId,
-    protocolId: value.protocolId,
-    evidenceClass: report.evidenceClass,
-    manifestHash: hashBody(manifest),
-    candidateSha: manifest.candidateSha,
-    candidateTree: manifest.candidateTree,
-    liveExecutionCount: metrics.executions?.length ?? 0,
-    controlledTrials: { evidenceClass: controlledTrials?.evidenceClass ?? null, count: controlledTrials?.trials?.length ?? 0,
-      faultScheduleHash: controlledTrials?.faultScheduleHash ?? null }
-  } : evidence.data;
+  // Only state/questions cross the API boundary. Hashes and counts cannot
+  // substitute for the observations Jev is being asked to judge.
+  const studyState = evidence.data;
   const evidenceForPayload = value.protocolId === 'CORE_VALUE_V2'
     ? { text: evidence.text, hash: evidence.hash, bytes: evidence.bytes }
     : evidence;
@@ -770,7 +783,8 @@ export async function completeValue({ output, publicKeyPath = process.env.EXHARN
   const value = await protocol(protocolIdFor(manifest));
   const report = await plainJson(join(directory, 'report.json'));
   const controlledTrials = await plainJson(join(directory, 'controlled-trials.json')).catch(() => null);
-  ensureBoundStudy(manifest, report, value, { allowDeterministic, controlledTrials, requireControlled: true });
+  const setupProbes = await plainJson(join(directory, 'setup', 'probes.json')).catch(() => null);
+  ensureBoundStudy(manifest, report, value, { allowDeterministic, setupProbes, controlledTrials, requireControlled: true });
   if (!report.complete) fail('benchmark completion requires a complete twelve-execution factual report', 'JUDGMENT_UNAVAILABLE');
   if (audited.finalChoice === 'INCONCLUSIVE') fail('INCONCLUSIVE Jev receipt is receipt-valid but not benchmark-complete', 'JUDGMENT_UNAVAILABLE');
   return { mode: 'complete', benchmarkComplete: true, valueEvaluationRef: audited.valueEvaluationRef,

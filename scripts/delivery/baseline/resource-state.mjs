@@ -281,6 +281,12 @@ export function foldResourceJournal(events, options = {}) {
       }
       case 'REQUEST_INTENT': {
         const item = execution(state, event.executionId);
+        if (item.waitStartedAt) {
+          item.providerWaitMs += Math.max(0, Date.parse(event.at) - Date.parse(item.waitStartedAt));
+          item.waitStartedAt = null;
+          item.nextEligibleAt = null;
+          item.status = 'RUNNING';
+        }
         const id = asText(event.requestId, 'requestId');
         if (state.requests[id]) fail(`request intent duplicated: ${id}`);
         state.requests[id] = {

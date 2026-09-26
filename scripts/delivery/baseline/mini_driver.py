@@ -7,6 +7,7 @@ provider client, budget ledger, trajectory and acceptance suite stay outside.
 from __future__ import annotations
 
 import json
+import math
 import os
 import subprocess
 import sys
@@ -19,6 +20,13 @@ from uuid import UUID
 from pathlib import Path
 
 from provider_budget import BudgetError, ProviderBudget, ProviderHTTPError, ProviderNotAdmittedError, ResourceBridgeError
+
+
+def mini_wall_seconds(remaining_seconds: float) -> int:
+    # mini requires an integer; zero disables its deadline altogether.
+    if not math.isfinite(remaining_seconds) or remaining_seconds < 1:
+        raise BudgetError("remaining attempt time is exhausted", "RESOURCE_LIMIT_EXCEEDED")
+    return math.floor(remaining_seconds)
 
 
 def _safe_response_headers(headers) -> dict[str, str]:
@@ -277,7 +285,7 @@ def run(config: dict) -> dict:
             instance_template="{{ task }}",
             step_limit=profile["budgets"]["maxModelCalls"],
             cost_limit=profile["budgets"]["maxApiUsd"],
-            wall_time_limit_seconds=profile["budgets"]["maxWallSeconds"],
+            wall_time_limit_seconds=mini_wall_seconds(profile["budgets"]["maxWallSeconds"]),
             output_path=Path(config["trajectoryPath"]),
         )
         result = agent.run(config["taskPrompt"])

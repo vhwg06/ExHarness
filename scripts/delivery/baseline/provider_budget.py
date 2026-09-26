@@ -12,6 +12,7 @@ import hashlib
 import os
 import re
 import subprocess
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -72,6 +73,7 @@ class ProviderBudget:
         self.resource_bridge_path = Path(resource_bridge_path).resolve() if resource_bridge_path else None
         self.node_executable = node_executable
         self.provider_wait_seconds = 0.0
+        self.started_monotonic = time.monotonic()
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def _resource_action(self, kind: str, **values) -> dict:
@@ -226,9 +228,25 @@ class ProviderBudget:
             raise BudgetError("shared task budget exhausted", "RESOURCE_LIMIT_EXCEEDED")
         identity = uuid.uuid4().hex
         if self.resource_context and self.resource_bridge_path:
-            self._resource_action("reserve", executionId=self.resource_context["executionId"],
-                                  attemptId=self.attempt_id, requestId=identity,
-                                  inputTokens=reserve_input_tokens, outputTokens=reserve_output_tokens, costUsd=reserve_cost)
+            while True:
+                try:
+                    self._resource_action("reserve", executionId=self.resource_context["executionId"],
+                                          attemptId=self.attempt_id, requestId=identity,
+                                          inputTokens=reserve_input_tokens, outputTokens=reserve_output_tokens, costUsd=reserve_cost)
+                    break
+                except ResourceBridgeError as error:
+                    # Local route pacing is not a failed model turn. Keep this
+                    # mini process/conversation alive; no reservation or send
+                    # has occurred. The bridge persists/enforces shared waits.
+                    if error.code != "RESOURCE_WAIT" or not error.next_eligible_at:
+                        raise
+                    delay = max(0.001, datetime.fromisoformat(error.next_eligible_at.replace("Z", "+00:00")).timestamp() - time.time())
+                    remaining = self.limits.get("maxWallSeconds", 0) - (time.monotonic() - self.started_monotonic)
+                    if delay >= remaining:
+                        raise BudgetError("route pacing exceeds remaining attempt time", "RESOURCE_LIMIT_EXCEEDED") from error
+                    before = time.monotonic()
+                    time.sleep(delay)
+                    self.provider_wait_seconds += time.monotonic() - before
         self._append({"schemaVersion": 1, "kind": "RESERVE", "requestId": identity, "taskId": self.task_id,
                       "attemptId": self.attempt_id, "timestamp": _now(), "inputTokensReserved": reserve_input_tokens,
                       "outputTokensReserved": reserve_output_tokens, "costUsdReserved": reserve_cost})

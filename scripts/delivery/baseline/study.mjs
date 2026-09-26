@@ -948,7 +948,8 @@ async function executeOne({ profile, registeredProfile = profile, output, task, 
   const terminalDate = terminalClock instanceof Date ? terminalClock : new Date(terminalClock);
   if (!Number.isFinite(terminalDate.getTime())) fail('study clock returned an invalid terminal timestamp');
   const terminalAt = terminalDate.toISOString();
-  const attemptActiveMs = Math.max(0, performance.now() - monotonicStartedAt);
+  const inAttemptWaitMs = Math.max(0, executionState.providerWaitMs - (execution?.providerWaitMs ?? 0));
+  const attemptActiveMs = Math.max(0, performance.now() - monotonicStartedAt - inAttemptWaitMs);
   const registeredAt = task.registeredStart ?? executionState.registeredAt;
   const executionStartedAt = executionState.attemptHistory.find(row => row.startedAt)?.startedAt ?? startedDate.toISOString();
   const providerWaitMs = executionState.providerWaitMs;
