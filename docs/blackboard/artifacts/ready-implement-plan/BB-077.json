@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-077",
-  "status": "READY",
+  "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-077.json",
     "hash": "1728f4a54cf9164c79eb549c344570737a7f3380f4c5e1648b1259c6514b5383"
@@ -31,6 +31,7 @@
     "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
   ],
   "architectureDecisions": [
+    "D0 — 2026-09-27 benchmark-program reset revokes the previous READY premise. BB-077 returns to RESEARCH_SA to define a harness-isolation benchmark before any async-first implementation decision is authorized.",
     "D1 — BB-077 implements measurement only. Do not introduce detached scheduling, change AgentRuntime capability semantics, or promote an async profile in this task. The current synchronous Core is the control arm and remains supported regardless of measured outcome.",
     "D2 — Use the delivered JavaScript CodeAct path as the smallest existing-Core workload substrate: createAgentRuntime + createJavaScriptCodeActStrategy + the repository reference JavaScript session executor. This exercises real multi-turn model requests, capability invocations, evolving prompt context and bounded execution without inventing a second coding-agent loop.",
     "D3 — Freeze two live workload families before the first provider request. FANOUT has four independent delayed PURE read capabilities whose exact values must all contribute to the terminal answer; DEPENDENT_CHAIN has three ordered read/transform steps whose later inputs depend on prior outputs. Register DEV-F01..F03 and DEV-C01..C03 for BB-077 and reserve HOLD-F01..F02 plus HOLD-C01..C02, including fixture seeds and expected-output digests, for BB-081 without executing the holdout tasks during BB-077.",
@@ -233,7 +234,14 @@
       "command": "npm run test:core"
     }
   ],
-  "researchGaps": [],
+  "researchGaps": [
+    "Survey and pin harness-benchmark methodology from Harness-Bench, Claw-SWE-Bench, Harbor and independent harness-cost/failure-fingerprint studies; separate external findings from ExHarness evidence.",
+    "Define the neutral adapter/substrate that can run current synchronous Core, a minimal/direct harness and later async candidates under identical model/task/prompt/workspace/budget/evaluator controls.",
+    "Replace the previous two synthetic workload-family-only protocol with a justified calibration/external workload set and specify how it relates to BB-065 and BB-074.",
+    "Predeclare Pareto/non-inferiority metrics covering accepted quality, tokens/cost, latency, tool/model turns, no-progress behavior, repeat consistency and failure fingerprints.",
+    "Define provider/infra failure classification and accounting so timeout, rate limit, unknown usage or harness termination do not become quality verdicts.",
+    "Produce a fresh implementation plan and Jev readiness binding; the previous READY judgment is historical and cannot authorize Worker execution."
+  ],
   "negativeVerificationCases": [
     "A second attempt reuses another attempt's fixture/session/provider session identity and appears cheaper because of leaked state or cache.",
     "A provider response omits usage/cost/cache details and the report substitutes zero or estimates a cache hit.",
@@ -542,6 +550,5 @@
         "researchEvidence"
       ]
     }
-  ],
-  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.readiness-jev-evaluation.json"
+  ]
 }
