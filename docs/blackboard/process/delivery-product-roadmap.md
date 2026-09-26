@@ -1,7 +1,8 @@
 # ExHarness: delivery product roadmap
 
 Status: SCHEDULED RESEARCH; future capabilities are not delivered.
-Evidence checked: 2026-09-24. Source baseline: aa91ba16548f31772d441f51975917397cbf73d7.
+Evidence checked: 2026-09-27. Source baseline for existing product research: aa91ba16548f31772d441f51975917397cbf73d7.
+Benchmark-program contract: `docs/blackboard/process/harness-benchmark-program-research.md`.
 Owner of scheduling: docs/blackboard/work-graph.json. This file owns the cross-topic product direction; the existing Integration and Oracle roadmaps retain their narrower contracts.
 
 ## Product outcome
@@ -10,7 +11,7 @@ A developer connects an allowed repository and model/runtime credentials, suppli
 
 Initial delivery profile: a small internal request-management web application, with create/list/update requests, validation, persistent storage and a usable browser interface. Go/PostgreSQL + React is a candidate profile, not a mandated platform rewrite. BB-065 chooses the exact fixture and acceptance scenarios before experiments. The first slice is one bounded improvement in an existing repository; greenfield and partial-input projects follow. Do not build a universal organization before measuring the first useful slice.
 
-Value hypothesis: ExHarness reduces human review/coordination effort and failure recovery cost at comparable accepted quality versus the same agent used directly. More roles, more artifacts, more tokens or more completed internal Blackboard tasks do not demonstrate this hypothesis.
+Value hypothesis: ExHarness improves software-delivery economics and reliability at comparable independently accepted quality. The benchmark must isolate harness effects from model/task/environment effects and separately measure lifecycle capabilities that a coding pass-rate benchmark does not cover. More roles, more artifacts, more tokens, a single successful demo or more completed internal Blackboard tasks do not demonstrate this hypothesis.
 
 ## What exists and what remains
 
@@ -25,6 +26,7 @@ These are research recommendations, not adoption verdicts or a global ranking. S
 |---|---:|---|---|---|
 | [OpenHands SDK](https://github.com/OpenHands/software-agent-sdk) | 1,155 | MIT coding-agent SDK with agent/server/workspace separation and Python, TypeScript and REST interfaces. First adapter candidate. | Prove dispatch/recover, exact workspace identity, cancellation and telemetry under our attempt binding; SDK success cannot accept product work. | 066–069 |
 | [mini-SWE-agent](https://github.com/SWE-agent/mini-swe-agent) | 7,879 | MIT minimal issue-solving loop. Use as direct-agent baseline and study the smallest sufficient tool loop. | Benchmark claims do not establish product delivery, permissions, independent QA or our repository performance. | 065, 066, 074 |
+| [Harbor](https://github.com/harbor-framework/harbor) | 5,625 | Apache-2.0 neutral agent-evaluation framework with isolated environments, arbitrary agent adapters, trial artifacts/trajectories, verifier outputs and usage/cost reporting. Preferred benchmark-substrate candidate. | Prove its adapter/evidence contracts preserve ExHarness native harness behavior and lifecycle evidence before adoption. | 065, 074, 077, 081 |
 | [Unreal Agent](https://github.com/unreallabsai/unreal-agent) | 1,850 | MIT async-first Go harness. Its coordinator/operation/session/context seams are a concrete reference for detached tool work and cache-stable result delivery. | Published cost/pass-rate results are vendor evidence, not ExHarness acceptance. Reproduce the mechanism against the current synchronous Core while preserving EffectOperation authority. | 077–081 |
 | [LangGraph](https://github.com/langchain-ai/langgraph) | 42,137 | MIT checkpoint/stateful workflow machinery; useful reference for domain-local interruption and persistence. | Do we need graph complexity? Checkpoints do not grant organization authority; in-memory persistence does not survive restart. | 066, 070 |
 | [Temporal](https://github.com/temporalio/temporal) | 23,234 | MIT durable service reference; compare operation/recovery model and deployment footprint. | Test same-attempt resume and external-effect ambiguity; decide operational cost versus existing Core and Restate. | 066, 072 |
@@ -42,6 +44,9 @@ Additional primary sources:
 - [METR productivity study](https://metr.org/Early_2025_AI_Experienced_OS_Devs_Study-paper.pdf) and [2026 design update](https://metr.org/blog/2026-02-24-uplift-update/): task-level productivity needs empirical measurement; older results are not a prediction of current ExHarness performance.
 - [Unreal Agent async-first design](https://unreallabs.ai/blog/unreal-agent/): vendor description and benchmark evidence for detached operations, fewer model turns and prompt-cache stability; not independent ExHarness proof.
 - [HarnessTax / AgentBRANE](https://harnesstax.github.io/): independent harness × model evidence motivating harness cost as a controlled experimental variable rather than a hidden implementation detail.
+- [Harness-Bench](https://arxiv.org/abs/2605.27922): shared environments, budgets and evaluation protocols across harness/model configurations; captures artifacts, traces, usage and validator output.
+- [Claw-SWE-Bench](https://arxiv.org/abs/2606.12344): fixed prompt/runtime/workspace/patch/evaluator contract for harness comparison; evidence that harness choice can be a first-class performance variable.
+- [The Scaffold Effect in Coding Agents](https://arxiv.org/abs/2607.22585): fixed-model evidence that harness choice can change token efficiency and failure fingerprints far more than a pass-rate-only view reveals.
 
 No surveyed source demonstrates the complete ExHarness authority/currentness/delivery contract. That is a scope observation from this survey, not a claim that no product has solved similar problems. Prefer adapters or borrowed patterns; require a measured reason before building competing agent loops, workflow engines, tracing platforms or generic retrieval frameworks.
 
@@ -51,11 +56,11 @@ No surveyed source demonstrates the complete ExHarness authority/currentness/del
 |---|---|---|---|
 | Existing Integration | 052–059 | Cross-domain authority, activation, exact QA/closure, recovery, observation and HOW evolution | Existing objective-specific delivery gates; do not duplicate or weaken |
 | Existing Oracle reconciliation | 060–064 | Infrastructure-owned context IO with preserved provenance | Existing package/port/connectivity/durability and drift acceptance |
-| Core harness efficiency | 077–081 | Measure and, only if evidence supports it, promote async-first detached tool execution with cache-stable context | Same-model/task matched evidence; no effect/recovery regressions; PROMOTE_ASYNC or KEEP_SYNC_BASELINE |
-| Runnable delivery foundation | 065–069 | First real agent changes a real repo and produces independently verified review/deployment evidence | Fixed baseline; adapter and sandbox contract; real Git/CI path; repeatable first slice |
+| Core harness efficiency | 077–081 | Research harness-isolation first; then, only if evidence supports it, implement and evaluate async scheduling/context/recovery | Neutral fixed-factor protocol; component ablation; repeated/fault evidence; quality-cost/recovery Pareto gate |
+| Runnable delivery foundation | 065–069 | Calibrate the neutral benchmark substrate, then deliver the first real independently verified repository change | Trusted task/evaluator/accounting substrate; adapter and sandbox contract; real Git/CI path; repeatable first slice |
 | Product lifecycle | 070–071 | Goal/partial artifacts → owned domain work → running web product; requirement changes repaired locally | Three seed completeness levels and kill/resume/change probes |
 | Operable distribution | 072–073 | Another developer installs and operates a bounded single-tenant product | Recovery/telemetry/cost controls; clean-install and upgrade/rollback exercises |
-| Pilot and value release | 074–076 | Demonstrated useful delivery, with a reproducible release | Matched baseline comparison, held-out HOW evaluation, independent release reproduction |
+| Pilot and value release | 074–076 | Demonstrated delivery-harness value, measured improvement and reproducible release | Fixed-factor harness comparison + lifecycle benchmark profile + held-out HOW evaluation + independent release reproduction |
 
 ```mermaid
 flowchart TD
@@ -86,7 +91,7 @@ Diagram shows phase relationships. Canonical direct task edges are in work-graph
 
 Every new task already has an OBJECTIVE, a DRAFT plan, context routing and a task-specific research brief. Start a fresh research session with an explicit ID. Recommended first: BB-065, then BB-066/067; Oracle 060–064 remains independently researchable.
 
-BB-077–081 are a dedicated Core-efficiency phase because current `AgentRuntime.invoke()` still awaits capability execution while Core already owns durable effect identity/reconciliation. The phase borrows async scheduling/cache-stability patterns without replacing effect authority. BB-066 depends on BB-081 so real coding-agent runtime integration uses an evidence-selected Core profile rather than silently freezing the synchronous shape.
+BB-077 and BB-081 have been returned to Research/SA because the previous narrow sync-vs-async benchmark premise is no longer sufficient. BB-077 now researches a neutral fixed-factor harness-isolation protocol; BB-081 researches held-out component ablation and fault robustness. BB-078–080 remain implementation candidates but are worker-blocked by the reopened research dependency. BB-066 still depends on BB-081 so the real coding-agent runtime cannot silently freeze an unmeasured Core profile.
 
 Each brief must converge through:
 1. Read the exact current source seam and dependency objectives/plans; distinguish delivered truth from design assumptions.
@@ -100,15 +105,21 @@ New DRAFT verification commands are proposed future worker probes, not files cla
 
 Source data and artifact content cannot grant authority. Oracle owns IO/adaptation; domain controllers own strategy selection for released work; independent QA/Jev own their respective judgments. Product decisions remain explicit human-owned inputs. Observe remains read-only; strategy evolution has its own evaluation/promotion boundary.
 
-## Pilot measurement protocol
+## Benchmark measurement program
 
-BB-065 fixes task selection, acceptance and budgets before choosing a winning integration. BB-074 proposes at least 20 matched task pairs across two repository/use-case contexts, including a held-out set. This is a proposed minimum pilot size, not a claim of statistical power. Record order effects and task familiarity; use matched variants where replaying the same task leaks a solution.
+The canonical cross-topic contract is `docs/blackboard/process/harness-benchmark-program-research.md`.
 
-Compare direct agent and ExHarness with equivalent model/version, tools, starting source and per-task resource ceilings. Report all attempted tasks, failures, abandoned tasks and retries. Compute accepted deliveries / attempted tasks; human active minutes including review, repair and coordination; lead time; total tokens/API/infra expense per accepted delivery; escaped defects during a predeclared observation window; and recovery success. Report paired distributions/uncertainty, not only an average.
+BB-065 is now substrate calibration, not a product-value experiment. It must establish task/environment validity, independent verifier behavior, fresh resets, artifact extraction, complete usage/accounting and a failure model in which provider/termination state remains separate from quality.
 
-Proposed value gate to ratify before the pilot: at least 20% lower median human active time with no drop in accepted quality and no more than 10% increase in total cost per accepted task. These are product hypotheses, not source-backed constants. BB-065 must justify or revise them before measurement; BB-074 cannot loosen them after seeing results. A failed value gate yields a scoped product change or no-go, never fabricated benefit.
+BB-077 then isolates the harness variable under a fixed model snapshot, prompt/task input, initial workspace, resource ceiling, artifact extraction and evaluator. Research should evaluate Harbor as the neutral substrate and must include a minimal/direct control plus the current ExHarness Core. Report quality together with cost/tokens, latency, no-progress behavior, repeat consistency and failure fingerprints.
 
-BB-069's first delivery gate uses at least three independently reset live runs with one recovery injection and one deliberate defect rejected by QA; it is feasibility evidence only. No claim of production reliability follows from three runs.
+BB-081 defines the held-out ablation and robustness protocol for BB-078/079/080. It must attribute detached scheduling, cache-stable context and steering/recovery separately and use repeated runs plus fault injection. Promotion is based on preregistered quality non-inferiority and acceptable cost/latency/recovery trade-offs, never on async architecture preference.
+
+BB-074 measures end-to-end delivery value. It combines an external/public harness workload for external validity with ExHarness-specific lifecycle scenarios such as verifier repair, stale context rejection, crash/resume, handoff, provider ambiguity, CI failure and currentness/claim fencing. Results are a multidimensional profile: accepted quality, economics, lead time, human active effort, consistency, fault robustness, recovery and failure fingerprints. Do not collapse these into one opaque score.
+
+BB-075 must choose a HOW candidate from observed benchmark failure/ablation evidence and evaluate it on held-out work under the same frozen contract. BB-076 must reproduce supported product behavior and the benchmark profile on the exact release.
+
+A failed or inconclusive preregistered gate yields a scoped follow-up or no-go. Thresholds may be researched and ratified before runs, but cannot be loosened after observing results. BB-069's small live-run gate remains feasibility evidence only and must not be reported as production reliability or product-value proof.
 
 ## Supported v1 completeness
 
