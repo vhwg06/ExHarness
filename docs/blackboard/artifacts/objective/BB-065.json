@@ -3,25 +3,34 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-065",
-  "outcome": "A fixed delivery fixture and measurement harness make direct-agent and ExHarness outcomes comparable before integration choices are made.",
-  "currentProblem": "The roadmap has authority proofs but no fixed real-delivery workload or cost/review-effort baseline.",
+  "outcome": "A resource-bounded, reproducible fixture benchmark compares direct mini-SWE-agent with the current ExHarness Core and obtains an exclusively Jev-issued value judgment scoped to this benchmark.",
+  "currentProblem": "The baseline implementation is merged but provider resource limits reportedly block live calibration. Direct-only calibration cannot establish ExHarness value, and current retry/export behavior does not support a reliable cross-session handoff.",
   "scope": [
-    "delivery.baseline"
+    "delivery.baseline",
+    "delivery.baseline.provider-recovery",
+    "delivery.baseline.paired-core-benchmark",
+    "delivery.baseline.jev-value"
   ],
   "constraints": [
     "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
     "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
-    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments."
+    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments.",
+    "Only Jev issues semantic value judgments. Operators supply authorized resources and measured facts; coding agents implement and collect evidence. Neither may author, override or replace a value verdict.",
+    "Completion may establish benefit or no benefit; a positive outcome is not required. Missing live evidence, exhausted capacity or unavailable Jev cannot be relabelled as a definitive value result."
   ],
   "successCriteria": [
-    "A versioned fixture specifies create/list/update/validation/persistence/browser acceptance and a smaller first change; external credentials are referenced, never embedded.",
-    "A reproducible baseline runner records attempted/accepted/failed tasks, human active time, lead time, total cost and model/tool identities; no precomputed success is substituted.",
-    "Pilot selection, held-out partition, budgets, quality and value thresholds are fixed before comparative results; unresolved stakeholder choices are explicit."
+    "A frozen request-tracker fixture and independent API/browser/persistence verifier preserve the existing three task families and bind every result to exact source, profile and candidate identities.",
+    "A finite provider resource and recovery protocol preserves all attempts, costs and unknown usage across quota waits, process restarts and incremental evidence exports without duplicate dispatch or budget resets.",
+    "A preregistered six-pair live study compares the current ExHarness Core against direct mini-SWE-agent using the same coding loop, model, tools, prompts, task budgets and independent checks; complete accounting exposes outcomes, time, tokens, calls and total cost.",
+    "Only a real, exactly bound Jev evaluation answers whether ExHarness adds value for this fixture/profile under the frozen rubric; missing evidence stays inconclusive, and worker delivery requires all acceptance claims independently SATISFIED."
   ],
   "currentSourceRefs": [
-    "packages/agentic-system/src/domain-execution-control.js",
-    "docs/living/system/state.md",
-    "docs/blackboard/process/delivery-product-roadmap.md",
-    "docs/blackboard/process/delivery-research/BB-065.md"
+    "scripts/delivery/baseline/run.mjs",
+    "scripts/delivery/baseline/provider_budget.py",
+    "scripts/delivery/baseline/provider-export.mjs",
+    "scripts/delivery/baseline/report.mjs",
+    "packages/core-harness/src/core-harness.js",
+    "scripts/blackboard-jev.mjs",
+    "docs/living/system/state.md"
   ]
 }
