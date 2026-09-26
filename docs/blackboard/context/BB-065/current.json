@@ -15,7 +15,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-065.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-  "planHash": "d9144b75edaa02e3c31287788ad746d7b2690c66f33da47fe0e1fe2bf8819134",
+  "planHash": "8f93e3c93d1e044993e791b5c0da6eb300703d8c4ce8f4787d8bad9a04289f31",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -121,6 +121,10 @@
     {
       "id": "value",
       "command": "node scripts/delivery/baseline/jev-value.mjs --mode complete --profile \"$EXHARNESS_BASELINE_PROFILE\" --output \"$EXHARNESS_BASELINE_OUTPUT\""
+    },
+    {
+      "id": "canary",
+      "command": "node --test test/delivery/baseline-canary.test.mjs"
     }
   ],
   "expectedOutputs": [
