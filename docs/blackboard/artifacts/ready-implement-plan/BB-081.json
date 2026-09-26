@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-081",
-  "status": "READY",
+  "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-081.json",
     "hash": "f7ef8cbfc2a5bfdeafb32b85a01b1408ff80874962fcbbba359b7aa0f1022165"
@@ -36,6 +36,7 @@
     "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
   ],
   "architectureDecisions": [
+    "D0 — 2026-09-27 benchmark-program reset revokes the previous READY acceptance protocol. BB-081 returns to RESEARCH_SA so held-out async acceptance is derived from the unified harness-benchmark methodology rather than the old fixed four-task protocol.",
     "D1 — BB-081 is acceptance/publication only. It must not change benchmark task semantics, provider/model identity, BB-077 primary thresholds, effect semantics, async scheduler correctness or the delivered BB-078–080 behavior to make the candidate pass.",
     "D2 — The acceptance cohort is exactly four pre-registered paired task units: HOLD-F01, HOLD-F02, HOLD-C01 and HOLD-C02. These fixture seeds and expected-output digests were reserved by BB-077 before async candidate work. No extra task may be added after observing candidate results; a new task set requires a new cohort/version.",
     "D3 — Each paired unit runs both `CORE_SYNC` control and exact delivered `CORE_ASYNC_FIRST_V1` candidate with the BB-077 provider contract: OpenRouter, `anthropic/claude-sonnet-4.6`, Anthropic provider only, fallbacks disabled, same budgets and the frozen 2026-09-25 normalized price table. The async arm is additionally bound to exact DONE BB-078/079/080 artifact hashes.",
@@ -323,7 +324,14 @@
       "command": "npm run test:core"
     }
   ],
-  "researchGaps": [],
+  "researchGaps": [
+    "Define the held-out ablation matrix over CORE_SYNC and the separately delivered BB-078 detached-operation, BB-079 cache-context and BB-080 steering/recovery capabilities so contribution can be attributed rather than bundled.",
+    "Bind the BB-081 held-out cohort to the unified neutral benchmark contract from BB-065/077 and the delivery-value protocol from BB-074 where applicable.",
+    "Predeclare repeated runs and fault injections for provider ambiguity, tool failure, timeout, process kill/restart, cancellation and duplicate wakeup/effect paths.",
+    "Define PROMOTE_ASYNC versus KEEP_SYNC_BASELINE using quality non-inferiority plus cost/latency/recovery Pareto evidence; pass rate alone cannot decide.",
+    "Specify complete attempt accounting, failure fingerprints and independent verification, including INCONCLUSIVE rules for missing/misaligned evidence.",
+    "Produce a fresh implementation plan and Jev readiness binding; the previous READY judgment is historical and cannot authorize Worker execution."
+  ],
   "negativeVerificationCases": [
     "A DEV-* task, replacement task or newly authored task enters the held-out denominator after candidate work exists.",
     "One arm reuses the other arm's workspace, provider session_id, runtime events or fixture state.",
@@ -676,6 +684,5 @@
         "researchEvidence"
       ]
     }
-  ],
-  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-081.readiness-jev-evaluation.json"
+  ]
 }
