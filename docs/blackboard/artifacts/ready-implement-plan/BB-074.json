@@ -27,6 +27,7 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
+    "D0 — 2026-09-27 benchmark-program reset: BB-074 no longer treats a matched direct-agent pilot as the complete value benchmark. It must measure harness effects under controlled fixed-factor comparisons and separately exercise ExHarness delivery-lifecycle value.",
     "Candidate direction, not selected architecture: Ratify the BB-065 predeclared pilot protocol without post-result threshold changes; recruit two representative repository/use-case contexts.",
     "Candidate direction, not selected architecture: Control model/tool budget, task familiarity and selection effects; report uncertainty and all failed attempts.",
     "Candidate direction, not selected architecture: Separate accepted task quality, human review/repair time, total cost and elapsed lead time; define go/no-go."
@@ -167,12 +168,13 @@
     }
   ],
   "researchGaps": [
-    "Ratify the BB-065 predeclared pilot protocol without post-result threshold changes; recruit two representative repository/use-case contexts.",
-    "Control model/tool budget, task familiarity and selection effects; report uncertainty and all failed attempts.",
-    "Separate accepted task quality, human review/repair time, total cost and elapsed lead time; define go/no-go.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
+    "Define the unified benchmark program from current harness-evaluation research: external/public harness workload, ExHarness delivery-lifecycle workload, held-out set and exact separation between them.",
+    "Freeze the experimental unit so model snapshot, prompt, task input, initial workspace, tool/resource ceilings, artifact extraction and evaluator are identical across harness arms.",
+    "Define comparison arms that include a minimal/direct baseline and ExHarness, plus component ablations where attribution is required; avoid a single Direct-vs-ExHarness aggregate as the only experiment.",
+    "Predeclare repeated-run policy, uncertainty reporting and fault injections for provider ambiguity, tool failure, process restart, stale state, CI failure, handoff and recovery.",
+    "Define the multidimensional result profile: accepted quality, cost/tokens per accepted delivery, latency, human active effort, consistency, robustness and failure fingerprints; do not collapse into one opaque score.",
+    "Pin the neutral execution/evaluation substrate and adapter implementation, including Harbor adoption or a documented rejection.",
+    "Rebind BB-075/076 to the resulting benchmark contract and obtain a fresh Jev readiness judgment after all gaps are resolved."
   ],
   "negativeVerificationCases": [
     "Producer success with failing independent acceptance.",
