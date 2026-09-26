@@ -13,18 +13,24 @@
     "oracle.physical-ownership",
     "oracle.context-intelligence-plane",
     "oracle.core-runtime-seam",
-    "oracle.authority-boundary"
+    "oracle.authority-boundary",
+    "oracle.superseded-readiness-reassessment"
   ],
   "outOfScope": [
-    "Moving product/domain scheduling, acceptance, publication or recovery authority into Oracle.",
+    "Implementing the production ContextRequirement/ContextResolution field contract or Core resolution hook; BB-061 owns that contract.",
+    "Selecting or integrating a lexical, LSP/semantic, graph, vector or persistence backend; BB-062/063 own measured provider/currentness choices.",
+    "Moving product/domain scheduling, acceptance, publication, recovery or external-effect authority into Oracle.",
     "Treating historical BB-060..064 READY/Jev artifacts as current implementation authority.",
-    "Claiming live coding-agent or product value from deterministic research prototypes or source inspection."
+    "Claiming live coding-agent/product value or Uber-scale benefit from this architecture slice."
   ],
   "constraints": [
-    "Research must inspect current source plus primary external evidence, distinguish retained findings from superseded assumptions, and compare reuse with the smallest ExHarness-owned seam.",
-    "Application/domain authority remains outside Oracle; Core consumes semantic context but does not own provider/source-specific retrieval.",
-    "Required context is budgeted, provenance-bound and currentness-checked; missing or ambiguous required evidence fails closed.",
-    "Worker execution is unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
+    "BB-060 must physically move source IO below Agentic Application while preserving current Backend/QA observable behavior, sourceRef/provenance and fail-closed errors.",
+    "Core production source is read-only in BB-060. The runtime seam is specified and probed development-only; BB-061 implements the semantic contract and Core hook.",
+    "The Oracle package must not import Agentic Application or Core implementation. Core must not import the Oracle implementation; future runtime composition uses dependency injection.",
+    "Application/domain controllers retain work semantics, context-need declaration, acceptance, publication, recovery and product authority.",
+    "The two moved source loops are compatibility providers/building blocks, not the final Oracle ContextRequirement/ContextResolution API.",
+    "Public GitHub implementation evidence must satisfy the >=1,000-star rule at the evidence check; licenses and exact source pins are recorded.",
+    "Worker execution remains unauthorized until this exact plan receives a fresh Jev SATISFIED readiness judgment."
   ],
   "invariants": [
     "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
@@ -32,118 +38,201 @@
     "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership."
   ],
   "architectureDecisions": [
-    "Selected research direction: Oracle is a runtime Context Intelligence Plane with infrastructure physical ownership; it is not merely two extracted read loops.",
-    "Core calls a semantic ContextRequirement/ContextResolution seam. Source catalog, retrieval/provider coordination, provenance/currentness mapping and materialization remain below that seam in Oracle.",
-    "The prior physical-ownership/dependency-direction finding is retained. The prior final-two-pulls/no-runtime-resolution assumption is superseded and cannot constrain the rebound plan.",
-    "No graph/search/LSP backend is selected by architecture preference; BB-062 experiments select reusable providers after measured evidence."
+    "D1 — Current source truth: prepareBackendObjective() and runQaObjective() resolve repository/artifact context in packages/agentic-system/src/oracle.js before Worker execution; Oracle physical source is therefore still Application-owned.",
+    "D2 — Current Core context.js/AgentRuntime already own bounded context selection and renderAgentContext(), but a dynamic context block is a projection mechanism, not a durable source resolution. It receives runtime metadata rather than a semantic requirement and does not create independent provenance/currentness/materialization identity.",
+    "D3 — Reject Capability/Resource/LiveObject as the default Oracle seam. Those are action/tool surfaces; making required grounding model-visible would add tool-turn cost, let model behavior decide baseline grounding and mix retrieval identity with effect/resource semantics.",
+    "D4 — Selected target runtime path is Application semantic need -> ContextRequirement -> Core pre-prompt context-resolution seam -> injected Oracle resolver -> governed providers/planner -> ContextResolution -> existing Core context projection/renderAgentContext. ContextRequirement/ContextResolution fields are finalized by BB-061.",
+    "D5 — Core consumes the future resolver by dependency injection and does not import @exharness/oracle implementation. Oracle likewise imports neither Core nor Agentic Application. The composition root is the wiring boundary.",
+    "D6 — BB-060 intentionally does not add the production Core resolver hook. Implementing an untyped temporary hook before BB-061 would create the same architecture debt this rebound is meant to prevent.",
+    "D7 — Create @exharness/oracle as an infrastructure workspace package. Move current source reads into provider-level modules: repository-source.js and application-artifact-source.js. Provider inputs are already-parsed source requests plus injected readers; provider outputs preserve raw content/sourceRef and source provenance only.",
+    "D8 — Keep packages/agentic-system/src/oracle.js as a compatibility/application adapter: parse Backend/Qa WorkOrders, call @exharness/oracle provider functions, then validate the existing BackendContextSchema/QaContextSchema. Existing resolveBackendContext/resolveQaContext exports remain stable in BB-060.",
+    "D9 — Provider modules are not a generic registry and do not own provider selection, lifecycle, refresh, planning, scheduling, acceptance or recovery. BB-062 decides source-catalog/planner topology after retrieval experiments.",
+    "D10 — A development-only bb060-runtime-seam-probe composes a semantic-need fixture -> injected resolver function -> Oracle compatibility provider -> projected Core context block -> renderAgentContext. It proves the boundary can remain outside capability/resource invocation without defining the BB-061 product contract.",
+    "D11 — Architecture guards verify both source placement and dependency direction: Oracle package cannot import agentic-system/core; Core cannot import Oracle implementation; agentic-system may depend on Oracle compatibility providers. Negative fixtures must fail for copied read loops or forbidden reverse imports.",
+    "D12 — External evidence is architecture input, not implementation selection: Uber supports rich cross-system context as runtime infrastructure; Aider supports budgeted structural projection; Serena/SolidLSP supports symbol-level semantic retrieval; Zoekt is a lexical baseline. Graphiti/Cognee remain later graph/currentness candidates.",
+    "D13 — Serena's current repository license is component-split: Serena application GPL-3.0-or-later, SolidLSP MIT. BB-060 therefore does not select full Serena as an ExHarness dependency; BB-062 must make an explicit reuse/license decision.",
+    "D14 — Living Docs after delivery must state only the delivered physical provider boundary and compatibility behavior, and explicitly mark the production ContextRequirement/ContextResolution runtime seam as NOT YET DELIVERED until BB-061.",
+    "D15 — Preserve the repository's no-install CI contract: packages/agentic-system/package.json declares dependencies.@exharness/oracle = \"file:../oracle\" to make package ownership explicit, while packages/agentic-system/src/oracle.js imports ../../oracle/src/index.js directly. Do not change .github workflows or introduce package-lock solely for BB-060. BB-061 may revisit package-specifier/install wiring when it defines the production resolution port."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agentic-system/src/oracle.js",
       "packages/agentic-system/src/backend-application.js",
       "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/package.json",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/context.js",
+      "package.json",
+      "packages/agentic-system/test/wave-a.test.js",
+      "packages/agentic-system/test/wave-c.test.js",
+      "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
       "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/semantics.md"
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/oracle/workflow.md",
+      ".github/workflows/test.yml"
     ],
     "expectedNew": [
-      "packages/oracle/src/context-resolution.js",
-      "scripts/oracle-context-intelligence/README.md"
+      "packages/oracle/package.json",
+      "packages/oracle/src/index.js",
+      "packages/oracle/src/providers/repository-source.js",
+      "packages/oracle/src/providers/application-artifact-source.js",
+      "scripts/oracle-context-intelligence/bb060-runtime-seam-probe.mjs"
     ],
     "expectedTests": [
+      "packages/oracle/test/compatibility-providers.test.js",
+      "packages/agentic-system/test/oracle-package-integration.test.js",
       "test/oracle-context-intelligence-architecture.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/contracts.js",
+      "packages/agentic-system/src/qa-contracts.js",
+      "packages/agentic-system/package.json",
+      "packages/agentic-system/test/**",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/package.json",
+      "package.json",
+      "docs/living/system/oracle/**",
+      "docs/living/system/core-harness/architecture.md",
       "docs/blackboard/process/oracle-reconciliation-phase.md",
       "docs/blackboard/process/oracle-context-intelligence-research.md",
-      "scripts/delivery/baseline/**",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-060.md",
+      ".github/workflows/test.yml"
     ],
     "write": [
       "packages/oracle/**",
-      "packages/core-harness/**",
-      "scripts/oracle-context-intelligence/**",
-      "test/**",
-      "docs/living/system/oracle/**",
-      "docs/living/system/core-harness/**",
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/package.json",
+      "packages/agentic-system/test/oracle-package-integration.test.js",
+      "scripts/oracle-context-intelligence/bb060-runtime-seam-probe.mjs",
+      "test/oracle-context-intelligence-architecture.test.mjs",
+      "docs/living/system/oracle/architecture.md",
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/oracle/workflow.md",
       "package.json"
     ],
     "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/contracts.js",
+      "packages/agentic-system/src/qa-contracts.js",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "Pin the exact Core/Application call path and package ownership boundary from current source.",
-    "Build the smallest deterministic requirement -> Oracle -> provider -> resolution prototype without adding product authority.",
-    "Add architecture/boundary negative cases and convert the result into exact worker seams only after evidence converges."
+    "S1 — Create private workspace package @exharness/oracle with index.js plus repository-source.js and application-artifact-source.js. Move only source-IO loops, reader validation/error wrapping and source-level provenance assembly. Provider modules accept already-parsed source requests and import no Agentic Application/Core code.",
+    "S2 — Replace packages/agentic-system/src/oracle.js with compatibility adapters preserving resolveBackendContext/resolveQaContext. Parse application WorkOrders above Oracle, delegate to the new provider functions, assemble/validate the unchanged BackendContextSchema/QaContextSchema and preserve exact error/sourceRef/provenance behavior.",
+    "S3 — Declare packages/agentic-system dependencies.@exharness/oracle = \"file:../oracle\" and use the direct relative ESM import ../../oracle/src/index.js because current CI performs no install step. Add root test:oracle and include it in npm test; do not create a lockfile or modify CI. Add provider unit tests plus existing Backend/QA/manifest regressions proving no behavioral drift.",
+    "S4 — Add oracle-context-intelligence-architecture.test.mjs. Scan production imports/package metadata and fail on Oracle->agentic/core imports, Core->Oracle implementation imports, copied source-read loops under agentic-system, missing agentic->Oracle dependency, or Oracle exports that claim scheduling/acceptance/recovery authority. Include mutated temporary negative fixtures.",
+    "S5 — Add the development-only bb060-runtime-seam-probe.mjs. Compose a semantic-need fixture through an injected resolver function and the new provider into an existing Core context block/renderAgentContext path; assert zero capability/resource/live-object calls, exact sourceRef/provenance preservation and declared serialized-context bound.",
+    "S6 — Update Oracle Living Docs to the delivered package/provider topology and compatibility semantics. Record the selected future pre-prompt injected resolution seam as planned/not-delivered and identify BB-061 as the owner of production ContextRequirement/ContextResolution fields and Core hook.",
+    "S7 — Run Oracle unit/integration/architecture/seam probes plus full agentic regression and ordinary npm test. Publish Worker evidence only for this bounded foundation; do not implement BB-061/062 features."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "A concrete runtime architecture routes semantic context need through ContextRequirement into infrastructure-owned Oracle and returns ContextResolution without source-specific calls in Core/Application.",
+      "id": "RUNTIME_PATH",
+      "statement": "The architecture explicitly routes Application semantic need -> future ContextRequirement -> Core pre-prompt injected resolution seam -> infrastructure-owned Oracle -> governed providers/planner -> future ContextResolution -> existing Core context projection, without making Oracle a Capability/Resource/LiveObject or Core implementation dependency.",
       "verificationIds": [
-        "architecture-probe"
+        "runtime-seam-probe",
+        "architecture-boundary"
       ],
       "evidenceRequired": [
-        "Architecture trace and exact source/package seam evidence."
+        "Development seam-probe trace showing resolution before renderAgentContext, zero capability/resource/live-object invocations, and static dependency evidence for the selected composition boundary."
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Physical package/dependency checks reject Oracle implementation under Agentic Application/Core or reverse imports that give Oracle application authority.",
+      "id": "PHYSICAL_OWNERSHIP",
+      "statement": "Concrete repository and accepted-application-artifact source IO is physically owned by @exharness/oracle; Oracle imports neither Agentic Application nor Core, and Core imports no Oracle implementation.",
       "verificationIds": [
-        "boundary-test"
+        "oracle-provider-unit",
+        "architecture-boundary"
       ],
       "evidenceRequired": [
-        "Positive topology check plus negative fixtures for placement/import reversal."
+        "Package/import topology plus negative fixtures for reverse imports, copied read loops and missing dependency wiring."
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "Research records which prior BB-060..064 findings remain valid and which readiness assumptions are superseded; no old readiness binding grants Worker authority.",
+      "id": "COMPATIBILITY",
+      "statement": "Existing resolveBackendContext/resolveQaContext APIs, Backend/QA context schemas, reader call arguments/order, sourceRef/provenance and fail-closed errors remain behaviorally compatible after physical extraction.",
       "verificationIds": [
-        "architecture-probe"
+        "oracle-compatibility",
+        "agentic-regression"
       ],
       "evidenceRequired": [
-        "Rebound architecture/evidence output bound to the current objective."
+        "Before/after/golden compatibility tests across Backend repository reads, QA artifact reads and manifest-protected QA scenarios."
+      ]
+    },
+    {
+      "id": "REBOUND_SEMANTICS",
+      "statement": "Delivered BB-060 treats the two moved source loops as compatibility providers rather than the final Oracle API and records retained physical/provenance findings separately from superseded thin-IO/no-runtime-resolution assumptions.",
+      "verificationIds": [
+        "architecture-boundary",
+        "living-docs-check"
+      ],
+      "evidenceRequired": [
+        "Architecture guard plus delivered Oracle Living Docs explicitly distinguishing current compatibility providers from the not-yet-delivered BB-061 semantic contract."
+      ]
+    },
+    {
+      "id": "EXTERNAL_EVIDENCE",
+      "statement": "The implementation plan is grounded by primary/source-pinned comparison of Uber Context Graph, Aider repo-map, Serena/SolidLSP and Zoekt patterns; eligible public GitHub repositories exceed 1,000 stars and provider/backend adoption is explicitly deferred to BB-062 experiments.",
+      "verificationIds": [
+        "research-evidence-check"
+      ],
+      "evidenceRequired": [
+        "Pinned source/release/license/star evidence and a comparison recording use, limitation and rejection/defer rationale for each approach."
+      ]
+    },
+    {
+      "id": "PROTOTYPE_HANDOFF",
+      "statement": "A falsifiable development-only runtime-seam probe and common benchmark handoff fields are defined so BB-061/062/064 can test the selected boundary without treating architecture prose or provider popularity as evidence.",
+      "verificationIds": [
+        "runtime-seam-probe",
+        "research-evidence-check"
+      ],
+      "evidenceRequired": [
+        "Executable probe output plus declared resolution/source/materialization/context-size/currentness/timing fields for later matched experiments."
       ]
     },
     {
       "id": "INV-1",
       "statement": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "verificationIds": [
-        "architecture-probe"
+        "architecture-boundary",
+        "oracle-compatibility"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Negative proof that Oracle/provider code cannot claim work or gain acceptance/publication/recovery authority."
       ]
     },
     {
       "id": "INV-2",
       "statement": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "verificationIds": [
-        "architecture-probe"
+        "runtime-seam-probe",
+        "oracle-provider-unit"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Probe/provider fixtures preserve source identity and fail on missing/ambiguous required source evidence; BB-061 owns final resolution budget/currentness fields."
       ]
     },
     {
       "id": "INV-3",
       "statement": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "verificationIds": [
-        "architecture-probe"
+        "architecture-boundary"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Static and mutated-fixture proof of infrastructure ownership and absence of model-visible scheduling/provider authority."
       ]
     }
   ],
@@ -151,43 +240,72 @@
     {
       "invariant": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "criterionIds": [
-        "INV-1"
+        "INV-1",
+        "RUNTIME_PATH",
+        "PHYSICAL_OWNERSHIP",
+        "COMPATIBILITY"
       ]
     },
     {
       "invariant": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "criterionIds": [
-        "INV-2"
+        "INV-2",
+        "COMPATIBILITY",
+        "PROTOTYPE_HANDOFF"
       ]
     },
     {
       "invariant": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "criterionIds": [
-        "INV-3"
+        "INV-3",
+        "RUNTIME_PATH",
+        "PHYSICAL_OWNERSHIP",
+        "REBOUND_SEMANTICS"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "architecture-probe",
-      "command": "node scripts/oracle-context-intelligence/probe-foundation.mjs"
+      "id": "oracle-provider-unit",
+      "command": "node --test packages/oracle/test/compatibility-providers.test.js"
     },
     {
-      "id": "boundary-test",
+      "id": "oracle-compatibility",
+      "command": "node --test packages/agentic-system/test/oracle-package-integration.test.js packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js"
+    },
+    {
+      "id": "architecture-boundary",
       "command": "node --test test/oracle-context-intelligence-architecture.test.mjs"
+    },
+    {
+      "id": "runtime-seam-probe",
+      "command": "node scripts/oracle-context-intelligence/bb060-runtime-seam-probe.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "research-evidence-check",
+      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs --test-name-pattern='research evidence|provider selection deferred|license'"
+    },
+    {
+      "id": "living-docs-check",
+      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs --test-name-pattern='Living|not delivered|BB-061'"
     }
   ],
-  "researchGaps": [
-    "Inspect the exact current Core runtime call site and identify the smallest source seam for ContextRequirement/ContextResolution.",
-    "Compare Uber Context Graph capabilities with ExHarness needs without importing Uber-scale topology as a requirement.",
-    "Pin the initial provider/backend choices only after BB-062 retrieval experiments; record reuse vs in-house decisions and licenses.",
-    "Resolve exact package/file names and executable prototype fixtures; proposed paths in this DRAFT do not yet exist.",
-    "Obtain a new Jev readiness judgment after the rebound plan and source baseline are final."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "A caller embeds provider/tool commands in ContextRequirement or bypasses the semantic resolution seam.",
-    "A stale or provenance-incomplete required context item is represented as current.",
-    "Oracle/provider/planner code attempts to claim work, accept product output, publish product truth or own domain recovery."
+    "Oracle provider source imports packages/agentic-system or packages/core-harness, or Core imports @exharness/oracle implementation.",
+    "A repositoryReader/artifactReader read loop remains or is copied into packages/agentic-system/src/oracle.js instead of delegating to Oracle.",
+    "Application compatibility adapters skip WorkOrder parsing or final BackendContextSchema/QaContextSchema validation.",
+    "Reader call order/arguments, sourceRef, APPLICATION_ARTIFACT provenance or wrapped error/cause semantics drift after extraction.",
+    "The development seam probe resolves context through invoke(), Resource or LiveObject and therefore increments an action/tool surface.",
+    "BB-060 adds a production ContextRequirement/ContextResolution schema or writes packages/core-harness before BB-061.",
+    "Oracle gains scheduling, acceptance, publication, recovery, product-currentness or external-effect authority.",
+    "Full Serena is added as a dependency without addressing its GPL-3.0-or-later application license.",
+    "A graph/LSP/search backend is selected from popularity/source inspection without the BB-062 discriminating experiment.",
+    "Living Docs claim runtime ContextRequirement/ContextResolution support is delivered by BB-060."
   ],
   "supersededAuthority": {
     "rule": "Historical readiness/Jev artifacts remain evidence only; changed objective/plan bindings make them non-authoritative for execution.",
@@ -227,5 +345,371 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-060 Living Oracle truth describes only the implemented and independently verified rebound capability and limitations."
-  }
+  },
+  "runtimeBoundaryContract": {
+    "current": "Application resolves concrete Backend/QA context before Worker; Core renders already-supplied context and has no source-resolution port.",
+    "target": "Application semantic need -> ContextRequirement -> Core pre-prompt injected resolver port -> Oracle -> provider/planner -> ContextResolution -> existing context projection/renderAgentContext.",
+    "bb060Delivery": "Physical provider ownership + compatibility facade + architecture guard + development-only seam probe.",
+    "bb061Handoff": "Define ContextRequirement/ContextResolution fields, identity/budget/failure semantics and implement the production Core injected resolver hook.",
+    "forbiddenDefaultSeams": [
+      "AgentRuntime capability",
+      "Resource",
+      "LiveObject",
+      "dynamic context block as durable resolution",
+      "Core import of Oracle implementation"
+    ]
+  },
+  "physicalTopologyContract": {
+    "oraclePackage": {
+      "name": "@exharness/oracle",
+      "version": "0.1.0",
+      "private": true,
+      "type": "module",
+      "export": ". -> ./src/index.js"
+    },
+    "providers": [
+      "packages/oracle/src/providers/repository-source.js",
+      "packages/oracle/src/providers/application-artifact-source.js"
+    ],
+    "applicationCompatibilityAdapter": "packages/agentic-system/src/oracle.js",
+    "packageDependency": "packages/agentic-system/package.json dependencies.@exharness/oracle = file:../oracle",
+    "noInstallSourceImport": "../../oracle/src/index.js",
+    "dependencyDirection": [
+      "@exharness/agentic-system -> @exharness/oracle"
+    ],
+    "forbiddenDirections": [
+      "@exharness/oracle -> @exharness/agentic-system",
+      "@exharness/oracle -> exharness(core-harness)",
+      "exharness(core-harness) -> @exharness/oracle implementation"
+    ],
+    "note": "Provider modules are concrete source building blocks, not the final source catalog or ContextResolution API."
+  },
+  "prototypeContract": {
+    "path": "scripts/oracle-context-intelligence/bb060-runtime-seam-probe.mjs",
+    "productionAPI": false,
+    "flow": "semantic-need fixture -> injected resolver function -> Oracle compatibility provider -> projected Core context block -> renderAgentContext",
+    "assertions": [
+      "zero capability/resource/live-object invocations",
+      "no source-specific reader API is passed into Core rendering",
+      "sourceRef/provenance preserved in projected prompt data",
+      "rendered context remains under explicit Core maxSerializedChars",
+      "provider failure prevents prompt projection"
+    ],
+    "benchmarkHandoffFields": [
+      "requirementId",
+      "resolutionId",
+      "sourceReads",
+      "resolutionCalls",
+      "providerCalls",
+      "materializedChars",
+      "renderedChars",
+      "estimatedTokens",
+      "provenanceCoverage",
+      "currentnessChecks",
+      "wallMs",
+      "failureClass"
+    ]
+  },
+  "researchEvidence": [
+    {
+      "source": "packages/agentic-system/src/backend-application.js",
+      "finding": "prepareBackendObjective parses the objective/order then awaits resolveBackendContext before backendWorker execution; current Oracle grounding is pre-worker Application orchestration."
+    },
+    {
+      "source": "packages/agentic-system/src/qa-application.js",
+      "finding": "runQaObjective builds QaWorkOrder then awaits resolveQaContext before qaWorker execution; QA context is likewise resolved above the worker."
+    },
+    {
+      "source": "packages/core-harness/src/agent-runtime.js",
+      "finding": "AgentRuntime renders selected context through renderAgentContext separately from capability invocation; capability.execute is an action path and is not required for prompt context."
+    },
+    {
+      "source": "packages/core-harness/src/context.js",
+      "finding": "Dynamic context blocks receive callId/judgment/turn metadata and are bounded prompt projections; they do not define durable source-resolution identity/currentness."
+    },
+    {
+      "source": "https://www.uber.com/gb/en/blog/efficient-software-factory/",
+      "checked": "2026-09-26",
+      "finding": "Uber's 2026 Software Factory article describes a 24M-node/80M-edge Context Graph across 30+ systems and a same-model grounding example; use as evidence for context infrastructure, not as ExHarness topology/scale requirements."
+    },
+    {
+      "source": "https://github.com/Aider-AI/aider/tree/5dc9490bb35f9729ef2c95d00a19ccd30c26339c",
+      "eligibility": "GitHub search confirms stars >=1,000 at 2026-09-26 check; Apache-2.0",
+      "finding": "Aider repo-map ranks structural repository information into an explicit token budget; useful pattern for retrieval/materialization vs bounded prompt projection."
+    },
+    {
+      "source": "https://github.com/oraios/serena/tree/7a2968335f2198b966864de1ce3655c8e485a653",
+      "eligibility": "GitHub search confirms stars >=1,000 at 2026-09-26 check; Serena application GPL-3.0-or-later, SolidLSP MIT",
+      "finding": "Symbol/LSP semantic retrieval is a useful provider capability, but full Serena is not selected as an ExHarness dependency in BB-060; BB-062 owns reuse/license choice."
+    },
+    {
+      "source": "https://github.com/sourcegraph/zoekt/tree/153817f643cde8b229ee388c1dddbcf07f4798af",
+      "eligibility": "GitHub search confirms stars >=1,000 at 2026-09-26 check; Apache-2.0",
+      "finding": "Zoekt provides indexed code search with code-aware ranking and is a suitable high-recall lexical comparison arm for BB-062, not a BB-060 dependency."
+    },
+    {
+      "source": "https://github.com/getzep/graphiti/tree/ba4a9cb32495b6864160616f8dfa2b898f4a500c",
+      "eligibility": "GitHub search confirms stars >=1,000 at 2026-09-26 check; Apache-2.0",
+      "finding": "Graphiti remains a temporal/context-graph experiment input for BB-062/063; no graph backend is selected by BB-060."
+    },
+    {
+      "source": "https://github.com/topoteretes/cognee/tree/eb90d03740755f5252b8b12cce91fd09970f2d81",
+      "eligibility": "GitHub search confirms stars >=1,000 at 2026-09-26 check; Apache-2.0",
+      "finding": "Cognee remains an alternative graph/memory pipeline experiment input; agent-memory semantics are not product/source truth."
+    },
+    {
+      "source": ".github/workflows/test.yml",
+      "finding": "Current PR kernel CI checks out source, sets up Node 24 and runs npm run verify without npm install; BB-060 therefore preserves direct relative source imports and must not require workspace symlink installation."
+    },
+    {
+      "source": "https://docs.npmjs.com/misc/workspaces/",
+      "checked": "2026-09-26",
+      "finding": "npm workspaces support explicit local workspace dependency metadata and symlink workspaces during install, but ExHarness PR CI intentionally has no install step; metadata cannot be assumed to create runtime module resolution in this repository."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Research specifies the runtime path Application semantic need -> ContextRequirement -> Core runtime -> Oracle -> governed providers/planner -> ContextResolution.",
+      "criterionIds": [
+        "RUNTIME_PATH",
+        "PROTOTYPE_HANDOFF",
+        "INV-1",
+        "INV-3"
+      ],
+      "planElements": [
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "runtime-seam-probe",
+        "architecture-boundary"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        9
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/backend-application.js",
+        "packages/agentic-system/src/qa-application.js",
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/context.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/backend-application.js",
+          "match": "const context = await resolveBackendContext(order, { repositoryReader });"
+        },
+        {
+          "ref": "packages/agentic-system/src/qa-application.js",
+          "match": "const context = await resolveQaContext(order, { artifactReader });"
+        },
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "latestPromptContext = await renderAgentContext({"
+        },
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "const resolvedValue = block.dynamic"
+        }
+      ],
+      "supportingPlanFields": [
+        "runtimeBoundaryContract",
+        "prototypeContract",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Physical package ownership and compile-time dependency direction are mechanically testable and keep Oracle outside Application/Core implementation ownership.",
+      "criterionIds": [
+        "PHYSICAL_OWNERSHIP",
+        "COMPATIBILITY",
+        "INV-1",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "oracle-provider-unit",
+        "oracle-compatibility",
+        "architecture-boundary"
+      ],
+      "decisionIndexes": [
+        0,
+        4,
+        6,
+        7,
+        8,
+        10
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/oracle.js",
+        "packages/agentic-system/package.json",
+        "package.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "import { BackendContextSchema, parseBackendWorkOrder } from \"./contracts.js\";"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "await repositoryReader.readFile({"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "await artifactReader.readArtifact({"
+        },
+        {
+          "ref": "packages/agentic-system/package.json",
+          "match": "\"name\": \"@exharness/agentic-system\""
+        }
+      ],
+      "supportingPlanFields": [
+        "physicalTopologyContract",
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Retained findings and superseded assumptions from the prior BB-060..064 readiness cycle are explicitly recorded.",
+      "criterionIds": [
+        "REBOUND_SEMANTICS",
+        "PHYSICAL_OWNERSHIP"
+      ],
+      "planElements": [
+        "S1",
+        "S6"
+      ],
+      "verificationIds": [
+        "architecture-boundary",
+        "living-docs-check"
+      ],
+      "decisionIndexes": [
+        0,
+        6,
+        7,
+        8,
+        13
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/oracle-reconciliation-phase.md",
+        "docs/living/system/oracle/architecture.md",
+        "docs/living/system/oracle/semantics.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/oracle-reconciliation-phase.md",
+          "match": "## Retained findings"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-reconciliation-phase.md",
+          "match": "## Superseded assumptions"
+        },
+        {
+          "ref": "docs/living/system/oracle/architecture.md",
+          "match": "Current source contains no generic source registry"
+        },
+        {
+          "ref": "docs/living/system/oracle/semantics.md",
+          "match": "Oracle is not an agent, Advisor, Worker, correctness authority, semantic-memory system or runtime context lifecycle."
+        }
+      ],
+      "supportingPlanFields": [
+        "runtimeBoundaryContract",
+        "physicalTopologyContract",
+        "supersededAuthority"
+      ]
+    },
+    {
+      "objectiveCriterion": "At least two relevant retrieval/context approaches are compared from primary sources; public GitHub examples meet the 1,000-star evidence rule when used.",
+      "criterionIds": [
+        "EXTERNAL_EVIDENCE",
+        "PROTOTYPE_HANDOFF"
+      ],
+      "planElements": [
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "research-evidence-check",
+        "runtime-seam-probe"
+      ],
+      "decisionIndexes": [
+        11,
+        12
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "## External evidence"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "## Reuse direction before experiments"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence",
+        "prototypeContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "A falsifiable prototype and benchmark handoff are defined so the next READY plan does not rely on architecture prose alone.",
+      "criterionIds": [
+        "PROTOTYPE_HANDOFF",
+        "RUNTIME_PATH",
+        "COMPATIBILITY"
+      ],
+      "planElements": [
+        "S2",
+        "S5",
+        "S7"
+      ],
+      "verificationIds": [
+        "runtime-seam-probe",
+        "oracle-compatibility",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        3,
+        5,
+        9,
+        13
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/context.js",
+        "packages/agentic-system/src/oracle.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "maxSerializedChars = 32_768"
+        },
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "export async function renderAgentContext({"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "sourceRef: resolved.sourceRef"
+        }
+      ],
+      "supportingPlanFields": [
+        "prototypeContract",
+        "runtimeBoundaryContract",
+        "researchEvidence"
+      ]
+    }
+  ]
 }
