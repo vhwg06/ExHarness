@@ -43,7 +43,18 @@ def run(config: dict) -> dict:
     if not os.getenv(model["credentialEnv"]):
         raise RuntimeError("provider credential environment variable is missing")
     command = config["probeCommand"]
-    message = [{"role": "user", "content": f"Call the bash tool exactly once with this command and do not execute it yourself: {command}"}]
+    # Qualification must exercise the same message envelope as the pinned
+    # mini-SWE-agent.  The old probe sent only a user turn; Nemotron can then
+    # emit its tool-call serialization as ordinary content when thinking is
+    # disabled.  Keep the prompt bounded and do not accept that content as a
+    # tool call: only the provider's structured tool_calls field is valid.
+    message = [
+        {"role": "system", "content": (
+            "You are a coding agent. Use bash to inspect and edit only /workspace. "
+            "Use the provided bash tool exactly once when requested."
+        )},
+        {"role": "user", "content": f"Call the bash tool exactly once with this command and do not execute it yourself: {command}"},
+    ]
     import litellm
     from minisweagent.models.utils.actions_toolcall import BASH_TOOL
 
@@ -75,7 +86,7 @@ def run(config: dict) -> dict:
     try:
         tool_call = validate_tool_call(response, command)
     except BaseException as error:
-        error.probe_settlement = {"response": response, "settled": settled}
+        error.probe_settlement = {"requestId": request_id, "response": response, "settled": settled}
         raise
     return {"schemaVersion": 1, "probeId": config["probeId"], "requestId": request_id, "status": "PASS",
             "providerModelId": response.get("model"), "providerRequestId": response.get("id"),
@@ -92,10 +103,12 @@ def main() -> int:
         return 2
     config = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     result_path = Path(config["resultPath"])
+    request_id = None
     try:
         result = run(config)
     except Exception as error:
         result = {"schemaVersion": 1, "probeId": config.get("probeId"), "status": "FAILED",
+                  "requestId": request_id,
                   "errorType": type(error).__name__, "error": str(error)[:1024],
                   "traceback": traceback.format_exc(limit=3)}
         if isinstance(error, ProviderNotAdmittedError):
@@ -113,6 +126,7 @@ def main() -> int:
             settled = probe_settlement["settled"]
             response = probe_settlement["response"]
             result.update({
+                "requestId": probe_settlement.get("requestId"),
                 "providerRequestId": response.get("id") if isinstance(response, dict) else None,
                 "providerModelId": response.get("model") if isinstance(response, dict) else None,
                 "usage": {
