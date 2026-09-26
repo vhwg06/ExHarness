@@ -138,9 +138,10 @@ export function validateQualificationArtifact({ artifact, profile, value }) {
   if (attempted > value.qualification.maxWireAttempts)
     fail('qualification campaign exceeded its registered wire-attempt limit', 3);
   for (const probe of selected.probes) {
+    const usage = probe.usage ?? { inputTokens: probe.inputTokens, outputTokens: probe.outputTokens };
     if (probe.status !== 'PASS' || probe.providerModelId !== profile.model.providerModelId ||
         probe.toolCall?.toolName !== 'bash' || !probe.providerEvidenceRef || !probe.providerEvidenceHash ||
-        !Number.isInteger(probe.usage?.outputTokens) || probe.usage.outputTokens > value.limits.maxProbeOutputTokens)
+        !Number.isInteger(usage.outputTokens) || usage.outputTokens > value.limits.maxProbeOutputTokens)
       fail('qualification probe is not a settled, attested bash call', 3);
   }
   return true;
@@ -202,7 +203,10 @@ export async function runQualification({ profile: baseProfile, profilePath = nul
     const probeManifest = await readProbeManifest(join(profileDir, 'setup', 'probes.json'));
     const record = { profileId: spec.id, profileSpec: profileSpec(variant), ready: Boolean(result.ready),
       prerequisiteMissing: Boolean(result.prerequisiteMissing), unresolvedProvider: Boolean(result.unresolvedProvider),
-      resourceExhausted: Boolean(result.resourceExhausted), probes: (probeManifest?.probes ?? []).map(probe => ({ ...probe, status: 'PASS', providerModelId: variant.model.providerModelId })),
+      resourceExhausted: Boolean(result.resourceExhausted), probes: (probeManifest?.probes ?? []).map(probe => ({ ...probe,
+        status: 'PASS', providerModelId: variant.model.providerModelId,
+        usage: { inputTokens: probe.inputTokens ?? null, outputTokens: probe.outputTokens ?? null,
+          cachedInputTokens: probe.cachedInputTokens ?? null } })),
       failures: (probeManifest?.failures ?? []).map(failure => ({ ...failure, result: compactProbeResult(failure.result) })),
       outputRef: relative(campaignRoot, profileDir).replaceAll('\\', '/') };
     attempts.push(record);
