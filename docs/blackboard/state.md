@@ -38,7 +38,7 @@ WORKER
 
 
 BB-065
-task: Define delivery profile and executable value baseline
+task: Calibrate neutral benchmark substrate and executable baseline
 lane: RESEARCH_SA
 phase: RESEARCH
 current-context: docs/blackboard/context/BB-065/current.json
@@ -57,10 +57,11 @@ worker: codex-bb065-research
 - BB-071 [RESEARCH_SA/RESEARCH] — Prove requirement change and failure recovery on a live product
 - BB-072 [RESEARCH_SA/RESEARCH] — Make delivery runs observable recoverable and cost bounded
 - BB-073 [RESEARCH_SA/RESEARCH] — Ship an installable supported delivery profile
-- BB-074 [RESEARCH_SA/RESEARCH] — Measure real delivery value against direct-agent baseline
+- BB-074 [RESEARCH_SA/RESEARCH] — Measure delivery-harness value under a controlled benchmark program
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
-- BB-077 [WORKER/EXECUTION] — Measure ExHarness harness tax and pin async-first baseline
+- BB-077 [RESEARCH_SA/RESEARCH] — Research harness-isolation benchmark and async-first baseline protocol
+- BB-081 [RESEARCH_SA/RESEARCH] — Research held-out harness profile acceptance and fault-ablation protocol
 
 ## Dependency graph
 
@@ -91,11 +92,11 @@ BB-073 [RESEARCH_SCHEDULABLE] <- BB-070, BB-072
 BB-074 [RESEARCH_SCHEDULABLE] <- BB-071, BB-073
 BB-075 [RESEARCH_SCHEDULABLE] <- BB-074, BB-059
 BB-076 [RESEARCH_SCHEDULABLE] <- BB-074, BB-075
-BB-077 [WORKER_SCHEDULABLE] <- ROOT
+BB-077 [RESEARCH_SCHEDULABLE] <- ROOT
 BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
-BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
+BB-081 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080
 ```
 
 ## Context semantics
