@@ -38,21 +38,21 @@
     "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership."
   ],
   "architectureDecisions": [
-    "D1 — Current source truth: prepareBackendObjective() and runQaObjective() resolve repository/artifact context in packages/agentic-system/src/oracle.js before Worker execution; Oracle physical source is therefore still Application-owned.",
-    "D2 — Current Core context.js/AgentRuntime already own bounded context selection and renderAgentContext(), but a dynamic context block is a projection mechanism, not a durable source resolution. It receives runtime metadata rather than a semantic requirement and does not create independent provenance/currentness/materialization identity.",
-    "D3 — Reject Capability/Resource/LiveObject as the default Oracle seam. Those are action/tool surfaces; making required grounding model-visible would add tool-turn cost, let model behavior decide baseline grounding and mix retrieval identity with effect/resource semantics.",
-    "D4 — Selected target runtime path is Application semantic need -> ContextRequirement -> Core pre-prompt context-resolution seam -> injected Oracle resolver -> governed providers/planner -> ContextResolution -> existing Core context projection/renderAgentContext. ContextRequirement/ContextResolution fields are finalized by BB-061.",
-    "D5 — Core consumes the future resolver by dependency injection and does not import @exharness/oracle implementation. Oracle likewise imports neither Core nor Agentic Application. The composition root is the wiring boundary.",
-    "D6 — BB-060 intentionally does not add the production Core resolver hook. Implementing an untyped temporary hook before BB-061 would create the same architecture debt this rebound is meant to prevent.",
-    "D7 — Create @exharness/oracle as an infrastructure workspace package. Move current source reads into provider-level modules: repository-source.js and application-artifact-source.js. Provider inputs are already-parsed source requests plus injected readers; provider outputs preserve raw content/sourceRef and source provenance only.",
-    "D8 — Keep packages/agentic-system/src/oracle.js as a compatibility/application adapter: parse Backend/Qa WorkOrders, call @exharness/oracle provider functions, then validate the existing BackendContextSchema/QaContextSchema. Existing resolveBackendContext/resolveQaContext exports remain stable in BB-060.",
-    "D9 — Provider modules are not a generic registry and do not own provider selection, lifecycle, refresh, planning, scheduling, acceptance or recovery. BB-062 decides source-catalog/planner topology after retrieval experiments.",
-    "D10 — A development-only bb060-runtime-seam-probe composes a semantic-need fixture -> injected resolver function -> Oracle compatibility provider -> projected Core context block -> renderAgentContext. It proves the boundary can remain outside capability/resource invocation without defining the BB-061 product contract.",
-    "D11 — Architecture guards verify both source placement and dependency direction: Oracle package cannot import agentic-system/core; Core cannot import Oracle implementation; agentic-system may depend on Oracle compatibility providers. Negative fixtures must fail for copied read loops or forbidden reverse imports.",
-    "D12 — External evidence is architecture input, not implementation selection: Uber supports rich cross-system context as runtime infrastructure; Aider supports budgeted structural projection; Serena/SolidLSP supports symbol-level semantic retrieval; Zoekt is a lexical baseline. Graphiti/Cognee remain later graph/currentness candidates.",
-    "D13 — Serena's current repository license is component-split: Serena application GPL-3.0-or-later, SolidLSP MIT. BB-060 therefore does not select full Serena as an ExHarness dependency; BB-062 must make an explicit reuse/license decision.",
-    "D14 — Living Docs after delivery must state only the delivered physical provider boundary and compatibility behavior, and explicitly mark the production ContextRequirement/ContextResolution runtime seam as NOT YET DELIVERED until BB-061.",
-    "D15 — Preserve the repository's no-install CI contract: packages/agentic-system/package.json declares dependencies.@exharness/oracle = \"file:../oracle\" to make package ownership explicit, while packages/agentic-system/src/oracle.js imports ../../oracle/src/index.js directly. Do not change .github workflows or introduce package-lock solely for BB-060. BB-061 may revisit package-specifier/install wiring when it defines the production resolution port."
+    "D1 — Current source truth: Backend and QA call packages/agentic-system/src/oracle.js before Worker execution, so Oracle IO is still physically Application-owned.",
+    "D2 — Core already owns bounded context selection/renderAgentContext; dynamic context blocks are projection, not durable source-resolution identity/currentness.",
+    "D3 — Capability, Resource and LiveObject are not the default Oracle seam; required grounding must not become model/tool-call behavior.",
+    "D4 — Target path: Application semantic need -> ContextRequirement -> Core pre-prompt injected resolver -> Oracle -> providers/planner -> ContextResolution -> existing Core context projection. BB-061 owns the production contract.",
+    "D5 — Core consumes the resolver by dependency injection; Core does not import Oracle implementation and Oracle imports neither Core nor Agentic Application.",
+    "D6 — BB-060 adds no production Core resolver hook or temporary ContextRequirement/ContextResolution API; BB-061 owns both.",
+    "D7 — Create private @exharness/oracle and move source loops into readRepositorySources() and readApplicationArtifacts() provider modules with injected readers and source provenance only.",
+    "D8 — Keep packages/agentic-system/src/oracle.js as compatibility adapter preserving resolveBackendContext/resolveQaContext and existing Application schema validation.",
+    "D9 — BB-060 providers are concrete building blocks, not a provider registry/planner/lifecycle system; BB-062 selects provider topology after experiments.",
+    "D10 — Development-only runtime seam probe resolves outside model-visible tools, projects the result into an ordinary Core context block, then calls renderAgentContext.",
+    "D11 — Architecture guards reject Oracle->agentic/core imports, Core->Oracle implementation imports, copied source loops and Oracle lifecycle/acceptance authority.",
+    "D12 — Evidence patterns: Aider=budgeted structural projection, Serena/SolidLSP=semantic symbols, Zoekt=lexical baseline, Graphiti/Cognee=context-graph candidates, Uber=context-infrastructure evidence. BB-060 selects no backend.",
+    "D13 — Serena application is GPL-3.0-or-later while SolidLSP is MIT; full Serena is not selected by BB-060.",
+    "D14 — Living Docs describe only delivered physical/provider compatibility; production ContextRequirement/ContextResolution remains NOT YET DELIVERED until BB-061.",
+    "D15 — Preserve no-install CI: declare file:../oracle metadata but use ../../oracle/src/index.js source import; no CI workflow or lockfile change."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -708,40 +708,27 @@
   ],
   "externalEvidenceSummary": {
     "checked": "2026-09-26",
-    "thresholdRule": "GitHub search query repo:<owner/name> stars:>=1000 confirmed Aider, Serena, Zoekt, Graphiti and Cognee met the standing >=1,000-star rule at the evidence check.",
+    "thresholdRule": "GitHub search with repo:<owner/name> stars:>=1000 confirmed Aider, Serena and Zoekt satisfy the standing >=1,000-star rule.",
     "comparisons": [
       {
         "approach": "Aider repo-map",
         "source": "https://github.com/Aider-AI/aider/tree/5dc9490bb35f9729ef2c95d00a19ccd30c26339c",
         "license": "Apache-2.0",
-        "observedPattern": "structural repository map ranks symbol/relationship context under an explicit token budget",
-        "use": "budget-aware structural projection candidate",
-        "limitation": "does not establish accepted-artifact provenance, cross-system currentness or durable ContextResolution identity"
+        "comparison": "budgeted structural projection; useful for compact repository context, but not durable provenance/currentness"
       },
       {
         "approach": "Serena / SolidLSP",
         "source": "https://github.com/oraios/serena/tree/7a2968335f2198b966864de1ce3655c8e485a653",
         "license": "Serena GPL-3.0-or-later; SolidLSP MIT",
-        "observedPattern": "LSP/symbol retrieval exposes semantic code entities and relationships",
-        "use": "semantic-code provider pattern",
-        "limitation": "full Serena is not selected; language coverage, integration value and license choice remain BB-062 experiment decisions"
+        "comparison": "symbol/LSP semantic retrieval; provider candidate only, with language/integration/license choice deferred to BB-062"
       },
       {
         "approach": "Zoekt",
         "source": "https://github.com/sourcegraph/zoekt/tree/153817f643cde8b229ee388c1dddbcf07f4798af",
         "license": "Apache-2.0",
-        "observedPattern": "indexed trigram/code-aware search provides a fast high-recall lexical baseline",
-        "use": "lexical provider comparison arm",
-        "limitation": "lexical relevance alone does not establish semantic ownership, provenance or currentness"
-      },
-      {
-        "approach": "Uber Context Graph",
-        "source": "https://www.uber.com/gb/en/blog/efficient-software-factory/",
-        "observedPattern": "cross-system context graph grounds engineering agents with relationships and current organizational/system data",
-        "use": "architecture evidence for context as runtime infrastructure",
-        "limitation": "Uber scale/topology is not an ExHarness requirement and is not copied into BB-060"
+        "comparison": "indexed high-recall lexical baseline; relevance alone does not provide ownership/provenance/currentness"
       }
     ],
-    "selectionRule": "BB-060 selects no backend. BB-062 must run same-corpus retrieval experiments before promoting lexical, LSP/semantic or graph implementations."
+    "selectionRule": "BB-060 selects no backend; BB-062 must compare retrieval value on the same corpus before adoption."
   }
 }
