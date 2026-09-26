@@ -100,8 +100,11 @@ def _nim_chat_completion(model_profile: dict, messages: list[dict], tools: list[
         raise BudgetError("unregistered NIM request override")
     body = {"model": model_profile["providerModelId"], "messages": messages, "tools": tools,
             "tool_choice": model_profile["toolChoice"], "max_tokens": max_output_tokens,
-            "temperature": model_profile["temperature"], "top_p": model_profile["topP"],
-            "reasoning_budget": model_profile["reasoningBudget"], "stream": False}
+            "temperature": model_profile["temperature"], "top_p": model_profile["topP"], "stream": False}
+    if model_profile.get("reasoningBudget") is not None:
+        body["reasoning_budget"] = model_profile["reasoningBudget"]
+    if model_profile.get("enableThinking") is not None:
+        body["chat_template_kwargs"] = {"enable_thinking": bool(model_profile["enableThinking"])}
     request = urllib.request.Request(f"{model_profile['apiBaseUrl'].rstrip('/')}/chat/completions",
                                      data=json.dumps(body, separators=(",", ":")).encode("utf-8"), method="POST",
                                      headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json",
@@ -201,7 +204,13 @@ def run(config: dict) -> dict:
     if not nim:
         model_kwargs["reasoning_effort"] = model_profile["reasoningEffort"]
     else:
-        model_kwargs["extra_body"] = {"reasoning_budget": model_profile["reasoningBudget"]}
+        extra_body = {}
+        if model_profile.get("reasoningBudget") is not None:
+            extra_body["reasoning_budget"] = model_profile["reasoningBudget"]
+        if model_profile.get("enableThinking") is not None:
+            extra_body["chat_template_kwargs"] = {"enable_thinking": bool(model_profile["enableThinking"])}
+        if extra_body:
+            model_kwargs["extra_body"] = extra_body
         model_kwargs["tool_choice"] = model_profile["toolChoice"]
     if model_profile["credentialEnv"] == "OPENAI_API_KEY":
         model_kwargs.update({"store": True, "service_tier": "default"})

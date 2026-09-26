@@ -213,7 +213,7 @@ function knownNonnegative(value) { return Number.isFinite(value) && value >= 0; 
  * valueVerdict field: semantic value is supplied only by jev-value.mjs.
  */
 export function calculateStudyReport({ manifest, executions = [], metrics = null, observationAsOf = null, resourceState = null }) {
-  if (manifest?.schemaVersion !== 1 || manifest.studyKind !== 'FIXTURE_VALUE_V1' || !Array.isArray(manifest.tasks))
+  if (manifest?.schemaVersion !== 1 || !['FIXTURE_VALUE_V1', 'CORE_VALUE_V2'].includes(manifest.studyKind) || !Array.isArray(manifest.tasks))
     fail('study manifest/schema mismatch');
   const body = Object.fromEntries(Object.entries(manifest).filter(([key]) => key !== 'digest'));
   if (manifest.digest !== `sha256:${sha256(body)}`) fail('study manifest changed after registration');
@@ -305,7 +305,9 @@ export function calculateStudyReport({ manifest, executions = [], metrics = null
     });
   }
   const ratios = pairs.map(pair => pair.activeTimeRatio).filter(value => value != null);
-  const allSettled = resultTasks.length === manifest.tasks.length && resultTasks.every(row => row.terminalReason != null && row.terminalReason !== 'RESOURCE_EXHAUSTED' && !row.provider.usageUnknown && row.timing.activeMs != null);
+  const allSettled = resultTasks.length === manifest.tasks.length && resultTasks.every(row => row.terminalReason != null &&
+    !['RESOURCE_EXHAUSTED', 'UNRESOLVED_PROVIDER', 'INFRASTRUCTURE_FAILURE'].includes(row.terminalReason) &&
+    !row.provider.usageUnknown && row.timing.activeMs != null);
   const verificationComplete = resultTasks.length === manifest.tasks.length && resultTasks.every(row =>
     ['ACCEPTED', 'REJECTED'].includes(row.verificationStatus) && Number.isInteger(row.checksPassed) &&
     Number.isInteger(row.checksTotal) && row.checksTotal > 0 && row.checksPassed >= 0 && row.checksPassed <= row.checksTotal);
@@ -314,8 +316,10 @@ export function calculateStudyReport({ manifest, executions = [], metrics = null
   const hasLiveEvidence = resultTasks.every(row => row.evidenceClass === 'LIVE' && row.provider.wireRequests > 0 && row.provider.modelCalls > 0);
   const resourceTerminal = resourceState == null || manifest.tasks.every(task => {
     const execution = resourceState.executions?.[task.executionId];
+    const metric = resultTasks.find(row => row.executionId === task.executionId);
+    const taskBudgetStop = metric?.terminalReason === 'TASK_BUDGET_EXHAUSTED' && execution?.terminalReason === 'RESOURCE_EXHAUSTED';
     return ['COMPLETED', 'TERMINAL'].includes(execution?.status) &&
-      !['RESOURCE_EXHAUSTED', 'UNRESOLVED_PROVIDER', 'INFRASTRUCTURE_FAILURE', 'INVALID_INPUT', 'PREREQUISITE_MISSING'].includes(execution?.terminalReason);
+      (taskBudgetStop || !['RESOURCE_EXHAUSTED', 'UNRESOLVED_PROVIDER', 'INFRASTRUCTURE_FAILURE', 'INVALID_INPUT', 'PREREQUISITE_MISSING'].includes(execution?.terminalReason));
   });
   const reasons = [];
   if (missing.length) reasons.push('MISSING_EXECUTIONS');

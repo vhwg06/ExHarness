@@ -40,10 +40,11 @@ function eventCounts(trajectory) {
   return Object.fromEntries([...new Set(trajectory.map(event => event.type))].sort().map(type => [type, trajectory.filter(event => event.type === type).length]));
 }
 
-export function createCoreArm({ directory, executionId, work, seedCandidate, executeAttempt, verifyCandidate, clock = () => new Date().toISOString() } = {}) {
+export function createCoreArm({ directory, executionId, cohortId = null, work, seedCandidate, executeAttempt, verifyCandidate, clock = () => new Date().toISOString() } = {}) {
   if (!directory || !executionId || !work || !seedCandidate || typeof executeAttempt !== 'function' || typeof verifyCandidate !== 'function')
     fail('directory, executionId, work, seedCandidate, executeAttempt and verifyCandidate are required');
   const root = resolve(directory);
+  const sessionId = cohortId ? `${cohortId}:${executionId}` : executionId;
   const store = createFileSessionStore(root);
   const coreClock = () => {
     const value = clock();
@@ -96,18 +97,18 @@ export function createCoreArm({ directory, executionId, work, seedCandidate, exe
     idFactory: () => `${executionId}-${Date.now()}-${Math.random().toString(16).slice(2)}`
   });
 
-  async function existingState() { return store.load(executionId); }
+  async function existingState() { return store.load(sessionId); }
 
   async function run({ attemptId, taskId, fault, verificationRef = null, action = null } = {}) {
     await mkdir(root, { recursive: true });
     let persisted = await existingState();
     if (!persisted) {
-      await harness.start({ sessionId: executionId, work: { ...clone(work), taskId, arm: 'EXHARNESS', executionId }, seedCandidate });
-      persisted = await harness.workState(executionId);
+      await harness.start({ sessionId, work: { ...clone(work), taskId, arm: 'EXHARNESS', executionId, cohortId }, seedCandidate });
+      persisted = await harness.workState(sessionId);
     }
     const hasObservation = persisted.trajectory.some(event => event.type === 'OBSERVED');
-    if (!hasObservation) await harness.observe(executionId, { taskId, fault, attemptId, executionId });
-    persisted = await harness.workState(executionId);
+    if (!hasObservation) await harness.observe(sessionId, { taskId, fault, attemptId, executionId });
+    persisted = await harness.workState(sessionId);
 
     const currentEvaluation = persisted.persistentMemory.evaluations.find(item => item.candidate.id === persisted.currentCandidate.id && item.candidate.version === persisted.currentCandidate.version);
     const latestActed = persisted.trajectory.filter(event => event.type === 'ACTED').at(-1) ?? null;
@@ -120,7 +121,7 @@ export function createCoreArm({ directory, executionId, work, seedCandidate, exe
       result: clone(actionResult.result)
     } : null;
     if (!actionView) {
-      actionView = await harness.act(executionId, {
+      actionView = await harness.act(sessionId, {
         kind: 'COMMON_MINI_ATTEMPT',
         attemptId,
         taskId,
@@ -129,7 +130,7 @@ export function createCoreArm({ directory, executionId, work, seedCandidate, exe
       });
     }
 
-    persisted = await harness.workState(executionId);
+    persisted = await harness.workState(sessionId);
     const currentCandidate = clone(persisted.currentCandidate);
     const existingVerification = persisted.persistentMemory.verifications.find(item => item.candidate.id === currentCandidate.id && item.candidate.version === currentCandidate.version);
     let verificationArtifact = existingVerification ?? null;
@@ -144,7 +145,7 @@ export function createCoreArm({ directory, executionId, work, seedCandidate, exe
       });
       lastVerification = verified;
       lastVerificationRef = verificationRef;
-      verificationArtifact = await harness.recordVerification(executionId, {
+      verificationArtifact = await harness.recordVerification(sessionId, {
         candidate: currentCandidate,
         claim: `fixture checks for ${taskId}`,
         status: verificationStatus(verified),
@@ -159,27 +160,28 @@ export function createCoreArm({ directory, executionId, work, seedCandidate, exe
       lastVerificationRef = verificationRef;
     }
 
-    persisted = await harness.workState(executionId);
+    persisted = await harness.workState(sessionId);
     const existingEvaluation = persisted.persistentMemory.evaluations.find(item => item.candidate.id === currentCandidate.id && item.candidate.version === currentCandidate.version);
-    const evaluation = existingEvaluation ?? await harness.evaluate(executionId, { taskId, verificationRef });
+    const evaluation = existingEvaluation ?? await harness.evaluate(sessionId, { taskId, verificationRef });
     let promotion = persisted.persistentMemory.lineage.find(item => item.candidate.id === currentCandidate.id && item.candidate.version === currentCandidate.version && item.kind === 'PROMOTED') ?? null;
     if (!promotion && actionView.mutated && evaluation.validity === EvaluationValidity.VALID && evaluation.verdict === EvaluationVerdict.PASS)
-      promotion = await harness.promote(executionId);
-    const state = await harness.workState(executionId);
+      promotion = await harness.promote(sessionId);
+    const state = await harness.workState(sessionId);
     await writeAtomicJson(join(root, 'core-state.json'), state);
     await writeAtomicJson(join(root, 'core-events.json'), {
       schemaVersion: 1,
       evidenceClass: 'LIVE_CORE_TRACE',
       executionId,
-      sessionId: executionId,
+      sessionId,
       eventCounts: eventCounts(state.trajectory),
       events: state.trajectory,
+      state,
       stateHash: `sha256:${sha256(state)}`
     });
     return {
       arm: 'EXHARNESS',
       executionId,
-      sessionId: executionId,
+      sessionId,
       attemptId,
       candidateDigest: state.currentCandidate.version,
       candidateRef: actionView.result?.candidateRef ?? null,
@@ -200,13 +202,14 @@ export function createCoreArm({ directory, executionId, work, seedCandidate, exe
   return Object.freeze({ harness, store, run, state: existingState });
 }
 
-export async function auditCoreTrace(path, { executionId, requirePromotion = false } = {}) {
+export async function auditCoreTrace(path, { executionId, sessionId = null, requirePromotion = false } = {}) {
   const trace = JSON.parse(await readFile(resolve(path), 'utf8'));
   if (trace.schemaVersion !== 1 || trace.evidenceClass !== 'LIVE_CORE_TRACE' || trace.executionId !== executionId)
     fail('Core trace identity mismatch');
+  if (sessionId && trace.sessionId !== sessionId) fail('Core trace session identity mismatch');
   const required = ['SESSION_STARTED', 'OBSERVED', 'ACTED', 'VERIFIED', 'EVALUATED'];
   for (const type of required) if (!trace.events.some(event => event.type === type)) fail(`Core trace missing ${type}`);
   if (requirePromotion && !trace.events.some(event => event.type === 'PROMOTED')) fail('Core trace missing PROMOTED');
-  if (trace.stateHash !== `sha256:${sha256(trace.state ?? {})}` && trace.state) fail('Core trace state hash mismatch');
+  if (!trace.state || trace.stateHash !== `sha256:${sha256(trace.state)}`) fail('Core trace state hash mismatch');
   return trace;
 }

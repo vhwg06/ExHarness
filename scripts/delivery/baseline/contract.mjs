@@ -90,10 +90,11 @@ export function selectPilotPairs(contexts) {
   });
 }
 
-export function validateProfile(profile, { fixtureDigest, acceptanceDigest, requireLive = false, requirePilot = true } = {}) {
+export function validateProfile(profile, { fixtureDigest, acceptanceDigest, requireLive = false, requirePilot = true,
+  protocolId = 'FIXTURE_VALUE_V1', protocolHash = PROTOCOL_HASH } = {}) {
   if (profile?.schemaVersion !== 1 || !nonempty(profile.experimentId) || !nonempty(profile.operatorId) || !nonempty(profile.reviewerId)) fail('experiment/operator/reviewer identity required');
   if (profile.operatorId === profile.reviewerId) fail('independent reviewer identity required');
-  if (profile.protocolHash !== PROTOCOL_HASH) fail('protocol hash changed');
+  if (profile.protocolHash !== protocolHash) fail('protocol hash changed');
   if (!exactSha(profile.candidateSha) || !exactSha(profile.candidateTree)) fail('exact candidate SHA/tree required');
   if (!exactDigest(profile.fixtureDigest) || profile.fixtureDigest !== fixtureDigest) fail('fixture digest mismatch');
   if (!exactDigest(profile.acceptanceDigest) || profile.acceptanceDigest !== acceptanceDigest) fail('acceptance digest mismatch');
@@ -111,6 +112,7 @@ export function validateProfile(profile, { fixtureDigest, acceptanceDigest, requ
       !['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'OPENROUTER_API_KEY', 'NVIDIA_NIM_API_KEY'].includes(model.credentialEnv) || !/^\d{4}-\d{2}-\d{2}$/.test(model.pricingDate ?? '') ||
       !nonempty(model.pricingSource) || !nonnegative(model.inputUsdPerMillion) || !nonnegative(model.cachedInputUsdPerMillion) ||
       model.cachedInputUsdPerMillion > model.inputUsdPerMillion || !nonnegative(model.outputUsdPerMillion)) fail('model snapshot, endpoint, pricing and credential reference required');
+  const v2Nim = protocolId === 'CORE_VALUE_V2' && nim;
   if (nim && (model.credentialEnv !== 'NVIDIA_NIM_API_KEY' ||
       model.snapshot !== `nvidia_nim/${model.providerModelId}` ||
       model.providerModelId !== 'nvidia/nemotron-3.5-lightning-30b-a3b' ||
@@ -120,8 +122,11 @@ export function validateProfile(profile, { fixtureDigest, acceptanceDigest, requ
       model.evidenceMode !== 'ORIGINAL_RESPONSE_ATTESTED' ||
       model.modelIdentityEvidence !== 'CATALOG_RELEASE' || model.backendRevision !== null ||
       model.releaseDate !== '2026-08-11' || model.modelVersion !== '1.0-preview' ||
-      model.reasoningBudget !== 256 || model.toolChoice !== 'required' ||
-      model.temperature !== 1 || model.topP !== 0.95 || model.requestTimeoutSeconds !== 180 ||
+      (!v2Nim && model.reasoningBudget !== 256) || (v2Nim && ![null, 256].includes(model.reasoningBudget)) ||
+      (!v2Nim && model.toolChoice !== 'required') ||
+      (v2Nim && !(model.toolChoice === 'required' || (model.toolChoice?.type === 'function' && model.toolChoice?.function?.name === 'bash'))) ||
+      model.temperature !== 1 || model.topP !== 0.95 || (!v2Nim && model.requestTimeoutSeconds !== 180) ||
+      (v2Nim && ![180, 300].includes(model.requestTimeoutSeconds)) ||
       model.pricingEvidence !== 'NVIDIA_FREE_ENDPOINT' || model.pricingDate !== '2026-09-25' ||
       model.pricingSource !== 'https://build.nvidia.com/nvidia/nemotron-3.5-lightning-30b-a3b' ||
       model.maxContextTokens !== 1000000 || model.inputUsdPerMillion !== 0 ||

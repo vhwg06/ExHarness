@@ -72,7 +72,11 @@ def run(config: dict) -> dict:
         budget.unknown(request_id, f"probe completion ambiguous: {type(error).__name__}")
         raise
     settled = settle_provider_response(budget, request_id, response, model, status_trace)
-    tool_call = validate_tool_call(response, command)
+    try:
+        tool_call = validate_tool_call(response, command)
+    except BaseException as error:
+        error.probe_settlement = {"response": response, "settled": settled}
+        raise
     return {"schemaVersion": 1, "probeId": config["probeId"], "requestId": request_id, "status": "PASS",
             "providerModelId": response.get("model"), "providerRequestId": response.get("id"),
             "usage": {"inputTokens": response["usage"]["prompt_tokens"],
@@ -104,6 +108,20 @@ def main() -> int:
             result.update({"resourceCode": error.code, "nextEligibleAt": error.next_eligible_at})
         if isinstance(error, BudgetError):
             result["resourceCode"] = getattr(error, "code", None)
+        probe_settlement = getattr(error, "probe_settlement", None)
+        if probe_settlement is not None:
+            settled = probe_settlement["settled"]
+            response = probe_settlement["response"]
+            result.update({
+                "providerRequestId": response.get("id") if isinstance(response, dict) else None,
+                "providerModelId": response.get("model") if isinstance(response, dict) else None,
+                "usage": {
+                    "inputTokens": response.get("usage", {}).get("prompt_tokens") if isinstance(response, dict) else None,
+                    "outputTokens": response.get("usage", {}).get("completion_tokens") if isinstance(response, dict) else None,
+                },
+                "providerEvidenceRef": settled.get("providerEvidenceRef"),
+                "providerEvidenceHash": settled.get("providerEvidenceHash"),
+            })
         _write(result_path, result)
         return 1
     _write(result_path, result)

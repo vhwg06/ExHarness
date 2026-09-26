@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "protocolId": "CORE_VALUE_V2",
+  "studyId": "BB065-CORE-VALUE-2",
+  "evidenceClass": "LIVE",
+  "seed": 65074,
+  "pairs": [
+    {
+      "pairId": "P01",
+      "taskId": "NORM-01",
+      "repeat": 1,
+      "order": [
+        "DIRECT",
+        "EXHARNESS"
+      ]
+    },
+    {
+      "pairId": "P02",
+      "taskId": "STATUS-01",
+      "repeat": 1,
+      "order": [
+        "EXHARNESS",
+        "DIRECT"
+      ]
+    },
+    {
+      "pairId": "P03",
+      "taskId": "ORDER-01",
+      "repeat": 1,
+      "order": [
+        "DIRECT",
+        "EXHARNESS"
+      ]
+    },
+    {
+      "pairId": "P04",
+      "taskId": "NORM-01",
+      "repeat": 2,
+      "order": [
+        "EXHARNESS",
+        "DIRECT"
+      ]
+    },
+    {
+      "pairId": "P05",
+      "taskId": "STATUS-01",
+      "repeat": 2,
+      "order": [
+        "DIRECT",
+        "EXHARNESS"
+      ]
+    },
+    {
+      "pairId": "P06",
+      "taskId": "ORDER-01",
+      "repeat": 2,
+      "order": [
+        "EXHARNESS",
+        "DIRECT"
+      ]
+    }
+  ],
+  "limits": {
+    "maxConcurrentProviderRequests": 1,
+    "minRequestIntervalSeconds": 10,
+    "maxWireRequestsPerExecution": 24,
+    "maxModelCallsPerExecution": 12,
+    "maxInputTokensPerCall": 16384,
+    "maxOutputTokensPerCall": 4096,
+    "maxTotalTokensPerExecution": 50000,
+    "maxAttemptsPerExecution": 2,
+    "maxExecutionActiveSeconds": 1200,
+    "maxToolCommandSeconds": 30,
+    "maxCohortWallSeconds": 259200,
+    "maxProviderWaitSeconds": 86400,
+    "maxWireRetriesPerLogicalRequest": 2,
+    "maxApiUsdPerExecution": 5,
+    "maxCohortApiUsd": 60,
+    "maxProbeRequests": 4,
+    "maxProbeOutputTokens": 512,
+    "maxProbeUsd": 0.1,
+    "maxJevStageCalls": 2,
+    "maxJevTransportAttemptsPerStage": 2,
+    "maxJevTotalInputTokens": 128000,
+    "maxJevUsd": 0.02
+  },
+  "commonPolicy": {
+    "executor": "mini-swe-agent@04d809ceab9df28f9adaed044884180159172930",
+    "nodeVersion": "24.19.0",
+    "playwrightVersion": "1.63.0",
+    "maxAttemptsPerExecution": 2,
+    "samePromptToolsBudgetsVerifier": true,
+    "independentReset": true,
+    "coreTreatment": "observe-act-recordVerification-evaluate-promote"
+  },
+  "rubric": {
+    "quality": "ExHarness accepted count is not lower than DIRECT and no protected verifier boundary is violated.",
+    "time": "At least 20 percent lower median paired active execution time.",
+    "tokens": "No more than 10 percent additional total provider tokens.",
+    "alternative": "At least one additional accepted execution with no more than 10 percent additional total provider tokens.",
+    "cost": "When positive known costs exist, no more than 10 percent increase in known total cost.",
+    "zeroPrice": "Zero-price routes require measured token/call totals; unknown infrastructure cost forbids a financial claim.",
+    "scope": "Current Core only: twelve live executions and twenty-four separately labelled controlled trials. Replay does not establish field incident frequency or customer/human productivity. Six pairs repeat three families.",
+    "efficiency": "The time OR alternative criterion together with tokens and known positive cost criteria defines efficiency only, not all possible value.",
+    "candidate_control": "Attributable reduction in unsafe candidate acceptance under frozen controlled faults compared with unchanged DIRECT. Protection provided equally by common safeguards is not incremental Core value.",
+    "recovery": "Attributable reduction in lost durable results, duplicate-effect intents or recovery work under frozen faults compared with unchanged DIRECT. Shared journal guarantees are not Core benefit.",
+    "netValue": "Jev alone weighs attributable efficiency OR candidate-control OR recovery benefit against measured overhead. VALUE_DEMONSTRATED requires complete comparable evidence and preserved quality; efficiency need not pass when another benefit justifies overhead. Adequate evidence of absent or outweighed benefits permits NO_VALUE_DEMONSTRATED. Missing essentials or unresolved confounds require INCONCLUSIVE. No agent weights, confidence gate or reroll."
+  },
+  "jev": {
+    "model": "jev-1.13.0",
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "credentialEnv": "TYPESAFE_API_KEY",
+    "stageOne": [
+      "evidence",
+      "comparison",
+      "quality",
+      "efficiency",
+      "candidate_control",
+      "recovery"
+    ],
+    "stageTwo": [
+      "VALUE_DEMONSTRATED",
+      "NO_VALUE_DEMONSTRATED",
+      "INCONCLUSIVE"
+    ],
+    "semanticAuthority": "JEV_ONLY",
+    "evidenceByteLimit": 24000
+  },
+  "qualification": {
+    "profiles": [
+      {
+        "id": "A",
+        "enableThinking": false,
+        "toolChoice": "required"
+      },
+      {
+        "id": "B",
+        "enableThinking": false,
+        "toolChoice": {
+          "type": "function",
+          "function": {
+            "name": "bash"
+          }
+        }
+      }
+    ],
+    "requiredSuccessfulProbes": 2,
+    "maxWireAttempts": 4,
+    "requestTimeoutSeconds": 300,
+    "supervisorTimeoutSeconds": 310,
+    "deadlineSeconds": 1800,
+    "maxUsd": 0.1
+  },
+  "controlledTrials": {
+    "evidenceClass": "CONTROLLED_REPLAY",
+    "families": [
+      "NORM-01",
+      "STATUS-01",
+      "ORDER-01"
+    ],
+    "arms": [
+      "DIRECT",
+      "EXHARNESS"
+    ],
+    "scenarios": [
+      "STALE_CANDIDATE_VERIFICATION",
+      "PRODUCER_SUCCESS_VERIFIER_REJECTION",
+      "CRASH_AFTER_DURABLE_RESULT",
+      "RESTART_AFTER_FINALIZATION"
+    ],
+    "count": 24
+  }
+}
+

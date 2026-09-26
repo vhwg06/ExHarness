@@ -33,7 +33,25 @@ The NIM transport captures each original Chat Completions JSON response outside 
 
 Run `node --test test/delivery/baseline-*.test.mjs` for deterministic contract, fixture, accounting and runner checks. Those tests are labelled deterministic and do not count as LIVE evidence.
 
-## FIXTURE_VALUE_V1 Core study
+## CORE_VALUE_V2 Core value study
+
+BB-065's value phase uses `CORE_VALUE_V2`, not the three-task calibration. Qualify the existing NVIDIA route before registration; the command keeps every failed probe and only writes `profile.selected.json` after two settled, attested bash probes. A missing qualification artifact is a zero-dispatch registration failure.
+
+```sh
+node qualification.mjs --profile runs/BB-065/profile.base.json --output runs/BB-065/qualification
+node study.mjs --mode register --profile runs/BB-065/qualification/profile.selected.json --output runs/BB-065/study
+node study.mjs --mode live --profile runs/BB-065/qualification/profile.selected.json --output runs/BB-065/study
+node controlled-trials.mjs --profile runs/BB-065/qualification/profile.selected.json --output runs/BB-065/study
+node study.mjs --mode export --output runs/BB-065/study
+node study.mjs --mode audit --profile runs/BB-065/qualification/profile.selected.json --output runs/BB-065/study
+node jev-value.mjs --mode evaluate --output runs/BB-065/study
+node jev-value.mjs --mode audit --output runs/BB-065/study
+node jev-value.mjs --mode complete --output runs/BB-065/study
+```
+
+`controlled-trials.mjs` performs 24 deterministic production-seam replays (four frozen fault scenarios × three task families × two arms) and never calls a model. It cannot replace the twelve live executions. `audit` means the signed receipt and factual bundle are valid; `complete` additionally requires a complete twelve-execution report, all 24 controlled rows, and a definitive Jev choice. Both `VALUE_DEMONSTRATED` and `NO_VALUE_DEMONSTRATED` are valid conclusions; `INCONCLUSIVE` is not benchmark completion.
+
+## FIXTURE_VALUE_V1 compatibility study
 
 The six-pair study is a separate registration from calibration and the future pilot. After preparing a profile from the frozen candidate, register the cohort before dispatch:
 

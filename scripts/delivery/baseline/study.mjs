@@ -13,7 +13,10 @@ import { auditCoreTrace, createCoreArm } from './core-arm.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const fixture = join(root, 'fixture');
-const protocolPath = join(root, 'value-protocol.json');
+const protocolPaths = Object.freeze({
+  FIXTURE_VALUE_V1: join(root, 'value-protocol.json'),
+  CORE_VALUE_V2: join(root, 'core-value-protocol.json')
+});
 const fail = (message, code = 2) => { const error = new Error(`BASELINE_STUDY_INVALID: ${message}`); error.exitCode = code; throw error; };
 const option = (args, name) => { const index = args.indexOf(name); return index < 0 ? undefined : args[index + 1]; };
 const nowIso = () => new Date().toISOString();
@@ -47,8 +50,16 @@ const appendJsonlOnce = async (path, key, value) => {
 const digestFile = async path => `sha256:${createHash('sha256').update(await readFile(path)).digest('hex')}`;
 const git = (...args) => execFileSync('git', args, { cwd: process.cwd(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 
-let protocolCache;
-async function protocol() { return protocolCache ??= await plainJson(protocolPath); }
+const protocolCache = new Map();
+export async function loadValueProtocol(protocolId = 'FIXTURE_VALUE_V1') {
+  const path = protocolPaths[protocolId];
+  if (!path) fail(`unknown value protocol: ${protocolId}`);
+  if (!protocolCache.has(protocolId)) protocolCache.set(protocolId, await plainJson(path));
+  return protocolCache.get(protocolId);
+}
+const protocolIdFor = ({ profile = null, manifest = null } = {}) =>
+  profile?.protocolId ?? manifest?.protocolId ?? (manifest?.studyKind === 'CORE_VALUE_V2' ? 'CORE_VALUE_V2' : 'FIXTURE_VALUE_V1');
+const protocolFor = ({ profile = null, manifest = null } = {}) => loadValueProtocol(protocolIdFor({ profile, manifest }));
 
 async function copyCandidate(destination) {
   await mkdir(destination, { recursive: true });
@@ -361,7 +372,7 @@ async function recoverProbeSuffix({ output, executionId, resultPath, resource })
   return result;
 }
 
-async function finalizeProbeResult({ output, probeId, executionId, resultPath, expectedCommand, expectedModelId, result, resource }) {
+async function finalizeProbeResult({ output, probeId, executionId, resultPath, expectedCommand, expectedModelId, result, resource, maxOutputTokens = 128 }) {
   const state = await resource.state();
   const execution = state.executions[executionId];
   const attempt = execution?.attemptHistory.at(-1);
@@ -381,7 +392,7 @@ async function finalizeProbeResult({ output, probeId, executionId, resultPath, e
     request.usage?.inputTokens === stored.usage?.inputTokens && request.usage?.outputTokens === stored.usage?.outputTokens;
   const accepted = stored.status === 'PASS' && stored.providerModelId === expectedModelId &&
     stored.toolCall?.command === expectedCommand && Number.isInteger(stored.usage?.outputTokens) &&
-    stored.usage.outputTokens <= 128 && Boolean(stored.providerEvidenceHash && stored.providerEvidenceRef) && requestMatches;
+    stored.usage.outputTokens <= maxOutputTokens && Boolean(stored.providerEvidenceHash && stored.providerEvidenceRef) && requestMatches;
   const verificationStatus = accepted ? 'ACCEPTED' : request?.status === 'UNKNOWN' ? 'INCONCLUSIVE' : 'REJECTED';
   const resultHash = await digestFile(resultPath);
   if (attempt && !attempt.resultCaptured) await resource.captureResult({ executionId, attemptId: attempt.attemptId,
@@ -408,11 +419,24 @@ export function providerProbeDriverTimeoutMs(requestTimeoutSeconds, maxExecution
   return Math.min(maxExecutionActiveSeconds * 1000, requestTimeoutSeconds * 1000 + 10_000);
 }
 
-async function runProviderProbes({ profile, output, manifest, resource, clock }) {
-  const value = await protocol();
+export async function runProviderProbes({ profile, output, manifest, resource, clock, value = null }) {
+  value ??= await protocolFor({ profile, manifest });
   const successful = [];
-  for (let index = 1; index <= value.limits.maxProbeRequests; index += 1) {
-    const probeId = `PROBE-${index}`;
+  const failures = [];
+  const requiredProbeCount = value.qualification?.requiredSuccessfulProbes ?? value.limits.maxProbeRequests;
+  const maxProbeAttempts = value.qualification?.maxWireAttempts ?? value.limits.maxProbeRequests;
+  const writeProbeManifest = async ({ selectedProfileId = profile.qualificationProfileId ?? null } = {}) => {
+    await writeAtomicJson(join(output, 'setup', 'probes.json'), { schemaVersion: 1, evidenceClass: 'LIVE_PROVIDER_PROBES',
+      modelId: profile.model.providerModelId, required: requiredProbeCount,
+      attempted: successful.length + failures.length, outputTokenLimit: value.limits.maxProbeOutputTokens,
+      selectedProfileId, qualificationHash: profile.qualificationHash ?? null, failures,
+      probes: successful.map(item => ({ probeId: item.probeId, profileId: item.profileId ?? selectedProfileId, requestId: item.requestId, providerRequestId: item.providerRequestId,
+        inputTokens: item.usage?.inputTokens ?? null, outputTokens: item.usage?.outputTokens ?? null, costUsd: item.costUsd ?? null, providerEvidenceRef: item.providerEvidenceRef,
+        providerEvidenceHash: item.providerEvidenceHash, toolCall: item.toolCall })) });
+  };
+  for (let index = 1; index <= maxProbeAttempts; index += 1) {
+    if (successful.length >= requiredProbeCount) break;
+    const probeId = profile.qualificationProfileId ? `${profile.qualificationProfileId}-PROBE-${index}` : `PROBE-${index}`;
     const executionId = `SETUP:${probeId}`;
     const probeDir = join(output, 'setup', probeId.toLowerCase());
     const resultPath = join(probeDir, 'result.json');
@@ -426,17 +450,21 @@ async function runProviderProbes({ profile, output, manifest, resource, clock })
     if (priorResult) {
       const attempt = (await resource.state()).executions[executionId]?.attemptHistory.at(-1);
       const finished = await finalizeProbeResult({ output, probeId, executionId, resultPath, expectedCommand,
-        expectedModelId: profile.model.providerModelId, result: { ...priorResult, attemptId: attempt?.attemptId }, resource });
-      if (finished.unresolvedProvider) return { ready: false, unresolvedProvider: true };
-      if (!finished.accepted) return { ready: false, prerequisiteMissing: true, resourceExhausted: finished.resourceExhausted };
+        expectedModelId: profile.model.providerModelId, result: { ...priorResult, attemptId: attempt?.attemptId }, resource,
+        maxOutputTokens: value.limits.maxProbeOutputTokens });
+      if (finished.unresolvedProvider) { failures.push({ probeId, profileId: profile.qualificationProfileId ?? null, result: finished.result }); await writeProbeManifest(); return { ready: false, unresolvedProvider: true }; }
+      if (!finished.accepted) { failures.push({ probeId, profileId: profile.qualificationProfileId ?? null, result: finished.result }); await writeProbeManifest(); return { ready: false, prerequisiteMissing: true, resourceExhausted: finished.resourceExhausted }; }
       successful.push(finished.result);
       continue;
     }
     const state = await resource.state();
-    if (Object.values(state.requests).some(row => ['INTENT', 'IN_FLIGHT', 'UNKNOWN'].includes(row.status)))
+    if (Object.values(state.requests).some(row => ['INTENT', 'IN_FLIGHT', 'UNKNOWN'].includes(row.status))) {
+      failures.push({ probeId, reason: 'UNRESOLVED_PROVIDER' });
+      await writeProbeManifest();
       return { ready: false, unresolvedProvider: true };
-    const setupRequests = Object.values(state.requests).filter(row => row.executionId.startsWith('SETUP:PROBE-'));
-    if (setupRequests.length >= value.limits.maxProbeRequests) return { ready: false, prerequisiteMissing: true };
+    }
+    const setupRequests = Object.values(state.requests).filter(row => row.executionId.startsWith('SETUP:'));
+    if (setupRequests.length >= maxProbeAttempts) return { ready: false, prerequisiteMissing: true };
     const inputPrice = Math.max(profile.model.inputUsdPerMillion, profile.model.cachedInputUsdPerMillion ?? profile.model.inputUsdPerMillion);
     const reserveUsd = (value.limits.maxInputTokensPerCall * inputPrice + value.limits.maxProbeOutputTokens * profile.model.outputUsdPerMillion) / 1_000_000;
     const committedProbeUsd = setupRequests.reduce((sum, row) => sum + (row.status === 'SETTLED' ? Number(row.usage?.costUsd ?? 0) :
@@ -447,8 +475,10 @@ async function runProviderProbes({ profile, output, manifest, resource, clock })
     }
     try { await requireProviderEligibility({ resource, executionId, clock }); }
     catch (error) {
-      if (error.studyReason === 'WAITING_PROVIDER' || error.studyReason === 'RESOURCE_EXHAUSTED')
+      if (error.studyReason === 'WAITING_PROVIDER' || error.studyReason === 'RESOURCE_EXHAUSTED') {
+        failures.push({ probeId, reason: error.studyReason }); await writeProbeManifest();
         return { ready: false, resourceExhausted: error.studyReason === 'RESOURCE_EXHAUSTED' };
+      }
       throw error;
     }
     const attemptId = `${executionId}:attempt-1`;
@@ -483,8 +513,11 @@ async function runProviderProbes({ profile, output, manifest, resource, clock })
     let result = await plainJson(childResultPath).catch(() => null);
     const postRunState = await resource.state();
     const requestAfterRun = Object.values(postRunState.requests).find(row => row.executionId === executionId);
-    if (requestAfterRun && ['INTENT', 'IN_FLIGHT', 'UNKNOWN'].includes(requestAfterRun.status))
+    if (requestAfterRun && ['INTENT', 'IN_FLIGHT', 'UNKNOWN'].includes(requestAfterRun.status)) {
+      failures.push({ probeId, profileId: profile.qualificationProfileId ?? null, reason: 'UNRESOLVED_PROVIDER' });
+      await writeProbeManifest();
       return { ready: false, unresolvedProvider: true };
+    }
     if (!result) result = await recoverProbeResult({ output, probeId, executionId, expectedCommand,
       expectedModelId: profile.model.providerModelId, resource });
     const terminalClock = clock();
@@ -494,18 +527,14 @@ async function runProviderProbes({ profile, output, manifest, resource, clock })
       activeMs: Math.max(0, performance.now() - startedAt), startedAt: (wallStart instanceof Date ? wallStart : new Date(wallStart)).toISOString(),
       terminalAt: terminalDate.toISOString(), stdoutHash: `sha256:${sha256(child.stdout)}`, stderrHash: `sha256:${sha256(child.stderr)}` };
     const finished = await finalizeProbeResult({ output, probeId, executionId, resultPath, expectedCommand,
-      expectedModelId: profile.model.providerModelId, result, resource });
-    if (finished.unresolvedProvider) return { ready: false, unresolvedProvider: true };
-    if (!finished.accepted) return { ready: false, prerequisiteMissing: true, resourceExhausted: finished.resourceExhausted };
+      expectedModelId: profile.model.providerModelId, result, resource, maxOutputTokens: value.limits.maxProbeOutputTokens });
+    if (finished.unresolvedProvider) { failures.push({ probeId, profileId: profile.qualificationProfileId ?? null, result: finished.result }); await writeProbeManifest(); return { ready: false, unresolvedProvider: true }; }
+    if (!finished.accepted) { failures.push({ probeId, profileId: profile.qualificationProfileId ?? null, result: finished.result }); await writeProbeManifest(); return { ready: false, prerequisiteMissing: true, resourceExhausted: finished.resourceExhausted }; }
     successful.push(finished.result);
   }
-  await writeAtomicJson(join(output, 'setup', 'probes.json'), { schemaVersion: 1, evidenceClass: 'LIVE_PROVIDER_PROBES',
-    modelId: profile.model.providerModelId, required: value.limits.maxProbeRequests,
-    outputTokenLimit: value.limits.maxProbeOutputTokens,
-    probes: successful.map(item => ({ probeId: item.probeId, requestId: item.requestId, providerRequestId: item.providerRequestId,
-      inputTokens: item.usage.inputTokens, outputTokens: item.usage.outputTokens, costUsd: item.usage.costUsd, providerEvidenceRef: item.providerEvidenceRef,
-      providerEvidenceHash: item.providerEvidenceHash, toolCall: item.toolCall })) });
-  return { ready: successful.length === value.limits.maxProbeRequests, prerequisiteMissing: false };
+  await writeProbeManifest();
+  return { ready: successful.length >= requiredProbeCount, prerequisiteMissing: false,
+    selectedProfileId: profile.qualificationProfileId ?? null, selectedModel: profile.model, failures };
 }
 
 export async function executeMiniAttempt({ profile, task, output, executionId, attemptId, candidateDir, attemptDir, resourceContext }) {
@@ -553,7 +582,8 @@ function studyPairs(value) {
 }
 
 export function validateStudyManifest(manifest, { protocol: value, profileHash = null, candidateSha = null, candidateTree = null } = {}) {
-  if (manifest?.schemaVersion !== 1 || manifest.studyKind !== 'FIXTURE_VALUE_V1' || manifest.registrationKind !== 'STUDY' || manifest.studyId !== value.studyId)
+  const expectedKind = value.protocolId ?? 'FIXTURE_VALUE_V1';
+  if (manifest?.schemaVersion !== 1 || manifest.studyKind !== expectedKind || (manifest.protocolId ?? 'FIXTURE_VALUE_V1') !== expectedKind || manifest.registrationKind !== 'STUDY' || manifest.studyId !== value.studyId)
     fail('study manifest identity/schema mismatch');
   const body = Object.fromEntries(Object.entries(manifest).filter(([key]) => key !== 'digest'));
   if (manifest.digest !== `sha256:${sha256(body)}` || manifest.protocolHash !== `sha256:${sha256(value)}` || manifest.valueProtocolHash !== `sha256:${sha256(value)}`)
@@ -566,6 +596,14 @@ export function validateStudyManifest(manifest, { protocol: value, profileHash =
   const pairs = studyPairs(value);
   if (canonical(manifest.pairs) !== canonical(pairs) || !Array.isArray(manifest.tasks) || manifest.tasks.length !== 12)
     fail('study pair/task registration differs from frozen protocol');
+  if (expectedKind === 'CORE_VALUE_V2') {
+    if (typeof manifest.cohortId !== 'string' || !manifest.cohortId ||
+        manifest.cohortIdHash !== `sha256:${sha256(manifest.cohortId)}` ||
+        !/^sha256:[a-f0-9]{64}$/.test(manifest.qualificationHash ?? '') ||
+        typeof manifest.qualificationProfileId !== 'string' || !manifest.qualificationProfileId ||
+        manifest.faultScheduleHash !== `sha256:${sha256(value.controlledTrials)}`)
+      fail('CORE_VALUE_V2 manifest lacks qualification/cohort/fault bindings');
+  }
   const ids = new Set();
   for (const task of manifest.tasks) {
     if (!task.executionId || ids.has(task.executionId) || !pairs.some(pair => pair.pairId === task.pairId && pair.taskId === task.taskId && pair.repeat === task.repeat && pair.order.includes(task.arm))) fail('invalid or duplicate study execution registration');
@@ -578,27 +616,36 @@ export function validateStudyManifest(manifest, { protocol: value, profileHash =
 }
 
 export async function createStudyManifest({ profile, identities, protocol: value, jevTrustedPublicKeyFingerprint = null, at = nowIso() }) {
-  const checked = validateProfile(profile, { ...identities, requireLive: false, requirePilot: false });
+  const checked = validateProfile(profile, { ...identities, requireLive: false, requirePilot: false,
+    protocolId: value.protocolId ?? 'FIXTURE_VALUE_V1', protocolHash: `sha256:${sha256(value)}` });
   const pairs = studyPairs(value);
   const tasks = [];
   for (const pair of pairs) for (const [index, arm] of pair.order.entries()) {
     const executionId = `${pair.pairId}:${arm}`;
     tasks.push({ executionId, pairId: pair.pairId, taskId: pair.taskId, repeat: pair.repeat, arm, orderIndex: index + 1, registeredStart: at, infrastructureUsd: null, evaluatorUsd: null, setupAllocationUsd: null });
   }
+  const protocolId = value.protocolId ?? 'FIXTURE_VALUE_V1';
   const body = {
     schemaVersion: 1,
-    studyKind: 'FIXTURE_VALUE_V1',
+    studyKind: protocolId,
+    protocolId,
     studyId: value.studyId,
     registrationKind: 'STUDY',
     evidenceClass: 'LIVE_REGISTRATION',
     protocolHash: `sha256:${sha256(value)}`,
-    valueProtocolRef: 'scripts/delivery/baseline/value-protocol.json',
+    valueProtocolRef: protocolId === 'CORE_VALUE_V2' ? 'scripts/delivery/baseline/core-value-protocol.json' : 'scripts/delivery/baseline/value-protocol.json',
     valueProtocolHash: `sha256:${sha256(value)}`,
     profileHash: checked.profileHash,
     armHash: checked.armHash,
     candidateSha: profile.candidateSha,
     candidateTree: profile.candidateTree,
     jevTrustedPublicKeyFingerprint,
+    cohortId: profile.cohortId ?? `${value.studyId}:${checked.profileHash.slice(0, 16)}`,
+    cohortIdHash: `sha256:${sha256(profile.cohortId ?? `${value.studyId}:${checked.profileHash.slice(0, 16)}`)}`,
+    qualificationHash: profile.qualificationHash ?? null,
+    qualificationProfileId: profile.qualificationProfileId ?? null,
+    qualificationRef: profile.qualificationRef ?? null,
+    faultScheduleHash: protocolId === 'CORE_VALUE_V2' ? `sha256:${sha256(value.controlledTrials)}` : null,
     fixtureDigest: identities.fixtureDigest,
     acceptanceDigest: identities.acceptanceDigest,
     operatorId: profile.operatorId,
@@ -615,16 +662,32 @@ export async function createStudyManifest({ profile, identities, protocol: value
 async function loadManifest(output) { return plainJson(join(output, 'manifest.json')); }
 async function loadStudyTasks(output) { return (await loadManifest(output)).tasks; }
 
-async function registerStudy({ profile, output }) {
+async function assertQualification({ profile, profilePath, value }) {
+  if (value.protocolId !== 'CORE_VALUE_V2') return null;
+  if (!profilePath || !profile.qualificationRef) fail('CORE_VALUE_V2 registration requires the selected qualification profile and artifact', 3);
+  const { validateQualificationArtifact } = await import('./qualification.mjs');
+  const profileRoot = dirname(resolve(profilePath));
+  const artifactPath = resolve(profileRoot, profile.qualificationRef);
+  if (relative(profileRoot, artifactPath).startsWith('..')) fail('qualification reference escapes the profile directory', 3);
+  const artifact = await plainJson(artifactPath).catch(() => null);
+  if (!artifact) fail('qualification artifact is missing before registration', 3);
+  validateQualificationArtifact({ artifact, profile, value });
+  return { artifact, artifactPath };
+}
+
+async function registerStudy({ profile, profilePath, output }) {
   const identities = await fixtureIdentities();
-  const value = await protocol();
-  const checked = validateProfile(profile, { ...identities, requireLive: false, requirePilot: false });
+  const value = await protocolFor({ profile });
+  const checked = validateProfile(profile, { ...identities, requireLive: false, requirePilot: false,
+    protocolId: value.protocolId ?? 'FIXTURE_VALUE_V1', protocolHash: `sha256:${sha256(value)}` });
   ensureCandidate(profile);
+  const qualification = await assertQualification({ profile, profilePath, value });
   const trust = await trustedJevMaterial(output);
   const manifest = await createStudyManifest({ profile, identities, protocol: value, jevTrustedPublicKeyFingerprint: trust.fingerprint });
   await mkdir(output, { recursive: true });
   const existing = await readFile(join(output, 'manifest.json'), 'utf8').then(JSON.parse).catch(() => null);
   if (existing && canonical(existing) !== canonical(manifest)) fail('study registration is immutable; changed input requires a new cohort');
+  if (qualification) await writeOnce(join(output, 'qualification.json'), qualification.artifact);
   validateStudyManifest(manifest, { protocol: value, profileHash: checked.profileHash, candidateSha: profile.candidateSha, candidateTree: profile.candidateTree });
   if (!existing) await writeOnce(join(output, 'manifest.json'), manifest);
   const resource = new ResourceState({ journalPath: join(output, 'events.jsonl'), experimentId: manifest.studyId, profileHash: manifest.profileHash, candidateSha: manifest.candidateSha, candidateTree: manifest.candidateTree, protocolHash: manifest.protocolHash, limits: value.limits });
@@ -763,6 +826,7 @@ async function executeOne({ profile, registeredProfile = profile, output, task, 
       const arm = createCoreArm({
         directory: executionDir,
         executionId: task.executionId,
+        cohortId: resource.experimentId,
         work: { taskId: task.taskId, pairId: task.pairId, repeat: task.repeat },
         seedCandidate: { id: task.executionId, version: resetDigest },
         executeAttempt: runCommon,
@@ -812,7 +876,7 @@ async function executeOne({ profile, registeredProfile = profile, output, task, 
   }
   const resourceExhausted = ['RESOURCE_LIMIT_EXCEEDED', 'RESOURCE_EXHAUSTED'].includes(common.driverResult?.resourceCode);
   const accepted = verification.status === 'ACCEPTED' && !providerUnresolved && !resourceExhausted;
-  const terminalReason = providerUnresolved ? 'UNRESOLVED_PROVIDER' : resourceExhausted ? 'RESOURCE_EXHAUSTED' : accepted ? 'COMPLETED' : attemptNumber >= 2 ? 'ATTEMPT_LIMIT' : 'RETRYABLE_VERIFIER_REJECTION';
+  const terminalReason = providerUnresolved ? 'UNRESOLVED_PROVIDER' : resourceExhausted ? 'TASK_BUDGET_EXHAUSTED' : accepted ? 'COMPLETED' : attemptNumber >= 2 ? 'ATTEMPT_LIMIT' : 'RETRYABLE_VERIFIER_REJECTION';
   const terminalStatus = providerUnresolved || resourceExhausted || attemptNumber >= 2 ? 'TERMINAL' : accepted ? 'COMPLETED' : 'RETRYABLE';
   const terminalClock = clock();
   const terminalDate = terminalClock instanceof Date ? terminalClock : new Date(terminalClock);
@@ -870,7 +934,7 @@ async function executeOne({ profile, registeredProfile = profile, output, task, 
   await writeAtomicJson(metricsPath, metrics);
   await resource.captureResult({ executionId: task.executionId, attemptId, resultHash, candidateDigest: common.candidateDigest, path: relative(output, verificationPath).replaceAll('\\', '/') });
   await resource.verified({ executionId: task.executionId, attemptId, verificationHash: resultHash, status: verification.status });
-  if (task.arm === 'EXHARNESS') await resource.adopted({ executionId: task.executionId, attemptId, sessionId: task.executionId, eventHash: coreEvidence.events.at(-1).id });
+  if (task.arm === 'EXHARNESS') await resource.adopted({ executionId: task.executionId, attemptId, sessionId: `${resource.experimentId}:${task.executionId}`, eventHash: coreEvidence.events.at(-1).id });
   await resource.terminal({ executionId: task.executionId, attemptId, reason: terminalReason, status: terminalStatus, activeMs: attemptActiveMs, terminalAt });
   return metrics;
 }
@@ -920,8 +984,9 @@ async function materializeStudySnapshot({ output, manifest, resource, observatio
 
 export async function runStudy({ profile, output, executor = executeMiniAttempt, verify = verifyCandidate, clock = () => new Date() } = {}) {
   const identities = await fixtureIdentities();
-  const value = await protocol();
-  validateProfile(profile, { ...identities, requireLive: true, requirePilot: false });
+  const value = await protocolFor({ profile });
+  validateProfile(profile, { ...identities, requireLive: true, requirePilot: false,
+    protocolId: value.protocolId ?? 'FIXTURE_VALUE_V1', protocolHash: `sha256:${sha256(value)}` });
   ensureCandidate(profile);
   const executionProfile = {
     ...profile,
@@ -989,7 +1054,7 @@ export async function runStudy({ profile, output, executor = executeMiniAttempt,
 
 export async function exportStudy(output) {
   const manifest = await loadManifest(output);
-  const value = await protocol();
+  const value = await protocolFor({ manifest });
   validateStudyManifest(manifest, { protocol: value, candidateSha: manifest.candidateSha, candidateTree: manifest.candidateTree });
   const state = await foldResourceJournal(await readResourceJournal(join(output, 'events.jsonl')), { experimentId: manifest.studyId, profileHash: manifest.profileHash, candidateSha: manifest.candidateSha, candidateTree: manifest.candidateTree, protocolHash: manifest.protocolHash });
   const files = [];
@@ -1030,19 +1095,26 @@ async function auditHandoff({ output, manifest, resourceState }) {
   return handoff;
 }
 
-export async function auditStudy({ profile, output }) {
+export async function auditStudy({ profile, profilePath = null, output }) {
   const identities = await fixtureIdentities();
-  validateProfile(profile, { ...identities, requireLive: false, requirePilot: false });
-  ensureCandidate(profile);
-  const value = await protocol();
   const manifest = await loadManifest(output);
+  const value = await protocolFor({ profile, manifest });
+  validateProfile(profile, { ...identities, requireLive: false, requirePilot: false,
+    protocolId: value.protocolId ?? 'FIXTURE_VALUE_V1', protocolHash: `sha256:${sha256(value)}` });
+  ensureCandidate(profile);
+  const qualification = await assertQualification({ profile, profilePath, value });
   validateStudyManifest(manifest, { protocol: value, profileHash: sha256(profile), candidateSha: profile.candidateSha, candidateTree: profile.candidateTree });
-  if (manifest.studyKind !== 'FIXTURE_VALUE_V1' || manifest.evidenceClass !== 'LIVE_REGISTRATION' ||
+  if (!['FIXTURE_VALUE_V1', 'CORE_VALUE_V2'].includes(manifest.studyKind) || manifest.evidenceClass !== 'LIVE_REGISTRATION' ||
       manifest.valueProtocolHash !== `sha256:${sha256(value)}`) fail('study manifest is synthetic, stale or uses another protocol');
   await assertRegisteredJevTrust({ output, manifest, requireController: false });
   const registration = await plainJson(join(output, 'registration.json'));
   if (registration.manifestHash !== `sha256:${sha256(manifest)}` || registration.manifestRef !== 'manifest.json' ||
       registration.resourceJournalRef !== 'events.jsonl') fail('registration identity is stale');
+  if (qualification) {
+    const bundledQualification = await plainJson(join(output, 'qualification.json')).catch(() => null);
+    if (!bundledQualification || canonical(bundledQualification) !== canonical(qualification.artifact))
+      fail('bundled qualification artifact is missing or stale');
+  }
   const events = await readResourceJournal(join(output, 'events.jsonl'));
   const resourceState = foldResourceJournal(events, { experimentId: manifest.studyId, profileHash: manifest.profileHash,
     candidateSha: manifest.candidateSha, candidateTree: manifest.candidateTree, protocolHash: manifest.protocolHash });
@@ -1092,22 +1164,24 @@ export async function auditStudy({ profile, output }) {
       await verifyProviderEvidenceRef({ output, providerRow, events });
     }
     if (task.arm === 'EXHARNESS') {
-      const trace = await auditCoreTrace(join(executionDir, 'core-events.json'), { executionId: task.executionId });
+      const trace = await auditCoreTrace(join(executionDir, 'core-events.json'), { executionId: task.executionId, sessionId: `${manifest.studyId}:${task.executionId}` });
       if (canonical(trace.eventCounts) !== canonical(row.core?.eventCounts) || !row.core?.events?.length)
         fail(`Core lifecycle evidence mismatch: ${task.executionId}`);
     }
   }
   const probeManifest = await plainJson(join(output, 'setup', 'probes.json')).catch(() => null);
+  const requiredProbeCount = value.qualification?.requiredSuccessfulProbes ?? value.limits.maxProbeRequests;
   const anyTaskDispatch = Object.values(resourceState.requests).some(row => !row.executionId.startsWith('SETUP:PROBE-'));
-  if (anyTaskDispatch && (!probeManifest || probeManifest.probes?.length !== value.limits.maxProbeRequests))
-    fail('task provider dispatch occurred before two successful registered probes');
+  if (anyTaskDispatch && (!probeManifest || probeManifest.probes?.length < requiredProbeCount))
+    fail('task provider dispatch occurred before the required successful registered probes');
   if (probeManifest) {
     if (probeManifest.evidenceClass !== 'LIVE_PROVIDER_PROBES' || probeManifest.modelId !== profile.model.providerModelId ||
-        probeManifest.probes?.length !== value.limits.maxProbeRequests) fail('provider probe manifest identity/count mismatch');
-    for (let index = 1; index <= value.limits.maxProbeRequests; index += 1) {
-      const probeId = `PROBE-${index}`;
+        probeManifest.probes?.length < requiredProbeCount) fail('provider probe manifest identity/count mismatch');
+    for (const probe of probeManifest.probes ?? []) {
+      const probeId = probe.probeId;
+      const index = Number(probeId?.match(/(\d+)$/)?.[1]);
+      if (!Number.isInteger(index)) fail(`provider probe id is invalid: ${probeId}`);
       const executionId = `SETUP:${probeId}`;
-      const probe = probeManifest.probes.find(item => item.probeId === probeId);
       const setupExecution = resourceState.executions[executionId];
       const request = Object.values(resourceState.requests).find(item => item.executionId === executionId);
       if (!probe || setupExecution?.status !== 'COMPLETED' || request?.status !== 'SETTLED' ||
@@ -1153,9 +1227,9 @@ export async function main(args = process.argv.slice(2)) {
   const profilePath = option(args, '--profile');
   if (!output) fail('--output is required');
   const out = resolve(output);
-  if (mode === 'register') return registerStudy({ profile: await plainJson(resolve(profilePath)), output: out });
+  if (mode === 'register') return registerStudy({ profile: await plainJson(resolve(profilePath)), profilePath: resolve(profilePath), output: out });
   if (mode === 'live' || mode === 'resume') return runStudy({ profile: await plainJson(resolve(profilePath)), output: out });
-  if (mode === 'audit') return auditStudy({ profile: await plainJson(resolve(profilePath)), output: out });
+  if (mode === 'audit') return auditStudy({ profile: await plainJson(resolve(profilePath)), profilePath: resolve(profilePath), output: out });
   if (mode === 'export') return exportStudy(out);
   if (mode === 'status') return statusStudy(out);
   fail(`unknown mode: ${mode}`);

@@ -4,7 +4,8 @@ import { generateKeyPairSync } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { evaluateValue, auditValue } from '../../scripts/delivery/baseline/jev-value.mjs';
+import { completeValue, evaluateValue, auditValue } from '../../scripts/delivery/baseline/jev-value.mjs';
+import { runControlledTrials } from '../../scripts/delivery/baseline/controlled-trials.mjs';
 import { sha256 } from '../../scripts/delivery/baseline/contract.mjs';
 
 async function fixture(t, evidenceClass = 'LIVE') {
@@ -162,3 +163,59 @@ test('an injected Jev mock cannot produce a LIVE receipt and stage attempts stay
 });
 
 async function fixtureFor(t, evidenceClass = 'LIVE') { return fixture(t, evidenceClass); }
+
+async function coreFixture(t) {
+  const base = await fixture(t);
+  const value = JSON.parse(await readFile('scripts/delivery/baseline/core-value-protocol.json', 'utf8'));
+  const pairs = value.pairs;
+  const cohortId = `${value.studyId}:jev-test`;
+  const manifestBody = { ...base.manifest, studyKind: value.protocolId, protocolId: value.protocolId, studyId: value.studyId,
+    protocolHash: `sha256:${sha256(value)}`, valueProtocolHash: `sha256:${sha256(value)}`, evidenceClass: 'LIVE_REGISTRATION',
+    cohortId, cohortIdHash: `sha256:${sha256(cohortId)}`, qualificationHash: `sha256:${'c'.repeat(64)}`,
+    qualificationProfileId: 'A', qualificationRef: 'qualification.json', faultScheduleHash: `sha256:${sha256(value.controlledTrials)}`, pairs };
+  delete manifestBody.digest;
+  const manifest = { ...manifestBody, digest: `sha256:${sha256(manifestBody)}` };
+  const executions = base.metrics.executions.map(row => ({ ...row, profileHash: manifest.profileHash }));
+  const report = { ...base.report, studyId: manifest.studyId, studyKind: value.protocolId, protocolHash: manifest.protocolHash,
+    profileHash: manifest.profileHash, candidateSha: manifest.candidateSha, candidateTree: manifest.candidateTree, evidenceClass: 'LIVE' };
+  const metrics = { ...base.metrics, studyId: manifest.studyId, executions };
+  await writeFile(join(base.output, 'manifest.json'), JSON.stringify(manifest));
+  await writeFile(join(base.output, 'report.json'), JSON.stringify(report));
+  await writeFile(join(base.output, 'metrics.json'), JSON.stringify(metrics));
+  const probes = JSON.parse(await readFile(join(base.output, 'setup', 'probes.json'), 'utf8'));
+  await writeFile(join(base.output, 'setup', 'probes.json'), JSON.stringify({ ...probes, outputTokenLimit: value.limits.maxProbeOutputTokens,
+    selectedProfileId: 'A', qualificationHash: manifest.qualificationHash }));
+  await runControlledTrials({ output: base.output, profile: { candidateSha: manifest.candidateSha, candidateTree: manifest.candidateTree } });
+  return { ...base, protocol: value, manifest, report, metrics };
+}
+
+test('CORE_VALUE_V2 sends controlled evidence to Jev and permits attributable control value without an efficiency gate', async t => {
+  const fixture = await coreFixture(t);
+  const payloads = [];
+  const call = async payload => {
+    payloads.push(payload);
+    if (payload.questions.value) {
+      return { response: { model: payload.model, answers: { value: { type: 'choice', choice: 'VALUE_DEMONSTRATED', confidence: 0.8,
+        probabilities: { VALUE_DEMONSTRATED: 0.8, NO_VALUE_DEMONSTRATED: 0.1, INCONCLUSIVE: 0.1 } } }, usage: { input_tokens: 1800, output_tokens: 1 } }, attempts: 1 };
+    }
+    const answers = Object.fromEntries(Object.keys(payload.questions).map(id => {
+      const selected = id === 'efficiency' || id === 'recovery' ? 'INSUFFICIENT_EVIDENCE' : 'SATISFIED';
+      return [id, { type: 'choice', choice: selected, confidence: 0.8,
+        probabilities: selected === 'SATISFIED' ? { SATISFIED: 0.8, INSUFFICIENT_EVIDENCE: 0.1, CONTRADICTED: 0.1 } :
+          { SATISFIED: 0.1, INSUFFICIENT_EVIDENCE: 0.8, CONTRADICTED: 0.1 } }];
+    }));
+    return { response: { model: payload.model, answers, usage: { input_tokens: 2200, output_tokens: 6 } }, attempts: 1 };
+  };
+  const result = await evaluateValue({ output: fixture.output, callJevImpl: call, allowDeterministic: true,
+    privateKeyPath: fixture.privateKeyPath, publicKeyPath: fixture.publicKeyPath });
+  assert.equal(result.finalChoice, 'VALUE_DEMONSTRATED');
+  assert.deepEqual(Object.keys(payloads[0].questions).sort(), ['candidate_control', 'comparison', 'efficiency', 'evidence', 'quality', 'recovery']);
+  assert.equal(payloads[0].state.study.controlledTrials.count, 24);
+  assert.equal(payloads[0].state.study.controlledTrials.evidenceClass, 'CONTROLLED_REPLAY');
+  assert.ok(Buffer.byteLength(JSON.stringify(payloads[0])) < fixture.protocol.jev.evidenceByteLimit);
+  assert.ok(Buffer.byteLength(JSON.stringify(payloads[1])) < fixture.protocol.jev.evidenceByteLimit);
+  const audited = await auditValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true });
+  assert.equal(audited.finalChoice, 'VALUE_DEMONSTRATED');
+  const complete = await completeValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true });
+  assert.equal(complete.benchmarkComplete, true);
+});
