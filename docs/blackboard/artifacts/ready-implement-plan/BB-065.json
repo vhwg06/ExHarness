@@ -34,6 +34,7 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
+    "D0 — 2026-09-27 benchmark-program reset: BB-065 is benchmark substrate calibration, not evidence that ExHarness beats a direct agent. The previous custom DIRECT-vs-Core study remains historical/provisional until the neutral harness adapter, task/oracle controls and common run record are researched.",
     "D1 — Extend c0b895f59d060a845f836a8e089e1f67ef268bde; CORE_VALUE_V2 is new evidence. Preserve V1 protocol and terminal runs; never retrofit outcomes.",
     "D2 — Retain Node24.19.0/Python3.12.13/Playwright1.63.0/mini04d809ceab9df28f9adaed044884180159172930. Register inspected Docker image ID separately from OCI digest and actual OS runtime paths.",
     "D3 — Reuse createCoreHarness around the same mini executor. Only Core lifecycle/persistence differs. No packages edits; candidate version is source digest and no-op preserves identity.",
@@ -311,7 +312,15 @@
       "command": "node --test test/delivery/baseline-canary.test.mjs"
     }
   ],
-  "researchGaps": [],
+  "researchGaps": [
+    "Evaluate Harbor as the neutral execution/evaluation substrate and pin the exact adapter seam; if rejected, record the concrete incompatibility and smallest alternative.",
+    "Recast BB-065 as substrate calibration only: define oracle/pass, no-op/fail, sandbox/reset, artifact-extraction and verifier controls before any ExHarness value comparison.",
+    "Define one neutral harness adapter contract that fixes model snapshot, prompt/task input, starting workspace, budgets and evaluator while preserving native harness execution behavior.",
+    "Define the common run record for artifacts, traces, token/tool/cost/time usage, termination, provider/infra status and independent quality verdict; quality and termination must remain orthogonal.",
+    "Choose a small calibration workload and repeat policy that can detect flaky task/environment/provider behavior without claiming product value.",
+    "Reconcile or retire the existing six-pair DIRECT-vs-Core study contract so no stale custom protocol can become the canonical harness benchmark by accident.",
+    "Obtain a fresh Jev readiness judgment only after the neutral benchmark-substrate contract is stable."
+  ],
   "negativeVerificationCases": [
     "Provider 429/timeout does not become accepted, zero charge or a negative value judgment by code.",
     "UNKNOWN cannot be retried, zero-filled, overwritten or reconciled twice with different facts.",
