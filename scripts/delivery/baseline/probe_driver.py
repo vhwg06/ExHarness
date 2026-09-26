@@ -54,7 +54,7 @@ def run(config: dict) -> dict:
     request_id = budget.reserve(tokens, profile["budgets"]["maxOutputTokensPerCall"])
     try:
         budget.send_started(request_id)
-        bounded_model = {**model, "requestTimeoutSeconds": min(30, int(model["requestTimeoutSeconds"]))}
+        bounded_model = {**model, "requestTimeoutSeconds": int(model["requestTimeoutSeconds"])}
         response, status_trace = _nim_chat_completion(bounded_model, message, [BASH_TOOL],
                                                       os.environ[model["credentialEnv"]],
                                                       profile["budgets"]["maxOutputTokensPerCall"])

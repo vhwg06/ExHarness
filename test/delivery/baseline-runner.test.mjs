@@ -8,7 +8,7 @@ import { classifyRunResult, main, selectedCalibrationTaskIds } from '../../scrip
 import { CALIBRATION_TASK_IDS, MINI_COMMIT, NODE_VERSION, PLAYWRIGHT_VERSION, PROTOCOL, PROTOCOL_HASH, fixtureIdentities, sha256 } from '../../scripts/delivery/baseline/contract.mjs';
 import { exportProviderRecords, reconcileOriginalResponse, reconcileStoredCompletion } from '../../scripts/delivery/baseline/provider-export.mjs';
 import { ResourceState } from '../../scripts/delivery/baseline/resource-state.mjs';
-import { buildProviderProbeConfig } from '../../scripts/delivery/baseline/study.mjs';
+import { buildProviderProbeConfig, providerProbeDriverTimeoutMs } from '../../scripts/delivery/baseline/study.mjs';
 
 const PYTHON = (() => {
   for (const candidate of [process.env.EXHARNESS_TEST_PYTHON, 'python3', 'python'].filter(Boolean)) {
@@ -191,6 +191,8 @@ test('provider probe driver config binds the registered attempt before launch', 
     resourceBridgePath: '/tmp/resource-bridge.mjs', nodeExecutable: process.execPath, resultPath: '/tmp/result.json' });
   assert.equal(config.attemptId, attemptId);
   assert.throws(() => buildProviderProbeConfig({ ...config, attemptId: '' }), /configuration is incomplete/);
+  assert.equal(providerProbeDriverTimeoutMs(180, 1200), 190_000);
+  assert.throws(() => providerProbeDriverTimeoutMs(1200, 1200), /active-time ceiling/);
 });
 
 test('proven 429 admission failure releases reservation but keeps the wire attempt', async t => {

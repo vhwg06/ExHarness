@@ -401,6 +401,13 @@ export function buildProviderProbeConfig({ profile, probeId, probeCommand, attem
     resourceBridgePath, nodeExecutable, resultPath };
 }
 
+export function providerProbeDriverTimeoutMs(requestTimeoutSeconds, maxExecutionActiveSeconds) {
+  if (!Number.isFinite(requestTimeoutSeconds) || requestTimeoutSeconds < 1 ||
+      !Number.isFinite(maxExecutionActiveSeconds) || maxExecutionActiveSeconds < requestTimeoutSeconds + 1)
+    fail('provider probe timeout is outside the registered active-time ceiling');
+  return Math.min(maxExecutionActiveSeconds * 1000, requestTimeoutSeconds * 1000 + 10_000);
+}
+
 async function runProviderProbes({ profile, output, manifest, resource, clock }) {
   const value = await protocol();
   const successful = [];
@@ -470,7 +477,8 @@ async function runProviderProbes({ profile, output, manifest, resource, clock })
     const startedAt = performance.now();
     const wallStart = clock();
     const child = await runChild(profile.pythonExecutable, [join(root, 'probe_driver.py'), configPath],
-      { cwd: root, timeoutMs: value.limits.maxToolCommandSeconds * 1000, env: process.env });
+      { cwd: root, timeoutMs: providerProbeDriverTimeoutMs(profile.model.requestTimeoutSeconds,
+        value.limits.maxExecutionActiveSeconds), env: process.env });
     await recoverProviderJournal({ output, resource });
     let result = await plainJson(childResultPath).catch(() => null);
     const postRunState = await resource.state();
