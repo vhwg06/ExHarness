@@ -3,7 +3,8 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-065",
-  "status": "READY",
+  "status": "DRAFT",
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-065.json",
     "hash": "a7b1e9c6117587bfabe3099c19d719f0c8b4c23cbd6e6ae674e7ae9070e5b677"
@@ -47,7 +48,9 @@
     "D12 — Efficiency thresholds are one dimension. Jev weighs attributable control/recovery benefits against measured overhead; shared protection is not Core benefit. No full-product/customer/incident-frequency claim.",
     "D13 — Finite limits are not provider availability guarantees. Retain charges and failure facts; incomplete evidence is not a definitive value result.",
     "D14 — Freeze exact candidate/tree before measurement. Credential-free audits and independent outer Jev must pass before exact evaluated main-tree delivery.",
-    "D15 — Settled independently verified task-budget stops count as measured failures; provider/verification gaps remain incomplete. Receipt-valid is not benchmark-complete."
+    "D15 — Settled independently verified task-budget stops count as measured failures; provider/verification gaps remain incomplete. Receipt-valid is not benchmark-complete.",
+    "D16 — Canary admission is OPERABILITY, not submission. Exact CANARY_OPERABILITY_V2 causal, accounting and failure policy is in resourceContract.canary; preregister policy/prompt hashes, preserve r6 FAIL, new evidence only.",
+    "D17 — Retain implemented S1-S4: cumulative waits, single POST/poll deadline, cohort sessions, phase timings, shared DIRECT seam and 24 real fault trials; file-backed factual audits, no consistencyCheck semantic override, plan-verbatim value criteria, full stage-two answers within24KB and dual export. Add regression evidence rather than rewrite these behaviors."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -73,7 +76,8 @@
       "scripts/delivery/baseline/session-store.mjs",
       "scripts/delivery/baseline/study.mjs",
       "scripts/delivery/baseline/jev-value.mjs",
-      "scripts/delivery/baseline/value-protocol.json"
+      "scripts/delivery/baseline/value-protocol.json",
+      "scripts/delivery/baseline/canary.mjs"
     ],
     "expectedNew": [
       "scripts/delivery/baseline/qualification.mjs",
@@ -87,7 +91,8 @@
       "test/delivery/baseline-runner.test.mjs",
       "test/delivery/baseline-recovery.test.mjs",
       "test/delivery/baseline-arms.test.mjs",
-      "test/delivery/baseline-jev-value.test.mjs"
+      "test/delivery/baseline-jev-value.test.mjs",
+      "test/delivery/baseline-canary.test.mjs"
     ]
   },
   "sourceScope": {
@@ -110,7 +115,8 @@
       "test/delivery/baseline-recovery.test.mjs",
       "test/delivery/baseline-arms.test.mjs",
       "test/delivery/baseline-jev-value.test.mjs",
-      "docs/living/system/state.md"
+      "docs/living/system/state.md",
+      "test/delivery/baseline-canary.test.mjs"
     ],
     "forbiddenWrite": [
       "packages/**",
@@ -121,6 +127,7 @@
     ]
   },
   "implementationSlices": [
+    "S0 — Canary [REGISTRATION]: implement resourceContract.canary in canary.mjs; nonce-free prompt, native call/result identity, later-turn FIRST-write audit; shared evaluator register/live/audit, policy/prompt bindings; preserve canaryDigest and driver/timing capture; test every positive/negative gate.",
     "S1 — Qualification and registration [REGISTRATION,RESOURCE_RECOVERY]: add qualification.mjs, CORE_VALUE_V2 protocol, V1-compatible dispatch and profile support for thinking disabled/required or named bash. Use four bounded requests before registration; persist all failures and campaign budgets, bind selected profile and qualification. Zero-dispatch negative tests.",
     "S2 — Execution completeness [RESOURCE_RECOVERY,HANDOFF,ACCOUNTING]: study/driver/report distinguish measured task-budget stops from unresolved provider gaps, continue after settled task failure, send identical bounded repair feedback, preserve original reservations/attempts, phase timings and durable current-stage/deadline. Keep all 12 execution slots and portable exports.",
     "S3 — Actual Core and controlled study [ARMS,FIXTURE,BOUNDARY]: reuse current Core and unchanged DIRECT policy; fix cohort-scoped session and durable state hash verification. Add controlled-trials.mjs for four frozen fault scenarios x three families x two arms =24; exercise production seams and independent oracle, no model calls. Attribute shared protection to COMMON.",
@@ -142,11 +149,13 @@
       "id": "REGISTRATION",
       "statement": "Calibration, six-pair study and future pilot have distinct immutable registrations; identical arm inputs, quota policy and budget fields are validated before task dispatch.",
       "verificationIds": [
-        "contract"
+        "contract",
+        "canary"
       ],
       "evidenceRequired": [
         "Positive manifest; zero-dispatch rejection cases for mismatched arms, incomplete resource fields, unsupported route, edited protocol and stale source.",
-        "Qualification before registration, all failed probes retained, selected profile identical across arms, campaign restart cannot reset budget."
+        "Qualification before registration, all failed probes retained, selected profile identical across arms, campaign restart cannot reset budget.",
+        "File-backed CANARY_OPERABILITY_V2 policy/prompt bindings, causal trace, actual driver exit, resolved usage/timing and zero-dispatch failures; submission telemetry only."
       ]
     },
     {
@@ -296,6 +305,10 @@
     {
       "id": "value",
       "command": "node scripts/delivery/baseline/jev-value.mjs --mode complete --profile \"$EXHARNESS_BASELINE_PROFILE\" --output \"$EXHARNESS_BASELINE_OUTPUT\""
+    },
+    {
+      "id": "canary",
+      "command": "node --test test/delivery/baseline-canary.test.mjs"
     }
   ],
   "researchGaps": [],
@@ -311,7 +324,8 @@
     "Zero API price is reported alongside tokens/calls/infrastructure; no division-by-zero benefit.",
     "HTTP 200 with no tool call is qualification failure and retains usage; missing probes/rows/controlled trials cannot pass V2 completion.",
     "Control/recovery benefit may yield positive Jev value despite failed efficiency; shared protection alone cannot be attributed to Core; INCONCLUSIVE receipt audit is not completion.",
-    "Task budget stop with settled usage and independently verified candidate is a measured outcome; UNKNOWN remains incomplete and cannot trigger replacement sends."
+    "Task budget stop with settled usage and independently verified candidate is a measured outcome; UNKNOWN remains incomplete and cannot trigger replacement sends.",
+    "OPERABILITY: budget stop after complete chain PASS; malformed/truncated settled response followed by complete chain PASS; same-turn read/write, earlier FIRST write, failed read/write, pseudo-tools, wrong marker FAIL; UNKNOWN/capture/timing/caps block; coordinated rehash tampering detected; legacy admission refused and r6 unchanged."
   ],
   "laneContracts": [
     {
@@ -442,6 +456,12 @@
       "maxWireAttempts": 4,
       "maxUsd": 0.1,
       "selection": "Two valid structured bash calls with settled usage/model attestation; first passing profile. Record every failure. No live cohort registration until qualification succeeds; bind qualification hash and selected profile. Shared campaign identity owns budgets across process/output restarts. No second cohort or semantic reroll automatically."
+    },
+    "canary": {
+      "gatePolicyId": "CANARY_OPERABILITY_V2",
+      "purpose": "OPERABILITY",
+      "submissionRequired": false,
+      "gate": "D16 — CANARY_OPERABILITY_V2: OPERABILITY, submissionRequired=false (telemetry). Nonce only in nonce.txt, never prompt. Require successful native read, exact tool result, FIRST successful marker write in strictly later assistant turn and exact disk marker; map tool call IDs to original SETTLED request/response and results; >=2 causal native turns. Shared file-backed evaluator register/live/audit. PASS needs complete capture/digest/measured timing, resolved wires and 4wire/50k/1200active seconds/USD5 caps. Submitted or journal-backed LimitsExceeded after full chain may PASS. Recovered settled malformed/truncated responses remain charged telemetry. UNKNOWN/reserved => UNRESOLVED; infra/capture/timing/caps/incomplete chain => FAIL. Pin policy/prompt hashes in profile/canary/registration/Jev; new discriminator, old pinned and r6 FAIL unchanged."
     }
   },
   "comparisonContract": {
@@ -616,7 +636,7 @@
   },
   "verificationSetup": {
     "offline": "Use exact registered Node/Python/Playwright dependencies; tests resolve Python from configured executable or python3, not Windows-only paths. Tests have deterministic provider doubles and real local fixture/Core behavior, no real provider dispatch. Fake clocks cover multi-day waits without sleeping.",
-    "live": "After worker candidate commit run qualification.mjs with existing NVIDIA credential and bounded campaign directory; two passing probes select profile before measured registration. Run study.mjs --mode live and controlled-trials.mjs for that frozen profile/cohort. Freeze evidence before jev-value.mjs --mode evaluate. No live benchmark during research. Independently preregister controller key fingerprint; audit receipt and complete gates without credentials.",
+    "live": "Worker: all deterministic/regression checks first -> freeze SHA/tree/profile/protocol/policy/prompt/trusted key -> bounded A/B qualification -> one fresh canary -> PASS then exactly one cohort -> 12 LIVE + 24 real-fault controlled -> factual complete audit -> two real Jev stages -> dual export/offline audit. Research calls real readiness Jev only. INCONCLUSIVE is not complete, no reroll or cohort escape. Provider capacity not guaranteed.",
     "candidate": "Commit the exact research publication before worker edits and use that commit as worker baselineSha; researchBaselineSha and implementedSourceSha retain the inspected implementation identity. The candidate includes the exact READY plan/objective, authorized source deltas and Living update. Model route changes require a new cohort. No operator judgment is required.",
     "evidence": "Attach textual pair metrics, Core traces, response attestations, Jev payloads/replies/signatures/trusted-controller provenance and audit logs via contract.claimEvidence. Binary traces are auxiliary; text evidence must suffice for Jev."
   },
@@ -722,9 +742,13 @@
         "D6",
         "D7",
         "D8",
-        "D13"
+        "D13",
+        "S0"
       ],
-      "decisionIndexes": [],
+      "decisionIndexes": [
+        15,
+        16
+      ],
       "sourceRefs": [
         "scripts/delivery/baseline/run.mjs",
         "scripts/delivery/baseline/provider_budget.py",
@@ -736,7 +760,8 @@
       "verificationIds": [
         "recovery",
         "runner",
-        "report"
+        "report",
+        "canary"
       ],
       "sourceAnchors": [
         {
@@ -828,7 +853,5 @@
       ]
     }
   ],
-  "implementedSourceSha": "c0b895f59d060a845f836a8e089e1f67ef268bde",
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
-  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-065.readiness-jev-evaluation.json"
+  "implementedSourceSha": "c0b895f59d060a845f836a8e089e1f67ef268bde"
 }

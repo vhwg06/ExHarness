@@ -21,14 +21,14 @@ next-work-id: BB-082
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: NONE
+  active: BB-065
 
 WORKER
   active: NONE
@@ -36,7 +36,14 @@ WORKER
 
 ## Active work
 
-NONE
+
+BB-065
+task: Define delivery profile and executable value baseline
+lane: RESEARCH_SA
+phase: RESEARCH
+current-context: docs/blackboard/context/BB-065/current.json
+components: agentic/domain-execution-control
+worker: codex-bb065-research
 
 ## Schedulable tasks
 
@@ -46,7 +53,6 @@ NONE
 - BB-062 [RESEARCH_SA/RESEARCH] — Define Oracle source provider topology and semantic code retrieval
 - BB-063 [RESEARCH_SA/RESEARCH] — Define durable ContextResolution identity provenance currentness and materialization
 - BB-064 [RESEARCH_SA/RESEARCH] — Accept Oracle Context Intelligence foundation
-- BB-065 [WORKER/EXECUTION] — Define delivery profile and executable value baseline
 - BB-070 [RESEARCH_SA/RESEARCH] — Deliver product from goal and partial artifacts across owned domains
 - BB-071 [RESEARCH_SA/RESEARCH] — Prove requirement change and failure recovery on a live product
 - BB-072 [RESEARCH_SA/RESEARCH] — Make delivery runs observable recoverable and cost bounded
@@ -73,7 +79,7 @@ BB-061 [RESEARCH_SCHEDULABLE] <- BB-060
 BB-062 [RESEARCH_SCHEDULABLE] <- BB-061
 BB-063 [RESEARCH_SCHEDULABLE] <- BB-062
 BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
-BB-065 [WORKER_SCHEDULABLE] <- ROOT
+BB-065 [ACTIVE] <- ROOT
 BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
