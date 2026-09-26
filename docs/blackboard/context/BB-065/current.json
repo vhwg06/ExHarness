@@ -15,7 +15,7 @@
   "stage": "RESEARCH",
   "semanticArtifactRef": "docs/blackboard/artifacts/objective/BB-065.json",
   "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-  "planHash": "ec2fcd5ce6e459c2ffbc2d5628fa42edc89751b435b720784ef8ae5156b93210",
+  "planHash": "bfd6b678541f8817233b7febef1eecaf830751409fbc7fd9c4395995939118d6",
   "action": {
     "kind": "RESEARCH",
     "summary": "Follow the current lane contract; Jev owns semantic judgment."
@@ -38,8 +38,7 @@
       "scripts/blackboard-jev.mjs",
       "scripts/blackboard-delivery-contract.mjs",
       "docs/living/system/state.md",
-      "docs/blackboard/process/delivery-research/BB-065.md",
-      "docs/blackboard/process/harness-benchmark-program-research.md"
+      "docs/blackboard/process/delivery-research/BB-065.md"
     ],
     "write": [],
     "forbiddenWrite": [
@@ -55,8 +54,7 @@
       "scripts/blackboard-jev.mjs",
       "scripts/blackboard-delivery-contract.mjs",
       "docs/living/system/state.md",
-      "docs/blackboard/process/delivery-research/BB-065.md",
-      "docs/blackboard/process/harness-benchmark-program-research.md"
+      "docs/blackboard/process/delivery-research/BB-065.md"
     ],
     "write": [
       "scripts/delivery/baseline/**",
@@ -88,16 +86,44 @@
   ],
   "verification": [
     {
-      "id": "benchmark-contract",
-      "command": "node --test test/delivery/benchmark-substrate-contract.test.mjs"
+      "id": "contract",
+      "command": "node --test test/delivery/baseline-contract.test.mjs"
     },
     {
-      "id": "benchmark-evidence",
-      "command": "node --test test/delivery/benchmark-substrate-evidence.test.mjs"
+      "id": "fixture",
+      "command": "node --test test/delivery/baseline-fixture.test.mjs"
     },
     {
-      "id": "benchmark-failures",
-      "command": "node --test test/delivery/benchmark-substrate-failures.test.mjs"
+      "id": "report",
+      "command": "node --test test/delivery/baseline-report.test.mjs"
+    },
+    {
+      "id": "runner",
+      "command": "node --test test/delivery/baseline-runner.test.mjs"
+    },
+    {
+      "id": "recovery",
+      "command": "node --test test/delivery/baseline-recovery.test.mjs"
+    },
+    {
+      "id": "arms",
+      "command": "node --test test/delivery/baseline-arms.test.mjs"
+    },
+    {
+      "id": "jev",
+      "command": "node --test test/delivery/baseline-jev-value.test.mjs"
+    },
+    {
+      "id": "live",
+      "command": "node scripts/delivery/baseline/study.mjs --mode audit --profile \"$EXHARNESS_BASELINE_PROFILE\" --output \"$EXHARNESS_BASELINE_OUTPUT\""
+    },
+    {
+      "id": "value",
+      "command": "node scripts/delivery/baseline/jev-value.mjs --mode complete --profile \"$EXHARNESS_BASELINE_PROFILE\" --output \"$EXHARNESS_BASELINE_OUTPUT\""
+    },
+    {
+      "id": "canary",
+      "command": "node --test test/delivery/baseline-canary.test.mjs"
     }
   ],
   "expectedOutputs": [
