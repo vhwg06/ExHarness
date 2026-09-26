@@ -48,6 +48,14 @@ const appendJsonlOnce = async (path, key, value) => {
   await appendJsonl(path, value);
 };
 const digestFile = async path => `sha256:${createHash('sha256').update(await readFile(path)).digest('hex')}`;
+async function taskProviderLedgerPath(output, executionId) {
+  const ledgerPath = join(output, 'executions', executionId, 'provider-ledger.jsonl');
+  try { await stat(ledgerPath); return ledgerPath; }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return join(output, 'executions', executionId.replaceAll(':', '__'), 'provider-ledger.jsonl');
+  }
+}
 const git = (...args) => execFileSync('git', args, { cwd: process.cwd(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 
 const protocolCache = new Map();
@@ -196,8 +204,7 @@ export async function recoverProviderJournal({ output, resource }) {
     if (!['INTENT', 'IN_FLIGHT', 'UNKNOWN'].includes(row.status)) continue;
     const intent = events.find(event => event.kind === 'REQUEST_INTENT' && event.requestId === row.requestId);
     const unknownEvent = events.findLast(event => event.kind === 'UNKNOWN' && event.requestId === row.requestId);
-    const executionDir = join(output, 'executions', row.executionId.replaceAll(':', '__'));
-    const ledgerPath = join(executionDir, 'provider-ledger.jsonl');
+    const ledgerPath = await taskProviderLedgerPath(output, row.executionId);
     const ledger = await jsonLines(ledgerPath);
     const reserve = ledger.find(event => event.kind === 'RESERVE' && event.requestId === row.requestId);
     const outcome = ledger.find(event => event.kind !== 'RESERVE' && event.requestId === row.requestId);
@@ -1208,7 +1215,7 @@ export async function auditStudy({ profile, profilePath = null, output }) {
     const logAttempt = attemptById.get(row.attemptId);
     if (!logAttempt || logAttempt.executionId !== task.executionId || logAttempt.candidateDigest !== row.candidateDigest ||
         logAttempt.verification?.status !== row.verificationStatus) fail(`attempt evidence mismatch: ${task.executionId}`);
-    const ledgerPath = join(executionDir, 'provider-ledger.jsonl');
+    const ledgerPath = await taskProviderLedgerPath(output, task.executionId);
     const localProvider = await providerFacts(ledgerPath);
     for (const field of ['wireRequests', 'modelCalls', 'inputTokens', 'outputTokens', 'cachedTokens', 'apiUsd', 'usageUnknown'])
       if (canonical(localProvider[field]) !== canonical(row.provider[field])) fail(`provider usage total mismatch for ${task.executionId}: ${field}`);
