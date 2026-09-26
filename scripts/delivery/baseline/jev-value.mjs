@@ -19,7 +19,7 @@ const choice = (criteria, statement) => ({
   type: 'choice',
   instructions: statement,
   criteria: Array.isArray(criteria)
-    ? Object.fromEntries(criteria.map(value => [value, value === 'SATISFIED' ? 'The supplied factual evidence establishes this atomic claim.' : value === 'CONTRADICTED' ? 'Adequate factual evidence refutes this atomic claim.' : 'The supplied factual evidence is incomplete or unresolved for this atomic claim.']))
+    ? Object.fromEntries(criteria.map(value => [value, value === 'SATISFIED' ? 'The supplied evidence establishes the claim.' : value === 'CONTRADICTED' ? 'Adequate evidence refutes the claim.' : 'The supplied evidence is incomplete or unresolved.']))
     : criteria
 });
 const hashBody = value => `sha256:${sha256(value)}`;
@@ -228,7 +228,6 @@ function studyTotalApiUsd(report, setupProbes, judgmentApiUsd) {
 }
 
 export const VALUE_DIMENSIONS = Object.freeze(['evidence', 'comparison', 'quality', 'efficiency']);
-const V2_VALUE_DIMENSIONS = Object.freeze(['evidence', 'comparison', 'quality', 'efficiency', 'candidate_control', 'recovery']);
 export const VALUE_CHOICES = Object.freeze(['VALUE_DEMONSTRATED', 'NO_VALUE_DEMONSTRATED', 'INCONCLUSIVE']);
 // A LIVE_REGISTRATION may have a factually live but incomplete report.  The
 // report's UNMEASURED class means that the study cannot support a positive or
@@ -241,18 +240,17 @@ const VALUE_CHOICE_CRITERIA = Object.freeze({
   NO_VALUE_DEMONSTRATED: 'Complete comparable live evidence is adequate and establishes a quality regression, failure of both preregistered benefit paths, or failure of the applicable cost constraint. This is a valid negative finding, including when neither arm produces an accepted result.',
   INCONCLUSIVE: 'The cohort or comparison is incomplete, provider usage or verification is unresolved, or confounds/missing facts prevent a supported positive or negative value finding. Missing evidence is not a negative result.'
 });
-
-function valueDimensions(value) {
-  return value.protocolId === 'CORE_VALUE_V2' ? V2_VALUE_DIMENSIONS : VALUE_DIMENSIONS;
-}
+// The three stage-two Choice descriptions in the READY plan are the only value
+// criteria for CORE_VALUE_V2. The full rubric paragraph is never a criterion.
+const V2_VALUE_CHOICE_CRITERIA = Object.freeze({
+  VALUE_DEMONSTRATED: 'Complete comparable evidence and preserved quality plus attributable efficiency OR candidate-control OR recovery benefit justify measured overhead according to Jev. Efficiency need not be SATISFIED when another benefit justifies overhead.',
+  NO_VALUE_DEMONSTRATED: 'Adequate comparable evidence establishes no incremental benefit, worsened quality, or overhead outweighing benefits. Shared safeguards and ties are not Core benefit.',
+  INCONCLUSIVE: 'Essential evidence/comparability is missing or unresolved confounds prevent a supported scoped conclusion; no availability failure may become a negative value conclusion.'
+});
 
 function valueChoiceCriteria(value) {
   if (value.protocolId !== 'CORE_VALUE_V2') return VALUE_CHOICE_CRITERIA;
-  return {
-    VALUE_DEMONSTRATED: value.rubric.netValue,
-    NO_VALUE_DEMONSTRATED: 'Adequate comparable evidence establishes no incremental benefit, worsened quality, or overhead outweighing the attributable efficiency, candidate-control and recovery benefits. Equal protection from shared safeguards is not Core value.',
-    INCONCLUSIVE: 'Essential live or controlled evidence, comparability, provider usage, verification or fault attribution is missing or unresolved. Resource availability failure is not a negative value finding.'
-  };
+  return { ...V2_VALUE_CHOICE_CRITERIA };
 }
 
 const protocolCache = new Map();
@@ -264,7 +262,7 @@ async function protocol(protocolId = 'FIXTURE_VALUE_V1') {
 }
 const protocolIdFor = manifest => manifest?.protocolId ?? (manifest?.studyKind === 'CORE_VALUE_V2' ? 'CORE_VALUE_V2' : 'FIXTURE_VALUE_V1');
 
-function ensureBoundStudy(manifest, report, value, { allowDeterministic = false, setupProbes = null, controlledTrials = null, requireControlled = false } = {}) {
+function ensureBoundStudy(manifest, report, value, { allowDeterministic = false, setupProbes = null, controlledTrials = null, requireControlled = false, canary = null } = {}) {
   const expectedKind = value.protocolId ?? 'FIXTURE_VALUE_V1';
   if (manifest?.studyKind !== expectedKind || (manifest.protocolId ?? 'FIXTURE_VALUE_V1') !== expectedKind || report?.studyId !== manifest.studyId) fail('study/report identity mismatch');
   if (manifest.valueProtocolHash !== hashBody(value) || report.protocolHash !== manifest.protocolHash) fail('study protocol hash mismatch');
@@ -284,6 +282,9 @@ function ensureBoundStudy(manifest, report, value, { allowDeterministic = false,
     if (requireControlled && (!controlledTrials || controlledTrials.evidenceClass !== 'CONTROLLED_REPLAY' ||
         controlledTrials.trials?.length !== value.controlledTrials.count))
       fail('complete CORE_VALUE_V2 judgment requires all controlled trials', 'JUDGMENT_UNAVAILABLE');
+    if (!allowDeterministic && (canary?.evidenceClass !== 'LIVE_CANARY' || canary.status !== 'PASS' ||
+        canary.profileHash !== manifest.profileHash || manifest.canaryHash !== canary.digest))
+      fail('production CORE_VALUE_V2 judgment requires the bound passing runtime-readiness canary', 'JUDGMENT_UNAVAILABLE');
   }
 }
 
@@ -293,7 +294,27 @@ async function validateControlledArtifactIfPresent({ controlledTrials, manifest,
   validateControlledTrials({ artifact: controlledTrials, manifest, value });
 }
 
-export function evidenceText({ manifest, report, metrics, value, setupProbes = null, controlledTrials = null }) {
+async function readValueInputs({ directory, manifest, value, allowDeterministic = false }) {
+  let canary = null;
+  if (value.protocolId === 'CORE_VALUE_V2') {
+    canary = await plainJson(join(directory, 'canary', 'canary.json')).catch(() => null);
+    if (!canary && !allowDeterministic)
+      fail('production CORE_VALUE_V2 judgment requires the recorded runtime-readiness canary', 'JUDGMENT_UNAVAILABLE');
+  }
+  let resourceSummary = null;
+  const { foldResourceJournal, readResourceJournal } = await import('./resource-state.mjs');
+  const events = await readResourceJournal(join(directory, 'events.jsonl')).catch(() => null);
+  if (!events && !allowDeterministic)
+    fail('production value judgment requires the hash-bound resource journal', 'JUDGMENT_UNAVAILABLE');
+  if (events) {
+    const state = foldResourceJournal(events, { experimentId: manifest.studyId });
+    resourceSummary = { journalHash: hashBody(events), counters: state.counters,
+      cohortTerminalReason: state.cohortTerminalReason ?? null };
+  }
+  return { canary, resourceSummary };
+}
+
+export function evidenceText({ manifest, report, metrics, value, setupProbes = null, controlledTrials = null, canary = null, resourceSummary = null }) {
   const checkCatalog = [...new Set((metrics.executions ?? []).flatMap(row => (row.verificationChecks ?? []).map(item => item.check)).filter(label => typeof label === 'string'))].sort();
   const compactExecution = row => {
     const requests = row.provider?.rows ?? [];
@@ -358,8 +379,10 @@ export function evidenceText({ manifest, report, metrics, value, setupProbes = n
       candidateDigest: row.candidateDigest
     });
   };
+  // Trial family, scenario and arm are encoded in the trial id
+  // (F<nn>-<family>-<scenario>-<arm>); the full oracle files stay on disk.
   const compactControlled = controlledTrials?.trials?.map(row => value.protocolId === 'CORE_VALUE_V2'
-    ? [row.trialId, row.family ?? row.taskId, row.arm, row.scenario, row.outcome ?? null, row.unsafeAcceptance ?? null,
+    ? [row.trialId, row.outcome ?? null, row.unsafeAcceptance ?? null,
       row.duplicateEffect ?? null, row.lostResult ?? null, row.recoveryWork ?? null, row.attribution ?? null,
       row.oracleHash ?? null, row.traceHash ?? null]
     : ({
@@ -414,6 +437,7 @@ export function evidenceText({ manifest, report, metrics, value, setupProbes = n
       evidenceClass: controlledTrials?.evidenceClass ?? null,
       count: controlledTrials?.trials?.length ?? 0,
       faultScheduleHash: controlledTrials?.faultScheduleHash ?? null,
+      trialIdFormat: 'F<nn>-<family>-<scenario>-<arm>',
       trials: compactControlled
     } : null,
     report: {
@@ -428,12 +452,20 @@ export function evidenceText({ manifest, report, metrics, value, setupProbes = n
       observationAsOf: report.observationAsOf
     },
     checkCatalog,
+    canary: canary ? { evidenceClass: canary.evidenceClass ?? null, status: canary.status ?? null,
+      toolTurns: canary.toolTurns ?? null, toolResults: canary.toolResults ?? null,
+      wireRequests: canary.wireRequests ?? null, inputTokens: canary.inputTokens ?? null,
+      outputTokens: canary.outputTokens ?? null, apiUsd: canary.apiUsd ?? null,
+      digest: canary.digest ?? null } : null,
+    resource: resourceSummary ? { journalHash: resourceSummary.journalHash ?? null,
+      counters: resourceSummary.counters ?? null,
+      cohortTerminalReason: resourceSummary.cohortTerminalReason ?? null } : null,
     ...(value.protocolId === 'CORE_VALUE_V2' ? { columns: {
       executions: ['executionId', 'attemptCount', 'terminalReason', 'verificationStatus', 'checksPassed', 'checksTotal', 'checkMask', 'verificationHash', 'accepted', 'provider', 'requests', 'timing', 'overheadUsd', 'core', 'resetDigest', 'candidateDigest'],
       provider: ['wireRequests', 'modelCalls', 'inputTokens', 'outputTokens', 'cachedTokens', 'apiUsd', 'usageUnknown'],
       requestFailures: ['requestId', 'status', 'reason'],
       timing: ['activeMs', 'providerWaitMs', 'elapsedMs'], core: ['eventCounts', 'stateBytes'],
-      trials: ['trialId', 'family', 'arm', 'scenario', 'outcome', 'unsafeAcceptance', 'duplicateEffect', 'lostResult', 'recoveryWork', 'attribution', 'oracleHash', 'traceHash'],
+      trials: ['trialId(family,scenario,arm)', 'outcome', 'unsafeAcceptance', 'duplicateEffect', 'lostResult', 'recoveryWork', 'attribution', 'oracleHash', 'traceHash'],
       manifestPairs: ['pairId', 'taskId', 'repeat', 'order'],
       reportPairs: ['pairId', 'taskId', 'repeat', 'order', 'directAccepted', 'exharnessAccepted', 'activeTimeRatio', 'tokenRatio', 'costRatio', 'directActiveMs', 'exharnessActiveMs'],
       probes: ['probeId', 'requestId', 'providerRequestId', 'inputTokens', 'outputTokens', 'evidenceRef', 'evidenceHash', 'command'],
@@ -448,9 +480,9 @@ export function evidenceText({ manifest, report, metrics, value, setupProbes = n
   return { data, text, hash: hashBody(text), bytes };
 }
 
-export function buildStageOnePayload({ manifest, report, metrics, protocol: value, setupProbes = null, controlledTrials = null, allowDeterministic = false } = {}) {
-  ensureBoundStudy(manifest, report, value, { allowDeterministic, setupProbes, controlledTrials });
-  const evidence = evidenceText({ manifest, report, metrics, value, setupProbes, controlledTrials });
+export function buildStageOnePayload({ manifest, report, metrics, protocol: value, setupProbes = null, controlledTrials = null, canary = null, resourceSummary = null, allowDeterministic = false } = {}) {
+  ensureBoundStudy(manifest, report, value, { allowDeterministic, setupProbes, controlledTrials, canary });
+  const evidence = evidenceText({ manifest, report, metrics, value, setupProbes, controlledTrials, canary, resourceSummary });
   // Only state/questions cross the API boundary. Hashes and counts cannot
   // substitute for the observations Jev is being asked to judge.
   const studyState = evidence.data;
@@ -477,19 +509,45 @@ export function buildStageOnePayload({ manifest, report, metrics, protocol: valu
     } : {})
   };
   const payload = { model: MODEL, state, questions, evidence: evidenceForPayload, rubricHash: hashBody(value.rubric), endpoint: ENDPOINT };
-  if (Buffer.byteLength(canonical(requestBody(payload))) > value.jev.evidenceByteLimit)
+  const wireBytes = Buffer.byteLength(canonical(requestBody(payload)));
+  if (process.env.EXHARNESS_DEBUG_JEV_BYTES) {
+    const study = state.study;
+    console.error(JSON.stringify({ wireBytes,
+      manifest: Buffer.byteLength(canonical(study.manifest)),
+      protocol: Buffer.byteLength(canonical(study.protocol)),
+      probes: Buffer.byteLength(canonical(study.providerProbes)),
+      controlled: Buffer.byteLength(canonical(study.controlledTrials)),
+      report: Buffer.byteLength(canonical(study.report)),
+      executions: Buffer.byteLength(canonical(study.executions)),
+      canary: Buffer.byteLength(canonical(study.canary)),
+      resource: Buffer.byteLength(canonical(study.resource)),
+      questions: Buffer.byteLength(canonical(questions)),
+      rubric: Buffer.byteLength(canonical(state.rubric)) }));
+  }
+  if (wireBytes > value.jev.evidenceByteLimit)
     fail('Jev stage-one request exceeds the registered materialization bound');
   return payload;
 }
 
 export function buildStageTwoPayload({ stageOnePayload, stageOneResponse, protocol: value }) {
+  // Stage two carries the same study observations by reference (no duplicated
+  // copy) plus the verbatim stage-one answers. The full stage-one wire triple
+  // {model, state, questions} and the full stage-one response envelope stay on
+  // disk in jev-stage-one.request.json / jev-stage-one.response.json and are
+  // bound here by hash, so both stages stay inside the materialization bound.
+  // The receipt binds rubricHash from request.state.rubric.
+  const stageOneWire = { model: stageOnePayload.model, state: stageOnePayload.state, questions: stageOnePayload.questions };
   const state = {
-    ...stageOnePayload.state,
-    stageOneResponse: stageOneResponse.answers,
+    evidenceClass: stageOnePayload.state.evidenceClass,
+    evidenceRoot: stageOnePayload.state.evidenceRoot,
+    evidenceBytes: stageOnePayload.state.evidenceBytes,
+    study: stageOnePayload.state.study,
+    stageOneAnswers: stageOneResponse.answers,
+    stageOnePayloadHash: hashBody(stageOneWire),
     stageOneResponseHash: hashBody(stageOneResponse),
-    stageOnePayloadHash: hashBody({ model: stageOnePayload.model, state: stageOnePayload.state, questions: stageOnePayload.questions }),
     rubric: value.rubric,
-    authority: 'JEV_ONLY'
+    authority: 'JEV_ONLY',
+    valueVerdict: null
   };
   const payload = {
     model: MODEL,
@@ -560,25 +618,6 @@ function finalChoice(response) {
   const value = response.answers?.value?.choice;
   if (!VALUE_CHOICES.includes(value)) fail('Jev final choice is invalid');
   return value;
-}
-
-function consistencyCheck(stageOne, finalResponse, value) {
-  const dimensions = valueDimensions(value);
-  const choices = Object.fromEntries(dimensions.map(id => [id, stageOne.answers?.[id]?.choice]));
-  const final = finalChoice(finalResponse);
-  const allSatisfied = Object.values(choices).every(choiceValue => choiceValue === 'SATISFIED');
-  if (final === 'VALUE_DEMONSTRATED') {
-    const baseSatisfied = ['evidence', 'comparison', 'quality'].every(id => choices[id] === 'SATISFIED');
-    const benefitSatisfied = (value.protocolId === 'CORE_VALUE_V2'
-      ? ['efficiency', 'candidate_control', 'recovery']
-      : ['efficiency']).some(id => choices[id] === 'SATISFIED');
-    if (!baseSatisfied || !benefitSatisfied) fail('Jev final value choice contradicts stage-one prerequisites');
-  }
-  if (final === 'NO_VALUE_DEMONSTRATED' && (!['SATISFIED'].includes(choices.evidence) || !['SATISFIED'].includes(choices.comparison))) fail('Jev negative value choice lacks comparable evidence prerequisites');
-  if (final === 'NO_VALUE_DEMONSTRATED' && allSatisfied) fail('Jev negative value choice contradicts all satisfied dimensions');
-  if (final === 'INCONCLUSIVE' && choices.evidence === 'SATISFIED' && choices.comparison === 'SATISFIED' && choices.quality === 'SATISFIED' &&
-      (value.protocolId !== 'CORE_VALUE_V2' ? choices.efficiency === 'SATISFIED' : ['efficiency', 'candidate_control', 'recovery'].some(id => choices[id] === 'SATISFIED'))) fail('Jev inconclusive choice contradicts satisfied evidence and benefit');
-  return final;
 }
 
 async function invoke(payload, call = callJev, options = undefined) {
@@ -680,9 +719,15 @@ export async function evaluateValue({ output, callJevImpl = callJev, privateKeyP
   const setupProbes = await plainJson(join(directory, 'setup', 'probes.json')).catch(() => null);
   const controlledTrials = await plainJson(join(directory, 'controlled-trials.json')).catch(() => null);
   await validateControlledArtifactIfPresent({ controlledTrials, manifest, value });
-  const stageOnePayload = buildStageOnePayload({ manifest, report, metrics, protocol: value, setupProbes, controlledTrials, allowDeterministic });
-  const material = await signingMaterial({ privateKeyPath, publicKeyPath, output: directory, allowOutputKeys: allowDeterministic });
+  const { canary, resourceSummary } = await readValueInputs({ directory, manifest, value, allowDeterministic });
+  const stageOnePayload = buildStageOnePayload({ manifest, report, metrics, protocol: value, setupProbes,
+    controlledTrials, canary, resourceSummary, allowDeterministic });
   const liveTransport = callJevImpl === callJev && !allowDeterministic && manifest.evidenceClass === 'LIVE_REGISTRATION';
+  if (liveTransport) {
+    const { runFactualAudit } = await import('./factual-audit.mjs');
+    await runFactualAudit({ output: directory, allowDeterministic: false });
+  }
+  const material = await signingMaterial({ privateKeyPath, publicKeyPath, output: directory, allowOutputKeys: allowDeterministic });
   const stageOne = await executeBudgetedStage({ output: directory, stage: 'STAGE_ONE', payload: stageOnePayload,
     callJevImpl, allowDeterministic, limits: value.limits });
   const stageOneRequest = stageOne.request;
@@ -726,7 +771,7 @@ export async function evaluateValue({ output, callJevImpl = callJev, privateKeyP
     await writeAtomicJson(join(directory, 'jev-stage-two.json'), { schemaVersion: 1, requestHash: stageTwoRequestHash, responseHash: hashBody(stageTwoResponse), attempts: stageTwoAttempts, receipt: stageTwoReceipt });
   }
   verifyReceipt(stageTwoReceipt, { request: stageTwoRequest, response: stageTwoResponse, manifest, report, evidence: stageTwoPayload.evidence, publicKey: material.publicKey, allowDeterministic });
-  const choiceValue = consistencyCheck(stageOneResponse, stageTwoResponse, value);
+  const choiceValue = finalChoice(stageTwoResponse);
   const judgmentUsage = jevBudgetSummary(await readJevBudget(directory), value.limits);
   if (judgmentUsage.stages.STAGE_ONE.requestHash !== stageOneRequestHash || judgmentUsage.stages.STAGE_TWO.requestHash !== stageTwoRequestHash ||
       judgmentUsage.stages.STAGE_ONE.responseHash !== hashBody(stageOneResponse) || judgmentUsage.stages.STAGE_TWO.responseHash !== hashBody(stageTwoResponse))
@@ -746,8 +791,10 @@ export async function auditValue({ output, publicKeyPath = process.env.EXHARNESS
   const setupProbes = await plainJson(join(directory, 'setup', 'probes.json')).catch(() => null);
   const controlledTrials = await plainJson(join(directory, 'controlled-trials.json')).catch(() => null);
   await validateControlledArtifactIfPresent({ controlledTrials, manifest, value });
-  ensureBoundStudy(manifest, report, value, { allowDeterministic, setupProbes, controlledTrials });
-  const stageOnePayload = buildStageOnePayload({ manifest, report, metrics, protocol: value, setupProbes, controlledTrials, allowDeterministic });
+  const { canary, resourceSummary } = await readValueInputs({ directory, manifest, value, allowDeterministic });
+  ensureBoundStudy(manifest, report, value, { allowDeterministic, setupProbes, controlledTrials, canary });
+  const stageOnePayload = buildStageOnePayload({ manifest, report, metrics, protocol: value, setupProbes,
+    controlledTrials, canary, resourceSummary, allowDeterministic });
   const stageOneRequest = requestBody(stageOnePayload);
   const stageOneResponse = await plainJson(join(directory, 'jev-stage-one.response.json'));
   const stageOneReceipt = await plainJson(join(directory, 'jev-stage-one.receipt.json'));
@@ -761,7 +808,7 @@ export async function auditValue({ output, publicKeyPath = process.env.EXHARNESS
   if (stageTwoReceipt.parentReceiptHash !== hashBody(stageOneReceipt)) fail('stage-two receipt is not bound to stage one');
   verifyReceipt(stageTwoReceipt, { request: stageTwoRequest, response: stageTwoResponse, manifest, report, evidence: stageTwoPayload.evidence, publicKey: material.publicKey, allowDeterministic });
   const pointer = await plainJson(join(directory, 'value.json'));
-  const final = consistencyCheck(stageOneResponse, stageTwoResponse, value);
+  const final = finalChoice(stageTwoResponse);
   const budget = jevBudgetSummary(await readJevBudget(directory), value.limits);
   const expectedLive = stageOneReceipt.evidenceClass === 'LIVE_JEV_RECEIPT' && stageTwoReceipt.evidenceClass === 'LIVE_JEV_RECEIPT' &&
     manifest.evidenceClass === 'LIVE_REGISTRATION' && LIVE_REPORT_EVIDENCE_CLASSES.has(report.evidenceClass);
@@ -784,7 +831,8 @@ export async function completeValue({ output, publicKeyPath = process.env.EXHARN
   const report = await plainJson(join(directory, 'report.json'));
   const controlledTrials = await plainJson(join(directory, 'controlled-trials.json')).catch(() => null);
   const setupProbes = await plainJson(join(directory, 'setup', 'probes.json')).catch(() => null);
-  ensureBoundStudy(manifest, report, value, { allowDeterministic, setupProbes, controlledTrials, requireControlled: true });
+  const { canary } = await readValueInputs({ directory, manifest, value, allowDeterministic });
+  ensureBoundStudy(manifest, report, value, { allowDeterministic, setupProbes, controlledTrials, requireControlled: true, canary });
   if (!report.complete) fail('benchmark completion requires a complete twelve-execution factual report', 'JUDGMENT_UNAVAILABLE');
   if (audited.finalChoice === 'INCONCLUSIVE') fail('INCONCLUSIVE Jev receipt is receipt-valid but not benchmark-complete', 'JUDGMENT_UNAVAILABLE');
   return { mode: 'complete', benchmarkComplete: true, valueEvaluationRef: audited.valueEvaluationRef,

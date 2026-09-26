@@ -5,7 +5,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile, appendFile } from 'node:fs/pro
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ResourceState, foldResourceJournal, nextEligibleAt, readResourceJournal, redactTransportValue, writeResourceSnapshot } from '../../scripts/delivery/baseline/resource-state.mjs';
-import { prepareAttemptCandidate, recoverCapturedSuffix, recoverProviderJournal, validateStudyManifest, verifyProviderEvidenceRef } from '../../scripts/delivery/baseline/study.mjs';
+import { prepareAttemptCandidate, recoverCapturedSuffix, recoverProviderJournal, requireProviderEligibility, validateStudyManifest, verifyProviderEvidenceRef } from '../../scripts/delivery/baseline/study.mjs';
 import { candidateDigest } from '../../scripts/delivery/baseline/fixture/acceptance.mjs';
 import { sha256 } from '../../scripts/delivery/baseline/contract.mjs';
 
@@ -210,6 +210,20 @@ test('fresh-process recovery closes pre-send intent and fences ambiguous send as
   const localInFlightLedger = (await readFile(join(afterSend.root, 'executions', 'P01__DIRECT', 'provider-ledger.jsonl'), 'utf8'))
     .split(/\r?\n/).filter(Boolean).map(JSON.parse);
   assert.deepEqual(localInFlightLedger.map(row => row.kind), ['RESERVE', 'UNKNOWN']);
+});
+
+test('cumulative pre-dispatch and in-route waits exhaust the registered ceiling together', async t => {
+  let current = new Date('2026-09-25T00:00:00.000Z');
+  const at = seconds => new Date(Date.parse('2026-09-25T00:00:00.000Z') + seconds * 1000).toISOString();
+  const { resource } = await setup(t, { resourceLimits: { ...limits, minRequestIntervalSeconds: 0 }, clock: () => current });
+  await resource.wait({ executionId: 'P01:DIRECT', nextAt: at(3500), waitMs: 3500000 });
+  current = new Date(at(3500));
+  await resource.wait({ executionId: 'P01:DIRECT', nextAt: at(3700), waitMs: 200000 });
+  await assert.rejects(() => requireProviderEligibility({ resource, executionId: 'P01:DIRECT', clock: () => current }),
+    error => error.code === 'RESOURCE_LIMIT_EXCEEDED' && error.studyReason === 'RESOURCE_EXHAUSTED');
+  const state = await resource.state();
+  assert.equal(state.executions['P01:DIRECT'].status, 'TERMINAL');
+  assert.equal(state.executions['P01:DIRECT'].terminalReason, 'RESOURCE_EXHAUSTED');
 });
 
 test('pre-send NOT_ADMITTED audit proof resolves an exact intent event, not a filesystem path', async () => {

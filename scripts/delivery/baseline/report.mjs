@@ -265,7 +265,11 @@ export function calculateStudyReport({ manifest, executions = [], metrics = null
         terminalAt: timing.terminalAt ?? null,
         activeMs: knownNonnegative(timing.activeMs) ? timing.activeMs : null,
         providerWaitMs: knownNonnegative(timing.providerWaitMs) ? timing.providerWaitMs : null,
-        elapsedMs: knownNonnegative(timing.elapsedMs) ? timing.elapsedMs : null
+        elapsedMs: knownNonnegative(timing.elapsedMs) ? timing.elapsedMs : null,
+        phases: timing.phases != null && [timing.phases.executorMs, timing.phases.verifyMs, timing.phases.coreMs]
+          .every(value => value == null || knownNonnegative(value))
+          ? { executorMs: timing.phases.executorMs ?? null, verifyMs: timing.phases.verifyMs ?? null,
+            coreMs: timing.phases.coreMs ?? null } : null
       },
       overheadUsd: row?.overheadUsd == null ? null : (knownNonnegative(row.overheadUsd) ? row.overheadUsd : null),
       humanIntervals: Array.isArray(row?.humanIntervals) ? row.humanIntervals : [],

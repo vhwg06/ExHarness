@@ -544,6 +544,28 @@ export async function runProviderProbes({ profile, output, manifest, resource, c
     selectedProfileId: profile.qualificationProfileId ?? null, selectedModel: profile.model, failures };
 }
 
+/**
+ * Shared DIRECT coordination seam: one executor turn, one independent
+ * verification, and a candidate-digest binding between them. Both the live
+ * study DIRECT arm and the controlled DIRECT trials call this function; the
+ * optional fault hook observes the verified result before finalization.
+ */
+export async function coordinateDirectAttempt({ runExecutor, verifyCandidate, onVerified = null }) {
+  if (typeof runExecutor !== 'function' || typeof verifyCandidate !== 'function') fail('direct seam requires executor and verifier', 4);
+  const executorStarted = performance.now();
+  const common = await runExecutor();
+  const executorMs = Math.max(0, performance.now() - executorStarted);
+  if (!common || typeof common.candidateDigest !== 'string' || typeof common.candidateRef !== 'string')
+    fail('direct executor returned no candidate-bound result', 4);
+  const verifyStarted = performance.now();
+  const verification = await verifyCandidate(common);
+  const verifyMs = Math.max(0, performance.now() - verifyStarted);
+  if (!verification || verification.candidateDigest !== common.candidateDigest)
+    fail('executed and verified candidate digests differ', 4);
+  const hook = onVerified ? await onVerified({ common, verification }) : null;
+  return { common, verification, executorMs, verifyMs, hook };
+}
+
 export async function executeMiniAttempt({ profile, task, output, executionId, attemptId, candidateDir, attemptDir, resourceContext }) {
   const ledgerPath = join(output, 'executions', executionId, 'provider-ledger.jsonl');
   const config = {
@@ -610,6 +632,10 @@ export function validateStudyManifest(manifest, { protocol: value, profileHash =
         typeof manifest.qualificationProfileId !== 'string' || !manifest.qualificationProfileId ||
         manifest.faultScheduleHash !== `sha256:${sha256(value.controlledTrials)}`)
       fail('CORE_VALUE_V2 manifest lacks qualification/cohort/fault bindings');
+    if (!/^sha256:[a-f0-9]{64}$/.test(manifest.canaryHash ?? '') || manifest.canaryRef !== 'canary/canary.json' ||
+        !manifest.canaryUsage || !Number.isInteger(manifest.canaryUsage.wireRequests) ||
+        !Number.isFinite(manifest.canaryUsage.apiUsd))
+      fail('CORE_VALUE_V2 manifest lacks a bound passing runtime-readiness canary');
   }
   const ids = new Set();
   for (const task of manifest.tasks) {
@@ -622,7 +648,7 @@ export function validateStudyManifest(manifest, { protocol: value, profileHash =
   return true;
 }
 
-export async function createStudyManifest({ profile, identities, protocol: value, jevTrustedPublicKeyFingerprint = null, at = nowIso() }) {
+export async function createStudyManifest({ profile, identities, protocol: value, jevTrustedPublicKeyFingerprint = null, canary = null, at = nowIso() }) {
   const checked = validateProfile(profile, { ...identities, requireLive: false, requirePilot: false,
     protocolId: value.protocolId ?? 'FIXTURE_VALUE_V1', protocolHash: `sha256:${sha256(value)}` });
   const pairs = studyPairs(value);
@@ -652,6 +678,11 @@ export async function createStudyManifest({ profile, identities, protocol: value
     qualificationHash: profile.qualificationHash ?? null,
     qualificationProfileId: profile.qualificationProfileId ?? null,
     qualificationRef: profile.qualificationRef ?? null,
+    canaryHash: canary?.digest ?? null,
+    canaryRef: canary ? 'canary/canary.json' : null,
+    canaryUsage: canary ? { wireRequests: canary.wireRequests, inputTokens: canary.inputTokens,
+      outputTokens: canary.outputTokens, apiUsd: canary.apiUsd, activeMs: canary.activeMs,
+      toolTurns: canary.toolTurns } : null,
     faultScheduleHash: protocolId === 'CORE_VALUE_V2' ? `sha256:${sha256(value.controlledTrials)}` : null,
     fixtureDigest: identities.fixtureDigest,
     acceptanceDigest: identities.acceptanceDigest,
@@ -745,8 +776,13 @@ async function registerStudy({ profile, profilePath, output }) {
     protocolId: value.protocolId ?? 'FIXTURE_VALUE_V1', protocolHash: `sha256:${sha256(value)}` });
   ensureCandidate(profile);
   const qualification = await assertQualification({ profile, profilePath, value });
+  let canary = null;
+  if (value.protocolId === 'CORE_VALUE_V2') {
+    const { assertCanaryForRegistration } = await import('./canary.mjs');
+    canary = await assertCanaryForRegistration({ output, profile });
+  }
   const trust = await trustedJevMaterial(output);
-  const manifest = await createStudyManifest({ profile, identities, protocol: value, jevTrustedPublicKeyFingerprint: trust.fingerprint });
+  const manifest = await createStudyManifest({ profile, identities, protocol: value, jevTrustedPublicKeyFingerprint: trust.fingerprint, canary });
   await mkdir(output, { recursive: true });
   const existing = await readFile(join(output, 'manifest.json'), 'utf8').then(JSON.parse).catch(() => null);
   if (existing && canonical(existing) !== canonical(manifest)) fail('study registration is immutable; changed input requires a new cohort');
@@ -774,7 +810,7 @@ function studyError(message, code, studyReason) {
   return Object.assign(new Error(message), { code, studyReason });
 }
 
-async function requireProviderEligibility({ resource, executionId, clock }) {
+export async function requireProviderEligibility({ resource, executionId, clock }) {
   const state = await resource.state();
   const item = state.executions[executionId];
   if (state.cohortTerminalReason) throw studyError(`cohort is terminal: ${state.cohortTerminalReason}`, 'RESOURCE_LIMIT_EXCEEDED', 'RESOURCE_EXHAUSTED');
@@ -804,7 +840,7 @@ async function requireProviderEligibility({ resource, executionId, clock }) {
   throw studyError(`provider is eligible at ${new Date(eligibleMs).toISOString()}`, 'RESOURCE_WAIT', 'WAITING_PROVIDER');
 }
 
-export async function recoverCapturedSuffix({ output, task, resource }) {
+export async function recoverCapturedSuffix({ output, task, resource, cohortId = null }) {
   const state = await resource.state();
   const execution = state.executions[task.executionId];
   if (!execution || !['RESULT_CAPTURED', 'VERIFIED', 'CORE_ADOPTED'].includes(execution.status)) return null;
@@ -832,7 +868,7 @@ export async function recoverCapturedSuffix({ output, task, resource }) {
     const eventHash = coreTrace.events.at(-1)?.id;
     if (!eventHash) fail('Core trace lacks a terminal event identity', 4);
     await resource.adopted({ executionId: task.executionId, attemptId: attempt.attemptId,
-      sessionId: task.executionId, eventHash });
+      sessionId: `${cohortId ?? resource.experimentId}:${task.executionId}`, eventHash });
   }
   const reason = metrics.terminalReason;
   const status = reason === 'COMPLETED' ? 'COMPLETED' :
@@ -842,13 +878,14 @@ export async function recoverCapturedSuffix({ output, task, resource }) {
   return metrics;
 }
 
-async function executeOne({ profile, registeredProfile = profile, output, task, resource, executor = executeMiniAttempt, verify = verifyCandidate, clock = () => new Date() }) {
+async function executeOne({ profile, registeredProfile = profile, output, task, resource, executor = executeMiniAttempt, verify = verifyCandidate, clock = () => new Date(), cohortId = null }) {
+  const sessionCohort = cohortId ?? task.cohortId ?? resource.experimentId;
   const executionDir = join(output, 'executions', task.executionId.replaceAll(':', '__'));
   await mkdir(executionDir, { recursive: true });
   const current = await resource.state();
   const execution = current.executions[task.executionId];
   if (execution?.status === 'COMPLETED' || execution?.status === 'TERMINAL') return null;
-  const recovered = await recoverCapturedSuffix({ output, task, resource });
+  const recovered = await recoverCapturedSuffix({ output, task, resource, cohortId: sessionCohort });
   if (recovered) return recovered;
   await requireProviderEligibility({ resource, executionId: task.executionId, clock });
   const taskFixture = (await plainJson(join(fixture, 'tasks.json'))).tasks.find(item => item.id === task.taskId);
@@ -885,21 +922,31 @@ async function executeOne({ profile, registeredProfile = profile, output, task, 
   let common;
   let armResult;
   let verification;
+  const phases = { executorMs: null, verifyMs: null, coreMs: null };
   try {
     const attemptProfile = { ...profile, budgets: { ...profile.budgets, maxWallSeconds: Math.max(0.001, remainingActiveMs / 1000) } };
-    const runCommon = async () => executor({ profile: attemptProfile, task: taskFixture, output, executionId: task.executionId, attemptId, candidateDir, attemptDir, resourceContext });
+    const runCommon = async () => {
+      const executorStarted = performance.now();
+      try {
+        return await executor({ profile: attemptProfile, task: taskFixture, output, executionId: task.executionId, attemptId, candidateDir, attemptDir, resourceContext });
+      } finally {
+        phases.executorMs = Math.max(0, performance.now() - executorStarted);
+      }
+    };
     if (task.arm === 'EXHARNESS') {
       const arm = createCoreArm({
         directory: executionDir,
         executionId: task.executionId,
-        cohortId: resource.experimentId,
+        cohortId: sessionCohort,
         work: { taskId: task.taskId, pairId: task.pairId, repeat: task.repeat },
         seedCandidate: { id: task.executionId, version: resetDigest },
         executeAttempt: runCommon,
         verifyCandidate: async ({ candidateRef, taskId, fault }) => verify({ candidateDir: resolve(output, candidateRef), fault, browser: true }),
         clock: () => clock().toISOString()
       });
+      const coreStarted = performance.now();
       armResult = await arm.run({ attemptId, taskId: task.taskId, fault: taskFixture.fault, verificationRef: `executions/${task.executionId.replaceAll(':', '__')}/attempt-${attemptNumber}/verification.json` });
+      phases.coreMs = Math.max(0, performance.now() - coreStarted);
       const executorResult = armResult.executor ?? {};
       const terminalClock = clock();
       const terminalDate = terminalClock instanceof Date ? terminalClock : new Date(terminalClock);
@@ -907,8 +954,14 @@ async function executeOne({ profile, registeredProfile = profile, output, task, 
       common = { candidateDigest: armResult.candidateDigest, candidateRef: armResult.candidateRef, provider: executorResult.provider ?? { ...(await providerFacts(join(output, 'executions', task.executionId, 'provider-ledger.jsonl'))) }, timing: measuredTiming, driverResult: executorResult.driverResult ?? null };
       verification = armResult.verification?.details ?? { status: armResult.verification?.status === 'PASS' ? 'ACCEPTED' : armResult.verification?.status === 'FAIL' ? 'REJECTED' : 'INCONCLUSIVE', candidateDigest: armResult.candidateDigest, checks: [] };
     } else {
-      common = await runCommon();
-      verification = await verify({ candidateDir: resolve(output, common.candidateRef), fault: taskFixture.fault, browser: true });
+      const coordinated = await coordinateDirectAttempt({
+        runExecutor: runCommon,
+        verifyCandidate: async produced => verify({ candidateDir: resolve(output, produced.candidateRef), fault: taskFixture.fault, browser: true })
+      });
+      common = coordinated.common;
+      verification = coordinated.verification;
+      phases.executorMs = coordinated.executorMs;
+      phases.verifyMs = coordinated.verifyMs;
     }
   } catch (error) {
     if (error.code === 'RESOURCE_WAIT') {
@@ -957,7 +1010,8 @@ async function executeOne({ profile, registeredProfile = profile, output, task, 
     ['COMPLETED', 'RETRYABLE', 'TERMINAL'].includes(row.status));
   const activeMs = activeRecoverable ? executionState.activeMs + attemptActiveMs : null;
   const elapsedMs = Math.max(0, Date.parse(terminalAt) - Date.parse(registeredAt));
-  const timing = { registeredAt, startedAt: executionStartedAt, terminalAt, activeMs, attemptActiveMs, providerWaitMs, elapsedMs };
+  const timing = { registeredAt, startedAt: executionStartedAt, terminalAt, activeMs, attemptActiveMs, providerWaitMs, elapsedMs,
+    phases: { executorMs: phases.executorMs, verifyMs: phases.verifyMs, coreMs: phases.coreMs } };
   let coreEvidence = null;
   if (task.arm === 'EXHARNESS') {
     const eventHash = armResult?.core?.events?.at(-1)?.id;
@@ -1001,7 +1055,7 @@ async function executeOne({ profile, registeredProfile = profile, output, task, 
   await writeAtomicJson(metricsPath, metrics);
   await resource.captureResult({ executionId: task.executionId, attemptId, resultHash, candidateDigest: common.candidateDigest, path: relative(output, verificationPath).replaceAll('\\', '/') });
   await resource.verified({ executionId: task.executionId, attemptId, verificationHash: resultHash, status: verification.status });
-  if (task.arm === 'EXHARNESS') await resource.adopted({ executionId: task.executionId, attemptId, sessionId: `${resource.experimentId}:${task.executionId}`, eventHash: coreEvidence.events.at(-1).id });
+  if (task.arm === 'EXHARNESS') await resource.adopted({ executionId: task.executionId, attemptId, sessionId: `${sessionCohort}:${task.executionId}`, eventHash: coreEvidence.events.at(-1).id });
   await resource.terminal({ executionId: task.executionId, attemptId, reason: terminalReason, status: terminalStatus, activeMs: attemptActiveMs, terminalAt });
   return metrics;
 }
@@ -1073,6 +1127,11 @@ export async function runStudy({ profile, output, executor = executeMiniAttempt,
   validateStudyManifest(manifest, { protocol: value, profileHash: sha256(profile), candidateSha: profile.candidateSha, candidateTree: profile.candidateTree });
   if (manifest.evidenceClass !== 'LIVE_REGISTRATION') fail('study registration is missing or not live-bound', 3);
   await assertRegisteredJevTrust({ output, manifest });
+  if (value.protocolId === 'CORE_VALUE_V2') {
+    const { auditCanary } = await import('./canary.mjs');
+    const canary = await auditCanary({ output, profile });
+    if (canary.status !== 'PASS') fail(`live dispatch requires a passing runtime-readiness canary: ${canary.status}`, 3);
+  }
   const resource = new ResourceState({ journalPath: join(output, 'events.jsonl'), experimentId: manifest.studyId, profileHash: manifest.profileHash, candidateSha: manifest.candidateSha, candidateTree: manifest.candidateTree, protocolHash: manifest.protocolHash, limits: value.limits, now: clock });
   const owner = await resource.acquireCohortLock();
   let failure = null;
@@ -1091,7 +1150,7 @@ export async function runStudy({ profile, output, executor = executeMiniAttempt,
       if ((await resource.state()).executions[task.executionId]?.status === 'COMPLETED') continue;
       try {
         while (true) {
-          const result = await executeOne({ profile: executionProfile, registeredProfile: profile, output, task, resource, executor, verify, clock });
+          const result = await executeOne({ profile: executionProfile, registeredProfile: profile, output, task, resource, executor, verify, clock, cohortId: manifest.cohortId ?? manifest.studyId });
           if (!result || result.accepted || (await resource.state()).executions[task.executionId]?.status === 'TERMINAL') break;
         }
       }
@@ -1183,6 +1242,13 @@ export async function auditStudy({ profile, profilePath = null, output }) {
     if (!bundledQualification || canonical(bundledQualification) !== canonical(qualification.artifact))
       fail('bundled qualification artifact is missing or stale');
   }
+  if (value.protocolId === 'CORE_VALUE_V2') {
+    const { auditCanary } = await import('./canary.mjs');
+    const canary = await auditCanary({ output, profile });
+    if (canary.status !== 'PASS') fail(`cohort evidence lacks a passing runtime-readiness canary: ${canary.status}`);
+    const recorded = await plainJson(join(output, 'canary', 'canary.json'));
+    if (manifest.canaryHash !== recorded.digest) fail('manifest canary binding is stale');
+  }
   const events = await readResourceJournal(join(output, 'events.jsonl'));
   const resourceState = foldResourceJournal(events, { experimentId: manifest.studyId, profileHash: manifest.profileHash,
     candidateSha: manifest.candidateSha, candidateTree: manifest.candidateTree, protocolHash: manifest.protocolHash });
@@ -1232,7 +1298,9 @@ export async function auditStudy({ profile, profilePath = null, output }) {
       await verifyProviderEvidenceRef({ output, providerRow, events });
     }
     if (task.arm === 'EXHARNESS') {
-      const trace = await auditCoreTrace(join(executionDir, 'core-events.json'), { executionId: task.executionId, sessionId: `${manifest.studyId}:${task.executionId}` });
+      const sessionId = value.protocolId === 'CORE_VALUE_V2' && manifest.cohortId
+        ? `${manifest.cohortId}:${task.executionId}` : `${manifest.studyId}:${task.executionId}`;
+      const trace = await auditCoreTrace(join(executionDir, 'core-events.json'), { executionId: task.executionId, sessionId });
       if (canonical(trace.eventCounts) !== canonical(row.core?.eventCounts) || !row.core?.events?.length)
         fail(`Core lifecycle evidence mismatch: ${task.executionId}`);
     }

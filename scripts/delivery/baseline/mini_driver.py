@@ -102,7 +102,8 @@ def _poll_nim_status(api_base: str, request_id: str, api_key: str, *, initial_pa
 
 
 def _nim_chat_completion(model_profile: dict, messages: list[dict], tools: list[dict], api_key: str,
-                         max_output_tokens: int, overrides: dict | None = None):
+                         max_output_tokens: int, overrides: dict | None = None,
+                         poll_timeout_seconds: float | None = None):
     """Capture the actual NIM JSON before LiteLLM rewrites its model field."""
     if overrides:
         raise BudgetError("unregistered NIM request override")
@@ -140,8 +141,12 @@ def _nim_chat_completion(model_profile: dict, messages: list[dict], tools: list[
     if not isinstance(payload, dict):
         raise ProviderHTTPError(status, headers, "NIM completion is not a JSON object")
     if status == 202:
+        # One POST→poll deadline: the pending poll never outlives the
+        # request timeout, so no fresh 300 s clock starts after admission.
+        poll_budget = model_profile["requestTimeoutSeconds"] if poll_timeout_seconds is None \
+            else min(poll_timeout_seconds, model_profile["requestTimeoutSeconds"])
         return _poll_nim_status(model_profile["apiBaseUrl"], payload.get("requestId"), api_key,
-                                initial_payload=payload)
+                                initial_payload=payload, timeout_seconds=max(0.001, poll_budget))
     return payload, []
 
 
@@ -239,9 +244,11 @@ def run(config: dict) -> dict:
         try:
             budget.send_started(request_id)
             if nim:
+                remaining_wall = max(0.001, profile["budgets"]["maxWallSeconds"] - (time.monotonic() - budget.started_monotonic))
                 raw, status_trace = _nim_chat_completion(model_profile, messages, [BASH_TOOL],
                                                           os.environ["NVIDIA_NIM_API_KEY"],
-                                                          profile["budgets"]["maxOutputTokensPerCall"], kwargs)
+                                                          profile["budgets"]["maxOutputTokensPerCall"], kwargs,
+                                                          poll_timeout_seconds=min(model_profile["requestTimeoutSeconds"], remaining_wall))
             else:
                 response = original_query(messages, **kwargs)
                 raw = _completion_dict(response)

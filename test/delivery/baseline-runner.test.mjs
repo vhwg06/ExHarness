@@ -316,6 +316,51 @@ print('nim-ledger-ok')
   assert.match(execFileSync(PYTHON, ['-c', script], { encoding: 'utf8' }), /nim-ledger-ok/);
 });
 
+test('NIM pending poll honors a single deadline and never resets the clock', () => {
+  const source = resolve('scripts/delivery/baseline').replaceAll('\\', '/');
+  const script = `import json,sys,threading,time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+sys.path.insert(0, ${JSON.stringify(source)})
+from mini_driver import _nim_chat_completion, BudgetError
+request_id = '12345678-1234-1234-1234-123456789abc'
+class Handler(BaseHTTPRequestHandler):
+    def log_message(self, *_): pass
+    def send_json(self, status, body):
+        encoded = json.dumps(body).encode()
+        self.send_response(status); self.send_header('Content-Type','application/json'); self.send_header('Content-Length',str(len(encoded))); self.end_headers(); self.wfile.write(encoded)
+    def do_POST(self):
+        self.send_json(202, {'requestId':request_id})
+    def do_GET(self):
+        self.send_json(202, {'requestId':request_id})
+server = ThreadingHTTPServer(('127.0.0.1',0),Handler)
+thread = threading.Thread(target=server.serve_forever,daemon=True); thread.start()
+model = {'apiBaseUrl':'http://127.0.0.1:'+str(server.server_port)+'/v1','providerModelId':'nvidia/nemotron-3.5-lightning-30b-a3b','toolChoice':'required','temperature':1,'topP':0.95,'reasoningBudget':256,'requestTimeoutSeconds':30}
+try:
+    started = time.monotonic()
+    try:
+        _nim_chat_completion(model,[{'role':'user','content':'test'}],[], 'test-token',16, poll_timeout_seconds=1)
+    except BudgetError as error:
+        assert 'timed out' in str(error), error
+    else:
+        raise AssertionError('pending poll must time out on the single deadline')
+    elapsed = time.monotonic() - started
+    assert elapsed < 10, elapsed
+    started = time.monotonic()
+    try:
+        _nim_chat_completion(model,[{'role':'user','content':'test'}],[], 'test-token',16)
+    except BudgetError as error:
+        assert 'timed out' in str(error), error
+    else:
+        raise AssertionError('default poll must be capped by the request timeout, not a fresh 300 s clock')
+    elapsed = time.monotonic() - started
+    assert elapsed < 40, elapsed
+finally:
+    server.shutdown(); server.server_close()
+print('nim-poll-deadline-ok')
+`;
+  assert.match(execFileSync(PYTHON, ['-c', script], { encoding: 'utf8' }), /nim-poll-deadline-ok/);
+});
+
 test('NIM evidence auditor rejects changed response bytes and returned model drift', async t => {
   const output = await mkdtemp(join(tmpdir(), 'baseline-nim-audit-'));
   t.after(() => rm(output, { recursive: true, force: true }));

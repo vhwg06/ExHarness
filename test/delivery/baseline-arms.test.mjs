@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createCoreArm } from '../../scripts/delivery/baseline/core-arm.mjs';
 import { auditCoreTrace } from '../../scripts/delivery/baseline/core-arm.mjs';
-import { loadValueProtocol } from '../../scripts/delivery/baseline/study.mjs';
+import { coordinateDirectAttempt, loadValueProtocol } from '../../scripts/delivery/baseline/study.mjs';
 import { runControlledTrials } from '../../scripts/delivery/baseline/controlled-trials.mjs';
 import { sha256 } from '../../scripts/delivery/baseline/contract.mjs';
 
@@ -78,6 +78,38 @@ test('a no-op Core action is evaluated but cannot promote the baseline', async t
   assert.equal(result.core.eventCounts.PROMOTED ?? 0, 0);
 });
 
+test('the shared DIRECT seam binds executor output to independent verification', async () => {
+  const produced = { candidateDigest: 'sha256:produced', candidateRef: 'candidate' };
+  const verified = { status: 'ACCEPTED', candidateDigest: 'sha256:produced', checks: [] };
+  let hooked = null;
+  const result = await coordinateDirectAttempt({ runExecutor: async () => produced,
+    verifyCandidate: async common => { assert.equal(common, produced); return verified; },
+    onVerified: async ({ common, verification }) => { hooked = { common, verification }; return { observed: true }; } });
+  assert.equal(result.common, produced);
+  assert.equal(result.verification, verified);
+  assert.deepEqual(hooked, { common: produced, verification: verified });
+  assert.deepEqual(result.hook, { observed: true });
+  assert.ok(Number.isFinite(result.executorMs) && Number.isFinite(result.verifyMs));
+  await assert.rejects(() => coordinateDirectAttempt({ runExecutor: async () => produced,
+    verifyCandidate: async () => ({ ...verified, candidateDigest: 'sha256:other' }) }), /digests differ/);
+  await assert.rejects(() => coordinateDirectAttempt({ runExecutor: async () => ({}),
+    verifyCandidate: async () => verified }), /no candidate-bound result/);
+});
+
+test('Core sessions are scoped to the cohort and reject cross-cohort joins', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'baseline-arms-cohort-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const arm = createCoreArm({ directory: root, executionId: 'P01:EXHARNESS', cohortId: 'BB065-CORE-VALUE-2:test',
+    work: { taskId: 'NORM-01', pairId: 'P01' }, seedCandidate: { id: 'P01:EXHARNESS', version: 'sha256:reset' },
+    executeAttempt: async () => ({ candidateDigest: 'sha256:fixed-candidate', candidateRef: 'candidate' }),
+    verifyCandidate: async () => ({ status: 'ACCEPTED', candidateDigest: 'sha256:fixed-candidate', checks: [] }),
+    clock });
+  const result = await arm.run({ attemptId: 'a1', taskId: 'NORM-01', fault: 'NORM-01' });
+  assert.equal(result.sessionId, 'BB065-CORE-VALUE-2:test:P01:EXHARNESS');
+  await auditCoreTrace(join(root, 'core-events.json'), { executionId: 'P01:EXHARNESS', sessionId: 'BB065-CORE-VALUE-2:test:P01:EXHARNESS' });
+  await assert.rejects(() => auditCoreTrace(join(root, 'core-events.json'), { executionId: 'P01:EXHARNESS', sessionId: 'OTHER:P01:EXHARNESS' }), /session/i);
+});
+
 test('controlled replay materializes all four fault scenarios across three families and both arms', async t => {
   const root = await mkdtemp(join(tmpdir(), 'baseline-controlled-'));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -102,4 +134,30 @@ test('controlled replay materializes all four fault scenarios across three famil
   assert.equal(new Set(artifact.trials.map(row => row.scenario)).size, 4);
   assert.ok(artifact.trials.every(row => row.faultScheduleHash === manifest.faultScheduleHash && row.oracleHash));
   assert.ok(artifact.trials.filter(row => row.arm === 'EXHARNESS').every(row => row.traceHash && row.coreStateHash));
+  const byScenario = scenario => artifact.trials.filter(row => row.scenario === scenario);
+  for (const row of byScenario('STALE_CANDIDATE_VERIFICATION')) {
+    assert.equal(row.mechanism.swapObserved, true);
+    assert.equal(row.accepted, false);
+    assert.equal(row.outcome, 'VERIFIER_REJECTED');
+  }
+  for (const row of byScenario('PRODUCER_SUCCESS_VERIFIER_REJECTION')) {
+    assert.equal(row.mechanism.defectiveObserved, true);
+    assert.equal(row.accepted, false);
+  }
+  for (const row of byScenario('CRASH_AFTER_DURABLE_RESULT')) {
+    assert.equal(row.mechanism.killObserved, true);
+    assert.equal(row.mechanism.resumedWithoutReplay, true);
+    assert.equal(row.actionCalls, 1);
+    assert.equal(row.recoveryWork, 1);
+    assert.equal(row.duplicateEffect, false);
+    assert.equal(row.lostResult, false);
+  }
+  for (const row of byScenario('RESTART_AFTER_FINALIZATION')) {
+    assert.equal(row.mechanism.restartWithoutReplay, true);
+    assert.equal(row.actionCalls, 1);
+    assert.equal(row.duplicateEffect, false);
+  }
+  assert.ok(artifact.trials.filter(row => row.arm === 'DIRECT').every(row => row.attribution === 'COMMON'));
+  assert.ok(artifact.trials.filter(row => row.arm === 'EXHARNESS').every(row => ['COMMON', 'CORE'].includes(row.attribution)));
+  assert.ok(artifact.trials.every(row => row.unsafeAcceptance === false && row.mechanism && typeof row.mechanism.cutPoint === 'string'));
 });

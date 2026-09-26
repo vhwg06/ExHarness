@@ -212,20 +212,81 @@ test('CORE_VALUE_V2 sends controlled evidence to Jev and permits attributable co
   assert.deepEqual(Object.keys(payloads[0].questions).sort(), ['candidate_control', 'comparison', 'efficiency', 'evidence', 'quality', 'recovery']);
   assert.equal(payloads[0].state.study.controlledTrials.count, 24);
   assert.equal(payloads[0].state.study.controlledTrials.evidenceClass, 'CONTROLLED_REPLAY');
-  for (const payload of payloads) {
-    assert.equal(payload.state.study.executions.length, 12);
-    assert.equal(payload.state.study.controlledTrials.trials.length, 24);
-    assert.equal(payload.state.study.providerProbes.probes.length, 2);
-    assert.equal(payload.state.study.report.complete, true);
-    assert.ok(payload.state.study.executions.some(row => row[0] === 'P01:DIRECT'));
-    assert.equal(payload.state.evidenceRoot, `sha256:${sha256((await import('../../scripts/delivery/baseline/contract.mjs')).canonical(payload.state.study))}`);
+  const studies = [payloads[0].state.study, payloads[1].state.study];
+  for (const study of studies) {
+    assert.equal(study.executions.length, 12);
+    assert.equal(study.controlledTrials.trials.length, 24);
+    assert.equal(study.providerProbes.probes.length, 2);
+    assert.equal(study.report.complete, true);
+    assert.ok(study.executions.some(row => row[0] === 'P01:DIRECT'));
   }
+  assert.equal(payloads[0].state.evidenceRoot, `sha256:${sha256((await import('../../scripts/delivery/baseline/contract.mjs')).canonical(payloads[0].state.study))}`);
+  assert.equal(payloads[1].state.evidenceRoot, payloads[0].state.evidenceRoot);
+  assert.deepEqual(Object.keys(payloads[1].state.stageOneAnswers).sort(), ['candidate_control', 'comparison', 'efficiency', 'evidence', 'quality', 'recovery']);
+  assert.equal(payloads[1].state.stageOneAnswers.evidence.choice, 'SATISFIED');
+  assert.equal(payloads[1].state.stageOneAnswers.efficiency.choice, 'INSUFFICIENT_EVIDENCE');
+  const valueCriteria = payloads[1].questions.value.criteria;
+  assert.equal(valueCriteria.VALUE_DEMONSTRATED, 'Complete comparable evidence and preserved quality plus attributable efficiency OR candidate-control OR recovery benefit justify measured overhead according to Jev. Efficiency need not be SATISFIED when another benefit justifies overhead.');
+  assert.equal(valueCriteria.NO_VALUE_DEMONSTRATED, 'Adequate comparable evidence establishes no incremental benefit, worsened quality, or overhead outweighing benefits. Shared safeguards and ties are not Core benefit.');
+  assert.equal(valueCriteria.INCONCLUSIVE, 'Essential evidence/comparability is missing or unresolved confounds prevent a supported scoped conclusion; no availability failure may become a negative value conclusion.');
+  assert.equal(new Set(Object.values(valueCriteria)).size, 3);
   assert.ok(Buffer.byteLength(JSON.stringify(payloads[0])) < fixture.protocol.jev.evidenceByteLimit);
   assert.ok(Buffer.byteLength(JSON.stringify(payloads[1])) < fixture.protocol.jev.evidenceByteLimit);
   const audited = await auditValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true });
   assert.equal(audited.finalChoice, 'VALUE_DEMONSTRATED');
   const complete = await completeValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true });
   assert.equal(complete.benchmarkComplete, true);
+});
+
+test('Jev negative and inconclusive verdicts are stored verbatim with no validator veto', async t => {
+  for (const finalChoice of ['NO_VALUE_DEMONSTRATED', 'INCONCLUSIVE']) {
+    const fixture = await coreFixture(t);
+    const call = async payload => {
+      if (payload.questions.value) {
+        const probabilities = { VALUE_DEMONSTRATED: 0.1, NO_VALUE_DEMONSTRATED: 0.1, INCONCLUSIVE: 0.1 };
+        probabilities[finalChoice] = 0.8;
+        return { response: { model: payload.model, answers: { value: { type: 'choice', choice: finalChoice, confidence: 0.7,
+          probabilities } }, usage: { input_tokens: 1800, output_tokens: 1 } }, attempts: 1 };
+      }
+      const answers = Object.fromEntries(Object.keys(payload.questions).map(id =>
+        [id, { type: 'choice', choice: 'SATISFIED', confidence: 0.9,
+          probabilities: { SATISFIED: 0.9, INSUFFICIENT_EVIDENCE: 0.05, CONTRADICTED: 0.05 } }]));
+      return { response: { model: payload.model, answers, usage: { input_tokens: 2200, output_tokens: 6 } }, attempts: 1 };
+    };
+    const result = await evaluateValue({ output: fixture.output, callJevImpl: call, allowDeterministic: true,
+      privateKeyPath: fixture.privateKeyPath, publicKeyPath: fixture.publicKeyPath });
+    assert.equal(result.finalChoice, finalChoice);
+    assert.equal((await auditValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true })).finalChoice, finalChoice);
+    if (finalChoice === 'INCONCLUSIVE') {
+      await assert.rejects(() => completeValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true }), /not benchmark-complete/);
+    } else {
+      assert.equal((await completeValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true })).benchmarkComplete, true);
+    }
+  }
+});
+
+test('stage-one observations carry canary and ledger facts inside the bound', async t => {
+  const f = await coreFixture(t);
+  const args = { manifest: f.manifest, report: f.report, metrics: f.metrics, protocol: f.protocol,
+    setupProbes: JSON.parse(await readFile(join(f.output, 'setup/probes.json'), 'utf8')),
+    controlledTrials: JSON.parse(await readFile(join(f.output, 'controlled-trials.json'), 'utf8')),
+    allowDeterministic: true };
+  const without = buildStageOnePayload(args);
+  assert.equal(without.state.study.canary, null);
+  assert.equal(without.state.study.resource, null);
+  const canary = { evidenceClass: 'LIVE_CANARY', status: 'PASS', toolTurns: 3, toolResults: 3,
+    wireRequests: 2, inputTokens: 400, outputTokens: 90, apiUsd: 0, digest: `sha256:${'f'.repeat(64)}` };
+  const resourceSummary = { journalHash: `sha256:${'e'.repeat(64)}`,
+    counters: { wireRequests: 24, settled: 24, notAdmitted: 0, unknown: 0 }, cohortTerminalReason: null };
+  const payload = buildStageOnePayload({ ...args, canary, resourceSummary });
+  assert.equal(payload.state.study.canary.status, 'PASS');
+  assert.equal(payload.state.study.canary.toolTurns, 3);
+  assert.equal(payload.state.study.canary.digest, canary.digest);
+  assert.equal(payload.state.study.resource.journalHash, resourceSummary.journalHash);
+  assert.equal(payload.state.study.resource.counters.settled, 24);
+  assert.ok(Buffer.byteLength(JSON.stringify({ model: payload.model, state: payload.state, questions: payload.questions })) < f.protocol.jev.evidenceByteLimit);
+  await assert.rejects(() => evaluateValue({ output: f.output, callJevImpl: transport().call, allowDeterministic: false,
+    privateKeyPath: f.privateKeyPath, publicKeyPath: f.publicKeyPath }), /canary|journal|credential|unavailable/i);
 });
 
 test('full live request ledgers fit the Jev transport with bound factual summaries and explicit failures', async t => {

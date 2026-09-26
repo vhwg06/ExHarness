@@ -82,6 +82,38 @@ test('complete matched cohort reports preregistered facts without deciding value
   assert.equal(calculateReport(missing).valueInputs.complete, false);
 });
 
+test('report preserves measured phase timings and nulls absent or invalid phases', async () => {
+  const value = JSON.parse(await (await import('node:fs/promises')).readFile('scripts/delivery/baseline/value-protocol.json', 'utf8'));
+  const tasks = value.pairs.flatMap(pair => pair.order.map((arm, index) => ({
+    executionId: `${pair.pairId}:${arm}`, pairId: pair.pairId, taskId: pair.taskId, repeat: pair.repeat,
+    arm, orderIndex: index + 1, registeredStart: timestamp
+  })));
+  const body = { schemaVersion: 1, studyKind: 'FIXTURE_VALUE_V1', studyId: value.studyId,
+    protocolHash: `sha256:${sha256(value)}`, profileHash: 'sha256:profile', candidateSha: 'a'.repeat(40),
+    candidateTree: 'b'.repeat(40), seed: value.seed, pairs: value.pairs, tasks };
+  const manifest = { ...body, digest: `sha256:${sha256(body)}` };
+  const metrics = { executions: tasks.map(task => ({
+    executionId: task.executionId, evidenceClass: 'LIVE', verificationStatus: 'ACCEPTED',
+    checksPassed: 8, checksTotal: 8, terminalReason: 'COMPLETED', attemptCount: 1,
+    provider: { wireRequests: 1, modelCalls: 1, inputTokens: 100, outputTokens: 20, usageUnknown: false, apiUsd: 0 },
+    timing: { activeMs: 60000, providerWaitMs: 0, elapsedMs: 60000,
+      phases: task.arm === 'DIRECT' ? { executorMs: 50000, verifyMs: 9000, coreMs: null } : { executorMs: 40000, verifyMs: null, coreMs: 45000 } },
+    accepted: true
+  })) };
+  const report = calculateStudyReport({ manifest, metrics, observationAsOf: timestamp });
+  assert.equal(report.complete, true);
+  const direct = report.executions.find(row => row.executionId === 'P01:DIRECT');
+  assert.deepEqual(direct.timing.phases, { executorMs: 50000, verifyMs: 9000, coreMs: null });
+  const exharness = report.executions.find(row => row.executionId === 'P01:EXHARNESS');
+  assert.deepEqual(exharness.timing.phases, { executorMs: 40000, verifyMs: null, coreMs: 45000 });
+  const invalid = structuredClone(metrics);
+  invalid.executions[0].timing.phases = { executorMs: -1, verifyMs: 0, coreMs: 0 };
+  delete invalid.executions[1].timing.phases;
+  const second = calculateStudyReport({ manifest, metrics: invalid, observationAsOf: timestamp });
+  assert.equal(second.executions[0].timing.phases, null);
+  assert.equal(second.executions[1].timing.phases, null);
+});
+
 test('a fully measured cohort with zero accepted outputs is complete evidence for Jev negative judgment', async () => {
   const value = JSON.parse(await (await import('node:fs/promises')).readFile('scripts/delivery/baseline/value-protocol.json', 'utf8'));
   const tasks = value.pairs.flatMap(pair => pair.order.map((arm, index) => ({
