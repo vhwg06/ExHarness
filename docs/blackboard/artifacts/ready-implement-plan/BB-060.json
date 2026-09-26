@@ -129,13 +129,13 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Create private workspace package @exharness/oracle with index.js plus repository-source.js and application-artifact-source.js. Move only source-IO loops, reader validation/error wrapping and source-level provenance assembly. Provider modules accept already-parsed source requests and import no Agentic Application/Core code.",
-    "S2 — Replace packages/agentic-system/src/oracle.js with compatibility adapters preserving resolveBackendContext/resolveQaContext. Parse application WorkOrders above Oracle, delegate to the new provider functions, assemble/validate the unchanged BackendContextSchema/QaContextSchema and preserve exact error/sourceRef/provenance behavior.",
-    "S3 — Declare packages/agentic-system dependencies.@exharness/oracle = \"file:../oracle\" and use the direct relative ESM import ../../oracle/src/index.js because current CI performs no install step. Add root test:oracle and include it in npm test; do not create a lockfile or modify CI. Add provider unit tests plus existing Backend/QA/manifest regressions proving no behavioral drift.",
-    "S4 — Add oracle-context-intelligence-architecture.test.mjs. Scan production imports/package metadata and fail on Oracle->agentic/core imports, Core->Oracle implementation imports, copied source-read loops under agentic-system, missing agentic->Oracle dependency, or Oracle exports that claim scheduling/acceptance/recovery authority. Include mutated temporary negative fixtures.",
-    "S5 — Add the development-only bb060-runtime-seam-probe.mjs. Compose a semantic-need fixture through an injected resolver function and the new provider into an existing Core context block/renderAgentContext path; assert zero capability/resource/live-object calls, exact sourceRef/provenance preservation and declared serialized-context bound.",
-    "S6 — Update Oracle Living Docs to the delivered package/provider topology and compatibility semantics. Record the selected future pre-prompt injected resolution seam as planned/not-delivered and identify BB-061 as the owner of production ContextRequirement/ContextResolution fields and Core hook.",
-    "S7 — Run Oracle unit/integration/architecture/seam probes plus full agentic regression and ordinary npm test. Publish Worker evidence only for this bounded foundation; do not implement BB-061/062 features."
+    "S1 — Create private workspace package @exharness/oracle with src/index.js exporting readRepositorySources(request,{repositoryReader}) and readApplicationArtifacts(request,{artifactReader}). repository-source.js accepts {repositoryRef,revision,requiredFiles[]} and returns {repository:{ref,revision},files:[{path,content,sourceRef}]}; application-artifact-source.js accepts {requiredArtifacts[],producerWorkOrderId,revision,acceptanceDecision} and returns {artifacts:[{ref,path?,content,sourceRef,provenance}]}. These functions own the concrete read loops and reader-shape validation only; they import no Agentic Application/Core code and expose no scheduling/acceptance/recovery API.",
+    "S2 — Replace packages/agentic-system/src/oracle.js with compatibility adapters preserving resolveBackendContext(rawOrder,{repositoryReader}) and resolveQaContext(rawOrder,{artifactReader}). Each adapter parses its existing WorkOrder, calls the exact S1 provider function, maps provider output into the unchanged BackendContextSchema/QaContextSchema, preserves sourceRef/provenance and fail-closed read errors, and contains no repositoryReader.readFile/artifactReader.readArtifact loop of its own.",
+    "S3 — Declare packages/agentic-system dependencies.@exharness/oracle = \"file:../oracle\" and import ../../oracle/src/index.js directly because current CI performs no install step. Add root test:oracle and include it in npm test; do not create a lockfile or modify CI. Provider unit tests and existing Backend/QA/manifest regressions must prove no behavioral drift.",
+    "S4 — Add test/oracle-context-intelligence-architecture.test.mjs. Scan production imports/package metadata and fail on Oracle->agentic/core imports, Core->Oracle implementation imports, copied repositoryReader.readFile/artifactReader.readArtifact loops under agentic-system/src/oracle.js, missing agentic->Oracle dependency, or Oracle exports that claim scheduling/acceptance/recovery authority. Mutated temporary negative fixtures must demonstrate each guard fails closed.",
+    "S5 — Add development-only scripts/oracle-context-intelligence/bb060-runtime-seam-probe.mjs. The probe creates a semantic-need fixture, calls an injected resolver function outside AgentRuntime tools, delegates source IO to readRepositorySources(), converts the returned source/provenance into one ordinary Core context block, then calls renderAgentContext(). It asserts zero capability/resource/live-object invocations, no source-specific reader API enters Core rendering, exact sourceRef/provenance survives projection, rendered output stays below the explicit Core maxSerializedChars bound, and provider failure prevents projection.",
+    "S6 — Update Oracle Living Docs to the delivered @exharness/oracle provider topology and compatibility semantics. State that the selected pre-prompt injected ContextRequirement/ContextResolution seam is planned but NOT YET DELIVERED, with BB-061 owning its production fields, identity/budget/failure semantics and Core hook.",
+    "S7 — Verification order is deterministic: oracle-provider-unit -> oracle-compatibility -> architecture-boundary -> runtime-seam-probe -> agentic-regression -> living-docs-check. Publish Worker evidence only for this bounded physical/provider foundation; do not implement BB-061 ContextRequirement/ContextResolution or BB-062 provider/backend selection."
   ],
   "acceptanceCriteria": [
     {
@@ -641,14 +641,24 @@
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
-          "match": "## External evidence"
+          "match": "| [Aider](https://github.com/Aider-AI/aider)"
         },
         {
           "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
-          "match": "## Reuse direction before experiments"
+          "match": "| [Serena](https://github.com/oraios/serena)"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "| [Zoekt](https://github.com/sourcegraph/zoekt)"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "At the 2026-09-25 check, each GitHub repository above was over the standing 1,000-star threshold."
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "externalEvidenceSummary"
+      ]
     },
     {
       "objectiveCriterion": "A falsifiable prototype and benchmark handoff are defined so the next READY plan does not rely on architecture prose alone.",
@@ -691,7 +701,47 @@
           "match": "sourceRef: resolved.sourceRef"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "prototypeContract"
+      ]
     }
-  ]
+  ],
+  "externalEvidenceSummary": {
+    "checked": "2026-09-26",
+    "thresholdRule": "GitHub search query repo:<owner/name> stars:>=1000 confirmed Aider, Serena, Zoekt, Graphiti and Cognee met the standing >=1,000-star rule at the evidence check.",
+    "comparisons": [
+      {
+        "approach": "Aider repo-map",
+        "source": "https://github.com/Aider-AI/aider/tree/5dc9490bb35f9729ef2c95d00a19ccd30c26339c",
+        "license": "Apache-2.0",
+        "observedPattern": "structural repository map ranks symbol/relationship context under an explicit token budget",
+        "use": "budget-aware structural projection candidate",
+        "limitation": "does not establish accepted-artifact provenance, cross-system currentness or durable ContextResolution identity"
+      },
+      {
+        "approach": "Serena / SolidLSP",
+        "source": "https://github.com/oraios/serena/tree/7a2968335f2198b966864de1ce3655c8e485a653",
+        "license": "Serena GPL-3.0-or-later; SolidLSP MIT",
+        "observedPattern": "LSP/symbol retrieval exposes semantic code entities and relationships",
+        "use": "semantic-code provider pattern",
+        "limitation": "full Serena is not selected; language coverage, integration value and license choice remain BB-062 experiment decisions"
+      },
+      {
+        "approach": "Zoekt",
+        "source": "https://github.com/sourcegraph/zoekt/tree/153817f643cde8b229ee388c1dddbcf07f4798af",
+        "license": "Apache-2.0",
+        "observedPattern": "indexed trigram/code-aware search provides a fast high-recall lexical baseline",
+        "use": "lexical provider comparison arm",
+        "limitation": "lexical relevance alone does not establish semantic ownership, provenance or currentness"
+      },
+      {
+        "approach": "Uber Context Graph",
+        "source": "https://www.uber.com/gb/en/blog/efficient-software-factory/",
+        "observedPattern": "cross-system context graph grounds engineering agents with relationships and current organizational/system data",
+        "use": "architecture evidence for context as runtime infrastructure",
+        "limitation": "Uber scale/topology is not an ExHarness requirement and is not copied into BB-060"
+      }
+    ],
+    "selectionRule": "BB-060 selects no backend. BB-062 must run same-corpus retrieval experiments before promoting lexical, LSP/semantic or graph implementations."
+  }
 }
