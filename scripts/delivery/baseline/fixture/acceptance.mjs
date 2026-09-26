@@ -24,6 +24,27 @@ export async function candidateDigest(directory) {
   return sha256(rows.join('\n'));
 }
 
+export const CANARY_WORKSPACE_FILES = Object.freeze(['nonce.txt', 'marker.txt']);
+
+export async function canaryDigest(directory) {
+  const root = resolve(directory);
+  const names = await readdir(root);
+  for (const name of names) {
+    if (!CANARY_WORKSPACE_FILES.includes(name)) throw new Error(`canary workspace contains unexpected file: ${name}`);
+  }
+  if (!names.includes('nonce.txt')) throw new Error('canary workspace is missing nonce.txt');
+  const rows = [];
+  for (const name of CANARY_WORKSPACE_FILES) {
+    if (!names.includes(name)) continue;
+    const path = join(root, name);
+    const info = await lstat(path);
+    if (!info.isFile() || info.isSymbolicLink()) throw new Error(`invalid canary file: ${name}`);
+    const body = await readFile(path);
+    rows.push(`${name}\0${sha256(body)}`);
+  }
+  return sha256(rows.join('\n'));
+}
+
 async function startServer(directory, databasePath, fault) {
   const child = spawn(process.execPath, [join(directory, 'server.mjs'), '--database', databasePath, '--fault', fault], {
     cwd: directory, stdio: ['ignore', 'pipe', 'pipe'], env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot }

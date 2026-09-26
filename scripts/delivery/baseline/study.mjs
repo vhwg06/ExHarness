@@ -5,7 +5,7 @@ import { readFile, mkdir, copyFile, cp, open, readdir, stat } from 'node:fs/prom
 import { dirname } from 'node:path';
 import { join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { verifyCandidate, candidateDigest } from './fixture/acceptance.mjs';
+import { verifyCandidate, candidateDigest, canaryDigest } from './fixture/acceptance.mjs';
 import { canonical, fixtureIdentities, validateProfile, sha256 } from './contract.mjs';
 import { calculateStudyReport } from './report.mjs';
 import { ResourceState, foldResourceJournal, portableResourceState, readResourceJournal, writeAtomicJson, writeResourceSnapshot, resourceExitCode } from './resource-state.mjs';
@@ -566,7 +566,7 @@ export async function coordinateDirectAttempt({ runExecutor, verifyCandidate, on
   return { common, verification, executorMs, verifyMs, hook };
 }
 
-export async function executeMiniAttempt({ profile, task, output, executionId, attemptId, candidateDir, attemptDir, resourceContext }) {
+export async function executeMiniAttempt({ profile, task, output, executionId, attemptId, candidateDir, attemptDir, resourceContext, workspaceKind = 'fixture' }) {
   const ledgerPath = join(output, 'executions', executionId, 'provider-ledger.jsonl');
   const config = {
     profile,
@@ -593,15 +593,25 @@ export async function executeMiniAttempt({ profile, task, output, executionId, a
     });
   } finally { cleanupContainers(attemptId); }
   const result = await plainJson(join(attemptDir, 'driver-result.json')).catch(() => ({ exitStatus: child?.timedOut ? 'TIMED_OUT' : 'FAILED', error: child?.stderr ?? '' }));
-  const digest = await candidateDigest(candidateDir);
   const providerWaitMs = Math.max(0, Number(result.providerWaitSeconds ?? 0) * 1000);
+  const startedAtIso = new Date(startedAt).toISOString();
+  const terminalAtIso = nowIso();
+  const activeMs = Math.max(0, Date.now() - startedAt - providerWaitMs);
+  let digest = null;
+  let digestError = null;
+  try {
+    digest = workspaceKind === 'canary' ? await canaryDigest(candidateDir) : await candidateDigest(candidateDir);
+  } catch (error) {
+    digestError = String(error?.message ?? error).slice(0, 512);
+  }
   return {
     attemptId,
     candidateDigest: digest,
+    candidateDigestError: digestError,
     candidateRef: relative(output, candidateDir).replaceAll('\\', '/'),
     driverResult: { ...result, processCode: child?.code ?? null, timedOut: child?.timedOut ?? false, stderr: child?.stderr ?? '', stdout: child?.stdout ?? '' },
     provider: await providerFacts(ledgerPath),
-    timing: { startedAt: new Date(startedAt).toISOString(), terminalAt: nowIso(), activeMs: Math.max(0, Date.now() - startedAt - providerWaitMs), providerWaitMs }
+    timing: { startedAt: startedAtIso, terminalAt: terminalAtIso, activeMs, providerWaitMs, provenance: 'measured' }
   };
 }
 
