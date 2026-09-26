@@ -735,6 +735,7 @@ export async function writeResourceSnapshot({ path, state, journalPath, files = 
       if (mutableRoots.has(ref)) return true;
       if (!oldExecution) return false;
       if (ref.endsWith('/metrics.json')) return oldExecution.status === 'RETRYABLE';
+      if (ref.includes('/sessions/')) return oldExecution.status === 'RETRYABLE';
       if (ref.includes('/candidate/')) {
         const attemptMatch = ref.match(/\/attempt-(\d+)\/candidate\//);
         const attempt = attemptMatch && oldExecution.attemptHistory?.find(row => row.attemptNumber === Number(attemptMatch[1]));
