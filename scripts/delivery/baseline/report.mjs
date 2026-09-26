@@ -171,16 +171,23 @@ export function calculateReport({ manifest, attempts = [], usage = [], humanEven
   for (const defect of defects) if (!taskIds.has(defect.taskId) || !['CRITICAL', 'MAJOR', 'MINOR'].includes(defect.severity)) fail('invalid defect record');
   const qualityWindowComplete = manifest.qualityWindowEnd && observationAsOf && ms(observationAsOf) >= ms(manifest.qualityWindowEnd);
   const complete = resultTasks.length === PROTOCOL.pairs * 2 && pairs.length === PROTOCOL.pairs && resultTasks.every(task => !task.censored && task.humanActiveMinutes != null && task.totalCostUsd != null) && qualityWindowComplete && medianPairedHumanRatio != null && arms.DIRECT.costPerAcceptedTaskUsd > 0 && arms.EXHARNESS.costPerAcceptedTaskUsd != null;
-  let valueVerdict = 'INCONCLUSIVE';
-  if (complete) {
-    const critical = defects.some(defect => defect.arm === 'EXHARNESS' && defect.severity === 'CRITICAL');
-    const majorDirect = defects.filter(defect => defect.arm === 'DIRECT' && defect.severity === 'MAJOR').length;
-    const majorExharness = defects.filter(defect => defect.arm === 'EXHARNESS' && defect.severity === 'MAJOR').length;
-    valueVerdict = medianPairedHumanRatio <= PROTOCOL.gates.maxMedianPairedHumanRatio &&
-      arms.EXHARNESS.acceptedRate >= arms.DIRECT.acceptedRate && !critical && majorExharness <= majorDirect &&
-      arms.EXHARNESS.costPerAcceptedTaskUsd <= PROTOCOL.gates.maxCostPerAcceptedRelativeToDirect * arms.DIRECT.costPerAcceptedTaskUsd ? 'PASS' : 'NO_GO';
-  }
-  return { schemaVersion: 1, experimentId: manifest.experimentId, protocolHash: PROTOCOL_HASH, tasks: resultTasks, arms, pairs, medianPairedHumanRatio, pairedBootstrap95: interval, defects, qualityWindowComplete: Boolean(qualityWindowComplete), valueVerdict };
+  const criticalExharnessDefects = defects.filter(defect => defect.arm === 'EXHARNESS' && defect.severity === 'CRITICAL').length;
+  const majorDefectCounts = Object.fromEntries(['DIRECT', 'EXHARNESS'].map(arm => [arm, defects.filter(defect => defect.arm === arm && defect.severity === 'MAJOR').length]));
+  const costPerAcceptedTaskRatio = arms.DIRECT.costPerAcceptedTaskUsd > 0 && arms.EXHARNESS.costPerAcceptedTaskUsd != null
+    ? arms.EXHARNESS.costPerAcceptedTaskUsd / arms.DIRECT.costPerAcceptedTaskUsd : null;
+  const valueInputs = {
+    complete,
+    medianPairedHumanRatio,
+    maxMedianPairedHumanRatio: PROTOCOL.gates.maxMedianPairedHumanRatio,
+    directAcceptedRate: arms.DIRECT.acceptedRate,
+    exharnessAcceptedRate: arms.EXHARNESS.acceptedRate,
+    costPerAcceptedTaskRatio,
+    maxCostPerAcceptedRelativeToDirect: PROTOCOL.gates.maxCostPerAcceptedRelativeToDirect,
+    criticalExharnessDefects,
+    majorDefectCounts,
+    qualityWindowComplete: Boolean(qualityWindowComplete)
+  };
+  return { schemaVersion: 1, experimentId: manifest.experimentId, protocolHash: PROTOCOL_HASH, tasks: resultTasks, arms, pairs, medianPairedHumanRatio, pairedBootstrap95: interval, defects, qualityWindowComplete: Boolean(qualityWindowComplete), valueInputs };
 }
 
 function studyBootstrap(values, seed = 65074) {
@@ -205,7 +212,7 @@ function knownNonnegative(value) { return Number.isFinite(value) && value >= 0; 
  * Build facts for the six-pair fixture study. This deliberately has no
  * valueVerdict field: semantic value is supplied only by jev-value.mjs.
  */
-export function calculateStudyReport({ manifest, executions = [], metrics = null, observationAsOf = null }) {
+export function calculateStudyReport({ manifest, executions = [], metrics = null, observationAsOf = null, resourceState = null }) {
   if (manifest?.schemaVersion !== 1 || manifest.studyKind !== 'FIXTURE_VALUE_V1' || !Array.isArray(manifest.tasks))
     fail('study manifest/schema mismatch');
   const body = Object.fromEntries(Object.entries(manifest).filter(([key]) => key !== 'digest'));
@@ -298,14 +305,24 @@ export function calculateStudyReport({ manifest, executions = [], metrics = null
     });
   }
   const ratios = pairs.map(pair => pair.activeTimeRatio).filter(value => value != null);
-  const allSettled = resultTasks.length === manifest.tasks.length && resultTasks.every(row => row.terminalReason != null && !row.provider.usageUnknown && row.timing.activeMs != null);
+  const allSettled = resultTasks.length === manifest.tasks.length && resultTasks.every(row => row.terminalReason != null && row.terminalReason !== 'RESOURCE_EXHAUSTED' && !row.provider.usageUnknown && row.timing.activeMs != null);
+  const verificationComplete = resultTasks.length === manifest.tasks.length && resultTasks.every(row =>
+    ['ACCEPTED', 'REJECTED'].includes(row.verificationStatus) && Number.isInteger(row.checksPassed) &&
+    Number.isInteger(row.checksTotal) && row.checksTotal > 0 && row.checksPassed >= 0 && row.checksPassed <= row.checksTotal);
   const evidenceClasses = new Set(resultTasks.filter(row => seen.has(row.executionId)).map(row => row.evidenceClass));
   const evidenceClass = evidenceClasses.size === 1 && evidenceClasses.has('LIVE') ? 'LIVE' : evidenceClasses.has('DETERMINISTIC') ? 'DETERMINISTIC' : 'UNMEASURED';
-  const hasLiveEvidence = resultTasks.every(row => row.evidenceClass === 'LIVE' && row.provider.wireRequests > 0);
+  const hasLiveEvidence = resultTasks.every(row => row.evidenceClass === 'LIVE' && row.provider.wireRequests > 0 && row.provider.modelCalls > 0);
+  const resourceTerminal = resourceState == null || manifest.tasks.every(task => {
+    const execution = resourceState.executions?.[task.executionId];
+    return ['COMPLETED', 'TERMINAL'].includes(execution?.status) &&
+      !['RESOURCE_EXHAUSTED', 'UNRESOLVED_PROVIDER', 'INFRASTRUCTURE_FAILURE', 'INVALID_INPUT', 'PREREQUISITE_MISSING'].includes(execution?.terminalReason);
+  });
   const reasons = [];
   if (missing.length) reasons.push('MISSING_EXECUTIONS');
   if (!allSettled) reasons.push('UNSETTLED_OR_UNKNOWN_USAGE');
   if (!hasLiveEvidence) reasons.push('LIVE_PROVIDER_EVIDENCE_MISSING');
+  if (!verificationComplete) reasons.push('INDEPENDENT_VERIFICATION_INCOMPLETE');
+  if (!resourceTerminal) reasons.push('RESOURCE_EXECUTION_NOT_TERMINAL');
   return {
     schemaVersion: 1,
     studyId: manifest.studyId,
@@ -354,5 +371,5 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (!input || !output) fail('usage: report.mjs --input <directory> --output <report.json>');
   const result = await reportDirectory(input);
   await writeFile(output, JSON.stringify(result, null, 2) + '\n');
-  console.log(JSON.stringify({ output, valueVerdict: result.valueVerdict }));
+  console.log(JSON.stringify({ output, complete: result.valueInputs.complete, valueInputs: result.valueInputs }));
 }

@@ -7,6 +7,7 @@ import { join, resolve } from 'node:path';
 import { classifyRunResult, main, selectedCalibrationTaskIds } from '../../scripts/delivery/baseline/run.mjs';
 import { CALIBRATION_TASK_IDS, MINI_COMMIT, NODE_VERSION, PLAYWRIGHT_VERSION, PROTOCOL, PROTOCOL_HASH, fixtureIdentities, sha256 } from '../../scripts/delivery/baseline/contract.mjs';
 import { exportProviderRecords, reconcileOriginalResponse, reconcileStoredCompletion } from '../../scripts/delivery/baseline/provider-export.mjs';
+import { ResourceState } from '../../scripts/delivery/baseline/resource-state.mjs';
 
 const PYTHON = (() => {
   for (const candidate of [process.env.EXHARNESS_TEST_PYTHON, 'python3', 'python'].filter(Boolean)) {
@@ -91,6 +92,94 @@ test('reservation overshoot and a third attempt cannot exceed the shared call bu
   const overshoot = join(output, 'overshoot.jsonl').replaceAll('\\', '/');
   const overshootScript = `import sys\nsys.path.insert(0, ${JSON.stringify(source)})\nfrom provider_budget import ProviderBudget, BudgetError\nprofile = {'budgets': {'maxInputTokensPerCall': 10, 'maxOutputTokensPerCall': 5, 'maxModelCalls': 2, 'maxTotalTokens': 30, 'maxApiUsd': 1}, 'model': {'maxContextTokens': 20, 'inputUsdPerMillion': 1, 'outputUsdPerMillion': 2}}\np = ProviderBudget(${JSON.stringify(overshoot)}, profile, 'T1', 'A1')\na = p.reserve(10, 5)\ntry:\n    p.settle(a, 'provider-1', 11, 3)\nexcept BudgetError as e:\n    assert 'exceeds reservation' in str(e)\nelse:\n    raise AssertionError('overshoot must fail')\ntry:\n    p.reserve(1, 1)\nexcept BudgetError as e:\n    assert 'unresolved' in str(e)\nelse:\n    raise AssertionError('overshoot uncertainty must fence future calls')\nprint('overshoot-fenced')\n`;
   assert.match(execFileSync(PYTHON, ['-c', overshootScript], { encoding: 'utf8' }), /overshoot-fenced/);
+});
+
+test('worst-case per-wire reservation exhausts a 50000-token execution instead of under-reserving', async t => {
+  const output = await mkdtemp(join(tmpdir(), 'baseline-provider-exhaustion-'));
+  t.after(() => rm(output, { recursive: true, force: true }));
+  const source = resolve('scripts/delivery/baseline').replaceAll('\\', '/');
+  const ledger = join(output, 'usage.jsonl').replaceAll('\\', '/');
+  const script = `import sys
+sys.path.insert(0, ${JSON.stringify(source)})
+from provider_budget import ProviderBudget, BudgetError
+profile = {'budgets': {'maxInputTokensPerCall': 16384, 'maxOutputTokensPerCall': 4096, 'maxModelCalls': 12, 'maxWireRequestsPerExecution': 24, 'maxTotalTokens': 50000, 'maxApiUsd': 5}, 'model': {'maxContextTokens': 32768, 'inputUsdPerMillion': 0, 'outputUsdPerMillion': 0}}
+budget = ProviderBudget(${JSON.stringify(ledger)}, profile, 'NORM-01', 'attempt-1')
+for index, usage in enumerate([(12000,1800),(13000,2957)]):
+    request = budget.reserve(10000,4096)
+    reservation = budget._events()[-1]
+    assert reservation['inputTokensReserved'] == 16384 and reservation['outputTokensReserved'] == 4096
+    budget.settle(request, 'provider-'+str(index), usage[0], usage[1])
+try:
+    budget.reserve(100,4096)
+except BudgetError as error:
+    assert 'exhausted' in str(error)
+else:
+    raise AssertionError('29,757 actual tokens plus the 20,480 worst-case reservation must exceed 50,000')
+assert len([row for row in budget._events() if row['kind']=='RESERVE']) == 2
+print('resource-exhaustion-explicit')
+`;
+  assert.match(execFileSync(PYTHON, ['-c', script], { encoding: 'utf8' }), /resource-exhaustion-explicit/);
+});
+
+test('Python provider calls reserve and settle individually in the shared resource journal', async t => {
+  const output = await mkdtemp(join(tmpdir(), 'baseline-resource-bridge-'));
+  t.after(() => rm(output, { recursive: true, force: true }));
+  const journalPath = join(output, 'events.jsonl');
+  const identity = { profileHash: 'sha256:profile', candidateSha: 'a'.repeat(40), candidateTree: 'b'.repeat(40), protocolHash: 'sha256:protocol' };
+  const limits = { maxConcurrentProviderRequests: 1, minRequestIntervalSeconds: 0, maxWireRequestsPerExecution: 8,
+    maxTotalTokensPerExecution: 50, maxApiUsdPerExecution: 1, maxAttemptsPerExecution: 2,
+    maxProviderWaitSeconds: 3600, maxExecutionActiveSeconds: 1200, maxCohortWallSeconds: 3600 };
+  const resource = new ResourceState({ journalPath, experimentId: 'bridge-test', ...identity, limits });
+  await resource.registerExecution({ executionId: 'P01:DIRECT', pairId: 'P01', taskId: 'NORM-01', arm: 'DIRECT', repeat: 1, deadline: new Date(Date.now() + 60_000).toISOString() });
+  await resource.registerAttempt({ executionId: 'P01:DIRECT', attemptId: 'P01:DIRECT:attempt-1', attemptNumber: 1 });
+  const context = { journalPath, experimentId: 'bridge-test', ...identity, limits: resource.limits, executionId: 'P01:DIRECT' };
+  const source = resolve('scripts/delivery/baseline').replaceAll('\\', '/');
+  const ledger = join(output, 'provider-ledger.jsonl').replaceAll('\\', '/');
+  const script = `import sys,json
+from pathlib import Path
+sys.path.insert(0, ${JSON.stringify(source)})
+from provider_budget import ProviderBudget
+root = Path(${JSON.stringify(output.replaceAll('\\', '/'))})
+profile = {'budgets': {'maxInputTokensPerCall': 10, 'maxOutputTokensPerCall': 5, 'maxModelCalls': 8, 'maxWireRequestsPerExecution': 8, 'maxTotalTokens': 50, 'maxApiUsd': 1, 'maxProviderWaitSeconds': 3600}, 'model': {'maxContextTokens': 20, 'inputUsdPerMillion': 0, 'outputUsdPerMillion': 0}}
+resource = json.loads(${JSON.stringify(JSON.stringify(context))})
+budget = ProviderBudget(root/'provider-ledger.jsonl', profile, 'NORM-01', 'P01:DIRECT:attempt-1', root, resource, ${JSON.stringify(join(resolve('scripts/delivery/baseline'), 'resource-bridge.mjs').replaceAll('\\', '/'))}, ${JSON.stringify(process.execPath)})
+for index in range(3):
+    request = budget.reserve(2, 5)
+    budget.send_started(request)
+    raw = {'id': 'provider-'+str(index), 'model': 'model', 'usage': {'input_tokens': 2, 'output_tokens': 1}}
+    proof = budget.attest(request, raw, 'RETRIEVABLE_RECORD')
+    budget.settle(request, raw['id'], 2, 1, evidence=proof)
+print('resource-bridge-ok')
+`;
+  assert.match(execFileSync(PYTHON, ['-c', script], { encoding: 'utf8' }), /resource-bridge-ok/);
+  const state = await resource.state();
+  assert.equal(state.counters.wireRequests, 3);
+  assert.equal(state.counters.settled, 3);
+  assert.equal(state.executions['P01:DIRECT'].status, 'RUNNING');
+  assert.equal(Object.values(state.requests).reduce((sum, row) => sum + row.usage.inputTokens + row.usage.outputTokens, 0), 9);
+  assert.ok(Object.values(state.requests).every(row => row.inputTokensReserved === 10 && row.outputTokensReserved === 5));
+  assert.ok(Object.values(state.requests).every(row => row.proof.providerEvidenceRef));
+});
+
+test('provider preflight accepts only the one exact bounded bash tool call', () => {
+  const source = resolve('scripts/delivery/baseline').replaceAll('\\', '/');
+  const script = `import json,sys
+sys.path.insert(0, ${JSON.stringify(source)})
+from probe_driver import validate_tool_call
+response = {'choices': [{'message': {'tool_calls': [{'id':'call-1','function': {'name':'bash','arguments': json.dumps({'command': "printf 'EXHARNESS_PROBE_1'"})}}]}}]}
+result = validate_tool_call(response, "printf 'EXHARNESS_PROBE_1'")
+assert result['toolName'] == 'bash'
+for invalid in [
+    {'choices': [{'message': {'tool_calls': []}}]},
+    {'choices': [{'message': {'tool_calls': [response['choices'][0]['message']['tool_calls'][0], response['choices'][0]['message']['tool_calls'][0]]}}]},
+    {'choices': [{'message': {'tool_calls': [{'function': {'name':'bash','arguments':'{}'}}]}}]}
+]:
+    try: validate_tool_call(invalid, "printf 'EXHARNESS_PROBE_1'")
+    except Exception: pass
+    else: raise AssertionError('invalid probe tool call accepted')
+print('probe-contract-ok')
+`;
+  assert.match(execFileSync(PYTHON, ['-c', script], { encoding: 'utf8' }), /probe-contract-ok/);
 });
 
 test('proven 429 admission failure releases reservation but keeps the wire attempt', async t => {

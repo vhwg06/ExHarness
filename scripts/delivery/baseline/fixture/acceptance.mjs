@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFile, lstat, readdir, mkdtemp, cp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -61,13 +61,20 @@ export async function verifyCandidate({ candidateDir, fault = 'NONE', browser = 
   const verifier = await mkdtemp(join(tmpdir(), 'baseline-verify-'));
   const copy = join(verifier, 'candidate');
   const results = [];
-  let process;
+  let serverProcess;
   try {
     await cp(candidateDir, copy, { recursive: true, force: false, errorOnExist: true });
     if (await candidateDigest(copy) !== expected) throw new Error('candidate changed during copy');
+    for (const name of ['server.mjs', 'client.js', 'smoke.mjs']) {
+      const checked = spawnSync(process.execPath, ['--check', join(copy, name)], { encoding: 'utf8', timeout: 10000, maxBuffer: 8192 });
+      if (checked.error) throw checked.error;
+      check(checked.status === 0, `candidate JavaScript parses: ${name}`, results);
+    }
+    if (results.some(result => !result.pass))
+      return { schemaVersion: 1, status: 'REJECTED', candidateDigest: expected, checks: results, failureClass: 'CANDIDATE_SYNTAX' };
     const databasePath = join(verifier, 'requests.sqlite');
-    process = await startServer(copy, databasePath, fault);
-    const base = process.url;
+    serverProcess = await startServer(copy, databasePath, fault);
+    const base = serverProcess.url;
     const created = await json(`${base}/requests`, 'POST', { title: '  Valid title  ', description: 'A description' });
     check(created.status === 201 && created.body.title === 'Valid title' && created.body.status === 'OPEN', 'create and normalize valid title', results);
     const id = created.body.id;
@@ -136,9 +143,9 @@ export async function verifyCandidate({ candidateDir, fault = 'NONE', browser = 
       } finally { await browserProcess.close(); }
     }
     const beforeRestart = await json(`${base}/requests`);
-    await process.stop(); process = null;
-    process = await startServer(copy, databasePath, fault);
-    const reopened = await json(`${process.url}/requests`);
+    await serverProcess.stop(); serverProcess = null;
+    serverProcess = await startServer(copy, databasePath, fault);
+    const reopened = await json(`${serverProcess.url}/requests`);
     check(JSON.stringify(reopened.body) === JSON.stringify(beforeRestart.body), 'same database persists across restart', results);
     check(reopened.body.every((row, index, rows) => index === 0 || rows[index - 1].id < row.id), 'restart preserves ascending order', results);
     const after = await candidateDigest(copy);
@@ -148,7 +155,7 @@ export async function verifyCandidate({ candidateDir, fault = 'NONE', browser = 
   } catch (error) {
     return { schemaVersion: 1, status: 'INCONCLUSIVE', candidateDigest: expected, checks: results, infrastructureError: error.message };
   } finally {
-    if (process) await process.stop();
+    if (serverProcess) await serverProcess.stop();
     await rm(verifier, { recursive: true, force: true });
   }
 }

@@ -48,7 +48,9 @@ export function redactTransportValue(value) {
   if (Array.isArray(value)) return value.map(redactTransportValue);
   if (typeof value !== 'object') return typeof value === 'string' && value.length > 2048 ? `${value.slice(0, 2048)}...[truncated]` : value;
   return Object.fromEntries(Object.entries(value).map(([key, child]) => {
-    if (/(authorization|api[-_]?key|cookie|set-cookie|password|secret|token)/i.test(key)) return [key, '[REDACTED]'];
+    if (/(authorization|api[-_]?key|cookie|password|secret)/i.test(key) ||
+        (/^(?:token|access[-_]?token|refresh[-_]?token|id[-_]?token|auth[-_]?token)$/i.test(key) && typeof child === 'string'))
+      return [key, '[REDACTED]'];
     return [key, redactTransportValue(child)];
   }));
 }
@@ -57,7 +59,7 @@ export function nextEligibleAt({ now, retryIndex, retryAfterSeconds = null, jitt
   const base = Math.min(60 * (2 ** asInteger(retryIndex, 'retryIndex')), 3600);
   const retryAfter = retryAfterSeconds == null ? 0 : asNumber(retryAfterSeconds, 'retryAfterSeconds');
   const jitter = asNumber(jitterSeconds, 'jitterSeconds');
-  return stamp(new Date(now).getTime() + Math.max(base + jitter, retryAfter * 1000));
+  return stamp(new Date(now).getTime() + Math.max(base + jitter, retryAfter) * 1000);
 }
 
 export function parseRetryAfter(value, now = Date.now()) {
@@ -167,6 +169,9 @@ function blankState({ experimentId = null, profileHash = null, candidateSha = nu
     candidateTree,
     protocolHash,
     lastEventHash: null,
+    lastProviderDispatchAt: null,
+    routeNextEligibleAt: null,
+    cohortTerminalReason: null,
     executions: {},
     requests: {},
     counters: { wireRequests: 0, settled: 0, notAdmitted: 0, unknown: 0 },
@@ -201,6 +206,11 @@ export function foldResourceJournal(events, options = {}) {
     if (options.protocolHash != null && payload.protocolHash != null && payload.protocolHash !== options.protocolHash) fail(`event protocol binding differs: ${event.eventId}`);
     state.lastEventHash = event.eventHash;
     switch (event.kind) {
+      case 'COHORT_TERMINAL': {
+        if (!['RESOURCE_EXHAUSTED', 'UNRESOLVED_PROVIDER'].includes(payload.reason)) fail('unknown cohort terminal reason');
+        state.cohortTerminalReason = payload.reason;
+        break;
+      }
       case 'REGISTER_EXECUTION': {
         const id = asText(event.executionId, 'executionId');
         if (state.executions[id]) fail(`execution registered twice: ${id}`);
@@ -210,18 +220,24 @@ export function foldResourceJournal(events, options = {}) {
           taskId: payload.taskId ?? null,
           arm: payload.arm ?? null,
           repeat: payload.repeat ?? null,
+          providerModelId: payload.providerModelId ?? null,
           registeredAt: event.at,
           deadline: payload.deadline ?? null,
           status: 'REGISTERED',
           activeMs: 0,
           providerWaitMs: 0,
           attempts: 0,
+          attemptHistory: [],
           terminalReason: null,
           nextEligibleAt: null,
+          waitStartedAt: null,
           outstandingRequestIds: [],
           resultCaptured: false,
+          capturedResult: null,
           verified: false,
-          coreAdopted: false
+          verification: null,
+          coreAdopted: false,
+          coreAdoption: null
         };
         break;
       }
@@ -230,7 +246,36 @@ export function foldResourceJournal(events, options = {}) {
         asInteger(payload.attemptNumber, 'attemptNumber', { min: 1 });
         if (item.status === 'TERMINAL') fail('cannot register attempt after terminal execution');
         if (payload.attemptNumber > 2) fail('attempt limit exceeded');
-        item.attempts = Math.max(item.attempts, payload.attemptNumber);
+        const prior = item.attemptHistory.find(row => row.attemptNumber === payload.attemptNumber);
+        if (prior) {
+          if (prior.attemptId !== event.attemptId) fail('attempt number was rebound to another attempt id');
+          break;
+        }
+        if (payload.attemptNumber !== item.attempts + 1) fail('attempt numbers must be contiguous');
+        if (item.waitStartedAt) {
+          const elapsedWaitMs = Date.parse(event.at) - Date.parse(item.waitStartedAt);
+          if (Number.isFinite(elapsedWaitMs) && elapsedWaitMs >= 0) item.providerWaitMs += elapsedWaitMs;
+          item.waitStartedAt = null;
+        }
+        item.attempts = payload.attemptNumber;
+        item.attemptHistory.push({ attemptId: event.attemptId, attemptNumber: payload.attemptNumber,
+          status: 'REGISTERED', registeredAt: event.at, startedAt: null, terminalAt: null,
+          activeMs: null, terminalReason: null, resultCaptured: false, capturedResult: null,
+          verified: false, verification: null, coreAdopted: false, coreAdoption: null });
+        item.status = 'RUNNING';
+        break;
+      }
+      case 'ATTEMPT_STARTED': {
+        const item = execution(state, event.executionId);
+        const attempt = item.attemptHistory.find(row => row.attemptId === event.attemptId);
+        if (!attempt) fail('attempt start has no registered attempt');
+        if (attempt.startedAt) {
+          if (attempt.startedAt !== event.at) fail('attempt start was recorded more than once');
+          break;
+        }
+        if (attempt.status !== 'REGISTERED') fail('attempt start is not a fresh registered attempt');
+        attempt.startedAt = event.at;
+        attempt.status = 'RUNNING';
         item.status = 'RUNNING';
         break;
       }
@@ -263,6 +308,7 @@ export function foldResourceJournal(events, options = {}) {
         ensureTransition(item.status, ['INTENT'], 'SEND_STARTED');
         item.status = 'IN_FLIGHT';
         item.sendStartedAt = event.at;
+        state.lastProviderDispatchAt = event.at;
         break;
       }
       case 'SETTLED': {
@@ -303,7 +349,9 @@ export function foldResourceJournal(events, options = {}) {
         const item = execution(state, event.executionId);
         item.status = 'WAITING_PROVIDER';
         item.nextEligibleAt = asText(payload.nextEligibleAt, 'nextEligibleAt');
-        item.providerWaitMs += asNumber(payload.waitMs ?? 0, 'waitMs');
+        item.waitStartedAt ??= event.at;
+        if (payload.routeWide === true && (!state.routeNextEligibleAt || Date.parse(item.nextEligibleAt) > Date.parse(state.routeNextEligibleAt)))
+          state.routeNextEligibleAt = item.nextEligibleAt;
         break;
       }
       case 'RECONCILED_SETTLED':
@@ -324,29 +372,67 @@ export function foldResourceJournal(events, options = {}) {
       }
       case 'RESULT_CAPTURED': {
         const item = execution(state, event.executionId);
+        const attempt = item.attemptHistory.find(row => row.attemptId === event.attemptId);
+        if (!attempt) fail('captured result has no registered attempt');
+        const captured = { attemptId: event.attemptId, resultHash: payload.resultHash,
+          candidateDigest: payload.candidateDigest, path: payload.path };
+        if (attempt.capturedResult && canonical(attempt.capturedResult) !== canonical(captured)) fail('captured result identity changed');
+        attempt.resultCaptured = true;
+        attempt.capturedResult = captured;
         item.resultCaptured = true;
+        item.capturedResult = captured;
         item.status = 'RESULT_CAPTURED';
         break;
       }
       case 'VERIFIED': {
         const item = execution(state, event.executionId);
         ensureTransition(item.status, ['RESULT_CAPTURED', 'VERIFIED'], 'VERIFIED');
+        const attempt = item.attemptHistory.find(row => row.attemptId === event.attemptId);
+        if (!attempt?.resultCaptured) fail('verification has no captured result');
+        const verification = { attemptId: event.attemptId, verificationHash: payload.verificationHash, status: payload.status };
+        if (attempt.verification && canonical(attempt.verification) !== canonical(verification)) fail('verification identity changed');
+        attempt.verified = true;
+        attempt.verification = verification;
         item.verified = true;
+        item.verification = verification;
         item.status = 'VERIFIED';
         break;
       }
       case 'CORE_ADOPTED': {
         const item = execution(state, event.executionId);
         ensureTransition(item.status, ['VERIFIED', 'CORE_ADOPTED'], 'CORE_ADOPTED');
+        const attempt = item.attemptHistory.find(row => row.attemptId === event.attemptId);
+        if (!attempt?.verified) fail('Core adoption has no verified result');
+        const adoption = { attemptId: event.attemptId, sessionId: payload.sessionId, eventHash: payload.eventHash };
+        if (attempt.coreAdoption && canonical(attempt.coreAdoption) !== canonical(adoption)) fail('Core adoption identity changed');
+        attempt.coreAdopted = true;
+        attempt.coreAdoption = adoption;
         item.coreAdopted = true;
+        item.coreAdoption = adoption;
         item.status = 'CORE_ADOPTED';
         break;
       }
       case 'ATTEMPT_TERMINAL': {
         const item = execution(state, event.executionId);
         if (!['RESULT_CAPTURED', 'VERIFIED', 'CORE_ADOPTED', 'RUNNING', 'WAITING_PROVIDER'].includes(item.status)) fail('attempt terminal before result state');
-        item.status = payload.status === 'COMPLETED' ? 'COMPLETED' : payload.status === 'RETRYABLE' ? 'RETRYABLE' : 'TERMINAL';
-        item.terminalReason = payload.reason ?? payload.status ?? null;
+        const attempt = item.attemptHistory.find(row => row.attemptId === event.attemptId);
+        if (!attempt) fail('attempt terminal has no registered attempt');
+        const terminal = { status: payload.status === 'COMPLETED' ? 'COMPLETED' : payload.status === 'RETRYABLE' ? 'RETRYABLE' : 'TERMINAL',
+          reason: payload.reason ?? payload.status ?? null, terminalAt: payload.terminalAt ?? event.at,
+          activeMs: asNumber(payload.activeMs ?? 0, 'activeMs') };
+        if (attempt.terminalAt) {
+          if (attempt.status !== terminal.status || attempt.terminalReason !== terminal.reason || attempt.terminalAt !== terminal.terminalAt || attempt.activeMs !== terminal.activeMs)
+            fail('attempt terminal facts changed');
+          break;
+        }
+        if (!attempt.startedAt) fail('attempt terminal has no durable start event');
+        attempt.status = terminal.status;
+        attempt.terminalReason = terminal.reason;
+        attempt.terminalAt = terminal.terminalAt;
+        attempt.activeMs = terminal.activeMs;
+        item.activeMs += terminal.activeMs;
+        item.status = terminal.status;
+        item.terminalReason = terminal.reason;
         break;
       }
       case 'TERMINAL': {
@@ -378,7 +464,7 @@ export class ResourceState {
     this.journalPath = resolve(journalPath);
     this.experimentId = asText(experimentId, 'experimentId');
     this.identity = { profileHash, candidateSha, candidateTree, protocolHash };
-    this.limits = { maxConcurrentProviderRequests: 1, maxWireRequestsPerExecution: 24, maxTotalTokensPerExecution: 50000, maxApiUsdPerExecution: 5, maxAttemptsPerExecution: 2, maxExecutionActiveSeconds: 1200, maxProviderWaitSeconds: 86400, maxCohortWallSeconds: 259200, ...limits };
+    this.limits = { maxConcurrentProviderRequests: 1, minRequestIntervalSeconds: 10, maxWireRequestsPerExecution: 24, maxInputTokensPerCall: 16384, maxOutputTokensPerCall: 4096, maxTotalTokensPerExecution: 50000, maxApiUsdPerExecution: 5, maxCohortApiUsd: 60, maxAttemptsPerExecution: 2, maxExecutionActiveSeconds: 1200, maxProviderWaitSeconds: 86400, maxCohortWallSeconds: 259200, ...limits };
     this.now = now;
   }
 
@@ -408,35 +494,96 @@ export class ResourceState {
   }
   async registerExecution(input) {
     const existing = (await this.state()).executions[input.executionId];
-    if (existing) return clone(existing);
-    await this.append('REGISTER_EXECUTION', { executionId: input.executionId, payload: { pairId: input.pairId, taskId: input.taskId, arm: input.arm, repeat: input.repeat, deadline: input.deadline } });
+    if (existing) {
+      for (const field of ['pairId', 'taskId', 'arm', 'repeat', 'deadline', 'providerModelId'])
+        if (input[field] != null && existing[field] != null && input[field] !== existing[field]) fail(`execution registration identity changed: ${field}`);
+      return clone(existing);
+    }
+    await this.append('REGISTER_EXECUTION', { executionId: input.executionId, payload: { pairId: input.pairId, taskId: input.taskId, arm: input.arm, repeat: input.repeat, deadline: input.deadline, providerModelId: input.providerModelId } });
     return (await this.state()).executions[input.executionId];
   }
   async registerAttempt({ executionId, attemptId, attemptNumber }) {
     const current = await this.state();
     const item = execution(current, executionId);
-    if (item.attempts >= attemptNumber) return clone(item);
+    const prior = item.attemptHistory.find(row => row.attemptNumber === attemptNumber);
+    if (prior) {
+      if (prior.attemptId !== attemptId) fail('attempt number was registered with a different id');
+      return clone(item);
+    }
     assertWithin(attemptNumber, this.limits.maxAttemptsPerExecution, 'attempt count');
     await this.append('ATTEMPT_REGISTERED', { executionId, attemptId, payload: { attemptNumber } });
     return (await this.state()).executions[executionId];
   }
+  async startAttempt({ executionId, attemptId }) {
+    const item = execution((await this.state()), executionId);
+    const prior = item.attemptHistory.find(row => row.attemptId === attemptId);
+    if (!prior) fail('attempt must be registered before start');
+    if (prior.startedAt) return clone(item);
+    await this.append('ATTEMPT_STARTED', { executionId, attemptId });
+    return (await this.state()).executions[executionId];
+  }
   async reserve({ executionId, attemptId, requestId = randomUUID(), inputTokens, outputTokens, costUsd, retryIndex = 0 }) {
     const current = await this.state();
+    if (current.cohortTerminalReason) fail(`cohort is terminal: ${current.cohortTerminalReason}`, 'RESOURCE_LIMIT_EXCEEDED');
     const item = execution(current, executionId);
+    asInteger(inputTokens, 'inputTokens');
+    asInteger(outputTokens, 'outputTokens', { min: 1 });
+    asNumber(costUsd, 'costUsd');
+    assertWithin(inputTokens, this.limits.maxInputTokensPerCall, 'per-call input tokens');
+    assertWithin(outputTokens, this.limits.maxOutputTokensPerCall, 'per-call output tokens');
+    if (item.deadline && new Date(this.now()).getTime() >= Date.parse(item.deadline)) fail('execution deadline expired', 'RESOURCE_LIMIT_EXCEEDED');
+    const rows = Object.values(current.requests).filter(row => row.executionId === executionId);
+    const existing = current.requests[requestId];
+    if (existing) {
+      if (existing.executionId !== executionId || existing.attemptId !== attemptId ||
+          existing.inputTokensReserved !== inputTokens || existing.outputTokensReserved !== outputTokens || existing.costUsdReserved !== costUsd)
+        fail(`request identity reused with different reservation: ${requestId}`);
+      return clone(existing);
+    }
     if (item.nextEligibleAt && new Date(this.now()).getTime() < Date.parse(item.nextEligibleAt)) {
       const error = new Error(`provider wait has not elapsed: ${item.nextEligibleAt}`);
       error.code = 'RESOURCE_WAIT';
       error.nextEligibleAt = item.nextEligibleAt;
       throw error;
     }
-    if (item.outstandingRequestIds.length >= this.limits.maxConcurrentProviderRequests) fail('provider concurrency limit reached', 'RESOURCE_WAIT');
-    const rows = Object.values(current.requests).filter(row => row.executionId === executionId);
-    if (rows.some(row => row.requestId === requestId)) return clone(request(current, requestId));
+    if (current.routeNextEligibleAt && new Date(this.now()).getTime() < Date.parse(current.routeNextEligibleAt)) {
+      const error = new Error(`provider route wait has not elapsed: ${current.routeNextEligibleAt}`);
+      error.code = 'RESOURCE_WAIT';
+      error.nextEligibleAt = current.routeNextEligibleAt;
+      throw error;
+    }
+    const active = Object.values(current.requests).filter(row => ['INTENT', 'IN_FLIGHT', 'UNKNOWN'].includes(row.status));
+    if (active.some(row => row.status === 'UNKNOWN')) fail('unresolved provider request fences cohort dispatch', 'RESOURCE_UNRESOLVED');
+    if (active.length >= this.limits.maxConcurrentProviderRequests) fail('provider concurrency limit reached', 'RESOURCE_WAIT');
+    const lastSend = current.lastProviderDispatchAt ? Date.parse(current.lastProviderDispatchAt) : null;
+    const minIntervalMs = Number(this.limits.minRequestIntervalSeconds ?? 0) * 1000;
+    if (lastSend != null && this.limits.minRequestIntervalSeconds > 0 && new Date(this.now()).getTime() < lastSend + minIntervalMs) {
+      const nextAt = stamp(lastSend + minIntervalMs);
+      const error = new Error(`provider route pacing requires wait until ${nextAt}`);
+      error.code = 'RESOURCE_WAIT';
+      error.nextEligibleAt = nextAt;
+      throw error;
+    }
     assertWithin(rows.length + 1, this.limits.maxWireRequestsPerExecution, 'wire request count');
-    const reservedTokens = rows.reduce((sum, row) => sum + Number(row.inputTokensReserved ?? 0) + Number(row.outputTokensReserved ?? 0), 0);
-    const reservedCost = rows.reduce((sum, row) => sum + Number(row.costUsdReserved ?? 0), 0);
-    assertWithin(reservedTokens + inputTokens + outputTokens, this.limits.maxTotalTokensPerExecution, 'reserved token count');
-    assertWithin(reservedCost + costUsd, this.limits.maxApiUsdPerExecution, 'reserved API cost');
+    const committed = rows.reduce((sum, row) => {
+      if (row.status === 'SETTLED') return {
+        tokens: sum.tokens + Number(row.usage?.inputTokens ?? 0) + Number(row.usage?.outputTokens ?? 0),
+        cost: sum.cost + Number(row.usage?.costUsd ?? 0)
+      };
+      if (['INTENT', 'IN_FLIGHT', 'UNKNOWN'].includes(row.status)) return {
+        tokens: sum.tokens + Number(row.inputTokensReserved ?? 0) + Number(row.outputTokensReserved ?? 0),
+        cost: sum.cost + Number(row.costUsdReserved ?? 0)
+      };
+      return sum;
+    }, { tokens: 0, cost: 0 });
+    assertWithin(committed.tokens + inputTokens + outputTokens, this.limits.maxTotalTokensPerExecution, 'reserved token count');
+    assertWithin(committed.cost + costUsd, this.limits.maxApiUsdPerExecution, 'reserved API cost');
+    const cohortCost = Object.values(current.requests).reduce((sum, row) => {
+      if (row.status === 'SETTLED') return sum + Number(row.usage?.costUsd ?? 0);
+      if (['INTENT', 'IN_FLIGHT', 'UNKNOWN'].includes(row.status)) return sum + Number(row.costUsdReserved ?? 0);
+      return sum;
+    }, 0);
+    assertWithin(cohortCost + costUsd, this.limits.maxCohortApiUsd, 'cohort API cost');
     await this.append('REQUEST_INTENT', { executionId, attemptId, requestId, payload: { inputTokensReserved: inputTokens, outputTokensReserved: outputTokens, costUsdReserved: costUsd, retryIndex } });
     return clone((await this.state()).requests[requestId]);
   }
@@ -477,28 +624,71 @@ export class ResourceState {
     await this.append(kind, { executionId, attemptId, requestId, payload: { originalEventHash, providerRequestId, responseHash, proofHash, usage } });
     return clone((await this.state()).requests[requestId]);
   }
-  async wait({ executionId, nextAt, waitMs, reason = 'PROVIDER_BACKOFF' }) {
+  async wait({ executionId, nextAt, waitMs, reason = 'PROVIDER_BACKOFF', routeWide = false }) {
     const seconds = Number(waitMs) / 1000;
     assertWithin(seconds, this.limits.maxProviderWaitSeconds, 'provider wait');
-    await this.append('WAITING_PROVIDER', { executionId, payload: { nextEligibleAt: stamp(nextAt), waitMs, reason } });
+    const state = await this.state();
+    const prior = state.executions[executionId];
+    if (prior?.nextEligibleAt && Date.parse(prior.nextEligibleAt) >= Date.parse(stamp(nextAt)) &&
+        (!routeWide || state.routeNextEligibleAt && Date.parse(state.routeNextEligibleAt) >= Date.parse(stamp(nextAt))))
+      return clone(prior);
+    await this.append('WAITING_PROVIDER', { executionId, payload: { nextEligibleAt: stamp(nextAt), waitMs, reason, routeWide } });
     return (await this.state()).executions[executionId];
   }
   async captureResult({ executionId, attemptId, resultHash, candidateDigest, path }) {
+    const item = execution((await this.state()), executionId);
+    const prior = item.attemptHistory.find(row => row.attemptId === attemptId)?.capturedResult;
+    const value = { attemptId, resultHash, candidateDigest, path };
+    if (prior) {
+      if (canonical(prior) !== canonical(value)) fail('captured result identity changed');
+      return (await this.state()).executions[executionId];
+    }
     await this.append('RESULT_CAPTURED', { executionId, attemptId, payload: { resultHash, candidateDigest, path } });
     return (await this.state()).executions[executionId];
   }
   async verified({ executionId, attemptId, verificationHash, status }) {
+    const item = execution((await this.state()), executionId);
+    const prior = item.attemptHistory.find(row => row.attemptId === attemptId)?.verification;
+    const value = { attemptId, verificationHash, status };
+    if (prior) {
+      if (canonical(prior) !== canonical(value)) fail('verification identity changed');
+      return (await this.state()).executions[executionId];
+    }
     await this.append('VERIFIED', { executionId, attemptId, payload: { verificationHash, status } });
     return (await this.state()).executions[executionId];
   }
   async adopted({ executionId, attemptId, sessionId, eventHash }) {
+    const item = execution((await this.state()), executionId);
+    const prior = item.attemptHistory.find(row => row.attemptId === attemptId)?.coreAdoption;
+    const value = { attemptId, sessionId, eventHash };
+    if (prior) {
+      if (canonical(prior) !== canonical(value)) fail('Core adoption identity changed');
+      return (await this.state()).executions[executionId];
+    }
     await this.append('CORE_ADOPTED', { executionId, attemptId, payload: { sessionId, eventHash } });
     return (await this.state()).executions[executionId];
   }
-  async terminal({ executionId, attemptId = null, reason, status = null }) {
-    if (status) await this.append('ATTEMPT_TERMINAL', { executionId, attemptId, payload: { status, reason } });
+  async terminal({ executionId, attemptId = null, reason, status = null, activeMs = 0, terminalAt = null }) {
+    if (status) {
+      const item = execution((await this.state()), executionId);
+      const prior = item.attemptHistory.find(row => row.attemptId === attemptId);
+      if (!prior) fail('attempt terminal has no registered attempt');
+      if (prior.terminalAt) {
+        if (prior.status !== (status === 'COMPLETED' ? 'COMPLETED' : status === 'RETRYABLE' ? 'RETRYABLE' : 'TERMINAL') || prior.terminalReason !== reason || prior.activeMs !== activeMs || terminalAt && prior.terminalAt !== terminalAt)
+          fail('attempt terminal facts changed');
+        return clone(item);
+      }
+      await this.append('ATTEMPT_TERMINAL', { executionId, attemptId, payload: { status, reason, activeMs, terminalAt: terminalAt ?? stamp(this.now()) } });
+    }
     else await this.append('TERMINAL', { executionId, attemptId, payload: { reason } });
     return (await this.state()).executions[executionId];
+  }
+  async stopCohort(reason, detail = null) {
+    if (!['RESOURCE_EXHAUSTED', 'UNRESOLVED_PROVIDER'].includes(reason)) fail('invalid cohort terminal reason');
+    const current = await this.state();
+    if (current.cohortTerminalReason) return clone(current);
+    await this.append('COHORT_TERMINAL', { payload: { reason, detail } });
+    return this.state();
   }
 }
 
@@ -524,10 +714,53 @@ export async function writeResourceSnapshot({ path, state, journalPath, files = 
   for (const file of files) {
     const absolute = resolve(file);
     const body = await readFile(absolute);
-    rows.push({ ref: relative(snapshotRoot, absolute).replaceAll('\\', '/'), hash: `sha256:${createHash('sha256').update(body).digest('hex')}`, bytes: body.byteLength });
+    const ref = relative(snapshotRoot, absolute).replaceAll('\\', '/');
+    if (ref.startsWith('../') || ref === '..') fail('handoff file reference escapes the cohort output');
+    rows.push({ ref, hash: `sha256:${createHash('sha256').update(body).digest('hex')}`, bytes: body.byteLength });
+  }
+  const target = resolve(path);
+  const prior = await readFile(target, 'utf8').then(JSON.parse).catch(error => {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  });
+  if (prior) {
+    const nextByRef = new Map(rows.map(row => [row.ref, row]));
+    const mutableRoots = new Set(['metrics.json', 'report.json', 'observation.json', 'current.json']);
+    const appendOnly = ref => /(?:^|\/)(?:events|provider-ledger|attempts|usage)\.jsonl$/.test(ref);
+    const priorExecution = ref => {
+      const match = ref.match(/^executions\/([^/]+)\//);
+      return match ? prior.state?.executions?.[match[1].replaceAll('__', ':')] ?? null : null;
+    };
+    const mutableWhileUnfinished = (ref, oldExecution) => {
+      if (mutableRoots.has(ref)) return true;
+      if (!oldExecution) return false;
+      if (ref.endsWith('/metrics.json')) return oldExecution.status === 'RETRYABLE';
+      if (ref.includes('/candidate/')) {
+        const attemptMatch = ref.match(/\/attempt-(\d+)\/candidate\//);
+        const attempt = attemptMatch && oldExecution.attemptHistory?.find(row => row.attemptNumber === Number(attemptMatch[1]));
+        return Boolean(attempt && !['COMPLETED', 'RETRYABLE', 'TERMINAL'].includes(attempt.status));
+      }
+      if (ref.endsWith('/core-state.json') || ref.endsWith('/core-events.json'))
+        return !['COMPLETED', 'TERMINAL'].includes(oldExecution.status);
+      return false;
+    };
+    for (const old of prior.files ?? []) {
+      const next = nextByRef.get(old.ref);
+      if (!next) fail(`handoff dropped previously exported evidence: ${old.ref}`);
+      if (next.hash === old.hash && next.bytes === old.bytes) continue;
+      const currentBody = await readFile(resolve(snapshotRoot, old.ref));
+      if (appendOnly(old.ref)) {
+        const prefix = currentBody.subarray(0, old.bytes);
+        if (prefix.byteLength !== old.bytes || `sha256:${createHash('sha256').update(prefix).digest('hex')}` !== old.hash)
+          fail(`append-only handoff evidence rewrote prior bytes: ${old.ref}`);
+        continue;
+      }
+      if (mutableWhileUnfinished(old.ref, priorExecution(old.ref))) continue;
+      fail(`immutable handoff evidence changed: ${old.ref}`);
+    }
   }
   const snapshot = { schemaVersion: RESOURCE_SCHEMA_VERSION, state: portableResourceState(state), journal: journalPath ? { ref: relative(snapshotRoot, resolve(journalPath)).replaceAll('\\', '/'), hash: digest(await readFile(resolve(journalPath))) } : null, files: rows };
-  await writeAtomicJson(path, snapshot);
+  await writeAtomicJson(target, snapshot);
   return snapshot;
 }
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, copyFile, rm } from 'node:fs/promises';
+import { mkdtemp, copyFile, rm, appendFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { verifyCandidate } from '../../scripts/delivery/baseline/fixture/acceptance.mjs';
@@ -27,4 +27,14 @@ test('three independently seeded defects are rejected by the frozen verifier', a
     assert.equal(result.status, 'REJECTED', `${fault}: ${JSON.stringify(result)}`);
     assert.ok(result.checks.some(check => !check.pass));
   }
+});
+
+test('candidate JavaScript syntax failure is a measured rejection, not verifier infrastructure failure', async t => {
+  const directory = await candidate(t);
+  await appendFile(join(directory, 'server.mjs'), '\nconst broken = ;\n');
+  const result = await verifyCandidate({ candidateDir: directory, fault: 'NONE', browser: true });
+  assert.equal(result.status, 'REJECTED');
+  assert.equal(result.failureClass, 'CANDIDATE_SYNTAX');
+  assert.ok(result.checks.some(item => item.check === 'candidate JavaScript parses: server.mjs' && !item.pass));
+  assert.equal(result.checks.some(item => /server starts/.test(item.check)), false);
 });

@@ -18,10 +18,15 @@ import urllib.request
 from uuid import UUID
 from pathlib import Path
 
-from provider_budget import BudgetError, ProviderBudget, ProviderNotAdmittedError
+from provider_budget import BudgetError, ProviderBudget, ProviderHTTPError, ProviderNotAdmittedError, ResourceBridgeError
 
 
-def _read_url(request: urllib.request.Request, timeout_seconds: float, max_bytes: int) -> tuple[int, bytes]:
+def _safe_response_headers(headers) -> dict[str, str]:
+    allowed = {"retry-after", "request-id", "x-request-id", "content-type", "date"}
+    return {key.lower(): str(value)[:256] for key, value in headers.items() if key.lower() in allowed}
+
+
+def _read_url_response(request: urllib.request.Request, timeout_seconds: float, max_bytes: int) -> tuple[int, dict[str, str], bytes]:
     """Apply an absolute deadline even if a provider drips response bytes."""
     result: dict[str, object] = {}
 
@@ -29,7 +34,12 @@ def _read_url(request: urllib.request.Request, timeout_seconds: float, max_bytes
         try:
             with urllib.request.urlopen(request, timeout=timeout_seconds) as reply:
                 result["status"] = reply.status
+                result["headers"] = _safe_response_headers(reply.headers)
                 result["body"] = reply.read(max_bytes)
+        except urllib.error.HTTPError as error:
+            result["status"] = error.code
+            result["headers"] = _safe_response_headers(error.headers)
+            result["body"] = error.read(max_bytes)
         except BaseException as error:  # hand the exact transport error to the caller
             result["error"] = error
 
@@ -40,7 +50,12 @@ def _read_url(request: urllib.request.Request, timeout_seconds: float, max_bytes
         raise TimeoutError(f"NIM request exceeded absolute deadline of {timeout_seconds:g}s")
     if "error" in result:
         raise result["error"]
-    return int(result["status"]), bytes(result["body"])
+    return int(result["status"]), dict(result.get("headers", {})), bytes(result["body"])
+
+
+def _read_url(request: urllib.request.Request, timeout_seconds: float, max_bytes: int) -> tuple[int, bytes]:
+    status, _headers, body = _read_url_response(request, timeout_seconds, max_bytes)
+    return status, body
 
 
 def _completion_dict(response) -> dict:
@@ -92,22 +107,30 @@ def _nim_chat_completion(model_profile: dict, messages: list[dict], tools: list[
                                      headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json",
                                               "Accept": "application/json"})
     try:
-        status, encoded = _read_url(request, model_profile["requestTimeoutSeconds"], 2_000_001)
-    except urllib.error.HTTPError as error:
+        status, headers, encoded = _read_url_response(request, model_profile["requestTimeoutSeconds"], 2_000_001)
+    except urllib.error.HTTPError as error:  # kept for nonstandard urllib handlers
         body = error.read(2049).decode("utf-8", errors="replace")
+        safe_headers = _safe_response_headers(error.headers)
         if error.code in {429, 503, 529}:
-            raise ProviderNotAdmittedError(error.code, error.headers.get("Retry-After"), body) from error
-        raise BudgetError(f"NIM chat completion failed with HTTP {error.code}") from error
+            raise ProviderNotAdmittedError(error.code, safe_headers.get("retry-after"), body, safe_headers) from error
+        raise ProviderHTTPError(error.code, safe_headers, body) from error
+    if status in {429, 503, 529}:
+        body = encoded[:2048].decode("utf-8", errors="replace")
+        raise ProviderNotAdmittedError(status, headers.get("retry-after"), body, headers)
+    if status not in {200, 202}:
+        body = encoded[:2048].decode("utf-8", errors="replace")
+        raise ProviderHTTPError(status, headers, body)
     if len(encoded) > 2_000_000:
         raise BudgetError("NIM completion exceeds evidence size limit")
-    payload = json.loads(encoded)
+    try:
+        payload = json.loads(encoded)
+    except (json.JSONDecodeError, UnicodeDecodeError) as error:
+        raise ProviderHTTPError(status, headers, encoded[:2048].decode("utf-8", errors="replace")) from error
     if not isinstance(payload, dict):
-        raise BudgetError("NIM completion is not a JSON object")
+        raise ProviderHTTPError(status, headers, "NIM completion is not a JSON object")
     if status == 202:
         return _poll_nim_status(model_profile["apiBaseUrl"], payload.get("requestId"), api_key,
                                 initial_payload=payload)
-    if status != 200:
-        raise BudgetError(f"NIM completion failed with HTTP {status}")
     return payload, []
 
 
@@ -169,7 +192,9 @@ def run(config: dict) -> dict:
     if not candidate.is_dir() or any(path.is_symlink() for path in candidate.iterdir()):
         raise RuntimeError("candidate workspace is not a plain directory")
     attempt_id = config["attemptId"]
-    budget = ProviderBudget(config["ledgerPath"], profile, config["taskId"], attempt_id)
+    budget = ProviderBudget(config["ledgerPath"], profile, config["taskId"], attempt_id,
+                            config.get("evidenceRoot"), config.get("resourceContext"),
+                            config.get("resourceBridgePath"), config.get("nodeExecutable", "node"))
     model_kwargs = {"num_retries": 0, "max_tokens": profile["budgets"]["maxOutputTokensPerCall"],
                     "api_base": model_profile["apiBaseUrl"]}
     nim = model_profile.get("provider") == "nvidia_nim"
@@ -195,6 +220,7 @@ def run(config: dict) -> dict:
             raise BudgetError(f"pinned tokenizer could not count request: {error}") from error
         request_id = budget.reserve(input_tokens, profile["budgets"]["maxOutputTokensPerCall"])
         try:
+            budget.send_started(request_id)
             if nim:
                 raw, status_trace = _nim_chat_completion(model_profile, messages, [BASH_TOOL],
                                                           os.environ["NVIDIA_NIM_API_KEY"],
@@ -206,6 +232,14 @@ def run(config: dict) -> dict:
         except ProviderNotAdmittedError as error:
             proof = budget.record_non_admission(request_id, error.status, error.retry_after, error.body)
             budget.not_admitted(request_id, f"HTTP_{error.status}_NOT_ADMITTED", proof)
+            error.next_eligible_at = budget.wait_after_non_admission(request_id, error.retry_after)
+            error.resource_code = "RESOURCE_WAIT"
+            raise
+        except ProviderHTTPError as error:
+            evidence = budget.record_http_error(request_id, error.status, error.headers, error.body)
+            budget.unknown(request_id, f"provider HTTP {error.status} has unresolved usage", {
+                **evidence, "ref": evidence["ref"], "hash": evidence["hash"]
+            })
             raise
         except BaseException as error:
             budget.unknown(request_id, f"provider completion ambiguous: {type(error).__name__}")
@@ -239,7 +273,11 @@ def run(config: dict) -> dict:
         )
         result = agent.run(config["taskPrompt"])
         return {"schemaVersion": 1, "exitStatus": result.get("exit_status"), "submission": result.get("submission", ""),
-                "modelCalls": agent.n_calls, "reportedAgentCostUsd": agent.cost, "containerId": environment.container_id}
+                "modelCalls": agent.n_calls, "reportedAgentCostUsd": agent.cost, "providerWaitSeconds": budget.provider_wait_seconds,
+                "containerId": environment.container_id}
+    except Exception as error:
+        setattr(error, "provider_wait_seconds", budget.provider_wait_seconds)
+        raise
     finally:
         if environment.container_id:
             subprocess.run(["docker", "rm", "-f", environment.container_id], stdout=subprocess.DEVNULL,
@@ -260,7 +298,17 @@ def main() -> int:
                   "error": str(error), "traceback": traceback.format_exc(limit=4)}
         if isinstance(error, ProviderNotAdmittedError):
             result.update({"providerAdmission": "NOT_ADMITTED", "httpStatus": error.status,
-                           "retryAfter": error.retry_after, "retryAfterSeconds": error.retry_after})
+                           "retryAfter": error.retry_after, "retryAfterSeconds": error.retry_after,
+                           "resourceCode": getattr(error, "resource_code", "RESOURCE_WAIT"),
+                           "nextEligibleAt": getattr(error, "next_eligible_at", None)})
+        if isinstance(error, ProviderHTTPError):
+            result.update({"providerAdmission": "UNKNOWN", "httpStatus": error.status,
+                           "providerResponseBody": error.body[:2048], "providerResponseHeaders": error.headers})
+        if isinstance(error, ResourceBridgeError):
+            result.update({"resourceCode": error.code, "nextEligibleAt": error.next_eligible_at})
+        if isinstance(error, BudgetError) and "resourceCode" not in result:
+            result["resourceCode"] = getattr(error, "code", None)
+        result["providerWaitSeconds"] = getattr(error, "provider_wait_seconds", 0)
         _write(result_path, result)
         return 1
     _write(result_path, result)
