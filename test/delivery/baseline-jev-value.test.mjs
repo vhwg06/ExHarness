@@ -86,6 +86,47 @@ test('value evaluation is two-stage, signed, cacheable and only copies Jev choic
   assert.equal((await JSON.parse(await readFile(join(fixture.output, 'value.json'), 'utf8'))).judgmentUsage.inputTokens, 3000);
 });
 
+test('an incomplete live-bound cohort is sent to Jev for an INCONCLUSIVE choice', async t => {
+  const fixture = await fixtureFor(t);
+  await writeFile(join(fixture.output, 'report.json'), JSON.stringify({
+    ...fixture.report,
+    evidenceClass: 'UNMEASURED',
+    measuredExecutionCount: 0,
+    complete: false,
+    completenessReasons: ['MISSING_EXECUTIONS', 'UNSETTLED_OR_UNKNOWN_USAGE'],
+    executions: [],
+    pairs: fixture.report.pairs.map(pair => ({
+      ...pair,
+      directAccepted: null,
+      exharnessAccepted: null,
+      activeTimeRatio: null,
+      tokenRatio: null,
+      costRatio: null,
+      directActiveMs: null,
+      exharnessActiveMs: null
+    })),
+    medianActiveTimeRatio: null,
+    pairedBootstrap95: null
+  }));
+  await writeFile(join(fixture.output, 'metrics.json'), JSON.stringify({ schemaVersion: 1, studyId: fixture.manifest.studyId, executions: [] }));
+  const payloads = [];
+  const call = async payload => {
+    payloads.push(payload);
+    if (payload.questions.value) {
+      return { response: { model: payload.model, answers: { value: { type: 'choice', choice: 'INCONCLUSIVE', confidence: 0.95, probabilities: { VALUE_DEMONSTRATED: 0.01, NO_VALUE_DEMONSTRATED: 0.01, INCONCLUSIVE: 0.98 } } }, usage: { input_tokens: 1200, output_tokens: 1 } }, attempts: 1 };
+    }
+    const answers = {};
+    for (const id of Object.keys(payload.questions)) answers[id] = { type: 'choice', choice: 'INSUFFICIENT_EVIDENCE', confidence: 0.95, probabilities: { SATISFIED: 0.01, INSUFFICIENT_EVIDENCE: 0.98, CONTRADICTED: 0.01 } };
+    return { response: { model: payload.model, answers, usage: { input_tokens: 1800, output_tokens: 4 } }, attempts: 1 };
+  };
+  const result = await evaluateValue({ output: fixture.output, callJevImpl: call, allowDeterministic: true, privateKeyPath: fixture.privateKeyPath, publicKeyPath: fixture.publicKeyPath });
+  assert.equal(result.finalChoice, 'INCONCLUSIVE');
+  assert.equal(payloads.length, 2);
+  assert.equal(payloads[0].state.study.report.complete, false);
+  assert.equal(payloads[0].state.study.report.completenessReasons.includes('UNSETTLED_OR_UNKNOWN_USAGE'), true);
+  assert.equal((await auditValue({ output: fixture.output, publicKeyPath: fixture.publicKeyPath, allowDeterministic: true })).finalChoice, 'INCONCLUSIVE');
+});
+
 test('tampered study facts or an unavailable trusted key fail closed', async t => {
   const fixture = await fixtureFor(t);
   const fake = transport();

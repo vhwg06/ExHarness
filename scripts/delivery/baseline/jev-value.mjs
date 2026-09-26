@@ -226,6 +226,12 @@ function studyTotalApiUsd(report, setupProbes, judgmentApiUsd) {
 
 export const VALUE_DIMENSIONS = Object.freeze(['evidence', 'comparison', 'quality', 'efficiency']);
 export const VALUE_CHOICES = Object.freeze(['VALUE_DEMONSTRATED', 'NO_VALUE_DEMONSTRATED', 'INCONCLUSIVE']);
+// A LIVE_REGISTRATION may have a factually live but incomplete report.  The
+// report's UNMEASURED class means that the study cannot support a positive or
+// negative value finding yet; it must still be eligible for a real Jev call so
+// Jev can issue the registered INCONCLUSIVE choice.  Deterministic reports
+// remain excluded by the manifest gate below.
+const LIVE_REPORT_EVIDENCE_CLASSES = Object.freeze(new Set(['LIVE', 'UNMEASURED']));
 const VALUE_CHOICE_CRITERIA = Object.freeze({
   VALUE_DEMONSTRATED: 'Complete comparable live evidence establishes that ExHarness accepted count is not lower than DIRECT and no protected verifier boundary is violated, plus either at least 20% lower median paired active time with no more than 10% additional provider tokens or at least one more accepted execution than DIRECT with no more than 10% additional provider tokens. The registered cost constraint is met: known positive total cost increases by no more than 10%; a zero-priced route requires measured call/token totals and limits any finding to operational rather than financial value when infrastructure cost is unknown.',
   NO_VALUE_DEMONSTRATED: 'Complete comparable live evidence is adequate and establishes a quality regression, failure of both preregistered benefit paths, or failure of the applicable cost constraint. This is a valid negative finding, including when neither arm produces an accepted result.',
@@ -237,7 +243,8 @@ async function protocol() { return plainJson(protocolPath); }
 function ensureBoundStudy(manifest, report, value, { allowDeterministic = false, setupProbes = null } = {}) {
   if (manifest?.studyKind !== 'FIXTURE_VALUE_V1' || report?.studyId !== manifest.studyId) fail('study/report identity mismatch');
   if (manifest.valueProtocolHash !== hashBody(value) || report.protocolHash !== manifest.protocolHash) fail('study protocol hash mismatch');
-  if (!allowDeterministic && (manifest.evidenceClass !== 'LIVE_REGISTRATION' || report.evidenceClass !== 'LIVE')) fail('only LIVE study evidence can produce a production value receipt', 'JUDGMENT_UNAVAILABLE');
+  if (!allowDeterministic && (manifest.evidenceClass !== 'LIVE_REGISTRATION' || !LIVE_REPORT_EVIDENCE_CLASSES.has(report.evidenceClass)))
+    fail('only live-bound study evidence can produce a production value receipt', 'JUDGMENT_UNAVAILABLE');
   if (manifest.tasks?.length !== 12 || report.registeredExecutionCount !== 12) fail('complete twelve-execution registration is required');
   if (!allowDeterministic && report.complete && (setupProbes?.evidenceClass !== 'LIVE_PROVIDER_PROBES' ||
       setupProbes.probes?.length !== value.limits.maxProbeRequests || setupProbes.probes.some(row =>
@@ -399,7 +406,7 @@ function signReceipt({ stage, request, response, manifest, report, evidence, par
   const responseHash = hashBody(response);
   const body = {
     schemaVersion: 1,
-    evidenceClass: liveTransport && report.evidenceClass === 'LIVE' ? 'LIVE_JEV_RECEIPT' : 'DETERMINISTIC_JEV_RECEIPT',
+    evidenceClass: liveTransport ? 'LIVE_JEV_RECEIPT' : 'DETERMINISTIC_JEV_RECEIPT',
     stage,
     model: MODEL,
     endpoint: ENDPOINT,
@@ -545,7 +552,7 @@ export async function evaluateValue({ output, callJevImpl = callJev, privateKeyP
   const setupProbes = await plainJson(join(directory, 'setup', 'probes.json')).catch(() => null);
   const stageOnePayload = buildStageOnePayload({ manifest, report, metrics, protocol: value, setupProbes, allowDeterministic });
   const material = await signingMaterial({ privateKeyPath, publicKeyPath, output: directory, allowOutputKeys: allowDeterministic });
-  const liveTransport = callJevImpl === callJev && !allowDeterministic && report.evidenceClass === 'LIVE';
+  const liveTransport = callJevImpl === callJev && !allowDeterministic && manifest.evidenceClass === 'LIVE_REGISTRATION';
   const stageOne = await executeBudgetedStage({ output: directory, stage: 'STAGE_ONE', payload: stageOnePayload,
     callJevImpl, allowDeterministic, limits: value.limits });
   const stageOneRequest = stageOne.request;
@@ -624,7 +631,8 @@ export async function auditValue({ output, publicKeyPath = process.env.EXHARNESS
   const pointer = await plainJson(join(directory, 'value.json'));
   const final = consistencyCheck(stageOneResponse, stageTwoResponse);
   const budget = jevBudgetSummary(await readJevBudget(directory), value.limits);
-  const expectedLive = stageOneReceipt.evidenceClass === 'LIVE_JEV_RECEIPT' && stageTwoReceipt.evidenceClass === 'LIVE_JEV_RECEIPT' && report.evidenceClass === 'LIVE';
+  const expectedLive = stageOneReceipt.evidenceClass === 'LIVE_JEV_RECEIPT' && stageTwoReceipt.evidenceClass === 'LIVE_JEV_RECEIPT' &&
+    manifest.evidenceClass === 'LIVE_REGISTRATION' && LIVE_REPORT_EVIDENCE_CLASSES.has(report.evidenceClass);
   const evidenceClass = expectedLive ? 'LIVE_VALUE_EVALUATION' : 'DETERMINISTIC_VALUE_EVALUATION';
   const totalApiUsd = studyTotalApiUsd(report, setupProbes, budget.apiUsd);
   if (!allowDeterministic && !expectedLive) fail('deterministic Jev transport cannot pass production audit', 'JUDGMENT_UNAVAILABLE');
