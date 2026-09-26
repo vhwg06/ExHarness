@@ -27,10 +27,11 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "D0 — 2026-09-27 benchmark-program reset: BB-074 no longer treats a matched direct-agent pilot as the complete value benchmark. It must measure harness effects under controlled fixed-factor comparisons and separately exercise ExHarness delivery-lifecycle value.",
-    "Candidate direction, not selected architecture: Ratify the BB-065 predeclared pilot protocol without post-result threshold changes; recruit two representative repository/use-case contexts.",
-    "Candidate direction, not selected architecture: Control model/tool budget, task familiarity and selection effects; report uncertainty and all failed attempts.",
-    "Candidate direction, not selected architecture: Separate accepted task quality, human review/repair time, total cost and elapsed lead time; define go/no-go."
+    "D1 — BB-074 measures delivery-harness value using the unified benchmark contract; a direct-agent matched pilot is only one comparison, not the entire benchmark.",
+    "D2 — Use two workload classes: an external/public harness workload for external validity and ExHarness delivery-lifecycle scenarios for orchestration/recovery/currentness value.",
+    "D3 — Fixed-factor harness comparisons keep model snapshot, prompt/task input, starting workspace, resource ceilings, artifact extraction and evaluator constant.",
+    "D4 — Lifecycle scenarios include verifier repair, stale context, crash/resume, handoff, provider ambiguity, CI failure and authority/currentness fencing; do not invent fake symmetry where a direct harness lacks the capability.",
+    "D5 — Report accepted quality, economics, lead time, human active effort, consistency, robustness, recovery and failure fingerprints as a vector; no opaque ExHarness score."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -72,69 +73,47 @@
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S1 — Bind BB-065/077/081 benchmark contracts and select external plus lifecycle workloads.",
+    "S2 — Define auditable human-effort measurement, repeats/sample policy, reset/leakage and decision gates.",
+    "S3 — Implement external fixed-factor comparison and lifecycle fault/recovery scenarios with complete attempt accounting.",
+    "S4 — Produce multidimensional value evidence and explicit pass/no-go/inconclusive outcome for downstream BB-075/076."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "At least the predeclared pilot sample is executed with equivalent direct-agent comparison and a held-out set; all attempts are recorded.",
+      "id": "EXTERNAL",
+      "statement": "External harness comparison holds all non-harness factors fixed and reports complete attempts with independent quality.",
       "verificationIds": [
-        "live-probe"
+        "delivery-external"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "fixed-factor manifests",
+        "all-attempt records",
+        "independent verifier results"
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Quality and value gates fixed before the run are evaluated from raw evidence including failures/retries and human intervention.",
+      "id": "LIFECYCLE",
+      "statement": "Delivery-lifecycle scenarios exercise repair, stale-state rejection, recovery/handoff, provider/CI failure and authority fencing with exact evidence.",
       "verificationIds": [
-        "live-probe"
+        "delivery-lifecycle"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "scenario traces",
+        "recovery/currentness evidence",
+        "failure records"
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "A failed or inconclusive value gate yields an explicit no-go or follow-up scope; delivery cannot be claimed from selected successful demos.",
+      "id": "VALUE_PROFILE",
+      "statement": "Value is reported as a multidimensional quality/economics/time/human-effort/robustness profile with preregistered gates and uncertainty.",
       "verificationIds": [
-        "live-probe"
+        "delivery-value"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
-      ]
-    },
-    {
-      "id": "INV-1",
-      "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
-      "verificationIds": [
-        "boundary-probe"
-      ],
-      "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
-      ]
-    },
-    {
-      "id": "INV-2",
-      "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
-      "verificationIds": [
-        "boundary-probe"
-      ],
-      "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
-      ]
-    },
-    {
-      "id": "INV-3",
-      "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
-      "verificationIds": [
-        "boundary-probe"
-      ],
-      "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "metric profile",
+        "human-effort records",
+        "gate definition",
+        "uncertainty/all-attempt report"
       ]
     }
   ],
@@ -142,30 +121,40 @@
     {
       "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
       "criterionIds": [
-        "INV-1"
+        "EXTERNAL",
+        "LIFECYCLE",
+        "VALUE_PROFILE"
       ]
     },
     {
       "invariant": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
       "criterionIds": [
-        "INV-2"
+        "EXTERNAL",
+        "LIFECYCLE",
+        "VALUE_PROFILE"
       ]
     },
     {
       "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
       "criterionIds": [
-        "INV-3"
+        "EXTERNAL",
+        "LIFECYCLE",
+        "VALUE_PROFILE"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-074-probe.mjs"
+      "id": "delivery-external",
+      "command": "node --test test/delivery/harness-external-benchmark.test.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-074.test.mjs"
+      "id": "delivery-lifecycle",
+      "command": "node --test test/delivery/harness-lifecycle-benchmark.test.mjs"
+    },
+    {
+      "id": "delivery-value",
+      "command": "node --test test/delivery/harness-value-profile.test.mjs"
     }
   ],
   "researchGaps": [
