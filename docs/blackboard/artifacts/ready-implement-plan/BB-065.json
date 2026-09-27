@@ -772,9 +772,7 @@
         "package.json",
         "docs/blackboard/process/delivery-research/BB-065.md"
       ],
-      "supportingPlanFields": [
-        "benchmarkPackageContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "A Harbor adapter outside packages/benchmark owns process invocation, trial identity, fresh workspace/reset, artifact/verifier extraction, raw evidence references and normalized substrate failure mapping while packages/benchmark remains Harbor-independent.",
@@ -801,10 +799,7 @@
       "sourceRefs": [
         "docs/blackboard/process/delivery-research/BB-065.md"
       ],
-      "supportingPlanFields": [
-        "harborAdapterContract",
-        "calibrationContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Deterministic calibration proves producer SUCCESS plus verifier FAIL is REJECTED; budget exhaustion plus a valid verified artifact is ACCEPTED with BUDGET_EXHAUSTED; provider timeout without an artifact is NOT_EVALUATED; missing usage remains UNKNOWN/null; retries preserve failed attempts; and tampered evidence fails audit.",
@@ -834,11 +829,7 @@
       "sourceRefs": [
         "docs/blackboard/process/delivery-research/BB-065.md"
       ],
-      "supportingPlanFields": [
-        "calibrationContract",
-        "benchmarkPackageContract",
-        "harborAdapterContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "The implementation boundary is concrete at file/API/test level and architectural negatives fail when packages/benchmark imports product runtime, Harbor or provider SDKs, when downstream work bypasses AttemptLedger, or when the retired baseline remains executable.",
@@ -874,11 +865,7 @@
         "scripts/delivery/baseline/study.mjs",
         "scripts/delivery/baseline/core-arm.mjs"
       ],
-      "supportingPlanFields": [
-        "benchmarkPackageContract",
-        "downstreamContract",
-        "migrationContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Legacy scripts/delivery/baseline capabilities are inventoried and explicitly mapped to DROP, reimplementation under the new generic contract, or downstream ownership before current entrypoints are removed.",
@@ -903,9 +890,7 @@
         "scripts/delivery/baseline/provider_budget.py",
         "scripts/delivery/baseline/mini_driver.py"
       ],
-      "supportingPlanFields": [
-        "migrationContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "BB-065 emits one reusable benchmark/evidence/accounting backbone and substrate manifest that BB-077, BB-081, BB-074, BB-075 and BB-076 can consume without inventing parallel experimental infrastructure.",
@@ -930,10 +915,7 @@
       "sourceRefs": [
         "docs/blackboard/process/harness-benchmark-program-research.md"
       ],
-      "supportingPlanFields": [
-        "downstreamContract",
-        "benchmarkPackageContract"
-      ]
+      "supportingPlanFields": []
     }
   ]
 }
