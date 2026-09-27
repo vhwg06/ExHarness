@@ -44,7 +44,8 @@
     "D7 — Pin the first live model route to OpenRouter anthropic/claude-sonnet-4.6 with provider Anthropic and fallback disabled. Preserve provider-reported charged cost as primary billing evidence and independently normalize against the frozen 2026-09-27 table: USD 3/M fresh input, 15/M output, 0.30/M cache read and 3.75/M five-minute cache write.",
     "D8 — Normalize Harbor AgentContext/TrialResult plus ExHarness trace data into HARNESS_RUN_RECORD_V1. Token/cost/cache fields remain nullable; UNKNOWN or PARTIAL usage never becomes zero. Quality is the independent Harbor verifier result and remains orthogonal to termination, provider and infrastructure failure classes.",
     "D9 — Run three paired repeats per development task and arm. Pair by exact task digest + repeat index; alternate arm order DIRECT→CORE, CORE→DIRECT, DIRECT→CORE. Every attempt, retry, timeout and rejected result stays in the ledger. Report paired distributions and medians; uncertainty intervals are descriptive only and no significance claim is made from the small cohort.",
-    "D10 — Predeclare the BB-081 candidate gate now, before async results exist: accepted-task rate candidate >= CORE_SYNC; duplicate external effects = 0 and required recovery negatives pass; median normalized provider-cost ratio <= 0.85; median prompt-input-token ratio <= 0.90; median model-turn ratio <= 1.00; median elapsed-time ratio <= 1.10. Missing registered pairs, unknown primary cost/token accounting, task/verifier drift, safety failure or quality regression yields INCONCLUSIVE or KEEP_SYNC, never PROMOTE_ASYNC."
+    "D10 — Predeclare the BB-081 candidate gate now, before async results exist: accepted-task rate candidate >= CORE_SYNC; duplicate external effects = 0 and required recovery negatives pass; median normalized provider-cost ratio <= 0.85; median prompt-input-token ratio <= 0.90; median model-turn ratio <= 1.00; median elapsed-time ratio <= 1.10. Missing registered pairs, unknown primary cost/token accounting, task/verifier drift, safety failure or quality regression yields INCONCLUSIVE or KEEP_SYNC, never PROMOTE_ASYNC.",
+    "D11 — Measure model work, tool wait and residual harness time from monotonic event intervals instead of estimating token overhead. The benchmark model adapter records each MODEL interval and canonical stable-prefix/dynamic-suffix hashes/bytes; capability wrappers record CALL intervals. Cache reuse is CONFIRMED only from provider cached-token fields, ELIGIBLE when the stable-prefix hash repeats but provider cache data is absent/zero, and UNKNOWN when usage is unavailable. Residual elapsed time is reported as unattributedHarnessMs, not asserted to be polling overhead."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -72,7 +73,8 @@
       "benchmarks/harness_efficiency/report.mjs",
       "benchmarks/harness_efficiency/internal-tasks.json",
       "benchmarks/harness_efficiency/terminal-bench-2.1.json",
-      "benchmarks/harness_efficiency/profile.example.json"
+      "benchmarks/harness_efficiency/profile.example.json",
+      "benchmarks/harness_efficiency/measurement.mjs"
     ],
     "expectedTests": [
       "benchmarks/harness_efficiency/test/contract.test.mjs",
@@ -80,7 +82,8 @@
       "benchmarks/harness_efficiency/test/accounting.test.mjs",
       "benchmarks/harness_efficiency/test/dataset-boundary.test.mjs",
       "benchmarks/harness_efficiency/test/failure-taxonomy.test.mjs",
-      "benchmarks/harness_efficiency/test/test_harbor_adapter.py"
+      "benchmarks/harness_efficiency/test/test_harbor_adapter.py",
+      "benchmarks/harness_efficiency/test/measurement.test.mjs"
     ]
   },
   "sourceScope": {
@@ -110,7 +113,7 @@
     "S1 — Neutral substrate + adapter: add the pinned Harbor custom-agent adapter, upload/install only the declared ExHarness benchmark runtime into each task environment, forward the Harbor instruction verbatim and emit one normalized run record without making a quality judgment.",
     "S2 — Fixed arms: implement DIRECT_CODEACT minimal runtime shim and CORE_SYNC createAgentRuntime arm over the same JavaScript CodeAct strategy/executor/model/capability contracts; deterministic tests prove only the orchestration path differs.",
     "S3 — Dataset boundary: materialize the six internal calibration tasks, the six pinned Terminal-Bench 2.1 development task digests and four held-out digests; implement oracle/nop preflight, fresh reset, pair identity and hard held-out rejection.",
-    "S4 — Accounting + failure model: normalize Harbor trial/verifier/timing data and ExHarness model/turn/tool traces into HARNESS_RUN_RECORD_V1 with nullable usage/cost, explicit quality/termination/provider/infra dimensions and complete attempt ledger.",
+    "S4 — Accounting + measurement: normalize Harbor trial/verifier/timing data and ExHarness model/turn/tool traces into HARNESS_RUN_RECORD_V1; record monotonic MODEL/capability intervals, stable-prefix/dynamic-suffix hashes/bytes, provider-confirmed cache fields, nullable usage/cost and explicit quality/termination/provider/infra dimensions.",
     "S5 — Live baseline: run three alternating-order paired repeats for each registered development task under the frozen OpenRouter/Anthropic route and finite cohort budget; publish raw pair records plus a multidimensional report with no aggregate winner score.",
     "S6 — Gate handoff: publish the preregistered BB-081 non-inferiority/efficiency gate and held-out manifest without executing held-out tasks or modifying async product behavior."
   ],
@@ -187,6 +190,22 @@
       ]
     },
     {
+      "id": "MEASUREMENT",
+      "statement": "Per-request and per-capability monotonic intervals plus canonical stable-prefix/dynamic-suffix hashes and byte counts distinguish observed model time, capability wait, overlap, residual harness time and cache eligibility without inventing provider cache or token metrics.",
+      "verificationIds": [
+        "measurement",
+        "accounting"
+      ],
+      "evidenceRequired": [
+        "MODEL and capability interval records",
+        "stablePrefixSha256/stablePrefixBytes and dynamicSuffixSha256/dynamicSuffixBytes per model request",
+        "provider cached/cache-write fields or explicit UNKNOWN",
+        "cache status CONFIRMED|ELIGIBLE|MISS|UNKNOWN",
+        "unattributedHarnessMs labelled non-causal",
+        "negative case proving repeated prefix hash alone is not a cache hit"
+      ]
+    },
+    {
       "id": "PROTOCOL",
       "statement": "Three paired repeats per development task, alternating arm order, complete attempt accounting and the BB-081 non-inferiority/efficiency gates are frozen before async candidate results are observed.",
       "verificationIds": [
@@ -222,6 +241,7 @@
       "criterionIds": [
         "SUBSTRATE",
         "ISOLATION",
+        "MEASUREMENT",
         "PROTOCOL",
         "BOUNDARY"
       ]
@@ -230,6 +250,7 @@
       "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
       "criterionIds": [
         "QUALITY_SEPARATION",
+        "MEASUREMENT",
         "BOUNDARY"
       ]
     },
@@ -239,6 +260,7 @@
         "ISOLATION",
         "DATASET",
         "ACCOUNTING",
+        "MEASUREMENT",
         "PROTOCOL"
       ]
     }
@@ -259,6 +281,10 @@
     {
       "id": "dataset",
       "command": "node --test benchmarks/harness_efficiency/test/dataset-boundary.test.mjs"
+    },
+    {
+      "id": "measurement",
+      "command": "node --test benchmarks/harness_efficiency/test/measurement.test.mjs"
     },
     {
       "id": "accounting",
@@ -284,6 +310,8 @@
     "A selected Terminal-Bench task has one oracle failure in five or nop is accepted and the cohort silently drops it after model results exist.",
     "BB-077 attempts one of the four held-out Terminal-Bench tasks before BB-081 enables held-out execution.",
     "Provider usage/cost/cache data is missing and the report stores zero or computes a definitive efficiency ratio.",
+    "A repeated stable-prefix hash is reported as a confirmed provider cache hit even though cached_tokens/cache_write_tokens are missing or zero.",
+    "Elapsed minus model/tool time is labelled polling/heartbeat overhead without an explicit event proving that cause.",
     "A candidate artifact is independently accepted after budget exhaustion but the report changes quality to REJECTED because termination was non-success.",
     "A provider timeout/rate limit produces no candidate and is counted as verifier rejection instead of provider/termination failure with quality NOT_EVALUATED.",
     "Only successful attempts are used in paired medians or a retry replaces the original attempt.",
@@ -429,6 +457,7 @@
     {
       "objectiveCriterion": "The baseline distinguishes model work from harness wait/poll/heartbeat-like overhead and reports prompt-prefix/cache reuse observations without inventing provider metrics.",
       "criterionIds": [
+        "MEASUREMENT",
         "ACCOUNTING",
         "QUALITY_SEPARATION",
         "PROTOCOL"
@@ -438,6 +467,7 @@
         "S5"
       ],
       "verificationIds": [
+        "measurement",
         "accounting",
         "failure",
         "report"
@@ -445,30 +475,36 @@
       "decisionIndexes": [
         7,
         8,
-        9
+        9,
+        10
       ],
       "sourceRefs": [
         "packages/core-harness/src/agent-runtime.js",
-        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/model-routing.js",
         "packages/core-harness/src/javascript-codeact-strategy.js"
       ],
       "sourceAnchors": [
         {
-          "ref": "packages/core-harness/src/agent-runtime.js",
-          "match": "let capabilityCalls = 0;"
+          "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
+          "match": "TraceSpanKind.MODEL"
         },
         {
           "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
-          "match": "let hostCalls = 0;"
+          "match": "TraceSpanKind.EXECUTION"
+        },
+        {
+          "ref": "packages/core-harness/src/model-routing.js",
+          "match": "calls: generateCalls"
         },
         {
           "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
-          "match": "const observations = []"
+          "match": "observations: clone(observations)"
         }
       ],
       "supportingPlanFields": [
         "benchmarkContract",
         "providerContract",
+        "measurementContract",
         "comparisonContract",
         "failureTaxonomy"
       ]
@@ -711,7 +747,13 @@
       "useful operation overlap",
       "no-progress turns",
       "repeat consistency",
-      "failure fingerprint"
+      "failure fingerprint",
+      "model active ms",
+      "capability active/wait ms",
+      "unattributed harness ms",
+      "stable-prefix bytes/hash",
+      "dynamic-suffix bytes/hash",
+      "cache status CONFIRMED|ELIGIBLE|MISS|UNKNOWN"
     ],
     "reporting": "Per-run and paired values plus medians/distributions. No opaque aggregate score and no best-of-k filtering.",
     "futurePromotionGate": {
@@ -724,5 +766,57 @@
       "incomplete": "missing registered pair, unknown primary cost/token accounting, task/verifier drift, safety failure or quality regression => INCONCLUSIVE or KEEP_SYNC"
     },
     "uncertainty": "Three paired repeats are a bounded engineering experiment, not a significance claim. Bootstrap intervals may be reported descriptively only."
+  },
+  "measurementContract": {
+    "schemaVersion": 1,
+    "clock": "monotonic process clock for benchmark-owned intervals; wall timestamps are metadata only",
+    "modelRequest": {
+      "interval": [
+        "modelStart",
+        "modelEnd"
+      ],
+      "requestProjection": {
+        "stablePrefix": "canonical serialization of fixed system/protocol instructions, task instruction, capability schema and static context blocks",
+        "dynamicSuffix": "canonical serialization of turn number, observations, evolving history/prompt context and last validation error"
+      },
+      "fields": [
+        "stablePrefixSha256",
+        "stablePrefixBytes",
+        "dynamicSuffixSha256",
+        "dynamicSuffixBytes",
+        "providerPromptTokens",
+        "providerCompletionTokens",
+        "providerCachedTokens",
+        "providerCacheWriteTokens",
+        "providerRequestId",
+        "usageStatus"
+      ]
+    },
+    "capabilityCall": {
+      "interval": [
+        "capabilityStart",
+        "capabilityEnd"
+      ],
+      "fields": [
+        "callId",
+        "capabilityName",
+        "mutatesCandidate",
+        "status"
+      ]
+    },
+    "derived": {
+      "modelActiveMs": "sum of measured MODEL intervals",
+      "capabilityActiveMs": "union duration of capability intervals",
+      "modelCapabilityOverlapMs": "intersection duration of MODEL and capability intervals; expected zero for current synchronous arms unless an implementation explicitly overlaps",
+      "unattributedHarnessMs": "max(0, agentExecutionMs - union(MODEL and capability intervals)); descriptive residual only, never named polling overhead without an explicit event",
+      "explicitPollHeartbeatCalls": "count only events/capability calls explicitly tagged poll or heartbeat; zero is reportable only when trace completeness is true"
+    },
+    "cacheStatus": {
+      "CONFIRMED": "provider reports cached_tokens > 0 for the request",
+      "MISS": "provider reports cached_tokens = 0 with known usage",
+      "ELIGIBLE": "stablePrefixSha256 repeats within the attempt but provider cache usage is unavailable; not a claimed hit",
+      "UNKNOWN": "stable prefix or provider usage needed for classification is unavailable"
+    },
+    "rule": "Never infer provider token counts, cache hits or causal overhead from byte counts or elapsed subtraction. Byte/hash projections establish prompt stability only."
   }
 }
