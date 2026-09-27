@@ -3,34 +3,43 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-065",
-  "outcome": "A resource-bounded, reproducible fixture benchmark compares direct mini-SWE-agent with the current ExHarness Core and obtains an exclusively Jev-issued value judgment scoped to this benchmark.",
-  "currentProblem": "The baseline implementation is merged but provider resource limits reportedly block live calibration. Direct-only calibration cannot establish ExHarness value, and current retry/export behavior does not support a reliable cross-session handoff.",
+  "outcome": "A reusable, substrate-independent @exharness/benchmark package plus a pinned neutral Harbor calibration substrate can register benchmark experiments and units, preserve append-only attempts/evidence/accounting, independently evaluate artifacts, and deterministically audit normalized outcomes for downstream ExHarness benchmark studies without depending on product-runtime semantics.",
+  "currentProblem": "The current BB-065 objective and scripts/delivery/baseline implementation encode a retired Direct-vs-Core value-study premise. Downstream benchmark plans would otherwise duplicate runner, accounting, evidence and failure semantics, while the legacy baseline couples those concerns to mini-SWE/provider/Jev-value behavior. BB-065 needs a fresh neutral benchmark kernel and calibrated substrate before harness economics or delivery-value work can be trusted.",
   "scope": [
-    "delivery.baseline",
-    "delivery.baseline.provider-recovery",
-    "delivery.baseline.paired-core-benchmark",
-    "delivery.baseline.jev-value"
+    "benchmark.kernel",
+    "benchmark.experiment-registration",
+    "benchmark.attempt-ledger",
+    "benchmark.evidence-accounting-audit",
+    "benchmark.substrate.harbor",
+    "benchmark.calibration",
+    "benchmark.legacy-retirement",
+    "benchmark.downstream-contract"
   ],
   "constraints": [
-    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
-    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
-    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments.",
-    "Only Jev issues semantic value judgments. Operators supply authorized resources and measured facts; coding agents implement and collect evidence. Neither may author, override or replace a value verdict.",
-    "Completion may establish benefit or no benefit; a positive outcome is not required. Missing live evidence, exhausted capacity or unavailable Jev cannot be relabelled as a definitive value result."
+    "@exharness/benchmark is private workspace infrastructure with a public package contract; it must not import packages/core-harness, packages/agentic-system, Harbor implementation code, provider SDKs, Blackboard controller code, or retired scripts/delivery/baseline implementation.",
+    "Harbor is pinned and isolated behind a benchmark substrate adapter. Harbor process/trial/verifier details may be captured as evidence but may not become package-internal semantics.",
+    "BB-065 calibrates benchmark infrastructure only: it does not compare ExHarness against another harness, select an async profile, or make a product-value conclusion.",
+    "Every started attempt remains represented. Quality is independently evaluated and orthogonal to termination/provider/infrastructure state; retries append new attempts and never overwrite earlier attempts.",
+    "Unknown token, cache or cost fields remain null with explicit UNKNOWN/PARTIAL status; missing observations are never converted to zero or success.",
+    "Deterministic local calibration is credential-free and model-free. External sanity uses only a bounded pinned workload with oracle/nop controls selected before downstream live model results are observed.",
+    "Legacy current execution paths are retired only after replacement package/substrate calibration passes. Historical evidence stays recoverable through Git and is not rewritten into the new objective."
   ],
   "successCriteria": [
-    "A frozen request-tracker fixture and independent API/browser/persistence verifier preserve the existing three task families and bind every result to exact source, profile and candidate identities.",
-    "A finite provider resource and recovery protocol preserves all attempts, costs and unknown usage across quota waits, process restarts and incremental evidence exports without duplicate dispatch or budget resets.",
-    "A preregistered six-pair live study compares the current ExHarness Core against direct mini-SWE-agent using the same coding loop, model, tools, prompts, task budgets and independent checks; complete accounting exposes outcomes, time, tokens, calls and total cost.",
-    "Only a real, exactly bound Jev evaluation answers whether ExHarness adds value for this fixture/profile under the frozen rubric; missing evidence stays inconclusive, and worker delivery requires all acceptance claims independently SATISFIED."
+    "@exharness/benchmark exposes explicit Experiment, Unit, AttemptLedger, Outcome, Evidence, Accounting, Audit and Port contracts with immutable identity/fixed-factor rules, append-only retries, orthogonal outcomes, nullable accounting and deterministic reopening/audit.",
+    "A Harbor adapter outside packages/benchmark owns process invocation, trial identity, fresh workspace/reset, artifact/verifier extraction, raw evidence references and normalized substrate failure mapping while packages/benchmark remains Harbor-independent.",
+    "Deterministic calibration proves producer SUCCESS plus verifier FAIL is REJECTED; budget exhaustion plus a valid verified artifact is ACCEPTED with BUDGET_EXHAUSTED; provider timeout without an artifact is NOT_EVALUATED; missing usage remains UNKNOWN/null; retries preserve failed attempts; and tampered evidence fails audit.",
+    "The implementation boundary is concrete at file/API/test level and architectural negatives fail when packages/benchmark imports product runtime, Harbor or provider SDKs, when downstream work bypasses AttemptLedger, or when the retired baseline remains executable.",
+    "Legacy scripts/delivery/baseline capabilities are inventoried and explicitly mapped to DROP, reimplementation under the new generic contract, or downstream ownership before current entrypoints are removed.",
+    "BB-065 emits one reusable benchmark/evidence/accounting backbone and substrate manifest that BB-077, BB-081, BB-074, BB-075 and BB-076 can consume without inventing parallel experimental infrastructure."
   ],
   "currentSourceRefs": [
-    "scripts/delivery/baseline/run.mjs",
+    "docs/blackboard/process/delivery-research/BB-065.md",
+    "docs/blackboard/process/harness-benchmark-program-research.md",
+    "scripts/delivery/baseline/study.mjs",
+    "scripts/delivery/baseline/core-arm.mjs",
+    "scripts/delivery/baseline/jev-value.mjs",
     "scripts/delivery/baseline/provider_budget.py",
-    "scripts/delivery/baseline/provider-export.mjs",
-    "scripts/delivery/baseline/report.mjs",
-    "packages/core-harness/src/core-harness.js",
-    "scripts/blackboard-jev.mjs",
-    "docs/living/system/state.md"
+    "scripts/delivery/baseline/mini_driver.py",
+    "package.json"
   ]
 }
