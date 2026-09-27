@@ -105,6 +105,17 @@
         "docs/blackboard/process/harness-efficiency-phase.md",
         "docs/blackboard/process/harness-benchmark-program-research.md"
       ]
+    },
+    {
+      "id": "TOPIC-BLACKBOARD-CONTROL",
+      "title": "Outer Blackboard control-plane evolution",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-OBJECTIVE-SUPERSESSION"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/contracts.md"
+      ]
     }
   ],
   "features": [
@@ -499,6 +510,20 @@
         "docs/blackboard/process/harness-efficiency-research/BB-081.md"
       ],
       "acceptanceTaskId": "BB-081"
+    },
+    {
+      "id": "FEATURE-OBJECTIVE-SUPERSESSION",
+      "topicId": "TOPIC-BLACKBOARD-CONTROL",
+      "kind": "FEATURE",
+      "title": "Supersede stale research objectives without self-redefinition",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-082"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/contracts.md"
+      ],
+      "acceptanceTaskId": "BB-082"
     }
   ],
   "tasks": [
@@ -1233,12 +1258,19 @@
       "featureId": "FEATURE-DELIVERY-BASELINE",
       "title": "Calibrate neutral benchmark substrate and executable baseline",
       "kind": "IMPLEMENTATION",
-      "status": "ACTIVE",
+      "status": "BLOCKED",
       "complexity": "L",
       "components": [
         "agentic/domain-execution-control"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "taskId": "BB-082",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
       "artifacts": {
         "inputRefs": [
           "docs/blackboard/artifacts/objective/BB-065.json",
@@ -1257,10 +1289,8 @@
         "Every calibration emits candidate artifacts, execution trace, validator result, token/tool/cost/time accounting and an explicit failure class; provider or termination failure is never silently converted into quality failure.",
         "BB-065 establishes benchmark trustworthiness only. Direct-versus-ExHarness or product-value conclusions are deferred to the controlled harness and delivery benchmark tasks."
       ],
-      "currentContextRef": "docs/blackboard/context/BB-065/current.json",
-      "claim": {
-        "workerId": "codex-bb065-research"
-      },
+      "currentContextRef": null,
+      "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-065.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
@@ -2158,10 +2188,47 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-082",
+      "featureId": "FEATURE-OBJECTIVE-SUPERSESSION",
+      "title": "Define trusted objective supersession and research reset control",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-082.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-082.json",
+          "docs/blackboard/contracts.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": []
+      },
+      "expectedOutputs": [
+        "A typed objective-supersession contract binds exact old/new objective identities, rationale/evidence, target plan and downstream impact.",
+        "Trusted CI provides a dedicated supersession publication path while ordinary RESEARCH_SA candidates remain unable to redefine their own objective.",
+        "Supersession resets an unfinished target to DRAFT research with stale readiness/worker authority, claim and context removed while retaining historical provenance.",
+        "A separate BB-065 migration can use the delivered control to replace the obsolete value-study objective with neutral substrate calibration."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-082.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-082.json",
+        "researchBaselineSha": "7b5d570782a57553f2e16ec20b3ede7a3a476173",
+        "baselineSha": "7b5d570782a57553f2e16ec20b3ede7a3a476173"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-082",
+    "nextWorkId": "BB-083",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
