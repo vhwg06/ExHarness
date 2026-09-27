@@ -20,14 +20,14 @@
     "Publishing B/C diagnostic arms as supported profiles or running downstream BB-074 value acceptance here."
   ],
   "constraints": [
-    "A/B/C/D keep BB-077 Harbor/model/task/environment/capability names+inputs/budgets/measurement/verifier fixed; only declared execution composition differs.",
-    "Use only the four BB-077-reserved held-out digests; exactly two repeats per task/arm (32 units), all attempts retained, no replacement.",
-    "Reuse BB-077 limits: USD 0.60/attempt and USD 25 live cohort; budget stop is INCONCLUSIVE.",
-    "One identical effect-aware benchmark binder activates the same held-out-relevant capability in every arm; zero treatment cannot support promotion.",
-    "Fault robustness uses deterministic fixtures separate from paid external economics.",
-    "D vs A uses BB-077 quality/safety/cost/token/turn/elapsed gates unchanged; B/C are attribution only.",
-    "Unknown/missing primary accounting, pair, verifier/profile/dependency mismatch or incomplete required faults => INCONCLUSIVE.",
-    "Worker requires BB-077/078/079/080 DONE; incompatible/non-composable delivered seams => PLAN_INPUT_CONTRADICTION. CORE_SYNC stays supported and rollback is quiescent-only."
+    "A/B/C/D keep BB-077's Harbor adapter, model/provider, task input, environment, tool surface, budgets, measurement, artifact extraction and verifier fixed; only delivered Core capability composition varies.",
+    "Held-out work is exactly the four BB-077-reserved Terminal-Bench digests; no development/replacement task or post-result mutation is permitted.",
+    "Run two independent repeats per task/arm (32 registered arm units); all attempts/retries/failures remain visible and the live cohort stays within BB-077's $25 cohort and $0.60/attempt ceilings.",
+    "Fault robustness uses deterministic fixtures, separate from paid held-out economics.",
+    "D is the only promotion candidate; B/C are attribution-only. BB-077's D/A quality/safety/efficiency gates are reused unchanged.",
+    "Missing pair, budget stop, unknown primary cost/token accounting, verifier/task/profile/dependency drift or incomplete required fault evidence yields INCONCLUSIVE, never inferred zero/success.",
+    "Worker execution requires BB-077/078/079/080 DONE with exact delivered bindings; incompatible or non-composable dependencies yield PLAN_INPUT_CONTRADICTION.",
+    "CORE_SYNC remains supported; rollback is only at a new/quiescent session boundary after in-flight async operations/effects are terminal or reconciled. BB-074 is downstream and cannot tune BB-081."
   ],
   "invariants": [
     "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
@@ -35,18 +35,20 @@
     "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
   ],
   "architectureDecisions": [
-    "D1 — BB-081 is acceptance/attribution/publication only; it cannot mutate delivered dependencies or benchmark/effect/product authority.",
-    "D2 — Profiles: A=CORE_SYNC; B=A+BB-078; C=B+BB-079; D=C+BB-080. B/C are diagnostic; D is the sole promotion candidate. Exact DONE exports must compose independently or fail PLAN_INPUT_CONTRADICTION.",
-    "D3 — Real treatment activation: all arms expose the same BB-077 capability name/input contract through one identical deterministic effect binder and terminal-or-operation response union; A invokes synchronously, B/C/D wrap the same capability through BB-078. All-eight-D zero detachable calls => INCONCLUSIVE.",
-    "D4 — Held-out cohort is the four BB-077 Terminal-Bench digests, two repeats each, 32 arm units. Use the frozen balanced order schedule and fresh Harbor/runtime/provider-session state per unit; all retries stay append-only.",
-    "D5 — Reuse HARNESS_RUN_RECORD_V1 and BB-077 measurement/failure semantics. Primary comparison is D/A; report A→B, B→C, C→D marginal vectors separately with no aggregate winner score.",
-    "D6 — Deterministic fault fixtures cover provider timeout/429/ambiguous completion/tool failure (A-D), kill/cancel/non-reconcilable ambiguity (B-D), duplicate transition (C-D), duplicate wake and stale-model-after-steer (D). N/A is not pass.",
-    "D7 — D safety is absolute: duplicate external effects=0; no lost terminal result; unsafe cancellation, stale-model dispatch, turn storm or unresolved NON_RECONCILABLE ambiguity blocks promotion.",
-    "D8 — Primary gate over eight matched D/A task-repeat units: accepted-task rate D>=A; median normalized cost<=0.85; prompt-input tokens<=0.90; model turns<=1.00; elapsed<=1.10; plus D safety gate.",
-    "D9 — Reducer outcomes are PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE. Complete known evidence + any primary failure => KEEP; missing/unknown/budget/binding/fault evidence => INCONCLUSIVE.",
-    "D10 — Publish CORE_ASYNC_FIRST_V1 only after PROMOTE_ASYNC. CORE_SYNC remains supported; createAgentRuntime defaults stay unchanged; evidence binds protocol/dependency/provider/source/decision hashes and rollback is new/quiescent-session only.",
-    "D11 — BB-074 is downstream and cannot tune this gate. Repeated rollout evidence is reported as variance/consistency, never best-of-k or a significance claim.",
-    "D12 — Jev validates exact evidence claims but cannot override the deterministic reducer or become profile-selection authority."
+    "D1 — BB-081 is acceptance/attribution/publication only; it cannot modify BB-077/078/079/080 semantics or product/effect authority to make a candidate pass.",
+    "D2 — Freeze compositional arms A=CORE_SYNC, B=A+BB-078, C=B+BB-079, D=C+BB-080. B/C are diagnostic; D is the sole promotion candidate.",
+    "D3 — Build arms from exact DONE exports. If B/C/D cannot be independently composed, stop with PLAN_INPUT_CONTRADICTION rather than approximate the ablation.",
+    "D4 — Use exactly BB-077's four reserved Terminal-Bench 2.1 held-out digests, two repeats per arm/task, fresh trial/runtime/provider session per unit, and the balanced order schedule in ablationContract.",
+    "D5 — Reuse HARNESS_RUN_RECORD_V1 and BB-077 measurement/failure semantics. Extend records only with arm, dependencyManifestHash, repeatIndex and faultScenarioRef.",
+    "D6 — Primary decision is D vs A. Report A→B, B→C and C→D marginal vectors only for attribution; no B/C result can publish a supported profile.",
+    "D7 — Reuse BB-077's conjunctive gate unchanged: D quality >= A; safety negatives pass with zero duplicate effects; median D/A cost<=0.85, prompt input<=0.90, turns<=1.00, elapsed<=1.10.",
+    "D8 — Keep every registered task-repeat unit and retry in accounting. Report per-task 0/2|1/2|2/2 consistency; no best-of-k or significance claim from the bounded cohort.",
+    "D9 — Run safety/recovery faults as deterministic provider/tool/process fixtures with explicit arm applicability and N/A cells; do not mix fault fixtures into live-provider economics.",
+    "D10 — Any conclusive D safety violation (duplicate effect, lost terminal result, unsafe cancellation, stale-model dispatch, duplicate-wake storm or unresolved NON_RECONCILABLE ambiguity) forces KEEP_SYNC_BASELINE.",
+    "D11 — A deterministic reducer returns PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE from frozen evidence; Jev validates evidence claims but cannot rewrite the reducer outcome.",
+    "D12 — Publish CORE_ASYNC_FIRST_V1 only after PROMOTE_ASYNC; CORE_SYNC always remains supported, B/C remain diagnostic, and createAgentRuntime defaults are not silently changed.",
+    "D13 — Profile evidence binds protocol, dependency delivery hashes, provider/model profile, evaluated source and decision artifact; later mutation invalidates the evidence-backed claim. Rollback is quiescent-session only.",
+    "D14 — BB-074 remains downstream: it measures end-to-end delivery value after BB-081 profile support and cannot feed results backward into this frozen gate."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -128,60 +130,45 @@
     ]
   },
   "implementationSlices": [
-    "S1 — `dependency-binding.mjs` resolves exact DONE BB-077/078/079/080 implementation-result/judgment/Living refs and exports one immutable dependency-manifest hash; `profile-capabilities.mjs` binds the exact BB-077 held-out capability once, constructs the shared effect identity/response union and fails on missing/incompatible/non-composable/zero-treatment seams. Verify with dependency-binding + profile-capabilities tests.",
-    "S2 — `ablation-contract.mjs` exports the canonical A/B/C/D composition, four held-out digests, two-repeat 32-unit balanced order, fixed BB-077 profile/budget hashes and protocol hash; `heldout-profile.json` contains only runtime values/credential env names. Contract tests reject any task/order/fixed-factor drift.",
-    "S3 — `run.mjs` imports the delivered BB-077 Harbor runner/accounting seams plus S1/S2 manifests, creates fresh trial/runtime/provider-session state for every registered unit, executes exactly 32 live arm units, retains retries/failures, records detachable-call counts and writes append-only HARNESS_RUN_RECORD_V1 evidence. Live mode rejects non-held-out tasks and stops INCONCLUSIVE at cohort budget.",
-    "S4 — `report.mjs` deterministically validates the complete ledger and emits the reportContract only: per-unit metrics, token/cost sums, useful-operations/turn, measured detached/model overlap, D/A pairs, A→B/B→C/C→D marginals, repeat consistency and failure fingerprints. It emits no promotion decision. Verify with `report.test.mjs` including token-double-count, useful-operation and overlap negatives.",
-    "S5 — `fault-matrix.mjs` executes only deterministic provider/tool/process/effect fixtures, enforces the declared arm applicability/N/A map and emits exact recovery/safety records keyed by scenario+arm+operation/effect/generation identities. Verify all required D safety outcomes and N/A-not-pass behavior.",
-    "S6 — `accept.mjs` consumes only hashes of S1/S2, complete S4 report and S5 fault evidence plus frozen thresholds; it returns PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE and rejects missing units, unknown primary accounting, budget stop, protocol mutation or stale dependency/source bindings. Verify all outcomes and mutation cases.",
-    "S7 — `execution-profile.js` + `index.js` publish CORE_SYNC always and CORE_ASYNC_FIRST_V1 only from a PROMOTE_ASYNC decision/evidence binding; B/C remain benchmark-only. `execution-profile.test.js` covers KEEP/INCONCLUSIVE, stale evidence and mid-flight rollback rejection; then update Core Living Docs with the verified decision/limits and run full Core regression."
+    "S1 — Bind exact DONE BB-077/078/079/080 outputs, compute the dependency manifest, and fail PLAN_INPUT_CONTRADICTION on missing/incompatible/non-composable seams.",
+    "S2 — Materialize A/B/C/D plus the four held-out digests, two-repeat balanced schedule, fixed BB-077 profile/budgets and protocol hashes.",
+    "S3 — Execute all 32 registered held-out arm units through the shared BB-077 Harbor adapter with fresh state/session identity and append-only HARNESS_RUN_RECORD_V1 accounting.",
+    "S4 — Emit D/A primary and A→B/B→C/C→D attribution vectors for quality, economics, context/cache observations, turns, timing/overlap, consistency and failure fingerprints.",
+    "S5 — Run the deterministic fault matrix and capture exact recovery/effect/fencing evidence without paid-provider dependence.",
+    "S6 — Run the frozen reducer for PROMOTE_ASYNC|KEEP_SYNC_BASELINE|INCONCLUSIVE; mutation tests cover missing/unknown/drift and every primary gate.",
+    "S7 — Publish the evidence-bound supported profile only after PROMOTE_ASYNC and update Core Living Docs with the actual decision, limitations and rollback boundary."
   ],
   "acceptanceCriteria": [
     {
       "id": "DEPENDENCY",
-      "statement": "Exact DONE BB-077/078/079/080 artifacts compose A/B/C/D without dependency-source mutation; incompatibility/non-composability fails PLAN_INPUT_CONTRADICTION.",
+      "statement": "Exact DONE BB-077/078/079/080 outputs construct independent A/B/C/D profiles without dependency-source mutation; missing, incompatible or non-composable seams fail PLAN_INPUT_CONTRADICTION.",
       "verificationIds": [
         "dependency-contract",
         "ablation-contract"
       ],
       "evidenceRequired": [
-        "dependency hash",
-        "profile manifest",
-        "contradiction negatives"
-      ]
-    },
-    {
-      "id": "TOOL_SURFACE",
-      "statement": "All arms use the same held-out-relevant capability name/input protocol and identical effect binder; A is synchronous while B/C/D exercise BB-078 detachment, and all-zero D treatment cannot promote.",
-      "verificationIds": [
-        "dependency-contract",
-        "profile-capabilities",
-        "ablation-contract"
-      ],
-      "evidenceRequired": [
-        "surface hash",
-        "activation timeline",
-        "same effect identity",
-        "detachable-call counts"
+        "dependency manifest",
+        "A/B/C/D construction",
+        "negative mismatches"
       ]
     },
     {
       "id": "COHORT",
-      "statement": "Live mode admits only the four BB-077 held-out digests, two repeats and frozen 32-unit order under unchanged BB-077 fixed factors and limits.",
+      "statement": "Live held-out mode runs exactly the four reserved digests, two repeats and frozen four-arm order under unchanged BB-077 fixed factors and budgets.",
       "verificationIds": [
         "ablation-contract",
         "live-heldout"
       ],
       "evidenceRequired": [
-        "32-unit manifest",
-        "digests/order",
-        "fresh reset",
-        "leakage rejection"
+        "32 registered units",
+        "digest/order/profile manifest",
+        "fresh reset/session identities",
+        "DEV/replacement rejection"
       ]
     },
     {
       "id": "ACCOUNTING",
-      "statement": "All units, attempts, retries, provider failures and unknown usage remain append-only HARNESS_RUN_RECORD_V1 evidence; missing values stay unknown and no run is replaced.",
+      "statement": "Every registered unit, retry, failure and unknown usage remains append-only HARNESS_RUN_RECORD_V1 evidence; missing values stay unknown and no unit is replaced.",
       "verificationIds": [
         "ablation-contract",
         "decision-contract",
@@ -189,150 +176,137 @@
       ],
       "evidenceRequired": [
         "complete ledger",
-        "retry/unknown fixtures",
-        "denominator reconciliation"
-      ]
-    },
-    {
-      "id": "METRICS",
-      "statement": "Every registered unit/report exposes independent quality, provider input/output/cached accounting, non-double-counted total tokens, cost, model turns, tool calls, useful operations per turn, detached-operation/model overlap, elapsed time and failure identity; deterministic fault records add explicit recovery outcome.",
-      "verificationIds": [
-        "ablation-contract",
-        "fault-matrix",
-        "live-heldout",
-        "report-contract"
-      ],
-      "evidenceRequired": [
-        "run/report schema fixture with every metric",
-        "token double-count negative",
-        "useful-operation classification fixture",
-        "async-overlap timeline",
-        "recovery outcome matrix"
+        "denominator reconciliation",
+        "unknown/retry negatives",
+        "cohort budget"
       ]
     },
     {
       "id": "ATTRIBUTION",
-      "statement": "Report matched D/A primary metrics and A→B/B→C/C→D marginal vectors for quality/economics/turns/timing/cache/failures without an aggregate winner score.",
+      "statement": "Reports provide D/A primary plus A→B, B→C and C→D marginal vectors without an opaque aggregate or B/C promotion.",
       "verificationIds": [
         "ablation-contract",
-        "decision-contract",
-        "report-contract"
+        "decision-contract"
       ],
       "evidenceRequired": [
-        "pair-complete primary+marginal report",
-        "B/C diagnostic-only proof"
+        "pair-complete primary/marginal report",
+        "B/C diagnostic marker"
       ]
     },
     {
       "id": "ROBUSTNESS",
-      "statement": "Deterministic fault fixtures cover every declared applicable arm/boundary with explicit N/A and preserve independent quality/failure taxonomy.",
+      "statement": "The deterministic fault matrix runs only declared arm/scenario cells and preserves provider/termination/quality separation; N/A is never counted as pass.",
       "verificationIds": [
         "fault-matrix"
       ],
       "evidenceRequired": [
-        "fault applicability matrix",
-        "fixture results",
-        "N/A-not-pass test"
+        "scenario/applicability manifest",
+        "deterministic traces",
+        "N/A negative"
       ]
     },
     {
       "id": "SAFETY",
-      "statement": "D cannot promote with duplicate effects, lost terminal result, unsafe cancellation, stale-model dispatch, turn storm or unresolved NON_RECONCILABLE ambiguity.",
+      "statement": "D cannot promote with duplicate effects, lost terminal result, unsafe cancellation, stale-model dispatch, duplicate-wake storm or unresolved NON_RECONCILABLE ambiguity.",
       "verificationIds": [
         "fault-matrix",
         "decision-contract",
         "core-regression"
       ],
       "evidenceRequired": [
-        "required D fault evidence",
+        "required D negatives",
         "zero duplicate effects",
-        "KEEP cases"
+        "KEEP_SYNC safety mutations"
       ]
     },
     {
       "id": "QUALITY",
-      "statement": "Across all eight registered D/A units, D accepted rate is not below A under the unchanged independent verifier; repeats are not best-of-k.",
+      "statement": "Across all eight registered D/A units, D accepted-task rate is at least A under the same Harbor verifier; both repeats remain independent denominator units.",
       "verificationIds": [
         "decision-contract",
         "live-heldout"
       ],
       "evidenceRequired": [
-        "8-unit verifier records",
-        "repeat consistency",
-        "best-of-k rejection"
+        "8 D/A verifier pairs",
+        "per-task 0/2|1/2|2/2 consistency",
+        "no best-of-k"
       ]
     },
     {
       "id": "EFFICIENCY",
-      "statement": "PROMOTE_ASYNC requires all BB-077 D/A median gates: cost<=0.85, prompt-input<=0.90, turns<=1.00, elapsed<=1.10 with known complete accounting.",
+      "statement": "PROMOTE_ASYNC requires every frozen D/A cost/token/turn/elapsed threshold with complete known primary accounting.",
       "verificationIds": [
         "decision-contract",
         "live-heldout"
       ],
       "evidenceRequired": [
-        "8 paired ratios+medians",
-        "profile/price binding",
-        "all-gates proof"
+        "8 paired ratios",
+        "medians",
+        "all-gates reducer",
+        "profile/pricing binding"
       ]
     },
     {
       "id": "DECISION",
-      "statement": "Reducer emits only PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE; missing/unknown/budget/binding evidence is INCONCLUSIVE and no external prose overrides it.",
+      "statement": "Only the frozen reducer selects PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE; incomplete/unknown/drift evidence yields INCONCLUSIVE and cannot be overridden by prose.",
       "verificationIds": [
         "decision-contract"
       ],
       "evidenceRequired": [
-        "three-outcome fixtures",
-        "mutation/missing/unknown cases"
+        "fixtures for all outcomes",
+        "missing/unknown/drift mutations"
       ]
     },
     {
       "id": "PROFILE",
-      "statement": "CORE_SYNC remains supported; CORE_ASYNC_FIRST_V1 is published only after PROMOTE_ASYNC with exact evidence binding, unchanged runtime defaults and quiescent rollback.",
+      "statement": "CORE_SYNC stays supported; CORE_ASYNC_FIRST_V1 is published only after PROMOTE_ASYNC with exact evidence binding and quiescent rollback, while B/C remain diagnostic and runtime defaults stay unchanged.",
       "verificationIds": [
         "profile-contract",
         "core-regression"
       ],
       "evidenceRequired": [
-        "profile/export outcomes",
+        "profile/export tests",
+        "B/C non-publication",
         "freshness binding",
-        "rollback tests"
+        "mid-flight rollback rejection"
       ]
     },
     {
       "id": "INV-1",
-      "statement": "Benchmark/profile/cache state cannot become correctness, product-acceptance or external-effect authority.",
+      "statement": "Benchmark, profile, context or cache state never becomes correctness, product-acceptance or external-effect authority.",
       "verificationIds": [
         "decision-contract",
         "fault-matrix",
         "core-regression"
       ],
       "evidenceRequired": [
-        "authority negative"
+        "authority-negative cases"
       ]
     },
     {
       "id": "INV-2",
-      "statement": "Detached operations remain bound to exact call/turn/action/effect/generation identity and unresolved effect ambiguity fails closed.",
+      "statement": "Detached operations retain exact call/turn/action/effect/generation identity and unresolved effect ambiguity fails closed.",
       "verificationIds": [
         "fault-matrix",
         "core-regression"
       ],
       "evidenceRequired": [
-        "binding/restart/ambiguity negatives"
+        "binding/restart negatives",
+        "NON_RECONCILABLE escalation",
+        "zero duplicate semantic dispatch"
       ]
     },
     {
       "id": "INV-3",
-      "statement": "Efficiency claims require the exact frozen matched protocol; model/provider/task/budget/profile/dependency mutation invalidates comparison.",
+      "statement": "Efficiency claims apply only to the exact frozen matched protocol; model/provider/task/budget/profile/dependency drift invalidates the cohort.",
       "verificationIds": [
         "ablation-contract",
         "dependency-contract",
         "decision-contract"
       ],
       "evidenceRequired": [
-        "binding mutation negatives",
-        "protocol hash change"
+        "binding-drift negatives",
+        "protocol hash checks"
       ]
     }
   ],
@@ -340,7 +314,6 @@
     {
       "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
       "criterionIds": [
-        "TOOL_SURFACE",
         "SAFETY",
         "DECISION",
         "PROFILE",
@@ -350,7 +323,6 @@
     {
       "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
       "criterionIds": [
-        "TOOL_SURFACE",
         "ROBUSTNESS",
         "SAFETY",
         "PROFILE",
@@ -360,10 +332,8 @@
     {
       "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
       "criterionIds": [
-        "DEPENDENCY",
         "COHORT",
         "ACCOUNTING",
-        "METRICS",
         "ATTRIBUTION",
         "QUALITY",
         "EFFICIENCY",
@@ -411,19 +381,16 @@
   ],
   "researchGaps": [],
   "negativeVerificationCases": [
-    "Task/model/provider/environment/tool-input/verifier differs by arm beyond declared composition.",
-    "B/C/D cannot compose or treatment is all-zero but benchmark still promotes.",
-    "Workspace/session/model output leaks across units or failed/retried attempts are hidden/replaced.",
-    "Repeated runs become best-of-k or missing usage becomes zero/inferred cache usage.",
-    "Cached input tokens are added on top of provider prompt tokens when computing totalProviderTokens, double-counting the cached subset.",
-    "Every successful tool call is labelled useful even when it is poll/heartbeat/no-progress or never consumed/mutates candidate.",
-    "Async overlap is inferred from elapsed subtraction instead of measured BB-078 operation intervals intersected with BB-077 MODEL intervals.",
-    "Live cohort exceeds frozen units/budget or deterministic fault calls are mixed into economics.",
-    "N/A fault cell counts as pass.",
-    "PROMOTE_ASYNC occurs with failed/unknown primary gate or missing required D fault evidence.",
-    "B/C or INCONCLUSIVE publishes async support/default changes.",
-    "Reducer is overridden by Jev/worker/vendor/BB-074 prose.",
-    "Rollback mutates active unresolved async/effect state or stale evidence survives source/profile/dependency change."
+    "DEV/replacement/mutated task enters held-out cohort.",
+    "An arm changes any BB-077 fixed factor beyond capability composition.",
+    "Non-composable B/C/D is approximated instead of PLAN_INPUT_CONTRADICTION.",
+    "Workspace/provider-session/runtime state leaks between units.",
+    "Failed/retried attempt is dropped, overwritten or best-of-k selected.",
+    "Missing token/cost/cache data becomes zero or inferred from prompt bytes.",
+    "Live paid units exceed the frozen 32 without a new protocol.",
+    "Fault fixture is mixed into live-provider economics or N/A counted as pass.",
+    "PROMOTE_ASYNC occurs with any quality/safety/efficiency/incomplete-evidence failure.",
+    "B/C or INCONCLUSIVE changes supported profile; rollback mutates a non-quiescent session; stale evidence survives source/dependency drift."
   ],
   "laneContracts": [
     {
@@ -488,7 +455,6 @@
       "criterionIds": [
         "COHORT",
         "ACCOUNTING",
-        "METRICS",
         "ATTRIBUTION",
         "ROBUSTNESS",
         "QUALITY",
@@ -505,12 +471,10 @@
       ],
       "verificationIds": [
         "dependency-contract",
-        "profile-capabilities",
         "ablation-contract",
         "fault-matrix",
         "live-heldout",
-        "core-regression",
-        "report-contract"
+        "core-regression"
       ],
       "decisionIndexes": [
         1,
@@ -518,8 +482,9 @@
         3,
         4,
         5,
-        6,
-        10
+        7,
+        8,
+        9
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
@@ -536,24 +501,18 @@
           "match": "\"runRecord\": \"HARNESS_RUN_RECORD_V1\""
         },
         {
-          "ref": "docs/blackboard/process/harness-efficiency-phase.md",
-          "match": "Record every attempt, including failures/retries:"
-        },
-        {
           "ref": "packages/core-harness/src/effect-reconciliation.js",
           "match": "case EffectReplayPolicy.NON_RECONCILABLE:"
         }
       ],
       "supportingPlanFields": [
         "ablationContract",
-        "faultMatrix",
-        "reportContract"
+        "faultMatrix"
       ]
     },
     {
       "objectiveCriterion": "The candidate passes a predeclared quality non-regression bound and cost/token improvement gate or the decision is KEEP_SYNC_BASELINE.",
       "criterionIds": [
-        "TOOL_SURFACE",
         "QUALITY",
         "EFFICIENCY",
         "DECISION",
@@ -571,7 +530,6 @@
       ],
       "verificationIds": [
         "dependency-contract",
-        "profile-capabilities",
         "ablation-contract",
         "decision-contract",
         "profile-contract",
@@ -580,11 +538,12 @@
       "decisionIndexes": [
         1,
         2,
-        3,
-        4,
+        5,
+        6,
         7,
-        8,
-        9
+        10,
+        11,
+        12
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
@@ -606,17 +565,17 @@
         }
       ],
       "supportingPlanFields": [
-        "toolActivationContract",
-        "decisionContract"
+        "decisionContract",
+        "profilePublicationContract"
       ]
     },
     {
       "objectiveCriterion": "No duplicate external effects, lost terminal results, unsafe cancellation or recovery regressions occur in negative probes.",
       "criterionIds": [
-        "TOOL_SURFACE",
         "ROBUSTNESS",
         "SAFETY",
         "PROFILE",
+        "DEPENDENCY",
         "INV-1",
         "INV-2"
       ],
@@ -627,19 +586,20 @@
         "S7"
       ],
       "verificationIds": [
-        "profile-capabilities",
+        "dependency-contract",
         "fault-matrix",
         "decision-contract",
         "profile-contract",
         "core-regression"
       ],
       "decisionIndexes": [
-        1,
+        0,
         2,
-        5,
-        6,
         8,
-        9
+        9,
+        10,
+        11,
+        12
       ],
       "sourceRefs": [
         "packages/core-harness/src/effect-reconciliation.js",
@@ -667,110 +627,142 @@
     }
   ],
   "ablationContract": {
+    "version": 1,
     "arms": {
-      "A": "CORE_SYNC",
-      "B": "A+BB-078",
-      "C": "B+BB-079",
-      "D": "C+BB-080"
+      "A": "CORE_SYNC control",
+      "B": "A + BB-078 detached operations (diagnostic)",
+      "C": "B + BB-079 async-result context (diagnostic)",
+      "D": "C + BB-080 steering/wakeup/recovery (promotion candidate)"
     },
-    "roles": {
-      "A": "control",
-      "B": "diagnostic",
-      "C": "diagnostic",
-      "D": "promotion candidate"
-    },
-    "unit": "task digest + repeat index + frozen profile hash",
-    "repeatsPerTaskArm": 2,
+    "heldout": [
+      [
+        "terminal-bench/git-leak-recovery",
+        "sha256:22a9ec10dbd4cd8b99477b70e1944103775ca41de9b9e0025ec4898cd17bd334"
+      ],
+      [
+        "terminal-bench/pypi-server",
+        "sha256:1a1e0542f58e2d3362fec17a9bbb98667717d9a4a3e9a4c8413d3150a4fa0ff1"
+      ],
+      [
+        "terminal-bench/kv-store-grpc",
+        "sha256:973c5d4c111fb61a344457936f1c36400acd2d9e44389e7b319586fe23a7a307"
+      ],
+      [
+        "terminal-bench/sanitize-git-repo",
+        "sha256:73c94a21ebe370bae843adbeeaaa9e991374867b18483aaf56c7cd470dcddea7"
+      ]
+    ],
+    "unit": "task digest + repeatIndex + frozen profile hash",
+    "repeats": 2,
     "registeredArmUnits": 32,
-    "order": [
+    "schedule": [
       "git-leak r1 A-B-D-C; r2 C-D-B-A",
       "pypi r1 B-C-A-D; r2 D-A-C-B",
       "kv-store r1 C-D-B-A; r2 A-B-D-C",
       "sanitize r1 D-A-C-B; r2 B-C-A-D"
     ],
-    "primary": "D/A",
-    "attribution": [
-      "A->B",
-      "B->C",
-      "C->D"
-    ],
-    "accounting": "all units/attempts retained; per-task repeat consistency 0/2|1/2|2/2"
-  },
-  "heldoutContract": {
-    "dataset": "terminal-bench/terminal-bench-2-1@7131e4375048a0e408a8fb404b5f499d726b695b",
-    "tasks": [
-      "git-leak-recovery sha256:22a9ec10dbd4cd8b99477b70e1944103775ca41de9b9e0025ec4898cd17bd334",
-      "pypi-server sha256:1a1e0542f58e2d3362fec17a9bbb98667717d9a4a3e9a4c8413d3150a4fa0ff1",
-      "kv-store-grpc sha256:973c5d4c111fb61a344457936f1c36400acd2d9e44389e7b319586fe23a7a307",
-      "sanitize-git-repo sha256:73c94a21ebe370bae843adbeeaaa9e991374867b18483aaf56c7cd470dcddea7"
-    ],
-    "preflight": "reuse fresh BB-077 oracle 5/5 + nop negative + digest/environment proof; rerun if stale",
-    "reset": "fresh Harbor env/runtime/coordinator/provider session per unit",
-    "budget": "BB-077 external per-attempt limits + USD25 live cohort",
-    "leakage": "reject development/replacement tasks"
+    "fixed": "All BB-077 fixed factors, preflight/reset/leakage semantics and HARNESS_RUN_RECORD_V1",
+    "budget": "BB-077 external limits: <=$0.60/unit, <=$25 live cohort, 16 turns, 64 host calls, 900s, 180k input, 12k output",
+    "comparison": "D/A primary; A->B, B->C, C->D diagnostic; all units/attempts retained"
   },
   "faultMatrix": {
-    "mode": "deterministic fixtures; no paid provider calls",
-    "applicability": {
-      "PROVIDER_TIMEOUT|PROVIDER_429|AMBIGUOUS_COMPLETION|TOOL_FAILURE": "A-D",
-      "KILL_AFTER_DURABLE_OPERATION|CANCEL_AFTER_DISPATCH|NON_RECONCILABLE_AMBIGUITY": "B-D",
-      "DUPLICATE_TRANSITION": "C-D",
-      "DUPLICATE_WAKE|STALE_MODEL_AFTER_STEER": "D"
-    },
-    "requiredD": [
-      "duplicate external effects=0",
-      "no lost terminal result",
-      "cancel never claims unresolved effect cancelled",
-      "stale model dispatches zero actions/tools",
-      "duplicate wake creates at most one active wake",
-      "NON_RECONCILABLE fails closed",
-      "restart preserves operation/effect/generation identity"
+    "version": 1,
+    "mode": "deterministic fixtures; no paid-provider calls",
+    "scenarios": [
+      [
+        "PROVIDER_TIMEOUT",
+        "ABCD",
+        "provider/termination separate from quality; no hidden usage/retry"
+      ],
+      [
+        "PROVIDER_429",
+        "ABCD",
+        "rate-limit retained; retry append-only"
+      ],
+      [
+        "AMBIGUOUS_COMPLETION",
+        "ABCD",
+        "unverified result never authoritative"
+      ],
+      [
+        "TOOL_FAILURE",
+        "ABCD",
+        "failure fingerprint retained; verifier owns quality"
+      ],
+      [
+        "KILL_AFTER_DURABLE_OPERATION",
+        "BCD",
+        "exact operation/effect/generation on restart; zero duplicate effects"
+      ],
+      [
+        "CANCEL_AFTER_DISPATCH",
+        "BCD",
+        "replay-policy truth; unresolved effect not relabelled cancelled"
+      ],
+      [
+        "DUPLICATE_TRANSITION",
+        "CD",
+        "idempotent duplicate; binding conflict fails closed"
+      ],
+      [
+        "DUPLICATE_WAKE",
+        "D",
+        "at most one active wake; no turn storm"
+      ],
+      [
+        "STALE_MODEL_AFTER_STEER",
+        "D",
+        "zero stale action/tool dispatch; one current successor"
+      ],
+      [
+        "NON_RECONCILABLE_AMBIGUITY",
+        "BCD",
+        "escalate/fail closed; no second semantic dispatch"
+      ]
     ],
-    "na": "outside applicability is N/A, never pass"
+    "rule": "Undeclared arm/scenario cells are N/A, never passes. Every D-applicable assertion must pass and D duplicate external effects must be zero."
   },
   "decisionContract": {
+    "version": 1,
     "outcomes": [
       "PROMOTE_ASYNC",
       "KEEP_SYNC_BASELINE",
       "INCONCLUSIVE"
     ],
-    "denominator": "8 registered D/A task-repeat units per arm",
-    "gates": {
-      "quality": "accepted rate D>=A",
-      "safety": "all required D faults pass; duplicate effects=0",
-      "cost": "median D/A normalized provider cost <=0.85",
-      "input": "median D/A prompt-input tokens <=0.90",
-      "turns": "median D/A model turns <=1.00",
-      "elapsed": "median D/A elapsed <=1.10"
-    },
-    "promote": "complete known live+fault evidence and every gate passes",
-    "keep": "complete known evidence and any primary gate fails",
-    "inconclusive": "missing unit/fault, budget stop, unknown primary accounting or binding/profile/verifier drift",
-    "authority": "deterministic reducer; B/C attribution and Jev prose cannot override"
+    "primary": "8 matched D/A task-repeat units",
+    "gates": [
+      "accepted-task rate D >= A",
+      "D duplicate external effects=0 and all required D safety/recovery assertions pass",
+      "median normalized provider cost D/A <=0.85",
+      "median prompt-input tokens D/A <=0.90",
+      "median model turns D/A <=1.00",
+      "median elapsed D/A <=1.10"
+    ],
+    "promote": "complete 32-unit live cohort + complete required D fault evidence + all gates pass",
+    "keepSync": "complete/known evidence and any primary gate conclusively fails",
+    "inconclusive": "missing unit, budget stop, unknown primary accounting, verifier/task/profile/dependency drift, incomplete required fault evidence or invalid binding",
+    "authority": "frozen deterministic reducer; Jev cannot override"
   },
   "profilePublicationContract": {
-    "supported": {
-      "CORE_SYNC": "always",
-      "CORE_ASYNC_FIRST_V1": "only PROMOTE_ASYNC"
-    },
+    "version": 1,
+    "supported": [
+      "CORE_SYNC",
+      "CORE_ASYNC_FIRST_V1 only after PROMOTE_ASYNC"
+    ],
     "diagnostic": [
       "B",
       "C"
     ],
     "noImplicitDefault": true,
-    "evidenceBinding": [
+    "binding": [
       "decision",
-      "heldout",
-      "ablation",
-      "fault",
-      "source",
-      "BB-077",
-      "BB-078",
-      "BB-079",
-      "BB-080",
-      "provider/model"
+      "ablation/fault protocol",
+      "evaluated source",
+      "BB-077/078/079/080 deliveries",
+      "provider/model profile"
     ],
-    "rollback": "CORE_SYNC at new/quiescent session after in-flight async effects are terminal/reconciled"
+    "rollback": "CORE_SYNC at new/quiescent session after async operations/effects are terminal or reconciled",
+    "inconclusive": "no profile change"
   },
   "toolActivationContract": {
     "source": "exact delivered BB-077 held-out-relevant shell/fixture capability",
