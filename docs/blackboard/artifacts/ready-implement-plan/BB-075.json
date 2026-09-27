@@ -9,17 +9,23 @@
     "hash": "3190a4156ef0cb13a90dc669672e98a8972aa6feea2d0f7b5cadc6f239139ced"
   },
   "scope": [
-    "delivery.evolution"
+    "delivery.evolution",
+    "delivery.evidence-selected-how",
+    "delivery.heldout-regression"
   ],
   "outOfScope": [
-    "Unbounded autonomous product decisions and expansion beyond the supported delivery profile.",
-    "Replacing delivered Integration or Oracle authority contracts.",
+    "Choosing an optimization before consuming exact DONE BB-074 evidence.",
+    "Adding new product/runtime architecture, schedulers, context planes or evaluators to make a candidate possible.",
+    "Changing WHAT, acceptance semantics, benchmark task content, model/provider route, resource ceilings or product authority.",
+    "Executing any RELEASE_RESERVE model arm; BB-076 owns first use.",
     "Treating this research allocation as implementation readiness or product delivery."
   ],
   "constraints": [
-    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
-    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
-    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments."
+    "Worker execution requires exact DONE BB-074 and BB-059 bindings; incompatible delivered semantics yield PLAN_INPUT_CONTRADICTION.",
+    "Candidate selection is deterministic from immutable BB-074 evidence and may choose at most one bounded HOW/configuration axis.",
+    "If no observed bottleneck maps to an already delivered safe HOW seam, the valid outcome is KEEP_BASELINE rather than source-scope expansion.",
+    "Improvement and release-reserve cohorts are disjoint from every task used/reserved by BB-065/077/081/074 and are sealed before candidate execution.",
+    "Quality remains independently evaluated; missing/unknown primary accounting remains unknown and cannot be zero-filled."
   ],
   "invariants": [
     "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
@@ -27,112 +33,151 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Select one observed pilot failure and identify whether strategy, context or tool configuration owns it.",
-    "Candidate direction, not selected architecture: Apply BB-059 promotion/currentness semantics using training and held-out tasks with fixed acceptance.",
-    "Candidate direction, not selected architecture: Measure improvement and regression, preserve independent evaluation and define rollback on degradation."
+    "D1 — Consume exact DONE BB-074 evidence plus exact DONE BB-059 HOW-evolution authority; do not preselect an optimization during research.",
+    "D2 — Run a deterministic HOW_IMPROVEMENT_SELECTION_V1 reducer. Eligible axes are STRATEGY_POLICY, CONTEXT_POLICY, TOOL_POLICY or NONE; only observed fingerprints addressable through delivered bounded HOW/config seams are eligible.",
+    "D3 — Selection precedence is: eligible critical lifecycle/recovery failure, repeated accepted-quality/failure fingerprint, repeated known-cost inefficiency, repeated prompt-input/model-turn inefficiency, then NONE. Within a class use affected registered-unit count then lexicographic fingerprint id.",
+    "D4 — Before candidate construction, exclude every task digest used/reserved by BB-065/077/081/074 from the pinned Terminal-Bench 2.1 pool, oracle-preflight 5/5 plus nop-fail 1/1, sort by immutable bundle digest, seal first six as IMPROVEMENT_HOLDOUT and next four as RELEASE_RESERVE.",
+    "D5 — BB-075 may execute only IMPROVEMENT_HOLDOUT. Any model execution over RELEASE_RESERVE before BB-076 invalidates the partition.",
+    "D6 — BASELINE is the exact supported BB-074/BB-081 profile with current HOW policy; CANDIDATE differs only by one immutable HOW_PROFILE_V1. Same task/prompt/environment/tools/model/provider/budgets/evaluator apply to both.",
+    "D7 — Run six tasks x two repeats x two arms = 24 registered arm units with counterbalanced order, fresh task/runtime/provider state and append-only attempt accounting.",
+    "D8 — Fingerprints map to one frozen primary metric family: FAILURE_RATE, PROVIDER_COST, PROMPT_INPUT or MODEL_TURNS. A fingerprint with no safe mapping is ineligible.",
+    "D9 — Promotion requires complete known primary evidence, no quality/safety/currentness regression and the metric-specific minimum effect; otherwise complete evidence yields KEEP_BASELINE and missing/drifted evidence yields INCONCLUSIVE.",
+    "D10 — Promotion uses BB-059 proposal/promoter/currentness semantics only. Existing attempts keep old bindings; rollback is a successor generation selecting an exact prior accepted profile.",
+    "D11 — BB-075 product/runtime source writes are forbidden. If a measured bottleneck needs a new implementation seam, record a follow-up research requirement and KEEP_BASELINE."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "packages/agentic-system/src/domain-execution-control.js",
-      "docs/living/system/state.md"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-074.json",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
+      "packages/agentic-system/src/how-evolution.js"
     ],
     "expectedNew": [
-      "scripts/delivery/bb-075-probe.mjs"
+      "benchmarks/delivery_evolution/selection.mjs",
+      "benchmarks/delivery_evolution/cohort.mjs",
+      "benchmarks/delivery_evolution/run.mjs",
+      "benchmarks/delivery_evolution/decision.mjs"
     ],
     "expectedTests": [
-      "test/delivery/bb-075.test.mjs"
+      "benchmarks/delivery_evolution/test/selection.test.mjs",
+      "benchmarks/delivery_evolution/test/cohort-partition.test.mjs",
+      "benchmarks/delivery_evolution/test/candidate-boundary.test.mjs",
+      "benchmarks/delivery_evolution/test/decision.test.mjs",
+      "benchmarks/delivery_evolution/test/currentness.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
+      "benchmarks/**",
       "packages/agentic-system/**",
       "packages/core-harness/**",
       "packages/oracle/**",
       "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-059*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-074*",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
       "docs/blackboard/process/delivery-research/BB-075.md",
-      "scripts/**",
-      "test/**",
       "package.json"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "benchmarks/delivery_evolution/**",
+      "docs/living/system/**"
     ],
     "forbiddenWrite": [
+      "packages/**",
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "package.json"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S1 — Resolve exact DONE BB-074/059, recompute evidence identities and run deterministic HOW_IMPROVEMENT_SELECTION_V1. NONE immediately yields an evidence-backed KEEP_BASELINE path.",
+    "S2 — Build the prior-task exclusion set, run oracle/nop preflight on the remaining pinned Terminal-Bench 2.1 pool and seal six IMPROVEMENT_HOLDOUT plus four RELEASE_RESERVE tasks by digest order before candidate construction.",
+    "S3 — Materialize exactly one immutable HOW_PROFILE_V1 through an already delivered HOW/configuration seam and bind it to the selected fingerprint plus metric family. No package source implementation is allowed.",
+    "S4 — Execute all 24 registered BASELINE/CANDIDATE held-out arm units with fixed factors, fresh state and complete append-only attempt/provider accounting.",
+    "S5 — Run the frozen reducer for PROMOTE_CANDIDATE|KEEP_BASELINE|INCONCLUSIVE. PROMOTE uses BB-059 proposal/promoter/currentness; KEEP leaves current policy unchanged.",
+    "S6 — Publish selection/cohort/attempt/report/decision evidence, update Living truth and hand the unopened RELEASE_RESERVE manifest to BB-076."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
-      "statement": "One candidate is linked to a real pilot failure and evaluated with fixed product semantics and resource limits.",
+      "statement": "Selection is derived deterministically from exact DONE BB-074 evidence and either identifies one eligible observed HOW bottleneck or yields NONE/KEEP_BASELINE.",
       "verificationIds": [
-        "live-probe"
+        "selection"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "HOW_IMPROVEMENT_SELECTION_V1 plus exact BB-074 evidence bindings and reducer output."
       ]
     },
     {
       "id": "AC-2",
-      "statement": "Held-out evaluation supports PROMOTE or KEEP_BASELINE; acceptance changes and producer-authored success claims cannot decide promotion.",
+      "statement": "Six improvement-held-out and four release-reserve tasks are disjoint from all prior benchmark cohorts, preflight-valid and sealed before candidate execution; BB-075 never opens release-reserve model results.",
       "verificationIds": [
-        "live-probe"
+        "cohort"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Partition manifest, exclusion set, task digests, oracle/nop evidence and reserve-access negative test."
       ]
     },
     {
       "id": "AC-3",
-      "statement": "Existing attempts remain pinned, new attempts use a promoted strategy only after authorization, and regression can trigger supported rollback.",
+      "statement": "Baseline and candidate differ only by one bounded HOW_PROFILE_V1 and all 24 registered held-out arm units preserve fixed task/model/provider/tools/budgets/evaluator semantics with complete attempt accounting.",
       "verificationIds": [
-        "live-probe"
+        "candidate-boundary",
+        "heldout"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Profile diff, unit manifests, raw attempts and normalized benchmark records."
+      ]
+    },
+    {
+      "id": "AC-4",
+      "statement": "PROMOTE_CANDIDATE occurs only with complete known primary evidence, no quality/safety/currentness regression and the metric-specific minimum effect; otherwise complete evidence keeps baseline.",
+      "verificationIds": [
+        "decision"
+      ],
+      "evidenceRequired": [
+        "Deterministic reducer inputs/outputs plus mutation cases for every gate."
+      ]
+    },
+    {
+      "id": "AC-5",
+      "statement": "Promotion/rollback use BB-059 freshness and generation semantics; existing attempts retain old bindings and stale promotion cannot mutate current policy.",
+      "verificationIds": [
+        "currentness"
+      ],
+      "evidenceRequired": [
+        "Promotion/keep receipt, old-attempt pinning and stale-head negative evidence."
       ]
     },
     {
       "id": "INV-1",
       "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
       "verificationIds": [
-        "boundary-probe"
+        "candidate-boundary"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Boundary case proving runtime success/candidate policy cannot redefine acceptance or domain authority."
       ]
     },
     {
       "id": "INV-2",
       "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
       "verificationIds": [
-        "boundary-probe"
+        "decision"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Missing/stale identity or unknown primary evidence yields INCONCLUSIVE rather than success."
       ]
     },
     {
       "id": "INV-3",
       "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
       "verificationIds": [
-        "boundary-probe"
+        "candidate-boundary"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Negative case proving outer Blackboard scope is not used as product runtime coordination authority."
       ]
     }
   ],
@@ -158,26 +203,50 @@
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-075-probe.mjs"
+      "id": "selection",
+      "command": "node --test benchmarks/delivery_evolution/test/selection.test.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-075.test.mjs"
+      "id": "cohort",
+      "command": "node --test benchmarks/delivery_evolution/test/cohort-partition.test.mjs"
+    },
+    {
+      "id": "candidate-boundary",
+      "command": "node --test benchmarks/delivery_evolution/test/candidate-boundary.test.mjs"
+    },
+    {
+      "id": "decision",
+      "command": "node --test benchmarks/delivery_evolution/test/decision.test.mjs"
+    },
+    {
+      "id": "currentness",
+      "command": "node --test benchmarks/delivery_evolution/test/currentness.test.mjs"
+    },
+    {
+      "id": "preflight",
+      "command": "node benchmarks/delivery_evolution/run.mjs --mode preflight"
+    },
+    {
+      "id": "heldout",
+      "command": "node benchmarks/delivery_evolution/run.mjs --mode heldout"
+    },
+    {
+      "id": "audit",
+      "command": "node benchmarks/delivery_evolution/run.mjs --mode audit"
     }
   ],
-  "researchGaps": [
-    "Select one observed pilot failure and identify whether strategy, context or tool configuration owns it.",
-    "Apply BB-059 promotion/currentness semantics using training and held-out tasks with fixed acceptance.",
-    "Measure improvement and regression, preserve independent evaluation and define rollback on degradation.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Producer success with failing independent acceptance.",
-    "Missing or stale source/runtime identity represented as current evidence.",
-    "Unresolved external effect retried as if confirmed safe."
+    "Operator-picked candidate not produced by HOW_IMPROVEMENT_SELECTION_V1.",
+    "Provider 429/timeout classified as product HOW defect.",
+    "Candidate changes evaluator, task content, model/provider route or resource budget.",
+    "Candidate requires packages/** mutation but Worker proceeds instead of KEEP_BASELINE.",
+    "Prior benchmark task appears in IMPROVEMENT_HOLDOUT or RELEASE_RESERVE.",
+    "Any RELEASE_RESERVE model result exists before BB-076.",
+    "Unknown primary metric represented as zero or used to promote.",
+    "Accepted-quality or critical-safety regression hidden by efficiency gain.",
+    "Existing active attempt rebound to newly promoted policy.",
+    "Stale promotion head mutates current policy."
   ],
   "laneContracts": [
     {
@@ -210,5 +279,69 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-075 Living truth describes only the implemented and independently verified supported capability and limitations."
+  },
+  "selectionContract": {
+    "schemaVersion": 1,
+    "input": "exact DONE BB-074 report + unit/attempt evidence",
+    "eligibleAxes": [
+      "STRATEGY_POLICY",
+      "CONTEXT_POLICY",
+      "TOOL_POLICY",
+      "NONE"
+    ],
+    "repeated": "at least two distinct registered units, except one BB-074 primary critical lifecycle gate failure with unambiguous HOW ownership",
+    "precedence": [
+      "CRITICAL_LIFECYCLE_OR_RECOVERY",
+      "QUALITY_OR_FAILURE_FINGERPRINT",
+      "KNOWN_PROVIDER_COST",
+      "PROMPT_INPUT_OR_MODEL_TURNS",
+      "NONE"
+    ],
+    "tieBreak": "affectedRegisteredUnitCount desc, then fingerprintId lexicographic",
+    "forbidden": [
+      "provider availability as product HOW defect",
+      "evaluator/task/budget change",
+      "new runtime architecture",
+      "operator-picked candidate"
+    ]
+  },
+  "cohortContract": {
+    "dataset": "terminal-bench/terminal-bench-2-1",
+    "sourceCommit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "exclude": "all task digests used or reserved by BB-065, BB-077, BB-081 and BB-074",
+    "preflight": "Harbor oracle 5/5 and nop fail >=1/1 before candidate live execution",
+    "ordering": "ascending immutable task-bundle digest",
+    "improvementHoldoutCount": 6,
+    "releaseReserveCount": 4,
+    "mutationRule": "after any candidate live run, cohort and reserve are immutable",
+    "reserveRule": "BB-075 must not execute model arms on RELEASE_RESERVE"
+  },
+  "evaluationContract": {
+    "arms": {
+      "BASELINE": "supported BB-074/BB-081 profile + current HOW policy",
+      "CANDIDATE": "same profile + selected HOW_PROFILE_V1 only"
+    },
+    "repeats": 2,
+    "registeredArmUnits": 24,
+    "fresh": "task environment + runtime state + provider session per registered arm unit",
+    "fixed": "task/prompt/tools/model/provider/budgets/evaluator/artifact extraction",
+    "attempts": "append-only; retries never overwrite prior attempts"
+  },
+  "metricContract": {
+    "FAILURE_RATE": "fewer target-fingerprint attempts, eliminate at least two matched baseline occurrences, candidate accepted quality >= baseline, no new critical fingerprint, recovery/currentness negatives pass",
+    "PROVIDER_COST": "median cost ratio <=0.90 with known cost, accepted quality >= baseline, turns ratio <=1.00, no new critical fingerprint",
+    "PROMPT_INPUT": "median prompt-input ratio <=0.90, accepted quality >= baseline, known cost ratio <=1.10 when available, no new critical fingerprint",
+    "MODEL_TURNS": "median turn ratio <=0.90, accepted quality >= baseline, known cost ratio <=1.10 when available, no new critical fingerprint"
+  },
+  "decisionContract": {
+    "outcomes": [
+      "PROMOTE_CANDIDATE",
+      "KEEP_BASELINE",
+      "INCONCLUSIVE"
+    ],
+    "promote": "complete 24-unit cohort + known primary metric + all quality/safety/currentness gates + selected minimum effect",
+    "keep": "complete valid evidence and selection NONE, unavailable bounded seam, insufficient effect or conclusive regression",
+    "inconclusive": "missing unit, unknown primary metric, verifier/task/profile drift or incomplete required negative evidence",
+    "authority": "frozen deterministic reducer; Jev validates evidence claims and cannot rewrite outcome"
   }
 }
