@@ -115,16 +115,30 @@ A candidate may be independently ACCEPTED even if the producer later exhausts a 
 
 ## Layer A — BB-065 neutral substrate calibration
 
-BB-065 proves the substrate before any ExHarness comparison.
+BB-065 proves the benchmark foundation before any ExHarness comparison.
 
-It selects Harbor v0.23.0 as the neutral outer runner and produces a benchmark-owned substrate library plus a provider-independent normalized attempt record. BB-065 does not implement ExHarness harness arms and does not claim Core or product value.
+It creates a first-class private workspace package `@exharness/benchmark` plus a Harbor-backed calibration substrate. The package owns substrate-independent experiment registration, immutable unit identity, append-only attempts, orthogonal outcome semantics, evidence manifests, nullable accounting and deterministic audit. Harbor remains an adapter under `benchmarks/substrate/**`, never package-internal semantics.
 
-Worker implementation after objective supersession is restricted to benchmark infrastructure:
+The dependency direction is one-way:
 
 ```text
-benchmarks/substrate/**
-benchmarks/substrate/test/**
+benchmarks/substrate/** and future experiment adapters
+        ↓
+@exharness/benchmark
 ```
+
+`@exharness/benchmark` must not import `exharness`, `@exharness/agentic-system`, Harbor-specific code, provider SDKs or the retired `scripts/delivery/baseline/**` implementation.
+
+Worker implementation is restricted to benchmark infrastructure:
+
+```text
+packages/benchmark/**
+benchmarks/substrate/**
+scripts/delivery/baseline/**   # retirement/deletion only
+root package metadata          # benchmark workspace/test wiring only
+```
+
+The retired Direct/Core six-pair + CORE_VALUE implementation is not evolved in place. It is inventoried, then removed from current execution paths after the new package/substrate calibration passes. Git history retains the historical evidence.
 
 Required calibration:
 
@@ -135,7 +149,7 @@ Required calibration:
 
 BB-065 emits `BENCHMARK_ATTEMPT_RECORD_V1`. BB-077 may extend that record with harness-specific model/turn/cache timing fields; it must not redefine the orthogonal outcome semantics.
 
-BB-065's current canonical OBJECTIVE still describes the retired mini-SWE DIRECT-vs-Core value study. Publication of the replacement objective is therefore intentionally fenced by BB-082. Research convergence does not bypass that control.
+BB-065's current canonical OBJECTIVE still describes the retired mini-SWE DIRECT-vs-Core value study. That stale objective/plan must be replaced before readiness, but BB-082 is not a benchmark-domain dependency. The reset is a trusted research-publication action; BB-082 may later generalize that control-plane operation without sitting in the benchmark execution DAG.
 
 ## Layer B — BB-077 harness isolation / economics
 
@@ -275,8 +289,8 @@ A failed value, lifecycle, identity or clean-install gate is RELEASE_NO_GO when 
 Research readiness and worker schedulability are different.
 
 ```text
-BB-082 DONE
-  -> publish BB-065 objective supersession
+trusted BB-065 research publication
+  -> replace stale objective + materialize package-oriented plan
   -> fresh BB-065 Jev readiness
   -> BB-065 Worker
 
@@ -300,7 +314,7 @@ Research may finish downstream plans before upstream delivery. Worker execution 
 As of this research pass:
 
 ```text
-BB-065  research design converged; canonical objective/plan promotion BLOCKED by BB-082
+BB-065  research package/substrate design converged; canonical objective/plan reset still needs trusted publication, not a BB-082 dependency
 BB-077  READY plan retained
 BB-078  READY plan retained
 BB-079  READY plan retained
