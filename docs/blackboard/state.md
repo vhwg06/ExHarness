@@ -56,7 +56,6 @@ worker: codex-bb065-research
 - BB-071 [RESEARCH_SA/RESEARCH] — Prove requirement change and failure recovery on a live product
 - BB-072 [RESEARCH_SA/RESEARCH] — Make delivery runs observable recoverable and cost bounded
 - BB-073 [RESEARCH_SA/RESEARCH] — Ship an installable supported delivery profile
-- BB-074 [RESEARCH_SA/RESEARCH] — Measure delivery-harness value under a controlled benchmark program
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
 
@@ -86,7 +85,7 @@ BB-070 [RESEARCH_SCHEDULABLE] <- BB-069, BB-055
 BB-071 [RESEARCH_SCHEDULABLE] <- BB-070, BB-057
 BB-072 [RESEARCH_SCHEDULABLE] <- BB-068, BB-058
 BB-073 [RESEARCH_SCHEDULABLE] <- BB-070, BB-072
-BB-074 [RESEARCH_SCHEDULABLE] <- BB-065, BB-071, BB-073, BB-077, BB-081
+BB-074 [BLOCKED_BY BB-065,BB-071,BB-073,BB-077,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [RESEARCH_SCHEDULABLE] <- BB-074, BB-059
 BB-076 [RESEARCH_SCHEDULABLE] <- BB-074, BB-075
 BB-077 [BLOCKED_BY BB-065] <- BB-065
