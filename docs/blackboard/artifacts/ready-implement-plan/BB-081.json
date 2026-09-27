@@ -191,6 +191,22 @@
       ]
     },
     {
+      "id": "METRICS",
+      "statement": "Every registered unit/report exposes independent quality, provider input/output/cached accounting, non-double-counted total tokens, cost, model turns, tool calls, useful operations per turn, detached-operation/model overlap, elapsed time and failure identity; deterministic fault records add explicit recovery outcome.",
+      "verificationIds": [
+        "ablation-contract",
+        "fault-matrix",
+        "live-heldout"
+      ],
+      "evidenceRequired": [
+        "run/report schema fixture with every metric",
+        "token double-count negative",
+        "useful-operation classification fixture",
+        "async-overlap timeline",
+        "recovery outcome matrix"
+      ]
+    },
+    {
       "id": "ATTRIBUTION",
       "statement": "Report matched D/A primary metrics and A→B/B→C/C→D marginal vectors for quality/economics/turns/timing/cache/failures without an aggregate winner score.",
       "verificationIds": [
@@ -342,6 +358,7 @@
         "DEPENDENCY",
         "COHORT",
         "ACCOUNTING",
+        "METRICS",
         "ATTRIBUTION",
         "QUALITY",
         "EFFICIENCY",
@@ -389,6 +406,9 @@
     "B/C/D cannot compose or treatment is all-zero but benchmark still promotes.",
     "Workspace/session/model output leaks across units or failed/retried attempts are hidden/replaced.",
     "Repeated runs become best-of-k or missing usage becomes zero/inferred cache usage.",
+    "Cached input tokens are added on top of provider prompt tokens when computing totalProviderTokens, double-counting the cached subset.",
+    "Every successful tool call is labelled useful even when it is poll/heartbeat/no-progress or never consumed/mutates candidate.",
+    "Async overlap is inferred from elapsed subtraction instead of measured BB-078 operation intervals intersected with BB-077 MODEL intervals.",
     "Live cohort exceeds frozen units/budget or deterministic fault calls are mixed into economics.",
     "N/A fault cell counts as pass.",
     "PROMOTE_ASYNC occurs with failed/unknown primary gate or missing required D fault evidence.",
@@ -459,6 +479,7 @@
       "criterionIds": [
         "COHORT",
         "ACCOUNTING",
+        "METRICS",
         "ATTRIBUTION",
         "ROBUSTNESS",
         "QUALITY",
@@ -515,7 +536,8 @@
       ],
       "supportingPlanFields": [
         "ablationContract",
-        "faultMatrix"
+        "faultMatrix",
+        "reportContract"
       ]
     },
     {
@@ -760,5 +782,32 @@
     "probe": "same capability/schema/effect identity; A waits terminal, B/C/D return RUNNING before identical delayed effect completes",
     "usageRule": "record detachable-call count per unit; all eight D units zero => INCONCLUSIVE",
     "failClosed": "cannot bind without changing fixed surface => PLAN_INPUT_CONTRADICTION"
+  },
+  "reportContract": {
+    "unit": "one registered task-digest + repeat + arm",
+    "liveFields": [
+      "verifierQuality",
+      "providerPromptTokens",
+      "providerCachedInputTokens",
+      "providerCacheWriteTokens",
+      "providerOutputTokens",
+      "totalProviderTokens=prompt+output (cached input is a prompt subset, never double-counted)",
+      "providerChargedCostUsd",
+      "normalizedCostUsd",
+      "modelTurns",
+      "toolHostCalls",
+      "usefulOperationCount",
+      "usefulOperationsPerTurn",
+      "detachedOperationOverlapMs",
+      "elapsedMs",
+      "failureFingerprint",
+      "usageStatus"
+    ],
+    "usefulOperation": "unique non-duplicate capability operation that succeeds and is not poll/heartbeat/no-progress, and either mutatesCandidate=true or its result/terminal update is consumed by a later model request/final result",
+    "usefulOperationsPerTurn": "usefulOperationCount / modelTurns; null when modelTurns=0",
+    "detachedOperationOverlapMs": "union duration where a delivered BB-078 RUNNING→terminal operation interval overlaps an active MODEL interval; A is 0/N/A by construction, B/C/D are measured from operation transitions + BB-077 MODEL intervals",
+    "tokenRule": "prompt/output/cached/cache-write remain provider-observed nullable fields; fresh input may be derived only when prompt and cached input are known; totalProviderTokens never adds cached tokens twice",
+    "recoveryOutcome": "ordinary live units record NOT_APPLICABLE; deterministic fault records use RECOVERED|FAILED_CLOSED|UNSAFE|NOT_APPLICABLE plus exact scenario/arm identity",
+    "aggregation": "report every unit plus per-arm sums for tokens/cost/tool calls, medians for paired ratios/elapsed, per-task 0/2|1/2|2/2 acceptance, and fault outcome matrix; unknown fields remain null/reason"
   }
 }
