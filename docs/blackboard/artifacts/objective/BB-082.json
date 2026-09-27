@@ -1,0 +1,40 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-082",
+  "outcome": "Outer Blackboard can supersede a materially stale RESEARCH_SA objective through an explicit trusted publication without allowing the candidate research branch to redefine its own evaluation subject.",
+  "currentProblem": "BB-065's benchmark premise was reset from a six-pair value study to neutral substrate calibration, but the canonical objective is intentionally trusted-main data and ordinary research candidates may contribute only plan draft plus research baseline. There is no controlled path to change a current objective while preserving anti-self-redefinition, provenance and downstream impact.",
+  "scope": [
+    "outer-blackboard.objective-supersession",
+    "outer-blackboard.research-reset",
+    "outer-blackboard.provenance",
+    "outer-blackboard.impact-fencing"
+  ],
+  "constraints": [
+    "Ordinary RESEARCH_SA candidates must remain unable to change objectiveRef, objective content or planRef used by their own Jev readiness evaluation.",
+    "An objective supersession is a distinct publication/control-plane action, not a readiness result, worker result or Jev semantic pass.",
+    "The previous objective and its historical plans/evaluations remain auditable; supersession must not rewrite prior Git history or relabel prior evidence.",
+    "Supersession must bind exact work id, old objective hash, replacement objective hash/content, reason/evidence, affected plan and direct downstream tasks before publication.",
+    "Publishing a replacement objective must revoke stale readiness/evaluation authority, reset the affected task to RESEARCH_SA/RESEARCH with a DRAFT plan bound to the replacement objective, and remove any active claim/context.",
+    "The replacement objective does not become delivered product truth and cannot mark the affected task DONE.",
+    "The first migration target is BB-065; BB-082 must establish the generic control before a separate BB-065 supersession publication uses it."
+  ],
+  "successCriteria": [
+    "A canonical OBJECTIVE_SUPERSESSION proposal/publication contract binds exact old/new objective identities, rationale/evidence, affected plan and direct dependency impact while retaining an immutable supersession record.",
+    "Trusted CI accepts an objective supersession only through the dedicated publication path and continues rejecting ordinary research branches that alter their trusted objective or routing identity.",
+    "A valid supersession atomically leaves the target task non-active in RESEARCH_SA/RESEARCH with a DRAFT plan bound to the new objective, stale readiness/evaluation/worker authority cleared, and rebuildable context absent until the task is claimed again.",
+    "Negative tests reject stale-old-objective races, wrong work/plan refs, hidden downstream impact, status/readiness preservation, objective mutation inside ordinary readiness, and attempts to rewrite DONE/WORKER task truth.",
+    "After the control is delivered, a separate BB-065 migration can replace the obsolete six-pair objective with neutral benchmark-substrate calibration without rerunning or rewriting the historical value-study evidence."
+  ],
+  "currentSourceRefs": [
+    "scripts/blackboard-jev-ci.mjs",
+    "scripts/blackboard-jev.mjs",
+    "scripts/blackboard-delivery-verify.mjs",
+    "scripts/blackboard-delivery-contract.mjs",
+    "scripts/blackboard-work-graph.mjs",
+    "test/blackboard-jev.test.mjs",
+    "test/blackboard-work-graph.test.mjs",
+    "docs/blackboard/contracts.md"
+  ]
+}
