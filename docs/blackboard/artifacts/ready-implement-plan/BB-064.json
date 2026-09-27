@@ -559,7 +559,8 @@
         }
       ],
       "supportingPlanFields": [
-        "convergenceContract"
+        "convergenceContract",
+        "dependencyConvergenceEvidence"
       ]
     },
     {
@@ -724,5 +725,39 @@
     },
     "execution": "BB-061 once-per-agent-call resolver -> BB-062 deterministic bounded planning/providers -> BB-061 materialization -> BB-063 optional exact-key reuse with pre/post currentness fence",
     "foundationLimits": "graph provider seam only; deterministic planner only; immutable progression identity only; hard byte/item/call/step budgets only; no automatic progressive retrieval, adaptive token budgeting, graph DB or model-assisted planning"
+  },
+  "dependencyConvergenceEvidence": {
+    "upstream": {
+      "BB-060": {
+        "status": "READY",
+        "planHash": "f01f6a94cd08ee6a022bb303eacd72ab0dfce26095fca881e8905919e922e9e4",
+        "verdict": "SATISFIED",
+        "role": "Oracle infrastructure ownership + injected Core boundary; no product authority"
+      },
+      "BB-061": {
+        "status": "READY",
+        "planHash": "b7bdbbc0f35736eb1dfd47a4285322d965ad330f180d95da563232f22eac4434",
+        "verdict": "SATISFIED",
+        "role": "ContextRequirement/ContextResolution semantic identity + generic Core pre-render port"
+      },
+      "BB-062": {
+        "status": "READY",
+        "planHash": "b3856cc284678fbd713b414b4f9d667b5a0c86ad7471f9e43a7389635abed43c",
+        "verdict": "SATISFIED",
+        "role": "Source authority + deterministic provider/planner layer; provider details remain internal"
+      },
+      "BB-063": {
+        "status": "READY",
+        "planHash": "03483afd646d206909f035ecd9b876923fcbad1a8db5c48c381aab8b839889c6",
+        "verdict": "SATISFIED",
+        "role": "Durable reuseKey/receipt + pre/post currentness fence; resolutionId unchanged"
+      }
+    },
+    "compatibility": [
+      "Authority: Application/domain owns work/product decisions; Core owns generic execution/rendering; Oracle owns context resolution only.",
+      "Identity: BB-061 requirementId/resolutionId -> BB-062 authoritative source observations -> BB-063 separate reuseKey/receipt; no layer redefines another layer's identity.",
+      "Visibility: provider/planner/durability details stay below Oracle; Core/model never select provider/tool operations.",
+      "Failure: BB-064 S1 preflight must stop PLAN_INPUT_CONTRADICTION if delivered exports diverge from these exact READY contracts."
+    ]
   }
 }
