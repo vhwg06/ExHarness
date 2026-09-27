@@ -9,17 +9,24 @@
     "hash": "e4b0cc9676bf431cd8b394ded7c07d23c54be87f3a7cfeb21ea7470224930e01"
   },
   "scope": [
-    "delivery.release"
+    "delivery.release",
+    "delivery.release-provenance",
+    "delivery.release-value-reproduction",
+    "delivery.release-lifecycle"
   ],
   "outOfScope": [
-    "Unbounded autonomous product decisions and expansion beyond the supported delivery profile.",
-    "Replacing delivered Integration or Oracle authority contracts.",
-    "Treating this research allocation as implementation readiness or product delivery."
+    "Tuning product behavior during release acceptance.",
+    "Changing packaging/runtime behavior to make a frozen release candidate pass.",
+    "Executing release-reserve tasks before exact release freeze.",
+    "Treating CI success, merge state or a working-tree demo as release value evidence.",
+    "Claiming a SLSA level or certification; SLSA provenance fields are design guidance only."
   ],
   "constraints": [
-    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
-    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
-    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments."
+    "Worker execution requires exact DONE BB-074 and BB-075 plus compatible delivered distribution/profile evidence; incompatibility yields PLAN_INPUT_CONTRADICTION.",
+    "Release freeze binds source/tree, dependency lock, supported profile, HOW policy, build/install procedure and produced artifact digests before release-reserve model execution.",
+    "BB-076 is the first task allowed to execute BB-075 RELEASE_RESERVE; any prior model result invalidates the reserve.",
+    "All release-reserve and lifecycle evidence must run against the packaged/frozen release, not working-tree product code.",
+    "Missing/unknown primary cost or incomplete registered evidence yields INCONCLUSIVE, never implicit success."
   ],
   "invariants": [
     "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
@@ -27,113 +34,180 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Define supported profile, known limitations and release acceptance that consumes every phase's delivered evidence.",
-    "Candidate direction, not selected architecture: Choose independent clean-room reproduction and exact source/build/deployment identity checks.",
-    "Candidate direction, not selected architecture: Define no-go/remediation if pilot value, installation or reliability gates fail; do not downgrade the goal silently."
+    "D1 — Consume exact DONE BB-074 and BB-075 decisions and the supported install/distribution/profile evidence; BB-076 performs acceptance only and cannot tune product behavior.",
+    "D2 — Freeze a release candidate before paid evaluation: source commit/tree, dependency lock digest, supported harness/profile, current HOW policy, build/install procedure, builder/runtime identity, artifact digests, benchmark protocol hashes and release-reserve manifest hash.",
+    "D3 — Emit SUPPORTED_RELEASE_PROVENANCE_V1 inspired by SLSA provenance v1.2 fields for source, resolved dependencies, builder/invocation and produced artifact subjects. Do not claim a SLSA level.",
+    "D4 — Clean-room reproduction starts from a fresh supported environment with no working-tree checkout and installs only frozen artifact(s) by digest. It verifies manifest/provenance, dependency/runtime compatibility, actionable missing-credential failure, reference delivery and independent QA.",
+    "D5 — BB-076 is first opener of the four BB-075 RELEASE_RESERVE tasks. Prior model execution, cohort overlap or digest drift invalidates the reserve and returns to research.",
+    "D6 — Release value arms are D=DIRECT_CODEACT control and R=ExHarness installed from the frozen release artifact. Same Harbor substrate, model/provider, task, prompt, tools, evaluator, budgets and human-event semantics apply.",
+    "D7 — Run four release-reserve tasks x two repeats x two arms = 16 registered arm units with counterbalanced order, fresh state and append-only attempt accounting.",
+    "D8 — Release value gates are: accepted R>=D with zero critical escaped defects; operator active time R<=0.80*D; known provider cost per accepted R<=1.10*D; no duplicate effects/currentness bypass and required recovery negatives pass.",
+    "D9 — Re-run all six BB-074 lifecycle scenarios on the packaged release and bind independent acceptance, operator effort, elapsed, cost when live, recovery/fence outcome and failure fingerprint to the exact release provenance.",
+    "D10 — Generate SUPPORTED_RELEASE_MANIFEST_V1 from delivered evidence and compare it to user-facing support docs; unsupported claims or omitted known limitations fail release acceptance.",
+    "D11 — A deterministic reducer returns RELEASE_ACCEPTED, RELEASE_NO_GO or INCONCLUSIVE. Complete evidence plus any required gate failure is RELEASE_NO_GO; missing/unknown/drifted primary evidence is INCONCLUSIVE.",
+    "D12 — Product/package source writes are forbidden in BB-076. If release acceptance exposes a packaging/product defect, no-go and route repair upstream instead of patching inside acceptance."
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "docs/blackboard/artifacts/ready-implement-plan/BB-074.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-075.json",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
       "package.json",
-      "packages/agentic-system/src/domain-execution-control.js",
-      "docs/living/system/state.md"
+      "package-lock.json"
     ],
     "expectedNew": [
-      "scripts/delivery/bb-076-probe.mjs"
+      "scripts/release/build.mjs",
+      "benchmarks/release_acceptance/provenance.mjs",
+      "benchmarks/release_acceptance/run.mjs",
+      "benchmarks/release_acceptance/decision.mjs"
     ],
     "expectedTests": [
-      "test/delivery/bb-076.test.mjs"
+      "benchmarks/release_acceptance/test/provenance.test.mjs",
+      "benchmarks/release_acceptance/test/reserve-boundary.test.mjs",
+      "benchmarks/release_acceptance/test/clean-room.test.mjs",
+      "benchmarks/release_acceptance/test/value-gate.test.mjs",
+      "benchmarks/release_acceptance/test/lifecycle.test.mjs",
+      "benchmarks/release_acceptance/test/support-manifest.test.mjs",
+      "benchmarks/release_acceptance/test/decision.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
-      "docs/blackboard/process/delivery-research/BB-076.md",
+      "benchmarks/**",
       "scripts/**",
-      "test/**",
-      "package.json"
+      "packages/**",
+      "docs/living/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-074*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-075*",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
+      "docs/blackboard/process/delivery-research/BB-076.md",
+      "package.json",
+      "package-lock.json"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "benchmarks/release_acceptance/**",
+      "scripts/release/**",
+      "docs/living/system/**"
     ],
     "forbiddenWrite": [
+      "packages/**",
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "package.json",
+      "package-lock.json"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S1 — Resolve exact DONE BB-074/075 and compatible delivered distribution/profile evidence, verify RELEASE_RESERVE has no prior model execution and freeze source/tree/policy/profile/build/dependency identities.",
+    "S2 — Build the frozen release artifact(s), emit SUPPORTED_RELEASE_PROVENANCE_V1 and verify artifact digests plus resolved dependency/runtime identity.",
+    "S3 — Reproduce from a fresh supported environment using only frozen release artifacts; verify provenance/manifest, run reference delivery + independent QA and one change/recovery preflight.",
+    "S4 — Execute all 16 D/R release-reserve registered arm units with fixed factors, fresh state and complete attempt/provider/human-event accounting.",
+    "S5 — Execute all six required BB-074 lifecycle scenarios against the packaged release and bind acceptance/recovery/currentness evidence to exact release provenance.",
+    "S6 — Generate SUPPORTED_RELEASE_MANIFEST_V1 and audit support docs/known limitations against delivered evidence.",
+    "S7 — Run the frozen RELEASE_ACCEPTED|RELEASE_NO_GO|INCONCLUSIVE reducer and update Living truth only with the independently verified result and limitations."
   ],
   "acceptanceCriteria": [
     {
       "id": "AC-1",
-      "statement": "All prerequisite feature evidence is delivered and release acceptance reproduces supported entry, change, recovery and independent QA behavior.",
+      "statement": "The frozen release artifact is cryptographically bound to exact source/tree, dependency lock, supported profiles, build/runtime identity and benchmark bindings through SUPPORTED_RELEASE_PROVENANCE_V1.",
       "verificationIds": [
-        "live-probe"
+        "provenance"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Release provenance, artifact digests and independent verification output."
       ]
     },
     {
       "id": "AC-2",
-      "statement": "A clean operator environment reproduces installation and representative delivery on the exact release; documentation matches supported capabilities.",
+      "statement": "A fresh supported environment with no working-tree product code installs only frozen artifacts, verifies identity and completes reference delivery plus independent QA and a change/recovery preflight.",
       "verificationIds": [
-        "live-probe"
+        "clean-room"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Clean-room environment identity, install logs, provenance verification, reference-delivery and independent QA evidence."
       ]
     },
     {
       "id": "AC-3",
-      "statement": "Predeclared product value gate passes and known limitations are explicit; no release claim relies solely on merged source, CI or agent success.",
+      "statement": "BB-076 is the first model execution of the exact BB-075 RELEASE_RESERVE and completes all 16 fixed-factor D/R registered arm units with complete attempt/accounting evidence.",
       "verificationIds": [
-        "live-probe"
+        "reserve-boundary",
+        "release-reserve"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "Reserve manifest/access audit, unit manifests, raw attempts and normalized records."
+      ]
+    },
+    {
+      "id": "AC-4",
+      "statement": "Release-reserve quality, human-effort, provider-economics and safety/currentness gates all pass on the frozen packaged release.",
+      "verificationIds": [
+        "value-gate",
+        "release-reserve"
+      ],
+      "evidenceRequired": [
+        "Deterministic gate inputs/outputs and paired release-reserve report."
+      ]
+    },
+    {
+      "id": "AC-5",
+      "statement": "All six required delivery lifecycle scenarios pass against the packaged release with exact provenance bindings.",
+      "verificationIds": [
+        "lifecycle"
+      ],
+      "evidenceRequired": [
+        "Per-scenario acceptance, effort, recovery/fence and failure evidence."
+      ]
+    },
+    {
+      "id": "AC-6",
+      "statement": "SUPPORTED_RELEASE_MANIFEST_V1 and user-facing support documentation match delivered capabilities and known limitations.",
+      "verificationIds": [
+        "support-manifest"
+      ],
+      "evidenceRequired": [
+        "Machine-readable manifest, documentation audit and mismatch negatives."
+      ]
+    },
+    {
+      "id": "AC-7",
+      "statement": "Only complete passing evidence returns RELEASE_ACCEPTED; complete required-gate failure returns RELEASE_NO_GO and missing/unknown/drift returns INCONCLUSIVE.",
+      "verificationIds": [
+        "decision"
+      ],
+      "evidenceRequired": [
+        "Reducer matrix and mutation tests for every outcome path."
       ]
     },
     {
       "id": "INV-1",
       "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
       "verificationIds": [
-        "boundary-probe"
+        "clean-room"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Negative case proving packaged runtime success cannot redefine acceptance/publication authority."
       ]
     },
     {
       "id": "INV-2",
       "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
       "verificationIds": [
-        "boundary-probe"
+        "provenance",
+        "decision"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Missing/stale artifact/source/accounting identity cannot be represented as current release success."
       ]
     },
     {
       "id": "INV-3",
       "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
       "verificationIds": [
-        "boundary-probe"
+        "support-manifest"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Boundary case proving outer Blackboard remains development coordination rather than product runtime authority."
       ]
     }
   ],
@@ -159,26 +233,60 @@
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-076-probe.mjs"
+      "id": "provenance",
+      "command": "node --test benchmarks/release_acceptance/test/provenance.test.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-076.test.mjs"
+      "id": "reserve-boundary",
+      "command": "node --test benchmarks/release_acceptance/test/reserve-boundary.test.mjs"
+    },
+    {
+      "id": "clean-room",
+      "command": "node --test benchmarks/release_acceptance/test/clean-room.test.mjs"
+    },
+    {
+      "id": "value-gate",
+      "command": "node --test benchmarks/release_acceptance/test/value-gate.test.mjs"
+    },
+    {
+      "id": "lifecycle",
+      "command": "node --test benchmarks/release_acceptance/test/lifecycle.test.mjs"
+    },
+    {
+      "id": "support-manifest",
+      "command": "node --test benchmarks/release_acceptance/test/support-manifest.test.mjs"
+    },
+    {
+      "id": "decision",
+      "command": "node --test benchmarks/release_acceptance/test/decision.test.mjs"
+    },
+    {
+      "id": "freeze",
+      "command": "node scripts/release/build.mjs --mode freeze"
+    },
+    {
+      "id": "release-reserve",
+      "command": "node benchmarks/release_acceptance/run.mjs --mode release-reserve"
+    },
+    {
+      "id": "audit",
+      "command": "node benchmarks/release_acceptance/run.mjs --mode audit"
     }
   ],
-  "researchGaps": [
-    "Define supported profile, known limitations and release acceptance that consumes every phase's delivered evidence.",
-    "Choose independent clean-room reproduction and exact source/build/deployment identity checks.",
-    "Define no-go/remediation if pilot value, installation or reliability gates fail; do not downgrade the goal silently.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Producer success with failing independent acceptance.",
-    "Missing or stale source/runtime identity represented as current evidence.",
-    "Unresolved external effect retried as if confirmed safe."
+    "Release artifact digest differs from provenance or installed source/profile identity.",
+    "Clean-room run reads working-tree/uncommitted product files.",
+    "Source, dependency lock, HOW policy, supported profile or build recipe changes after release freeze.",
+    "RELEASE_RESERVE model result predates BB-076 or overlaps prior benchmark tasks.",
+    "Unknown primary provider cost represented as zero.",
+    "Fewer than 16 registered release-reserve units represented as complete.",
+    "Direct and release arms use different evaluator, model/provider, tool envelope or resource budget.",
+    "Any required lifecycle scenario omitted or run only against working-tree code.",
+    "Duplicate effect or stale-worker/currentness bypass tolerated because quality passes.",
+    "Support documentation claims unsupported behavior or hides known limitation.",
+    "CI/merge success substituted for release value evidence.",
+    "Failed value/lifecycle/identity gate downgraded to a limitation instead of RELEASE_NO_GO."
   ],
   "laneContracts": [
     {
@@ -211,5 +319,93 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-076 Living truth describes only the implemented and independently verified supported capability and limitations."
+  },
+  "releaseFreezeContract": {
+    "schemaVersion": 1,
+    "binds": [
+      "source commit and git tree",
+      "dependency lock digest",
+      "supported harness/profile identity",
+      "current HOW policy identity",
+      "build/install procedure identity",
+      "builder/runtime identity",
+      "produced artifact digests",
+      "benchmark protocol/profile hashes",
+      "release-reserve manifest hash",
+      "known limitations"
+    ],
+    "invalidation": "any mutation after freeze requires a new release candidate identity before release-reserve execution"
+  },
+  "provenanceContract": {
+    "schema": "SUPPORTED_RELEASE_PROVENANCE_V1",
+    "guidance": "SLSA provenance v1.2 field model; no SLSA level claim",
+    "required": [
+      "releaseId",
+      "source repository/commit/tree",
+      "buildType/invocationId/builder/runtime/command digest/timestamps",
+      "resolved dependency lock/runtime identities",
+      "artifact subjects with sha256/size",
+      "supported harness/HOW/product profiles",
+      "BB-074/075 decision bindings",
+      "release-reserve manifest hash",
+      "benchmark protocol hash",
+      "known limitations"
+    ]
+  },
+  "releaseReserveContract": {
+    "source": "exact unopened BB-075 RELEASE_RESERVE manifest",
+    "taskCount": 4,
+    "repeats": 2,
+    "arms": {
+      "D": "DIRECT_CODEACT control",
+      "R": "frozen packaged ExHarness release"
+    },
+    "registeredArmUnits": 16,
+    "firstUse": "BB-076 only",
+    "invalidation": [
+      "prior model result",
+      "overlap with previous benchmark cohort",
+      "task digest drift",
+      "reserve manifest drift"
+    ]
+  },
+  "valueGateContract": {
+    "quality": "accepted units R >= D and criticalEscapedDefects=0",
+    "humanEffort": "total operatorActiveMs(R) <= 0.80 * total operatorActiveMs(D)",
+    "providerEconomics": "known providerCostPerAccepted(R) <= 1.10 * providerCostPerAccepted(D)",
+    "safetyCurrentness": "duplicate external effects=0, stale-worker/currentness bypass=0, required recovery negatives pass",
+    "fixed": "same substrate/model/provider/task/prompt/tools/evaluator/budgets/human-event semantics"
+  },
+  "lifecycleContract": {
+    "scenarios": [
+      "LOCAL_REQUIREMENT_CHANGE",
+      "CROSS_DOMAIN_REQUIREMENT_CHANGE",
+      "KILL_RESUME_DUPLICATE_ACTIVATION",
+      "STALE_WORKER_DEPLOYMENT_FENCE",
+      "CLEAN_INSTALL_REFERENCE_DELIVERY",
+      "UPGRADE_ROLLBACK_COMPATIBILITY"
+    ],
+    "required": true,
+    "target": "packaged frozen release, never working-tree runtime",
+    "metrics": [
+      "independent acceptance",
+      "operatorActiveMs",
+      "elapsedMs",
+      "providerCost when live",
+      "recovery/fence outcome",
+      "failure fingerprint",
+      "release provenance identity"
+    ]
+  },
+  "decisionContract": {
+    "outcomes": [
+      "RELEASE_ACCEPTED",
+      "RELEASE_NO_GO",
+      "INCONCLUSIVE"
+    ],
+    "accepted": "verified provenance/artifact/source identity + clean-room acceptance + complete 16-unit release-reserve comparison + all value gates + all six lifecycle scenarios + support-doc consistency",
+    "noGo": "complete valid evidence and any required identity/value/lifecycle/documentation gate fails",
+    "inconclusive": "missing registered unit, unknown primary cost, provider/infra gap preventing evaluation, invalid reserve provenance or incomplete lifecycle evidence",
+    "authority": "frozen deterministic reducer; Jev validates evidence claims and cannot rewrite outcome"
   }
 }
