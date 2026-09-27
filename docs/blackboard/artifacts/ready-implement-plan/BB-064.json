@@ -16,15 +16,18 @@
     "oracle.research-to-implementation-handoff"
   ],
   "outOfScope": [
-    "Moving product/domain scheduling, acceptance, publication or recovery authority into Oracle.",
-    "Treating historical BB-060..064 READY/Jev artifacts as current implementation authority.",
-    "Claiming live coding-agent or product value from deterministic research prototypes or source inspection."
+    "Redefine BB-060..063 contracts or Core/Application semantics to make acceptance pass.",
+    "Claim live model/token/cost/quality/productivity value from deterministic fixtures.",
+    "Ship graph DB/session memory/model-assisted planning/progressive runtime/adaptive budgeting/async interaction.",
+    "Allocate continuation tasks or move product authority into Oracle."
   ],
   "constraints": [
-    "Research must inspect current source plus primary external evidence, distinguish retained findings from superseded assumptions, and compare reuse with the smallest ExHarness-owned seam.",
-    "Application/domain authority remains outside Oracle; Core consumes semantic context but does not own provider/source-specific retrieval.",
-    "Required context is budgeted, provenance-bound and currentness-checked; missing or ambiguous required evidence fails closed.",
-    "Worker execution is unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
+    "Worker starts only after BB-060..063 are DONE and must inspect delivered exports before coding.",
+    "Compose delivered contracts in place; incompatible dependencies stop PLAN_INPUT_CONTRADICTION.",
+    "Oracle stays infrastructure-owned behind Core's injected pre-render resolver; Core imports no Oracle implementation.",
+    "Required context is budgeted, provenance/currentness-bound and fail-closed.",
+    "Benchmark varies Oracle profile only; fixture byte reduction is not live value evidence.",
+    "BB-077..081 remain Core async work; new JEV SATISFIED is required before Worker."
   ],
   "invariants": [
     "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
@@ -32,36 +35,54 @@
     "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership."
   ],
   "architectureDecisions": [
-    "Foundation acceptance requires converged BB-060..063 semantics plus executable evidence; package extraction alone cannot close Oracle.",
-    "The foundation proves one bounded ContextRequirement -> Oracle -> provider(s) -> ContextResolution path with provenance/currentness/budget enforcement.",
-    "Benchmark controls reuse the same-model/task/source/budget discipline from BB-065 and BB-077/081; deterministic foundation evidence is not a live product-value claim.",
-    "Context Graph productization, Retrieval Planner optimization, progressive runtime resolution, context budgeting optimization, async integration and profile acceptance continue as separately allocated efficiency work after foundation.",
-    "Only a new rebound Jev readiness judgment can transition Oracle back to Worker execution."
+    "D1 — BB-064 is convergence/acceptance only; incompatible delivered BB-060..063 outputs stop PLAN_INPUT_CONTRADICTION.",
+    "D2 — Add one facade createOracleContextResolver({sourceCatalog,retrievalPlanner,durability?,resolverConfiguration}).resolve(requirement,metadata?) using delivered primitives only.",
+    "D3 — Path: requirement -> authoritative pre-observe -> optional reuse -> deterministic plan/providers -> materialize/validate -> post-observe -> optional receipt -> Core injected resolver.",
+    "D4 — No model-visible context tool, Application lifecycle import, graph DB, model-assisted planner or parallel semantic contract.",
+    "D5 — Foundation keeps deterministic planner + graph seam + hard item/byte/call/step/Core render bounds; progressive runtime and adaptive token budgeting stay post-foundation.",
+    "D6 — BB-061 resolutionId remains semantic identity; BB-063 reuseKey remains durable reuse identity and cannot weaken manifest/source truth.",
+    "D7 — Acceptance probe covers repository CURRENT, manifest-protected exact artifact, budget/provenance/currentness/reuse and required fail-closed classes.",
+    "D8 — Research fixture (bc268918) used 4,909/46,885 bytes under 3 items/6,000 bytes/3 calls/1 step; structural evidence only.",
+    "D9 — ORACLE_CONTEXT_BENCHMARK_V1 compares O0_STATIC_CONTEXT_CONTROL vs O1_ORACLE_FOUNDATION_V1 with all non-Oracle factors fixed.",
+    "D10 — Metrics remain a vector; UNKNOWN stays UNKNOWN and BB-064 sets no positive value threshold.",
+    "D11 — Continuation order: graph productization -> planner optimization -> progressive runtime -> adaptive/model-aware budget -> supported-Core interaction -> held-out profile acceptance.",
+    "D12 — BB-082 is occupied; proposed continuation ids start BB-083. BB-077..081 remain Core work and async is not assumed."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/qa-application.js",
-      "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/semantics.md"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+      "docs/living/system/oracle/artifact-manifest.md",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
+      "docs/blackboard/state.md"
     ],
     "expectedNew": [
       "packages/oracle/src/context-resolution.js",
+      "scripts/oracle-context-intelligence/probe-foundation.mjs",
+      "scripts/oracle-context-intelligence/benchmark-profile.mjs",
       "scripts/oracle-context-intelligence/README.md"
     ],
     "expectedTests": [
+      "test/oracle-context-intelligence-foundation.test.mjs",
+      "test/oracle-context-intelligence-benchmark-contract.test.mjs",
       "test/oracle-context-intelligence-architecture.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
       "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/oracle-reconciliation-phase.md",
-      "docs/blackboard/process/oracle-context-intelligence-research.md",
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "docs/living/system/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+      "docs/blackboard/process/oracle-context-intelligence-research/**",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
+      "docs/blackboard/process/harness-efficiency-phase.md",
       "scripts/delivery/baseline/**",
       "scripts/**",
       "test/**",
@@ -69,92 +90,119 @@
     ],
     "write": [
       "packages/oracle/**",
-      "packages/core-harness/**",
       "scripts/oracle-context-intelligence/**",
-      "test/**",
+      "test/oracle-context-intelligence-foundation.test.mjs",
+      "test/oracle-context-intelligence-benchmark-contract.test.mjs",
       "docs/living/system/oracle/**",
       "docs/living/system/core-harness/**",
-      "package.json"
+      "package.json",
+      "test/oracle-context-intelligence-architecture.test.mjs"
     ],
     "forbiddenWrite": [
+      "packages/core-harness/src/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "Converge BB-060..063 decisions into one exact foundation architecture and implementation boundary.",
-    "Run the bounded foundation prototype plus stale/provider/authority negatives and freeze benchmark controls.",
-    "Publish the exact foundation worker plan and post-foundation Oracle efficiency continuation only after evidence closes research gaps."
+    "S1 [DEPENDENCY_CONVERGENCE] — First action in probe-foundation.mjs: inspect exact DONE BB-060..063 exports/hashes and emit FOUNDATION_DEPENDENCY_MANIFEST_V1 {workId,planHash,module,exports}. Require 060 exact-source providers, 061 context contract/Core resolver seam, 062 catalog/planner/provider contracts and 063 durability/currentness helpers. Missing/parallel/incompatible seam exits PLAN_INPUT_CONTRADICTION before resolution or writes. Verify: probe, foundation, architecture.",
+    "S2 [FOUNDATION_COMPOSITION,INV-1,INV-3] — Create packages/oracle/src/context-resolution.js and export createOracleContextResolver from dependency-delivered packages/oracle/src/index.js. resolve() composes delivered parse/identity -> authoritative pre-observe -> optional exact-key reuse -> deterministic planner/providers -> candidate normalization -> ContextResolution materialization -> post-observe -> optional receipt. No Agentic lifecycle import; Core remains injection-only. Verify: foundation, architecture, oracle-regression.",
+    "S3 [FOUNDATION_PROBE,INV-2] — Create scripts/oracle-context-intelligence/probe-foundation.mjs and test/oracle-context-intelligence-foundation.test.mjs. Probe executes one REPOSITORY CURRENT and one exact manifest-protected APPLICATION_ARTIFACT requirement and emits ORACLE_FOUNDATION_PROBE_V1 with requirementId/resolutionId/reuseKey/receiptId, validators/provenance, item/byte/call/step counters, rendered bytes, unchanged-source reuse and changed-source invalidation. Verify: probe, foundation, agentic-regression.",
+    "S4 [FAIL_CLOSED_ARCHITECTURE] — Create test/oracle-context-intelligence-architecture.test.mjs and add failure fixtures to the foundation test for every negativeVerificationCases row: provider/tool leakage, source/provider failure, weak/unverifiable CURRENT, index/pre-post drift, all budget overruns, ambiguity, graph-lineage gap, divergent reuse, manifest mismatch, ownership import leak and resolver failure dispatch. Each fixture asserts typed failure plus non-consumption/non-publication; pre-render failure asserts zero model/Capability/Resource/LiveObject dispatch. Verify: foundation, architecture.",
+    "S5 [BENCHMARK_HANDOFF] — Create scripts/oracle-context-intelligence/benchmark-profile.mjs and test/oracle-context-intelligence-benchmark-contract.test.mjs. --mode validate checks ORACLE_CONTEXT_BENCHMARK_V1 O0/O1 arms, exact fixed-factor identities, metric vector, UNKNOWN semantics, no paid/live dispatch, no cohort mutation and no fixture-to-value claim. Verify: benchmark, benchmark-boundary.",
+    "S6 [REGRESSION_LIVING] — After S1-S5 pass, run Oracle/Core/Agentic/package-consumer regressions, then update Oracle/Core Living architecture/state/workflow with only delivered facade/currentness/durability behavior; graph productization, planner optimization, progressive runtime, adaptive budgeting, async interaction and live profile acceptance remain NOT DELIVERED. Verify: oracle-regression, core-regression, agentic-regression, package-consumer, living-docs.",
+    "S7 [CONTINUATION_HANDOFF] — Create/update scripts/oracle-context-intelligence/README.md with semantic continuation and proposed BB-083..BB-088 only; ids remain non-authoritative until separate Blackboard allocation and BB-077..081 remain Core work. Worker does not edit docs/blackboard. Verify: benchmark-boundary, living-docs."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "One executable foundation path resolves bounded runtime context through the rebound architecture with exact provenance/currentness and budget evidence.",
+      "id": "CONVERGENCE",
+      "statement": "DONE BB-060..063 compose without redefining authority/identity/currentness/reuse; incompatibility stops.",
       "verificationIds": [
-        "foundation-probe"
+        "foundation",
+        "architecture",
+        "oracle-regression"
       ],
       "evidenceRequired": [
-        "Raw prototype inputs/outputs, source identities, budget accounting and resolution identity."
+        "Exact dependency export/hash manifest and contradiction fixtures."
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Architecture and failure tests reject stale currentness, provider ambiguity, application/Core ownership leakage and semantic-contract bypass.",
+      "id": "FOUNDATION_PATH",
+      "statement": "Requirement -> Oracle facade -> provider plan -> ContextResolution preserves budget, source/provenance/currentness, manifest protection and optional reuse through Core's generic resolver.",
       "verificationIds": [
-        "architecture-test"
+        "probe",
+        "foundation",
+        "agentic-regression"
       ],
       "evidenceRequired": [
-        "Independent negative fixtures for each historical/new drift class."
+        "Repository CURRENT + exact artifact probe with ids, validators/provenance, budget/render/reuse evidence."
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "A predeclared benchmark/profile handoff is compatible with BB-065 and Core-efficiency measurement controls and does not claim value before live evidence.",
+      "id": "FAIL_CLOSED",
+      "statement": "Failure, stale/unverifiable currentness, drift, budget exhaustion, ambiguity, lineage gap, reuse conflict and resolver/authority bypass cannot become current model context.",
       "verificationIds": [
-        "benchmark-profile"
+        "foundation",
+        "architecture"
       ],
       "evidenceRequired": [
-        "Frozen comparison arms, task/source/model/budget identities, metrics and no-go/inconclusive rules."
+        "One deterministic negative per class plus zero model/action dispatch on pre-render failure."
       ]
     },
     {
-      "id": "AC-4",
-      "statement": "The handoff explicitly separates the bounded foundation from post-foundation Context Graph, Retrieval Planner, progressive resolution, context budgeting, async integration and profile acceptance work.",
+      "id": "BENCHMARK_HANDOFF",
+      "statement": "O0 vs O1 freezes all non-Oracle factors, reports full metric/failure/UNKNOWN accounting and makes no live-value claim.",
       "verificationIds": [
-        "foundation-probe"
+        "benchmark",
+        "benchmark-boundary"
       ],
       "evidenceRequired": [
-        "Continuation boundary and allocation rule after 060..064 stabilization."
+        "Fixed-factor manifest, drift/unknown/value-language negatives and metric schema."
+      ]
+    },
+    {
+      "id": "CONTINUATION",
+      "statement": "Foundation is separated from graph productization, planner optimization, progressive runtime, adaptive budgeting, Core interaction and held-out profile acceptance without overloading BB-077..081.",
+      "verificationIds": [
+        "benchmark-boundary",
+        "living-docs"
+      ],
+      "evidenceRequired": [
+        "Continuation order/proposed ids and async-outcome-neutral rule."
       ]
     },
     {
       "id": "INV-1",
       "statement": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "verificationIds": [
-        "foundation-probe"
+        "architecture",
+        "foundation"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Oracle cannot claim/accept/publish/recover product work."
       ]
     },
     {
       "id": "INV-2",
       "statement": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "verificationIds": [
-        "foundation-probe"
+        "probe",
+        "foundation"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Budget/currentness/provenance/manifest failures are explicit and fail closed."
       ]
     },
     {
       "id": "INV-3",
       "statement": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "verificationIds": [
-        "foundation-probe"
+        "architecture",
+        "benchmark-boundary"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "No model-tool/Core/Application ownership or benchmark-authority leak."
       ]
     }
   ],
@@ -162,47 +210,82 @@
     {
       "invariant": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "criterionIds": [
+        "CONVERGENCE",
+        "FOUNDATION_PATH",
         "INV-1"
       ]
     },
     {
       "invariant": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "criterionIds": [
+        "FOUNDATION_PATH",
+        "FAIL_CLOSED",
         "INV-2"
       ]
     },
     {
       "invariant": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "criterionIds": [
+        "CONVERGENCE",
+        "BENCHMARK_HANDOFF",
+        "CONTINUATION",
         "INV-3"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "foundation-probe",
+      "id": "foundation",
+      "command": "node --test test/oracle-context-intelligence-foundation.test.mjs"
+    },
+    {
+      "id": "probe",
       "command": "node scripts/oracle-context-intelligence/probe-foundation.mjs"
     },
     {
-      "id": "architecture-test",
+      "id": "architecture",
       "command": "node --test test/oracle-context-intelligence-architecture.test.mjs"
     },
     {
-      "id": "benchmark-profile",
-      "command": "node scripts/oracle-context-intelligence/benchmark-profile.mjs"
+      "id": "benchmark",
+      "command": "node scripts/oracle-context-intelligence/benchmark-profile.mjs --mode validate"
+    },
+    {
+      "id": "benchmark-boundary",
+      "command": "node --test test/oracle-context-intelligence-benchmark-contract.test.mjs"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test packages/oracle/test/*.test.js"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "package-consumer",
+      "command": "npm run verify:package && npm run verify:consumer"
+    },
+    {
+      "id": "living-docs",
+      "command": "node --test test/oracle-context-intelligence-foundation.test.mjs --test-name-pattern='Living|not delivered|continuation'"
     }
   ],
-  "researchGaps": [
-    "Resolve all BB-060..063 architecture/contract/provider/durability choices into one non-contradictory foundation.",
-    "Freeze the deterministic foundation prototype fixture, metrics and negative cases.",
-    "Bind benchmark controls to the delivered/current BB-065 and BB-077/081 measurement semantics without assuming future outputs exist.",
-    "Allocate BB-082+ continuation work only after the foundation boundaries are stable; do not overload BB-077..081.",
-    "Obtain a new Jev readiness judgment bound to the rebound BB-064 objective and plan."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "A caller embeds provider/tool commands in ContextRequirement or bypasses the semantic resolution seam.",
-    "A stale or provenance-incomplete required context item is represented as current.",
-    "Oracle/provider/planner code attempts to claim work, accept product output, publish product truth or own domain recovery."
+    "Missing/incompatible BB-060..063 dependency proceeds instead of PLAN_INPUT_CONTRADICTION.",
+    "Caller/model selects provider/tool/MCP operation, Core imports Oracle, or Oracle imports Application lifecycle authority.",
+    "Required failure/ambiguity/weak-currentness/stale-index/source-drift reaches model generation.",
+    "Any item/byte/provider-call/resolution-step budget is exceeded without fail-closed.",
+    "Graph context lacks authoritative lineage or same reuseKey accepts divergent/newer-stale semantics.",
+    "Manifest provenance is wrong but artifact is accepted/reused.",
+    "Resolver/project failure dispatches model/action or Oracle gains product authority.",
+    "Benchmark drifts fixed factors, maps UNKNOWN to zero, runs paid/live, or turns fixture byte reduction into value.",
+    "Worker edits Blackboard continuation or Living Docs claim post-foundation features delivered."
   ],
   "supersededAuthority": {
     "rule": "Historical readiness/Jev artifacts remain evidence only; changed objective/plan bindings make them non-authoritative for execution.",
@@ -242,5 +325,523 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-064 Living Oracle truth describes only the implemented and independently verified rebound capability and limitations."
-  }
+  },
+  "foundationContract": {
+    "api": "createOracleContextResolver({ sourceCatalog, retrievalPlanner, durability?, resolverConfiguration }).resolve(ContextRequirement, metadata?) -> ContextResolution",
+    "dependencyRule": "Consume exact DONE BB-060..063 exports; no parallel/redefined contracts.",
+    "pipeline": [
+      "ContextRequirement parse + identity",
+      "authoritative pre-observation",
+      "optional BB-063 exact-key reuse lookup",
+      "BB-062 deterministic RetrievalPlanner",
+      "BB-060/062 provider execution",
+      "ProviderCandidate normalization",
+      "BB-061 ContextResolution materialization/validation",
+      "authoritative post-observation",
+      "optional BB-063 receipt/reuse publication",
+      "ContextResolution return to Core injected resolver port"
+    ],
+    "runtimeRule": "One resolution per selected requirement block per AgentRuntime call; no automatic progressive re-resolution in foundation.",
+    "authorityRule": "Application/domain owns semantic work and product authority; Core owns generic execution/rendering; Oracle owns context resolution only."
+  },
+  "prototypeEvidence": {
+    "classification": "DETERMINISTIC_RESEARCH_FIXTURE_ONLY",
+    "sourceSnapshot": "bc268918a9fce2a42b40f9aa81c8773dcff7b894",
+    "corpusBytes": 46885,
+    "requirementId": "693f34a45c7e5f32116f06bfff242547045918438244e8f9eae42470c9cb4b4d",
+    "resolverConfigDigest": "1596cb99f5cef57a388ce9dac17fa729218de1e98d2a235931be8478e5242c7a",
+    "reuseKey": "f172a900a9e76d96a3db3d11dda580a9b80bce6a29d0e3df50c6a6534eff27fc",
+    "resolutionId": "38b6f4f03c858805497c1063c9b2625dabef99d42be895306936c6990a9e9185",
+    "receiptId": "c374542cf0e3a2ad7926fe6f3f745ec429a23e3093560bddf8f97d626e3bb2c6",
+    "budget": {
+      "maxItems": 3,
+      "maxMaterializedBytes": 6000,
+      "maxProviderCalls": 3,
+      "maxResolutionSteps": 1
+    },
+    "consumed": {
+      "items": 3,
+      "materializedBytes": 4909,
+      "providerCalls": 3,
+      "resolutionSteps": 1
+    },
+    "byteReduction": 0.8953,
+    "checks": [
+      "same observations/config -> same reuseKey",
+      "changed authoritative observation -> different reuseKey",
+      "pre/post source drift rejected",
+      "required provider failure -> UNSATISFIED/non-reusable",
+      "reduced materialization budget -> BUDGET_EXHAUSTED/UNSATISFIED",
+      "provider descriptor product-authority field rejected"
+    ],
+    "claimBoundary": "No model/provider calls; no token/cost/quality/productivity claim."
+  },
+  "benchmarkHandoff": {
+    "schema": "ORACLE_CONTEXT_BENCHMARK_V1",
+    "question": "At fixed model/task/prompt/workspace/Core execution profile/tool surface/resource budget/evaluator, what changes when only the Oracle context profile changes?",
+    "fixedFactors": [
+      "model snapshot and provider route",
+      "task + task digest",
+      "prompt/instruction",
+      "initial workspace/source snapshot",
+      "Core execution profile",
+      "capability/tool surface",
+      "model/runtime/resource ceilings",
+      "artifact extraction",
+      "independent evaluator",
+      "repeat/sample schedule",
+      "pricing/accounting semantics"
+    ],
+    "foundationArms": {
+      "O0": "STATIC_CONTEXT_CONTROL — frozen context supplied without runtime Oracle retrieval",
+      "O1": "ORACLE_FOUNDATION_V1 — delivered BB-060..064 deterministic foundation"
+    },
+    "metrics": [
+      "independent quality/verifier result",
+      "prompt input tokens",
+      "total input/output/cache tokens when known",
+      "normalized provider cost when known",
+      "model turns",
+      "capability/tool calls",
+      "Oracle resolution steps",
+      "Oracle provider calls",
+      "source corpus bytes considered",
+      "materialized context bytes",
+      "rendered prompt-context bytes",
+      "reuse hit/miss/stale/currentness outcomes",
+      "resolution latency",
+      "elapsed task time",
+      "no-progress behavior",
+      "repeat consistency",
+      "failure fingerprint"
+    ],
+    "accounting": "UNKNOWN stays UNKNOWN; provider/infra/currentness status remains separate from quality.",
+    "decision": "BB-064 freezes measurement only; positive thresholds and representative cohort belong to later Oracle benchmark/profile acceptance."
+  },
+  "continuationSchedule": {
+    "allocationAuthority": "Separate canonical Blackboard publication after foundation delivery; proposed ids reflect next-work-id BB-083 at this research baseline.",
+    "tasks": [
+      {
+        "proposedId": "BB-083",
+        "semanticKey": "ORACLE_CONTEXT_GRAPH",
+        "title": "Productize authoritative Context Graph",
+        "requires": [
+          "BB-064 delivered"
+        ]
+      },
+      {
+        "proposedId": "BB-084",
+        "semanticKey": "ORACLE_PLANNER_OPTIMIZATION",
+        "title": "Research Retrieval Planner optimization and ablation",
+        "requires": [
+          "ORACLE_CONTEXT_GRAPH"
+        ]
+      },
+      {
+        "proposedId": "BB-085",
+        "semanticKey": "ORACLE_PROGRESSIVE_RESOLUTION",
+        "title": "Research bounded progressive runtime resolution",
+        "requires": [
+          "ORACLE_PLANNER_OPTIMIZATION"
+        ]
+      },
+      {
+        "proposedId": "BB-086",
+        "semanticKey": "ORACLE_CONTEXT_BUDGETING",
+        "title": "Research adaptive/model-aware context budgeting",
+        "requires": [
+          "ORACLE_PROGRESSIVE_RESOLUTION"
+        ]
+      },
+      {
+        "proposedId": "BB-087",
+        "semanticKey": "ORACLE_CORE_INTEGRATION",
+        "title": "Research Oracle interaction with supported Core execution profile",
+        "requires": [
+          "ORACLE_CONTEXT_BUDGETING",
+          "BB-081 outcome"
+        ]
+      },
+      {
+        "proposedId": "BB-088",
+        "semanticKey": "ORACLE_PROFILE_ACCEPTANCE",
+        "title": "Accept Oracle efficiency profile on held-out fixed-factor benchmark",
+        "requires": [
+          "ORACLE_CORE_INTEGRATION",
+          "benchmark program controls"
+        ]
+      }
+    ],
+    "nonOverload": "BB-077..081 remain Core async-harness work and are not renamed/reused as Oracle tasks.",
+    "asyncRule": "No assumption that BB-081 promotes async; KEEP_SYNC/INCONCLUSIVE leaves sync as supported profile and async interaction NOT_EVALUATED."
+  },
+  "researchEvidence": [
+    {
+      "source": "docs/blackboard/process/oracle-context-intelligence-research/BB-060.md",
+      "finding": "Pins infrastructure ownership and pre-prompt injected Core->Oracle boundary; rejects model-visible capability/resource and dynamic-block-as-resolution."
+    },
+    {
+      "source": "docs/blackboard/process/oracle-context-intelligence-research/BB-061.md",
+      "finding": "Pins provider-neutral ContextRequirement/ContextResolution identity, hard budgets, strong currentness and once-per-call Core resolver semantics."
+    },
+    {
+      "source": "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
+      "finding": "Pins explicit SourceCatalog, deterministic budgeted planner, provider neutrality, authoritative snapshot checks and graph/external provider seams without backend adoption."
+    },
+    {
+      "source": "docs/blackboard/process/oracle-context-intelligence-research/BB-063.md",
+      "finding": "Pins separate reuseKey versus resolutionId, immutable durable receipt/slot semantics and authoritative pre/post currentness fencing."
+    },
+    {
+      "source": "docs/blackboard/process/harness-benchmark-program-research.md",
+      "finding": "Current benchmark reset treats harness/profile as the experimental variable; fixed model/task/prompt/workspace/budget/evaluator and complete accounting are mandatory before value claims."
+    },
+    {
+      "source": "docs/blackboard/process/harness-efficiency-phase.md",
+      "finding": "Future Oracle efficiency work must reuse fixed-factor/ablation discipline and remain separate from Core async semantics."
+    },
+    {
+      "source": "scripts/delivery/baseline/README.md",
+      "finding": "Current baseline separates deterministic controls from LIVE evidence, preserves provider/unknown outcomes and forbids value claims from calibration-only evidence."
+    },
+    {
+      "source": "deterministic BB-064 research prototype",
+      "checked": "2026-09-27",
+      "finding": "Bounded contract model on current source consumed 4,909/46,885 bytes under declared limits and failed stale/provider/budget/authority negatives; no model/provider call was made."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "BB-060..063 converge on one coherent runtime Context Intelligence architecture with no contradictory authority or identity semantics.",
+      "criterionIds": [
+        "CONVERGENCE",
+        "INV-1",
+        "INV-2",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S4"
+      ],
+      "verificationIds": [
+        "foundation",
+        "architecture",
+        "oracle-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-063.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+          "match": "D5 — Core consumes the resolver by dependency injection; Core does not import Oracle implementation and Oracle imports neither Core nor Agentic Application."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+          "match": "D5 — itemDigest binds source snapshot, currentness validators, provenance and content; materialization.id binds normalized ordered items; resolutionId binds requirementId + step + status + materialization.id + unresolved state."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+          "match": "D5 — SourceCatalog separately registers a source snapshot authority capable of resolving/validating authoritative snapshots. A retrieval index cannot satisfy CURRENT merely by reporting its own indexed revision; stale indexedSnapshotRef versus authoritative snapshot is STALE."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+          "match": "D1 — Preserve BB-061 resolutionId unchanged. Add ContextResolutionReuseKey as sha256(canonical(requirementId + resolverConfigDigest + normalized sourceObservations + derivationInputs))."
+        }
+      ],
+      "supportingPlanFields": [
+        "convergenceContract",
+        "dependencyConvergenceEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "An executable requirement -> Oracle -> provider(s) -> ContextResolution prototype preserves provenance/currentness and enforces a context budget.",
+      "criterionIds": [
+        "FOUNDATION_PATH",
+        "INV-2"
+      ],
+      "planElements": [
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "probe",
+        "foundation",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/context.js",
+        "docs/living/system/oracle/artifact-manifest.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "maxSerializedChars = 32_768"
+        },
+        {
+          "ref": "docs/living/system/oracle/artifact-manifest.md",
+          "match": "content SHA-256 check"
+        }
+      ],
+      "supportingPlanFields": [
+        "foundationContract",
+        "prototypeEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Negative cases reject stale currentness, provider failure ambiguity and authority/boundary bypass.",
+      "criterionIds": [
+        "FAIL_CLOSED",
+        "INV-1",
+        "INV-2",
+        "INV-3"
+      ],
+      "planElements": [
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "foundation",
+        "architecture"
+      ],
+      "decisionIndexes": [
+        2,
+        6
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/semantics.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-063.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/semantics.md",
+          "match": "Oracle is not an agent, Advisor, Worker, correctness authority, semantic-memory system or runtime context lifecycle."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+          "match": "D14 — Requirement-resolution failure or projection rejection occurs before model generation. Capability, Resource and LiveObject invocation counts remain zero for context resolution."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+          "match": "D17 — Unsupported language, stale index, missing/renamed symbol, ambiguous symbol, unproven graph fact and external response without a strong source validator map to explicit typed provider failures/unresolved reasons; no silent downgrade."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+          "match": "D10 — Cache-hit and fresh paths both double-fence currentness: authoritative pre-observation before lookup/materialization and post-observation before reuse publication/consumption must have identical normalized digest. Drift produces STALE_DURING_RESOLUTION and no current consumption/publication."
+        }
+      ],
+      "supportingPlanFields": [
+        "failureMatrix"
+      ]
+    },
+    {
+      "objectiveCriterion": "A predeclared benchmark/profile handoff connects Oracle context efficiency to the existing delivery/Core harness measurement controls without fabricating product value.",
+      "criterionIds": [
+        "BENCHMARK_HANDOFF",
+        "INV-3"
+      ],
+      "planElements": [
+        "S5"
+      ],
+      "verificationIds": [
+        "benchmark",
+        "benchmark-boundary"
+      ],
+      "decisionIndexes": [
+        8,
+        9,
+        11
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/harness-benchmark-program-research.md",
+        "scripts/delivery/baseline/README.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "To estimate a harness effect, hold model/task/prompt/start workspace/resource ceilings/artifact extraction/evaluator fixed and change the harness."
+        },
+        {
+          "ref": "scripts/delivery/baseline/README.md",
+          "match": "The report cannot assert pilot value from these three calibrations."
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "The resulting READY plan names exact implementation seams and explicitly schedules the post-foundation Oracle efficiency continuation.",
+      "criterionIds": [
+        "CONVERGENCE",
+        "CONTINUATION"
+      ],
+      "planElements": [
+        "S1",
+        "S6",
+        "S7"
+      ],
+      "verificationIds": [
+        "foundation",
+        "benchmark-boundary",
+        "living-docs"
+      ],
+      "decisionIndexes": [
+        0,
+        10,
+        11
+      ],
+      "sourceRefs": [
+        "docs/blackboard/state.md",
+        "docs/blackboard/process/harness-efficiency-phase.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/state.md",
+          "match": "next-work-id: BB-083"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-phase.md",
+          "match": "Oracle BB-060..064 remains a separate Context Intelligence research phase."
+        }
+      ],
+      "supportingPlanFields": []
+    }
+  ],
+  "convergenceContract": {
+    "ownership": {
+      "application": "declares semantic need and owns work/product acceptance/publication/recovery",
+      "core": "generic execution + pre-render injected contextResolver; no Oracle implementation import",
+      "oracle": "context resolution only; providers/planner/durability remain infrastructure-owned"
+    },
+    "identity": {
+      "requirement": "BB-061 requirementId",
+      "semanticResult": "BB-061 resolutionId",
+      "sourceCurrentness": "BB-062 authoritative SourceCatalog observations; derived/index state cannot self-certify CURRENT",
+      "durableReuse": "BB-063 reuseKey/receipt; never replaces resolutionId or source authority"
+    },
+    "execution": "BB-061 once-per-agent-call resolver -> BB-062 deterministic bounded planning/providers -> BB-061 materialization -> BB-063 optional exact-key reuse with pre/post currentness fence",
+    "foundationLimits": "graph provider seam only; deterministic planner only; immutable progression identity only; hard byte/item/call/step budgets only; no automatic progressive retrieval, adaptive token budgeting, graph DB or model-assisted planning"
+  },
+  "dependencyConvergenceEvidence": {
+    "upstream": {
+      "BB-060": {
+        "status": "READY",
+        "planHash": "f01f6a94cd08ee6a022bb303eacd72ab0dfce26095fca881e8905919e922e9e4",
+        "verdict": "SATISFIED",
+        "role": "Oracle infrastructure ownership + injected Core boundary; no product authority"
+      },
+      "BB-061": {
+        "status": "READY",
+        "planHash": "b7bdbbc0f35736eb1dfd47a4285322d965ad330f180d95da563232f22eac4434",
+        "verdict": "SATISFIED",
+        "role": "ContextRequirement/ContextResolution semantic identity + generic Core pre-render port"
+      },
+      "BB-062": {
+        "status": "READY",
+        "planHash": "b3856cc284678fbd713b414b4f9d667b5a0c86ad7471f9e43a7389635abed43c",
+        "verdict": "SATISFIED",
+        "role": "Source authority + deterministic provider/planner layer; provider details remain internal"
+      },
+      "BB-063": {
+        "status": "READY",
+        "planHash": "03483afd646d206909f035ecd9b876923fcbad1a8db5c48c381aab8b839889c6",
+        "verdict": "SATISFIED",
+        "role": "Durable reuseKey/receipt + pre/post currentness fence; resolutionId unchanged"
+      }
+    },
+    "compatibility": [
+      "Authority: Application/domain owns work/product decisions; Core owns generic execution/rendering; Oracle owns context resolution only.",
+      "Identity: BB-061 requirementId/resolutionId -> BB-062 authoritative source observations -> BB-063 separate reuseKey/receipt; no layer redefines another layer's identity.",
+      "Visibility: provider/planner/durability details stay below Oracle; Core/model never select provider/tool operations.",
+      "Failure: BB-064 S1 preflight must stop PLAN_INPUT_CONTRADICTION if delivered exports diverge from these exact READY contracts."
+    ]
+  },
+  "failureMatrix": [
+    {
+      "case": "provider/source failure or ambiguity",
+      "sourceRule": "BB-062 D17 typed unresolved failures; no silent downgrade",
+      "expected": "UNSATISFIED before model",
+      "verify": [
+        "foundation",
+        "architecture"
+      ]
+    },
+    {
+      "case": "weak/unverifiable/stale CURRENT",
+      "sourceRule": "BB-062 D5 authoritative snapshot + BB-063 D10 pre/post fence",
+      "expected": "CURRENTNESS_UNVERIFIABLE|STALE_DURING_RESOLUTION; non-consumable",
+      "verify": [
+        "foundation"
+      ]
+    },
+    {
+      "case": "item/byte/provider-call/step budget exhaustion",
+      "sourceRule": "BB-061 D10 hard budget",
+      "expected": "BUDGET_EXHAUSTED; no model dispatch",
+      "verify": [
+        "foundation",
+        "probe"
+      ]
+    },
+    {
+      "case": "graph/derived lineage gap",
+      "sourceRule": "BB-063 D6 authoritative observation closure",
+      "expected": "reject materialization/reuse",
+      "verify": [
+        "foundation"
+      ]
+    },
+    {
+      "case": "same reuseKey divergent resolutionId",
+      "sourceRule": "BB-063 D8",
+      "expected": "NONDETERMINISTIC_RESOLUTION_CONFLICT",
+      "verify": [
+        "foundation"
+      ]
+    },
+    {
+      "case": "manifest producer/revision/acceptance/content mismatch",
+      "sourceRule": "existing manifest reader + BB-063 D13",
+      "expected": "fail before receipt publication",
+      "verify": [
+        "foundation",
+        "agentic-regression"
+      ]
+    },
+    {
+      "case": "resolver/project failure",
+      "sourceRule": "BB-061 D14",
+      "expected": "zero model + Capability/Resource/LiveObject dispatch",
+      "verify": [
+        "foundation",
+        "architecture"
+      ]
+    },
+    {
+      "case": "Oracle product authority/import leak",
+      "sourceRule": "BB-060 D5/D11 + Oracle semantics",
+      "expected": "architecture guard fails",
+      "verify": [
+        "architecture"
+      ]
+    }
+  ]
 }
