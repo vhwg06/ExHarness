@@ -50,7 +50,7 @@ NONE
 - BB-073 [RESEARCH_SA/RESEARCH] — Ship an installable supported delivery profile
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
-- BB-082 [RESEARCH_SA/RESEARCH] — Define trusted objective supersession and research reset control
+- BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 
 ## Dependency graph
 
@@ -86,7 +86,7 @@ BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
 BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
-BB-082 [RESEARCH_SCHEDULABLE] <- ROOT
+BB-082 [WORKER_SCHEDULABLE] <- ROOT
 ```
 
 ## Context semantics
