@@ -98,7 +98,8 @@
       "docs/blackboard/process/harness-efficiency-research/BB-077.md"
     ],
     "write": [
-      "benchmarks/harness_efficiency/**"
+      "benchmarks/harness_efficiency/**",
+      "docs/living/system/core-harness/**"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
@@ -115,7 +116,7 @@
     "S3 — Dataset boundary: materialize the six internal calibration tasks, the six pinned Terminal-Bench 2.1 development task digests and four held-out digests; implement oracle/nop preflight, fresh reset, pair identity and hard held-out rejection.",
     "S4 — Accounting + measurement: normalize Harbor trial/verifier/timing data and ExHarness model/turn/tool traces into HARNESS_RUN_RECORD_V1; record monotonic MODEL/capability intervals, stable-prefix/dynamic-suffix hashes/bytes, provider-confirmed cache fields, nullable usage/cost and explicit quality/termination/provider/infra dimensions.",
     "S5 — Live baseline: run three alternating-order paired repeats for each registered development task under the frozen OpenRouter/Anthropic route and finite cohort budget; publish raw pair records plus a multidimensional report with no aggregate winner score.",
-    "S6 — Gate handoff: publish the preregistered BB-081 non-inferiority/efficiency gate and held-out manifest without executing held-out tasks or modifying async product behavior."
+    "S6 — Gate + Living truth handoff: publish the preregistered BB-081 non-inferiority/efficiency gate and held-out manifest without executing held-out tasks; after verified implementation, update Core-harness Living Docs with the delivered measurement capability, exact limitations and unchanged synchronous support profile."
   ],
   "acceptanceCriteria": [
     {
@@ -818,5 +819,13 @@
       "UNKNOWN": "stable prefix or provider usage needed for classification is unavailable"
     },
     "rule": "Never infer provider token counts, cache hits or causal overhead from byte counts or elapsed subtraction. Byte/hash projections establish prompt stability only."
+  },
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "BB-077 Living Docs describe only the delivered benchmark/harness-measurement capability, fixed-factor contract, accounting limitations and current synchronous baseline; they do not claim async promotion or product-value results that BB-081/BB-074 have not established."
   }
 }
