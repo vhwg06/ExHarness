@@ -77,7 +77,9 @@
       "benchmarks/harness_efficiency/bb081/fault-matrix.mjs",
       "benchmarks/harness_efficiency/bb081/run.mjs",
       "benchmarks/harness_efficiency/bb081/accept.mjs",
-      "packages/core-harness/src/execution-profile.js"
+      "packages/core-harness/src/execution-profile.js",
+      "benchmarks/harness_efficiency/bb081/dependency-binding.mjs",
+      "benchmarks/harness_efficiency/bb081/report.mjs"
     ],
     "expectedTests": [
       "benchmarks/harness_efficiency/bb081/test/ablation-contract.test.mjs",
@@ -85,7 +87,8 @@
       "benchmarks/harness_efficiency/bb081/test/fault-matrix.test.mjs",
       "benchmarks/harness_efficiency/bb081/test/decision.test.mjs",
       "benchmarks/harness_efficiency/bb081/test/dependency-binding.test.mjs",
-      "packages/core-harness/test/execution-profile.test.js"
+      "packages/core-harness/test/execution-profile.test.js",
+      "benchmarks/harness_efficiency/bb081/test/report.test.mjs"
     ]
   },
   "sourceScope": {
@@ -125,13 +128,13 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Resolve exact DONE BB-077/078/079/080 artifacts/exports; build dependency hash and identical effect-aware capability binder; fail closed on missing, incompatible, non-composable or zero-treatment seams.",
-    "S2 — Materialize A/B/C/D, held-out digests, two-repeat balanced schedule, fixed BB-077 profile/budget and fresh-unit reset contract.",
-    "S3 — Execute 32 live arm units through the shared Harbor adapter; emit complete HARNESS_RUN_RECORD_V1 ledger and reject non-held-out tasks.",
-    "S4 — Report D/A primary vectors plus A→B/B→C/C→D attribution, repeat consistency and failure fingerprints.",
-    "S5 — Execute deterministic fault matrix with explicit applicability/N/A and exact safety/recovery identity evidence.",
-    "S6 — Deterministically reduce complete evidence to PROMOTE_ASYNC/KEEP_SYNC_BASELINE/INCONCLUSIVE with mutation/unknown/missing-evidence tests.",
-    "S7 — Publish execution-profile contract and Core Living Docs only from the verified decision; preserve CORE_SYNC and quiescent rollback."
+    "S1 — `dependency-binding.mjs` resolves exact DONE BB-077/078/079/080 implementation-result/judgment/Living refs and exports one immutable dependency-manifest hash; `profile-capabilities.mjs` binds the exact BB-077 held-out capability once, constructs the shared effect identity/response union and fails on missing/incompatible/non-composable/zero-treatment seams. Verify with dependency-binding + profile-capabilities tests.",
+    "S2 — `ablation-contract.mjs` exports the canonical A/B/C/D composition, four held-out digests, two-repeat 32-unit balanced order, fixed BB-077 profile/budget hashes and protocol hash; `heldout-profile.json` contains only runtime values/credential env names. Contract tests reject any task/order/fixed-factor drift.",
+    "S3 — `run.mjs` imports the delivered BB-077 Harbor runner/accounting seams plus S1/S2 manifests, creates fresh trial/runtime/provider-session state for every registered unit, executes exactly 32 live arm units, retains retries/failures, records detachable-call counts and writes append-only HARNESS_RUN_RECORD_V1 evidence. Live mode rejects non-held-out tasks and stops INCONCLUSIVE at cohort budget.",
+    "S4 — `report.mjs` deterministically validates the complete ledger and emits the reportContract only: per-unit metrics, token/cost sums, useful-operations/turn, measured detached/model overlap, D/A pairs, A→B/B→C/C→D marginals, repeat consistency and failure fingerprints. It emits no promotion decision. Verify with `report.test.mjs` including token-double-count, useful-operation and overlap negatives.",
+    "S5 — `fault-matrix.mjs` executes only deterministic provider/tool/process/effect fixtures, enforces the declared arm applicability/N/A map and emits exact recovery/safety records keyed by scenario+arm+operation/effect/generation identities. Verify all required D safety outcomes and N/A-not-pass behavior.",
+    "S6 — `accept.mjs` consumes only hashes of S1/S2, complete S4 report and S5 fault evidence plus frozen thresholds; it returns PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE and rejects missing units, unknown primary accounting, budget stop, protocol mutation or stale dependency/source bindings. Verify all outcomes and mutation cases.",
+    "S7 — `execution-profile.js` + `index.js` publish CORE_SYNC always and CORE_ASYNC_FIRST_V1 only from a PROMOTE_ASYNC decision/evidence binding; B/C remain benchmark-only. `execution-profile.test.js` covers KEEP/INCONCLUSIVE, stale evidence and mid-flight rollback rejection; then update Core Living Docs with the verified decision/limits and run full Core regression."
   ],
   "acceptanceCriteria": [
     {
@@ -196,7 +199,8 @@
       "verificationIds": [
         "ablation-contract",
         "fault-matrix",
-        "live-heldout"
+        "live-heldout",
+        "report-contract"
       ],
       "evidenceRequired": [
         "run/report schema fixture with every metric",
@@ -211,7 +215,8 @@
       "statement": "Report matched D/A primary metrics and A→B/B→C/C→D marginal vectors for quality/economics/turns/timing/cache/failures without an aggregate winner score.",
       "verificationIds": [
         "ablation-contract",
-        "decision-contract"
+        "decision-contract",
+        "report-contract"
       ],
       "evidenceRequired": [
         "pair-complete primary+marginal report",
@@ -380,6 +385,10 @@
       "command": "node --test benchmarks/harness_efficiency/bb081/test/ablation-contract.test.mjs"
     },
     {
+      "id": "report-contract",
+      "command": "node --test benchmarks/harness_efficiency/bb081/test/report.test.mjs"
+    },
+    {
       "id": "fault-matrix",
       "command": "node --test benchmarks/harness_efficiency/bb081/test/fault-matrix.test.mjs"
     },
@@ -500,7 +509,8 @@
         "ablation-contract",
         "fault-matrix",
         "live-heldout",
-        "core-regression"
+        "core-regression",
+        "report-contract"
       ],
       "decisionIndexes": [
         1,
