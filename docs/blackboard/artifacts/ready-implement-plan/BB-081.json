@@ -39,7 +39,7 @@
     "D2 — Freeze compositional arms A=CORE_SYNC, B=A+BB-078, C=B+BB-079, D=C+BB-080. B/C are diagnostic; D is the sole promotion candidate.",
     "D3 — Build arms from exact DONE exports. If B/C/D cannot be independently composed, stop with PLAN_INPUT_CONTRADICTION rather than approximate the ablation.",
     "D4 — Use exactly BB-077's four reserved Terminal-Bench 2.1 held-out digests, two repeats per arm/task, fresh trial/runtime/provider session per unit, and the balanced order schedule in ablationContract.",
-    "D5 — Reuse HARNESS_RUN_RECORD_V1 and BB-077 measurement/failure semantics. Extend records only with arm, dependencyManifestHash, repeatIndex and faultScenarioRef.",
+    "D5 — Reuse HARNESS_RUN_RECORD_V1 and BB-077 measurement/failure semantics, extended only with arm/dependency/repeat/fault fields plus reportContract-derived useful-operation and recovery views; unknown measurements remain null.",
     "D6 — Primary decision is D vs A. Report A→B, B→C and C→D marginal vectors only for attribution; no B/C result can publish a supported profile.",
     "D7 — Reuse BB-077's conjunctive gate unchanged: D quality >= A; safety negatives pass with zero duplicate effects; median D/A cost<=0.85, prompt input<=0.90, turns<=1.00, elapsed<=1.10.",
     "D8 — Keep every registered task-repeat unit and retry in accounting. Report per-task 0/2|1/2|2/2 consistency; no best-of-k or significance claim from the bounded cohort.",
@@ -133,7 +133,7 @@
     "S1 — Bind exact DONE BB-077/078/079/080 outputs, compute the dependency manifest, and fail PLAN_INPUT_CONTRADICTION on missing/incompatible/non-composable seams.",
     "S2 — Materialize A/B/C/D plus the four held-out digests, two-repeat balanced schedule, fixed BB-077 profile/budgets and protocol hashes.",
     "S3 — Execute all 32 registered held-out arm units through the shared BB-077 Harbor adapter with fresh state/session identity and append-only HARNESS_RUN_RECORD_V1 accounting.",
-    "S4 — Emit D/A primary and A→B/B→C/C→D attribution vectors for quality, economics, context/cache observations, turns, timing/overlap, consistency and failure fingerprints.",
+    "S4 — Emit reportContract metrics for every registered unit, D/A primary pairs and A→B/B→C/C→D attribution, including quality, input/output/cache tokens, cost, turns, tool calls, useful operations/turn, operation overlap, elapsed time, recovery outcome, repeat consistency and failure fingerprints.",
     "S5 — Run the deterministic fault matrix and capture exact recovery/effect/fencing evidence without paid-provider dependence.",
     "S6 — Run the frozen reducer for PROMOTE_ASYNC|KEEP_SYNC_BASELINE|INCONCLUSIVE; mutation tests cover missing/unknown/drift and every primary gate.",
     "S7 — Publish the evidence-bound supported profile only after PROMOTE_ASYNC and update Core Living Docs with the actual decision, limitations and rollback boundary."
@@ -175,22 +175,25 @@
         "live-heldout"
       ],
       "evidenceRequired": [
-        "complete ledger",
-        "denominator reconciliation",
-        "unknown/retry negatives",
-        "cohort budget"
+        "complete HARNESS_RUN_RECORD_V1 ledger",
+        "provider token/cost fields or explicit UNKNOWN",
+        "model/tool/operation timing records",
+        "retry/failure denominator reconciliation",
+        "cohort budget record"
       ]
     },
     {
       "id": "ATTRIBUTION",
-      "statement": "Reports provide D/A primary plus A→B, B→C and C→D marginal vectors without an opaque aggregate or B/C promotion.",
+      "statement": "Every registered unit and matched comparison reports quality, input/output/cache tokens, cost, model turns, tool calls, useful operations per turn, useful-operation overlap, elapsed time, recovery outcome, repeat consistency and failure fingerprints; D/A is primary and A→B/B→C/C→D are diagnostic.",
       "verificationIds": [
         "ablation-contract",
         "decision-contract"
       ],
       "evidenceRequired": [
-        "pair-complete primary/marginal report",
-        "B/C diagnostic marker"
+        "per-unit report rows with every reportContract field",
+        "D/A paired views and A→B/B→C/C→D marginal views",
+        "null/UNKNOWN handling fixtures",
+        "B/C diagnostic-only marker"
       ]
     },
     {
@@ -503,11 +506,16 @@
         {
           "ref": "packages/core-harness/src/effect-reconciliation.js",
           "match": "case EffectReplayPolicy.NON_RECONCILABLE:"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+          "match": "\"metrics\": ["
         }
       ],
       "supportingPlanFields": [
         "ablationContract",
-        "faultMatrix"
+        "faultMatrix",
+        "reportContract"
       ]
     },
     {
@@ -786,30 +794,43 @@
     "failClosed": "cannot bind without changing fixed surface => PLAN_INPUT_CONTRADICTION"
   },
   "reportContract": {
-    "unit": "one registered task-digest + repeat + arm",
-    "liveFields": [
-      "verifierQuality",
-      "providerPromptTokens",
-      "providerCachedInputTokens",
-      "providerCacheWriteTokens",
-      "providerOutputTokens",
-      "totalProviderTokens=prompt+output (cached input is a prompt subset, never double-counted)",
-      "providerChargedCostUsd",
-      "normalizedCostUsd",
-      "modelTurns",
-      "toolHostCalls",
+    "version": 1,
+    "perRegisteredUnit": [
+      "independent verifier quality",
+      "provider prompt/input/output/cached/cache-write tokens when known",
+      "provider charged + normalized cost when known",
+      "model turns",
+      "tool/host calls",
       "usefulOperationCount",
       "usefulOperationsPerTurn",
-      "detachedOperationOverlapMs",
+      "modelActiveMs",
+      "capabilityActiveMs",
+      "modelCapabilityOverlapMs",
+      "usefulOperationOverlapMs",
       "elapsedMs",
-      "failureFingerprint",
-      "usageStatus"
+      "termination/provider/infrastructure failure fingerprint",
+      "recoveryOutcome"
     ],
-    "usefulOperation": "unique non-duplicate capability operation that succeeds and is not poll/heartbeat/no-progress, and either mutatesCandidate=true or its result/terminal update is consumed by a later model request/final result",
-    "usefulOperationsPerTurn": "usefulOperationCount / modelTurns; null when modelTurns=0",
-    "detachedOperationOverlapMs": "union duration where a delivered BB-078 RUNNING→terminal operation interval overlaps an active MODEL interval; A is 0/N/A by construction, B/C/D are measured from operation transitions + BB-077 MODEL intervals",
-    "tokenRule": "prompt/output/cached/cache-write remain provider-observed nullable fields; fresh input may be derived only when prompt and cached input are known; totalProviderTokens never adds cached tokens twice",
-    "recoveryOutcome": "ordinary live units record NOT_APPLICABLE; deterministic fault records use RECOVERED|FAILED_CLOSED|UNSAFE|NOT_APPLICABLE plus exact scenario/arm identity",
-    "aggregation": "report every unit plus per-arm sums for tokens/cost/tool calls, medians for paired ratios/elapsed, per-task 0/2|1/2|2/2 acceptance, and fault outcome matrix; unknown fields remain null/reason"
+    "definitions": {
+      "usefulOperationCount": "Count distinct capability/detached-operation executions that reach a terminal successful result bound to the current run and become model-visible or mutate the candidate; duplicate transition/wakeup delivery never increments the count.",
+      "usefulOperationsPerTurn": "usefulOperationCount / modelTurns when modelTurns>0; otherwise null with explicit reason.",
+      "usefulOperationOverlapMs": "Union duration in which >=2 useful operations are simultaneously RUNNING; zero only when complete operation timing is known.",
+      "recoveryOutcome": "NOT_APPLICABLE|RECOVERED|ESCALATED|FAILED|UNKNOWN, derived only from deterministic recovery/fault evidence or an observed live recovery path.",
+      "unknownRule": "Unknown token/cost/timing/recovery fields remain null/UNKNOWN and never become zero or success."
+    },
+    "pairedViews": [
+      "D/A primary per task-repeat unit",
+      "A->B detached-operation attribution",
+      "B->C context/cache attribution",
+      "C->D steering/recovery attribution"
+    ],
+    "aggregateViews": [
+      "accepted-task rate",
+      "cost per accepted task",
+      "median paired token/cost/turn/elapsed ratios",
+      "per-task 0/2|1/2|2/2 repeat consistency",
+      "failure-fingerprint recurrence",
+      "recovery-outcome counts"
+    ]
   }
 }
