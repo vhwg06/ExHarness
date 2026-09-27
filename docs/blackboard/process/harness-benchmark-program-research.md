@@ -313,6 +313,8 @@ BB-076  converged implementation-plan candidate; fresh Jev still required
 
 No task is moved to Worker by this research change.
 
+Because this PR changes only Research/SA contracts and does not change delivered runtime behavior, it must be classified `CURRENT_SYSTEM_NOT_CHANGED`; Living system truth changes only with later verified Worker delivery.
+
 ## Research gate for any future benchmark task
 
 A benchmark-related task cannot become READY until it has:
