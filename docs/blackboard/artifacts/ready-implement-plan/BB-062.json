@@ -18,15 +18,21 @@
     "oracle.retrieval-planner-boundary"
   ],
   "outOfScope": [
-    "Moving product/domain scheduling, acceptance, publication or recovery authority into Oracle.",
-    "Treating historical BB-060..064 READY/Jev artifacts as current implementation authority.",
-    "Claiming live coding-agent or product value from deterministic research prototypes or source inspection."
+    "Changing the BB-061 caller-facing ContextRequirement/ContextResolution schema or Core pre-render resolution port.",
+    "Shipping or embedding Zoekt, Serena, SolidLSP, Graphiti or Cognee binaries/runtime dependencies inside ExHarness.",
+    "Adding a provider-selection LLM or exposing provider/tool selection to the model.",
+    "Adding durable ContextResolution storage, cache reuse/invalidation or replay lifecycle; BB-063 owns that.",
+    "Implementing the post-foundation Context Graph product or automatic progressive runtime retrieval.",
+    "Moving product/domain scheduling, acceptance, publication, recovery or external-effect authority into Oracle."
   ],
   "constraints": [
-    "Research must inspect current source plus primary external evidence, distinguish retained findings from superseded assumptions, and compare reuse with the smallest ExHarness-owned seam.",
-    "Application/domain authority remains outside Oracle; Core consumes semantic context but does not own provider/source-specific retrieval.",
-    "Required context is budgeted, provenance-bound and currentness-checked; missing or ambiguous required evidence fails closed.",
-    "Worker execution is unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
+    "Provider capability metadata and operations remain Oracle-internal; ContextRequirement never names providerId, transport, tool or operation.",
+    "Source identity is independent of retrieval family: lexical, semantic and structural providers over repository code must preserve the same repository ref/snapshot/currentness contract.",
+    "CURRENT retrieval cannot let an index self-certify freshness; indexed/provider snapshot identity must be comparable with an authoritative source-snapshot observation.",
+    "The first RetrievalPlanner is deterministic and budget-reserving; model-assisted planning is deferred until a matched benchmark proves value worth another model turn.",
+    "Exact repository/artifact providers from BB-060 and semantic contract/Core seam from BB-061 are dependency inputs, not redefined by BB-062.",
+    "Public GitHub implementation evidence must satisfy the >=1,000-star rule and record exact source pin/license at the research check.",
+    "Worker execution remains unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
   ],
   "invariants": [
     "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
@@ -34,119 +40,200 @@
     "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership."
   ],
   "architectureDecisions": [
-    "Source providers advertise bounded capabilities below Oracle; callers never receive a model-visible generic provider/tool registry.",
-    "Research compares complementary retrieval families: Zoekt-style lexical indexing, Serena/LSP symbols, Aider-style structural repo maps, and Graphiti/Cognee-style graph context.",
-    "Repository and accepted-artifact readers remain first-class providers with their existing identity/provenance semantics.",
-    "MCP is only an optional transport/capability adapter below a provider boundary; it cannot own retrieval policy or work lifecycle.",
-    "The Retrieval Planner consumes ContextRequirement plus budget and selects bounded provider work; its implementation style remains open until experiment evidence."
+    "D1 — SourceCatalog is an explicit composition-time registry below Oracle, not a model-visible generic tool registry. Duplicate provider ids or ambiguous source-authority registrations fail closed.",
+    "D2 — Retrieval provider descriptor fields are providerId, sourceKinds, operations, snapshotModes, validatorKinds and optional languageIds. Provider priority/policy is owned by RetrievalPlanner, not self-declared by the provider.",
+    "D3 — Internal operations are READ_EXACT, SEARCH_LEXICAL, LOOKUP_SYMBOL, FIND_REFERENCES, STRUCTURAL_MAP, TRAVERSE_GRAPH and FETCH_EXTERNAL. These verbs never enter ContextRequirement.",
+    "D4 — ProviderCandidate preserves evidenceId, source kind/ref/snapshotRef/itemRef, validators, provenance and content. providerId/operation/score/rank/latency are diagnostic providerEvidence only and do not become semantic source identity/currentness authority.",
+    "D5 — SourceCatalog separately registers a source snapshot authority capable of resolving/validating authoritative snapshots. A retrieval index cannot satisfy CURRENT merely by reporting its own indexed revision; stale indexedSnapshotRef versus authoritative snapshot is STALE.",
+    "D6 — The first RetrievalPlanner is deterministic. Exact itemRefs prefer READ_EXACT. Repository semantic needs without exact itemRefs use semantic-code and lexical capabilities within the declared provider-call budget; lexical remains fallback when semantic lookup is unsupported.",
+    "D7 — Semantic-code planning sends a normalized semantic query to an injected symbolClient and may use returned symbol/reference identities for bounded FIND_REFERENCES. The caller does not supply LSP commands.",
+    "D8 — Structural map is an Oracle-internal bounded projection over normalized definition/reference edges, inspired by Aider. It is not a primary retriever and cannot initiate unbounded discovery.",
+    "D9 — Context-graph provider is a typed graph-client seam only. The research typed-edge experiment returned exact cross-source projections averaging 399 bytes versus 48,983 raw bytes (97.71% reduction), so a graph seam is justified; a separate graph database is not yet justified.",
+    "D10 — External/MCP-backed sources use the same ProviderCandidate and source-snapshot checks. MCP is transport only and cannot introduce MCP task/session/tool authority into Oracle semantics.",
+    "D11 — Zoekt is the lexical adapter target: Apache-2.0, sourcegraph/zoekt@153817f643cde8b229ee388c1dddbcf07f4798af, >=1,000 stars. It offers indexed code search plus repository branch/version metadata. BB-062 uses an injected client adapter rather than embedding the Go implementation.",
+    "D12 — Serena full application is not adopted: oraios/serena@7a2968335f2198b966864de1ce3655c8e485a653 is GPL-3.0-or-later while SolidLSP is MIT. BB-062 defines an injected semantic symbol client; LSP/SolidLSP remains an out-of-process implementation option.",
+    "D13 — Aider is inspiration/algorithm reuse only: Aider-AI/aider@5dc9490bb35f9729ef2c95d00a19ccd30c26339c, Apache-2.0, >=1,000 stars. Its definition/reference graph + PageRank + token budget informs structural projection but the application is not a dependency.",
+    "D14 — Graphiti and Cognee are not foundation dependencies. Graphiti@ba4a9cb32495b6864160616f8dfa2b898f4a500c and Cognee@eb90d03740755f5252b8b12cce91fd09970f2d81 are Apache-2.0 and >=1,000 stars; their temporal graph/code-memory capabilities remain comparison evidence for later Context Graph work.",
+    "D15 — Research family benchmark on the same 8-file/4-query corpus measured mean Recall@3 lexical=0.792, symbol=0.875, structural=0.750. This supports complementary lexical+semantic retrieval and rejects structural ranking as a universal primary retriever.",
+    "D16 — Planner fallback may switch provider implementations only when the same source/snapshot/currentness contract can still be proven. It may never weaken EXACT/CURRENT constraints, provenance requirements or budget.",
+    "D17 — Unsupported language, stale index, missing/renamed symbol, ambiguous symbol, unproven graph fact and external response without a strong source validator map to explicit typed provider failures/unresolved reasons; no silent downgrade.",
+    "D18 — Same-problem graph/context evidence: a disposable typed source graph over the identical 8-file/Q1-Q4 corpus used verified import/contract relations and bounded node/relation labels; it achieved mean Recall@3=1.000, Precision@3=0.667, MRR=1.000 and mean bytes@3=70,163. This closes the graph/context comparison on the same representative problems but is explicitly not a Graphiti/Cognee execution or backend-adoption result."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/artifact-manifest.js",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/process/oracle-context-intelligence-research.md",
       "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/semantics.md"
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/core-harness/state.md"
     ],
     "expectedNew": [
-      "packages/oracle/src/context-resolution.js",
-      "scripts/oracle-context-intelligence/README.md"
+      "packages/oracle/src/provider-contract.js",
+      "packages/oracle/src/source-catalog.js",
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/providers/lexical-search.js",
+      "packages/oracle/src/providers/semantic-code.js",
+      "packages/oracle/src/providers/structural-map.js",
+      "packages/oracle/src/providers/context-graph.js",
+      "packages/oracle/src/providers/external-source.js",
+      "scripts/oracle-context-intelligence/bb062-retrieval-benchmark.mjs"
     ],
     "expectedTests": [
+      "packages/oracle/test/provider-contract.test.js",
+      "packages/oracle/test/retrieval-planner.test.js",
+      "packages/oracle/test/provider-adapters.test.js",
       "test/oracle-provider-boundary.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/artifact-manifest.js",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/agent-runtime.js",
       "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "packages/agentic-system/test/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/core-harness/**",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/work-graph.json",
       "docs/blackboard/process/oracle-context-intelligence-research.md",
-      "scripts/delivery/baseline/**",
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
       "scripts/**",
       "test/**",
       "package.json"
     ],
     "write": [
       "packages/oracle/**",
-      "packages/core-harness/**",
-      "scripts/oracle-context-intelligence/**",
-      "test/**",
-      "docs/living/system/oracle/**",
-      "docs/living/system/core-harness/**",
+      "scripts/oracle-context-intelligence/bb062-retrieval-benchmark.mjs",
+      "test/oracle-provider-boundary.test.mjs",
+      "docs/living/system/oracle/architecture.md",
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/oracle/workflow.md",
       "package.json"
     ],
     "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "Pin primary sources/releases/licenses and the representative ExHarness retrieval corpus.",
-    "Run a same-query provider shootout and graph-feasibility experiment with predeclared relevant files/symbols/relationships.",
-    "Select the smallest provider topology and planner seam justified by measured relevance, context size, latency, update/currentness and failure behavior."
+    "S1 [PROVIDER_CONTRACT,INV-2,INV-3] — After BB-060/061 dependency outputs exist, add provider-contract.js and export the new provider/planner public surface through the dependency-created packages/oracle/src/index.js. Implement strict provider descriptors, ProviderCandidate normalization and typed provider failures. Provider metadata is Oracle-internal; reject lifecycle-authority fields and candidate source/currentness/provenance omissions.",
+    "S2 [CATALOG,CURRENTNESS,INV-2] — Add SourceCatalog with explicit composition-time provider registrations plus one authoritative snapshot authority per applicable source namespace. Fail on duplicate provider ids/authority ambiguity. For CURRENT, compare provider/index snapshotRef to authoritative snapshot; self-reported index freshness is insufficient.",
+    "S3 [ADAPTERS,PROVIDER_NEUTRALITY] — Add injected lexical-search and semantic-code adapters. Lexical adapter accepts a Zoekt-like search client and normalizes indexed repository/version/file/snippet results. Semantic adapter accepts a symbolClient with workspace-symbol/lookup/reference capabilities. Neither adapter imports external projects or exposes their protocol/tool commands above Oracle.",
+    "S4 [STRUCTURAL_GRAPH_EXTERNAL] — Add Aider-inspired structural-map projection over normalized symbol/reference edges; add typed context-graph client seam and external-source transport seam. Structural projection is bounded and cannot source-discover independently. Graph/external candidates require authoritative provenance/currentness paths.",
+    "S5 [PLANNER,BUDGET,INV-1,INV-3] — Add deterministic RetrievalPlanner producing bounded RetrievalWork. Reserve provider-call/item/byte budget before invocation. Exact item refs use exact providers; repository semantic needs compose semantic+lexical providers within budget; unsupported semantic lookup may fall back to lexical; structural refinement consumes existing edges; graph/external work is selected only for matching source kinds. No model call or Application scheduling primitive is used.",
+    "S6 [BENCHMARK] — Add bb062-retrieval-benchmark.mjs with the predeclared 8-file corpus and identical Q1-Q4 ground truth for FOUR arms: lexical, semantic/symbol, structural-map and typed graph/context. The typed-graph fixture must derive declared import/contract relations rather than use manually ranked answers. Report every arm/attempt, Recall@3, Precision@3, MRR, materialized bytes, latency, setup/update cost proxy and exact provenance/currentness coverage. Reference research results: lexical Recall@3=0.792, semantic=0.875, structural=0.750, typed graph/context=1.000; structural is not promoted to primary unless it matches/exceeds lexical. Separately retain the four cross-source authority queries and require exact answers with >=0.95 mean byte reduction.",
+    "S7 [NEGATIVE_INTEGRATION] — Add provider/planner/boundary tests for stale index versus authoritative head, unsupported language, deleted/renamed/ambiguous symbol, budget exhaustion, provider timeout, graph candidate without authoritative path, external/MCP response without validator, duplicate registrations, caller provider-command leakage and forbidden Oracle authority.",
+    "S8 [LIVING_TRUTH] — Update Oracle Living Docs with SourceCatalog/provider/planner topology and exact limitations. Explicitly state that Zoekt/LSP/Graphiti/Cognee runtimes are not bundled, graph persistence/durable ContextResolution lifecycle is not delivered, and model-assisted planning is not delivered."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "A provider capability topology covers repository/artifact, lexical, semantic-code and graph seams without expanding the caller-facing semantic contract.",
+      "id": "PROVIDER_TOPOLOGY",
+      "statement": "A strict SourceCatalog/provider contract covers exact repository/artifact, lexical, semantic-code, structural, graph and external seams without expanding the caller-facing ContextRequirement contract.",
       "verificationIds": [
-        "provider-boundary-test"
+        "provider-contract",
+        "provider-boundary"
       ],
       "evidenceRequired": [
-        "Capability catalog fixture and negative caller/provider leakage cases."
+        "Provider descriptor/candidate fixtures and negative caller/provider-command leakage cases."
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Representative retrieval experiments compare at least lexical, semantic/symbol and structural-map approaches on the same predeclared corpus and report all attempts.",
+      "id": "PLANNER",
+      "statement": "RetrievalPlanner deterministically maps ContextRequirement evidence plus remaining budget into bounded provider work without model calls or Application scheduling authority.",
+      "verificationIds": [
+        "planner-unit",
+        "provider-boundary"
+      ],
+      "evidenceRequired": [
+        "Exact, semantic repository, unsupported-language fallback, graph/external and insufficient-budget planning traces with reserved budgets."
+      ]
+    },
+    {
+      "id": "CURRENTNESS",
+      "statement": "Indexed/derived providers cannot self-certify CURRENT; provider candidates are consumable only when exact snapshot/currentness/provenance can be bound to an authoritative source observation.",
+      "verificationIds": [
+        "provider-contract",
+        "adapter-unit"
+      ],
+      "evidenceRequired": [
+        "Stale-index/current-head mismatch, exact snapshot, graph provenance and external-validator negative fixtures."
+      ]
+    },
+    {
+      "id": "RETRIEVAL_EVIDENCE",
+      "statement": "The executable reference benchmark compares lexical, semantic/symbol, structural-map and typed graph/context approaches on the SAME predeclared ExHarness Q1–Q4 retrieval problems and preserves all attempts/metrics.",
       "verificationIds": [
         "retrieval-benchmark"
       ],
       "evidenceRequired": [
-        "Raw query corpus, ground truth, recall/relevance, context bytes/tokens, latency and failure records."
+        "One shared corpus/ground-truth manifest plus Recall@3, Precision@3, MRR, materialized bytes, latency/setup-update metrics and provenance/currentness records for every one of the four arms."
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "Graph/context approaches are adopted only if they provide cross-source/currentness value beyond simpler retrieval composition with complete provenance.",
+      "id": "GRAPH_DECISION",
+      "statement": "Graph support is delivered as a typed provider seam/projection only; no graph database is adopted without measured value beyond explicit authoritative edges.",
       "verificationIds": [
-        "retrieval-benchmark"
+        "retrieval-benchmark",
+        "provider-boundary"
       ],
       "evidenceRequired": [
-        "Graph feasibility results including update/invalidation and provenance paths."
+        "Four exact structured-edge query results with byte-reduction metrics and dependency scan proving Graphiti/Cognee are not runtime dependencies."
+      ]
+    },
+    {
+      "id": "REUSE_DECISION",
+      "statement": "Zoekt, Serena/SolidLSP, Aider, Graphiti and Cognee have explicit pinned reuse/adaptation/rejection decisions based on license, integration/currentness behavior and measured retrieval role.",
+      "verificationIds": [
+        "research-evidence",
+        "provider-boundary"
+      ],
+      "evidenceRequired": [
+        "Pinned source/license/star evidence and dependency-negative checks."
       ]
     },
     {
       "id": "INV-1",
       "statement": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "verificationIds": [
-        "retrieval-benchmark"
+        "provider-boundary",
+        "planner-unit"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Negative cases reject provider/planner work lifecycle, acceptance, publication, recovery or external-effect authority."
       ]
     },
     {
       "id": "INV-2",
       "statement": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "verificationIds": [
-        "retrieval-benchmark"
+        "provider-contract",
+        "planner-unit",
+        "adapter-unit"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Budget/currentness/provenance/source identity failures are explicit and required evidence fails closed."
       ]
     },
     {
       "id": "INV-3",
       "statement": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "verificationIds": [
-        "retrieval-benchmark"
+        "provider-boundary",
+        "planner-unit"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "No provider registry/tool surface reaches model/Core/Application ownership; dependency direction remains Oracle-owned."
       ]
     }
   ],
@@ -154,43 +241,79 @@
     {
       "invariant": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "criterionIds": [
-        "INV-1"
+        "INV-1",
+        "PLANNER"
       ]
     },
     {
       "invariant": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "criterionIds": [
-        "INV-2"
+        "INV-2",
+        "CURRENTNESS",
+        "RETRIEVAL_EVIDENCE"
       ]
     },
     {
       "invariant": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "criterionIds": [
-        "INV-3"
+        "INV-3",
+        "PROVIDER_TOPOLOGY",
+        "GRAPH_DECISION"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "retrieval-benchmark",
-      "command": "node scripts/oracle-context-intelligence/benchmark-retrieval.mjs"
+      "id": "provider-contract",
+      "command": "node --test packages/oracle/test/provider-contract.test.js"
     },
     {
-      "id": "provider-boundary-test",
+      "id": "planner-unit",
+      "command": "node --test packages/oracle/test/retrieval-planner.test.js"
+    },
+    {
+      "id": "adapter-unit",
+      "command": "node --test packages/oracle/test/provider-adapters.test.js"
+    },
+    {
+      "id": "provider-boundary",
       "command": "node --test test/oracle-provider-boundary.test.mjs"
+    },
+    {
+      "id": "retrieval-benchmark",
+      "command": "node scripts/oracle-context-intelligence/bb062-retrieval-benchmark.mjs"
+    },
+    {
+      "id": "research-evidence",
+      "command": "node --test test/oracle-provider-boundary.test.mjs --test-name-pattern='evidence|license|dependency|provider-neutral'"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test packages/oracle/test/*.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "living-docs",
+      "command": "node --test test/oracle-provider-boundary.test.mjs --test-name-pattern='Living|not delivered|BB-063'"
     }
   ],
-  "researchGaps": [
-    "Pin exact source/release/license/star evidence for Serena, Zoekt, Aider, Graphiti and Cognee; any public repo used must satisfy the 1,000-star rule.",
-    "Define representative ExHarness retrieval queries and predeclare relevant files/symbols/relationships before running candidate comparisons.",
-    "Decide reuse, adapter, inspiration-only or rejection for each candidate based on experiment and integration cost.",
-    "Determine whether the first Retrieval Planner is deterministic, model-assisted or hybrid; benchmark the choice under the same budget.",
-    "Resolve executable fixture/index setup and exact provider adapter write scope before readiness."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "A caller embeds provider/tool commands in ContextRequirement or bypasses the semantic resolution seam.",
-    "A stale or provenance-incomplete required context item is represented as current.",
-    "Oracle/provider/planner code attempts to claim work, accept product output, publish product truth or own domain recovery."
+    "ContextRequirement contains providerId/tool/operation/MCP method or caller selects a concrete provider.",
+    "SourceCatalog allows duplicate provider id or multiple unqualified snapshot authorities for one source namespace.",
+    "Zoekt-like result reports indexed revision X while authoritative repository head is Y and is still represented as CURRENT.",
+    "Semantic provider unsupported-language/ambiguous/deleted symbol silently becomes a valid exact semantic result.",
+    "Planner exceeds provider-call/item/materialized-byte budget or retries without reserved budget.",
+    "Planner invokes a model to select providers or exposes RetrievalWork as an agent/model tool.",
+    "Structural projection initiates unbounded retrieval rather than ranking already-normalized edges.",
+    "Graph candidate without authoritative provenance/currentness path satisfies REQUIRED evidence.",
+    "MCP/external transport success without exact source snapshot/validator satisfies CURRENT evidence.",
+    "Oracle/provider/planner claims work, accepts product output, publishes product truth, mutates external effects or owns domain recovery.",
+    "Graphiti/Cognee/Serena application is added as runtime dependency despite the research decision.",
+    "Living Docs claim durable ContextResolution cache/replay, graph persistence or model-assisted planning is delivered by BB-062."
   ],
   "supersededAuthority": {
     "rule": "Historical readiness/Jev artifacts remain evidence only; changed objective/plan bindings make them non-authoritative for execution.",
@@ -226,9 +349,249 @@
   "livingDocs": {
     "refs": [
       "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/state.md"
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/oracle/workflow.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-062 Living Oracle truth describes only the implemented and independently verified rebound capability and limitations."
+    "statement": "BB-062 Living Oracle truth describes only the delivered SourceCatalog/provider contracts, deterministic planner and bounded provider adapters/projections, with external runtimes, durable resolution lifecycle, graph persistence and model-assisted planning explicitly not delivered."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Research defines a provider capability model that can add one source without expanding the caller-facing semantic contract.",
+      "criterionIds": [
+        "PROVIDER_TOPOLOGY",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "provider-contract",
+        "provider-boundary"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        9
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/oracle.js",
+        "docs/living/system/oracle/semantics.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "export async function resolveBackendContext"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "export async function resolveQaContext"
+        },
+        {
+          "ref": "docs/living/system/oracle/semantics.md",
+          "match": "There is no generic resolver abstraction in current source."
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Serena/LSP, Zoekt-style indexed search, Aider repo-map patterns and graph/context approaches are compared on the same representative retrieval problems.",
+      "criterionIds": [
+        "RETRIEVAL_EVIDENCE",
+        "REUSE_DECISION",
+        "GRAPH_DECISION"
+      ],
+      "planElements": [
+        "S3",
+        "S4",
+        "S6"
+      ],
+      "verificationIds": [
+        "retrieval-benchmark",
+        "research-evidence"
+      ],
+      "decisionIndexes": [
+        8,
+        10,
+        11,
+        12,
+        13,
+        14,
+        17
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research.md",
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/agent-runtime.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "## Experiment 1 — Code retrieval provider shootout"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "## Experiment 2 — Context Graph feasibility"
+        },
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "maxSerializedChars = 32_768"
+        },
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "latestPromptContext = await renderAgentContext({"
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "A retrieval-planner seam consumes ContextRequirement plus budget and emits bounded provider work without becoming application scheduling authority.",
+      "criterionIds": [
+        "PLANNER",
+        "INV-1",
+        "INV-2",
+        "INV-3"
+      ],
+      "planElements": [
+        "S2",
+        "S5",
+        "S7"
+      ],
+      "verificationIds": [
+        "planner-unit",
+        "provider-boundary"
+      ],
+      "decisionIndexes": [
+        4,
+        5,
+        6,
+        15,
+        16
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/semantics.md",
+        "docs/living/system/core-harness/state.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/semantics.md",
+          "match": "Oracle is not an agent, Advisor, Worker, correctness authority, semantic-memory system or runtime context lifecycle."
+        },
+        {
+          "ref": "docs/living/system/core-harness/state.md",
+          "match": "Oracle              -> source resolution / dereference / adaptation"
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "An executable experiment measures relevance/recall, context bytes or tokens, latency, setup/update cost and provenance completeness.",
+      "criterionIds": [
+        "RETRIEVAL_EVIDENCE",
+        "CURRENTNESS",
+        "GRAPH_DECISION"
+      ],
+      "planElements": [
+        "S6",
+        "S7"
+      ],
+      "verificationIds": [
+        "retrieval-benchmark",
+        "adapter-unit"
+      ],
+      "decisionIndexes": [
+        4,
+        14,
+        16
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research.md",
+        "docs/blackboard/component-registry.json",
+        "docs/blackboard/work-graph.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "Recall@k / relevant-symbol coverage"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "update/invalidation latency"
+        },
+        {
+          "ref": "docs/blackboard/component-registry.json",
+          "match": "\"id\": \"oracle/infrastructure\""
+        },
+        {
+          "ref": "docs/blackboard/work-graph.json",
+          "match": "\"id\": \"BB-064\""
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Future external/MCP-backed sources can be adapted without bypassing source identity/currentness checks.",
+      "criterionIds": [
+        "PROVIDER_TOPOLOGY",
+        "CURRENTNESS",
+        "INV-2",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S4",
+        "S7"
+      ],
+      "verificationIds": [
+        "provider-contract",
+        "adapter-unit",
+        "provider-boundary"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        9,
+        15,
+        16
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/architecture.md",
+        "docs/living/system/oracle/state.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/architecture.md",
+          "match": "Any later concrete MCP-backed source must remain a source/capability adapter below the application-owned context/work lifecycle boundary."
+        },
+        {
+          "ref": "docs/living/system/oracle/state.md",
+          "match": "MCP remains a source/capability adapter"
+        }
+      ],
+      "supportingPlanFields": []
+    }
+  ],
+  "dependencyHandoff": {
+    "BB-060": [
+      "@exharness/oracle package",
+      "repository exact-source provider",
+      "application-artifact exact-source provider",
+      "Agentic compatibility facade remains above Oracle"
+    ],
+    "BB-061": [
+      "ContextRequirement/ContextResolution semantic contract",
+      "Oracle context-contract identity/currentness helpers",
+      "Core injected pre-render resolver seam"
+    ],
+    "rule": "Worker must inspect delivered dependency outputs before coding and extend them in place; it may not recreate alternate exact providers, semantic contracts or Core resolution ports."
   }
 }
