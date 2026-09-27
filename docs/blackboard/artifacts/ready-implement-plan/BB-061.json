@@ -53,7 +53,8 @@
     "D12 — The semantic schema implementation belongs under @exharness/oracle. No shared contracts package is introduced; Core does not import Oracle or duplicate Oracle schema.",
     "D13 — Core adds contextRequirementBlocks + contextResolver as a generic pre-render port. A selected block resolves exactly once per agent call, projects to an ordinary fixed context block, then existing renderAgentContext enforces trust and serialized-size policy.",
     "D14 — Requirement-resolution failure or projection rejection occurs before model generation. Capability, Resource and LiveObject invocation counts remain zero for context resolution.",
-    "D15 — Backend/QA compatibility is proven by deterministic fixture mappers only in BB-061; production provider orchestration remains unchanged until later Oracle tasks."
+    "D15 — Backend/QA compatibility is proven by deterministic fixture mappers only in BB-061; production provider orchestration remains unchanged until later Oracle tasks.",
+    "D16 — Provider-neutrality is falsifiable with four fixtures using one contract shape: repository semantic-code need (Oracle may use LSP/symbol retrieval), repository lexical need (Oracle may use indexed search), context-graph relationship need, and accepted application-artifact need. The requirement names semantic need + source constraints only; provider selection/query construction remains below Oracle and no fixture may contain providerId, tool, operation, queryDsl or MCP method fields."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -149,7 +150,7 @@
     "S3 [CORE_PORT,INV-3] — Add packages/core-harness/src/context-resolution.js with defineContextRequirementBlock() and resolveContextRequirementBlocks(). Core treats requirement/resolution values as opaque JSON-safe data. A requirement block is {name,description?,trust,requirement,project}. resolveContextRequirementBlocks receives selected block names, resolver.resolve(requirement,metadata), and returns ordinary fixed ContextBlock definitions. Core imports no Oracle module.",
     "S4 [RUNTIME_PATH,FAIL_CLOSED,INV-3] — Extend createAgentRuntime() with contextRequirementBlocks=[] and contextResolver=null. For each run, after callId/input/context are established and before any prompt render/model generation, resolve selected requirement blocks exactly once using metadata {callId,judgment,input,context}; project each resolution; combine projected fixed blocks with existing ordinary context blocks; then call existing renderAgentContext. Turn-aware prepareTurn() re-renders ordinary context/history but reuses the same fixed projected requirement blocks for every turn in that call. Unselected requirement blocks cause zero resolver calls. Missing resolver, resolver rejection or project rejection fails before model generation and without Capability/Resource/LiveObject invocation.",
     "S5 [COMPATIBILITY,INV-1] — Add scripts/oracle-context-intelligence/bb061-contract-compatibility-probe.mjs using deterministic fixtures only. Map one current BackendWorkOrder into repository EXACT requirements and one current QaWorkOrder into accepted-artifact EXACT requirements with required producer/acceptance provenance; construct fixture ContextResolutions; map back through existing BackendContextSchema/QaContextSchema. Assert exact repository ref/revision/file ordering/sourceRef and exact QA upstream/artifact/sourceRef/APPLICATION_ARTIFACT producer+acceptance provenance survive. Do not change Backend/QA production application paths.",
-    "S6 [VERIFICATION,AUTHORITY] — Add packages/oracle/test/context-contract.test.js, packages/core-harness/test/context-resolution.test.js and test/oracle-context-contract-boundary.test.mjs. Cover every identity field, unknown/provider/tool/lifecycle fields, stale/weak-only CURRENT, missing/ambiguous/budget exhaustion, optional partial, progression parent/index/counters, provenance identity, same semantic result under different operational cost, no Core->Oracle import, no Oracle lifecycle authority, once-per-call resolution and zero model/action calls on failure.",
+    "S6 [VERIFICATION,AUTHORITY,PROVIDER_NEUTRALITY] — Add packages/oracle/test/context-contract.test.js, packages/core-harness/test/context-resolution.test.js and test/oracle-context-contract-boundary.test.mjs. Cover every identity field, unknown/provider/tool/lifecycle fields, stale/weak-only CURRENT, missing/ambiguous/budget exhaustion, optional partial, progression parent/index/counters, provenance identity, same semantic result under different operational cost, no Core->Oracle import, no Oracle lifecycle authority, once-per-call resolution and zero model/action calls on failure. Add four provider-neutral requirement fixtures: semantic-code over repository source, lexical-search over the same repository source, context-graph relationship retrieval, and accepted application-artifact retrieval; all parse through the same ContextRequirement schema while provider-specific query/tool fields are absent and rejected if injected.",
     "S7 [LIVING_TRUTH] — Update Oracle Living architecture/state/semantics with the delivered semantic contract and explicit limits; update Core architecture/state/workflow with the injected pre-render context-resolution port, once-per-call freeze semantics and separation from Capability/Resource/LiveObject. Do not claim provider catalog/planner, durable resolution persistence/cache invalidation, automatic progressive re-resolution or benchmark value."
   ],
   "acceptanceCriteria": [
@@ -197,13 +198,14 @@
     },
     {
       "id": "PROVIDER_NEUTRALITY",
-      "statement": "The same contract can describe repository/artifact exact reads and future semantic-code, lexical and graph-backed context without exposing provider-specific operations.",
+      "statement": "One ContextRequirement schema expresses semantic-code, lexical-search, context-graph and application-artifact needs using only semantic need/source constraints; provider-specific operations remain below Oracle.",
       "verificationIds": [
         "oracle-contract-unit",
         "research-evidence"
       ],
       "evidenceRequired": [
-        "Provider-neutral source constraints plus evidence comparison showing retrieval implementation stays below Oracle."
+        "Four deterministic fixtures (semantic-code, lexical-search, context-graph, application-artifact) parse/normalize through the same schema and retain source/currentness/provenance constraints.",
+        "Negative fixtures prove providerId/tool/operation/queryDsl/mcpMethod are rejected rather than becoming caller-visible commands."
       ]
     },
     {
@@ -722,24 +724,28 @@
         0,
         1,
         11,
-        12
+        12,
+        15
       ],
       "sourceRefs": [
-        "docs/blackboard/process/oracle-context-intelligence-research.md",
-        "packages/core-harness/src/context.js"
+        "docs/blackboard/process/oracle-context-intelligence-research.md"
       ],
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
-          "match": "Source Catalog"
+          "match": "| [Aider](https://github.com/Aider-AI/aider)"
         },
         {
           "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
-          "match": "Retrieval Planner"
+          "match": "| [Serena](https://github.com/oraios/serena)"
         },
         {
-          "ref": "packages/core-harness/src/context.js",
-          "match": "export function defineContextBlock(definition = {})"
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "| [Zoekt](https://github.com/sourcegraph/zoekt)"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "| [Graphiti](https://github.com/getzep/graphiti)"
         }
       ],
       "supportingPlanFields": []
