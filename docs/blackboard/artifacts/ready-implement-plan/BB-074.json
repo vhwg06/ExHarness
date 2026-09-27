@@ -9,17 +9,28 @@
     "hash": "593426f48ba644483f434153eb2b55384e7bf83ff4e3e325b380d7a5a66f4e06"
   },
   "scope": [
-    "delivery.pilot"
+    "delivery.pilot",
+    "delivery.value-benchmark",
+    "delivery.human-effort",
+    "delivery.lifecycle-value"
   ],
   "outOfScope": [
-    "Unbounded autonomous product decisions and expansion beyond the supported delivery profile.",
-    "Replacing delivered Integration or Oracle authority contracts.",
-    "Treating this research allocation as implementation readiness or product delivery."
+    "Changing delivered product/Core/Oracle semantics or benchmark thresholds after results.",
+    "Treating public benchmark scores, vendor claims or selected demos as ExHarness product-value evidence.",
+    "Forcing a fake direct-agent analogue for lifecycle capabilities that only the delivery product exposes.",
+    "Implementing BB-075 HOW improvements or BB-076 release acceptance."
   ],
   "constraints": [
-    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
-    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
-    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments."
+    "Worker binds exact DONE BB-065/071/073/077/081 artifacts plus the supported release/profile; missing or incompatible bindings => PLAN_INPUT_CONTRADICTION.",
+    "External comparison holds model/provider, task digest/instruction, start environment, tool surface, aggregate provider/token/time ceilings, final verifier and reset policy fixed; only DIRECT_CODEACT vs supported ExHarness delivery orchestration varies.",
+    "External cohort is sealed before model results: six primary + two ordered reserve Terminal-Bench 2.1 tasks, all unused by BB-077/081; reserve substitution is allowed only for failed oracle/nop preflight before any live arm dispatch.",
+    "Every primary task runs two repeats per arm = 24 registered arm units. Fresh sandbox/runtime/provider session is required per unit; all attempts/retries/failures remain recorded.",
+    "Human effort is measured only from explicit operator events. Idle/tool/provider time is never inferred as active effort; zero effort requires an explicit NO_INTERVENTION record.",
+    "Benchmark setup and independent evaluator time are excluded from product human effort; operator review/decision/coordination/manual repair are included and manual edits are marked human-assisted.",
+    "Quality remains independent-verifier owned. Producer success, human perception, runtime success or model termination cannot accept delivery.",
+    "Primary value gates are frozen before live results: ExHarness accepted-unit rate >= Direct; zero critical escaped defects; total operator active time <=80% of Direct; provider cost per accepted delivery <=110% of Direct; all required lifecycle scenarios pass.",
+    "Unknown primary provider cost, missing human-event coverage, missing registered unit, task/verifier/profile drift or incomplete lifecycle evidence => INCONCLUSIVE, never value demonstrated.",
+    "Lead time, repeat consistency, failure fingerprints and perceived ease are reported diagnostics; no opaque composite score or arbitrary dollar conversion of human time is permitted."
   ],
   "invariants": [
     "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
@@ -27,112 +38,228 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Ratify the BB-065 predeclared pilot protocol without post-result threshold changes; recruit two representative repository/use-case contexts.",
-    "Candidate direction, not selected architecture: Control model/tool budget, task familiarity and selection effects; report uncertainty and all failed attempts.",
-    "Candidate direction, not selected architecture: Separate accepted task quality, human review/repair time, total cost and elapsed lead time; define go/no-go."
+    "D1 — Reuse BB-077 Harbor substrate, DIRECT_CODEACT control, provider/measurement/failure contracts and exact supported Core profile selected by BB-081. BB-074 adds delivery orchestration and human-effort measurement; it does not redefine harness accounting.",
+    "D2 — External arm E is the exact supported ExHarness release/profile from BB-073+BB-081; arm D is BB-077 DIRECT_CODEACT. Both receive the same Terminal-Bench instruction/environment/final verifier and aggregate live budget.",
+    "D3 — Freeze six external primary tasks: configure-git-webserver, git-multibranch, build-cython-ext, modernize-scientific-stack, custom-memory-heap-crash, sqlite-with-gcov. Ordered reserves are openssl-selfsigned-cert then db-wal-recovery; all digests are pinned in externalCohort.",
+    "D4 — Before any live model call, each primary/reserve candidate used must pass Harbor oracle 5/5 and nop fail 1/1. Substitution follows reserve order and is sealed in one cohort hash before arm results.",
+    "D5 — Run two repeats per task/arm. Counterbalance D/E order across 12 task-repeat pairs; fresh task environment, product/direct runtime state and provider session per unit. A retry is a new attempt inside the same unit.",
+    "D6 — Give both arms the same aggregate ceiling: USD1.20 provider cost, 360k input tokens, 24k output tokens, 24 model turns, 96 host/tool calls and 1800s wall time per registered arm unit; live external cohort ceiling is USD35.",
+    "D7 — Record DELIVERY_HUMAN_EVENT_V1 with explicit START/PAUSE/RESUME/STOP or NO_INTERVENTION. Included categories are OPERATOR_REVIEW, PRODUCT_DECISION, COORDINATION and MANUAL_EDIT; excluded categories are BENCHMARK_SETUP, INDEPENDENT_EVAL and PASSIVE_WAIT.",
+    "D8 — Primary active human effort is the union duration of included operator intervals per unit; overlapping categories are not double-counted and overlapping active intervals across units are forbidden. Manual edits remain visible and final quality still comes from the same independent verifier.",
+    "D9 — Lifecycle evidence is separate from the causal D/E task comparison. Run six exact delivered-product scenarios derived from BB-071/073: local requirement change, cross-domain requirement change, kill/resume+duplicate activation, stale-worker/deployment fence, clean install+reference delivery, upgrade/rollback compatibility.",
+    "D10 — Lifecycle scenarios report active human effort, lead time, provider cost when live, recovery/fencing result and independent acceptance. No direct-arm symmetry is invented where the capability does not exist.",
+    "D11 — Use a deterministic reducer with outcomes VALUE_DEMONSTRATED, NO_VALUE_DEMONSTRATED or INCONCLUSIVE. Complete evidence + any primary gate failure => NO_VALUE; incomplete/unknown/drift => INCONCLUSIVE.",
+    "D12 — Human perception is diagnostic only. An optional post-unit ease/confidence rating may be collected, but it cannot override observed active time, verifier quality or economics; this avoids perception-as-productivity substitution.",
+    "D13 — BB-075 may consume observed bottlenecks/failure fingerprints only after BB-074 freezes and publishes this value result. BB-076 later reproduces the exact release and value profile."
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-071.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-073.json",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
+      "docs/blackboard/process/delivery-product-roadmap.md",
       "packages/agentic-system/src/domain-execution-control.js",
       "docs/living/system/state.md"
     ],
     "expectedNew": [
-      "scripts/delivery/bb-074-probe.mjs"
+      "benchmarks/delivery_value/contract.mjs",
+      "benchmarks/delivery_value/external-cohort.json",
+      "benchmarks/delivery_value/human-events.mjs",
+      "benchmarks/delivery_value/lifecycle.mjs",
+      "benchmarks/delivery_value/run.mjs",
+      "benchmarks/delivery_value/report.mjs",
+      "benchmarks/delivery_value/accept.mjs"
     ],
     "expectedTests": [
-      "test/delivery/bb-074.test.mjs"
+      "benchmarks/delivery_value/test/contract.test.mjs",
+      "benchmarks/delivery_value/test/human-events.test.mjs",
+      "benchmarks/delivery_value/test/lifecycle.test.mjs",
+      "benchmarks/delivery_value/test/decision.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
+      "benchmarks/**",
+      "scripts/delivery/**",
       "packages/agentic-system/**",
       "packages/core-harness/**",
       "packages/oracle/**",
       "docs/living/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-071*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-073*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-077*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-081*",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
       "docs/blackboard/process/delivery-product-roadmap.md",
-      "docs/blackboard/process/delivery-research/BB-074.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "docs/blackboard/process/delivery-research/BB-074.md"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "benchmarks/delivery_value/**",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
       "docs/blackboard/**",
-      ".github/**"
+      ".github/**",
+      "packages/agentic-system/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "package.json"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S1 — Bind exact DONE benchmark/product dependencies and supported release/profile; seal fixed-factor arm manifests.",
+    "S2 — Preflight and seal six external held-out tasks plus ordered reserves before any live arm dispatch.",
+    "S3 — Implement explicit human-event ledger and unit lifecycle with fresh D/E environments and complete attempt/provider accounting.",
+    "S4 — Run 24 external registered arm units and produce paired quality/economics/human-effort/lead-time/failure evidence.",
+    "S5 — Run six product lifecycle scenarios from BB-071/073 and capture recovery/fencing/install/rollback plus human effort.",
+    "S6 — Reduce complete evidence to VALUE_DEMONSTRATED, NO_VALUE_DEMONSTRATED or INCONCLUSIVE with frozen gates.",
+    "S7 — Publish report and update Living truth with only the verified value result, limitations and exact release/protocol bindings."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "At least the predeclared pilot sample is executed with equivalent direct-agent comparison and a held-out set; all attempts are recorded.",
+      "id": "DEPENDENCY",
+      "statement": "Worker binds exact DONE BB-065/071/073/077/081 outputs and one supported release/profile; stale/missing/incompatible inputs fail before live dispatch.",
       "verificationIds": [
-        "live-probe"
+        "contract"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "dependency/release/profile manifest",
+        "mismatch negatives"
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Quality and value gates fixed before the run are evaluated from raw evidence including failures/retries and human intervention.",
+      "id": "COHORT",
+      "statement": "Exactly six sealed primary tasks, two repeats and D/E arms form 24 registered units under identical fixed factors; reserve replacement occurs only after preflight and before results.",
       "verificationIds": [
-        "live-probe"
+        "contract",
+        "live-external"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "task digests",
+        "oracle/nop preflight",
+        "cohort hash",
+        "24-unit manifest",
+        "reserve-rule negatives"
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "A failed or inconclusive value gate yields an explicit no-go or follow-up scope; delivery cannot be claimed from selected successful demos.",
+      "id": "ACCOUNTING",
+      "statement": "All attempts/retries/provider failures and nullable token/cost fields remain append-only and bound to registered units; no success-only filtering or unknown-to-zero conversion occurs.",
       "verificationIds": [
-        "live-probe"
+        "contract",
+        "live-external"
       ],
       "evidenceRequired": [
-        "Exact release/source/runtime identity, raw output, failure records and independent assessment for this criterion."
+        "attempt ledger",
+        "provider usage/cost refs",
+        "unknown/retry negatives"
+      ]
+    },
+    {
+      "id": "HUMAN_EFFORT",
+      "statement": "Primary human effort derives only from explicit included DELIVERY_HUMAN_EVENT_V1 intervals, with excluded benchmark/evaluator/wait time separated and zero requiring NO_INTERVENTION.",
+      "verificationIds": [
+        "human-events",
+        "live-external"
+      ],
+      "evidenceRequired": [
+        "event ledger",
+        "interval-union proof",
+        "manual-edit markers",
+        "zero/overlap/missing-event negatives"
+      ]
+    },
+    {
+      "id": "QUALITY",
+      "statement": "Both arms use the same independent final verifier; ExHarness accepted-unit rate is no lower than Direct and critical escaped defects are zero.",
+      "verificationIds": [
+        "contract",
+        "live-external",
+        "decision"
+      ],
+      "evidenceRequired": [
+        "24 verifier results",
+        "arm-blind artifact identities",
+        "quality denominator",
+        "critical-defect evidence"
+      ]
+    },
+    {
+      "id": "ECONOMICS",
+      "statement": "Primary value requires ExHarness total operator active time <=80% of Direct and provider cost per accepted delivery <=110% of Direct under complete known accounting.",
+      "verificationIds": [
+        "human-events",
+        "live-external",
+        "decision"
+      ],
+      "evidenceRequired": [
+        "arm totals",
+        "cost-per-accepted calculation",
+        "paired diagnostics",
+        "gate boundary fixtures"
+      ]
+    },
+    {
+      "id": "LIFECYCLE",
+      "statement": "All six delivered-product lifecycle scenarios pass their independent acceptance/fencing/recovery expectations and report active effort, elapsed time and cost/status without invented direct symmetry.",
+      "verificationIds": [
+        "lifecycle",
+        "decision"
+      ],
+      "evidenceRequired": [
+        "scenario traces",
+        "requirement-change evidence",
+        "kill/resume/duplicate fence",
+        "stale fence",
+        "clean install",
+        "upgrade/rollback"
+      ]
+    },
+    {
+      "id": "DECISION",
+      "statement": "Frozen reducer emits only VALUE_DEMONSTRATED, NO_VALUE_DEMONSTRATED or INCONCLUSIVE; complete primary failure is NO_VALUE and incomplete/unknown/drift is INCONCLUSIVE.",
+      "verificationIds": [
+        "decision"
+      ],
+      "evidenceRequired": [
+        "fixtures for all outcomes",
+        "missing/cost/event/profile drift mutations",
+        "no post-result threshold change"
       ]
     },
     {
       "id": "INV-1",
-      "statement": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
+      "statement": "Benchmark/run/runtime success cannot become product, QA, publication or external-effect authority.",
       "verificationIds": [
-        "boundary-probe"
+        "boundary"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "authority-negative cases"
       ]
     },
     {
       "id": "INV-2",
-      "statement": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
+      "statement": "Every result binds exact release/source/task/attempt/configuration/evidence and unknown effects or missing evidence cannot be called success.",
       "verificationIds": [
-        "boundary-probe"
+        "contract",
+        "lifecycle",
+        "boundary"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "binding-drift and unresolved-effect negatives"
       ]
     },
     {
       "id": "INV-3",
-      "statement": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
+      "statement": "Outer Blackboard remains ExHarness-development control; benchmark tooling does not become product-runtime coordination.",
       "verificationIds": [
-        "boundary-probe"
+        "boundary"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "changed-path/authority boundary proof"
       ]
     }
   ],
@@ -140,44 +267,67 @@
     {
       "invariant": "Application owns work semantics and domain authority; Oracle owns source IO; runtime success is not acceptance or publication authority.",
       "criterionIds": [
+        "QUALITY",
+        "LIFECYCLE",
+        "DECISION",
         "INV-1"
       ]
     },
     {
       "invariant": "Every result binds exact source, attempt, configuration and evidence; unknown effects or missing evidence cannot be called success.",
       "criterionIds": [
+        "DEPENDENCY",
+        "ACCOUNTING",
+        "LIFECYCLE",
         "INV-2"
       ]
     },
     {
       "invariant": "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system.",
       "criterionIds": [
+        "DEPENDENCY",
         "INV-3"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-074-probe.mjs"
+      "id": "contract",
+      "command": "node --test benchmarks/delivery_value/test/contract.test.mjs"
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-074.test.mjs"
+      "id": "human-events",
+      "command": "node --test benchmarks/delivery_value/test/human-events.test.mjs"
+    },
+    {
+      "id": "lifecycle",
+      "command": "node --test benchmarks/delivery_value/test/lifecycle.test.mjs"
+    },
+    {
+      "id": "decision",
+      "command": "node --test benchmarks/delivery_value/test/decision.test.mjs"
+    },
+    {
+      "id": "live-external",
+      "command": "node benchmarks/delivery_value/run.mjs --mode external --cohort benchmarks/delivery_value/external-cohort.json"
+    },
+    {
+      "id": "boundary",
+      "command": "git diff --name-only \"$BB074_BASELINE_SHA\" \"$BB074_CANDIDATE_SHA\" | node benchmarks/delivery_value/run.mjs --mode verify-boundary"
     }
   ],
-  "researchGaps": [
-    "Ratify the BB-065 predeclared pilot protocol without post-result threshold changes; recruit two representative repository/use-case contexts.",
-    "Control model/tool budget, task familiarity and selection effects; report uncertainty and all failed attempts.",
-    "Separate accepted task quality, human review/repair time, total cost and elapsed lead time; define go/no-go.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Producer success with failing independent acceptance.",
-    "Missing or stale source/runtime identity represented as current evidence.",
-    "Unresolved external effect retried as if confirmed safe."
+    "A BB-077/081 development or held-out task is reused in the BB-074 external cohort.",
+    "Reserve substitution occurs after any live arm result is observed.",
+    "D/E arms differ in model/provider/task/environment/tool surface/budget/final verifier.",
+    "A retry replaces an earlier failed attempt or unknown token/cost fields become zero.",
+    "Human effort is inferred from idle/tool/provider time or an unlogged run is treated as zero intervention.",
+    "Benchmark setup or independent evaluator time is counted as product operator effort.",
+    "Manual edit is hidden while final candidate is reported as fully autonomous.",
+    "ExHarness is called value-demonstrated with lower accepted rate, a critical escaped defect, >80% Direct active effort, >110% Direct cost/accepted, or failed lifecycle scenario.",
+    "Incomplete cost/event/unit/lifecycle evidence is converted to NO_VALUE or VALUE instead of INCONCLUSIVE.",
+    "Downstream BB-075/076 or producer narrative changes thresholds or overrides the reducer."
   ],
   "laneContracts": [
     {
@@ -209,6 +359,331 @@
       "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-074 Living truth describes only the implemented and independently verified supported capability and limitations."
-  }
+    "statement": "BB-074 Living truth records only the independently verified value outcome, exact release/protocol/cohort bindings, multidimensional measurements and limitations. INCONCLUSIVE or NO_VALUE_DEMONSTRATED cannot be phrased as demonstrated delivery value."
+  },
+  "externalCohort": {
+    "version": 1,
+    "dataset": "terminal-bench/terminal-bench-2-1",
+    "sourceCommit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "primary": [
+      [
+        "terminal-bench/configure-git-webserver",
+        "sha256:e3dc712acfecdb1338a889f86c97b37422c3778351253f9aca4236e895fdb36e"
+      ],
+      [
+        "terminal-bench/git-multibranch",
+        "sha256:7759a92a373c967dd31535975bad8659410644025673fe62385444fd2605c5fa"
+      ],
+      [
+        "terminal-bench/build-cython-ext",
+        "sha256:35dc561790e73f13e59837828ac0863c0893edc6b71d42cf7d58656c843adf12"
+      ],
+      [
+        "terminal-bench/modernize-scientific-stack",
+        "sha256:67a9952aca67df9c70510acf62faea336644a0e9d379f3aaf9df79f14c8fcb12"
+      ],
+      [
+        "terminal-bench/custom-memory-heap-crash",
+        "sha256:61e021e0304c9818a9be2c9173c8a0938ce5d136e95c5422e099f1fdb2dc080e"
+      ],
+      [
+        "terminal-bench/sqlite-with-gcov",
+        "sha256:9f9bd57fbf9f4831e9031755e83aea6b9d60d2b2d54e8a12d48cff4dca3c231d"
+      ]
+    ],
+    "reserves": [
+      [
+        "terminal-bench/openssl-selfsigned-cert",
+        "sha256:d4afa2bd2a9ba1420db8d6cfde42ffdb4873ae2d955c35014e8da94444c83302"
+      ],
+      [
+        "terminal-bench/db-wal-recovery",
+        "sha256:07e9193513bfce038b9f9d84962ecc85683eee0a642d14ee6fb7104b086ddab4"
+      ]
+    ],
+    "preflight": "oracle 5/5 and nop fail 1/1; ordered reserve replacement before first live result only",
+    "arms": {
+      "D": "BB-077 DIRECT_CODEACT",
+      "E": "BB-073 supported ExHarness delivery release using BB-081 supported Core profile"
+    },
+    "repeats": 2,
+    "units": 24,
+    "order": "For task index 1..6: repeat1 alternates D->E for odd tasks/E->D for even; repeat2 reverses repeat1.",
+    "perUnitBudget": {
+      "usd": 1.2,
+      "inputTokens": 360000,
+      "outputTokens": 24000,
+      "modelTurns": 24,
+      "hostCalls": 96,
+      "wallSeconds": 1800
+    },
+    "cohortUsd": 35,
+    "reset": "fresh Harbor env + arm runtime/product state + unique provider session per registered unit",
+    "allAttempts": true
+  },
+  "humanEffortContract": {
+    "schemaVersion": 1,
+    "event": "DELIVERY_HUMAN_EVENT_V1",
+    "included": [
+      "OPERATOR_REVIEW",
+      "PRODUCT_DECISION",
+      "COORDINATION",
+      "MANUAL_EDIT"
+    ],
+    "excluded": [
+      "BENCHMARK_SETUP",
+      "INDEPENDENT_EVAL",
+      "PASSIVE_WAIT"
+    ],
+    "lifecycle": [
+      "START",
+      "PAUSE",
+      "RESUME",
+      "STOP",
+      "NO_INTERVENTION"
+    ],
+    "primary": "union milliseconds of included intervals per registered unit; no double count",
+    "zero": "valid only with explicit NO_INTERVENTION",
+    "overlap": "active included intervals may not overlap across registered units",
+    "manualEdit": "allowed but must bind changed artifact/commit and mark humanAssisted=true",
+    "perception": "optional post-unit ease/confidence diagnostic only; never a gate",
+    "privacy": "screen recording is not required; event/action refs must be auditable"
+  },
+  "lifecycleContract": {
+    "version": 1,
+    "scenarios": [
+      "LOCAL_REQUIREMENT_CHANGE",
+      "CROSS_DOMAIN_REQUIREMENT_CHANGE",
+      "KILL_RESUME_DUPLICATE_ACTIVATION",
+      "STALE_WORKER_DEPLOYMENT_FENCE",
+      "CLEAN_INSTALL_REFERENCE_DELIVERY",
+      "UPGRADE_ROLLBACK_COMPATIBILITY"
+    ],
+    "source": "exact DONE BB-071 and BB-073 delivered capabilities",
+    "metrics": [
+      "independent acceptance",
+      "operatorActiveMs",
+      "elapsedMs",
+      "providerCost when live",
+      "recovery/fence outcome",
+      "failure fingerprint"
+    ],
+    "rule": "all six required; no fake direct baseline; missing/incompatible delivered scenario semantics => PLAN_INPUT_CONTRADICTION"
+  },
+  "decisionContract": {
+    "outcomes": [
+      "VALUE_DEMONSTRATED",
+      "NO_VALUE_DEMONSTRATED",
+      "INCONCLUSIVE"
+    ],
+    "primaryUnit": "12 matched external task-repeat D/E pairs",
+    "gates": {
+      "quality": "accepted units E >= D and criticalEscapedDefects=0",
+      "humanEffort": "total operatorActiveMs(E) <= 0.80 * total operatorActiveMs(D)",
+      "providerEconomics": "providerCostPerAccepted(E) <= 1.10 * providerCostPerAccepted(D), with known costs",
+      "lifecycle": "all six lifecycle scenarios pass"
+    },
+    "reportOnly": [
+      "elapsed lead time",
+      "paired active-time deltas",
+      "repeat consistency",
+      "failure fingerprints",
+      "perceived ease/confidence"
+    ],
+    "noValue": "complete valid evidence and any primary gate fails",
+    "inconclusive": "missing registered unit, unknown primary cost, missing human-event coverage, invalid task/verifier/profile binding or incomplete lifecycle evidence",
+    "noComposite": "do not merge human time/provider cost/quality into one scalar score"
+  },
+  "researchEvidence": [
+    {
+      "source": "METR, Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity (2025)",
+      "finding": "RCT used real repository tasks and observed implementation time; developer perceptions diverged from measured time, supporting observed effort over self-reported speedup."
+    },
+    {
+      "source": "METR, We are Changing our Developer Productivity Experiment Design (2026-02-24)",
+      "finding": "Participation/selection effects can bias productivity experiments; BB-074 seals cohort and all-attempt accounting before results."
+    },
+    {
+      "source": "SPACE of Developer Productivity (ACM Queue/Microsoft Research, 2021)",
+      "finding": "Developer productivity is multidimensional; activity alone is not a sufficient outcome measure."
+    },
+    {
+      "source": "EngThrive (Microsoft Research, 2026)",
+      "finding": "Operational developer measurement should combine Speed, Ease and Quality outcome metrics rather than optimize activity counts."
+    },
+    {
+      "source": "DORA software delivery performance metrics, updated 2026-01-05",
+      "finding": "Lead time and recovery/stability are complementary delivery outcomes; BB-074 reports lead time and lifecycle recovery without treating speed alone as value."
+    },
+    {
+      "source": "BB-077/BB-081 current benchmark contracts",
+      "finding": "Provide neutral Harbor/direct control, fixed-factor measurement, failure taxonomy and supported Core profile boundary reused by BB-074."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "At least the predeclared pilot sample is executed with equivalent direct-agent comparison and a held-out set; all attempts are recorded.",
+      "criterionIds": [
+        "DEPENDENCY",
+        "COHORT",
+        "ACCOUNTING",
+        "HUMAN_EFFORT",
+        "QUALITY"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "contract",
+        "human-events",
+        "live-external"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/delivery-product-roadmap.md",
+        "docs/blackboard/process/harness-benchmark-program-research.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-077.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "BB-074 measures end-to-end delivery value."
+        },
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "Layer D — delivery harness value (BB-074)"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+          "match": "\"runRecord\": \"HARNESS_RUN_RECORD_V1\""
+        }
+      ],
+      "supportingPlanFields": [
+        "externalCohort",
+        "humanEffortContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Quality and value gates fixed before the run are evaluated from raw evidence including failures/retries and human intervention.",
+      "criterionIds": [
+        "ACCOUNTING",
+        "HUMAN_EFFORT",
+        "QUALITY",
+        "ECONOMICS",
+        "LIFECYCLE",
+        "DECISION"
+      ],
+      "planElements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6"
+      ],
+      "verificationIds": [
+        "human-events",
+        "lifecycle",
+        "decision",
+        "live-external"
+      ],
+      "decisionIndexes": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/delivery-product-roadmap.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "Results are a multidimensional profile:"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+          "match": "\"outcomes\": ["
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "ExecutionAttempt"
+        }
+      ],
+      "supportingPlanFields": [
+        "humanEffortContract",
+        "lifecycleContract",
+        "decisionContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "A failed or inconclusive value gate yields an explicit no-go or follow-up scope; delivery cannot be claimed from selected successful demos.",
+      "criterionIds": [
+        "ACCOUNTING",
+        "LIFECYCLE",
+        "DECISION",
+        "INV-1",
+        "INV-2",
+        "INV-3"
+      ],
+      "planElements": [
+        "S4",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "verificationIds": [
+        "contract",
+        "lifecycle",
+        "decision",
+        "boundary"
+      ],
+      "decisionIndexes": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/delivery-product-roadmap.md",
+        "docs/living/system/state.md",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "A failed or inconclusive preregistered gate yields a scoped follow-up or no-go."
+        },
+        {
+          "ref": "docs/living/system/state.md",
+          "match": "The baseline has no product runtime, acceptance-publication authority, or completed comparative value claim."
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "ExecutionJudgmentBundle"
+        }
+      ],
+      "supportingPlanFields": [
+        "decisionContract",
+        "lifecycleContract"
+      ]
+    }
+  ]
 }
