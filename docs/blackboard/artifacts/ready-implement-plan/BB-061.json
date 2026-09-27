@@ -17,15 +17,21 @@
     "oracle.failure-semantics"
   ],
   "outOfScope": [
-    "Moving product/domain scheduling, acceptance, publication or recovery authority into Oracle.",
-    "Treating historical BB-060..064 READY/Jev artifacts as current implementation authority.",
-    "Claiming live coding-agent or product value from deterministic research prototypes or source inspection."
+    "Selecting lexical, LSP/semantic, graph, vector, ranking or persistence backends; BB-062/063 own measured provider and durable-currentness choices.",
+    "Automatic progressive re-resolution during a live AgentRuntime call; BB-061 defines immutable chain semantics but resolves once per call.",
+    "Moving product/domain scheduling, acceptance, publication, recovery or external-effect authority into Oracle.",
+    "Replacing Core maxSerializedChars with model-specific token accounting; source-resolution budget and prompt-render budget remain distinct.",
+    "Changing current Backend/QA production orchestration to use the new generic contract before BB-060 is delivered and BB-062 selects provider topology."
   ],
   "constraints": [
-    "Research must inspect current source plus primary external evidence, distinguish retained findings from superseded assumptions, and compare reuse with the smallest ExHarness-owned seam.",
-    "Application/domain authority remains outside Oracle; Core consumes semantic context but does not own provider/source-specific retrieval.",
-    "Required context is budgeted, provenance-bound and currentness-checked; missing or ambiguous required evidence fails closed.",
-    "Worker execution is unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
+    "ContextRequirement describes semantic need, source constraints and hard limits only; strict parsing rejects provider/tool commands and lifecycle-authority fields.",
+    "ContextResolution binds exact requirement identity, exact source snapshots/currentness validators, provenance, materialization identity, unresolved evidence and immutable progression.",
+    "Current Backend repository and QA accepted-artifact context must map into the same contract without weakening exact revision, sourceRef, producer or acceptance-decision provenance.",
+    "Core must not import Oracle. Core receives opaque JSON-safe requirement/resolution values only through an injected pre-render resolver port.",
+    "Selected ContextRequirement blocks resolve once per AgentRuntime call before prompt rendering; turn-aware strategies reuse that exact resolved projection across turns.",
+    "Required missing, stale, ambiguous, unverifiable-currentness or budget-exhausted evidence yields UNSATISFIED and prevents model generation; optional unresolved evidence is explicit PARTIAL.",
+    "Currentness is not timestamp freshness: REQUIRED CURRENT evidence must bind an exact snapshotRef plus at least one strong validator.",
+    "Worker execution remains unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
   ],
   "invariants": [
     "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
@@ -33,118 +39,204 @@
     "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership."
   ],
   "architectureDecisions": [
-    "ContextRequirement is caller-facing and provider-neutral: semantic need, required/optional evidence, currentness constraints, consumer identity and budget.",
-    "ContextResolution is durable evidence: requirement identity, source/currentness identities, materialization identity, provenance, budget consumed, resolved items and explicit missing/partial state.",
-    "Current Backend repository and QA accepted-artifact flows are compatibility examples, not separate final APIs.",
-    "Provider-specific queries and planning stay below the semantic contract; a ContextRequirement cannot grant scheduling, acceptance, publication or recovery authority."
+    "D1 — ContextRequirement v1 is provider-neutral and strict: consumerRef, semanticNeed, ordered evidence requirements and a hard budget; unknown provider/tool/lifecycle fields are rejected.",
+    "D2 — Each evidence requirement has id, necessity REQUIRED|OPTIONAL, semantic need, source kind/ref, EXACT|CURRENT snapshot constraint, optional itemRefs and requiredProvenance constraints.",
+    "D3 — requirementId = SHA-256 of canonical semantic requirement fields excluding requirementId itself; evidence order is semantic and duplicate evidence ids are invalid.",
+    "D4 — ContextResolution v1 contains requirementId, immutable step parent/index, COMPLETE|PARTIAL|UNSATISFIED status, normalized items, explicit unresolved evidence, materialization identity and cumulative budget consumption.",
+    "D5 — itemDigest binds source snapshot, currentness validators, provenance and content; materialization.id binds normalized ordered items; resolutionId binds requirementId + step + status + materialization.id + unresolved state.",
+    "D6 — Provider calls, latency and consumed counters are operational evidence and do not enter resolutionId; different provider implementations may produce the same semantic resolution.",
+    "D7 — COMPLETE means all required and optional evidence is resolved; PARTIAL means all required evidence is resolved with optional evidence explicitly unresolved; UNSATISFIED means at least one required evidence requirement is unresolved and is non-consumable.",
+    "D8 — REQUIRED CURRENT evidence must resolve to an exact snapshotRef plus at least one STRONG validator. Modification timestamps may be retained as weak evidence but cannot alone satisfy REQUIRED CURRENT.",
+    "D9 — Provenance is typed lineage evidence, not authority. Producer work-order, acceptance-decision and artifact-manifest refs can constrain/describe resolution but cannot confer acceptance/publication/recovery rights.",
+    "D10 — Budget v1 uses maxItems, maxMaterializedBytes, maxProviderCalls and maxResolutionSteps. Token budget is deferred because tokenization is model-specific; Core separately preserves maxSerializedChars.",
+    "D11 — Progressive resolution is explicit immutable chaining: index starts at 0, previousResolutionId is exact, cumulative consumption never decreases, and no step mutates a prior resolution in place.",
+    "D12 — The semantic schema implementation belongs under @exharness/oracle. No shared contracts package is introduced; Core does not import Oracle or duplicate Oracle schema.",
+    "D13 — Core adds contextRequirementBlocks + contextResolver as a generic pre-render port. A selected block resolves exactly once per agent call, projects to an ordinary fixed context block, then existing renderAgentContext enforces trust and serialized-size policy.",
+    "D14 — Requirement-resolution failure or projection rejection occurs before model generation. Capability, Resource and LiveObject invocation counts remain zero for context resolution.",
+    "D15 — Backend/QA compatibility is proven by deterministic fixture mappers only in BB-061; production provider orchestration remains unchanged until later Oracle tasks.",
+    "D16 — Provider-neutrality is falsifiable with four fixtures using one contract shape: repository semantic-code need (Oracle may use LSP/symbol retrieval), repository lexical need (Oracle may use indexed search), context-graph relationship need, and accepted application-artifact need. The requirement names semantic need + source constraints only; provider selection/query construction remains below Oracle and no fixture may contain providerId, tool, operation, queryDsl or MCP method fields."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/qa-application.js",
-      "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/semantics.md"
+      "packages/agentic-system/src/contracts.js",
+      "packages/agentic-system/src/qa-contracts.js",
+      "packages/agentic-system/src/backend-worker.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/package.json",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/oracle/artifact-manifest.md",
+      "docs/living/system/core-harness/architecture.md",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
     ],
     "expectedNew": [
-      "packages/oracle/src/context-resolution.js",
-      "scripts/oracle-context-intelligence/README.md"
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/test/context-contract.test.js",
+      "packages/core-harness/src/context-resolution.js",
+      "packages/core-harness/test/context-resolution.test.js",
+      "scripts/oracle-context-intelligence/bb061-contract-compatibility-probe.mjs",
+      "test/oracle-context-contract-boundary.test.mjs"
+    ],
+    "expectedModified": [
+      "packages/oracle/src/index.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/index.js",
+      "docs/living/system/oracle/architecture.md",
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/core-harness/architecture.md",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
     ],
     "expectedTests": [
-      "test/oracle-context-contract.test.mjs"
+      "packages/oracle/test/context-contract.test.js",
+      "packages/core-harness/test/context-resolution.test.js",
+      "scripts/oracle-context-intelligence/bb061-contract-compatibility-probe.mjs",
+      "test/oracle-context-contract-boundary.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/contracts.js",
+      "packages/agentic-system/src/qa-contracts.js",
+      "packages/agentic-system/src/backend-worker.js",
+      "packages/agentic-system/test/**",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/package.json",
+      "packages/core-harness/test/**",
       "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "docs/living/system/oracle/**",
+      "docs/living/system/core-harness/**",
+      "docs/living/system/agentic-application/contracts.md",
       "docs/blackboard/process/oracle-context-intelligence-research.md",
-      "scripts/delivery/baseline/**",
-      "scripts/**",
-      "test/**",
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-061.md",
       "package.json"
     ],
     "write": [
-      "packages/oracle/**",
-      "packages/core-harness/**",
-      "scripts/oracle-context-intelligence/**",
-      "test/**",
-      "docs/living/system/oracle/**",
-      "docs/living/system/core-harness/**",
-      "package.json"
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/src/index.js",
+      "packages/oracle/test/context-contract.test.js",
+      "packages/core-harness/src/context-resolution.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/index.js",
+      "packages/core-harness/test/context-resolution.test.js",
+      "scripts/oracle-context-intelligence/bb061-contract-compatibility-probe.mjs",
+      "test/oracle-context-contract-boundary.test.mjs",
+      "docs/living/system/oracle/architecture.md",
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/core-harness/architecture.md",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
     ],
     "forbiddenWrite": [
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/contracts.js",
+      "packages/agentic-system/src/qa-contracts.js",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "Derive the semantic fields and identity rules from current Backend/QA flows plus runtime needs.",
-    "Implement a deterministic contract prototype and compatibility fixture for repository and accepted-artifact requirements.",
-    "Exercise required/optional, budget exhaustion, stale currentness and authority-negative cases before narrowing worker scope."
+    "S1 [CONTRACT,IDENTITY,INV-2] — Add packages/oracle/src/context-contract.js and export it from packages/oracle/src/index.js. Implement strict JSON-safe parsers/constructors for ContextRequirement v1 and ContextResolution v1 plus SHA-256 helpers contextRequirementId(), contextItemDigest(), contextMaterializationId(), contextResolutionId() and assertConsumableContextResolution(). Reject unknown fields at every semantic object level. requirementId hashes every semantic requirement field except itself; itemDigest binds source snapshot/currentness/provenance/content; materialization id binds normalized ordered items; resolutionId binds requirementId + step + status + materialization id + unresolved state and excludes cost/timing counters.",
+    "S2 [CURRENTNESS,BUDGET,PROGRESSION,INV-2] — Enforce REQUIRED|OPTIONAL coverage, EXACT|CURRENT source constraints, requiredProvenance matching, hard maxItems/maxMaterializedBytes/maxProviderCalls/maxResolutionSteps, explicit unresolved reasons, COMPLETE/PARTIAL/UNSATISFIED status, strong-validator requirement for REQUIRED CURRENT, and immutable progression {index,previousResolutionId}. Cumulative counters may not decrease or exceed the original requirement budget. UNSATISFIED is non-consumable; PARTIAL is consumable only when every REQUIRED evidence need is satisfied.",
+    "S3 [CORE_PORT,INV-3] — Add packages/core-harness/src/context-resolution.js with defineContextRequirementBlock() and resolveContextRequirementBlocks(). Core treats requirement/resolution values as opaque JSON-safe data. A requirement block is {name,description?,trust,requirement,project}. resolveContextRequirementBlocks receives selected block names, resolver.resolve(requirement,metadata), and returns ordinary fixed ContextBlock definitions. Core imports no Oracle module.",
+    "S4 [RUNTIME_PATH,FAIL_CLOSED,INV-3] — Extend createAgentRuntime() with contextRequirementBlocks=[] and contextResolver=null. For each run, after callId/input/context are established and before any prompt render/model generation, resolve selected requirement blocks exactly once using metadata {callId,judgment,input,context}; project each resolution; combine projected fixed blocks with existing ordinary context blocks; then call existing renderAgentContext. Turn-aware prepareTurn() re-renders ordinary context/history but reuses the same fixed projected requirement blocks for every turn in that call. Unselected requirement blocks cause zero resolver calls. Missing resolver, resolver rejection or project rejection fails before model generation and without Capability/Resource/LiveObject invocation.",
+    "S5 [COMPATIBILITY,INV-1] — Add scripts/oracle-context-intelligence/bb061-contract-compatibility-probe.mjs using deterministic fixtures only. Map one current BackendWorkOrder into repository EXACT requirements and one current QaWorkOrder into accepted-artifact EXACT requirements with required producer/acceptance provenance; construct fixture ContextResolutions; map back through existing BackendContextSchema/QaContextSchema. Assert exact repository ref/revision/file ordering/sourceRef and exact QA upstream/artifact/sourceRef/APPLICATION_ARTIFACT producer+acceptance provenance survive. Do not change Backend/QA production application paths.",
+    "S6 [VERIFICATION,AUTHORITY,PROVIDER_NEUTRALITY] — Add packages/oracle/test/context-contract.test.js, packages/core-harness/test/context-resolution.test.js and test/oracle-context-contract-boundary.test.mjs. Cover every identity field, unknown/provider/tool/lifecycle fields, stale/weak-only CURRENT, missing/ambiguous/budget exhaustion, optional partial, progression parent/index/counters, provenance identity, same semantic result under different operational cost, no Core->Oracle import, no Oracle lifecycle authority, once-per-call resolution and zero model/action calls on failure. Add four provider-neutral requirement fixtures: semantic-code over repository source, lexical-search over the same repository source, context-graph relationship retrieval, and accepted application-artifact retrieval; all parse through the same ContextRequirement schema while provider-specific query/tool fields are absent and rejected if injected.",
+    "S7 [LIVING_TRUTH] — Update Oracle Living architecture/state/semantics with the delivered semantic contract and explicit limits; update Core architecture/state/workflow with the injected pre-render context-resolution port, once-per-call freeze semantics and separation from Capability/Resource/LiveObject. Do not claim provider catalog/planner, durable resolution persistence/cache invalidation, automatic progressive re-resolution or benchmark value."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "ContextRequirement and ContextResolution have explicit deterministic fields and identity semantics independent of concrete provider commands.",
+      "id": "CONTRACT",
+      "statement": "ContextRequirement and ContextResolution have strict deterministic provider-neutral fields and canonical identities; provider/tool/lifecycle commands cannot enter the caller-facing contract.",
       "verificationIds": [
-        "contract-test"
+        "oracle-contract-unit",
+        "boundary"
       ],
       "evidenceRequired": [
-        "Contract fixtures and identity/currentness examples."
+        "Canonical-hash fixtures show each semantic field changes the proper identity while derived ids and operational cost/timing are excluded; unknown provider/tool/lifecycle fields fail parsing."
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Repository and accepted-artifact compatibility cases can be expressed through the same semantic contract without weakening existing provenance checks.",
+      "id": "BUDGET_CURRENTNESS",
+      "statement": "Required/optional, budget, currentness and immutable progression semantics are explicit and fail closed without silent context growth.",
+      "verificationIds": [
+        "oracle-contract-unit"
+      ],
+      "evidenceRequired": [
+        "Fixtures cover strong-vs-weak currentness, missing/stale/ambiguous/currentness-unverifiable/budget-exhausted required evidence, optional PARTIAL, parent/index monotonicity and cumulative budgets."
+      ]
+    },
+    {
+      "id": "CORE_PORT",
+      "statement": "Core resolves selected semantic requirement blocks harness-side exactly once per agent call before prompt rendering, with no Oracle dependency or model-visible tool surface.",
+      "verificationIds": [
+        "core-context-resolution",
+        "boundary"
+      ],
+      "evidenceRequired": [
+        "Tests prove once-per-call resolution across turn-aware multiple turns, zero resolver calls for unselected blocks, zero model/action calls on failure, ordinary context behavior unchanged, and no Core import of Oracle."
+      ]
+    },
+    {
+      "id": "COMPATIBILITY",
+      "statement": "Current Backend repository and QA accepted-artifact context can round-trip through the same semantic contract without weakening revision, sourceRef, producer or acceptance-decision provenance.",
       "verificationIds": [
         "compatibility-probe"
       ],
       "evidenceRequired": [
-        "Before/after compatibility fixture with exact source/provenance identity."
+        "Deterministic Backend and QA fixture transcript with exact before/after semantic identities."
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "Required missing/stale context and exhausted budgets fail closed; optional/partial context is explicit and bounded.",
+      "id": "PROVIDER_NEUTRALITY",
+      "statement": "One ContextRequirement schema expresses semantic-code, lexical-search, context-graph and application-artifact needs using only semantic need/source constraints; provider-specific operations remain below Oracle.",
       "verificationIds": [
-        "contract-test"
+        "oracle-contract-unit",
+        "research-evidence"
       ],
       "evidenceRequired": [
-        "Negative fixtures for stale, missing, partial and budget exhaustion."
+        "Four deterministic fixtures (semantic-code, lexical-search, context-graph, application-artifact) parse/normalize through the same schema and retain source/currentness/provenance constraints.",
+        "Negative fixtures prove providerId/tool/operation/queryDsl/mcpMethod are rejected rather than becoming caller-visible commands."
       ]
     },
     {
       "id": "INV-1",
-      "statement": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
+      "statement": "Application/domain controllers retain work semantics, acceptance, publication, recovery and product authority; Oracle resolution provenance cannot confer those rights.",
       "verificationIds": [
-        "contract-test"
+        "boundary"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Negative parser/boundary fixtures reject lifecycle-authority fields and Oracle imports of application authority."
       ]
     },
     {
       "id": "INV-2",
-      "statement": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
+      "statement": "Every consumable ContextResolution is bounded by the originating requirement and preserves exact source/currentness/provenance/materialization identity.",
       "verificationIds": [
-        "contract-test"
+        "oracle-contract-unit"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Negative fixtures reject over-budget, wrong requirement, wrong snapshot, weak-only CURRENT, provenance drift and invalid progression."
       ]
     },
     {
       "id": "INV-3",
-      "statement": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
+      "statement": "Oracle remains infrastructure-owned and Core consumes an injected opaque resolver port without provider internals becoming model-visible actions or Core implementation ownership.",
       "verificationIds": [
-        "contract-test"
+        "core-context-resolution",
+        "boundary"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Dependency-direction and runtime-call-count tests."
       ]
     }
   ],
@@ -152,43 +244,78 @@
     {
       "invariant": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "criterionIds": [
-        "INV-1"
+        "INV-1",
+        "COMPATIBILITY"
       ]
     },
     {
       "invariant": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "criterionIds": [
-        "INV-2"
+        "INV-2",
+        "CONTRACT",
+        "BUDGET_CURRENTNESS"
       ]
     },
     {
       "invariant": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "criterionIds": [
-        "INV-3"
+        "INV-3",
+        "CORE_PORT",
+        "PROVIDER_NEUTRALITY"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "contract-test",
-      "command": "node --test test/oracle-context-contract.test.mjs"
+      "id": "oracle-contract-unit",
+      "command": "node --test packages/oracle/test/context-contract.test.js"
+    },
+    {
+      "id": "core-context-resolution",
+      "command": "node --test packages/core-harness/test/context-resolution.test.js"
     },
     {
       "id": "compatibility-probe",
-      "command": "node scripts/oracle-context-intelligence/probe-contract-compatibility.mjs"
+      "command": "node scripts/oracle-context-intelligence/bb061-contract-compatibility-probe.mjs"
+    },
+    {
+      "id": "boundary",
+      "command": "node --test test/oracle-context-contract-boundary.test.mjs"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "package-consumer",
+      "command": "npm run verify:package && npm run verify:consumer"
+    },
+    {
+      "id": "research-evidence",
+      "command": "node --test test/oracle-context-contract-boundary.test.mjs --test-name-pattern='provider-neutral|evidence|currentness'"
+    },
+    {
+      "id": "living-docs",
+      "command": "node --test test/oracle-context-contract-boundary.test.mjs --test-name-pattern='Living|not delivered|BB-062|BB-063'"
     }
   ],
-  "researchGaps": [
-    "Select exact ContextRequirement and ContextResolution fields and canonical identity/hash inputs.",
-    "Define required versus optional evidence and the semantics of a partial resolution under a hard context budget.",
-    "Map current Backend/QA source shapes into compatibility fixtures without preserving application-specific final ports.",
-    "Decide whether a small contracts package is needed or the semantic contract belongs entirely under packages/oracle.",
-    "Obtain a new Jev readiness judgment after contract experiments close all gaps."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "A caller embeds provider/tool commands in ContextRequirement or bypasses the semantic resolution seam.",
-    "A stale or provenance-incomplete required context item is represented as current.",
-    "Oracle/provider/planner code attempts to claim work, accept product output, publish product truth or own domain recovery."
+    "ContextRequirement accepts providerId/tool/operation/queryDsl/mcpMethod, task lifecycle commands, acceptance/publication/recovery directives or any other unknown semantic field.",
+    "A REQUIRED CURRENT item has only weak/timestamp currentness evidence or no exact snapshotRef but is treated as consumable.",
+    "A required evidence need is missing/stale/ambiguous/budget-exhausted yet resolution status is COMPLETE or PARTIAL.",
+    "Optional unresolved evidence disappears instead of producing explicit PARTIAL + unresolved reason.",
+    "Operational provider calls/latency change resolutionId for otherwise identical semantic materialization.",
+    "A later progressive resolution rewrites an earlier resolution, skips the exact parent, decrements cumulative consumption or exceeds the original budget.",
+    "Core imports @exharness/oracle or interprets provider/source-specific fields instead of treating requirement/resolution as opaque JSON-safe data.",
+    "A selected requirement block resolves more than once in a single turn-aware agent call, causing hidden context drift.",
+    "Resolver/project failure still reaches the model or increments Capability/Resource/LiveObject invocation.",
+    "Backend/QA compatibility mapping drops exact revision/sourceRef/producer/acceptance-decision provenance.",
+    "Living Docs claim provider catalog/planner, durable resolution storage/cache invalidation, automatic progressive resolution or benchmark value is delivered by BB-061."
   ],
   "supersededAuthority": {
     "rule": "Historical readiness/Jev artifacts remain evidence only; changed objective/plan bindings make them non-authoritative for execution.",
@@ -224,9 +351,404 @@
   "livingDocs": {
     "refs": [
       "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/state.md"
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/core-harness/architecture.md",
+      "docs/living/system/core-harness/state.md",
+      "docs/living/system/core-harness/workflow.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-061 Living Oracle truth describes only the implemented and independently verified rebound capability and limitations."
-  }
+    "statement": "BB-061 Living truth describes only the delivered ContextRequirement/ContextResolution semantic contract and Core injected pre-render resolution seam, with provider selection, durable resolution lifecycle and automatic progressive re-resolution explicitly not yet delivered."
+  },
+  "semanticContract": {
+    "requirement": {
+      "kind": "CONTEXT_REQUIREMENT",
+      "version": 1,
+      "semanticFields": [
+        "consumerRef",
+        "semanticNeed",
+        "evidence[].{id,necessity,need,source.{kind,ref,snapshot,itemRefs?},requiredProvenance?}",
+        "budget.{maxItems,maxMaterializedBytes,maxProviderCalls,maxResolutionSteps}"
+      ],
+      "necessity": [
+        "REQUIRED",
+        "OPTIONAL"
+      ],
+      "snapshotModes": [
+        "EXACT",
+        "CURRENT"
+      ],
+      "identity": "requirementId = sha256(canonical(all semantic fields except requirementId))",
+      "strictness": "Unknown fields are rejected at every semantic object level; provider/tool/lifecycle commands are not valid contract fields."
+    },
+    "resolution": {
+      "kind": "CONTEXT_RESOLUTION",
+      "version": 1,
+      "statuses": [
+        "COMPLETE",
+        "PARTIAL",
+        "UNSATISFIED"
+      ],
+      "unresolvedReasons": [
+        "MISSING",
+        "STALE",
+        "AMBIGUOUS",
+        "BUDGET_EXHAUSTED",
+        "SOURCE_FAILURE",
+        "UNSUPPORTED",
+        "CURRENTNESS_UNVERIFIABLE",
+        "DEFERRED"
+      ],
+      "identity": [
+        "itemDigest = sha256(canonical(source snapshot + currentness validators + provenance + content))",
+        "materialization.id = sha256(canonical(normalized ordered items))",
+        "resolutionId = sha256(canonical(requirementId + step + status + materialization.id + unresolved))"
+      ],
+      "normalization": "Items are ordered by originating requirement evidence order then rank; provenance and validators are canonicalized by semantic fields before hashing.",
+      "consumability": "COMPLETE and PARTIAL are consumable only when every REQUIRED evidence requirement is satisfied; UNSATISFIED is never consumable.",
+      "operationalCounters": "consumed.{items,materializedBytes,providerCalls,resolutionSteps} are cumulative budget evidence and excluded from resolutionId."
+    },
+    "currentness": {
+      "requiredCurrent": "Exact snapshotRef + at least one STRONG validator.",
+      "validators": [
+        "REVISION",
+        "CONTENT_DIGEST",
+        "OPAQUE"
+      ],
+      "strengths": [
+        "STRONG",
+        "WEAK"
+      ],
+      "rule": "Weak/timestamp-only evidence cannot satisfy REQUIRED CURRENT. Strong identity proves representation identity/currentness, not semantic correctness."
+    },
+    "progression": {
+      "first": "step.index=0 and previousResolutionId=null",
+      "next": "index = previous.index + 1 and previousResolutionId equals exact prior resolutionId",
+      "rule": "Immutable snapshots; cumulative consumption never decreases or exceeds original requirement budget."
+    }
+  },
+  "coreResolutionSeam": {
+    "api": "createAgentRuntime({ contextBlocks, contextRequirementBlocks, contextResolver, ...existing })",
+    "requirementBlock": "{ name, description?, trust, requirement, project(resolution, metadata) }",
+    "resolver": "contextResolver.resolve(requirement, metadata) -> opaque JSON-safe resolution",
+    "metadata": [
+      "callId",
+      "judgment",
+      "input",
+      "context"
+    ],
+    "timing": "Resolve selected requirement blocks once per agent call before any prompt render/model generation; project to ordinary fixed context blocks; turn-aware prepareTurn reuses the same projected fixed blocks.",
+    "failure": "Missing resolver, resolver rejection or project rejection fails before model generation.",
+    "nonGoals": [
+      "No Core import of Oracle",
+      "No Capability/Resource/LiveObject path",
+      "No automatic progressive re-resolution in BB-061"
+    ]
+  },
+  "compatibilityContract": {
+    "backend": "BackendWorkOrder repositoryRef/revision/requiredFiles -> repository EXACT requirements -> ContextResolution -> existing BackendContextSchema with exact repository ref/revision, ordered files and sourceRef.",
+    "qa": "QaWorkOrder upstream + requiredArtifacts -> application-artifact EXACT requirements with required producer/acceptance provenance -> ContextResolution -> existing QaContextSchema with exact upstream, artifact/sourceRef and APPLICATION_ARTIFACT provenance.",
+    "productionAdoption": false
+  },
+  "researchEvidence": [
+    {
+      "source": "packages/agentic-system/src/oracle.js",
+      "finding": "Current Backend and QA resolution is explicit pre-worker source IO; sourceRef plus QA producer/acceptance provenance already form compatibility identity evidence."
+    },
+    {
+      "source": "packages/core-harness/src/context.js",
+      "finding": "renderAgentContext already bounds selected prompt blocks by maxBlocks/history/maxSerializedChars; resolution should project into this existing boundary rather than replace it."
+    },
+    {
+      "source": "packages/core-harness/src/agent-runtime.js",
+      "finding": "Non-turn-aware context renders before strategy/model execution; turn-aware prepareTurn renders each turn, so requirement resolution must be frozen per agent call to avoid hidden turn-to-turn source drift."
+    },
+    {
+      "source": "docs/living/system/oracle/artifact-manifest.md",
+      "finding": "Artifact digest/manifest provenance proves identity/currentness constraints but explicitly does not confer semantic correctness or acceptance authority."
+    },
+    {
+      "source": "docs/living/system/agentic-application/contracts.md",
+      "finding": "Application decides required semantic context and owns orchestration/completion; Oracle resolves/dereferences it before Worker execution."
+    },
+    {
+      "source": "https://www.rfc-editor.org/rfc/rfc9110.html#name-weak-versus-strong",
+      "checked": "2026-09-27",
+      "finding": "RFC 9110 distinguishes strong validators from weak validators; strict revision identifiers and collision-resistant representation hashes are examples of strong validation, while modification time can be weak. BB-061 uses this as a currentness model, not as an Oracle wire protocol."
+    },
+    {
+      "source": "https://bazel.build/remote/caching",
+      "checked": "2026-09-27",
+      "finding": "Bazel remote caching separates declared action/input identity from content-addressed output storage; BB-061 applies the same separation between requirement identity and exact materialization/content identity."
+    },
+    {
+      "source": "https://modelcontextprotocol.io/specification/2026-07-28/server/resources",
+      "checked": "2026-09-27",
+      "finding": "MCP keeps resource addressing/reading distinct from tool invocation and carries resource metadata; BB-061 uses this as evidence for source metadata separation, not as a requirement to expose Oracle through MCP."
+    },
+    {
+      "source": "https://aider.chat/docs/repomap.html",
+      "checked": "2026-09-27",
+      "finding": "Aider explicitly fits repository-map context into a token budget; BB-061 keeps bounded materialization as a first-class contract while leaving model-specific token policy above source identity."
+    },
+    {
+      "source": "https://github.com/getzep/graphiti/tree/ba4a9cb32495b6864160616f8dfa2b898f4a500c",
+      "checked": "2026-09-27",
+      "eligibility": "GitHub search confirms stars >=1,000; Apache-2.0",
+      "finding": "Graphiti models temporal validity/currentness-like intervals and provenance-bearing facts; useful evidence that graph providers can stay below a provider-neutral resolution contract."
+    }
+  ],
+  "externalEvidenceSummary": {
+    "checked": "2026-09-27",
+    "conclusion": "No external system is adopted as the BB-061 contract. Evidence supports separation of semantic need from provider mechanics, exact identity from currentness metadata, and bounded projection from source resolution.",
+    "comparisons": [
+      {
+        "approach": "RFC 9110 validator semantics",
+        "use": "Strong-vs-weak currentness model",
+        "notUsedAs": "Oracle protocol"
+      },
+      {
+        "approach": "Bazel remote cache/CAS",
+        "use": "Requirement/input identity vs materialized content identity separation",
+        "notUsedAs": "Oracle storage backend"
+      },
+      {
+        "approach": "MCP resources",
+        "use": "Resource identity/read metadata separate from tool calls",
+        "notUsedAs": "model-visible Oracle interface"
+      },
+      {
+        "approach": "Aider repo map",
+        "use": "bounded context projection",
+        "notUsedAs": "durable provenance/currentness contract"
+      },
+      {
+        "approach": "Graphiti",
+        "use": "future temporal/graph provider compatibility",
+        "notUsedAs": "BB-061 backend"
+      }
+    ]
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Research defines concrete ContextRequirement and ContextResolution fields, identity rules and lifecycle examples for repository and accepted-artifact use cases.",
+      "criterionIds": [
+        "CONTRACT",
+        "COMPATIBILITY",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S5"
+      ],
+      "verificationIds": [
+        "oracle-contract-unit",
+        "compatibility-probe"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        14
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/oracle.js",
+        "docs/living/system/oracle/artifact-manifest.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "sourceRef: resolved.sourceRef"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "sourceClass: \"APPLICATION_ARTIFACT\""
+        },
+        {
+          "ref": "docs/living/system/oracle/artifact-manifest.md",
+          "match": "The adapter does not widen the Oracle result shape and does not grant correctness or acceptance authority to a digest."
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Budget and progressive-resolution semantics are explicit enough to prevent unbounded retrieval or silent context growth.",
+      "criterionIds": [
+        "BUDGET_CURRENTNESS",
+        "INV-2",
+        "CORE_PORT"
+      ],
+      "planElements": [
+        "S2",
+        "S4"
+      ],
+      "verificationIds": [
+        "oracle-contract-unit",
+        "core-context-resolution"
+      ],
+      "decisionIndexes": [
+        6,
+        9,
+        10,
+        12,
+        13
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/context.js",
+        "packages/core-harness/src/agent-runtime.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "maxSerializedChars = 32_768"
+        },
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "latestPromptContext = await renderAgentContext({"
+        },
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "async function prepareTurn({ reportedTurn = null, model = null } = {})"
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Currentness and provenance can be checked deterministically at consumption/replay boundaries.",
+      "criterionIds": [
+        "BUDGET_CURRENTNESS",
+        "CONTRACT",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "oracle-contract-unit"
+      ],
+      "decisionIndexes": [
+        4,
+        7,
+        8,
+        10
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/artifact-manifest.md",
+        "packages/agentic-system/src/oracle.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/artifact-manifest.md",
+          "match": "content SHA-256 check"
+        },
+        {
+          "ref": "docs/living/system/oracle/artifact-manifest.md",
+          "match": "acceptance-decision semantic digest"
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "producerWorkOrderId: order.upstream.workOrderId"
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Negative cases prove the semantic contract cannot confer application/domain authority.",
+      "criterionIds": [
+        "INV-1",
+        "INV-3",
+        "CORE_PORT"
+      ],
+      "planElements": [
+        "S1",
+        "S3",
+        "S4",
+        "S6"
+      ],
+      "verificationIds": [
+        "boundary",
+        "core-context-resolution"
+      ],
+      "decisionIndexes": [
+        0,
+        8,
+        11,
+        12,
+        13
+      ],
+      "sourceRefs": [
+        "docs/living/system/agentic-application/contracts.md",
+        "docs/living/system/core-harness/state.md",
+        "docs/living/system/oracle/semantics.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/agentic-application/contracts.md",
+          "match": "Application decides required semantic context; Oracle resolves/dereferences it before Worker execution."
+        },
+        {
+          "ref": "docs/living/system/core-harness/state.md",
+          "match": "Oracle              -> source resolution / dereference / adaptation"
+        },
+        {
+          "ref": "docs/living/system/oracle/semantics.md",
+          "match": "Oracle is not an agent, Advisor, Worker, correctness authority, semantic-memory system or runtime context lifecycle."
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "The contract admits semantic-code, lexical-search, graph and artifact providers without exposing provider-specific commands to callers.",
+      "criterionIds": [
+        "PROVIDER_NEUTRALITY",
+        "CONTRACT",
+        "INV-3"
+      ],
+      "planElements": [
+        "S1",
+        "S6"
+      ],
+      "verificationIds": [
+        "oracle-contract-unit",
+        "research-evidence",
+        "boundary"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        11,
+        12,
+        15
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "| [Aider](https://github.com/Aider-AI/aider)"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "| [Serena](https://github.com/oraios/serena)"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "| [Zoekt](https://github.com/sourcegraph/zoekt)"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "match": "| [Graphiti](https://github.com/getzep/graphiti)"
+        }
+      ],
+      "supportingPlanFields": []
+    }
+  ]
 }
