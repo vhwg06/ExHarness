@@ -1,0 +1,293 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-082",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-082.json",
+    "hash": "0260de54db835f185844c818123f5835be455ad1de2ed16dff90e7816b3399aa"
+  },
+  "scope": [
+    "outer-blackboard.objective-supersession",
+    "outer-blackboard.research-reset",
+    "outer-blackboard.provenance",
+    "outer-blackboard.impact-fencing"
+  ],
+  "outOfScope": [
+    "Changing BB-065 objective in this allocation task.",
+    "Allowing ordinary RESEARCH_SA or WORKER PRs to redefine their own objective.",
+    "Rewriting historical objective/plan/evaluation artifacts or Git history.",
+    "Using supersession as product acceptance, delivery completion or dependency bypass."
+  ],
+  "constraints": [
+    "The current candidate is a research plan only; exact publication schema and CI transition rules must be independently researched before READY.",
+    "Trusted-main objective/routing remains authoritative for ordinary Jev evaluation.",
+    "Supersession must be a separately recognizable publication with exact old/new objective and target-task bindings.",
+    "Target reset must revoke stale readiness/worker authority and preserve historical provenance.",
+    "BB-065 is the first intended migration consumer, but BB-082 must deliver the generic control before that migration is authored."
+  ],
+  "invariants": [
+    "A task cannot evaluate a replacement objective that its own ordinary research candidate introduced.",
+    "Objective supersession preserves immutable prior evidence and never grants product or delivery authority.",
+    "A superseded unfinished task re-enters research with stale execution/readiness authority removed.",
+    "Downstream dependency impact is explicit and cannot be hidden by objective replacement."
+  ],
+  "architectureDecisions": [
+    "Research the smallest explicit OBJECTIVE_SUPERSESSION artifact/publication shape instead of weakening candidateResearchTask trusted-objective checks.",
+    "Research a dedicated trusted CI path analogous to readiness publication but semantically distinct from Jev readiness.",
+    "Research atomic reset semantics for target objective/plan/lane/phase/status/claim/context/readiness bindings and downstream impact."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-delivery-contract.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "scripts/blackboard-work-graph.mjs",
+      "test/blackboard-jev.test.mjs",
+      "test/blackboard-work-graph.test.mjs",
+      "docs/blackboard/contracts.md"
+    ],
+    "expectedNew": [
+      "scripts/blackboard-objective-supersession.mjs"
+    ],
+    "expectedTests": [
+      "test/blackboard-objective-supersession.test.mjs"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "scripts/**",
+      "test/**",
+      "docs/blackboard/**",
+      "docs/living/system/state.md",
+      ".github/workflows/**"
+    ],
+    "write": [
+      "scripts/blackboard-objective-supersession.mjs",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery-contract.mjs",
+      "scripts/blackboard-delivery-verify.mjs",
+      "scripts/blackboard-work-graph.mjs",
+      "test/blackboard-objective-supersession.test.mjs",
+      "test/blackboard-jev.test.mjs",
+      "test/blackboard-work-graph.test.mjs",
+      "docs/blackboard/contracts.md",
+      "docs/living/system/state.md",
+      ".github/workflows/test.yml"
+    ],
+    "forbiddenWrite": [
+      "packages/**",
+      "docs/blackboard/artifacts/objective/**",
+      "docs/blackboard/artifacts/ready-implement-plan/**"
+    ]
+  },
+  "implementationSlices": [
+    "R1 — Specify objective-supersession artifact, authority, freshness and impact contract.",
+    "R2 — Specify trusted publication validation and ordinary-candidate rejection behavior.",
+    "R3 — Specify atomic target reset, downstream staleness/impact semantics and migration provenance.",
+    "R4 — Implement controller/tests/docs only after Jev readiness."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "statement": "A dedicated supersession contract binds exact target work, old objective, replacement objective, reason/evidence, plan and direct downstream impact.",
+      "verificationIds": [
+        "supersession-contract"
+      ],
+      "evidenceRequired": [
+        "positive schema fixture",
+        "old/new hash binding",
+        "impact manifest"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "statement": "Ordinary research evaluation still rejects any candidate objective/routing change; only the trusted supersession publication path may authorize objective replacement.",
+      "verificationIds": [
+        "ci-boundary"
+      ],
+      "evidenceRequired": [
+        "ordinary-candidate rejection",
+        "trusted-publication acceptance",
+        "wrong-path negatives"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "statement": "A valid supersession resets only an unfinished researchable target to DRAFT RESEARCH_SA/RESEARCH and clears stale claim/context/readiness/evaluation/worker authority.",
+      "verificationIds": [
+        "reset-semantics"
+      ],
+      "evidenceRequired": [
+        "atomic reset fixture",
+        "stale authority removal",
+        "DONE/WORKER rejection"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "statement": "Historical objective/plan/evaluation evidence stays immutable and exact supersession provenance remains reconstructable.",
+      "verificationIds": [
+        "supersession-contract",
+        "reset-semantics"
+      ],
+      "evidenceRequired": [
+        "history-retention proof",
+        "fresh-process reconstruction"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "statement": "Downstream tasks affected by changed prerequisite semantics are explicitly identified/fenced rather than silently retaining stale execution authority.",
+      "verificationIds": [
+        "impact"
+      ],
+      "evidenceRequired": [
+        "direct-dependent impact fixture",
+        "hidden-impact rejection"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "statement": "A task cannot evaluate a replacement objective that its own ordinary research candidate introduced.",
+      "verificationIds": [
+        "ci-boundary"
+      ],
+      "evidenceRequired": [
+        "self-redefinition negative"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "statement": "Objective supersession preserves immutable prior evidence and never grants product or delivery authority.",
+      "verificationIds": [
+        "supersession-contract",
+        "reset-semantics"
+      ],
+      "evidenceRequired": [
+        "authority/history negatives"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "A superseded unfinished task re-enters research with stale execution/readiness authority removed.",
+      "verificationIds": [
+        "reset-semantics"
+      ],
+      "evidenceRequired": [
+        "reset state proof"
+      ]
+    },
+    {
+      "id": "INV-4",
+      "statement": "Downstream dependency impact is explicit and cannot be hidden by objective replacement.",
+      "verificationIds": [
+        "impact"
+      ],
+      "evidenceRequired": [
+        "impact completeness proof"
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A task cannot evaluate a replacement objective that its own ordinary research candidate introduced.",
+      "criterionIds": [
+        "AC-2",
+        "INV-1"
+      ]
+    },
+    {
+      "invariant": "Objective supersession preserves immutable prior evidence and never grants product or delivery authority.",
+      "criterionIds": [
+        "AC-4",
+        "INV-2"
+      ]
+    },
+    {
+      "invariant": "A superseded unfinished task re-enters research with stale execution/readiness authority removed.",
+      "criterionIds": [
+        "AC-3",
+        "INV-3"
+      ]
+    },
+    {
+      "invariant": "Downstream dependency impact is explicit and cannot be hidden by objective replacement.",
+      "criterionIds": [
+        "AC-5",
+        "INV-4"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "supersession-contract",
+      "command": "node --test test/blackboard-objective-supersession.test.mjs"
+    },
+    {
+      "id": "ci-boundary",
+      "command": "node --test test/blackboard-jev.test.mjs"
+    },
+    {
+      "id": "reset-semantics",
+      "command": "node --test test/blackboard-objective-supersession.test.mjs test/blackboard-work-graph.test.mjs"
+    },
+    {
+      "id": "impact",
+      "command": "node --test test/blackboard-objective-supersession.test.mjs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify:blackboard-context"
+    }
+  ],
+  "researchGaps": [
+    "Define the exact immutable supersession artifact/proposal fields and who may author/publish it.",
+    "Define how trusted CI recognizes and validates supersession without weakening ordinary objectiveRef/content trust.",
+    "Define downstream readiness invalidation versus explicit impact-only fencing when a prerequisite objective changes.",
+    "Define exact BB-065 migration procedure after BB-082 is delivered, including stale plan/readiness cleanup and retained historical evidence."
+  ],
+  "negativeVerificationCases": [
+    "Ordinary research PR changes its own objective content or objectiveRef and still reaches Jev.",
+    "Supersession old-objective hash is stale or replacement objective does not match the declared digest.",
+    "Supersession preserves READY/WORKER execution authority or an ACTIVE claim/currentContextRef.",
+    "DONE task or unrelated task is reset through supersession.",
+    "Direct downstream tasks with semantic dependency impact are omitted.",
+    "Historical objective/evaluation artifacts are deleted or rewritten."
+  ],
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-082 objective + current Blackboard trust/publication seams",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "forbidden": [
+        "controller implementation",
+        "objective migration",
+        "self-authorization"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "trusted supersession control + tests + Living Docs",
+      "forbidden": [
+        "perform BB-065 migration inside BB-082 worker",
+        "weaken ordinary candidate trust",
+        "rewrite history"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living state documents the delivered objective-supersession trust boundary, publication/reset semantics and retained-history behavior."
+  }
+}
