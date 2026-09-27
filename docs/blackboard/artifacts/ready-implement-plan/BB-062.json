@@ -56,7 +56,8 @@
     "D14 — Graphiti and Cognee are not foundation dependencies. Graphiti@ba4a9cb32495b6864160616f8dfa2b898f4a500c and Cognee@eb90d03740755f5252b8b12cce91fd09970f2d81 are Apache-2.0 and >=1,000 stars; their temporal graph/code-memory capabilities remain comparison evidence for later Context Graph work.",
     "D15 — Research family benchmark on the same 8-file/4-query corpus measured mean Recall@3 lexical=0.792, symbol=0.875, structural=0.750. This supports complementary lexical+semantic retrieval and rejects structural ranking as a universal primary retriever.",
     "D16 — Planner fallback may switch provider implementations only when the same source/snapshot/currentness contract can still be proven. It may never weaken EXACT/CURRENT constraints, provenance requirements or budget.",
-    "D17 — Unsupported language, stale index, missing/renamed symbol, ambiguous symbol, unproven graph fact and external response without a strong source validator map to explicit typed provider failures/unresolved reasons; no silent downgrade."
+    "D17 — Unsupported language, stale index, missing/renamed symbol, ambiguous symbol, unproven graph fact and external response without a strong source validator map to explicit typed provider failures/unresolved reasons; no silent downgrade.",
+    "D18 — Same-problem graph/context evidence: a disposable typed source graph over the identical 8-file/Q1-Q4 corpus used verified import/contract relations and bounded node/relation labels; it achieved mean Recall@3=1.000, Precision@3=0.667, MRR=1.000 and mean bytes@3=70,163. This closes the graph/context comparison on the same representative problems but is explicitly not a Graphiti/Cognee execution or backend-adoption result."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -131,7 +132,7 @@
     "S3 [ADAPTERS,PROVIDER_NEUTRALITY] — Add injected lexical-search and semantic-code adapters. Lexical adapter accepts a Zoekt-like search client and normalizes indexed repository/version/file/snippet results. Semantic adapter accepts a symbolClient with workspace-symbol/lookup/reference capabilities. Neither adapter imports external projects or exposes their protocol/tool commands above Oracle.",
     "S4 [STRUCTURAL_GRAPH_EXTERNAL] — Add Aider-inspired structural-map projection over normalized symbol/reference edges; add typed context-graph client seam and external-source transport seam. Structural projection is bounded and cannot source-discover independently. Graph/external candidates require authoritative provenance/currentness paths.",
     "S5 [PLANNER,BUDGET,INV-1,INV-3] — Add deterministic RetrievalPlanner producing bounded RetrievalWork. Reserve provider-call/item/byte budget before invocation. Exact item refs use exact providers; repository semantic needs compose semantic+lexical providers within budget; unsupported semantic lookup may fall back to lexical; structural refinement consumes existing edges; graph/external work is selected only for matching source kinds. No model call or Application scheduling primitive is used.",
-    "S6 [BENCHMARK] — Add bb062-retrieval-benchmark.mjs with predeclared 8-file corpus, four code queries/ground truth and four structured-edge graph queries from research. Report every arm/attempt, Recall@3, Precision@3, MRR, materialized bytes, setup/update proxy and exact provenance/currentness coverage. Reference gates: lexical mean Recall@3 >=0.75; semantic >=0.85; structural is not promoted to primary unless it matches/exceeds lexical; typed graph projection must answer all four relation queries exactly with >=0.95 mean byte reduction.",
+    "S6 [BENCHMARK] — Add bb062-retrieval-benchmark.mjs with the predeclared 8-file corpus and identical Q1-Q4 ground truth for FOUR arms: lexical, semantic/symbol, structural-map and typed graph/context. The typed-graph fixture must derive declared import/contract relations rather than use manually ranked answers. Report every arm/attempt, Recall@3, Precision@3, MRR, materialized bytes, latency, setup/update cost proxy and exact provenance/currentness coverage. Reference research results: lexical Recall@3=0.792, semantic=0.875, structural=0.750, typed graph/context=1.000; structural is not promoted to primary unless it matches/exceeds lexical. Separately retain the four cross-source authority queries and require exact answers with >=0.95 mean byte reduction.",
     "S7 [NEGATIVE_INTEGRATION] — Add provider/planner/boundary tests for stale index versus authoritative head, unsupported language, deleted/renamed/ambiguous symbol, budget exhaustion, provider timeout, graph candidate without authoritative path, external/MCP response without validator, duplicate registrations, caller provider-command leakage and forbidden Oracle authority.",
     "S8 [LIVING_TRUTH] — Update Oracle Living Docs with SourceCatalog/provider/planner topology and exact limitations. Explicitly state that Zoekt/LSP/Graphiti/Cognee runtimes are not bundled, graph persistence/durable ContextResolution lifecycle is not delivered, and model-assisted planning is not delivered."
   ],
@@ -171,12 +172,12 @@
     },
     {
       "id": "RETRIEVAL_EVIDENCE",
-      "statement": "The executable reference benchmark compares lexical, semantic/symbol and structural approaches on the same predeclared ExHarness problems and preserves all attempts/metrics.",
+      "statement": "The executable reference benchmark compares lexical, semantic/symbol, structural-map and typed graph/context approaches on the SAME predeclared ExHarness Q1–Q4 retrieval problems and preserves all attempts/metrics.",
       "verificationIds": [
         "retrieval-benchmark"
       ],
       "evidenceRequired": [
-        "Corpus/ground-truth manifest plus Recall@3, Precision@3, MRR, materialized bytes and failure records for every arm."
+        "One shared corpus/ground-truth manifest plus Recall@3, Precision@3, MRR, materialized bytes, latency/setup-update metrics and provenance/currentness records for every one of the four arms."
       ]
     },
     {
@@ -423,7 +424,8 @@
         11,
         12,
         13,
-        14
+        14,
+        17
       ],
       "sourceRefs": [
         "docs/blackboard/process/oracle-context-intelligence-research.md",
