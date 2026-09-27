@@ -23,7 +23,7 @@
   ],
   "constraints": [
     "Worker execution requires exact DONE BB-074 and BB-075 plus compatible delivered distribution/profile evidence; incompatibility yields PLAN_INPUT_CONTRADICTION.",
-    "Release freeze binds source/tree, dependency lock, supported profile, HOW policy, build/install procedure and produced artifact digests before release-reserve model execution.",
+    "Release freeze binds source/tree, dependency-resolution manifest, supported profile, HOW policy, build/install procedure and produced artifact digests before release-reserve model execution.",
     "BB-076 is the first task allowed to execute BB-075 RELEASE_RESERVE; any prior model result invalidates the reserve.",
     "All release-reserve and lifecycle evidence must run against the packaged/frozen release, not working-tree product code.",
     "Missing/unknown primary cost or incomplete registered evidence yields INCONCLUSIVE, never implicit success."
@@ -35,7 +35,7 @@
   ],
   "architectureDecisions": [
     "D1 — Consume exact DONE BB-074 and BB-075 decisions and the supported install/distribution/profile evidence; BB-076 performs acceptance only and cannot tune product behavior.",
-    "D2 — Freeze a release candidate before paid evaluation: source commit/tree, dependency lock digest, supported harness/profile, current HOW policy, build/install procedure, builder/runtime identity, artifact digests, benchmark protocol hashes and release-reserve manifest hash.",
+    "D2 — Freeze a release candidate before paid evaluation: source commit/tree, dependency-resolution manifest digest, supported harness/profile, current HOW policy, build/install procedure, builder/runtime identity, artifact digests, benchmark protocol hashes and release-reserve manifest hash.",
     "D3 — Emit SUPPORTED_RELEASE_PROVENANCE_V1 inspired by SLSA provenance v1.2 fields for source, resolved dependencies, builder/invocation and produced artifact subjects. Do not claim a SLSA level.",
     "D4 — Clean-room reproduction starts from a fresh supported environment with no working-tree checkout and installs only frozen artifact(s) by digest. It verifies manifest/provenance, dependency/runtime compatibility, actionable missing-credential failure, reference delivery and independent QA.",
     "D5 — BB-076 is first opener of the four BB-075 RELEASE_RESERVE tasks. Prior model execution, cohort overlap or digest drift invalidates the reserve and returns to research.",
@@ -52,8 +52,7 @@
       "docs/blackboard/artifacts/ready-implement-plan/BB-074.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-075.json",
       "docs/blackboard/process/harness-benchmark-program-research.md",
-      "package.json",
-      "package-lock.json"
+      "package.json"
     ],
     "expectedNew": [
       "scripts/release/build.mjs",
@@ -81,8 +80,7 @@
       "docs/blackboard/artifacts/ready-implement-plan/BB-075*",
       "docs/blackboard/process/harness-benchmark-program-research.md",
       "docs/blackboard/process/delivery-research/BB-076.md",
-      "package.json",
-      "package-lock.json"
+      "package.json"
     ],
     "write": [
       "benchmarks/release_acceptance/**",
@@ -93,8 +91,7 @@
       "packages/**",
       "docs/blackboard/**",
       ".github/**",
-      "package.json",
-      "package-lock.json"
+      "package.json"
     ]
   },
   "implementationSlices": [
@@ -324,7 +321,7 @@
     "schemaVersion": 1,
     "binds": [
       "source commit and git tree",
-      "dependency lock digest",
+      "dependency-resolution manifest digest",
       "supported harness/profile identity",
       "current HOW policy identity",
       "build/install procedure identity",
@@ -343,7 +340,7 @@
       "releaseId",
       "source repository/commit/tree",
       "buildType/invocationId/builder/runtime/command digest/timestamps",
-      "resolved dependency lock/runtime identities",
+      "resolved dependency manifest/runtime identities",
       "artifact subjects with sha256/size",
       "supported harness/HOW/product profiles",
       "BB-074/075 decision bindings",
@@ -407,5 +404,9 @@
     "noGo": "complete valid evidence and any required identity/value/lifecycle/documentation gate fails",
     "inconclusive": "missing registered unit, unknown primary cost, provider/infra gap preventing evaluation, invalid reserve provenance or incomplete lifecycle evidence",
     "authority": "frozen deterministic reducer; Jev validates evidence claims and cannot rewrite outcome"
+  },
+  "dependencyResolution": {
+    "workerStart": "Consume the exact dependency-resolution manifest/digest emitted by the delivered BB-073-supported distribution path. Do not assume a root lockfile exists.",
+    "contradiction": "If the delivered distribution has no reproducible dependency-resolution identity, BB-076 cannot claim exact release provenance and must return PLAN_INPUT_CONTRADICTION."
   }
 }
