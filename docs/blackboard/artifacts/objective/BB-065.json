@@ -3,34 +3,38 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-065",
-  "outcome": "A resource-bounded, reproducible fixture benchmark compares direct mini-SWE-agent with the current ExHarness Core and obtains an exclusively Jev-issued value judgment scoped to this benchmark.",
-  "currentProblem": "The baseline implementation is merged but provider resource limits reportedly block live calibration. Direct-only calibration cannot establish ExHarness value, and current retry/export behavior does not support a reliable cross-session handoff.",
+  "outcome": "A neutral, resource-bounded benchmark substrate is independently calibrated so later harness comparisons can vary the harness without confounding model, task, environment, evaluator or accounting semantics.",
+  "currentProblem": "The prior BB-065 objective conflated benchmark calibration with a six-pair Direct-vs-Core product-value study. Recent benchmark research makes that premise stale: provider/termination failure must be separated from independent quality, heterogeneous harnesses need one fixed-factor adapter contract, and substrate validity must be proven before ExHarness value is measured.",
   "scope": [
-    "delivery.baseline",
-    "delivery.baseline.provider-recovery",
-    "delivery.baseline.paired-core-benchmark",
-    "delivery.baseline.jev-value"
+    "delivery.benchmark-substrate",
+    "delivery.benchmark-calibration",
+    "delivery.benchmark-neutral-adapter",
+    "delivery.benchmark-accounting",
+    "delivery.benchmark-failure-semantics"
   ],
   "constraints": [
-    "Research must compare reuse and the smallest existing-Core approach, inspect primary sources and pin selected versions before READY.",
-    "Future dependency plans are assumptions, not delivered truth; worker execution requires delivered dependencies and a current Jev-satisfied plan.",
-    "Real-provider and live-product evidence must be identified separately from deterministic mocks; no fabricated API runs, costs or judgments.",
-    "Only Jev issues semantic value judgments. Operators supply authorized resources and measured facts; coding agents implement and collect evidence. Neither may author, override or replace a value verdict.",
-    "Completion may establish benefit or no benefit; a positive outcome is not required. Missing live evidence, exhausted capacity or unavailable Jev cannot be relabelled as a definitive value result."
+    "BB-065 establishes benchmark trustworthiness only; it cannot conclude that ExHarness, Direct, Core Sync or any future async profile adds product value.",
+    "Research must compare reuse with the smallest ExHarness-owned seam, inspect primary sources and pin selected substrate/version/task identities before READY.",
+    "Harness comparisons must fix model snapshot, task/prompt input, starting workspace/environment, resource ceilings, artifact extraction and independent evaluator while preserving each harness's native execution behavior.",
+    "Provider, infrastructure and termination state are orthogonal to independent quality. Timeout, 429, UNKNOWN usage or budget exhaustion cannot be silently converted to verifier rejection, and producer success cannot become acceptance.",
+    "Every run keeps exact artifact/candidate identity, trace and token/tool/cost/time accounting where known; unknown usage stays explicit and all attempts/retries remain visible.",
+    "Calibration is finite and resource-bounded. Real-provider evidence is distinct from deterministic controls; no fabricated live calls, costs, cache hits or judgments."
   ],
   "successCriteria": [
-    "A frozen request-tracker fixture and independent API/browser/persistence verifier preserve the existing three task families and bind every result to exact source, profile and candidate identities.",
-    "A finite provider resource and recovery protocol preserves all attempts, costs and unknown usage across quota waits, process restarts and incremental evidence exports without duplicate dispatch or budget resets.",
-    "A preregistered six-pair live study compares the current ExHarness Core against direct mini-SWE-agent using the same coding loop, model, tools, prompts, task budgets and independent checks; complete accounting exposes outcomes, time, tokens, calls and total cost.",
-    "Only a real, exactly bound Jev evaluation answers whether ExHarness adds value for this fixture/profile under the frozen rubric; missing evidence stays inconclusive, and worker delivery requires all acceptance claims independently SATISFIED."
+    "A pinned task/environment/evaluator substrate has reproducible fresh reset, exact artifact extraction and independent oracle/pass plus no-op/fail controls sufficient to detect invalid or flaky benchmark tasks before harness-value experiments.",
+    "A neutral harness adapter contract fixes model, task/prompt, starting workspace/environment, tool/resource ceilings, artifact extraction and evaluator while permitting native harness execution to vary as the experimental factor.",
+    "A common run record binds task/environment/harness/model/profile/candidate identities, trace, verifier quality, model/tool usage, cost/time accounting and explicit termination/provider/infrastructure classes; quality remains independent from those failure dimensions and UNKNOWN never becomes zero.",
+    "A preregistered calibration/repeat protocol proves the substrate, reset, verifier and accounting paths are executable and hands a pinned benchmark contract to downstream harness-isolation and delivery-value work without making a Direct-vs-ExHarness value claim."
   ],
   "currentSourceRefs": [
     "scripts/delivery/baseline/run.mjs",
     "scripts/delivery/baseline/provider_budget.py",
     "scripts/delivery/baseline/provider-export.mjs",
     "scripts/delivery/baseline/report.mjs",
-    "packages/core-harness/src/core-harness.js",
-    "scripts/blackboard-jev.mjs",
+    "packages/core-harness/src/javascript-codeact-strategy.js",
+    "packages/core-harness/src/model-routing.js",
+    "docs/blackboard/process/harness-benchmark-program-research.md",
+    "docs/blackboard/process/delivery-research/BB-065.md",
     "docs/living/system/state.md"
   ]
 }
