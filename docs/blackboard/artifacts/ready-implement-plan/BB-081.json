@@ -22,7 +22,7 @@
     "Running BB-074 end-to-end delivery-value acceptance inside BB-081. BB-074 is downstream and consumes the profile decision after BB-081."
   ],
   "constraints": [
-    "Every A/B/C/D arm uses the exact BB-077 Harbor adapter/substrate, model/provider profile, task instruction, starting environment, tool/capability surface, per-attempt budgets, measurement contract, artifact extraction and Harbor verifier. Only the declared Core capability composition may differ.",
+    "Every A/B/C/D arm uses the exact BB-077 Harbor adapter/substrate, model/provider profile, task instruction, starting environment, capability names/input schemas, per-attempt budgets, measurement contract, artifact extraction and Harbor verifier. A profile-neutral benchmark capability binder is identical across arms; only the intended synchronous-vs-detached/context/coordinator behavior may differ.",
     "The external held-out cohort is exactly the four Terminal-Bench 2.1 task digests reserved by BB-077. Development tasks, replacement tasks and task mutation after observing results are forbidden.",
     "Run exactly two independent repeats per held-out task and arm. The registered evaluation unit is task digest + repeat index + frozen profile hash; all 32 arm attempts remain in the denominator and accounting.",
     "The 32-attempt live ablation must remain inside BB-077's USD 25 cohort ceiling and USD 0.60 per-attempt ceiling. Budget exhaustion yields an incomplete/INCONCLUSIVE cohort; it cannot trigger task deletion or threshold changes.",
@@ -44,24 +44,26 @@
     "D1 — BB-081 is acceptance/attribution/publication only. It must not modify the delivered BB-078/079/080 semantics, BB-077 benchmark contract or product acceptance/effect authority to make a candidate pass.",
     "D2 — Freeze four compositional arms: A=CORE_SYNC; B=A+BB-078 detached-operation capability; C=B+BB-079 append-only/cache-stable async-result context; D=C+BB-080 steering/wakeup/recovery coordinator. B/C are diagnostic only; D is the sole promotion candidate.",
     "D3 — Arm composition is capability-manifest driven. Worker bootstrap resolves exact DONE BB-078/079/080 exports and constructs the four profiles without source mutation. If an independently toggleable B/C/D composition cannot be built from delivered APIs, stop with PLAN_INPUT_CONTRADICTION rather than approximate attribution.",
-    "D4 — Use the four Terminal-Bench 2.1 held-out tasks reserved in BB-077 by exact digest: git-leak-recovery, pypi-server, kv-store-grpc and sanitize-git-repo. BB-077's oracle/nop validation, fresh reset, Harbor adapter and leakage rules remain authoritative.",
-    "D5 — Run two independent repeats per task/arm, yielding 32 registered arm attempts and staying under BB-077's USD 25 cohort ceiling even at the USD 0.60 per-attempt cap. Pair every comparison by exact task digest + repeat index + fixed benchmark profile hash.",
-    "D6 — Counterbalance four-arm execution order with an eight-sequence balanced schedule: git-leak r1 A-B-D-C/r2 C-D-B-A; pypi r1 B-C-A-D/r2 D-A-C-B; kv-store r1 C-D-B-A/r2 A-B-D-C; sanitize r1 D-A-C-B/r2 B-C-A-D. Each arm occupies each ordinal position exactly twice across the cohort.",
-    "D7 — Reuse HARNESS_RUN_RECORD_V1 and BB-077 measurement/failure taxonomy unchanged. The report extends each record only with ablationArm, dependencyManifestHash, repeatIndex and faultScenarioRef; it does not redefine quality, token/cache accounting or causal timing semantics.",
-    "D8 — The primary live decision compares D against A only. B and C are used to compute marginal attribution vectors A→B, B→C and C→D for quality, normalized cost, prompt tokens, model turns, elapsed time, overlap/cache observations and failure fingerprints; no B/C result can independently publish a supported profile.",
-    "D9 — Preserve BB-077's primary gate exactly over the registered task-repeat units: D accepted-task rate >= A; duplicate external effects = 0 and all required recovery negatives pass; median D/A normalized provider-cost ratio <=0.85; prompt-input-token ratio <=0.90; model-turn ratio <=1.00; elapsed ratio <=1.10.",
-    "D10 — Define accepted-task rate over the registered comparison unit already frozen by BB-077: exact task digest + repeat index + profile hash. With four held-out tasks and two repeats, each arm has denominator 8. Retries remain attempts inside that unit and never create a replacement unit.",
-    "D11 — The live cohort is a bounded engineering experiment, not a significance claim. Report all eight paired D/A observations, medians/distributions, per-task repeat consistency and optional descriptive bootstrap intervals; do not convert repeated rollouts into best-of-k or claim statistical superiority from n=8.",
-    "D12 — Fault robustness is a separate deterministic matrix over frozen synthetic fixtures. It injects provider timeout, 429, ambiguous completion, tool failure, process kill/restart, cancellation, duplicate operation transition/wakeup and external-effect ambiguity at declared boundaries. Fault results are not mixed into paid external task economics.",
-    "D13 — Fault scenarios apply only where semantically meaningful: provider/tool failures have A-D controls; durable-operation kill/restart and cancellation target B-D; duplicate transition/context delivery targets C-D; duplicate wake/model-generation fencing targets D; external-effect ambiguity/replay fencing targets B-D. Unsupported scenario/arm cells are N/A, not passes.",
-    "D14 — Promotion safety is absolute for D: zero duplicate external effects; no lost terminal result; cancellation never claims an unresolved external effect cancelled; stale/fenced model output dispatches zero actions; NON_RECONCILABLE ambiguity escalates/fails closed; restart preserves exact operation/effect/generation identity. Any conclusive violation => KEEP_SYNC_BASELINE.",
-    "D15 — Reliability is observed from repeated independent registered units. Report per-task 0/2,1/2,2/2 acceptance consistency and failure-fingerprint recurrence. A repeated run is evidence about variance, not permission to select the better outcome.",
-    "D16 — Separate measurement, deterministic decision and publication. run.mjs emits append-only live/fault evidence; accept.mjs consumes only the frozen cohort/manifests/gates and returns PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE; Jev independently validates the exact claims/evidence but cannot rewrite the reducer outcome.",
-    "D17 — Publish a narrow package-level execution-profile contract only after the deterministic decision. CORE_SYNC is always supported; CORE_ASYNC_FIRST_V1 is selectable only after PROMOTE_ASYNC. createAgentRuntime() defaults are not silently changed; downstream BB-066 must resolve the exported supported profile explicitly.",
-    "D18 — Profile evidence binds exact BB-077 benchmark contract hash, held-out protocol hash, dependency delivery hashes for BB-078/079/080, provider/model profile hash, evaluated source SHA and decision artifact hash. Any later mutation invalidates the evidence-backed claim and requires a new acceptance cohort.",
-    "D19 — KEEP_SYNC_BASELINE is a valid completed BB-081 outcome: publish CORE_SYNC as supported and retain async components as non-default/experimental capability. INCONCLUSIVE is not acceptance-complete and publishes no supported-profile change.",
-    "D20 — BB-074 remains downstream. BB-081 decides Core execution-profile support from harness-level evidence; BB-074 later tests whether the integrated delivery system produces end-to-end human/value improvement without feeding those results back into this frozen gate.",
-    "D21 — Public methodology evidence is supporting context only. Beyond Pass@k (arXiv:2608.14711) shows independent rollouts are required to measure reliability and a single-rollout proxy can be misleading; The Scaffold Effect (arXiv:2607.22585) supports fixed-model harness-specific cost/latency/failure reporting. Neither paper nor any vendor result decides ExHarness promotion."
+    "D4 — Make detachment observable without changing the model's tool names or input schemas. BB-081 defines one profile-neutral benchmark effect binding over the exact delivered BB-077 shell/fixture capability: all arms expose the same capability name/input contract and a predeclared terminal-or-operation response union; A invokes the bound effect capability synchronously and therefore emits the terminal branch, while B/C/D wrap that exact capability through delivered BB-078 and may emit RUNNING. The binder uses deterministic operation identity and an explicit conservative replay policy; it is identical across arms and cannot special-case tasks.",
+    "D5 — The dependency/bootstrap gate must prove that at least one held-out-relevant BB-077 capability can be bound to BB-078 without changing task instruction, capability name/input schema or verifier semantics. If delivered BB-077/078 seams cannot satisfy this, BB-081 is PLAN_INPUT_CONTRADICTION rather than a zero-treatment ablation.",
+    "D6 — Use the four Terminal-Bench 2.1 held-out tasks reserved in BB-077 by exact digest: git-leak-recovery, pypi-server, kv-store-grpc and sanitize-git-repo. BB-077's oracle/nop validation, fresh reset, Harbor adapter and leakage rules remain authoritative.",
+    "D7 — Run two independent repeats per task/arm, yielding 32 registered arm attempts and staying under BB-077's USD 25 cohort ceiling even at the USD 0.60 per-attempt cap. Pair every comparison by exact task digest + repeat index + fixed benchmark profile hash.",
+    "D8 — Counterbalance four-arm execution order with an eight-sequence balanced schedule: git-leak r1 A-B-D-C/r2 C-D-B-A; pypi r1 B-C-A-D/r2 D-A-C-B; kv-store r1 C-D-B-A/r2 A-B-D-C; sanitize r1 D-A-C-B/r2 B-C-A-D. Each arm occupies each ordinal position exactly twice across the cohort.",
+    "D9 — Reuse HARNESS_RUN_RECORD_V1 and BB-077 measurement/failure taxonomy unchanged. The report extends each record only with ablationArm, dependencyManifestHash, repeatIndex and faultScenarioRef; it does not redefine quality, token/cache accounting or causal timing semantics.",
+    "D10 — The primary live decision compares D against A only. B and C are used to compute marginal attribution vectors A→B, B→C and C→D for quality, normalized cost, prompt tokens, model turns, elapsed time, overlap/cache observations and failure fingerprints; no B/C result can independently publish a supported profile.",
+    "D11 — Preserve BB-077's primary gate exactly over the registered task-repeat units: D accepted-task rate >= A; duplicate external effects = 0 and all required recovery negatives pass; median D/A normalized provider-cost ratio <=0.85; prompt-input-token ratio <=0.90; model-turn ratio <=1.00; elapsed ratio <=1.10.",
+    "D12 — Define accepted-task rate over the registered comparison unit already frozen by BB-077: exact task digest + repeat index + profile hash. With four held-out tasks and two repeats, each arm has denominator 8. Retries remain attempts inside that unit and never create a replacement unit.",
+    "D13 — The live cohort is a bounded engineering experiment, not a significance claim. Report all eight paired D/A observations, medians/distributions, per-task repeat consistency and optional descriptive bootstrap intervals; do not convert repeated rollouts into best-of-k or claim statistical superiority from n=8.",
+    "D14 — Fault robustness is a separate deterministic matrix over frozen synthetic fixtures. It injects provider timeout, 429, ambiguous completion, tool failure, process kill/restart, cancellation, duplicate operation transition/wakeup and external-effect ambiguity at declared boundaries. Fault results are not mixed into paid external task economics.",
+    "D15 — Fault scenarios apply only where semantically meaningful: provider/tool failures have A-D controls; durable-operation kill/restart and cancellation target B-D; duplicate transition/context delivery targets C-D; duplicate wake/model-generation fencing targets D; external-effect ambiguity/replay fencing targets B-D. Unsupported scenario/arm cells are N/A, not passes.",
+    "D16 — Promotion safety is absolute for D: zero duplicate external effects; no lost terminal result; cancellation never claims an unresolved external effect cancelled; stale/fenced model output dispatches zero actions; NON_RECONCILABLE ambiguity escalates/fails closed; restart preserves exact operation/effect/generation identity. Any conclusive violation => KEEP_SYNC_BASELINE.",
+    "D17 — Reliability is observed from repeated independent registered units. Report per-task 0/2,1/2,2/2 acceptance consistency and failure-fingerprint recurrence. A repeated run is evidence about variance, not permission to select the better outcome.",
+    "D18 — Separate measurement, deterministic decision and publication. run.mjs emits append-only live/fault evidence; accept.mjs consumes only the frozen cohort/manifests/gates and returns PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE; Jev independently validates the exact claims/evidence but cannot rewrite the reducer outcome.",
+    "D19 — Publish a narrow package-level execution-profile contract only after the deterministic decision. CORE_SYNC is always supported; CORE_ASYNC_FIRST_V1 is selectable only after PROMOTE_ASYNC. createAgentRuntime() defaults are not silently changed; downstream BB-066 must resolve the exported supported profile explicitly.",
+    "D20 — Profile evidence binds exact BB-077 benchmark contract hash, held-out protocol hash, dependency delivery hashes for BB-078/079/080, provider/model profile hash, evaluated source SHA and decision artifact hash. Any later mutation invalidates the evidence-backed claim and requires a new acceptance cohort.",
+    "D21 — KEEP_SYNC_BASELINE is a valid completed BB-081 outcome: publish CORE_SYNC as supported and retain async components as non-default/experimental capability. INCONCLUSIVE is not acceptance-complete and publishes no supported-profile change.",
+    "D22 — BB-074 remains downstream. BB-081 decides Core execution-profile support from harness-level evidence; BB-074 later tests whether the integrated delivery system produces end-to-end human/value improvement without feeding those results back into this frozen gate.",
+    "D23 — Public methodology evidence is supporting context only. Beyond Pass@k (arXiv:2608.14711) shows independent rollouts are required to measure reliability and a single-rollout proxy can be misleading; The Scaffold Effect (arXiv:2607.22585) supports fixed-model harness-specific cost/latency/failure reporting. Neither paper nor any vendor result decides ExHarness promotion."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -87,6 +89,7 @@
     ],
     "expectedNew": [
       "benchmarks/harness_efficiency/bb081/ablation-contract.mjs",
+      "benchmarks/harness_efficiency/bb081/profile-capabilities.mjs",
       "benchmarks/harness_efficiency/bb081/heldout-profile.json",
       "benchmarks/harness_efficiency/bb081/fault-matrix.mjs",
       "benchmarks/harness_efficiency/bb081/run.mjs",
@@ -95,6 +98,7 @@
     ],
     "expectedTests": [
       "benchmarks/harness_efficiency/bb081/test/ablation-contract.test.mjs",
+      "benchmarks/harness_efficiency/bb081/test/profile-capabilities.test.mjs",
       "benchmarks/harness_efficiency/bb081/test/fault-matrix.test.mjs",
       "benchmarks/harness_efficiency/bb081/test/decision.test.mjs",
       "benchmarks/harness_efficiency/bb081/test/dependency-binding.test.mjs",
@@ -138,8 +142,8 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Dependency/bootstrap gate: resolve exact DONE BB-077/078/079/080 implementation-result/judgment/Living refs, compute one dependency manifest hash and reject missing/incompatible or non-composable capability contracts with PLAN_INPUT_CONTRADICTION.",
-    "S2 — Ablation profiles: construct A/B/C/D from exact delivered exports without modifying dependency source; freeze the four held-out Terminal-Bench digests, two-repeat schedule, eight-sequence arm ordering, model/provider/profile/budget hashes and live USD ceiling.",
+    "S1 — Dependency/tool-surface bootstrap gate: resolve exact DONE BB-077/078/079/080 implementation-result/judgment/Living refs, compute one dependency manifest hash, bind the delivered BB-077 held-out-relevant capability through one identical effect-aware benchmark binder, and reject missing/incompatible/non-composable/zero-treatment contracts with PLAN_INPUT_CONTRADICTION.",
+    "S2 — Ablation profiles: construct A/B/C/D from the same bound benchmark capability surface without modifying dependency source; A executes the effect-aware capability synchronously, B/C/D detach the exact capability through BB-078, then C adds BB-079 and D adds BB-080. Freeze held-out digests, repeat/order schedule and fixed model/provider/budget hashes.",
     "S3 — Live held-out runner: execute all 32 registered arm attempts through the shared BB-077 Harbor adapter with fresh trial/runtime/provider session identity and HARNESS_RUN_RECORD_V1 accounting; preserve every retry/failure and block development/replacement tasks.",
     "S4 — Attribution report: produce pair-complete A→B, B→C, C→D and D/A vectors for quality, economics, context/cache observations, turns, latency/overlap, repeat consistency and failure fingerprints without one aggregate winner score.",
     "S5 — Deterministic fault matrix: run local provider/tool/process/replay fixtures at preregistered boundaries, record N/A cells explicitly, and prove D safety/recovery requirements plus component-level attribution for B/C/D.",
@@ -159,6 +163,23 @@
         "dependency manifest hashes",
         "A/B/C/D construction manifest",
         "missing/mismatched/non-composable dependency negatives"
+      ]
+    },
+    {
+      "id": "TOOL_SURFACE",
+      "statement": "A/B/C/D expose the same held-out-relevant capability name/input protocol through one identical effect-aware benchmark binder; A synchronously reaches terminal output while B/C/D exercise the exact delivered BB-078 detached path without task-specific behavior or a changed verifier.",
+      "verificationIds": [
+        "dependency-contract",
+        "profile-capabilities",
+        "ablation-contract"
+      ],
+      "evidenceRequired": [
+        "same capability/schema hash across arms",
+        "deterministic delayed activation probe",
+        "same semantic effect identity",
+        "A terminal-before-return vs B/C/D RUNNING-before-terminal timeline",
+        "per-unit detachable invocation count",
+        "all-zero-treatment INCONCLUSIVE negative"
       ]
     },
     {
@@ -341,6 +362,7 @@
     {
       "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
       "criterionIds": [
+        "TOOL_SURFACE",
         "SAFETY",
         "DECISION",
         "PROFILE",
@@ -350,6 +372,7 @@
     {
       "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
       "criterionIds": [
+        "TOOL_SURFACE",
         "ROBUSTNESS",
         "SAFETY",
         "ROLLBACK",
@@ -359,6 +382,8 @@
     {
       "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
       "criterionIds": [
+        "DEPENDENCY",
+        "TOOL_SURFACE",
         "COHORT",
         "ACCOUNTING",
         "ATTRIBUTION",
@@ -372,6 +397,10 @@
     {
       "id": "dependency-contract",
       "command": "node --test benchmarks/harness_efficiency/bb081/test/dependency-binding.test.mjs"
+    },
+    {
+      "id": "profile-capabilities",
+      "command": "node --test benchmarks/harness_efficiency/bb081/test/profile-capabilities.test.mjs"
     },
     {
       "id": "ablation-contract",
@@ -402,6 +431,9 @@
   "negativeVerificationCases": [
     "A development, replacement or mutated task enters the held-out cohort after candidate work exists.",
     "An arm changes model/provider, instruction, starting environment, tool surface, per-attempt budget, Harbor adapter, measurement contract or verifier in addition to capability composition.",
+    "A/B/C/D expose different capability names/input schemas or arm-specific prompt/tool descriptions in order to explain async handles.",
+    "BB-078/079/080 modules are installed but no held-out D unit actually invokes a detachable capability, yet the reducer treats the D/A economics as evidence for PROMOTE_ASYNC.",
+    "The benchmark effect binder assigns different semantic operation identity or replay policy by arm for the same task/repeat/capability input.",
     "B/C/D cannot be independently composed from delivered dependencies but the benchmark approximates the missing arm instead of returning PLAN_INPUT_CONTRADICTION.",
     "One arm reuses another arm's workspace, provider session, runtime/coordinator state or prior model output.",
     "A failed/rate-limited/retried attempt is dropped, overwritten or replaced by a later success.",
@@ -505,6 +537,7 @@
       "objectiveCriterion": "Held-out matched runs report accepted quality, total/provider input-output-cached tokens, cost, model turns, tool calls, useful operations per turn, overlap, elapsed time and recovery outcomes.",
       "criterionIds": [
         "COHORT",
+        "TOOL_SURFACE",
         "ACCOUNTING",
         "ATTRIBUTION",
         "ROBUSTNESS",
@@ -522,6 +555,7 @@
       ],
       "verificationIds": [
         "dependency-contract",
+        "profile-capabilities",
         "ablation-contract",
         "fault-matrix",
         "live-heldout",
@@ -536,11 +570,13 @@
         5,
         6,
         7,
-        10,
-        11,
+        8,
+        9,
         12,
         13,
-        14
+        14,
+        15,
+        16
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
@@ -570,13 +606,15 @@
         "heldoutContract",
         "faultMatrix",
         "decisionContract",
-        "researchEvidence"
+        "researchEvidence",
+        "toolActivationContract"
       ]
     },
     {
       "objectiveCriterion": "The candidate passes a predeclared quality non-regression bound and cost/token improvement gate or the decision is KEEP_SYNC_BASELINE.",
       "criterionIds": [
         "QUALITY",
+        "TOOL_SURFACE",
         "EFFICIENCY",
         "DECISION",
         "DEPENDENCY",
@@ -593,6 +631,7 @@
       ],
       "verificationIds": [
         "dependency-contract",
+        "profile-capabilities",
         "ablation-contract",
         "decision-contract",
         "profile-contract",
@@ -602,17 +641,19 @@
         0,
         1,
         2,
+        3,
         4,
-        5,
+        6,
         7,
-        8,
         9,
         10,
-        15,
-        16,
+        11,
+        12,
         17,
         18,
-        19
+        19,
+        20,
+        21
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
@@ -641,13 +682,15 @@
       "supportingPlanFields": [
         "ablationContract",
         "decisionContract",
-        "profilePublicationContract"
+        "profilePublicationContract",
+        "toolActivationContract"
       ]
     },
     {
       "objectiveCriterion": "No duplicate external effects, lost terminal results, unsafe cancellation or recovery regressions occur in negative probes.",
       "criterionIds": [
         "ROBUSTNESS",
+        "TOOL_SURFACE",
         "SAFETY",
         "ROLLBACK",
         "DEPENDENCY",
@@ -663,6 +706,7 @@
       ],
       "verificationIds": [
         "dependency-contract",
+        "profile-capabilities",
         "fault-matrix",
         "decision-contract",
         "profile-contract",
@@ -672,14 +716,16 @@
         0,
         1,
         2,
-        11,
-        12,
+        3,
+        4,
         13,
         14,
         15,
         16,
         17,
-        18
+        18,
+        19,
+        20
       ],
       "sourceRefs": [
         "packages/core-harness/src/effect-reconciliation.js",
@@ -703,7 +749,8 @@
       "supportingPlanFields": [
         "faultMatrix",
         "decisionContract",
-        "profilePublicationContract"
+        "profilePublicationContract",
+        "toolActivationContract"
       ]
     }
   ],
@@ -1060,5 +1107,29 @@
     ],
     "rollbackProfile": "CORE_SYNC",
     "rollbackBoundary": "New/quiescent session only after all in-flight async operations/effects are terminal or reconciled."
+  },
+  "toolActivationContract": {
+    "schemaVersion": 1,
+    "purpose": "Guarantee that A/B/C/D differ on a real held-out-relevant operation rather than only on installed-but-unused async modules.",
+    "capabilitySource": "Exact delivered BB-077 shell or fixture capability used by the Harbor adapter.",
+    "fixedSurface": [
+      "capability name",
+      "description/protocol text",
+      "input schema",
+      "task instruction",
+      "Harbor adapter",
+      "verifier"
+    ],
+    "responseContract": "One predeclared union visible in every arm: terminal result OR durable operation handle/update. A synchronously emits terminal results; B/C/D may emit RUNNING/late terminal behavior from delivered async layers.",
+    "effectBinding": "The benchmark binder creates one exact effect-aware capability with deterministic operationKey bound to task/repeat/arm-independent semantic call identity and an explicit replay policy. Binding logic is byte-identical across A/B/C/D.",
+    "armBehavior": {
+      "A": "Invoke the bound effect capability synchronously through CORE_SYNC.",
+      "B": "Wrap the exact bound capability with delivered BB-078 detached-operation manager.",
+      "C": "Same B binding plus delivered BB-079 async-result context.",
+      "D": "Same C binding plus delivered BB-080 coordinator."
+    },
+    "activationProbe": "Before paid held-out dispatch, a deterministic fixture must prove A waits for terminal completion while B/C/D receive a durable RUNNING handle before the same delayed effect completes, with identical capability name/input binding and one semantic effect id.",
+    "externalCohortCheck": "For each held-out task/repeat, record whether the detachable capability was actually invoked. A registered D/A unit with zero detachable invocations remains in quality accounting but is excluded from causal detachment-efficiency attribution; if all eight D units have zero detachable invocations, the profile decision is INCONCLUSIVE because the treatment was not exercised.",
+    "failClosed": "Cannot bind delivered capability, schema differs by arm, effect identity differs by arm, or all D units exercise zero detachable calls => INCONCLUSIVE/PLAN_INPUT_CONTRADICTION as applicable; never PROMOTE_ASYNC."
   }
 }
