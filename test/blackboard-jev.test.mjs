@@ -179,6 +179,40 @@ test('API has bounded retry, no auth retry and missing key fails without network
   calls=0;await assert.rejects(()=>callJev(payload,{apiKey:'fixture',fetchImpl:async()=>{calls++;return new Response('',{status:401});}}),/401/);assert.equal(calls,1);
   await assert.rejects(()=>callJev(payload,{apiKey:'',fetchImpl}),/missing/);assert.equal(calls,1);
 });
+test('API retries one malformed typed response without relaxing validation',async t=>{
+  const f=fixture(t),payload=materialize(f.root,'BB-1').payload;
+  const malformed=()=>{
+    const body=f.response(payload);
+    const first=Object.values(body.answers)[0];
+    first.probabilities={SATISFIED:0.5,IMPLEMENTATION_DEFECT:0.2,INSUFFICIENT_EVIDENCE:0.2,PLAN_INPUT_CONTRADICTION:0.09};
+    return body;
+  };
+  let calls=0;
+  const recovered=await callJev(payload,{
+    apiKey:'fixture',
+    fetchImpl:async()=>{
+      calls++;
+      const body=calls===1?malformed():f.response(payload);
+      return new Response(JSON.stringify(body),{status:200});
+    }
+  });
+  assert.equal(calls,2);
+  assert.equal(recovered.attempts,2);
+  assert.doesNotThrow(()=>validateResponse(recovered.response,payload));
+
+  calls=0;
+  await assert.rejects(
+    ()=>callJev(payload,{
+      apiKey:'fixture',
+      fetchImpl:async()=>{
+        calls++;
+        return new Response(JSON.stringify(malformed()),{status:200});
+      }
+    }),
+    /invalid probabilities/
+  );
+  assert.equal(calls,2);
+});
 test('end-to-end only exact candidate in main may publish delivery',async t=>{
   const f=fixture(t);await f.ready();const c=f.candidate();
   const evaluation=await f.ev();
