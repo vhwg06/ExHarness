@@ -772,7 +772,9 @@
         "package.json",
         "docs/blackboard/process/delivery-research/BB-065.md"
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "benchmarkPackageContract"
+      ]
     },
     {
       "objectiveCriterion": "A Harbor adapter outside packages/benchmark owns process invocation, trial identity, fresh workspace/reset, artifact/verifier extraction, raw evidence references and normalized substrate failure mapping while packages/benchmark remains Harbor-independent.",
@@ -799,7 +801,9 @@
       "sourceRefs": [
         "docs/blackboard/process/delivery-research/BB-065.md"
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "harborAdapterContract"
+      ]
     },
     {
       "objectiveCriterion": "Deterministic calibration proves producer SUCCESS plus verifier FAIL is REJECTED; budget exhaustion plus a valid verified artifact is ACCEPTED with BUDGET_EXHAUSTED; provider timeout without an artifact is NOT_EVALUATED; missing usage remains UNKNOWN/null; retries preserve failed attempts; and tampered evidence fails audit.",
@@ -829,7 +833,9 @@
       "sourceRefs": [
         "docs/blackboard/process/delivery-research/BB-065.md"
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "calibrationContract"
+      ]
     },
     {
       "objectiveCriterion": "The implementation boundary is concrete at file/API/test level and architectural negatives fail when packages/benchmark imports product runtime, Harbor or provider SDKs, when downstream work bypasses AttemptLedger, or when the retired baseline remains executable.",
@@ -865,7 +871,10 @@
         "scripts/delivery/baseline/study.mjs",
         "scripts/delivery/baseline/core-arm.mjs"
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "benchmarkPackageContract",
+        "downstreamContract"
+      ]
     },
     {
       "objectiveCriterion": "Legacy scripts/delivery/baseline capabilities are inventoried and explicitly mapped to DROP, reimplementation under the new generic contract, or downstream ownership before current entrypoints are removed.",
@@ -915,7 +924,9 @@
       "sourceRefs": [
         "docs/blackboard/process/harness-benchmark-program-research.md"
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "downstreamContract"
+      ]
     }
   ]
 }
