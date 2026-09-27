@@ -17,18 +17,18 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-082
+next-work-id: BB-083
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
 
 ```text
 RESEARCH_SA
-  active: BB-065
+  active: NONE
 
 WORKER
   active: NONE
@@ -36,14 +36,7 @@ WORKER
 
 ## Active work
 
-
-BB-065
-task: Calibrate neutral benchmark substrate and executable baseline
-lane: RESEARCH_SA
-phase: RESEARCH
-current-context: docs/blackboard/context/BB-065/current.json
-components: agentic/domain-execution-control
-worker: codex-bb065-research
+NONE
 
 ## Schedulable tasks
 
@@ -58,6 +51,7 @@ worker: codex-bb065-research
 - BB-073 [RESEARCH_SA/RESEARCH] — Ship an installable supported delivery profile
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
+- BB-082 [RESEARCH_SA/RESEARCH] — Define trusted objective supersession and research reset control
 
 ## Dependency graph
 
@@ -76,7 +70,7 @@ BB-061 [BLOCKED_BY BB-060] <- BB-060
 BB-062 [RESEARCH_SCHEDULABLE] <- BB-061
 BB-063 [RESEARCH_SCHEDULABLE] <- BB-062
 BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
-BB-065 [ACTIVE] <- ROOT
+BB-065 [BLOCKED] <- BB-082
 BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
@@ -93,6 +87,7 @@ BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
 BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
+BB-082 [RESEARCH_SCHEDULABLE] <- ROOT
 ```
 
 ## Context semantics
