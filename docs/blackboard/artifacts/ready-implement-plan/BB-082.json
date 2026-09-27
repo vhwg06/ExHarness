@@ -15,28 +15,40 @@
     "outer-blackboard.impact-fencing"
   ],
   "outOfScope": [
-    "Changing BB-065 objective in this allocation task.",
-    "Allowing ordinary RESEARCH_SA or WORKER PRs to redefine their own objective.",
-    "Rewriting historical objective/plan/evaluation artifacts or Git history.",
-    "Using supersession as product acceptance, delivery completion or dependency bypass."
+    "Performing the BB-065 objective migration inside BB-082 implementation.",
+    "Letting ordinary RESEARCH_SA/WORKER candidates change their own objective/routing trust subject.",
+    "Reconstructing version chains in current context or retaining duplicate current objective/plan siblings.",
+    "Using supersession to mark work DONE, accept product truth, bypass dependencies or mutate delivered task history."
   ],
   "constraints": [
-    "This allocation remains a DRAFT research plan; exact publication schema and CI transition rules must be independently researched before READY.",
-    "Trusted-main objective/routing remains authoritative for ordinary Jev evaluation.",
-    "Supersession must be a separately recognizable publication with exact old/new objective and target-task bindings.",
-    "Target reset must revoke stale readiness/worker authority and preserve historical provenance.",
-    "BB-065 is the first intended migration consumer, but BB-082 must deliver the generic control before that migration is authored."
+    "Ordinary research evaluation continues to copy objective/Board authority from exact PR-base trusted data; candidate source cannot redefine its own semantic subject.",
+    "Supersession is a dedicated control-plane publication verified by trusted-base code against exact base/head content; candidate supersession code is never executed by the verifier.",
+    "Supersession applies only to unfinished RESEARCH_SA targets. WORKER input contradictions must first return through the existing research path; DONE tasks are immutable.",
+    "The publication binds exact trustedBaseSha, old objective ref/hash, replacement ref/hash, target plan ref, reason/evidence and the complete direct-dependent set.",
+    "Target is reset to PLANNED RESEARCH_SA/RESEARCH, claim/currentContext removed, plan DRAFT rebound to the replacement objective, and stale readiness/evaluation/worker bindings removed.",
+    "Every non-DONE direct dependent is listed. A READY/WORKER direct dependent is conservatively reset to research/DRAFT; a RESEARCH_SA dependent remains research; DONE dependents remain historical and unchanged.",
+    "Canonical objective/plan paths stay stable. The current supersession relation has one canonical receipt; Git history retains prior bodies/receipts rather than adding generation/version artifacts to context.",
+    "A later correction is another explicit supersession from the then-current objective; no hidden rollback or history rewrite.",
+    "BB-065 remains BLOCKED until BB-082 is delivered; its replacement objective is published only in a separate migration PR."
   ],
   "invariants": [
-    "A task cannot evaluate a replacement objective that its own ordinary research candidate introduced.",
-    "Objective supersession preserves immutable prior evidence and never grants product or delivery authority.",
-    "A superseded unfinished task re-enters research with stale execution/readiness authority removed.",
-    "Downstream dependency impact is explicit and cannot be hidden by objective replacement."
+    "Candidate-controlled content cannot redefine the semantic subject judged by ordinary Jev.",
+    "Supersession is freshness-fenced to exact prior objective and Board state; stale/lost-update publication fails closed.",
+    "Supersession revokes stale execution/readiness authority while preserving canonical history and task identity.",
+    "All direct dependency impact is explicit; ready downstream work cannot silently survive changed prerequisite semantics."
   ],
   "architectureDecisions": [
-    "Research the smallest explicit OBJECTIVE_SUPERSESSION artifact/publication shape instead of weakening candidateResearchTask trusted-objective checks.",
-    "Research a dedicated trusted CI path analogous to readiness publication but semantically distinct from Jev readiness.",
-    "Research atomic reset semantics for target objective/plan/lane/phase/status/claim/context/readiness bindings and downstream impact."
+    "D1 — Add OBJECTIVE_SUPERSESSION as a typed Blackboard artifact and one canonical receipt path `docs/blackboard/artifacts/objective/<WORK_ID>.supersession.json`; it is a current relation, not an objective version.",
+    "D2 — Receipt pins targetWorkId, trustedBaseSha, oldObjective(ref/hash), replacementObjective(ref/hash), planRef, reason, evidenceRefs and an exact directDependents impact list.",
+    "D3 — Extend the trusted PR-base selector with a third output `supersessions`. Detection happens before ordinary candidateResearchTask routing checks and recognizes only a canonical candidate reset matching the typed receipt.",
+    "D4 — Add `verify-supersession` to trusted `blackboard-jev-ci.mjs` and a sibling `objective-supersession-verify` workflow job. It checks candidate files as data only; no candidate module/command is executed and no provider credential is used.",
+    "D5 — Freshness is CAS-like: trustedBaseSha must equal PR base; oldObjective hash must equal trusted-base bytes; target task/objectiveRef/planRef must match trusted Board; any base/objective/routing drift rejects publication.",
+    "D6 — Target transition is exact: unfinished RESEARCH_SA -> PLANNED/RESEARCH, claim/currentContext=null; objective path is unchanged but content/hash replaced; current plan becomes DRAFT bound to new objective; remove readinessRef plus evaluationRef/lastEvaluatedInput/evidenceRef/candidateSha/claimEvidence/deliveryRef/merge authority fields.",
+    "D7 — Direct impact is complete and conservative. All trusted direct dependents are enumerated exactly once. Non-DONE WORKER/READY dependents must reset to RESEARCH_SA/RESEARCH with DRAFT plan and stale execution/readiness bindings cleared; RESEARCH_SA dependents remain non-active research; DONE dependents are listed TERMINAL_UNCHANGED.",
+    "D8 — IDs, feature/topic membership, components and dependency edges are preserved by supersession. This control cannot retitle/reparent work, change execution scope or alter delivered dependencies.",
+    "D9 — Retention follows current-only semantics: overwrite the canonical unfinished objective/plan only through the verified publication, retain the canonical supersession receipt, and rely on Git revision history for prior file bodies. No gNNNN/version siblings enter context.",
+    "D10 — Repository merge authority is the publication authorization after deterministic verification. Jev evaluates and accepts BB-082's mechanism, but a migration does not ask Jev to judge an objective introduced by that same migration candidate.",
+    "D11 — The first consumer is a separate BB-065 migration after BB-082 DONE. That migration may reset its ready direct dependents per D7; it cannot be bundled into the BB-082 worker candidate."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -45,12 +57,17 @@
       "scripts/blackboard-delivery-contract.mjs",
       "scripts/blackboard-delivery-verify.mjs",
       "scripts/blackboard-work-graph.mjs",
+      "scripts/blackboard-state-project.mjs",
+      ".github/workflows/test.yml",
       "test/blackboard-jev.test.mjs",
       "test/blackboard-work-graph.test.mjs",
-      "docs/blackboard/contracts.md"
+      "docs/blackboard/contracts.md",
+      "docs/blackboard/jev.md",
+      "docs/living/system/state.md"
     ],
     "expectedNew": [
-      "scripts/blackboard-objective-supersession.mjs"
+      "scripts/blackboard-objective-supersession.mjs",
+      "test/blackboard-objective-supersession.test.mjs"
     ],
     "expectedTests": [
       "test/blackboard-objective-supersession.test.mjs"
@@ -70,204 +87,246 @@
       "scripts/blackboard-delivery-contract.mjs",
       "scripts/blackboard-delivery-verify.mjs",
       "scripts/blackboard-work-graph.mjs",
+      ".github/workflows/test.yml",
       "test/blackboard-objective-supersession.test.mjs",
       "test/blackboard-jev.test.mjs",
       "test/blackboard-work-graph.test.mjs",
       "docs/blackboard/contracts.md",
-      "docs/living/system/state.md",
-      ".github/workflows/test.yml"
+      "docs/blackboard/jev.md",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
       "packages/**",
       "docs/blackboard/artifacts/objective/**",
-      "docs/blackboard/artifacts/ready-implement-plan/**"
+      "docs/blackboard/artifacts/ready-implement-plan/**",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/state.md"
     ]
   },
   "implementationSlices": [
-    "R1 — Specify objective-supersession artifact, authority, freshness and impact contract.",
-    "R2 — Specify trusted publication validation and ordinary-candidate rejection behavior.",
-    "R3 — Specify atomic target reset, downstream staleness/impact semantics and migration provenance.",
-    "R4 — Implement controller/tests/docs only after Jev readiness."
+    "S1 — Type OBJECTIVE_SUPERSESSION and implement pure trusted-root/candidate-root verification helpers with exact hash/ref/task/dependent-set checks.",
+    "S2 — Extend PR selector/output and add `verify-supersession` plus sibling workflow verification without executing candidate code or exposing Jev credentials.",
+    "S3 — Enforce target reset and conservative direct-dependent reset semantics, including stale readiness/worker-field stripping and no-active-context invariants.",
+    "S4 — Add fixtures for valid reset, stale old objective/base, self-redefinition, hidden/mutated dependents, DONE/WORKER target rejection and history/current-only behavior.",
+    "S5 — Update Blackboard/Jev and Living system docs; run repository regression. BB-065 migration remains a separate post-delivery publication."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "A dedicated supersession contract binds exact target work, old objective, replacement objective, reason/evidence, plan and direct downstream impact.",
+      "id": "CONTRACT",
+      "statement": "OBJECTIVE_SUPERSESSION has one canonical typed receipt binding exact base, old/new objective, target plan, reason/evidence and the complete direct-dependent impact set.",
       "verificationIds": [
-        "supersession-contract"
+        "supersession"
       ],
       "evidenceRequired": [
-        "positive schema fixture",
-        "old/new hash binding",
-        "impact manifest"
+        "positive receipt fixture",
+        "old/new canonical hashes",
+        "complete direct-dependent manifest",
+        "current-only path"
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Ordinary research evaluation still rejects any candidate objective/routing change; only the trusted supersession publication path may authorize objective replacement.",
+      "id": "TRUST_BOUNDARY",
+      "statement": "Ordinary research candidates still cannot change trusted objective/routing, while canonical supersession is selected and verified only by trusted PR-base controller code without executing candidate code.",
       "verificationIds": [
-        "ci-boundary"
+        "supersession",
+        "jev-ci"
       ],
       "evidenceRequired": [
-        "ordinary-candidate rejection",
-        "trusted-publication acceptance",
-        "wrong-path negatives"
+        "self-redefinition rejection",
+        "supersession selection",
+        "trusted verifier path",
+        "no provider/candidate execution"
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "A valid supersession resets only an unfinished researchable target to DRAFT RESEARCH_SA/RESEARCH and clears stale claim/context/readiness/evaluation/worker authority.",
+      "id": "FRESHNESS",
+      "statement": "Supersession requires exact PR-base/task/old-objective currentness; stale base/hash/routing/plan or replacement-binding mismatch fails closed.",
       "verificationIds": [
-        "reset-semantics"
+        "supersession"
       ],
       "evidenceRequired": [
-        "atomic reset fixture",
-        "stale authority removal",
-        "DONE/WORKER rejection"
+        "stale-base",
+        "old-hash",
+        "routing",
+        "plan",
+        "replacement-hash negatives"
       ]
     },
     {
-      "id": "AC-4",
-      "statement": "Historical objective/plan/evaluation evidence stays immutable and exact supersession provenance remains reconstructable.",
+      "id": "TARGET_RESET",
+      "statement": "Valid publication preserves target identity/edges but resets unfinished RESEARCH_SA target to non-active PLANNED research with DRAFT replacement-bound plan and no stale readiness/evaluation/worker authority.",
       "verificationIds": [
-        "supersession-contract",
-        "reset-semantics"
+        "supersession",
+        "work-graph"
       ],
       "evidenceRequired": [
-        "history-retention proof",
-        "fresh-process reconstruction"
+        "exact before/after target",
+        "field stripping",
+        "claim/context removal",
+        "DONE/WORKER target negatives"
       ]
     },
     {
-      "id": "AC-5",
-      "statement": "Downstream tasks affected by changed prerequisite semantics are explicitly identified/fenced rather than silently retaining stale execution authority.",
+      "id": "DEPENDENT_IMPACT",
+      "statement": "Every direct dependent is enumerated; non-DONE ready/WORKER dependents reset to research/DRAFT, research dependents remain non-active research and DONE dependents remain immutable.",
       "verificationIds": [
-        "impact"
+        "supersession",
+        "work-graph"
       ],
       "evidenceRequired": [
-        "direct-dependent impact fixture",
-        "hidden-impact rejection"
+        "mixed dependent fixture",
+        "omission/duplicate/mutation negatives",
+        "terminal unchanged proof"
+      ]
+    },
+    {
+      "id": "RETENTION",
+      "statement": "Supersession keeps stable canonical objective/plan paths and a canonical relation receipt; no version-chain artifacts enter context and previous bodies remain Git history rather than current routing authority.",
+      "verificationIds": [
+        "supersession",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "changed-path audit",
+        "no gNNNN/version siblings",
+        "old hash in receipt",
+        "repository history fixture"
+      ]
+    },
+    {
+      "id": "MIGRATION_BOUNDARY",
+      "statement": "BB-082 delivers only the generic control; BB-065 objective replacement cannot appear in the BB-082 worker candidate and remains a separate post-delivery publication.",
+      "verificationIds": [
+        "boundary"
+      ],
+      "evidenceRequired": [
+        "changed-path rejection for BB-065 canonical objective/plan/graph",
+        "separate-migration assertion"
       ]
     },
     {
       "id": "INV-1",
-      "statement": "A task cannot evaluate a replacement objective that its own ordinary research candidate introduced.",
+      "statement": "Candidate-controlled content cannot redefine the semantic subject judged by ordinary Jev.",
       "verificationIds": [
-        "ci-boundary"
+        "jev-ci",
+        "supersession"
       ],
       "evidenceRequired": [
-        "self-redefinition negative"
+        "ordinary objective mutation rejected"
       ]
     },
     {
       "id": "INV-2",
-      "statement": "Objective supersession preserves immutable prior evidence and never grants product or delivery authority.",
+      "statement": "Supersession is freshness-fenced to exact prior objective and Board state; stale/lost-update publication fails closed.",
       "verificationIds": [
-        "supersession-contract",
-        "reset-semantics"
+        "supersession"
       ],
       "evidenceRequired": [
-        "authority/history negatives"
+        "CAS-style stale negatives"
       ]
     },
     {
       "id": "INV-3",
-      "statement": "A superseded unfinished task re-enters research with stale execution/readiness authority removed.",
+      "statement": "Supersession revokes stale execution/readiness authority while preserving canonical history and task identity.",
       "verificationIds": [
-        "reset-semantics"
+        "supersession",
+        "work-graph"
       ],
       "evidenceRequired": [
-        "reset state proof"
+        "authority stripping",
+        "identity preservation",
+        "history evidence"
       ]
     },
     {
       "id": "INV-4",
-      "statement": "Downstream dependency impact is explicit and cannot be hidden by objective replacement.",
+      "statement": "All direct dependency impact is explicit; ready downstream work cannot silently survive changed prerequisite semantics.",
       "verificationIds": [
-        "impact"
+        "supersession",
+        "work-graph"
       ],
       "evidenceRequired": [
-        "impact completeness proof"
+        "dependent completeness and reset proof"
       ]
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "A task cannot evaluate a replacement objective that its own ordinary research candidate introduced.",
+      "invariant": "Candidate-controlled content cannot redefine the semantic subject judged by ordinary Jev.",
       "criterionIds": [
-        "AC-2",
+        "TRUST_BOUNDARY",
         "INV-1"
       ]
     },
     {
-      "invariant": "Objective supersession preserves immutable prior evidence and never grants product or delivery authority.",
+      "invariant": "Supersession is freshness-fenced to exact prior objective and Board state; stale/lost-update publication fails closed.",
       "criterionIds": [
-        "AC-4",
+        "FRESHNESS",
         "INV-2"
       ]
     },
     {
-      "invariant": "A superseded unfinished task re-enters research with stale execution/readiness authority removed.",
+      "invariant": "Supersession revokes stale execution/readiness authority while preserving canonical history and task identity.",
       "criterionIds": [
-        "AC-3",
+        "TARGET_RESET",
+        "RETENTION",
         "INV-3"
       ]
     },
     {
-      "invariant": "Downstream dependency impact is explicit and cannot be hidden by objective replacement.",
+      "invariant": "All direct dependency impact is explicit; ready downstream work cannot silently survive changed prerequisite semantics.",
       "criterionIds": [
-        "AC-5",
+        "DEPENDENT_IMPACT",
         "INV-4"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "supersession-contract",
+      "id": "supersession",
       "command": "node --test test/blackboard-objective-supersession.test.mjs"
     },
     {
-      "id": "ci-boundary",
+      "id": "jev-ci",
       "command": "node --test test/blackboard-jev.test.mjs"
     },
     {
-      "id": "reset-semantics",
-      "command": "node --test test/blackboard-objective-supersession.test.mjs test/blackboard-work-graph.test.mjs"
+      "id": "work-graph",
+      "command": "node --test test/blackboard-work-graph.test.mjs"
     },
     {
-      "id": "impact",
+      "id": "boundary",
       "command": "node --test test/blackboard-objective-supersession.test.mjs"
     },
     {
       "id": "repository",
-      "command": "npm run verify:blackboard-context"
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Define the exact immutable supersession artifact/proposal fields and who may author/publish it.",
-    "Define how trusted CI recognizes and validates supersession without weakening ordinary objectiveRef/content trust.",
-    "Define downstream readiness invalidation versus explicit impact-only fencing when a prerequisite objective changes.",
-    "Define exact BB-065 migration procedure after BB-082 is delivered, including stale plan/readiness cleanup and retained historical evidence."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Ordinary research PR changes its own objective content or objectiveRef and still reaches Jev.",
-    "Supersession old-objective hash is stale or replacement objective does not match the declared digest.",
-    "Supersession preserves READY/WORKER execution authority or an ACTIVE claim/currentContextRef.",
-    "DONE task or unrelated task is reset through supersession.",
-    "Direct downstream tasks with semantic dependency impact are omitted.",
-    "Historical objective/evaluation artifacts are deleted or rewritten."
+    "Ordinary RESEARCH_SA candidate changes objective bytes/ref or routing and reaches semantic Jev.",
+    "Supersession trustedBaseSha differs from exact PR base or old objective hash differs from trusted bytes.",
+    "Replacement objective/artifact id/ref/hash or DRAFT plan binding is inconsistent.",
+    "Target is DONE, WORKER, ACTIVE after publication, reparented, retitled, or has changed components/dependency edges.",
+    "Supersession leaves claim/currentContext/readinessRef/evaluation/candidate/evidence/delivery authority attached.",
+    "A trusted direct dependent is omitted/duplicated or its declared status/plan hash does not match base.",
+    "A ready/WORKER direct dependent remains executable after prerequisite supersession.",
+    "Historical objective/plan/evaluation artifacts are rewritten as accepted under the replacement objective.",
+    "Candidate creates gNNNN/versioned objective or plan siblings instead of stable canonical paths.",
+    "BB-082 worker candidate directly edits BB-065 objective/plan/work-graph to perform the migration."
   ],
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-082 objective + current Blackboard trust/publication seams",
+      "input": "BB-082 trusted objective + current Blackboard/Jev publication seams + external currentness patterns",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + Jev SATISFIED",
       "forbidden": [
         "controller implementation",
-        "objective migration",
-        "self-authorization"
+        "BB-065 migration",
+        "candidate-defined semantic authority"
       ]
     },
     {
@@ -275,10 +334,11 @@
       "input": "exact READY plan",
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash + candidate/evidence + Jev",
-      "convergence": "trusted supersession control + tests + Living Docs",
+      "convergence": "typed supersession control + CI verifier + tests + Living Docs",
       "forbidden": [
-        "perform BB-065 migration inside BB-082 worker",
-        "weaken ordinary candidate trust",
+        "perform BB-065 migration",
+        "weaken ordinary trusted objective checks",
+        "execute candidate code in trusted verifier",
         "rewrite history"
       ]
     }
@@ -288,6 +348,305 @@
       "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living state documents the delivered objective-supersession trust boundary, publication/reset semantics and retained-history behavior."
+    "statement": "Living state documents the delivered objective-supersession trust boundary, exact freshness/reset/dependent-impact behavior, and the fact that BB-065 migration remains a separate publication."
+  },
+  "researchEvidence": [
+    {
+      "source": "scripts/blackboard-jev-ci.mjs",
+      "finding": "Current selector copies Board/objective authority from PR base, allows only plan draft/researchBaseline from research candidate, and recognizes readiness publication as the sole routing mutation."
+    },
+    {
+      "source": "docs/blackboard/contracts.md",
+      "finding": "Current-only keeps one canonical artifact per semantic subject, Git retains revision history, artifact retirement requires explicit supersession, and research cannot claim delivery."
+    },
+    {
+      "source": "Kubernetes API concepts — resourceVersion",
+      "checked": "2026-09-27",
+      "finding": "Conditional updates bind the previously observed resource version and reject stale lost updates; BB-082 applies the same freshness shape with trusted PR-base/objective hashes."
+    },
+    {
+      "source": "Kubernetes observedGeneration semantics",
+      "checked": "2026-09-27",
+      "finding": "Status explicitly identifies the spec generation it reflects; stale observations are detectable rather than silently current. BB-082 similarly clears readiness/execution authority when objective generation changes."
+    },
+    {
+      "source": "GitHub Actions pull_request event semantics",
+      "checked": "2026-09-27",
+      "finding": "PR base/head SHAs are separately available and head SHA differs from merge-ref SHA; supersession verification therefore binds explicit PR-base trusted state and explicit candidate head."
+    },
+    {
+      "source": "GitHub Actions secure-use guidance",
+      "checked": "2026-09-27",
+      "finding": "Immutable full SHAs are the reliable code identity boundary; trusted supersession verification must execute controller code from the base, never candidate code with privileged authority."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A canonical OBJECTIVE_SUPERSESSION proposal/publication contract binds exact old/new objective identities, rationale/evidence, affected plan and direct dependency impact while retaining an immutable supersession record.",
+      "criterionIds": [
+        "CONTRACT",
+        "FRESHNESS",
+        "DEPENDENT_IMPACT",
+        "RETENTION"
+      ],
+      "planElements": [
+        "S1",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "supersession",
+        "work-graph",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        4,
+        6,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/contracts.md",
+        "scripts/blackboard-work-graph.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/contracts.md",
+          "match": "Artifact deletion requires explicit semantic retirement/supersession."
+        },
+        {
+          "ref": "docs/blackboard/contracts.md",
+          "match": "Git retains revision history; fresh workers do not reconstruct context from Git history."
+        },
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "if(task.status===\"ACTIVE\"){"
+        }
+      ],
+      "supportingPlanFields": [
+        "supersessionContract",
+        "dependentImpactContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Trusted CI accepts an objective supersession only through the dedicated publication path and continues rejecting ordinary research branches that alter their trusted objective or routing identity.",
+      "criterionIds": [
+        "TRUST_BOUNDARY",
+        "FRESHNESS",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S4"
+      ],
+      "verificationIds": [
+        "supersession",
+        "jev-ci"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        4,
+        9
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-jev-ci.mjs",
+        ".github/workflows/test.yml",
+        "docs/blackboard/jev.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-jev-ci.mjs",
+          "match": "fail('research candidate changed trusted routing contract')"
+        },
+        {
+          "ref": ".github/workflows/test.yml",
+          "match": "ref: ${{ github.event.pull_request.base.sha }}"
+        },
+        {
+          "ref": "docs/blackboard/jev.md",
+          "match": "Any other lane/routing mutation in a research candidate fails closed."
+        }
+      ],
+      "supportingPlanFields": [
+        "supersessionContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "A valid supersession atomically leaves the target task non-active in RESEARCH_SA/RESEARCH with a DRAFT plan bound to the new objective, stale readiness/evaluation/worker authority cleared, and rebuildable context absent until the task is claimed again.",
+      "criterionIds": [
+        "TARGET_RESET",
+        "DEPENDENT_IMPACT",
+        "INV-3",
+        "INV-4"
+      ],
+      "planElements": [
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "supersession",
+        "work-graph"
+      ],
+      "decisionIndexes": [
+        5,
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-work-graph.mjs",
+        "scripts/blackboard-state-project.mjs",
+        "docs/blackboard/contracts.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-work-graph.mjs",
+          "match": "non-ACTIVE task cannot have currentContextRef"
+        },
+        {
+          "ref": "docs/blackboard/contracts.md",
+          "match": "A non-ACTIVE Task has no worker claim and no `currentContextRef`."
+        },
+        {
+          "ref": "docs/blackboard/contracts.md",
+          "match": "Plan/input contradictions return to Research/SA and revoke readiness."
+        }
+      ],
+      "supportingPlanFields": [
+        "supersessionContract",
+        "dependentImpactContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Negative tests reject stale-old-objective races, wrong work/plan refs, hidden downstream impact, status/readiness preservation, objective mutation inside ordinary readiness, and attempts to rewrite DONE/WORKER task truth.",
+      "criterionIds": [
+        "TRUST_BOUNDARY",
+        "FRESHNESS",
+        "TARGET_RESET",
+        "DEPENDENT_IMPACT",
+        "RETENTION",
+        "MIGRATION_BOUNDARY"
+      ],
+      "planElements": [
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "supersession",
+        "jev-ci",
+        "work-graph",
+        "boundary",
+        "repository"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-jev-ci.mjs",
+        "docs/blackboard/contracts.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-jev-ci.mjs",
+          "match": "canonicalReadinessPublication"
+        },
+        {
+          "ref": "docs/blackboard/contracts.md",
+          "match": "Existing terminal canonical evidence stays unchanged and valid; no version/history reconstruction."
+        }
+      ],
+      "supportingPlanFields": [
+        "supersessionContract",
+        "dependentImpactContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "After the control is delivered, a separate BB-065 migration can replace the obsolete six-pair objective with neutral benchmark-substrate calibration without rerunning or rewriting the historical value-study evidence.",
+      "criterionIds": [
+        "RETENTION",
+        "MIGRATION_BOUNDARY"
+      ],
+      "planElements": [
+        "S5"
+      ],
+      "verificationIds": [
+        "boundary",
+        "repository"
+      ],
+      "decisionIndexes": [
+        8,
+        10
+      ],
+      "sourceRefs": [
+        "docs/blackboard/contracts.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/contracts.md",
+          "match": "Migration converts unfinished work only. Existing terminal canonical evidence stays unchanged and valid; no version/history reconstruction."
+        },
+        {
+          "ref": "docs/blackboard/contracts.md",
+          "match": "`current-only` means one canonical artifact per semantic subject, not active-work-only."
+        }
+      ],
+      "supportingPlanFields": [
+        "supersessionContract"
+      ]
+    }
+  ],
+  "supersessionContract": {
+    "artifact": "OBJECTIVE_SUPERSESSION/v1",
+    "canonicalRef": "docs/blackboard/artifacts/objective/<TARGET_WORK_ID>.supersession.json",
+    "fields": [
+      "targetWorkId",
+      "trustedBaseSha",
+      "oldObjective.ref+hash",
+      "replacementObjective.ref+hash",
+      "planRef",
+      "reason",
+      "evidenceRefs[]",
+      "directDependents[]"
+    ],
+    "targetPrecondition": "trusted target exists, unfinished, lane=RESEARCH_SA; objectiveRef/planRef unchanged and old objective hash exact",
+    "candidateTarget": "same id/feature/title/components/dependencies; status=PLANNED,lane=RESEARCH_SA,phase=RESEARCH,claim/currentContext=null",
+    "candidatePlan": "same canonical planRef, status=DRAFT, objective ref unchanged and hash=replacement objective; no readinessRef",
+    "clearedContractFields": [
+      "evaluationRef",
+      "lastEvaluatedInput",
+      "lastResearchEvaluationRef",
+      "candidateSha",
+      "evidenceRef",
+      "claimEvidence",
+      "deliveryRef",
+      "mergeSha"
+    ],
+    "freshness": "receipt.trustedBaseSha == PR base SHA and every old/current hash/Board field matches trusted checkout",
+    "verifier": "trusted-base scripts only; candidate is parsed as data; no candidate executable import and no provider credential",
+    "publicationAuthority": "repository merge authority after required deterministic checks",
+    "rollback": "another explicit supersession from the then-current objective; never rewrite the prior receipt/history"
+  },
+  "dependentImpactContract": {
+    "source": "exact direct dependency edges from trusted work-graph",
+    "completeness": "receipt directDependents IDs exactly equal all tasks whose dependencies include targetWorkId",
+    "dispositions": {
+      "WORKER_OR_READY": "RESET_RESEARCH: preserve id/feature/title/components/dependencies; PLANNED RESEARCH_SA/RESEARCH; DRAFT same plan content/binding subject; clear stale readiness/worker authority",
+      "RESEARCH_SA": "RETAIN_RESEARCH: must be non-active in candidate; exact plan/objective refs preserved; reset claim/context if active",
+      "DONE": "TERMINAL_UNCHANGED: candidate task and terminal artifacts byte-identical"
+    },
+    "rationale": "Objective change can invalidate assumptions behind an already accepted downstream plan; conservative reset prevents silent execution on stale prerequisite semantics.",
+    "laterResearch": "reset dependents explicitly rebind researchBaselineSha to a current ancestor before their next semantic judgment"
   }
 }
