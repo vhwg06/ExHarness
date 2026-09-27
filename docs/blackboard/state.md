@@ -49,7 +49,6 @@ worker: codex-bb065-research
 
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
 - BB-060 [WORKER/EXECUTION] — Define Oracle runtime architecture and physical ownership
-- BB-061 [WORKER/EXECUTION] — Define ContextRequirement and ContextResolution semantic contract
 - BB-062 [RESEARCH_SA/RESEARCH] — Define Oracle source provider topology and semantic code retrieval
 - BB-063 [RESEARCH_SA/RESEARCH] — Define durable ContextResolution identity provenance currentness and materialization
 - BB-064 [RESEARCH_SA/RESEARCH] — Accept Oracle Context Intelligence foundation
