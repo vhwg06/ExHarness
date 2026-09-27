@@ -403,8 +403,21 @@ export async function callJev(payload, { apiKey = process.env.TYPESAFE_API_KEY, 
       fail(`Jev HTTP ${response.status}${detail?`: ${detail}`:''}`);
     }
     let body;
-    try { body = await response.json(); } catch { fail('Jev invalid JSON'); }
-    return { response: validateResponse(body, payload), attempts };
+    try { body = await response.json(); }
+    catch {
+      if (attempts === 2 || Date.now() >= deadline) fail('Jev invalid JSON');
+      continue;
+    }
+    try {
+      return { response: validateResponse(body, payload), attempts };
+    } catch (error) {
+      // A syntactically successful provider response may still violate the
+      // trusted typed-response contract (for example rounded probabilities
+      // that do not sum to 1). Do not normalize or accept it. Retry the
+      // provider once, then preserve the strict validation failure.
+      if (attempts === 2 || Date.now() >= deadline) throw error;
+      continue;
+    }
   }
 }
 const WORKER_BATCH_MAX_BYTES = 60000;
