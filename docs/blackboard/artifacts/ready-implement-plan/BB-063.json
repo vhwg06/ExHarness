@@ -18,15 +18,22 @@
     "oracle.manifest-compatibility"
   ],
   "outOfScope": [
-    "Moving product/domain scheduling, acceptance, publication or recovery authority into Oracle.",
-    "Treating historical BB-060..064 READY/Jev artifacts as current implementation authority.",
-    "Claiming live coding-agent or product value from deterministic research prototypes or source inspection."
+    "Changing BB-061 ContextRequirement, ContextResolution, resolutionId or Core pre-render resolution semantics.",
+    "Changing BB-062 SourceCatalog/provider/planner contracts except consuming their authoritative observations and derivation metadata.",
+    "Adding a mutable current-resolution head, lockfile-owned cache head or database solely for cache correctness.",
+    "Adding SQLite, Graphiti, Cognee, Redis or other persistence runtime dependencies in the foundation.",
+    "Automatic unbounded retry/progressive retrieval, durable model conversation memory or garbage collection as correctness logic.",
+    "Moving product/domain scheduling, acceptance, publication, claim recovery or external-effect authority into Oracle."
   ],
   "constraints": [
-    "Research must inspect current source plus primary external evidence, distinguish retained findings from superseded assumptions, and compare reuse with the smallest ExHarness-owned seam.",
-    "Application/domain authority remains outside Oracle; Core consumes semantic context but does not own provider/source-specific retrieval.",
-    "Required context is budgeted, provenance-bound and currentness-checked; missing or ambiguous required evidence fails closed.",
-    "Worker execution is unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
+    "Durable reuse identity is separate from BB-061 semantic resolutionId; storage/backend details must not redefine semantic result identity.",
+    "Reuse begins from authoritative source observations supplied through the BB-062 source-authority boundary; provider/index self-observation cannot certify CURRENT.",
+    "A cache hit and a fresh materialization both require matching pre/post authoritative observations at the consumption boundary.",
+    "No reusable slot is published for UNSATISFIED required context; PARTIAL is reusable only when every unresolved optional need has a strongly fenced negative observation.",
+    "Manifest-protected application-artifact reads continue through the existing validating reader and receipt persistence cannot substitute for producer/revision/acceptance/content checks.",
+    "Concurrent same-key semantically divergent results fail closed instead of last-writer-wins.",
+    "Process-crash recovery is in scope; arbitrary machine/power-loss guarantees beyond the selected filesystem sync contract are not claimed.",
+    "Worker execution remains unauthorized until researchGaps are empty and a new exact Jev readiness judgment is SATISFIED."
   ],
   "invariants": [
     "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
@@ -34,120 +41,203 @@
     "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership."
   ],
   "architectureDecisions": [
-    "ContextResolution reuse identity binds semantic requirement, authoritative source/currentness identities and the relevant provider/planner configuration.",
-    "Derived/graph context is never opaque authority: every resolved item retains a provenance path to authoritative source.",
-    "Cache/materialization reuse is an optimization; currentness is checked independently and stale required context fails closed.",
-    "Existing manifest-protected accepted-artifact validation is preserved as a lower-bound compatibility invariant.",
-    "Persistence backend choice follows identity/currentness/recovery experiments rather than preceding them."
+    "D1 — Preserve BB-061 resolutionId unchanged. Add ContextResolutionReuseKey as sha256(canonical(requirementId + resolverConfigDigest + normalized sourceObservations + derivationInputs)).",
+    "D2 — Define SourceObservation v1 with evidenceId, source identity/mode/requested snapshot, observed state, exact observedSnapshotRef when present, validators, authorityRef/authorityRevision and optional provenanceDigest. REQUIRED CURRENT PRESENT requires at least one STRONG validator.",
+    "D3 — Define ResolverConfiguration v1 containing only semantics-affecting contract/planner/materialization/provider binding revisions. Timing, worker id, retry count and provider-call cost are excluded from reuse identity.",
+    "D4 — Define DerivationInput v1 for provider/operation/revision/providerSnapshotRef/configDigest. Derived/index/graph observations never replace authoritative source observations.",
+    "D5 — Define ContextResolutionReceipt v1 binding reuseKey, requirementId, resolutionId, materializationId, exact resolutionArtifactRef, resolverConfigDigest, sourceObservations, derivationInputs and itemLineage. receiptId hashes all semantic receipt fields except itself.",
+    "D6 — Every materialized item has one lineage record mapping itemDigest to authoritative sourceObservationIds plus provenance refs. Graph-derived items must close over authoritative source observations; graph/index identity alone is insufficient.",
+    "D7 — Persist canonical ContextResolution and receipt values as immutable content-addressed files. Publish by complete temp write + file sync/close + hard-link into digest-derived final name; existing exact content converges, digest/content mismatch fails closed.",
+    "D8 — Publish reusable cache entries into exact reuse/<reuseKey>.json no-overwrite slots containing reuseKey, resolutionId and receiptRef. Same reuseKey+same resolutionId converges; same reuseKey+different resolutionId is NONDETERMINISTIC_RESOLUTION_CONFLICT.",
+    "D9 — No mutable current cache head is used. Current lookup first observes authoritative sources, computes the exact reuseKey, then looks up that key. Source/currentness change therefore selects a different key without mutating old history.",
+    "D10 — Cache-hit and fresh paths both double-fence currentness: authoritative pre-observation before lookup/materialization and post-observation before reuse publication/consumption must have identical normalized digest. Drift produces STALE_DURING_RESOLUTION and no current consumption/publication.",
+    "D11 — COMPLETE is reusable when all fences/digests/lineage validate. PARTIAL is reusable only when all unresolved OPTIONAL evidence has strongly versioned negative observations. UNSATISFIED is never reusable.",
+    "D12 — Selective invalidation is logical, not destructive: evaluateReceiptCurrentness returns CURRENT|STALE plus changedEvidenceIds/reasons. Old immutable receipts remain historical evidence and are excluded by changed reuse keys.",
+    "D13 — Existing createManifestArtifactReader remains the authority for accepted-artifact payload validation. Durable SourceObservation/lineage adds exact manifest/provenance binding after that validation and cannot bypass it.",
+    "D14 — Crash after resolution/receipt object write but before reuse-slot publication leaves only an orphan immutable object. Retry may reuse exact bytes and publish; no partial object becomes canonical.",
+    "D15 — A stale writer whose source state changed cannot publish/consume current because the post-observation fence fails. Even an old-key historical slot can never satisfy a reader that observes a newer key.",
+    "D16 — Persistence backend selected for foundation is the filesystem immutable-object + no-overwrite exact-key slot design, modeled on the current manifest store. Mutable lockfile CAS is rejected for cache currentness because crash can strand the lock and a mutable head is unnecessary.",
+    "D17 — Restic/Git/Bazel evidence supports immutable content-addressed artifacts and key/reference separation. node:sqlite is evaluated but not selected; current Node source marks it release-candidate and the no-head design does not need transactional mutable state.",
+    "D18 — No automatic retry loop is introduced. Currentness drift is explicit failure; a later bounded resolution call/step may retry under normal BB-061 budget/progression semantics."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "packages/agentic-system/src/oracle.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/qa-application.js",
-      "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/semantics.md"
+      "packages/agentic-system/src/artifact-manifest.js",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/domain-execution-store.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+      "packages/agentic-system/test/bb045-atomic-manifest-publication.test.js",
+      "docs/living/system/oracle/artifact-manifest.md",
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-061.md",
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md"
     ],
     "expectedNew": [
-      "packages/oracle/src/context-resolution.js",
-      "scripts/oracle-context-intelligence/README.md"
+      "packages/oracle/src/resolution-durability.js",
+      "packages/oracle/src/resolution-store.js",
+      "packages/oracle/test/resolution-durability.test.js",
+      "packages/oracle/test/resolution-store.test.js",
+      "scripts/oracle-context-intelligence/bb063-currentness-probe.mjs",
+      "test/oracle-context-resolution-durability.test.mjs"
     ],
     "expectedTests": [
+      "packages/oracle/test/resolution-durability.test.js",
+      "packages/oracle/test/resolution-store.test.js",
       "test/oracle-context-resolution-durability.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
       "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/oracle-reconciliation-phase.md",
+      "packages/agentic-system/src/artifact-manifest.js",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/domain-execution-store.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+      "packages/agentic-system/test/bb045-atomic-manifest-publication.test.js",
+      "docs/living/system/oracle/**",
       "docs/blackboard/process/oracle-context-intelligence-research.md",
-      "scripts/delivery/baseline/**",
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-061.md",
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-063.md",
       "scripts/**",
       "test/**",
       "package.json"
     ],
     "write": [
-      "packages/oracle/**",
-      "packages/core-harness/**",
-      "scripts/oracle-context-intelligence/**",
-      "test/**",
-      "docs/living/system/oracle/**",
-      "docs/living/system/core-harness/**",
-      "package.json"
+      "packages/oracle/src/resolution-durability.js",
+      "packages/oracle/src/resolution-store.js",
+      "packages/oracle/src/index.js",
+      "packages/oracle/test/resolution-durability.test.js",
+      "packages/oracle/test/resolution-store.test.js",
+      "scripts/oracle-context-intelligence/bb063-currentness-probe.mjs",
+      "test/oracle-context-resolution-durability.test.mjs",
+      "docs/living/system/oracle/architecture.md",
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/oracle/workflow.md"
     ],
     "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "Define canonical resolution/materialization identity and currentness fences for repository, artifact and derived context.",
-    "Prototype durable store/replay semantics with changed-source invalidation and exact provenance paths.",
-    "Inject crashes, partial provider failures and concurrent refresh to prove stale results cannot become current."
+    "S1 [DURABLE_CONTRACTS,INV-2] — After BB-061/062 dependency outputs exist, add strict SourceObservation, ResolverConfiguration, DerivationInput and ContextResolutionReceipt v1 contracts plus canonical observationDigest, resolverConfigDigest, reuseKey and receiptId helpers. Extend dependency-created packages/oracle/src/index.js rather than creating parallel contract surfaces.",
+    "S2 [LINEAGE,CURRENTNESS,INV-2] — Validate one itemLineage record per ContextResolution item; every lineage sourceObservationId must exist; graph/derived items must reach at least one authoritative observation. Implement evaluateReceiptCurrentness(receipt,currentObservations) returning CURRENT|STALE with exact changedEvidenceIds/reasons. CURRENT PRESENT requires exact snapshot + strong validator; stable ABSENT requires authorityRevision.",
+    "S3 [IMMUTABLE_STORE] — Add resolution-store.js with content-addressed immutable resolution/receipt objects and exact reuse-key slots. Final objects/slots appear only after complete temp write + sync/close + hard-link no-overwrite. Read validates filename/ref digest and strict artifact contract. Same reuseKey+same resolutionId converges; semantic divergence under one key fails NONDETERMINISTIC_RESOLUTION_CONFLICT.",
+    "S4 [DURABLE_REUSE,RECOVERY] — Add a durability coordinator that asks the delivered BB-062 source-authority seam for normalized pre-observations, computes reuseKey, validates any exact-key cached receipt/materialization, obtains post-observations before consumption, and otherwise materializes fresh through the delivered resolver then repeats the post-fence before publishing. Observation drift returns STALE_DURING_RESOLUTION; no automatic retry loop is hidden inside the coordinator.",
+    "S5 [REUSE_POLICY] — Publish reusable slots only for COMPLETE, or PARTIAL where every unresolved OPTIONAL need has a strongly fenced negative observation. Never publish UNSATISFIED, currentness-unverifiable, ambiguous-required or partial-provider-failure REQUIRED results. Cache reuse remains optional and cannot change acceptance/domain state.",
+    "S6 [MANIFEST_COMPAT,INV-1] — Add integration fixtures that continue to read accepted application artifacts through createManifestArtifactReader/manifest-protected Backend->QA semantics, then bind exact manifest ref/digest, producer revision, acceptance decision, stored revision/content digest into SourceObservation/lineage. Matching bytes with wrong provenance must still fail before reusable receipt publication.",
+    "S7 [FAILURE_INJECTION,INV-3] — Add deterministic crash/concurrency tests: 20 same-key equivalent publishers converge to one slot; same-key different resolutionId conflicts; crash after resolution object and after receipt object but before slot leaves harmless orphan and retry converges; source changes pre/post block publication; old-key stale writer cannot satisfy new-key lookup; corrupted object/slot/digest fails closed; simulated leftover lock demonstrates the rejected lockfile-head failure mode.",
+    "S8 [CURRENTNESS_PROBE] — Add bb063-currentness-probe.mjs with repository CURRENT A->A and A->B cases, exact accepted-artifact manifest replay, semantic-index snapshot equal/mismatch, graph-derived lineage with authoritative leaves, stable/unstable optional absence, partial provider failure and concurrent refresh. Emit exact reuse keys/currentness reasons and all attempts.",
+    "S9 [LIVING_TRUTH] — Update Oracle Living Docs with durable receipt/reuse semantics and limitations: no mutable current resolution head, no SQLite/graph DB dependency, no failure-cache authority, no garbage-collection correctness and no power-loss guarantee beyond the implemented fs sync contract."
   ],
   "acceptanceCriteria": [
     {
-      "id": "AC-1",
-      "statement": "Same requirement plus same authoritative currentness/configuration has stable reusable resolution identity; relevant source change invalidates old materialization.",
+      "id": "REUSE_IDENTITY",
+      "statement": "Same requirement, semantics-affecting resolver configuration and authoritative source/derivation state produce the same durable reuseKey; relevant source/config/provider-snapshot change produces a different key without changing BB-061 resolutionId semantics.",
       "verificationIds": [
+        "durability-unit",
         "currentness-probe"
       ],
       "evidenceRequired": [
-        "Identity fixtures across unchanged and changed source states."
+        "Canonical identity matrix across unchanged repo/artifact/config and each changed input."
       ]
     },
     {
-      "id": "AC-2",
-      "statement": "Every materialized item, including graph-derived context, retains traceable provenance and currentness evidence.",
+      "id": "PROVENANCE_CURRENTNESS",
+      "statement": "Every reusable materialized item, including derived/graph context, has traceable authoritative lineage and deterministic currentness evidence; stale/unverifiable required evidence fails closed.",
       "verificationIds": [
-        "durability-test"
+        "durability-unit",
+        "integration-durability"
       ],
       "evidenceRequired": [
-        "Provenance-chain assertions and malformed/missing provenance negatives."
+        "Lineage closure, strong/weak validator, graph leaf and malformed/missing provenance fixtures."
       ]
     },
     {
-      "id": "AC-3",
-      "statement": "Crash/replay, concurrent refresh and partial provider failure cannot promote stale/ambiguous context; manifest-protected QA remains fail-closed.",
+      "id": "CRASH_CONCURRENCY",
+      "statement": "Process crash, interrupted publication and concurrent refresh cannot promote partial, stale or semantically divergent ContextResolution as current.",
       "verificationIds": [
-        "durability-test",
+        "store-unit",
+        "integration-durability",
         "currentness-probe"
       ],
       "evidenceRequired": [
-        "Failure-injection logs and compatibility assertions for existing manifest semantics."
+        "Orphan recovery, same-key convergence, divergent-key conflict, pre/post drift and corrupted-slot logs."
+      ]
+    },
+    {
+      "id": "MANIFEST_COMPAT",
+      "statement": "Manifest-protected Backend-to-QA continuation remains at least as strict as existing producer/revision/acceptance/stored-revision/content-digest validation.",
+      "verificationIds": [
+        "integration-durability",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "Exact manifest replay succeeds; wrong producer/revision/acceptance/content fails before reusable receipt publication."
+      ]
+    },
+    {
+      "id": "SELECTIVE_INVALIDATION",
+      "statement": "Currentness invalidation is explicit/selective by changed observations and never requires destructive mutation of historical receipts.",
+      "verificationIds": [
+        "durability-unit",
+        "currentness-probe"
+      ],
+      "evidenceRequired": [
+        "A->B source changes report exact changed evidence ids while unrelated exact-source receipts remain reusable."
+      ]
+    },
+    {
+      "id": "PERSISTENCE_DECISION",
+      "statement": "Foundation persistence uses immutable content-addressed files plus no-overwrite reuse slots and has evidence-based rejection of mutable lockfile heads/database adoption for correctness.",
+      "verificationIds": [
+        "store-unit",
+        "research-evidence"
+      ],
+      "evidenceRequired": [
+        "Failure-model results, dependency scan and pinned Restic/Bazel/Git/Node SQLite comparison."
       ]
     },
     {
       "id": "INV-1",
       "statement": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "verificationIds": [
-        "durability-test"
+        "integration-durability"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Durability/reuse code has no application lifecycle/acceptance/publication/recovery mutations."
       ]
     },
     {
       "id": "INV-2",
       "statement": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "verificationIds": [
-        "durability-test"
+        "durability-unit",
+        "currentness-probe",
+        "integration-durability"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "Required stale/ambiguous/currentness-unverifiable/partial provider failure never becomes reusable current context."
       ]
     },
     {
       "id": "INV-3",
       "statement": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "verificationIds": [
-        "durability-test"
+        "store-unit",
+        "integration-durability"
       ],
       "evidenceRequired": [
-        "A negative or boundary case that would fail if this invariant were violated."
+        "No Core/Application write dependency, model-visible cache/provider tool or mutable lockfile cache authority."
       ]
     }
   ],
@@ -155,43 +245,78 @@
     {
       "invariant": "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
       "criterionIds": [
-        "INV-1"
+        "INV-1",
+        "MANIFEST_COMPAT"
       ]
     },
     {
       "invariant": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
       "criterionIds": [
-        "INV-2"
+        "INV-2",
+        "REUSE_IDENTITY",
+        "PROVENANCE_CURRENTNESS",
+        "SELECTIVE_INVALIDATION"
       ]
     },
     {
       "invariant": "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership.",
       "criterionIds": [
-        "INV-3"
+        "INV-3",
+        "PERSISTENCE_DECISION",
+        "CRASH_CONCURRENCY"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "durability-test",
-      "command": "node --test test/oracle-context-resolution-durability.test.mjs"
+      "id": "durability-unit",
+      "command": "node --test packages/oracle/test/resolution-durability.test.js"
+    },
+    {
+      "id": "store-unit",
+      "command": "node --test packages/oracle/test/resolution-store.test.js"
     },
     {
       "id": "currentness-probe",
-      "command": "node scripts/oracle-context-intelligence/probe-currentness.mjs"
+      "command": "node scripts/oracle-context-intelligence/bb063-currentness-probe.mjs"
+    },
+    {
+      "id": "integration-durability",
+      "command": "node --test test/oracle-context-resolution-durability.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test packages/oracle/test/*.test.js"
+    },
+    {
+      "id": "research-evidence",
+      "command": "node --test test/oracle-context-resolution-durability.test.mjs --test-name-pattern='evidence|store|lock|sqlite|content-addressed'"
+    },
+    {
+      "id": "living-docs",
+      "command": "node --test test/oracle-context-resolution-durability.test.mjs --test-name-pattern='Living|not delivered|BB-064'"
     }
   ],
-  "researchGaps": [
-    "Define exact canonical identity inputs for requirement, source snapshots, provider/index/graph versions and materialization configuration.",
-    "Compare persistence choices only after required replay/currentness semantics are fixed.",
-    "Specify selective invalidation and refresh rules for repo revision, accepted artifact, semantic index and graph-derived context.",
-    "Map existing Backend-to-QA durable continuation and manifest checks into the new ContextResolution model.",
-    "Finalize crash/concurrency/failure fixtures and new Jev readiness evidence."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "A caller embeds provider/tool commands in ContextRequirement or bypasses the semantic resolution seam.",
-    "A stale or provenance-incomplete required context item is represented as current.",
-    "Oracle/provider/planner code attempts to claim work, accept product output, publish product truth or own domain recovery."
+    "Durable reuse logic changes BB-061 resolutionId by adding storage/backend/config details.",
+    "A cache reader trusts reuse slot or provider/index self-report without authoritative pre/post source observations.",
+    "Required CURRENT evidence has only weak/timestamp validation or provider snapshot differs from authoritative source and is still reusable.",
+    "Source changes between pre-observation and prompt consumption but cached/fresh resolution is returned as current.",
+    "UNSATISFIED or required partial-provider failure publishes a reusable slot.",
+    "PARTIAL with optional unresolved evidence lacking strongly versioned negative observation publishes a reusable slot.",
+    "Same reuseKey accepts two different semantic resolutionIds by last-writer-wins.",
+    "Crash leaves a partial final object/slot that later reads as canonical.",
+    "Corrupted resolution/receipt bytes or ref/digest mismatch are accepted.",
+    "Graph-derived item has no authoritative source-observation lineage.",
+    "Manifest-compatible bytes with wrong producer/revision/acceptance/stored revision become reusable.",
+    "Durability layer claims work, accepts/publishes product state, recovers domain claims or mutates external effects.",
+    "Worker introduces a mutable lockfile cache head, SQLite/Graphiti/Cognee dependency or hidden automatic retry loop.",
+    "Living Docs claim BB-064 foundation acceptance, garbage collection or power-loss durability beyond implemented sync semantics."
   ],
   "supersededAuthority": {
     "rule": "Historical readiness/Jev artifacts remain evidence only; changed objective/plan bindings make them non-authoritative for execution.",
@@ -227,9 +352,302 @@
   "livingDocs": {
     "refs": [
       "docs/living/system/oracle/architecture.md",
-      "docs/living/system/oracle/state.md"
+      "docs/living/system/oracle/state.md",
+      "docs/living/system/oracle/semantics.md",
+      "docs/living/system/oracle/workflow.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-063 Living Oracle truth describes only the implemented and independently verified rebound capability and limitations."
-  }
+    "statement": "BB-063 Living Oracle truth describes only durable ContextResolution receipt/reuse/currentness semantics and exact limitations, with no mutable current head, external database, failure-cache authority, GC correctness or foundation acceptance claim."
+  },
+  "durabilityContract": {
+    "reuseIdentity": "reuseKey = sha256(canonical(requirementId + resolverConfigDigest + sourceObservations + derivationInputs)); BB-061 resolutionId remains unchanged.",
+    "sourceObservationStates": [
+      "PRESENT",
+      "ABSENT",
+      "UNAVAILABLE",
+      "AMBIGUOUS"
+    ],
+    "receipt": "ContextResolutionReceipt binds reuseKey, requirementId, resolutionId, materializationId, resolutionArtifactRef, resolverConfigDigest, sourceObservations, derivationInputs and per-item lineage.",
+    "store": "Immutable content-addressed resolution/receipt objects plus exact no-overwrite reuse-key slot; no mutable current-resolution head.",
+    "currentnessFence": "Authoritative pre/post observation digests must match before cache-hit or fresh result can be consumed/published as current.",
+    "reusePolicy": "COMPLETE reusable; PARTIAL only with strongly fenced optional negative observations; UNSATISFIED never reusable.",
+    "invalidation": "Logical selective currentness evaluation returns changedEvidenceIds/reasons; historical immutable receipts are not destructively rewritten."
+  },
+  "failureModelEvidence": {
+    "model": "Disposable filesystem semantics model; not product implementation.",
+    "results": [
+      "20 concurrent same-key/same-resolution publishers converged to one slot with PUBLISHED/REUSED outcomes.",
+      "Same reuseKey with a different resolutionId failed conflict.",
+      "Crash after immutable blob before reuse slot left harmless orphan; retry published successfully.",
+      "Source observation A->B changed reuseKey; B lookup could not return A.",
+      "Pre A/post B drift rejected publication/current consumption.",
+      "Required partial provider failure produced no reuse slot.",
+      "Simulated stranded *.lock blocked the next exclusive lock writer, supporting rejection of mutable lockfile cache heads."
+    ]
+  },
+  "researchEvidence": [
+    {
+      "source": "packages/agentic-system/src/artifact-manifest.js",
+      "finding": "Existing manifest persistence uses digest-bound immutable content plus temp-write/hard-link no-overwrite publication and explicit concurrent semantic conflict handling."
+    },
+    {
+      "source": "packages/agentic-system/src/organization-authority-store.js",
+      "finding": "Existing JSON CAS head uses an exclusive lock file around mutation; a process crash can strand that lock unless an additional recovery protocol exists."
+    },
+    {
+      "source": "packages/agentic-system/src/product-lineage.js",
+      "finding": "Existing product lineage keeps immutable journal artifacts authoritative and uses exact head observations/currentness checks; demonstrates immutable-history/currentness separation."
+    },
+    {
+      "source": "packages/agentic-system/src/durable-backend-qa.js",
+      "finding": "Durable Backend->QA recovery persists exact accepted handoff/manifest refs and fences interrupted execution through application claim generation; Oracle receipt reuse must not weaken that continuation."
+    },
+    {
+      "source": "restic/restic@5127c4abf921857fde4ae51f566c86028c8c2911",
+      "checked": "2026-09-27",
+      "eligibility": "GitHub search confirms stars >=1,000; BSD-2-Clause",
+      "finding": "Restic design uses SHA-256 storage IDs, write-once immutable repository files and atomic writes for concurrent access."
+    },
+    {
+      "source": "bazelbuild/bazel@680f57bbe5f72e29ac091ba4fcfe12f5f53dc80b",
+      "checked": "2026-09-27",
+      "eligibility": "GitHub search confirms stars >=1,000; Apache-2.0",
+      "finding": "Bazel remote cache separates Action Cache lookup entries from Content Addressable Storage blobs; useful analogy for reuse key versus immutable result object."
+    },
+    {
+      "source": "git/git@0f8e75abebff0877cae681a3d5ff31ac47f54220",
+      "checked": "2026-09-27",
+      "eligibility": "GitHub search confirms stars >=1,000; GPL-2.0-only",
+      "finding": "Git repository layout separates content-addressed objects from refs/current tips; BB-063 keeps the object lesson but avoids a mutable cache-current ref."
+    },
+    {
+      "source": "nodejs/node@3641c36af1e99d47d0b90a9e86143153efdc54a8",
+      "checked": "2026-09-27",
+      "eligibility": "GitHub search confirms stars >=1,000; MIT",
+      "finding": "node:sqlite is available but current source marks the module Stability 1.2 / release candidate; no mutable DB is required by the selected exact-key reuse design."
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "The same requirement against the same authoritative source/currentness state has deterministic reuse identity; relevant source change invalidates it.",
+      "criterionIds": [
+        "REUSE_IDENTITY",
+        "SELECTIVE_INVALIDATION",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S4",
+        "S8"
+      ],
+      "verificationIds": [
+        "durability-unit",
+        "currentness-probe"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        8,
+        9,
+        11
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/artifact-manifest.js",
+        "packages/agentic-system/src/product-lineage.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/artifact-manifest.js",
+          "match": "hard-link no-overwrite makes"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-lineage.js",
+          "match": "The immutable journal is authoritative; no reverse-impact cache is required."
+        },
+        {
+          "ref": "packages/agentic-system/src/product-lineage.js",
+          "match": "async function observationsCurrent(observations)"
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Every materialized context item can be traced to source provenance and currentness evidence, including graph-derived context.",
+      "criterionIds": [
+        "PROVENANCE_CURRENTNESS",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "durability-unit",
+        "integration-durability"
+      ],
+      "decisionIndexes": [
+        1,
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/artifact-manifest.js",
+        "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/artifact-manifest.js",
+          "match": "contentDigest: digest"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
+          "match": "It is not semantic source identity and cannot certify currentness."
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Crash/replay and concurrent refresh cannot promote a stale ContextResolution to current.",
+      "criterionIds": [
+        "CRASH_CONCURRENCY",
+        "SELECTIVE_INVALIDATION",
+        "INV-2",
+        "INV-3"
+      ],
+      "planElements": [
+        "S3",
+        "S4",
+        "S7",
+        "S8"
+      ],
+      "verificationIds": [
+        "store-unit",
+        "integration-durability",
+        "currentness-probe"
+      ],
+      "decisionIndexes": [
+        6,
+        7,
+        8,
+        9,
+        13,
+        14,
+        15,
+        17
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/artifact-manifest.js",
+        "packages/agentic-system/src/organization-authority-store.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/artifact-manifest.js",
+          "match": "await fs.link(tempPath, finalPath);"
+        },
+        {
+          "ref": "packages/agentic-system/src/organization-authority-store.js",
+          "match": "const lockPath=`${path}.lock`;"
+        },
+        {
+          "ref": "packages/agentic-system/src/organization-authority-store.js",
+          "match": "async compareAndSwap(key,expectedRevision,nextValue)"
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Manifest-protected Backend-to-QA continuation remains at least as strict as the existing behavior.",
+      "criterionIds": [
+        "MANIFEST_COMPAT",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S6"
+      ],
+      "verificationIds": [
+        "integration-durability",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        12
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/artifact-manifest.js",
+        "packages/agentic-system/src/durable-backend-qa.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/artifact-manifest.js",
+          "match": "artifact acceptance-decision digest mismatch"
+        },
+        {
+          "ref": "packages/agentic-system/src/artifact-manifest.js",
+          "match": "artifact content identity mismatch"
+        },
+        {
+          "ref": "packages/agentic-system/src/durable-backend-qa.js",
+          "match": "artifactReader.forManifest(checkpoint.acceptedBackend.artifactManifestRef)"
+        }
+      ],
+      "supportingPlanFields": []
+    },
+    {
+      "objectiveCriterion": "Failure-injection tests cover stale source, partial provider failure, interrupted materialization and recovery.",
+      "criterionIds": [
+        "CRASH_CONCURRENCY",
+        "PROVENANCE_CURRENTNESS",
+        "PERSISTENCE_DECISION",
+        "INV-3"
+      ],
+      "planElements": [
+        "S3",
+        "S4",
+        "S5",
+        "S7",
+        "S8"
+      ],
+      "verificationIds": [
+        "store-unit",
+        "currentness-probe",
+        "integration-durability",
+        "research-evidence"
+      ],
+      "decisionIndexes": [
+        7,
+        9,
+        10,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+        "packages/agentic-system/test/bb045-atomic-manifest-publication.test.js",
+        "packages/agentic-system/src/organization-authority-store.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+          "match": "stored revision"
+        },
+        {
+          "ref": "packages/agentic-system/test/bb045-atomic-manifest-publication.test.js",
+          "match": "concurrent"
+        },
+        {
+          "ref": "packages/agentic-system/src/organization-authority-store.js",
+          "match": "throw new Error(\"CAS head store mutation already in progress\")"
+        }
+      ],
+      "supportingPlanFields": []
+    }
+  ]
 }
