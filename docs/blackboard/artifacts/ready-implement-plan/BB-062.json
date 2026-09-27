@@ -125,7 +125,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 [PROVIDER_CONTRACT,INV-2,INV-3] — Add provider-contract.js with strict provider descriptors, ProviderCandidate normalization and typed provider failures. Provider metadata is Oracle-internal; reject lifecycle-authority fields and candidate source/currentness/provenance omissions.",
+    "S1 [PROVIDER_CONTRACT,INV-2,INV-3] — After BB-060/061 dependency outputs exist, add provider-contract.js and export the new provider/planner public surface through the dependency-created packages/oracle/src/index.js. Implement strict provider descriptors, ProviderCandidate normalization and typed provider failures. Provider metadata is Oracle-internal; reject lifecycle-authority fields and candidate source/currentness/provenance omissions.",
     "S2 [CATALOG,CURRENTNESS,INV-2] — Add SourceCatalog with explicit composition-time provider registrations plus one authoritative snapshot authority per applicable source namespace. Fail on duplicate provider ids/authority ambiguity. For CURRENT, compare provider/index snapshotRef to authoritative snapshot; self-reported index freshness is insufficient.",
     "S3 [ADAPTERS,PROVIDER_NEUTRALITY] — Add injected lexical-search and semantic-code adapters. Lexical adapter accepts a Zoekt-like search client and normalizes indexed repository/version/file/snippet results. Semantic adapter accepts a symbolClient with workspace-symbol/lookup/reference capabilities. Neither adapter imports external projects or exposes their protocol/tool commands above Oracle.",
     "S4 [STRUCTURAL_GRAPH_EXTERNAL] — Add Aider-inspired structural-map projection over normalized symbol/reference edges; add typed context-graph client seam and external-source transport seam. Structural projection is bounded and cannot source-discover independently. Graph/external candidates require authoritative provenance/currentness paths.",
@@ -576,5 +576,19 @@
       ],
       "supportingPlanFields": []
     }
-  ]
+  ],
+  "dependencyHandoff": {
+    "BB-060": [
+      "@exharness/oracle package",
+      "repository exact-source provider",
+      "application-artifact exact-source provider",
+      "Agentic compatibility facade remains above Oracle"
+    ],
+    "BB-061": [
+      "ContextRequirement/ContextResolution semantic contract",
+      "Oracle context-contract identity/currentness helpers",
+      "Core injected pre-render resolver seam"
+    ],
+    "rule": "Worker must inspect delivered dependency outputs before coding and extend them in place; it may not recreate alternate exact providers, semantic contracts or Core resolution ports."
+  }
 }
