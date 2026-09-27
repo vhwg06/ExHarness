@@ -484,31 +484,7 @@
       "normalize",
       "settleAttempt",
       "audit"
-    ],
-    "packageEnforces": [
-      "schema validation and canonical digest identities",
-      "experiment/unit fixed-factor immutability after first attempt",
-      "unique attempt/event identity and valid retry relation",
-      "append-only STARTED/SETTLED ledger semantics",
-      "orthogonal quality/termination/provider/infrastructure enums",
-      "nullable accounting status and no zero fill",
-      "evidence manifest digest binding",
-      "deterministic audit/recompute equality"
-    ],
-    "adapterOwns": [
-      "actual environment/workspace reset",
-      "substrate process invocation",
-      "raw trial/result capture",
-      "candidate/artifact extraction",
-      "independent evaluator invocation",
-      "provider/usage observation",
-      "truthful substrate failure mapping"
-    ],
-    "attemptLedger": {
-      "beginAttempt": "append STARTED with immutable unit/protocol/runtime/profile identities before substrate execution",
-      "settleAttempt": "append SETTLED referencing the same attempt and immutable evidence manifest; never mutate STARTED",
-      "retry": "new attemptId on same unit with retryOfAttemptId pointing to an existing prior attempt; all attempts remain reducer input"
-    }
+    ]
   },
   "harborAdapterContract": {
     "schemaVersion": 1,
@@ -899,7 +875,9 @@
         "scripts/delivery/baseline/provider_budget.py",
         "scripts/delivery/baseline/mini_driver.py"
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "migrationContract"
+      ]
     },
     {
       "objectiveCriterion": "BB-065 emits one reusable benchmark/evidence/accounting backbone and substrate manifest that BB-077, BB-081, BB-074, BB-075 and BB-076 can consume without inventing parallel experimental infrastructure.",
@@ -926,6 +904,16 @@
       ],
       "supportingPlanFields": [
         "downstreamContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "### Layer B — harness isolation and economics (BB-077)"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "## Downstream research impact"
+        }
       ]
     }
   ]
