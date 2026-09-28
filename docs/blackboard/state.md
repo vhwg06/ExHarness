@@ -49,7 +49,6 @@ NONE
 - BB-073 [RESEARCH_SA/RESEARCH] — Ship an installable supported delivery profile
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
-- BB-077 [RESEARCH_SA/RESEARCH] — Research harness-isolation economics on shared benchmark kernel
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 
 ## Dependency graph
@@ -81,7 +80,7 @@ BB-073 [RESEARCH_SCHEDULABLE] <- BB-070, BB-072
 BB-074 [BLOCKED_BY BB-065,BB-071,BB-073,BB-077,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [RESEARCH_SCHEDULABLE] <- BB-074, BB-059
 BB-076 [RESEARCH_SCHEDULABLE] <- BB-074, BB-075
-BB-077 [RESEARCH_SCHEDULABLE] <- BB-065
+BB-077 [BLOCKED_BY BB-065] <- BB-065
 BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
