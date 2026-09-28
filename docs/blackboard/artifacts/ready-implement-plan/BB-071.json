@@ -196,6 +196,14 @@
   ],
   "verificationPlan": [
     {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-071-probe.mjs --mode live --browser-adapter playwright@1.63.0"
+    },
+    {
+      "id": "boundary-probe",
+      "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js test/delivery/bb-071.test.mjs"
+    },
+    {
       "id": "change-contract",
       "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"change|identity|scenario\""
     },
@@ -210,10 +218,6 @@
     {
       "id": "deterministic-probe",
       "command": "node scripts/delivery/bb-071-probe.mjs --mode deterministic"
-    },
-    {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-071-probe.mjs --mode live --browser-adapter playwright@1.63.0"
     },
     {
       "id": "agentic-regression",
