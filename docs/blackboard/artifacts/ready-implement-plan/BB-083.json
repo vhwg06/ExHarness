@@ -33,8 +33,13 @@
     "Measured improvement requires fresh comparable evidence; unknown outcome is not success."
   ],
   "architectureDecisions": [
-    "Provisional: use one durable feedback episode with separate fact, context, interpretation, authority and outcome boundaries; exact schema/owner unresolved.",
-    "Provisional: compose existing capabilities through additive contracts; no new global scheduler and no modification of old task scope."
+    "Reuse-first selection: standalone gepa@d771eb21b5dd3228bc3f567293d2ccfc423fc900 behind a Python adapter; do not reimplement reflection, Pareto search, candidate lineage or optimizer checkpointing.",
+    "Do not require DSPy for a non-DSPy ExHarness program. Keep LangGraph as an alternative rather than replacing the existing durable continuation/store.",
+    "Use OpenHands SDK events through normalization when that runtime is selected; retain ExHarness attempt/provenance binding without introducing a second event bus.",
+    "LangMem schema extraction/consolidation is an optional proposal producer; defer mandatory dependency pending labeled-cohort comparison. Reflexion supplies a bounded feedback pattern, not a production executor.",
+    "GEPA search acceptance is not independent promotion; selected candidate crosses existing HOW evaluation and currentness gates with final holdout excluded from optimizer.",
+    "Enforce hard budget reservations at dispatch through the existing ledger; observed GEPA max_metric_calls stopper can overshoot a batch.",
+    "Implement only additive episode/context/response/outcome bindings and projections around existing mechanics. Existing researched tasks remain unchanged."
   ],
   "sourceScope": {
     "read": [
@@ -61,22 +66,35 @@
       "docs/living/system/agentic-application/self-upgrade.md",
       "docs/blackboard/process/harness-benchmark-program-research.md"
     ],
-    "expectedNew": [],
+    "expectedNew": [
+      "packages/agentic-system/src/feedback-contracts.js",
+      "packages/agentic-system/src/feedback-controller.js",
+      "packages/agentic-system/src/feedback-projection.js",
+      "packages/agentic-system/src/feedback-gepa-adapter.js",
+      "scripts/feedback/gepa_adapter.py",
+      "scripts/feedback/requirements.lock"
+    ],
     "expectedTests": [
-      "Research must specify exact new semantic and adversarial test files before READY."
+      "packages/agentic-system/test/feedback-contracts.test.js",
+      "packages/agentic-system/test/feedback-controller.test.js",
+      "packages/agentic-system/test/feedback-projection.test.js",
+      "test/feedback-gepa-bridge.test.mjs"
     ]
   },
   "implementationSlices": [
-    "Research only: inventory existing seams and compare source-backed reuse approaches.",
-    "Research only: settle episode/response/aggregation ownership, schemas, recovery and authority.",
-    "Research only: publish additive file-level implementation slices and fixed-factor evaluation protocol; submit fresh Jev readiness."
+    "R1 complete: pin >=1,000-star source candidates and inspect relevant source/test seams; see source-ledger.json.",
+    "R2 complete: run deterministic upstream GEPA adapter/search/resume/regression/budget probe without modifying engine source; see gepa-probe-result.json.",
+    "R3 pending: finalize exact JS/Python bridge exports and benchmark/Oracle/HOW dependency mappings from the new research report; no changes to previous plans.",
+    "R4 pending: discriminate optional memory extraction on a labeled cohort; settle package lock, hard-budget/crash/replay and final holdout protocol.",
+    "R5 pending: replace remaining provisional source/write scope with exact worker plan, materialize evidence and obtain independent Jev readiness."
   ],
   "acceptanceCriteria": [
     {
       "id": "C1",
       "statement": "Specify observation/context/finding/impact contracts with exact identity, provenance, uncertainty and missing-context behavior.",
       "verificationIds": [
-        "graph"
+        "graph",
+        "gepa-seam"
       ],
       "evidenceRequired": [
         "Source-backed research brief and exact plan mapping; this DRAFT does not claim semantic validation."
@@ -106,7 +124,8 @@
       "id": "C4",
       "statement": "Define additive seams with Observer/Oracle/reconciliation/HOW evolution and neutral benchmark evidence, preserving existing accepted scopes.",
       "verificationIds": [
-        "graph"
+        "graph",
+        "gepa-seam"
       ],
       "evidenceRequired": [
         "Source-backed research brief and exact plan mapping; this DRAFT does not claim semantic validation."
@@ -147,13 +166,32 @@
     {
       "id": "graph",
       "command": "npm run verify:blackboard-work-graph"
+    },
+    {
+      "id": "gepa-seam",
+      "command": "PYTHONPATH=\"$GEPA_SOURCE_DIR/src\" python3 docs/blackboard/evidence/BB-083/gepa-probe.py"
     }
   ],
   "researchGaps": [
-    "Pin source evidence and verify candidate repository eligibility; shortlist is not verified evidence.",
-    "Resolve schema, package ownership, context-currentness and bounded context lookup semantics.",
-    "Resolve response acknowledgement versus outcome closure, deferred revisit, supersession and restart semantics.",
-    "Specify cohort/denominator/deduplication/counterevidence and system-causality criteria.",
-    "Replace this research seed with exact worker write scopes, implementation files, executable positive/negative probes and preregistered usefulness/quality/cost/latency gates before READY."
-  ]
+    "Finalize exact benchmark/Oracle/HOW export mapping and reflection accounting; dependency contracts are planned, not delivered runtime evidence.",
+    "Execute JS/Python bridge crash/replay, cancellation and hard per-dispatch budget admission probes; current upstream Python test is narrower.",
+    "Decide optional LangMem adapter using labeled-cohort benefit/integration-cost evidence or explicitly omit it from the first slice.",
+    "Freeze candidate package lock and independent evaluation sample/effect thresholds; no live model effectiveness evidence exists.",
+    "New-task registration remains unmerged; independent Jev readiness not run and local TYPESAFE_API_KEY absent."
+  ],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-083/source-ledger.json",
+      "finding": "Seven repositories meet cutoff; pinned source review corrects overbroad claims and supports reuse choices."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+      "finding": "Real pinned GEPA engine supports evidence projection, candidate search and adapter-state resume; aggregate acceptance hides per-case regression and batch budget can overshoot."
+    },
+    {
+      "ref": "docs/blackboard/process/feedback-architecture-research.md",
+      "finding": "Reuse decisions, additive seams, limits, independent evaluation design and outstanding readiness obligations."
+    }
+  ],
+  "proposedImplementationScopeStatus": "PROVISIONAL: research gaps remain; sourceScope.write currently authorizes research brief only, not product implementation."
 }
