@@ -20,7 +20,7 @@
     "Publishing B/C diagnostic arms as supported profiles or running downstream BB-074 value acceptance here."
   ],
   "constraints": [
-    "A/B/C/D keep BB-077's Harbor adapter, model/provider, task input, environment, tool surface, budgets, measurement, artifact extraction and verifier fixed; only delivered Core capability composition varies.",
+    "A/B/C/D keep the delivered BB-065 substrate manifest/adapter, task environment/reset/artifact extraction/verifier, and BB-077 model/provider/tool/budget/fixed-factor comparison semantics fixed; only delivered Core capability composition varies.",
     "Held-out work is exactly the four BB-077-reserved Terminal-Bench digests; no development/replacement task or post-result mutation is permitted.",
     "Run two independent repeats per task/arm (32 registered arm units); all attempts/retries/failures remain visible and the live cohort stays within BB-077's $25 cohort and $0.60/attempt ceilings.",
     "Fault robustness uses deterministic fixtures, separate from paid held-out economics.",
@@ -180,7 +180,7 @@
         "live-heldout"
       ],
       "evidenceRequired": [
-        "complete HARNESS_RUN_RECORD_V1 ledger",
+        "complete BENCHMARK_ATTEMPT_RECORD_V1 / AttemptLedger evidence for every registered unit",
         "provider token/cost fields or explicit UNKNOWN",
         "model/tool/operation timing records",
         "retry/failure denominator reconciliation",
@@ -229,7 +229,7 @@
     },
     {
       "id": "QUALITY",
-      "statement": "Across all eight registered D/A units, D accepted-task rate is at least A under the same Harbor verifier; both repeats remain independent denominator units.",
+      "statement": "Across all eight registered D/A units, D accepted-task rate is at least A under the same delivered substrate verifier; both repeats remain independent denominator units.",
       "verificationIds": [
         "decision-contract",
         "live-heldout"
@@ -439,7 +439,7 @@
   "researchEvidence": [
     {
       "source": "BB-077 READY plan",
-      "finding": "Freezes Harbor, held-out digests, budgets, HARNESS_RUN_RECORD_V1, measurement/failure semantics and future D/A thresholds."
+      "finding": "Freezes held-out digests, BB-065 substrate identity, BB-077 fixed-factor/budget/measurement/failure semantics, shared BENCHMARK_ATTEMPT_RECORD_V1 truth and future D/A thresholds."
     },
     {
       "source": "BB-078/079/080 READY plans",
