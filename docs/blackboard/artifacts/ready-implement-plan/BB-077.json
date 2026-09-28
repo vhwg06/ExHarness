@@ -3,10 +3,10 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-077",
-  "status": "READY",
+  "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-077.json",
-    "hash": "1728f4a54cf9164c79eb549c344570737a7f3380f4c5e1648b1259c6514b5383"
+    "hash": "02163346bb3daecccb01285a4886f1081ce177c1b91caadf97ff0dcd6dd4012e"
   },
   "scope": [
     "core.harness-economics",
@@ -304,7 +304,9 @@
       "command": "git diff --name-only \"$BB077_BASELINE_SHA\" \"$BB077_CANDIDATE_SHA\" | node benchmarks/harness_efficiency/run.mjs --mode verify-boundary"
     }
   ],
-  "researchGaps": [],
+  "researchGaps": [
+    "Replace the pre-BB-065 self-owned Harbor/accounting/evidence design with a thin @exharness/benchmark consumer plan before readiness can be evaluated."
+  ],
   "negativeVerificationCases": [
     "Changing arm also changes model/provider, prompt, task digest, environment, capability surface or budget and the run is still admitted as matched.",
     "Harbor adapter has arm-specific setup or instruction rewriting that makes the adapter itself a confounder.",
@@ -827,6 +829,5 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-077 Living Docs describe only the delivered benchmark/harness-measurement capability, fixed-factor contract, accounting limitations and current synchronous baseline; they do not claim async promotion or product-value results that BB-081/BB-074 have not established."
-  },
-  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.readiness-jev-evaluation.json"
+  }
 }
