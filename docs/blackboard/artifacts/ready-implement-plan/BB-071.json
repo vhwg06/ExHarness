@@ -107,9 +107,9 @@
     "S0 — Dependency preflight: require BB-070 and BB-057 DONE and bind exact lifecycle/reference-product plus recovery/fencing outputs; reject incompatible delivered seams.",
     "S1 — Change contract: implement REQUIREMENT_CHANGE_V1 and deterministic scenario manifests that pin the exact pre-change semantic heads and acceptance refs.",
     "S2 — Selective invalidation composition: publish replacement requirement/semantic revision, derive affected current closure only through ProductLineageStore/reverseSemanticClosure, invoke delivered invalidation semantics for affected work and prove unrelated heads remain current.",
-    "S3 — Local repair: materialize only obligations reachable from the changed semantic revision, execute owning domains and independent QA, and produce a newly verified release without replaying unrelated accepted domains.",
-    "S4 — Recovery/fencing: inject process kill, duplicate activation, old-worker replay and stale deployment observation; require same-attempt recovery, one logical publication and fail-closed stale evidence exactly through delivered BB-057/Integration fences.",
-    "S5 — Live product change probe: execute LOCAL_DOMAIN and CROSS_DOMAIN changes over the exact BB-070 reference product, capture Playwright v1.63.0 evidence for the replacement release, and preserve raw provider/runtime failures separately from acceptance.",
+    "S3 — Selective live repair: implement and run LOCAL_DOMAIN plus CROSS_DOMAIN from BB071_CHANGE_RECOVERY_V1 over independently reset copies of the exact accepted BB-070 release. Derive affected work only from current reverse semantic lineage, prove protected control heads stay current, and independently verify each replacement release.",
+    "S4 — Recovery/fencing live probes: execute KILL_RESUME_DUPLICATE and STALE_FENCE at the frozen durable barriers in BB071_CHANGE_RECOVERY_V1; require same semantic attempt/binding, one logical authoritative publication, stale worker/deployment rejection and unchanged unrelated heads.",
+    "S5 — Persist and independently audit the complete BB071_CHANGE_RECOVERY_V1 evidence matrix (pre/post semantic heads, affected/unaffected sets, claim/attempt/binding/publication/release identities, Playwright/API/persistence/QA evidence and raw failures). NOT_RUN or missing evidence cannot satisfy the objective.",
     "S6 — Update Living truth with selective-change/recovery capability and explicit limits; do not claim generic workflow durability or exactly-once external effects beyond the delivered reconciliation contract."
   ],
   "acceptanceCriteria": [
@@ -202,6 +202,14 @@
     {
       "id": "boundary-probe",
       "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js test/delivery/bb-071.test.mjs"
+    },
+    {
+      "id": "change-live",
+      "command": "node scripts/delivery/bb-071-probe.mjs --mode live --protocol BB071_CHANGE_RECOVERY_V1 --output \"$EXHARNESS_BB071_OUTPUT\""
+    },
+    {
+      "id": "change-audit",
+      "command": "node scripts/delivery/bb-071-probe.mjs --mode audit-live --protocol BB071_CHANGE_RECOVERY_V1 --input \"$EXHARNESS_BB071_OUTPUT\""
     },
     {
       "id": "change-contract",
@@ -335,7 +343,13 @@
       "mint fresh semantic attempt to hide recovery failure",
       "global reset of unrelated accepted work",
       "second workflow journal as recovery authority"
-    ]
+    ],
+    "liveInjectionPoints": {
+      "kill": "after durable runtime activity is observed and before SCM candidate submission",
+      "duplicate": "after recovery reaches publication-ready barrier but before authoritative publication commit",
+      "staleWorker": "pre-change claim generation/release tuple",
+      "staleDeployment": "pre-change release/deployment observation supplied after replacement semantic head is current"
+    }
   },
   "objectiveCoverage": [
     {
@@ -354,8 +368,8 @@
       "verificationIds": [
         "change-contract",
         "selective-invalidation",
-        "deterministic-probe",
-        "live-probe"
+        "change-live",
+        "change-audit"
       ],
       "decisionIndexes": [
         0,
@@ -372,7 +386,8 @@
       ],
       "supportingPlanFields": [
         "changeContract",
-        "scenarioContract"
+        "scenarioContract",
+        "liveChangeProtocol"
       ]
     },
     {
@@ -388,8 +403,8 @@
       ],
       "verificationIds": [
         "recovery-fencing",
-        "deterministic-probe",
-        "live-probe"
+        "change-live",
+        "change-audit"
       ],
       "decisionIndexes": [
         4,
@@ -401,7 +416,8 @@
         "packages/agentic-system/src/domain-execution-control.js"
       ],
       "supportingPlanFields": [
-        "recoveryContract"
+        "recoveryContract",
+        "liveChangeProtocol"
       ]
     },
     {
@@ -419,7 +435,8 @@
       "verificationIds": [
         "selective-invalidation",
         "recovery-fencing",
-        "boundary-probe"
+        "change-live",
+        "change-audit"
       ],
       "decisionIndexes": [
         1,
@@ -434,8 +451,76 @@
       ],
       "supportingPlanFields": [
         "changeContract",
-        "recoveryContract"
+        "recoveryContract",
+        "liveChangeProtocol"
       ]
     }
-  ]
+  ],
+  "liveChangeProtocol": {
+    "schemaVersion": 1,
+    "protocol": "BB071_CHANGE_RECOVERY_V1",
+    "prerequisite": "exact accepted BB-070 reference request-management release; exact DONE BB-057 recovery/fencing seam",
+    "common": {
+      "startingRelease": "same pinned current BB-070 accepted release lineage for each independently reset scenario",
+      "evidence": "pin pre-change semantic heads, change manifest/digest, affected+unaffected control keys, attempt/binding, publication, replacement release, QA/browser/API/persistence evidence",
+      "closure": "replacement release must satisfy exact current product projection/QA/closure; old release evidence is retained but cannot satisfy changed work"
+    },
+    "scenarios": [
+      {
+        "id": "LOCAL_DOMAIN",
+        "requirement": "When the request list is empty, the browser UI must show the exact text 'No requests yet'. API/storage behavior is unchanged.",
+        "expectedAffected": [
+          "frontend semantic/output lineage",
+          "independent QA/release verification"
+        ],
+        "protectedUnchanged": [
+          "backend API contract",
+          "persistence semantics"
+        ],
+        "assertions": [
+          "empty database UI shows exact text",
+          "GET /requests contract remains unchanged",
+          "backend current head is not invalidated solely by this presentation requirement"
+        ]
+      },
+      {
+        "id": "CROSS_DOMAIN",
+        "requirement": "Add IN_PROGRESS as a supported request status on create/update, persistence/list output and browser UI while preserving rejection of unknown statuses.",
+        "expectedAffected": [
+          "backend validation/API",
+          "frontend status control/rendering",
+          "independent QA/release verification"
+        ],
+        "protectedUnchanged": [
+          "unrelated request title/description semantics"
+        ],
+        "assertions": [
+          "POST/PATCH IN_PROGRESS accepted and persisted",
+          "GET returns IN_PROGRESS",
+          "browser can choose/render IN_PROGRESS",
+          "unknown status still returns validation failure"
+        ]
+      },
+      {
+        "id": "KILL_RESUME_DUPLICATE",
+        "requirement": "Apply CROSS_DOMAIN change, kill the coding runtime after durable activity but before candidate submission, resume in a fresh process, then race a duplicate activation at publication.",
+        "assertions": [
+          "same semantic executionAttemptId + immutable binding",
+          "new runtime invocation may be recorded",
+          "exactly one logical authoritative publication",
+          "no second provider/session identity when delivered BB-057/BB-070 contract forbids it"
+        ]
+      },
+      {
+        "id": "STALE_FENCE",
+        "requirement": "After replacement semantic revision/release is current, replay the pre-change worker/claim and pre-change deployment observation against closure.",
+        "assertions": [
+          "stale worker cannot dispatch/publish",
+          "old deployment observation cannot close changed work",
+          "unrelated accepted control heads remain current"
+        ]
+      }
+    ],
+    "passRule": "LOCAL_DOMAIN and CROSS_DOMAIN produce newly independently accepted replacement releases with exactly the current-lineage affected set; KILL_RESUME_DUPLICATE preserves one semantic attempt/logical publication; STALE_FENCE rejects stale authority/evidence. Missing live evidence is NOT_RUN and does not satisfy the objective."
+  }
 }
