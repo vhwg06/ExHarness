@@ -199,6 +199,14 @@
   ],
   "verificationPlan": [
     {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-072-probe.mjs --mode operations"
+    },
+    {
+      "id": "boundary-probe",
+      "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js test/delivery/bb-072.test.mjs"
+    },
+    {
       "id": "projection",
       "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"projection|provenance|blocker\""
     },
