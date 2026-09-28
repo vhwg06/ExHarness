@@ -115,12 +115,92 @@ Freeze development/search-validation/final-holdout partitions before execution. 
 
 Measure context/finding support precision on labeled episodes, false-pattern rate, outcome coverage, stale-binding rejection, evidence reconstruction, model calls/tokens/cost, latency and held-out quality. A systematic claim requires mechanism evidence beyond repeated observations.
 
+## Dependency convergence and direct ownership
+
+The worker dependency closure is now explicit and uses the contract owners, not a downstream experiment as a proxy:
+
+| Dependency | Planned reusable contract consumed by this research | Worker rule |
+|---|---|---|
+| BB-059 | HOW evaluation protocol, independent evaluator boundary, currentness/promotion/rollback semantics | Resolve exact DONE exports and hashes before any optimizer handoff; a missing/incompatible seam is PLAN_INPUT_CONTRADICTION. |
+| BB-064 | Oracle ContextRequirement/ContextResolution identity, authoritative currentness and provenance through createOracleContextResolver | Feedback stores only exact resolution ref+digest/currentness evidence. It does not add another retriever or allow context to self-certify CURRENT. |
+| BB-065 | @exharness/benchmark root contract: experiment/unit identity, AttemptLedger, evidence, nullable accounting and audit | Node owns reservation and benchmark side effects. No deep import and no Python-side replacement ledger. |
+
+BB-075 remains a research reference for fixed-factor held-out improvement semantics, but it is not the reusable contract owner and is not a direct execution dependency. BB-058 observation is reached transitively through the HOW-evolution dependency and remains evidence-only.
+
+The worker starts with a dependency-convergence preflight. Planned contracts are not treated as delivered source: it resolves the exact DONE implementation result/judgment/Living refs and public exports, then either binds them or exits before writes with PLAN_INPUT_CONTRADICTION.
+
+## Cross-language bridge contract and executed failure probe
+
+The GEPA integration is an offline improvement adapter, not part of ordinary feedback capture. Node remains the side-effect owner:
+
+1. Node freezes the improvement request, GEPA pin/config, allowed HOW component set and benchmark experiment/unit identities.
+2. Node reserves every benchmark attempt in the delivered @exharness/benchmark AttemptLedger before dispatch.
+3. Python runs the pinned standalone GEPA optimizer and requests evaluations through a bounded JSON-lines callback protocol. Python never owns benchmark truth, budget authority, promotion or product mutation.
+4. Node executes/reopens benchmark attempts and returns exact result/evidence/accounting refs. UNKNOWN stays unknown; no missing metric is coerced to zero.
+5. Python returns only an optimizer candidate/provenance envelope. Node normalizes that into an immutable ImprovementProposal with no accepted/promoted flag.
+6. If Python crashes, only trusted locally controlled GEPA checkpoint state may resume. Settled benchmark attempts are reopened by exact refs; uncertain side effects reconcile before retry and are never blindly duplicated.
+7. Cancellation does not refund started reservations or rewrite settled attempts. A hard budget denial happens before Python can cause another benchmark dispatch.
+
+The deterministic cross-process probe is in `docs/blackboard/evidence/BB-083/bridge-probe.mjs` + `bridge-worker.py`; its recorded result is `bridge-probe-result.json`. Observed: normal settle succeeds; crash-after-commit exits 23 and is recovered from durable receipt; replay causes one dispatch only; cancellation after STARTED is SIGKILL with no receipt and still consumes its reservation; the fourth request is denied before dispatch. This closes the process/budget semantics research gap but is deliberately not GEPA effectiveness evidence. The earlier pinned GEPA probe separately proves the real optimizer seam.
+
+## v1 dependency decision: no LangMem runtime dependency
+
+LangMem is omitted from v1. Its inspected extraction/consolidation mechanics are useful, but no labeled cohort demonstrates incremental benefit over deterministic episode projection + standalone GEPA, while its dependency closure introduces LangChain/LangGraph/trustcall/provider integrations. The v1 pattern projection therefore stays native and deterministic: deduplicate episode refs, group only on explicit cohort keys, carry counterevidence, and optionally allow an LLM to propose a summary that remains untrusted. LangMem may return as a separately evaluated adapter only if a future labeled cohort shows material extraction benefit under the same evidence and cost contract.
+
+This is a closed choice for the first implementation slice; Worker is not asked to choose a memory framework.
+
+## Frozen GEPA package boundary
+
+The optimizer pin is standalone `gepa==0.1.4` at source commit `d771eb21b5dd3228bc3f567293d2ccfc423fc900`, Python `>=3.10,<3.15`. The inspected upstream `pyproject.toml` declares no mandatory runtime dependencies for the base package. v1 uses only the base package API; it does not install `gepa[full]`, DSPy, LangChain or LangMem. The implementation lock records the exact VCS commit and Python range; changing that lock creates a new optimizer identity and invalidates cached optimizer state.
+
+GEPA checkpoint loading uses pickle upstream. Only checkpoints created by the same trusted local improvement run directory may be loaded. Checkpoints are optimizer recovery state, never canonical ExHarness acceptance evidence.
+
+## Preregistered independent improvement handoff
+
+BB-083 does not invent a second promotion mechanism. It produces a bounded `HOW_IMPROVEMENT_PROPOSAL_V1` and hands it to the delivered BB-059 evaluation authority. The final evaluation protocol is fixed before candidate search can observe final holdout data:
+
+- semantic WHAT/acceptance refs and current baseline HOW head are exact ref+digest bindings;
+- development/search-validation/final-holdout partitions are disjoint; final holdout is unavailable to GEPA, reflection memory and candidate producer;
+- deterministic cases run once; stochastic model-backed cases use at least three paired baseline/candidate repeats per case unless the frozen metric policy requires more;
+- the exact metric-policy ref+digest and `minEffect` are fixed before candidate search; BB-083 defines no universal percentage and the optimizer cannot rewrite the threshold;
+- critical quality/authority/currentness/recovery regressions are hard failures and per-case regression cannot be hidden by aggregate gain;
+- every final run is a registered @exharness/benchmark unit/attempt with append-only evidence, nullable accounting and fresh-process audit reopening;
+- missing required measurement/provider usage/evaluator evidence is INCONCLUSIVE, never success;
+- evaluation may only propose promotion or keep baseline/inconclusive. Existing BB-059 independent authority performs currentness recheck and any policy publication.
+
+For implementation readiness, no live model-effectiveness claim is required: the deliverable is the feedback/bridge contract plus a reproducible evaluation handoff. A product improvement claim requires fresh held-out execution after the dependencies are actually delivered.
+
+## Exact implementation boundary
+
+The product package remains optimizer-agnostic. New product files are limited to typed feedback contracts/controller/projection/improvement-envelope code. The GEPA bridge and Python dependency live under `scripts/feedback/` as offline improvement tooling. No `packages/benchmark/**`, `packages/oracle/**`, Core runtime, HOW publisher or prior Blackboard artifact is modified by this task.
+
+Target files:
+
+```text
+packages/agentic-system/src/
+  feedback-contracts.js
+  feedback-controller.js
+  feedback-projection.js
+  feedback-improvement.js
+  index.js                         # exports only
+packages/agentic-system/test/
+  feedback-contracts.test.js
+  feedback-controller.test.js
+  feedback-projection.test.js
+  feedback-improvement.test.js
+scripts/feedback/
+  gepa-bridge.mjs
+  gepa_adapter.py
+  requirements.lock
+test/
+  feedback-gepa-bridge.test.mjs
+docs/living/system/agentic-application/
+  feedback.md
+```
+
 ## Remaining research gaps
 
-1. Bind the proposed JS/Python bridge to exact planned/delivered benchmark and HOW/Oracle exports, including accounting of reflection and dispatch reservation, cancellation and uncertain provider outcomes.
-2. Run real bridge crash/replay and hard-budget probes; current test covers direct Python adapter only.
-3. Complete a discriminating labeled-cohort comparison for optional memory extraction; otherwise omit LangMem from v1 dependency closure and explicitly document that choice.
-4. Freeze the final held-out experiment size/effect thresholds and package/dependency lock; live model effectiveness has not been tested.
-5. Obtain independent Jev readiness once the new task/objective is in trusted routing. This environment has no TYPESAFE_API_KEY, so no local Jev call or SATISFIED claim was made.
+1. Merge the new task/objective/research evidence into trusted main so the CI selector can judge the task from trusted routing.
+2. Run fresh independent Jev readiness against the final worker-ready plan. No SATISFIED result is claimed in this registration PR.
 
-The source/probe phase materially narrows the design: reuse GEPA; preserve current ExHarness authorities; avoid mandatory DSPy/LangGraph/LangMem rewrites. It does not close BB-083 or claim research readiness prematurely.
+The technical architecture questions are closed: direct contract owners are identified, the bridge failure semantics are executed, LangMem is omitted from v1, the GEPA lock is fixed, and final promotion remains an independent BB-059/benchmark-backed decision. The registration PR intentionally remains DRAFT until trusted routing exists and fresh Jev publishes readiness.
