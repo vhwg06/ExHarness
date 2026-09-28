@@ -42,13 +42,16 @@ NONE
 
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
 - BB-060 [WORKER/EXECUTION] — Define Oracle runtime architecture and physical ownership
-- BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
+- BB-065 [RESEARCH_SA/RESEARCH] — Establish neutral benchmark package and calibrated substrate
 - BB-070 [RESEARCH_SA/RESEARCH] — Deliver product from goal and partial artifacts across owned domains
 - BB-071 [RESEARCH_SA/RESEARCH] — Prove requirement change and failure recovery on a live product
 - BB-072 [RESEARCH_SA/RESEARCH] — Make delivery runs observable recoverable and cost bounded
 - BB-073 [RESEARCH_SA/RESEARCH] — Ship an installable supported delivery profile
+- BB-074 [RESEARCH_SA/RESEARCH] — Measure delivery-harness value under a controlled benchmark program
 - BB-075 [RESEARCH_SA/RESEARCH] — Validate one useful HOW improvement on held-out delivery tasks
 - BB-076 [RESEARCH_SA/RESEARCH] — Accept supported product release with independently reproducible value
+- BB-077 [RESEARCH_SA/RESEARCH] — Research harness-isolation economics on shared benchmark kernel
+- BB-081 [RESEARCH_SA/RESEARCH] — Research held-out harness profile acceptance and fault-ablation protocol
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 
 ## Dependency graph
@@ -68,7 +71,7 @@ BB-061 [BLOCKED_BY BB-060] <- BB-060
 BB-062 [BLOCKED_BY BB-061] <- BB-061
 BB-063 [BLOCKED_BY BB-062] <- BB-062
 BB-064 [BLOCKED_BY BB-060,BB-061,BB-062,BB-063] <- BB-060, BB-061, BB-062, BB-063
-BB-065 [WORKER_SCHEDULABLE] <- ROOT
+BB-065 [RESEARCH_SCHEDULABLE] <- ROOT
 BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
@@ -77,14 +80,14 @@ BB-070 [RESEARCH_SCHEDULABLE] <- BB-069, BB-055
 BB-071 [RESEARCH_SCHEDULABLE] <- BB-070, BB-057
 BB-072 [RESEARCH_SCHEDULABLE] <- BB-068, BB-058
 BB-073 [RESEARCH_SCHEDULABLE] <- BB-070, BB-072
-BB-074 [BLOCKED_BY BB-065,BB-071,BB-073,BB-077,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
+BB-074 [RESEARCH_SCHEDULABLE] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [RESEARCH_SCHEDULABLE] <- BB-074, BB-059
 BB-076 [RESEARCH_SCHEDULABLE] <- BB-074, BB-075
-BB-077 [BLOCKED_BY BB-065] <- BB-065
+BB-077 [RESEARCH_SCHEDULABLE] <- BB-065
 BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
-BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
+BB-081 [RESEARCH_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [WORKER_SCHEDULABLE] <- ROOT
 ```
 
