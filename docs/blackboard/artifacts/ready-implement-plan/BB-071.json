@@ -27,52 +27,90 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Choose a requirement change crossing FE/BE/QA and another affecting only one domain.",
-    "Candidate direction, not selected architecture: Map real-provider process failures and stale outputs to the delivered Integration-H fence semantics.",
-    "Candidate direction, not selected architecture: Define exact downstream invalidation and evidence needed to resume without re-running the whole organization."
+    "D1 — Model a product change as REQUIREMENT_CHANGE_V1 bound to project/root, prior accepted requirement/semantic revision refs, replacement content identity, declared acceptance refs and a stable changeKey. A change never mutates historical semantic artifacts; it publishes a replacement revision and relies on current lineage to derive affected work.",
+    "D2 — Use the delivered ProductLineageStore/current semantic heads and reverseSemanticClosure as the only dependency invalidation source. Only derivation edges to currently selected dependent revisions participate; Blackboard dependency edges and role labels are not semantic invalidation graphs.",
+    "D3 — Freeze two scenario classes over the BB-070 delivered reference product: LOCAL_DOMAIN changes one presentation-only requirement whose current lineage is confined to FE; CROSS_DOMAIN changes one validation/API contract whose lineage reaches BE, FE and QA. Scenario manifests name exact starting semantic refs before execution.",
+    "D4 — Invalidated current outputs become stale/reopened through the delivered dependency-invalidation/currentness boundary; unrelated current semantic heads remain untouched. Re-execution creates replacement revisions and downstream obligations from the changed revision rather than re-running the whole organization.",
+    "D5 — Recovery consumes the exact delivered BB-057 recovery/fencing boundary. Process kill/resume must reuse the same semantic execution attempt/binding; duplicate activation must converge on the existing publication idempotency key; an old claim/worker or stale deployment observation cannot publish or close changed work.",
+    "D6 — Browser/deployment verification uses Playwright v1.63.0 only for observable post-change evidence bound to the new release. The authoritative change/currentness decision remains ExHarness semantic lineage + independent QA/closure.",
+    "D7 — Temporal v1.32.0 and Restate v1.7.11 are rejected for this task's recovery authority. Their durable workflow/step models are useful references but would introduce a second durable execution authority and do not replace ExHarness external-effect ambiguity/currentness fences.",
+    "D8 — Worker preflight requires BB-070 and BB-057 DONE and binds their exact product-lifecycle and recovery outputs. Any mismatch in change-entry, attempt recovery or publication-fencing seams is PLAN_INPUT_CONTRADICTION."
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/src/cross-domain-obligation.js",
       "packages/agentic-system/src/domain-execution-control.js",
-      "docs/living/system/state.md"
+      "packages/agentic-system/src/domain-write-authority.js",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
+      "docs/blackboard/process/delivery-research/BB-071.md"
+    ],
+    "expectedDependencyOutputs": [
+      "BB-070 DONE: exact PROJECT_SEED/product-lifecycle/reference-product seam and current product outcome/release identity used as the change baseline.",
+      "BB-057 DONE: exact adversarial recovery, stale-worker and bounded-remediation APIs/evidence; Worker must bind the delivered names/refs."
     ],
     "expectedNew": [
-      "scripts/delivery/bb-071-probe.mjs"
+      "packages/agentic-system/src/product-change-control.js",
+      "scripts/delivery/bb-071-probe.mjs",
+      "test/delivery/fixtures/bb-071/local-domain-change.json",
+      "test/delivery/fixtures/bb-071/cross-domain-change.json"
     ],
     "expectedTests": [
+      "packages/agentic-system/test/bb071-product-change-control.test.js",
       "test/delivery/bb-071.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
-      "docs/blackboard/process/delivery-research/BB-071.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/src/cross-domain-obligation.js",
+      "packages/agentic-system/src/domain-execution-*.js",
+      "packages/agentic-system/src/domain-write-authority.js",
+      "packages/agentic-system/test/**",
+      "docs/living/system/agentic-application/**",
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-070*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-057*",
+      "scripts/delivery/**",
+      "test/delivery/**"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "packages/agentic-system/src/product-change-control.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb071-product-change-control.test.js",
+      "scripts/delivery/bb-071-probe.mjs",
+      "test/delivery/bb-071.test.mjs",
+      "test/delivery/fixtures/bb-071/**",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      ".github/**",
       "docs/blackboard/**",
-      ".github/**"
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/domain-write-authority.js"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S0 — Dependency preflight: require BB-070 and BB-057 DONE and bind exact lifecycle/reference-product plus recovery/fencing outputs; reject incompatible delivered seams.",
+    "S1 — Change contract: implement REQUIREMENT_CHANGE_V1 and deterministic scenario manifests that pin the exact pre-change semantic heads and acceptance refs.",
+    "S2 — Selective invalidation composition: publish replacement requirement/semantic revision, derive affected current closure only through ProductLineageStore/reverseSemanticClosure, invoke delivered invalidation semantics for affected work and prove unrelated heads remain current.",
+    "S3 — Local repair: materialize only obligations reachable from the changed semantic revision, execute owning domains and independent QA, and produce a newly verified release without replaying unrelated accepted domains.",
+    "S4 — Recovery/fencing: inject process kill, duplicate activation, old-worker replay and stale deployment observation; require same-attempt recovery, one logical publication and fail-closed stale evidence exactly through delivered BB-057/Integration fences.",
+    "S5 — Live product change probe: execute LOCAL_DOMAIN and CROSS_DOMAIN changes over the exact BB-070 reference product, capture Playwright v1.63.0 evidence for the replacement release, and preserve raw provider/runtime failures separately from acceptance.",
+    "S6 — Update Living truth with selective-change/recovery capability and explicit limits; do not claim generic workflow durability or exactly-once external effects beyond the delivered reconciliation contract."
   ],
   "acceptanceCriteria": [
     {
@@ -158,22 +196,35 @@
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-071-probe.mjs"
+      "id": "change-contract",
+      "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"change|identity|scenario\""
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-071.test.mjs"
+      "id": "selective-invalidation",
+      "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"invalidation|unrelated|lineage\""
+    },
+    {
+      "id": "recovery-fencing",
+      "command": "node --test packages/agentic-system/test/bb071-product-change-control.test.js --test-name-pattern=\"recovery|duplicate|stale\""
+    },
+    {
+      "id": "deterministic-probe",
+      "command": "node scripts/delivery/bb-071-probe.mjs --mode deterministic"
+    },
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-071-probe.mjs --mode live --browser-adapter playwright@1.63.0"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Choose a requirement change crossing FE/BE/QA and another affecting only one domain.",
-    "Map real-provider process failures and stale outputs to the delivered Integration-H fence semantics.",
-    "Define exact downstream invalidation and evidence needed to resume without re-running the whole organization.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
     "Producer success with failing independent acceptance.",
     "Missing or stale source/runtime identity represented as current evidence.",
@@ -210,5 +261,32 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-071 Living truth describes only the implemented and independently verified supported capability and limitations."
-  }
+  },
+  "researchEvidence": [
+    {
+      "source": "ExHarness Integration C current source: product-lineage.js + dependency-invalidation.js",
+      "checked": "2026-09-28",
+      "finding": "Current semantic heads and reverse current derivation closure already define selective invalidation; Blackboard dependency edges are not semantic lineage."
+    },
+    {
+      "source": "ExHarness domain-execution-control.js current source",
+      "checked": "2026-09-28",
+      "finding": "Semantic attempt binding, recovery reuse and idempotent publication already exist below the application boundary and must remain the authority path."
+    },
+    {
+      "source": "Temporal v1.32.0",
+      "checked": "2026-09-28",
+      "finding": "Durable workflow execution is a useful recovery reference but is rejected as an additional authority layer for BB-071."
+    },
+    {
+      "source": "Restate v1.7.11",
+      "checked": "2026-09-28",
+      "finding": "Durable steps/signals are a useful reference; adoption would duplicate the current authority/reconciliation model and its server license also differs from the unrestricted MIT references."
+    },
+    {
+      "source": "Playwright v1.63.0",
+      "checked": "2026-09-28",
+      "finding": "Selected only for exact-release browser evidence after repair; it does not decide currentness or acceptance."
+    }
+  ]
 }
