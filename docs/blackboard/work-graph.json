@@ -1917,7 +1917,7 @@
     {
       "id": "BB-077",
       "featureId": "FEATURE-HARNESS-ECONOMICS",
-      "title": "Research harness-isolation benchmark and async-first baseline protocol",
+      "title": "Research harness-isolation economics on shared benchmark kernel",
       "kind": "IMPLEMENTATION",
       "status": "PLANNED",
       "complexity": "L",
@@ -1946,24 +1946,22 @@
         ]
       },
       "expectedOutputs": [
-        "Research and pin a credible harness-evaluation method using shared environments, fixed model/task/prompt/budget/evaluator controls and native harness execution; compare external evidence such as Harness-Bench, Claw-SWE-Bench and Harbor with ExHarness constraints.",
-        "Define the neutral comparison unit and adapter contract for current synchronous Core, a minimal/direct baseline and the async candidate without letting a different model, prompt, workspace or evaluator confound harness effects.",
-        "Predeclare quality-cost Pareto metrics, tokens/tool calls/latency per accepted task, no-progress behavior, repeated-run consistency and a failure fingerprint taxonomy; preserve provider/infra failures as separate observations.",
-        "Produce a fresh implementation/readiness plan only after the benchmark protocol, datasets, budgets, sample/repeat policy and independent verification gates are resolved."
+        "DIRECT_CODEACT and CORE_SYNC are experiment-specific arm adapters over the delivered @exharness/benchmark kernel and calibrated substrate, not owners of generic runner/accounting/evidence infrastructure.",
+        "A fixed-factor protocol, cohort/repeat schedule and harness-economics reducer isolate synchronous harness effects while preserving every attempt and UNKNOWN/null provider observations.",
+        "BB-077 emits only comparison-specific metrics/reporting and a held-out handoff for BB-081; generic AttemptLedger/evidence/accounting/audit remain BB-065 ownership.",
+        "Worker execution remains blocked on BB-065 delivery even when research readiness converges."
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-077.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
-        "researchBaselineSha": "d4c442d4d2df101260f95d0f4d76ff4fffab40f5",
+        "researchBaselineSha": "edcd934afaa8c5c7e682af9121ca32984196bc59",
         "baselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.readiness-jev-evaluation.json",
-        "lastEvaluatedInput": "aadb78518c3f950bd13e7c2b1bd1df9d2373cd2be0cdd3675b00400c1283b04b",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.implementation-result.json"
       },
-      "lane": "WORKER",
-      "phase": "EXECUTION"
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     },
     {
       "id": "BB-078",
