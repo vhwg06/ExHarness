@@ -250,10 +250,7 @@
       "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Merge the BB-083 task/objective/research evidence into trusted main so CI can judge it from trusted routing.",
-    "Run fresh independent Jev readiness against this worker-ready plan; no SATISFIED readiness is claimed in the registration PR."
-  ],
+  "researchGaps": [],
   "researchEvidence": [
     {
       "ref": "docs/blackboard/evidence/BB-083/source-ledger.json",
@@ -677,5 +674,28 @@
         "dependencyResolution"
       ]
     }
+  ],
+  "negativeVerificationCases": [
+    "Observation or FeedbackEpisode with a missing source/attempt/candidate digest, mismatched evidence subject, forged provider event identity, or unresolved Oracle context must be rejected or remain explicitly unresolved; it must not become a grounded causal finding.",
+    "A ContextBinding whose ContextResolution digest/currentness/source observation no longer matches the delivered Oracle result must fail closed; derived/index data cannot self-certify CURRENT.",
+    "Evaluator, observer, provider payload, GEPA output or model-generated rationale attempting to act as the application principal or change ACTED/REJECTED/DEFERRED/SUPERSEDED status must be rejected.",
+    "Replaying the same response transition or recovery operation must not create a second lifecycle mutation; stale expected revision must fail rather than silently rebase.",
+    "Missing fresh outcome evidence, provider failure, unavailable required measurement or stale experiment identity must produce UNKNOWN/INCONCLUSIVE, never IMPROVED.",
+    "Duplicate/retried episodes must not increase pattern support twice; repeated frequency without explicit mechanism evidence must not produce a SYSTEMIC proposal.",
+    "Positive reinforcement must not mutate acceptance, promotion, policy head or response status; contrary evidence must remain attached to the pattern projection.",
+    "Worker start with BB-059, BB-064 or BB-065 not DONE, missing exact implementation-result/judgment/Living refs, incompatible public exports or a required deep import must exit PLAN_INPUT_CONTRADICTION before product source writes.",
+    "Python/GEPA attempting direct repository, benchmark-ledger, product-state or policy-head mutation must be impossible through the bridge capability surface and rejected by bridge tests.",
+    "A benchmark evaluation request without a successful Node-owned AttemptLedger reservation must not be dispatched to Python/provider execution.",
+    "Crash after a benchmark side effect but before bridge acknowledgement must reconcile/reopen the exact attempt before retry; duplicate dispatch of an uncertain operation is forbidden.",
+    "Cancellation after dispatch must not refund a started reservation, delete settled evidence or convert an uncertain attempt into success.",
+    "Unknown provider usage/cost must remain null/UNKNOWN; bridge or reducer code must not coerce missing accounting to zero.",
+    "GEPA candidate acceptance, aggregate score gain or checkpoint state must not set accepted/promoted flags or bypass BB-059 independent evaluation/currentness authority.",
+    "Final-holdout membership/evidence, evaluator-owned acceptance data or frozen metric-policy minEffect exposed to GEPA/reflection/candidate producer invalidates the experiment.",
+    "Candidate changes to WHAT, acceptance semantics, evaluator identity, model/provider/tool/budget fixed factors or any undeclared HOW surface must invalidate comparison.",
+    "Any critical quality, authority, currentness or recovery regression blocks promotion even when aggregate score or efficiency improves.",
+    "Stochastic model-backed final comparison with fewer than three paired repeats per case, unless the frozen metric policy explicitly requires a stronger plan, is incomplete and must be INCONCLUSIVE.",
+    "Introducing LangMem, DSPy, LangGraph workflow replacement, gepa[full] or another memory/optimizer platform in v1 violates the frozen dependency boundary.",
+    "Loading an untrusted/external GEPA pickle checkpoint or treating checkpoint state as canonical ExHarness evidence must be rejected.",
+    "Worker modifications under packages/benchmark/**, packages/oracle/**, packages/core-harness/**, existing HOW/domain-execution ownership files or docs/blackboard/** must fail repository boundary verification."
   ]
 }
