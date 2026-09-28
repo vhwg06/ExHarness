@@ -40,10 +40,11 @@ The delivered Integration B boundary preserves:
 - canonical publication is fenced against the current organization claim and domain write-authority subject;
 - duplicate recovery converges on one logical publication.
 
+Integration C (BB-052) is also delivered in the canonical work graph: cross-domain obligations, selective semantic invalidation and the BA -> SA executable handoff. Its current consolidated system refs are under `docs/living/system/agentic-application/`.
+
 Current implementation input queue:
 
 ```text
-Integration C — cross-domain obligation + lineage/currentness
 Integration D — domain activation + parallel autonomy
 Integration E/F — exact deployment identity + Product QA acceptance
 Integration G — product completeness + closure currentness
@@ -51,7 +52,7 @@ Integration G — product completeness + closure currentness
 
 These inputs are accepted semantic handoffs, not active work and not priority order by file position. `docs/blackboard/state.md` is the current delivery router.
 
-Remaining phase proof after C–G:
+Remaining phase proof after D–G:
 
 ```text
 H — adversarial recovery
@@ -394,8 +395,11 @@ Observation is not acceptance authority.
 J uses one real failure observed in B–I execution history.
 
 ```text
-Observation
-  -> Finding
+Evidence
+  -> Observation
+  -> relevant context resolution
+  -> Finding + explicit impact
+  -> authorized disposition / response
   -> exact target layer
        ExecutionStrategy
        ExecutionPolicy
@@ -425,6 +429,78 @@ candidate tries to alter acceptance/root authority
 ```
 
 The organization may improve HOW without moving the goalposts.
+
+## Feedback architecture direction — research amendment
+
+Updated 2026-09-28 from the user-approved feedback direction; repository baseline `c5356b4d6ae81df64bcfcdb8cd8fd196f1f4e7f5`.
+
+This section defines future architecture and research acceptance, not delivered behavior or an amendment to an already evaluated implementation plan. Existing BB-058/059/075 plans require an explicit scope comparison and, where changed, trusted objective/plan supersession plus fresh Jev readiness before a worker implements this extension. The canonical work graph remains the execution router. Do not treat old readiness judgments as covering these additions.
+
+The conceptual source is [Healthy Feedback](https://martinfowler.com/articles/healthy-peer-feedback.html), by Anuja Karnik and Sumeet Gayathri Moghe (2026-09-24). It motivates observation before interpretation, context, reinforcement and closing the response loop. The typed lifecycle and authority design below are ExHarness design choices, not an architecture claimed by that article.
+
+### One feedback episode
+
+Evidence -> Observation -> Context resolution -> Finding + Impact -> Disposition -> Response -> fresh Outcome observation -> FeedbackResolution.
+
+These are semantic boundaries, not mandatory model calls or a new global scheduler. Reuse existing runtime evidence, reconciliation and self-upgrade seams; context already present and current need not be retrieved again.
+
+| Concept | Required research contract |
+|---|---|
+| Observation | Exact subject/attempt/candidate, evidence refs, producer and observed time; facts remain distinct from interpretation. |
+| Context resolution | Relevant requirement, policy, environment and baseline refs with provenance/currentness; explicit missing or contradictory context. Reuse Oracle contracts for IO. |
+| Finding + Impact | Grounded interpretation, supporting/counterevidence, scope and uncertainty; distinguish measured impact from a hypothesis. A tool-call count alone does not prove inefficiency. |
+| Disposition | Authorized reconciliation to CURRENT_WORK, EXISTING_WORK, NEW_WORK or NON_ACTIONABLE. Routing is independent of instance/pattern/system classification. |
+| Response | ACTED, REJECTED, DEFERRED or SUPERSEDED, with owner, rationale and linked work/experiment where relevant. |
+| Outcome observation | Fresh evidence bound to the response and comparison protocol; IMPROVED, NO_CHANGE, REGRESSED or UNKNOWN. Unknown is never silently success. |
+| FeedbackResolution | Links the observation/finding, disposition, response/rationale and outcome evidence; records what happened to the feedback, not merely that work was created. |
+
+Research must settle identity, idempotency, replay, stale-context handling, supersession and authorized writes. Separate response acknowledgement from outcome completion: DEFERRED needs an owner and revisit condition; REJECTED can close the response without claiming improvement; SUPERSEDED links its successor. Unmeasured outcomes remain UNKNOWN. Work completion is not evidence that feedback was useful.
+
+Missing context may support a bounded evidence-gathering response; it cannot authorize an unsupported causal diagnosis. Existing independently grounded correctness failures may still route to repair.
+
+### Instance, pattern and system scope
+
+BB-058 should provide read-only episode reconstruction and aggregation proposals. INSTANCE is one exact execution. PATTERN requires a declared cohort/window, denominator, deduplicated independent episodes, comparable context and counterexamples. SYSTEM requires evidence of a shared mechanism or contract defect; repetition alone is insufficient. These levels are not an automatic escalation ladder.
+
+Aggregation must retain source episode refs, uncertainty and disconfirming evidence. Retries of the same event cannot manufacture recurrence. Contradictory or stale evidence must be visible rather than discarded.
+
+Feedback also records REINFORCE_PATTERN / KEEP proposals: preserve a strategy shown useful under comparable quality and resource conditions. Reinforcement cannot bypass evaluation or create promotion authority.
+
+### Ownership and authority
+
+- Observer produces observations, reconstructs episodes and proposes patterns; it cannot repair, mutate canonical work lifecycle, accept or promote.
+- Oracle resolves context and provenance; it does not judge correctness or authorize a response.
+- Evaluators/Jev produce judgments at their defined boundaries; they do not mutate Blackboard.
+- Application authority reconciles findings and commits authorized lifecycle/disposition changes.
+- Existing independent evaluation and promotion authority govern HOW changes. Feedback itself never becomes accepted truth.
+- Inner product/runtime episodes and outer development feedback remain distinct scopes with explicit provenance links. Outer Jev is one evaluation boundary, not the entire feedback system.
+
+### Research sequence and reuse study
+
+| Slice | Existing owner / dependency | Required output |
+|---|---|---|
+| F1: episode and context semantics | BB-058 scope review; Oracle BB-061/063 contract coordination | Typed facts/context/finding/impact boundaries, missing-context behavior and read-only reconstruction fixtures. |
+| F2: response and resolution | BB-059 scope review; consumes F1 | Application-owned routing/write authority, durable response/outcome lifecycle, recovery and no-action closure. |
+| F3: cross-episode learning | BB-058/059 coordinated scope; consumes F1/F2 | Aggregation criteria, counterevidence, recurrence/system distinction and reinforcement. |
+| F4: independent improvement proof | BB-075; consumes BB-059 and BB-074 | Episode -> candidate -> held-out experiment -> independent decision -> observed outcome/resolution. |
+| F5: reproduction | BB-076; existing BB-074/075 dependencies | Reproduce exact candidate, baseline, decisions and feedback outcome on the supported release. |
+
+F1–F5 are roadmap slices, not allocated task IDs. Research may proceed using planned dependency contracts; worker execution requires canonical delivered dependencies. Decide exact direct edges during plan alignment; do not add transitive dependencies or block BB-065 on this feedback extension. BB-065 remains neutral benchmark substrate; BB-077/081 supply isolation/ablation evidence, not feedback authority.
+
+Study the user-provided shortlist as candidates: OpenHands (events/observations), Reflexion (trial/reflection), LangGraph (durable workflow), LangMem (consolidation), DSPy/GEPA (candidate evaluation/selection). This amendment does not verify their complete capabilities, current stars, or the absence of an end-to-end implementation. Before treating any repository as evidence, verify >=1,000 stars, pin source/release, inspect relevant code/tests, and record license, limitations and integration cost. If none qualifies for a mechanism, say so. Compare reuse with extending existing ExHarness seams; no framework adoption is implied.
+
+### Acceptance and measurement
+
+Before READY, publish exact schemas/exports, owning packages, source/write scopes, migration strategy, direct dependencies and executable evidence commands. Validate:
+
+1. Same observation with different relevant context can yield different grounded findings; missing context remains explicit.
+2. Duplicate events/retries cannot create false patterns; correlated observations cannot alone establish system causality.
+3. All response dispositions survive restart with rationale; deferred work remains discoverable and superseded feedback links its successor.
+4. Fresh outcome evidence distinguishes improvement, no change, regression and unknown; positive reinforcement preserves correctness constraints.
+5. Stale subject/context bindings, forged authority and self-promotion fail closed; candidate code cannot change its evaluator, objective or acceptance gate.
+6. Matched baseline/candidate experiments freeze task/model/environment/budgets, use held-out work and preserve in-flight attempt bindings.
+
+Report feedback usefulness separately from routing throughput: evidence completeness, unresolved/deferred age, false pattern rate on labeled fixtures, response-to-outcome coverage, quality/cost/latency deltas and regression rate. Predeclare budgets and thresholds before trials. A resolution count or generated-work count is not an improvement metric.
 
 ## End-to-end phase acceptance
 
