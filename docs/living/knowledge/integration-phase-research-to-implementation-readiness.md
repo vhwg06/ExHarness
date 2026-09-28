@@ -509,3 +509,9 @@ Do not reconstruct prior research/review history to decide what is current.
 ## Delivery product continuation
 
 Integration is the organization contract foundation for the [delivery product roadmap](../../blackboard/process/delivery-product-roadmap.md). The continuation covers real agent and repository execution, independent live QA, supported installation, matched pilot value and release acceptance. Oracle reconciliation retains its own phase contract. These are planned capabilities, not delivered system truth. The canonical outer Blackboard owns scheduling and exact task dependencies.
+
+## Additive feedback research — BB-083
+
+The new [feedback research task](../../blackboard/process/feedback-architecture-research.md) owns the requested extension: Evidence -> Observation -> Context -> Finding + Impact -> authorized Disposition -> Response -> fresh Outcome -> FeedbackResolution, followed by evidence-backed pattern/system proposals and independent improvement evaluation.
+
+BB-083 is PLANNED / RESEARCH_SA / RESEARCH with a DRAFT plan. It builds on existing Observer, Oracle and HOW/benchmark contracts. BB-058, BB-059, BB-075 and all other completed research retain their existing scope, plans and readiness; this direction does not reopen or extend them. New direct execution dependencies are BB-059, BB-064 and BB-075; research can run ahead using planned contracts. Positive reinforcement, rejected/deferred/superseded responses and outcome uncertainty are explicit research requirements. Observer and evaluators remain without lifecycle/promotion authority. See the brief for evidence rules and readiness gates.
