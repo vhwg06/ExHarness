@@ -408,6 +408,20 @@
         "seedContract",
         "closureContract",
         "seedEquivalenceProtocol"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+          "match": "ProductStateProjection is a deterministic disposable reduction"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
+          "match": "Independent QA feeds verifier-produced behavior/regression evidence"
+        },
+        {
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "Three seed completeness levels and kill/resume/change probes"
+        }
       ]
     },
     {
@@ -439,6 +453,16 @@
       ],
       "supportingPlanFields": [
         "lifecycleCompositionContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "createDomainExecutionController"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
+          "match": "Runtime SUCCEEDED is only a candidate-producing fact."
+        }
       ]
     },
     {
@@ -474,6 +498,20 @@
       "supportingPlanFields": [
         "seedContract",
         "closureContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+          "match": "ProductOutcomeClaim is immutable evidence outside ProductHistory."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
+          "match": "Independent QA feeds verifier-produced behavior/regression evidence"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "resolveExecutionJudgmentBundle"
+        }
       ]
     }
   ],
@@ -513,5 +551,6 @@
     ],
     "convergence": "All three arms must preserve the same frozen acceptanceSemanticDigest and each independently reach a current accepted product outcome. Source tree/attempt IDs may differ; acceptance semantics may not.",
     "failureRule": "Any NOT_RUN, unresolved product-owner decision, missing evidence, stale projection/release, independent QA rejection or non-current closure makes the criterion unsatisfied; deterministic fixtures cannot substitute for these three live arms."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
