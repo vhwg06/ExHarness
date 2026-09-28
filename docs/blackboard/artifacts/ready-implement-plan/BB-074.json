@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-074",
-  "status": "READY",
+  "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-074.json",
     "hash": "593426f48ba644483f434153eb2b55384e7bf83ff4e3e325b380d7a5a66f4e06"
@@ -316,7 +316,9 @@
       "command": "git diff --name-only \"$BB074_BASELINE_SHA\" \"$BB074_CANDIDATE_SHA\" | node benchmarks/delivery_value/run.mjs --mode verify-boundary"
     }
   ],
-  "researchGaps": [],
+  "researchGaps": [
+    "Refresh BB-074 to consume the shared @exharness/benchmark kernel and delivered upstream comparison contracts; the previous READY plan predates BB-065/BB-077 ownership."
+  ],
   "negativeVerificationCases": [
     "A BB-077/081 development or held-out task is reused in the BB-074 external cohort.",
     "Reserve substitution occurs after any live arm result is observed.",
@@ -685,6 +687,5 @@
         "lifecycleContract"
       ]
     }
-  ],
-  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-074.readiness-jev-evaluation.json"
+  ]
 }
