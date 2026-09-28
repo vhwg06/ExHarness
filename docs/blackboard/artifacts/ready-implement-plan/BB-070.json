@@ -293,5 +293,174 @@
       "checked": "2026-09-28",
       "finding": "Selected for browser trace and observable UI evidence only; browser success remains evidence for independent acceptance, not product closure authority."
     }
+  ],
+  "seedContract": {
+    "schemaVersion": 1,
+    "kind": "PROJECT_SEED_V1",
+    "seedKinds": [
+      "GOAL_ONLY",
+      "REQUIREMENTS_DESIGN",
+      "EXISTING_CODE"
+    ],
+    "requiredIdentity": [
+      "projectId",
+      "rootIntentId",
+      "seedKind",
+      "suppliedArtifactRefs",
+      "declaredAcceptanceRefs"
+    ],
+    "normalization": "Preserve supplied artifact identities; classify absent authoritative decisions; never synthesize product decisions.",
+    "decisionBlocker": "PRODUCT_DECISION_REQUEST_V1 binds decisionKey, affectedAcceptanceRefs, blockingObligationRefs and productOwnerAuthorityRef.",
+    "equivalenceRule": "All three seed kinds target one acceptanceSemanticDigest derived only from declared acceptance semantics; seed completeness may change required obligations but not the acceptance contract."
+  },
+  "lifecycleCompositionContract": {
+    "schemaVersion": 1,
+    "semanticOwners": {
+      "PM": "product decisions and acceptance intent",
+      "BA": "requirement obligations",
+      "SA": "architecture assessment",
+      "FE": "frontend implementation",
+      "BE": "backend implementation",
+      "DevOps": "deployable release evidence",
+      "QA": "independent product verification"
+    },
+    "authorityPath": [
+      "PROJECT_SEED_V1 / accepted product-owner decisions",
+      "OrganizationWorkContract materialization",
+      "domain-owned claim/release",
+      "DomainExecutionController",
+      "independent domain completion",
+      "authoritative publication / semantic lineage",
+      "BB-055 product projection and closure"
+    ],
+    "concurrency": "FE and BE are independently eligible only from their direct current semantic prerequisites; no central next-role selector may serialize them.",
+    "forbidden": [
+      "generic role registry",
+      "workflow DSL",
+      "runtime selected by another domain",
+      "outer Blackboard as product scheduler"
+    ]
+  },
+  "closureContract": {
+    "schemaVersion": 1,
+    "upstream": "exact DONE BB-055 product completeness/currentness boundary",
+    "requiredCurrentEvidence": [
+      "exact release/deployment identity",
+      "independent QA evidence",
+      "complete ProductStateProjection subject",
+      "current acceptance policy/waiver set"
+    ],
+    "failClosedOn": [
+      "missing product-owner decision",
+      "stale semantic input",
+      "stale deployment",
+      "missing or rejected QA",
+      "incomplete projection"
+    ],
+    "nonAuthority": [
+      "runtime SUCCEEDED",
+      "domain ACCEPT without publication",
+      "Playwright pass",
+      "producer prose"
+    ]
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Goal-only, requirements/design and existing-code seeds converge to the same declared acceptance semantics with actual product evidence.",
+      "criterionIds": [
+        "AC-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "seed-contract",
+        "deterministic-probe",
+        "live-probe"
+      ],
+      "decisionIndexes": [
+        0,
+        6,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
+        "docs/blackboard/process/delivery-product-roadmap.md"
+      ],
+      "supportingPlanFields": [
+        "seedContract",
+        "closureContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "FE and BE can progress independently where obligations allow; domain publication creates authorized obligations without selecting another domain's runtime.",
+      "criterionIds": [
+        "AC-2",
+        "INV-1",
+        "INV-3"
+      ],
+      "planElements": [
+        "S0",
+        "S2",
+        "S4"
+      ],
+      "verificationIds": [
+        "domain-boundary",
+        "boundary-probe",
+        "deterministic-probe"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-069.json"
+      ],
+      "supportingPlanFields": [
+        "lifecycleCompositionContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Missing authoritative product decisions pause for the owner; current deployment/QA/completeness evidence is required for product outcome closure.",
+      "criterionIds": [
+        "AC-3",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "seed-contract",
+        "closure-boundary",
+        "boundary-probe",
+        "live-probe"
+      ],
+      "decisionIndexes": [
+        1,
+        5,
+        6,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "supportingPlanFields": [
+        "seedContract",
+        "closureContract"
+      ]
+    }
   ]
 }
