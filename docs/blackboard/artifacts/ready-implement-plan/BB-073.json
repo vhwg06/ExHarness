@@ -445,27 +445,30 @@
         ".github/workflows/test.yml",
         "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
         "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
-        "docs/blackboard/process/delivery-product-roadmap.md"
+        "docs/blackboard/process/delivery-product-roadmap.md",
+        "docs/blackboard/process/delivery-research/BB-073.md"
       ],
       "supportingPlanFields": [
-        "ac1ReadinessEvidence"
+        "ac1ReadinessEvidence",
+        "cleanRoomContract",
+        "releaseProfileContract"
       ],
       "sourceAnchors": [
         {
+          "ref": "docs/blackboard/process/delivery-research/BB-073.md",
+          "match": "A developer outside the implementation session can install configure and run the supported profile."
+        },
+        {
+          "ref": "docs/blackboard/process/delivery-research/BB-073.md",
+          "match": "A working developer checkout is not a usable distribution with predictable compatibility and recovery."
+        },
+        {
+          "ref": "docs/blackboard/process/delivery-research/BB-073.md",
+          "match": "A fresh environment installs a pinned release and completes the reference delivery with documented configuration."
+        },
+        {
           "ref": "docs/blackboard/process/delivery-product-roadmap.md",
-          "match": "A person other than the author can install, operate, stop, upgrade and recover it."
-        },
-        {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
-          "match": "Goal-only, requirements/design and existing-code seeds converge to the same declared acceptance semantics with actual product evidence."
-        },
-        {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
-          "match": "A fresh operator can explain blockers and inspect exact task/attempt/model/runtime/SCM identities without model-inferred provenance."
-        },
-        {
-          "ref": ".github/workflows/test.yml",
-          "match": "node-version: 24"
+          "match": "Completion requires installation by a fresh operator, one representative real product delivered from its declared inputs"
         }
       ]
     },
@@ -498,12 +501,23 @@
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
         "docs/living/system/state.md",
-        "docs/blackboard/process/delivery-product-roadmap.md"
+        "docs/blackboard/process/delivery-product-roadmap.md",
+        "docs/blackboard/process/delivery-research/BB-073.md"
       ],
       "supportingPlanFields": [
-        "ac2ReadinessEvidence"
+        "ac2ReadinessEvidence",
+        "operatorCliContract",
+        "releaseProfileContract"
       ],
       "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/delivery-research/BB-073.md",
+          "match": "Define runtime/model/SCM compatibility policy, credential configuration and clean-room installation path."
+        },
+        {
+          "ref": "docs/blackboard/process/delivery-research/BB-073.md",
+          "match": "Health checks and actionable errors cover missing credentials, unsupported runtime and incompatible persisted state."
+        },
         {
           "ref": "docs/blackboard/process/delivery-product-roadmap.md",
           "match": "Operable distribution"
