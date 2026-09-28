@@ -27,53 +27,90 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Choose single-tenant local/container packaging and minimal operational prerequisites; defer Kubernetes tenancy unless required.",
-    "Candidate direction, not selected architecture: Define runtime/model/SCM compatibility policy, credential configuration and clean-room installation path.",
-    "Candidate direction, not selected architecture: Compare CLI-first operation with an operator UI; require a demonstrated workflow need before adding UI scope."
+    "D1 — The supported v1 distribution is one single-tenant OCI/container profile with a CLI-first control surface. Kubernetes tenancy, multi-node HA and an operator web UI are explicitly deferred; they require separate measured product need.",
+    "D2 — The normative release identity is DELIVERY_RELEASE_MANIFEST_V1 binding ExHarness source/release version, OCI image digest, Node runtime major, state-schema compatibility version, supported SCM=GitHub, supported runtime adapter/profile refs and required configuration keys. Mutable tags are never sufficient release identity.",
+    "D3 — Node 24 is the supported runtime major for this profile because the current repository kernel CI executes on Node 24. The container image carries the runtime; a clean operator host requires Docker/Compose-compatible container execution and Git, not a matching host Node installation.",
+    "D4 — The supported operator CLI commands are doctor, configure, run, status, cancel, backup, restore and upgrade-check. They compose BB-070 lifecycle and BB-072 operations APIs; the CLI is an adapter/control surface and owns no alternate lifecycle or acceptance state.",
+    "D5 — Configuration is schema-validated and split from secrets. The committed config example contains no credentials; provider/SCM secrets enter only through named environment/file secret inputs. doctor fails with actionable typed errors for missing credentials, unsupported runtime, unreachable SCM/provider prerequisites and incompatible persisted state.",
+    "D6 — Clean install consumes only the pinned release bundle: compose.yaml, config example/schema, release manifest and runbook. Installation must not depend on a developer checkout, prior session state or unpublished local files.",
+    "D7 — Upgrade is allowed only after upgrade-check validates state-schema compatibility and either no ACTIVE/RECOVERY_REQUIRED attempt exists or the exact delivered compatibility contract permits continuation. Otherwise the operator must quiesce/cancel/reconcile first. No in-place best-effort migration is allowed from an unknown state.",
+    "D8 — Rollback uses the exact previous OCI digest plus its compatible state snapshot/release manifest. If the current persisted schema is not rollback-compatible, rollback requires restoring the pre-upgrade backup; unsupported downgrade fails closed.",
+    "D9 — OpenHands software-agent-sdk v1.49.6 is not repackaged as a second product; the distribution consumes the exact BB-070/BB-069 delivered runtime profile. Langfuse v4.46.0 remains optional observability infrastructure from BB-072 and is not required for install/health.",
+    "D10 — Worker preflight requires BB-070 and BB-072 DONE and binds their exact lifecycle/operator/config/state compatibility outputs. Any mismatch in control commands, canonical data roots or compatibility semantics is PLAN_INPUT_CONTRADICTION."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "package.json",
-      "packages/agentic-system/src/domain-execution-control.js",
-      "docs/living/system/state.md"
+      ".github/workflows/test.yml",
+      "packages/agentic-system/package.json",
+      "packages/agentic-system/src/index.js",
+      "docs/living/system/state.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
+      "docs/blackboard/process/delivery-research/BB-073.md"
+    ],
+    "expectedDependencyOutputs": [
+      "BB-070 DONE: exact supported product-entry/lifecycle/reference-product API and release identity consumed by the distribution.",
+      "BB-072 DONE: exact operator CLI/API, canonical store roots, backup/restore contract and state-schema compatibility metadata consumed by install/upgrade/rollback."
     ],
     "expectedNew": [
+      "packages/delivery-cli/package.json",
+      "packages/delivery-cli/src/index.js",
+      "packages/delivery-cli/bin/exharness-delivery.mjs",
+      "distribution/Dockerfile",
+      "distribution/compose.yaml",
+      "distribution/config.schema.json",
+      "distribution/config.example.json",
+      "distribution/release-manifest.schema.json",
+      "docs/runbooks/supported-delivery-profile.md",
       "scripts/delivery/bb-073-probe.mjs"
     ],
     "expectedTests": [
+      "packages/delivery-cli/test/cli.test.js",
       "test/delivery/bb-073.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
+      "package.json",
+      ".github/workflows/test.yml",
       "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "packages/core-harness/package.json",
+      "docs/living/system/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-070*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-072*",
       "docs/blackboard/process/delivery-research/BB-073.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "scripts/delivery/**",
+      "test/delivery/**"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
+      "packages/delivery-cli/**",
+      "distribution/**",
+      "docs/runbooks/supported-delivery-profile.md",
+      "scripts/delivery/bb-073-probe.mjs",
+      "test/delivery/bb-073.test.mjs",
+      "docs/living/system/state.md",
       "package.json"
     ],
     "forbiddenWrite": [
+      "packages/agentic-system/src/**",
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      ".github/**",
       "docs/blackboard/**",
-      ".github/**"
+      "k8s/**",
+      "charts/**"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S0 — Dependency/profile preflight: require BB-070 and BB-072 DONE; bind exact lifecycle/operator APIs, canonical data roots and compatibility metadata; reject mismatch as PLAN_INPUT_CONTRADICTION.",
+    "S1 — Release manifest/config: implement DELIVERY_RELEASE_MANIFEST_V1 and config schema/example, bind immutable image digest/runtime/schema/SCM/runtime-profile identities and typed required secret names.",
+    "S2 — CLI package: create @exharness/delivery-cli with doctor/configure/run/status/cancel/backup/restore/upgrade-check as thin adapters over delivered application/operations boundaries; add negatives proving the CLI cannot directly edit canonical state.",
+    "S3 — Container profile: build one Node-24 single-tenant image and compose.yaml with explicit data/config/secret mounts, healthcheck and immutable release-manifest exposure; no Kubernetes/operator UI path.",
+    "S4 — Clean-room install exercise: from an empty temp host directory, use only the packed release bundle/runbook/config to start the profile and complete the BB-070 reference delivery; record exact image/release/config identities and actionable failures.",
+    "S5 — Compatibility exercise: test missing credentials, unsupported runtime metadata and incompatible persisted state; run supported upgrade-check, quiescent upgrade and exact-digest rollback with pre-upgrade backup/restore when schema rollback requires it.",
+    "S6 — Distribution integrity: pack the CLI/workspace artifacts, scan the clean-room bundle for undeclared developer-checkout dependencies/secrets/mutable image identity and verify supported commands against a fresh operator process.",
+    "S7 — Update Living truth and runbook with exact supported profile, prerequisites, support boundaries, upgrade/rollback rules and known exclusions."
   ],
   "acceptanceCriteria": [
     {
@@ -159,22 +196,35 @@
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-073-probe.mjs"
+      "id": "cli-contract",
+      "command": "node --test packages/delivery-cli/test/cli.test.js"
     },
     {
-      "id": "boundary-probe",
+      "id": "distribution-contract",
       "command": "node --test test/delivery/bb-073.test.mjs"
+    },
+    {
+      "id": "doctor",
+      "command": "node packages/delivery-cli/bin/exharness-delivery.mjs doctor --config distribution/config.example.json"
+    },
+    {
+      "id": "clean-install",
+      "command": "node scripts/delivery/bb-073-probe.mjs --mode clean-install"
+    },
+    {
+      "id": "upgrade-rollback",
+      "command": "node scripts/delivery/bb-073-probe.mjs --mode upgrade-rollback"
+    },
+    {
+      "id": "pack",
+      "command": "npm pack --dry-run --workspace packages/delivery-cli"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Choose single-tenant local/container packaging and minimal operational prerequisites; defer Kubernetes tenancy unless required.",
-    "Define runtime/model/SCM compatibility policy, credential configuration and clean-room installation path.",
-    "Compare CLI-first operation with an operator UI; require a demonstrated workflow need before adding UI scope.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
     "Producer success with failing independent acceptance.",
     "Missing or stale source/runtime identity represented as current evidence.",
@@ -211,5 +261,27 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-073 Living truth describes only the implemented and independently verified supported capability and limitations."
-  }
+  },
+  "researchEvidence": [
+    {
+      "source": "ExHarness .github/workflows/test.yml at main",
+      "checked": "2026-09-28",
+      "finding": "Current kernel CI uses Node 24; the supported distribution profile pins Node 24 inside the container rather than requiring operator-host Node."
+    },
+    {
+      "source": "OpenHands software-agent-sdk v1.49.6",
+      "checked": "2026-09-28",
+      "finding": "The runtime remains a delivered upstream dependency/profile, not a separately repackaged lifecycle product inside BB-073."
+    },
+    {
+      "source": "Langfuse v4.46.0",
+      "checked": "2026-09-28",
+      "finding": "Observability UI/backend is optional and unnecessary for the minimum install/run/health/upgrade control path; BB-073 remains CLI-first."
+    },
+    {
+      "source": "Existing ExHarness package/workspace layout",
+      "checked": "2026-09-28",
+      "finding": "A separate packages/delivery-cli workspace package plus OCI bundle is the smallest distribution seam without changing core-harness or agentic runtime ownership."
+    }
+  ]
 }
