@@ -41,8 +41,8 @@
     "D5 — Emit SUPPORTED_RELEASE_PROVENANCE_V1 inspired by SLSA provenance v1.2 source/dependency/builder/invocation/subject fields. It is local provenance evidence only and makes no SLSA level/certification claim.",
     "D6 — Clean-room reproduction starts from the exact supported environment declared by the delivered distribution contract, with no working-tree checkout, and installs only frozen release artifact(s) by digest. It verifies provenance, dependency/runtime compatibility, actionable missing-credential failure, reference delivery, independent QA and one change/recovery preflight before opening paid reserve runs.",
     "D7 — BB-076 is first opener of the exact four-task BB-075 RELEASE_RESERVE. Any prior model result, cohort overlap, task digest drift or reserve-manifest drift invalidates the reserve and returns to research.",
-    "D8 — Release-value arms are D=DIRECT_CODEACT control and R=ExHarness installed from the frozen release artifact. Harbor substrate, task/prompt, model/provider route, tool envelope, evaluator, resource ceilings, artifact extraction and human-event semantics are identical.",
-    "D9 — Run four reserve tasks x two repeats x two arms = 16 registered arm units with counterbalanced order, fresh task/runtime/provider state and append-only attempt accounting.",
+    "D8 — Release-value arms are D=BB-077 DIRECT_CODEACT control and R=ExHarness installed from the frozen release artifact. Both run through the delivered BB-065 substrate and @exharness/benchmark lifecycle with identical task/prompt/model/provider/tool/evaluator/resource ceilings; BB-076 adds release provenance and human/lifecycle observations only.",
+    "D9 — Run four reserve tasks x two repeats x two arms = 16 registered arm units with counterbalanced order and fresh substrate/runtime/provider state. Every execution/retry remains a separate shared AttemptLedger attempt with immutable evidence/accounting binding.",
     "D10 — Release value gates remain predeclared: accepted R>=D with zero critical escaped defects; operatorActiveMs(R)<=0.80*D; known providerCostPerAccepted(R)<=1.10*D; duplicate effects/currentness bypass=0 and required recovery negatives pass.",
     "D11 — Re-run all six BB-074 lifecycle scenarios against the packaged release, not working-tree code, and bind acceptance/effort/cost/recovery/fence/failure evidence to exact release provenance.",
     "D12 — Generate SUPPORTED_RELEASE_MANIFEST_V1 from delivered evidence and compare it with user-facing support documentation. Unsupported claims or omitted known limitations are release failures.",
@@ -51,6 +51,9 @@
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
       "docs/blackboard/work-graph.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-074.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-075.json",
@@ -109,7 +112,7 @@
     "S1 — Prerequisite closure: implement benchmarks/release_acceptance/dependency.mjs to recompute BB-076 transitive dependencies from canonical work-graph.json, require the plan-bound ancestor set and DONE status, resolve every current objective/plan/delivery/judgment identity, and emit RELEASE_DEPENDENCY_MANIFEST_V1. Extract exact BB-073 distribution, BB-071/074 lifecycle, BB-081 harness-profile, BB-065/077/074 benchmark and BB-059/075 HOW-policy contracts; any gap stops PLAN_INPUT_CONTRADICTION before build.",
     "S2 — Release build/freeze adapter: implement scripts/release/build.mjs as a thin consumer of the exact delivered BB-073 distribution contract. Invoke only its declared artifact/export procedure, capture dependency-resolution and builder/runtime identities, hash all produced subjects, and emit immutable RELEASE_FREEZE_V1 plus SUPPORTED_RELEASE_PROVENANCE_V1. If the delivered distribution contract cannot supply these identities, stop PLAN_INPUT_CONTRADICTION rather than invent packaging.",
     "S3 — Independent clean-room gate: implement clean-room.mjs to create the exact supported fresh environment declared by BB-073, make no product checkout available, install only frozen artifact subjects by digest, verify provenance/runtime/dependency identity, exercise missing-credential diagnostics, then run reference delivery + independent QA + one change/recovery preflight. Failure blocks release-reserve dispatch.",
-    "S4 — Reserve boundary and value run: verify the exact BB-075 RELEASE_RESERVE has no prior model result, materialize D/R fixed-factor manifests, and execute all 16 registered units through the inherited Harbor/accounting contract with fresh state. report.mjs emits paired quality/human-effort/cost/safety/currentness evidence without reusing BB-075 improvement-heldout results.",
+    "S4 — Reserve boundary and value run: verify the exact BB-075 RELEASE_RESERVE has no prior model result, materialize D/R fixed-factor manifests, and execute all 16 registered units through @exharness/benchmark + the delivered BB-065 substrate with fresh state. report.mjs adds release-specific quality/human-effort/cost/safety/currentness views without reimplementing generic attempt/evidence/accounting truth.",
     "S5 — Packaged lifecycle reproduction: run all six BB-074 lifecycle scenarios against the exact frozen artifact/profile and record independent acceptance, operatorActiveMs, elapsedMs, providerCost when live, recovery/fence result and failure fingerprint with the release provenance hash on every scenario.",
     "S6 — Support contract audit: implement support-manifest.mjs to derive SUPPORTED_RELEASE_MANIFEST_V1 from RELEASE_DEPENDENCY_MANIFEST_V1 plus observed clean-room/value/lifecycle evidence and compare it to user-facing support docs; unsupported claims or missing known limitations are explicit failures.",
     "S7 — Release decision/publication: implement decision.mjs to reduce complete bound evidence to RELEASE_ACCEPTED|RELEASE_NO_GO|INCONCLUSIVE. Only RELEASE_ACCEPTED updates Living truth to a supported release; RELEASE_NO_GO records exact failed gates/remediation scope; INCONCLUSIVE preserves no release claim. No path mutates product source."
@@ -150,7 +153,7 @@
     },
     {
       "id": "RESERVE",
-      "statement": "BB-076 is the first model execution of the exact BB-075 RELEASE_RESERVE and completes all 16 fixed-factor D/R registered arm units with complete attempt/accounting evidence.",
+      "statement": "BB-076 is the first model execution of the exact BB-075 RELEASE_RESERVE and completes all 16 fixed-factor D/R units through the shared @exharness/benchmark lifecycle with complete append-only attempt/evidence/accounting truth.",
       "verificationIds": [
         "reserve-boundary",
         "fixed-factors",
@@ -349,7 +352,9 @@
     "Duplicate effect or stale-worker/currentness bypass is tolerated because quality passes.",
     "Support documentation claims unsupported behavior or hides a known limitation.",
     "CI/merge success is substituted for release value evidence.",
-    "Failed value/lifecycle/identity/documentation gate is downgraded to a limitation instead of RELEASE_NO_GO."
+    "Failed value/lifecycle/identity/documentation gate is downgraded to a limitation instead of RELEASE_NO_GO.",
+    "BB-076 deep-imports benchmark internals, invokes Harbor directly, or creates a local generic AttemptLedger/evidence/accounting/audit layer.",
+    "BB-076 mutates packages/benchmark/** or benchmarks/substrate/** instead of consuming the exact delivered benchmark contracts."
   ],
   "laneContracts": [
     {
@@ -730,7 +735,8 @@
       "sourceRefs": [
         "docs/blackboard/process/delivery-research/BB-076.md",
         "docs/blackboard/process/delivery-product-roadmap.md",
-        "docs/living/system/state.md"
+        "docs/living/system/state.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
       ],
       "sourceAnchors": [
         {
@@ -744,6 +750,10 @@
         {
           "ref": "docs/living/system/state.md",
           "match": "The baseline has no product runtime, acceptance-publication authority, or completed comparative value claim."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "D12 — BB-081, BB-074, BB-075 and BB-076 reuse the same experiment/unit/attempt/evidence/accounting backbone."
         }
       ],
       "supportingPlanFields": [
@@ -751,8 +761,50 @@
         "valueGateContract",
         "lifecycleContract",
         "supportManifestContract",
-        "decisionContract"
+        "decisionContract",
+        "kernelConsumerContract"
       ]
+    }
+  ],
+  "kernelConsumerContract": {
+    "schemaVersion": 1,
+    "upstreamPackage": "@exharness/benchmark",
+    "substrateManifest": "BENCHMARK_SUBSTRATE_MANIFEST_V1",
+    "upstreamEvidence": [
+      "BB-077 DIRECT_CODEACT/fixed-factor contract",
+      "BB-081 supported Core profile",
+      "BB-074 lifecycle/value protocol",
+      "BB-075 unopened RELEASE_RESERVE manifest"
+    ],
+    "kernelOwned": [
+      "experiment/unit identity",
+      "AttemptLedger",
+      "orthogonal outcome",
+      "evidence manifest",
+      "nullable provider accounting",
+      "audit/recompute",
+      "substrate reset/artifact/verifier/failure normalization"
+    ],
+    "bb076Owned": [
+      "release dependency/provenance freeze",
+      "clean-room installation",
+      "release-reserve D/R execution view",
+      "packaged lifecycle reproduction",
+      "support manifest",
+      "release reducer"
+    ],
+    "forbidden": [
+      "local generic benchmark truth",
+      "direct Harbor invocation",
+      "product/package source patching",
+      "kernel/substrate mutation"
+    ]
+  },
+  "researchEvidence": [
+    {
+      "source": "BB-065 shared kernel + BB-077/081/074/075 downstream contracts",
+      "checked": "2026-09-28",
+      "finding": "Release reproduction must use the same registered-unit/attempt/evidence/accounting backbone while adding provenance, clean-room and support-documentation gates."
     }
   ]
 }
