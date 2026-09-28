@@ -80,4 +80,10 @@ assert.ok(meanByteReduction>=0.95,`mean byte reduction ${meanByteReduction} belo
 assert.equal(attempts.length,16);assert.ok(attempts.every(a=>a.provenanceCoverage===1&&a.currentnessCoverage===1));
 const structuralPrimary=aggregate['structural-map'].recallAt3>=aggregate.lexical.recallAt3 && aggregate['structural-map'].mrr>=aggregate.lexical.mrr;
 const report={kind:'ORACLE_RETRIEVAL_BENCHMARK',version:1,snapshotRef,corpus:corpus.map(({ref,bytes,digest})=>({ref,bytes,digest})),groundTruth:questions,graphEdges:graphEdges.map(({from,to,kind,sourceRef})=>({from,to,kind,sourceRef})),referenceResearch:{lexicalRecallAt3:0.792,semanticRecallAt3:0.875,structuralRecallAt3:0.750,typedGraphRecallAt3:1},aggregate,attempts,structuralPrimary,crossSource:{rawBytes,queries:crossSource,meanByteReduction},decisions:{zoekt:'ADAPTER_TARGET',serena:'REJECT_FULL_APPLICATION_GPL',solidLsp:'INJECTED_MIT_CAPABILITY',aider:'STRUCTURAL_INSPIRATION_ONLY',graphiti:'DEFER_BACKEND',cognee:'REJECT_FOUNDATION_DEPENDENCY'}};
-console.log(JSON.stringify(report,null,2));
+const compact={
+ ...report,
+ graphEdges:{count:report.graphEdges.length,sample:[...report.graphEdges.filter(edge=>edge.kind==='IMPORTS').slice(0,3),...report.graphEdges.filter(edge=>edge.kind==='REFERENCES').slice(0,1)]},
+ attempts:report.attempts.map(attempt=>({...attempt,selected:attempt.selected.map(({ref,score})=>({ref,score}))})),
+ selectionIdentityRule:'Each selected ref joins the exact corpus digest and top-level snapshotRef; per-attempt provenance/currentness coverage is computed before compaction.'
+};
+console.log(JSON.stringify(compact));
