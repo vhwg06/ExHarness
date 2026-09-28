@@ -127,3 +127,9 @@ The release supports one explicit delivery profile and one primary SCM/runtime s
 
 Completion requires installation by a fresh operator, one representative real product delivered from its declared inputs, scope-correct permissions, bounded costs/cancellation, durable recovery, independent acceptance, exact release/source evidence, upgrade/rollback/runbooks, a passed predeclared value gate, and stated support boundaries. Source merged in ExHarness is necessary for its feature delivery; the pilot additionally needs actual runtime/product evidence. A green CI, an accepted plan, or a successful agent exit alone cannot close this roadmap.
 
+
+## Additive feedback research — BB-083
+
+[BB-083](feedback-architecture-research.md) is a new research task connecting context-grounded feedback episodes, response/resolution, cross-episode patterns and reinforcement to independent improvement evaluation. Existing researched tasks, including BB-058/059/075, retain their accepted scope and readiness unchanged.
+
+The new task consumes BB-059, BB-064 and BB-075 as direct execution dependencies; their transitive Observer/benchmark dependencies are not duplicated. Research may run ahead; no existing task is made dependent on BB-083. The new objective and DRAFT plan must converge through their own research and fresh Jev readiness. This is future additive capability, not delivered behavior or an extension authorized by old judgments.
