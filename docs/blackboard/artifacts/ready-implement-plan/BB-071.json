@@ -388,6 +388,20 @@
         "changeContract",
         "scenarioContract",
         "liveChangeProtocol"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/product-lineage.js",
+          "match": "export function reverseSemanticClosure"
+        },
+        {
+          "ref": "packages/agentic-system/src/dependency-invalidation.js",
+          "match": "Reconciliation scans durable Board provenance"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
+          "match": "FE and BE can progress independently where obligations allow"
+        }
       ]
     },
     {
@@ -418,6 +432,16 @@
       "supportingPlanFields": [
         "recoveryContract",
         "liveChangeProtocol"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
+          "match": "Execution recovery preserves semantic executionAttemptId + immutable binding"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "runtimeAdapter.recover"
+        }
       ]
     },
     {
@@ -453,6 +477,20 @@
         "changeContract",
         "recoveryContract",
         "liveChangeProtocol"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
+          "match": "stale workers fail before dispatch/publication."
+        },
+        {
+          "ref": "packages/agentic-system/src/product-lineage.js",
+          "match": "export function reverseSemanticClosure"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "claimController.assertExecutable"
+        }
       ]
     }
   ],
@@ -522,5 +560,6 @@
       }
     ],
     "passRule": "LOCAL_DOMAIN and CROSS_DOMAIN produce newly independently accepted replacement releases with exactly the current-lineage affected set; KILL_RESUME_DUPLICATE preserves one semantic attempt/logical publication; STALE_FENCE rejects stale authority/evidence. Missing live evidence is NOT_RUN and does not satisfy the objective."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
