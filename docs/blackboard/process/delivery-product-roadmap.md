@@ -16,7 +16,7 @@ Value hypothesis: ExHarness improves software-delivery economics and reliability
 ## What exists and what remains
 
 Source/Living evidence confirms Core durable effects and recovery primitives, concrete Backend/QA Oracle resolution, organizational A.1 claim authority, and bounded Integration B runtime dispatch/recover/publication. Main exposes runtimeAdapter.dispatch/recover with a pinned attempt binding; that is a usable integration seam, not proof that a real coding-agent service has delivered a product.
-BB-052–058 have readiness judgments, but are not marked delivered. BB-059 and BB-060–064 are research. Oracle implementation still resides in agentic-system. This roadmap does not relabel these as production features.
+Routing checked against `c5356b4d6ae81df64bcfcdb8cd8fd196f1f4e7f5` on 2026-09-28: BB-052 is DONE; BB-053–059 and BB-060–064 are planned WORKER/EXECUTION tasks, with execution constrained by their direct dependencies. Readiness is not delivery. The feedback extension below requires its own scope alignment and fresh readiness for changed plans; it is not covered by those existing judgments.
 
 ## Technology evidence and reuse decisions
 
@@ -89,9 +89,9 @@ Diagram shows phase relationships. Canonical direct task edges are in work-graph
 
 ## Research lane contract
 
-Every new task already has an OBJECTIVE, a DRAFT plan, context routing and a task-specific research brief. Start a fresh research session with an explicit ID. Recommended first: BB-065, then BB-066/067; Oracle 060–064 remains independently researchable.
+Tasks carry explicit objectives, plans and context routing. Resolve the current lane/phase from the graph and start with an explicit task ID. Do not infer DRAFT or research status from this roadmap.
 
-BB-077 and BB-081 have been returned to Research/SA because the previous narrow sync-vs-async benchmark premise is no longer sufficient. BB-077 now researches a neutral fixed-factor harness-isolation protocol; BB-081 researches held-out component ablation and fault robustness. BB-078–080 remain implementation candidates but are worker-blocked by the reopened research dependency. BB-066 still depends on BB-081 so the real coding-agent runtime cannot silently freeze an unmeasured Core profile.
+The current benchmark direction is neutral fixed-factor harness isolation (BB-077), capability candidates (BB-078–080), then held-out component ablation and fault robustness (BB-081). At the routing check above these tasks are planned WORKER/EXECUTION, with non-DONE dependencies blocking execution. BB-066 still depends on BB-081 so the runtime cannot silently freeze an unmeasured Core profile.
 
 Each brief must converge through:
 1. Read the exact current source seam and dependency objectives/plans; distinguish delivered truth from design assumptions.
@@ -120,6 +120,20 @@ BB-074 measures end-to-end delivery value. It combines an external/public harnes
 BB-075 must choose a HOW candidate from observed benchmark failure/ablation evidence and evaluate it on held-out work under the same frozen contract. BB-076 must reproduce supported product behavior and the benchmark profile on the exact release.
 
 A failed or inconclusive preregistered gate yields a scoped follow-up or no-go. Thresholds may be researched and ratified before runs, but cannot be loosened after observing results. BB-069's small live-run gate remains feasibility evidence only and must not be reported as production reliability or product-value proof.
+
+## Feedback, Observer and measured improvement
+
+The canonical architectural direction is [Feedback architecture direction](../../living/knowledge/integration-phase-research-to-implementation-readiness.md#feedback-architecture-direction--research-amendment). It extends Integration I/J and the BB-075 improvement proof:
+
+Evidence -> Observation -> relevant Context -> Finding + Impact -> authorized Disposition -> Response -> fresh Outcome -> FeedbackResolution.
+
+BB-058 reconstructs episodes and proposes instance/pattern/system findings; BB-059 connects application-owned responses and resolution to the existing HOW evolution boundary. BB-075 evaluates one grounded candidate and records its measured outcome, including KEEP_BASELINE, rejection, deferral or regression. Positive reinforcement is also captured as a preserve/KEEP proposal. BB-076 reproduces the resulting evidence chain.
+
+BB-065 owns neutral execution/evidence/accounting, BB-077 isolates harness economics, BB-081 supplies ablation/robustness, and BB-074 supplies delivery-value evidence. These feed feedback without acquiring disposition or promotion authority. Oracle provides context provenance; missing context stays explicit.
+
+Next research action: compare the new requirements with exact BB-058/059/075 objectives and plans; use trusted supersession for affected contracts and fresh Jev readiness. Resolve package ownership, episode/response schemas, recovery, cohort criteria and direct dependencies before implementation. This roadmap update does not reopen tasks, rewrite evaluated plans, allocate task IDs or claim READY. Existing scheduling stays in the canonical graph.
+
+Useful feedback is demonstrated by a grounded response and observed outcome, not by the number of findings or work items generated. Outcome evidence must retain fixed-factor/held-out comparison, uncertainty, quality non-inferiority and regression reporting. Observer and evaluators remain without lifecycle mutation or promotion authority.
 
 ## Supported v1 completeness
 
