@@ -1,0 +1,28 @@
+{
+  "evidenceClass": "DETERMINISTIC_JS_PYTHON_BRIDGE_PROBE",
+  "node": "v22.16.0",
+  "python": "python3",
+  "budget": 3,
+  "reservations": 3,
+  "fourthReservationDenied": true,
+  "normalSettled": true,
+  "crashExitCode": 23,
+  "crashRecoveredFromDurableReceipt": true,
+  "replayNoDuplicateDispatch": true,
+  "dispatchCounts": {
+    "op-a": 1,
+    "op-b": 1,
+    "op-c": 1
+  },
+  "cancellationSignal": "SIGKILL",
+  "cancellationStarted": true,
+  "cancellationConsumesReservation": true,
+  "cancellationProducedNoReceipt": true,
+  "hardBudgetAdmissionBeforeDispatch": true,
+  "resultDigestRecovered": "fixture-result-op-b",
+  "limitations": [
+    "Deterministic fixture worker, not the GEPA engine",
+    "Simulated durable receipt stands in for exact benchmark AttemptLedger/evidence reopening",
+    "No provider/model calls; effectiveness is not measured"
+  ]
+}

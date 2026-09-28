@@ -116,6 +116,17 @@
       "artifactRefs": [
         "docs/blackboard/contracts.md"
       ]
+    },
+    {
+      "id": "TOPIC-FEEDBACK",
+      "title": "Context-grounded feedback and cross-episode learning",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-FEEDBACK-LIFECYCLE"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/feedback-architecture-research.md"
+      ]
     }
   ],
   "features": [
@@ -524,6 +535,20 @@
         "docs/blackboard/contracts.md"
       ],
       "acceptanceTaskId": "BB-082"
+    },
+    {
+      "id": "FEATURE-FEEDBACK-LIFECYCLE",
+      "topicId": "TOPIC-FEEDBACK",
+      "kind": "FEATURE",
+      "title": "Additive feedback lifecycle and learning",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-083"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/feedback-architecture-research.md"
+      ],
+      "acceptanceTaskId": "BB-083"
     }
   ],
   "tasks": [
@@ -2268,10 +2293,78 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-083",
+      "featureId": "FEATURE-FEEDBACK-LIFECYCLE",
+      "title": "Research feedback lifecycle and cross-episode learning",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "agentic/causal-observation",
+        "agentic/how-evolution",
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-059",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-064",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-065",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-083.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+          "docs/blackboard/process/feedback-architecture-research.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-083/source-ledger.json",
+          "docs/blackboard/evidence/BB-083/gepa-probe.py",
+          "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+          "docs/blackboard/evidence/BB-083/gepa-probe.log",
+          "docs/blackboard/evidence/BB-083/bridge-worker.py",
+          "docs/blackboard/evidence/BB-083/bridge-probe.mjs",
+          "docs/blackboard/evidence/BB-083/bridge-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/feedback.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify observation/context/finding/impact contracts with exact identity, provenance, uncertainty and missing-context behavior.",
+        "Specify application-owned disposition and ACTED/REJECTED/DEFERRED/SUPERSEDED response resolution, recovery and fresh IMPROVED/NO_CHANGE/REGRESSED/UNKNOWN outcomes.",
+        "Specify deduplicated cohort-based pattern proposals, counterevidence, systemic mechanism evidence and reinforcement without automatic escalation.",
+        "Define additive seams with Observer/Oracle/reconciliation/HOW evolution and neutral benchmark evidence, preserving existing accepted scopes.",
+        "Compare reuse and smallest native extension using verified primary evidence; produce exact package/file-level implementation plan, direct dependencies, negative cases and preregistered benchmark/eval protocol for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-083.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+        "researchBaselineSha": "c5356b4d6ae81df64bcfcdb8cd8fd196f1f4e7f5"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-083",
+    "nextWorkId": "BB-084",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

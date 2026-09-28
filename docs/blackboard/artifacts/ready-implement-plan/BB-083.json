@@ -1,0 +1,681 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-083",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-083.json",
+    "hash": "e4f5d56c1ffae08ce849b95fc305f002d1a8729d1fd956d67fbccd79db11160f"
+  },
+  "scope": [
+    "feedback.episode-context",
+    "feedback.response-resolution",
+    "feedback.pattern-system",
+    "feedback.reinforcement",
+    "feedback.independent-improvement"
+  ],
+  "outOfScope": [
+    "Reopening or modifying BB-058/059/060–064/065/074–076 research or implementation scope.",
+    "Runtime implementation or promotion during this research.",
+    "Adopting a new framework without source evidence and discriminating evaluation."
+  ],
+  "constraints": [
+    "Preserve all existing tasks, objectives, evaluated plans, readiness and delivery evidence unchanged; extend through BB-083 only.",
+    "Observation, interpretation, disposition and promotion authority remain separate; Observer and evaluators cannot mutate lifecycle or promote.",
+    "Reuse existing Observer, Oracle, reconciliation, HOW evolution and benchmark contracts; distinguish planned dependencies from delivered truth.",
+    "Research only: no runtime implementation, paid experiments, self-issued READY or fabricated Jev judgment.",
+    "Public repository evidence requires verified >=1,000 stars, pinned primary source, license and seam inspection; otherwise state none qualifies."
+  ],
+  "invariants": [
+    "Existing researched tasks and their accepted scope remain unchanged.",
+    "Feedback cannot grant acceptance, lifecycle mutation or promotion authority.",
+    "Measured improvement requires fresh comparable evidence; unknown outcome is not success."
+  ],
+  "architectureDecisions": [
+    "Reuse standalone GEPA 0.1.4 at source commit d771eb21b5dd3228bc3f567293d2ccfc423fc900 as offline optimizer only; product feedback capture and resolution do not depend on Python or GEPA availability.",
+    "Keep the product package optimizer-agnostic. Feedback contracts/controller/projection/improvement envelope live in packages/agentic-system; the GEPA Node/Python bridge lives under scripts/feedback.",
+    "Direct worker dependencies are the reusable contract owners BB-059 (HOW evaluation/promotion), BB-064 (Oracle ContextResolution/currentness) and BB-065 (@exharness/benchmark). BB-075 is research evidence for fixed-factor held-out policy, not a direct runtime dependency.",
+    "At Worker start, resolve exact DONE implementation-result/judgment/Living refs and public exports for every direct dependency. Planned contract mismatch or missing delivery is PLAN_INPUT_CONTRADICTION before source writes.",
+    "Node owns benchmark registration, AttemptLedger reservation, side effects, reconciliation, cancellation accounting and evidence refs. Python owns only GEPA optimizer computation over a bounded JSON-lines callback protocol.",
+    "GEPA search acceptance is never product acceptance. The selected candidate becomes HOW_IMPROVEMENT_PROPOSAL_V1 with no accepted/promoted flag and crosses independent BB-059 evaluation/currentness authority.",
+    "Omit LangMem from v1. Deterministic native episode/cohort projection is the only required pattern memory; an LLM or future LangMem adapter may produce untrusted proposals only after separate labeled-cohort evidence.",
+    "Freeze development/search-validation/final-holdout separation. Final holdout is inaccessible to GEPA/reflection; deterministic cases run once and stochastic model-backed cases use at least three paired repeats unless a frozen metric policy requires more.",
+    "The exact metric-policy ref+digest and minEffect are fixed before candidate search. Missing required measurements remain INCONCLUSIVE; no universal percentage is invented by BB-083.",
+    "Use only GEPA base-package API with Python >=3.10,<3.15; no gepa[full], DSPy, LangChain or LangMem dependency. Trusted local GEPA pickle checkpoint state is recovery-only and never canonical acceptance evidence."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "docs/living/system/agentic-application/**",
+      "docs/living/system/oracle/**",
+      "docs/blackboard/process/feedback-architecture-research.md",
+      "docs/blackboard/evidence/BB-083/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-075.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/feedback-contracts.js",
+      "packages/agentic-system/src/feedback-controller.js",
+      "packages/agentic-system/src/feedback-projection.js",
+      "packages/agentic-system/src/feedback-improvement.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/feedback-contracts.test.js",
+      "packages/agentic-system/test/feedback-controller.test.js",
+      "packages/agentic-system/test/feedback-projection.test.js",
+      "packages/agentic-system/test/feedback-improvement.test.js",
+      "scripts/feedback/gepa-bridge.mjs",
+      "scripts/feedback/gepa_adapter.py",
+      "scripts/feedback/requirements.lock",
+      "test/feedback-gepa-bridge.test.mjs",
+      "test/feedback-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/feedback.md"
+    ],
+    "forbiddenWrite": [
+      "packages/benchmark/**",
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/src/how-evolution.js",
+      "packages/agentic-system/src/how-evolution-jev-adapter.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/self-upgrade.md",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
+      "docs/blackboard/process/feedback-architecture-research.md",
+      "docs/blackboard/evidence/BB-083/source-ledger.json",
+      "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+      "docs/blackboard/evidence/BB-083/bridge-probe-result.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-075.json",
+      "packages/agentic-system/src/self-upgrade-pilot.js",
+      "packages/agentic-system/src/domain-execution-control.js"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/feedback-contracts.js",
+      "packages/agentic-system/src/feedback-controller.js",
+      "packages/agentic-system/src/feedback-projection.js",
+      "packages/agentic-system/src/feedback-improvement.js",
+      "scripts/feedback/gepa-bridge.mjs",
+      "scripts/feedback/gepa_adapter.py",
+      "scripts/feedback/requirements.lock",
+      "test/feedback-gepa-bridge.test.mjs",
+      "test/feedback-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/feedback.md"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/feedback-contracts.test.js",
+      "packages/agentic-system/test/feedback-controller.test.js",
+      "packages/agentic-system/test/feedback-projection.test.js",
+      "packages/agentic-system/test/feedback-improvement.test.js",
+      "test/feedback-gepa-bridge.test.mjs",
+      "test/feedback-dependency-contract.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Dependency convergence: before writes, resolve exact DONE BB-059/BB-064/BB-065 implementation-result, judgment and Living refs plus the public HOW/Oracle/benchmark exports. Emit one dependency manifest for tests; any missing/incompatible contract exits PLAN_INPUT_CONTRADICTION.",
+    "S2 — Typed lifecycle contracts: implement immutable Observation, ContextBinding, FeedbackEpisode, FeedbackResponse, FeedbackOutcome and HOW_IMPROVEMENT_PROPOSAL_V1 validators with exact ref+digest identity, explicit uncertainty and no implicit authority.",
+    "S3 — Observation/context projection: normalize delivered observation/event evidence, bind exact Oracle ContextResolution/currentness/provenance, reject missing/stale/ambiguous context as unresolved, and never infer causal truth from provider prose.",
+    "S4 — Application-owned response lifecycle: implement ACTED/REJECTED/DEFERRED/SUPERSEDED disposition with expected-current revision, idempotent recovery and fresh IMPROVED/NO_CHANGE/REGRESSED/UNKNOWN outcome binding. Observer/evaluator/provider fields cannot supply the application principal.",
+    "S5 — Cross-episode projection and reinforcement: deterministically deduplicate episode refs, group only on explicit cohort keys, retain contrary evidence, require mechanism evidence for SYSTEMIC proposals, and treat positive reinforcement as evidence rather than automatic escalation.",
+    "S6 — Offline GEPA bridge: implement Node-owned bidirectional JSON-lines orchestration to pinned Python GEPA; reserve @exharness/benchmark attempts before callbacks, reopen/reconcile exact settled/uncertain attempts across crash, preserve cancellation reservations, enforce hard budget before dispatch and normalize only a proposal envelope.",
+    "S7 — Independent improvement handoff: freeze HOW subject, optimizer identity, partitions, metric-policy ref+digest/minEffect and final holdout before candidate search; register final baseline/candidate work in @exharness/benchmark and submit proposal/evidence to delivered BB-059 evaluation/promotion authority. GEPA never sees final holdout or publishes policy.",
+    "S8 — Verification and Living truth: run contract/controller/projection/improvement/bridge/dependency negatives plus agentic and repository regressions; document only delivered feedback capability and explicit optimizer/evaluation limitations in the new Living feedback doc."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "C1",
+      "statement": "Observation, ContextBinding, FeedbackEpisode finding/impact contracts bind exact source/attempt/candidate and Oracle resolution identities, preserve provenance/uncertainty, and represent missing or stale context explicitly rather than inventing causal truth.",
+      "verificationIds": [
+        "contracts",
+        "projection",
+        "dependency"
+      ],
+      "evidenceRequired": [
+        "Typed contract and projection tests covering exact ref+digest identity, missing/stale/ambiguous context and provider/event provenance."
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "Only an application-owned principal may create or revise ACTED/REJECTED/DEFERRED/SUPERSEDED responses; recovery is idempotent and fresh outcomes are exactly IMPROVED/NO_CHANGE/REGRESSED/UNKNOWN without evaluator/provider lifecycle authority.",
+      "verificationIds": [
+        "controller",
+        "contracts",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "Authority, expected-current, replay/recovery and fresh-outcome negative/positive test evidence."
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "Cross-episode learning is a deterministic deduplicated projection with cohort identity, contrary evidence and mechanism evidence; reinforcement cannot auto-escalate to SYSTEMIC or mutate acceptance/promotion state.",
+      "verificationIds": [
+        "projection",
+        "improvement"
+      ],
+      "evidenceRequired": [
+        "Duplicate/retry, counterevidence, reinforcement and false-systemic test cases with exact contributing episode refs."
+      ]
+    },
+    {
+      "id": "C4",
+      "statement": "The implementation composes exact DONE BB-059 HOW, BB-064 Oracle and BB-065 benchmark contracts without modifying those owners; Node owns benchmark budget/effects and the GEPA bridge survives crash/reconcile/cancel without duplicate dispatch or silent budget refund.",
+      "verificationIds": [
+        "dependency",
+        "bridge",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Dependency manifest/export checks, bridge crash/replay/cancellation/hard-budget tests and forbidden-write/deep-import verification."
+      ]
+    },
+    {
+      "id": "C5",
+      "statement": "Reuse is bounded to pinned standalone GEPA and native feedback contracts; LangMem is absent from v1; final improvement evaluation uses sealed partitions, frozen metric policy/minEffect, fresh benchmark evidence and independent BB-059 authority, with unknown or critical regression never called success.",
+      "verificationIds": [
+        "improvement",
+        "bridge",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Optimizer pin/dependency lock tests, holdout isolation and metric-policy immutability tests, proposal-only authority negatives and repository regression evidence."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Existing researched tasks and their accepted scope remain unchanged.",
+      "criterionIds": [
+        "C4",
+        "C5"
+      ]
+    },
+    {
+      "invariant": "Feedback cannot grant acceptance, lifecycle mutation or promotion authority.",
+      "criterionIds": [
+        "C2",
+        "C3",
+        "C5"
+      ]
+    },
+    {
+      "invariant": "Measured improvement requires fresh comparable evidence; unknown outcome is not success.",
+      "criterionIds": [
+        "C1",
+        "C5"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "dependency",
+      "command": "node --test test/feedback-dependency-contract.test.mjs"
+    },
+    {
+      "id": "contracts",
+      "command": "node --test packages/agentic-system/test/feedback-contracts.test.js"
+    },
+    {
+      "id": "controller",
+      "command": "node --test packages/agentic-system/test/feedback-controller.test.js"
+    },
+    {
+      "id": "projection",
+      "command": "node --test packages/agentic-system/test/feedback-projection.test.js"
+    },
+    {
+      "id": "improvement",
+      "command": "node --test packages/agentic-system/test/feedback-improvement.test.js"
+    },
+    {
+      "id": "bridge",
+      "command": "node --test test/feedback-gepa-bridge.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [
+    "Merge the BB-083 task/objective/research evidence into trusted main so CI can judge it from trusted routing.",
+    "Run fresh independent Jev readiness against this worker-ready plan; no SATISFIED readiness is claimed in the registration PR."
+  ],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-083/source-ledger.json",
+      "finding": "Seven >=1,000-star repositories were pinned and source/test seams inspected; reuse decisions distinguish framework mechanics from ExHarness authority."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+      "finding": "Pinned GEPA engine carries evidence/context through adapter search/resume; aggregate search acceptance can hide per-case regression and max_metric_calls is not a hard dispatch budget."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-083/bridge-probe-result.json",
+      "finding": "Executed Node/Python process probe recovers crash-after-commit without duplicate dispatch, preserves cancellation reservation and denies over-budget work before dispatch."
+    },
+    {
+      "ref": "docs/blackboard/process/feedback-architecture-research.md",
+      "finding": "Technical research is closed with exact dependency owners, v1 LangMem omission, GEPA lock, bridge contract, physical files and independent held-out evaluation handoff."
+    }
+  ],
+  "proposedImplementationScopeStatus": "PROVISIONAL: research gaps remain; sourceScope.write currently authorizes research brief only, not product implementation.",
+  "dependencyResolution": {
+    "direct": [
+      "BB-059",
+      "BB-064",
+      "BB-065"
+    ],
+    "workerStart": "Resolve exact DONE implementation-result/judgment/Living refs and delivered public exports for HOW evolution, Oracle foundation and @exharness/benchmark before any product source write.",
+    "plannedBindings": {
+      "BB-059": "HOW_EVOLUTION_EVALUATION_PROTOCOL + independent evaluator/promotion/currentness semantics",
+      "BB-064": "createOracleContextResolver(...).resolve(ContextRequirement, metadata?) -> ContextResolution with authoritative currentness/provenance",
+      "BB-065": "@exharness/benchmark package-root exports including AttemptLedger, experiment/unit/evidence/accounting/audit contracts"
+    },
+    "contradiction": "Missing delivery, changed ownership, deep-import requirement or incompatible public contract => PLAN_INPUT_CONTRADICTION; return to research rather than adapting architecture in Worker.",
+    "referenceOnly": [
+      "BB-075 fixed-factor/held-out decision research; no direct dependency or required import"
+    ]
+  },
+  "feedbackContract": {
+    "artifacts": {
+      "Observation": [
+        "subjectRef+digest",
+        "attempt/candidate/provider event identity",
+        "evidenceRefs",
+        "observedAt",
+        "measurements"
+      ],
+      "ContextBinding": [
+        "contextResolutionRef+digest",
+        "required source/policy refs",
+        "currentness",
+        "completeness",
+        "uncertainty"
+      ],
+      "FeedbackEpisode": [
+        "episodeId",
+        "observationRefs",
+        "contextBindingRef+digest",
+        "finding",
+        "impact",
+        "scopeKey",
+        "contraryEvidenceRefs"
+      ],
+      "FeedbackResponse": [
+        "episodeRef+digest",
+        "applicationPrincipal",
+        "expectedRevision",
+        "disposition",
+        "status",
+        "rationaleRef",
+        "work/experiment/successor refs",
+        "revisitCondition"
+      ],
+      "FeedbackOutcome": [
+        "responseRef+digest",
+        "experiment/evidence refs",
+        "freshness identity",
+        "outcome",
+        "measurements"
+      ],
+      "ImprovementProposal": [
+        "cohort/episode refs",
+        "baseline HOW ref+digest",
+        "allowed HOW axis",
+        "optimizer identity/config",
+        "candidate digest/diff",
+        "development evidence/benchmark refs"
+      ]
+    },
+    "responseStatuses": [
+      "ACTED",
+      "REJECTED",
+      "DEFERRED",
+      "SUPERSEDED"
+    ],
+    "outcomes": [
+      "IMPROVED",
+      "NO_CHANGE",
+      "REGRESSED",
+      "UNKNOWN"
+    ],
+    "authority": "Observation/finding/evaluator/optimizer are evidence or proposal producers only; application principal owns disposition and BB-059 independent authority owns promotion.",
+    "unknownRule": "Missing current context, required measurement or independent evidence remains unresolved/UNKNOWN and cannot be converted to success."
+  },
+  "patternContract": {
+    "identity": "Pattern key = explicit scope/cohort key + normalized finding kind + target HOW axis; contributing episode refs are deduplicated by immutable episode identity.",
+    "reinforcement": "Repeated positive evidence increases support metadata only; it does not change response status, SYSTEMIC classification, acceptance or promotion.",
+    "systemic": "SYSTEMIC proposal requires explicit mechanism evidence refs spanning the declared scope plus contrary-evidence accounting; frequency alone is insufficient.",
+    "synthesis": "Optional model synthesis is untrusted text attached to exact episode refs. Native deterministic projection remains canonical v1 behavior.",
+    "langMem": "OMITTED_V1; reconsider only through separate labeled-cohort evidence showing material extraction benefit under the same cost/evidence contract."
+  },
+  "optimizerContract": {
+    "engine": {
+      "name": "gepa",
+      "version": "0.1.4",
+      "commit": "d771eb21b5dd3228bc3f567293d2ccfc423fc900",
+      "python": ">=3.10,<3.15",
+      "extras": []
+    },
+    "location": "offline scripts/feedback tooling; ordinary feedback lifecycle has no Python/GEPA runtime dependency",
+    "lock": "scripts/feedback/requirements.lock records exact VCS commit and Python range; any change creates a new optimizer identity.",
+    "checkpoint": "Only same-run trusted local GEPA checkpoint directories may be loaded; upstream pickle state is never accepted as ExHarness truth.",
+    "proposalOnly": true
+  },
+  "bridgeContract": {
+    "transport": "bounded bidirectional JSON-lines over one Node-owned child process per optimization run; request ids and schema kinds are explicit",
+    "sideEffectOwner": "Node only",
+    "pythonRole": "GEPA optimizer computation; evaluation callbacks contain no direct repository/product/benchmark mutation capability",
+    "admission": "Node reserves each delivered @exharness/benchmark attempt before evaluation dispatch. Denied reservation is returned to Python as a terminal budget result without side effect.",
+    "crash": "Settled attempts reopen by exact evidence refs; uncertain side effects reconcile before reuse; Python restart/checkpoint cannot blindly redispatch an unknown attempt.",
+    "cancellation": "Killing optimizer does not refund started reservations or rewrite settled attempts. In-flight unknown attempts remain auditable/reconcilable.",
+    "accounting": "Unknown usage/cost remains null/UNKNOWN; reflection/search/final-evaluation calls are attributed to their exact experiment/unit/attempt.",
+    "researchProbe": "docs/blackboard/evidence/BB-083/bridge-probe-result.json"
+  },
+  "evaluationHandoffContract": {
+    "owner": "delivered BB-059 independent HOW evaluation/promotion authority",
+    "fixedBeforeSearch": [
+      "WHAT/acceptance semantic refs+digests",
+      "baseline HOW/policy head ref+digest/current generation",
+      "optimizer engine/version/commit/config and allowed HOW axis",
+      "development/search-validation/final-holdout partition refs+digests",
+      "metricPolicy ref+digest including minEffect",
+      "model/provider/tool/budget/evaluator identities for final comparison"
+    ],
+    "partitionRule": "Final holdout is inaccessible to GEPA, reflection memory and candidate producer; any leakage invalidates the evaluation.",
+    "repeatRule": "Deterministic cases may run once; stochastic model-backed cases require at least three paired baseline/candidate repeats per case unless the frozen metric policy requires more.",
+    "benchmarkRule": "Every final baseline/candidate run is registered through @exharness/benchmark with append-only attempts, evidence manifest, nullable accounting and audit reopening.",
+    "decisionRule": "Per-case critical quality/authority/currentness/recovery regression blocks promotion regardless of aggregate score; missing required evidence is INCONCLUSIVE.",
+    "thresholdRule": "BB-083 does not invent a universal numeric effect. The exact metric-policy minEffect is mandatory and immutable before candidate search."
+  },
+  "deliveryContract": {
+    "precondition": "BB-059, BB-064 and BB-065 are DONE and dependencyResolution preflight binds their exact delivered contracts before source writes.",
+    "completion": "All criterion-specific checks + agentic/repository regressions + Living feedback doc + independent Worker Jev judgment.",
+    "forbidden": "No modification of dependency owners, no generic memory/workflow platform, no self-promotion, no final-holdout exposure to optimizer, no unknown-as-success."
+  },
+  "ciContract": {
+    "checks": [
+      "dependency",
+      "contracts",
+      "controller",
+      "projection",
+      "improvement",
+      "bridge",
+      "agentic-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses CI TYPESAFE_API_KEY only; evaluator transport failure is INCONCLUSIVE and never fabricated locally."
+  },
+  "migrationContract": {
+    "preserve": [
+      "all existing observation/HOW/Oracle/benchmark artifacts and accepted scopes",
+      "existing domain execution and self-upgrade history"
+    ],
+    "add": [
+      "feedback lifecycle modules",
+      "offline GEPA bridge/lock",
+      "feedback tests",
+      "Living feedback capability doc"
+    ],
+    "rollback": "Revert only additive feedback modules/scripts/docs and exports; never rewrite prior execution/evaluation history."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-083 trusted objective + pinned source/probe evidence + current planned dependency contracts",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness",
+        "fabricated effectiveness evidence"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-059/BB-064/BB-065",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "typed lifecycle + bounded bridge + independent evaluation handoff + Living truth",
+      "forbidden": [
+        "redefine dependency contracts",
+        "self-promotion",
+        "deep-import benchmark internals",
+        "introduce LangMem/framework rewrite"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/feedback.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living feedback truth documents only the delivered episode/response/outcome/pattern capability, optional offline GEPA bridge, exact authority boundaries and unsupported/unevaluated limitations."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify observation/context/finding/impact contracts with exact identity, provenance, uncertainty and missing-context behavior.",
+      "criterionIds": [
+        "C1"
+      ],
+      "planElements": [
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "contracts",
+        "projection",
+        "dependency"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "docs/living/system/agentic-application/contracts.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+        "docs/blackboard/process/feedback-architecture-research.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/agentic-application/contracts.md",
+          "match": "Application semantic contract"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+          "match": "createOracleContextResolver"
+        }
+      ],
+      "supportingPlanFields": [
+        "feedbackContract",
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify application-owned disposition and ACTED/REJECTED/DEFERRED/SUPERSEDED response resolution, recovery and fresh IMPROVED/NO_CHANGE/REGRESSED/UNKNOWN outcomes.",
+      "criterionIds": [
+        "C2"
+      ],
+      "planElements": [
+        "S2",
+        "S4"
+      ],
+      "verificationIds": [
+        "contracts",
+        "controller",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        1,
+        5
+      ],
+      "sourceRefs": [
+        "docs/living/system/agentic-application/contracts.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+        "docs/blackboard/process/feedback-architecture-research.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+          "match": "candidate producer != promotion authority"
+        }
+      ],
+      "supportingPlanFields": [
+        "feedbackContract",
+        "evaluationHandoffContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify deduplicated cohort-based pattern proposals, counterevidence, systemic mechanism evidence and reinforcement without automatic escalation.",
+      "criterionIds": [
+        "C3"
+      ],
+      "planElements": [
+        "S5"
+      ],
+      "verificationIds": [
+        "projection",
+        "improvement"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/feedback-architecture-research.md",
+        "docs/blackboard/evidence/BB-083/source-ledger.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/feedback-architecture-research.md",
+          "match": "LangMem is omitted from v1."
+        }
+      ],
+      "supportingPlanFields": [
+        "patternContract",
+        "feedbackContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Define additive seams with Observer/Oracle/reconciliation/HOW evolution and neutral benchmark evidence, preserving existing accepted scopes.",
+      "criterionIds": [
+        "C4"
+      ],
+      "planElements": [
+        "S1",
+        "S3",
+        "S6",
+        "S7"
+      ],
+      "verificationIds": [
+        "dependency",
+        "projection",
+        "bridge",
+        "repository"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+        "docs/blackboard/evidence/BB-083/bridge-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "@exharness/benchmark"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+          "match": "createOracleContextResolver"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-083/bridge-probe-result.json",
+          "match": "crashRecoveredFromDurableReceipt"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution",
+        "bridgeContract",
+        "evaluationHandoffContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Compare reuse and smallest native extension using verified primary evidence; produce exact package/file-level implementation plan, direct dependencies, negative cases and preregistered benchmark/eval protocol for fresh Jev readiness.",
+      "criterionIds": [
+        "C4",
+        "C5"
+      ],
+      "planElements": [
+        "S1",
+        "S6",
+        "S7",
+        "S8"
+      ],
+      "verificationIds": [
+        "dependency",
+        "bridge",
+        "improvement",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        6,
+        7,
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-083/source-ledger.json",
+        "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-075.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+          "match": "sumImprovementCanHidePerCaseRegression"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+          "match": "Baseline and candidate execute identical pinned cases."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-075.json",
+          "match": "registeredArmUnits"
+        }
+      ],
+      "supportingPlanFields": [
+        "optimizerContract",
+        "bridgeContract",
+        "evaluationHandoffContract",
+        "patternContract",
+        "dependencyResolution"
+      ]
+    }
+  ]
+}
