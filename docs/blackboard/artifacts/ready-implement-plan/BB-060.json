@@ -34,7 +34,7 @@
   ],
   "invariants": [
     "Application/domain controllers own work semantics, acceptance, publication, recovery and product authority; Oracle only resolves context.",
-    "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
+    "BB-060 compatibility providers preserve declared source identity and provenance and fail closed on missing or ambiguous reads; the development projection enforces an explicit context-size budget. Production ContextResolution currentness belongs to the follow-on semantic contract.",
     "Oracle is infrastructure-owned and provider/planner internals do not become model-visible scheduling authority or Core/Application implementation ownership."
   ],
   "architectureDecisions": [
@@ -51,7 +51,7 @@
     "D11 — Architecture guards reject Oracle->agentic/core imports, Core->Oracle implementation imports, copied source loops and Oracle lifecycle/acceptance authority.",
     "D12 — Evidence patterns: Aider=budgeted structural projection, Serena/SolidLSP=semantic symbols, Zoekt=lexical baseline, Graphiti/Cognee=context-graph candidates, Uber=context-infrastructure evidence. BB-060 selects no backend.",
     "D13 — Serena application is GPL-3.0-or-later while SolidLSP is MIT; full Serena is not selected by BB-060.",
-    "D14 — Living Docs describe only delivered physical/provider compatibility; production ContextRequirement/ContextResolution remains NOT YET DELIVERED until BB-061.",
+    "D14 — Living Docs describe only delivered physical/provider compatibility and explicitly state that the production semantic resolution contract and Core pre-prompt resolver hook are NOT YET DELIVERED. They use capability names, not delivery-work IDs; the follow-on implementation task is tracked in the Blackboard.",
     "D15 — Preserve no-install CI: declare file:../oracle metadata but use ../../oracle/src/index.js source import; no CI workflow or lockfile change."
   ],
   "sourceSeams": {
@@ -103,7 +103,8 @@
       "docs/blackboard/process/oracle-reconciliation-phase.md",
       "docs/blackboard/process/oracle-context-intelligence-research.md",
       "docs/blackboard/process/oracle-context-intelligence-research/BB-060.md",
-      ".github/workflows/test.yml"
+      ".github/workflows/test.yml",
+      "scripts/current-docs-verify.mjs"
     ],
     "write": [
       "packages/oracle/**",
@@ -134,8 +135,8 @@
     "S3 [PHYSICAL_OWNERSHIP] — packages/agentic-system/package.json adds dependencies.@exharness/oracle='file:../oracle'; source uses ../../oracle/src/index.js because CI does not run npm install. Root package.json adds test:oracle='node --test packages/oracle/test/*.test.js test/oracle-context-intelligence-architecture.test.mjs' and appends npm run test:oracle to test. Do not add package-lock or modify .github workflows. packages/oracle/test/compatibility-providers.test.js covers success, missing reader, reader rejection and malformed result; packages/agentic-system/test/oracle-package-integration.test.js covers both unchanged application adapters.",
     "S4 [PHYSICAL_OWNERSHIP,REBOUND_SEMANTICS,INV-1,INV-3] — test/oracle-context-intelligence-architecture.test.mjs mechanically checks: Oracle source imports contain no agentic-system/core path; core-harness source/package contains no @exharness/oracle or packages/oracle implementation import; agentic-system/src/oracle.js contains no '.readFile(' or '.readArtifact('; agentic-system declares file:../oracle; Oracle exports are exactly the two S1 provider functions. In-memory mutated-text fixtures must make each forbidden import/read-loop/export case fail.",
     "S5 [RUNTIME_PATH,PROTOTYPE_HANDOFF,INV-2] — scripts/oracle-context-intelligence/bb060-runtime-seam-probe.mjs uses deterministic fixtures only: semanticNeed -> injected resolver function -> readRepositorySources -> define one ordinary required Core context block from returned source/provenance -> renderAgentContext. It never calls AgentRuntime.invoke/Capability/Resource/LiveObject. Exit nonzero unless providerCalls=1, actionCalls=0, exact sourceRef/provenance survives, renderedChars<=declared maxSerializedChars, and provider failure yields no rendered prompt. On success print one JSON record with providerCalls,actionCalls,sourceReads,materializedChars,renderedChars,provenanceCoverage,wallMs,failureClass for later benchmark ingestion.",
-    "S6 [REBOUND_SEMANTICS] — Update docs/living/system/oracle/{architecture,state,semantics,workflow}.md with only delivered @exharness/oracle provider ownership, compatibility path and limitations. State verbatim that production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED and belong to BB-061; do not claim graph/search/planner delivery.",
-    "S7 [EXIT] — Execute in order: node --test packages/oracle/test/compatibility-providers.test.js; node --test packages/agentic-system/test/oracle-package-integration.test.js packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js; node --test test/oracle-context-intelligence-architecture.test.mjs; node scripts/oracle-context-intelligence/bb060-runtime-seam-probe.mjs; npm run test:agentic; npm test. Worker output is limited to the files in sourceScope.write and evidence for the declared acceptance criteria; any need for a production Core hook, provider registry/planner or backend selection returns to research instead of expanding BB-060."
+    "S6 [REBOUND_SEMANTICS] — Update docs/living/system/oracle/{architecture,state,semantics,workflow}.md with only delivered @exharness/oracle provider ownership, compatibility path and limitations. State that production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED; identify the follow-on semantic contract without putting delivery-work IDs into Living Docs. Do not claim graph/search/planner delivery.",
+    "S7 [EXIT] — Run verificationPlan in order, then npm test. Candidate writes only sourceScope.write; any need for a production Core hook, provider registry/planner or backend selection returns to research."
   ],
   "acceptanceCriteria": [
     {
@@ -176,10 +177,11 @@
       "statement": "Delivered BB-060 treats the two moved source loops as compatibility providers rather than the final Oracle API and records retained physical/provenance findings separately from superseded thin-IO/no-runtime-resolution assumptions.",
       "verificationIds": [
         "architecture-boundary",
-        "living-docs-check"
+        "living-docs-check",
+        "current-docs-gate"
       ],
       "evidenceRequired": [
-        "Architecture guard plus delivered Oracle Living Docs explicitly distinguishing current compatibility providers from the not-yet-delivered BB-061 semantic contract."
+        "Architecture guard and Oracle Living Docs distinguish current compatibility providers from the not-yet-delivered semantic contract, without delivery-work IDs; the current-docs repository gate passes."
       ]
     },
     {
@@ -216,13 +218,13 @@
     },
     {
       "id": "INV-2",
-      "statement": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
+      "statement": "BB-060 compatibility providers preserve source identity and provenance, reject missing or ambiguous required reads, and project resolved data within an explicit Core context-size budget; production resolution currentness remains deferred.",
       "verificationIds": [
         "runtime-seam-probe",
         "oracle-provider-unit"
       ],
       "evidenceRequired": [
-        "Probe/provider fixtures preserve source identity and fail on missing/ambiguous required source evidence; BB-061 owns final resolution budget/currentness fields."
+        "Provider tests reject missing or multiple read results; the development probe preserves sourceRef/provenance and rejects oversized prompt projection. Its zero currentness checks and null resolutionId are explicit follow-on limitations."
       ]
     },
     {
@@ -247,7 +249,7 @@
       ]
     },
     {
-      "invariant": "Every ContextResolution is bounded by explicit requirement/budget and preserves source provenance/currentness; missing or ambiguous required evidence fails closed.",
+      "invariant": "BB-060 compatibility providers preserve declared source identity and provenance and fail closed on missing or ambiguous reads; the development projection enforces an explicit context-size budget. Production ContextResolution currentness belongs to the follow-on semantic contract.",
       "criterionIds": [
         "INV-2",
         "COMPATIBILITY",
@@ -291,7 +293,11 @@
     },
     {
       "id": "living-docs-check",
-      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs --test-name-pattern='Living|not delivered|BB-061'"
+      "command": "node --test --test-name-pattern='Living|not delivered|semantic contract' test/oracle-context-intelligence-architecture.test.mjs"
+    },
+    {
+      "id": "current-docs-gate",
+      "command": "npm run verify:current-docs"
     }
   ],
   "researchGaps": [],
@@ -344,7 +350,7 @@
       "docs/living/system/oracle/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-060 Living Oracle truth describes only the implemented and independently verified rebound capability and limitations."
+    "statement": "Oracle Living Docs describe only the implemented and independently verified provider rebound and limitations, contain no delivery-work IDs, and do not claim the production semantic contract or Core resolver hook."
   },
   "runtimeBoundaryContract": {
     "current": "Application resolves concrete Backend/QA context before Worker; Core renders already-supplied context and has no source-resolution port.",
