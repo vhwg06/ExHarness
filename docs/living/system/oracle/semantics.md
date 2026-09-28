@@ -9,3 +9,7 @@
 - QA internal artifact context additionally preserves `APPLICATION_ARTIFACT`, producer work-order and acceptance-decision provenance.
 - Oracle is not an agent, Advisor, Worker, correctness authority, semantic-memory system or runtime context lifecycle.
 - There is no generic resolver abstraction in current source.
+
+`@exharness/oracle` owns the two concrete source read loops. The Agentic Application adapter still owns WorkOrder parsing and context schema validation. These providers are compatibility building blocks; provider selection, planner, durable resolution identity and currentness are future work.
+
+The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED and belong to BB-061.

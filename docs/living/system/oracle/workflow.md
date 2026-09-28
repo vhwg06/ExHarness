@@ -5,6 +5,7 @@
 ```text
 parse BackendWorkOrder
  -> for each requiredFiles path
+    -> @exharness/oracle.readRepositorySources(...)
     -> repositoryReader.readFile(...)
     -> capture content + sourceRef
  -> BackendContextSchema.parse(...)
@@ -18,6 +19,7 @@ A repository read error is rethrown with repository/ref/revision/path boundary c
 ```text
 parse QaWorkOrder
  -> for each required artifact
+    -> @exharness/oracle.readApplicationArtifacts(...)
     -> artifactReader.readArtifact(...)
     -> capture content + sourceRef
     -> attach APPLICATION_ARTIFACT provenance
@@ -48,3 +50,7 @@ There is no MCP-backed resolution path in current source. `oracle.js` does not i
 Any later concrete MCP-backed source remains below application-owned work/lifecycle authority; this constraint does not make an MCP flow current implementation.
 
 No implicit refresh, background provider lifecycle, cache or retrieval pass exists in the current workflow.
+
+The development-only BB-060 seam probe resolves an Application semantic need through an injected resolver, projects the source and provenance into an ordinary bounded Core context block, and then calls `renderAgentContext`. No model-visible action is invoked. Its handoff record reports requirement and resolution ids, source reads, resolution/provider calls, materialized/rendered sizes, estimated tokens when available, provenance coverage, currentness checks, wall time and failure class.
+
+The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED and belong to BB-061.

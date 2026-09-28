@@ -4,7 +4,7 @@ Source-synchronized Oracle projection. Open Oracle questions live only in `../do
 
 ## Current implemented boundary
 
-`packages/agentic-system/src/oracle.js` exposes two concrete resolution functions:
+`packages/agentic-system/src/oracle.js` remains the compatibility adapter and exposes two concrete resolution functions. Their source loops now live in `@exharness/oracle`:
 
 ```text
 resolveBackendContext(order, { repositoryReader })
@@ -43,6 +43,8 @@ QaWorkOrder.requiredArtifacts
 - manifest-protected durable Backend -> QA composition persists the exact manifest ref before QA_PENDING and scopes fresh QA reads to that ref; direct-reader mode remains supported;
 - Oracle has no agent loop, session lifecycle, generic resolver registry, MCP-first layer, retrieval framework or cache lifecycle in current source;
 - no MCP client/adapter, MCP request state, MRTR continuation or Tasks handle is implemented or persisted today.
+
+The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED and belong to BB-061.
 
 If a concrete MCP-backed source appears later, MCP remains a source/capability adapter below application-owned work/lifecycle authority; protocol support alone does not count as a third source class.
 

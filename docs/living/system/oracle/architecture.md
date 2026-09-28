@@ -1,20 +1,30 @@
 # Oracle current architecture
 
-Oracle is the concrete infrastructure boundary between application-declared context needs and source IO.
+Oracle source IO now lives in the private infrastructure package `@exharness/oracle`. The Agentic Application compatibility adapter parses its WorkOrders and validates its context schemas; the package reads the requested sources through injected readers.
 
 ```text
 BackendWorkOrder.requiredFiles
         -> resolveBackendContext
+        -> @exharness/oracle.readRepositorySources
         -> repositoryReader
         -> BackendContext
 
 QaWorkOrder.requiredArtifacts
         -> resolveQaContext
+        -> @exharness/oracle.readApplicationArtifacts
         -> artifactReader
         -> QaContext
 ```
 
-Application schemas/contracts stay above the source adapters. Oracle performs pull/adapt/assemble and then validates using those application-owned schemas.
+Application schemas/contracts stay above the source adapters. Oracle providers perform concrete reads and preserve source references; the compatibility adapter validates using Application-owned schemas.
+
+## Future runtime seam
+
+Application semantic need -> ContextRequirement -> injected Core pre-prompt resolver -> Oracle providers/planner -> ContextResolution -> Core context projection -> `renderAgentContext`. The development-only BB-060 probe exercises this ordering. Core imports no Oracle implementation, and Oracle imports neither Core nor Agentic Application. Oracle has no acceptance, publication, scheduling or recovery authority.
+
+The two moved source loops are compatibility providers, not the final Oracle API. Retained findings are physical source ownership, required-source failure behavior and provenance. The earlier thin-IO-only architecture and assumption that the existing Application adapter was sufficient for runtime context intelligence are superseded. Aider's budgeted repo map, Serena/SolidLSP's semantic symbols, and Zoekt's lexical retrieval remain comparison patterns for BB-062; no backend is selected. Serena application is GPL-3.0-or-later, while SolidLSP is MIT.
+
+The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED and belong to BB-061.
 
 The two implemented source classes intentionally remain distinct because repository reads and application-produced artifact lookup carry different identity/provenance semantics.
 
