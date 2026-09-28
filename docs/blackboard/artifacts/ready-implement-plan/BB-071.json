@@ -292,5 +292,150 @@
       "checked": "2026-09-28",
       "finding": "Selected only for exact-release browser evidence after repair; it does not decide currentness or acceptance."
     }
+  ],
+  "changeContract": {
+    "schemaVersion": 1,
+    "kind": "REQUIREMENT_CHANGE_V1",
+    "identity": [
+      "projectId",
+      "rootIntentId",
+      "changeKey",
+      "priorSemanticRevisionRef",
+      "replacementContentDigest",
+      "acceptanceRefs"
+    ],
+    "publicationRule": "Publish immutable replacement semantic revision; never mutate historical semantic artifacts.",
+    "invalidationRule": "Compute affected closure only from current ProductLineageStore derivation edges via reverseSemanticClosure.",
+    "unrelatedRule": "Current semantic heads outside the reverse closure remain selected/current."
+  },
+  "scenarioContract": {
+    "schemaVersion": 1,
+    "scenarios": {
+      "LOCAL_DOMAIN": "presentation-only requirement with current lineage confined to FE plus final independent QA/release verification",
+      "CROSS_DOMAIN": "validation/API contract whose current lineage reaches BE, FE and QA"
+    },
+    "frozenBeforeExecution": [
+      "starting semantic head refs",
+      "change digest",
+      "expected affected subject keys",
+      "unaffected control subject keys",
+      "acceptance refs"
+    ]
+  },
+  "recoveryContract": {
+    "schemaVersion": 1,
+    "upstream": "exact DONE BB-057 recovery/fencing boundary",
+    "required": [
+      "same semantic executionAttemptId and immutable binding after kill/resume",
+      "stable publication idempotency key under duplicate activation",
+      "stale worker/claim fenced",
+      "stale deployment observation cannot satisfy changed-work closure"
+    ],
+    "forbidden": [
+      "mint fresh semantic attempt to hide recovery failure",
+      "global reset of unrelated accepted work",
+      "second workflow journal as recovery authority"
+    ]
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A real requirement change invalidates only affected outputs and drives the owning domains to a newly verified release.",
+      "criterionIds": [
+        "AC-1",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S5"
+      ],
+      "verificationIds": [
+        "change-contract",
+        "selective-invalidation",
+        "deterministic-probe",
+        "live-probe"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
+        "packages/agentic-system/src/product-lineage.js",
+        "packages/agentic-system/src/dependency-invalidation.js"
+      ],
+      "supportingPlanFields": [
+        "changeContract",
+        "scenarioContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Kill/resume and duplicate activation preserve attempt identity and one logical external publication.",
+      "criterionIds": [
+        "AC-2",
+        "INV-2"
+      ],
+      "planElements": [
+        "S0",
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "recovery-fencing",
+        "deterministic-probe",
+        "live-probe"
+      ],
+      "decisionIndexes": [
+        4,
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "supportingPlanFields": [
+        "recoveryContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "An old worker and stale deployment observation cannot close changed work; unrelated accepted outputs remain current.",
+      "criterionIds": [
+        "AC-3",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "selective-invalidation",
+        "recovery-fencing",
+        "boundary-probe"
+      ],
+      "decisionIndexes": [
+        1,
+        3,
+        4,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
+        "packages/agentic-system/src/product-lineage.js",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "supportingPlanFields": [
+        "changeContract",
+        "recoveryContract"
+      ]
+    }
   ]
 }
