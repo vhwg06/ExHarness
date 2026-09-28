@@ -42,8 +42,6 @@ NONE
 
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
 - BB-060 [WORKER/EXECUTION] — Define Oracle runtime architecture and physical ownership
-- BB-064 [RESEARCH_SA/RESEARCH] — Accept Oracle Context Intelligence foundation
-- BB-065 [RESEARCH_SA/RESEARCH] — Establish neutral benchmark package and calibrated substrate
 - BB-070 [RESEARCH_SA/RESEARCH] — Deliver product from goal and partial artifacts across owned domains
 - BB-071 [RESEARCH_SA/RESEARCH] — Prove requirement change and failure recovery on a live product
 - BB-072 [RESEARCH_SA/RESEARCH] — Make delivery runs observable recoverable and cost bounded
@@ -68,8 +66,8 @@ BB-060 [WORKER_SCHEDULABLE] <- ROOT
 BB-061 [BLOCKED_BY BB-060] <- BB-060
 BB-062 [BLOCKED_BY BB-061] <- BB-061
 BB-063 [BLOCKED_BY BB-062] <- BB-062
-BB-064 [RESEARCH_SCHEDULABLE] <- BB-060, BB-061, BB-062, BB-063
-BB-065 [RESEARCH_SCHEDULABLE] <- ROOT
+BB-064 [BLOCKED_BY BB-060,BB-061,BB-062,BB-063] <- BB-060, BB-061, BB-062, BB-063
+BB-065 [BLOCKED] <- BB-082
 BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
@@ -81,7 +79,7 @@ BB-073 [RESEARCH_SCHEDULABLE] <- BB-070, BB-072
 BB-074 [BLOCKED_BY BB-065,BB-071,BB-073,BB-077,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [RESEARCH_SCHEDULABLE] <- BB-074, BB-059
 BB-076 [RESEARCH_SCHEDULABLE] <- BB-074, BB-075
-BB-077 [BLOCKED_BY BB-065] <- BB-065
+BB-077 [RESEARCH_SCHEDULABLE] <- BB-065
 BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079

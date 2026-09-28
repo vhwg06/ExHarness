@@ -277,7 +277,7 @@
       "id": "FEATURE-DELIVERY-BASELINE",
       "topicId": "TOPIC-DELIVERY-FOUNDATION",
       "kind": "FEATURE",
-      "title": "Establish neutral benchmark package and calibrated substrate",
+      "title": "Define delivery profile and executable value baseline",
       "status": "PLANNED",
       "taskIds": [
         "BB-065"
@@ -1198,6 +1198,7 @@
       "complexity": "XL",
       "components": [
         "oracle/infrastructure",
+        "core/context-resolution",
         "outer/blackboard"
       ],
       "dependencies": [
@@ -1230,7 +1231,8 @@
         "inputRefs": [
           "docs/blackboard/artifacts/objective/BB-064.json",
           "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
-          "docs/blackboard/process/oracle-context-intelligence-research.md"
+          "docs/blackboard/process/oracle-context-intelligence-research.md",
+          "docs/blackboard/process/oracle-context-intelligence-research/BB-064.md"
         ],
         "outputRefs": [],
         "consolidatedRefs": [
@@ -1245,20 +1247,23 @@
         ]
       },
       "expectedOutputs": [
-        "bounded Oracle foundation runtime proof",
-        "architecture/currentness failure guards",
-        "benchmark/profile handoff and post-foundation efficiency continuation"
+        "one delivered Oracle foundation composition facade over exact BB-060..063 outputs",
+        "deterministic foundation proof with fail-closed provenance/currentness/budget/durability negatives",
+        "fixed-factor Oracle benchmark handoff plus explicit post-foundation continuation boundary"
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-064.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
-        "researchBaselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109",
-        "baselineSha": "0e0b124153774ccbdab692a9cadad12ec51ae109"
+        "researchBaselineSha": "faf39ab0b160267eb69d1ad62f3b3e917d80c633",
+        "baselineSha": "faf39ab0b160267eb69d1ad62f3b3e917d80c633",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-064.implementation-result.json",
+        "lastEvaluatedInput": "e04545d1585bfe2819eec62b77f1a9a3f220d6b53809831a67e53cd95d7cf3d2"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-065",
@@ -1852,7 +1857,7 @@
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-075.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-075.json",
-        "researchBaselineSha": "bc268918a9fce2a42b40f9aa81c8773dcff7b894",
+        "researchBaselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62",
         "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62"
       },
       "lane": "RESEARCH_SA",
@@ -1903,7 +1908,7 @@
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-076.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-076.json",
-        "researchBaselineSha": "bc268918a9fce2a42b40f9aa81c8773dcff7b894",
+        "researchBaselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62",
         "baselineSha": "ff85b6c710fc78663ce6e5657f30c5481c61ac62"
       },
       "lane": "RESEARCH_SA",
@@ -1912,7 +1917,7 @@
     {
       "id": "BB-077",
       "featureId": "FEATURE-HARNESS-ECONOMICS",
-      "title": "Research harness-isolation benchmark and async-first baseline protocol",
+      "title": "Research harness-isolation economics on shared benchmark kernel",
       "kind": "IMPLEMENTATION",
       "status": "PLANNED",
       "complexity": "L",
@@ -1941,24 +1946,22 @@
         ]
       },
       "expectedOutputs": [
-        "Research and pin a credible harness-evaluation method using shared environments, fixed model/task/prompt/budget/evaluator controls and native harness execution; compare external evidence such as Harness-Bench, Claw-SWE-Bench and Harbor with ExHarness constraints.",
-        "Define the neutral comparison unit and adapter contract for current synchronous Core, a minimal/direct baseline and the async candidate without letting a different model, prompt, workspace or evaluator confound harness effects.",
-        "Predeclare quality-cost Pareto metrics, tokens/tool calls/latency per accepted task, no-progress behavior, repeated-run consistency and a failure fingerprint taxonomy; preserve provider/infra failures as separate observations.",
-        "Produce a fresh implementation/readiness plan only after the benchmark protocol, datasets, budgets, sample/repeat policy and independent verification gates are resolved."
+        "DIRECT_CODEACT and CORE_SYNC are experiment-specific arm adapters over the delivered @exharness/benchmark kernel and calibrated substrate, not owners of generic runner/accounting/evidence infrastructure.",
+        "A fixed-factor protocol, cohort/repeat schedule and harness-economics reducer isolate synchronous harness effects while preserving every attempt and UNKNOWN/null provider observations.",
+        "BB-077 emits only comparison-specific metrics/reporting and a held-out handoff for BB-081; generic AttemptLedger/evidence/accounting/audit remain BB-065 ownership.",
+        "Worker execution remains blocked on BB-065 delivery even when research readiness converges."
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-077.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
-        "researchBaselineSha": "d4c442d4d2df101260f95d0f4d76ff4fffab40f5",
+        "researchBaselineSha": "edcd934afaa8c5c7e682af9121ca32984196bc59",
         "baselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.readiness-jev-evaluation.json",
-        "lastEvaluatedInput": "aadb78518c3f950bd13e7c2b1bd1df9d2373cd2be0cdd3675b00400c1283b04b",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.implementation-result.json"
       },
-      "lane": "WORKER",
-      "phase": "EXECUTION"
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     },
     {
       "id": "BB-078",
