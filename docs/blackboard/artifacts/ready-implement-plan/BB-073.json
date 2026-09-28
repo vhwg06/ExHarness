@@ -291,5 +291,193 @@
       "checked": "2026-09-28",
       "finding": "A separate packages/delivery-cli workspace package plus OCI bundle is the smallest distribution seam without changing core-harness or agentic runtime ownership."
     }
+  ],
+  "releaseProfileContract": {
+    "schemaVersion": 1,
+    "kind": "DELIVERY_RELEASE_MANIFEST_V1",
+    "supportedProfile": "single-tenant OCI/container deployment with CLI-first control surface",
+    "identity": [
+      "source/release version",
+      "OCI image digest",
+      "Node runtime major=24",
+      "stateSchemaCompatibilityVersion",
+      "SCM=GitHub",
+      "runtime/profile refs",
+      "config schema digest"
+    ],
+    "excluded": [
+      "mutable tag as identity",
+      "Kubernetes tenancy",
+      "multi-node HA",
+      "operator web UI"
+    ]
+  },
+  "cleanRoomContract": {
+    "schemaVersion": 1,
+    "hostPrerequisites": [
+      "Docker/Compose-compatible OCI execution",
+      "Git",
+      "network access required by configured provider/SCM"
+    ],
+    "bundleOnly": [
+      "compose.yaml",
+      "config schema/example",
+      "release manifest",
+      "packed CLI/runtime artifacts",
+      "supported-delivery-profile runbook"
+    ],
+    "forbidden": [
+      "developer checkout",
+      "prior chat/session state",
+      "unpublished local path",
+      "unversioned mutable image identity"
+    ],
+    "success": "From an empty temp host directory, validate config/secrets, start exact image digest, pass health, execute exact BB-070 reference delivery, retain release/config/run/evidence identities."
+  },
+  "operatorCliContract": {
+    "schemaVersion": 1,
+    "commands": [
+      "doctor",
+      "configure",
+      "run",
+      "status",
+      "cancel",
+      "backup",
+      "restore",
+      "upgrade-check"
+    ],
+    "errors": {
+      "MISSING_CREDENTIAL": "required named provider/SCM secret is absent",
+      "UNSUPPORTED_RUNTIME": "release/runtime metadata violates supported profile",
+      "INCOMPATIBLE_STATE": "persisted state schema/release compatibility check fails",
+      "ACTIVE_ATTEMPT": "upgrade is unsafe while ACTIVE/RECOVERY_REQUIRED work is not explicitly compatible"
+    },
+    "authority": "CLI delegates to delivered BB-070/BB-072 APIs and cannot directly rewrite canonical lifecycle, attempt or acceptance state."
+  },
+  "compatibilityContract": {
+    "schemaVersion": 1,
+    "upgrade": "upgrade-check validates target release/state schema plus active attempt compatibility before mutation; otherwise quiesce/cancel/reconcile is required",
+    "backup": "create pre-upgrade canonical backup when rollback compatibility is not guaranteed",
+    "rollback": "use exact previous OCI digest + previous release manifest; restore pre-upgrade snapshot when current state is not downgrade-compatible",
+    "failClosed": [
+      "unknown state schema",
+      "unknown image identity",
+      "ACTIVE/RECOVERY_REQUIRED attempt without explicit compatibility",
+      "missing previous release manifest"
+    ]
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A fresh environment installs a pinned release and completes the reference delivery with documented configuration.",
+      "criterionIds": [
+        "AC-1",
+        "INV-2",
+        "INV-3"
+      ],
+      "planElements": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S6"
+      ],
+      "verificationIds": [
+        "live-probe",
+        "clean-install",
+        "doctor",
+        "pack",
+        "distribution-contract"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "package.json",
+        ".github/workflows/test.yml",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-072.json"
+      ],
+      "supportingPlanFields": [
+        "releaseProfileContract",
+        "cleanRoomContract",
+        "operatorCliContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Health checks and actionable errors cover missing credentials, unsupported runtime and incompatible persisted state.",
+      "criterionIds": [
+        "AC-2",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S5",
+        "S6"
+      ],
+      "verificationIds": [
+        "doctor",
+        "distribution-contract",
+        "boundary-probe",
+        "upgrade-rollback"
+      ],
+      "decisionIndexes": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
+        "docs/living/system/state.md"
+      ],
+      "supportingPlanFields": [
+        "operatorCliContract",
+        "releaseProfileContract",
+        "compatibilityContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Upgrade and rollback exercises preserve or explicitly gate ongoing attempt compatibility; runbooks document support boundaries.",
+      "criterionIds": [
+        "AC-3",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S0",
+        "S5",
+        "S7"
+      ],
+      "verificationIds": [
+        "upgrade-rollback",
+        "boundary-probe",
+        "repository"
+      ],
+      "decisionIndexes": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "supportingPlanFields": [
+        "compatibilityContract",
+        "releaseProfileContract"
+      ]
+    }
   ]
 }
