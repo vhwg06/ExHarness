@@ -43,10 +43,6 @@ NONE
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
 - BB-060 [WORKER/EXECUTION] — Define Oracle runtime architecture and physical ownership
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
-- BB-070 [RESEARCH_SA/RESEARCH] — Deliver product from goal and partial artifacts across owned domains
-- BB-071 [RESEARCH_SA/RESEARCH] — Prove requirement change and failure recovery on a live product
-- BB-072 [RESEARCH_SA/RESEARCH] — Make delivery runs observable recoverable and cost bounded
-- BB-073 [RESEARCH_SA/RESEARCH] — Ship an installable supported delivery profile
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 
 ## Dependency graph
@@ -71,10 +67,10 @@ BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
 BB-069 [BLOCKED_BY BB-068,BB-064] <- BB-068, BB-064
-BB-070 [RESEARCH_SCHEDULABLE] <- BB-069, BB-055
-BB-071 [RESEARCH_SCHEDULABLE] <- BB-070, BB-057
-BB-072 [RESEARCH_SCHEDULABLE] <- BB-068, BB-058
-BB-073 [RESEARCH_SCHEDULABLE] <- BB-070, BB-072
+BB-070 [BLOCKED_BY BB-069,BB-055] <- BB-069, BB-055
+BB-071 [BLOCKED_BY BB-070,BB-057] <- BB-070, BB-057
+BB-072 [BLOCKED_BY BB-068,BB-058] <- BB-068, BB-058
+BB-073 [BLOCKED_BY BB-070,BB-072] <- BB-070, BB-072
 BB-074 [BLOCKED_BY BB-065,BB-071,BB-073,BB-077,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [BLOCKED_BY BB-074,BB-059] <- BB-074, BB-059
 BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
