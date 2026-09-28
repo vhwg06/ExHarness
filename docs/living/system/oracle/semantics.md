@@ -12,4 +12,4 @@
 
 `@exharness/oracle` owns the two concrete source read loops. The Agentic Application adapter still owns WorkOrder parsing and context schema validation. These providers are compatibility building blocks; provider selection, planner, durable resolution identity and currentness are future work.
 
-The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED and belong to BB-061.
+The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED. They belong to the follow-on semantic contract and runtime integration work.

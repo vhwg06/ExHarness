@@ -48,11 +48,13 @@ test("architecture guard rejects mutated forbidden imports, loops, wiring, expor
   for (const mutation of cases) assert.notDeepEqual(boundaryViolations({ ...fixture(), ...mutation }), [], JSON.stringify(mutation));
 });
 
-test("Living Docs mark BB-061 contract and hook not delivered", () => {
+test("Living Docs mark semantic contract and hook not delivered without work IDs", () => {
   for (const name of ["architecture", "state", "semantics", "workflow"]) {
     const doc = read(`docs/living/system/oracle/${name}.md`);
     assert.match(doc, /@exharness\/oracle/);
-    assert.match(doc, /production ContextRequirement\/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED and belong to BB-061/);
+    assert.match(doc, /production ContextRequirement\/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED/);
+    assert.match(doc, /follow-on semantic contract and runtime integration work/);
+    assert.doesNotMatch(doc, /\bBB-\d+\b/);
   }
 });
 
