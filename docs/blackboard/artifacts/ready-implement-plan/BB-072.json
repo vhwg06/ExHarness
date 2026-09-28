@@ -41,9 +41,6 @@
   "sourceSeams": {
     "requiredExisting": [
       "packages/agentic-system/src/index.js",
-      "packages/agentic-system/src/organization-observer.js",
-      "packages/agentic-system/src/causal-provenance.js",
-      "packages/agentic-system/src/causal-reconstruction.js",
       "packages/agentic-system/src/domain-execution-control.js",
       "docs/living/system/agentic-application/contracts.md",
       "docs/living/system/agentic-application/state.md",
@@ -53,7 +50,7 @@
     ],
     "expectedDependencyOutputs": [
       "BB-068 DONE: exact repository/commit/CI/review identity and evidence refs exposed to delivery operations.",
-      "BB-058 DONE: exact causal reconstruction, blocker explanation and external-effect reconciliation/currentness seam used by the operator projection."
+      "BB-058 DONE: packages/agentic-system/src/organization-observer.js, causal-provenance.js and causal-reconstruction.js plus exact blocker/timing/effect-reconciliation/currentness contracts; Worker binds delivered refs rather than assuming draft file shapes."
     ],
     "expectedNew": [
       "packages/agentic-system/src/delivery-operations.js",
@@ -297,6 +294,146 @@
       "source": "Temporal v1.32.0 and Restate v1.7.11",
       "checked": "2026-09-28",
       "finding": "Both provide durable execution references, but adoption would duplicate ExHarness execution/reconciliation journals; rejected for BB-072 canonical durability."
+    }
+  ],
+  "operatorProjectionContract": {
+    "schemaVersion": 1,
+    "kind": "DELIVERY_RUN_PROJECTION_V1",
+    "authoritativeInputs": [
+      "project/root identity",
+      "work item + claimGeneration",
+      "executionAttemptId + bindingRef",
+      "runtime/model/profile refs",
+      "SCM base/head/review/check refs",
+      "evidence/currentness refs"
+    ],
+    "derivation": "Read-only reconstruction from delivered canonical stores/artifacts; caller cannot supply a reduced truth set.",
+    "missing": "UNKNOWN or UNRESOLVED with missing provenance refs; never infer provenance from model text."
+  },
+  "accountingBudgetContract": {
+    "schemaVersion": 1,
+    "accounting": "append-only one record per provider wire attempt including failed/retried/ambiguous calls",
+    "nullable": [
+      "providerCost",
+      "inputTokens",
+      "outputTokens",
+      "cachedTokens",
+      "providerRequestId when unobservable"
+    ],
+    "zeroRule": "Unknown usage/cost remains null/UNKNOWN and is never normalized to zero.",
+    "budgetKind": "DELIVERY_BUDGET_POLICY_V1",
+    "dimensions": [
+      "providerCost when known",
+      "input/output tokens",
+      "model calls",
+      "wall time"
+    ],
+    "admission": "Reserve known/maximum permitted budget before dispatch; uncertainty may conservatively block a new dispatch but cannot fabricate usage."
+  },
+  "durabilityTelemetryContract": {
+    "schemaVersion": 1,
+    "backup": "Quiescent snapshot of configured canonical stores plus path/digest/schema/release MANIFEST_V1.",
+    "restore": "Validate every digest and schema/release compatibility before replacing configured canonical state; reconstructed projection must match the pinned pre-backup subject.",
+    "ambiguousEffects": "Consume exact DONE BB-058 reconciliation/currentness result; NON_RECONCILABLE remains blocked.",
+    "telemetry": "OpenTelemetry JS v2.11.0 compatible copy-only spans/metrics; exporter or Langfuse loss cannot mutate lifecycle/currentness/acceptance."
+  },
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "A fresh operator can explain blockers and inspect exact task/attempt/model/runtime/SCM identities without model-inferred provenance.",
+      "criterionIds": [
+        "AC-1",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S0",
+        "S1",
+        "S3",
+        "S6"
+      ],
+      "verificationIds": [
+        "projection",
+        "operator-smoke",
+        "deterministic-probe",
+        "boundary-probe"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        5,
+        6,
+        9
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "supportingPlanFields": [
+        "operatorProjectionContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Cost and duration include failed/retried provider calls; missing usage is explicit and cannot appear as zero.",
+      "criterionIds": [
+        "AC-2",
+        "INV-2"
+      ],
+      "planElements": [
+        "S2",
+        "S6"
+      ],
+      "verificationIds": [
+        "accounting-budget",
+        "deterministic-probe"
+      ],
+      "decisionIndexes": [
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/delivery-product-roadmap.md",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "supportingPlanFields": [
+        "accountingBudgetContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Backup/restore and process restart recover canonical runs; lost telemetry cannot grant or revoke product acceptance.",
+      "criterionIds": [
+        "AC-3",
+        "INV-1",
+        "INV-2"
+      ],
+      "planElements": [
+        "S3",
+        "S4",
+        "S5",
+        "S6"
+      ],
+      "verificationIds": [
+        "recovery-backup",
+        "telemetry-boundary",
+        "operator-smoke",
+        "deterministic-probe"
+      ],
+      "decisionIndexes": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/living/system/state.md"
+      ],
+      "supportingPlanFields": [
+        "durabilityTelemetryContract"
+      ]
     }
   ]
 }
