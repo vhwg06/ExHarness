@@ -39,10 +39,10 @@
     "D2 — Freeze compositional arms A=CORE_SYNC, B=A+BB-078, C=B+BB-079, D=C+BB-080. B/C are diagnostic; D is the sole promotion candidate.",
     "D3 — Build arms from exact DONE exports. If B/C/D cannot be independently composed, stop with PLAN_INPUT_CONTRADICTION rather than approximate the ablation.",
     "D4 — Use exactly BB-077's four reserved Terminal-Bench 2.1 held-out digests, two repeats per arm/task, fresh trial/runtime/provider session per unit, and the balanced order schedule in ablationContract.",
-    "D5 — Reuse HARNESS_RUN_RECORD_V1 and BB-077 measurement/failure semantics, extended only with arm/dependency/repeat/fault fields plus reportContract-derived useful-operation and recovery views; unknown measurements remain null.",
+    "D5 — Consume BB-065 @exharness/benchmark AttemptLedger/evidence/accounting/audit and BENCHMARK_SUBSTRATE_MANIFEST_V1 through the delivered public contracts. Extend settled benchmark attempts only with BB-081 arm/dependency/repeat/fault observations; unknown measurements remain null. BB-081 must not implement a second Harbor adapter or generic run-record truth.",
     "D6 — Primary decision is D vs A. Report A→B, B→C and C→D marginal vectors only for attribution; no B/C result can publish a supported profile.",
     "D7 — Reuse BB-077's conjunctive gate unchanged: D quality >= A; safety negatives pass with zero duplicate effects; median D/A cost<=0.85, prompt input<=0.90, turns<=1.00, elapsed<=1.10.",
-    "D8 — Keep every registered task-repeat unit and retry in accounting. Report per-task 0/2|1/2|2/2 consistency; no best-of-k or significance claim from the bounded cohort.",
+    "D8 — Keep every registered task-repeat unit and retry in the shared AttemptLedger and comparison denominators. Report per-task 0/2|1/2|2/2 consistency; no best-of-k or significance claim from the bounded cohort.",
     "D9 — Run safety/recovery faults as deterministic provider/tool/process fixtures with explicit arm applicability and N/A cells; do not mix fault fixtures into live-provider economics.",
     "D10 — Any conclusive D safety violation (duplicate effect, lost terminal result, unsafe cancellation, stale-model dispatch, duplicate-wake storm or unresolved NON_RECONCILABLE ambiguity) forces KEEP_SYNC_BASELINE.",
     "D11 — A deterministic reducer returns PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE from frozen evidence; Jev validates evidence claims but cannot rewrite the reducer outcome.",
@@ -52,6 +52,7 @@
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-078.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-079.json",
@@ -67,7 +68,7 @@
       "docs/living/system/core-harness/workflow.md"
     ],
     "expectedDependencyOutputs": [
-      "BB-077 DONE: exact Harbor adapter/substrate, held-out registry, HARNESS_RUN_RECORD_V1, provider/budget/measurement/failure contracts and synchronous control evidence.",
+      "BB-077 DONE: exact DIRECT_CODEACT/CORE_SYNC adapters, fixed-factor protocol, development/held-out manifests, economics reducer/report and BB-081 handoff over the BB-065 benchmark kernel; no generic ledger/evidence/accounting ownership.",
       "BB-078 DONE: exact independently composable detached-operation manager/store, transition/recovery/cancel APIs and delivery judgment.",
       "BB-079 DONE: exact independently composable async-result context checkpoint/provider-delivery APIs and delivery judgment.",
       "BB-080 DONE: exact independently composable async-agent coordinator steering/coalescing/model-fencing/recovery APIs and delivery judgment."
@@ -95,6 +96,8 @@
   },
   "sourceScope": {
     "read": [
+      "benchmarks/substrate/**",
+      "packages/benchmark/**",
       "benchmarks/harness_efficiency/**",
       "packages/core-harness/src/**",
       "packages/core-harness/test/**",
@@ -116,6 +119,8 @@
       "docs/living/system/core-harness/workflow.md"
     ],
     "forbiddenWrite": [
+      "benchmarks/substrate/**",
+      "packages/benchmark/**",
       "docs/blackboard/**",
       ".github/**",
       "packages/agentic-system/**",
@@ -132,7 +137,7 @@
   "implementationSlices": [
     "S1 — Bind exact DONE BB-077/078/079/080 outputs, compute the dependency manifest, and fail PLAN_INPUT_CONTRADICTION on missing/incompatible/non-composable seams.",
     "S2 — Materialize A/B/C/D plus the four held-out digests, two-repeat balanced schedule, fixed BB-077 profile/budgets and protocol hashes.",
-    "S3 — Execute all 32 registered held-out arm units through the shared BB-077 Harbor adapter with fresh state/session identity and append-only HARNESS_RUN_RECORD_V1 accounting.",
+    "S3 — Execute all 32 registered held-out arm units through the delivered BB-065 substrate port and @exharness/benchmark lifecycle, with fresh trial/runtime/provider session per unit; preserve every attempt/retry and bind BB-081 arm/fault observations to BENCHMARK_ATTEMPT_RECORD_V1 evidence.",
     "S4 — Emit reportContract metrics for every registered unit, D/A primary pairs and A→B/B→C/C→D attribution, including quality, input/output/cache tokens, cost, turns, tool calls, useful operations/turn, operation overlap, elapsed time, recovery outcome, repeat consistency and failure fingerprints.",
     "S5 — Run the deterministic fault matrix and capture exact recovery/effect/fencing evidence without paid-provider dependence.",
     "S6 — Run the frozen reducer for PROMOTE_ASYNC|KEEP_SYNC_BASELINE|INCONCLUSIVE; mutation tests cover missing/unknown/drift and every primary gate.",
@@ -168,7 +173,7 @@
     },
     {
       "id": "ACCOUNTING",
-      "statement": "Every registered unit, retry, failure and unknown usage remains append-only HARNESS_RUN_RECORD_V1 evidence; missing values stay unknown and no unit is replaced.",
+      "statement": "Every registered unit, retry, failure and unknown usage remains append-only shared @exharness/benchmark attempt/evidence/accounting truth; missing values stay UNKNOWN/null, no unit is replaced, and BB-081 owns no second generic ledger.",
       "verificationIds": [
         "ablation-contract",
         "decision-contract",
@@ -382,9 +387,7 @@
       "command": "npm run test:core"
     }
   ],
-  "researchGaps": [
-    "Refresh BB-081 to consume the shared @exharness/benchmark kernel and delivered upstream comparison contracts; the previous READY plan predates BB-065/BB-077 ownership."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
     "DEV/replacement/mutated task enters held-out cohort.",
     "An arm changes any BB-077 fixed factor beyond capability composition.",
@@ -395,7 +398,9 @@
     "Live paid units exceed the frozen 32 without a new protocol.",
     "Fault fixture is mixed into live-provider economics or N/A counted as pass.",
     "PROMOTE_ASYNC occurs with any quality/safety/efficiency/incomplete-evidence failure.",
-    "B/C or INCONCLUSIVE changes supported profile; rollback mutates a non-quiescent session; stale evidence survives source/dependency drift."
+    "B/C or INCONCLUSIVE changes supported profile; rollback mutates a non-quiescent session; stale evidence survives source/dependency drift.",
+    "BB-081 deep-imports packages/benchmark/src/**, implements a local generic AttemptLedger/evidence/accounting/audit layer, or spawns Harbor directly.",
+    "BB-081 mutates packages/benchmark/** or benchmarks/substrate/** to make an ablation pass."
   ],
   "laneContracts": [
     {
@@ -451,6 +456,11 @@
     {
       "source": "packages/core-harness/src/effect-reconciliation.js",
       "finding": "EffectOperation/reconciliation remains side-effect truth and NON_RECONCILABLE ambiguity fails closed."
+    },
+    {
+      "source": "BB-065 canonical benchmark plan + BB-077 kernel-consumer plan",
+      "checked": "2026-09-28",
+      "finding": "Generic experiment/attempt/evidence/accounting/audit/substrate truth is upstream; BB-081 owns only held-out ablation/fault/attribution/promotion semantics."
     }
   ],
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
@@ -492,32 +502,29 @@
         9
       ],
       "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
         "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
-        "docs/blackboard/process/harness-efficiency-phase.md",
         "packages/core-harness/src/effect-reconciliation.js"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
-          "match": "\"heldout\": ["
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "D12 — BB-081, BB-074, BB-075 and BB-076 reuse the same experiment/unit/attempt/evidence/accounting backbone."
         },
         {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
-          "match": "\"runRecord\": \"HARNESS_RUN_RECORD_V1\""
+          "match": "D10 — Freeze the BB-081 handoff before future async results"
         },
         {
           "ref": "packages/core-harness/src/effect-reconciliation.js",
           "match": "case EffectReplayPolicy.NON_RECONCILABLE:"
-        },
-        {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
-          "match": "\"metrics\": ["
         }
       ],
       "supportingPlanFields": [
         "ablationContract",
         "faultMatrix",
-        "reportContract"
+        "reportContract",
+        "kernelConsumerContract"
       ]
     },
     {
@@ -563,7 +570,7 @@
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
-          "match": "\"medianNormalizedProviderCostRatio\": \"<=0.85\""
+          "match": "D10 — Freeze the BB-081 handoff before future async results"
         },
         {
           "ref": "docs/blackboard/process/harness-efficiency-phase.md",
@@ -671,7 +678,7 @@
       "kv-store r1 C-D-B-A; r2 A-B-D-C",
       "sanitize r1 D-A-C-B; r2 B-C-A-D"
     ],
-    "fixed": "All BB-077 fixed factors, preflight/reset/leakage semantics and HARNESS_RUN_RECORD_V1",
+    "fixed": "All BB-077 fixed factors and comparison protocol, plus BB-065 BENCHMARK_SUBSTRATE_MANIFEST_V1 and @exharness/benchmark attempt/evidence/accounting/audit semantics",
     "budget": "BB-077 external limits: <=$0.60/unit, <=$25 live cohort, 16 turns, 64 host calls, 900s, 180k input, 12k output",
     "comparison": "D/A primary; A->B, B->C, C->D diagnostic; all units/attempts retained"
   },
@@ -834,5 +841,35 @@
       "failure-fingerprint recurrence",
       "recovery-outcome counts"
     ]
+  },
+  "kernelConsumerContract": {
+    "schemaVersion": 1,
+    "upstreamPackage": "@exharness/benchmark",
+    "substrateManifest": "BENCHMARK_SUBSTRATE_MANIFEST_V1",
+    "bb077Input": [
+      "fixed-factor protocol",
+      "held-out manifest",
+      "comparison metric vector",
+      "failure fingerprints",
+      "preregistered promotion gate"
+    ],
+    "kernelOwned": [
+      "experiment/unit identity",
+      "AttemptLedger",
+      "orthogonal outcome",
+      "evidence manifest",
+      "nullable provider accounting",
+      "audit/recompute",
+      "substrate reset/artifact/verifier/failure normalization"
+    ],
+    "bb081Owned": [
+      "A/B/C/D ablation composition",
+      "held-out execution",
+      "fault matrix",
+      "attribution reducer",
+      "PROMOTE_ASYNC|KEEP_SYNC_BASELINE|INCONCLUSIVE",
+      "supported-profile publication"
+    ],
+    "importRule": "package root/public upstream contracts only; no benchmark deep imports or direct Harbor invocation"
   }
 }
