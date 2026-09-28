@@ -21,15 +21,15 @@ test('provider-neutral evidence fixtures share one schema',()=>{
  const fixtures=[['semantic-code','REPOSITORY'],['lexical-search','REPOSITORY'],['relationship','CONTEXT_GRAPH'],['accepted artifact','APPLICATION_ARTIFACT']];
  for(const [need,kind] of fixtures) {const r=req([{id:'e',necessity:'REQUIRED',need,source:{kind,ref:'source',snapshot:{mode:'EXACT',ref:'revision'}}}]);assert.equal(r.evidence[0].source.kind,kind);assert.ok(!('providerId' in r));}
 });
-test('resolution binds source currentness provenance content and status',()=>{
+test('resolution binds source currentness provenance content and status',t=>{
  const r=req();const a=result(r); assert.equal(consumable(a,r).resolutionId,a.resolutionId);assert.equal(a.items[0].itemDigest,contextItemDigest(a.items[0]));assert.equal(a.materialization.id,contextMaterializationId(a.items));assert.equal(a.resolutionId,contextResolutionId(a));
  const b=result(r,[item('code',{provenance:[{kind:'ORIGIN',ref:'manifest'}]})]);assert.notEqual(a.resolutionId,b.resolutionId);
  const c=result(r,[item('code',{content:'changed'})]);assert.notEqual(a.materialization.id,c.materialization.id);
  const raw=structuredClone(a);raw.consumed.providerCalls=2;assert.equal(resolution(raw,r).resolutionId,a.resolutionId);
- assert.throws(()=>result(r,[item('code',{currentness:{validators:[{kind:'OPAQUE',value:'mtime',strength:'WEAK'}]}})]),/strong validator/);
+ assert.throws(()=>result(r,[item('code',{currentness:{validators:[{kind:'OPAQUE',value:'mtime',strength:'WEAK'}]}})]),/strong validator/);t.diagnostic('REQUIRED CURRENT rejects weak timestamp-only validator');
  assert.throws(()=>result(r,[item('code',{source:{...item().source,ref:'wrong'}})]),/source identity/);
  assert.throws(()=>result(r,[],[{evidenceId:'code',reason:'MISSING'}],null,{status:'COMPLETE'}),/status/);
- for(const reason of ['MISSING','STALE','AMBIGUOUS','BUDGET_EXHAUSTED','CURRENTNESS_UNVERIFIABLE']) {const missing=result(r,[],[{evidenceId:'code',reason}]);assert.equal(missing.status,'UNSATISFIED');assert.throws(()=>consumable(missing,r),/unresolved/);}
+ for(const reason of ['MISSING','STALE','AMBIGUOUS','BUDGET_EXHAUSTED','CURRENTNESS_UNVERIFIABLE']) {const missing=result(r,[],[{evidenceId:'code',reason}]);assert.equal(missing.status,'UNSATISFIED');assert.throws(()=>consumable(missing,r),/unresolved/);t.diagnostic(`REQUIRED ${reason} -> UNSATISFIED, non-consumable`);}
 });
 test('optional partial, required provenance and progression budgets',()=>{
  const r=req([req().evidence[0],{id:'optional',necessity:'OPTIONAL',need:'extra',source:{kind:'REPOSITORY',ref:'repo',snapshot:{mode:'EXACT',ref:'rev-1'}}}]);
@@ -49,3 +49,31 @@ test('exact snapshot, itemRef coverage, status and digest are fail closed',()=>{
  const wrong=structuredClone(good);wrong.requirementId='bad';assert.throws(()=>resolution(wrong,exact),/wrong requirementId/);
  const unknown=structuredClone(good);unknown.items[0].source.providerId='x';assert.throws(()=>resolution(unknown,exact),/unknown field/);
 });
+test('budget/currentness evidence: every counter and immutable step ceiling',t=>{
+ const r=req();const first=result(r);const second=result(r,[item()],[],first,{consumed:{items:2,materializedBytes:4096,providerCalls:2,resolutionSteps:2}});const third=result(r,[item()],[],second,{consumed:{items:3,materializedBytes:4096,providerCalls:3,resolutionSteps:3}});
+ assert.throws(()=>result(r,[item()],[],third,{consumed:{items:4,materializedBytes:4096,providerCalls:4,resolutionSteps:4}}),/resolutionSteps budget/);
+ for(const [counter,value] of [['items',5],['materializedBytes',4097],['providerCalls',5],['resolutionSteps',4]]) {
+  const consumed={items:1,materializedBytes:4096,providerCalls:1,resolutionSteps:1,[counter]:value};
+  assert.throws(()=>result(r,[item()],[],null,{consumed}),new RegExp(`${counter} budget`));
+  t.diagnostic(`${counter} hard budget rejects ${value}`);
+ }
+ assert.equal(first.step.index,0);assert.equal(second.step.previousResolutionId,first.resolutionId);assert.equal(third.step.previousResolutionId,second.resolutionId);
+ t.diagnostic('index 0 -> 1 -> 2 binds exact immutable parent; step 3 rejected');
+});
+for(const fixture of [
+ {name:'semantic-code repository CURRENT',kind:'REPOSITORY',ref:'repo://source',need:'Find symbol callers',snapshot:{mode:'CURRENT'},itemRef:'src/symbol.js'},
+ {name:'lexical-search repository CURRENT',kind:'REPOSITORY',ref:'repo://source',need:'Find exact warning text',snapshot:{mode:'CURRENT'},itemRef:'src/warning.js'},
+ {name:'context-graph relationship CURRENT',kind:'CONTEXT_GRAPH',ref:'graph://dependencies',need:'Find dependency edge',snapshot:{mode:'CURRENT'},itemRef:null},
+ {name:'accepted application-artifact EXACT',kind:'APPLICATION_ARTIFACT',ref:'artifact://accepted',need:'Read accepted output',snapshot:{mode:'EXACT',ref:'revision-7'},itemRef:'dist/output.js',requiredProvenance:[{kind:'PRODUCER_WORK_ORDER',ref:'work-7'},{kind:'ACCEPTANCE_DECISION',ref:'accepted-7',digest:'sha256:decision'}]}
+]) {
+ test(`provider-neutral fixture: ${fixture.name}`,t=>{
+  const evidence={id:'source',necessity:'REQUIRED',need:fixture.need,source:{kind:fixture.kind,ref:fixture.ref,snapshot:fixture.snapshot,...(fixture.itemRef?{itemRefs:[fixture.itemRef]}:{})},...(fixture.requiredProvenance?{requiredProvenance:fixture.requiredProvenance}:{})};
+  const r=req([evidence]);
+  const source={kind:fixture.kind,ref:fixture.ref,snapshotRef:fixture.snapshot.mode==='EXACT'?fixture.snapshot.ref:'revision-7',itemRef:fixture.itemRef};
+  const validators=[{kind:'REVISION',value:source.snapshotRef,strength:'STRONG'}];
+  const resolved=result(r,[{evidenceId:'source',rank:0,source,currentness:{validators},provenance:fixture.requiredProvenance??[],content:{text:fixture.need}}]);
+  assert.equal(consumable(resolved,r).status,'COMPLETE');assert.equal(resolved.items[0].source.kind,fixture.kind);
+  assert.deepEqual(resolved.items[0].provenance,fixture.requiredProvenance??[]);
+  t.diagnostic(JSON.stringify({kind:fixture.kind,mode:fixture.snapshot.mode,requirementId:r.requirementId,resolutionId:resolved.resolutionId,provenance:resolved.items[0].provenance}));
+ });
+}
