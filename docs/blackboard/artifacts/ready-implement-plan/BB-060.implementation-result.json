@@ -1,0 +1,152 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-060-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+    "hash": "22a9d8e12c982b794e8b9333b3245ab0c326383bb050c8f37e1edbb29dc185ab"
+  },
+  "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+  "baselineSha": "2fa41d94f84f86f20ae612dd9caad0b5d861b13c",
+  "candidateTree": "4eb0c0d27b0b2359f6a34c1dc7022c4c824c7070",
+  "verificationRuns": [
+    {
+      "id": "oracle-provider-unit",
+      "command": "node --test packages/oracle/test/compatibility-providers.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+      "logRef": "docs/blackboard/evidence/BB-060/oracle-provider-unit.txt",
+      "logHash": "6afc0071b87f85fe1ca6fb7b9f119d1b3d663f92389df439e3ba3d3cd63e2fa5"
+    },
+    {
+      "id": "oracle-compatibility",
+      "command": "node --test packages/agentic-system/test/oracle-package-integration.test.js packages/agentic-system/test/wave-a.test.js packages/agentic-system/test/wave-c.test.js packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+      "logRef": "docs/blackboard/evidence/BB-060/oracle-compatibility.txt",
+      "logHash": "3811f804b170142c39ec1a6aad6cfbf8bece2977c2228dc4235c1a9f32edbcfe"
+    },
+    {
+      "id": "architecture-boundary",
+      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+      "logRef": "docs/blackboard/evidence/BB-060/architecture-boundary.txt",
+      "logHash": "168cfe551ba8d64b5f00c44b18e2d33961e031cc162c23fd0ad76b66160c21be"
+    },
+    {
+      "id": "runtime-seam-probe",
+      "command": "node scripts/oracle-context-intelligence/bb060-runtime-seam-probe.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+      "logRef": "docs/blackboard/evidence/BB-060/runtime-seam-probe.txt",
+      "logHash": "9ddd184542edfca8c9ab63936a3ea410e357fe9e71234847fe6d1d0e51b81467"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+      "logRef": "docs/blackboard/evidence/BB-060/agentic-regression.txt",
+      "logHash": "4ac27222e809b0b921d9a7ca86bcc742ea45c872153219b8c6f0814d92a9b354"
+    },
+    {
+      "id": "research-evidence-check",
+      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs --test-name-pattern='research evidence|provider selection deferred|license'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+      "logRef": "docs/blackboard/evidence/BB-060/research-evidence-check.txt",
+      "logHash": "eaf12952831c37aa18db1987874cbd77ed527476aa340717d7804bd84eb5eda3"
+    },
+    {
+      "id": "living-docs-check",
+      "command": "node --test --test-name-pattern='Living|not delivered|semantic contract' test/oracle-context-intelligence-architecture.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+      "logRef": "docs/blackboard/evidence/BB-060/living-docs-check.txt",
+      "logHash": "2e7aa732c8bec2c6aa0ac12e659f1517af80729e1448423d68e8f3d8d63f67a3"
+    },
+    {
+      "id": "current-docs-gate",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+      "logRef": "docs/blackboard/evidence/BB-060/current-docs-gate.txt",
+      "logHash": "a8e4c7c3814b69d670d325cdd7cd75c2065a70af913ae35ca1131d9475541285"
+    }
+  ],
+  "claims": [
+    {
+      "id": "RUNTIME_PATH",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-060/architecture-boundary.txt",
+        "docs/blackboard/evidence/BB-060/runtime-seam-probe.txt"
+      ]
+    },
+    {
+      "id": "PHYSICAL_OWNERSHIP",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-060/oracle-provider-unit.txt",
+        "docs/blackboard/evidence/BB-060/architecture-boundary.txt"
+      ]
+    },
+    {
+      "id": "COMPATIBILITY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-060/oracle-compatibility.txt",
+        "docs/blackboard/evidence/BB-060/agentic-regression.txt"
+      ]
+    },
+    {
+      "id": "REBOUND_SEMANTICS",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-060/architecture-boundary.txt",
+        "docs/blackboard/evidence/BB-060/living-docs-check.txt",
+        "docs/blackboard/evidence/BB-060/current-docs-gate.txt"
+      ]
+    },
+    {
+      "id": "EXTERNAL_EVIDENCE",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-060/research-evidence-check.txt",
+        "docs/blackboard/evidence/BB-060/EXTERNAL_EVIDENCE-observation-0.txt"
+      ]
+    },
+    {
+      "id": "PROTOTYPE_HANDOFF",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-060/runtime-seam-probe.txt",
+        "docs/blackboard/evidence/BB-060/research-evidence-check.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-060/oracle-compatibility.txt",
+        "docs/blackboard/evidence/BB-060/architecture-boundary.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-060/oracle-provider-unit.txt",
+        "docs/blackboard/evidence/BB-060/runtime-seam-probe.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-060/architecture-boundary.txt"
+      ]
+    }
+  ]
+}
