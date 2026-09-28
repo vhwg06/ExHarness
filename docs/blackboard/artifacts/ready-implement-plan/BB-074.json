@@ -38,11 +38,11 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "D1 — Reuse BB-077 Harbor substrate, DIRECT_CODEACT control, provider/measurement/failure contracts and exact supported Core profile selected by BB-081. BB-074 adds delivery orchestration and human-effort measurement; it does not redefine harness accounting.",
+    "D1 — Reuse BB-065 @exharness/benchmark + calibrated substrate for experiment/unit/AttemptLedger/evidence/accounting/audit truth, BB-077 DIRECT_CODEACT as the direct control adapter, and the exact supported Core profile selected by BB-081. BB-074 adds delivery orchestration and human-effort measurement; it does not redefine generic benchmark infrastructure.",
     "D2 — External arm E is the exact supported ExHarness release/profile from BB-073+BB-081; arm D is BB-077 DIRECT_CODEACT. Both receive the same Terminal-Bench instruction/environment/final verifier and aggregate live budget.",
     "D3 — Freeze six external primary tasks: configure-git-webserver, git-multibranch, build-cython-ext, modernize-scientific-stack, custom-memory-heap-crash, sqlite-with-gcov. Ordered reserves are openssl-selfsigned-cert then db-wal-recovery; all digests are pinned in externalCohort.",
-    "D4 — Before any live model call, each primary/reserve candidate used must pass Harbor oracle 5/5 and nop fail 1/1. Substitution follows reserve order and is sealed in one cohort hash before arm results.",
-    "D5 — Run two repeats per task/arm. Counterbalance D/E order across 12 task-repeat pairs; fresh task environment, product/direct runtime state and provider session per unit. A retry is a new attempt inside the same unit.",
+    "D4 — Before any live model call, each primary/reserve candidate used must pass task-specific oracle 5/5 and nop fail 1/1 through the delivered BB-065 substrate port. This is task admissibility only and cannot mutate/redefine generic substrate calibration. Substitution follows reserve order and is sealed in one cohort hash before arm results.",
+    "D5 — Run two repeats per task/arm. Counterbalance D/E order across 12 task-repeat pairs; each unit uses a fresh delivered substrate trial, fresh product/direct runtime state and provider session. Every execution/retry is a new shared AttemptLedger attempt inside the registered unit.",
     "D6 — Give both arms the same aggregate ceiling: USD1.20 provider cost, 360k input tokens, 24k output tokens, 24 model turns, 96 host/tool calls and 1800s wall time per registered arm unit; live external cohort ceiling is USD35.",
     "D7 — Record DELIVERY_HUMAN_EVENT_V1 with explicit START/PAUSE/RESUME/STOP or NO_INTERVENTION. Included categories are OPERATOR_REVIEW, PRODUCT_DECISION, COORDINATION and MANUAL_EDIT; excluded categories are BENCHMARK_SETUP, INDEPENDENT_EVAL and PASSIVE_WAIT.",
     "D8 — Primary active human effort is the union duration of included operator intervals per unit; overlapping categories are not double-counted and overlapping active intervals across units are forbidden. Manual edits remain visible and final quality still comes from the same independent verifier.",
@@ -54,6 +54,7 @@
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-071.json",
@@ -81,6 +82,8 @@
   },
   "sourceScope": {
     "read": [
+      "benchmarks/substrate/**",
+      "packages/benchmark/**",
       "benchmarks/**",
       "scripts/delivery/**",
       "packages/agentic-system/**",
@@ -112,8 +115,8 @@
   "implementationSlices": [
     "S1 — Bind exact DONE benchmark/product dependencies and supported release/profile; seal fixed-factor arm manifests.",
     "S2 — Preflight and seal six external held-out tasks plus ordered reserves before any live arm dispatch.",
-    "S3 — Implement explicit human-event ledger and unit lifecycle with fresh D/E environments and complete attempt/provider accounting.",
-    "S4 — Run 24 external registered arm units and produce paired quality/economics/human-effort/lead-time/failure evidence.",
+    "S3 — Implement the experiment-specific DELIVERY_HUMAN_EVENT_V1 ledger and unit lifecycle, while routing D/E execution, retries, provider observations, candidate evidence and audit through the shared BB-065 benchmark lifecycle; preserve UNKNOWN/null accounting.",
+    "S4 — Run 24 external registered D/E arm units through the shared benchmark substrate/kernel and produce paired quality/economics/human-effort/lead-time/failure evidence without reimplementing generic attempt/evidence/accounting truth.",
     "S5 — Run six product lifecycle scenarios from BB-071/073 and capture recovery/fencing/install/rollback plus human effort.",
     "S6 — Reduce complete evidence to VALUE_DEMONSTRATED, NO_VALUE_DEMONSTRATED or INCONCLUSIVE with frozen gates.",
     "S7 — Publish report and update Living truth with only the verified value result, limitations and exact release/protocol bindings."
@@ -147,7 +150,7 @@
     },
     {
       "id": "ACCOUNTING",
-      "statement": "All attempts/retries/provider failures and nullable token/cost fields remain append-only and bound to registered units; no success-only filtering or unknown-to-zero conversion occurs.",
+      "statement": "All registered units, attempts/retries/provider failures and nullable token/cost fields remain in shared @exharness/benchmark AttemptLedger/evidence/accounting truth; no success-only filtering, replacement, deep-import bypass or unknown-to-zero conversion occurs.",
       "verificationIds": [
         "contract",
         "live-external"
@@ -316,9 +319,7 @@
       "command": "git diff --name-only \"$BB074_BASELINE_SHA\" \"$BB074_CANDIDATE_SHA\" | node benchmarks/delivery_value/run.mjs --mode verify-boundary"
     }
   ],
-  "researchGaps": [
-    "Refresh BB-074 to consume the shared @exharness/benchmark kernel and delivered upstream comparison contracts; the previous READY plan predates BB-065/BB-077 ownership."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
     "A BB-077/081 development or held-out task is reused in the BB-074 external cohort.",
     "Reserve substitution occurs after any live arm result is observed.",
@@ -329,7 +330,9 @@
     "Manual edit is hidden while final candidate is reported as fully autonomous.",
     "ExHarness is called value-demonstrated with lower accepted rate, a critical escaped defect, >80% Direct active effort, >110% Direct cost/accepted, or failed lifecycle scenario.",
     "Incomplete cost/event/unit/lifecycle evidence is converted to NO_VALUE or VALUE instead of INCONCLUSIVE.",
-    "Downstream BB-075/076 or producer narrative changes thresholds or overrides the reducer."
+    "Downstream BB-075/076 or producer narrative changes thresholds or overrides the reducer.",
+    "BB-074 deep-imports benchmark internals, implements a local generic AttemptLedger/evidence/accounting/audit layer, or invokes Harbor directly.",
+    "BB-074 mutates packages/benchmark/** or benchmarks/substrate/** instead of consuming delivered upstream contracts."
   ],
   "laneContracts": [
     {
@@ -420,7 +423,7 @@
       "wallSeconds": 1800
     },
     "cohortUsd": 35,
-    "reset": "fresh Harbor env + arm runtime/product state + unique provider session per registered unit",
+    "reset": "fresh BB-065 substrate trial + arm runtime/product state + unique provider session per registered unit",
     "allAttempts": true
   },
   "humanEffortContract": {
@@ -519,7 +522,12 @@
     },
     {
       "source": "BB-077/BB-081 current benchmark contracts",
-      "finding": "Provide neutral Harbor/direct control, fixed-factor measurement, failure taxonomy and supported Core profile boundary reused by BB-074."
+      "finding": "BB-065 provides neutral substrate/reset/artifact/verifier normalization; BB-077 provides DIRECT_CODEACT plus fixed-factor/economics/failure comparison semantics; BB-081 provides the supported Core profile boundary reused by BB-074."
+    },
+    {
+      "source": "BB-065 canonical benchmark plan + BB-077/BB-081 downstream contracts",
+      "checked": "2026-09-28",
+      "finding": "Delivery value must reuse the same experiment/attempt/evidence/accounting backbone; BB-074 adds human-effort and lifecycle-specific observations only."
     }
   ],
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
@@ -555,27 +563,28 @@
         7
       ],
       "sourceRefs": [
-        "docs/blackboard/process/delivery-product-roadmap.md",
-        "docs/blackboard/process/harness-benchmark-program-research.md",
-        "docs/blackboard/artifacts/ready-implement-plan/BB-077.json"
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+        "docs/blackboard/process/harness-benchmark-program-research.md"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
-          "match": "BB-074 measures end-to-end delivery value."
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "D12 — BB-081, BB-074, BB-075 and BB-076 reuse the same experiment/unit/attempt/evidence/accounting backbone."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+          "match": "D7 — Every arm execution is registered through createExperimentRegistration/createBenchmarkUnit and starts/settles through AttemptLedger."
         },
         {
           "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
           "match": "Layer D — delivery harness value (BB-074)"
-        },
-        {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
-          "match": "\"runRecord\": \"HARNESS_RUN_RECORD_V1\""
         }
       ],
       "supportingPlanFields": [
         "externalCohort",
-        "humanEffortContract"
+        "humanEffortContract",
+        "kernelConsumerContract"
       ]
     },
     {
@@ -687,5 +696,39 @@
         "lifecycleContract"
       ]
     }
-  ]
+  ],
+  "kernelConsumerContract": {
+    "schemaVersion": 1,
+    "upstreamPackage": "@exharness/benchmark",
+    "substrateManifest": "BENCHMARK_SUBSTRATE_MANIFEST_V1",
+    "bb077Input": [
+      "DIRECT_CODEACT adapter",
+      "fixed-factor comparison protocol",
+      "economics/failure metric semantics"
+    ],
+    "bb081Input": [
+      "exact supported Core profile",
+      "held-out attribution decision/profile evidence"
+    ],
+    "kernelOwned": [
+      "experiment/unit identity",
+      "AttemptLedger",
+      "orthogonal outcome",
+      "evidence manifest",
+      "nullable provider accounting",
+      "audit/recompute",
+      "substrate reset/artifact/verifier/failure normalization"
+    ],
+    "bb074Owned": [
+      "delivery D/E orchestration",
+      "DELIVERY_HUMAN_EVENT_V1",
+      "delivery lifecycle scenarios",
+      "delivery-value reducer"
+    ],
+    "forbidden": [
+      "local generic benchmark truth",
+      "direct Harbor invocation",
+      "kernel/substrate mutation"
+    ]
+  }
 }
