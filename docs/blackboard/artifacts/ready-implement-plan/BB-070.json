@@ -407,20 +407,21 @@
       "supportingPlanFields": [
         "seedContract",
         "closureContract",
-        "seedEquivalenceProtocol"
+        "seedEquivalenceProtocol",
+        "workerEvidenceContract"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
-          "match": "ProductStateProjection is a deterministic disposable reduction"
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "Initial delivery profile: a small internal request-management web application"
         },
         {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
-          "match": "Independent QA feeds verifier-produced behavior/regression evidence"
+          "match": "D13: Execute four live evidence runs: three clean reset runs from the same frozen base/protocol and one interruption run."
         },
         {
-          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
-          "match": "Three seed completeness levels and kill/resume/change probes"
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+          "match": "ProductOutcomeClaim is immutable evidence outside ProductHistory."
         }
       ]
     },
@@ -452,12 +453,17 @@
         "docs/blackboard/artifacts/ready-implement-plan/BB-069.json"
       ],
       "supportingPlanFields": [
-        "lifecycleCompositionContract"
+        "lifecycleCompositionContract",
+        "workerEvidenceContract"
       ],
       "sourceAnchors": [
         {
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "The system can pause for a product decision, resume after process failure, and incorporate requirement changes without restarting unrelated work."
+        },
+        {
           "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "createDomainExecutionController"
+          "match": "RECOVERY_REQUIRED"
         },
         {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
@@ -497,20 +503,21 @@
       ],
       "supportingPlanFields": [
         "seedContract",
-        "closureContract"
+        "closureContract",
+        "workerEvidenceContract"
       ],
       "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "The system can pause for a product decision, resume after process failure, and incorporate requirement changes without restarting unrelated work."
+        },
         {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
           "match": "ProductOutcomeClaim is immutable evidence outside ProductHistory."
         },
         {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
-          "match": "Independent QA feeds verifier-produced behavior/regression evidence"
-        },
-        {
-          "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "resolveExecutionJudgmentBundle"
+          "match": "Runtime SUCCEEDED is only a candidate-producing fact."
         }
       ]
     }
@@ -552,5 +559,36 @@
     "convergence": "All three arms must preserve the same frozen acceptanceSemanticDigest and each independently reach a current accepted product outcome. Source tree/attempt IDs may differ; acceptance semantics may not.",
     "failureRule": "Any NOT_RUN, unresolved product-owner decision, missing evidence, stale projection/release, independent QA rejection or non-current closure makes the criterion unsatisfied; deterministic fixtures cannot substitute for these three live arms."
   },
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "workerEvidenceContract": {
+    "schemaVersion": 1,
+    "laneMeaning": "RESEARCH_SA readiness establishes an executable protocol; WORKER acceptance later requires the actual bound live evidence below. No research judgment may substitute synthetic/deterministic evidence for the live rows.",
+    "objectiveEvidence": {
+      "AC-1": {
+        "required": [
+          "three BB070_SEED_EQUIVALENCE_V1 live arm records for GOAL_ONLY, REQUIREMENTS_DESIGN and EXISTING_CODE",
+          "same frozen acceptanceSemanticDigest and reference repository/base/runtime/budget identity across arms",
+          "per-arm product-owner decision refs, domain obligation/work refs, execution/runtime identities, exact release/deployment refs, independent QA/browser/API/persistence refs and current closure subject/outcome"
+        ],
+        "pass": "all three arms independently reach current accepted product outcomes with the same acceptanceSemanticDigest; NOT_RUN/missing/stale/rejected evidence fails"
+      },
+      "AC-2": {
+        "required": [
+          "dependency/eligibility snapshots showing FE and BE independently schedulable where direct semantic prerequisites allow",
+          "claim/attempt/publication timestamps and refs for both domains",
+          "cross-domain obligation/publication evidence proving one domain emits authorized semantic work without selecting the other domain runtime"
+        ],
+        "pass": "at least one frozen probe exposes concurrent/independent FE+BE eligibility and both domains complete through their own authority path without a central next-role selector"
+      },
+      "AC-3": {
+        "required": [
+          "missing-decision fixture producing PRODUCT_DECISION_REQUEST_V1 before affected work is actionable",
+          "resolved product-owner decision ref",
+          "closure negatives for stale deployment, rejected/missing QA and incomplete ProductStateProjection",
+          "current exact release + QA + projection + ProductOutcomeClaim on success"
+        ],
+        "pass": "missing authoritative choice blocks; only explicit owner resolution resumes; product closure fails closed on every stale/missing condition"
+      }
+    }
+  }
 }
