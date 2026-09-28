@@ -27,52 +27,96 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Define ProjectSeed input validation and bounded product-owner clarification for missing requirements/design.",
-    "Candidate direction, not selected architecture: Bind PM/BA/SA/FE/BE/DevOps/QA responsibilities to the existing lifecycle and delivered activation contracts.",
-    "Candidate direction, not selected architecture: Compare explicit domain strategies with generic graph orchestration; preserve independent domain ownership and avoid a central next-role selector."
+    "D1 — Introduce PROJECT_SEED_V1 as the only product-entry envelope for this slice. seedKind is exactly GOAL_ONLY | REQUIREMENTS_DESIGN | EXISTING_CODE; the seed binds project/root identity, immutable supplied artifact refs, declared acceptance refs and explicit missing authoritative decision kinds. Seed normalization may classify missing inputs but cannot invent product decisions.",
+    "D2 — Introduce PRODUCT_DECISION_REQUEST_V1 for bounded clarification. A request names the unresolved product decision, affected acceptance refs and blocking obligations; only an explicitly configured product-owner authority may resolve it. PM/SA coordination may surface evidence or prerequisites but cannot answer the decision or authorize completion.",
+    "D3 — Implement product delivery as a thin application composition over existing OrganizationWorkContract, cross-domain obligation/currentness, domain activation and domain execution/publication boundaries. The composition materializes explicit domain obligations from the seed/accepted decisions; it never selects another domain's runtime or implements a central next-role/workflow scheduler.",
+    "D4 — Role semantics are fixed for v1: PM owns product-decision/acceptance intent, BA owns requirement obligations, SA owns architecture assessment, FE/BE own domain implementation, DevOps owns deployable release evidence, and QA owns independent product verification. These are semantic obligation owners, not a generic role registry or agent-routing DSL.",
+    "D5 — Parallelism is dependency-derived only. FE and BE may claim independently when their exact direct semantic prerequisites are current; cross-domain publication emits typed obligations and lineage, and no coordinator serializes them merely because they belong to one product.",
+    "D6 — Product outcome closure is fail-closed. BB-070 may request closure only when the delivered BB-055 product-state/completeness boundary reports current deployment, QA and completeness evidence for the exact release. Runtime success, domain ACCEPT or a Playwright pass alone cannot close the product outcome.",
+    "D7 — Playwright v1.63.0 is selected only as the browser-observation adapter for the live product probe and trace/artifact capture. Browser evidence is bound to exact release/deployment identity and remains input to independent acceptance; Playwright has no lifecycle, work-selection or publication authority.",
+    "D8 — LangGraph v1.2.12 is rejected for BB-070 runtime orchestration: its checkpoint/interrupt graph machinery would add a second coordinator over already-delivered application/domain authority. OpenHands software-agent-sdk v1.49.6 remains the upstream coding-runtime seam owned by BB-066/BB-069 and is consumed only through their delivered outputs, not embedded into the BB-070 lifecycle controller.",
+    "D9 — Worker preflight must re-resolve BB-055 and BB-069 as DONE and bind their exact consolidated/delivery outputs. If delivered closure or live-runtime seams differ from the assumptions in this plan, execution stops with PLAN_INPUT_CONTRADICTION and returns to RESEARCH_SA rather than adapting architecture inside Worker."
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/organization-work.js",
+      "packages/agentic-system/src/organization-claim.js",
+      "packages/agentic-system/src/cross-domain-obligation.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
       "packages/agentic-system/src/domain-execution-control.js",
-      "docs/living/system/state.md"
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-055.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-069.json",
+      "docs/blackboard/process/delivery-research/BB-070.md"
+    ],
+    "expectedDependencyOutputs": [
+      "BB-055 DONE: exact product completeness/currentness and ProductStateProjection/ProductOutcomeClaim closure seam; Worker must bind the delivered names/refs rather than assuming the draft shape.",
+      "BB-069 DONE: exact supported live coding-agent delivery/runtime seam and reference web-product fixture/release identity used by the BB-070 live probe."
     ],
     "expectedNew": [
-      "scripts/delivery/bb-070-probe.mjs"
+      "packages/agentic-system/src/project-seed.js",
+      "packages/agentic-system/src/product-delivery-lifecycle.js",
+      "scripts/delivery/bb-070-probe.mjs",
+      "test/delivery/fixtures/bb-070/goal-only.json",
+      "test/delivery/fixtures/bb-070/requirements-design.json",
+      "test/delivery/fixtures/bb-070/existing-code.json"
     ],
     "expectedTests": [
+      "packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js",
       "test/delivery/bb-070.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/application-orchestrator.js",
+      "packages/agentic-system/src/organization-*.js",
+      "packages/agentic-system/src/cross-domain-obligation.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js",
+      "packages/agentic-system/src/domain-execution-*.js",
+      "packages/agentic-system/test/**",
+      "docs/living/system/agentic-application/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-055*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-069*",
       "docs/blackboard/process/delivery-research/BB-070.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "scripts/delivery/**",
+      "test/delivery/**"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "packages/agentic-system/src/project-seed.js",
+      "packages/agentic-system/src/product-delivery-lifecycle.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js",
+      "scripts/delivery/bb-070-probe.mjs",
+      "test/delivery/bb-070.test.mjs",
+      "test/delivery/fixtures/bb-070/**",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      ".github/**",
       "docs/blackboard/**",
-      ".github/**"
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/product-lineage.js",
+      "packages/agentic-system/src/dependency-invalidation.js"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S0 — Dependency contract preflight: require BB-055 and BB-069 DONE, load their exact consolidated/delivery refs and reject incompatible closure/runtime/reference-product seams as PLAN_INPUT_CONTRADICTION.",
+    "S1 — Seed/clarification contract: implement PROJECT_SEED_V1 normalization for the three seed kinds plus PRODUCT_DECISION_REQUEST_V1; prove missing authoritative decisions block without invented defaults and resolved decisions are identity-bound.",
+    "S2 — Domain-owned lifecycle composition: map normalized seed + accepted decisions into explicit BA/SA/FE/BE/DevOps/QA obligations using existing organization materialization and semantic obligation contracts; preserve dependency-derived FE/BE concurrency and forbid central next-role selection.",
+    "S3 — Product closure composition: consume exact delivered BB-055 closure semantics and allow closure request only for the exact current release when deployment, independent QA and completeness evidence are current.",
+    "S4 — Deterministic boundary suite: run all three seed fixtures; assert equivalent declared acceptance semantics, bounded clarification, domain ownership, independent parallel claims, stale/missing evidence rejection and producer-success-with-failing-acceptance negatives.",
+    "S5 — Live reference-product probe: execute the delivered BB-069 reference product through all three seed classes, capture Playwright v1.63.0 trace/browser artifacts bound to exact release identity, and preserve raw failures. Live credentials/runtime access are prerequisites; absence produces NOT_RUN, never synthetic success.",
+    "S6 — Update Living truth with only the implemented seed/lifecycle/closure capability, explicit limits and the fact that outer Blackboard remains separate from product runtime coordination."
   ],
   "acceptanceCriteria": [
     {
@@ -158,22 +202,35 @@
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-070-probe.mjs"
+      "id": "seed-contract",
+      "command": "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js --test-name-pattern=\"seed|clarification\""
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-070.test.mjs"
+      "id": "domain-boundary",
+      "command": "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js --test-name-pattern=\"domain|parallel|authority\""
+    },
+    {
+      "id": "closure-boundary",
+      "command": "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js --test-name-pattern=\"closure|stale|acceptance\""
+    },
+    {
+      "id": "deterministic-probe",
+      "command": "node scripts/delivery/bb-070-probe.mjs --mode deterministic"
+    },
+    {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-070-probe.mjs --mode live --browser-adapter playwright@1.63.0"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Define ProjectSeed input validation and bounded product-owner clarification for missing requirements/design.",
-    "Bind PM/BA/SA/FE/BE/DevOps/QA responsibilities to the existing lifecycle and delivered activation contracts.",
-    "Compare explicit domain strategies with generic graph orchestration; preserve independent domain ownership and avoid a central next-role selector.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
     "Producer success with failing independent acceptance.",
     "Missing or stale source/runtime identity represented as current evidence.",
@@ -210,5 +267,27 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-070 Living truth describes only the implemented and independently verified supported capability and limitations."
-  }
+  },
+  "researchEvidence": [
+    {
+      "source": "ExHarness Integration C/B current source: product-lineage.js, dependency-invalidation.js, organization-work.js, domain-execution-control.js",
+      "checked": "2026-09-28",
+      "finding": "Current application already owns semantic currentness, domain materialization, attempt binding, independent completion and publication fencing; BB-070 should compose these boundaries rather than add a graph scheduler."
+    },
+    {
+      "source": "LangGraph v1.2.12",
+      "checked": "2026-09-28",
+      "finding": "Provides checkpoint/stateful graph and interrupt machinery, but adopting it as product coordinator would duplicate ExHarness application/domain authority; rejected for BB-070 runtime orchestration."
+    },
+    {
+      "source": "OpenHands software-agent-sdk v1.49.6",
+      "checked": "2026-09-28",
+      "finding": "Provides a modular coding-agent/server/workspace runtime and meets the public-repository eligibility rule; retained as the upstream runtime candidate owned by BB-066/069, not lifecycle authority in BB-070."
+    },
+    {
+      "source": "Playwright v1.63.0",
+      "checked": "2026-09-28",
+      "finding": "Selected for browser trace and observable UI evidence only; browser success remains evidence for independent acceptance, not product closure authority."
+    }
+  ]
 }
