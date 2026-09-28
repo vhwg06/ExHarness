@@ -62,7 +62,8 @@
       "docs/living/system/core-harness/state.md",
       "docs/living/system/core-harness/workflow.md",
       "docs/blackboard/process/harness-efficiency-research/BB-077.md",
-      "docs/blackboard/process/harness-benchmark-program-research.md"
+      "docs/blackboard/process/harness-benchmark-program-research.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
     ],
     "expectedNew": [
       "benchmarks/harness-efficiency/adapters/direct-codeact.mjs",
@@ -501,10 +502,25 @@
         10
       ],
       "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
         "docs/blackboard/process/harness-efficiency-research/BB-077.md"
       ],
       "supportingPlanFields": [
         "kernelConsumerContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "D11 — BB-077 consumes only @exharness/benchmark public API plus BENCHMARK_SUBSTRATE_MANIFEST_V1"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "\"bb077Owns\""
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "BB-077 answers one question only: under an otherwise fixed benchmark contract"
+        }
       ]
     },
     {
@@ -531,6 +547,20 @@
       ],
       "supportingPlanFields": [
         "experimentContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "fixed model snapshot"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "arm = DIRECT_CODEACT"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "arm = CORE_SYNC"
+        }
       ]
     },
     {
@@ -555,10 +585,25 @@
         8
       ],
       "sourceRefs": [
-        "docs/blackboard/process/harness-efficiency-research/BB-077.md"
+        "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
       ],
       "supportingPlanFields": [
         "experimentContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "### Held-out reservation for BB-081"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "## Live pair protocol"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "D4 — AttemptLedger is append-only"
+        }
       ]
     },
     {
@@ -581,10 +626,25 @@
         8
       ],
       "sourceRefs": [
-        "docs/blackboard/process/harness-efficiency-research/BB-077.md"
+        "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
       ],
       "supportingPlanFields": [
         "economicsContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "## Common run record"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "## Measurement contract"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "missing usage/cost stays nullable UNKNOWN/PARTIAL rather than zero"
+        }
       ]
     },
     {
@@ -608,10 +668,25 @@
         10
       ],
       "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
         "docs/blackboard/process/harness-benchmark-program-research.md"
       ],
       "supportingPlanFields": [
         "kernelConsumerContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "BB-077 bypasses AttemptLedger or reimplements benchmark accounting/evidence truth."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "downstream reimplementation of AttemptLedger/evidence/accounting truth"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "The program has four layers. They share run identity/accounting but answer different questions."
+        }
       ]
     },
     {
@@ -632,10 +707,25 @@
         10
       ],
       "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
         "docs/blackboard/process/harness-benchmark-program-research.md"
       ],
       "supportingPlanFields": [
         "downstreamContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "D12 — BB-081, BB-074, BB-075 and BB-076 reuse the same experiment/unit/attempt/evidence/accounting backbone."
+        },
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "### Layer C — component ablation and robustness (BB-081)"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "## Downstream research impact"
+        }
       ]
     }
   ]
