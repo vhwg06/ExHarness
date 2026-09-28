@@ -1,0 +1,159 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-083",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-083.json",
+    "hash": "e4f5d56c1ffae08ce849b95fc305f002d1a8729d1fd956d67fbccd79db11160f"
+  },
+  "scope": [
+    "feedback.episode-context",
+    "feedback.response-resolution",
+    "feedback.pattern-system",
+    "feedback.reinforcement",
+    "feedback.independent-improvement"
+  ],
+  "outOfScope": [
+    "Reopening or modifying BB-058/059/060–064/065/074–076 research or implementation scope.",
+    "Runtime implementation or promotion during this research.",
+    "Adopting a new framework without source evidence and discriminating evaluation."
+  ],
+  "constraints": [
+    "Preserve all existing tasks, objectives, evaluated plans, readiness and delivery evidence unchanged; extend through BB-083 only.",
+    "Observation, interpretation, disposition and promotion authority remain separate; Observer and evaluators cannot mutate lifecycle or promote.",
+    "Reuse existing Observer, Oracle, reconciliation, HOW evolution and benchmark contracts; distinguish planned dependencies from delivered truth.",
+    "Research only: no runtime implementation, paid experiments, self-issued READY or fabricated Jev judgment.",
+    "Public repository evidence requires verified >=1,000 stars, pinned primary source, license and seam inspection; otherwise state none qualifies."
+  ],
+  "invariants": [
+    "Existing researched tasks and their accepted scope remain unchanged.",
+    "Feedback cannot grant acceptance, lifecycle mutation or promotion authority.",
+    "Measured improvement requires fresh comparable evidence; unknown outcome is not success."
+  ],
+  "architectureDecisions": [
+    "Provisional: use one durable feedback episode with separate fact, context, interpretation, authority and outcome boundaries; exact schema/owner unresolved.",
+    "Provisional: compose existing capabilities through additive contracts; no new global scheduler and no modification of old task scope."
+  ],
+  "sourceScope": {
+    "read": [
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/self-upgrade.md",
+      "docs/blackboard/process/harness-benchmark-program-research.md"
+    ],
+    "write": [
+      "docs/blackboard/process/feedback-architecture-research.md"
+    ],
+    "forbiddenWrite": [
+      "packages/**",
+      "docs/blackboard/artifacts/objective/BB-058.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-075.json"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/living/knowledge/integration-phase-research-to-implementation-readiness.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/self-upgrade.md",
+      "docs/blackboard/process/harness-benchmark-program-research.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "Research must specify exact new semantic and adversarial test files before READY."
+    ]
+  },
+  "implementationSlices": [
+    "Research only: inventory existing seams and compare source-backed reuse approaches.",
+    "Research only: settle episode/response/aggregation ownership, schemas, recovery and authority.",
+    "Research only: publish additive file-level implementation slices and fixed-factor evaluation protocol; submit fresh Jev readiness."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "C1",
+      "statement": "Specify observation/context/finding/impact contracts with exact identity, provenance, uncertainty and missing-context behavior.",
+      "verificationIds": [
+        "graph"
+      ],
+      "evidenceRequired": [
+        "Source-backed research brief and exact plan mapping; this DRAFT does not claim semantic validation."
+      ]
+    },
+    {
+      "id": "C2",
+      "statement": "Specify application-owned disposition and ACTED/REJECTED/DEFERRED/SUPERSEDED response resolution, recovery and fresh IMPROVED/NO_CHANGE/REGRESSED/UNKNOWN outcomes.",
+      "verificationIds": [
+        "graph"
+      ],
+      "evidenceRequired": [
+        "Source-backed research brief and exact plan mapping; this DRAFT does not claim semantic validation."
+      ]
+    },
+    {
+      "id": "C3",
+      "statement": "Specify deduplicated cohort-based pattern proposals, counterevidence, systemic mechanism evidence and reinforcement without automatic escalation.",
+      "verificationIds": [
+        "graph"
+      ],
+      "evidenceRequired": [
+        "Source-backed research brief and exact plan mapping; this DRAFT does not claim semantic validation."
+      ]
+    },
+    {
+      "id": "C4",
+      "statement": "Define additive seams with Observer/Oracle/reconciliation/HOW evolution and neutral benchmark evidence, preserving existing accepted scopes.",
+      "verificationIds": [
+        "graph"
+      ],
+      "evidenceRequired": [
+        "Source-backed research brief and exact plan mapping; this DRAFT does not claim semantic validation."
+      ]
+    },
+    {
+      "id": "C5",
+      "statement": "Compare reuse and smallest native extension using verified primary evidence; produce exact package/file-level implementation plan, direct dependencies, negative cases and preregistered benchmark/eval protocol for fresh Jev readiness.",
+      "verificationIds": [
+        "graph"
+      ],
+      "evidenceRequired": [
+        "Source-backed research brief and exact plan mapping; this DRAFT does not claim semantic validation."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Existing researched tasks and their accepted scope remain unchanged.",
+      "criterionIds": [
+        "C4"
+      ]
+    },
+    {
+      "invariant": "Feedback cannot grant acceptance, lifecycle mutation or promotion authority.",
+      "criterionIds": [
+        "C2"
+      ]
+    },
+    {
+      "invariant": "Measured improvement requires fresh comparable evidence; unknown outcome is not success.",
+      "criterionIds": [
+        "C5"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "graph",
+      "command": "npm run verify:blackboard-work-graph"
+    }
+  ],
+  "researchGaps": [
+    "Pin source evidence and verify candidate repository eligibility; shortlist is not verified evidence.",
+    "Resolve schema, package ownership, context-currentness and bounded context lookup semantics.",
+    "Resolve response acknowledgement versus outcome closure, deferred revisit, supersession and restart semantics.",
+    "Specify cohort/denominator/deduplication/counterevidence and system-causality criteria.",
+    "Replace this research seed with exact worker write scopes, implementation files, executable positive/negative probes and preregistered usefulness/quality/cost/latency gates before READY."
+  ]
+}
