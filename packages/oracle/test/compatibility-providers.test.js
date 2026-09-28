@@ -42,4 +42,10 @@ test("providers fail closed on absent readers, rejection and malformed results",
     error => error.cause === root && /qa context resolution failed for artifact:\/\/one/.test(error.message));
   await assert.rejects(() => readRepositorySources(repositoryRequest, { repositoryReader: { readFile: async () => ({ content: "ok" }) } }), /sourceRef/);
   await assert.rejects(() => readApplicationArtifacts(artifactRequest, { artifactReader: { readArtifact: async () => ({ sourceRef: "ref" }) } }), /content/);
+  await assert.rejects(() => readRepositorySources(repositoryRequest, { repositoryReader: { readFile: async () => [
+    { content: "first", sourceRef: "source:first" }, { content: "second", sourceRef: "source:second" }
+  ] } }), /must return an object/);
+  await assert.rejects(() => readApplicationArtifacts(artifactRequest, { artifactReader: { readArtifact: async () => [
+    { content: "first", sourceRef: "source:first" }, { content: "second", sourceRef: "source:second" }
+  ] } }), /must return an object/);
 });

@@ -41,4 +41,16 @@ try {
 } catch (error) { failureClass = error.cause?.message === "source unavailable" ? "SOURCE_READ_FAILURE" : "UNEXPECTED_FAILURE"; }
 assert.equal(failureClass, "SOURCE_READ_FAILURE");
 assert.equal(failureRenderedPrompt, null);
+const oversized = await readRepositorySources(semanticNeed, { repositoryReader: {
+  readFile: async ({ path }) => ({ content: "x".repeat(maxSerializedChars), sourceRef: `repo://fixture@r1:${path}` })
+} });
+let oversizedPrompt = null;
+await assert.rejects(async () => {
+  oversizedPrompt = await renderAgentContext({
+    blocks: [defineContextBlock({ name: "required-source", value: oversized })],
+    selection: { blocks: ["required-source"] },
+    policy: { maxSerializedChars }
+  });
+}, /context|limit|exceed/i);
+assert.equal(oversizedPrompt, null);
 console.log(JSON.stringify({ requirementId: semanticNeed.requirementId, resolutionId: null, providerCalls, resolutionCalls: 1, actionCalls, sourceReads, materializedChars, renderedChars, estimatedTokens: null, provenanceCoverage: 1, currentnessChecks: 0, wallMs: Math.round((performance.now() - start) * 1000) / 1000, failureClass }));
