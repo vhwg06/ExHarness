@@ -4,48 +4,52 @@
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-077",
   "status": "DRAFT",
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-077.json",
     "hash": "02163346bb3daecccb01285a4886f1081ce177c1b91caadf97ff0dcd6dd4012e"
   },
   "scope": [
-    "core.harness-economics",
-    "core.runtime-usage",
-    "core.cache-observation",
-    "core.harness-isolation",
-    "benchmark.harbor-adapter",
-    "benchmark.external-validity"
+    "benchmark.harness-isolation",
+    "benchmark.arm-adapters",
+    "benchmark.fixed-factor-protocol",
+    "benchmark.economics",
+    "benchmark.cohort-repeats",
+    "benchmark.comparison-reducer"
   ],
   "outOfScope": [
-    "Implementing detached scheduling, async wakeup, cache-stable async context or steering/recovery; BB-078..080 own those changes.",
-    "Promoting an async Core profile; BB-081 owns held-out ablation and promotion.",
-    "Changing Application/domain semantics, product acceptance, Oracle source authority, Jev/QA authority or EffectOperation truth.",
-    "Treating Harbor, Terminal-Bench, Harness-Bench, Claw-SWE-Bench or vendor benchmark numbers as evidence that ExHarness itself is better.",
-    "Submitting an official Terminal-Bench leaderboard result; the pinned subset is an internal matched harness experiment."
+    "Generic experiment registration, AttemptLedger, evidence manifest, accounting normalization, audit and Harbor substrate/reset/verifier/failure semantics; BB-065 owns them.",
+    "Detached scheduling, async cache-stable context and steering/recovery capability implementation; BB-078/079/080 own those changes.",
+    "Async candidate promotion or held-out ablation execution; BB-081 owns that decision.",
+    "Changes to packages/benchmark/**, benchmarks/substrate/**, packages/core-harness/src/**, packages/agentic-system/** or product acceptance/external-effect authority.",
+    "Official Terminal-Bench leaderboard submission or a claim that external benchmark/vendor results establish ExHarness product value."
   ],
   "constraints": [
-    "Use the same model/version, task fixture, starting source, tool surface and resource ceiling for matched comparisons.",
-    "Treat Unreal Agent benchmark numbers as vendor evidence until independently reproduced; do not promote a design from external claims alone.",
-    "Record failed/retried calls and missing usage explicitly; unknown usage cannot be treated as zero.",
-    "Public GitHub implementation examples must have at least 1,000 stars at evidence check time or be called out as below the eligibility threshold."
+    "BB-077 consumes @exharness/benchmark only through its public package root and consumes the calibrated substrate only through the BB-065 substrate manifest/port; it must not deep-import packages/benchmark/src/** or reimplement AttemptLedger, generic evidence, generic accounting, audit or Harbor substrate behavior.",
+    "Use the same model/version, task fixture, starting source, prompt/task input, tool surface, evaluator and resource ceilings for matched arm comparisons; only the harness orchestration path may vary.",
+    "Every attempt remains in the shared benchmark ledger. Missing provider token/cache/cost observations stay UNKNOWN/null and provider/infrastructure state remains orthogonal to verifier quality.",
+    "BB-077 owns synchronous harness economics only. Detached scheduling/cache-stable context/steering capabilities belong to BB-078/079/080 and promotion/held-out ablation belongs to BB-081.",
+    "Worker execution requires BB-065 delivery, but RESEARCH_SA may converge the consumer contract before that dependency is DONE.",
+    "Public GitHub implementation examples used as canonical evidence must have at least 1,000 stars at evidence check time or be explicitly marked below the threshold."
   ],
   "invariants": [
-    "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
-    "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
-    "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget."
+    "The benchmark kernel/substrate is an upstream dependency, never code duplicated inside the harness-economics experiment.",
+    "Harness effect claims require fixed-factor identity; arm selection is the only experimental variable in BB-077.",
+    "All attempts, retries and unknown accounting remain represented through the shared kernel; experiment reducers cannot rewrite benchmark truth.",
+    "BB-077 can measure synchronous harness economics but cannot authorize async promotion, product acceptance or external effects."
   ],
   "architectureDecisions": [
-    "D1 — Pin Harbor v0.23.0 at commit 1e5c5c6db929a10a140d05e606882c671ae20729 as the neutral outer execution/evaluation substrate. Harbor owns task sandbox lifecycle, trial identity, verifier invocation and raw trial artifacts only; it does not own ExHarness orchestration, product semantics or acceptance.",
-    "D2 — Implement one benchmark-only Harbor custom agent class, ExHarnessHarborAgent, for every measured arm. The only arm option is DIRECT_CODEACT or CORE_SYNC; setup, task instruction forwarding, environment, model route, output path and Harbor integration remain identical so the Harbor adapter is not a second varying factor.",
-    "D3 — DIRECT_CODEACT and CORE_SYNC share the exact createJavaScriptCodeActStrategy instance configuration, reference JavaScript session executor, model adapter, prompt/task input, shell or fixture capability surface and budgets. DIRECT_CODEACT invokes the strategy through a benchmark-owned minimal runtime shim; CORE_SYNC invokes the same strategy through createAgentRuntime. No product source is modified to make either arm fit the benchmark.",
-    "D4 — Keep internal FANOUT and DEPENDENT_CHAIN tasks only as mechanism/calibration probes. External validity uses Terminal-Bench 2.1 dataset terminal-bench/terminal-bench-2-1 pinned to source commit 7131e4375048a0e408a8fb404b5f499d726b695b with exact task digests recorded in datasetContract.",
-    "D5 — Freeze six external development tasks before implementation results: fix-git, cancel-async-tasks, query-optimize, nginx-request-logging, fix-code-vulnerability and sqlite-db-truncate. Reserve git-leak-recovery, pypi-server, kv-store-grpc and sanitize-git-repo as BB-081 held-out tasks; BB-077 live mode must reject held-out execution.",
-    "D6 — Before any model comparison, each selected external task must pass Harbor oracle five times in the selected sandbox and nop must fail at least once. Any oracle flake, nop acceptance, task checksum drift or environment mismatch removes the task from the cohort only by starting a new preregistered cohort; it cannot be silently dropped after model results.",
-    "D7 — Pin the first live model route to OpenRouter anthropic/claude-sonnet-4.6 with provider Anthropic and fallback disabled. Preserve provider-reported charged cost as primary billing evidence and independently normalize against the frozen 2026-09-27 table: USD 3/M fresh input, 15/M output, 0.30/M cache read and 3.75/M five-minute cache write.",
-    "D8 — Normalize Harbor AgentContext/TrialResult plus ExHarness trace data into HARNESS_RUN_RECORD_V1. Token/cost/cache fields remain nullable; UNKNOWN or PARTIAL usage never becomes zero. Quality is the independent Harbor verifier result and remains orthogonal to termination, provider and infrastructure failure classes.",
-    "D9 — Run three paired repeats per development task and arm. Pair by exact task digest + repeat index; alternate arm order DIRECT→CORE, CORE→DIRECT, DIRECT→CORE. Every attempt, retry, timeout and rejected result stays in the ledger. Report paired distributions and medians; uncertainty intervals are descriptive only and no significance claim is made from the small cohort.",
-    "D10 — Predeclare the BB-081 candidate gate now, before async results exist: accepted-task rate candidate >= CORE_SYNC; duplicate external effects = 0 and required recovery negatives pass; median normalized provider-cost ratio <= 0.85; median prompt-input-token ratio <= 0.90; median model-turn ratio <= 1.00; median elapsed-time ratio <= 1.10. Missing registered pairs, unknown primary cost/token accounting, task/verifier drift, safety failure or quality regression yields INCONCLUSIVE or KEEP_SYNC, never PROMOTE_ASYNC.",
-    "D11 — Measure model work, tool wait and residual harness time from monotonic event intervals instead of estimating token overhead. The benchmark model adapter records each MODEL interval and canonical stable-prefix/dynamic-suffix hashes/bytes; capability wrappers record CALL intervals. Cache reuse is CONFIRMED only from provider cached-token fields, ELIGIBLE when the stable-prefix hash repeats but provider cache data is absent/zero, and UNKNOWN when usage is unavailable. Residual elapsed time is reported as unattributedHarnessMs, not asserted to be polling overhead."
+    "D1 — BB-065 is the sole owner of generic benchmark infrastructure. BB-077 consumes @exharness/benchmark from its package root and BENCHMARK_SUBSTRATE_MANIFEST_V1 from the delivered calibrated substrate. Deep imports into packages/benchmark/src/** and direct use of Harbor implementation internals are unsupported.",
+    "D2 — BB-077 owns exactly two experiment-specific arm adapters: DIRECT_CODEACT and CORE_SYNC. DIRECT_CODEACT invokes the existing JavaScript CodeAct strategy through a benchmark-owned minimal orchestration shim; CORE_SYNC invokes the same strategy through createAgentRuntime. Neither adapter owns experiment registration, ledger, evidence, accounting or audit persistence.",
+    "D3 — The fixed-factor identity binds model route/version, task digest, starting workspace, instruction/prompt, JavaScript CodeAct strategy configuration, executor, capability/tool surface, evaluator, resource ceilings and substrate manifest. The only allowed varying factor is arm=DIRECT_CODEACT|CORE_SYNC.",
+    "D4 — Keep the existing development/held-out split: six Terminal-Bench 2.1 development tasks for BB-077 and the four reserved tasks for BB-081. Task digests and environment identities are sealed in the BB-077 cohort manifest; BB-077 hard-rejects held-out task execution.",
+    "D5 — Task-specific oracle/nop admissibility may run through the delivered substrate port before the cohort starts, but BB-077 cannot reimplement Harbor reset/artifact/verifier/failure normalization or rewrite the BB-065 generic calibration result. A changed substrate manifest starts a new cohort.",
+    "D6 — Preserve the frozen first live model route from the prior research: OpenRouter anthropic/claude-sonnet-4.6, provider Anthropic, fallback disabled. Provider-observed charged cost remains primary when present; the frozen 2026-09-27 normalization table remains experiment metadata rather than benchmark-kernel policy.",
+    "D7 — Every arm execution is registered through createExperimentRegistration/createBenchmarkUnit and starts/settles through AttemptLedger. Arm adapters return raw producer observations; the shared kernel/substrate owns evidence binding, orthogonal outcome normalization, nullable accounting and audit.",
+    "D8 — Economics-specific observations owned by BB-077 are model-turn count, capability/tool-call count, monotonic MODEL/CALL intervals, stable-prefix/dynamic-suffix hashes/bytes and comparison labels. Provider cache/token/cost observations remain nullable kernel accounting inputs; repeated prefix proves ELIGIBLE, not a provider cache hit.",
+    "D9 — Run three paired repeats per development task with order DIRECT→CORE, CORE→DIRECT, DIRECT→CORE. Reduce all attempts, including retries and non-accepted outcomes, into paired distributions and medians. No best-of-k filtering, significance claim from the small cohort or opaque overall harness score.",
+    "D10 — Freeze the BB-081 handoff before future async results: held-out manifest plus the existing quality/safety/economics/context/interaction/latency gate. BB-077 does not execute async candidate arms and does not publish PROMOTE_ASYNC/KEEP_SYNC; BB-081 owns that decision.",
+    "D11 — Dependency enforcement is fail-closed: Worker preflight requires BB-065 DONE, the @exharness/benchmark public exports expected by this plan, and a compatible BENCHMARK_SUBSTRATE_MANIFEST_V1. Missing or incompatible upstream artifacts stop execution rather than triggering a local fallback implementation."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -53,781 +57,677 @@
       "packages/core-harness/src/model-routing.js",
       "packages/core-harness/src/javascript-codeact-strategy.js",
       "packages/core-harness/src/context.js",
-      "packages/core-harness/src/action-effect.js",
-      "packages/core-harness/src/effect-reconciliation.js",
       "scripts/javascript-codeact-worker.mjs",
       "scripts/reference-javascript-session-executor.mjs",
       "docs/living/system/core-harness/state.md",
       "docs/living/system/core-harness/workflow.md",
-      "docs/blackboard/process/harness-efficiency-phase.md",
-      "docs/blackboard/process/harness-benchmark-program-research.md"
+      "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+      "docs/blackboard/process/harness-benchmark-program-research.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
     ],
     "expectedNew": [
-      "benchmarks/harness_efficiency/__init__.py",
-      "benchmarks/harness_efficiency/harbor_agent.py",
-      "benchmarks/harness_efficiency/contract.mjs",
-      "benchmarks/harness_efficiency/direct-arm.mjs",
-      "benchmarks/harness_efficiency/core-sync-arm.mjs",
-      "benchmarks/harness_efficiency/openrouter-model.mjs",
-      "benchmarks/harness_efficiency/run.mjs",
-      "benchmarks/harness_efficiency/report.mjs",
-      "benchmarks/harness_efficiency/internal-tasks.json",
-      "benchmarks/harness_efficiency/terminal-bench-2.1.json",
-      "benchmarks/harness_efficiency/profile.example.json",
-      "benchmarks/harness_efficiency/measurement.mjs"
+      "benchmarks/harness-efficiency/adapters/direct-codeact.mjs",
+      "benchmarks/harness-efficiency/adapters/core-sync.mjs",
+      "benchmarks/harness-efficiency/protocol.mjs",
+      "benchmarks/harness-efficiency/cohort.mjs",
+      "benchmarks/harness-efficiency/economics.mjs",
+      "benchmarks/harness-efficiency/reducer.mjs",
+      "benchmarks/harness-efficiency/run.mjs",
+      "benchmarks/harness-efficiency/report.mjs",
+      "benchmarks/harness-efficiency/manifests/development.json",
+      "benchmarks/harness-efficiency/manifests/held-out.json",
+      "benchmarks/harness-efficiency/profile.example.json"
     ],
     "expectedTests": [
-      "benchmarks/harness_efficiency/test/contract.test.mjs",
-      "benchmarks/harness_efficiency/test/arms.test.mjs",
-      "benchmarks/harness_efficiency/test/accounting.test.mjs",
-      "benchmarks/harness_efficiency/test/dataset-boundary.test.mjs",
-      "benchmarks/harness_efficiency/test/failure-taxonomy.test.mjs",
-      "benchmarks/harness_efficiency/test/test_harbor_adapter.py",
-      "benchmarks/harness_efficiency/test/measurement.test.mjs"
+      "benchmarks/harness-efficiency/test/kernel-boundary.test.mjs",
+      "benchmarks/harness-efficiency/test/integration.test.mjs",
+      "benchmarks/harness-efficiency/test/arms.test.mjs",
+      "benchmarks/harness-efficiency/test/protocol.test.mjs",
+      "benchmarks/harness-efficiency/test/dataset.test.mjs",
+      "benchmarks/harness-efficiency/test/economics.test.mjs",
+      "benchmarks/harness-efficiency/test/reducer.test.mjs",
+      "benchmarks/harness-efficiency/test/handoff.test.mjs",
+      "benchmarks/harness-efficiency/test/boundary.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
+      "packages/benchmark/**",
+      "benchmarks/substrate/**",
       "packages/core-harness/**",
       "scripts/javascript-codeact-worker.mjs",
       "scripts/reference-javascript-session-executor.mjs",
-      "benchmarks/**",
+      "benchmarks/harness-efficiency/**",
       "docs/living/system/core-harness/**",
-      "docs/blackboard/process/harness-efficiency-phase.md",
-      "docs/blackboard/process/harness-benchmark-program-research.md",
-      "docs/blackboard/process/harness-efficiency-research/BB-077.md"
+      "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+      "docs/blackboard/process/harness-benchmark-program-research.md"
     ],
     "write": [
-      "benchmarks/harness_efficiency/**",
+      "benchmarks/harness-efficiency/**",
       "docs/living/system/core-harness/**"
     ],
     "forbiddenWrite": [
-      "docs/blackboard/**",
-      ".github/**",
+      "packages/benchmark/**",
+      "benchmarks/substrate/**",
       "packages/core-harness/src/**",
       "packages/agentic-system/**",
+      ".github/**",
+      "docs/blackboard/**",
       "package.json",
       "scripts/blackboard-jev.mjs"
     ]
   },
   "implementationSlices": [
-    "S1 — Neutral substrate + adapter: add the pinned Harbor custom-agent adapter, upload/install only the declared ExHarness benchmark runtime into each task environment, forward the Harbor instruction verbatim and emit one normalized run record without making a quality judgment.",
-    "S2 — Fixed arms: implement DIRECT_CODEACT minimal runtime shim and CORE_SYNC createAgentRuntime arm over the same JavaScript CodeAct strategy/executor/model/capability contracts; deterministic tests prove only the orchestration path differs.",
-    "S3 — Dataset boundary: materialize the six internal calibration tasks, the six pinned Terminal-Bench 2.1 development task digests and four held-out digests; implement oracle/nop preflight, fresh reset, pair identity and hard held-out rejection.",
-    "S4 — Accounting + measurement: normalize Harbor trial/verifier/timing data and ExHarness model/turn/tool traces into HARNESS_RUN_RECORD_V1; record monotonic MODEL/capability intervals, stable-prefix/dynamic-suffix hashes/bytes, provider-confirmed cache fields, nullable usage/cost and explicit quality/termination/provider/infra dimensions.",
-    "S5 — Live baseline: run three alternating-order paired repeats for each registered development task under the frozen OpenRouter/Anthropic route and finite cohort budget; publish raw pair records plus a multidimensional report with no aggregate winner score.",
-    "S6 — Gate + Living truth handoff: publish the preregistered BB-081 non-inferiority/efficiency gate and held-out manifest without executing held-out tasks; after verified implementation, update Core-harness Living Docs with the delivered measurement capability, exact limitations and unchanged synchronous support profile."
+    "S0 — Upstream contract preflight: assert BB-065 is DONE; load @exharness/benchmark only from the package root; validate required public exports and BENCHMARK_SUBSTRATE_MANIFEST_V1 compatibility; fail closed with no local fallback.",
+    "S1 — Arm adapters: implement DIRECT_CODEACT and CORE_SYNC only. Both use the same JavaScript CodeAct strategy/executor/model/capability contracts; deterministic tests prove all fixed factors match and only orchestration differs.",
+    "S2 — Fixed-factor/cohort protocol: materialize development and held-out manifests, pair identity, three-repeat alternating order, task-specific admissibility and hard held-out rejection; bind every unit to the upstream substrate manifest.",
+    "S3 — Kernel integration: register experiments/units and route every attempt through AttemptLedger plus upstream evidence/accounting/audit APIs; adapters contribute experiment-specific raw observations only; add negatives for deep imports, direct ledger/evidence writes and local Harbor invocation.",
+    "S4 — Economics reducer: derive comparison-specific MODEL/CALL timing, turn/tool counts, cache eligibility labels, accepted quality and known provider cost/token metrics from shared attempt records; preserve UNKNOWN/null and all attempts in denominators.",
+    "S5 — Live synchronous baseline: execute the preregistered paired cohort only after S0-S4 pass; emit immutable per-pair records and a multidimensional report without a best-of-k or winner score.",
+    "S6 — BB-081 handoff + Living truth: publish comparison/handoff/held-out/gate manifests for BB-081 and update Core-harness Living Docs with measured synchronous baseline capability and limitations; do not execute async candidates."
   ],
   "acceptanceCriteria": [
     {
-      "id": "SUBSTRATE",
-      "statement": "Harbor v0.23.0 is used only as a neutral sandbox/trial/verifier substrate through one shared ExHarnessHarborAgent adapter, and changing the arm does not change task instruction, environment, model route or Harbor integration.",
+      "id": "KERNEL_CONSUMER",
+      "statement": "BB-077 consumes @exharness/benchmark only through the package root plus the BB-065 substrate manifest/port and does not reimplement generic experiment, AttemptLedger, evidence, accounting, audit or Harbor substrate behavior.",
       "verificationIds": [
-        "adapter",
-        "contract"
+        "kernel-boundary",
+        "integration"
       ],
       "evidenceRequired": [
-        "pinned Harbor version/commit",
-        "adapter option schema",
-        "same-adapter arm manifests",
-        "negative arm/config mismatch cases"
+        "root import graph",
+        "BB-065 manifest identity",
+        "no deep imports",
+        "no local generic ledger/evidence/accounting/audit implementation"
       ]
     },
     {
-      "id": "ISOLATION",
-      "statement": "DIRECT_CODEACT and CORE_SYNC use identical JavaScript CodeAct strategy, executor, model, prompt/task input, capabilities and budgets; the measured varying factor is the direct minimal runtime shim versus createAgentRuntime orchestration.",
+      "id": "ARM_ISOLATION",
+      "statement": "DIRECT_CODEACT and CORE_SYNC share exact model/task/prompt/workspace/tool/evaluator/budget identities and differ only in benchmark-owned direct orchestration versus createAgentRuntime synchronous Core orchestration.",
       "verificationIds": [
         "arms",
-        "contract"
+        "protocol"
       ],
       "evidenceRequired": [
+        "fixed-factor digest equality",
         "arm construction trace",
-        "fixed-factor hashes",
-        "model/capability/budget equality assertions",
-        "changed-factor rejection"
+        "varying-factor assertion",
+        "changed-factor negatives"
       ]
     },
     {
-      "id": "DATASET",
-      "statement": "Internal calibration, external development and BB-081 held-out tasks are separately pinned; external tasks pass preregistered oracle/nop validation and BB-077 cannot execute held-out tasks.",
+      "id": "COHORT",
+      "statement": "The external development cohort, three paired repeats, alternating arm order and BB-081 held-out set are preregistered; held-out execution is rejected and task-specific admissibility uses the delivered substrate without mutating its generic calibration semantics.",
       "verificationIds": [
-        "dataset"
+        "dataset",
+        "protocol"
       ],
       "evidenceRequired": [
-        "Terminal-Bench source commit and task digests",
-        "oracle x5 results per selected task",
-        "nop negative result per selected task",
-        "held-out rejection trace",
-        "fresh-reset identities"
-      ]
-    },
-    {
-      "id": "ACCOUNTING",
-      "statement": "Every registered attempt yields HARNESS_RUN_RECORD_V1 with exact task/arm/model/environment identities, verifier result, timings, model turns/tool calls and nullable token/cache/cost fields; missing usage is explicit and all attempts remain in denominators.",
-      "verificationIds": [
-        "accounting",
-        "failure"
-      ],
-      "evidenceRequired": [
-        "normalized run records",
-        "raw Harbor result refs",
-        "provider request/generation refs where available",
-        "UNKNOWN/PARTIAL usage negatives",
-        "retry ledger"
-      ]
-    },
-    {
-      "id": "QUALITY_SEPARATION",
-      "statement": "Independent verifier quality is orthogonal to termination, provider and infrastructure status, so an accepted candidate may coexist with budget/termination failure and a provider failure cannot be silently rewritten as quality rejection.",
-      "verificationIds": [
-        "failure",
-        "accounting"
-      ],
-      "evidenceRequired": [
-        "quality/termination matrix tests",
-        "provider timeout/rate-limit cases",
-        "candidate-with-budget-stop verification case",
-        "verifier-error NOT_EVALUATED case"
-      ]
-    },
-    {
-      "id": "MEASUREMENT",
-      "statement": "Per-request and per-capability monotonic intervals plus canonical stable-prefix/dynamic-suffix hashes and byte counts distinguish observed model time, capability wait, overlap, residual harness time and cache eligibility without inventing provider cache or token metrics.",
-      "verificationIds": [
-        "measurement",
-        "accounting"
-      ],
-      "evidenceRequired": [
-        "MODEL and capability interval records",
-        "stablePrefixSha256/stablePrefixBytes and dynamicSuffixSha256/dynamicSuffixBytes per model request",
-        "provider cached/cache-write fields or explicit UNKNOWN",
-        "cache status CONFIRMED|ELIGIBLE|MISS|UNKNOWN",
-        "unattributedHarnessMs labelled non-causal",
-        "negative case proving repeated prefix hash alone is not a cache hit"
-      ]
-    },
-    {
-      "id": "PROTOCOL",
-      "statement": "Three paired repeats per development task, alternating arm order, complete attempt accounting and the BB-081 non-inferiority/efficiency gates are frozen before async candidate results are observed.",
-      "verificationIds": [
-        "contract",
-        "report",
-        "dataset"
-      ],
-      "evidenceRequired": [
-        "cohort manifest hash",
+        "cohort manifest digest",
         "pair/order schedule",
+        "task digests",
+        "held-out rejection",
+        "substrate manifest binding"
+      ]
+    },
+    {
+      "id": "ECONOMICS",
+      "statement": "Comparison metrics are derived only from shared benchmark attempt/evidence/accounting records and report a multidimensional vector for quality, known cost/tokens, model turns, tool calls, elapsed time, cache observations, no-progress/failure fingerprints and repeat consistency without an opaque winner score.",
+      "verificationIds": [
+        "economics",
+        "reducer"
+      ],
+      "evidenceRequired": [
+        "shared attempt inputs",
+        "nullable UNKNOWN/PARTIAL examples",
+        "metric vector",
+        "paired distributions/medians",
+        "no aggregate winner score"
+      ]
+    },
+    {
+      "id": "COMPLETE_ATTEMPTS",
+      "statement": "Every registered attempt and retry remains in the shared AttemptLedger and comparison denominators; BB-077 never overwrites failed attempts, zero-fills missing usage or derives quality from producer/provider termination.",
+      "verificationIds": [
+        "integration",
+        "reducer"
+      ],
+      "evidenceRequired": [
+        "retry-preservation integration case",
+        "missing-usage null case",
+        "quality/termination separation integration case",
+        "complete denominator assertion"
+      ]
+    },
+    {
+      "id": "BB081_HANDOFF",
+      "statement": "BB-077 emits a versioned comparison manifest/report contract, held-out manifest and preregistered future gate that BB-081 can consume on the same benchmark backbone without changing BB-065 kernel semantics.",
+      "verificationIds": [
+        "handoff",
+        "protocol"
+      ],
+      "evidenceRequired": [
+        "BB-081 handoff fixture",
+        "held-out manifest",
         "gate manifest",
-        "report containing per-pair values and medians",
-        "no best-of-k or success-only filtering"
+        "public-kernel-only dependency graph"
       ]
     },
     {
       "id": "BOUNDARY",
-      "statement": "BB-077 changes benchmark tooling only; it neither changes Core runtime behavior nor promotes an async profile or product acceptance authority.",
+      "statement": "BB-077 changes benchmark comparison tooling and Living truth only; it does not modify packages/benchmark, benchmarks/substrate, Core product runtime or async capability implementation.",
       "verificationIds": [
-        "boundary"
+        "boundary",
+        "kernel-boundary"
       ],
       "evidenceRequired": [
         "changed-path audit",
-        "no packages/core-harness/src or agentic-system writes",
-        "no async profile publication",
-        "benchmark report contains no product acceptance decision"
+        "forbidden-write scan",
+        "no product runtime diff",
+        "no benchmark-kernel/substrate diff"
       ]
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Async scheduling and prompt optimization cannot become correctness, product-acceptance or external-effect authority.",
+      "invariant": "The benchmark kernel/substrate is an upstream dependency, never code duplicated inside the harness-economics experiment.",
       "criterionIds": [
-        "SUBSTRATE",
-        "ISOLATION",
-        "MEASUREMENT",
-        "PROTOCOL",
+        "KERNEL_CONSUMER",
         "BOUNDARY"
       ]
     },
     {
-      "invariant": "Every detached operation remains bound to exact call/turn/action/effect identity and unresolved effect ambiguity fails closed.",
+      "invariant": "Harness effect claims require fixed-factor identity; arm selection is the only experimental variable in BB-077.",
       "criterionIds": [
-        "QUALITY_SEPARATION",
-        "MEASUREMENT",
-        "BOUNDARY"
+        "ARM_ISOLATION",
+        "COHORT"
       ]
     },
     {
-      "invariant": "Efficiency claims require matched evidence with fixed model, task semantics, tool surface and resource budget.",
+      "invariant": "All attempts, retries and unknown accounting remain represented through the shared kernel; experiment reducers cannot rewrite benchmark truth.",
       "criterionIds": [
-        "ISOLATION",
-        "DATASET",
-        "ACCOUNTING",
-        "MEASUREMENT",
-        "PROTOCOL"
+        "ECONOMICS",
+        "COMPLETE_ATTEMPTS",
+        "KERNEL_CONSUMER"
+      ]
+    },
+    {
+      "invariant": "BB-077 can measure synchronous harness economics but cannot authorize async promotion, product acceptance or external effects.",
+      "criterionIds": [
+        "BB081_HANDOFF",
+        "BOUNDARY"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "adapter",
-      "command": "python3 benchmarks/harness_efficiency/test/test_harbor_adapter.py"
+      "id": "kernel-boundary",
+      "command": "node --test benchmarks/harness-efficiency/test/kernel-boundary.test.mjs"
     },
     {
-      "id": "contract",
-      "command": "node --test benchmarks/harness_efficiency/test/contract.test.mjs"
+      "id": "integration",
+      "command": "node --test benchmarks/harness-efficiency/test/integration.test.mjs"
     },
     {
       "id": "arms",
-      "command": "node --test benchmarks/harness_efficiency/test/arms.test.mjs"
+      "command": "node --test benchmarks/harness-efficiency/test/arms.test.mjs"
+    },
+    {
+      "id": "protocol",
+      "command": "node --test benchmarks/harness-efficiency/test/protocol.test.mjs"
     },
     {
       "id": "dataset",
-      "command": "node --test benchmarks/harness_efficiency/test/dataset-boundary.test.mjs"
+      "command": "node --test benchmarks/harness-efficiency/test/dataset.test.mjs"
     },
     {
-      "id": "measurement",
-      "command": "node --test benchmarks/harness_efficiency/test/measurement.test.mjs"
+      "id": "economics",
+      "command": "node --test benchmarks/harness-efficiency/test/economics.test.mjs"
     },
     {
-      "id": "accounting",
-      "command": "node --test benchmarks/harness_efficiency/test/accounting.test.mjs"
+      "id": "reducer",
+      "command": "node --test benchmarks/harness-efficiency/test/reducer.test.mjs"
     },
     {
-      "id": "failure",
-      "command": "node --test benchmarks/harness_efficiency/test/failure-taxonomy.test.mjs"
-    },
-    {
-      "id": "report",
-      "command": "node benchmarks/harness_efficiency/run.mjs --mode audit --profile benchmarks/harness_efficiency/profile.example.json"
+      "id": "handoff",
+      "command": "node --test benchmarks/harness-efficiency/test/handoff.test.mjs"
     },
     {
       "id": "boundary",
-      "command": "git diff --name-only \"$BB077_BASELINE_SHA\" \"$BB077_CANDIDATE_SHA\" | node benchmarks/harness_efficiency/run.mjs --mode verify-boundary"
+      "command": "node --test benchmarks/harness-efficiency/test/boundary.test.mjs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Replace the pre-BB-065 self-owned Harbor/accounting/evidence design with a thin @exharness/benchmark consumer plan before readiness can be evaluated."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
-    "Changing arm also changes model/provider, prompt, task digest, environment, capability surface or budget and the run is still admitted as matched.",
-    "Harbor adapter has arm-specific setup or instruction rewriting that makes the adapter itself a confounder.",
-    "A selected Terminal-Bench task has one oracle failure in five or nop is accepted and the cohort silently drops it after model results exist.",
-    "BB-077 attempts one of the four held-out Terminal-Bench tasks before BB-081 enables held-out execution.",
-    "Provider usage/cost/cache data is missing and the report stores zero or computes a definitive efficiency ratio.",
-    "A repeated stable-prefix hash is reported as a confirmed provider cache hit even though cached_tokens/cache_write_tokens are missing or zero.",
-    "Elapsed minus model/tool time is labelled polling/heartbeat overhead without an explicit event proving that cause.",
-    "A candidate artifact is independently accepted after budget exhaustion but the report changes quality to REJECTED because termination was non-success.",
-    "A provider timeout/rate limit produces no candidate and is counted as verifier rejection instead of provider/termination failure with quality NOT_EVALUATED.",
-    "Only successful attempts are used in paired medians or a retry replaces the original attempt.",
-    "Benchmark changes packages/core-harness/src, Agentic Application source, outer Jev, product acceptance or effect-authority semantics."
+    "BB-077 deep-imports packages/benchmark/src/** and kernel-boundary still passes.",
+    "BB-077 defines a local AttemptLedger, evidence manifest, generic accounting normalizer or audit implementation and boundary tests still pass.",
+    "BB-077 imports/spawns Harbor directly instead of consuming the delivered substrate port/manifest.",
+    "An arm changes model, prompt/task input, workspace, tool surface, evaluator or budget and protocol still accepts the pair.",
+    "A retry success removes or overwrites the failed shared-ledger attempt.",
+    "Missing provider cost/token/cache data becomes numeric zero or KNOWN.",
+    "Producer/provider termination changes independent verifier quality inside the reducer.",
+    "BB-077 executes a BB-081 held-out task.",
+    "A changed BB-065 substrate manifest is silently mixed into an existing cohort.",
+    "The report filters to accepted-only attempts, best-of-k, or publishes one opaque winner score.",
+    "BB-077 writes packages/benchmark, benchmarks/substrate or product runtime source."
   ],
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-077 objective + harness-efficiency phase + current Core seams + pinned public evidence",
+      "input": "replacement BB-077 objective + BB-065 public downstream contract + prior harness-isolation research",
       "output": "READY_IMPLEMENT_PLAN",
-      "binding": "objective hash + researchBaselineSha",
-      "convergence": "researchGaps=[] + Jev SATISFIED",
+      "binding": "objective hash + exact researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
       "forbidden": [
-        "product mutation",
-        "vendor-benchmark-as-proof",
-        "planned capability as delivered truth"
+        "Worker code",
+        "redefining BB-065 kernel/substrate",
+        "async promotion decision"
       ]
     },
     {
       "lane": "WORKER",
-      "input": "exact READY plan + DONE direct dependencies",
+      "input": "READY BB-077 plan + delivered BB-065 kernel/substrate",
       "output": "DELIVERED_FEATURE",
-      "binding": "plan hash + candidate + evidence + Jev",
-      "convergence": "all acceptance claims SATISFIED + evaluated source merged",
+      "binding": "plan hash + candidate SHA + evidence + Jev",
+      "convergence": "acceptance claims SATISFIED + merged evaluated source",
       "forbidden": [
-        "redefine fixed benchmark semantics",
-        "self-acceptance",
-        "unsafe effect replay"
+        "kernel/substrate rewrite",
+        "product runtime changes",
+        "async capability implementation"
       ]
     }
   ],
-  "researchEvidence": [
-    {
-      "source": "Harness-Bench, arXiv:2605.27922",
-      "checked": "2026-09-27",
-      "finding": "Treats harness/model configuration as the evaluation unit under shared sandboxed tasks, budgets and evaluators while retaining artifacts, traces, usage and validator evidence. Supports fixed-factor harness evaluation rather than model-only reporting."
-    },
-    {
-      "source": "Claw-SWE-Bench, arXiv:2606.12344",
-      "checked": "2026-09-27",
-      "finding": "Fixes prompt, runtime budget, workspace contract, patch extraction and evaluator while varying harnesses; supports isolating harness effects from model/task confounders."
-    },
-    {
-      "source": "The Scaffold Effect in Coding Agents, arXiv:2607.22585",
-      "checked": "2026-09-27",
-      "finding": "Fixed-model comparisons report substantial harness-dependent token efficiency and repeatable failure fingerprints beyond pass rate; motivates efficiency/failure vectors rather than one score."
-    },
-    {
-      "source": "https://github.com/harbor-framework/harbor/tree/1e5c5c6db929a10a140d05e606882c671ae20729",
-      "checked": "2026-09-27",
-      "eligibility": "5,629 stars; Apache-2.0; >=1,000-star rule satisfied",
-      "finding": "Harbor v0.23.0 exposes custom BaseAgent setup/run, isolated environments, AgentContext nullable token/cache/cost fields, TrialResult timing/exception/verifier data and benchmark task/verifier abstractions. Selected as neutral outer substrate, not product runtime."
-    },
-    {
-      "source": "https://github.com/harbor-framework/terminal-bench-2-1/tree/7131e4375048a0e408a8fb404b5f499d726b695b",
-      "checked": "2026-09-27",
-      "eligibility": "Benchmark dataset source, not a reusable implementation example; repository is below the >=1,000-star implementation-example threshold.",
-      "finding": "Terminal-Bench 2.1 fixes 28 of 89 prior tasks and publishes exact task digests. Used only as pinned external workload data; ExHarness does not infer implementation quality from this repository."
-    },
-    {
-      "source": "https://github.com/SWE-agent/mini-swe-agent",
-      "checked": "2026-09-27",
-      "eligibility": "7,998 stars; MIT; >=1,000-star rule satisfied",
-      "finding": "Eligible minimal-agent reference for comparison of loop simplicity, but not used as the isolation control because its prompt/tool loop would add another varying factor."
-    },
-    {
-      "source": "https://github.com/OpenHands/software-agent-sdk",
-      "checked": "2026-09-27",
-      "eligibility": "1,174 stars; MIT; >=1,000-star rule satisfied",
-      "finding": "Eligible modular-agent reference for event/workspace/accounting patterns, not a BB-077 runtime dependency."
-    },
-    {
-      "source": "https://openrouter.ai/compare/openai/gpt-5.3-codex/anthropic/claude-sonnet-4.6",
-      "checked": "2026-09-27",
-      "finding": "Claude Sonnet 4.6 remains listed at USD 3/M input, 15/M output and 0.30/M cached input; profile is frozen for normalization rather than treated as timeless pricing."
-    },
-    {
-      "source": "https://openrouter.ai/blog/tutorials/prompt-caching-sticky-routing/",
-      "checked": "2026-09-27",
-      "finding": "OpenRouter documents Sonnet 4.6 cache-read pricing, 1.25x five-minute cache-write pricing and session_id sticky routing; provider cache observations remain non-authoritative."
-    },
-    {
-      "source": "ExHarness current Core at d4c442d4d2df101260f95d0f4d76ff4fffab40f5",
-      "checked": "2026-09-27",
-      "finding": "AgentRuntime synchronously awaits capability execution and model routing exposes generate-call count; JavaScript CodeAct already supplies a bounded strategy/executor seam suitable for a direct-vs-Core orchestration isolation without changing product source."
-    }
-  ],
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
-  "objectiveCoverage": [
-    {
-      "objectiveCriterion": "One matched baseline runner records accepted outcome, model identity, input/output/cached tokens when available, model turns, tool calls, elapsed time, cost and failure/retry records.",
-      "criterionIds": [
-        "SUBSTRATE",
-        "ISOLATION",
-        "ACCOUNTING",
-        "QUALITY_SEPARATION"
-      ],
-      "planElements": [
-        "S1",
-        "S2",
-        "S4",
-        "S5"
-      ],
-      "verificationIds": [
-        "adapter",
-        "arms",
-        "accounting",
-        "failure",
-        "report"
-      ],
-      "decisionIndexes": [
-        0,
-        1,
-        2,
-        7,
-        8
-      ],
-      "sourceRefs": [
-        "packages/core-harness/src/agent-runtime.js",
-        "packages/core-harness/src/model-routing.js",
-        "packages/core-harness/src/javascript-codeact-strategy.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/core-harness/src/agent-runtime.js",
-          "match": "const output = await capability.execute(parsedInput, runtime);"
-        },
-        {
-          "ref": "packages/core-harness/src/model-routing.js",
-          "match": "calls: generateCalls"
-        },
-        {
-          "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
-          "match": "const observations = []"
-        }
-      ],
-      "supportingPlanFields": [
-        "benchmarkContract",
-        "providerContract",
-        "failureTaxonomy"
-      ]
-    },
-    {
-      "objectiveCriterion": "The baseline distinguishes model work from harness wait/poll/heartbeat-like overhead and reports prompt-prefix/cache reuse observations without inventing provider metrics.",
-      "criterionIds": [
-        "MEASUREMENT",
-        "ACCOUNTING",
-        "QUALITY_SEPARATION",
-        "PROTOCOL"
-      ],
-      "planElements": [
-        "S4",
-        "S5"
-      ],
-      "verificationIds": [
-        "measurement",
-        "accounting",
-        "failure",
-        "report"
-      ],
-      "decisionIndexes": [
-        7,
-        8,
-        9,
-        10
-      ],
-      "sourceRefs": [
-        "packages/core-harness/src/agent-runtime.js",
-        "packages/core-harness/src/model-routing.js",
-        "packages/core-harness/src/javascript-codeact-strategy.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
-          "match": "TraceSpanKind.MODEL"
-        },
-        {
-          "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
-          "match": "TraceSpanKind.EXECUTION"
-        },
-        {
-          "ref": "packages/core-harness/src/model-routing.js",
-          "match": "calls: generateCalls"
-        },
-        {
-          "ref": "packages/core-harness/src/javascript-codeact-strategy.js",
-          "match": "observations: clone(observations)"
-        }
-      ],
-      "supportingPlanFields": [
-        "benchmarkContract",
-        "providerContract",
-        "measurementContract",
-        "comparisonContract",
-        "failureTaxonomy"
-      ]
-    },
-    {
-      "objectiveCriterion": "A predeclared comparison protocol and non-regression/cost gate are fixed before async implementation results are observed.",
-      "criterionIds": [
-        "DATASET",
-        "PROTOCOL",
-        "BOUNDARY"
-      ],
-      "planElements": [
-        "S3",
-        "S6"
-      ],
-      "verificationIds": [
-        "contract",
-        "dataset",
-        "boundary"
-      ],
-      "decisionIndexes": [
-        3,
-        4,
-        5,
-        8,
-        9
-      ],
-      "sourceRefs": [
-        "docs/blackboard/process/harness-efficiency-phase.md",
-        "packages/core-harness/src/action-effect.js",
-        "packages/core-harness/src/effect-reconciliation.js"
-      ],
-      "sourceAnchors": [
-        {
-          "ref": "docs/blackboard/process/harness-efficiency-phase.md",
-          "match": "The fixed comparison contract must hold model snapshot, task input, prompt, initial workspace, resource ceilings, artifact extraction and evaluator constant while the harness/profile changes."
-        },
-        {
-          "ref": "packages/core-harness/src/action-effect.js",
-          "match": "EffectRecoveryRequiredError"
-        },
-        {
-          "ref": "packages/core-harness/src/effect-reconciliation.js",
-          "match": "NON_RECONCILABLE"
-        }
-      ],
-      "supportingPlanFields": [
-        "datasetContract",
-        "comparisonContract",
-        "benchmarkContract"
-      ]
-    }
-  ],
-  "benchmarkContract": {
-    "schemaVersion": 1,
-    "harbor": {
-      "version": "v0.23.0",
-      "commit": "1e5c5c6db929a10a140d05e606882c671ae20729",
-      "role": "neutral sandbox/trial/verifier substrate"
-    },
-    "arms": {
-      "DIRECT_CODEACT": "Same JavaScript CodeAct strategy/executor/model/capabilities through a benchmark-owned minimal runtime shim; no AgentRuntime orchestration.",
-      "CORE_SYNC": "Same JavaScript CodeAct strategy/executor/model/capabilities through current createAgentRuntime synchronous orchestration."
-    },
-    "fixedFactors": [
-      "task instruction/digest",
-      "starting environment/workspace",
-      "model/provider/profile",
-      "strategy configuration",
-      "tool/capability surface",
-      "turn/tool/time/token/cost budgets",
-      "artifact extraction",
-      "Harbor verifier",
-      "Harbor adapter class/version"
-    ],
-    "adapter": "One ExHarnessHarborAgent class; arm is a validated option. setup/run paths are otherwise identical. Harbor instruction is forwarded verbatim. Adapter emits /logs/agent/exharness-run.json and populates AgentContext usage without assigning quality.",
-    "repeats": {
-      "developmentPerArmTask": 3,
-      "order": [
-        "DIRECT_CODEACT->CORE_SYNC",
-        "CORE_SYNC->DIRECT_CODEACT",
-        "DIRECT_CODEACT->CORE_SYNC"
-      ]
-    },
-    "budgets": {
-      "internal": {
-        "maxModelTurns": 4,
-        "maxHostCalls": 12,
-        "maxWallSeconds": 90,
-        "maxInputTokens": 32000,
-        "maxOutputTokens": 4000,
-        "maxUsdPerAttempt": 0.25
-      },
-      "external": {
-        "maxModelTurns": 16,
-        "maxHostCalls": 64,
-        "maxWallSeconds": 900,
-        "maxInputTokens": 180000,
-        "maxOutputTokens": 12000,
-        "maxUsdPerAttempt": 0.6
-      },
-      "liveCohortMaxUsd": 25
-    },
-    "runRecord": "HARNESS_RUN_RECORD_V1"
-  },
-  "datasetContract": {
-    "schemaVersion": 1,
-    "internalCalibration": {
-      "tasks": [
-        "CAL-FANOUT-01",
-        "CAL-FANOUT-02",
-        "CAL-FANOUT-03",
-        "CAL-CHAIN-01",
-        "CAL-CHAIN-02",
-        "CAL-CHAIN-03"
-      ],
-      "role": "mechanism/calibration only; not external-validity evidence"
-    },
-    "external": {
-      "dataset": "terminal-bench/terminal-bench-2-1",
-      "sourceCommit": "7131e4375048a0e408a8fb404b5f499d726b695b",
-      "development": [
-        {
-          "task": "terminal-bench/fix-git",
-          "digest": "sha256:16948b980df9d96de616a205f5acca1c5d395de83ff4f8ffabcafacb93226f2e"
-        },
-        {
-          "task": "terminal-bench/cancel-async-tasks",
-          "digest": "sha256:a3d048d351136e48070696cda8bb79660dfd74db1fea3b6da88559f0332699c1"
-        },
-        {
-          "task": "terminal-bench/query-optimize",
-          "digest": "sha256:169496ea6843cb403b0860132675baf7aa0df0ac8b86221068e27d86395260f4"
-        },
-        {
-          "task": "terminal-bench/nginx-request-logging",
-          "digest": "sha256:9d1b8bebd989ea0bc8080c3b159480068caf183c5fd61385868b2574b206e097"
-        },
-        {
-          "task": "terminal-bench/fix-code-vulnerability",
-          "digest": "sha256:d31348aa16b533a15f013420e4d9726dc529e6086adc7d6d48067d22cc18fe71"
-        },
-        {
-          "task": "terminal-bench/sqlite-db-truncate",
-          "digest": "sha256:956f038b479cc3b9b493553b57a60a8ff4154526386c3914c0b99e93e1ab6e87"
-        }
-      ],
-      "heldout": [
-        {
-          "task": "terminal-bench/git-leak-recovery",
-          "digest": "sha256:22a9ec10dbd4cd8b99477b70e1944103775ca41de9b9e0025ec4898cd17bd334"
-        },
-        {
-          "task": "terminal-bench/pypi-server",
-          "digest": "sha256:1a1e0542f58e2d3362fec17a9bbb98667717d9a4a3e9a4c8413d3150a4fa0ff1"
-        },
-        {
-          "task": "terminal-bench/kv-store-grpc",
-          "digest": "sha256:973c5d4c111fb61a344457936f1c36400acd2d9e44389e7b319586fe23a7a307"
-        },
-        {
-          "task": "terminal-bench/sanitize-git-repo",
-          "digest": "sha256:73c94a21ebe370bae843adbeeaaa9e991374867b18483aaf56c7cd470dcddea7"
-        }
-      ]
-    },
-    "preflight": "For every selected external task, Harbor oracle must pass 5/5 in the selected sandbox and nop must fail >=1/1 before live model dispatch. Any mismatch requires a newly hashed cohort.",
-    "reset": "Fresh Harbor trial/environment and ExHarness run identity per attempt. No prior model output, task filesystem mutation or ExHarness session state crosses attempts.",
-    "leakage": "BB-077 live mode permits only internal calibration + external development tasks. Held-out task names/digests may be committed for reservation but instructions/solutions/results are not used for candidate tuning and runner rejects execution until BB-081."
-  },
-  "providerContract": {
-    "transport": "OpenRouter API",
-    "credentialEnv": "OPENROUTER_API_KEY",
-    "model": "anthropic/claude-sonnet-4.6",
-    "provider": "Anthropic",
-    "allowFallbacks": false,
-    "profileDate": "2026-09-27",
-    "priceUsdPerMillion": {
-      "freshInput": 3,
-      "output": 15,
-      "cacheRead": 0.3,
-      "cacheWrite5m": 3.75
-    },
-    "session": "Unique session_id per attempt; stable within an attempt only.",
-    "requiredUsage": [
-      "prompt_tokens",
-      "completion_tokens",
-      "prompt_tokens_details.cached_tokens when exposed",
-      "cache_write_tokens when exposed",
-      "provider charged cost when exposed",
-      "request/generation identity"
-    ],
-    "missingUsage": "Store null and KNOWN|PARTIAL|UNKNOWN status with reason. Unknown primary cost/token accounting makes efficiency gate INCONCLUSIVE."
-  },
-  "failureTaxonomy": {
-    "quality": [
-      "ACCEPTED",
-      "REJECTED",
-      "NOT_EVALUATED"
-    ],
-    "termination": [
-      "COMPLETED",
-      "BUDGET_EXHAUSTED",
-      "AGENT_TIMEOUT",
-      "AGENT_ERROR",
-      "CANCELLED"
-    ],
-    "provider": [
-      "NONE",
-      "RATE_LIMITED",
-      "PROVIDER_TIMEOUT",
-      "PROVIDER_5XX",
-      "ROUTE_MISMATCH",
-      "USAGE_UNKNOWN"
-    ],
-    "infrastructure": [
-      "NONE",
-      "ENV_BUILD",
-      "ENV_RUNTIME",
-      "ADAPTER_SETUP",
-      "HARNESS_PROTOCOL",
-      "ARTIFACT_EXTRACTION",
-      "VERIFIER_ERROR"
-    ],
-    "rule": "Quality comes only from the independent verifier. Termination/provider/infrastructure dimensions never synthesize a quality verdict; if a candidate exists the verifier still runs when safe."
-  },
-  "comparisonContract": {
-    "unit": "exact task digest + repeat index + fixed profile hash",
-    "allAttempts": "All initial attempts and retries remain in the ledger; retry never overwrites an earlier attempt.",
-    "metrics": [
-      "accepted task rate",
-      "normalized provider cost per registered attempt",
-      "cost per accepted task",
-      "input/output/cached/cache-write tokens when known",
-      "model turns",
-      "tool/host calls",
-      "elapsed time",
-      "provider wait",
-      "capability wait",
-      "useful operation overlap",
-      "no-progress turns",
-      "repeat consistency",
-      "failure fingerprint",
-      "model active ms",
-      "capability active/wait ms",
-      "unattributed harness ms",
-      "stable-prefix bytes/hash",
-      "dynamic-suffix bytes/hash",
-      "cache status CONFIRMED|ELIGIBLE|MISS|UNKNOWN"
-    ],
-    "reporting": "Per-run and paired values plus medians/distributions. No opaque aggregate score and no best-of-k filtering.",
-    "futurePromotionGate": {
-      "quality": "candidate accepted-task rate >= CORE_SYNC and no declared quality/safety negative regresses",
-      "duplicateEffects": "0 and required recovery negatives pass",
-      "medianNormalizedProviderCostRatio": "<=0.85",
-      "medianPromptInputTokenRatio": "<=0.90",
-      "medianModelTurnRatio": "<=1.00",
-      "medianElapsedRatio": "<=1.10",
-      "incomplete": "missing registered pair, unknown primary cost/token accounting, task/verifier drift, safety failure or quality regression => INCONCLUSIVE or KEEP_SYNC"
-    },
-    "uncertainty": "Three paired repeats are a bounded engineering experiment, not a significance claim. Bootstrap intervals may be reported descriptively only."
-  },
-  "measurementContract": {
-    "schemaVersion": 1,
-    "clock": "monotonic process clock for benchmark-owned intervals; wall timestamps are metadata only",
-    "modelRequest": {
-      "interval": [
-        "modelStart",
-        "modelEnd"
-      ],
-      "requestProjection": {
-        "stablePrefix": "canonical serialization of fixed system/protocol instructions, task instruction, capability schema and static context blocks",
-        "dynamicSuffix": "canonical serialization of turn number, observations, evolving history/prompt context and last validation error"
-      },
-      "fields": [
-        "stablePrefixSha256",
-        "stablePrefixBytes",
-        "dynamicSuffixSha256",
-        "dynamicSuffixBytes",
-        "providerPromptTokens",
-        "providerCompletionTokens",
-        "providerCachedTokens",
-        "providerCacheWriteTokens",
-        "providerRequestId",
-        "usageStatus"
-      ]
-    },
-    "capabilityCall": {
-      "interval": [
-        "capabilityStart",
-        "capabilityEnd"
-      ],
-      "fields": [
-        "callId",
-        "capabilityName",
-        "mutatesCandidate",
-        "status"
-      ]
-    },
-    "derived": {
-      "modelActiveMs": "sum of measured MODEL intervals",
-      "capabilityActiveMs": "union duration of capability intervals",
-      "modelCapabilityOverlapMs": "intersection duration of MODEL and capability intervals; expected zero for current synchronous arms unless an implementation explicitly overlaps",
-      "unattributedHarnessMs": "max(0, agentExecutionMs - union(MODEL and capability intervals)); descriptive residual only, never named polling overhead without an explicit event",
-      "explicitPollHeartbeatCalls": "count only events/capability calls explicitly tagged poll or heartbeat; zero is reportable only when trace completeness is true"
-    },
-    "cacheStatus": {
-      "CONFIRMED": "provider reports cached_tokens > 0 for the request",
-      "MISS": "provider reports cached_tokens = 0 with known usage",
-      "ELIGIBLE": "stablePrefixSha256 repeats within the attempt but provider cache usage is unavailable; not a claimed hit",
-      "UNKNOWN": "stable prefix or provider usage needed for classification is unavailable"
-    },
-    "rule": "Never infer provider token counts, cache hits or causal overhead from byte counts or elapsed subtraction. Byte/hash projections establish prompt stability only."
-  },
   "livingDocs": {
     "refs": [
       "docs/living/system/core-harness/state.md",
       "docs/living/system/core-harness/workflow.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "BB-077 Living Docs describe only the delivered benchmark/harness-measurement capability, fixed-factor contract, accounting limitations and current synchronous baseline; they do not claim async promotion or product-value results that BB-081/BB-074 have not established."
-  }
+    "statement": "Core-harness Living Docs record the delivered synchronous harness-economics benchmark capability, upstream benchmark-kernel dependency, measured limitations and BB-081 handoff without claiming async promotion or product value."
+  },
+  "kernelConsumerContract": {
+    "schemaVersion": 1,
+    "upstreamPackage": "@exharness/benchmark",
+    "importRule": "package root only; no packages/benchmark/src/** deep imports",
+    "requiredExports": [
+      "createExperimentRegistration",
+      "createBenchmarkUnit",
+      "AttemptLedger",
+      "normalizeOutcome",
+      "createEvidenceManifest",
+      "normalizeAccounting",
+      "auditAttempt",
+      "assertSubstratePort"
+    ],
+    "substrateManifest": "BENCHMARK_SUBSTRATE_MANIFEST_V1",
+    "kernelOwned": [
+      "experiment registration",
+      "unit/fixed-factor identity",
+      "AttemptLedger",
+      "orthogonal outcome",
+      "evidence manifest",
+      "nullable accounting",
+      "audit/recompute",
+      "Harbor substrate/reset/artifact/verifier/failure normalization"
+    ],
+    "bb077Owned": [
+      "DIRECT_CODEACT adapter",
+      "CORE_SYNC adapter",
+      "fixed-factor protocol",
+      "cohort/repeat schedule",
+      "economics observations",
+      "comparison reducer/report",
+      "BB-081 handoff"
+    ],
+    "noFallback": true
+  },
+  "experimentContract": {
+    "schemaVersion": 1,
+    "arms": [
+      "DIRECT_CODEACT",
+      "CORE_SYNC"
+    ],
+    "varyingFactor": "harness orchestration path only",
+    "fixedFactors": [
+      "model route/version",
+      "task digest",
+      "starting workspace",
+      "instruction/prompt",
+      "strategy config",
+      "executor",
+      "capability/tool surface",
+      "evaluator",
+      "resource ceilings",
+      "substrate manifest"
+    ],
+    "repeats": 3,
+    "order": [
+      "DIRECT_CODEACT->CORE_SYNC",
+      "CORE_SYNC->DIRECT_CODEACT",
+      "DIRECT_CODEACT->CORE_SYNC"
+    ],
+    "developmentTasks": [
+      "fix-git",
+      "cancel-async-tasks",
+      "query-optimize",
+      "nginx-request-logging",
+      "fix-code-vulnerability",
+      "sqlite-db-truncate"
+    ],
+    "heldOutForBB081": [
+      "git-leak-recovery",
+      "pypi-server",
+      "kv-store-grpc",
+      "sanitize-git-repo"
+    ]
+  },
+  "economicsContract": {
+    "schemaVersion": 1,
+    "inputs": "settled shared benchmark attempts only",
+    "metrics": [
+      "accepted quality",
+      "provider cost when known",
+      "prompt/output/cache tokens when known",
+      "model turns",
+      "tool/capability calls",
+      "elapsed time",
+      "MODEL/CALL interval-derived timing",
+      "cache CONFIRMED|MISS|ELIGIBLE|UNKNOWN",
+      "no-progress/failure fingerprint",
+      "repeat consistency"
+    ],
+    "accountingRule": "UNKNOWN/PARTIAL remains nullable and cannot be zero-filled",
+    "reducerRule": "all registered attempts and retries remain in denominators; paired distributions/medians only; no opaque winner score"
+  },
+  "downstreamContract": {
+    "schemaVersion": 1,
+    "bb081Receives": [
+      "comparison manifest",
+      "development cohort identity",
+      "held-out manifest",
+      "fixed-factor protocol",
+      "metric vector",
+      "failure fingerprints",
+      "preregistered gate"
+    ],
+    "bb081Owns": [
+      "async candidate arms",
+      "held-out execution",
+      "robustness/fault ablation",
+      "PROMOTE_ASYNC|KEEP_SYNC|INCONCLUSIVE decision"
+    ],
+    "forbidden": [
+      "BB-077 executing async arms",
+      "BB-077 consuming held-out outcomes",
+      "BB-077 modifying BB-065 kernel semantics"
+    ]
+  },
+  "researchEvidence": [
+    {
+      "source": "Existing BB-077 harness-isolation research on trusted baseline",
+      "checked": "2026-09-28",
+      "finding": "Fixed-factor arm isolation, paired repeats, dataset split, economics vector and model/capability interval measurement remain valid; generic substrate/accounting/evidence ownership is superseded by BB-065."
+    },
+    {
+      "source": "BB-065 downstream contract",
+      "checked": "2026-09-28",
+      "finding": "The neutral benchmark package owns experiment/unit/attempt/evidence/accounting/audit truth and exposes BB-077 as a consumer owning only harness-specific adapters/protocol/economics/reducer."
+    }
+  ],
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "BB-077 defines DIRECT_CODEACT and CORE_SYNC arm adapters over the exact @exharness/benchmark public contracts and BB-065 substrate manifest, with no local replacement for experiment registration, AttemptLedger, evidence manifests, accounting normalization or audit.",
+      "criterionIds": [
+        "KERNEL_CONSUMER",
+        "BOUNDARY"
+      ],
+      "planElements": [
+        "S0",
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "kernel-boundary",
+        "integration",
+        "boundary"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        6,
+        10
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+        "docs/blackboard/process/harness-efficiency-research/BB-077.md"
+      ],
+      "supportingPlanFields": [
+        "kernelConsumerContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "D11 — BB-077 consumes only @exharness/benchmark public API plus BENCHMARK_SUBSTRATE_MANIFEST_V1"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "\"bb077Owns\""
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "BB-077 answers one question only: under an otherwise fixed benchmark contract"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "The arm protocol fixes model/task/prompt/workspace/tool/evaluator/budget identities and proves the varying factor is only the direct minimal orchestration path versus createAgentRuntime synchronous Core.",
+      "criterionIds": [
+        "ARM_ISOLATION"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "arms",
+        "protocol"
+      ],
+      "decisionIndexes": [
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/agent-runtime.js",
+        "packages/core-harness/src/javascript-codeact-strategy.js",
+        "scripts/reference-javascript-session-executor.mjs",
+        "docs/blackboard/process/harness-efficiency-research/BB-077.md"
+      ],
+      "supportingPlanFields": [
+        "experimentContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "fixed model snapshot"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "arm = DIRECT_CODEACT"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "arm = CORE_SYNC"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "The cohort/dataset/repeat protocol is preregistered, preserves complete attempts, keeps BB-081 held-out tasks inaccessible, and uses the calibrated substrate without requalifying or mutating its generic semantics.",
+      "criterionIds": [
+        "COHORT",
+        "COMPLETE_ATTEMPTS"
+      ],
+      "planElements": [
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "dataset",
+        "protocol",
+        "integration"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        6,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+      ],
+      "supportingPlanFields": [
+        "experimentContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "### Held-out reservation for BB-081"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "## Live pair protocol"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "D4 — AttemptLedger is append-only"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Harness economics are reduced from shared benchmark records into a multidimensional vector including accepted quality, provider cost/tokens when known, model turns, tool calls, elapsed time, cache observations, no-progress/failure fingerprints and repeat consistency without an opaque winner score.",
+      "criterionIds": [
+        "ECONOMICS",
+        "COMPLETE_ATTEMPTS"
+      ],
+      "planElements": [
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "economics",
+        "reducer"
+      ],
+      "decisionIndexes": [
+        5,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+      ],
+      "supportingPlanFields": [
+        "economicsContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "## Common run record"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+          "match": "## Measurement contract"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "missing usage/cost stays nullable UNKNOWN/PARTIAL rather than zero"
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "Architectural negatives fail when BB-077 deep-imports benchmark internals, writes generic attempt/evidence/accounting truth directly, implements a second Harbor adapter, bypasses shared audit, or changes product runtime to fit the benchmark.",
+      "criterionIds": [
+        "KERNEL_CONSUMER",
+        "BOUNDARY"
+      ],
+      "planElements": [
+        "S0",
+        "S3"
+      ],
+      "verificationIds": [
+        "kernel-boundary",
+        "integration",
+        "boundary"
+      ],
+      "decisionIndexes": [
+        0,
+        6,
+        10
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+        "docs/blackboard/process/harness-benchmark-program-research.md"
+      ],
+      "supportingPlanFields": [
+        "kernelConsumerContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "BB-077 bypasses AttemptLedger or reimplements benchmark accounting/evidence truth."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "downstream reimplementation of AttemptLedger/evidence/accounting truth"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "The program has four layers. They share run identity/accounting but answer different questions."
+        }
+      ]
+    },
+    {
+      "objectiveCriterion": "BB-077 emits a comparison protocol/report contract and held-out handoff that BB-081 can consume without inventing parallel experimental infrastructure or changing the BB-065 kernel.",
+      "criterionIds": [
+        "BB081_HANDOFF",
+        "KERNEL_CONSUMER"
+      ],
+      "planElements": [
+        "S6"
+      ],
+      "verificationIds": [
+        "handoff",
+        "protocol"
+      ],
+      "decisionIndexes": [
+        9,
+        10
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+        "docs/blackboard/process/harness-benchmark-program-research.md"
+      ],
+      "supportingPlanFields": [
+        "downstreamContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "D12 — BB-081, BB-074, BB-075 and BB-076 reuse the same experiment/unit/attempt/evidence/accounting backbone."
+        },
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "### Layer C — component ablation and robustness (BB-081)"
+        },
+        {
+          "ref": "docs/blackboard/process/harness-benchmark-program-research.md",
+          "match": "## Downstream research impact"
+        }
+      ]
+    }
+  ]
 }
