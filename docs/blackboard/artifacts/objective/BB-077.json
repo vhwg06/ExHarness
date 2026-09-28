@@ -3,31 +3,39 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-077",
-  "outcome": "ExHarness has a reproducible same-model, same-task harness-efficiency baseline that isolates orchestration overhead before any async runtime change is promoted.",
-  "currentProblem": "Current Core measures capability calls and model usage but does not isolate harness-induced model turns, input/cache churn, tool-wait turns, polling/heartbeat overhead, operation overlap, or cost per accepted task. Unreal Agent and recent harness studies indicate this overhead can be material, but vendor benchmark claims are not ExHarness evidence.",
+  "outcome": "Using the delivered @exharness/benchmark kernel and calibrated substrate, ExHarness can run reproducible fixed-factor DIRECT_CODEACT versus CORE_SYNC experiments that isolate harness economics without duplicating experiment, attempt, evidence, accounting or audit infrastructure.",
+  "currentProblem": "The current BB-077 READY plan predates the neutral benchmark package decision and re-owns Harbor integration, run-record/accounting, failure normalization and generic experiment infrastructure. After BB-065, those concerns belong to the shared benchmark kernel/substrate, so BB-077 must return to research and become a thin harness-comparison consumer.",
   "scope": [
-    "core.harness-economics",
-    "core.runtime-usage",
-    "core.cache-observation",
-    "core.matched-baseline"
+    "benchmark.harness-isolation",
+    "benchmark.arm-adapters",
+    "benchmark.fixed-factor-protocol",
+    "benchmark.economics",
+    "benchmark.cohort-repeats",
+    "benchmark.comparison-reducer"
   ],
   "constraints": [
-    "Use the same model/version, task fixture, starting source, tool surface and resource ceiling for matched comparisons.",
-    "Treat Unreal Agent benchmark numbers as vendor evidence until independently reproduced; do not promote a design from external claims alone.",
-    "Record failed/retried calls and missing usage explicitly; unknown usage cannot be treated as zero.",
-    "Public GitHub implementation examples must have at least 1,000 stars at evidence check time or be called out as below the eligibility threshold."
+    "BB-077 consumes @exharness/benchmark only through its public package root and consumes the calibrated substrate only through the BB-065 substrate manifest/port; it must not deep-import packages/benchmark/src/** or reimplement AttemptLedger, generic evidence, generic accounting, audit or Harbor substrate behavior.",
+    "Use the same model/version, task fixture, starting source, prompt/task input, tool surface, evaluator and resource ceilings for matched arm comparisons; only the harness orchestration path may vary.",
+    "Every attempt remains in the shared benchmark ledger. Missing provider token/cache/cost observations stay UNKNOWN/null and provider/infrastructure state remains orthogonal to verifier quality.",
+    "BB-077 owns synchronous harness economics only. Detached scheduling/cache-stable context/steering capabilities belong to BB-078/079/080 and promotion/held-out ablation belongs to BB-081.",
+    "Worker execution requires BB-065 delivery, but RESEARCH_SA may converge the consumer contract before that dependency is DONE.",
+    "Public GitHub implementation examples used as canonical evidence must have at least 1,000 stars at evidence check time or be explicitly marked below the threshold."
   ],
   "successCriteria": [
-    "One matched baseline runner records accepted outcome, model identity, input/output/cached tokens when available, model turns, tool calls, elapsed time, cost and failure/retry records.",
-    "The baseline distinguishes model work from harness wait/poll/heartbeat-like overhead and reports prompt-prefix/cache reuse observations without inventing provider metrics.",
-    "A predeclared comparison protocol and non-regression/cost gate are fixed before async implementation results are observed."
+    "BB-077 defines DIRECT_CODEACT and CORE_SYNC arm adapters over the exact @exharness/benchmark public contracts and BB-065 substrate manifest, with no local replacement for experiment registration, AttemptLedger, evidence manifests, accounting normalization or audit.",
+    "The arm protocol fixes model/task/prompt/workspace/tool/evaluator/budget identities and proves the varying factor is only the direct minimal orchestration path versus createAgentRuntime synchronous Core.",
+    "The cohort/dataset/repeat protocol is preregistered, preserves complete attempts, keeps BB-081 held-out tasks inaccessible, and uses the calibrated substrate without requalifying or mutating its generic semantics.",
+    "Harness economics are reduced from shared benchmark records into a multidimensional vector including accepted quality, provider cost/tokens when known, model turns, tool calls, elapsed time, cache observations, no-progress/failure fingerprints and repeat consistency without an opaque winner score.",
+    "Architectural negatives fail when BB-077 deep-imports benchmark internals, writes generic attempt/evidence/accounting truth directly, implements a second Harbor adapter, bypasses shared audit, or changes product runtime to fit the benchmark.",
+    "BB-077 emits a comparison protocol/report contract and held-out handoff that BB-081 can consume without inventing parallel experimental infrastructure or changing the BB-065 kernel."
   ],
   "currentSourceRefs": [
-    "docs/blackboard/process/harness-efficiency-phase.md",
+    "docs/blackboard/process/harness-efficiency-research/BB-077.md",
+    "docs/blackboard/process/harness-benchmark-program-research.md",
     "docs/living/system/core-harness/state.md",
     "docs/living/system/core-harness/workflow.md",
     "packages/core-harness/src/agent-runtime.js",
-    "packages/core-harness/src/action-effect.js",
-    "packages/core-harness/src/effect-reconciliation.js"
+    "packages/core-harness/src/javascript-codeact-strategy.js",
+    "scripts/reference-javascript-session-executor.mjs"
   ]
 }
