@@ -2,6 +2,10 @@
 
 Current Core execution/cognition/recovery projection. This file does not define Agentic Application orchestration or Oracle source resolution.
 
+## PRE-RENDER CONTEXT RESOLUTION
+
+For each agent call, Core selects requirement blocks, invokes the injected resolver once per selected block, projects each result to a fixed context block, then renders ordinary context. Turn-aware strategies may render history and dynamic ordinary blocks again on later turns while the requirement projection remains fixed. Missing resolver or resolver/projection failure stops before model generation. This port is separate from Capability, Resource and LiveObject action surfaces. It does not automatically request later resolution steps.
+
 ## CURRENT AVO RUNNING PATH
 
 ```text

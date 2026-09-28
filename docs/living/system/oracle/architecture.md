@@ -18,13 +18,13 @@ QaWorkOrder.requiredArtifacts
 
 Application schemas/contracts stay above the source adapters. Oracle providers perform concrete reads and preserve source references; the compatibility adapter validates using Application-owned schemas.
 
-## Future runtime seam
+## Semantic contract and runtime seam
 
-Application semantic need -> ContextRequirement -> injected Core pre-prompt resolver -> Oracle providers/planner -> ContextResolution -> Core context projection -> `renderAgentContext`. A development-only probe exercises this ordering. Core imports no Oracle implementation, and Oracle imports neither Core nor Agentic Application. Oracle has no acceptance, publication, scheduling or recovery authority.
+Application semantic need -> ContextRequirement -> injected Core pre-prompt resolver -> ContextResolution -> Core context projection -> `renderAgentContext`. The contract and Core port are implemented; provider selection and production wiring remain future work. A development-only compatibility probe exercises the contract with fixed Backend/QA source fixtures. Core imports no Oracle implementation, and Oracle imports neither Core nor Agentic Application. Oracle has no acceptance, publication, scheduling or recovery authority.
 
 The two moved source loops are compatibility providers, not the final Oracle API. Retained findings are physical source ownership, required-source failure behavior and provenance. The earlier thin-IO-only architecture and assumption that the existing Application adapter was sufficient for runtime context intelligence are superseded. Aider's budgeted repo map, Serena/SolidLSP's semantic symbols, and Zoekt's lexical retrieval remain comparison patterns for later provider experiments; no backend is selected. Serena application is GPL-3.0-or-later, while SolidLSP is MIT.
 
-The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED. They belong to the follow-on semantic contract and runtime integration work.
+`@exharness/oracle` exports the ContextRequirement/ContextResolution v1 semantic schema and identity helpers. Core accepts requirement blocks through an injected resolver and does not import Oracle. Automatic progressive re-resolution, provider catalog/planner and durable resolution cache are not implemented.
 
 The two implemented source classes intentionally remain distinct because repository reads and application-produced artifact lookup carry different identity/provenance semantics.
 

@@ -8,8 +8,8 @@
 - For consumers that opt into manifest validation, application-artifact identity/provenance is verified before ordinary Oracle resolution; digest identity is not semantic correctness.
 - QA internal artifact context additionally preserves `APPLICATION_ARTIFACT`, producer work-order and acceptance-decision provenance.
 - Oracle is not an agent, Advisor, Worker, correctness authority, semantic-memory system or runtime context lifecycle.
-- There is no generic resolver abstraction in current source.
+- The ContextRequirement/ContextResolution contract is provider-neutral; it does not select a provider or grant product authority. Core consumes it through an injected resolver hook.
 
-`@exharness/oracle` owns the two concrete source read loops. The Agentic Application adapter still owns WorkOrder parsing and context schema validation. These providers are compatibility building blocks; provider selection, planner, durable resolution identity and currentness are future work.
+`@exharness/oracle` owns the two concrete source read loops. The Agentic Application adapter still owns WorkOrder parsing and context schema validation. These providers are compatibility building blocks. The new schema binds requirement, item, materialization and resolution identity; REQUIRED CURRENT evidence needs an exact snapshot and strong validator. Provider selection, planner, durable storage and invalidation remain future work.
 
-The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED. They belong to the follow-on semantic contract and runtime integration work.
+A required unresolved evidence need is UNSATISFIED and cannot be consumed. Optional unresolved evidence is explicitly PARTIAL. Budgets and immutable step parent/index constrain progression; the runtime resolves only once per call and does not automatically advance steps.

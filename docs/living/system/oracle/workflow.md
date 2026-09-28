@@ -53,4 +53,4 @@ No implicit refresh, background provider lifecycle, cache or retrieval pass exis
 
 The development-only runtime seam probe resolves an Application semantic need through an injected resolver, projects the source and provenance into an ordinary bounded Core context block, and then calls `renderAgentContext`. No model-visible action is invoked. Its handoff record reports requirement and resolution ids, source reads, resolution/provider calls, materialized/rendered sizes, estimated tokens when available, provenance coverage, currentness checks, wall time and failure class.
 
-The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED. They belong to the follow-on semantic contract and runtime integration work.
+The ContextRequirement/ContextResolution semantic contract and injected Core pre-prompt resolver hook are implemented. Existing Backend/QA production flows still use their compatibility adapter. Provider selection, durable resolution cache and automatic progressive resolution are not implemented.

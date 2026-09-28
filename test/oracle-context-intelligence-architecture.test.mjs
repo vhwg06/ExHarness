@@ -17,7 +17,7 @@ function boundaryViolations({ oracleSource, coreSource, adapterSource, agenticPa
   if (/@exharness\/oracle|packages\/oracle|\.\.\/\.\.\/oracle/.test(coreSource)) violations.push("Core Oracle implementation import");
   if (/\.readFile\s*\(|\.readArtifact\s*\(/.test(adapterSource)) violations.push("copied source loop");
   if (agenticPackage.dependencies?.["@exharness/oracle"] !== "file:../oracle") violations.push("missing package dependency");
-  if (oracleExports.join(",") !== "readApplicationArtifacts,readRepositorySources") violations.push("Oracle exports");
+  if (oracleExports.join(",") !== "assertConsumableContextResolution,contextItemDigest,contextMaterializationId,contextRequirementId,contextResolutionId,defineContextRequirement,defineContextResolution,readApplicationArtifacts,readRepositorySources") violations.push("Oracle exports");
   if (/\b(?:claimWork|publishDelivery|acceptWork|recoverWork|scheduleWork)\s*\(/.test(oracleSource)) violations.push("Oracle lifecycle authority");
   return violations;
 }
@@ -48,12 +48,13 @@ test("architecture guard rejects mutated forbidden imports, loops, wiring, expor
   for (const mutation of cases) assert.notDeepEqual(boundaryViolations({ ...fixture(), ...mutation }), [], JSON.stringify(mutation));
 });
 
-test("Living Docs mark semantic contract and hook not delivered without work IDs", () => {
+test("Living Docs mark delivered semantic contract and deferred limits without work IDs", () => {
   for (const name of ["architecture", "state", "semantics", "workflow"]) {
     const doc = read(`docs/living/system/oracle/${name}.md`);
     assert.match(doc, /@exharness\/oracle/);
-    assert.match(doc, /production ContextRequirement\/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED/);
-    assert.match(doc, /follow-on semantic contract and runtime integration work/);
+    assert.match(doc, /ContextRequirement\/ContextResolution/);
+    assert.match(doc, /Core.*(?:resolver|hook)|resolver.*Core/s);
+    assert.match(doc, /provider|Provider/);
     assert.doesNotMatch(doc, /\bBB-\d+\b/);
   }
 });

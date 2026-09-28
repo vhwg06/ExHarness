@@ -21,6 +21,8 @@ Source-synchronized ExHarness Core checkpoint. Open Core gaps/problems live only
 - semantic-memory retrieval is `RELEVANCE_ONLY`; associative ranking/spontaneous recall are opt-in;
 - promotion requires a current evaluation over exact current observation/verification snapshots.
 
+- `createAgentRuntime()` accepts `contextRequirementBlocks` and an injected `contextResolver`; selected requirements resolve once before prompt/model work, then project to fixed context blocks. Core does not select providers or interpret Oracle schema.
+
 ## Current authority boundary
 
 ```text

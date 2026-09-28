@@ -44,7 +44,7 @@ QaWorkOrder.requiredArtifacts
 - Oracle has no agent loop, session lifecycle, generic resolver registry, MCP-first layer, retrieval framework or cache lifecycle in current source;
 - no MCP client/adapter, MCP request state, MRTR continuation or Tasks handle is implemented or persisted today.
 
-The production ContextRequirement/ContextResolution and the Core pre-prompt resolver hook are NOT YET DELIVERED. They belong to the follow-on semantic contract and runtime integration work.
+The provider-neutral ContextRequirement/ContextResolution v1 contract, canonical identity and consumability checks are implemented in `@exharness/oracle`. Core has an injected pre-render resolver port and freezes selected requirement blocks once per agent call. Existing Backend/QA production source paths still use their compatibility adapter. Provider catalog/planner, durable resolution persistence/cache invalidation and automatic progressive re-resolution are not implemented.
 
 If a concrete MCP-backed source appears later, MCP remains a source/capability adapter below application-owned work/lifecycle authority; protocol support alone does not count as a third source class.
 
