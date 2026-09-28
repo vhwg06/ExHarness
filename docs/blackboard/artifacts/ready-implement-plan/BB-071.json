@@ -382,25 +382,27 @@
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
         "packages/agentic-system/src/product-lineage.js",
-        "packages/agentic-system/src/dependency-invalidation.js"
+        "packages/agentic-system/src/dependency-invalidation.js",
+        "docs/blackboard/process/delivery-product-roadmap.md"
       ],
       "supportingPlanFields": [
         "changeContract",
         "scenarioContract",
-        "liveChangeProtocol"
+        "liveChangeProtocol",
+        "workerEvidenceContract"
       ],
       "sourceAnchors": [
         {
           "ref": "packages/agentic-system/src/product-lineage.js",
-          "match": "export function reverseSemanticClosure"
+          "match": "export function reverseSemanticClosure(snapshot,subjectKeys)"
         },
         {
           "ref": "packages/agentic-system/src/dependency-invalidation.js",
-          "match": "Reconciliation scans durable Board provenance"
+          "match": "export function createDependencyInvalidationController({lineage,orchestrator,artifactRegistry,claimController})"
         },
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
-          "match": "FE and BE can progress independently where obligations allow"
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "incorporate requirement changes without restarting unrelated work"
         }
       ]
     },
@@ -427,11 +429,13 @@
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
-        "packages/agentic-system/src/domain-execution-control.js"
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/blackboard/process/delivery-product-roadmap.md"
       ],
       "supportingPlanFields": [
         "recoveryContract",
-        "liveChangeProtocol"
+        "liveChangeProtocol",
+        "workerEvidenceContract"
       ],
       "sourceAnchors": [
         {
@@ -440,7 +444,11 @@
         },
         {
           "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "runtimeAdapter.recover"
+          "match": "RECOVERY_REQUIRED"
+        },
+        {
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "resume after process failure"
         }
       ]
     },
@@ -471,25 +479,27 @@
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
         "packages/agentic-system/src/product-lineage.js",
-        "packages/agentic-system/src/domain-execution-control.js"
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/blackboard/process/delivery-product-roadmap.md"
       ],
       "supportingPlanFields": [
         "changeContract",
         "recoveryContract",
-        "liveChangeProtocol"
+        "liveChangeProtocol",
+        "workerEvidenceContract"
       ],
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-057.json",
-          "match": "stale workers fail before dispatch/publication."
+          "match": "Claim takeover is fenced by current claimGeneration/release; stale workers fail before dispatch/publication."
         },
         {
           "ref": "packages/agentic-system/src/product-lineage.js",
-          "match": "export function reverseSemanticClosure"
+          "match": "export function reverseSemanticClosure(snapshot,subjectKeys)"
         },
         {
-          "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "claimController.assertExecutable"
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "incorporate requirement changes without restarting unrelated work"
         }
       ]
     }
@@ -561,5 +571,35 @@
     ],
     "passRule": "LOCAL_DOMAIN and CROSS_DOMAIN produce newly independently accepted replacement releases with exactly the current-lineage affected set; KILL_RESUME_DUPLICATE preserves one semantic attempt/logical publication; STALE_FENCE rejects stale authority/evidence. Missing live evidence is NOT_RUN and does not satisfy the objective."
   },
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "workerEvidenceContract": {
+    "schemaVersion": 1,
+    "laneMeaning": "RESEARCH_SA proves the exact change/recovery experiment is executable. WORKER later must supply live bound rows; deterministic tests only verify mechanics.",
+    "objectiveEvidence": {
+      "AC-1": {
+        "required": [
+          "LOCAL_DOMAIN and CROSS_DOMAIN live scenario manifests pinned before mutation",
+          "pre-change semantic head snapshot, replacement requirement revision, reverseSemanticClosure affected keys and protected-unaffected control keys",
+          "new domain work/attempt/publication refs and exact newly verified release/QA/closure refs"
+        ],
+        "pass": "observed invalidated set equals current reverse semantic closure plus required verification/release dependents; protected control heads remain current; both scenarios reach newly accepted releases"
+      },
+      "AC-2": {
+        "required": [
+          "KILL_RESUME_DUPLICATE live trace at the frozen post-durable-activity/pre-candidate kill barrier",
+          "same semantic executionAttemptId and immutable binding before/after fresh-process recovery",
+          "duplicate activation/publication race evidence and canonical publication key/result"
+        ],
+        "pass": "recovery preserves one semantic attempt/binding and concurrent duplicate activation converges to one logical authoritative publication"
+      },
+      "AC-3": {
+        "required": [
+          "STALE_FENCE replay using the exact pre-change claim generation/release tuple",
+          "old deployment observation replayed after replacement release/current semantic head",
+          "before/after unrelated control semantic heads"
+        ],
+        "pass": "stale worker cannot dispatch/publish, stale deployment cannot close changed work, and every declared unrelated accepted control head is byte-for-byte the same current revision"
+      }
+    }
+  }
 }
