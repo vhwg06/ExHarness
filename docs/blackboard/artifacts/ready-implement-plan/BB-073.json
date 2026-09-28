@@ -47,7 +47,8 @@
       "docs/living/system/state.md",
       "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
-      "docs/blackboard/process/delivery-research/BB-073.md"
+      "docs/blackboard/process/delivery-research/BB-073.md",
+      "packages/core-harness/package.json"
     ],
     "expectedDependencyOutputs": [
       "BB-070 DONE: exact supported product-entry/lifecycle/reference-product API and release identity consumed by the distribution.",
@@ -64,7 +65,8 @@
       "distribution/release-manifest.schema.json",
       "docs/runbooks/supported-delivery-profile.md",
       "scripts/delivery/bb-073-probe.mjs",
-      "scripts/delivery/build-release.mjs"
+      "scripts/delivery/build-release.mjs",
+      "package-lock.json"
     ],
     "expectedTests": [
       "packages/delivery-cli/test/cli.test.js",
@@ -82,7 +84,8 @@
       "docs/blackboard/artifacts/ready-implement-plan/BB-072*",
       "docs/blackboard/process/delivery-research/BB-073.md",
       "scripts/delivery/**",
-      "test/delivery/**"
+      "test/delivery/**",
+      "packages/**"
     ],
     "write": [
       "packages/delivery-cli/**",
@@ -92,7 +95,8 @@
       "test/delivery/bb-073.test.mjs",
       "docs/living/system/state.md",
       "package.json",
-      "scripts/delivery/build-release.mjs"
+      "scripts/delivery/build-release.mjs",
+      "package-lock.json"
     ],
     "forbiddenWrite": [
       "packages/agentic-system/src/**",
@@ -106,9 +110,9 @@
   },
   "implementationSlices": [
     "S0 — Dependency/profile preflight: require BB-070 and BB-072 DONE; bind exact lifecycle/operator APIs, canonical data roots and compatibility metadata; reject mismatch as PLAN_INPUT_CONTRADICTION.",
-    "S1 — Release/build identity: implement DELIVERY_BUILD_IDENTITY_V1 plus external DELIVERY_RELEASE_MANIFEST_V1, config schema/example and `build-release.mjs`; eliminate OCI-digest self-reference by binding the post-build digest only in the external release manifest and render compose with image@sha256.",
+    "S1 — Dependency-locked build/release identity: after BB-070/BB-072 are DONE, generate and commit root package-lock.json from the exact current npm workspace graph, implement DELIVERY_BUILD_IDENTITY_V1 and external DELIVERY_RELEASE_MANIFEST_V1, bind config schema and post-build OCI digest, and render compose with image@sha256. If dependency package topology cannot be represented by this workspace lock/install contract, return PLAN_INPUT_CONTRADICTION.",
     "S2 — CLI package: create @exharness/delivery-cli with doctor/configure/run/status/cancel/backup/restore/upgrade-check as thin adapters over delivered application/operations boundaries; add negatives proving the CLI cannot directly edit canonical state.",
-    "S3 — Build the Node-24 single-tenant CLI-job image from the exact repository root: lockfile install, private workspace sources copied into-image, entrypoint `node packages/delivery-cli/bin/exharness-delivery.mjs`, one BB-072 canonical state volume, read-only config and declared secrets. `doctor` is the v1 health/readiness check; no hidden daemon, Kubernetes or host Node dependency.",
+    "S3 — Build the Node-24 single-tenant CLI-job image from the exact candidate repository: copy root package.json + committed package-lock + packages/**, run npm ci --omit=dev, use entrypoint `node packages/delivery-cli/bin/exharness-delivery.mjs`, mount one BB-072 canonical state volume plus read-only config/declared secrets. No hidden daemon, Kubernetes, registry-only private package or host Node dependency.",
     "S4 — Assemble the release-only directory (digest-pinned compose, config schema/example, external release manifest, runbook) and execute clean-room install from an empty host directory with no checkout/npm/host Node: verify bundle, doctor, run the exact BB-070 reference delivery, then status; retain exact image/build/release/config/run/evidence identities.",
     "S5 — Compatibility exercise: test missing credentials, unsupported runtime metadata and incompatible persisted state; run supported upgrade-check, quiescent upgrade and exact-digest rollback with pre-upgrade backup/restore when schema rollback requires it.",
     "S6 — Distribution integrity: pack the CLI/workspace artifacts, scan the clean-room bundle for undeclared developer-checkout dependencies/secrets/mutable image identity and verify supported commands against a fresh operator process.",
@@ -419,24 +423,21 @@
         "cleanRoomContract",
         "operatorCliContract",
         "deliveryImageContract",
-        "releaseBundleContract"
+        "releaseBundleContract",
+        "workerEvidenceContract"
       ],
       "sourceAnchors": [
         {
-          "ref": "package.json",
-          "match": "\"workspaces\": ["
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "A person other than the author can install, operate, stop, upgrade and recover it."
         },
         {
           "ref": ".github/workflows/test.yml",
           "match": "node-version: 24"
         },
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
-          "match": "Goal-only, requirements/design and existing-code seeds converge"
-        },
-        {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
-          "match": "Backup/restore and process restart recover canonical runs"
+          "ref": "package.json",
+          "match": "\"workspaces\": ["
         }
       ]
     },
@@ -469,23 +470,25 @@
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
-        "docs/living/system/state.md"
+        "docs/living/system/state.md",
+        "docs/blackboard/process/delivery-product-roadmap.md"
       ],
       "supportingPlanFields": [
         "operatorCliContract",
         "releaseProfileContract",
         "compatibilityContract",
         "deliveryImageContract",
-        "releaseBundleContract"
+        "releaseBundleContract",
+        "workerEvidenceContract"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
-          "match": "Backup/restore and process restart recover canonical runs"
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "Operable distribution"
         },
         {
-          "ref": "docs/living/system/state.md",
-          "match": "Runtime SUCCEEDED is not domain ACCEPT"
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+          "match": "I introduces a read-only CausalReconstruction service"
         }
       ]
     },
@@ -515,26 +518,24 @@
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
         "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
-        "packages/agentic-system/src/domain-execution-control.js"
+        "packages/agentic-system/src/domain-execution-control.js",
+        "docs/blackboard/process/delivery-product-roadmap.md"
       ],
       "supportingPlanFields": [
         "compatibilityContract",
         "releaseProfileContract",
         "deliveryImageContract",
-        "releaseBundleContract"
+        "releaseBundleContract",
+        "workerEvidenceContract"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
-          "match": "lost telemetry cannot grant or revoke product acceptance"
+          "ref": "docs/blackboard/process/delivery-product-roadmap.md",
+          "match": "clean-install and upgrade/rollback exercises"
         },
         {
-          "ref": "packages/agentic-system/src/domain-execution-control.js",
-          "match": "RECOVERY_REQUIRED"
-        },
-        {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
-          "match": "current deployment/QA/completeness evidence is required for product outcome closure"
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+          "match": "I introduces a read-only CausalReconstruction service"
         }
       ]
     }
@@ -543,14 +544,12 @@
     "schemaVersion": 1,
     "buildContext": "exact candidate repository root",
     "buildInputs": [
-      "root package.json + lockfile/workspace metadata",
-      "packages/core-harness",
-      "packages/agentic-system",
-      "packages/delivery-cli",
-      "exact delivered runtime/Oracle workspace packages required by BB-070",
+      "root package.json",
+      "BB-073-owned committed package-lock.json generated after exact dependencies are DONE",
+      "packages/** exact delivered workspace sources at the BB-073 candidate",
       "distribution config/schema assets"
     ],
-    "runtime": "Node 24 OCI image; production dependencies installed from lockfile; source/workspace packages are copied into the image because @exharness/agentic-system is private and is not fetched from a registry.",
+    "runtime": "Node 24 OCI image. BB-073 first generates and commits the root npm workspace lockfile from the exact delivered dependency graph, then Docker uses `npm ci --omit=dev`; private workspace packages are copied from the candidate repository and linked by npm workspaces, not fetched from a registry.",
     "entrypoint": [
       "node",
       "packages/delivery-cli/bin/exharness-delivery.mjs"
@@ -561,7 +560,7 @@
       "embedded": "DELIVERY_BUILD_IDENTITY_V1 binds source SHA, package versions, Node major, state schema and config-schema digest without self-referential image digest",
       "external": "DELIVERY_RELEASE_MANIFEST_V1 binds the built OCI digest plus embedded build-identity digest and exact bundle digests; compose references image by digest"
     },
-    "noDaemonRequirement": "v1 is a CLI job profile, not an always-on workflow service; `doctor` is the health/readiness check and every command starts a fresh operator process over the durable state volume."
+    "noDaemonRequirement": "v1 is a CLI job profile, not an always-on workflow service; `doctor` is the health/readiness command and each operation starts a fresh process against the durable BB-072 state volume."
   },
   "releaseBundleContract": {
     "schemaVersion": 1,
@@ -582,5 +581,35 @@
     ],
     "noCheckout": "All host-side commands operate from the assembled release directory; no repository checkout, npm install or host Node runtime is allowed."
   },
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "workerEvidenceContract": {
+    "schemaVersion": 1,
+    "laneMeaning": "RESEARCH_SA defines the reproducible distribution/install/compatibility protocol. WORKER later must build the digest-pinned image/bundle and execute clean-room evidence; research does not claim the install has already run.",
+    "objectiveEvidence": {
+      "AC-1": {
+        "required": [
+          "committed root package-lock.json generated from the exact post-dependency workspace graph",
+          "DELIVERY_BUILD_IDENTITY_V1 + OCI image digest + DELIVERY_RELEASE_MANIFEST_V1 + bundle digests",
+          "empty-host-directory transcript containing release verification, docker compose doctor, run of exact BB-070 reference delivery and status",
+          "exact config/secret names and resulting run/evidence identities"
+        ],
+        "pass": "a fresh host with only Docker/Compose-compatible OCI runtime + Git + network and the assembled release directory completes the pinned reference delivery without repo checkout, npm or host Node"
+      },
+      "AC-2": {
+        "required": [
+          "doctor transcripts for missing provider/SCM credential, unsupported runtime/release metadata and incompatible persisted state",
+          "typed error code plus actionable remediation for each case"
+        ],
+        "pass": "all three fail before unsafe run/upgrade mutation and emit the predeclared typed diagnosis"
+      },
+      "AC-3": {
+        "required": [
+          "upgrade-check evidence for compatible quiescent state and ACTIVE/RECOVERY_REQUIRED incompatible state",
+          "pre-upgrade backup manifest, target image/release identity, prior image digest/release identity",
+          "rollback transcript with exact prior digest and backup restore when schema downgrade is not compatible"
+        ],
+        "pass": "safe upgrade proceeds only after compatibility gate; incompatible ongoing attempts are blocked; rollback reconstructs the compatible prior canonical state"
+      }
+    }
+  }
 }
