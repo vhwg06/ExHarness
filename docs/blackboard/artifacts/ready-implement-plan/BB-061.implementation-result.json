@@ -1,0 +1,159 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-061-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+    "hash": "2abbd6041c6ed4e933f237c38a47e38e8b6a8be65c6618295a3099cccaad2641"
+  },
+  "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+  "baselineSha": "d6c0b78db498124271c34099b29f9a7032ac3335",
+  "candidateTree": "d58f4ebd2600f1419b1ef98dd6daae5a1d8e27ca",
+  "verificationRuns": [
+    {
+      "id": "oracle-contract-unit",
+      "command": "node --test packages/oracle/test/context-contract.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/oracle-contract-unit.txt",
+      "logHash": "c55759e79954c85df9ebbf6d50028e6a9365a9ecaad59d4e17d0395d7df9f736"
+    },
+    {
+      "id": "core-context-resolution",
+      "command": "node --test packages/core-harness/test/context-resolution.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/core-context-resolution.txt",
+      "logHash": "7df8d5bf25460f529869a510ad106f258f1429ceabf0568c530a3203b35c3381"
+    },
+    {
+      "id": "compatibility-probe",
+      "command": "node scripts/oracle-context-intelligence/bb061-contract-compatibility-probe.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/compatibility-probe.txt",
+      "logHash": "8ce9a419b6c64c7028ed3b726fc8eab231b156f3fb86ddb0f570610ffbadbcdd"
+    },
+    {
+      "id": "boundary",
+      "command": "node --test test/oracle-context-contract-boundary.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/boundary.txt",
+      "logHash": "d70f1ab29e32cfa094758cacc50636f02a6d2a47a6fc2ff1473863c1d2598720"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/core-regression.txt",
+      "logHash": "dddc80ddc6a18a0a5a147bfcbde22d6e12c6dde32b0fe938c95143ba6060049a"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/agentic-regression.txt",
+      "logHash": "b0633260374d376556a4d08d7aa3ddc723f1d74ea6ebeadac03be2a716a14b79"
+    },
+    {
+      "id": "package-consumer",
+      "command": "npm run verify:package && npm run verify:consumer",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/package-consumer.txt",
+      "logHash": "59c59103f63c040c97666887158fe6fbcc06e175a21f71241a936eeb2460af06"
+    },
+    {
+      "id": "research-evidence",
+      "command": "node --test test/oracle-context-contract-boundary.test.mjs --test-name-pattern='provider-neutral|evidence|currentness'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/research-evidence.txt",
+      "logHash": "0c755c589123c0f00044236d58eaeb75472981fdf21fe1825bf6fb81fa567711"
+    },
+    {
+      "id": "living-docs",
+      "command": "node --test test/oracle-context-contract-boundary.test.mjs --test-name-pattern='Living|not delivered|BB-062|BB-063'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/living-docs.txt",
+      "logHash": "f628e28714c814c2a5017502b1b501c2f05c10c2bef626a702f32d49fa45e49b"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+      "logRef": "docs/blackboard/evidence/BB-061/oracle-regression.txt",
+      "logHash": "850c0af2ac06cc5d1a346e6be9407bd7c273d975ad3e259b51063736edc05740"
+    }
+  ],
+  "claims": [
+    {
+      "id": "CONTRACT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-061/oracle-contract-unit.txt",
+        "docs/blackboard/evidence/BB-061/boundary.txt"
+      ]
+    },
+    {
+      "id": "BUDGET_CURRENTNESS",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-061/oracle-contract-unit.txt"
+      ]
+    },
+    {
+      "id": "CORE_PORT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-061/core-context-resolution.txt",
+        "docs/blackboard/evidence/BB-061/boundary.txt"
+      ]
+    },
+    {
+      "id": "COMPATIBILITY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-061/compatibility-probe.txt"
+      ]
+    },
+    {
+      "id": "PROVIDER_NEUTRALITY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-061/oracle-contract-unit.txt",
+        "docs/blackboard/evidence/BB-061/research-evidence.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-061/boundary.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-061/oracle-contract-unit.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-061/core-context-resolution.txt",
+        "docs/blackboard/evidence/BB-061/boundary.txt"
+      ]
+    }
+  ]
+}

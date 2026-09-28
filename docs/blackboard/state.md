@@ -41,7 +41,7 @@ NONE
 ## Schedulable tasks
 
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
-- BB-061 [WORKER/EXECUTION] — Define ContextRequirement and ContextResolution semantic contract
+- BB-062 [WORKER/EXECUTION] — Define Oracle source provider topology and semantic code retrieval
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 
@@ -58,10 +58,10 @@ BB-057 [BLOCKED_BY BB-055] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
 BB-059 [BLOCKED_BY BB-058] <- BB-058
 BB-060 [DONE] <- ROOT
-BB-061 [WORKER_SCHEDULABLE] <- BB-060
-BB-062 [BLOCKED_BY BB-061] <- BB-061
+BB-061 [DONE] <- BB-060
+BB-062 [WORKER_SCHEDULABLE] <- BB-061
 BB-063 [BLOCKED_BY BB-062] <- BB-062
-BB-064 [BLOCKED_BY BB-061,BB-062,BB-063] <- BB-060, BB-061, BB-062, BB-063
+BB-064 [BLOCKED_BY BB-062,BB-063] <- BB-060, BB-061, BB-062, BB-063
 BB-065 [WORKER_SCHEDULABLE] <- ROOT
 BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066

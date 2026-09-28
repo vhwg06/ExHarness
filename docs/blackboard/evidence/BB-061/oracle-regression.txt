@@ -1,0 +1,47 @@
+
+> test:oracle
+> node --test packages/oracle/test/*.test.js test/oracle-context-intelligence-architecture.test.mjs
+
+✔ repository provider reads in requested order and retains source refs (0.686166ms)
+✔ application artifact provider keeps identity and provenance (0.172416ms)
+✔ providers fail closed on absent readers, rejection and malformed results (0.423875ms)
+✔ requirement semantic identity and strict provider-neutral parser (2.038125ms)
+✔ provider-neutral evidence fixtures share one schema (0.167084ms)
+✔ resolution binds source currentness provenance content and status (1.563458ms)
+ℹ REQUIRED CURRENT rejects weak timestamp-only validator
+ℹ REQUIRED MISSING -> UNSATISFIED, non-consumable
+ℹ REQUIRED STALE -> UNSATISFIED, non-consumable
+ℹ REQUIRED AMBIGUOUS -> UNSATISFIED, non-consumable
+ℹ REQUIRED BUDGET_EXHAUSTED -> UNSATISFIED, non-consumable
+ℹ REQUIRED CURRENTNESS_UNVERIFIABLE -> UNSATISFIED, non-consumable
+✔ optional partial, required provenance and progression budgets (0.67425ms)
+✔ exact snapshot, itemRef coverage, status and digest are fail closed (0.360042ms)
+✔ budget/currentness evidence: every counter and immutable step ceiling (0.79ms)
+ℹ items hard budget rejects 5
+ℹ materializedBytes hard budget rejects 4097
+ℹ providerCalls hard budget rejects 5
+ℹ resolutionSteps hard budget rejects 4
+ℹ index 0 -> 1 -> 2 binds exact immutable parent; step 3 rejected
+✔ provider-neutral fixture: semantic-code repository CURRENT (0.4975ms)
+ℹ {"kind":"REPOSITORY","mode":"CURRENT","requirementId":"577f664b9e763fd9b81068530c3a51b747153bbaca2e8da7a81314608e79eb65","resolutionId":"705a4ef6593ec63ce9b156d805e7c81ac6f73c6ac21198f6bebbd4a6d8e1b2d2","provenance":[]}
+✔ provider-neutral fixture: lexical-search repository CURRENT (0.1455ms)
+ℹ {"kind":"REPOSITORY","mode":"CURRENT","requirementId":"552a21f94213e7ea26251f9ad72cbf4b31876133e2432a8712ab4a87e96fbcca","resolutionId":"9ffaeed0ba0b9d2e815d2383e8551219bd4a8f2813b5ffa283459482f283e503","provenance":[]}
+✔ provider-neutral fixture: context-graph relationship CURRENT (0.151625ms)
+ℹ {"kind":"CONTEXT_GRAPH","mode":"CURRENT","requirementId":"0877f5061455e3b8bc4a4a70cf481d624dce112c6e100170e4a3a229a7065af0","resolutionId":"a77c2d442d0698b352a83aed0991ef8f3d20216e2bc2d77778085187fd9ae43e","provenance":[]}
+✔ provider-neutral fixture: accepted application-artifact EXACT (0.287125ms)
+ℹ {"kind":"APPLICATION_ARTIFACT","mode":"EXACT","requirementId":"972ebf44a3184b107f12aca75d0ee4878bb81664a993a8e58cbb45ef093f895b","resolutionId":"5a2aeacf78ab95de277e54b7e74c1ce1573726ac7beb8c7b19caf10e28fbae33","provenance":[{"kind":"PRODUCER_WORK_ORDER","ref":"work-7"},{"kind":"ACCEPTANCE_DECISION","ref":"accepted-7","digest":"sha256:decision"}]}
+✔ Oracle architecture boundary and dependency direction (5.201875ms)
+✔ architecture guard rejects mutated forbidden imports, loops, wiring, exports and authority (14.640666ms)
+✔ Living Docs mark delivered semantic contract and deferred limits without work IDs (0.251333ms)
+✔ research evidence and provider selection deferred with license (1.228667ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 66.350417
+
+
+exitCode=0

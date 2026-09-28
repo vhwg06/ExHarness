@@ -1,0 +1,196 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-061-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-061",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "hash": "2abbd6041c6ed4e933f237c38a47e38e8b6a8be65c6618295a3099cccaad2641"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-061.json",
+      "hash": "b2900f7a117b79118368f5149f8017b1450d1970096f029c088b006693de8e95"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.implementation-result.json",
+      "hash": "d971aee43d5f55868fef2e258409eb4c17df186669c5dd9f484db53ca692c798"
+    },
+    "candidateSha": "99489c8deaa902c4a5a62d8439f7786e99277874",
+    "candidateTree": "d58f4ebd2600f1419b1ef98dd6daae5a1d8e27ca",
+    "baselineSha": "d6c0b78db498124271c34099b29f9a7032ac3335"
+  },
+  "stateHash": "4c58b22e6dbccc96e22832134c037277c04d23b9db0e9c4f1f16818395825d45",
+  "specHash": "de5efdb2e85f1fe7a06b139fe6ca70648e598c64326de8253dc72cbf4a78129a",
+  "cacheKey": "a12f73f3e17e0cefaab19e568d590dc9c50fdc165e418f3ff97ca8815b603390",
+  "model": "jev-1.13.0",
+  "answers": {
+    "CONTRACT": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.95,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "SATISFIED": 0.96,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.03
+      }
+    },
+    "BUDGET_CURRENTNESS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.94,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.96,
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.04
+      }
+    },
+    "CORE_PORT": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.82,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.12,
+        "SATISFIED": 0.87,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "COMPATIBILITY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.51,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.26,
+        "IMPLEMENTATION_DEFECT": 0.1,
+        "SATISFIED": 0.63,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "PROVIDER_NEUTRALITY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.88,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.91,
+        "INSUFFICIENT_EVIDENCE": 0.08
+      }
+    },
+    "INV-1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.53,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.34,
+        "SATISFIED": 0.65,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "INV-2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.8,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.13,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "SATISFIED": 0.86
+      }
+    },
+    "INV-3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.92,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.05,
+        "SATISFIED": 0.94,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.97,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "SATISFIED": 0.97,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 113872,
+    "output_tokens": 651
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 9,
+    "latencyMs": 3482.539708,
+    "payloadBytes": 172144,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_ATOMIC_QUESTIONS_V1",
+      "manifest": [
+        {
+          "id": "CONTRACT",
+          "payloadHash": "26f1d52002e282cb6db235cf3f32b44874ec3be61dd2cc24a0133c6c52ca71c1",
+          "payloadBytes": 48249
+        },
+        {
+          "id": "BUDGET_CURRENTNESS",
+          "payloadHash": "38b7a06638f7094711aeb772440bf1cec041830432d48311b389fd24056d148c",
+          "payloadBytes": 46304
+        },
+        {
+          "id": "CORE_PORT",
+          "payloadHash": "88d502f29e6712998d864c964813b606bdaa21957633bc1909b92bdc8d2df90c",
+          "payloadBytes": 44114
+        },
+        {
+          "id": "COMPATIBILITY",
+          "payloadHash": "0b4b6449aecc63d411213c8f297fb38d959030c9590c1a7f7082383cbdf6d7f7",
+          "payloadBytes": 42935
+        },
+        {
+          "id": "PROVIDER_NEUTRALITY",
+          "payloadHash": "5fdcd205de36acd543a8faf865c773c2130d55b7b667b4ae515b93d5051b6ad1",
+          "payloadBytes": 47566
+        },
+        {
+          "id": "INV-1",
+          "payloadHash": "f2780f6efcf5b24a7ba24877f33439b4229ed3a3768c2054b99e99c8fa316f2a",
+          "payloadBytes": 37397
+        },
+        {
+          "id": "INV-2",
+          "payloadHash": "4ae3e214113e99864191a9d90d7542dcd672edeb7478e0ab0eab1e22e7a96cd4",
+          "payloadBytes": 46325
+        },
+        {
+          "id": "INV-3",
+          "payloadHash": "cad971f1d182fcba8b68bc7bded17d06d596251645ba46be0e842679e8debe1e",
+          "payloadBytes": 43898
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "1cf45fa49e1971fa1ebabbb188002d5e7d57de2af1bc584a7432cad10ee9a2e1",
+          "payloadBytes": 26049
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
