@@ -28,11 +28,11 @@
   ],
   "architectureDecisions": [
     "D1 — The supported v1 distribution is one single-tenant OCI/container profile with a CLI-first control surface. Kubernetes tenancy, multi-node HA and an operator web UI are explicitly deferred; they require separate measured product need.",
-    "D2 — The normative release identity is DELIVERY_RELEASE_MANIFEST_V1 binding ExHarness source/release version, OCI image digest, Node runtime major, state-schema compatibility version, supported SCM=GitHub, supported runtime adapter/profile refs and required configuration keys. Mutable tags are never sufficient release identity.",
-    "D3 — Node 24 is the supported runtime major for this profile because the current repository kernel CI executes on Node 24. The container image carries the runtime; a clean operator host requires Docker/Compose-compatible container execution and Git, not a matching host Node installation.",
+    "D2 — DELIVERY_RELEASE_MANIFEST_V1 is the normative distribution identity. It binds source/release version, linux/amd64 image content ID, required delivery-image.tar SHA-256, pinned Node-24 base-image identity, state-schema compatibility version, SCM=GitHub, delivered runtime/profile refs, config-schema digest and reference-seed digest. A Docker tag is only a local locator and can never satisfy identity/currentness by itself.",
+    "D3 — The supported v1 runtime is linux/amd64 Node 24 inside the container because repository kernel CI executes on Node 24. The release image contains every runtime prerequisite needed by the delivered BB-070/BB-072 adapters; the clean operator host requires only a Docker/Compose-compatible engine with `docker image load` and `docker compose run --pull never`, plus network access for the configured SCM/provider. Host Node, npm, Git and a repository checkout are not prerequisites.",
     "D4 — The supported operator CLI commands are doctor, configure, run, status, cancel, backup, restore and upgrade-check. They compose BB-070 lifecycle and BB-072 operations APIs; the CLI is an adapter/control surface and owns no alternate lifecycle or acceptance state.",
     "D5 — Configuration is schema-validated and split from secrets. The committed config example contains no credentials; provider/SCM secrets enter only through named environment/file secret inputs. doctor fails with actionable typed errors for missing credentials, unsupported runtime, unreachable SCM/provider prerequisites and incompatible persisted state.",
-    "D6 — Clean install consumes only the pinned release bundle: compose.yaml, config example/schema, release manifest and runbook. Installation must not depend on a developer checkout, prior session state or unpublished local files.",
+    "D6 — Clean install is self-contained: the release bundle must include delivery-image.tar, digest-pinned release/config/reference-seed manifests and the runbook. Installation verifies the archive hash, loads the image, verifies the loaded image content ID, and runs Compose with pull disabled. A registry may later mirror the same image but is not part of BB-073 acceptance and cannot be a hidden prerequisite.",
     "D7 — Upgrade is allowed only after upgrade-check validates state-schema compatibility and either no ACTIVE/RECOVERY_REQUIRED attempt exists or the exact delivered compatibility contract permits continuation. Otherwise the operator must quiesce/cancel/reconcile first. No in-place best-effort migration is allowed from an unknown state.",
     "D8 — Rollback uses the exact previous OCI digest plus its compatible state snapshot/release manifest. If the current persisted schema is not rollback-compatible, rollback requires restoring the pre-upgrade backup; unsupported downgrade fails closed.",
     "D9 — OpenHands software-agent-sdk v1.49.6 is not repackaged as a second product; the distribution consumes the exact BB-070/BB-069 delivered runtime profile. Langfuse v4.46.0 remains optional observability infrastructure from BB-072 and is not required for install/health.",
@@ -66,7 +66,12 @@
       "docs/runbooks/supported-delivery-profile.md",
       "scripts/delivery/bb-073-probe.mjs",
       "scripts/delivery/build-release.mjs",
-      "package-lock.json"
+      "package-lock.json",
+      "packages/delivery-cli/src/config.js",
+      "packages/delivery-cli/src/dependency-adapter.js",
+      "packages/delivery-cli/src/commands.js",
+      "packages/delivery-cli/src/release.js",
+      "distribution/reference-seed.json"
     ],
     "expectedTests": [
       "packages/delivery-cli/test/cli.test.js",
@@ -96,7 +101,8 @@
       "docs/living/system/state.md",
       "package.json",
       "scripts/delivery/build-release.mjs",
-      "package-lock.json"
+      "package-lock.json",
+      "distribution/reference-seed.json"
     ],
     "forbiddenWrite": [
       "packages/agentic-system/src/**",
@@ -109,14 +115,14 @@
     ]
   },
   "implementationSlices": [
-    "S0 — Dependency/profile preflight: require BB-070 and BB-072 DONE; bind exact lifecycle/operator APIs, canonical data roots and compatibility metadata; reject mismatch as PLAN_INPUT_CONTRADICTION.",
-    "S1 — Dependency-locked build/release identity: after BB-070/BB-072 are DONE, generate and commit root package-lock.json from the exact current npm workspace graph, implement DELIVERY_BUILD_IDENTITY_V1 and external DELIVERY_RELEASE_MANIFEST_V1, bind config schema and post-build OCI digest, and render compose with image@sha256. If dependency package topology cannot be represented by this workspace lock/install contract, return PLAN_INPUT_CONTRADICTION.",
-    "S2 — CLI package: create @exharness/delivery-cli with doctor/configure/run/status/cancel/backup/restore/upgrade-check as thin adapters over delivered application/operations boundaries; add negatives proving the CLI cannot directly edit canonical state.",
-    "S3 — Build the Node-24 single-tenant CLI-job image from the exact candidate repository: copy root package.json + committed package-lock + packages/**, run npm ci --omit=dev, use entrypoint `node packages/delivery-cli/bin/exharness-delivery.mjs`, mount one BB-072 canonical state volume plus read-only config/declared secrets. No hidden daemon, Kubernetes, registry-only private package or host Node dependency.",
-    "S4 — Assemble the release-only directory (digest-pinned compose, config schema/example, external release manifest, runbook) and execute clean-room install from an empty host directory with no checkout/npm/host Node: verify bundle, doctor, run the exact BB-070 reference delivery, then status; retain exact image/build/release/config/run/evidence identities.",
-    "S5 — Compatibility exercise: test missing credentials, unsupported runtime metadata and incompatible persisted state; run supported upgrade-check, quiescent upgrade and exact-digest rollback with pre-upgrade backup/restore when schema rollback requires it.",
-    "S6 — Distribution integrity: pack the CLI/workspace artifacts, scan the clean-room bundle for undeclared developer-checkout dependencies/secrets/mutable image identity and verify supported commands against a fresh operator process.",
-    "S7 — Update Living truth and runbook with exact supported profile, prerequisites, support boundaries, upgrade/rollback rules and known exclusions."
+    "S0 — Exact dependency bind (`packages/delivery-cli/src/dependency-adapter.js`): require BB-070 and BB-072 DONE; resolve their implementation-result/judgment/consolidated refs and public exports; bind the local lifecycle.run + operations.{doctor,status,cancel,backup,restore,upgradeCheck} ports. Do not edit dependency packages. Any missing/incompatible public seam is PLAN_INPUT_CONTRADICTION.",
+    "S1 — Locked build inputs (`package-lock.json`, `distribution/reference-seed.json`, `src/release.js`): run `npm install --package-lock-only --ignore-scripts` against the exact post-dependency workspace, commit the resulting root lockfile, materialize one reference-seed.json from exact BB-070 delivered reference semantics, define DELIVERY_BUILD_IDENTITY_V1/DELIVERY_RELEASE_MANIFEST_V1 validation, and require a literal linux/amd64 Node-24 base-image digest.",
+    "S2 — CLI implementation (`config.js`, `commands.js`, `index.js`, bin): implement the eight fixed commands over only the bound local ports. `configure` emits non-secret config JSON to stdout/--output; doctor validates release/config/secrets/runtime/state before run; run emits {projectId,runId,releaseRef,outcomeRef,evidenceRefs}; status/cancel/backup/restore/upgrade-check delegate without direct canonical-state writes. Unit negatives prove bypass is impossible.",
+    "S3 — Deterministic image (`distribution/Dockerfile`): copy root package.json + committed lock + candidate packages/**, run `npm ci --omit=dev`, copy distribution assets, use non-root Node 24 runtime and entrypoint `node packages/delivery-cli/bin/exharness-delivery.mjs`. Build as linux/amd64 with release-local tag; inspect and record exact imageContentId. No build context or dependency may come from outside the candidate tree.",
+    "S4 — Self-contained release (`build-release.mjs`, compose, schema/runbook): `--mode build` saves the exact local image to required delivery-image.tar, hashes it and every bundle file, writes DELIVERY_RELEASE_MANIFEST_V1, and renders compose.yaml with no build section. `--mode verify` must succeed using the bundle directory alone. Docker tag is locator-only; manifest imageContentId + archive digest are authority.",
+    "S5 — Clean-room acceptance (`bb-073-probe.mjs --mode clean-install`): create a fresh empty temp host directory, copy only release bundle bytes, verify bundle, `docker image load`, re-inspect exact imageContentId, create operator config from documented non-secret input + external secrets, then run doctor -> BB-070 reference run -> status using `docker compose run --pull never --rm`. Assert exact accepted BB-070 release/outcome/evidence refs and record raw stdout/stderr/exit codes plus host/bundle/image identities. Any registry pull, checkout, host npm/Node/Git, NOT_RUN or missing acceptance ref fails AC-1.",
+    "S6 — Failure/compatibility acceptance: exercise MISSING_CREDENTIAL, UNSUPPORTED_RUNTIME and INCOMPATIBLE_STATE before mutation; then run upgrade-check against quiescent compatible state and ACTIVE/RECOVERY_REQUIRED incompatible state, persist pre-upgrade backup manifest, load/verify target image archive, perform supported upgrade, and roll back to the exact prior imageContentId/release manifest with backup restore when schema downgrade requires it.",
+    "S7 — Distribution integrity + documentation: scan bundle/Dockerfile/compose for undeclared host paths, secrets, registry dependency, mutable-image authority or build sections; run CLI/package/repository regression; update docs/living/system/state.md and docs/runbooks/supported-delivery-profile.md with exact prerequisites, image-archive transport, install commands, state paths, typed failures, support boundaries and upgrade/rollback procedure."
   ],
   "acceptanceCriteria": [
     {
@@ -203,7 +209,7 @@
   "verificationPlan": [
     {
       "id": "live-probe",
-      "command": "node scripts/delivery/bb-073-probe.mjs --mode clean-install"
+      "command": "node scripts/delivery/bb-073-probe.mjs --mode clean-install --bundle \"$EXHARNESS_BB073_BUNDLE\" --output \"$EXHARNESS_BB073_OUTPUT\""
     },
     {
       "id": "boundary-probe",
@@ -211,11 +217,11 @@
     },
     {
       "id": "image-contract",
-      "command": "node --test test/delivery/bb-073.test.mjs --test-name-pattern=\"image|bundle|digest|no checkout\""
+      "command": "node --test test/delivery/bb-073.test.mjs --test-name-pattern=\"image archive|imageContentId|pull never|no checkout\""
     },
     {
       "id": "release-build",
-      "command": "node scripts/delivery/build-release.mjs --mode verify-contract"
+      "command": "node scripts/delivery/build-release.mjs --mode verify --bundle \"$EXHARNESS_BB073_BUNDLE\""
     },
     {
       "id": "cli-contract",
@@ -227,15 +233,15 @@
     },
     {
       "id": "doctor",
-      "command": "node packages/delivery-cli/bin/exharness-delivery.mjs doctor --config distribution/config.example.json"
+      "command": "docker compose -f \"$EXHARNESS_BB073_BUNDLE/compose.yaml\" run --pull never --rm delivery doctor --config /release/config.json"
     },
     {
       "id": "clean-install",
-      "command": "node scripts/delivery/bb-073-probe.mjs --mode clean-install"
+      "command": "node scripts/delivery/bb-073-probe.mjs --mode clean-install --bundle \"$EXHARNESS_BB073_BUNDLE\" --output \"$EXHARNESS_BB073_OUTPUT\""
     },
     {
       "id": "upgrade-rollback",
-      "command": "node scripts/delivery/bb-073-probe.mjs --mode upgrade-rollback"
+      "command": "node scripts/delivery/bb-073-probe.mjs --mode upgrade-rollback --bundle \"$EXHARNESS_BB073_BUNDLE\" --output \"$EXHARNESS_BB073_UPGRADE_OUTPUT\""
     },
     {
       "id": "pack",
@@ -304,6 +310,11 @@
       "source": "Existing ExHarness package/workspace layout",
       "checked": "2026-09-28",
       "finding": "A separate packages/delivery-cli workspace package plus OCI bundle is the smallest distribution seam without changing core-harness or agentic runtime ownership."
+    },
+    {
+      "source": "Docker CLI image save/load + Compose run pull policy documentation",
+      "checked": "2026-09-28",
+      "finding": "`docker image save` creates a tar archive restorable by `docker image load`, and `docker compose run --pull never` prevents an implicit registry pull. Selected as BB-073 v1 image transport so the release directory itself is sufficient for clean-install image transfer."
     }
   ],
   "releaseProfileContract": {
@@ -312,12 +323,14 @@
     "supportedProfile": "single-tenant OCI/container deployment with CLI-first control surface",
     "identity": [
       "source/release version",
-      "OCI image digest",
-      "Node runtime major=24",
+      "linux/amd64 imageContentId",
+      "delivery-image.tar SHA-256",
+      "digest-pinned Node 24 base image",
       "stateSchemaCompatibilityVersion",
       "SCM=GitHub",
       "runtime/profile refs",
-      "config schema digest"
+      "config schema digest",
+      "reference seed digest"
     ],
     "excluded": [
       "mutable tag as identity",
@@ -329,16 +342,16 @@
   "cleanRoomContract": {
     "schemaVersion": 1,
     "hostPrerequisites": [
-      "Docker/Compose-compatible OCI execution",
-      "Git",
-      "network access required by configured provider/SCM"
+      "Docker/Compose-compatible engine supporting docker image load and docker compose run --pull never",
+      "network access required by the configured provider/SCM"
     ],
     "bundleOnly": [
-      "compose.yaml bound to image digest",
-      "config schema/example",
+      "delivery-image.tar (required, hash-bound)",
+      "compose.yaml using the release-local image locator",
+      "config.schema.json and secret-free config.example.json",
+      "reference-seed.json bound to exact DONE BB-070 supported reference delivery",
       "DELIVERY_RELEASE_MANIFEST_V1",
-      "supported-delivery-profile runbook",
-      "optional manifest-bound OCI archive only for explicit offline mode"
+      "supported-delivery-profile runbook"
     ],
     "forbidden": [
       "developer checkout",
@@ -346,7 +359,7 @@
       "unpublished local path",
       "unversioned mutable image identity"
     ],
-    "success": "From an empty temp host directory, verify the release bundle, supply only documented config/secrets, pass `docker compose run --rm delivery doctor`, execute the exact BB-070 reference delivery with `run`, inspect `status`, and retain image/build/release/config/run/evidence identities."
+    "success": "From a newly created empty temp host directory, copy only the assembled release directory; verify all manifest/file hashes; `docker image load --input delivery-image.tar`; verify the loaded locator resolves to the manifest imageContentId; supply only documented config/secrets; run `docker compose run --pull never --rm delivery doctor`, then `run --seed /release/reference-seed.json`, then `status`; require the exact BB-070 reference delivery outcome/acceptance refs and retain image/build/release/config/run/evidence identities."
   },
   "operatorCliContract": {
     "schemaVersion": 1,
@@ -394,7 +407,8 @@
         "S2",
         "S3",
         "S4",
-        "S6"
+        "S5",
+        "S7"
       ],
       "verificationIds": [
         "live-probe",
@@ -402,7 +416,8 @@
         "image-contract",
         "release-build",
         "doctor",
-        "pack"
+        "pack",
+        "distribution-contract"
       ],
       "decisionIndexes": [
         0,
@@ -425,7 +440,9 @@
         "operatorCliContract",
         "deliveryImageContract",
         "releaseBundleContract",
-        "workerEvidenceContract"
+        "workerEvidenceContract",
+        "imageTransportContract",
+        "distributionImplementationContract"
       ],
       "sourceAnchors": [
         {
@@ -480,7 +497,9 @@
         "compatibilityContract",
         "deliveryImageContract",
         "releaseBundleContract",
-        "workerEvidenceContract"
+        "workerEvidenceContract",
+        "imageTransportContract",
+        "distributionImplementationContract"
       ],
       "sourceAnchors": [
         {
@@ -527,7 +546,9 @@
         "releaseProfileContract",
         "deliveryImageContract",
         "releaseBundleContract",
-        "workerEvidenceContract"
+        "workerEvidenceContract",
+        "imageTransportContract",
+        "distributionImplementationContract"
       ],
       "sourceAnchors": [
         {
@@ -548,39 +569,58 @@
       "root package.json",
       "BB-073-owned committed package-lock.json generated after exact dependencies are DONE",
       "packages/** exact delivered workspace sources at the BB-073 candidate",
-      "distribution config/schema assets"
+      "distribution config/schema/reference-seed assets"
     ],
-    "runtime": "Node 24 OCI image. BB-073 first generates and commits the root npm workspace lockfile from the exact delivered dependency graph, then Docker uses `npm ci --omit=dev`; private workspace packages are copied from the candidate repository and linked by npm workspaces, not fetched from a registry.",
+    "runtime": "linux/amd64 Node 24 image with a literal digest-pinned `node:24-bookworm-slim@sha256:...` base selected at Worker implementation. After BB-070/BB-072 are DONE, BB-073 generates and commits the root npm workspace lockfile, then Docker uses `npm ci --omit=dev`; private workspace packages come only from candidate `packages/**`.",
     "entrypoint": [
       "node",
       "packages/delivery-cli/bin/exharness-delivery.mjs"
     ],
-    "invocation": "docker compose run --rm delivery <doctor|configure|run|status|cancel|backup|restore|upgrade-check>",
+    "invocation": "docker compose run --pull never --rm delivery <doctor|configure|run|status|cancel|backup|restore|upgrade-check>",
     "state": "one named persistent volume mounted at the BB-072 canonical data root; config is read-only; secrets arrive only through declared secret/env inputs",
     "identitySplit": {
-      "embedded": "DELIVERY_BUILD_IDENTITY_V1 binds source SHA, package versions, Node major, state schema and config-schema digest without self-referential image digest",
-      "external": "DELIVERY_RELEASE_MANIFEST_V1 binds the built OCI digest plus embedded build-identity digest and exact bundle digests; compose references image by digest"
+      "embedded": "DELIVERY_BUILD_IDENTITY_V1 binds source SHA, workspace package versions, literal base-image digest, Node major, linux/amd64, state schema and config/reference-seed digests without self-reference.",
+      "external": "DELIVERY_RELEASE_MANIFEST_V1 binds imageContentId, delivery-image.tar SHA-256, embedded build-identity digest and every release-bundle file digest. The compose image tag is only a locator and is revalidated against imageContentId before execution."
     },
     "noDaemonRequirement": "v1 is a CLI job profile, not an always-on workflow service; `doctor` is the health/readiness command and each operation starts a fresh process against the durable BB-072 state volume."
   },
   "releaseBundleContract": {
     "schemaVersion": 1,
-    "assembly": "scripts/delivery/build-release.mjs produces one directory/archive after image build",
+    "assembly": "scripts/delivery/build-release.mjs --mode build produces one self-contained release directory after the exact candidate image is built.",
     "contents": [
-      "compose.yaml rendered with immutable image@sha256 digest",
+      "delivery-image.tar containing the exact release-local tagged linux/amd64 image",
+      "compose.yaml rendered with the release-local image locator and no build section",
       "config.schema.json and secret-free config.example.json",
+      "reference-seed.json generated/bound from exact DONE BB-070 reference product contract",
       "DELIVERY_RELEASE_MANIFEST_V1",
       "supported-delivery-profile runbook"
     ],
-    "optionalOfflineArtifact": "OCI image archive may be included only when offline-install mode is explicitly produced and its digest is bound by the release manifest.",
-    "installSequence": [
-      "verify release-manifest and bundle digests",
-      "copy config.example.json to operator config and supply named secrets outside the bundle",
-      "docker compose run --rm delivery doctor",
-      "docker compose run --rm delivery run <reference-delivery input>",
-      "docker compose run --rm delivery status"
+    "manifestFields": [
+      "releaseId",
+      "sourceSha",
+      "buildIdentityDigest",
+      "imageLocator",
+      "imageContentId",
+      "imageArchiveSha256",
+      "platform=linux/amd64",
+      "baseImageDigest",
+      "nodeMajor=24",
+      "stateSchemaCompatibilityVersion",
+      "configSchemaSha256",
+      "referenceSeedSha256",
+      "bundleFileDigests"
     ],
-    "noCheckout": "All host-side commands operate from the assembled release directory; no repository checkout, npm install or host Node runtime is allowed."
+    "installSequence": [
+      "verify DELIVERY_RELEASE_MANIFEST_V1 and every bundle file digest",
+      "docker image load --input delivery-image.tar",
+      "docker image inspect the manifest imageLocator and require exact imageContentId equality",
+      "copy config.example.json to operator config and supply named secrets outside the bundle",
+      "docker compose run --pull never --rm delivery doctor --config /release/config.json",
+      "docker compose run --pull never --rm delivery run --config /release/config.json --seed /release/reference-seed.json --output /state/reference-run.json",
+      "docker compose run --pull never --rm delivery status --config /release/config.json --run-id <runId>"
+    ],
+    "noCheckout": "All host-side steps operate from the release directory and Docker state only; no repository checkout, npm install, host Node/Git, registry pull or unpublished local file is allowed.",
+    "registry": "Not required for v1 acceptance. A later mirror must be treated as a transport of the same bound image identity."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "workerEvidenceContract": {
@@ -590,11 +630,11 @@
       "AC-1": {
         "required": [
           "committed root package-lock.json generated from the exact post-dependency workspace graph",
-          "DELIVERY_BUILD_IDENTITY_V1 + OCI image digest + DELIVERY_RELEASE_MANIFEST_V1 + bundle digests",
-          "empty-host-directory transcript containing release verification, docker compose doctor, run of exact BB-070 reference delivery and status",
-          "exact config/secret names and resulting run/evidence identities"
+          "DELIVERY_BUILD_IDENTITY_V1 + imageContentId + required delivery-image.tar SHA-256 + DELIVERY_RELEASE_MANIFEST_V1 + bundle digests",
+          "empty-host-directory transcript proving no checkout/host Node/Git/registry pull and showing manifest verification -> docker image load -> imageContentId verification -> compose doctor/run/status with --pull never",
+          "exact config/secret names, referenceSeedSha256 and BB-070 result/release/outcome/evidence refs"
         ],
-        "pass": "a fresh host with only Docker/Compose-compatible OCI runtime + Git + network and the assembled release directory completes the pinned reference delivery without repo checkout, npm or host Node"
+        "pass": "a newly created empty host directory with only Docker/Compose + network and the self-contained release directory loads the exact bound image and completes the pinned BB-070 reference delivery; any missing archive, registry/build-host dependency, identity mismatch, NOT_RUN, missing acceptance evidence or stale outcome fails"
       },
       "AC-2": {
         "required": [
@@ -612,5 +652,73 @@
         "pass": "safe upgrade proceeds only after compatibility gate; incompatible ongoing attempts are blocked; rollback reconstructs the compatible prior canonical state"
       }
     }
+  },
+  "imageTransportContract": {
+    "schemaVersion": 1,
+    "kind": "BUNDLED_DOCKER_ARCHIVE_V1",
+    "supportedPlatform": "linux/amd64",
+    "buildLocator": "exharness-delivery:release-<releaseId>; locator only, never authority",
+    "build": [
+      "Build distribution/Dockerfile from the exact candidate source with a literal digest-pinned Node 24 base image.",
+      "Resolve and persist `docker image inspect <locator> --format {{.Id}}` as imageContentId.",
+      "Run `docker image save --output <bundle>/delivery-image.tar <locator>`.",
+      "Hash delivery-image.tar and bind imageArchiveSha256 + imageContentId + platform in DELIVERY_RELEASE_MANIFEST_V1."
+    ],
+    "install": [
+      "Verify delivery-image.tar SHA-256 against DELIVERY_RELEASE_MANIFEST_V1 before loading.",
+      "Run `docker image load --input delivery-image.tar`.",
+      "Resolve the loaded locator with `docker image inspect` and require exact imageContentId equality.",
+      "Run every supported command with `docker compose run --pull never --rm delivery ...`; any missing/mismatched local image fails before application execution."
+    ],
+    "registryPolicy": "No registry is required for the supported v1 clean-install acceptance path. A future registry mirror is transport convenience only and must resolve to the same image content identity.",
+    "rationale": "Docker's supported save/load path makes the release directory sufficient for image transfer and removes an implicit registry/build-host dependency."
+  },
+  "distributionImplementationContract": {
+    "schemaVersion": 1,
+    "package": "@exharness/delivery-cli",
+    "files": {
+      "packages/delivery-cli/src/config.js": [
+        "export validateDeliveryConfig(value)",
+        "export loadDeliveryConfig({ path, env })",
+        "validate non-secret config against distribution/config.schema.json; resolve named secrets from environment/file inputs without persisting secret values"
+      ],
+      "packages/delivery-cli/src/dependency-adapter.js": [
+        "export bindDeliveredDeliveryPorts({ lifecycle, operations, release })",
+        "adapt only exact public DONE BB-070 lifecycle and DONE BB-072 operations exports to the local CLI ports; if public dependency seams cannot satisfy the required ports without editing forbidden packages, throw PLAN_INPUT_CONTRADICTION during Worker preflight"
+      ],
+      "packages/delivery-cli/src/commands.js": [
+        "export runDoctor(ctx,args), runConfigure(ctx,args), runDelivery(ctx,args), runStatus(ctx,args), runCancel(ctx,args), runBackup(ctx,args), runRestore(ctx,args), runUpgradeCheck(ctx,args)",
+        "commands may call only bound lifecycle/operations ports and release/config readers; no command may write canonical state directly"
+      ],
+      "packages/delivery-cli/src/release.js": [
+        "export readReleaseManifest(path), verifyReleaseManifest(manifest), verifyLoadedImage({ manifest, inspect })",
+        "enforce source/release/config/reference-seed/image/archive/state-schema identities before run/upgrade"
+      ],
+      "packages/delivery-cli/bin/exharness-delivery.mjs": [
+        "parse exact command + --config/--seed/--run-id/--output flags, construct dependency adapter, execute one command, emit one JSON result to stdout or --output, use nonzero exit for typed operator errors"
+      ],
+      "scripts/delivery/build-release.mjs": [
+        "`--mode build --output <dir>` generates root package-lock if absent from exact post-dependency workspace graph, verifies it is committed for candidate acceptance, builds linux/amd64 image, records imageContentId, saves delivery-image.tar, hashes every bundle file, writes DELIVERY_RELEASE_MANIFEST_V1 and renders compose.yaml",
+        "`--mode verify --bundle <dir>` verifies manifest, archive/config/reference-seed/runbook digests without a repository checkout"
+      ],
+      "scripts/delivery/bb-073-probe.mjs": [
+        "`--mode clean-install --bundle <dir>` creates a new empty temp operator directory, copies only bundle bytes, verifies bundle, loads image, verifies imageContentId, injects test secrets externally, runs doctor -> run(reference-seed) -> status with --pull never, and writes a machine-readable evidence manifest",
+        "`--mode upgrade-rollback` exercises compatibility gate, pre-upgrade backup, target image load/verification, blocked active-attempt case, supported upgrade and exact prior-image rollback/restore"
+      ]
+    },
+    "localPorts": {
+      "lifecycle": {
+        "run": "run({ seed, config, outputRef }) -> { projectId, runId, releaseRef, outcomeRef, evidenceRefs[] }"
+      },
+      "operations": {
+        "doctor": "doctor({ config, release }) -> typed readiness result",
+        "status": "status({ runId }) -> DELIVERY_RUN_PROJECTION_V1-compatible projection",
+        "cancel": "cancel({ runId }) -> authority-routed cancellation result",
+        "backup": "backup({ output }) -> canonical backup manifest ref",
+        "restore": "restore({ manifestRef }) -> validated restore result",
+        "upgradeCheck": "upgradeCheck({ targetRelease }) -> compatible | blocked with reasons"
+      }
+    },
+    "dependencyRule": "The local ports are BB-073 adapter contracts, not new runtime authority. S0 binds them to exact DONE BB-070/BB-072 public outputs and stops with PLAN_INPUT_CONTRADICTION on mismatch."
   }
 }
