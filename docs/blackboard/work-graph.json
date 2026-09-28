@@ -1268,21 +1268,14 @@
     {
       "id": "BB-065",
       "featureId": "FEATURE-DELIVERY-BASELINE",
-      "title": "Calibrate neutral benchmark substrate and executable baseline",
+      "title": "Establish neutral benchmark package and calibrated substrate",
       "kind": "IMPLEMENTATION",
-      "status": "BLOCKED",
+      "status": "PLANNED",
       "complexity": "L",
       "components": [
         "agentic/domain-execution-control"
       ],
-      "dependencies": [
-        {
-          "taskId": "BB-082",
-          "requires": [
-            "TASK_OUTPUT"
-          ]
-        }
-      ],
+      "dependencies": [],
       "artifacts": {
         "inputRefs": [
           "docs/blackboard/artifacts/objective/BB-065.json",
@@ -1296,17 +1289,17 @@
         ]
       },
       "expectedOutputs": [
-        "Frozen task, sandbox, verifier and provider-accounting fixtures are independently calibrated before any harness-value claim; oracle/pass and no-op/fail controls distinguish task validity from agent behavior.",
-        "A neutral harness adapter contract fixes model snapshot, prompt/task input, starting workspace, resource ceilings, artifact extraction and evaluator while preserving each harness's native execution behavior.",
-        "Every calibration emits candidate artifacts, execution trace, validator result, token/tool/cost/time accounting and an explicit failure class; provider or termination failure is never silently converted into quality failure.",
-        "BB-065 establishes benchmark trustworthiness only. Direct-versus-ExHarness or product-value conclusions are deferred to the controlled harness and delivery benchmark tasks."
+        "A standalone @exharness/benchmark workspace package owns substrate-independent experiment registration, attempt/evidence/accounting and audit contracts without importing ExHarness product runtime packages.",
+        "A pinned Harbor adapter and deterministic calibration workload prove fresh reset, independent verification, artifact extraction, evidence reopening and orthogonal failure/accounting semantics before any harness-value claim.",
+        "The retired scripts/delivery/baseline Direct/Core value-study implementation is removed from current benchmark execution paths after replacement calibration passes; Git history retains historical evidence.",
+        "BB-065 establishes benchmark trustworthiness only. Direct-versus-ExHarness harness economics, component attribution and product-value conclusions remain downstream."
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-065.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-        "researchBaselineSha": "dc94d898db5baa09f47b987996b1374ad71ced81",
+        "researchBaselineSha": "faf39ab0b160267eb69d1ad62f3b3e917d80c633",
         "baselineSha": "c0b895f59d060a845f836a8e089e1f67ef268bde",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-065.implementation-result.json"
       },
