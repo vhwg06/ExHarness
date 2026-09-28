@@ -238,9 +238,9 @@ NONE
 
 A fingerprint is eligible only if it can be changed through a delivered bounded HOW/configuration seam without changing WHAT, acceptance, evaluator, task, benchmark budget or product authority. If the observed problem requires new runtime/product architecture, BB-075 returns `INCONCLUSIVE/NO_ELIGIBLE_CANDIDATE` and records a follow-up research requirement instead of expanding Worker source scope. `KEEP_BASELINE` is reserved for a real candidate that completed held-out evaluation and failed its promotion gate.
 
-Before candidate construction, BB-075 deterministically partitions the remaining pinned Terminal-Bench 2.1 pool after excluding every task digest used/reserved by BB-077, BB-081 and BB-074:
+Before candidate construction, BB-075 deterministically partitions the remaining pinned Terminal-Bench 2.1 pool after excluding every task digest used/reserved by BB-065, BB-077, BB-081 and BB-074:
 
-1. preflight candidates with oracle 5/5 and nop failure;
+1. preflight candidates through the delivered BB-065 substrate port with oracle 5/5 and nop failure;
 2. sort eligible task bundles by immutable digest;
 3. seal the first six as `IMPROVEMENT_HOLDOUT`;
 4. seal the next four as `RELEASE_RESERVE`.
