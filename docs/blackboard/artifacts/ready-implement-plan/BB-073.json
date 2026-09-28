@@ -435,14 +435,7 @@
         "docs/blackboard/process/delivery-product-roadmap.md"
       ],
       "supportingPlanFields": [
-        "releaseProfileContract",
-        "cleanRoomContract",
-        "operatorCliContract",
-        "deliveryImageContract",
-        "releaseBundleContract",
-        "workerEvidenceContract",
-        "imageTransportContract",
-        "distributionImplementationContract"
+        "cleanInstallReadinessContract"
       ],
       "sourceAnchors": [
         {
@@ -492,14 +485,7 @@
         "docs/blackboard/process/delivery-product-roadmap.md"
       ],
       "supportingPlanFields": [
-        "operatorCliContract",
-        "releaseProfileContract",
-        "compatibilityContract",
-        "deliveryImageContract",
-        "releaseBundleContract",
-        "workerEvidenceContract",
-        "imageTransportContract",
-        "distributionImplementationContract"
+        "operatorCliContract"
       ],
       "sourceAnchors": [
         {
@@ -542,13 +528,7 @@
         "docs/blackboard/process/delivery-product-roadmap.md"
       ],
       "supportingPlanFields": [
-        "compatibilityContract",
-        "releaseProfileContract",
-        "deliveryImageContract",
-        "releaseBundleContract",
-        "workerEvidenceContract",
-        "imageTransportContract",
-        "distributionImplementationContract"
+        "compatibilityContract"
       ],
       "sourceAnchors": [
         {
@@ -720,5 +700,14 @@
       }
     },
     "dependencyRule": "The local ports are BB-073 adapter contracts, not new runtime authority. S0 binds them to exact DONE BB-070/BB-072 public outputs and stops with PLAN_INPUT_CONTRADICTION on mismatch."
+  },
+  "cleanInstallReadinessContract": {
+    "schemaVersion": 1,
+    "transport": "BUNDLED_DOCKER_ARCHIVE_V1: required delivery-image.tar; manifest binds archive SHA-256 + imageContentId + linux/amd64 + source/build/config/reference-seed identities.",
+    "build": "Exact candidate -> committed root workspace lock -> digest-pinned Node-24 base -> npm ci --omit=dev -> local image -> inspect imageContentId -> docker image save -> hash archive -> release manifest.",
+    "freshHost": "Prerequisites are Docker/Compose-compatible engine + provider/SCM network only. No checkout, host Node/npm/Git or registry pull.",
+    "install": "Verify bundle hashes -> docker image load -> inspect exact imageContentId -> external secrets + documented config -> docker compose run --pull never --rm delivery doctor -> run exact reference-seed -> status.",
+    "acceptance": "run must return exact BB-070 current accepted reference release/outcome/evidence refs; archive/image/config/seed/run identities are retained; NOT_RUN, hidden external file/registry dependency, mismatch, stale or missing acceptance evidence fails.",
+    "implementation": "S0 binds DONE BB-070/072 public ports; S1 lock+seed; S2 CLI; S3 Dockerfile; S4 release archive; S5 clean-room probe; S6 compatibility; S7 integrity/docs."
   }
 }
