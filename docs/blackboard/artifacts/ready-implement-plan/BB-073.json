@@ -196,6 +196,14 @@
   ],
   "verificationPlan": [
     {
+      "id": "live-probe",
+      "command": "node scripts/delivery/bb-073-probe.mjs --mode clean-install"
+    },
+    {
+      "id": "boundary-probe",
+      "command": "node --test packages/delivery-cli/test/cli.test.js test/delivery/bb-073.test.mjs"
+    },
+    {
       "id": "cli-contract",
       "command": "node --test packages/delivery-cli/test/cli.test.js"
     },
