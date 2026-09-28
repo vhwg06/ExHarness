@@ -115,7 +115,7 @@
     "S2 — Domain-owned lifecycle composition: map normalized seed + accepted decisions into explicit BA/SA/FE/BE/DevOps/QA obligations using existing organization materialization and semantic obligation contracts; preserve dependency-derived FE/BE concurrency and forbid central next-role selection.",
     "S3 — Product closure composition: consume exact delivered BB-055 closure semantics and allow closure request only for the exact current release when deployment, independent QA and completeness evidence are current.",
     "S4 — Deterministic boundary suite: run all three seed fixtures; assert equivalent declared acceptance semantics, bounded clarification, domain ownership, independent parallel claims, stale/missing evidence rejection and producer-success-with-failing-acceptance negatives.",
-    "S5 — Live reference-product probe: execute the delivered BB-069 reference product through all three seed classes, capture Playwright v1.63.0 trace/browser artifacts bound to exact release identity, and preserve raw failures. Live credentials/runtime access are prerequisites; absence produces NOT_RUN, never synthetic success.",
+    "S5 — Execute preregistered BB070_SEED_EQUIVALENCE_V1: three independently reset live arms (GOAL_ONLY, REQUIREMENTS_DESIGN, EXISTING_CODE) over the exact BB-069 reference product with one frozen acceptanceSemanticDigest/runtime/budget profile. Persist the complete per-arm identity/evidence matrix, audit it separately, and reject any NOT_RUN/stale/missing/QA-failed arm; deterministic fixtures cannot satisfy this slice.",
     "S6 — Update Living truth with only the implemented seed/lifecycle/closure capability, explicit limits and the fact that outer Blackboard remains separate from product runtime coordination."
   ],
   "acceptanceCriteria": [
@@ -208,6 +208,14 @@
     {
       "id": "boundary-probe",
       "command": "node --test packages/agentic-system/test/bb070-product-delivery-lifecycle.test.js test/delivery/bb-070.test.mjs"
+    },
+    {
+      "id": "seed-equivalence-live",
+      "command": "node scripts/delivery/bb-070-probe.mjs --mode live --protocol BB070_SEED_EQUIVALENCE_V1 --output \"$EXHARNESS_BB070_OUTPUT\""
+    },
+    {
+      "id": "seed-equivalence-audit",
+      "command": "node scripts/delivery/bb-070-probe.mjs --mode audit-live --protocol BB070_SEED_EQUIVALENCE_V1 --input \"$EXHARNESS_BB070_OUTPUT\""
     },
     {
       "id": "seed-contract",
@@ -372,17 +380,22 @@
         "INV-2"
       ],
       "planElements": [
+        "S0",
         "S1",
+        "S3",
         "S4",
         "S5"
       ],
       "verificationIds": [
         "seed-contract",
         "deterministic-probe",
-        "live-probe"
+        "seed-equivalence-live",
+        "seed-equivalence-audit"
       ],
       "decisionIndexes": [
         0,
+        1,
+        5,
         6,
         8
       ],
@@ -393,7 +406,8 @@
       ],
       "supportingPlanFields": [
         "seedContract",
-        "closureContract"
+        "closureContract",
+        "seedEquivalenceProtocol"
       ]
     },
     {
@@ -462,5 +476,42 @@
         "closureContract"
       ]
     }
-  ]
+  ],
+  "seedEquivalenceProtocol": {
+    "schemaVersion": 1,
+    "protocol": "BB070_SEED_EQUIVALENCE_V1",
+    "prerequisite": "exact DONE BB-069 reference request-management repository/runtime plus exact DONE BB-055 closure boundary",
+    "frozenTarget": {
+      "base": "same repositoryRef + baseSha and clean data reset for every seed arm",
+      "productGoal": "deliver the same supported request-management behavior and independently accepted release",
+      "acceptance": "one product-owner-approved acceptanceSemanticDigest is frozen before the three executions",
+      "runtime": "same delivered coding runtime/tool/sandbox profile and same per-run budget ceilings"
+    },
+    "arms": [
+      {
+        "seedKind": "GOAL_ONLY",
+        "visibleInput": "repository/base identity + bounded product goal; detailed requirements/design are absent",
+        "clarification": "required acceptance/product choices must be obtained through PRODUCT_DECISION_REQUEST_V1 before affected work becomes actionable"
+      },
+      {
+        "seedKind": "REQUIREMENTS_DESIGN",
+        "visibleInput": "same repository/base + same goal + product-owner-approved requirements/design refs bound to the frozen acceptanceSemanticDigest"
+      },
+      {
+        "seedKind": "EXISTING_CODE",
+        "visibleInput": "same repository/base + same goal + explicit existing-code/source refs and acceptance refs; no hidden accepted implementation is supplied"
+      }
+    ],
+    "requiredPerArmEvidence": [
+      "PROJECT_SEED_V1 manifest and accepted product-decision refs",
+      "normalized acceptanceSemanticDigest",
+      "materialized domain obligation/work refs and claim generations",
+      "execution attempt/runtime/model/tool/profile identities and raw failures",
+      "exact SCM/release/deployment identity from delivered path",
+      "independent API/persistence/browser evidence including Playwright trace on failure",
+      "exact current ProductStateProjection subject and ProductOutcomeClaim/closure decision"
+    ],
+    "convergence": "All three arms must preserve the same frozen acceptanceSemanticDigest and each independently reach a current accepted product outcome. Source tree/attempt IDs may differ; acceptance semantics may not.",
+    "failureRule": "Any NOT_RUN, unresolved product-owner decision, missing evidence, stale projection/release, independent QA rejection or non-current closure makes the criterion unsatisfied; deterministic fixtures cannot substitute for these three live arms."
+  }
 }
