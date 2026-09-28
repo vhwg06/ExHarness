@@ -149,7 +149,7 @@ Required calibration:
 
 BB-065 emits `BENCHMARK_ATTEMPT_RECORD_V1`. BB-077 may extend that record with harness-specific model/turn/cache timing fields; it must not redefine the orthogonal outcome semantics.
 
-BB-065's current canonical OBJECTIVE still describes the retired mini-SWE DIRECT-vs-Core value study. That stale objective/plan must be replaced before readiness, but BB-082 is not a benchmark-domain dependency. The reset is a trusted research-publication action; BB-082 may later generalize that control-plane operation without sitting in the benchmark execution DAG.
+BB-065's canonical objective/plan has now been replaced around the neutral `@exharness/benchmark` package plus calibrated substrate, passed fresh readiness, and is READY for Worker execution. BB-082 remains outside the benchmark-domain dependency DAG.
 
 ## Layer B — BB-077 harness isolation / economics
 
@@ -236,7 +236,7 @@ TOOL_POLICY
 NONE
 ```
 
-A fingerprint is eligible only if it can be changed through a delivered bounded HOW/configuration seam without changing WHAT, acceptance, evaluator, task, benchmark budget or product authority. If the observed problem requires new runtime/product architecture, BB-075 returns KEEP_BASELINE and records a follow-up research requirement instead of expanding Worker source scope.
+A fingerprint is eligible only if it can be changed through a delivered bounded HOW/configuration seam without changing WHAT, acceptance, evaluator, task, benchmark budget or product authority. If the observed problem requires new runtime/product architecture, BB-075 returns `INCONCLUSIVE/NO_ELIGIBLE_CANDIDATE` and records a follow-up research requirement instead of expanding Worker source scope. `KEEP_BASELINE` is reserved for a real candidate that completed held-out evaluation and failed its promotion gate.
 
 Before candidate construction, BB-075 deterministically partitions the remaining pinned Terminal-Bench 2.1 pool after excluding every task digest used/reserved by BB-077, BB-081 and BB-074:
 
@@ -314,18 +314,18 @@ Research may finish downstream plans before upstream delivery. Worker execution 
 As of this research pass:
 
 ```text
-BB-065  research package/substrate design converged; canonical objective/plan reset still needs trusted publication, not a BB-082 dependency
-BB-077  READY plan retained
+BB-065  READY; neutral benchmark package/substrate research closure complete
+BB-077  READY; harness-comparison ownership audit complete, Worker blocked by BB-065 delivery
 BB-078  READY plan retained
 BB-079  READY plan retained
 BB-080  READY plan retained
-BB-081  READY plan retained
-BB-074  READY plan retained
-BB-075  converged implementation-plan candidate; fresh Jev still required
-BB-076  converged implementation-plan candidate; fresh Jev still required
+BB-081  DRAFT; ownership audit corrected, fresh readiness required on current head
+BB-074  DRAFT; ownership audit corrected, fresh readiness required on current head
+BB-075  DRAFT; no-candidate decision contradiction corrected, fresh readiness required on current head
+BB-076  DRAFT; release-acceptance ownership audit clean, fresh readiness required on current head
 ```
 
-No task is moved to Worker by this research change.
+BB-065 and BB-077 are the only benchmark-program plans already published READY in this branch; BB-081/074/075/076 remain Research/SA until fresh readiness publication on their current audited plans.
 
 Because this PR changes only Research/SA contracts and does not change delivered runtime behavior, it must be classified `CURRENT_SYSTEM_NOT_CHANGED`; Living system truth changes only with later verified Worker delivery.
 
