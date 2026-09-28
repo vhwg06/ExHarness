@@ -33,7 +33,7 @@ QaWorkOrder.requiredArtifacts
 ## Current semantics
 
 - application contracts decide which context is required;
-- Oracle pulls only declared files/artifacts;
+- production Backend/QA compatibility paths pull only declared files/artifacts;
 - resolution happens explicitly before Worker execution;
 - external repository IO and internal application-artifact IO remain distinct adapters;
 - context carries stable source refs; internal artifacts also carry producer/acceptance provenance;
@@ -41,10 +41,10 @@ QaWorkOrder.requiredArtifacts
 - an optional application-owned manifest-validating artifactReader can verify ref/path + producer/revision/acceptance provenance + content digest before QA receives bytes; the default artifactReader path remains unchanged;
 - the optional manifest store is durable filesystem state and the validating reader returns the existing { content, sourceRef } shape after validation;
 - manifest-protected durable Backend -> QA composition persists the exact manifest ref before QA_PENDING and scopes fresh QA reads to that ref; direct-reader mode remains supported;
-- Oracle has no agent loop, session lifecycle, generic resolver registry, MCP-first layer, retrieval framework or cache lifecycle in current source;
+- Oracle has no agent loop, session lifecycle, model-visible provider registry, MCP-first layer or cache lifecycle;
 - no MCP client/adapter, MCP request state, MRTR continuation or Tasks handle is implemented or persisted today.
 
-The provider-neutral ContextRequirement/ContextResolution v1 contract, canonical identity and consumability checks are implemented in `@exharness/oracle`. Core has an injected pre-render resolver port and freezes selected requirement blocks once per agent call. Existing Backend/QA production source paths still use their compatibility adapter. Provider catalog/planner, durable resolution persistence/cache invalidation and automatic progressive re-resolution are not implemented.
+The provider-neutral ContextRequirement/ContextResolution v1 contract, canonical identity and consumability checks are implemented in `@exharness/oracle`. Core has an injected pre-render resolver port and freezes selected requirement blocks once per agent call. Existing Backend/QA production source paths still use their compatibility adapter. SourceCatalog, strict candidate/provider contracts, injected lexical/semantic/graph/external adapters and deterministic RetrievalPlanner are implemented below the caller-facing requirement. External runtimes, durable resolution persistence/cache invalidation and automatic progressive re-resolution are not implemented.
 
 If a concrete MCP-backed source appears later, MCP remains a source/capability adapter below application-owned work/lifecycle authority; protocol support alone does not count as a third source class.
 

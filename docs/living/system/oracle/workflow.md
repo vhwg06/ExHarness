@@ -49,8 +49,8 @@ There is no MCP-backed resolution path in current source. `oracle.js` does not i
 
 Any later concrete MCP-backed source remains below application-owned work/lifecycle authority; this constraint does not make an MCP flow current implementation.
 
-No implicit refresh, background provider lifecycle, cache or retrieval pass exists in the current workflow.
+No implicit refresh, background provider lifecycle, cache or automatic production retrieval pass exists in the current workflow.
 
 The development-only runtime seam probe resolves an Application semantic need through an injected resolver, projects the source and provenance into an ordinary bounded Core context block, and then calls `renderAgentContext`. No model-visible action is invoked. Its handoff record reports requirement and resolution ids, source reads, resolution/provider calls, materialized/rendered sizes, estimated tokens when available, provenance coverage, currentness checks, wall time and failure class.
 
-The ContextRequirement/ContextResolution semantic contract and injected Core pre-prompt resolver hook are implemented. Existing Backend/QA production flows still use their compatibility adapter. Provider selection, durable resolution cache and automatic progressive resolution are not implemented.
+The ContextRequirement/ContextResolution semantic contract and injected Core pre-prompt resolver hook are implemented. Existing Backend/QA production flows still use their compatibility adapter. Composition-time SourceCatalog registration and deterministic RetrievalPlanner are implemented below this contract. For semantic repository needs the planner reserves bounded symbol and lexical work; exact refs select exact reads; graph/external work requires matching source kinds. Candidate validation checks source identity, provenance and authoritative CURRENT snapshot before materialization. Durable resolution cache and automatic progressive resolution are not implemented.

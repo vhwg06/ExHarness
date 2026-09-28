@@ -17,7 +17,7 @@ function boundaryViolations({ oracleSource, coreSource, adapterSource, agenticPa
   if (/@exharness\/oracle|packages\/oracle|\.\.\/\.\.\/oracle/.test(coreSource)) violations.push("Core Oracle implementation import");
   if (/\.readFile\s*\(|\.readArtifact\s*\(/.test(adapterSource)) violations.push("copied source loop");
   if (agenticPackage.dependencies?.["@exharness/oracle"] !== "file:../oracle") violations.push("missing package dependency");
-  if (oracleExports.join(",") !== "assertConsumableContextResolution,contextItemDigest,contextMaterializationId,contextRequirementId,contextResolutionId,defineContextRequirement,defineContextResolution,readApplicationArtifacts,readRepositorySources") violations.push("Oracle exports");
+  if (oracleExports.join(",") !== "ProviderFailure,ProviderFailureReason,ProviderOperation,assertConsumableContextResolution,contextItemDigest,contextMaterializationId,contextRequirementId,contextResolutionId,createContextGraphProvider,createExactArtifactProvider,createExactRepositoryProvider,createExternalSourceProvider,createLexicalSearchProvider,createRetrievalPlanner,createSemanticCodeProvider,createSourceCatalog,createStructuralMapProvider,defineContextRequirement,defineContextResolution,defineProviderCandidate,defineProviderDescriptor,projectStructuralMap,readApplicationArtifacts,readRepositorySources") violations.push("Oracle exports");
   if (/\b(?:claimWork|publishDelivery|acceptWork|recoverWork|scheduleWork)\s*\(/.test(oracleSource)) violations.push("Oracle lifecycle authority");
   return violations;
 }
