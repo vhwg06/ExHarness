@@ -27,52 +27,93 @@
     "The outer Blackboard schedules ExHarness development only; product runtime coordination remains a separate system."
   ],
   "architectureDecisions": [
-    "Candidate direction, not selected architecture: Compare Langfuse/OTel export with a minimal operator CLI; keep canonical evidence independent from a tracing vendor.",
-    "Candidate direction, not selected architecture: Specify storage durability, backup/restore, retention/redaction and unknown external-effect reconciliation for single tenancy.",
-    "Candidate direction, not selected architecture: Define service health, blocked-owner explanations, budget alarms and cancellation semantics."
+    "D1 — Canonical operational truth remains the existing Blackboard/application artifact/attempt/evidence stores plus delivered causal reconstruction. BB-072 adds a read-only DELIVERY_RUN_PROJECTION_V1 and operator control surface; it does not create a second canonical run database or let telemetry state authorize lifecycle transitions.",
+    "D2 — DELIVERY_RUN_PROJECTION_V1 is reconstructed from exact project/work/claimGeneration/executionAttemptId/binding/model/runtime/SCM/evidence refs and reports blocker/currentness state from authoritative sources. Missing provenance is UNKNOWN/UNRESOLVED, never model-inferred.",
+    "D3 — Provider accounting is append-only per wire attempt. Cost, input/output/cache tokens and provider request identity remain nullable; failed/retried calls stay in totals; any missing usage remains UNKNOWN and can trigger conservative budget exhaustion but is never normalized to zero.",
+    "D4 — Budget control is explicit DELIVERY_BUDGET_POLICY_V1 with per-run hard ceilings for provider cost when known, token counts, model calls and wall time. Admission reserves known/maximum budget before dispatch; exhaustion blocks new dispatch, while cancellation requests route through the delivered execution/effect recovery authority instead of mutating attempt state directly.",
+    "D5 — Backup/restore for the supported single-tenant profile is a quiescent canonical-store snapshot plus MANIFEST_V1 of paths/digests/schema/release identity. Restore validates all digests and schema/release compatibility before replacing configured state; telemetry exports are excluded because loss of telemetry cannot grant or revoke acceptance.",
+    "D6 — Unknown external effects remain governed by the delivered Core/BB-058 reconciliation result. NON_RECONCILABLE/ambiguous effects stay blocked for operator action; the operations layer cannot mark them succeeded to make recovery convenient.",
+    "D7 — OpenTelemetry JS v2.11.0 is the selected optional export API for spans/metrics copied from canonical observations. OTLP export failure is diagnostic and cannot affect acceptance/currentness. The exporter is an adapter boundary that can target any compatible collector.",
+    "D8 — Langfuse v4.46.0 is retained only as an optional OTLP/trace inspection backend for operator experiments, not a required service or evidence authority. A minimal CLI is the supported v1 operator surface because diagnose/status/cancel/reconcile/backup/restore do not require an additional UI service.",
+    "D9 — Temporal v1.32.0 and Restate v1.7.11 are rejected as the canonical durability layer: existing ExHarness attempt/currentness/effect stores already own execution truth, and adding another workflow journal would create dual recovery authority.",
+    "D10 — Worker preflight requires BB-068 and BB-058 DONE and binds their exact SCM/CI provenance plus causal reconstruction/effect-reconciliation outputs. Incompatible delivered identity/recovery fields are PLAN_INPUT_CONTRADICTION."
   ],
   "sourceSeams": {
     "requiredExisting": [
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/organization-observer.js",
+      "packages/agentic-system/src/causal-provenance.js",
+      "packages/agentic-system/src/causal-reconstruction.js",
       "packages/agentic-system/src/domain-execution-control.js",
-      "docs/living/system/state.md"
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-068.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+      "docs/blackboard/process/delivery-research/BB-072.md"
+    ],
+    "expectedDependencyOutputs": [
+      "BB-068 DONE: exact repository/commit/CI/review identity and evidence refs exposed to delivery operations.",
+      "BB-058 DONE: exact causal reconstruction, blocker explanation and external-effect reconciliation/currentness seam used by the operator projection."
     ],
     "expectedNew": [
+      "packages/agentic-system/src/delivery-operations.js",
+      "packages/agentic-system/src/delivery-telemetry.js",
+      "scripts/delivery/operator.mjs",
       "scripts/delivery/bb-072-probe.mjs"
     ],
     "expectedTests": [
+      "packages/agentic-system/test/bb072-delivery-operations.test.js",
       "test/delivery/bb-072.test.mjs"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "docs/living/**",
-      "docs/blackboard/process/delivery-product-roadmap.md",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/src/organization-observer.js",
+      "packages/agentic-system/src/causal-*.js",
+      "packages/agentic-system/src/domain-execution-*.js",
+      "packages/agentic-system/test/**",
+      "packages/core-harness/src/effect-reconciliation.js",
+      "docs/living/system/agentic-application/**",
+      "docs/living/system/core-harness/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-068*",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-058*",
       "docs/blackboard/process/delivery-research/BB-072.md",
-      "scripts/**",
-      "test/**",
-      "package.json"
+      "scripts/delivery/**",
+      "test/delivery/**"
     ],
     "write": [
-      "packages/agentic-system/**",
-      "packages/core-harness/**",
-      "packages/oracle/**",
-      "scripts/delivery/**",
-      "test/delivery/**",
-      "docs/living/system/**",
-      "package.json"
+      "packages/agentic-system/src/delivery-operations.js",
+      "packages/agentic-system/src/delivery-telemetry.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb072-delivery-operations.test.js",
+      "scripts/delivery/operator.mjs",
+      "scripts/delivery/bb-072-probe.mjs",
+      "test/delivery/bb-072.test.mjs",
+      "docs/living/system/agentic-application/capabilities.md",
+      "docs/living/system/agentic-application/contracts.md",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      ".github/**",
       "docs/blackboard/**",
-      ".github/**"
+      "packages/agentic-system/src/organization-observer.js",
+      "packages/agentic-system/src/causal-provenance.js",
+      "packages/agentic-system/src/causal-reconstruction.js",
+      "packages/agentic-system/src/domain-execution-control.js"
     ]
   },
   "implementationSlices": [
-    "Resolve task-specific research decisions and narrow source scope before readiness.",
-    "Implement the selected bounded capability and concrete adapter/fixture seams.",
-    "Run the defined live and negative probes; capture exact evidence and update delivered Living truth."
+    "S0 — Dependency preflight: require BB-068 and BB-058 DONE; bind exact SCM/CI and causal/reconciliation outputs and reject incompatible delivered identity fields.",
+    "S1 — Operator projection: implement DELIVERY_RUN_PROJECTION_V1 from authoritative refs only; expose exact blockers, task/attempt/model/runtime/SCM identities, currentness and evidence refs with UNKNOWN for missing observations.",
+    "S2 — Accounting/budget: implement append-only provider-attempt accounting and DELIVERY_BUDGET_POLICY_V1 admission/ceiling logic; keep failures/retries, nullable cost/tokens and conservative UNKNOWN handling.",
+    "S3 — Operator actions: implement CLI status/diagnose/cancel/reconcile using existing authority APIs. Cancellation/reconciliation cannot directly rewrite attempt/publication state and must surface ambiguous effects as blocked.",
+    "S4 — Durability: implement quiescent backup manifest, digest/schema/release validation and restore for configured canonical stores; prove process restart and restore reconstruct the same run projection while telemetry loss has no authority effect.",
+    "S5 — Telemetry adapter: export copy-only spans/metrics through OpenTelemetry JS v2.11.0-compatible APIs; prove exporter outage/loss cannot change canonical state. Optionally inspect with Langfuse v4.46.0 but keep it outside the supported authority boundary.",
+    "S6 — Operations probe: disconnect telemetry, exhaust each budget dimension, kill/restart the process, restore a backup and inject unresolved external effects; require truthful operator explanations and no fabricated zero usage.",
+    "S7 — Update Living truth with supported operator surface, retention/backup boundary, telemetry non-authority and known single-tenant limits."
   ],
   "acceptanceCriteria": [
     {
@@ -158,22 +199,39 @@
   ],
   "verificationPlan": [
     {
-      "id": "live-probe",
-      "command": "node scripts/delivery/bb-072-probe.mjs"
+      "id": "projection",
+      "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"projection|provenance|blocker\""
     },
     {
-      "id": "boundary-probe",
-      "command": "node --test test/delivery/bb-072.test.mjs"
+      "id": "accounting-budget",
+      "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"accounting|budget|unknown\""
+    },
+    {
+      "id": "recovery-backup",
+      "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"restart|backup|restore|effect\""
+    },
+    {
+      "id": "telemetry-boundary",
+      "command": "node --test packages/agentic-system/test/bb072-delivery-operations.test.js --test-name-pattern=\"telemetry|otel|non-authority\""
+    },
+    {
+      "id": "deterministic-probe",
+      "command": "node scripts/delivery/bb-072-probe.mjs --mode deterministic"
+    },
+    {
+      "id": "operator-smoke",
+      "command": "node scripts/delivery/operator.mjs doctor --fixture test/delivery/fixtures/bb-072"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
     }
   ],
-  "researchGaps": [
-    "Compare Langfuse/OTel export with a minimal operator CLI; keep canonical evidence independent from a tracing vendor.",
-    "Specify storage durability, backup/restore, retention/redaction and unknown external-effect reconciliation for single tenancy.",
-    "Define service health, blocked-owner explanations, budget alarms and cancellation semantics.",
-    "Pin selected technology source/release and inspect its seam; document rejected alternatives and compatibility/license evidence.",
-    "Resolve exact implementation files, scope, fixture setup and runnable verification commands; proposed probe paths do not exist yet.",
-    "Bind upstream delivered/ready semantics and obtain a real Jev readiness judgment after all gaps are resolved."
-  ],
+  "researchGaps": [],
   "negativeVerificationCases": [
     "Producer success with failing independent acceptance.",
     "Missing or stale source/runtime identity represented as current evidence.",
@@ -210,5 +268,27 @@
     ],
     "questionId": "LIVING_DOCS",
     "statement": "BB-072 Living truth describes only the implemented and independently verified supported capability and limitations."
-  }
+  },
+  "researchEvidence": [
+    {
+      "source": "ExHarness causal-provenance.js / causal-reconstruction.js / organization-observer.js and domain-execution-control.js",
+      "checked": "2026-09-28",
+      "finding": "Canonical identities, attempt evidence and read-only observation already exist; operations should project/export them rather than create a second truth store."
+    },
+    {
+      "source": "OpenTelemetry JS v2.11.0",
+      "checked": "2026-09-28",
+      "finding": "Selected as the optional standard telemetry export seam. The 2.x line is stable/current on the research date; export remains copy-only and non-authoritative."
+    },
+    {
+      "source": "Langfuse v4.46.0",
+      "checked": "2026-09-28",
+      "finding": "Useful optional trace/evaluation inspection backend, but not selected as required canonical storage or operator control authority."
+    },
+    {
+      "source": "Temporal v1.32.0 and Restate v1.7.11",
+      "checked": "2026-09-28",
+      "finding": "Both provide durable execution references, but adoption would duplicate ExHarness execution/reconciliation journals; rejected for BB-072 canonical durability."
+    }
+  ]
 }
