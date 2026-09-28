@@ -420,6 +420,24 @@
         "operatorCliContract",
         "deliveryImageContract",
         "releaseBundleContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "package.json",
+          "match": "\"workspaces\": ["
+        },
+        {
+          "ref": ".github/workflows/test.yml",
+          "match": "node-version: 24"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
+          "match": "Goal-only, requirements/design and existing-code seeds converge"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
+          "match": "Backup/restore and process restart recover canonical runs"
+        }
       ]
     },
     {
@@ -459,6 +477,16 @@
         "compatibilityContract",
         "deliveryImageContract",
         "releaseBundleContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
+          "match": "Backup/restore and process restart recover canonical runs"
+        },
+        {
+          "ref": "docs/living/system/state.md",
+          "match": "Runtime SUCCEEDED is not domain ACCEPT"
+        }
       ]
     },
     {
@@ -494,6 +522,20 @@
         "releaseProfileContract",
         "deliveryImageContract",
         "releaseBundleContract"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-072.json",
+          "match": "lost telemetry cannot grant or revoke product acceptance"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "RECOVERY_REQUIRED"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-070.json",
+          "match": "current deployment/QA/completeness evidence is required for product outcome closure"
+        }
       ]
     }
   ],
@@ -539,5 +581,6 @@
       "docker compose run --rm delivery status"
     ],
     "noCheckout": "All host-side commands operate from the assembled release directory; no repository checkout, npm install or host Node runtime is allowed."
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
