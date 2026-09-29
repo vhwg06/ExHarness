@@ -1,0 +1,113 @@
+{
+  "kind": "BB096_REAL_EXECUTION_PROBE_RESULT",
+  "version": 1,
+  "evidenceClass": "DETERMINISTIC_SOURCE_INVENTORY_AND_FIXTURE_EXPERIMENT",
+  "probeRef": "docs/blackboard/evidence/BB-096/real-execution-probe.mjs",
+  "inventory": {
+    "packageSourceFiles": 117,
+    "providerAdapterFiles": [],
+    "agenticSourceFiles": 45,
+    "agenticProcessExecutionFiles": [],
+    "agenticTestFiles": 43,
+    "agenticTestsUsingCoreModelStrategies": [],
+    "agenticInlineScriptedStrategies": 10,
+    "backendWorkerRequiresInjectedStrategy": true,
+    "backendWorkerRequiresInjectedWorkspace": true,
+    "qaWorkerUsesInjectedVerifiers": true,
+    "manifestsWithBin": []
+  },
+  "experiment": {
+    "fixture": "temporary git repository with one failing node:test",
+    "completionAction": "ACCEPT",
+    "runDecision": "RETURN",
+    "resultRevision": "rev-2",
+    "repositoryHeadUnchanged": true,
+    "repositoryWorkingTreeClean": true,
+    "realTestExitBefore": 1,
+    "realTestExitAfter": 1,
+    "verifierProcessesSpawned": 0,
+    "evidence": [
+      {
+        "kind": "BACKEND_MUTATION",
+        "claim": "backend.mutation",
+        "status": "PASS",
+        "subjectType": "backend-candidate"
+      },
+      {
+        "kind": "VERIFICATION",
+        "claim": "backend.typecheck",
+        "status": "PASS",
+        "subjectType": "backend-candidate"
+      },
+      {
+        "kind": "VERIFICATION",
+        "claim": "backend.tests",
+        "status": "PASS",
+        "subjectType": "backend-candidate"
+      }
+    ],
+    "mutationEvidenceAfterRevision": "rev-2",
+    "acceptedWithoutRealMutationOrPassingTests": true
+  },
+  "roadmapCoverage": [
+    {
+      "id": "BB-066",
+      "title": "Integrate a real coding-agent execution strategy",
+      "lane": "WORKER",
+      "planStatus": "READY",
+      "mentionsBackendWorker": false,
+      "mentionsBackendCompletion": false,
+      "mentionsQaWorker": false,
+      "writesBackendPath": false,
+      "writesRootReadme": false,
+      "writesAgenticState": false
+    },
+    {
+      "id": "BB-067",
+      "title": "Enforce bounded workspace and tool capabilities",
+      "lane": "WORKER",
+      "planStatus": "READY",
+      "mentionsBackendWorker": false,
+      "mentionsBackendCompletion": false,
+      "mentionsQaWorker": false,
+      "writesBackendPath": false,
+      "writesRootReadme": false,
+      "writesAgenticState": false
+    },
+    {
+      "id": "BB-068",
+      "title": "Connect real repository changes to CI and review evidence",
+      "lane": "WORKER",
+      "planStatus": "READY",
+      "mentionsBackendWorker": false,
+      "mentionsBackendCompletion": false,
+      "mentionsQaWorker": false,
+      "writesBackendPath": false,
+      "writesRootReadme": false,
+      "writesAgenticState": false
+    },
+    {
+      "id": "BB-069",
+      "title": "Prove first useful agent delivery through Oracle and independent QA",
+      "lane": "WORKER",
+      "planStatus": "READY",
+      "mentionsBackendWorker": false,
+      "mentionsBackendCompletion": false,
+      "mentionsQaWorker": true,
+      "writesBackendPath": false,
+      "writesRootReadme": false,
+      "writesAgenticState": false
+    }
+  ],
+  "readmeClaimsDeliveredBackendEvidence": true,
+  "conclusions": {
+    "noModelProviderInProductSource": true,
+    "noProcessExecutionInAgenticSource": true,
+    "noAgenticTestUsesCoreModelStrategy": true,
+    "noRunnableEntrypoint": true,
+    "acceptanceIsNotBoundToRepositoryState": true,
+    "realExecutionAlreadyPlannedOutsideBackendWorker": true,
+    "backendWorkerPathOwnedByNoPlan": true,
+    "deliveredClaimOwnedByNoPlan": true
+  }
+}
