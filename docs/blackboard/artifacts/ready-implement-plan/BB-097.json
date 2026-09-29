@@ -42,7 +42,7 @@
     "D6 — Attempt loop inside strategy.run({ input, invoke }): attempt 1 prompt = task.prompt; attempt n>1 prompt = task.prompt + a bounded feedback block whose first line is exactly `ExHarness verification failed:` followed by each failing verifier name, status, reason and output tail (total <= maxFeedbackChars), invoked with resume. After each invocation: if HEAD moved, `git reset --soft <candidate.version>` and record AGENT_COMMITS_FOLDED; edits = every added/modified file path from `git status --porcelain -z --untracked-files=all` with its current content read from the worktree; invoke AVOCapability.ACT with { kind: \"APPLY_BACKEND_CHANGE\", edits } (the action kind BB-096 act accepts; it commits and stages deletions via git add -A); invoke verificationCapabilityName(name) for each declared verifier; invoke EVALUATE; PASS -> PROMOTE and return ACCEPTED. mutated false is recorded as NO_CHANGE and counts as an attempt. After maxAttempts return EXHAUSTED.",
     "D7 — objective.evaluate returns PASS only when Core-supplied verifications for the current candidate contain a PASS record for every declared verifier; tool claimedSuccess/finalMessage are stored in the attempt record only.",
     "D8 — AGENT_TASK_V1 = { id, repositoryRoot, baseRevision (40-hex), prompt, verifications: [{ name, command, args, timeoutMs }] } validated before any process starts. AGENT_SUPERVISED_RESULT_V1 = { taskId, tool, toolVersion, status ACCEPTED|EXHAUSTED|TOOL_UNAVAILABLE, attempts: [{ index, resume, exitCode, timedOut, durationMs, claimedSuccess, candidateSha, mutated, foldedAgentCommits, verification: [{ name, status, reason }], feedbackChars }], acceptedSha }.",
-    "D9 — bin/exharness-agent.mjs: `run --tool <codex|kiro|agy> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO]` prints AGENT_SUPERVISED_RESULT_V1; `probe` prints versions; `smoke --tool <t> [--command <path>]` creates a temp repo with one failing test and a one-line fix prompt, runs the supervised loop and prints the result, or prints SKIPPED with reason NOT_INSTALLED (executable missing) or TOOL_FAILED_BEFORE_EDIT (tool exited non-zero with no change on attempt 1); --command overrides only the executable path (used by tests); it never reports ACCEPTED without a passing verification.",
+    "D9 — bin/exharness-agent.mjs: `run --tool <codex|kiro|agy> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO]` prints AGENT_SUPERVISED_RESULT_V1; `probe` prints versions; `smoke --tool <t> [--command <path>]` creates a temp repo with one failing test and a one-line fix prompt, runs the supervised loop and prints the result, or prints SKIPPED with reason NOT_INSTALLED (executable missing) or TOOL_FAILED_BEFORE_EDIT (tool exited non-zero with no change on attempt 1, which is how a missing login or credential surfaces); --command overrides only the executable path (used by tests); it never reports ACCEPTED without a passing verification.",
     "D10 — Fake CLI fixture test/fixtures/fake-agent.mjs selects behavior from env FAKE_AGENT_SCENARIO: FIX_FIRST, FIX_AFTER_FEEDBACK (fixes only when its prompt contains the line `ExHarness verification failed:`), NEVER_FIX, CLAIM_SUCCESS_NO_EDIT, SELF_COMMIT, HANG. It records the argv and stdin it received to a JSON file for argv assertions, answers versionArgs with `fake-agent <FAKE_AGENT_VERSION or 0.0.0>`, implements \"fix\" as `git apply <FAKE_AGENT_SOLUTION_PATCH>` in its cwd when that env var is set and otherwise writes the built-in fix of the AT3 fixture, and when invoked with codex-style argv emits a first JSONL line {\"type\":\"thread.started\",\"thread_id\":\"fake-<n>\"}.",
     "D11 — Evidence basis: executed probe shows all three CLIs installed with non-interactive, resume and permission flags; only codex has --json; no ExHarness code launches external agents; BB-066 names only OpenHands."
   ],
@@ -94,10 +94,10 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Adapters [AT1]: implement D2-D3. \"AT1 ...\" tests assert exact argv and stdin per tool and profile for resume null, resume { sessionRef: \"s-1\" } and resume { sessionRef: null }, that codex parseResult extracts sessionRef from a thread.started line, that a prompt containing `; & | \" $()` reaches the fake verbatim, that a missing executable yields TOOL_UNAVAILABLE, and that resolveExecutable with platform win32 over a synthetic PATH directory containing a fake npm shim returns process.execPath plus the shim JS entry while a native .exe is returned unchanged.",
+    "S1 — Adapters + fake CLI [AT1]: implement D2-D3 and the D10 fake CLI fixture first, because every later slice tests against it. \"AT1 ...\" tests assert exact argv and stdin per tool and profile for resume null, resume { sessionRef: \"s-1\" } and resume { sessionRef: null }, that codex parseResult extracts sessionRef from a thread.started line, that a prompt containing `; & | \" $()` reaches the fake verbatim, that a missing executable yields TOOL_UNAVAILABLE, and that resolveExecutable with platform win32 over a synthetic PATH directory containing a fake npm shim returns process.execPath plus the shim JS entry while a native .exe is returned unchanged.",
     "S2 — Process runner [AT2]: implement D4. \"AT2 ...\" tests cover exit code capture, output truncation flag and digests, and HANG with timeoutMs 500 returning timedOut within 10s with the pid no longer alive.",
     "S3 — Supervisor [AT3]: implement D5-D8. \"AT3 ...\" tests on temp git repos cover FIX_FIRST -> ACCEPTED in 1 attempt; FIX_AFTER_FEEDBACK -> ACCEPTED in 2 attempts with resume argv and feedback text observed by the fake; NEVER_FIX -> EXHAUSTED after maxAttempts with no PROMOTE; CLAIM_SUCCESS_NO_EDIT -> not ACCEPTED with NO_CHANGE; SELF_COMMIT -> folded into one candidate; source repository unchanged in every case.",
-    "S4 — CLI + smoke + docs [AT4]: implement D9-D10. \"AT4 ...\" tests run the bin `run` against the fake tool (task.json plus a --command override to the fake) and parse the result, and `smoke --tool codex --command <nonexistent path>` yields SKIPPED NOT_INSTALLED. Add root scripts, write docs/living/system/agent-tools/state.md and link it from docs/living/system/state.md, then run test:agent-tools, verify:current-docs and npm test."
+    "S4 — CLI + smoke + docs [AT4]: implement D9. \"AT4 ...\" tests run the bin `run` against the fake tool (task.json plus a --command override to the fake) and parse the result, and `smoke --tool codex --command <nonexistent path>` yields SKIPPED NOT_INSTALLED. Add root scripts, write docs/living/system/agent-tools/state.md and link it from docs/living/system/state.md, then run test:agent-tools, verify:current-docs and npm test."
   ],
   "acceptanceCriteria": [
     {
@@ -426,19 +426,31 @@
         "repository"
       ],
       "decisionIndexes": [
-        8
+        8,
+        9
       ],
       "sourceRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-097.md",
+        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
         "packages/core-harness/src/harness.js"
       ],
       "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-097.md",
+          "match": "no sandbox, which is BB-067"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+          "match": "\"--dangerously-skip-permissions\": true"
+        },
         {
           "ref": "packages/core-harness/src/harness.js",
           "match": "const baseAgent = agent ?? createAgentRuntime({"
         }
       ],
       "supportingPlanFields": [
-        "livingDocs"
+        "livingDocs",
+        "constraints"
       ]
     },
     {
