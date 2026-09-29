@@ -1,0 +1,605 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-086",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-086.json",
+    "hash": "643f8702256cf6e31e0b45b5cb5f18ee1aa2ac1701902f8d35704c88aceea3e3"
+  },
+  "scope": [
+    "improve.cross-episode-pattern",
+    "improve.reinforcement",
+    "improve.proposal",
+    "improve.optimizer-bridge",
+    "improve.independent-evaluation-handoff"
+  ],
+  "outOfScope": [
+    "Per-episode feedback lifecycle, disposition, outcome and resolution (BB-085) and observation grounding (BB-084).",
+    "Implementing or modifying HOW evaluation, Jev adapter, promotion, rollback or policy publication (BB-059) or @exharness/benchmark internals (BB-065).",
+    "Live model-effectiveness claims, paid experiments or a universal numeric improvement threshold.",
+    "LangMem, DSPy, LangGraph, gepa[full] or any memory/optimizer/workflow platform in v1; an optimizer fork.",
+    "Modifying BB-083 objective, plan, readiness, graph record or its planned feedback-*.js and scripts/feedback/** files."
+  ],
+  "constraints": [
+    "RESEARCH_SA reuses closed BB-083 research and probe evidence and consumes READY BB-059/BB-065 plans and the BB-085 desired contract as design inputs; the Worker binds only DONE BB-085, BB-059 and BB-065 package-root exports.",
+    "Pattern projection is deterministic and read-only over FeedbackResolution refs; it persists no mutable pattern state and mutates no lifecycle, acceptance or policy head.",
+    "Node owns all side effects, benchmark reservation, reconciliation and accounting; Python owns only pinned GEPA optimizer computation.",
+    "HOW_IMPROVEMENT_PROPOSAL_V1 carries no accepted/promoted authority; only delivered BB-059 independent authority can promote.",
+    "The final holdout, metric policy and minEffect are fixed before search and never exposed to GEPA, reflection or candidate producer."
+  ],
+  "invariants": [
+    "Pattern, reinforcement, optimizer and proposal outputs are evidence or proposals only and cannot mutate response, acceptance, promotion or policy state.",
+    "Support is counted once per distinct observation set; SYSTEMIC requires mechanism evidence covering every supporting episode, never frequency alone.",
+    "No benchmark attempt is dispatched without a prior Node-owned reservation, and crash, cancellation or unknown usage never duplicates dispatch, refunds budget or becomes success.",
+    "Promotion requires independent BB-059 evaluation over sealed, pre-frozen partitions; per-case critical regression or missing evidence is never success."
+  ],
+  "architectureDecisions": [
+    "D1 — Product modules in packages/agentic-system/src: improvement-pattern.js (projectImprovementPatterns, PATTERN_POLICY_V1) and improvement-proposal.js (HOW_IMPROVEMENT_PROPOSAL_V1, IMPROVEMENT_EVALUATION_HANDOFF_V1, buildHowEvolutionHandoff). Offline tooling in scripts/self-improve: gepa-bridge.mjs, gepa_adapter.py, requirements.lock. The product package has no Python/GEPA runtime dependency.",
+    "D2 — Input is a set of FEEDBACK_RESOLUTION_V1 refs resolved through the delivered BB-085 exports. SUPERSEDED resolutions contribute only through their successor; the projection reads episodes, responses and outcomes by exact ref+digest and rejects digest mismatch.",
+    "D3 — patternKey = sha256(canonical({cohortKey: episode.scopeKey, findingKind: normalized finding.kind, howAxis})). howAxis comes from PATTERN_POLICY_V1.findingKindToHowAxis; an unmapped finding kind is excluded with reason UNMAPPED_AXIS, never guessed.",
+    "D4 — Deduplication: a support unit is the sorted set of observation refs behind the episode's GroundedFindingInputs; retried or duplicated episodes with the same unit count once. supportingEpisodeRefs, outcomeCounts {IMPROVED, NO_CHANGE, REGRESSED, REJECTED_ACKNOWLEDGED} and contraryEvidenceRefs (episode contrary refs plus NO_CHANGE/REGRESSED episodes) are all retained.",
+    "D5 — Classification INSTANCE | RECURRING | SYSTEMIC: RECURRING when distinct support units >= policy.minSupport (>= 2); SYSTEMIC only when RECURRING and mechanismEvidence[{ref, digest, coveredEpisodeRefs}] resolves and covers every supporting episode, with contrary accounting recorded. Frequency alone never yields SYSTEMIC.",
+    "D6 — Reinforcement is recomputation: projectionId = sha256(canonical(policy digest + sorted input resolution refs)). New positive evidence changes only support metadata in a new projection; no escalation, response, acceptance or policy mutation is possible because the module has no write port.",
+    "D7 — HOW_IMPROVEMENT_PROPOSAL_V1 = {patternProjectionRef+digest, patternKey, cohortEpisodeRefs, baselineHow:{policyHeadRef, strategyRef+digest}, allowedHowAxis, optimizer:{engine gepa, version 0.1.4, commit d771eb21b5dd3228bc3f567293d2ccfc423fc900, configDigest}, candidate:{strategyRef, digest, diff}, developmentEvidenceRefs, benchmarkAttemptRefs}. Eligible only from RECURRING or SYSTEMIC patterns. Keys accepted, promoted, approved, verdict or policyHead mutation fields are rejected at any depth.",
+    "D8 — Offline GEPA bridge reuses the BB-083 bridgeContract: one Node-owned child process per run, bounded bidirectional JSON-lines with explicit request ids and schema kinds, Python evaluation callbacks with no repository/benchmark/product mutation capability. Only trusted same-run local checkpoints load; pickle state is never ExHarness evidence.",
+    "D9 — Budget/crash/cancel: before each dispatch Node calls the delivered @exharness/benchmark AttemptLedger beginAttempt under a hard budget; denial returns a terminal BUDGET_DENIED to Python with no side effect. After crash Node reopens settled attempts by exact refs and reconciles STARTED-without-SETTLED attempts before any retry (retry = new attemptId with retryOfAttemptId). Cancellation never refunds a started reservation. Unknown usage/cost stays null.",
+    "D10 — IMPROVEMENT_EVALUATION_HANDOFF_V1 freezes before search: WHAT/acceptance refs+digests, baseline HOW head, optimizer identity/config, allowed axis, development/search-validation partition refs+digests, evaluator-owned final holdout ref+digest, metricPolicy ref+digest with minEffect, and model/provider/tool/budget/evaluator identities. The bridge receives only development and search-validation case refs.",
+    "D11 — buildHowEvolutionHandoff maps the proposal to the delivered BB-059 HOW_EVOLUTION_FINDING and HOW_EVOLUTION_EVALUATION_PROTOCOL/v1 inputs; final baseline/candidate runs register as @exharness/benchmark units/attempts; stochastic model-backed cases need >= 3 paired repeats unless the frozen policy requires more. Critical per-case regression blocks promotion; missing evidence is INCONCLUSIVE; BB-059 alone can publish.",
+    "D12 — Worker-start preflight test/self-improve-dependency-contract.test.mjs asserts BB-085, BB-059 and BB-065 DONE with delivery receipts/Living refs and package-root exports (FeedbackResolution validator, HOW evolution protocol/finding builders and independent promotion entry, AttemptLedger and experiment/unit/evidence/accounting/audit contracts). Missing/incompatible export or deep import => PLAN_INPUT_CONTRADICTION.",
+    "D13 — Mapping from BB-083: this task owns BB-083 S5, S6, S7 and the ImprovementProposal half of S2 under new file names; BB-083 remains unmodified pending BB-082 objective supersession and its feedback-*.js and scripts/feedback/** paths are forbidden here."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/benchmark/**",
+      "docs/living/system/agentic-application/**",
+      "docs/living/system/benchmark/**",
+      "docs/blackboard/process/observed-feedback-self-improve-research.md",
+      "docs/blackboard/process/feedback-architecture-research.md",
+      "docs/blackboard/evidence/BB-083/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-075.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-085.json",
+      "docs/blackboard/work-graph.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/improvement-pattern.js",
+      "packages/agentic-system/src/improvement-proposal.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/improvement-pattern.test.js",
+      "packages/agentic-system/test/improvement-proposal.test.js",
+      "packages/agentic-system/test/improvement-handoff.test.js",
+      "scripts/self-improve/gepa-bridge.mjs",
+      "scripts/self-improve/gepa_adapter.py",
+      "scripts/self-improve/requirements.lock",
+      "test/self-improve-gepa-bridge.test.mjs",
+      "test/self-improve-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/self-improvement.md"
+    ],
+    "forbiddenWrite": [
+      "packages/benchmark/**",
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/src/how-evolution.js",
+      "packages/agentic-system/src/how-evolution-jev-adapter.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+      "packages/agentic-system/src/feedback-lifecycle-controller.js",
+      "packages/agentic-system/src/feedback-outcome.js",
+      "packages/agentic-system/src/feedback-contracts.js",
+      "packages/agentic-system/src/feedback-controller.js",
+      "packages/agentic-system/src/feedback-projection.js",
+      "packages/agentic-system/src/feedback-improvement.js",
+      "scripts/feedback/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/observed-feedback-self-improve-research.md",
+      "docs/blackboard/process/feedback-architecture-research.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-085.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+      "docs/blackboard/evidence/BB-083/bridge-probe-result.json",
+      "docs/blackboard/evidence/BB-083/source-ledger.json",
+      "packages/agentic-system/src/index.js"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/improvement-pattern.js",
+      "packages/agentic-system/src/improvement-proposal.js",
+      "scripts/self-improve/gepa-bridge.mjs",
+      "scripts/self-improve/gepa_adapter.py",
+      "scripts/self-improve/requirements.lock",
+      "test/self-improve-gepa-bridge.test.mjs",
+      "test/self-improve-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/self-improvement.md"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/improvement-pattern.test.js",
+      "packages/agentic-system/test/improvement-proposal.test.js",
+      "packages/agentic-system/test/improvement-handoff.test.js",
+      "test/self-improve-gepa-bridge.test.mjs",
+      "test/self-improve-dependency-contract.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "I1 — Dependency preflight [SI5]: implement test/self-improve-dependency-contract.test.mjs first per D12; any missing BB-085/BB-059/BB-065 delivery or export => PLAN_INPUT_CONTRADICTION before product writes.",
+    "I2 — Pattern projection + reinforcement [SI1, INV-1, INV-2]: implement PATTERN_POLICY_V1 and projectImprovementPatterns per D2-D6 as a pure read-only function with exact ref+digest resolution, support-unit dedup, contrary retention and mechanism-gated SYSTEMIC.",
+    "I3 — Proposal envelope [SI2, INV-1]: implement HOW_IMPROVEMENT_PROPOSAL_V1 validator/builder per D7 with eligibility and forbidden-authority-key rejection.",
+    "I4 — Offline GEPA bridge [SI3, INV-3]: implement scripts/self-improve/gepa-bridge.mjs, gepa_adapter.py and requirements.lock per D8-D9 against the pinned GEPA base API; bridge tests drive a deterministic Python protocol stub for crash-after-commit, replay, cancellation, hard-budget denial and malformed/timeout cases, plus a lock/pin conformance test.",
+    "I5 — Independent evaluation handoff [SI4, INV-4]: implement IMPROVEMENT_EVALUATION_HANDOFF_V1 and buildHowEvolutionHandoff per D10-D11; prove holdout exclusion from bridge input, freeze-before-search immutability and mapping to BB-059 protocol inputs without calling a publisher.",
+    "I6 — Living truth [SI5]: add docs/living/system/agentic-application/self-improvement.md describing only delivered pattern/proposal/bridge/handoff contracts, authority limits and unevaluated effectiveness; export new names; run agentic and repository regressions."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "SI1",
+      "statement": "projectImprovementPatterns is deterministic and read-only over exact FeedbackResolution refs, counts each observation-set support unit once, retains outcome counts and contrary evidence, and classifies SYSTEMIC only with mechanism evidence covering every supporting episode; reinforcement changes support metadata only.",
+      "verificationIds": [
+        "pattern"
+      ],
+      "evidenceRequired": [
+        "Duplicate/retry, superseded, contrary-evidence, false-systemic, unmapped-axis and reinforcement-no-escalation test cases with exact contributing refs and stable projectionId."
+      ]
+    },
+    {
+      "id": "SI2",
+      "statement": "HOW_IMPROVEMENT_PROPOSAL_V1 binds pattern projection, cohort episodes, baseline HOW ref+digest, one allowed axis, pinned optimizer identity and candidate digest; it is eligible only from RECURRING/SYSTEMIC patterns and rejects accepted/promoted/policy-mutation fields.",
+      "verificationIds": [
+        "proposal"
+      ],
+      "evidenceRequired": [
+        "Proposal validator positive/negative tests and INSTANCE-ineligibility test."
+      ]
+    },
+    {
+      "id": "SI3",
+      "statement": "The Node-owned GEPA bridge reserves every attempt through the delivered AttemptLedger before dispatch, denies over-budget work before dispatch, recovers crash-after-commit without duplicate dispatch, keeps cancelled reservations consumed, keeps unknown usage null and pins GEPA 0.1.4 at the locked commit without extras.",
+      "verificationIds": [
+        "bridge",
+        "dependency"
+      ],
+      "evidenceRequired": [
+        "Bridge crash/replay/cancellation/budget/malformed/timeout tests and requirements.lock pin test."
+      ]
+    },
+    {
+      "id": "SI4",
+      "statement": "The evaluation handoff freezes partitions, final holdout, metric policy and minEffect before search, excludes holdout from all bridge input, maps to BB-059 finding/protocol inputs with >= 3 paired repeats for stochastic cases, and treats critical per-case regression or missing evidence as non-success without calling any publisher.",
+      "verificationIds": [
+        "handoff",
+        "bridge"
+      ],
+      "evidenceRequired": [
+        "Holdout-exclusion, freeze-immutability, repeat-count, critical-regression and no-publisher-call tests."
+      ]
+    },
+    {
+      "id": "SI5",
+      "statement": "The implementation binds only DONE BB-085, BB-059 and BB-065 package-root exports through the preflight, modifies no forbidden owner, introduces no LangMem/DSPy/LangGraph/gepa[full] dependency and documents delivered self-improvement truth in its Living Doc.",
+      "verificationIds": [
+        "dependency",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Preflight manifest, forbidden-write/deep-import/dependency scan and Living Doc diff."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Pattern, reinforcement, optimizer and proposal outputs are evidence or proposals only and cannot mutate response, acceptance, promotion or policy state.",
+      "criterionIds": [
+        "SI1",
+        "SI2"
+      ]
+    },
+    {
+      "invariant": "Support is counted once per distinct observation set; SYSTEMIC requires mechanism evidence covering every supporting episode, never frequency alone.",
+      "criterionIds": [
+        "SI1"
+      ]
+    },
+    {
+      "invariant": "No benchmark attempt is dispatched without a prior Node-owned reservation, and crash, cancellation or unknown usage never duplicates dispatch, refunds budget or becomes success.",
+      "criterionIds": [
+        "SI3"
+      ]
+    },
+    {
+      "invariant": "Promotion requires independent BB-059 evaluation over sealed, pre-frozen partitions; per-case critical regression or missing evidence is never success.",
+      "criterionIds": [
+        "SI4",
+        "SI5"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "dependency",
+      "command": "node --test test/self-improve-dependency-contract.test.mjs"
+    },
+    {
+      "id": "pattern",
+      "command": "node --test packages/agentic-system/test/improvement-pattern.test.js"
+    },
+    {
+      "id": "proposal",
+      "command": "node --test packages/agentic-system/test/improvement-proposal.test.js"
+    },
+    {
+      "id": "handoff",
+      "command": "node --test packages/agentic-system/test/improvement-handoff.test.js"
+    },
+    {
+      "id": "bridge",
+      "command": "node --test test/self-improve-gepa-bridge.test.mjs"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+      "finding": "RESEARCH_DESIRED_STATE: patternContract, optimizerContract, bridgeContract and evaluationHandoffContract are closed and Jev-satisfied as part of BB-083 readiness."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+      "finding": "Executed: pinned GEPA carries evidence through adapter search/resume; aggregate acceptance can hide per-case regression; max_metric_calls is not a hard dispatch budget."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-083/bridge-probe-result.json",
+      "finding": "Executed: Node/Python bridge recovers crash-after-commit without duplicate dispatch, preserves cancellation reservation and denies over-budget work before dispatch."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+      "finding": "PLANNED_CONTRACT: HOW_EVOLUTION_FINDING, HOW_EVOLUTION_EVALUATION_PROTOCOL/v1, paired repeats and independent promotion authority."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "finding": "PLANNED_CONTRACT: @exharness/benchmark root-only exports with append-only AttemptLedger, retry-as-new-attempt and nullable accounting."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-085",
+      "BB-059",
+      "BB-065"
+    ],
+    "workerStart": "Run the I1 preflight before any product write; bind exact DONE delivery receipts, Living refs and package-root exports of BB-085, BB-059 and BB-065.",
+    "plannedBindings": {
+      "BB-085": "FEEDBACK_RESOLUTION_V1 validator and read access to episode/response/outcome artifacts exported from @exharness/agentic-system root",
+      "BB-059": "HOW_EVOLUTION_FINDING + HOW_EVOLUTION_EVALUATION_PROTOCOL/v1 builders and the independent evaluation/promotion entry",
+      "BB-065": "@exharness/benchmark root exports createExperimentRegistration, createBenchmarkUnit, AttemptLedger, createEvidenceManifest, normalizeAccounting, auditAttempt"
+    },
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "@exharness/agentic-system package-root export surface (index.js)"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-059 HOW evolution evaluation/promotion",
+        "BB-065 @exharness/benchmark"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "BB-083 pattern/optimizer/bridge/evaluation-handoff contracts and executed probe evidence",
+        "BB-085 FEEDBACK_RESOLUTION_V1"
+      ]
+    },
+    "contradiction": "Missing delivery, changed ownership, deep-import requirement or incompatible public contract => PLAN_INPUT_CONTRADICTION; return to RESEARCH_SA.",
+    "referenceOnly": [
+      "BB-075 fixed-factor held-out decision research; no direct dependency or required import"
+    ]
+  },
+  "optimizerContract": {
+    "engine": {
+      "name": "gepa",
+      "version": "0.1.4",
+      "commit": "d771eb21b5dd3228bc3f567293d2ccfc423fc900",
+      "python": ">=3.10,<3.15",
+      "extras": []
+    },
+    "lock": "scripts/self-improve/requirements.lock records the exact VCS commit and Python range; any change creates a new optimizer identity.",
+    "proposalOnly": true
+  },
+  "deliveryContract": {
+    "precondition": "BB-085, BB-059 and BB-065 are DONE and the I1 preflight binds their delivered exports.",
+    "completion": "All criterion checks + agentic/repository regressions + self-improvement Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No modification of dependency owners, no self-promotion, no holdout exposure, no unknown-as-success, no LangMem/framework rewrite."
+  },
+  "ciContract": {
+    "checks": [
+      "dependency",
+      "pattern",
+      "proposal",
+      "handoff",
+      "bridge",
+      "agentic-regression",
+      "repository"
+    ],
+    "runtime": "Bridge tests require python3 >=3.10 on PATH and use a deterministic protocol stub; no GEPA install or model call in CI. Missing Python is a failed check, never a skip.",
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "BB-083 objective, plan, readiness, graph record and evidence",
+      "HOW evolution, benchmark and feedback lifecycle owners"
+    ],
+    "add": [
+      "improvement-pattern.js",
+      "improvement-proposal.js",
+      "scripts/self-improve/**",
+      "tests",
+      "self-improvement Living Doc"
+    ],
+    "rollback": "Revert only the additive modules, scripts, exports, tests and Living Doc; never rewrite benchmark or evaluation history."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-086 objective + closed BB-083 research/probes + READY BB-059/BB-065 plans + BB-085 desired contract",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness",
+        "fabricated effectiveness evidence"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-085/BB-059/BB-065",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "pattern projection + proposal + bounded bridge + independent handoff + Living truth",
+      "forbidden": [
+        "redefine dependency contracts",
+        "self-promotion",
+        "deep-import benchmark internals",
+        "introduce LangMem/framework rewrite"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/self-improvement.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Living self-improvement doc describes only the delivered pattern projection, proposal envelope, offline GEPA bridge and independent evaluation handoff, their authority limits and the absence of any live effectiveness claim."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify a deterministic cross-episode pattern projection over FeedbackResolution refs with deduplication, explicit cohort keys, retained contrary evidence, mechanism-gated SYSTEMIC classification and reinforcement as support metadata only.",
+      "criterionIds": [
+        "SI1"
+      ],
+      "planElements": [
+        "I2"
+      ],
+      "verificationIds": [
+        "pattern"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-085.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+          "match": "SYSTEMIC proposal requires explicit mechanism evidence refs spanning the declared scope plus contrary-evidence accounting; frequency alone is insufficient."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-085.json",
+          "match": "FEEDBACK_RESOLUTION_V1 = "
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify HOW_IMPROVEMENT_PROPOSAL_V1 binding pattern and cohort refs, baseline HOW ref+digest, one allowed HOW axis, optimizer identity and candidate digest with no accepted or promoted authority.",
+      "criterionIds": [
+        "SI2"
+      ],
+      "planElements": [
+        "I3"
+      ],
+      "verificationIds": [
+        "proposal"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-059.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+          "match": "HOW_IMPROVEMENT_PROPOSAL_V1 with no accepted/promoted flag"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+          "match": "candidate producer != promotion authority"
+        }
+      ],
+      "supportingPlanFields": [
+        "optimizerContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify the pinned standalone GEPA offline bridge with Node-owned benchmark reservation, crash reconciliation, cancellation accounting and hard pre-dispatch budget, reusing executed BB-083 probe evidence.",
+      "criterionIds": [
+        "SI3"
+      ],
+      "planElements": [
+        "I4"
+      ],
+      "verificationIds": [
+        "bridge",
+        "dependency"
+      ],
+      "decisionIndexes": [
+        0,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-083/bridge-probe-result.json",
+        "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-083/bridge-probe-result.json",
+          "match": "crashRecoveredFromDurableReceipt"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-083/gepa-probe-result.json",
+          "match": "sumImprovementCanHidePerCaseRegression"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "AttemptLedger is append-only"
+        }
+      ],
+      "supportingPlanFields": [
+        "optimizerContract",
+        "ciContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify the independent evaluation handoff: sealed final holdout, frozen metric policy and minEffect, paired baseline/candidate runs registered in @exharness/benchmark and BB-059 independent promotion, with critical regression and UNKNOWN never success.",
+      "criterionIds": [
+        "SI4"
+      ],
+      "planElements": [
+        "I5"
+      ],
+      "verificationIds": [
+        "handoff",
+        "bridge"
+      ],
+      "decisionIndexes": [
+        9,
+        10
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-083.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-059.json",
+          "match": "Baseline and candidate execute identical pinned cases."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+          "match": "Final holdout is inaccessible to GEPA, reflection memory and candidate producer"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution",
+        "deliveryContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce an exact package/file-level implementation plan, direct dependencies, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "SI1",
+        "SI2",
+        "SI3",
+        "SI4",
+        "SI5"
+      ],
+      "planElements": [
+        "I1",
+        "I2",
+        "I3",
+        "I4",
+        "I5",
+        "I6"
+      ],
+      "verificationIds": [
+        "dependency",
+        "pattern",
+        "proposal",
+        "handoff",
+        "bridge",
+        "agentic-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        11,
+        12
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/observed-feedback-self-improve-research.md",
+          "match": "File names differ from BB-083's planned feedback-*.js"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "@exharness/benchmark"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases",
+        "ciContract"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A FeedbackResolution ref whose digest mismatches its artifact, or a non-resolution artifact, is rejected by the projection.",
+    "Two episodes backed by the same observation-ref set, or a retried episode, count as one support unit.",
+    "A SUPERSEDED resolution contributes only through its successor and is never double counted.",
+    "An unmapped finding kind is excluded with UNMAPPED_AXIS and never assigned a guessed HOW axis.",
+    "RECURRING support without mechanism evidence, or mechanism evidence that does not cover every supporting episode, never classifies SYSTEMIC.",
+    "NO_CHANGE and REGRESSED episodes and episode contrary refs remain in contrary evidence; adding positive episodes changes only support metadata and projectionId.",
+    "The projection module exposes no write port; attempts to change response, acceptance, promotion or policy head are impossible and tested by module surface inspection.",
+    "A proposal from an INSTANCE pattern, with more than one HOW axis, an unpinned optimizer identity or any accepted/promoted/approved/verdict/policy-head field is rejected.",
+    "A bridge evaluation request without a successful AttemptLedger reservation is never dispatched; over-budget requests return BUDGET_DENIED before dispatch.",
+    "Crash after a benchmark side effect but before acknowledgement reconciles the exact attempt before any retry; a STARTED-without-SETTLED attempt is never blindly redispatched.",
+    "Cancellation after dispatch keeps the reservation consumed and the attempt auditable; unknown usage/cost stays null, never zero.",
+    "Python attempting repository, benchmark-ledger, product-state or policy-head mutation has no capability path through the bridge; malformed, oversized or timed-out messages fail closed.",
+    "Loading an external or foreign-run GEPA pickle checkpoint is rejected; checkpoint state is never ExHarness evidence.",
+    "Any final-holdout case ref, holdout evidence, metric policy threshold or evaluator acceptance data appearing in bridge input invalidates the run.",
+    "Changing partitions, metric policy, minEffect, WHAT/acceptance, evaluator or fixed factors after search start invalidates the handoff.",
+    "Stochastic final comparison with fewer than three paired repeats per case is INCONCLUSIVE; a critical per-case regression blocks promotion even with aggregate gain.",
+    "buildHowEvolutionHandoff never calls a policy publisher; GEPA acceptance or aggregate gain cannot bypass BB-059 independent evaluation.",
+    "Worker start with BB-085, BB-059 or BB-065 not DONE, missing delivery receipt/Living refs, missing package-root export or a required deep import exits PLAN_INPUT_CONTRADICTION.",
+    "Introducing LangMem, DSPy, LangGraph, gepa[full] or writes under packages/benchmark/**, HOW evolution owners, feedback lifecycle owners, scripts/feedback/** or docs/blackboard/** fail repository verification."
+  ]
+}

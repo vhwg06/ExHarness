@@ -127,6 +127,39 @@
       "artifactRefs": [
         "docs/blackboard/process/feedback-architecture-research.md"
       ]
+    },
+    {
+      "id": "TOPIC-OBSERVED-IMPLEMENTATION",
+      "title": "Grounded observed implementation",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-OBSERVED-GROUNDING"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md"
+      ]
+    },
+    {
+      "id": "TOPIC-FEEDBACK-LIFECYCLE",
+      "title": "Application-owned feedback lifecycle",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-FEEDBACK-EPISODE-LIFECYCLE"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md"
+      ]
+    },
+    {
+      "id": "TOPIC-SELF-IMPROVE",
+      "title": "Evidence-gated self-improvement",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-SELF-IMPROVE-PIPELINE"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md"
+      ]
     }
   ],
   "features": [
@@ -549,6 +582,48 @@
         "docs/blackboard/process/feedback-architecture-research.md"
       ],
       "acceptanceTaskId": "BB-083"
+    },
+    {
+      "id": "FEATURE-OBSERVED-GROUNDING",
+      "topicId": "TOPIC-OBSERVED-IMPLEMENTATION",
+      "kind": "FEATURE",
+      "title": "Grounded observation, context binding and finding input",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-084"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md"
+      ],
+      "acceptanceTaskId": "BB-084"
+    },
+    {
+      "id": "FEATURE-FEEDBACK-EPISODE-LIFECYCLE",
+      "topicId": "TOPIC-FEEDBACK-LIFECYCLE",
+      "kind": "FEATURE",
+      "title": "Feedback episode, response, outcome and resolution",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-085"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md"
+      ],
+      "acceptanceTaskId": "BB-085"
+    },
+    {
+      "id": "FEATURE-SELF-IMPROVE-PIPELINE",
+      "topicId": "TOPIC-SELF-IMPROVE",
+      "kind": "FEATURE",
+      "title": "Cross-episode pattern, proposal, GEPA bridge and independent handoff",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-086"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md"
+      ],
+      "acceptanceTaskId": "BB-086"
     }
   ],
   "tasks": [
@@ -2364,10 +2439,168 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-084",
+      "featureId": "FEATURE-OBSERVED-GROUNDING",
+      "title": "Implement grounded observation and context binding",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/causal-observation",
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-058",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-064",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-084.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-084.json",
+          "docs/blackboard/process/observed-feedback-self-improve-research.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/observed-implementation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify GROUNDED_OBSERVATION_V1 normalizing BB-058 causal facts and delivered execution identity with exact subject, attempt, runtime invocation and provider-event identity, evidence refs and MISSING_PROVENANCE, never inferring causal truth from narrative.",
+        "Specify OBSERVATION_CONTEXT_BINDING_V1 binding BB-064 ContextResolution identity, status, receipt and currentness with fail-closed classification of missing, stale, ambiguous or unverifiable context.",
+        "Specify GROUNDED_FINDING_INPUT_V1 as the only feedback-facing output, carrying grounding status, typed unresolved reasons and uncertainty without finding, disposition or authority fields.",
+        "Define additive seams consuming BB-058 and BB-064 only through a Worker-start delivered-export preflight, with explicit DELIVERED_TRUTH / PLANNED_CONTRACT / RESEARCH_DESIRED_STATE labels and no modification of their scope.",
+        "Produce an exact package/file-level implementation plan, direct dependencies, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-084.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-084.json",
+        "researchBaselineSha": "5f25a8e8bbfef828ee66e13351066e523da56153"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-085",
+      "featureId": "FEATURE-FEEDBACK-EPISODE-LIFECYCLE",
+      "title": "Implement application-owned feedback episode lifecycle",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/feedback-lifecycle"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-084",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-085.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-085.json",
+          "docs/blackboard/process/observed-feedback-self-improve-research.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/feedback-lifecycle.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify an immutable FeedbackEpisode whose finding and MEASURED or HYPOTHESIZED impact bind exact BB-084 GroundedFindingInput refs, scope key and contrary evidence; unresolved input cannot yield MEASURED impact or ACTED.",
+        "Specify application-owned ACTED/REJECTED/DEFERRED/SUPERSEDED responses with verified principal, expected-revision CAS, idempotent replay and crash recovery; observer, evaluator and provider cannot act as principal.",
+        "Specify fresh IMPROVED/NO_CHANGE/REGRESSED/UNKNOWN outcomes bound to a frozen outcome policy and explicit freshness identity newer than the response; UNKNOWN is never success.",
+        "Specify FeedbackResolution as the terminal lifecycle boundary with no cross-episode aggregation, optimizer, benchmark or promotion dependency.",
+        "Produce an exact package/file-level implementation plan, direct dependencies, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-085.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-085.json",
+        "researchBaselineSha": "5f25a8e8bbfef828ee66e13351066e523da56153"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-086",
+      "featureId": "FEATURE-SELF-IMPROVE-PIPELINE",
+      "title": "Implement evidence-gated self-improvement pipeline",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "components": [
+        "agentic/self-improve",
+        "agentic/how-evolution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-085",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-059",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-065",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-086.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-086.json",
+          "docs/blackboard/process/observed-feedback-self-improve-research.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/self-improvement.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify a deterministic cross-episode pattern projection over FeedbackResolution refs with deduplication, explicit cohort keys, retained contrary evidence, mechanism-gated SYSTEMIC classification and reinforcement as support metadata only.",
+        "Specify HOW_IMPROVEMENT_PROPOSAL_V1 binding pattern and cohort refs, baseline HOW ref+digest, one allowed HOW axis, optimizer identity and candidate digest with no accepted or promoted authority.",
+        "Specify the pinned standalone GEPA offline bridge with Node-owned benchmark reservation, crash reconciliation, cancellation accounting and hard pre-dispatch budget, reusing executed BB-083 probe evidence.",
+        "Specify the independent evaluation handoff: sealed final holdout, frozen metric policy and minEffect, paired baseline/candidate runs registered in @exharness/benchmark and BB-059 independent promotion, with critical regression and UNKNOWN never success.",
+        "Produce an exact package/file-level implementation plan, direct dependencies, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-086.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-086.json",
+        "researchBaselineSha": "5f25a8e8bbfef828ee66e13351066e523da56153"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-084",
+    "nextWorkId": "BB-087",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

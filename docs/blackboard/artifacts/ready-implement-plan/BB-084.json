@@ -1,0 +1,576 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-084",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-084.json",
+    "hash": "0480eddf13e4957a41d0b5dccd133c3c23a0ff422e9f0f9742c194d294fa39f5"
+  },
+  "scope": [
+    "observe.grounded-observation",
+    "observe.context-binding",
+    "observe.grounding-classification",
+    "observe.finding-input"
+  ],
+  "outOfScope": [
+    "Reimplementing or modifying BB-058 causal reconstruction, CausalLifecycleEvidence, OrganizationObserver or their files.",
+    "Resolving context: no new retriever, planner, provider or resolver; BB-060..064 Oracle files and contracts are unchanged.",
+    "Feedback finding, impact, disposition, response, outcome and resolution (BB-085).",
+    "Cross-episode pattern, reinforcement, HOW improvement proposal, optimizer and promotion (BB-086).",
+    "Mutable observation heads, observation indexes/warehouses, telemetry backends or generic tracing platforms.",
+    "Modifying BB-083 objective, plan, readiness, graph record or its planned feedback-*.js files."
+  ],
+  "constraints": [
+    "RESEARCH_SA consumes READY BB-058/BB-061/BB-063/BB-064 plans and BB-083 research as design inputs; the Worker binds only DONE BB-058 and BB-064 delivered exports.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE in dependencyResolution.sourceClassification.",
+    "Observation modules receive only read/query ports and an immutable artifact store; no acceptance, claim, dispatch, recovery, policy-publisher or lifecycle port is accepted.",
+    "Additive physical ownership: two new product modules, index exports, tests and one Living Doc; forbidden writes are enforced.",
+    "Unknown, missing or unverifiable values stay typed UNRESOLVED/null; nothing is estimated, backfilled or coerced to zero."
+  ],
+  "invariants": [
+    "Observation, context binding and grounded finding input are evidence only and grant no lifecycle, acceptance, promotion, finding or remediation authority.",
+    "Every grounded fact binds exact durable refs+digests; missing provenance or context is a typed UNRESOLVED reason, never inferred.",
+    "GROUNDED requires CURRENT context at binding time and again at consumption time; stale or unverifiable context is never grounded.",
+    "Historical and current observation subjects never mix, and provider event ids never substitute for ExHarness attempt identity."
+  ],
+  "architectureDecisions": [
+    "D1 — Add packages/agentic-system/src/grounded-observation.js (GROUNDED_OBSERVATION_V1 normalization + GROUNDED_FINDING_INPUT_V1) and packages/agentic-system/src/observation-context-binding.js (OBSERVATION_CONTEXT_BINDING_V1 + grounding classification). No new package; exports are added to packages/agentic-system/src/index.js only.",
+    "D2 — Input is the BB-058 query-only OrganizationObserver result for one pinned CausalObservationSubject. createGroundedObservationProjector({observer, artifactRegistry, artifactStore}) calls observer query methods only; constructor validation rejects any argument exposing publish/claim/dispatch/accept/recover/compareAndSwap methods.",
+    "D3 — Execution identity is {executionAttemptId, runtimeInvocationId, bindingRef+digest, attestationRefs+digests} resolved through the delivered resolveExecutionJudgmentBundle / artifactRegistry.resolveExecutionAttemptBinding / resolveRuntimeExecutionAttestation path. Provider events are attributes {provider, eventKind, eventId, attemptBindingRef} and never identity.",
+    "D4 — GROUNDED_OBSERVATION_V1 = {kind, version, subject:{mode HISTORICAL|CURRENT, subjectRef, subjectDigest}, execution, facts[{factId, kind, value, evidenceRefs[{ref,digest}], provenance PROVENANCED|MISSING_PROVENANCE}], measurements[{key, value|null, unit, evidenceRef|null, reason|null}], providerEvents[], narrative[{text, trust:UNTRUSTED_NARRATIVE}], observedAtBoundaries}. Boundary timestamps come only from BB-058 durable facts; materialization time is operational and excluded.",
+    "D5 — observationId = sha256(canonical(content without narrative)); the artifact is stored with createJsonImmutableArtifactStore().put('grounded-observation', value). Rebuild from the same pinned subject yields the same observationId; a newer CURRENT head requires a new subject and produces a new id.",
+    "D6 — Narrative (model/provider prose) is retained only as UNTRUSTED_NARRATIVE, is excluded from observationId, facts and classification, and cannot create or clear a MISSING_PROVENANCE fact.",
+    "D7 — OBSERVATION_CONTEXT_BINDING_V1 = {observationRef+digest, requirementId, resolutionId, resolutionStatus COMPLETE|PARTIAL|UNSATISFIED, unresolvedEvidence[{evidenceId, necessity}], receiptRef+digest|null, currentness:{status CURRENT|STALE|CURRENTNESS_UNVERIFIABLE, changedEvidenceIds, evaluatorIdentity}}. The binder never resolves context: it accepts an already-produced ContextResolution plus receipt and an injected receiptCurrentness(receipt) function wired to the delivered BB-063 evaluateReceiptCurrentness.",
+    "D8 — Classification is a pure total function. GROUNDED iff every required fact is PROVENANCED, resolution is COMPLETE or PARTIAL with only OPTIONAL unresolved evidence, receipt is present and currentness is CURRENT. Otherwise UNRESOLVED with reasons from exactly {MISSING_PROVENANCE, MISSING_CONTEXT, UNSATISFIED_CONTEXT, STALE_CONTEXT, AMBIGUOUS_CONTEXT, CURRENTNESS_UNVERIFIABLE, SUBJECT_MISMATCH}. No receipt => CURRENTNESS_UNVERIFIABLE.",
+    "D9 — GROUNDED_FINDING_INPUT_V1 = {kind, version, observationRefs[{ref,digest}], contextBindingRef+digest, groundingStatus GROUNDED|UNRESOLVED, unresolvedReasons[], uncertainty:{missingProvenanceFactIds, unresolvedEvidenceIds, optionalUnresolvedEvidenceIds}}. The validator rejects any key named finding, impact, disposition, response, verdict, accepted, promoted, remediation or principal at any depth.",
+    "D10 — assertGroundedFindingInputCurrent(input, {receiptCurrentness, artifactStore}) re-resolves the binding and re-evaluates currentness at consumption; STALE or unverifiable returns an UNRESOLVED consumption result for that consumer without rewriting the immutable input.",
+    "D11 — Worker-start preflight test/observed-implementation-dependency-contract.test.mjs asserts BB-058 and BB-064 are DONE with delivery receipts and Living refs, and that delivered package-root exports provide the OrganizationObserver factory, createOracleContextResolver, a ContextResolution validator and evaluateReceiptCurrentness. It writes no product source; any missing/incompatible export or required deep import is PLAN_INPUT_CONTRADICTION.",
+    "D12 — Mapping from BB-083: this task owns BB-083 S3 and the Observation/ContextBinding half of S2 under new file names. BB-083 remains unmodified pending BB-082 objective supersession; its planned feedback-*.js paths are forbidden here to avoid ownership collision."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "docs/living/system/oracle/**",
+      "docs/blackboard/process/observed-feedback-self-improve-research.md",
+      "docs/blackboard/process/feedback-architecture-research.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+      "docs/blackboard/work-graph.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/grounded-observation.js",
+      "packages/agentic-system/src/observation-context-binding.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/grounded-observation.test.js",
+      "packages/agentic-system/test/observation-context-binding.test.js",
+      "packages/agentic-system/test/grounded-finding-input.test.js",
+      "packages/agentic-system/test/grounded-observation-fresh-process.test.js",
+      "test/observed-implementation-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/observed-implementation.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "packages/benchmark/**",
+      "packages/agentic-system/src/causal-provenance.js",
+      "packages/agentic-system/src/causal-reconstruction.js",
+      "packages/agentic-system/src/organization-observer.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/feedback-contracts.js",
+      "packages/agentic-system/src/feedback-controller.js",
+      "packages/agentic-system/src/feedback-projection.js",
+      "packages/agentic-system/src/feedback-improvement.js",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/observed-feedback-self-improve-research.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/domain-execution-control.js",
+      "packages/agentic-system/src/index.js",
+      "docs/living/system/agentic-application/contracts.md"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/grounded-observation.js",
+      "packages/agentic-system/src/observation-context-binding.js",
+      "test/observed-implementation-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/observed-implementation.md"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/grounded-observation.test.js",
+      "packages/agentic-system/test/observation-context-binding.test.js",
+      "packages/agentic-system/test/grounded-finding-input.test.js",
+      "packages/agentic-system/test/grounded-observation-fresh-process.test.js",
+      "test/observed-implementation-dependency-contract.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "O1 — Dependency preflight [OB5]: implement test/observed-implementation-dependency-contract.test.mjs first. Assert BB-058/BB-064 DONE with delivery receipts and Living refs in work-graph, and the delivered package-root exports named in D11. Missing/incompatible export or deep-import requirement => PLAN_INPUT_CONTRADICTION before any product write.",
+    "O2 — Grounded observation [OB1, INV-2, INV-4]: implement GROUNDED_OBSERVATION_V1 validator and createGroundedObservationProjector per D2-D6. Resolve execution identity through delivered attempt binding/attestation; carry MISSING_PROVENANCE from BB-058 unchanged; isolate UNTRUSTED_NARRATIVE; content-address into the immutable artifact store.",
+    "O3 — Context binding + classification [OB2, INV-3]: implement OBSERVATION_CONTEXT_BINDING_V1 and the total classification function per D7-D8 using an injected receiptCurrentness; never call a resolver; every non-GROUNDED path returns typed reasons.",
+    "O4 — Grounded finding input [OB3, INV-1]: implement GROUNDED_FINDING_INPUT_V1 builder/validator with forbidden-authority-key rejection (D9) and consumption-time assertGroundedFindingInputCurrent (D10).",
+    "O5 — Read-only + fresh-process proof [OB4, INV-1, INV-4]: constructor rejects write-capable ports; deleting the store and rebuilding from the same pinned subject in a fresh node process yields identical observationId/bindingId/inputId; a newer CURRENT head yields a new subject id and never mixes with the historical one.",
+    "O6 — Living truth [OB5]: add docs/living/system/agentic-application/observed-implementation.md describing only delivered contracts, classification reasons, authority limits and unsupported cases; export new names from index.js; run agentic and repository regressions."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "OB1",
+      "statement": "GROUNDED_OBSERVATION_V1 binds exact subject pin, executionAttemptId, runtimeInvocationId, attempt binding and attestation refs+digests and provider events as attributes; every fact carries evidence refs or MISSING_PROVENANCE, and narrative is UNTRUSTED_NARRATIVE excluded from identity and facts.",
+      "verificationIds": [
+        "observation",
+        "fresh-process"
+      ],
+      "evidenceRequired": [
+        "Tests for exact identity/digest binding, forged or unbound provider event rejection, MISSING_PROVENANCE pass-through, narrative exclusion and deterministic observationId."
+      ]
+    },
+    {
+      "id": "OB2",
+      "statement": "OBSERVATION_CONTEXT_BINDING_V1 binds resolutionId, requirementId, status, receipt and injected currentness, and classification returns GROUNDED only under D8 with typed UNRESOLVED reasons for missing, unsatisfied, stale, ambiguous, unverifiable or mismatched context.",
+      "verificationIds": [
+        "context-binding"
+      ],
+      "evidenceRequired": [
+        "Table-driven classification tests covering every reason, PARTIAL with REQUIRED vs OPTIONAL unresolved, missing receipt and STALE currentness."
+      ]
+    },
+    {
+      "id": "OB3",
+      "statement": "GROUNDED_FINDING_INPUT_V1 is the only feedback-facing output; it rejects finding/disposition/authority keys at any depth and consumption-time currentness recheck turns STALE or unverifiable into UNRESOLVED without mutating the stored input.",
+      "verificationIds": [
+        "finding-input"
+      ],
+      "evidenceRequired": [
+        "Forbidden-key, consumption recheck and immutability tests."
+      ]
+    },
+    {
+      "id": "OB4",
+      "statement": "Observation modules are read-only: write-capable ports are rejected, no authority or head state is persisted, and a fresh process rebuild from the same pinned subject yields identical identities while historical and current subjects never mix.",
+      "verificationIds": [
+        "observation",
+        "fresh-process",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "Port-rejection tests, fresh node process rebuild comparison and historical-vs-current subject test."
+      ]
+    },
+    {
+      "id": "OB5",
+      "statement": "The implementation composes only DONE BB-058/BB-064 package-root exports through the preflight, modifies no forbidden owner file, and documents delivered observed-implementation truth in its Living Doc.",
+      "verificationIds": [
+        "dependency",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Preflight export/receipt manifest output, forbidden-write/deep-import repository check and Living Doc diff."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Observation, context binding and grounded finding input are evidence only and grant no lifecycle, acceptance, promotion, finding or remediation authority.",
+      "criterionIds": [
+        "OB3",
+        "OB4"
+      ]
+    },
+    {
+      "invariant": "Every grounded fact binds exact durable refs+digests; missing provenance or context is a typed UNRESOLVED reason, never inferred.",
+      "criterionIds": [
+        "OB1",
+        "OB2"
+      ]
+    },
+    {
+      "invariant": "GROUNDED requires CURRENT context at binding time and again at consumption time; stale or unverifiable context is never grounded.",
+      "criterionIds": [
+        "OB2",
+        "OB3"
+      ]
+    },
+    {
+      "invariant": "Historical and current observation subjects never mix, and provider event ids never substitute for ExHarness attempt identity.",
+      "criterionIds": [
+        "OB1",
+        "OB4"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "dependency",
+      "command": "node --test test/observed-implementation-dependency-contract.test.mjs"
+    },
+    {
+      "id": "observation",
+      "command": "node --test packages/agentic-system/test/grounded-observation.test.js"
+    },
+    {
+      "id": "context-binding",
+      "command": "node --test packages/agentic-system/test/observation-context-binding.test.js"
+    },
+    {
+      "id": "finding-input",
+      "command": "node --test packages/agentic-system/test/grounded-finding-input.test.js"
+    },
+    {
+      "id": "fresh-process",
+      "command": "node --test packages/agentic-system/test/grounded-observation-fresh-process.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/process/observed-feedback-self-improve-research.md",
+      "finding": "BB-083 splits into Observed / Feedback / Self-Improve layers with one-way dependency; BB-084 productizes BB-058 output into GroundedFindingInput with a fail-closed grounding rule."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+      "finding": "PLANNED_CONTRACT: read-only OrganizationObserver, pinned CausalObservationSubject, immutable attempt identity and MISSING_PROVENANCE; observation cannot become acceptance findings."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+      "finding": "PLANNED_CONTRACT: createOracleContextResolver facade returns ContextResolution; failure/stale/ambiguous paths are non-consumable."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+      "finding": "PLANNED_CONTRACT: evaluateReceiptCurrentness returns CURRENT|STALE with changedEvidenceIds; receipts are immutable."
+    },
+    {
+      "ref": "packages/agentic-system/src/organization-artifact-store.js",
+      "finding": "DELIVERED_TRUTH: createJsonImmutableArtifactStore content-addresses kind:sha256 refs and rejects conflicting content."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-058",
+      "BB-064"
+    ],
+    "workerStart": "Run the O1 preflight before any product write; bind exact DONE delivery receipts, Living refs and package-root exports of BB-058 and BB-064.",
+    "plannedBindings": {
+      "BB-058": "query-only OrganizationObserver over pinned CausalObservationSubject with evidence-backed facts and MISSING_PROVENANCE",
+      "BB-064": "createOracleContextResolver(...).resolve(ContextRequirement, metadata?) -> ContextResolution; BB-061 ContextResolution validator and BB-063 evaluateReceiptCurrentness re-exported through @exharness/oracle root"
+    },
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "createJsonImmutableArtifactStore / createOrganizationArtifactRegistry (organization-artifact-store.js, package root)",
+        "resolveExecutionJudgmentBundle, ExecutionAttemptBinding, RuntimeExecutionAttestation (domain-execution-control.js)"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-058 OrganizationObserver, CausalObservationSubject, MISSING_PROVENANCE",
+        "BB-061 ContextResolution COMPLETE|PARTIAL|UNSATISFIED + resolutionId",
+        "BB-063 ContextResolutionReceipt + evaluateReceiptCurrentness",
+        "BB-064 createOracleContextResolver"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "BB-083 feedbackContract.Observation and ContextBinding fields",
+        "GROUNDED_OBSERVATION_V1 / OBSERVATION_CONTEXT_BINDING_V1 / GROUNDED_FINDING_INPUT_V1 defined here"
+      ]
+    },
+    "contradiction": "Missing delivery, changed ownership, deep-import requirement or incompatible public contract => PLAN_INPUT_CONTRADICTION; return to RESEARCH_SA rather than adapting architecture in Worker.",
+    "transitiveOnly": [
+      "BB-060, BB-061, BB-062, BB-063 via BB-064; BB-048/BB-057 via BB-058"
+    ]
+  },
+  "deliveryContract": {
+    "precondition": "BB-058 and BB-064 are DONE and the O1 preflight binds their delivered exports.",
+    "completion": "All criterion checks + agentic/repository regressions + observed-implementation Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No resolver/retriever, no modification of BB-058/Oracle owners, no authority ports, no inferred causal truth, no mutable observation head."
+  },
+  "ciContract": {
+    "checks": [
+      "dependency",
+      "observation",
+      "context-binding",
+      "finding-input",
+      "fresh-process",
+      "agentic-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "BB-058/BB-064 artifacts and accepted scope",
+      "BB-083 objective, plan, readiness and graph record"
+    ],
+    "add": [
+      "grounded-observation.js",
+      "observation-context-binding.js",
+      "tests",
+      "observed-implementation Living Doc"
+    ],
+    "rollback": "Revert only the additive modules, exports, tests and Living Doc."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-084 objective + BB-083 research + READY BB-058/BB-061/BB-063/BB-064 plans as PLANNED_CONTRACT",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-058/BB-064",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "grounded observation + fail-closed binding + finding input + Living truth",
+      "forbidden": [
+        "redefine dependency contracts",
+        "add a context resolver",
+        "accept write-capable ports"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/observed-implementation.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Living observed-implementation doc describes only delivered grounded observation, context binding, grounding classification and finding-input contracts, their read-only authority limits and unsupported cases."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify GROUNDED_OBSERVATION_V1 normalizing BB-058 causal facts and delivered execution identity with exact subject, attempt, runtime invocation and provider-event identity, evidence refs and MISSING_PROVENANCE, never inferring causal truth from narrative.",
+      "criterionIds": [
+        "OB1"
+      ],
+      "planElements": [
+        "O2"
+      ],
+      "verificationIds": [
+        "observation",
+        "fresh-process"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+        "packages/agentic-system/src/domain-execution-control.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-058.json",
+          "match": "MISSING_PROVENANCE"
+        },
+        {
+          "ref": "packages/agentic-system/src/domain-execution-control.js",
+          "match": "export async function resolveExecutionJudgmentBundle"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify OBSERVATION_CONTEXT_BINDING_V1 binding BB-064 ContextResolution identity, status, receipt and currentness with fail-closed classification of missing, stale, ambiguous or unverifiable context.",
+      "criterionIds": [
+        "OB2"
+      ],
+      "planElements": [
+        "O3"
+      ],
+      "verificationIds": [
+        "context-binding"
+      ],
+      "decisionIndexes": [
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-064.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+          "match": "COMPLETE means all required and optional evidence is resolved"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+          "match": "evaluateReceiptCurrentness returns CURRENT|STALE"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+          "match": "UNSATISFIED before model"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify GROUNDED_FINDING_INPUT_V1 as the only feedback-facing output, carrying grounding status, typed unresolved reasons and uncertainty without finding, disposition or authority fields.",
+      "criterionIds": [
+        "OB3"
+      ],
+      "planElements": [
+        "O4"
+      ],
+      "verificationIds": [
+        "finding-input"
+      ],
+      "decisionIndexes": [
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/observed-feedback-self-improve-research.md",
+          "match": "GroundedFindingInput (GROUNDED_FINDING_INPUT_V1) is the only surface Feedback consumes"
+        }
+      ],
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
+    },
+    {
+      "objectiveCriterion": "Define additive seams consuming BB-058 and BB-064 only through a Worker-start delivered-export preflight, with explicit DELIVERED_TRUTH / PLANNED_CONTRACT / RESEARCH_DESIRED_STATE labels and no modification of their scope.",
+      "criterionIds": [
+        "OB4",
+        "OB5"
+      ],
+      "planElements": [
+        "O1",
+        "O5"
+      ],
+      "verificationIds": [
+        "dependency",
+        "fresh-process",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        10,
+        11
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+        "packages/agentic-system/src/organization-artifact-store.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/observed-feedback-self-improve-research.md",
+          "match": "A planned contract is never described as a delivered API."
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+          "match": "createOracleContextResolver"
+        },
+        {
+          "ref": "packages/agentic-system/src/organization-artifact-store.js",
+          "match": "export function createJsonImmutableArtifactStore"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution",
+        "deliveryContract",
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce an exact package/file-level implementation plan, direct dependencies, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "OB1",
+        "OB2",
+        "OB3",
+        "OB4",
+        "OB5"
+      ],
+      "planElements": [
+        "O1",
+        "O2",
+        "O3",
+        "O4",
+        "O5",
+        "O6"
+      ],
+      "verificationIds": [
+        "dependency",
+        "observation",
+        "context-binding",
+        "finding-input",
+        "fresh-process",
+        "agentic-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        10
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/index.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/index.js",
+          "match": "createJsonImmutableArtifactStore"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases",
+        "ciContract"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Observation with a missing or mismatched subject digest, attempt binding digest or attestation digest is rejected.",
+    "A provider event whose attemptBindingRef differs from the observation's execution binding is rejected; a provider event id alone cannot establish attempt identity.",
+    "A BB-058 MISSING_PROVENANCE fact stays MISSING_PROVENANCE; narrative text cannot clear it or add a PROVENANCED fact.",
+    "Changing only narrative does not change observationId; changing any fact, evidence digest or subject pin does.",
+    "Unmeasured values are null with a reason; a zero default for a missing measurement is rejected.",
+    "Resolution status UNSATISFIED, or PARTIAL with a REQUIRED unresolved evidence item, classifies as UNRESOLVED with UNSATISFIED_CONTEXT or MISSING_CONTEXT.",
+    "A binding without a receipt classifies as CURRENTNESS_UNVERIFIABLE; the binder never self-certifies CURRENT.",
+    "receiptCurrentness returning STALE at binding time classifies STALE_CONTEXT; returning STALE at consumption time makes assertGroundedFindingInputCurrent return UNRESOLVED without rewriting the stored input.",
+    "An observation bound to a ContextResolution for a different requirement or subject classifies SUBJECT_MISMATCH.",
+    "GroundedFindingInput containing finding, impact, disposition, response, verdict, accepted, promoted, remediation or principal at any depth is rejected.",
+    "Passing a port with publish, claim, dispatch, accept, recover or compareAndSwap methods to the projector or binder is rejected at construction.",
+    "A historical-subject rebuild after newer canonical heads returns the original ids; a CURRENT query after the transition produces a new subject id and never mixes facts.",
+    "Worker start with BB-058 or BB-064 not DONE, missing delivery receipt/Living refs, missing package-root export or a required deep import exits PLAN_INPUT_CONTRADICTION before product writes.",
+    "Candidate writes under packages/oracle/**, BB-058 owner files, BB-083 feedback-*.js paths or docs/blackboard/** fail repository scope verification."
+  ]
+}

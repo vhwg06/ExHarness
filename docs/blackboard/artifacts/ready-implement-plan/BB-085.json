@@ -1,0 +1,553 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-085",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-085.json",
+    "hash": "f55abe80411bbdea15e9efa5bc58eef9e0c36ed2d295916c3d8bece8e56c2483"
+  },
+  "scope": [
+    "feedback.episode",
+    "feedback.disposition-response",
+    "feedback.fresh-outcome",
+    "feedback.resolution"
+  ],
+  "outOfScope": [
+    "Producing observations, context bindings or grounding classification (BB-084).",
+    "Cross-episode pattern, reinforcement, SYSTEMIC classification, HOW improvement proposal, optimizer, benchmark and promotion (BB-086).",
+    "Integrating episodes into ApplicationOrchestrator or Blackboard lifecycle transitions; creating or scheduling the work an ACTED response references.",
+    "A generic memory, workflow or feedback platform, new database or new durable engine.",
+    "Modifying BB-083 objective, plan, readiness, graph record or its planned feedback-*.js files."
+  ],
+  "constraints": [
+    "RESEARCH_SA consumes the BB-084 desired contract and BB-083 research as design inputs; the Worker binds only DONE BB-084 package-root exports.",
+    "Persistence reuses delivered createJsonImmutableArtifactStore for immutable artifacts and delivered createJsonCasHeadStore compare-and-swap for the per-episode head; no new store implementation.",
+    "Only an application principal verified by an injected principalAuthority can create or revise a response or resolve an episode.",
+    "The lifecycle ends at FeedbackResolution and imports nothing from BB-059, BB-065, optimizer or pattern code.",
+    "Unknown, missing, stale or unresolved evidence yields UNKNOWN or an unresolved state, never success."
+  ],
+  "invariants": [
+    "Finding and impact are evidence; they grant no disposition, acceptance, lifecycle or promotion authority.",
+    "Every lifecycle transition is made by a verified application principal against the exact expected head revision, and exact replay converges without a second mutation.",
+    "An outcome is fresh only when bound to the current response and to grounded evidence strictly after the response; otherwise it is UNKNOWN.",
+    "UNKNOWN never resolves an episode, and resolution values are derived from recorded state rather than chosen by the caller."
+  ],
+  "architectureDecisions": [
+    "D1 — Add three modules in packages/agentic-system/src: feedback-lifecycle-contracts.js (FEEDBACK_EPISODE_V1, FEEDBACK_RESPONSE_V1, FEEDBACK_OUTCOME_POLICY_V1, FEEDBACK_OUTCOME_V1, FEEDBACK_RESOLUTION_V1 validators), feedback-outcome.js (pure classifyFeedbackOutcome) and feedback-lifecycle-controller.js (createFeedbackLifecycleController + createJsonFeedbackEpisodeHeadStore). Exports added to index.js only.",
+    "D2 — FEEDBACK_EPISODE_V1 = {groundedInputRefs[{ref,digest}], finding:{kind, statement, evidenceRefs, producer:{kind OBSERVER|MODEL|HUMAN|APPLICATION, id}}, impact:{basis MEASURED|HYPOTHESIZED, measurements[]}, scopeKey, contraryEvidenceRefs[]}. episodeId = sha256(canonical(episode)). MEASURED requires every input GROUNDED under BB-084 validation plus consumption recheck; otherwise basis must be HYPOTHESIZED.",
+    "D3 — Episode head key = 'feedback-episode:'+episodeId in a head store created by createJsonFeedbackEpisodeHeadStore(options), which returns the delivered createJsonCasHeadStore(options). Head value = {episodeRef, state, responseRef|null, outcomeRef|null, resolutionRef|null}. Every transition is compareAndSwap(key, expectedRevision, next).",
+    "D4 — States: OPEN -> RESPONDED_ACTED -> OUTCOME_RECORDED -> RESOLVED; OPEN|RESPONDED_DEFERRED -> RESPONDED_REJECTED|RESPONDED_SUPERSEDED -> RESOLVED; OPEN -> RESPONDED_DEFERRED -> (revisit) any response. RESOLVED is terminal. UNKNOWN outcome leaves RESPONDED_ACTED so a later fresh outcome or a new DEFERRED/SUPERSEDED response is possible.",
+    "D5 — FEEDBACK_RESPONSE_V1 = {episodeRef+digest, previousResponseRef|null, principalAuthorityRef, disposition ACTED|REJECTED|DEFERRED|SUPERSEDED, rationaleRef, actionRefs[], successorEpisodeRef|null, revisitCondition:{kind AFTER_EPISODE|AFTER_REVISION|MANUAL, ref|null}|null, outcomePolicy|null}. ACTED requires GROUNDED inputs, non-empty actionRefs and a frozen outcomePolicy; SUPERSEDED requires successorEpisodeRef; DEFERRED requires revisitCondition; REJECTED requires rationaleRef.",
+    "D6 — Principal: the controller accepts principal only as an explicit call argument and calls principalAuthority.verifyFeedbackPrincipal({principal, episodeRef, transition}) which must return {authorityRef}; this mirrors the delivered organization-authority verify pattern. Principals of kind OBSERVER, EVALUATOR, PROVIDER or OPTIMIZER are rejected before verification; principal-like fields inside episode, observation, finding or provider payloads are never read.",
+    "D7 — FEEDBACK_OUTCOME_POLICY_V1 = {metricKey, direction HIGHER_IS_BETTER|LOWER_IS_BETTER, minEffect > 0, noChangeBand with 0 <= noChangeBand <= minEffect, requiredMeasurementKeys[]} frozen by digest inside the ACTED response; it cannot be changed after the response.",
+    "D8 — Freshness identity = {responseRef+digest, freshInputRef+digest, freshExecutionAttemptIds, effectiveAfterBoundary}. effectiveAfterBoundary is the latest durable observedAtBoundary among the episode's inputs. Fresh input must be a BB-084 GroundedFindingInput not in the episode, pass consumption recheck, bind only execution attempts absent from the episode inputs, and have every boundary strictly later than effectiveAfterBoundary; the response ref must equal the head's current response.",
+    "D9 — classifyFeedbackOutcome(policy, baselineMeasurements, freshMeasurements, freshness) is pure: any missing or null required measurement, UNRESOLVED fresh input or failed freshness => UNKNOWN. Else signed delta = (fresh - baseline) * direction; delta >= minEffect => IMPROVED; delta < -noChangeBand => REGRESSED; otherwise NO_CHANGE.",
+    "D10 — FEEDBACK_RESOLUTION_V1 = {episodeRef, finalResponseRef, outcomeRef|null, resolution IMPROVED|NO_CHANGE|REGRESSED|REJECTED_ACKNOWLEDGED|SUPERSEDED, principalAuthorityRef}. resolve() derives the value from head state; a caller-supplied value that differs is rejected; UNKNOWN or DEFERRED cannot resolve.",
+    "D11 — Idempotency/recovery: artifacts are content-addressed so a retry after a crash between put and compareAndSwap recreates the same ref. On CAS failure the controller reloads the head; if it already equals the intended next value the call returns CONVERGED with no mutation, otherwise STALE_REVISION with no rebase. recover(episodeId) re-resolves every ref, verifies digests and ignores orphan artifacts.",
+    "D12 — Worker-start preflight test/feedback-lifecycle-dependency-contract.test.mjs asserts BB-084 DONE with delivery receipt/Living refs and package-root exports for the GroundedFindingInput validator and assertGroundedFindingInputCurrent; mismatch is PLAN_INPUT_CONTRADICTION. BB-059/BB-065 are not dependencies; outcome evidence is fresh grounded observation."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "docs/living/system/agentic-application/**",
+      "docs/blackboard/process/observed-feedback-self-improve-research.md",
+      "docs/blackboard/process/feedback-architecture-research.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-084.json",
+      "docs/blackboard/work-graph.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+      "packages/agentic-system/src/feedback-lifecycle-controller.js",
+      "packages/agentic-system/src/feedback-outcome.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/feedback-lifecycle-contracts.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-controller.test.js",
+      "packages/agentic-system/test/feedback-outcome.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-recovery.test.js",
+      "test/feedback-lifecycle-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/feedback-lifecycle.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "packages/benchmark/**",
+      "packages/agentic-system/src/grounded-observation.js",
+      "packages/agentic-system/src/observation-context-binding.js",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/feedback-contracts.js",
+      "packages/agentic-system/src/feedback-controller.js",
+      "packages/agentic-system/src/feedback-projection.js",
+      "packages/agentic-system/src/feedback-improvement.js",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/observed-feedback-self-improve-research.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-084.json",
+      "packages/agentic-system/src/organization-authority-store.js",
+      "packages/agentic-system/src/organization-artifact-store.js",
+      "packages/agentic-system/src/organization-authority.js",
+      "packages/agentic-system/src/index.js",
+      "docs/living/system/agentic-application/contracts.md"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+      "packages/agentic-system/src/feedback-lifecycle-controller.js",
+      "packages/agentic-system/src/feedback-outcome.js",
+      "test/feedback-lifecycle-dependency-contract.test.mjs",
+      "docs/living/system/agentic-application/feedback-lifecycle.md"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/feedback-lifecycle-contracts.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-controller.test.js",
+      "packages/agentic-system/test/feedback-outcome.test.js",
+      "packages/agentic-system/test/feedback-lifecycle-recovery.test.js",
+      "test/feedback-lifecycle-dependency-contract.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "F1 — Dependency preflight [FL5]: implement test/feedback-lifecycle-dependency-contract.test.mjs first per D12; missing BB-084 delivery or export => PLAN_INPUT_CONTRADICTION before product writes.",
+    "F2 — Typed contracts [FL1, FL3, INV-1]: implement the five validators and episodeId per D2, D5, D7, D10 with exact ref+digest identity and no implicit authority fields.",
+    "F3 — Episode + response controller [FL1, FL2, INV-2]: implement openEpisode and respond with the D3 head store, D4 state machine, D5 disposition rules and D6 principal verification; ACTED refused unless inputs are GROUNDED at consumption.",
+    "F4 — Fresh outcome [FL3, INV-3]: implement classifyFeedbackOutcome (D9) and recordOutcome enforcing the D8 freshness identity against the current response; UNKNOWN keeps RESPONDED_ACTED.",
+    "F5 — Resolution + recovery [FL2, FL4, INV-2, INV-4]: implement resolve with derived values (D10), CONVERGED/STALE_REVISION replay semantics and recover (D11); prove crash-between-put-and-CAS and fresh-process reconstruction in feedback-lifecycle-recovery.test.js.",
+    "F6 — Living truth [FL5]: add docs/living/system/agentic-application/feedback-lifecycle.md describing only the delivered episode/response/outcome/resolution contracts, authority boundaries and limits; export new names; run agentic and repository regressions."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "FL1",
+      "statement": "FeedbackEpisode binds exact GroundedFindingInput refs+digests, finding with producer identity, MEASURED or HYPOTHESIZED impact, scopeKey and contrary evidence; MEASURED impact and ACTED are refused when any input is UNRESOLVED or fails consumption recheck.",
+      "verificationIds": [
+        "contracts",
+        "controller"
+      ],
+      "evidenceRequired": [
+        "Contract tests for identity/digest binding and forbidden authority fields; controller tests refusing MEASURED/ACTED on UNRESOLVED or STALE input."
+      ]
+    },
+    {
+      "id": "FL2",
+      "statement": "Only a principalAuthority-verified application principal can respond or resolve; OBSERVER/EVALUATOR/PROVIDER/OPTIMIZER principals and payload-embedded principals are rejected; transitions use expected-revision CAS, exact replay returns CONVERGED, stale revision fails without rebase and crash recovery never duplicates a transition.",
+      "verificationIds": [
+        "controller",
+        "recovery",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "Authority negative tests, CAS/replay/stale tests, crash-between-put-and-CAS and fresh-process recovery tests."
+      ]
+    },
+    {
+      "id": "FL3",
+      "statement": "A recorded outcome is IMPROVED, NO_CHANGE, REGRESSED or UNKNOWN from the frozen outcome policy and D8 freshness identity; missing measurement, UNRESOLVED or non-fresh evidence, or a non-current response is UNKNOWN.",
+      "verificationIds": [
+        "outcome",
+        "controller"
+      ],
+      "evidenceRequired": [
+        "Table-driven classification boundaries for both directions and freshness negative tests."
+      ]
+    },
+    {
+      "id": "FL4",
+      "statement": "FeedbackResolution is terminal, derived from head state, never produced from UNKNOWN or DEFERRED, and the lifecycle modules import nothing from HOW evolution, benchmark, optimizer or pattern code.",
+      "verificationIds": [
+        "controller",
+        "recovery",
+        "dependency"
+      ],
+      "evidenceRequired": [
+        "Resolution derivation tests, terminal-state tests and an import-graph assertion in the dependency test."
+      ]
+    },
+    {
+      "id": "FL5",
+      "statement": "The implementation binds only DONE BB-084 package-root exports through the preflight, writes only authorized files and documents delivered feedback-lifecycle truth in its Living Doc.",
+      "verificationIds": [
+        "dependency",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Preflight manifest output, forbidden-write check and Living Doc diff."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Finding and impact are evidence; they grant no disposition, acceptance, lifecycle or promotion authority.",
+      "criterionIds": [
+        "FL1",
+        "FL2"
+      ]
+    },
+    {
+      "invariant": "Every lifecycle transition is made by a verified application principal against the exact expected head revision, and exact replay converges without a second mutation.",
+      "criterionIds": [
+        "FL2"
+      ]
+    },
+    {
+      "invariant": "An outcome is fresh only when bound to the current response and to grounded evidence strictly after the response; otherwise it is UNKNOWN.",
+      "criterionIds": [
+        "FL3"
+      ]
+    },
+    {
+      "invariant": "UNKNOWN never resolves an episode, and resolution values are derived from recorded state rather than chosen by the caller.",
+      "criterionIds": [
+        "FL3",
+        "FL4"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "dependency",
+      "command": "node --test test/feedback-lifecycle-dependency-contract.test.mjs"
+    },
+    {
+      "id": "contracts",
+      "command": "node --test packages/agentic-system/test/feedback-lifecycle-contracts.test.js"
+    },
+    {
+      "id": "controller",
+      "command": "node --test packages/agentic-system/test/feedback-lifecycle-controller.test.js"
+    },
+    {
+      "id": "outcome",
+      "command": "node --test packages/agentic-system/test/feedback-outcome.test.js"
+    },
+    {
+      "id": "recovery",
+      "command": "node --test packages/agentic-system/test/feedback-lifecycle-recovery.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/process/observed-feedback-self-improve-research.md",
+      "finding": "The per-episode lifecycle ends at FeedbackResolution and uses fresh grounded observation as outcome evidence, so it does not depend on BB-059 or BB-065."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+      "finding": "RESEARCH_DESIRED_STATE: FeedbackEpisode/Response/Outcome fields, ACTED/REJECTED/DEFERRED/SUPERSEDED, IMPROVED/NO_CHANGE/REGRESSED/UNKNOWN and the unknown rule."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-084.json",
+      "finding": "RESEARCH_DESIRED_STATE: GROUNDED_FINDING_INPUT_V1 and consumption-time currentness recheck are the only observation surface."
+    },
+    {
+      "ref": "packages/agentic-system/src/organization-authority-store.js",
+      "finding": "DELIVERED_TRUTH: createJsonCasHeadStore.compareAndSwap(key, expectedRevision, nextValue) returns false on revision mismatch."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-084"
+    ],
+    "workerStart": "Run the F1 preflight before any product write; bind exact DONE BB-084 delivery receipt, Living ref and package-root exports.",
+    "plannedBindings": {
+      "BB-084": "GROUNDED_FINDING_INPUT_V1 validator + assertGroundedFindingInputCurrent(input,{receiptCurrentness, artifactStore}) exported from @exharness/agentic-system root"
+    },
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "createJsonImmutableArtifactStore (organization-artifact-store.js, package root)",
+        "createJsonCasHeadStore compareAndSwap (organization-authority-store.js, package-internal import)",
+        "verify-then-publish authority pattern (organization-authority.js)"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "BB-083 feedbackContract episode/response/outcome fields and unknownRule",
+        "BB-084 GROUNDED_FINDING_INPUT_V1 and assertGroundedFindingInputCurrent"
+      ]
+    },
+    "contradiction": "Missing BB-084 delivery, changed contract shape or deep-import requirement => PLAN_INPUT_CONTRADICTION; return to RESEARCH_SA.",
+    "notDependencies": [
+      "BB-059, BB-065 and BB-083: lifecycle outcome uses fresh grounded observation, not benchmark or HOW evaluation"
+    ]
+  },
+  "deliveryContract": {
+    "precondition": "BB-084 is DONE and the F1 preflight binds its delivered exports.",
+    "completion": "All criterion checks + agentic/repository regressions + feedback-lifecycle Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No new store engine, no principal from payloads, no caller-chosen resolution, no unknown-as-success, no pattern/optimizer/promotion code."
+  },
+  "ciContract": {
+    "checks": [
+      "dependency",
+      "contracts",
+      "controller",
+      "outcome",
+      "recovery",
+      "agentic-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "BB-083 objective, plan, readiness and graph record",
+      "existing authority/artifact stores and their files"
+    ],
+    "add": [
+      "feedback-lifecycle-contracts.js",
+      "feedback-lifecycle-controller.js",
+      "feedback-outcome.js",
+      "tests",
+      "feedback-lifecycle Living Doc"
+    ],
+    "rollback": "Revert only the additive modules, exports, tests and Living Doc; persisted episode artifacts remain readable evidence."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-085 objective + BB-083 research + BB-084 desired contract",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-084",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "typed episode lifecycle + authority + fresh outcome + resolution + Living truth",
+      "forbidden": [
+        "redefine BB-084 contracts",
+        "cross-episode aggregation",
+        "self-resolution without verified principal"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/feedback-lifecycle.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Living feedback-lifecycle doc describes only the delivered episode, response, outcome and resolution contracts, principal and CAS authority boundaries, UNKNOWN handling and unsupported cases."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify an immutable FeedbackEpisode whose finding and MEASURED or HYPOTHESIZED impact bind exact BB-084 GroundedFindingInput refs, scope key and contrary evidence; unresolved input cannot yield MEASURED impact or ACTED.",
+      "criterionIds": [
+        "FL1"
+      ],
+      "planElements": [
+        "F2",
+        "F3"
+      ],
+      "verificationIds": [
+        "contracts",
+        "controller"
+      ],
+      "decisionIndexes": [
+        1,
+        4
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-084.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-083.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-084.json",
+          "match": "GROUNDED_FINDING_INPUT_V1 = "
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+          "match": "contraryEvidenceRefs"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify application-owned ACTED/REJECTED/DEFERRED/SUPERSEDED responses with verified principal, expected-revision CAS, idempotent replay and crash recovery; observer, evaluator and provider cannot act as principal.",
+      "criterionIds": [
+        "FL2"
+      ],
+      "planElements": [
+        "F3",
+        "F5"
+      ],
+      "verificationIds": [
+        "controller",
+        "recovery",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        4,
+        5,
+        10
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/organization-authority-store.js",
+        "packages/agentic-system/src/organization-authority.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/organization-authority-store.js",
+          "match": "async compareAndSwap(key,expectedRevision,nextValue)"
+        },
+        {
+          "ref": "packages/agentic-system/src/organization-authority.js",
+          "match": "authority publisher is not trusted"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify fresh IMPROVED/NO_CHANGE/REGRESSED/UNKNOWN outcomes bound to a frozen outcome policy and explicit freshness identity newer than the response; UNKNOWN is never success.",
+      "criterionIds": [
+        "FL3"
+      ],
+      "planElements": [
+        "F4"
+      ],
+      "verificationIds": [
+        "outcome",
+        "controller"
+      ],
+      "decisionIndexes": [
+        6,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+        "docs/blackboard/process/observed-feedback-self-improve-research.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-083.json",
+          "match": "Missing current context, required measurement or independent evidence remains unresolved/UNKNOWN and cannot be converted to success."
+        },
+        {
+          "ref": "docs/blackboard/process/observed-feedback-self-improve-research.md",
+          "match": "Outcome evidence is fresh grounded observation, so Feedback Lifecycle does not depend on BB-059 or BB-065."
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify FeedbackResolution as the terminal lifecycle boundary with no cross-episode aggregation, optimizer, benchmark or promotion dependency.",
+      "criterionIds": [
+        "FL4"
+      ],
+      "planElements": [
+        "F5"
+      ],
+      "verificationIds": [
+        "controller",
+        "recovery",
+        "dependency"
+      ],
+      "decisionIndexes": [
+        3,
+        9,
+        11
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/observed-feedback-self-improve-research.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/observed-feedback-self-improve-research.md",
+          "match": "The per-episode lifecycle is application-owned and ends at FeedbackResolution."
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution",
+        "deliveryContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce an exact package/file-level implementation plan, direct dependencies, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "FL1",
+        "FL2",
+        "FL3",
+        "FL4",
+        "FL5"
+      ],
+      "planElements": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6"
+      ],
+      "verificationIds": [
+        "dependency",
+        "contracts",
+        "controller",
+        "outcome",
+        "recovery",
+        "agentic-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        11
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/organization-artifact-store.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/organization-artifact-store.js",
+          "match": "export function createJsonImmutableArtifactStore"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases",
+        "ciContract"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "An episode whose groundedInputRef digest mismatches the stored input, or that references a non-GroundedFindingInput artifact, is rejected.",
+    "MEASURED impact with any UNRESOLVED input, or with an input that fails consumption-time currentness recheck, is rejected.",
+    "ACTED on an episode with UNRESOLVED or STALE inputs, without actionRefs or without a frozen outcome policy is rejected; REJECTED without rationaleRef, DEFERRED without revisitCondition and SUPERSEDED without successorEpisodeRef are rejected.",
+    "A principal of kind OBSERVER, EVALUATOR, PROVIDER or OPTIMIZER, a principal that principalAuthority does not verify, or a principal field embedded in episode, finding or observation payload cannot create, revise or resolve.",
+    "Replaying the same respond call after success returns CONVERGED and leaves the head revision unchanged; a stale expectedRevision with different content fails STALE_REVISION without rebase.",
+    "A crash after artifact put but before compareAndSwap leaves the head unchanged; retry produces the same artifact ref and one transition; recover ignores the orphan artifact.",
+    "An outcome bound to a non-current response, a fresh input already in the episode, an execution attempt present in the baseline inputs or a boundary not strictly after effectiveAfterBoundary is UNKNOWN.",
+    "A missing or null required measurement, or an UNRESOLVED fresh input, is UNKNOWN and never IMPROVED; a missing measurement is never coerced to zero.",
+    "Changing the outcome policy after the ACTED response is impossible: recordOutcome uses only the policy digest frozen in the response.",
+    "resolve() with UNKNOWN outcome or DEFERRED state fails; a caller-supplied resolution value different from the derived value fails; RESOLVED accepts no further transition.",
+    "Lifecycle modules importing how-evolution, @exharness/benchmark, optimizer, pattern or BB-083 feedback-*.js code fail the dependency import-graph test.",
+    "Worker start with BB-084 not DONE, missing delivery receipt/Living ref or missing package-root export exits PLAN_INPUT_CONTRADICTION before product writes."
+  ]
+}

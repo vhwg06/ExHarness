@@ -515,3 +515,8 @@ Integration is the organization contract foundation for the [delivery product ro
 The new [feedback research task](../../blackboard/process/feedback-architecture-research.md) owns the requested extension: Evidence -> Observation -> Context -> Finding + Impact -> authorized Disposition -> Response -> fresh Outcome -> FeedbackResolution, followed by evidence-backed pattern/system proposals and independent improvement evaluation.
 
 This research is PLANNED / RESEARCH_SA / RESEARCH with a DRAFT plan. It builds on existing Observer, Oracle and HOW/benchmark contracts while preserving all previously accepted research scopes, plans and readiness. Exact execution dependencies remain canonical in the outer Blackboard; research may advance against planned contracts without treating them as delivered truth. Positive reinforcement, rejected/deferred/superseded responses and outcome uncertainty are explicit research requirements. Observer and evaluators remain without lifecycle/promotion authority. See the brief for evidence rules and readiness gates.
+
+
+## Observed / Feedback / Self-Improve split
+
+The feedback research is split into three one-way capability layers (see the [split brief](../../blackboard/process/observed-feedback-self-improve-research.md)): Observed Implementation -> Feedback Lifecycle -> Self-Improve. These are planned capabilities, not delivered system truth. Research consumes READY/planned contracts labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; Worker execution binds only DONE dependencies.

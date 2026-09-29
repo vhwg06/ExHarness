@@ -381,6 +381,65 @@
           "scripts/**"
         ]
       }
+    },
+    {
+      "id": "agentic/feedback-lifecycle",
+      "contextOwner": "agentic-application/feedback-lifecycle",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/agentic-application/contracts.md",
+          "docs/living/system/agentic-application/state.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/feedback-lifecycle-contracts.js",
+          "packages/agentic-system/src/feedback-lifecycle-controller.js",
+          "packages/agentic-system/src/feedback-outcome.js"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/feedback-lifecycle-*.test.js",
+          "packages/agentic-system/test/feedback-outcome.test.js"
+        ],
+        "contractRefs": [
+          "FEEDBACK_EPISODE_V1",
+          "FEEDBACK_RESPONSE_V1",
+          "FEEDBACK_OUTCOME_V1",
+          "FEEDBACK_RESOLUTION_V1"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**"
+        ]
+      }
+    },
+    {
+      "id": "agentic/self-improve",
+      "contextOwner": "agentic-application/self-improve",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/agentic-application/self-upgrade.md",
+          "docs/living/system/agentic-application/evaluation.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/improvement-pattern.js",
+          "packages/agentic-system/src/improvement-proposal.js",
+          "scripts/self-improve/**"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/improvement-*.test.js",
+          "test/self-improve-*.test.mjs"
+        ],
+        "contractRefs": [
+          "PATTERN_POLICY_V1",
+          "HOW_IMPROVEMENT_PROPOSAL_V1",
+          "IMPROVEMENT_EVALUATION_HANDOFF_V1"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**",
+          "scripts/self-improve/**",
+          "test/**"
+        ]
+      }
     }
   ]
 }

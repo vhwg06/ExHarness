@@ -133,3 +133,8 @@ Completion requires installation by a fresh operator, one representative real pr
 [BB-083](feedback-architecture-research.md) is a new research task connecting context-grounded feedback episodes, response/resolution, cross-episode patterns and reinforcement to independent improvement evaluation. Existing researched tasks, including BB-058/059/075, retain their accepted scope and readiness unchanged.
 
 The new task consumes BB-059, BB-064 and BB-075 as direct execution dependencies; their transitive Observer/benchmark dependencies are not duplicated. Research may run ahead; no existing task is made dependent on BB-083. The new objective and DRAFT plan must converge through their own research and fresh Jev readiness. This is future additive capability, not delivered behavior or an extension authorized by old judgments.
+
+
+## Observed / Feedback / Self-Improve split — BB-084..086
+
+BB-083 research is consumed as design input by three one-way layers: [BB-084](observed-feedback-self-improve-research.md) Observed Implementation (grounded observation over BB-058/BB-064), BB-085 Feedback Lifecycle (episode -> response -> fresh outcome -> resolution over BB-084) and BB-086 Self-Improve (cross-episode pattern -> proposal -> GEPA -> independent BB-059 handoff over BB-085/BB-059/BB-065). Research runs ahead on planned contracts; each Worker waits for its direct dependencies to be DONE. BB-083's canonical record is unchanged until BB-082 objective supersession can reconcile it.
