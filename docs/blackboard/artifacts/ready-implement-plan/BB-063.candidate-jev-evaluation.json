@@ -1,0 +1,212 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-063-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-063",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+      "hash": "50b11d380b6ad28a3d401e99041808db11241cf91344ee63ddef5fa4c51c54f5"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-063.json",
+      "hash": "70c309512b7fd1458a4c9a468bbc65ead3ca4caa257eb33e20fba4fc73c564f7"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-063.implementation-result.json",
+      "hash": "d58d9b3bc94ed2a489beacc6eed491e6aa34d9b9c78818844a67143fc9c7d1e6"
+    },
+    "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+    "candidateTree": "bc15a88bf95734b99dc92f90f2823a5d0f39c6b6",
+    "baselineSha": "a4284aefe569989f87c455eda6f42205e19307fb"
+  },
+  "stateHash": "bc8b8dea544e864261c9751f120620792b6829824416d7b579d93c0adf57ddbf",
+  "specHash": "854bef548e8ded28deef66efe22947b1548100dec5c7c5fc7a491ccc1d3a333d",
+  "cacheKey": "9ab7f38112c10acabfaa1dc780a6991d582b6784eaf3d961385e4287cb3bea95",
+  "model": "jev-1.13.0",
+  "answers": {
+    "REUSE_IDENTITY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.5,
+      "probabilities": {
+        "SATISFIED": 0.63,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.35
+      }
+    },
+    "PROVENANCE_CURRENTNESS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.81,
+      "probabilities": {
+        "SATISFIED": 0.86,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.13,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "CRASH_CONCURRENCY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.7,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "SATISFIED": 0.77,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "INSUFFICIENT_EVIDENCE": 0.2
+      }
+    },
+    "MANIFEST_COMPAT": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.76,
+      "probabilities": {
+        "SATISFIED": 0.83,
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.17,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "SELECTIVE_INVALIDATION": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.72,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.79,
+        "INSUFFICIENT_EVIDENCE": 0.21,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "PERSISTENCE_DECISION": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.4,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.43,
+        "SATISFIED": 0.55,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "INV-1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.59,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.3,
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.7
+      }
+    },
+    "INV-2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.82,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.11,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "SATISFIED": 0.87,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "INV-3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.76,
+      "probabilities": {
+        "SATISFIED": 0.82,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.16,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.89,
+      "probabilities": {
+        "SATISFIED": 0.92,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.06,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 118341,
+    "output_tokens": 734
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 10,
+    "latencyMs": 4249.675125,
+    "payloadBytes": 165696,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_ATOMIC_QUESTIONS_V1",
+      "manifest": [
+        {
+          "id": "REUSE_IDENTITY",
+          "payloadHash": "ef0fde3952e5649a4eec843cc8adbb017f5231c92f5c1e51c501b4cf21441e1b",
+          "payloadBytes": 41386
+        },
+        {
+          "id": "PROVENANCE_CURRENTNESS",
+          "payloadHash": "53396be019562115d2aab31c917558b71d8fedf9444509be10a006731ddb06ed",
+          "payloadBytes": 40692
+        },
+        {
+          "id": "CRASH_CONCURRENCY",
+          "payloadHash": "47fb42d659806f58a3576b43d7de1b4048f8bd4c1d52cd70548326681fd9d233",
+          "payloadBytes": 45445
+        },
+        {
+          "id": "MANIFEST_COMPAT",
+          "payloadHash": "bbfa94365d2253463410bc876f466def1ce67c57b0b47d9133a8b6ebb0d24a21",
+          "payloadBytes": 36524
+        },
+        {
+          "id": "SELECTIVE_INVALIDATION",
+          "payloadHash": "8b2a93e2d9b07a640ef039ca0b6a4b42168c3528ffd90f5c6cb27af7329bb536",
+          "payloadBytes": 38333
+        },
+        {
+          "id": "PERSISTENCE_DECISION",
+          "payloadHash": "22a33642770179fab3d9af128461f75541df951d79a4e5cd1940be79f87e0e1b",
+          "payloadBytes": 35118
+        },
+        {
+          "id": "INV-1",
+          "payloadHash": "9530466dd2cb1d9876ac5cc3542a96a345e1fb7bdb4bf541332de6a85e9c26a2",
+          "payloadBytes": 33475
+        },
+        {
+          "id": "INV-2",
+          "payloadHash": "43de1888461df9ee1c565b9f68f4c78bf35479542b8f98664f058507de9a7603",
+          "payloadBytes": 45486
+        },
+        {
+          "id": "INV-3",
+          "payloadHash": "c5f96e0ac890c1899e54e7c7d19a5fb2812e9c78552ef35bb13c31d0d6c5444f",
+          "payloadBytes": 40402
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "83135a3618f2c44e2171b9a4767c6569e1b65ca052771df41a7ba96e588ceff4",
+          "payloadBytes": 19915
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
