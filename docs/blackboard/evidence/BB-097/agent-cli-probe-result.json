@@ -23,6 +23,7 @@
           },
           "helpLines": [
             "resume  Resume a previous session by id or pick the most recent with --last",
+            "instructions are read from stdin. If stdin is piped and a prompt is also provided, stdin",
             "-m, --model <MODEL>",
             "-s, --sandbox <SANDBOX_MODE>",
             "--json"
@@ -37,8 +38,12 @@
           },
           "helpLines": [
             "Resume a previous session by id or pick the most recent with --last",
+            "Usage: codex exec resume [OPTIONS] [SESSION_ID] [PROMPT]",
+            "[SESSION_ID]",
             "omitted, use --last to pick the most recent recorded session",
+            "Prompt to send after resuming the session. If `-` is used, read from stdin",
             "--last",
+            "Show all sessions (disables cwd filtering)",
             "-m, --model <MODEL>",
             "--json"
           ]
@@ -78,6 +83,7 @@
             "--trust-tools <TOOL_NAMES>",
             "Trust only this set of tools. Example: trust some tools: '--trust-tools=fs_read,fs_write',",
             "trust no tools: '--trust-tools='",
+            "-d, --delete-session <SESSION_ID>",
             "--mode <MODE>"
           ]
         },

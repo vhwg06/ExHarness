@@ -47,7 +47,7 @@ for (const [bin, spec] of Object.entries(tools)) {
       command: [bin, ...args].join(' '),
       helpAvailable: h.ok,
       flags: Object.fromEntries(spec.flags[surface].map((f) => [f, h.ok && has(h.text, f)])),
-      helpLines: h.ok ? h.text.split(/\r?\n/).map((l) => l.trim()).filter((l) => /--trust-tools|--trust-all-tools|--print|--sandbox|--mode|--resume|--continue|--json|--last/.test(l)).slice(0, 12) : []
+      helpLines: h.ok ? h.text.split(/\r?\n/).map((l) => l.trim()).filter((l) => /--trust-tools|--trust-all-tools|--print|--sandbox|--mode|--resume|--continue|--json|--last|SESSION_ID|read from stdin|cwd filtering/.test(l)).slice(0, 16) : []
     };
   }
   result.tools[bin] = entry;
