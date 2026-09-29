@@ -1,0 +1,18 @@
+✔ deterministic plan reserves exact work in declared file order before invocation (1.456625ms)
+ℹ {"work":[{"providerId":"exact","operation":"READ_EXACT","reservedBudget":{"providerCalls":1,"items":1,"materializedBytes":8192},"itemRef":"a.js"},{"providerId":"exact","operation":"READ_EXACT","reservedBudget":{"providerCalls":1,"items":1,"materializedBytes":8192},"itemRef":"b.js"}],"underBudget":[{"evidenceId":"e","reason":"BUDGET_EXHAUSTED"}]}
+✔ semantic repository composes symbol and lexical; unsupported symbol falls back (1.308792ms)
+ℹ {"orderedOperations":["LOOKUP_SYMBOL","SEARCH_LEXICAL"],"reserved":{"providerCalls":2,"items":2,"materializedBytes":16384,"resolutionSteps":1},"failures":[{"evidenceId":"e","providerId":"semantic","reason":"UNSUPPORTED","detail":"language unsupported"}],"finalCandidate":{"kind":"REPOSITORY","ref":"repo","snapshotRef":"head","itemRef":"a.js"}}
+✔ graph and external kinds route only to their typed providers (0.218084ms)
+ℹ graph/external/repository route by matching source kind without application scheduling
+✔ budget and missing provider fail closed before source calls (0.148458ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 45.946542
+
+
+exitCode=0
