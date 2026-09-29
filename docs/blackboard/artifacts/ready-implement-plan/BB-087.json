@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-087",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-087.json",
     "hash": "22cddb2c40dedf83f46b9927b7ba36d207e20adfbfc6fa9ba771531d188e9e42"
@@ -39,9 +39,9 @@
     "D3 — Items are built from execute().candidates in planner order with rank per evidence; the hard-coded slice(0,3) is removed because the planner already reserved at most budget.maxItems work units.",
     "D4 — Materialization bytes via the delivered contract only: pass 1 calls defineContextResolution with consumed.materializedBytes = requirement.budget.maxMaterializedBytes; its returned materialization.bytes is the exact contract-computed size. Pass 2 rebuilds with consumed.materializedBytes = that exact value. resolutionId excludes consumed, so both passes share identity. A pass-1 rejection \"consumed below materialization\" means overflow and triggers D5. No serialization is re-implemented in the facade.",
     "D5 — Budget overflow: if the exact materialization bytes exceed budget.maxMaterializedBytes, the facade drops the lowest-priority OPTIONAL evidence items first, then marks remaining overflowing evidence BUDGET_EXHAUSTED; status is recomputed (REQUIRED unresolved => UNSATISFIED). It never constructs a resolution that violates the budget and never throws for budget.",
-    "D6 — Unresolved reasons: planner unresolved and execute() unresolved/failure reasons (BUDGET_EXHAUSTED, SOURCE_FAILURE, STALE, CURRENTNESS_UNVERIFIABLE, UNSUPPORTED, AMBIGUOUS, MISSING) are copied verbatim; MISSING is used only when no candidate and no typed reason exists.",
+    "D6 — Unresolved reasons: planner unresolved and execute() unresolved/failure reasons (BUDGET_EXHAUSTED, SOURCE_FAILURE, STALE, CURRENTNESS_UNVERIFIABLE, UNSUPPORTED, AMBIGUOUS, MISSING) are copied verbatim; MISSING is used only when no candidate and no typed reason exists. resolve() additionally returns `failures` (execute().failures verbatim: evidenceId, providerId, reason, detail) as operational diagnostics outside ContextResolution identity, so callers can report the underlying cause without widening the contract.",
     "D7 — Thrown errors remain only for (a) invalid requirement/contract input, (b) STALE_DURING_RESOLUTION currentness drift (DurabilityFailure, unchanged), (c) catalog/planner misconfiguration. ProviderFailure no longer escapes resolve().",
-    "D8 — Durability reuse path and metadata passthrough are unchanged; the durability error discrimination keeps its current behavior (out of scope).",
+    "D8 — Preservation: the durability branch (REUSED/PUBLISHED passthrough and NOT_REUSABLE fallthrough), the pre/post observation fence and the {outcome, resolution, preObservations, postObservations, reuseKey, receiptRef} result shape are unchanged; metadata is still ignored. Core consumes the facade only through resolveContextRequirementBlocks, which is not edited; its existing test packages/core-harness/test/context-resolution.test.js and the durability suite test/oracle-context-resolution-durability.test.mjs must pass unchanged.",
     "D9 — Regression tests live in test/oracle-facade-accounting.test.mjs and reproduce each probe case from docs/blackboard/evidence/BB-087/facade-probe.mjs with corrected expectations; the probe script itself is research evidence and is not modified."
   ],
   "sourceScope": {
@@ -82,7 +82,9 @@
       "packages/oracle/src/context-resolution.js",
       "packages/oracle/src/retrieval-planner.js",
       "packages/oracle/src/context-contract.js",
-      "test/oracle-context-intelligence-foundation.test.mjs"
+      "test/oracle-context-intelligence-foundation.test.mjs",
+      "test/oracle-context-resolution-durability.test.mjs",
+      "packages/core-harness/test/context-resolution.test.js"
     ],
     "expectedNew": [
       "test/oracle-facade-accounting.test.mjs"
@@ -91,14 +93,16 @@
       "test/oracle-facade-accounting.test.mjs",
       "test/oracle-context-intelligence-foundation.test.mjs",
       "test/oracle-context-intelligence-benchmark-contract.test.mjs",
-      "test/oracle-context-intelligence-architecture.test.mjs"
+      "test/oracle-context-intelligence-architecture.test.mjs",
+      "test/oracle-context-resolution-durability.test.mjs",
+      "packages/core-harness/test/context-resolution.test.js"
     ]
   },
   "implementationSlices": [
     "B1 — Regression first [FA1, FA2, FA3]: write test/oracle-facade-accounting.test.mjs reproducing the four probe cases (small budget, constant bytes, provider failure, dropped planner reason) plus over-budget and zero-provider-call cases; confirm they fail against the current facade.",
     "B2 — Planner execution [FA2, INV-3, INV-4]: replace the manual planned.work loop with retrievalPlanner.execute() per D1-D3 and D6-D7; typed failures become unresolved entries and status is derived from necessity.",
     "B3 — Truthful accounting + budget [FA1, INV-1, INV-2]: compute exact materialization bytes (two-pass contract) and reserved provider calls per D2, D4 and apply the D5 overflow rule so no resolution violates its budget.",
-    "B4 — Preservation + Living truth [FA3, FA4]: keep pre/post currentness fence, durability path and Core port unchanged; run foundation/benchmark/architecture tests and probe-foundation.mjs; update docs/living/system/oracle/state.md to describe truthful accounting and typed failure."
+    "B4 — Preservation + Living truth [FA3, FA4]: in test/oracle-facade-accounting.test.mjs add (a) drift case: snapshot authority returns a different snapshotRef on post-observation => DurabilityFailure STALE_DURING_RESOLUTION; (b) durability stub returning {outcome:REUSED} passes through unchanged; (c) Core injection: resolveContextRequirementBlocks with the fixed facade projects a COMPLETE resolution once. Run the oracle-regression suite (foundation, benchmark, architecture, durability, contract boundary, Core context-resolution) and probe-foundation.mjs; update docs/living/system/oracle/state.md."
   ],
   "acceptanceCriteria": [
     {
@@ -113,7 +117,7 @@
     },
     {
       "id": "FA2",
-      "statement": "resolve() uses retrievalPlanner.execute(); a provider SOURCE_FAILURE on REQUIRED evidence returns UNSATISFIED with reason SOURCE_FAILURE and on OPTIONAL evidence returns PARTIAL, with no ProviderFailure thrown.",
+      "statement": "resolve() uses retrievalPlanner.execute(); a provider SOURCE_FAILURE on REQUIRED evidence returns UNSATISFIED with reason SOURCE_FAILURE and on OPTIONAL evidence returns PARTIAL, with no ProviderFailure thrown. resolve() also returns execute() failures as diagnostics outside ContextResolution identity.",
       "verificationIds": [
         "facade-accounting"
       ],
@@ -140,7 +144,7 @@
         "repository"
       ],
       "evidenceRequired": [
-        "Drift test, unchanged foundation/benchmark/architecture test logs, repository verify log and Living Doc diff."
+        "Drift, durability-passthrough and Core-injection tests in the accounting suite; unchanged foundation/benchmark/architecture/durability/contract-boundary/Core context-resolution logs; repository verify log and Living Doc diff."
       ]
     }
   ],
@@ -179,7 +183,7 @@
     },
     {
       "id": "oracle-regression",
-      "command": "node --test test/oracle-context-intelligence-foundation.test.mjs test/oracle-context-intelligence-benchmark-contract.test.mjs test/oracle-context-intelligence-architecture.test.mjs"
+      "command": "node --test test/oracle-context-intelligence-foundation.test.mjs test/oracle-context-intelligence-benchmark-contract.test.mjs test/oracle-context-intelligence-architecture.test.mjs test/oracle-context-resolution-durability.test.mjs test/oracle-context-contract-boundary.test.mjs packages/core-harness/test/context-resolution.test.js"
     },
     {
       "id": "repository",
@@ -369,7 +373,9 @@
       ],
       "sourceRefs": [
         "packages/oracle/src/context-resolution.js",
-        "docs/blackboard/evidence/BB-087/facade-probe-result.json"
+        "docs/blackboard/evidence/BB-087/facade-probe-result.json",
+        "test/oracle-context-resolution-durability.test.mjs",
+        "packages/core-harness/test/context-resolution.test.js"
       ],
       "sourceAnchors": [
         {
@@ -379,6 +385,14 @@
         {
           "ref": "docs/blackboard/evidence/BB-087/facade-probe-result.json",
           "match": "\"plannerReasonDropped\": true"
+        },
+        {
+          "ref": "test/oracle-context-resolution-durability.test.mjs",
+          "match": "durable coordinator publishes manifest-bound receipt without touching acceptance authority"
+        },
+        {
+          "ref": "packages/core-harness/test/context-resolution.test.js",
+          "match": "selected requirement is projected to a fixed context block once per call"
         }
       ],
       "supportingPlanFields": [
@@ -437,6 +451,9 @@
     "Materialization exceeding maxMaterializedBytes must yield BUDGET_EXHAUSTED (UNSATISFIED if REQUIRED) and never a resolution whose consumed exceeds budget.",
     "A requirement whose evidence is all UNSUPPORTED (zero reservations) must report providerCalls 0, never a floored 1.",
     "Source snapshot change between pre and post observation must still throw DurabilityFailure STALE_DURING_RESOLUTION.",
-    "Edits to contract, planner, catalog, provider, durability, Core or agentic files fail repository scope verification."
-  ]
+    "Edits to contract, planner, catalog, provider, durability, Core or agentic files fail repository scope verification.",
+    "A durability stub returning REUSED must be returned unchanged; the facade must not re-plan or re-account a reused resolution.",
+    "resolve() dropping execute() failures diagnostics, or placing them inside ContextResolution, fails the accounting test."
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-087.readiness-jev-evaluation.json"
 }

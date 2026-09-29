@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-089",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-089.json",
     "hash": "491f194c9a7197e779d6d23b6ad44fa121c7ac114f51525f531700c0183d96e9"
@@ -18,10 +18,11 @@
     "CURRENT-mode, semantic, lexical or graph retrieval for Backend/QA; this task adopts EXACT declared context only.",
     "Changing Backend/QA Workers, completion policies, Orchestrator, manifest store or acceptance semantics.",
     "Changing Oracle contracts, planner, catalog, providers, durability or facade (BB-087).",
-    "Retiring the compatibility adapter; that needs a separate acceptance decision."
+    "Retiring the compatibility adapter; that needs a separate acceptance decision.",
+    "Threading oracleResolution through the durable Backend -> QA workflow (durable-backend-qa.js) or runBackendThenQaObjective (composition.js)."
   ],
   "constraints": [
-    "Opt-in only: the Oracle path is selected by an explicit `oracleResolution: { maxMaterializedBytes }` option; without it behavior is unchanged.",
+    "Opt-in only: the Oracle path is selected by an explicit `oracleResolution: { maxMaterializedBytes }` option on resolveBackendContext/resolveQaContext, passed through unchanged by prepareBackendObjective/runBackendObjective/recoverBackendObjective and runQaObjective; without it behavior is unchanged.",
     "Requirements are derived only from declared BackendWorkOrder.requiredFiles and QaWorkOrder.requiredArtifacts; Oracle never adds or drops context.",
     "The Oracle path composes only delivered @exharness/oracle root exports: createSourceCatalog, createExactRepositoryProvider, createExactArtifactProvider, createRetrievalPlanner, createOracleContextResolver, assertConsumableContextResolution.",
     "Research consumes the BB-087 fixed-facade desired state; the Worker binds only DONE BB-087.",
@@ -38,12 +39,14 @@
     "D2 — Backend requirement: consumerRef `backend-work-order:<workOrderId>`, one REQUIRED evidence per required file in declared order with id `file-<index>`, source {kind REPOSITORY, ref repositoryRef, snapshot {mode EXACT, ref revision}, itemRefs [path]}; budget {maxItems n, maxProviderCalls n, maxResolutionSteps 1, maxMaterializedBytes caller value}. A non-positive or missing maxMaterializedBytes is rejected.",
     "D3 — QA requirement: one REQUIRED evidence per required artifact, source {kind APPLICATION_ARTIFACT, ref artifact.ref, snapshot {mode EXACT, ref upstream.revision}, itemRefs [artifact.path]}. The Oracle QA path requires every artifact to declare a path (the delivered QA objective flow always selects artifacts by path); a pathless artifact is rejected with a typed error and remains supported only on the compatibility path.",
     "D4 — Per-call composition: the adapter builds a SourceCatalog with exactly one exact provider — createExactRepositoryProvider({repositoryReader}) or createExactArtifactProvider({artifactReader, producerWorkOrderId, acceptanceDecision}) from the order — plus an EXACT snapshot authority whose observe() returns the order's pinned revision, then createRetrievalPlanner and createOracleContextResolver. EXACT mode claims no currentness; the pinned revision is the order's accepted revision.",
-    "D5 — Consumption: the adapter calls assertConsumableContextResolution(resolution, requirement) and additionally requires status COMPLETE (all evidence is REQUIRED). Otherwise it throws `backend|qa context resolution failed via Oracle: <status> <evidenceId>:<reason>...` before any Worker call.",
+    "D5 — Consumption: the adapter calls assertConsumableContextResolution(resolution, requirement) and requires status COMPLETE. Otherwise it throws OracleContextBlockedError {domain BACKEND|QA, status, unresolved, failures} whose message lists each evidenceId:reason and the BB-087 facade failure detail (which carries the underlying reader error text, e.g. an ArtifactManifestError code) before any Worker call.",
     "D6 — Projection: items are grouped by evidenceId in declared order; each item's content and SOURCE_REF provenance ref become {path, content, sourceRef}; QA artifacts add {ref, path, provenance:{sourceClass APPLICATION_ARTIFACT, producerWorkOrderId, acceptanceDecision}} exactly as readApplicationArtifacts does, then the unchanged schemas parse the result.",
     "D7 — Manifest protection: when artifactReader is createManifestArtifactReader, the exact artifact provider calls readApplicationArtifacts with the same producer/revision/acceptance arguments, so manifest validation runs unchanged; digest or provenance mismatch surfaces as provider SOURCE_FAILURE and blocks via D5.",
     "D8 — Intended difference: the Oracle path enforces maxMaterializedBytes; the compatibility path has no budget. Over-budget declared context is BUDGET_EXHAUSTED -> UNSATISFIED -> blocked. This is documented, not hidden.",
     "D9 — Equivalence is proven by a shared fixture test that runs both paths for Backend and QA (direct reader and manifest-validating reader) and asserts deepEqual contexts.",
-    "D10 — Worker-start: BB-087 DONE; verify the listed Oracle root exports and that the fixed facade reports exact materializedBytes; mismatch => PLAN_INPUT_CONTRADICTION."
+    "D10 — Worker-start: BB-087 DONE; verify the listed Oracle root exports and that the fixed facade reports exact materializedBytes; mismatch => PLAN_INPUT_CONTRADICTION.",
+    "D11 — Interpretation of the fail-closed criterion: (a) every Oracle-path evidence is REQUIRED, so a resolution is COMPLETE or UNSATISFIED; PARTIAL cannot occur and is rejected defensively; (b) EXACT mode makes no currentness claim, so staleness appears only as a pinned-revision mismatch surfaced by the reader (manifest STORED_REVISION_MISMATCH / PRODUCER_REVISION_MISMATCH) and blocks as SOURCE_FAILURE; (c) \"exactly as the compatibility path\" means the same blocking stage and outcome (typed error, zero Worker calls), not the same error class; (d) the default path is proven unchanged by deepEqual output against a pre-change golden fixture and by a spy asserting no Oracle catalog/resolver is constructed.",
+    "D12 — Production reachability: prepareBackendObjective, runBackendObjective and recoverBackendObjective (backend-application.js) and runQaObjective (qa-application.js) accept an optional `oracleResolution` option and pass it unchanged to resolveBackendContext/resolveQaContext; they add no other behavior. durable-backend-qa.js and runBackendThenQaObjective (composition.js) are not threaded in this task and keep the compatibility path; that limitation is documented in the Living Doc."
   ],
   "sourceScope": {
     "read": [
@@ -58,6 +61,8 @@
     "write": [
       "packages/agentic-system/src/oracle.js",
       "packages/agentic-system/src/oracle-context-requirements.js",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js",
       "packages/agentic-system/src/index.js",
       "packages/agentic-system/test/oracle-context-adoption.test.js",
       "packages/agentic-system/test/oracle-context-equivalence.test.js",
@@ -68,12 +73,12 @@
       "packages/core-harness/**",
       "packages/agentic-system/src/contracts.js",
       "packages/agentic-system/src/qa-contracts.js",
-      "packages/agentic-system/src/backend-application.js",
-      "packages/agentic-system/src/qa-application.js",
       "packages/agentic-system/src/artifact-manifest.js",
       "packages/agentic-system/src/backend-worker.js",
       "packages/agentic-system/src/qa-worker.js",
-      "docs/blackboard/**"
+      "docs/blackboard/**",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "packages/agentic-system/src/composition.js"
     ]
   },
   "sourceSeams": {
@@ -84,7 +89,11 @@
       "packages/oracle/src/providers/application-artifact-source.js",
       "packages/agentic-system/src/qa-contracts.js",
       "docs/living/system/oracle/workflow.md",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+      "packages/agentic-system/src/artifact-manifest.js",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js"
     ],
     "expectedNew": [
       "packages/agentic-system/src/oracle-context-requirements.js",
@@ -97,10 +106,10 @@
     ]
   },
   "implementationSlices": [
-    "A1 — Requirement mapping [AD1, AD2, INV-1]: implement backendContextRequirement and qaContextRequirement per D2-D3 with unit tests for evidence order, EXACT snapshot, itemRefs, budget and pathless-artifact rejection.",
-    "A2 — Oracle path [AD1, AD2, AD3]: implement per-call composition, consumption and projection per D4-D6 and the opt-in branch in oracle.js; tests for COMPLETE projection and every blocking status/reason.",
-    "A3 — Equivalence + manifest [AD3, AD4, INV-2, INV-4]: equivalence test runs compatibility and Oracle paths on shared Backend and QA fixtures, including a createManifestArtifactReader-backed QA fixture with a tampered artifact, and asserts deepEqual outputs or identical blocking.",
-    "A4 — Living truth [AD4]: export the new helpers from index.js, update docs/living/system/oracle/workflow.md to describe the opt-in Oracle path and its budget difference, and run agentic/Oracle/repository regressions."
+    "A1 — Requirement mapping [AD1, AD2, INV-1]: implement backendContextRequirement and qaContextRequirement (D2-D3) in oracle-context-requirements.js. oracle-context-adoption.test.js cases: evidence order/ids match declared order, EXACT snapshot = order revision, itemRefs = [path], budget n/n/1/maxMaterializedBytes, missing/zero/negative maxMaterializedBytes rejected, pathless QA artifact rejected, no undeclared evidence.",
+    "A2 — Oracle path [AD1, AD2, AD3]: implement per-call composition (D4), consumption + OracleContextBlockedError (D5, D11) and projection (D6); add the opt-in branch to resolveBackendContext/resolveQaContext and the D12 pass-through in backend-application.js/qa-application.js. Adoption tests: COMPLETE Backend and QA projections; reader throw => SOURCE_FAILURE block with detail; over-budget => BUDGET_EXHAUSTED block; Worker stub call count 0 on every block. An end-to-end adoption case runs runBackendObjective and runQaObjective with oracleResolution and a stub Worker and asserts the Worker receives the Oracle-projected context.",
+    "A3 — Equivalence + manifest [AD3, AD4, INV-2, INV-4]: oracle-context-equivalence.test.js copies the fixture shape of bb043-artifact-manifest-adapter.test.js (acceptedBackendRun, handoff, createManifestArtifactReader over a temp manifest store) without editing it; asserts deepEqual Backend and QA contexts across paths for direct and manifest-validating readers; changed bytes behind a stable ref block on both paths with ARTIFACT_CONTENT_MISMATCH text present in the Oracle error; default path output equals a golden fixture and constructs no Oracle objects.",
+    "A4 — Living truth [AD4]: export backendContextRequirement, qaContextRequirement, projectBackendContext, projectQaContext and OracleContextBlockedError from index.js; update docs/living/system/oracle/workflow.md (opt-in path, EXACT-only, budget difference, pathless limitation); run test:agentic and npm run verify."
   ],
   "acceptanceCriteria": [
     {
@@ -136,8 +145,9 @@
     },
     {
       "id": "AD4",
-      "statement": "On shared fixtures both paths return deepEqual Backend and QA contexts, the default path without oracleResolution is unchanged, only authorized files change, and the Oracle workflow Living Doc describes the opt-in path and its budget difference.",
+      "statement": "On shared fixtures both paths return deepEqual Backend and QA contexts, runBackendObjective/runQaObjective reach the Oracle path only when oracleResolution is passed, the default path without it is unchanged, only authorized files change, and the Oracle workflow Living Doc describes the opt-in path, its budget difference and the unthreaded durable workflow.",
       "verificationIds": [
+        "adoption",
         "equivalence",
         "agentic-regression",
         "repository"
@@ -225,7 +235,10 @@
         "oracle-context-requirements.js mapping/projection defined here"
       ]
     },
-    "contradiction": "Changed exact-provider provenance shape or facade accounting => PLAN_INPUT_CONTRADICTION."
+    "contradiction": "Changed exact-provider provenance shape or facade accounting => PLAN_INPUT_CONTRADICTION.",
+    "plannedBindings": {
+      "BB-087": "createOracleContextResolver returns exact consumed.materializedBytes, typed UNSATISFIED on provider failure and execute() failures diagnostics"
+    }
   },
   "deliveryContract": {
     "precondition": "BB-087 DONE.",
@@ -283,7 +296,7 @@
       "docs/living/system/oracle/workflow.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "The Oracle workflow Living Doc describes the delivered opt-in Backend/QA Oracle path, its exact-requirement mapping, equivalence with the compatibility path and its budget difference."
+    "statement": "The Oracle workflow Living Doc describes the delivered opt-in Backend/QA Oracle path, its exact-requirement mapping, equivalence with the compatibility path, its budget difference and that the durable Backend -> QA workflow still uses the compatibility path."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
@@ -304,11 +317,13 @@
         1,
         3,
         4,
-        5
+        5,
+        11
       ],
       "sourceRefs": [
         "packages/agentic-system/src/oracle.js",
-        "packages/oracle/src/source-catalog.js"
+        "packages/oracle/src/source-catalog.js",
+        "packages/agentic-system/src/backend-application.js"
       ],
       "sourceAnchors": [
         {
@@ -318,6 +333,10 @@
         {
           "ref": "packages/oracle/src/source-catalog.js",
           "match": "export function createExactRepositoryProvider"
+        },
+        {
+          "ref": "packages/agentic-system/src/backend-application.js",
+          "match": "export async function prepareBackendObjective(rawObjective, { repositoryReader })"
         }
       ],
       "supportingPlanFields": [
@@ -381,11 +400,14 @@
       "decisionIndexes": [
         4,
         6,
-        7
+        7,
+        10
       ],
       "sourceRefs": [
         "docs/living/system/oracle/workflow.md",
-        "packages/agentic-system/src/oracle.js"
+        "packages/agentic-system/src/oracle.js",
+        "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+        "packages/agentic-system/src/artifact-manifest.js"
       ],
       "sourceAnchors": [
         {
@@ -395,6 +417,14 @@
         {
           "ref": "packages/agentic-system/src/oracle.js",
           "match": "export async function resolveQaContext(rawOrder, { artifactReader })"
+        },
+        {
+          "ref": "packages/agentic-system/test/bb043-artifact-manifest-adapter.test.js",
+          "match": "BB-043 changed bytes behind a stable ref fail before QA receives context"
+        },
+        {
+          "ref": "packages/agentic-system/src/artifact-manifest.js",
+          "match": "STORED_REVISION_MISMATCH: \"ARTIFACT_STORED_REVISION_MISMATCH\""
         }
       ],
       "supportingPlanFields": [
@@ -456,6 +486,9 @@
     "A manifest-protected artifact whose bytes were changed blocks on the Oracle path exactly as on the compatibility path.",
     "Declared context larger than maxMaterializedBytes yields BUDGET_EXHAUSTED and blocks; it is never truncated and passed to a Worker.",
     "Oracle and compatibility contexts that differ in path, content, sourceRef, order or QA provenance fail the equivalence test.",
-    "Edits to Oracle package, Worker, schema, application or manifest files fail repository scope verification."
-  ]
+    "Edits to Oracle package, Worker, schema, application or manifest files fail repository scope verification.",
+    "runBackendObjective or runQaObjective called with oracleResolution must deliver the Oracle-projected context to the Worker; ignoring the option fails the end-to-end adoption case.",
+    "Edits to durable-backend-qa.js or composition.js fail repository scope verification."
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-089.readiness-jev-evaluation.json"
 }

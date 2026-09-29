@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-088",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-088.json",
     "hash": "9155a65f570c9444e486ac3567e88c87f8f31bb65353b6ba616d173e7ce4f081"
@@ -32,7 +32,7 @@
     "Every edge and every returned path carries AUTHORITATIVE_SOURCE provenance bound to the exact snapshot and file digest; no edge exists without it.",
     "The same snapshot and inputs always produce the same graphId, edge order and traversal output.",
     "CURRENT graph evidence is consumable only when the graph snapshot equals the authoritative repository snapshot; otherwise it fails closed as STALE or CURRENTNESS_UNVERIFIABLE.",
-    "Traversal is bounded by hops, items and bytes; exceeding a bound truncates deterministically and reports BUDGET_EXHAUSTED rather than expanding."
+    "Traversal is bounded by hops, items and bytes: more paths than maxItems are truncated deterministically with truncated:true, and content beyond the planner byte reservation is rejected by the delivered planner as BUDGET_EXHAUSTED; nothing expands beyond a bound."
   ],
   "architectureDecisions": [
     "D1 — Add packages/oracle/src/context-graph.js exporting buildContextGraph, createAuthoritativeGraphClient, parseContextGraphRef and CONTEXT_GRAPH_EDGES_V1; export them from packages/oracle/src/index.js. No other Oracle source file changes.",
@@ -101,10 +101,10 @@
     ]
   },
   "implementationSlices": [
-    "G1 — Extraction + identity [CG1, INV-1, INV-2]: implement buildContextGraph per D2-D5 with fixture snapshot readers; unit tests for import/re-export parsing, boundary nodes, declared edge files, exclusions and deterministic graphId.",
-    "G2 — Query + traversal [CG2, INV-4]: implement parseContextGraphRef and bounded BFS per D6 and D8; unit tests for both relations, hops 1/2, ordering, maxItems truncation and typed failures.",
-    "G3 — Client + currentness [CG3, INV-3]: implement createAuthoritativeGraphClient per D7 and composition wiring per D9; boundary test resolves CONTEXT_GRAPH evidence through createContextGraphProvider + createSourceCatalog + createRetrievalPlanner + fixed facade, including stale snapshot and missing authority.",
-    "G4 — Real snapshot proof + Living truth [CG4]: boundary test builds the graph from this repository at `git rev-parse HEAD` through a git-backed snapshotReader defined in the test, asserts determinism and AUTHORITATIVE_SOURCE provenance on every edge; add docs/living/system/oracle/context-graph.md and the index export; run Oracle and repository regressions."
+    "G1 — Extraction + identity [CG1, INV-1, INV-2]: implement buildContextGraph per D2-D5. packages/oracle/test/context-graph.test.js uses an in-memory snapshotReader fixture keyed by (revision,path) that throws on any other revision; cases: import, re-export, ../ normalization, out-of-root EXTERNAL_BOUNDARY, dynamic import excluded + listed in limits, bare specifier excluded, declared edge file valid/malformed/unknown relation, repeated build graphId equality, edge sort order.",
+    "G2 — Query + traversal [CG2, INV-4]: implement parseContextGraphRef (D6) and BFS (D8) in the same module; unit cases: IMPORTS vs IMPORTED_BY, hops 1 and 2, hops 0/3 rejected, unknown relation, absent anchor, ordering by (distance,id), maxItems truncation with truncated:true, every path provenance entry AUTHORITATIVE_SOURCE.",
+    "G3 — Client + currentness [CG3, INV-3]: implement createAuthoritativeGraphClient (D7). test/oracle-context-graph-boundary.test.mjs composes createContextGraphProvider({graphClient}) + createSourceCatalog with a CONTEXT_GRAPH snapshot authority (D9) + createRetrievalPlanner + createOracleContextResolver and resolves REQUIRED CONTEXT_GRAPH evidence: CURRENT at matching snapshot => COMPLETE with REVISION and CONTENT_DIGEST validators; authority reporting a newer snapshot => STALE => UNSATISFIED; no authority registered => CURRENTNESS_UNVERIFIABLE => UNSATISFIED; tiny maxMaterializedBytes => BUDGET_EXHAUSTED.",
+    "G4 — Real snapshot proof + Living truth [CG4]: the boundary test defines a git-backed snapshotReader (git ls-tree -r --name-only <sha> -- roots; git show <sha>:<path>) at `git rev-parse HEAD`, builds packages/oracle/src + packages/agentic-system/src twice, asserts equal graphId, zero edges without AUTHORITATIVE_SOURCE and that IMPORTED_BY of packages/oracle/src/context-contract.js returns only files that literally import it. Add the index export and docs/living/system/oracle/context-graph.md; run test:oracle and npm run verify."
   ],
   "acceptanceCriteria": [
     {
@@ -172,7 +172,7 @@
       ]
     },
     {
-      "invariant": "Traversal is bounded by hops, items and bytes; exceeding a bound truncates deterministically and reports BUDGET_EXHAUSTED rather than expanding.",
+      "invariant": "Traversal is bounded by hops, items and bytes: more paths than maxItems are truncated deterministically with truncated:true, and content beyond the planner byte reservation is rejected by the delivered planner as BUDGET_EXHAUSTED; nothing expands beyond a bound.",
       "criterionIds": [
         "CG2",
         "CG3"
@@ -451,5 +451,6 @@
     "More reachable paths than maxItems returns exactly maxItems in deterministic order with truncated:true.",
     "CURRENT evidence resolved against a graph built at an older snapshot is STALE; a composition without a CONTEXT_GRAPH authority is CURRENTNESS_UNVERIFIABLE; REQUIRED evidence then yields UNSATISFIED.",
     "Introducing a graph database, vector store or new package dependency, or editing provider seam/contract/facade files, fails repository scope verification."
-  ]
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-088.readiness-jev-evaluation.json"
 }
