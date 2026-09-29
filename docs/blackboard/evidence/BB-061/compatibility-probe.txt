@@ -1,0 +1,67 @@
+{
+  "backend": {
+    "requirementId": "55b4b141ad7662dd7d154eaeaf3152f2e4fe22ab8b8f37c47b2d8928de2cba93",
+    "resolutionId": "b3b50db90db2a3c28cab5b4638dabf5db1fca2587618f29c986adab384879700",
+    "repository": {
+      "ref": "repo://app",
+      "revision": "commit-123"
+    },
+    "files": [
+      {
+        "path": "src/a.js",
+        "content": "content 0",
+        "sourceRef": "repo://commit-123/src/a.js"
+      },
+      {
+        "path": "src/b.js",
+        "content": "content 1",
+        "sourceRef": "repo://commit-123/src/b.js"
+      }
+    ]
+  },
+  "qa": {
+    "requirementId": "816bde8e7539fa99dbe3ae7506d29105bfc3d7b772cbcde835fd43a7cc209870",
+    "resolutionId": "52f313ed6bcbea94824c21f292f7e96b3f7a8383a43b12978a68b8815999be3e",
+    "upstream": {
+      "workOrderId": "backend-1",
+      "revision": "commit-123",
+      "acceptanceDecision": {
+        "id": "accepted-1",
+        "digest": "sha256:decision"
+      }
+    },
+    "artifacts": [
+      {
+        "ref": "artifact://a",
+        "content": "artifact 0",
+        "sourceRef": "manifest://0",
+        "provenance": {
+          "sourceClass": "APPLICATION_ARTIFACT",
+          "producerWorkOrderId": "backend-1",
+          "acceptanceDecision": {
+            "id": "accepted-1",
+            "digest": "sha256:decision"
+          }
+        },
+        "path": "dist/a.js"
+      },
+      {
+        "ref": "artifact://b",
+        "content": "artifact 1",
+        "sourceRef": "manifest://1",
+        "provenance": {
+          "sourceClass": "APPLICATION_ARTIFACT",
+          "producerWorkOrderId": "backend-1",
+          "acceptanceDecision": {
+            "id": "accepted-1",
+            "digest": "sha256:decision"
+          }
+        },
+        "path": "dist/b.js"
+      }
+    ]
+  }
+}
+
+
+exitCode=0

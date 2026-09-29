@@ -1,0 +1,170 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-062-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-062.json",
+    "hash": "937ca9a51a688be24afa95e707a80c2f9bf8ec52736a949e342d14c2d40329f0"
+  },
+  "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+  "baselineSha": "73c983eeaffc475a00926f2deb6559df292e1df0",
+  "candidateTree": "dd965589c3ab2a6f82a937e9697086637aa3e80b",
+  "verificationRuns": [
+    {
+      "id": "provider-contract",
+      "command": "node --test packages/oracle/test/provider-contract.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/provider-contract.txt",
+      "logHash": "aaad2a06ba0b114bb1c498e84657b5812b767ddd28263905981c410d7aaa6766"
+    },
+    {
+      "id": "planner-unit",
+      "command": "node --test packages/oracle/test/retrieval-planner.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/planner-unit.txt",
+      "logHash": "38b29ea2980d3c262f5161794b6addb5a638db10c2bc5ee2ee30045c25e6bd50"
+    },
+    {
+      "id": "adapter-unit",
+      "command": "node --test packages/oracle/test/provider-adapters.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/adapter-unit.txt",
+      "logHash": "5971bae5eecda3b89d290f3824c2a9585d09ec1c06aed4aeb97321ddce31f7b6"
+    },
+    {
+      "id": "provider-boundary",
+      "command": "node --test test/oracle-provider-boundary.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/provider-boundary.txt",
+      "logHash": "305122111c0c10cecf75fb62f229b8182299358368bef2c28d04ddf8ebdbe240"
+    },
+    {
+      "id": "retrieval-benchmark",
+      "command": "node scripts/oracle-context-intelligence/bb062-retrieval-benchmark.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/retrieval-benchmark.txt",
+      "logHash": "b9c8a5d3ff8f130998084330723ec7d8430dd90636d0400f829bc63a06ec6b24"
+    },
+    {
+      "id": "research-evidence",
+      "command": "node --test test/oracle-provider-boundary.test.mjs --test-name-pattern='evidence|license|dependency|provider-neutral'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/research-evidence.txt",
+      "logHash": "3b5a4eef449d66fca3c9528d4a8f1c99c01c4adbaef7ac5284bba856a5fbb703"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test packages/oracle/test/*.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/oracle-regression.txt",
+      "logHash": "ae06500bc0b78fb4c39632c2082743fd652a5eeb413a3ce2c191b8798e72a34b"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/agentic-regression.txt",
+      "logHash": "13a8b82a51035ac3e908095db0d831a048ff5f6d638072b7c62658e9319d9efe"
+    },
+    {
+      "id": "living-docs",
+      "command": "node --test test/oracle-provider-boundary.test.mjs --test-name-pattern='Living|not delivered|BB-063'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/living-docs.txt",
+      "logHash": "ef7faeaebe4e77f0b2be22a344c29be7a6516c5a6cf7caf7a5f793302528fa3f"
+    },
+    {
+      "id": "oracle-architecture-regression",
+      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc642842741c1498e56b7919bda6a8dd20694014",
+      "logRef": "docs/blackboard/evidence/BB-062/oracle-architecture-regression.txt",
+      "logHash": "cf472056b48b914b21db838213adcfa3c98a1e709264dce47b7e9a9a01ee1327"
+    }
+  ],
+  "claims": [
+    {
+      "id": "PROVIDER_TOPOLOGY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-062/provider-contract.txt",
+        "docs/blackboard/evidence/BB-062/provider-boundary.txt"
+      ]
+    },
+    {
+      "id": "PLANNER",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-062/planner-unit.txt",
+        "docs/blackboard/evidence/BB-062/provider-boundary.txt"
+      ]
+    },
+    {
+      "id": "CURRENTNESS",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-062/provider-contract.txt",
+        "docs/blackboard/evidence/BB-062/adapter-unit.txt"
+      ]
+    },
+    {
+      "id": "RETRIEVAL_EVIDENCE",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-062/retrieval-benchmark.txt"
+      ]
+    },
+    {
+      "id": "GRAPH_DECISION",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-062/provider-boundary.txt",
+        "docs/blackboard/evidence/BB-062/retrieval-benchmark.txt"
+      ]
+    },
+    {
+      "id": "REUSE_DECISION",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-062/provider-boundary.txt",
+        "docs/blackboard/evidence/BB-062/research-evidence.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-062/planner-unit.txt",
+        "docs/blackboard/evidence/BB-062/provider-boundary.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-062/provider-contract.txt",
+        "docs/blackboard/evidence/BB-062/planner-unit.txt",
+        "docs/blackboard/evidence/BB-062/adapter-unit.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-062/planner-unit.txt",
+        "docs/blackboard/evidence/BB-062/provider-boundary.txt"
+      ]
+    }
+  ]
+}

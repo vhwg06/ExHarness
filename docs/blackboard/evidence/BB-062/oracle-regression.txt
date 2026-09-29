@@ -1,0 +1,62 @@
+✔ repository provider reads in requested order and retains source refs (0.694792ms)
+✔ application artifact provider keeps identity and provenance (0.614834ms)
+✔ providers fail closed on absent readers, rejection and malformed results (0.412125ms)
+✔ requirement semantic identity and strict provider-neutral parser (2.373208ms)
+✔ provider-neutral evidence fixtures share one schema (0.178ms)
+✔ resolution binds source currentness provenance content and status (1.525917ms)
+ℹ REQUIRED CURRENT rejects weak timestamp-only validator
+ℹ REQUIRED MISSING -> UNSATISFIED, non-consumable
+ℹ REQUIRED STALE -> UNSATISFIED, non-consumable
+ℹ REQUIRED AMBIGUOUS -> UNSATISFIED, non-consumable
+ℹ REQUIRED BUDGET_EXHAUSTED -> UNSATISFIED, non-consumable
+ℹ REQUIRED CURRENTNESS_UNVERIFIABLE -> UNSATISFIED, non-consumable
+✔ optional partial, required provenance and progression budgets (0.662959ms)
+✔ exact snapshot, itemRef coverage, status and digest are fail closed (0.399708ms)
+✔ budget/currentness evidence: every counter and immutable step ceiling (0.670083ms)
+ℹ items hard budget rejects 5
+ℹ materializedBytes hard budget rejects 4097
+ℹ providerCalls hard budget rejects 5
+ℹ resolutionSteps hard budget rejects 4
+ℹ index 0 -> 1 -> 2 binds exact immutable parent; step 3 rejected
+✔ provider-neutral fixture: semantic-code repository CURRENT (0.463042ms)
+ℹ {"kind":"REPOSITORY","mode":"CURRENT","requirementId":"577f664b9e763fd9b81068530c3a51b747153bbaca2e8da7a81314608e79eb65","resolutionId":"705a4ef6593ec63ce9b156d805e7c81ac6f73c6ac21198f6bebbd4a6d8e1b2d2","provenance":[]}
+✔ provider-neutral fixture: lexical-search repository CURRENT (0.132083ms)
+ℹ {"kind":"REPOSITORY","mode":"CURRENT","requirementId":"552a21f94213e7ea26251f9ad72cbf4b31876133e2432a8712ab4a87e96fbcca","resolutionId":"9ffaeed0ba0b9d2e815d2383e8551219bd4a8f2813b5ffa283459482f283e503","provenance":[]}
+✔ provider-neutral fixture: context-graph relationship CURRENT (0.141917ms)
+ℹ {"kind":"CONTEXT_GRAPH","mode":"CURRENT","requirementId":"0877f5061455e3b8bc4a4a70cf481d624dce112c6e100170e4a3a229a7065af0","resolutionId":"a77c2d442d0698b352a83aed0991ef8f3d20216e2bc2d77778085187fd9ae43e","provenance":[]}
+✔ provider-neutral fixture: accepted application-artifact EXACT (0.301625ms)
+ℹ {"kind":"APPLICATION_ARTIFACT","mode":"EXACT","requirementId":"972ebf44a3184b107f12aca75d0ee4878bb81664a993a8e58cbb45ef093f895b","resolutionId":"5a2aeacf78ab95de277e54b7e74c1ce1573726ac7beb8c7b19caf10e28fbae33","provenance":[{"kind":"PRODUCER_WORK_ORDER","ref":"work-7"},{"kind":"ACCEPTANCE_DECISION","ref":"accepted-7","digest":"sha256:decision"}]}
+✔ lexical adapter binds indexed version and stale head fails authoritative check (2.879834ms)
+ℹ Zoekt-like indexed old revision is rejected against authoritative new head
+✔ semantic adapter handles unsupported language, missing and ambiguous symbols (0.520292ms)
+ℹ unsupported language -> UNSUPPORTED; deleted symbol -> empty; ambiguous identity -> AMBIGUOUS
+✔ structural map consumes existing typed edges and obeys item/byte bounds (0.291ms)
+✔ graph path needs authoritative provenance and external CURRENT needs validator (0.236792ms)
+ℹ graph candidate lacks AUTHORITATIVE_SOURCE; external/MCP response weak-only validator rejected
+✔ provider timeout is recorded as explicit source failure under reserved call (1.074042ms)
+ℹ {"reservedCalls":1,"unresolved":[{"evidenceId":"e","reason":"SOURCE_FAILURE"}],"failures":[{"evidenceId":"e","providerId":"lexical-search","reason":"SOURCE_FAILURE","detail":"index timeout"}]}
+✔ renamed exact item cannot masquerade as required source path (0.171ms)
+✔ strict provider descriptor and candidate reject authority and missing semantic evidence (1.891708ms)
+✔ SourceCatalog requires one authoritative current snapshot and rejects stale index (0.986125ms)
+ℹ indexed old snapshot rejected against authoritative head
+✔ exact repository/artifact wrappers retain source refs and lineage (0.326584ms)
+✔ authoritative content digest can validate CURRENT without conflating digest and revision (0.214792ms)
+✔ exact provider may read CURRENT only with injected head lookup and independent catalog authority (0.213625ms)
+✔ deterministic plan reserves exact work in declared file order before invocation (1.676292ms)
+ℹ {"work":[{"providerId":"exact","operation":"READ_EXACT","reservedBudget":{"providerCalls":1,"items":1,"materializedBytes":8192},"itemRef":"a.js"},{"providerId":"exact","operation":"READ_EXACT","reservedBudget":{"providerCalls":1,"items":1,"materializedBytes":8192},"itemRef":"b.js"}],"underBudget":[{"evidenceId":"e","reason":"BUDGET_EXHAUSTED"}]}
+✔ semantic repository composes symbol and lexical; unsupported symbol falls back (1.500417ms)
+ℹ {"orderedOperations":["LOOKUP_SYMBOL","SEARCH_LEXICAL"],"reserved":{"providerCalls":2,"items":2,"materializedBytes":16384,"resolutionSteps":1},"failures":[{"evidenceId":"e","providerId":"semantic","reason":"UNSUPPORTED","detail":"language unsupported"}],"finalCandidate":{"kind":"REPOSITORY","ref":"repo","snapshotRef":"head","itemRef":"a.js"}}
+✔ graph and external kinds route only to their typed providers (0.237541ms)
+ℹ graph/external/repository route by matching source kind without application scheduling
+✔ budget and missing provider fail closed before source calls (0.171375ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.945958
+
+
+exitCode=0

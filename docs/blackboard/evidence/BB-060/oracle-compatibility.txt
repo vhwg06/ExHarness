@@ -1,0 +1,38 @@
+✔ BB-043 producer capture binds accepted artifacts without persisting payload bodies (1.569875ms)
+✔ BB-043 producer capture requires exact accepted artifact coverage and ACCEPT completion (0.250833ms)
+✔ BB-043 fresh reader reconstructs a valid manifest and preserves existing QA context shape (12.531042ms)
+✔ BB-043 changed bytes behind a stable ref fail before QA receives context (2.49425ms)
+✔ BB-043 missing payload is distinct from manifest/provenance failure and preserves source cause (2.827416ms)
+✔ BB-043 missing manifest fails closed without falling back to the underlying reader (1.14675ms)
+✔ BB-043 producer work-order, revision and acceptance-decision mismatches remain distinct failures (3.258167ms)
+✔ BB-043 stored revision and explicit unavailable metadata fail closed before the underlying read (3.7635ms)
+✔ BB-043 partial manifest rejects the missing artifact instead of accepting an unvalidated read (2.30075ms)
+✔ BB-043 conflicting manifests for one exact provenance fail closed (2.187917ms)
+✔ Backend compatibility adapter parses order, reads in order and validates context (1.670709ms)
+✔ QA compatibility adapter preserves application artifact provenance (0.522666ms)
+✔ S2 resolves only the Backend files declared by the concrete order (0.925208ms)
+✔ S2 resolution failure names the declared file and source boundary (0.372542ms)
+✔ S3 rejects context that does not exactly satisfy the concrete order (0.25475ms)
+✔ S3 BackendWorker executes the concrete work through ExHarness and requires promotion for APPLIED (8.566875ms)
+✔ S3 rejects an APPLIED result that did not advance ExHarness lineage (2.302708ms)
+✔ S4 runs one Backend objective end-to-end while Wave-B completion refuses unsupported acceptance (3.490875ms)
+✔ S7 adds a real non-mutating QA role with role-specific evidence semantics (16.975083ms)
+✔ S7 keeps QA non-mutating instead of forcing Backend Worker semantics into a generic Worker (2.551833ms)
+✔ S7 keeps QA issue handling role-specific and deterministic (4.237708ms)
+✔ S8 Backend -> QA handoff stores artifact refs and acceptance provenance, not artifact payloads (0.099833ms)
+✔ S8 Oracle dereferences only declared internal application artifacts and preserves provenance (0.166291ms)
+✔ S8 reports the internal artifact source boundary on dereference failure (0.152333ms)
+✔ Wave C composes accepted Backend work into QA through ref-only artifact handoff (8.999708ms)
+✔ Wave C does not dispatch QA when Backend completion is not accepted (3.320125ms)
+✔ S8 rejects a QA semantic need when the accepted Backend handoff lacks its required artifact (0.126125ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 119.453834
+
+
+exitCode=0

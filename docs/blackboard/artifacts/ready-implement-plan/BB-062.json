@@ -89,6 +89,9 @@
       "packages/oracle/test/retrieval-planner.test.js",
       "packages/oracle/test/provider-adapters.test.js",
       "test/oracle-provider-boundary.test.mjs"
+    ],
+    "expectedModified": [
+      "test/oracle-context-intelligence-architecture.test.mjs"
     ]
   },
   "sourceScope": {
@@ -107,7 +110,8 @@
       "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
       "scripts/**",
       "test/**",
-      "package.json"
+      "package.json",
+      "test/oracle-context-intelligence-architecture.test.mjs"
     ],
     "write": [
       "packages/oracle/**",
@@ -117,7 +121,8 @@
       "docs/living/system/oracle/state.md",
       "docs/living/system/oracle/semantics.md",
       "docs/living/system/oracle/workflow.md",
-      "package.json"
+      "package.json",
+      "test/oracle-context-intelligence-architecture.test.mjs"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
@@ -131,9 +136,9 @@
     "S2 [CATALOG,CURRENTNESS,INV-2] — Add SourceCatalog with explicit composition-time provider registrations plus one authoritative snapshot authority per applicable source namespace. Fail on duplicate provider ids/authority ambiguity. For CURRENT, compare provider/index snapshotRef to authoritative snapshot; self-reported index freshness is insufficient.",
     "S3 [ADAPTERS,PROVIDER_NEUTRALITY] — Add injected lexical-search and semantic-code adapters. Lexical adapter accepts a Zoekt-like search client and normalizes indexed repository/version/file/snippet results. Semantic adapter accepts a symbolClient with workspace-symbol/lookup/reference capabilities. Neither adapter imports external projects or exposes their protocol/tool commands above Oracle.",
     "S4 [STRUCTURAL_GRAPH_EXTERNAL] — Add Aider-inspired structural-map projection over normalized symbol/reference edges; add typed context-graph client seam and external-source transport seam. Structural projection is bounded and cannot source-discover independently. Graph/external candidates require authoritative provenance/currentness paths.",
-    "S5 [PLANNER,BUDGET,INV-1,INV-3] — Add deterministic RetrievalPlanner producing bounded RetrievalWork. Reserve provider-call/item/byte budget before invocation. Exact item refs use exact providers; repository semantic needs compose semantic+lexical providers within budget; unsupported semantic lookup may fall back to lexical; structural refinement consumes existing edges; graph/external work is selected only for matching source kinds. No model call or Application scheduling primitive is used.",
+    "S5 [PLANNER,BUDGET,INV-1,INV-3] — Add deterministic RetrievalPlanner producing bounded RetrievalWork. Reserve provider-call/item/byte budget before invocation. Exact item refs use exact providers; repository semantic needs compose semantic+lexical providers within budget; unsupported semantic lookup may fall back to lexical; structural refinement consumes existing edges; graph/external work is selected only for matching source kinds. No model call or Application scheduling primitive is used. In declared evidence order, select compatible registered operations by source kind and stable provider id, reserve one call and explicit item/byte caps from remaining budget for each emitted immutable RetrievalWork, and report BUDGET_EXHAUSTED before invocation if no reservation fits. The unit trace asserts work order, reservations, fallbacks and zero lifecycle/model operations.",
     "S6 [BENCHMARK] — Add bb062-retrieval-benchmark.mjs with the predeclared 8-file corpus and identical Q1-Q4 ground truth for FOUR arms: lexical, semantic/symbol, structural-map and typed graph/context. The typed-graph fixture must derive declared import/contract relations rather than use manually ranked answers. Report every arm/attempt, Recall@3, Precision@3, MRR, materialized bytes, latency, setup/update cost proxy and exact provenance/currentness coverage. Reference research results: lexical Recall@3=0.792, semantic=0.875, structural=0.750, typed graph/context=1.000; structural is not promoted to primary unless it matches/exceeds lexical. Separately retain the four cross-source authority queries and require exact answers with >=0.95 mean byte reduction.",
-    "S7 [NEGATIVE_INTEGRATION] — Add provider/planner/boundary tests for stale index versus authoritative head, unsupported language, deleted/renamed/ambiguous symbol, budget exhaustion, provider timeout, graph candidate without authoritative path, external/MCP response without validator, duplicate registrations, caller provider-command leakage and forbidden Oracle authority.",
+    "S7 [NEGATIVE_INTEGRATION] — Add provider/planner/boundary tests for stale index versus authoritative head, unsupported language, deleted/renamed/ambiguous symbol, budget exhaustion, provider timeout, graph candidate without authoritative path, external/MCP response without validator, duplicate registrations, caller provider-command leakage and forbidden Oracle authority. Rebase the existing Oracle architecture guard for the explicit provider/planner exports while retaining forbidden-import and lifecycle checks.",
     "S8 [LIVING_TRUTH] — Update Oracle Living Docs with SourceCatalog/provider/planner topology and exact limitations. Explicitly state that Zoekt/LSP/Graphiti/Cognee runtimes are not bundled, graph persistence/durable ContextResolution lifecycle is not delivered, and model-assisted planning is not delivered."
   ],
   "acceptanceCriteria": [
@@ -298,6 +303,10 @@
     {
       "id": "living-docs",
       "command": "node --test test/oracle-provider-boundary.test.mjs --test-name-pattern='Living|not delivered|BB-063'"
+    },
+    {
+      "id": "oracle-architecture-regression",
+      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs"
     }
   ],
   "researchGaps": [],

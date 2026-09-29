@@ -1,0 +1,14 @@
+export { readRepositorySources } from "./providers/repository-source.js";
+export { readApplicationArtifacts } from "./providers/application-artifact-source.js";
+export { defineContextRequirement, defineContextResolution, contextRequirementId, contextItemDigest, contextMaterializationId, contextResolutionId, assertConsumableContextResolution } from './context-contract.js';
+export { ProviderOperation, ProviderFailureReason, ProviderFailure, defineProviderDescriptor, defineProviderCandidate } from './provider-contract.js';
+export { createSourceCatalog, createExactRepositoryProvider, createExactArtifactProvider } from './source-catalog.js';
+export { createRetrievalPlanner } from './retrieval-planner.js';
+export { createLexicalSearchProvider } from './providers/lexical-search.js';
+export { createSemanticCodeProvider } from './providers/semantic-code.js';
+export { projectStructuralMap, createStructuralMapProvider } from './providers/structural-map.js';
+export { createContextGraphProvider } from './providers/context-graph.js';
+export { createExternalSourceProvider } from './providers/external-source.js';
+export { SourceObservationState, defineSourceObservation, observationDigest, defineResolverConfiguration, resolverConfigDigest, defineDerivationInput, reuseKey, defineContextResolutionReceipt, receiptId, evaluateReceiptCurrentness, isReusableResolution, createDurableResolutionCoordinator, DurabilityFailure } from './resolution-durability.js';
+export { createResolutionStore, ResolutionStoreError } from './resolution-store.js';
+export { createOracleContextResolver } from './context-resolution.js';

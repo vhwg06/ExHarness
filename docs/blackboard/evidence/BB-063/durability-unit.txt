@@ -1,0 +1,20 @@
+✔ reuse identity separates config/source/derivation without touching resolutionId (1.802417ms)
+ℹ reuseKey 0a69b2fa7b8c stable; source/config/derivation change selects different key
+✔ lineage and currentness fences fail closed on stale/unverifiable evidence (1.4755ms)
+ℹ COMPLETE reusable; A->B reports changed e; lineage without authoritative observation rejected
+✔ partial reuse needs strongly fenced optional absence; unsatisfiable never reusable (5.981708ms)
+✔ graph-derived items close over authoritative leaves; weak/malformed provenance fails (0.483167ms)
+ℹ graph TRAVERSE_GRAPH closes over authoritative leaf; REQUIRED CURRENT with only WEAK validator is not reusable; PRESENT without snapshotRef is malformed
+✔ coordinator double-fences pre/post observations and never auto-retries (1.922625ms)
+ℹ pre/post fences match on reuse; A->B selects different key; mid-resolve drift fails STALE_DURING_RESOLUTION without hidden retry
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 56.124542
+
+
+exitCode=0

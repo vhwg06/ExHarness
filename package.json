@@ -17,9 +17,10 @@
     "eval:blackboard-jev-stability": "node scripts/blackboard-jev-stability.mjs",
     "test:blackboard-jev": "node --test test/blackboard-jev.test.mjs",
     "verify:blackboard-delivery-contracts": "node scripts/blackboard-delivery-verify.mjs",
-    "test": "npm run test:core && npm run test:agentic",
+    "test": "npm run test:core && npm run test:agentic && npm run test:oracle",
     "test:core": "node --test packages/core-harness/test/*.test.js",
     "test:agentic": "node --test packages/agentic-system/test/*.test.js",
+    "test:oracle": "node --test packages/oracle/test/*.test.js test/oracle-context-intelligence-architecture.test.mjs",
     "example": "node examples/reference-harness.mjs",
     "benchmark": "node benchmarks/kernel-benchmark.mjs",
     "eval:reference": "node scripts/reference-eval.mjs",
@@ -46,6 +47,7 @@
     "verify:blackboard-work-graph": "node scripts/blackboard-work-graph.mjs && npm run verify:blackboard-delivery-contracts && npm run verify:blackboard-state && npm run test:blackboard-work-graph",
     "resolve:blackboard-task-context": "node scripts/blackboard-task-context-resolver.mjs",
     "project:blackboard-state": "node scripts/blackboard-state-project.mjs --write",
-    "verify:blackboard-state": "node scripts/blackboard-state-project.mjs --verify"
+    "verify:blackboard-state": "node scripts/blackboard-state-project.mjs --verify",
+    "benchmark:oracle-retrieval": "node scripts/oracle-context-intelligence/bb062-retrieval-benchmark.mjs"
   }
 }

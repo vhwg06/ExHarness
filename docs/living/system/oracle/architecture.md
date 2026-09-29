@@ -1,20 +1,32 @@
 # Oracle current architecture
 
-Oracle is the concrete infrastructure boundary between application-declared context needs and source IO.
+Oracle source IO now lives in the private infrastructure package `@exharness/oracle`. The Agentic Application compatibility adapter parses its WorkOrders and validates its context schemas; the package reads the requested sources through injected readers.
 
 ```text
 BackendWorkOrder.requiredFiles
         -> resolveBackendContext
+        -> @exharness/oracle.readRepositorySources
         -> repositoryReader
         -> BackendContext
 
 QaWorkOrder.requiredArtifacts
         -> resolveQaContext
+        -> @exharness/oracle.readApplicationArtifacts
         -> artifactReader
         -> QaContext
 ```
 
-Application schemas/contracts stay above the source adapters. Oracle performs pull/adapt/assemble and then validates using those application-owned schemas.
+Application schemas/contracts stay above the source adapters. Oracle providers perform concrete reads and preserve source references; the compatibility adapter validates using Application-owned schemas.
+
+## Semantic contract and runtime seam
+
+Application semantic need -> ContextRequirement -> injected Core pre-prompt resolver -> ContextResolution -> Core context projection -> `renderAgentContext`. The contract, Core port, explicit SourceCatalog and deterministic RetrievalPlanner are implemented; production wiring remains future work. A development-only compatibility probe exercises the contract with fixed Backend/QA source fixtures. Core imports no Oracle implementation, and Oracle imports neither Core nor Agentic Application. Oracle has no acceptance, publication, scheduling or recovery authority.
+
+The two moved source loops are compatibility providers, not the final Oracle API. Retained findings are physical source ownership, required-source failure behavior and provenance. The earlier thin-IO-only architecture and assumption that the existing Application adapter was sufficient for runtime context intelligence are superseded. Aider's bounded repo map informs the structural projector; Serena/SolidLSP symbols and Zoekt search inform injected adapters. No external backend is bundled. Serena application is GPL-3.0-or-later, while SolidLSP is MIT.
+
+`@exharness/oracle` exports the ContextRequirement/ContextResolution v1 semantic schema and identity helpers. Core accepts requirement blocks through an injected resolver and does not import Oracle. SourceCatalog registers strict Oracle-internal provider descriptors and one authoritative current-snapshot observer per namespace. RetrievalPlanner emits bounded provider work before source calls. Automatic progressive re-resolution is not implemented; durable resolution cache is implemented as immutable content-addressed objects plus no-overwrite exact-key reuse slots.
+
+Durable reuse binds requirement, semantics-affecting resolver configuration and authoritative source/derivation state into reuseKey; ContextResolutionReceipt binds reuseKey, requirement, resolution, materialization, source observations, derivation inputs and per-item lineage. Cache-hit and fresh paths both require matching pre/post authoritative observations. There is no mutable current head, no SQLite dependency, no garbage-collection correctness, and no power-loss guarantee beyond the implemented filesystem sync contract.
 
 The two implemented source classes intentionally remain distinct because repository reads and application-produced artifact lookup carry different identity/provenance semantics.
 
@@ -24,4 +36,8 @@ Current source has **no MCP adapter** and no MCP-owned Oracle lifecycle. MCP req
 
 Any later concrete MCP-backed source must remain a source/capability adapter below the application-owned context/work lifecycle boundary. MCP protocol support alone does not create a third Oracle source class.
 
-Current source contains no generic source registry, generic Resolver interface, provider lifecycle, automatic refresh, MCP adapter framework or retrieval engine.
+Current source has a composition-time SourceCatalog and deterministic RetrievalPlanner. It has no background provider lifecycle, automatic refresh, MCP adapter framework, graph database or model-assisted planner.
+
+## Delivered foundation facade
+
+`createOracleContextResolver` composes delivered requirement parsing, authoritative pre-observation, optional exact-key reuse, deterministic planner plus provider execution, candidate validation, materialization, post-observation fencing and optional receipt publication behind the existing Core injected resolver port. `ORACLE_FOUNDATION_PROBE_V1` exercises repository CURRENT plus manifest-protected artifact paths with budget and reuse evidence. `O0_STATIC_CONTEXT_CONTROL` versus foundation comparison freezes non-Oracle factors with UNKNOWN accounting. Graph productization, planner optimization, progressive runtime, adaptive budgeting, async interaction and live profile acceptance remain not delivered.

@@ -1,0 +1,59 @@
+{
+  "kind": "ORACLE_CURRENTNESS_PROBE",
+  "version": 1,
+  "attempts": [
+    {
+      "id": "repo-A-A",
+      "ok": true,
+      "detail": "reuseKey ba1107245437 reused"
+    },
+    {
+      "id": "repo-A-B",
+      "ok": true,
+      "detail": "A->B selects different key 10d1d8894b50"
+    },
+    {
+      "id": "manifest-replay",
+      "ok": true,
+      "detail": "manifest artifact-manifest://sha2 replay binds producer/revision/acceptance/content"
+    },
+    {
+      "id": "index-equal",
+      "ok": true,
+      "detail": "indexed snapshot equals authority"
+    },
+    {
+      "id": "index-mismatch",
+      "ok": true,
+      "detail": "stale reason: e: snapshot idx1 -> idx2"
+    },
+    {
+      "id": "graph-lineage",
+      "ok": true,
+      "detail": "graph item closes over authoritative leaf"
+    },
+    {
+      "id": "optional-stable",
+      "ok": true,
+      "detail": "PARTIAL with strongly fenced optional absence is reusable"
+    },
+    {
+      "id": "optional-unstable",
+      "ok": true,
+      "detail": "weak optional absence is not reusable"
+    },
+    {
+      "id": "provider-failure",
+      "ok": true,
+      "detail": "UNSATISFIED partial-provider failure publishes no slot"
+    },
+    {
+      "id": "concurrent-refresh",
+      "ok": true,
+      "detail": "20 publishers converge to one exact-key slot"
+    }
+  ]
+}
+
+
+exitCode=0

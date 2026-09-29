@@ -7,6 +7,7 @@ import {
   defineContextSelection,
   renderAgentContext
 } from "./context.js";
+import { defineContextRequirementBlock, resolveContextRequirementBlocks } from './context-resolution.js';
 import { defineJudgment, judgmentView } from "./judgment.js";
 import {
   createModelRegistry,
@@ -84,6 +85,8 @@ export function createAgentRuntime({
   agentEventStore = createAgentEventStore(),
   turnEventStore = createTurnEventStore(),
   contextBlocks = [],
+  contextRequirementBlocks = [],
+  contextResolver = null,
   contextPolicy = {},
   models = [],
   model = null,
@@ -180,6 +183,13 @@ export function createAgentRuntime({
     baseContextBlocks.set(block.name, block);
   }
 
+  const baseRequirementBlocks = new Map();
+  for (const definition of contextRequirementBlocks) {
+    const block = defineContextRequirementBlock(definition);
+    invariant(!baseContextBlocks.has(block.name) && !baseRequirementBlocks.has(block.name), `duplicate context block: ${block.name}`);
+    baseRequirementBlocks.set(block.name, block);
+  }
+
   const baseCapabilities = new Map();
   for (const definition of capabilities) {
     const capability = normalizeCapability(definition);
@@ -192,7 +202,7 @@ export function createAgentRuntime({
     const judgment = defineJudgment(definition);
     invariant(!baseJudgments.has(judgment.name), `duplicate judgment: ${judgment.name}`);
     for (const blockName of judgment.context.blocks) {
-      invariant(baseContextBlocks.has(blockName), `judgment ${judgment.name} references unknown context block: ${blockName}`);
+      invariant(baseContextBlocks.has(blockName) || baseRequirementBlocks.has(blockName), `judgment ${judgment.name} references unknown context block: ${blockName}`);
     }
     baseJudgments.set(judgment.name, judgment);
   }
@@ -320,6 +330,7 @@ export function createAgentRuntime({
     const turnAwareContext = selectedStrategy.turnAwareContext === true;
     let resolvedModelRoute = null;
     let latestPromptContext = null;
+    let projectedRequirementBlocks = [];
     const callResourceRefs = [];
     const callLiveObjectEntries = [];
 
@@ -342,6 +353,12 @@ export function createAgentRuntime({
     recordRuntimeEvent(AgentEventKind.TASK, callId, judgment, { input: runInput });
 
     try {
+      projectedRequirementBlocks = await resolveContextRequirementBlocks({
+        blocks: [...baseRequirementBlocks.values()],
+        selectedNames: resolvedSelection.blocks,
+        resolver: contextResolver,
+        metadata: { callId, judgment, input: runInput, context: runContext }
+      });
       resolvedModelRoute = await resolveRunModel(selectedStrategy, invocationModel, runtimeContract.model ?? null);
       for (const resource of resolvedCallResources) {
         callResourceRefs.push(resolvedResourceRegistry.register(resource, { callId }));
@@ -356,7 +373,7 @@ export function createAgentRuntime({
 
       if (!turnAwareContext) {
         latestPromptContext = await renderAgentContext({
-          blocks: [...baseContextBlocks.values()],
+          blocks: [...baseContextBlocks.values(), ...projectedRequirementBlocks],
           selection: resolvedSelection,
           policy: resolvedContextPolicy,
           canonicalEvents: priorAgentEvents,
@@ -590,7 +607,7 @@ export function createAgentRuntime({
         const before = beginTurn({ reportedTurn, model });
         try {
           latestPromptContext = await renderAgentContext({
-            blocks: [...baseContextBlocks.values()],
+            blocks: [...baseContextBlocks.values(), ...projectedRequirementBlocks],
             selection: resolvedSelection,
             policy: resolvedContextPolicy,
             canonicalEvents: currentTurnHistoryEvents(),
@@ -792,7 +809,7 @@ export function createAgentRuntime({
     },
 
     contextBlocks() {
-      return Object.freeze([...baseContextBlocks.values()].map(contextBlockView));
+      return Object.freeze([...baseContextBlocks.values(), ...baseRequirementBlocks.values()].map(contextBlockView));
     },
 
     contextPolicy() {

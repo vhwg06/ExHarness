@@ -1,0 +1,212 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-060-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-060",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-060.json",
+      "hash": "22a9d8e12c982b794e8b9333b3245ab0c326383bb050c8f37e1edbb29dc185ab"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-060.json",
+      "hash": "291acfe4a48cb6f705c921af2ec5960516ab95b176c2233e3d509046c194cd0b"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-060.implementation-result.json",
+      "hash": "fdbaa64477a58c59299031865cbae5772aae00f590b076281d258c76dbf6618a"
+    },
+    "candidateSha": "77b57bb98cc796d650c3c799c6e70ce79f25804f",
+    "candidateTree": "4eb0c0d27b0b2359f6a34c1dc7022c4c824c7070",
+    "baselineSha": "2fa41d94f84f86f20ae612dd9caad0b5d861b13c"
+  },
+  "stateHash": "f0126db86e70d8c0c7f5b3d982d8af84b70da17bf13cf7d2cdc36a5006574142",
+  "specHash": "142aa9a101eed3a876e1b229835c58912e7d8884b94ecc6e35d74ebb8a418e6f",
+  "cacheKey": "deb987fd300a047f6f42bedf4289b327ec201cbe303e0c5b1b40e5f91dbbb591",
+  "model": "jev-1.13.0",
+  "answers": {
+    "RUNTIME_PATH": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.85,
+      "probabilities": {
+        "SATISFIED": 0.89,
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "INSUFFICIENT_EVIDENCE": 0.08,
+        "IMPLEMENTATION_DEFECT": 0.01
+      }
+    },
+    "PHYSICAL_OWNERSHIP": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.89,
+      "probabilities": {
+        "SATISFIED": 0.93,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.05,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "COMPATIBILITY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.65,
+      "probabilities": {
+        "SATISFIED": 0.73,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0.05,
+        "INSUFFICIENT_EVIDENCE": 0.21
+      }
+    },
+    "REBOUND_SEMANTICS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.96,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.02,
+        "SATISFIED": 0.96,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "EXTERNAL_EVIDENCE": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.27,
+      "probabilities": {
+        "SATISFIED": 0.45,
+        "INSUFFICIENT_EVIDENCE": 0.4,
+        "IMPLEMENTATION_DEFECT": 0.12,
+        "PLAN_INPUT_CONTRADICTION": 0.03
+      }
+    },
+    "PROTOTYPE_HANDOFF": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.71,
+      "probabilities": {
+        "SATISFIED": 0.78,
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "IMPLEMENTATION_DEFECT": 0.09,
+        "INSUFFICIENT_EVIDENCE": 0.11
+      }
+    },
+    "INV-1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.73,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.17,
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "SATISFIED": 0.8,
+        "IMPLEMENTATION_DEFECT": 0.01
+      }
+    },
+    "INV-2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.35,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "SATISFIED": 0.52,
+        "IMPLEMENTATION_DEFECT": 0.09,
+        "INSUFFICIENT_EVIDENCE": 0.38
+      }
+    },
+    "INV-3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.82,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "SATISFIED": 0.86,
+        "INSUFFICIENT_EVIDENCE": 0.11
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.69,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.09,
+        "PLAN_INPUT_CONTRADICTION": 0.08,
+        "IMPLEMENTATION_DEFECT": 0.06,
+        "SATISFIED": 0.77
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 106567,
+    "output_tokens": 729
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 10,
+    "latencyMs": 3929.6660410000004,
+    "payloadBytes": 104215,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_ATOMIC_QUESTIONS_V1",
+      "manifest": [
+        {
+          "id": "RUNTIME_PATH",
+          "payloadHash": "6c9d0b466600fdde47e06207daa8fbcc9d10b9b302cc505f1ee35784563f66ac",
+          "payloadBytes": 35720
+        },
+        {
+          "id": "PHYSICAL_OWNERSHIP",
+          "payloadHash": "4d01011fd626814f2de26761338938d45e38aa6272b6f6e2b8bd9ab2cb158aa3",
+          "payloadBytes": 35492
+        },
+        {
+          "id": "COMPATIBILITY",
+          "payloadHash": "84412c3c5ef2070a3d12972e95a02883795dddfa5508d139b9bdef164df57461",
+          "payloadBytes": 56664
+        },
+        {
+          "id": "REBOUND_SEMANTICS",
+          "payloadHash": "f5de205385f11e050c37aa4517e9a2f17ee5bae3996f7ac69c25c3f91b87058c",
+          "payloadBytes": 36278
+        },
+        {
+          "id": "EXTERNAL_EVIDENCE",
+          "payloadHash": "cf5d62e73044746358b6ea1a3ea090032f5f600fa4f13eb41b0d179f80e78957",
+          "payloadBytes": 34333
+        },
+        {
+          "id": "PROTOTYPE_HANDOFF",
+          "payloadHash": "bf77ab1b4cf52c94944fc679ee7e04756b33e0f136898a3dca0e4d329aa99c6c",
+          "payloadBytes": 32707
+        },
+        {
+          "id": "INV-1",
+          "payloadHash": "10d4edd9412b6a336014e06147a3e6488412c585ffceaaa7b684ade78513337a",
+          "payloadBytes": 33277
+        },
+        {
+          "id": "INV-2",
+          "payloadHash": "cf3a3c9b81b769597338a7e9a87148a3243b34c022ee3602d8a0c41f04cb186b",
+          "payloadBytes": 35464
+        },
+        {
+          "id": "INV-3",
+          "payloadHash": "63a2639527df8ea343f83a6aa948b5912b1db078d1620cbea552894c664d6ff9",
+          "payloadBytes": 30005
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "e59062c3db9073f4ba0c805349c7cca16b096207f51ca836c659d9333d69ba7c",
+          "payloadBytes": 16546
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}

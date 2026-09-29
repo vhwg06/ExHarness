@@ -1,0 +1,161 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-063-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-063.json",
+    "hash": "50b11d380b6ad28a3d401e99041808db11241cf91344ee63ddef5fa4c51c54f5"
+  },
+  "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+  "baselineSha": "a4284aefe569989f87c455eda6f42205e19307fb",
+  "candidateTree": "bc15a88bf95734b99dc92f90f2823a5d0f39c6b6",
+  "verificationRuns": [
+    {
+      "id": "durability-unit",
+      "command": "node --test packages/oracle/test/resolution-durability.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+      "logRef": "docs/blackboard/evidence/BB-063/durability-unit.txt",
+      "logHash": "5324730b9b8e0463a36bbf0122996688b7ef6e6cde104f6042ef10d1925074d0"
+    },
+    {
+      "id": "store-unit",
+      "command": "node --test packages/oracle/test/resolution-store.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+      "logRef": "docs/blackboard/evidence/BB-063/store-unit.txt",
+      "logHash": "5fadc5ee516299a2a549a9159bfe04eac82487396f193732963e3650ce33442f"
+    },
+    {
+      "id": "currentness-probe",
+      "command": "node scripts/oracle-context-intelligence/bb063-currentness-probe.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+      "logRef": "docs/blackboard/evidence/BB-063/currentness-probe.txt",
+      "logHash": "2e321c74ba15d6aa6264f2b32ebb80f4f0fea2bbd7f8197244179fe07d8cd2e1"
+    },
+    {
+      "id": "integration-durability",
+      "command": "node --test test/oracle-context-resolution-durability.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+      "logRef": "docs/blackboard/evidence/BB-063/integration-durability.txt",
+      "logHash": "b002d485bda336e8386aa0e978c0935a16133d852851f8f169e4dee3be7acc4b"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+      "logRef": "docs/blackboard/evidence/BB-063/agentic-regression.txt",
+      "logHash": "e7c69889d34e622e83924559206d9bb85f1a7382823088983e5fbd9ea03993de"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test packages/oracle/test/*.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+      "logRef": "docs/blackboard/evidence/BB-063/oracle-regression.txt",
+      "logHash": "1f0b92945f4fefaa0d2a011f61918cac7e9d68ac5f47d2e58db2444fd447c007"
+    },
+    {
+      "id": "research-evidence",
+      "command": "node --test test/oracle-context-resolution-durability.test.mjs --test-name-pattern='evidence|store|lock|sqlite|content-addressed'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+      "logRef": "docs/blackboard/evidence/BB-063/research-evidence.txt",
+      "logHash": "e91463b09a7c63dd73b3a41f504ecc453fafcd4089af6f3a05b915d0a7a59abc"
+    },
+    {
+      "id": "living-docs",
+      "command": "node --test test/oracle-context-resolution-durability.test.mjs --test-name-pattern='Living|not delivered|BB-064'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+      "logRef": "docs/blackboard/evidence/BB-063/living-docs.txt",
+      "logHash": "8dbc9bf7ad2b87495221d1b8d652b19775053e59e68e8b22157c9acf08ac54cf"
+    },
+    {
+      "id": "oracle-architecture-regression",
+      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "a0f61193d687ea10f5456b30f3f4eeffa113780c",
+      "logRef": "docs/blackboard/evidence/BB-063/oracle-architecture-regression.txt",
+      "logHash": "1eb8376b7117af2ca78a23d164900a4412d4e8b7666286154974afad192f5e8f"
+    }
+  ],
+  "claims": [
+    {
+      "id": "REUSE_IDENTITY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-063/durability-unit.txt",
+        "docs/blackboard/evidence/BB-063/currentness-probe.txt"
+      ]
+    },
+    {
+      "id": "PROVENANCE_CURRENTNESS",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-063/durability-unit.txt",
+        "docs/blackboard/evidence/BB-063/integration-durability.txt"
+      ]
+    },
+    {
+      "id": "CRASH_CONCURRENCY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-063/store-unit.txt",
+        "docs/blackboard/evidence/BB-063/currentness-probe.txt",
+        "docs/blackboard/evidence/BB-063/integration-durability.txt"
+      ]
+    },
+    {
+      "id": "MANIFEST_COMPAT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-063/integration-durability.txt"
+      ]
+    },
+    {
+      "id": "SELECTIVE_INVALIDATION",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-063/durability-unit.txt",
+        "docs/blackboard/evidence/BB-063/currentness-probe.txt"
+      ]
+    },
+    {
+      "id": "PERSISTENCE_DECISION",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-063/store-unit.txt",
+        "docs/blackboard/evidence/BB-063/research-evidence.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-063/integration-durability.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-063/durability-unit.txt",
+        "docs/blackboard/evidence/BB-063/currentness-probe.txt",
+        "docs/blackboard/evidence/BB-063/integration-durability.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-063/store-unit.txt",
+        "docs/blackboard/evidence/BB-063/integration-durability.txt"
+      ]
+    }
+  ]
+}

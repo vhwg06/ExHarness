@@ -1,0 +1,164 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-064-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-064.json",
+    "hash": "7e262636eef2339b0b5f29fde5d090c5f8fca95aae9c0074c75abf741cd0149e"
+  },
+  "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+  "baselineSha": "c8b3541e1b51fa0692a65fd52a05795e2283d2f8",
+  "candidateTree": "200cd31a1132c07b9f1493356ce8b2b701042fcc",
+  "verificationRuns": [
+    {
+      "id": "foundation",
+      "command": "node --test test/oracle-context-intelligence-foundation.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/foundation.txt",
+      "logHash": "b149e1131aef18f57338b3831d6ba131fb871140abd25ba372b549ab452b4e07"
+    },
+    {
+      "id": "probe",
+      "command": "node scripts/oracle-context-intelligence/probe-foundation.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/probe.txt",
+      "logHash": "a690094c1ab5dd20494e6c5719cec4198c05fa7c4106f8046f0d9bfea64a27fa"
+    },
+    {
+      "id": "architecture",
+      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/architecture.txt",
+      "logHash": "71162d7201a5272674d33e24cc2c76a0f8186ec654b1c5b1f17a4f53ee2d34ec"
+    },
+    {
+      "id": "benchmark",
+      "command": "node scripts/oracle-context-intelligence/benchmark-profile.mjs --mode validate",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/benchmark.txt",
+      "logHash": "21bb43e12a8d9b3975cd52a76636cb45cde52a85cb7c83637cd0e47cf0a30f9a"
+    },
+    {
+      "id": "benchmark-boundary",
+      "command": "node --test test/oracle-context-intelligence-benchmark-contract.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/benchmark-boundary.txt",
+      "logHash": "d0c7e27424cb24f97251760444d101071cfeb9d7beabf3fcddf44c700b65e1f6"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test packages/oracle/test/*.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/oracle-regression.txt",
+      "logHash": "f9a88c9ab9e03434f71aeda36b0a628410ba09ee0d60c49d141af6778b0f271f"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/core-regression.txt",
+      "logHash": "b19ddba56db7ccf57ea891890ecfffbccb8bd9b1c10cf2e0df66ede23cd972cc"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/agentic-regression.txt",
+      "logHash": "6aea719847c8bf011268e9e2e090694e1200f2425839a0a40a197cf283fceeb2"
+    },
+    {
+      "id": "package-consumer",
+      "command": "npm run verify:package && npm run verify:consumer",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/package-consumer.txt",
+      "logHash": "59c59103f63c040c97666887158fe6fbcc06e175a21f71241a936eeb2460af06"
+    },
+    {
+      "id": "living-docs",
+      "command": "node --test test/oracle-context-intelligence-foundation.test.mjs --test-name-pattern='Living|not delivered|continuation'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "b0719871dba1b80c3732d1090e00779d559d94aa",
+      "logRef": "docs/blackboard/evidence/BB-064/living-docs.txt",
+      "logHash": "8952fe7f3034b9f307f222c1223eb5aad630fada072af248da88d2ddc7685fd1"
+    }
+  ],
+  "claims": [
+    {
+      "id": "CONVERGENCE",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-064/foundation.txt",
+        "docs/blackboard/evidence/BB-064/architecture.txt",
+        "docs/blackboard/evidence/BB-064/oracle-regression.txt"
+      ]
+    },
+    {
+      "id": "FOUNDATION_PATH",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-064/foundation.txt",
+        "docs/blackboard/evidence/BB-064/probe.txt"
+      ]
+    },
+    {
+      "id": "FAIL_CLOSED",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-064/foundation.txt",
+        "docs/blackboard/evidence/BB-064/architecture.txt"
+      ]
+    },
+    {
+      "id": "BENCHMARK_HANDOFF",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-064/benchmark.txt",
+        "docs/blackboard/evidence/BB-064/benchmark-boundary.txt"
+      ]
+    },
+    {
+      "id": "CONTINUATION",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-064/benchmark-boundary.txt",
+        "docs/blackboard/evidence/BB-064/living-docs.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-064/foundation.txt",
+        "docs/blackboard/evidence/BB-064/architecture.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-064/foundation.txt",
+        "docs/blackboard/evidence/BB-064/probe.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-064/architecture.txt",
+        "docs/blackboard/evidence/BB-064/benchmark-boundary.txt"
+      ]
+    }
+  ]
+}

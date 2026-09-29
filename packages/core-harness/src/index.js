@@ -331,3 +331,4 @@ export {
   createEffectAwareAVOHarness as createAVOHarness,
   createEffectAwareHarness as createHarness
 } from "./effect-aware-harness.js";
+export { defineContextRequirementBlock, resolveContextRequirementBlocks } from './context-resolution.js';

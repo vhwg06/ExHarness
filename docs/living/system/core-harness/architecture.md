@@ -33,7 +33,7 @@ injected infrastructure
 
 ## CONTEXT MODEL
 
-Context is explicitly selected and bounded by block count, history count and serialized size. History selection can only select canonical events; reduction produces a bounded projection rather than replacing canonical history.
+Context is explicitly selected and bounded by block count, history count and serialized size. Selected semantic requirement blocks use an injected resolver before prompt rendering and become fixed ordinary context blocks for the whole agent call. Core handles opaque JSON-safe requirement/resolution values and imports no Oracle schema. The delivered Oracle facade is consumed only through this injected port with pre-render failure stopping before model work. History selection can only select canonical events; reduction produces a bounded projection rather than replacing canonical history.
 
 ## PUBLIC SURFACE
 
