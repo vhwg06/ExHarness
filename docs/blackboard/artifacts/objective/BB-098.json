@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-098",
+  "outcome": "Every direct or ExHarness-supervised agent-tool invocation produces one normalized, append-only, secret-redacted run trace joining tool output, ExHarness events/spans, timing, diff statistics, verification outcomes and reported token usage, with a deterministic descriptive report per tool and arm.",
+  "currentProblem": "Core exposes eventSinks and createTraceRecorder but nothing persists them or joins them with external tool output; the executed probe shows only Codex has a structured event stream (--json), agy has --log-file and Kiro 2.24 non-interactive output is plain text, so usage is not uniformly observable.",
+  "scope": [
+    "agent-tools.run-trace",
+    "agent-tools.output-parsers",
+    "agent-tools.report"
+  ],
+  "constraints": [
+    "Traces are evidence; attempts, evidence manifests and accounting remain owned by the BB-065 benchmark kernel.",
+    "No external telemetry service or dependency is required.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify an append-only, digest-chained AGENT_TOOL_RUN_TRACE_V1 record per agent invocation covering tool, version, arm label, timing, exit, bounded redacted output excerpts, repository diff statistics, verification outcomes and ExHarness events/spans when supervised.",
+    "Specify per-tool output parsers that report token usage only when the tool reports it and otherwise record null with an explicit unavailable reason, never an estimate.",
+    "Specify secret redaction applied before any trace byte is written, proven by a planted-secret test.",
+    "Specify a deterministic descriptive report per tool and arm that never asserts acceptance or value, plus Living docs.",
+    "Ground the design in the executed agent CLI probe and delivered Core observability and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-research/BB-098.md",
+    "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+    "packages/core-harness/src/harness.js",
+    "packages/core-harness/src/tracing.js"
+  ]
+}

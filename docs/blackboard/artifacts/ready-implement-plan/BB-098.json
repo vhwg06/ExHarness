@@ -1,0 +1,502 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-098",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-098.json",
+    "hash": "7f81b60f7bfa33cc5a10f9a8f9d5587a5ad192b3309bfcb1f49c8491d53d11c0"
+  },
+  "scope": [
+    "agent-tools.run-trace",
+    "agent-tools.output-parsers",
+    "agent-tools.report"
+  ],
+  "outOfScope": [
+    "Deciding acceptance, arms semantics, suites or value verdicts (BB-099).",
+    "OTel, Langfuse or any remote telemetry export; token estimation.",
+    "Changes to Core, Oracle, agentic-system or the BB-097 supervisor semantics beyond passing sinks through its existing eventSinks/tracer options.",
+    "Reading CLI session stores or configuration outside the paths the invocation itself was given."
+  ],
+  "constraints": [
+    "Code lives in packages/agent-tools/src/{run-trace.js, output-parsers.js, redaction.js, report.js} with tests in packages/agent-tools/test/run-trace.test.js titled OB1..OB5 followed by a space, each with { timeout: 60000 }.",
+    "The trace writer uses only node built-ins; digests are sha256 hex.",
+    "bin/exharness-agent.mjs gains `report <trace-dir>`; root test:agent-tools already runs every packages/agent-tools/test/*.test.js file.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "Trace values are observed or null with a reason; no metric is estimated or inferred from text length.",
+    "No secret value from the environment or a known key pattern is ever written to a trace file.",
+    "Traces are evidence only; neither the trace writer nor the report decides acceptance or value.",
+    "A trace file whose content no longer matches its digest chain is rejected."
+  ],
+  "architectureDecisions": [
+    "D1 — AGENT_TOOL_RUN_TRACE_V1 = { kind, version, traceId, prevDigest, digest, taskId, tool, toolVersion, arm (caller-supplied label), attemptIndex, startedAt, endedAt, durationMs, exitCode, timedOut, argvRedacted, stdout: { sha256, bytes, truncated, excerpt }, stderr: { same }, toolEvents: { counts by type } | null, usage: { inputTokens, cachedInputTokens, outputTokens, source, unavailableReason }, diff: { filesChanged, insertions, deletions } from `git diff --numstat <base> <candidateOrWorkingTree>`, verification: [{ name, status, reason }], harness: { events: [{ type }], spans: [{ kind, name, status }] } | null }. Excerpts keep at most the last 4000 characters after redaction.",
+    "D2 — createRunTraceWriter({ dir }) appends one JSON line per trace to <dir>/traces.jsonl. digest = sha256 over the canonical JSON of the record without digest, with prevDigest equal to the previous line digest (null for the first). verifyTraceFile(path) recomputes the chain and throws TRACE_CHAIN_BROKEN on any mismatch or reorder.",
+    "D3 — observeInvocation({ invocation (BB-097 runAgentInvocation result), tool, toolVersion, arm, taskId, attemptIndex, worktree, baseRevision, candidate, verification, harnessCapture }) builds the record; it never reads files outside worktree and the invocation logFile.",
+    "D4 — Parsers: parseCodexJsonl(stdout) counts events by `type` and sums usage only from events carrying a `usage` object with numeric input_tokens/output_tokens (cached_input_tokens optional); if none, usage fields are null with unavailableReason CODEX_USAGE_NOT_REPORTED. Kiro: toolEvents null, usage null with KIRO_NO_STRUCTURED_OUTPUT. agy: the --log-file content is stored only as { sha256, bytes, excerpt }; usage null with AGY_USAGE_NOT_PARSED. Malformed JSONL lines are counted as invalidLines, never dropped silently.",
+    "D5 — Harness capture: createHarnessCapture() returns { eventSink, traceSink, snapshot() } where eventSink.write(event) records { type } and traceSink.write(span) records { kind, name, status }; passed through BB-097 runSupervisedTask({ eventSinks: [capture.eventSink], tracer: createTraceRecorder({ sinks: [capture.traceSink] }) }).",
+    "D6 — Redaction: redact(text, { env = process.env }) replaces with [REDACTED] every value of an environment variable whose name matches /(KEY|TOKEN|SECRET|PASSWORD|AUTH|COOKIE)/i and whose value length >= 8, and the patterns sk-[A-Za-z0-9_-]{16,}, ghp_[A-Za-z0-9]{20,}, github_pat_[A-Za-z0-9_]{20,}, AKIA[0-9A-Z]{16}, and Bearer\\s+[A-Za-z0-9._-]{16,}. It is applied to argv, excerpts and any parsed message before writing; digests are over raw bytes (one-way).",
+    "D7 — Report: summarizeTraces(records) groups by tool then arm (sorted) and returns runs, distinct tasks, invocations, verificationPassRate (share of traces whose verification is non-empty and all PASS), medianDurationMs, timeouts, and token totals with coverage = share of traces with non-null usage; totals are reported only over covered traces. `exharness-agent report <dir>` verifies the chain then prints JSON and a markdown table. The report is labelled DESCRIPTIVE and carries no acceptance or value field.",
+    "D8 — Evidence basis: executed probe (only codex --json; agy --log-file; kiro plain text) and delivered Core eventSinks/createTraceRecorder."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "benchmarks/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/redaction.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/run-trace.test.js",
+      "packages/agent-tools/test/fixtures/**",
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/**",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/agent-tool-research/BB-098.md",
+      "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+      "packages/core-harness/src/harness.js",
+      "packages/core-harness/src/tracing.js"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/redaction.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/test/run-trace.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/run-trace.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Trace schema + writer [OB1]: implement D1-D3. \"OB1 ...\" tests append traces from fake-CLI invocations on temp git repos, check diff numstat values, verify the chain, and assert TRACE_CHAIN_BROKEN after editing, deleting or reordering a line.",
+    "S2 — Parsers [OB2]: implement D4 with fixture outputs (codex JSONL with and without usage events and one malformed line, kiro stdout, agy log file). \"OB2 ...\" tests assert exact token sums for codex and null-with-reason for the others.",
+    "S3 — Harness capture [OB3]: implement D5. \"OB3 ...\" test runs BB-097 runSupervisedTask with the FIX_AFTER_FEEDBACK fake and asserts captured event types include HARNESS_VARIATION_STARTED and spans include STRATEGY, with direct traces carrying harness null.",
+    "S4 — Redaction [OB4]: implement D6. \"OB4 ...\" test plants an env secret and each key pattern into fake stdout/argv and asserts the bytes of traces.jsonl contain none of them.",
+    "S5 — Report + docs [OB5]: implement D7. \"OB5 ...\" tests assert deterministic identical output for identical input, coverage-limited token totals, no acceptance/value field, and the bin `report` rejecting a broken chain. Write docs/living/system/agent-tools/observation.md, update state.md, run test:agent-tools, verify:current-docs and npm test."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "OB1",
+      "statement": "Each invocation yields one digest-chained AGENT_TOOL_RUN_TRACE_V1 line with exact timing, exit, diff and verification fields, and any edit, deletion or reorder is rejected.",
+      "verificationIds": [
+        "ob1-trace",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "OB1 test output."
+      ]
+    },
+    {
+      "id": "OB2",
+      "statement": "Token usage is reported only when the tool reports it and is otherwise null with an explicit reason; malformed lines are counted.",
+      "verificationIds": [
+        "ob2-parsers",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "OB2 test output over fixture outputs."
+      ]
+    },
+    {
+      "id": "OB3",
+      "statement": "Supervised traces carry ExHarness event and span summaries captured through the existing eventSinks/tracer options; direct traces carry none.",
+      "verificationIds": [
+        "ob3-harness",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "OB3 test output."
+      ]
+    },
+    {
+      "id": "OB4",
+      "statement": "No planted secret appears in any written trace byte.",
+      "verificationIds": [
+        "ob4-redaction",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "OB4 test output."
+      ]
+    },
+    {
+      "id": "OB5",
+      "statement": "The descriptive report is deterministic, coverage-aware, carries no acceptance or value field, and Living docs describe observation.",
+      "verificationIds": [
+        "ob5-report",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "OB5 test output, docs diff, verify:current-docs and npm test logs."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Trace values are observed or null with a reason; no metric is estimated or inferred from text length.",
+      "criterionIds": [
+        "OB2",
+        "OB5"
+      ]
+    },
+    {
+      "invariant": "No secret value from the environment or a known key pattern is ever written to a trace file.",
+      "criterionIds": [
+        "OB4"
+      ]
+    },
+    {
+      "invariant": "Traces are evidence only; neither the trace writer nor the report decides acceptance or value.",
+      "criterionIds": [
+        "OB5"
+      ]
+    },
+    {
+      "invariant": "A trace file whose content no longer matches its digest chain is rejected.",
+      "criterionIds": [
+        "OB1"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "ob1-trace",
+      "command": "node --test --test-name-pattern=\"^OB1 \" packages/agent-tools/test/run-trace.test.js"
+    },
+    {
+      "id": "ob2-parsers",
+      "command": "node --test --test-name-pattern=\"^OB2 \" packages/agent-tools/test/run-trace.test.js"
+    },
+    {
+      "id": "ob3-harness",
+      "command": "node --test --test-name-pattern=\"^OB3 \" packages/agent-tools/test/run-trace.test.js"
+    },
+    {
+      "id": "ob4-redaction",
+      "command": "node --test --test-name-pattern=\"^OB4 \" packages/agent-tools/test/run-trace.test.js"
+    },
+    {
+      "id": "ob5-report",
+      "command": "node --test --test-name-pattern=\"^OB5 \" packages/agent-tools/test/run-trace.test.js"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+      "finding": "Executed: codex exec --json exists; agy has --log-file; kiro-cli chat has no structured output flag."
+    },
+    {
+      "ref": "packages/core-harness/src/tracing.js",
+      "finding": "DELIVERED_TRUTH: createTraceRecorder({ sinks }) writes each span to sink.write()."
+    },
+    {
+      "ref": "packages/core-harness/src/harness.js",
+      "finding": "DELIVERED_TRUTH: createHarness accepts eventSinks and tracer."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+      "finding": "PLANNED_CONTRACT: runAgentInvocation result shape and runSupervisedTask eventSinks/tracer options."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-097"
+    ],
+    "workerStart": "Confirm DONE BB-097 runAgentInvocation result fields and runSupervisedTask eventSinks/tracer options match D3/D5; capture one real codex --json sample if credentials exist and compare its usage field names with D4.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "Core eventSinks and createTraceRecorder sinks"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-097 runAgentInvocation and runSupervisedTask"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "AGENT_TOOL_RUN_TRACE_V1, parsers, redaction and report defined here"
+      ]
+    },
+    "contradiction": "If BB-097 does not expose eventSinks/tracer passthrough or the invocation result lacks stdout/stderr/durationMs, stop PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-097 DONE.",
+    "completion": "All OB criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No token estimation, no remote telemetry, no secret persistence, no acceptance/value fields in traces or reports."
+  },
+  "ciContract": {
+    "checks": [
+      "ob1-trace",
+      "ob2-parsers",
+      "ob3-harness",
+      "ob4-redaction",
+      "ob5-report",
+      "agent-tools",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "all existing packages, APIs and tests"
+    ],
+    "add": [
+      "BB-098 modules, tests and docs"
+    ],
+    "rollback": "Remove the BB-098 modules, tests, scripts and docs."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-098 objective + executed agent CLI probe + delivered/planned sources",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-097",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "No token estimation, no remote telemetry, no secret persistence, no acceptance/value fields in traces or reports."
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe the run trace schema, digest chain, per-tool observability limits, redaction and the descriptive report."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify an append-only, digest-chained AGENT_TOOL_RUN_TRACE_V1 record per agent invocation covering tool, version, arm label, timing, exit, bounded redacted output excerpts, repository diff statistics, verification outcomes and ExHarness events/spans when supervised.",
+      "criterionIds": [
+        "OB1"
+      ],
+      "planElements": [
+        "S1"
+      ],
+      "verificationIds": [
+        "ob1-trace",
+        "agent-tools"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+        "docs/blackboard/process/agent-tool-research/BB-098.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+          "match": "runAgentInvocation"
+        },
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-098.md",
+          "match": "## Approaches and evidence"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify per-tool output parsers that report token usage only when the tool reports it and otherwise record null with an explicit unavailable reason, never an estimate.",
+      "criterionIds": [
+        "OB2"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "ob2-parsers",
+        "agent-tools"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+          "match": "\"--json\": true"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+          "match": "\"--log-file\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariants"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify secret redaction applied before any trace byte is written, proven by a planted-secret test.",
+      "criterionIds": [
+        "OB4"
+      ],
+      "planElements": [
+        "S4"
+      ],
+      "verificationIds": [
+        "ob4-redaction",
+        "agent-tools"
+      ],
+      "decisionIndexes": [
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-098.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-098.md",
+          "match": "planted secret"
+        }
+      ],
+      "supportingPlanFields": [
+        "constraints"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify a deterministic descriptive report per tool and arm that never asserts acceptance or value, plus Living docs.",
+      "criterionIds": [
+        "OB3",
+        "OB5"
+      ],
+      "planElements": [
+        "S3",
+        "S5"
+      ],
+      "verificationIds": [
+        "ob3-harness",
+        "ob5-report",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        6
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/harness.js",
+        "packages/core-harness/src/tracing.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/harness.js",
+          "match": "eventSinks = [],"
+        },
+        {
+          "ref": "packages/core-harness/src/tracing.js",
+          "match": "export function createTraceRecorder({"
+        }
+      ],
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed agent CLI probe and delivered Core observability and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "OB1",
+        "OB2",
+        "OB3",
+        "OB4",
+        "OB5"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "verificationIds": [
+        "ob1-trace",
+        "ob2-parsers",
+        "ob3-harness",
+        "ob4-redaction",
+        "ob5-report",
+        "repository"
+      ],
+      "decisionIndexes": [
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+          "match": "\"allInstalled\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A codex stream without any usage-bearing event yields null token fields with CODEX_USAGE_NOT_REPORTED, never zero.",
+    "Kiro and agy traces never carry numeric token values.",
+    "A malformed JSONL line is counted in invalidLines and does not abort parsing.",
+    "Editing, deleting or reordering any trace line makes verifyTraceFile throw TRACE_CHAIN_BROKEN.",
+    "A planted environment secret or key-pattern string never appears in traces.jsonl bytes.",
+    "The report has no acceptance or value field and token totals exclude uncovered traces.",
+    "A direct (unsupervised) trace has harness null.",
+    "Any write to Core, Oracle, agentic-system, BB-097 supervisor/adapters or docs/blackboard fails scope verification."
+  ]
+}

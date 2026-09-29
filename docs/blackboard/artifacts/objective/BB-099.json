@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-099",
+  "outcome": "A pre-registered fixed-factor experiment decides per tool (Codex, Kiro, agy) whether ExHarness supervision delivers more hidden-test-accepted changes than the same tool used directly, separating supervision value from extra attempts, and at what cost.",
+  "currentProblem": "BB-077 compares DIRECT_CODEACT with CORE_SYNC inside ExHarness only and BB-074 measures organization-level value after BB-071/073; nothing measures whether ExHarness improves external agent tools, and BB-065 D12 requires such studies to reuse its benchmark kernel.",
+  "scope": [
+    "agent-tools.evaluation-suite",
+    "agent-tools.experiment",
+    "agent-tools.value-reducer"
+  ],
+  "constraints": [
+    "Live pilots are opt-in, cost-capped and excluded from npm test and verify.",
+    "No public benchmark or paid external service is required for the deterministic calibration.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify an owned local suite of calibrated agent tasks whose hidden acceptance tests are stored outside the agent worktree and applied only at independent evaluation.",
+    "Specify DIRECT_SINGLE, DIRECT_RETRY and EXHARNESS_SUPERVISED arms with matched per-tool fixed factors and attempt budget, and a pre-registration whose digest the runner enforces before any attempt.",
+    "Specify execution through the BB-065 benchmark public API with BB-098 traces as evidence, independent hidden-test evaluation, and a deterministic seeded paired-bootstrap reducer producing per-tool SUPERIOR, INFERIOR or INCONCLUSIVE with false-success, time, invocation and token metrics.",
+    "Specify a deterministic calibration over fake CLIs that reproduces the expected verdicts, and an opt-in cost-capped live pilot that records NOT_EVALUATED instead of fabricating results when a tool is unavailable.",
+    "Ground the design in the executed agent CLI probe and the planned benchmark, supervision and observation contracts and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-research/BB-099.md",
+    "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-098.json"
+  ]
+}

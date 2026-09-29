@@ -1,0 +1,109 @@
+{
+  "kind": "BB097_AGENT_CLI_PROBE_RESULT",
+  "version": 1,
+  "platform": "win32-x64",
+  "node": "v24.18.0",
+  "tools": {
+    "codex": {
+      "installed": true,
+      "version": "codex-cli 0.158.0",
+      "surfaces": {
+        "exec": {
+          "command": "codex exec --help",
+          "helpAvailable": true,
+          "flags": {
+            "--json": true,
+            "--output-last-message": true,
+            "--sandbox": true,
+            "--cd": true,
+            "--model": true,
+            "--skip-git-repo-check": true
+          }
+        },
+        "resume": {
+          "command": "codex exec resume --help",
+          "helpAvailable": true,
+          "flags": {
+            "--last": true
+          }
+        },
+        "mcp": {
+          "command": "codex mcp --help",
+          "helpAvailable": true,
+          "flags": {
+            "add": true,
+            "list": true
+          }
+        }
+      }
+    },
+    "kiro-cli": {
+      "installed": true,
+      "version": "kiro-cli-chat 2.24.1",
+      "surfaces": {
+        "chat": {
+          "command": "kiro-cli chat --help",
+          "helpAvailable": true,
+          "flags": {
+            "--no-interactive": true,
+            "--trust-all-tools": true,
+            "--trust-tools": true,
+            "--resume": true,
+            "--agent": true,
+            "--model": true
+          }
+        },
+        "mcp": {
+          "command": "kiro-cli mcp --help",
+          "helpAvailable": true,
+          "flags": {
+            "add": true,
+            "list": true,
+            "status": true
+          }
+        }
+      }
+    },
+    "agy": {
+      "installed": true,
+      "version": "1.1.1",
+      "surfaces": {
+        "root": {
+          "command": "agy --help",
+          "helpAvailable": true,
+          "flags": {
+            "--print": true,
+            "--continue": true,
+            "--conversation": true,
+            "--dangerously-skip-permissions": true,
+            "--log-file": true,
+            "--model": true,
+            "--mode": true,
+            "--add-dir": true
+          }
+        }
+      }
+    }
+  },
+  "configLocationsPresent": {
+    "codex ~/.codex/config.toml": true,
+    "codex ~/.codex/hooks.json": false,
+    "kiro ~/.kiro": true,
+    "agy ~/.gemini": true
+  },
+  "conclusions": {
+    "allInstalled": true,
+    "allHaveNonInteractiveMode": true,
+    "allHaveResume": true,
+    "structuredEventStream": {
+      "codex": true,
+      "kiro-cli": false,
+      "agy": false
+    },
+    "mcpClientManagement": {
+      "codex": true,
+      "kiro-cli": true,
+      "agy": "NOT_PROBED_VIA_CLI"
+    }
+  }
+}
