@@ -1,0 +1,95 @@
+
+> verify:package
+> npm pack --dry-run --workspace packages/core-harness
+
+exharness-0.3.0.tgz
+
+> verify:consumer
+> node scripts/consumer-smoke.mjs && node scripts/discovery-consumer-smoke.mjs && node scripts/javascript-codeact-consumer-smoke.mjs && node scripts/cognition-consumer-smoke.mjs
+
+consumer-smoke:ok
+{"packed":true,"conciseChars":236,"fullChars":725,"liveMembers":1}
+{"packed":true,"terminalFeature":"CELL_ABORT","result":{"total":12,"name":"after","discoveredMembers":3},"cells":2,"hostCalls":8,"executionErrors":0,"workerOpens":1,"workerCloses":1,"infiniteLoopContained":true,"infiniteLoopCode":"CODEACT_TIME_BUDGET_EXCEEDED","forcedKills":1,"childName":"after"}
+cognition-consumer-smoke:ok
+
+npm notice
+npm notice 📦  exharness@0.3.0
+npm notice Tarball Contents
+npm notice 3.0kB README.md
+npm notice 563B package.json
+npm notice 8.5kB src/action-effect.js
+npm notice 4.5kB src/agent-events.js
+npm notice 33.8kB src/agent-runtime.js
+npm notice 11.9kB src/avo-action-effect.js
+npm notice 12.6kB src/avo-harness.js
+npm notice 17.9kB src/codeact-strategy.js
+npm notice 9.1kB src/cognition-tracing.js
+npm notice 904B src/cognition.js
+npm notice 3.2kB src/context-resolution.js
+npm notice 11.1kB src/context.js
+npm notice 5.4kB src/contracts.js
+npm notice 21.4kB src/core-harness.js
+npm notice 4.2kB src/deliberation-controller.js
+npm notice 16.3kB src/deliberation.js
+npm notice 6.3kB src/discovery.js
+npm notice 1.7kB src/effect-aware-harness.js
+npm notice 10.7kB src/effect-reconciliation.js
+npm notice 1.8kB src/environment.js
+npm notice 8.3kB src/errors.js
+npm notice 1.8kB src/evaluation-freshness.js
+npm notice 4.6kB src/execution.js
+npm notice 4.3kB src/feedback.js
+npm notice 19.9kB src/grounded-cognition.js
+npm notice 15.7kB src/harness.js
+npm notice 8.8kB src/index.js
+npm notice 24.0kB src/javascript-codeact-strategy.js
+npm notice 1.5kB src/judgment.js
+npm notice 6.8kB src/knowledge.js
+npm notice 27.0kB src/live-object.js
+npm notice 2.1kB src/memory.js
+npm notice 5.6kB src/model-routing.js
+npm notice 514B src/model.js
+npm notice 8.6kB src/nooa-memory-retrieval.js
+npm notice 15.2kB src/object-agent.js
+npm notice 7.7kB src/observability.js
+npm notice 1.9kB src/observation.js
+npm notice 6.3kB src/persistence.js
+npm notice 679B src/ports.js
+npm notice 5.0kB src/predict-strategy.js
+npm notice 19.2kB src/process-trust.js
+npm notice 3.0kB src/recovery.js
+npm notice 13.7kB src/resource.js
+npm notice 13.3kB src/resumable-agent-runtime.js
+npm notice 906B src/runtime-execution.js
+npm notice 15.2kB src/runtime-snapshot.js
+npm notice 12.2kB src/search-investment.js
+npm notice 12.2kB src/semantic-memory-evolution.js
+npm notice 12.2kB src/semantic-memory-graph.js
+npm notice 12.7kB src/semantic-memory-intelligence.js
+npm notice 6.3kB src/semantic-memory-retrieval.js
+npm notice 22.9kB src/semantic-memory.js
+npm notice 6.4kB src/spontaneous-recall.js
+npm notice 3.5kB src/state.js
+npm notice 1.4kB src/store.js
+npm notice 6.5kB src/supervision.js
+npm notice 10.5kB src/testing.js
+npm notice 5.0kB src/tracing.js
+npm notice 4.2kB src/trust-boundary.js
+npm notice 2.6kB src/trust-chain.js
+npm notice 26.9kB src/trust.js
+npm notice 4.1kB src/turn-events.js
+npm notice 4.0kB src/variation.js
+npm notice 6.0kB src/verification-assessment.js
+npm notice 2.1kB src/verification.js
+npm notice Tarball Details
+npm notice name: exharness
+npm notice version: 0.3.0
+npm notice filename: exharness-0.3.0.tgz
+npm notice package size: 120.2 kB
+npm notice unpacked size: 588.2 kB
+npm notice shasum: 0b6e61b948ded5f233bc63bc0859cbe522e2e476
+npm notice integrity: sha512-pORahXAGlGLnw[...]gyrKDEQBs8r9w==
+npm notice total files: 66
+npm notice
+
+exitCode=0
