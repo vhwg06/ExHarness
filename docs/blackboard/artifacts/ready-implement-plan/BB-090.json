@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-090",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-090.json",
     "hash": "8b9d3357e5ace07a79fbffa88e3178d30f6efd593091493debf8fe8973ae9c9c"
@@ -24,7 +24,8 @@
     "Deterministic checks live in one new pure module scripts/blackboard-negative-case-binding.mjs; collectEvidence and materialize call it and keep all existing checks.",
     "Jev remains the semantic judge; each binding adds one atomic Choice question; verdict rules and confidence-as-telemetry are unchanged.",
     "BB-082 objective-supersession control is independent and unchanged.",
-    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every test in test/blackboard-negative-case-binding.test.mjs is titled with its criterion prefix (NB1..NB4 followed by a space) so each verification run selects exactly its criterion; package.json test:blackboard-jev is extended to run this file so npm run verify and verify:blackboard-context execute it."
   ],
   "invariants": [
     "A plan that declares negative cases under enforcement cannot reach MERGE_PENDING unless every case is bound to a passing, subject-invoking, non-vacuous executed test.",
@@ -61,7 +62,8 @@
       "docs/blackboard/contracts.md",
       "docs/blackboard/jev.md",
       "test/blackboard-negative-case-binding.test.mjs",
-      "docs/living/system/state.md"
+      "docs/living/system/state.md",
+      "package.json"
     ],
     "forbiddenWrite": [
       "docs/blackboard/artifacts/**",
@@ -91,23 +93,22 @@
       "test/blackboard-negative-case-binding.test.mjs"
     ],
     "expectedTests": [
-      "test/blackboard-negative-case-binding.test.mjs",
-      "test/blackboard-jev.test.mjs"
+      "test/blackboard-negative-case-binding.test.mjs"
     ]
   },
   "implementationSlices": [
-    "N1 — Pure binding module [NB1, NB2]: implement scripts/blackboard-negative-case-binding.mjs per D1, D3-D6 with unit tests for coverage, spec/TAP pass detection, exact-title extraction, subject invocation and vacuous-assertion rejection.",
-    "N2 — Plan schema + policy [NB1, NB4]: call assertNegativeCaseBindings from assertPlan when the field is present; add negativeCaseBindingsFromWorkId to jev-policy.json and enforce D2 in materialize; tests prove existing plans in the repository still validate.",
-    "N3 — Evidence collection [NB2]: extend collectEvidence per D7; fixture test using the existing blackboard-jev fixture pattern proves an unbound or failing negative blocks evidence and a bound one records bodyHash.",
-    "N4 — Atomic Worker judgment [NB3]: extend materialize per D8; mock-transport test proves one question per binding and unchanged verdict rules.",
-    "N5 — BB-064 reproduction + docs [NB4]: implement D9 regression, document the contract in docs/blackboard/contracts.md, docs/blackboard/jev.md and docs/living/system/state.md, set the policy threshold, run verify:blackboard-context and npm run verify."
+    "N1 — Pure binding module [NB1, NB2]: create scripts/blackboard-negative-case-binding.mjs (D1, D3-D6). Tests titled \"NB1 ...\" cover coverage gaps/duplicates, unknown criterion/verification, testRef outside expectedTests, unsafe subjectSymbol and threshold on/off; tests titled \"NB2 ...\" cover spec pass, TAP pass, ✖/not ok, missing, duplicate, substring-only titles, extraction with quotes/templates/comments, subject not invoked and each vacuous pattern.",
+    "N2 — Plan schema + policy [NB1]: call assertNegativeCaseBindings from assertPlan when negativeCaseBindings is present; add negativeCaseBindingsFromWorkId (initially null) to jev-policy.json and enforce D2 in materialize before any provider call. An \"NB1 repository plans still validate\" test loads every current plan under docs/blackboard/artifacts/ready-implement-plan and asserts assertPlan passes unchanged.",
+    "N3 — Evidence collection [NB2]: extend collectEvidence per D7 using the existing fixture(t) temp-repository pattern from test/blackboard-jev.test.mjs (copied into the new file, not edited): an \"NB2 collect ...\" case with an unbound or failing negative must throw negative case unbound, and a bound passing case must record {id, logRef, testRef, bodyHash} in its criterion claim.",
+    "N4 — Atomic Worker judgment [NB3]: extend materialize per D8; \"NB3 ...\" tests with mock transport assert one question id per binding containing the extracted body, a readiness-negativeCaseBindings question when bindings exist, and verdict() output unchanged for identical answers.",
+    "N5 — BB-064 reproduction + wiring + docs [NB4]: \"NB4 ...\" tests load test/oracle-context-intelligence-foundation.test.mjs via git show e6be04593fa00c55b59d55dc4dc3c8d2821f5930 and assert SUBJECT_NOT_INVOKED for createOracleContextResolver and coverage failure for eight indexes bound to one title; assert git diff shows no docs/blackboard/artifacts change. Extend package.json test:blackboard-jev to include the new file, set the policy threshold to allocation.nextWorkId at delivery, document in docs/blackboard/contracts.md, docs/blackboard/jev.md and docs/living/system/state.md, then run verify:blackboard-context and npm run verify."
   ],
   "acceptanceCriteria": [
     {
       "id": "NB1",
       "statement": "negativeCaseBindings validation covers every negativeVerificationCases index exactly once with existing criterion/verification ids and an expected test ref, and enforcement applies only at or above the policy work-id threshold.",
       "verificationIds": [
-        "binding",
+        "binding-schema",
         "blackboard-regression"
       ],
       "evidenceRequired": [
@@ -118,7 +119,7 @@
       "id": "NB2",
       "statement": "Evidence collection fails when a bound test title is missing, failing or duplicated in its spec or TAP log, when its body does not invoke subjectSymbol, or when it is vacuous, and records body hashes for passing bindings.",
       "verificationIds": [
-        "binding",
+        "binding-evidence",
         "blackboard-regression"
       ],
       "evidenceRequired": [
@@ -129,7 +130,7 @@
       "id": "NB3",
       "statement": "Worker Jev materialization emits one atomic question per binding with the extracted test body while verdict rules and confidence-as-telemetry remain unchanged.",
       "verificationIds": [
-        "binding",
+        "binding-judgment",
         "blackboard-regression"
       ],
       "evidenceRequired": [
@@ -140,7 +141,7 @@
       "id": "NB4",
       "statement": "The real BB-064 fail-closed test bound to createOracleContextResolver fails SUBJECT_NOT_INVOKED, no DONE or READY artifact changes, and the contract is documented in Blackboard and Living docs.",
       "verificationIds": [
-        "binding",
+        "bb064-reproduction",
         "repository"
       ],
       "evidenceRequired": [
@@ -178,8 +179,20 @@
   ],
   "verificationPlan": [
     {
-      "id": "binding",
-      "command": "node --test test/blackboard-negative-case-binding.test.mjs"
+      "id": "binding-schema",
+      "command": "node --test --test-name-pattern=\"^NB1 \" test/blackboard-negative-case-binding.test.mjs"
+    },
+    {
+      "id": "binding-evidence",
+      "command": "node --test --test-name-pattern=\"^NB2 \" test/blackboard-negative-case-binding.test.mjs"
+    },
+    {
+      "id": "binding-judgment",
+      "command": "node --test --test-name-pattern=\"^NB3 \" test/blackboard-negative-case-binding.test.mjs"
+    },
+    {
+      "id": "bb064-reproduction",
+      "command": "node --test --test-name-pattern=\"^NB4 \" test/blackboard-negative-case-binding.test.mjs"
     },
     {
       "id": "blackboard-regression",
@@ -230,7 +243,10 @@
   },
   "ciContract": {
     "checks": [
-      "binding",
+      "binding-schema",
+      "binding-evidence",
+      "binding-judgment",
+      "bb064-reproduction",
       "blackboard-regression",
       "repository"
     ],
@@ -295,7 +311,7 @@
         "N2"
       ],
       "verificationIds": [
-        "binding",
+        "binding-schema",
         "blackboard-regression"
       ],
       "decisionIndexes": [
@@ -331,7 +347,7 @@
         "N3"
       ],
       "verificationIds": [
-        "binding",
+        "binding-evidence",
         "blackboard-regression"
       ],
       "decisionIndexes": [
@@ -367,7 +383,7 @@
         "N4"
       ],
       "verificationIds": [
-        "binding",
+        "binding-judgment",
         "blackboard-regression"
       ],
       "decisionIndexes": [
@@ -412,7 +428,10 @@
         "N5"
       ],
       "verificationIds": [
-        "binding",
+        "binding-schema",
+        "binding-evidence",
+        "binding-judgment",
+        "bb064-reproduction",
         "blackboard-regression",
         "repository"
       ],
@@ -450,6 +469,8 @@
     "A bound test body that does not invoke subjectSymbol fails SUBJECT_NOT_INVOKED; the real BB-064 fail-closed test bound to createOracleContextResolver reproduces this.",
     "A bound test body containing `|| true)`, `assert.ok(true` or no assertions fails VACUOUS_ASSERTION.",
     "Plans below the threshold or without the field (all current DONE/READY plans) continue to validate and publish unchanged.",
-    "Any write under docs/blackboard/artifacts/**, docs/blackboard/evidence/** or packages/** fails repository scope verification."
-  ]
+    "Any write under docs/blackboard/artifacts/**, docs/blackboard/evidence/** or packages/** fails repository scope verification.",
+    "A verification run whose name pattern selects zero tests must fail (node --test exits non-zero on no matching tests is not assumed; the NB suite asserts each prefix has at least one test)."
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-090.readiness-jev-evaluation.json"
 }

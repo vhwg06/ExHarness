@@ -44,12 +44,7 @@ NONE
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 - BB-087 [WORKER/EXECUTION] — Fix Oracle facade budget accounting and typed provider failure
-- BB-090 [RESEARCH_SA/RESEARCH] — Bind declared negative cases to executed subject-invoking tests in the Worker gate
-- BB-091 [RESEARCH_SA/RESEARCH] — Research and ablate retrieval planner strategies
-- BB-092 [RESEARCH_SA/RESEARCH] — Implement bounded explicit progressive resolution
-- BB-093 [RESEARCH_SA/RESEARCH] — Implement model-aware context budget profiles
-- BB-094 [RESEARCH_SA/RESEARCH] — Verify Oracle on supported Core execution profiles
-- BB-095 [RESEARCH_SA/RESEARCH] — Accept Oracle profile on held-out fixed-factor benchmark
+- BB-090 [WORKER/EXECUTION] — Bind declared negative cases to executed subject-invoking tests in the Worker gate
 
 ## Dependency graph
 
@@ -93,12 +88,12 @@ BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
 BB-087 [WORKER_SCHEDULABLE] <- BB-064
 BB-088 [BLOCKED_BY BB-087] <- BB-087
 BB-089 [BLOCKED_BY BB-087] <- BB-087
-BB-090 [RESEARCH_SCHEDULABLE] <- BB-056
-BB-091 [RESEARCH_SCHEDULABLE] <- BB-088
-BB-092 [RESEARCH_SCHEDULABLE] <- BB-091
-BB-093 [RESEARCH_SCHEDULABLE] <- BB-092
-BB-094 [RESEARCH_SCHEDULABLE] <- BB-093, BB-081
-BB-095 [RESEARCH_SCHEDULABLE] <- BB-094, BB-065
+BB-090 [WORKER_SCHEDULABLE] <- BB-056
+BB-091 [BLOCKED_BY BB-088] <- BB-088
+BB-092 [BLOCKED_BY BB-091] <- BB-091
+BB-093 [BLOCKED_BY BB-092] <- BB-092
+BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
+BB-095 [BLOCKED_BY BB-094,BB-065] <- BB-094, BB-065
 ```
 
 ## Context semantics
