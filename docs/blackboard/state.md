@@ -44,9 +44,6 @@ NONE
 - BB-060 [WORKER/EXECUTION] — Define Oracle runtime architecture and physical ownership
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
-- BB-084 [RESEARCH_SA/RESEARCH] — Implement grounded observation and context binding
-- BB-085 [RESEARCH_SA/RESEARCH] — Implement application-owned feedback episode lifecycle
-- BB-086 [RESEARCH_SA/RESEARCH] — Implement evidence-gated self-improvement pipeline
 
 ## Dependency graph
 
@@ -84,9 +81,9 @@ BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
 BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [WORKER_SCHEDULABLE] <- ROOT
 BB-083 [BLOCKED_BY BB-059,BB-064,BB-065] <- BB-059, BB-064, BB-065
-BB-084 [RESEARCH_SCHEDULABLE] <- BB-058, BB-064
-BB-085 [RESEARCH_SCHEDULABLE] <- BB-084
-BB-086 [RESEARCH_SCHEDULABLE] <- BB-085, BB-059, BB-065
+BB-084 [BLOCKED_BY BB-058,BB-064] <- BB-058, BB-064
+BB-085 [BLOCKED_BY BB-084] <- BB-084
+BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
 ```
 
 ## Context semantics
