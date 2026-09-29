@@ -15,17 +15,33 @@
             "--json": true,
             "--output-last-message": true,
             "--sandbox": true,
+            "workspace-write": true,
+            "danger-full-access": true,
             "--cd": true,
             "--model": true,
             "--skip-git-repo-check": true
-          }
+          },
+          "helpLines": [
+            "resume  Resume a previous session by id or pick the most recent with --last",
+            "-m, --model <MODEL>",
+            "-s, --sandbox <SANDBOX_MODE>",
+            "--json"
+          ]
         },
         "resume": {
           "command": "codex exec resume --help",
           "helpAvailable": true,
           "flags": {
-            "--last": true
-          }
+            "--last": true,
+            "--json": true
+          },
+          "helpLines": [
+            "Resume a previous session by id or pick the most recent with --last",
+            "omitted, use --last to pick the most recent recorded session",
+            "--last",
+            "-m, --model <MODEL>",
+            "--json"
+          ]
         },
         "mcp": {
           "command": "codex mcp --help",
@@ -33,7 +49,8 @@
           "flags": {
             "add": true,
             "list": true
-          }
+          },
+          "helpLines": []
         }
       }
     },
@@ -51,7 +68,18 @@
             "--resume": true,
             "--agent": true,
             "--model": true
-          }
+          },
+          "helpLines": [
+            "-r, --resume",
+            "--resume-id <SESSION_ID>",
+            "--resume-picker",
+            "--model <MODEL>",
+            "-a, --trust-all-tools",
+            "--trust-tools <TOOL_NAMES>",
+            "Trust only this set of tools. Example: trust some tools: '--trust-tools=fs_read,fs_write',",
+            "trust no tools: '--trust-tools='",
+            "--mode <MODE>"
+          ]
         },
         "mcp": {
           "command": "kiro-cli mcp --help",
@@ -60,7 +88,8 @@
             "add": true,
             "list": true,
             "status": true
-          }
+          },
+          "helpLines": []
         }
       }
     },
@@ -79,8 +108,20 @@
             "--log-file": true,
             "--model": true,
             "--mode": true,
+            "accept-edits": true,
             "--add-dir": true
-          }
+          },
+          "helpLines": [
+            "-c                              Short alias for --continue",
+            "--continue                      Continue the most recent conversation",
+            "--mode                          Set the agent execution mode for this session (accept-edits, plan)",
+            "--model                         Model for the current CLI session",
+            "-p                              Short alias for --print",
+            "--print                         Run a single prompt non-interactively and print the response",
+            "--print-timeout                 Timeout for print mode wait (default 5m0s)",
+            "--prompt                        Alias for --print",
+            "--sandbox                       Run in a sandbox with terminal restrictions enabled"
+          ]
         }
       }
     }

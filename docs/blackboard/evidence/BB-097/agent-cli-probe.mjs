@@ -23,7 +23,7 @@ const tools = {
   codex: {
     version: ['--version'],
     help: { exec: ['exec', '--help'], resume: ['exec', 'resume', '--help'], mcp: ['mcp', '--help'] },
-    flags: { exec: ['--json', '--output-last-message', '--sandbox', '--cd', '--model', '--skip-git-repo-check'], resume: ['--last'], mcp: ['add', 'list'] }
+    flags: { exec: ['--json', '--output-last-message', '--sandbox', 'workspace-write', 'danger-full-access', '--cd', '--model', '--skip-git-repo-check'], resume: ['--last', '--json'], mcp: ['add', 'list'] }
   },
   'kiro-cli': {
     version: ['--version'],
@@ -33,7 +33,7 @@ const tools = {
   agy: {
     version: ['--version'],
     help: { root: ['--help'] },
-    flags: { root: ['--print', '--continue', '--conversation', '--dangerously-skip-permissions', '--log-file', '--model', '--mode', '--add-dir'] }
+    flags: { root: ['--print', '--continue', '--conversation', '--dangerously-skip-permissions', '--log-file', '--model', '--mode', 'accept-edits', '--add-dir'] }
   }
 };
 
@@ -46,7 +46,8 @@ for (const [bin, spec] of Object.entries(tools)) {
     entry.surfaces[surface] = {
       command: [bin, ...args].join(' '),
       helpAvailable: h.ok,
-      flags: Object.fromEntries(spec.flags[surface].map((f) => [f, h.ok && has(h.text, f)]))
+      flags: Object.fromEntries(spec.flags[surface].map((f) => [f, h.ok && has(h.text, f)])),
+      helpLines: h.ok ? h.text.split(/\r?\n/).map((l) => l.trim()).filter((l) => /--trust-tools|--trust-all-tools|--print|--sandbox|--mode|--resume|--continue|--json|--last/.test(l)).slice(0, 12) : []
     };
   }
   result.tools[bin] = entry;
