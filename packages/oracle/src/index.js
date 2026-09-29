@@ -9,3 +9,5 @@ export { createSemanticCodeProvider } from './providers/semantic-code.js';
 export { projectStructuralMap, createStructuralMapProvider } from './providers/structural-map.js';
 export { createContextGraphProvider } from './providers/context-graph.js';
 export { createExternalSourceProvider } from './providers/external-source.js';
+export { SourceObservationState, defineSourceObservation, observationDigest, defineResolverConfiguration, resolverConfigDigest, defineDerivationInput, reuseKey, defineContextResolutionReceipt, receiptId, evaluateReceiptCurrentness, isReusableResolution, createDurableResolutionCoordinator, DurabilityFailure } from './resolution-durability.js';
+export { createResolutionStore, ResolutionStoreError } from './resolution-store.js';
