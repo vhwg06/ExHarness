@@ -83,7 +83,14 @@ const report={kind:'ORACLE_RETRIEVAL_BENCHMARK',version:1,snapshotRef,corpus:cor
 const compact={
  ...report,
  graphEdges:{count:report.graphEdges.length,sample:[...report.graphEdges.filter(edge=>edge.kind==='IMPORTS').slice(0,3),...report.graphEdges.filter(edge=>edge.kind==='REFERENCES').slice(0,1)]},
- attempts:report.attempts.map(attempt=>({...attempt,selected:attempt.selected.map(({ref,score})=>({ref,score}))})),
- selectionIdentityRule:'Each selected ref joins the exact corpus digest and top-level snapshotRef; per-attempt provenance/currentness coverage is computed before compaction.'
+ measurementCosts:{setupMs,updateCostProxy:{indexedBytes:corpus.reduce((sum,x)=>sum+x.bytes,0),changedFileBytes:byRef.get(relative[0]).bytes}},
+ attempts:report.attempts.map(attempt=>({
+  arm:attempt.arm,questionId:attempt.questionId,
+  selectedCorpusIndexes:attempt.selected.map(item=>relative.indexOf(item.ref)),
+  recallAt3:attempt.recallAt3,precisionAt3:attempt.precisionAt3,mrr:attempt.mrr,
+  materializedBytes:attempt.materializedBytes,latencyMs:attempt.latencyMs,
+  provenanceCoverage:attempt.provenanceCoverage,currentnessCoverage:attempt.currentnessCoverage
+ })),
+ selectionIdentityRule:'selectedCorpusIndexes join the ordered corpus digest manifest and top-level snapshotRef; every attempt reports provenance/currentness coverage.'
 };
 console.log(JSON.stringify(compact));
