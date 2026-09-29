@@ -1,0 +1,442 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-087",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-087.json",
+    "hash": "22cddb2c40dedf83f46b9927b7ba36d207e20adfbfc6fa9ba771531d188e9e42"
+  },
+  "scope": [
+    "oracle.facade.budget-accounting",
+    "oracle.facade.typed-failure",
+    "oracle.facade.planner-execution"
+  ],
+  "outOfScope": [
+    "Changing ContextRequirement/ContextResolution schema, identity, status semantics or unresolved reason enum (BB-061).",
+    "Changing SourceCatalog, RetrievalPlanner, providers or their descriptors (BB-062).",
+    "Changing durability identity, receipts, reuse slots or currentness evaluation (BB-063).",
+    "Progressive multi-step resolution, adaptive budgeting or planner optimization (later Oracle continuations).",
+    "Rewriting BB-064 delivery evidence, readiness or receipt."
+  ],
+  "constraints": [
+    "Only packages/oracle/src/context-resolution.js changes in product source; everything else it composes is delivered and unchanged.",
+    "Accounting derives from actual values: consumed.items = returned items, consumed.materializedBytes = defineContextResolution materialization bytes, consumed.providerCalls = planner-reserved provider calls (execute().planned.reserved.providerCalls), consumed.resolutionSteps = 1.",
+    "Provider or planner failure on REQUIRED evidence returns a typed UNSATISFIED resolution; it never throws past the facade except for programming/contract errors and currentness drift.",
+    "Existing probe-foundation.mjs, foundation, benchmark-contract and architecture tests must keep passing unchanged.",
+    "BB-064 remains DONE; this is a BUGFIX task with its own evidence."
+  ],
+  "invariants": [
+    "Reported consumption equals observed materialization, returned items and planner-reserved provider calls; no constant or estimated counter exists.",
+    "A resolution never exceeds its requirement budget; exceeding budget yields BUDGET_EXHAUSTED unresolved evidence, not a thrown TypeError.",
+    "UNSATISFIED remains non-consumable and pre/post currentness drift still fails closed before any consumer receives context.",
+    "Unresolved reasons are preserved from the planner/provider that produced them."
+  ],
+  "architectureDecisions": [
+    "D1 — resolve() delegates candidate collection to the delivered retrievalPlanner.execute(requirement,{remainingBudget}) and no longer iterates planned.work itself. execute() already applies per-work item/byte reservations, groups by evidence and returns {planned, candidates, unresolved, failures}.",
+    "D2 — consumed.providerCalls = execute().planned.reserved.providerCalls. Reservation-based accounting is the budget-relevant quantity (each reservation counts against maxProviderCalls, and it bounds executed calls from above); the delivered execute() output does not expose an exact executed-call count and changing the planner is out of scope. The value is never floored with Math.max(...,1).",
+    "D3 — Items are built from execute().candidates in planner order with rank per evidence; the hard-coded slice(0,3) is removed because the planner already reserved at most budget.maxItems work units.",
+    "D4 — Materialization bytes via the delivered contract only: pass 1 calls defineContextResolution with consumed.materializedBytes = requirement.budget.maxMaterializedBytes; its returned materialization.bytes is the exact contract-computed size. Pass 2 rebuilds with consumed.materializedBytes = that exact value. resolutionId excludes consumed, so both passes share identity. A pass-1 rejection \"consumed below materialization\" means overflow and triggers D5. No serialization is re-implemented in the facade.",
+    "D5 — Budget overflow: if the exact materialization bytes exceed budget.maxMaterializedBytes, the facade drops the lowest-priority OPTIONAL evidence items first, then marks remaining overflowing evidence BUDGET_EXHAUSTED; status is recomputed (REQUIRED unresolved => UNSATISFIED). It never constructs a resolution that violates the budget and never throws for budget.",
+    "D6 — Unresolved reasons: planner unresolved and execute() unresolved/failure reasons (BUDGET_EXHAUSTED, SOURCE_FAILURE, STALE, CURRENTNESS_UNVERIFIABLE, UNSUPPORTED, AMBIGUOUS, MISSING) are copied verbatim; MISSING is used only when no candidate and no typed reason exists.",
+    "D7 — Thrown errors remain only for (a) invalid requirement/contract input, (b) STALE_DURING_RESOLUTION currentness drift (DurabilityFailure, unchanged), (c) catalog/planner misconfiguration. ProviderFailure no longer escapes resolve().",
+    "D8 — Durability reuse path and metadata passthrough are unchanged; the durability error discrimination keeps its current behavior (out of scope).",
+    "D9 — Regression tests live in test/oracle-facade-accounting.test.mjs and reproduce each probe case from docs/blackboard/evidence/BB-087/facade-probe.mjs with corrected expectations; the probe script itself is research evidence and is not modified."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/oracle/**",
+      "packages/core-harness/src/context-resolution.js",
+      "scripts/oracle-context-intelligence/**",
+      "test/oracle-*.test.mjs",
+      "docs/living/system/oracle/**",
+      "docs/blackboard/process/oracle-post-foundation-discovery.md",
+      "docs/blackboard/evidence/BB-087/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-064.json"
+    ],
+    "write": [
+      "packages/oracle/src/context-resolution.js",
+      "test/oracle-facade-accounting.test.mjs",
+      "docs/living/system/oracle/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/source-catalog.js",
+      "packages/oracle/src/provider-contract.js",
+      "packages/oracle/src/resolution-durability.js",
+      "packages/oracle/src/resolution-store.js",
+      "packages/oracle/src/providers/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "scripts/oracle-context-intelligence/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/oracle-post-foundation-discovery.md",
+      "docs/blackboard/evidence/BB-087/facade-probe-result.json",
+      "docs/blackboard/evidence/BB-087/facade-probe.mjs",
+      "packages/oracle/src/context-resolution.js",
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/context-contract.js",
+      "test/oracle-context-intelligence-foundation.test.mjs"
+    ],
+    "expectedNew": [
+      "test/oracle-facade-accounting.test.mjs"
+    ],
+    "expectedTests": [
+      "test/oracle-facade-accounting.test.mjs",
+      "test/oracle-context-intelligence-foundation.test.mjs",
+      "test/oracle-context-intelligence-benchmark-contract.test.mjs",
+      "test/oracle-context-intelligence-architecture.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "B1 — Regression first [FA1, FA2, FA3]: write test/oracle-facade-accounting.test.mjs reproducing the four probe cases (small budget, constant bytes, provider failure, dropped planner reason) plus over-budget and zero-provider-call cases; confirm they fail against the current facade.",
+    "B2 — Planner execution [FA2, INV-3, INV-4]: replace the manual planned.work loop with retrievalPlanner.execute() per D1-D3 and D6-D7; typed failures become unresolved entries and status is derived from necessity.",
+    "B3 — Truthful accounting + budget [FA1, INV-1, INV-2]: compute exact materialization bytes (two-pass contract) and reserved provider calls per D2, D4 and apply the D5 overflow rule so no resolution violates its budget.",
+    "B4 — Preservation + Living truth [FA3, FA4]: keep pre/post currentness fence, durability path and Core port unchanged; run foundation/benchmark/architecture tests and probe-foundation.mjs; update docs/living/system/oracle/state.md to describe truthful accounting and typed failure."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "FA1",
+      "statement": "consumed.materializedBytes equals the resolution materialization bytes and consumed.items/providerCalls equal returned items and planner-reserved provider calls; a 5-byte item under a 6000-byte budget resolves COMPLETE and no constant counter remains.",
+      "verificationIds": [
+        "facade-accounting"
+      ],
+      "evidenceRequired": [
+        "Test output for small-budget, exact-bytes and zero-call cases with asserted counters."
+      ]
+    },
+    {
+      "id": "FA2",
+      "statement": "resolve() uses retrievalPlanner.execute(); a provider SOURCE_FAILURE on REQUIRED evidence returns UNSATISFIED with reason SOURCE_FAILURE and on OPTIONAL evidence returns PARTIAL, with no ProviderFailure thrown.",
+      "verificationIds": [
+        "facade-accounting"
+      ],
+      "evidenceRequired": [
+        "Required and optional provider-failure test cases and a source inspection assertion that the facade calls execute()."
+      ]
+    },
+    {
+      "id": "FA3",
+      "statement": "Planner and provider unresolved reasons (including BUDGET_EXHAUSTED) are preserved verbatim, over-budget materialization yields BUDGET_EXHAUSTED instead of a thrown TypeError, and REQUIRED overflow yields UNSATISFIED.",
+      "verificationIds": [
+        "facade-accounting"
+      ],
+      "evidenceRequired": [
+        "Reason-preservation and over-budget test cases."
+      ]
+    },
+    {
+      "id": "FA4",
+      "statement": "Pre/post currentness drift still throws STALE_DURING_RESOLUTION, the durability and Core injected-port behavior is unchanged, only authorized files change, and existing Oracle foundation, benchmark and architecture tests pass unchanged.",
+      "verificationIds": [
+        "facade-accounting",
+        "oracle-regression",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Drift test, unchanged foundation/benchmark/architecture test logs, repository verify log and Living Doc diff."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Reported consumption equals observed materialization, returned items and planner-reserved provider calls; no constant or estimated counter exists.",
+      "criterionIds": [
+        "FA1"
+      ]
+    },
+    {
+      "invariant": "A resolution never exceeds its requirement budget; exceeding budget yields BUDGET_EXHAUSTED unresolved evidence, not a thrown TypeError.",
+      "criterionIds": [
+        "FA1",
+        "FA3"
+      ]
+    },
+    {
+      "invariant": "UNSATISFIED remains non-consumable and pre/post currentness drift still fails closed before any consumer receives context.",
+      "criterionIds": [
+        "FA2",
+        "FA4"
+      ]
+    },
+    {
+      "invariant": "Unresolved reasons are preserved from the planner/provider that produced them.",
+      "criterionIds": [
+        "FA3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "facade-accounting",
+      "command": "node --test test/oracle-facade-accounting.test.mjs"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test test/oracle-context-intelligence-foundation.test.mjs test/oracle-context-intelligence-benchmark-contract.test.mjs test/oracle-context-intelligence-architecture.test.mjs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-087/facade-probe-result.json",
+      "finding": "Executed against delivered source: constant 40000 materializedBytes, sub-40000 budgets throw, ProviderFailure escapes, planner BUDGET_EXHAUSTED relabeled MISSING."
+    },
+    {
+      "ref": "packages/oracle/src/retrieval-planner.js",
+      "finding": "DELIVERED_TRUTH: execute() applies per-work reservations and returns typed unresolved and failures; the facade does not use it."
+    },
+    {
+      "ref": "packages/oracle/src/context-contract.js",
+      "finding": "DELIVERED_TRUTH: defineContextResolution enforces consumed >= materialization and consumed <= budget; the contract is correct."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-064"
+    ],
+    "workerStart": "BB-064 is DONE; confirm packages/oracle/src/context-resolution.js at worker baseline matches subjectSha256 recorded in facade-probe-result.json, else re-run the probe and return to research if behavior differs.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "createOracleContextResolver, createRetrievalPlanner.execute, defineContextResolution, ProviderFailure in @exharness/oracle"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "Truthful accounting and typed-failure facade behavior defined here"
+      ]
+    },
+    "contradiction": "If delivered planner execute() semantics differ from D1/D6 or the contract rejects exact accounting, stop PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-064 DONE (satisfied at research baseline).",
+    "completion": "All criterion checks + Oracle regressions + repository verify + Oracle state Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No contract/planner/provider/durability edits, no constant counters, no swallowed currentness drift."
+  },
+  "ciContract": {
+    "checks": [
+      "facade-accounting",
+      "oracle-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "BB-064 plan, readiness, delivery receipt and evidence",
+      "probe-foundation.mjs and its output contract"
+    ],
+    "add": [
+      "test/oracle-facade-accounting.test.mjs"
+    ],
+    "rollback": "Revert context-resolution.js, the new test and the Living Doc paragraph."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-087 objective + executed facade probe + delivered Oracle source",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "retrofitting BB-064",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-064",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "truthful accounting + typed failure + unchanged contracts + Living truth",
+      "forbidden": [
+        "edit contract/planner/provider/durability",
+        "constant or estimated counters"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/oracle/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Oracle state Living Doc describes the facade's delivered truthful budget accounting, typed unresolved failures and unchanged fail-closed currentness behavior."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify facade budget accounting derived from actual materialization bytes, returned items and planner-reserved provider calls, with small budgets resolvable and over-budget results reported as BUDGET_EXHAUSTED.",
+      "criterionIds": [
+        "FA1",
+        "FA3"
+      ],
+      "planElements": [
+        "B3"
+      ],
+      "verificationIds": [
+        "facade-accounting"
+      ],
+      "decisionIndexes": [
+        1,
+        3,
+        4
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/context-resolution.js",
+        "packages/oracle/src/context-contract.js",
+        "docs/blackboard/evidence/BB-087/facade-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/context-resolution.js",
+          "match": "materializedBytes: 40000"
+        },
+        {
+          "ref": "packages/oracle/src/context-contract.js",
+          "match": "consumed below materialization/step"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-087/facade-probe-result.json",
+          "match": "\"subFortyKilobyteBudgetUnresolvable\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify facade execution through the delivered retrievalPlanner.execute() so per-work reservations apply and provider failures become typed unresolved reasons with UNSATISFIED or PARTIAL status instead of thrown errors.",
+      "criterionIds": [
+        "FA2"
+      ],
+      "planElements": [
+        "B2"
+      ],
+      "verificationIds": [
+        "facade-accounting"
+      ],
+      "decisionIndexes": [
+        0,
+        2,
+        6
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/retrieval-planner.js",
+        "docs/blackboard/evidence/BB-087/facade-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/retrieval-planner.js",
+          "match": "async function execute(requirement,options={})"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-087/facade-probe-result.json",
+          "match": "\"providerFailureEscapesAsThrow\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify preservation of planner and provider unresolved reasons, pre/post currentness fencing, durability reuse and Core injected-port behavior without contract changes.",
+      "criterionIds": [
+        "FA3",
+        "FA4"
+      ],
+      "planElements": [
+        "B2",
+        "B4"
+      ],
+      "verificationIds": [
+        "facade-accounting",
+        "oracle-regression"
+      ],
+      "decisionIndexes": [
+        5,
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/context-resolution.js",
+        "docs/blackboard/evidence/BB-087/facade-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/context-resolution.js",
+          "match": "source drift during resolution"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-087/facade-probe-result.json",
+          "match": "\"plannerReasonDropped\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce an exact file-level fix plan with regression tests reproducing every probe defect, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "FA1",
+        "FA2",
+        "FA3",
+        "FA4"
+      ],
+      "planElements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4"
+      ],
+      "verificationIds": [
+        "facade-accounting",
+        "oracle-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-087/facade-probe.mjs",
+        "test/oracle-context-intelligence-foundation.test.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-087/facade-probe.mjs",
+          "match": "planner-budget-exhausted-optional-evidence"
+        },
+        {
+          "ref": "test/oracle-context-intelligence-foundation.test.mjs",
+          "match": "fail-closed negatives cannot become current model context"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A 5-byte REQUIRED item under a 6000-byte budget must resolve COMPLETE; a TypeError 'materializedBytes budget exceeded' is a failure.",
+    "consumed.materializedBytes different from resolution.materialization.bytes, or any literal 40000, fails the accounting test.",
+    "A REQUIRED evidence whose provider throws ProviderFailure SOURCE_FAILURE must return status UNSATISFIED with unresolved reason SOURCE_FAILURE; a thrown ProviderFailure from resolve() fails.",
+    "An OPTIONAL evidence whose provider fails must return PARTIAL with its typed reason while REQUIRED evidence stays resolved.",
+    "Planner BUDGET_EXHAUSTED for optional evidence must appear as BUDGET_EXHAUSTED, never MISSING.",
+    "Materialization exceeding maxMaterializedBytes must yield BUDGET_EXHAUSTED (UNSATISFIED if REQUIRED) and never a resolution whose consumed exceeds budget.",
+    "A requirement whose evidence is all UNSUPPORTED (zero reservations) must report providerCalls 0, never a floored 1.",
+    "Source snapshot change between pre and post observation must still throw DurabilityFailure STALE_DURING_RESOLUTION.",
+    "Edits to contract, planner, catalog, provider, durability, Core or agentic files fail repository scope verification."
+  ]
+}

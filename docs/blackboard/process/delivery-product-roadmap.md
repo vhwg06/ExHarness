@@ -138,3 +138,7 @@ The new task consumes BB-059, BB-064 and BB-075 as direct execution dependencies
 ## Observed / Feedback / Self-Improve split — BB-084..086
 
 BB-083 research is consumed as design input by three one-way layers: [BB-084](observed-feedback-self-improve-research.md) Observed Implementation (grounded observation over BB-058/BB-064), BB-085 Feedback Lifecycle (episode -> response -> fresh outcome -> resolution over BB-084) and BB-086 Self-Improve (cross-episode pattern -> proposal -> GEPA -> independent BB-059 handoff over BB-085/BB-059/BB-065). Research runs ahead on planned contracts; each Worker waits for its direct dependencies to be DONE. BB-083's canonical record is unchanged until BB-082 objective supersession can reconcile it.
+
+## Oracle post-foundation discovery — BB-087..089
+
+[Discovery brief](oracle-post-foundation-discovery.md): BB-087 fixes delivered facade budget accounting and typed provider failure (executed probe evidence), BB-088 productizes the authoritative snapshot-bound Context Graph (first BB-064 continuation), BB-089 adopts the facade for Backend/QA production context behind an opt-in option. Remaining BB-064 continuations stay unregistered until the Context Graph desired state exists.

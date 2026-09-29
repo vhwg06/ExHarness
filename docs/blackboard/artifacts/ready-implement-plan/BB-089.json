@@ -1,0 +1,461 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-089",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-089.json",
+    "hash": "491f194c9a7197e779d6d23b6ad44fa121c7ac114f51525f531700c0183d96e9"
+  },
+  "scope": [
+    "oracle.adoption.backend-context",
+    "oracle.adoption.qa-context",
+    "oracle.adoption.compatibility"
+  ],
+  "outOfScope": [
+    "Removing or changing the default compatibility path, resolveBackendContext/resolveQaContext signatures, BackendContextSchema or QaContextSchema.",
+    "CURRENT-mode, semantic, lexical or graph retrieval for Backend/QA; this task adopts EXACT declared context only.",
+    "Changing Backend/QA Workers, completion policies, Orchestrator, manifest store or acceptance semantics.",
+    "Changing Oracle contracts, planner, catalog, providers, durability or facade (BB-087).",
+    "Retiring the compatibility adapter; that needs a separate acceptance decision."
+  ],
+  "constraints": [
+    "Opt-in only: the Oracle path is selected by an explicit `oracleResolution: { maxMaterializedBytes }` option; without it behavior is unchanged.",
+    "Requirements are derived only from declared BackendWorkOrder.requiredFiles and QaWorkOrder.requiredArtifacts; Oracle never adds or drops context.",
+    "The Oracle path composes only delivered @exharness/oracle root exports: createSourceCatalog, createExactRepositoryProvider, createExactArtifactProvider, createRetrievalPlanner, createOracleContextResolver, assertConsumableContextResolution.",
+    "Research consumes the BB-087 fixed-facade desired state; the Worker binds only DONE BB-087.",
+    "Any unresolved declared context blocks before Worker execution with a typed error, exactly like a compatibility read failure."
+  ],
+  "invariants": [
+    "The Application alone decides required context; the Oracle path resolves exactly the declared files/artifacts and nothing else.",
+    "On identical inputs the Oracle path returns a context deep-equal to the compatibility path, including sourceRef and QA acceptance provenance.",
+    "Unresolved, partial, stale, provenance-mismatched or over-budget declared context never reaches a Worker.",
+    "Without the opt-in option, Backend and QA behavior and outputs are unchanged."
+  ],
+  "architectureDecisions": [
+    "D1 — Add packages/agentic-system/src/oracle-context-requirements.js exporting backendContextRequirement(order, {maxMaterializedBytes}), qaContextRequirement(order, {maxMaterializedBytes}), projectBackendContext(order, resolution) and projectQaContext(order, resolution). packages/agentic-system/src/oracle.js gains an optional `oracleResolution` option on resolveBackendContext/resolveQaContext and branches to the Oracle path only when it is present.",
+    "D2 — Backend requirement: consumerRef `backend-work-order:<workOrderId>`, one REQUIRED evidence per required file in declared order with id `file-<index>`, source {kind REPOSITORY, ref repositoryRef, snapshot {mode EXACT, ref revision}, itemRefs [path]}; budget {maxItems n, maxProviderCalls n, maxResolutionSteps 1, maxMaterializedBytes caller value}. A non-positive or missing maxMaterializedBytes is rejected.",
+    "D3 — QA requirement: one REQUIRED evidence per required artifact, source {kind APPLICATION_ARTIFACT, ref artifact.ref, snapshot {mode EXACT, ref upstream.revision}, itemRefs [artifact.path]}. The Oracle QA path requires every artifact to declare a path (the delivered QA objective flow always selects artifacts by path); a pathless artifact is rejected with a typed error and remains supported only on the compatibility path.",
+    "D4 — Per-call composition: the adapter builds a SourceCatalog with exactly one exact provider — createExactRepositoryProvider({repositoryReader}) or createExactArtifactProvider({artifactReader, producerWorkOrderId, acceptanceDecision}) from the order — plus an EXACT snapshot authority whose observe() returns the order's pinned revision, then createRetrievalPlanner and createOracleContextResolver. EXACT mode claims no currentness; the pinned revision is the order's accepted revision.",
+    "D5 — Consumption: the adapter calls assertConsumableContextResolution(resolution, requirement) and additionally requires status COMPLETE (all evidence is REQUIRED). Otherwise it throws `backend|qa context resolution failed via Oracle: <status> <evidenceId>:<reason>...` before any Worker call.",
+    "D6 — Projection: items are grouped by evidenceId in declared order; each item's content and SOURCE_REF provenance ref become {path, content, sourceRef}; QA artifacts add {ref, path, provenance:{sourceClass APPLICATION_ARTIFACT, producerWorkOrderId, acceptanceDecision}} exactly as readApplicationArtifacts does, then the unchanged schemas parse the result.",
+    "D7 — Manifest protection: when artifactReader is createManifestArtifactReader, the exact artifact provider calls readApplicationArtifacts with the same producer/revision/acceptance arguments, so manifest validation runs unchanged; digest or provenance mismatch surfaces as provider SOURCE_FAILURE and blocks via D5.",
+    "D8 — Intended difference: the Oracle path enforces maxMaterializedBytes; the compatibility path has no budget. Over-budget declared context is BUDGET_EXHAUSTED -> UNSATISFIED -> blocked. This is documented, not hidden.",
+    "D9 — Equivalence is proven by a shared fixture test that runs both paths for Backend and QA (direct reader and manifest-validating reader) and asserts deepEqual contexts.",
+    "D10 — Worker-start: BB-087 DONE; verify the listed Oracle root exports and that the fixed facade reports exact materializedBytes; mismatch => PLAN_INPUT_CONTRADICTION."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/blackboard/process/oracle-post-foundation-discovery.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-087.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/oracle-context-requirements.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/oracle-context-adoption.test.js",
+      "packages/agentic-system/test/oracle-context-equivalence.test.js",
+      "docs/living/system/oracle/workflow.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/src/contracts.js",
+      "packages/agentic-system/src/qa-contracts.js",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/artifact-manifest.js",
+      "packages/agentic-system/src/backend-worker.js",
+      "packages/agentic-system/src/qa-worker.js",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/oracle-post-foundation-discovery.md",
+      "packages/agentic-system/src/oracle.js",
+      "packages/oracle/src/source-catalog.js",
+      "packages/oracle/src/providers/application-artifact-source.js",
+      "packages/agentic-system/src/qa-contracts.js",
+      "docs/living/system/oracle/workflow.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/oracle-context-requirements.js",
+      "packages/agentic-system/test/oracle-context-adoption.test.js",
+      "packages/agentic-system/test/oracle-context-equivalence.test.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/oracle-context-adoption.test.js",
+      "packages/agentic-system/test/oracle-context-equivalence.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "A1 — Requirement mapping [AD1, AD2, INV-1]: implement backendContextRequirement and qaContextRequirement per D2-D3 with unit tests for evidence order, EXACT snapshot, itemRefs, budget and pathless-artifact rejection.",
+    "A2 — Oracle path [AD1, AD2, AD3]: implement per-call composition, consumption and projection per D4-D6 and the opt-in branch in oracle.js; tests for COMPLETE projection and every blocking status/reason.",
+    "A3 — Equivalence + manifest [AD3, AD4, INV-2, INV-4]: equivalence test runs compatibility and Oracle paths on shared Backend and QA fixtures, including a createManifestArtifactReader-backed QA fixture with a tampered artifact, and asserts deepEqual outputs or identical blocking.",
+    "A4 — Living truth [AD4]: export the new helpers from index.js, update docs/living/system/oracle/workflow.md to describe the opt-in Oracle path and its budget difference, and run agentic/Oracle/repository regressions."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AD1",
+      "statement": "backendContextRequirement maps declared requiredFiles to REQUIRED EXACT REPOSITORY evidence and the Oracle path projects a COMPLETE resolution to a BackendContextSchema-valid context with each file's content and original sourceRef.",
+      "verificationIds": [
+        "adoption"
+      ],
+      "evidenceRequired": [
+        "Requirement mapping and Backend projection test output."
+      ]
+    },
+    {
+      "id": "AD2",
+      "statement": "qaContextRequirement maps declared path-bearing requiredArtifacts to REQUIRED EXACT APPLICATION_ARTIFACT evidence with producer/revision/acceptance provenance, projects to a QaContextSchema-valid context, and rejects pathless artifacts with a typed error.",
+      "verificationIds": [
+        "adoption"
+      ],
+      "evidenceRequired": [
+        "QA mapping, projection and pathless-rejection test output."
+      ]
+    },
+    {
+      "id": "AD3",
+      "statement": "UNSATISFIED or PARTIAL resolution, provider SOURCE_FAILURE, manifest digest/provenance mismatch and BUDGET_EXHAUSTED block with a typed error before any Worker call, and the manifest-validating reader is applied unchanged.",
+      "verificationIds": [
+        "adoption",
+        "equivalence"
+      ],
+      "evidenceRequired": [
+        "Blocking-case tests including a tampered manifest-protected artifact."
+      ]
+    },
+    {
+      "id": "AD4",
+      "statement": "On shared fixtures both paths return deepEqual Backend and QA contexts, the default path without oracleResolution is unchanged, only authorized files change, and the Oracle workflow Living Doc describes the opt-in path and its budget difference.",
+      "verificationIds": [
+        "equivalence",
+        "agentic-regression",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Equivalence test output, agentic regression and repository verify logs, Living Doc diff."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The Application alone decides required context; the Oracle path resolves exactly the declared files/artifacts and nothing else.",
+      "criterionIds": [
+        "AD1",
+        "AD2"
+      ]
+    },
+    {
+      "invariant": "On identical inputs the Oracle path returns a context deep-equal to the compatibility path, including sourceRef and QA acceptance provenance.",
+      "criterionIds": [
+        "AD4"
+      ]
+    },
+    {
+      "invariant": "Unresolved, partial, stale, provenance-mismatched or over-budget declared context never reaches a Worker.",
+      "criterionIds": [
+        "AD3"
+      ]
+    },
+    {
+      "invariant": "Without the opt-in option, Backend and QA behavior and outputs are unchanged.",
+      "criterionIds": [
+        "AD4"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "adoption",
+      "command": "node --test packages/agentic-system/test/oracle-context-adoption.test.js"
+    },
+    {
+      "id": "equivalence",
+      "command": "node --test packages/agentic-system/test/oracle-context-equivalence.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/living/system/oracle/workflow.md",
+      "finding": "DELIVERED_TRUTH: existing Backend/QA production flows still use their compatibility adapter."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "finding": "BB-061 D15 deferred production provider orchestration to later Oracle tasks; no registered task covered it."
+    },
+    {
+      "ref": "packages/oracle/src/source-catalog.js",
+      "finding": "DELIVERED_TRUTH: createExactRepositoryProvider/createExactArtifactProvider wrap the same readRepositorySources/readApplicationArtifacts loops and emit SOURCE_REF and acceptance provenance."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-087"
+    ],
+    "workerStart": "D10 preflight before product writes.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "resolveBackendContext/resolveQaContext compatibility adapter",
+        "@exharness/oracle exact providers, catalog, planner, assertConsumableContextResolution",
+        "createManifestArtifactReader"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-087 fixed createOracleContextResolver with exact materializedBytes and typed failures"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "oracle-context-requirements.js mapping/projection defined here"
+      ]
+    },
+    "contradiction": "Changed exact-provider provenance shape or facade accounting => PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-087 DONE.",
+    "completion": "All criterion checks + agentic/repository regressions + Oracle workflow Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No change to default path, schemas, Workers or Oracle package; no inferred context."
+  },
+  "ciContract": {
+    "checks": [
+      "adoption",
+      "equivalence",
+      "agentic-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "compatibility adapter default behavior",
+      "BackendContextSchema and QaContextSchema"
+    ],
+    "add": [
+      "oracle-context-requirements.js",
+      "opt-in oracleResolution option",
+      "tests",
+      "Living Doc section"
+    ],
+    "rollback": "Remove the opt-in branch, helper module, exports, tests and Living Doc section."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-089 objective + delivered Oracle/Application source + BB-087 desired facade",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-087",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "opt-in Oracle path + equivalence + fail-closed blocking + Living truth",
+      "forbidden": [
+        "change default path or schemas",
+        "edit Oracle package"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/oracle/workflow.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Oracle workflow Living Doc describes the delivered opt-in Backend/QA Oracle path, its exact-requirement mapping, equivalence with the compatibility path and its budget difference."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify an opt-in contextResolver path mapping BackendWorkOrder.requiredFiles to an EXACT ContextRequirement and projecting a consumable ContextResolution to the unchanged BackendContextSchema with preserved sourceRef.",
+      "criterionIds": [
+        "AD1"
+      ],
+      "planElements": [
+        "A1",
+        "A2"
+      ],
+      "verificationIds": [
+        "adoption"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/oracle.js",
+        "packages/oracle/src/source-catalog.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "export async function resolveBackendContext(rawOrder, { repositoryReader })"
+        },
+        {
+          "ref": "packages/oracle/src/source-catalog.js",
+          "match": "export function createExactRepositoryProvider"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify the equivalent QA path mapping requiredArtifacts with producer/revision/acceptance provenance through the exact artifact provider, including the manifest-validating reader, to the unchanged QaContextSchema.",
+      "criterionIds": [
+        "AD2",
+        "AD3"
+      ],
+      "planElements": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "verificationIds": [
+        "adoption",
+        "equivalence"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/source-catalog.js",
+        "packages/agentic-system/src/qa-contracts.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/source-catalog.js",
+          "match": "export function createExactArtifactProvider"
+        },
+        {
+          "ref": "packages/agentic-system/src/qa-contracts.js",
+          "match": "QA handoff missing required artifact path"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify fail-closed behavior: UNSATISFIED, PARTIAL for required declared files, stale, provenance mismatch or budget exhaustion block Worker execution exactly as the compatibility path does, and the default path is byte-identical in behavior.",
+      "criterionIds": [
+        "AD3",
+        "AD4"
+      ],
+      "planElements": [
+        "A2",
+        "A3"
+      ],
+      "verificationIds": [
+        "adoption",
+        "equivalence",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        4,
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/workflow.md",
+        "packages/agentic-system/src/oracle.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/workflow.md",
+          "match": "Existing Backend/QA production flows still use their compatibility adapter."
+        },
+        {
+          "ref": "packages/agentic-system/src/oracle.js",
+          "match": "export async function resolveQaContext(rawOrder, { artifactReader })"
+        }
+      ],
+      "supportingPlanFields": [
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce an exact file-level plan with equivalence tests between compatibility and Oracle paths, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "AD1",
+        "AD2",
+        "AD3",
+        "AD4"
+      ],
+      "planElements": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "verificationIds": [
+        "adoption",
+        "equivalence",
+        "agentic-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+        "docs/blackboard/process/oracle-post-foundation-discovery.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+          "match": "production provider orchestration remains unchanged until later Oracle tasks"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-post-foundation-discovery.md",
+          "match": "## BB-089 — Backend/QA production adoption desired state"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Calling resolveBackendContext/resolveQaContext without oracleResolution must never construct an Oracle catalog or resolver.",
+    "A missing, zero or negative maxMaterializedBytes is rejected before resolution.",
+    "An Oracle requirement containing a file or artifact not declared by the order, or omitting one, fails the mapping test.",
+    "A pathless QA artifact on the Oracle path fails with a typed error; the same order on the compatibility path still resolves.",
+    "A repository or artifact reader failure on the Oracle path blocks with SOURCE_FAILURE before any Worker call.",
+    "A manifest-protected artifact whose bytes were changed blocks on the Oracle path exactly as on the compatibility path.",
+    "Declared context larger than maxMaterializedBytes yields BUDGET_EXHAUSTED and blocks; it is never truncated and passed to a Worker.",
+    "Oracle and compatibility contexts that differ in path, content, sourceRef, order or QA provenance fail the equivalence test.",
+    "Edits to Oracle package, Worker, schema, application or manifest files fail repository scope verification."
+  ]
+}

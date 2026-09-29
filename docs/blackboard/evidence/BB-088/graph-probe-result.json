@@ -1,0 +1,52 @@
+{
+  "kind": "BB088_CONTEXT_GRAPH_PROBE_RESULT",
+  "version": 1,
+  "snapshotRef": "8a4ccd375bab3b56e4f9f30289f2323764904577",
+  "roots": [
+    "packages/oracle/src",
+    "packages/agentic-system/src"
+  ],
+  "nodes": 60,
+  "edges": 158,
+  "deterministic": true,
+  "graphDigest": "726fd74a6ec1f08b27601ba50688259c58a38d2c976c2d44ae5b6860ab185539",
+  "danglingEdges": [
+    "packages/agentic-system/src/application-orchestrator.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/artifact-manifest.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/backend-completion.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/backend-qa-project-acceptance.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/backend-session-store.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/backend-worker.js -> packages/core-harness/src/effect-reconciliation.js",
+    "packages/agentic-system/src/backend-worker.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/blackboard-orchestrator.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/decision-outcome-pilot.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/evidence.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/pm-sa-coordination-store.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/qa-completion.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/qa-worker.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/self-upgrade-pilot.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/trust-artifact-store.js -> packages/core-harness/src/index.js",
+    "packages/agentic-system/src/work-selection.js -> packages/core-harness/src/index.js"
+  ],
+  "everyEdgeAuthoritative": true,
+  "query": {
+    "reverseImportsOf": "packages/oracle/src/context-contract.js",
+    "importers": [
+      "packages/oracle/src/context-resolution.js",
+      "packages/oracle/src/index.js",
+      "packages/oracle/src/provider-contract.js",
+      "packages/oracle/src/resolution-durability.js",
+      "packages/oracle/src/resolution-store.js",
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/source-catalog.js"
+    ],
+    "projectionBytes": 1939,
+    "importerRawBytes": 53407
+  },
+  "corpusRawBytes": 619736,
+  "limits": [
+    "regex import extraction covers static relative ES imports/re-exports only; dynamic import() and package-name specifiers are not edges",
+    "no symbol-level edges",
+    "zero model calls"
+  ]
+}

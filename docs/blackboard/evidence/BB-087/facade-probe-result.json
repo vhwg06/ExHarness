@@ -1,0 +1,68 @@
+{
+  "kind": "BB087_FACADE_PROBE_RESULT",
+  "version": 1,
+  "subject": "packages/oracle/src/context-resolution.js createOracleContextResolver (BB-064 delivered)",
+  "subjectSha256": "de7bb4a50dcc922aedf4ee85d5f341eda39d84d20ac7593dbefbd6dfa758bf8b",
+  "cases": [
+    {
+      "name": "small-item-under-6000-byte-budget",
+      "outcome": "THROWN",
+      "errorName": "TypeError",
+      "reason": null,
+      "message": "materializedBytes budget exceeded",
+      "plannedUnresolved": []
+    },
+    {
+      "name": "small-item-under-100000-byte-budget",
+      "outcome": "RESOLVED",
+      "status": "COMPLETE",
+      "consumed": {
+        "items": 1,
+        "materializedBytes": 40000,
+        "providerCalls": 1,
+        "resolutionSteps": 1
+      },
+      "materializedBytes": 361,
+      "unresolved": [],
+      "plannedUnresolved": []
+    },
+    {
+      "name": "provider-source-failure-required-evidence",
+      "outcome": "THROWN",
+      "errorName": "ProviderFailure",
+      "reason": "SOURCE_FAILURE",
+      "message": "probe source failure",
+      "plannedUnresolved": []
+    },
+    {
+      "name": "planner-budget-exhausted-optional-evidence",
+      "outcome": "RESOLVED",
+      "status": "PARTIAL",
+      "consumed": {
+        "items": 1,
+        "materializedBytes": 40000,
+        "providerCalls": 1,
+        "resolutionSteps": 1
+      },
+      "materializedBytes": 361,
+      "unresolved": [
+        {
+          "evidenceId": "e2",
+          "reason": "MISSING"
+        }
+      ],
+      "plannedUnresolved": [
+        {
+          "evidenceId": "e2",
+          "reason": "BUDGET_EXHAUSTED"
+        }
+      ]
+    }
+  ],
+  "observations": {
+    "constantMaterializedBytes": true,
+    "subFortyKilobyteBudgetUnresolvable": true,
+    "providerFailureEscapesAsThrow": true,
+    "plannerReasonDropped": true
+  }
+}

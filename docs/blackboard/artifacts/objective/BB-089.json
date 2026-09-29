@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-089",
+  "outcome": "Production Backend and QA context preparation can resolve their declared context through the delivered Oracle facade and ContextResolution contract while preserving their public entry points, schemas and provenance.",
+  "currentProblem": "Oracle Living docs record that existing Backend/QA production flows still use the compatibility adapter, and BB-061 D15 deferred production provider orchestration to later Oracle tasks, but no registered task moves production context onto createOracleContextResolver.",
+  "scope": [
+    "oracle.adoption.backend-context",
+    "oracle.adoption.qa-context",
+    "oracle.adoption.compatibility"
+  ],
+  "constraints": [
+    "Additive and opt-in: resolveBackendContext/resolveQaContext signatures, BackendContextSchema, QaContextSchema and the default compatibility path remain unchanged.",
+    "The Application still decides which files/artifacts are required; Oracle does not widen or infer context requirements.",
+    "Manifest-protected QA reads and acceptance-decision provenance remain exact; no weaker artifact path is introduced.",
+    "Research may use the BB-087 fixed-facade desired state; the Worker binds only DONE BB-087 behavior.",
+    "Research only in this lane: no product source edits, no self-issued readiness."
+  ],
+  "successCriteria": [
+    "Specify an opt-in contextResolver path mapping BackendWorkOrder.requiredFiles to an EXACT ContextRequirement and projecting a consumable ContextResolution to the unchanged BackendContextSchema with preserved sourceRef.",
+    "Specify the equivalent QA path mapping requiredArtifacts with producer/revision/acceptance provenance through the exact artifact provider, including the manifest-validating reader, to the unchanged QaContextSchema.",
+    "Specify fail-closed behavior: UNSATISFIED, PARTIAL for required declared files, stale, provenance mismatch or budget exhaustion block Worker execution exactly as the compatibility path does, and the default path is byte-identical in behavior.",
+    "Produce an exact file-level plan with equivalence tests between compatibility and Oracle paths, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/oracle-post-foundation-discovery.md",
+    "packages/agentic-system/src/oracle.js",
+    "packages/oracle/src/source-catalog.js",
+    "docs/living/system/oracle/workflow.md",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-061.json"
+  ]
+}

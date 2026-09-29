@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-087
+next-work-id: BB-090
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -43,6 +43,9 @@ NONE
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
+- BB-087 [RESEARCH_SA/RESEARCH] — Fix Oracle facade budget accounting and typed provider failure
+- BB-088 [RESEARCH_SA/RESEARCH] — Productize authoritative snapshot-bound Context Graph
+- BB-089 [RESEARCH_SA/RESEARCH] — Adopt Oracle facade for Backend/QA production context
 
 ## Dependency graph
 
@@ -83,6 +86,9 @@ BB-083 [BLOCKED_BY BB-059,BB-065] <- BB-059, BB-064, BB-065
 BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
 BB-085 [BLOCKED_BY BB-084] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
+BB-087 [RESEARCH_SCHEDULABLE] <- BB-064
+BB-088 [RESEARCH_SCHEDULABLE] <- BB-087
+BB-089 [RESEARCH_SCHEDULABLE] <- BB-087
 ```
 
 ## Context semantics
