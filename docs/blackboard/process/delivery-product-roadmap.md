@@ -150,3 +150,7 @@ BB-083 research is consumed as design input by three one-way layers: [BB-084](ob
 ## Real Backend/QA execution — BB-096
 
 [Research brief](delivery-research/BB-096.md): the executed probe shows delivered Backend ACCEPT with PASS mutation/typecheck/tests on an unchanged real repository whose test fails; BB-096 adds a local git workspace and shell-free command verifier and proves Backend/QA through a real Core CodeAct strategy. Live provider, sandbox and SCM remain BB-066..068.
+
+## Agent-tool integration and measured value — BB-097..099
+
+Briefs: [BB-097](agent-tool-research/BB-097.md) runs Codex, Kiro and agy under ExHarness supervision (outer loop over the BB-096 workspace/verifiers), [BB-098](agent-tool-research/BB-098.md) observes every direct and supervised invocation as redacted digest-chained traces, [BB-099](agent-tool-research/BB-099.md) measures supervised versus direct delivery per tool with a DIRECT_RETRY control on the BB-065 benchmark kernel.

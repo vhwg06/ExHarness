@@ -181,6 +181,19 @@
         "docs/blackboard/process/oracle-post-foundation-discovery.md",
         "docs/blackboard/process/gate-gap-and-oracle-continuations.md"
       ]
+    },
+    {
+      "id": "TOPIC-AGENT-TOOL-INTEGRATION",
+      "title": "Agent-tool integration and measured value",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-AGENT-TOOL-SUPERVISION",
+        "FEATURE-AGENT-TOOL-OBSERVATION",
+        "FEATURE-AGENT-TOOL-VALUE"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+      ]
     }
   ],
   "features": [
@@ -797,6 +810,48 @@
         "docs/blackboard/process/delivery-research/BB-096.md"
       ],
       "acceptanceTaskId": "BB-096"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-SUPERVISION",
+      "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Run Codex, Kiro and agy under ExHarness supervision",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-097"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-097.md"
+      ],
+      "acceptanceTaskId": "BB-097"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-OBSERVATION",
+      "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Observe supervised and direct agent-tool runs",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-098"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-098.md"
+      ],
+      "acceptanceTaskId": "BB-098"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-VALUE",
+      "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Measure ExHarness-supervised versus direct agent-tool delivery",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-099"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-099.md"
+      ],
+      "acceptanceTaskId": "BB-099"
     }
   ],
   "tasks": [
@@ -3320,10 +3375,160 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-097",
+      "featureId": "FEATURE-AGENT-TOOL-SUPERVISION",
+      "title": "Run Codex, Kiro and agy under ExHarness supervision",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-096",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-097.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+          "docs/blackboard/process/agent-tool-research/BB-097.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-097/agent-cli-probe.mjs",
+          "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify tool adapters for Codex, Kiro and agy that build exact shell-free non-interactive and resume invocations with explicit permission profiles, resolve Windows npm shims without cmd.exe, and report an unavailable tool as TOOL_UNAVAILABLE.",
+        "Specify one bounded process runner that captures bounded output with digests, redacts nothing it does not own, and terminates the whole process tree on timeout.",
+        "Specify an ExHarness-supervised loop on Core createHarness and the BB-096 workspace/verifiers where each agent invocation is an ACT candidate, only passing declared verification can PROMOTE, failures feed back through tool resume up to maxAttempts, agent commits are folded into one candidate and the agent claim is telemetry only.",
+        "Specify a CLI entrypoint and an opt-in live smoke that never fakes success when a tool is missing or unauthenticated, plus Living docs stating the no-sandbox trust boundary.",
+        "Ground the design in the executed agent CLI probe and produce an exact file-level plan, fake-CLI fixtures, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-097.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+        "researchBaselineSha": "2a403ec5bb80487c0a3114d9edd7f6693a3aa55f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-098",
+      "featureId": "FEATURE-AGENT-TOOL-OBSERVATION",
+      "title": "Observe supervised and direct agent-tool runs",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-098.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-098.json",
+          "docs/blackboard/process/agent-tool-research/BB-098.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/observation.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify an append-only, digest-chained AGENT_TOOL_RUN_TRACE_V1 record per agent invocation covering tool, version, arm label, timing, exit, bounded redacted output excerpts, repository diff statistics, verification outcomes and ExHarness events/spans when supervised.",
+        "Specify per-tool output parsers that report token usage only when the tool reports it and otherwise record null with an explicit unavailable reason, never an estimate.",
+        "Specify secret redaction applied before any trace byte is written, proven by a planted-secret test.",
+        "Specify a deterministic descriptive report per tool and arm that never asserts acceptance or value, plus Living docs.",
+        "Ground the design in the executed agent CLI probe and delivered Core observability and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-098.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-098.json",
+        "researchBaselineSha": "2a403ec5bb80487c0a3114d9edd7f6693a3aa55f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-099",
+      "featureId": "FEATURE-AGENT-TOOL-VALUE",
+      "title": "Measure ExHarness-supervised versus direct agent-tool delivery",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-098",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-065",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-099.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-099.json",
+          "docs/blackboard/process/agent-tool-research/BB-099.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/evaluation.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify an owned local suite of calibrated agent tasks whose hidden acceptance tests are stored outside the agent worktree and applied only at independent evaluation.",
+        "Specify DIRECT_SINGLE, DIRECT_RETRY and EXHARNESS_SUPERVISED arms with matched per-tool fixed factors and attempt budget, and a pre-registration whose digest the runner enforces before any attempt.",
+        "Specify execution through the BB-065 benchmark public API with BB-098 traces as evidence, independent hidden-test evaluation, and a deterministic seeded paired-bootstrap reducer producing per-tool SUPERIOR, INFERIOR or INCONCLUSIVE with false-success, time, invocation and token metrics.",
+        "Specify a deterministic calibration over fake CLIs that reproduces the expected verdicts, and an opt-in cost-capped live pilot that records NOT_EVALUATED instead of fabricating results when a tool is unavailable.",
+        "Ground the design in the executed agent CLI probe and the planned benchmark, supervision and observation contracts and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-099.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-099.json",
+        "researchBaselineSha": "2a403ec5bb80487c0a3114d9edd7f6693a3aa55f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-097",
+    "nextWorkId": "BB-100",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

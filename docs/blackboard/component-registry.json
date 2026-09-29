@@ -467,6 +467,36 @@
           "packages/agentic-system/test/**"
         ]
       }
+    },
+    {
+      "id": "integration/agent-tools",
+      "contextOwner": "agent-tools",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/state.md"
+        ],
+        "sourceRoots": [
+          "packages/agent-tools/src/index.js",
+          "packages/agent-tools/src/tool-adapters.js",
+          "packages/agent-tools/src/process-runner.js",
+          "packages/agent-tools/src/supervisor.js",
+          "packages/agent-tools/src/run-trace.js",
+          "packages/agent-tools/src/report.js"
+        ],
+        "testRoots": [
+          "packages/agent-tools/test/*.test.js"
+        ],
+        "contractRefs": [
+          "AGENT_TOOL_ADAPTER_V1",
+          "AGENT_TASK_V1",
+          "AGENT_SUPERVISED_RESULT_V1",
+          "AGENT_TOOL_RUN_TRACE_V1"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agent-tools/**",
+          "benchmarks/agent-tools/**"
+        ]
+      }
     }
   ]
 }
