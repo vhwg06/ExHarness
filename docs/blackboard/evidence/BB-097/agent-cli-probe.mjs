@@ -28,12 +28,12 @@ const tools = {
   'kiro-cli': {
     version: ['--version'],
     help: { chat: ['chat', '--help'], mcp: ['mcp', '--help'] },
-    flags: { chat: ['--no-interactive', '--trust-all-tools', '--trust-tools', '--resume', '--agent', '--model'], mcp: ['add', 'list', 'status'] }
+    flags: { chat: ['--no-interactive', '--trust-all-tools', '--trust-tools', '--resume', '--resume-id', '--agent', '--model'], mcp: ['add', 'list', 'status'] }
   },
   agy: {
     version: ['--version'],
     help: { root: ['--help'] },
-    flags: { root: ['--print', '--continue', '--conversation', '--dangerously-skip-permissions', '--log-file', '--model', '--mode', 'accept-edits', '--add-dir'] }
+    flags: { root: ['--print', '--continue', '--conversation', '--print-timeout', '--output-format', '--project', '--new-project', '--dangerously-skip-permissions', '--log-file', '--model', '--mode', 'accept-edits', '--add-dir'] }
   }
 };
 
@@ -47,7 +47,7 @@ for (const [bin, spec] of Object.entries(tools)) {
       command: [bin, ...args].join(' '),
       helpAvailable: h.ok,
       flags: Object.fromEntries(spec.flags[surface].map((f) => [f, h.ok && has(h.text, f)])),
-      helpLines: h.ok ? h.text.split(/\r?\n/).map((l) => l.trim()).filter((l) => /--trust-tools|--trust-all-tools|--print|--sandbox|--mode|--resume|--continue|--json|--last|SESSION_ID|read from stdin|cwd filtering/.test(l)).slice(0, 16) : []
+      helpLines: h.ok ? h.text.split(/\r?\n/).map((l) => l.trim()).filter((l) => /--trust-tools|--trust-all-tools|--print|--output-format|--conversation|--project|--sandbox|--mode|--resume|--continue|--json|--last|SESSION_ID|read from stdin|cwd filtering/.test(l)).slice(0, 22) : []
     };
   }
   result.tools[bin] = entry;
