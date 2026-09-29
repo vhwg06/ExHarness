@@ -87,6 +87,9 @@
       "packages/oracle/test/resolution-durability.test.js",
       "packages/oracle/test/resolution-store.test.js",
       "test/oracle-context-resolution-durability.test.mjs"
+    ],
+    "expectedModified": [
+      "test/oracle-context-intelligence-architecture.test.mjs"
     ]
   },
   "sourceScope": {
@@ -119,7 +122,8 @@
       "docs/living/system/oracle/architecture.md",
       "docs/living/system/oracle/state.md",
       "docs/living/system/oracle/semantics.md",
-      "docs/living/system/oracle/workflow.md"
+      "docs/living/system/oracle/workflow.md",
+      "test/oracle-context-intelligence-architecture.test.mjs"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
@@ -299,6 +303,10 @@
     {
       "id": "living-docs",
       "command": "node --test test/oracle-context-resolution-durability.test.mjs --test-name-pattern='Living|not delivered|BB-064'"
+    },
+    {
+      "id": "oracle-architecture-regression",
+      "command": "node --test test/oracle-context-intelligence-architecture.test.mjs"
     }
   ],
   "researchGaps": [],
