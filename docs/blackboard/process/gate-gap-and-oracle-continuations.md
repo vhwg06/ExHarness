@@ -38,3 +38,14 @@ Executed probe `docs/blackboard/evidence/BB-091/continuation-probe-result.json`:
 | DELIVERED_TRUTH | `scripts/blackboard-delivery.mjs` collectEvidence, `scripts/blackboard-jev.mjs` materialize, `docs/blackboard/jev-policy.json`; `@exharness/oracle` root exports; Core `resolveContextRequirementBlocks` and `maxSerializedChars` |
 | PLANNED_CONTRACT | BB-082 objective supersession (serializes outer-Blackboard writes); BB-087 fixed facade; BB-088 Context Graph; BB-081 PROMOTE_ASYNC / KEEP_SYNC_BASELINE / INCONCLUSIVE; BB-065 @exharness/benchmark |
 | RESEARCH_DESIRED_STATE | BB-064 continuationSchedule and benchmarkHandoff; this brief |
+
+## Per-task research records
+
+Each record is derived from the canonical objective, READY plan and readiness judgment and adds no new claims:
+
+- [BB-090](blackboard-control-research/BB-090.md)
+- [BB-091](oracle-context-intelligence-research/BB-091.md)
+- [BB-092](oracle-context-intelligence-research/BB-092.md)
+- [BB-093](oracle-context-intelligence-research/BB-093.md)
+- [BB-094](oracle-context-intelligence-research/BB-094.md)
+- [BB-095](oracle-context-intelligence-research/BB-095.md)

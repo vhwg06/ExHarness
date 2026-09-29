@@ -41,3 +41,11 @@ Backend and QA keep their public `resolveBackendContext` / `resolveQaContext` en
 | DELIVERED_TRUTH | `@exharness/oracle` root exports (createOracleContextResolver, createRetrievalPlanner.plan/execute, createSourceCatalog, createExactRepositoryProvider, createExactArtifactProvider, createContextGraphProvider, defineContextResolution, assertConsumableContextResolution, ProviderFailure); `packages/agentic-system/src/oracle.js`; Core `resolveContextRequirementBlocks` |
 | PLANNED_CONTRACT | none for BB-087; BB-087 fixed facade for BB-088/BB-089 |
 | RESEARCH_DESIRED_STATE | BB-064 continuationSchedule; BB-062 graph experiments; this brief |
+
+## Per-task research records
+
+Each record is derived from the canonical objective, READY plan and readiness judgment and adds no new claims:
+
+- [BB-087](oracle-context-intelligence-research/BB-087.md)
+- [BB-088](oracle-context-intelligence-research/BB-088.md)
+- [BB-089](oracle-context-intelligence-research/BB-089.md)

@@ -101,3 +101,11 @@ Executed BB-083 evidence carried forward: the GEPA seam probe shows aggregate ac
 | BB-086 | packages/agentic-system/src/improvement-pattern.js, improvement-proposal.js; scripts/self-improve/** | docs/living/system/agentic-application/self-improvement.md |
 
 File names differ from BB-083's planned feedback-*.js so the split never collides with the not-yet-superseded BB-083 record.
+
+## Per-task research records
+
+Each record is derived from the canonical objective, READY plan and readiness judgment and adds no new claims:
+
+- [BB-084](feedback-research/BB-084.md)
+- [BB-085](feedback-research/BB-085.md)
+- [BB-086](feedback-research/BB-086.md)
