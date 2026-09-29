@@ -17,7 +17,7 @@ function boundaryViolations({ oracleSource, coreSource, adapterSource, agenticPa
   if (/@exharness\/oracle|packages\/oracle|\.\.\/\.\.\/oracle/.test(coreSource)) violations.push("Core Oracle implementation import");
   if (/\.readFile\s*\(|\.readArtifact\s*\(/.test(adapterSource)) violations.push("copied source loop");
   if (agenticPackage.dependencies?.["@exharness/oracle"] !== "file:../oracle") violations.push("missing package dependency");
-  if (oracleExports.join(",") !== "DurabilityFailure,ProviderFailure,ProviderFailureReason,ProviderOperation,ResolutionStoreError,SourceObservationState,assertConsumableContextResolution,contextItemDigest,contextMaterializationId,contextRequirementId,contextResolutionId,createContextGraphProvider,createDurableResolutionCoordinator,createExactArtifactProvider,createExactRepositoryProvider,createExternalSourceProvider,createLexicalSearchProvider,createResolutionStore,createRetrievalPlanner,createSemanticCodeProvider,createSourceCatalog,createStructuralMapProvider,defineContextRequirement,defineContextResolution,defineContextResolutionReceipt,defineDerivationInput,defineProviderCandidate,defineProviderDescriptor,defineResolverConfiguration,defineSourceObservation,evaluateReceiptCurrentness,isReusableResolution,observationDigest,projectStructuralMap,readApplicationArtifacts,readRepositorySources,receiptId,resolverConfigDigest,reuseKey") violations.push("Oracle exports");
+  if (oracleExports.join(",") !== "DurabilityFailure,ProviderFailure,ProviderFailureReason,ProviderOperation,ResolutionStoreError,SourceObservationState,assertConsumableContextResolution,contextItemDigest,contextMaterializationId,contextRequirementId,contextResolutionId,createContextGraphProvider,createDurableResolutionCoordinator,createExactArtifactProvider,createExactRepositoryProvider,createExternalSourceProvider,createLexicalSearchProvider,createOracleContextResolver,createResolutionStore,createRetrievalPlanner,createSemanticCodeProvider,createSourceCatalog,createStructuralMapProvider,defineContextRequirement,defineContextResolution,defineContextResolutionReceipt,defineDerivationInput,defineProviderCandidate,defineProviderDescriptor,defineResolverConfiguration,defineSourceObservation,evaluateReceiptCurrentness,isReusableResolution,observationDigest,projectStructuralMap,readApplicationArtifacts,readRepositorySources,receiptId,resolverConfigDigest,reuseKey") violations.push("Oracle exports");
   if (/\b(?:claimWork|publishDelivery|acceptWork|recoverWork|scheduleWork)\s*\(/.test(oracleSource)) violations.push("Oracle lifecycle authority");
   return violations;
 }
@@ -69,4 +69,17 @@ test("research evidence and provider selection deferred with license", () => {
   assert.match(plan.externalEvidenceSummary.thresholdRule, />=1,000/);
   assert.match(plan.externalEvidenceSummary.selectionRule, /BB-062/);
   assert.match(read("docs/living/system/oracle/architecture.md"), /Serena.*GPL-3\.0-or-later.*SolidLSP.*MIT/s);
+});
+
+test("foundation facade stays infrastructure-owned with zero pre-render dispatch", () => {
+  const oracleSource = filesUnder("packages/oracle/src").map((file) => fs.readFileSync(file, "utf8")).join("\n");
+  assert.doesNotMatch(oracleSource, /(?<!\.)\b(?:dispatchModel|callModel|invokeAction|claimWork|publishDelivery|acceptWork)\s*\(/);
+  assert.doesNotMatch(oracleSource, /from\s*["'][^"']*agentic-system|from\s*["'][^"']*core-harness/);
+  const facade = read("packages/oracle/src/context-resolution.js");
+  assert.match(facade, /createOracleContextResolver/);
+  assert.match(facade, /preObserve|post.*observ|STALE_DURING_RESOLUTION/);
+  const benchmark = read("scripts/oracle-context-intelligence/benchmark-profile.mjs");
+  assert.match(benchmark, /O0_STATIC_CONTEXT_CONTROL/);
+  assert.match(benchmark, /UNKNOWN stays UNKNOWN/);
+  assert.doesNotMatch(benchmark, /(?<!\.)\bfetch\s*\(|TYPESAFE_API_KEY|ANTHROPIC_API_KEY|OPENAI_API_KEY/);
 });

@@ -50,6 +50,10 @@ If a concrete MCP-backed source appears later, MCP remains a source/capability a
 
 Caching/RAG are not missing features merely because they are absent. If concrete pressure makes them necessary, that work must first appear on the Blackboard.
 
+## Delivered foundation
+
+The delivered facade `createOracleContextResolver` resolves through pre-observation, deterministic planning, provider execution, post-observation fencing and optional exact-key reuse behind the Core injected port. `ORACLE_FOUNDATION_PROBE_V1` covers repository CURRENT and manifest-protected artifact flows; `O0_STATIC_CONTEXT_CONTROL` anchors the benchmark handoff with UNKNOWN accounting. Graph productization, planner optimization, progressive runtime, adaptive budgeting, async interaction and live profile acceptance remain not delivered.
+
 ## Routing
 
 - **current Oracle capability semantics -> `capabilities.md`**

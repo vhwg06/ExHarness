@@ -37,3 +37,7 @@ Current source has **no MCP adapter** and no MCP-owned Oracle lifecycle. MCP req
 Any later concrete MCP-backed source must remain a source/capability adapter below the application-owned context/work lifecycle boundary. MCP protocol support alone does not create a third Oracle source class.
 
 Current source has a composition-time SourceCatalog and deterministic RetrievalPlanner. It has no background provider lifecycle, automatic refresh, MCP adapter framework, graph database or model-assisted planner.
+
+## Delivered foundation facade
+
+`createOracleContextResolver` composes delivered requirement parsing, authoritative pre-observation, optional exact-key reuse, deterministic planner plus provider execution, candidate validation, materialization, post-observation fencing and optional receipt publication behind the existing Core injected resolver port. `ORACLE_FOUNDATION_PROBE_V1` exercises repository CURRENT plus manifest-protected artifact paths with budget and reuse evidence. `O0_STATIC_CONTEXT_CONTROL` versus foundation comparison freezes non-Oracle factors with UNKNOWN accounting. Graph productization, planner optimization, progressive runtime, adaptive budgeting, async interaction and live profile acceptance remain not delivered.
