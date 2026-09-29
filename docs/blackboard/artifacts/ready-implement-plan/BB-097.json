@@ -209,7 +209,7 @@
   "researchEvidence": [
     {
       "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
-      "finding": "Executed: codex-cli 0.158.0, kiro-cli-chat 2.24.1 and agy 1.1.1 installed; non-interactive, resume and permission flags present for all; --json only for codex."
+      "finding": "Executed: codex-cli 0.158.0, kiro-cli-chat 2.24.1 and agy 1.1.1 installed; non-interactive, resume and permission flags present for all; --json only for codex. The Windows Codex npm shim was resolved and probed through process.execPath without cmd.exe."
     },
     {
       "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-096.json",
@@ -342,6 +342,10 @@
         {
           "ref": "docs/blackboard/evidence/BB-097/cli-session-docs.md",
           "match": "resolves the most recent conversation for the current workspace path"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+          "match": "\"codexShimResolvedToNodeEntry\": true"
         }
       ],
       "supportingPlanFields": [

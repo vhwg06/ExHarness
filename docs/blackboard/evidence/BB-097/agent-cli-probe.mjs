@@ -11,9 +11,25 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const win = process.platform === 'win32';
 
+function codexNodeEntry() {
+  if (!win) return null;
+  for (const dir of (process.env.PATH ?? '').split(path.delimiter)) {
+    const shim = path.join(dir, 'codex.cmd');
+    if (!fs.existsSync(shim)) continue;
+    const body = fs.readFileSync(shim, 'utf8');
+    if (!/node_modules[\\/]@openai[\\/]codex[\\/]bin[\\/]codex\.js/i.test(body)) continue;
+    const entry = path.join(dir, 'node_modules', '@openai', 'codex', 'bin', 'codex.js');
+    if (fs.existsSync(entry)) return entry;
+  }
+  return null;
+}
+const codexEntry = codexNodeEntry();
+
 function run(bin, args) {
-  // npm-installed codex is a .cmd/.ps1 shim on Windows; run it through cmd.exe with an argument array.
-  const [cmd, argv] = win && bin === 'codex' ? ['cmd.exe', ['/d', '/c', 'codex', ...args]] : [bin, args];
+  // The installed Codex npm shim targets a JS entry. Probe it without a shell.
+  const [cmd, argv] = win && bin === 'codex'
+    ? [process.execPath, [codexEntry ?? '__missing_codex_entry__', ...args]]
+    : [bin, args];
   const r = spawnSync(cmd, argv, { encoding: 'utf8', timeout: 15000, windowsHide: true });
   return { ok: r.error == null && r.status === 0, text: `${r.stdout ?? ''}\n${r.stderr ?? ''}`, error: r.error?.code ?? null, timedOut: r.error?.code === 'ETIMEDOUT' };
 }
@@ -38,6 +54,7 @@ const tools = {
 };
 
 const result = { kind: 'BB097_AGENT_CLI_PROBE_RESULT', version: 1, platform: `${process.platform}-${process.arch}`, node: process.version, tools: {} };
+result.codexShimResolvedToNodeEntry = !win || codexEntry != null;
 for (const [bin, spec] of Object.entries(tools)) {
   const v = run(bin, spec.version);
   const entry = { installed: v.ok, version: v.ok ? v.text.trim().split(/\r?\n/)[0] : null, surfaces: {} };
