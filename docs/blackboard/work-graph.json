@@ -46,7 +46,8 @@
         "FEATURE-DELIVERY-RUNTIME",
         "FEATURE-DELIVERY-SANDBOX",
         "FEATURE-DELIVERY-SCM",
-        "FEATURE-DELIVERY-FIRST-SLICE"
+        "FEATURE-DELIVERY-FIRST-SLICE",
+        "FEATURE-DELIVERY-REAL-BACKEND-QA"
       ],
       "artifactRefs": [
         "docs/blackboard/process/delivery-product-roadmap.md",
@@ -770,6 +771,20 @@
         "docs/blackboard/process/gate-gap-and-oracle-continuations.md"
       ],
       "acceptanceTaskId": "BB-095"
+    },
+    {
+      "id": "FEATURE-DELIVERY-REAL-BACKEND-QA",
+      "topicId": "TOPIC-DELIVERY-FOUNDATION",
+      "kind": "FEATURE",
+      "title": "Delivered Backend/QA acceptance bound to a real repository and real verification",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-096"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-research/BB-096.md"
+      ],
+      "acceptanceTaskId": "BB-096"
     }
   ],
   "tasks": [
@@ -3235,10 +3250,52 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-096",
+      "featureId": "FEATURE-DELIVERY-REAL-BACKEND-QA",
+      "title": "Bind delivered Backend/QA acceptance to a real repository and real verification processes",
+      "kind": "IMPLEMENTATION",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/backend-qa-execution"
+      ],
+      "dependencies": [],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-096.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-096.json",
+          "docs/blackboard/process/delivery-research/BB-096.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-096/real-execution-probe.mjs",
+          "docs/blackboard/evidence/BB-096/real-execution-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify a real local git workspace adapter whose ACT commits declared edits in an isolated detached worktree, carries the commit sha as candidate.version, rejects unsafe paths and no-op edits, and never changes the source repository HEAD or working tree.",
+        "Specify a real local command verifier that executes an argument-array process without a shell, is PASS only on exit 0, fails on revision mismatch or post-run tree mutation, terminates the process tree on timeout as INCONCLUSIVE, and binds evidence to the evaluated commit.",
+        "Specify an end-to-end proof that the delivered BackendWorker driven by a real Core CodeAct strategy with a deterministic model reaches ACCEPT only when the real commit makes the real test pass, and never ACCEPTs the executed probe shape (no or unrelated edit, failing test).",
+        "Specify an end-to-end proof that the delivered QaWorker verifies the accepted Backend commit through real command verifiers on a read-only checkout and fails when QA mutates the checkout or verifies a different revision.",
+        "Ground the design in the executed BB-096 probe, correct README and Living agentic docs so injected fixtures are distinguished from delivered local adapters, and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-096.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-096.json",
+        "researchBaselineSha": "8691ceb6b391bb0b5262e659ba28e2a8589a7a6f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-096",
+    "nextWorkId": "BB-097",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

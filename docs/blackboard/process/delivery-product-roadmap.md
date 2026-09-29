@@ -146,3 +146,7 @@ BB-083 research is consumed as design input by three one-way layers: [BB-084](ob
 ## Worker gate gap + Oracle continuations â€” BB-090..095
 
 [Brief](gate-gap-and-oracle-continuations.md): BB-090 closes the Worker gate gap that let BB-064 pass with untested negatives (BB-064 stays DONE). BB-091..095 register the remaining BB-064 continuations in fixed order: planner ablation, progressive resolution, budget profiles, Core profile conformance, held-out profile acceptance.
+
+## Real Backend/QA execution — BB-096
+
+[Research brief](delivery-research/BB-096.md): the executed probe shows delivered Backend ACCEPT with PASS mutation/typecheck/tests on an unchanged real repository whose test fails; BB-096 adds a local git workspace and shell-free command verifier and proves Backend/QA through a real Core CodeAct strategy. Live provider, sandbox and SCM remain BB-066..068.

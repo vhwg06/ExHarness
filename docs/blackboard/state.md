@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-096
+next-work-id: BB-097
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -45,6 +45,7 @@ NONE
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 - BB-087 [WORKER/EXECUTION] — Fix Oracle facade budget accounting and typed provider failure
 - BB-090 [WORKER/EXECUTION] — Bind declared negative cases to executed subject-invoking tests in the Worker gate
+- BB-096 [RESEARCH_SA/RESEARCH] — Bind delivered Backend/QA acceptance to a real repository and real verification processes
 
 ## Dependency graph
 
@@ -94,6 +95,7 @@ BB-092 [BLOCKED_BY BB-091] <- BB-091
 BB-093 [BLOCKED_BY BB-092] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094,BB-065] <- BB-094, BB-065
+BB-096 [RESEARCH_SCHEDULABLE] <- ROOT
 ```
 
 ## Context semantics

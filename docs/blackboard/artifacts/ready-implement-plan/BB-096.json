@@ -1,0 +1,528 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-096",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-096.json",
+    "hash": "8b48eb77ce87cae2d238295c2e056b9525e95de09499cc5755013f75e7903ebf"
+  },
+  "scope": [
+    "agentic.local-git-workspace",
+    "agentic.local-command-verification",
+    "agentic.backend-qa-real-execution-proof"
+  ],
+  "outOfScope": [
+    "Live model provider adapters or a real coding agent (BB-066), sandbox/network/tool isolation (BB-067), SCM/CI/PR delivery (BB-068), preview deployment (BB-069) and installable CLI distribution (BB-073).",
+    "Changing packages/core-harness (including the separately observed CodeAct session-open timeout leak), packages/oracle, BackendCompletionPolicy or QaCompletionPolicy semantics.",
+    "Rewriting or deleting existing fake-based agentic tests; they remain valid unit fixtures.",
+    "Remote repositories, cloning, pushing or branch creation in the source repository."
+  ],
+  "constraints": [
+    "New adapters live only in packages/agentic-system/src/local-git-workspace.js and packages/agentic-system/src/local-command-verifier.js and are exported from packages/agentic-system/src/index.js; backend-*.js and qa-*.js are not edited.",
+    "Every git and verification process is started with node:child_process spawn/execFile using an argument array and shell:false; no command string is ever interpolated.",
+    "Every test in the new file is titled with its criterion prefix (RB1..RB5 followed by a space), declares { timeout: 60000 }, creates its repositories under os.tmpdir() and removes worktrees and temp directories in finally blocks.",
+    "The model used by the end-to-end tests is a deterministic Core model adapter (defineModelAdapter-compatible generate()) whose next action is a pure function of request.observations; no network or provider credential is used.",
+    "Adapters are trusted local fixtures, not a sandbox; docs must say so and point isolation to BB-067.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "Backend ACCEPT through the local adapters requires a real commit in the isolated worktree and a PASS tests record executed at that exact commit.",
+    "A verification record is PASS only for an exit-0 process run at HEAD == candidate.version whose run left HEAD and the working tree unchanged.",
+    "The source repository HEAD, branches and working tree are never modified by Backend or QA runs.",
+    "Core, Oracle, completion policies and existing fake-based agentic tests are unchanged."
+  ],
+  "architectureDecisions": [
+    "D1 — createLocalGitWorkspace({ repositoryRoot, baseRevision, worktreeRoot }) runs `git worktree add --detach <worktreeRoot> <baseRevision>` and returns { root, act, observe, head, dispose }. dispose runs `git worktree remove --force` and deletes worktreeRoot. baseRevision must be a full 40-hex commit that exists in repositoryRoot.",
+    "D2 — act({ candidate, action }) accepts action.kind === \"APPLY_BACKEND_CHANGE\" with action.edits [{ path, content }]. Paths must be relative POSIX, non-empty, without \"..\", drive letters, leading \"/\" or a \".git\" segment, else it throws LOCAL_WORKSPACE_UNSAFE_PATH. It requires HEAD == candidate.version (else LOCAL_WORKSPACE_REVISION_MISMATCH), writes the files, runs `git add -A` and commits with fixed author/committer env (EXHARNESS_LOCAL_WORKSPACE identity, GIT_CONFIG_NOSYSTEM=1). It returns { mutated: true, candidate: { id: candidate.id, version: <new sha> }, result: { artifacts: [{ ref: `git:<sha>:<path>`, path }] } }. When `git status --porcelain` is empty after writing, it returns { mutated: false, candidate } and creates no commit.",
+    "D3 — observe({ candidate }) returns { candidate, head, files: <`git ls-files` at HEAD> } without writing.",
+    "D4 — createLocalCommandVerifier({ name, claim, root, command, args, timeoutMs = 30000, maxOutputBytes = 65536, requireUnchangedTree = true }) returns a Core verifier { name, verify }. verify({ candidate }) first requires `git rev-parse HEAD` in root == candidate.version, else FAIL with evidence reason REVISION_MISMATCH and no process spawned. It snapshots `git status --porcelain`, spawns command/args with cwd root and shell:false, and captures bounded stdout/stderr.",
+    "D5 — Status mapping: timeout → kill the process tree (POSIX: spawn detached and process.kill(-pid, \"SIGKILL\"); win32: execFile(\"taskkill\", [\"/pid\", String(pid), \"/T\", \"/F\"])), then INCONCLUSIVE with reason TIMEOUT. Exit 0 → PASS; non-zero or spawn error → FAIL. When requireUnchangedTree and HEAD or porcelain status changed after the run → FAIL with reason TREE_MUTATED, overriding PASS.",
+    "D6 — Verification evidence is an array of strings: `${name}:revision=<sha>`, `${name}:exit=<code|null>`, `${name}:reason=<PASS|FAIL|TIMEOUT|REVISION_MISMATCH|TREE_MUTATED|SPAWN_ERROR>`, `${name}:stdout-sha256=<hex>`, `${name}:stderr-sha256=<hex>`. The summary carries at most the last 2000 characters of output. Return shape { claim, status, evidence, summary } matches the delivered fake verifier shape in packages/agentic-system/test/durable-backend-qa.test.js.",
+    "D7 — Backend proof: createBackendWorker({ strategy: createCodeActStrategy({ model, executor, maxTurns: 12, maxDurationMs: 30000 }), workspace, verifiers: [typecheck, tests] }). typecheck runs `node --check src/server.js`; tests runs `node --test test/`. The deterministic model emits CAPABILITY actions for AVOCapability.ACT (with edits), the two verification capabilities, EVALUATE and PROMOTE. It then returns return_result with a BackendWorkResult whose revision and artifacts are read from the ACT observation. The objective repository.revision is the fixture base commit sha.",
+    "D8 — QA proof: after Backend ACCEPT, a second createLocalGitWorkspace at the accepted sha serves as a read-only checkout. createQaWorker({ strategy: createCodeActStrategy(...deterministic model...), verifiers: [qa-behavior, qa-regression] }) uses local command verifiers with requireUnchangedTree true on that checkout, and QaCompletion must ACCEPT. The QA run goes through the delivered runBackendThenQaObjective or the equivalent delivered QA entry, not a new orchestration path.",
+    "D9 — Reproduction of the probe: the RB3 negative cases reuse the probe fixture shape, a temp git repository whose test/server.test.js fails until src/server.js returns { status: \"ok\" }. They assert that a model that edits nothing or edits an unrelated file never yields BackendCompletionAction.ACCEPT.",
+    "D10 — Evidence basis: executed BB-096 probe shows ACCEPT with PASS mutation/typecheck/tests on an unchanged repository whose real test exits 1. It also shows no process execution in agentic source, no agentic test using a Core model strategy, and no READY delivery plan owning BackendWorker/BackendCompletion or the README claim."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/local-git-workspace.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb096-real-backend-qa.test.js",
+      "README.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/src/backend-*.js",
+      "packages/agentic-system/src/qa-*.js",
+      "packages/agentic-system/test/durable-backend-qa.test.js",
+      "packages/agentic-system/test/wave-a.test.js",
+      "docs/blackboard/**",
+      "scripts/blackboard-*.mjs"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/delivery-research/BB-096.md",
+      "docs/blackboard/evidence/BB-096/real-execution-probe-result.json",
+      "packages/agentic-system/src/backend-worker.js",
+      "packages/agentic-system/src/backend-completion.js",
+      "packages/agentic-system/src/qa-worker.js",
+      "packages/core-harness/src/codeact-strategy.js",
+      "README.md"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/local-git-workspace.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "L1 — Git workspace [RB1]: implement D1-D3. \"RB1 ...\" tests cover commit on edit (sha == HEAD, file content at `git show`), no-op edit → mutated false and no commit, each unsafe path class throws LOCAL_WORKSPACE_UNSAFE_PATH, revision mismatch throws, and source repository HEAD/branches/porcelain are unchanged after act and dispose.",
+    "L2 — Command verifier [RB2]: implement D4-D6. \"RB2 ...\" tests cover exit 0 → PASS with revision evidence, exit 1 → FAIL, HEAD != candidate.version → FAIL REVISION_MISMATCH with zero spawns, a command that writes a file → FAIL TREE_MUTATED, a `setInterval` process with timeoutMs 300 → INCONCLUSIVE TIMEOUT within 10s with the pid no longer alive, and an argument containing `; echo injected` passed literally.",
+    "L3 — Backend end-to-end [RB3]: implement D7 and D9 in the test file. \"RB3 ...\" tests cover the correct edit → BackendCompletionAction.ACCEPT with result.revision == worktree HEAD, mutation evidence afterRevision == HEAD, and the tests record containing `backend-tests:revision=<HEAD>`. The no-edit model and the unrelated-edit model each never ACCEPT. The source repository is unchanged.",
+    "L4 — QA end-to-end [RB4]: implement D8. \"RB4 ...\" tests cover QA ACCEPT on the accepted sha with both QA records PASS at that revision, a mutating QA command → QA not ACCEPT with TREE_MUTATED evidence, and a checkout at the base sha instead of the accepted sha → REVISION_MISMATCH.",
+    "L5 — Exports + docs [RB5]: export both factories from packages/agentic-system/src/index.js. The \"RB5 ...\" test asserts they are exported functions. Rewrite the README pipeline line so mutation/typecheck/tests evidence is produced by injected adapters, with delivered local git/command adapters. Document the adapters, their trust boundary (not a sandbox; BB-067) and the absence of a live provider (BB-066) in docs/living/system/agentic-application/state.md and capabilities.md. Then run test:agentic, verify:current-docs and npm test."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "RB1",
+      "statement": "The local git workspace commits declared edits in an isolated detached worktree with candidate.version = commit sha, rejects unsafe paths, revision mismatch and no-op edits, and leaves the source repository unchanged.",
+      "verificationIds": [
+        "rb1-workspace",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "RB1 test output over real temp git repositories."
+      ]
+    },
+    {
+      "id": "RB2",
+      "statement": "The local command verifier runs shell-free processes, is PASS only on exit 0 at HEAD == candidate.version with an unchanged tree, fails on mismatch or mutation, is INCONCLUSIVE with a killed process tree on timeout, and emits revision-bound evidence.",
+      "verificationIds": [
+        "rb2-verifier",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "RB2 test output including timeout and injection cases."
+      ]
+    },
+    {
+      "id": "RB3",
+      "statement": "The delivered BackendWorker driven by a Core CodeAct strategy with a deterministic model ACCEPTs only when its real commit makes the real test pass, and never ACCEPTs the probe shape.",
+      "verificationIds": [
+        "rb3-backend",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "RB3 test output for accept, no-edit and unrelated-edit cases."
+      ]
+    },
+    {
+      "id": "RB4",
+      "statement": "The delivered QaWorker verifies the accepted commit through real command verifiers on a read-only checkout and does not ACCEPT when QA mutates the checkout or verifies another revision.",
+      "verificationIds": [
+        "rb4-qa",
+        "agentic-regression"
+      ],
+      "evidenceRequired": [
+        "RB4 test output for accept, mutation and revision-mismatch cases."
+      ]
+    },
+    {
+      "id": "RB5",
+      "statement": "Both adapters are exported, and README plus Living agentic docs distinguish injected fixtures from the delivered local adapters and state their trust boundary, with no Core, Oracle, completion-policy or existing-test change.",
+      "verificationIds": [
+        "rb5-exports",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "RB5 test output, docs diff, git diff showing no forbiddenWrite paths, verify:current-docs and npm test logs."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Backend ACCEPT through the local adapters requires a real commit in the isolated worktree and a PASS tests record executed at that exact commit.",
+      "criterionIds": [
+        "RB1",
+        "RB3"
+      ]
+    },
+    {
+      "invariant": "A verification record is PASS only for an exit-0 process run at HEAD == candidate.version whose run left HEAD and the working tree unchanged.",
+      "criterionIds": [
+        "RB2",
+        "RB4"
+      ]
+    },
+    {
+      "invariant": "The source repository HEAD, branches and working tree are never modified by Backend or QA runs.",
+      "criterionIds": [
+        "RB1",
+        "RB3"
+      ]
+    },
+    {
+      "invariant": "Core, Oracle, completion policies and existing fake-based agentic tests are unchanged.",
+      "criterionIds": [
+        "RB5"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "rb1-workspace",
+      "command": "node --test --test-name-pattern=\"^RB1 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "rb2-verifier",
+      "command": "node --test --test-name-pattern=\"^RB2 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "rb3-backend",
+      "command": "node --test --test-name-pattern=\"^RB3 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "rb4-qa",
+      "command": "node --test --test-name-pattern=\"^RB4 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "rb5-exports",
+      "command": "node --test --test-name-pattern=\"^RB5 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-096/real-execution-probe-result.json",
+      "finding": "Executed: runBackendObjective ACCEPTs with PASS mutation/typecheck/tests while the real git HEAD is unchanged and the real test exits 1; zero verification processes spawned."
+    },
+    {
+      "ref": "packages/agentic-system/src/backend-worker.js",
+      "finding": "DELIVERED_TRUTH: strategy, workspace and verifiers are injected; completion evidence reflects only what they report."
+    },
+    {
+      "ref": "packages/core-harness/src/codeact-strategy.js",
+      "finding": "DELIVERED_TRUTH: CodeAct CAPABILITY actions call invoke(action.name, input), so AVO capabilities are reachable from a real Core strategy inside createHarness."
+    },
+    {
+      "ref": "docs/blackboard/process/delivery-research/BB-096.md",
+      "finding": "Selected detached git worktree and shell-free command verifier; rejected directory copy, shell runner and CI polling; isolation stays with BB-067."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [],
+    "workerStart": "Confirm createBackendWorker/createQaWorker option shapes, AVO capability names and createCodeActStrategy CAPABILITY action shape at the worker baseline match the research baseline.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "BackendWorker, QaWorker, BackendCompletionPolicy, QaCompletionPolicy, createCodeActStrategy, createHarness strategy composition"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-066 runtime adapter, BB-067 sandbox, BB-068 SCM, BB-069 first slice; none is required or described as delivered"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "local git workspace and local command verifier contracts defined here"
+      ]
+    },
+    "contradiction": "If the delivered BackendWorker cannot run a createCodeActStrategy strategy, or if ACCEPT through real adapters requires editing backend-*.js, qa-*.js, a completion policy or Core, stop PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "None beyond the delivered Backend/QA path; git available on PATH.",
+    "completion": "All RB criterion runs + test:agentic + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No Core/Oracle/completion-policy edits, no shell-string execution, no live provider or network, no edits to existing fake-based tests."
+  },
+  "ciContract": {
+    "checks": [
+      "rb1-workspace",
+      "rb2-verifier",
+      "rb3-backend",
+      "rb4-qa",
+      "rb5-exports",
+      "agentic-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "existing Backend/QA APIs and completion semantics",
+      "existing fake-based tests"
+    ],
+    "add": [
+      "local git workspace",
+      "local command verifier",
+      "real-execution tests",
+      "docs"
+    ],
+    "rollback": "Remove the two modules, their exports, the new test file and the doc changes."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-096 objective + executed real-execution probe + delivered Backend/QA source",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "real git/process evidence + no forbidden writes + docs",
+      "forbidden": [
+        "Core/Oracle/completion-policy edits",
+        "shell execution",
+        "live provider"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living agentic docs describe the delivered local git workspace and command verifier, that default tests still use injected fixtures, that adapters are not a sandbox, and that no live model provider exists."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify a real local git workspace adapter whose ACT commits declared edits in an isolated detached worktree, carries the commit sha as candidate.version, rejects unsafe paths and no-op edits, and never changes the source repository HEAD or working tree.",
+      "criterionIds": [
+        "RB1"
+      ],
+      "planElements": [
+        "L1"
+      ],
+      "verificationIds": [
+        "rb1-workspace",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/backend-worker.js",
+        "docs/blackboard/evidence/BB-096/real-execution-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/backend-worker.js",
+          "match": "BackendWorker requires workspace.act()"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-096/real-execution-probe-result.json",
+          "match": "\"repositoryHeadUnchanged\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify a real local command verifier that executes an argument-array process without a shell, is PASS only on exit 0, fails on revision mismatch or post-run tree mutation, terminates the process tree on timeout as INCONCLUSIVE, and binds evidence to the evaluated commit.",
+      "criterionIds": [
+        "RB2"
+      ],
+      "planElements": [
+        "L2"
+      ],
+      "verificationIds": [
+        "rb2-verifier",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-096/real-execution-probe-result.json",
+        "packages/agentic-system/src/backend-completion.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-096/real-execution-probe-result.json",
+          "match": "\"noProcessExecutionInAgenticSource\": true"
+        },
+        {
+          "ref": "packages/agentic-system/src/backend-completion.js",
+          "match": "action = BackendCompletionAction.ACCEPT;"
+        }
+      ],
+      "supportingPlanFields": [
+        "constraints"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify an end-to-end proof that the delivered BackendWorker driven by a real Core CodeAct strategy with a deterministic model reaches ACCEPT only when the real commit makes the real test pass, and never ACCEPTs the executed probe shape (no or unrelated edit, failing test).",
+      "criterionIds": [
+        "RB3"
+      ],
+      "planElements": [
+        "L3"
+      ],
+      "verificationIds": [
+        "rb3-backend",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        6,
+        8
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/codeact-strategy.js",
+        "docs/blackboard/evidence/BB-096/real-execution-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/codeact-strategy.js",
+          "match": "invoke(action.name, clone(action.input))"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-096/real-execution-probe-result.json",
+          "match": "\"acceptedWithoutRealMutationOrPassingTests\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify an end-to-end proof that the delivered QaWorker verifies the accepted Backend commit through real command verifiers on a read-only checkout and fails when QA mutates the checkout or verifies a different revision.",
+      "criterionIds": [
+        "RB4"
+      ],
+      "planElements": [
+        "L4"
+      ],
+      "verificationIds": [
+        "rb4-qa",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        7
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/qa-worker.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/qa-worker.js",
+          "match": "QaWorker is non-mutating"
+        },
+        {
+          "ref": "packages/agentic-system/src/qa-worker.js",
+          "match": "QaWorker requires strategy.run()"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariants"
+      ]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed BB-096 probe, correct README and Living agentic docs so injected fixtures are distinguished from delivered local adapters, and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "RB1",
+        "RB2",
+        "RB3",
+        "RB4",
+        "RB5"
+      ],
+      "planElements": [
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5"
+      ],
+      "verificationIds": [
+        "rb1-workspace",
+        "rb2-verifier",
+        "rb3-backend",
+        "rb4-qa",
+        "rb5-exports",
+        "docs",
+        "repository"
+      ],
+      "decisionIndexes": [
+        9
+      ],
+      "sourceRefs": [
+        "README.md",
+        "docs/blackboard/process/delivery-research/BB-096.md",
+        "docs/blackboard/evidence/BB-096/real-execution-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "README.md",
+          "match": "-> mutation + typecheck + tests evidence"
+        },
+        {
+          "ref": "docs/blackboard/process/delivery-research/BB-096.md",
+          "match": "## Discriminating experiment"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-096/real-execution-probe-result.json",
+          "match": "\"backendWorkerPathOwnedByNoPlan\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "livingDocs",
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "An edit path that is absolute, contains \"..\", a drive letter or a \".git\" segment throws LOCAL_WORKSPACE_UNSAFE_PATH and writes nothing.",
+    "An edit set that produces no diff returns mutated false, creates no commit and cannot lead to Backend ACCEPT.",
+    "ACT or verify when HEAD differs from candidate.version fails with a revision mismatch and spawns no verification process.",
+    "A verification process exiting non-zero yields FAIL; one exceeding timeoutMs yields INCONCLUSIVE TIMEOUT and its process tree is no longer alive.",
+    "A verification or QA command that changes HEAD or the working tree yields FAIL TREE_MUTATED even when it exits 0.",
+    "An argument containing shell metacharacters is passed literally and never interpreted by a shell.",
+    "The executed probe shape (model makes no edit or an unrelated edit while test/server.test.js fails) never yields BackendCompletionAction.ACCEPT.",
+    "QA run on a checkout of the base sha instead of the accepted Backend sha does not ACCEPT.",
+    "Any Backend or QA run leaves the source repository HEAD, branch list and porcelain status identical to before.",
+    "Any write to a forbiddenWrite path (Core, Oracle, backend-*.js, qa-*.js, existing fake-based tests, docs/blackboard) fails scope verification."
+  ]
+}

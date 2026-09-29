@@ -440,6 +440,33 @@
           "test/**"
         ]
       }
+    },
+    {
+      "id": "agentic/backend-qa-execution",
+      "contextOwner": "agentic-application/backend-qa-execution",
+      "contextProfile": {
+        "currentSystemRefs": [
+          "docs/living/system/agentic-application/state.md",
+          "docs/living/system/agentic-application/capabilities.md"
+        ],
+        "sourceRoots": [
+          "packages/agentic-system/src/backend-worker.js",
+          "packages/agentic-system/src/qa-worker.js",
+          "packages/agentic-system/src/local-git-workspace.js",
+          "packages/agentic-system/src/local-command-verifier.js"
+        ],
+        "testRoots": [
+          "packages/agentic-system/test/bb096-*.test.js"
+        ],
+        "contractRefs": [
+          "LOCAL_GIT_WORKSPACE_V1",
+          "LOCAL_COMMAND_VERIFIER_V1"
+        ],
+        "progressiveSearchRoots": [
+          "packages/agentic-system/src/**",
+          "packages/agentic-system/test/**"
+        ]
+      }
     }
   ]
 }
