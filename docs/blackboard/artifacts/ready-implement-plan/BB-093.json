@@ -1,0 +1,410 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-093",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-093.json",
+    "hash": "a0bc59ebd2640df83eeb40743f1104c8a3fa09119233657e056f0b4e7c1a6206"
+  },
+  "scope": [
+    "oracle.budget.profile",
+    "oracle.budget.render-fit",
+    "oracle.budget.adaptive-step"
+  ],
+  "outOfScope": [
+    "Changing ContextRequirement budget fields, ContextResolution identity or Core render policy/defaults.",
+    "Bundling a tokenizer dependency or estimating tokens from bytes.",
+    "Content truncation, summarization or compression of resolved items.",
+    "Selecting live model profiles or measuring prompt cost (BB-095)."
+  ],
+  "constraints": [
+    "Profiles are an additive derivation module in @exharness/oracle; the facade, contract and Core are unchanged.",
+    "Tokens are reported only when an injected tokenizer with exact {id, version} identity is declared; otherwise token fields are UNKNOWN.",
+    "Oracle source never imports Core; render-fit is proven by a test that composes both packages.",
+    "Research consumes BB-092 as planned contract; the Worker binds DONE BB-092.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "A derived budget never allows resolved context whose Core-rendered block exceeds the profile rendered ceiling.",
+    "Source identity is preserved: budgets drop whole items, never truncate or rewrite content.",
+    "Bytes are never presented as tokens; token counts exist only under a declared exact tokenizer identity."
+  ],
+  "architectureDecisions": [
+    "D1 — New module packages/oracle/src/context-budget.js exporting defineContextBudgetProfile, deriveRequirementBudget, deriveNextStepBudget and measureTokens.",
+    "D2 — CONTEXT_BUDGET_PROFILE_V1 = {kind, version, modelProfileRef, renderedCharCeiling, reservedChars, blockEnvelopeChars, maxItems, maxProviderCalls, maxResolutionSteps, tokenizer:{id, version}|null}; all counters positive safe integers; profileId = sha256(canonical(profile)).",
+    "D3 — deriveRequirementBudget(profile) = {maxItems, maxProviderCalls, maxResolutionSteps, maxMaterializedBytes: renderedCharCeiling - reservedChars - blockEnvelopeChars}; non-positive result is rejected. Because materialization bytes are Buffer.byteLength(canonical(items)) and UTF-8 byte length >= UTF-16 code-unit length, a projection that renders the canonical items renders at most maxMaterializedBytes characters plus envelope.",
+    "D4 — blockEnvelopeChars is measured, not guessed: the render-fit test renders an empty-items block through Core renderAgentContext with the profile's context policy and records its length; the profile must declare a value >= the measured envelope.",
+    "D5 — deriveNextStepBudget(profile, previousResolution) returns the remaining per-counter budget for BB-092 resolveNext and rejects when any counter is exhausted.",
+    "D6 — measureTokens(text, tokenizer) calls an injected countTokens only when profile.tokenizer is declared and the injected implementation reports the same {id, version}; otherwise returns {tokens: null, status: UNKNOWN}. Token results are operational diagnostics outside resolution identity.",
+    "D7 — Overflow keeps BB-087 facade semantics: over-budget evidence becomes BUDGET_EXHAUSTED and whole items are dropped; the profile layer adds no truncation path.",
+    "D8 — Evidence basis: BB-061 deferred token budgets because tokenization is model-specific; Core renderAgentContext enforces maxSerializedChars (default 32,768) independently of Oracle byte budgets."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/oracle/**",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/context-resolution.js",
+      "test/oracle-*.test.mjs",
+      "docs/blackboard/process/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-092.json",
+      "docs/living/system/oracle/**"
+    ],
+    "write": [
+      "packages/oracle/src/context-budget.js",
+      "packages/oracle/src/index.js",
+      "packages/oracle/test/context-budget.test.js",
+      "test/oracle-budget-render-fit.test.mjs",
+      "docs/living/system/oracle/context-budget.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/src/context-resolution.js",
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/providers/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "package.json",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/context-resolution.js",
+      "packages/oracle/src/context-contract.js",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-092.json"
+    ],
+    "expectedNew": [
+      "packages/oracle/src/context-budget.js",
+      "packages/oracle/test/context-budget.test.js",
+      "test/oracle-budget-render-fit.test.mjs",
+      "docs/living/system/oracle/context-budget.md"
+    ],
+    "expectedTests": [
+      "packages/oracle/test/context-budget.test.js",
+      "test/oracle-budget-render-fit.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "U1 — Profile + derivation [BU1]: implement D1-D3, D5-D6 with unit tests for validation, profileId determinism, derivation, next-step remaining budget and UNKNOWN tokens.",
+    "U2 — Render-fit proof [BU2]: test/oracle-budget-render-fit.test.mjs measures the Core envelope (D4), resolves fixtures with ASCII, quotes/newlines, BMP and astral Unicode content at the derived budget and asserts the Core-rendered block length <= renderedCharCeiling for every fixture.",
+    "U3 — Identity preservation + Living truth [BU3]: test an over-budget requirement drops whole items via BUDGET_EXHAUSTED with content byte-identical in kept items; add docs/living/system/oracle/context-budget.md; run test:oracle and npm run verify."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "BU1",
+      "statement": "CONTEXT_BUDGET_PROFILE_V1 validates, has deterministic identity, derives requirement and next-step budgets, and reports tokens only under a matching declared tokenizer identity, otherwise UNKNOWN.",
+      "verificationIds": [
+        "budget-unit"
+      ],
+      "evidenceRequired": [
+        "Unit test output for validation, derivation and tokenizer identity cases."
+      ]
+    },
+    {
+      "id": "BU2",
+      "statement": "For every render-fit fixture, resolving at the derived budget and rendering through Core renderAgentContext yields a block no longer than renderedCharCeiling, with blockEnvelopeChars measured from Core.",
+      "verificationIds": [
+        "render-fit"
+      ],
+      "evidenceRequired": [
+        "Render-fit test output listing fixture lengths and measured envelope."
+      ]
+    },
+    {
+      "id": "BU3",
+      "statement": "Over-budget context is reported BUDGET_EXHAUSTED with whole items dropped and kept content byte-identical; contract, facade and Core are unchanged and the Living Doc documents the profile.",
+      "verificationIds": [
+        "render-fit",
+        "oracle-regression",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Identity-preservation test, Oracle regression and repository verify logs, Living Doc diff."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A derived budget never allows resolved context whose Core-rendered block exceeds the profile rendered ceiling.",
+      "criterionIds": [
+        "BU2"
+      ]
+    },
+    {
+      "invariant": "Source identity is preserved: budgets drop whole items, never truncate or rewrite content.",
+      "criterionIds": [
+        "BU3"
+      ]
+    },
+    {
+      "invariant": "Bytes are never presented as tokens; token counts exist only under a declared exact tokenizer identity.",
+      "criterionIds": [
+        "BU1"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "budget-unit",
+      "command": "node --test packages/oracle/test/context-budget.test.js"
+    },
+    {
+      "id": "render-fit",
+      "command": "node --test test/oracle-budget-render-fit.test.mjs"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "finding": "Token budget deferred because tokenization is model-specific; Core separately preserves maxSerializedChars."
+    },
+    {
+      "ref": "packages/core-harness/src/context.js",
+      "finding": "DELIVERED_TRUTH: default maxSerializedChars 32,768 enforced at render."
+    },
+    {
+      "ref": "packages/oracle/src/context-contract.js",
+      "finding": "DELIVERED_TRUTH: materialization bytes are UTF-8 bytes of canonical items."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-092"
+    ],
+    "workerStart": "Confirm DONE BB-092 resolveNext and BB-087 exact accounting at worker baseline.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "renderAgentContext maxSerializedChars",
+        "materialization byte definition"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-087 exact accounting + BUDGET_EXHAUSTED overflow",
+        "BB-092 resolveNext"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "CONTEXT_BUDGET_PROFILE_V1 defined here"
+      ]
+    },
+    "contradiction": "If Core render expands canonical item JSON beyond byte length plus a constant envelope => PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-092 DONE.",
+    "completion": "All criterion checks + Oracle/repository regressions + context-budget Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No tokenizer dependency, no bytes-as-tokens, no truncation, no Core/contract edits."
+  },
+  "ciContract": {
+    "checks": [
+      "budget-unit",
+      "render-fit",
+      "oracle-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "contract budget fields",
+      "Core render policy"
+    ],
+    "add": [
+      "context-budget.js",
+      "tests",
+      "Living Doc"
+    ],
+    "rollback": "Remove the module, export, tests and Living Doc."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-093 objective + BB-061 deferral + delivered Core render policy + BB-092 desired progression",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-092",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "profile derivation + proven render fit + identity preservation + Living truth",
+      "forbidden": [
+        "tokenizer dependency",
+        "content truncation",
+        "edit Core or contract"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/oracle/context-budget.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Oracle context-budget Living Doc describes the delivered budget profile, derivation, measured render fit, UNKNOWN token semantics and whole-item overflow."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify CONTEXT_BUDGET_PROFILE_V1 keyed by model profile identity with rendered-character ceiling, reserved characters and optional exact tokenizer, and deterministic derivation of ContextRequirement.budget.",
+      "criterionIds": [
+        "BU1"
+      ],
+      "planElements": [
+        "U1"
+      ],
+      "verificationIds": [
+        "budget-unit"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-061.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+          "match": "Token budget is deferred because tokenization is model-specific"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify a render-fit guarantee: derived maxMaterializedBytes plus measured Core block envelope never exceeds the Core rendered-size limit, verified against resolveContextRequirementBlocks rendering.",
+      "criterionIds": [
+        "BU2"
+      ],
+      "planElements": [
+        "U2"
+      ],
+      "verificationIds": [
+        "render-fit"
+      ],
+      "decisionIndexes": [
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/context.js",
+        "packages/oracle/src/context-contract.js",
+        "packages/core-harness/src/context-resolution.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/context.js",
+          "match": "maxSerializedChars = 32_768"
+        },
+        {
+          "ref": "packages/oracle/src/context-contract.js",
+          "match": "bytes:Buffer.byteLength(canonical(items),'utf8')"
+        },
+        {
+          "ref": "packages/core-harness/src/context-resolution.js",
+          "match": "defineContextBlock({name:block.name"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify adaptive next-step budgets for progressive resolution and preservation of source identity by dropping whole items rather than truncating content.",
+      "criterionIds": [
+        "BU3"
+      ],
+      "planElements": [
+        "U3"
+      ],
+      "verificationIds": [
+        "render-fit",
+        "oracle-regression"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-092.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-092.json",
+          "match": "resolveNext"
+        }
+      ],
+      "supportingPlanFields": [
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "BU1",
+        "BU2",
+        "BU3"
+      ],
+      "planElements": [
+        "U1",
+        "U2",
+        "U3"
+      ],
+      "verificationIds": [
+        "budget-unit",
+        "render-fit",
+        "oracle-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/gate-gap-and-oracle-continuations.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+          "match": "Model-aware rendered-size budget profiles preserving source identity"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A profile with non-positive counters or a derived maxMaterializedBytes <= 0 is rejected.",
+    "A declared blockEnvelopeChars smaller than the measured Core envelope fails the render-fit test.",
+    "Any fixture whose Core-rendered block exceeds renderedCharCeiling at the derived budget fails.",
+    "measureTokens without a declared tokenizer, or with an injected tokenizer reporting a different id/version, returns UNKNOWN and never a byte-derived number.",
+    "deriveNextStepBudget with any exhausted counter is rejected.",
+    "Over-budget evidence must be BUDGET_EXHAUSTED with whole items dropped; any truncated or altered content fails.",
+    "Oracle source importing Core, or edits to Core/contract/facade files, fail architecture and scope verification."
+  ]
+}

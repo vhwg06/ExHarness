@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-094",
+  "outcome": "Oracle context resolution is verified on every supported Core execution profile with explicit pinning and re-resolution rules, and the Oracle x Core interaction protocol is frozen, with async cells NOT_EVALUATED unless BB-081 publishes an async profile.",
+  "currentProblem": "BB-064 declares ORACLE_CORE_INTEGRATION with the rule that BB-081 may keep CORE_SYNC or be inconclusive. No task verifies Oracle through Core createAgentRuntime profiles or defines how resolutions behave across async wake/resume.",
+  "scope": [
+    "oracle.core.profile-conformance",
+    "oracle.core.async-rule",
+    "oracle.core.interaction-protocol"
+  ],
+  "constraints": [
+    "No Core or Oracle source change; conformance and protocol only.",
+    "Never assume BB-081 promotes async; KEEP_SYNC_BASELINE or INCONCLUSIVE leave async cells NOT_EVALUATED.",
+    "Research consumes BB-093 and BB-081 as planned contracts; the Worker binds DONE BB-093 and BB-081.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify a conformance suite resolving Oracle requirement blocks through Core createAgentRuntime on CORE_SYNC and, only when published, CORE_ASYNC_FIRST_V1, with fail-closed pre-render behavior per profile.",
+    "Specify the async rule: a resolution is pinned to one agent call; a wake/resume performs a new call that re-resolves or reuses only a CURRENT receipt, never a STALE one.",
+    "Specify the frozen ORACLE_CORE_INTERACTION_V1 protocol (2x2 when async is published, otherwise 1x2 with async NOT_EVALUATED) reusing ORACLE_CONTEXT_BENCHMARK_V1 fixed factors, validated offline.",
+    "Produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+    "docs/blackboard/process/oracle-context-intelligence-research/BB-064.md",
+    "packages/core-harness/src/agent-runtime.js",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-064.json"
+  ]
+}

@@ -142,3 +142,7 @@ BB-083 research is consumed as design input by three one-way layers: [BB-084](ob
 ## Oracle post-foundation discovery — BB-087..089
 
 [Discovery brief](oracle-post-foundation-discovery.md): BB-087 fixes delivered facade budget accounting and typed provider failure (executed probe evidence), BB-088 productizes the authoritative snapshot-bound Context Graph (first BB-064 continuation), BB-089 adopts the facade for Backend/QA production context behind an opt-in option. Remaining BB-064 continuations stay unregistered until the Context Graph desired state exists.
+
+## Worker gate gap + Oracle continuations — BB-090..095
+
+[Brief](gate-gap-and-oracle-continuations.md): BB-090 closes the Worker gate gap that let BB-064 pass with untested negatives (BB-064 stays DONE). BB-091..095 register the remaining BB-064 continuations in fixed order: planner ablation, progressive resolution, budget profiles, Core profile conformance, held-out profile acceptance.

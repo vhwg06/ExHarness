@@ -1,0 +1,404 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-094",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-094.json",
+    "hash": "c80134ee34ed0785fc2d6b78265f83e69518cb78728d7474d9cd2102b177d399"
+  },
+  "scope": [
+    "oracle.core.profile-conformance",
+    "oracle.core.async-rule",
+    "oracle.core.interaction-protocol"
+  ],
+  "outOfScope": [
+    "Any Core or Oracle source change; promoting or evaluating async profiles (BB-081).",
+    "Live model or paid execution; the interaction experiment itself runs in BB-095.",
+    "Changing Core snapshot/resume semantics."
+  ],
+  "constraints": [
+    "Conformance uses only public Core createAgentRuntime options contextRequirementBlocks/contextResolver and public Oracle exports with deterministic fixture providers and a fake model.",
+    "Async cells are executed only when BB-081 is DONE with a PROMOTE_ASYNC decision and CORE_ASYNC_FIRST_V1 is exported; otherwise they are recorded NOT_EVALUATED, never skipped silently.",
+    "The interaction protocol is a frozen validated manifest; it defines arms and factors but runs no experiment.",
+    "Research consumes BB-093 and BB-081 as planned contracts; the Worker binds DONE BB-093 and BB-081.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "On every supported Core profile, Oracle requirement blocks resolve exactly once per agent call and failures stop before model dispatch.",
+    "A resumed or woken runtime never reuses a projected context block from a prior call unless it is backed by a CURRENT receipt.",
+    "Async interaction is NOT_EVALUATED unless an async profile is actually published."
+  ],
+  "architectureDecisions": [
+    "D1 — Conformance suite test/oracle-core-profile-conformance.test.mjs builds a Core createAgentRuntime with contextRequirementBlocks and contextResolver = createOracleContextResolver over fixture catalog providers, and a fake model that records prompts.",
+    "D2 — Profile manifest: the suite reads docs/blackboard/work-graph.json and the BB-081 decision artifact; profiles = [CORE_SYNC] plus CORE_ASYNC_FIRST_V1 only if BB-081 is DONE and its decision is PROMOTE_ASYNC. Each unexecuted cell is emitted as {profile, status: NOT_EVALUATED, reason}.",
+    "D3 — Per-profile cases: COMPLETE resolution renders once per call; UNSATISFIED fails pre-render with zero model/capability calls; STALE_DURING_RESOLUTION fails pre-render; two sequential calls invoke the resolver twice.",
+    "D4 — Resume rule test: create a runtime snapshot with Core createRuntimeSnapshot after one call, restore into a new runtime and perform a call; assert the resolver is invoked again and no projected block from the snapshot is rendered without resolution. With BB-063 durability, a CURRENT receipt may be REUSED and a changed source yields a new resolution, never the stale receipt.",
+    "D5 — ORACLE_CORE_INTERACTION_V1 manifest scripts/oracle-context-intelligence/core-interaction-protocol.mjs: fixed factors copied from ORACLE_CONTEXT_BENCHMARK_V1, Oracle arms {O1 foundation, O2 candidate}, Core arms {CORE_SYNC, CORE_ASYNC_FIRST_V1 when published}; design 2x2 when async is published else 1x2 with async NOT_EVALUATED; --mode validate checks structure and prints the resolved design.",
+    "D6 — If the resume test shows Core reuses projected blocks from a snapshot without re-resolution, that is a Core contradiction: stop PLAN_INPUT_CONTRADICTION rather than patching Core.",
+    "D7 — Evidence basis: BB-064 research fixes the async rule (KEEP_SYNC/INCONCLUSIVE leave async NOT_EVALUATED); BB-081 D11 returns PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE; Core resolves selected requirement blocks per call through contextResolver."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "scripts/oracle-context-intelligence/**",
+      "test/oracle-*.test.mjs",
+      "docs/blackboard/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/core-harness/**"
+    ],
+    "write": [
+      "test/oracle-core-profile-conformance.test.mjs",
+      "scripts/oracle-context-intelligence/core-interaction-protocol.mjs",
+      "test/oracle-core-interaction-protocol.test.mjs",
+      "docs/living/system/oracle/core-interaction.md"
+    ],
+    "forbiddenWrite": [
+      "packages/**",
+      "scripts/oracle-context-intelligence/benchmark-profile.mjs",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-064.md",
+      "packages/core-harness/src/agent-runtime.js",
+      "packages/core-harness/src/index.js",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-093.json"
+    ],
+    "expectedNew": [
+      "test/oracle-core-profile-conformance.test.mjs",
+      "scripts/oracle-context-intelligence/core-interaction-protocol.mjs",
+      "test/oracle-core-interaction-protocol.test.mjs",
+      "docs/living/system/oracle/core-interaction.md"
+    ],
+    "expectedTests": [
+      "test/oracle-core-profile-conformance.test.mjs",
+      "test/oracle-core-interaction-protocol.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "K1 — Conformance [CI1]: implement D1-D3 for CORE_SYNC and the profile manifest logic of D2.",
+    "K2 — Resume rule [CI2]: implement D4 with and without durability, applying D6 on contradiction.",
+    "K3 — Protocol [CI3]: implement D5 and its validate test for both published and unpublished async states using fixture graph inputs.",
+    "K4 — Living truth: add docs/living/system/oracle/core-interaction.md recording evaluated and NOT_EVALUATED cells; run test:oracle, test:core and npm run verify."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "CI1",
+      "statement": "On CORE_SYNC (and CORE_ASYNC_FIRST_V1 only when published) Oracle blocks resolve once per call, UNSATISFIED and drift fail pre-render with zero model/capability calls, and sequential calls re-resolve.",
+      "verificationIds": [
+        "conformance"
+      ],
+      "evidenceRequired": [
+        "Conformance test output per profile with call counters."
+      ]
+    },
+    {
+      "id": "CI2",
+      "statement": "A runtime restored from createRuntimeSnapshot re-resolves context on its next call, reusing only a CURRENT durability receipt and never a stale one.",
+      "verificationIds": [
+        "conformance"
+      ],
+      "evidenceRequired": [
+        "Resume and durability-reuse test output."
+      ]
+    },
+    {
+      "id": "CI3",
+      "statement": "ORACLE_CORE_INTERACTION_V1 validates with 2x2 design when async is published and 1x2 with async NOT_EVALUATED otherwise, and the Living Doc records evaluated and NOT_EVALUATED cells.",
+      "verificationIds": [
+        "protocol",
+        "core-regression",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Protocol validate output for both states, Core regression and repository verify logs, Living Doc diff."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "On every supported Core profile, Oracle requirement blocks resolve exactly once per agent call and failures stop before model dispatch.",
+      "criterionIds": [
+        "CI1"
+      ]
+    },
+    {
+      "invariant": "A resumed or woken runtime never reuses a projected context block from a prior call unless it is backed by a CURRENT receipt.",
+      "criterionIds": [
+        "CI2"
+      ]
+    },
+    {
+      "invariant": "Async interaction is NOT_EVALUATED unless an async profile is actually published.",
+      "criterionIds": [
+        "CI3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "conformance",
+      "command": "node --test test/oracle-core-profile-conformance.test.mjs"
+    },
+    {
+      "id": "protocol",
+      "command": "node --test test/oracle-core-interaction-protocol.test.mjs"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/process/oracle-context-intelligence-research/BB-064.md",
+      "finding": "Async interaction rule: never assume BB-081 promotes async; otherwise async is NOT_EVALUATED."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+      "finding": "PLANNED_CONTRACT: deterministic reducer returns PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE."
+    },
+    {
+      "ref": "packages/core-harness/src/agent-runtime.js",
+      "finding": "DELIVERED_TRUTH: createAgentRuntime accepts contextRequirementBlocks and contextResolver."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-093",
+      "BB-081"
+    ],
+    "workerStart": "Confirm DONE BB-093 and BB-081; read BB-081 decision artifact to select profiles per D2.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "createAgentRuntime contextRequirementBlocks/contextResolver",
+        "createRuntimeSnapshot"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-081 decision and CORE_ASYNC_FIRST_V1",
+        "BB-093 budget profile",
+        "BB-087 fixed facade"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "ORACLE_CORE_INTERACTION_V1 defined here"
+      ]
+    },
+    "contradiction": "Core reusing snapshot-projected context without re-resolution, or a published async profile lacking contextResolver support => PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-093 and BB-081 DONE.",
+    "completion": "All criterion checks + Core/repository regressions + core-interaction Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No Core/Oracle source edits, no assumed async promotion, no silent skipped cells."
+  },
+  "ciContract": {
+    "checks": [
+      "conformance",
+      "protocol",
+      "core-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "Core and Oracle source",
+      "ORACLE_CONTEXT_BENCHMARK_V1"
+    ],
+    "add": [
+      "conformance suite",
+      "interaction protocol",
+      "tests",
+      "Living Doc"
+    ],
+    "rollback": "Remove the tests, protocol script and Living Doc."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-094 objective + BB-064 async rule + BB-081 planned decision + delivered Core runtime",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-093/BB-081",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "per-profile conformance + resume rule + frozen protocol + Living truth",
+      "forbidden": [
+        "edit Core or Oracle source",
+        "assume async promotion"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/oracle/core-interaction.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Oracle core-interaction Living Doc records evaluated and NOT_EVALUATED Core profile cells, the once-per-call and resume rules and the frozen interaction protocol."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify a conformance suite resolving Oracle requirement blocks through Core createAgentRuntime on CORE_SYNC and, only when published, CORE_ASYNC_FIRST_V1, with fail-closed pre-render behavior per profile.",
+      "criterionIds": [
+        "CI1"
+      ],
+      "planElements": [
+        "K1"
+      ],
+      "verificationIds": [
+        "conformance"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/agent-runtime.js",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-081.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/agent-runtime.js",
+          "match": "contextResolver = null"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+          "match": "PROMOTE_ASYNC, KEEP_SYNC_BASELINE or INCONCLUSIVE"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify the async rule: a resolution is pinned to one agent call; a wake/resume performs a new call that re-resolves or reuses only a CURRENT receipt, never a STALE one.",
+      "criterionIds": [
+        "CI2"
+      ],
+      "planElements": [
+        "K2"
+      ],
+      "verificationIds": [
+        "conformance"
+      ],
+      "decisionIndexes": [
+        3,
+        5
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/index.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/index.js",
+          "match": "createRuntimeSnapshot"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify the frozen ORACLE_CORE_INTERACTION_V1 protocol (2x2 when async is published, otherwise 1x2 with async NOT_EVALUATED) reusing ORACLE_CONTEXT_BENCHMARK_V1 fixed factors, validated offline.",
+      "criterionIds": [
+        "CI3"
+      ],
+      "planElements": [
+        "K3",
+        "K4"
+      ],
+      "verificationIds": [
+        "protocol",
+        "core-regression"
+      ],
+      "decisionIndexes": [
+        4,
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research/BB-064.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research/BB-064.md",
+          "match": "If BB-081 keeps CORE_SYNC or is inconclusive, Oracle remains benchmarkable on the supported sync profile and async interaction is NOT_EVALUATED."
+        }
+      ],
+      "supportingPlanFields": [
+        "deliveryContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "CI1",
+        "CI2",
+        "CI3"
+      ],
+      "planElements": [
+        "K1",
+        "K2",
+        "K3",
+        "K4"
+      ],
+      "verificationIds": [
+        "conformance",
+        "protocol",
+        "core-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        4
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-093.json",
+        "docs/blackboard/process/gate-gap-and-oracle-continuations.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-093.json",
+          "match": "CONTEXT_BUDGET_PROFILE_V1"
+        },
+        {
+          "ref": "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+          "match": "async cells NOT_EVALUATED unless BB-081 publishes PROMOTE_ASYNC"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A second resolver call within one agent call, or zero calls on a second agent call, fails conformance.",
+    "UNSATISFIED or STALE_DURING_RESOLUTION reaching the fake model (non-zero model/capability calls) fails conformance.",
+    "A restored runtime rendering a prior projected block without calling the resolver fails the resume test and triggers PLAN_INPUT_CONTRADICTION.",
+    "Reusing a receipt whose source changed after snapshot fails the durability resume case.",
+    "Executing async cells while BB-081 is not DONE with PROMOTE_ASYNC, or omitting a NOT_EVALUATED record, fails the protocol test.",
+    "Any edit under packages/** fails repository scope verification."
+  ]
+}

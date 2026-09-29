@@ -1,0 +1,416 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-092",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-092.json",
+    "hash": "ae8699c2c4d3aded0dc8286e57e430d2652461fb676aa671697dfa1fbb83ebb8"
+  },
+  "scope": [
+    "oracle.progressive.next-step",
+    "oracle.progressive.boundedness",
+    "oracle.progressive.currentness"
+  ],
+  "outOfScope": [
+    "Automatic progression loops inside Oracle or Core; Core still resolves each selected block once per agent call.",
+    "Changing the ContextResolution contract, planner, catalog or durability reuse semantics.",
+    "Model-driven decisions about what to re-resolve.",
+    "Adaptive budget profiles (BB-093)."
+  ],
+  "constraints": [
+    "resolveNext is an explicit facade method called by application code; the facade file is the only Oracle source edited.",
+    "Only retriable unresolved reasons are re-attempted: BUDGET_EXHAUSTED, SOURCE_FAILURE, DEFERRED.",
+    "Prior items are retained byte-identical and cumulative consumption never decreases or exceeds the requirement budget.",
+    "Research consumes BB-091 as planned contract; the Worker binds DONE BB-091 and the BB-087 fixed facade.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "Each step is chained by index and previousResolutionId to its exact predecessor for the same requirement.",
+    "No hidden growth: prior items are unchanged, new items only answer previously unresolved evidence, and consumption is monotonic within budget.",
+    "Progression fails closed on source drift of any previously resolved evidence and on exhausted steps or nothing retriable."
+  ],
+  "architectureDecisions": [
+    "D1 — Facade adds resolveNext(rawRequirement, previousResult) where previousResult is the exact prior facade result {resolution, preObservations, ...}. It validates requirementId equality and uses the delivered defineContextResolution(raw, requirement, previous) chaining check.",
+    "D2 — Retriable set R = {BUDGET_EXHAUSTED, SOURCE_FAILURE, DEFERRED}. Non-retriable: STALE, AMBIGUOUS, UNSUPPORTED, CURRENTNESS_UNVERIFIABLE, MISSING. If no unresolved evidence has a reason in R, resolveNext throws ProgressionRefused NOTHING_RETRIABLE.",
+    "D3 — Remaining budget = requirement.budget - previous.consumed per counter; maxResolutionSteps remaining must be >= 1 else ProgressionRefused STEPS_EXHAUSTED; a COMPLETE previous throws ProgressionRefused ALREADY_COMPLETE.",
+    "D4 — Planning uses an operational sub-requirement containing only retriable evidence with budget = remaining; it is passed to retrievalPlanner.execute and catalog validation but never becomes resolution identity. The new resolution is built on the original requirement.",
+    "D5 — Items: previous items copied verbatim (same order and content) followed by new items for re-attempted evidence; consumed = previous.consumed + step deltas (exact bytes via the BB-087 two-pass contract method), resolutionSteps = previous + 1.",
+    "D6 — Currentness: pre-observe all evidence; any previously resolved evidence whose observation digest differs from previousResult.preObservations throws DurabilityFailure STALE_DURING_RESOLUTION; the post-observation fence is unchanged.",
+    "D7 — createPinnedResolver(result) returns {resolve(requirement)} that returns result.resolution when requirementId matches and throws otherwise, so an application can hand a specific step to Core's once-per-call injected port without Core changes.",
+    "D8 — Evidence basis: executed probe shows the contract accepts a chained step and rejects steps beyond maxResolutionSteps, while the facade hard-codes step 0 and resolve(rawRequirement, metadata = {}) takes no previous."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/oracle/**",
+      "packages/core-harness/src/context-resolution.js",
+      "packages/core-harness/src/agent-runtime.js",
+      "test/oracle-*.test.mjs",
+      "docs/blackboard/process/**",
+      "docs/blackboard/evidence/BB-091/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-087.json",
+      "docs/living/system/oracle/**"
+    ],
+    "write": [
+      "packages/oracle/src/context-resolution.js",
+      "packages/oracle/src/index.js",
+      "test/oracle-progressive-resolution.test.mjs",
+      "docs/living/system/oracle/progressive-resolution.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/source-catalog.js",
+      "packages/oracle/src/resolution-durability.js",
+      "packages/oracle/src/providers/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+      "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/src/context-resolution.js",
+      "packages/core-harness/src/context-resolution.js",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-087.json"
+    ],
+    "expectedNew": [
+      "test/oracle-progressive-resolution.test.mjs",
+      "docs/living/system/oracle/progressive-resolution.md"
+    ],
+    "expectedTests": [
+      "test/oracle-progressive-resolution.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "R1 — resolveNext [PR1, PR2]: implement D1-D5 in the facade with tests for chaining, retriable selection, remaining budget and verbatim prior items.",
+    "R2 — Refusal + currentness [PR3]: implement D2/D3 refusals and D6 drift fence with tests for ALREADY_COMPLETE, STEPS_EXHAUSTED, NOTHING_RETRIABLE and STALE_DURING_RESOLUTION.",
+    "R3 — Pinned resolver + Core [PR1]: implement D7; test passes a step-1 pinned resolver to Core resolveContextRequirementBlocks and asserts one resolve call and the step-1 projection.",
+    "R4 — Living truth: export resolveNext-related names, add docs/living/system/oracle/progressive-resolution.md, run test:oracle and npm run verify."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "PR1",
+      "statement": "resolveNext returns step index+1 bound to the previous resolutionId for the same requirement, and createPinnedResolver lets Core consume a specific step once per call without Core changes.",
+      "verificationIds": [
+        "progressive"
+      ],
+      "evidenceRequired": [
+        "Chaining and Core pinned-resolver test output."
+      ]
+    },
+    {
+      "id": "PR2",
+      "statement": "Only BUDGET_EXHAUSTED/SOURCE_FAILURE/DEFERRED evidence is re-attempted under remaining budget; prior items are byte-identical and cumulative consumption is monotonic within the requirement budget.",
+      "verificationIds": [
+        "progressive"
+      ],
+      "evidenceRequired": [
+        "Retriable-selection, verbatim-items and budget monotonicity tests."
+      ]
+    },
+    {
+      "id": "PR3",
+      "statement": "Progression refuses ALREADY_COMPLETE, STEPS_EXHAUSTED and NOTHING_RETRIABLE and throws STALE_DURING_RESOLUTION when previously resolved evidence drifted, with Oracle regressions unchanged.",
+      "verificationIds": [
+        "progressive",
+        "oracle-regression",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Refusal and drift tests, Oracle regression and repository verify logs, Living Doc diff."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Each step is chained by index and previousResolutionId to its exact predecessor for the same requirement.",
+      "criterionIds": [
+        "PR1"
+      ]
+    },
+    {
+      "invariant": "No hidden growth: prior items are unchanged, new items only answer previously unresolved evidence, and consumption is monotonic within budget.",
+      "criterionIds": [
+        "PR2"
+      ]
+    },
+    {
+      "invariant": "Progression fails closed on source drift of any previously resolved evidence and on exhausted steps or nothing retriable.",
+      "criterionIds": [
+        "PR3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "progressive",
+      "command": "node --test test/oracle-progressive-resolution.test.mjs"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+      "finding": "Executed: contract accepts chained step 1 and rejects steps beyond budget; facade hard-codes step 0 and takes no previous."
+    },
+    {
+      "ref": "packages/oracle/src/context-contract.js",
+      "finding": "DELIVERED_TRUTH: defineContextResolution enforces parent/index and non-decreasing consumption."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-091"
+    ],
+    "workerStart": "Confirm DONE BB-087 facade uses retrievalPlanner.execute with exact accounting and DONE BB-091 did not change the facade; mismatch => PLAN_INPUT_CONTRADICTION.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "defineContextResolution chaining",
+        "Core resolveContextRequirementBlocks once per call"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-087 fixed facade",
+        "BB-091 planning strategies"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "resolveNext and createPinnedResolver defined here"
+      ]
+    },
+    "contradiction": "If the delivered facade shape prevents chaining without contract changes => PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-091 DONE.",
+    "completion": "All criterion checks + Oracle/repository regressions + progressive Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No automatic loop, no contract/Core edits, no rewritten prior items."
+  },
+  "ciContract": {
+    "checks": [
+      "progressive",
+      "oracle-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "resolve() behavior",
+      "ContextResolution contract",
+      "Core port"
+    ],
+    "add": [
+      "resolveNext",
+      "createPinnedResolver",
+      "tests",
+      "Living Doc"
+    ],
+    "rollback": "Remove the two functions, exports, tests and Living Doc."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-092 objective + executed progression probe + BB-087 desired facade",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-091",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "explicit bounded progression + no hidden growth + fail-closed drift + Living truth",
+      "forbidden": [
+        "automatic progression",
+        "edit contract or Core"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/oracle/progressive-resolution.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Oracle progressive-resolution Living Doc describes the delivered explicit resolveNext step, retriable reasons, budget/drift refusals and pinned Core consumption."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify resolveNext(requirement, previous) on the facade producing step index+1 bound to previous.resolutionId, re-attempting only evidence with retriable unresolved reasons under the remaining cumulative budget.",
+      "criterionIds": [
+        "PR1"
+      ],
+      "planElements": [
+        "R1",
+        "R3"
+      ],
+      "verificationIds": [
+        "progressive"
+      ],
+      "decisionIndexes": [
+        0,
+        3,
+        6
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/context-contract.js",
+        "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+        "packages/oracle/src/context-resolution.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/context-contract.js",
+          "match": "invalid progression parent/index"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+          "match": "\"facadeHardcodesStepZero\": true"
+        },
+        {
+          "ref": "packages/oracle/src/context-resolution.js",
+          "match": "async function resolve(rawRequirement, metadata = {})"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify no hidden growth: previous items retained byte-identical, new items only for previously unresolved evidence, requirement identity unchanged and consumption monotonic within budget.",
+      "criterionIds": [
+        "PR2"
+      ],
+      "planElements": [
+        "R1"
+      ],
+      "verificationIds": [
+        "progressive"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        4
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/context-contract.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/context-contract.js",
+          "match": "consumption decreased"
+        },
+        {
+          "ref": "packages/oracle/src/context-contract.js",
+          "match": "'BUDGET_EXHAUSTED','SOURCE_FAILURE'"
+        }
+      ],
+      "supportingPlanFields": [
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify termination and currentness: reject when complete, out of steps or nothing retriable; re-fence all evidence and fail progression when a previously resolved source changed.",
+      "criterionIds": [
+        "PR3"
+      ],
+      "planElements": [
+        "R2"
+      ],
+      "verificationIds": [
+        "progressive",
+        "oracle-regression"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        5
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/context-resolution.js",
+        "docs/blackboard/evidence/BB-091/continuation-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/context-resolution.js",
+          "match": "source drift during resolution"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+          "match": "\"contractRejectsStepBeyondBudget\": \"resolutionSteps budget exceeded\""
+        }
+      ],
+      "supportingPlanFields": [
+        "deliveryContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed progression probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "PR1",
+        "PR2",
+        "PR3"
+      ],
+      "planElements": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "verificationIds": [
+        "progressive",
+        "oracle-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        6,
+        7
+      ],
+      "sourceRefs": [
+        "packages/core-harness/src/context-resolution.js",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-087.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/core-harness/src/context-resolution.js",
+          "match": "selected context requirement block needs contextResolver.resolve()"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-087.json",
+          "match": "retrievalPlanner.execute"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "resolveNext with a previous result for a different requirementId is rejected.",
+    "resolveNext on a COMPLETE previous throws ALREADY_COMPLETE; with no remaining steps throws STEPS_EXHAUSTED; with only STALE/AMBIGUOUS/UNSUPPORTED/CURRENTNESS_UNVERIFIABLE/MISSING unresolved throws NOTHING_RETRIABLE.",
+    "A step whose prior items differ in order or content from the previous resolution fails the verbatim test.",
+    "A step adding items for evidence that was already resolved fails the no-hidden-growth test.",
+    "Cumulative consumption decreasing or exceeding the requirement budget is impossible and tested.",
+    "A previously resolved source whose snapshot changed before the next step throws STALE_DURING_RESOLUTION.",
+    "createPinnedResolver given a mismatched requirement throws; Core resolves the pinned block exactly once per call.",
+    "Edits to contract, planner, catalog, durability or Core files fail repository scope verification."
+  ]
+}

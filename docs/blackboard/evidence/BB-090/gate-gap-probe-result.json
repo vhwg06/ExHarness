@@ -1,0 +1,57 @@
+{
+  "kind": "BB090_GATE_GAP_PROBE_RESULT",
+  "version": 1,
+  "subject": "BB-064 Worker delivery gate",
+  "plan": {
+    "failClosedEvidenceRequired": [
+      "One deterministic negative per class plus zero model/action dispatch on pre-render failure."
+    ],
+    "failureMatrixClasses": 8,
+    "negativeVerificationCases": 9
+  },
+  "executedEvidence": {
+    "failClosedClaimEvidenceRefs": [
+      "docs/blackboard/evidence/BB-064/foundation.txt",
+      "docs/blackboard/evidence/BB-064/architecture.txt"
+    ],
+    "failClosedTestsInLog": [
+      "fail-closed negatives cannot become current model context (1.02575ms)"
+    ],
+    "failClosedTestCallsFacade": false,
+    "failClosedTestAssertionCount": 2,
+    "dispatchCounterEverIncrementable": false
+  },
+  "judgment": {
+    "failClosedChoice": "SATISFIED",
+    "failClosedProbabilities": {
+      "PLAN_INPUT_CONTRADICTION": 0.01,
+      "SATISFIED": 0.51,
+      "IMPLEMENTATION_DEFECT": 0.02,
+      "INSUFFICIENT_EVIDENCE": 0.46
+    },
+    "questionsPerCriterion": 1
+  },
+  "deterministicGate": {
+    "claimEvidenceIsWholeLog": true,
+    "negativeCaseToTestBindingExists": false
+  },
+  "relatedVacuousCheck": {
+    "ref": "scripts/oracle-context-intelligence/benchmark-profile.mjs",
+    "alwaysTrueAssertion": true
+  },
+  "deliveredDefectConfirmedBy": {
+    "ref": "docs/blackboard/evidence/BB-087/facade-probe-result.json",
+    "observations": {
+      "constantMaterializedBytes": true,
+      "subFortyKilobyteBudgetUnresolvable": true,
+      "providerFailureEscapesAsThrow": true,
+      "plannerReasonDropped": true
+    }
+  },
+  "rootCause": [
+    "FAIL_CLOSED evidence never invokes createOracleContextResolver; its negatives exercise only defineContextResolution.",
+    "Plan requires one negative per class (8 classes); the executed test has 2 assertions.",
+    "collectEvidence binds each criterion to whole passing logs; no plan-declared negative case is bound to an executed test identity.",
+    "Jev judges one aggregate question per criterion; the 8-class FAIL_CLOSED claim was a near tie (SATISFIED vs INSUFFICIENT_EVIDENCE)."
+  ]
+}

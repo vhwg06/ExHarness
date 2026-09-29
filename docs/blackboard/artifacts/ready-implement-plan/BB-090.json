@@ -1,0 +1,455 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-090",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-090.json",
+    "hash": "8b9d3357e5ace07a79fbffa88e3178d30f6efd593091493debf8fe8973ae9c9c"
+  },
+  "scope": [
+    "outer-blackboard.negative-case-binding",
+    "outer-blackboard.test-execution-evidence",
+    "outer-blackboard.atomic-worker-judgment"
+  ],
+  "outOfScope": [
+    "Reopening, re-judging or rewriting BB-064 or any DONE/READY plan, evaluation or receipt.",
+    "Fixing the Oracle facade itself (BB-087) or the vacuous benchmark-profile assertion (BB-095).",
+    "Introducing a confidence threshold, reroll-for-pass or multi-model voting.",
+    "Parsing test semantics beyond title location, pass status, body extraction, subject-symbol invocation and always-true assertion patterns."
+  ],
+  "constraints": [
+    "Enforcement is opt-in by plan field and mandatory only for tasks whose numeric id is at or above jev-policy negativeCaseBindingsFromWorkId, which the Worker sets to the graph allocation.nextWorkId at delivery time; no existing plan becomes invalid.",
+    "Deterministic checks live in one new pure module scripts/blackboard-negative-case-binding.mjs; collectEvidence and materialize call it and keep all existing checks.",
+    "Jev remains the semantic judge; each binding adds one atomic Choice question; verdict rules and confidence-as-telemetry are unchanged.",
+    "BB-082 objective-supersession control is independent and unchanged.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "A plan that declares negative cases under enforcement cannot reach MERGE_PENDING unless every case is bound to a passing, subject-invoking, non-vacuous executed test.",
+    "Binding checks are deterministic, read only candidate-SHA sources and verification logs, and never consult model output.",
+    "Every binding receives its own atomic Jev question with the extracted test body; aggregate criterion questions remain.",
+    "No DONE or already READY plan, evaluation, receipt or evidence is modified or invalidated."
+  ],
+  "architectureDecisions": [
+    "D1 — Plan field negativeCaseBindings: [{id, negativeCaseIndex, criterionId, verificationId, testRef, testTitle, subjectSymbol}]. Validation (in assertPlan when the field is present): ids unique and safe; every negativeVerificationCases index covered exactly once; criterionId and verificationId exist; the verification's criterion list includes criterionId; testRef is listed in sourceSeams.expectedTests; testTitle and subjectSymbol are non-empty; subjectSymbol matches /^[A-Za-z_$][\\w$]*$/.",
+    "D2 — Enforcement: jev-policy.json gains negativeCaseBindingsFromWorkId (string BB-id or null). When set and Number(task.id.slice(3)) >= threshold, a plan with non-empty negativeVerificationCases must declare negativeCaseBindings or readiness materialization fails before any provider call. The Worker sets the value to allocation.nextWorkId observed at its delivery commit, so all tasks registered earlier (including BB-084..095) are grandfathered.",
+    "D3 — scripts/blackboard-negative-case-binding.mjs exports assertNegativeCaseBindings(plan), testPassedInLog(log, title), extractTestBody(source, title) and checkBinding({binding, log, testSource}). No I/O inside; callers pass strings.",
+    "D4 — testPassedInLog accepts Node spec reporter lines (optional indentation, '✔ ' + title, optional ' (Nms)') and TAP lines ('ok N - ' + title). Any '✖ ' + title or 'not ok N - ' + title, a missing title, or a duplicate title fails. Titles are matched exactly after trimming, never as substrings.",
+    "D5 — extractTestBody locates exactly one test(…)/it(…) call whose first string argument (single, double or template quote, no interpolation) equals the title, then returns the balanced-parenthesis call text using a small tokenizer that skips string, template and comment content. Zero or multiple matches fail.",
+    "D6 — checkBinding requires the extracted body to contain an invocation of subjectSymbol (identifier or member call followed by '(' or used as `new`), and rejects bodies containing always-true assertion patterns: `|| true)`, `assert.ok(true`, `assert(true`, `assert.equal(1, 1`, or zero assert/expect calls.",
+    "D7 — collectEvidence: after verification runs, for each binding read the bound log and the testRef at candidateSha via git show, run checkBinding, and fail evidence collection with `negative case unbound: <id>: <reason>` on any failure. Passing bindings are appended to the implementation result as claims.negativeCases [{id, logRef, testRef, bodyHash}] (IMPLEMENTATION_RESULT allowed-keys unchanged: stored inside claims entries of the owning criterion).",
+    "D8 — Worker materialize adds state.negativeCaseEvidence [{id, negativeCase, criterionId, testRef, testTitle, subjectSymbol, body}] and one question per binding id: 'The executed test <title> establishes negative case: <text> against <subjectSymbol>'. Readiness materialize adds one question 'readiness-negativeCaseBindings' when bindings are present.",
+    "D9 — Regression reproduction: the test suite loads the real BB-064 foundation test from git at e6be04593fa00c55b59d55dc4dc3c8d2821f5930 and a binding whose subjectSymbol is createOracleContextResolver; checkBinding must fail with SUBJECT_NOT_INVOKED. The BB-064 plan's 8 failureMatrix classes bound to the single fail-closed test must fail coverage (one test title bound to many indexes is allowed only with distinct titles per index).",
+    "D10 — Evidence basis: executed gate-gap probe shows the fail-closed test never calls the facade, has 2 assertions for 8 classes, collectEvidence binds whole logs, and Jev passed FAIL_CLOSED at SATISFIED 0.51 vs INSUFFICIENT_EVIDENCE 0.46."
+  ],
+  "sourceScope": {
+    "read": [
+      "scripts/**",
+      "test/**",
+      "docs/blackboard/**",
+      "packages/oracle/**",
+      "docs/living/system/state.md"
+    ],
+    "write": [
+      "scripts/blackboard-negative-case-binding.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-delivery-contract.mjs",
+      "scripts/blackboard-jev.mjs",
+      "docs/blackboard/jev-policy.json",
+      "docs/blackboard/contracts.md",
+      "docs/blackboard/jev.md",
+      "test/blackboard-negative-case-binding.test.mjs",
+      "docs/living/system/state.md"
+    ],
+    "forbiddenWrite": [
+      "docs/blackboard/artifacts/**",
+      "docs/blackboard/evidence/**",
+      "docs/blackboard/work-graph.json",
+      "docs/blackboard/state.md",
+      "packages/**",
+      "scripts/oracle-context-intelligence/**",
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-objective-supersession.mjs"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+      "docs/blackboard/evidence/BB-090/gate-gap-probe-result.json",
+      "docs/blackboard/evidence/BB-090/gate-gap-probe.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-jev.mjs",
+      "scripts/blackboard-delivery-contract.mjs",
+      "docs/blackboard/jev-policy.json",
+      "docs/blackboard/contracts.md",
+      "test/oracle-context-intelligence-foundation.test.mjs"
+    ],
+    "expectedNew": [
+      "scripts/blackboard-negative-case-binding.mjs",
+      "test/blackboard-negative-case-binding.test.mjs"
+    ],
+    "expectedTests": [
+      "test/blackboard-negative-case-binding.test.mjs",
+      "test/blackboard-jev.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "N1 — Pure binding module [NB1, NB2]: implement scripts/blackboard-negative-case-binding.mjs per D1, D3-D6 with unit tests for coverage, spec/TAP pass detection, exact-title extraction, subject invocation and vacuous-assertion rejection.",
+    "N2 — Plan schema + policy [NB1, NB4]: call assertNegativeCaseBindings from assertPlan when the field is present; add negativeCaseBindingsFromWorkId to jev-policy.json and enforce D2 in materialize; tests prove existing plans in the repository still validate.",
+    "N3 — Evidence collection [NB2]: extend collectEvidence per D7; fixture test using the existing blackboard-jev fixture pattern proves an unbound or failing negative blocks evidence and a bound one records bodyHash.",
+    "N4 — Atomic Worker judgment [NB3]: extend materialize per D8; mock-transport test proves one question per binding and unchanged verdict rules.",
+    "N5 — BB-064 reproduction + docs [NB4]: implement D9 regression, document the contract in docs/blackboard/contracts.md, docs/blackboard/jev.md and docs/living/system/state.md, set the policy threshold, run verify:blackboard-context and npm run verify."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "NB1",
+      "statement": "negativeCaseBindings validation covers every negativeVerificationCases index exactly once with existing criterion/verification ids and an expected test ref, and enforcement applies only at or above the policy work-id threshold.",
+      "verificationIds": [
+        "binding",
+        "blackboard-regression"
+      ],
+      "evidenceRequired": [
+        "Unit tests for coverage, id, cross-reference and threshold cases; repository plans still validate."
+      ]
+    },
+    {
+      "id": "NB2",
+      "statement": "Evidence collection fails when a bound test title is missing, failing or duplicated in its spec or TAP log, when its body does not invoke subjectSymbol, or when it is vacuous, and records body hashes for passing bindings.",
+      "verificationIds": [
+        "binding",
+        "blackboard-regression"
+      ],
+      "evidenceRequired": [
+        "Unit and collectEvidence fixture tests for every failure reason and the passing path."
+      ]
+    },
+    {
+      "id": "NB3",
+      "statement": "Worker Jev materialization emits one atomic question per binding with the extracted test body while verdict rules and confidence-as-telemetry remain unchanged.",
+      "verificationIds": [
+        "binding",
+        "blackboard-regression"
+      ],
+      "evidenceRequired": [
+        "Mock-transport materialization test asserting question ids, bodies and unchanged verdict computation."
+      ]
+    },
+    {
+      "id": "NB4",
+      "statement": "The real BB-064 fail-closed test bound to createOracleContextResolver fails SUBJECT_NOT_INVOKED, no DONE or READY artifact changes, and the contract is documented in Blackboard and Living docs.",
+      "verificationIds": [
+        "binding",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Regression test output, git diff showing no docs/blackboard/artifacts changes, docs diff and repository verify log."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A plan that declares negative cases under enforcement cannot reach MERGE_PENDING unless every case is bound to a passing, subject-invoking, non-vacuous executed test.",
+      "criterionIds": [
+        "NB1",
+        "NB2"
+      ]
+    },
+    {
+      "invariant": "Binding checks are deterministic, read only candidate-SHA sources and verification logs, and never consult model output.",
+      "criterionIds": [
+        "NB2"
+      ]
+    },
+    {
+      "invariant": "Every binding receives its own atomic Jev question with the extracted test body; aggregate criterion questions remain.",
+      "criterionIds": [
+        "NB3"
+      ]
+    },
+    {
+      "invariant": "No DONE or already READY plan, evaluation, receipt or evidence is modified or invalidated.",
+      "criterionIds": [
+        "NB3",
+        "NB4"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "binding",
+      "command": "node --test test/blackboard-negative-case-binding.test.mjs"
+    },
+    {
+      "id": "blackboard-regression",
+      "command": "npm run verify:blackboard-context"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-090/gate-gap-probe-result.json",
+      "finding": "Executed: FAIL_CLOSED test never invokes the facade, 2 assertions for 8 classes, whole-log claim binding, Jev near tie 0.51/0.46."
+    },
+    {
+      "ref": "scripts/blackboard-delivery.mjs",
+      "finding": "DELIVERED_TRUTH: collectEvidence maps each criterion to every log of its verification ids; no negative-case identity exists."
+    },
+    {
+      "ref": "docs/blackboard/jev-policy.json",
+      "finding": "DELIVERED_TRUTH: confidenceGate is false; confidence cannot be used as the fix."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-056"
+    ],
+    "workerStart": "Confirm collectEvidence/materialize/assertPlan signatures at worker baseline match the research baseline; BB-082 changes, if delivered first, must be merged without altering D1-D8.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "collectEvidence, materialize, assertPlan, jev-policy.json"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-082 objective supersession touches the same scripts; serialized by the graph, not a dependency"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "negativeCaseBindings contract defined here"
+      ]
+    },
+    "contradiction": "If delivered evidence collection or IMPLEMENTATION_RESULT shape differs so D7 cannot store bindings without a new top-level key, stop PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-056 DONE.",
+    "completion": "All criterion checks + Blackboard/repository regressions + Living state doc + independent Worker Jev judgment.",
+    "forbidden": "No retrofit of existing artifacts, no confidence gate, no model-derived binding checks."
+  },
+  "ciContract": {
+    "checks": [
+      "binding",
+      "blackboard-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "all DONE/READY plans, evaluations, receipts and evidence",
+      "verdict rules"
+    ],
+    "add": [
+      "negativeCaseBindings contract",
+      "binding module",
+      "policy threshold",
+      "tests",
+      "docs"
+    ],
+    "rollback": "Set negativeCaseBindingsFromWorkId to null and revert the module and callers."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-090 objective + executed gate-gap probe + delivered Blackboard tooling",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-056",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "deterministic negative-case binding + atomic judgment + no retrofit + docs",
+      "forbidden": [
+        "modify DONE/READY artifacts",
+        "confidence threshold",
+        "model-derived checks"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living state documents the delivered negative-case binding contract, its deterministic evidence checks, atomic Worker questions and the no-retrofit policy threshold."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify a typed negativeCaseBindings plan contract mapping every negativeVerificationCases entry to criterion, verification run, exact test title and subject symbol, validated deterministically at readiness and worker start.",
+      "criterionIds": [
+        "NB1"
+      ],
+      "planElements": [
+        "N1",
+        "N2"
+      ],
+      "verificationIds": [
+        "binding",
+        "blackboard-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-delivery-contract.mjs",
+        "docs/blackboard/evidence/BB-090/gate-gap-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-delivery-contract.mjs",
+          "match": "export function assertPlan(plan)"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-090/gate-gap-probe-result.json",
+          "match": "\"failureMatrixClasses\": 8"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify deterministic evidence collection that fails when a bound test title is absent or not passing in its verification log (spec and TAP formats), when its extracted body does not invoke the subject symbol, or when it contains an always-true assertion.",
+      "criterionIds": [
+        "NB2"
+      ],
+      "planElements": [
+        "N1",
+        "N3"
+      ],
+      "verificationIds": [
+        "binding",
+        "blackboard-regression"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-delivery.mjs",
+        "docs/blackboard/evidence/BB-090/gate-gap-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "claims: plan.acceptanceCriteria.map(c => ({ id: c.id, evidenceRefs: verificationRuns.filter"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-090/gate-gap-probe-result.json",
+          "match": "\"failClosedTestCallsFacade\": false"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify one atomic Worker Jev question per binding carrying the extracted test body, with a no-retrofit policy threshold and unchanged confidence-as-telemetry policy.",
+      "criterionIds": [
+        "NB3"
+      ],
+      "planElements": [
+        "N4"
+      ],
+      "verificationIds": [
+        "binding",
+        "blackboard-regression"
+      ],
+      "decisionIndexes": [
+        7
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-jev.mjs",
+        "docs/blackboard/jev-policy.json",
+        "docs/blackboard/contracts.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-jev.mjs",
+          "match": "question(c.id, `${c.statement} Required evidence"
+        },
+        {
+          "ref": "docs/blackboard/jev-policy.json",
+          "match": "\"confidenceGate\": false"
+        },
+        {
+          "ref": "docs/blackboard/contracts.md",
+          "match": "confidence is telemetry only"
+        }
+      ],
+      "supportingPlanFields": [
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed BB-064 root-cause probe and produce an exact file-level plan, regression fixtures reproducing the BB-064 shape, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "NB1",
+        "NB2",
+        "NB3",
+        "NB4"
+      ],
+      "planElements": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5"
+      ],
+      "verificationIds": [
+        "binding",
+        "blackboard-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        8,
+        9
+      ],
+      "sourceRefs": [
+        "test/oracle-context-intelligence-foundation.test.mjs",
+        "docs/blackboard/evidence/BB-090/gate-gap-probe.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "test/oracle-context-intelligence-foundation.test.mjs",
+          "match": "fail-closed negatives cannot become current model context"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-090/gate-gap-probe.mjs",
+          "match": "failClosedTestCallsFacade"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A plan at or above the threshold with negative cases but no negativeCaseBindings fails readiness materialization before any provider call.",
+    "A binding set that leaves a negativeVerificationCases index uncovered or covers one twice fails assertPlan.",
+    "A binding whose testRef is not in sourceSeams.expectedTests, or whose verificationId does not map to its criterionId, fails assertPlan.",
+    "A bound title absent from its verification log, marked failed (spec ✖ or TAP not ok), or appearing twice fails evidence collection.",
+    "A title that only appears as a substring of another test title does not satisfy the binding.",
+    "A bound test body that does not invoke subjectSymbol fails SUBJECT_NOT_INVOKED; the real BB-064 fail-closed test bound to createOracleContextResolver reproduces this.",
+    "A bound test body containing `|| true)`, `assert.ok(true` or no assertions fails VACUOUS_ASSERTION.",
+    "Plans below the threshold or without the field (all current DONE/READY plans) continue to validate and publish unchanged.",
+    "Any write under docs/blackboard/artifacts/**, docs/blackboard/evidence/** or packages/** fails repository scope verification."
+  ]
+}

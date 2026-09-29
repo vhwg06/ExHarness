@@ -1,0 +1,427 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-091",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-091.json",
+    "hash": "e640df6b1f68625704fec67acab19d8fef2374f12b4064cc29c0f3e418e3bd3f"
+  },
+  "scope": [
+    "oracle.planner.ablation-harness",
+    "oracle.planner.strategies",
+    "oracle.planner.decision"
+  ],
+  "outOfScope": [
+    "Changing DETERMINISTIC_V1 planner behavior, provider descriptors, SourceCatalog or the ContextRequirement contract.",
+    "Model-assisted or learned planning; live model calls; paid benchmarks.",
+    "Rewriting the BB-062 research benchmark script or its delivered evidence.",
+    "Promoting a strategy to default; that requires held-out profile acceptance (BB-095)."
+  ],
+  "constraints": [
+    "New strategies are separate planner factories with the delivered {plan, execute} interface in a new module; retrieval-planner.js is not edited.",
+    "The ablation uses deterministic fixture lexical/symbol clients over an exact git snapshot and the BB-088 graph client; every arm goes through SourceCatalog validation.",
+    "Ground truth is derived mechanically from component-registry contractRefs -> sourceRoots at the snapshot, not labeled by the Worker.",
+    "Research consumes BB-088 as planned contract; the Worker binds DONE BB-088.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "Every strategy preserves reservation, EXACT/CURRENT, provenance and budget semantics of DETERMINISTIC_V1.",
+    "The decision is computed by a preregistered deterministic reducer; non-discriminating arms yield INCONCLUSIVE.",
+    "Defaults never change in this task; model-assisted planning is NOT_EVALUATED."
+  ],
+  "architectureDecisions": [
+    "D1 — New module packages/oracle/src/planning-strategies.js exporting createFusionRetrievalPlanner({catalog, base}) (RRF_FUSION_V1) and createGraphExpandedRetrievalPlanner({catalog, base, graphProviderId}) (GRAPH_EXPANDED_V1); both return {plan, execute, strategyId} and delegate reservation to the delivered base planner.",
+    "D2 — RRF_FUSION_V1: executes every reserved work unit for an evidence instead of stopping at the first successful provider, then orders candidates by reciprocal-rank fusion score 1/(60+rank) summed across providers, ties by source itemRef; accepted count stays within the reserved item budget.",
+    "D3 — GRAPH_EXPANDED_V1: runs the base plan; when unreserved budget remains and a CONTEXT_GRAPH provider is registered, adds one TRAVERSE_GRAPH IMPORTS hop anchored at the top base candidate's itemRef; graph-derived items keep AUTHORITATIVE_SOURCE provenance and are validated by SourceCatalog.",
+    "D4 — Arms: A0 DETERMINISTIC_V1, A1 lexical-only and A2 symbol-only (delivered unavailableProviders option), A3 RRF_FUSION_V1, A4 GRAPH_EXPANDED_V1.",
+    "D5 — Cohort: scripts/oracle-context-intelligence/planner-ablation-cohort.json freezes snapshotRef, corpus roots packages/oracle/src and packages/agentic-system/src, and queries generated from docs/blackboard/component-registry.json: for each component, query = contractRefs joined by space, relevant = its sourceRoots that are concrete .js files existing at the snapshot. Components with no concrete relevant file are excluded with reason. The cohort digest is recorded before strategies run.",
+    "D6 — Fixture clients: lexical client = deterministic token-overlap scoring over snapshot file contents; symbol client = exported-identifier index over snapshot files; both return snapshot-bound candidates with REVISION validators. They are fixtures, stated as such, not Zoekt/LSP.",
+    "D7 — Metrics per arm/query: Recall@k and MRR with k = budget.maxItems (3), materialized bytes, provider calls, unresolved reasons. Discrimination check: if every arm selects identical ordered itemRefs for every query, outcome INCONCLUSIVE_NON_DISCRIMINATING.",
+    "D8 — Preregistered reducer: a candidate arm is RECOMMENDED when for every query Recall@k >= A0, mean Recall@k - A0 >= 0.05, and mean materialized bytes <= 1.25 x A0; the best such arm by mean Recall then MRR is returned as RECOMMEND_<strategyId>; otherwise KEEP_DETERMINISTIC_V1. Thresholds are constants in the cohort file.",
+    "D9 — Harness scripts/oracle-context-intelligence/planner-ablation.mjs --snapshot <sha> writes ORACLE_PLANNER_ABLATION_V1 {cohortDigest, arms, perQuery, decision}; --mode validate re-reduces a recorded report and must reproduce the decision.",
+    "D10 — Evidence basis: the executed continuation probe shows the delivered BB-062 benchmark does not use the planner, gives identical aggregate recall for three arms and reports structuralPrimary true despite BB-062 D15."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/oracle/**",
+      "scripts/oracle-context-intelligence/**",
+      "test/oracle-*.test.mjs",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/process/**",
+      "docs/blackboard/evidence/BB-091/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-088.json",
+      "docs/living/system/oracle/**"
+    ],
+    "write": [
+      "packages/oracle/src/planning-strategies.js",
+      "packages/oracle/src/index.js",
+      "packages/oracle/test/planning-strategies.test.js",
+      "scripts/oracle-context-intelligence/planner-ablation.mjs",
+      "scripts/oracle-context-intelligence/planner-ablation-cohort.json",
+      "test/oracle-planner-ablation.test.mjs",
+      "docs/living/system/oracle/planner.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/source-catalog.js",
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/src/providers/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "scripts/oracle-context-intelligence/bb062-retrieval-benchmark.mjs",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+      "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+      "packages/oracle/src/retrieval-planner.js",
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-088.json"
+    ],
+    "expectedNew": [
+      "packages/oracle/src/planning-strategies.js",
+      "scripts/oracle-context-intelligence/planner-ablation.mjs",
+      "scripts/oracle-context-intelligence/planner-ablation-cohort.json",
+      "docs/living/system/oracle/planner.md"
+    ],
+    "expectedTests": [
+      "packages/oracle/test/planning-strategies.test.js",
+      "test/oracle-planner-ablation.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "P1 — Cohort + fixture clients [PL1]: generate and commit planner-ablation-cohort.json per D5 with its digest, and implement D6 fixture clients inside the harness.",
+    "P2 — Strategies [PL2]: implement D1-D3; unit tests prove identical reservation/budget/currentness failures to DETERMINISTIC_V1 and correct fusion/expansion ordering.",
+    "P3 — Harness + reducer [PL1, PL3]: implement D4, D7-D9; test runs the harness at `git rev-parse HEAD`, checks discrimination detection on a forced-identical fixture, and re-reduces the report deterministically.",
+    "P4 — Living truth [PL3]: export strategies, add docs/living/system/oracle/planner.md with the recorded decision, fixture-client limits and NOT_EVALUATED model-assisted planning; run test:oracle and npm run verify."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "PL1",
+      "statement": "The ablation runs every arm through the delivered SourceCatalog/RetrievalPlanner path over a frozen, mechanically derived cohort and reports INCONCLUSIVE_NON_DISCRIMINATING when arms select identical items.",
+      "verificationIds": [
+        "ablation"
+      ],
+      "evidenceRequired": [
+        "Harness report with cohort digest and a forced non-discriminating fixture result."
+      ]
+    },
+    {
+      "id": "PL2",
+      "statement": "RRF_FUSION_V1 and GRAPH_EXPANDED_V1 preserve reservation, EXACT/CURRENT, provenance and budget behavior of DETERMINISTIC_V1 and implement the specified ordering.",
+      "verificationIds": [
+        "strategies"
+      ],
+      "evidenceRequired": [
+        "Unit tests comparing budget/currentness failures across strategies and ordering cases."
+      ]
+    },
+    {
+      "id": "PL3",
+      "statement": "The preregistered reducer deterministically returns RECOMMEND_<strategy> or KEEP_DETERMINISTIC_V1, validate mode reproduces it, defaults are unchanged and model-assisted planning is NOT_EVALUATED in the Living Doc.",
+      "verificationIds": [
+        "ablation",
+        "oracle-regression",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Reducer reproduction output, unchanged default planner tests, Living Doc diff and repository verify log."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Every strategy preserves reservation, EXACT/CURRENT, provenance and budget semantics of DETERMINISTIC_V1.",
+      "criterionIds": [
+        "PL2"
+      ]
+    },
+    {
+      "invariant": "The decision is computed by a preregistered deterministic reducer; non-discriminating arms yield INCONCLUSIVE.",
+      "criterionIds": [
+        "PL1",
+        "PL3"
+      ]
+    },
+    {
+      "invariant": "Defaults never change in this task; model-assisted planning is NOT_EVALUATED.",
+      "criterionIds": [
+        "PL3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "strategies",
+      "command": "node --test packages/oracle/test/planning-strategies.test.js"
+    },
+    {
+      "id": "ablation",
+      "command": "node --test test/oracle-planner-ablation.test.mjs"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+      "finding": "Executed: delivered BB-062 benchmark arms give identical aggregate Recall@3 0.792/MRR 0.875 and report structuralPrimary true; typed graph 0.542 vs research 1.000."
+    },
+    {
+      "ref": "packages/oracle/src/retrieval-planner.js",
+      "finding": "DELIVERED_TRUTH: plan() supports unavailableProviders; execute() stops at the first successful provider per evidence."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-088"
+    ],
+    "workerStart": "Confirm DONE BB-088 exports createAuthoritativeGraphClient and that planner plan()/execute() signatures match the research baseline.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "createRetrievalPlanner plan/execute, createSourceCatalog, createContextGraphProvider"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-088 createAuthoritativeGraphClient",
+        "BB-087 fixed facade"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "strategies, cohort and reducer defined here"
+      ]
+    },
+    "contradiction": "Changed planner interface or graph client contract => PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-088 DONE.",
+    "completion": "All criterion checks + Oracle/repository regressions + planner Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No default change, no model calls, no hand-labeled ground truth, no edits to delivered planner."
+  },
+  "ciContract": {
+    "checks": [
+      "strategies",
+      "ablation",
+      "oracle-regression",
+      "repository"
+    ],
+    "runtime": "Ablation test requires git on PATH and HEAD blobs; no network.",
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "DETERMINISTIC_V1 default",
+      "BB-062 research benchmark and evidence"
+    ],
+    "add": [
+      "planning-strategies.js",
+      "ablation harness and cohort",
+      "tests",
+      "planner Living Doc"
+    ],
+    "rollback": "Remove the module, harness, cohort, exports, tests and Living Doc."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-091 objective + executed continuation probe + BB-062 research + BB-088 desired graph client",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-088",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "opt-in strategies + discriminating ablation + deterministic decision + Living truth",
+      "forbidden": [
+        "change default planner",
+        "edit retrieval-planner.js",
+        "hand-label ground truth"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/oracle/planner.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Oracle planner Living Doc describes delivered planning strategies, the ablation cohort derivation, the recorded decision, fixture-client limits and that model-assisted planning is NOT_EVALUATED."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify a discriminating ablation harness over a frozen snapshot corpus and ground truth executed through the real planner and providers, which reports INCONCLUSIVE when arms are not discriminating.",
+      "criterionIds": [
+        "PL1"
+      ],
+      "planElements": [
+        "P1",
+        "P3"
+      ],
+      "verificationIds": [
+        "ablation"
+      ],
+      "decisionIndexes": [
+        3,
+        4,
+        5,
+        6,
+        9
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+        "docs/blackboard/component-registry.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+          "match": "\"aggregateRecallMrrIdenticalAcrossLexicalSemanticStructural\": true"
+        },
+        {
+          "ref": "docs/blackboard/component-registry.json",
+          "match": "\"contractRefs\""
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify opt-in GRAPH_EXPANDED_V1 and RRF_FUSION_V1 planning strategies that keep reservation, EXACT/CURRENT, provenance and budget semantics identical to DETERMINISTIC_V1.",
+      "criterionIds": [
+        "PL2"
+      ],
+      "planElements": [
+        "P2"
+      ],
+      "verificationIds": [
+        "strategies"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/retrieval-planner.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/retrieval-planner.js",
+          "match": "unavailableProviders=[]"
+        },
+        {
+          "ref": "packages/oracle/src/retrieval-planner.js",
+          "match": "if(accepted.length){evidenceCandidates.push(...accepted);success=true;"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify a preregistered per-query non-inferiority decision returning RECOMMEND_<strategy> or KEEP_DETERMINISTIC_V1 without changing defaults, with model-assisted planning explicitly NOT_EVALUATED.",
+      "criterionIds": [
+        "PL3"
+      ],
+      "planElements": [
+        "P3",
+        "P4"
+      ],
+      "verificationIds": [
+        "ablation",
+        "oracle-regression"
+      ],
+      "decisionIndexes": [
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
+        "docs/blackboard/evidence/BB-091/continuation-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
+          "match": "planner composition should use complementary providers rather than forcing one family to answer every need"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-091/continuation-probe-result.json",
+          "match": "\"structuralPrimaryReported\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed continuation probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "PL1",
+        "PL2",
+        "PL3"
+      ],
+      "planElements": [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "verificationIds": [
+        "strategies",
+        "ablation",
+        "oracle-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-088.json",
+        "docs/blackboard/process/gate-gap-and-oracle-continuations.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-088.json",
+          "match": "createAuthoritativeGraphClient"
+        },
+        {
+          "ref": "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+          "match": "Planner optimization therefore starts with a discriminating ablation executed through the real planner."
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "An arm that bypasses SourceCatalog validation or reads working-tree files fails the ablation test.",
+    "A strategy that weakens EXACT/CURRENT, drops provenance or exceeds reserved items/bytes fails the strategy parity tests.",
+    "A cohort query whose relevant set is edited by hand (cohort digest mismatch with regenerated cohort) fails the ablation test.",
+    "Forced identical selections across all arms must yield INCONCLUSIVE_NON_DISCRIMINATING, never RECOMMEND.",
+    "A candidate with any per-query recall below A0 must not be recommended even if its mean is higher.",
+    "Re-reducing a recorded report in validate mode with a different decision fails.",
+    "Changing the default createRetrievalPlanner behavior or editing retrieval-planner.js fails repository scope verification."
+  ]
+}

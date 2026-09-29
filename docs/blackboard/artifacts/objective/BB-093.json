@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-093",
+  "outcome": "Oracle requirement budgets can be derived from an explicit model-aware context budget profile so resolved context fits the Core rendered-size limit, with token accounting only under a declared tokenizer and without altering source identity.",
+  "currentProblem": "BB-064 declares ORACLE_CONTEXT_BUDGETING. BB-061 deferred token budgets because tokenization is model-specific; budgets are raw bytes/items/calls/steps while Core independently truncates rendered context at maxSerializedChars, so nothing guarantees resolved context survives rendering.",
+  "scope": [
+    "oracle.budget.profile",
+    "oracle.budget.render-fit",
+    "oracle.budget.adaptive-step"
+  ],
+  "constraints": [
+    "Contract budget fields and Core render policy are unchanged; profiles are an additive derivation layer.",
+    "Token counts are UNKNOWN unless an exact tokenizer identity is declared; bytes are never presented as tokens.",
+    "Research consumes BB-092 as planned contract; the Worker binds DONE BB-092.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify CONTEXT_BUDGET_PROFILE_V1 keyed by model profile identity with rendered-character ceiling, reserved characters and optional exact tokenizer, and deterministic derivation of ContextRequirement.budget.",
+    "Specify a render-fit guarantee: derived maxMaterializedBytes plus measured Core block envelope never exceeds the Core rendered-size limit, verified against resolveContextRequirementBlocks rendering.",
+    "Specify adaptive next-step budgets for progressive resolution and preservation of source identity by dropping whole items rather than truncating content.",
+    "Produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+    "packages/core-harness/src/context.js",
+    "packages/core-harness/src/context-resolution.js",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-064.json"
+  ]
+}

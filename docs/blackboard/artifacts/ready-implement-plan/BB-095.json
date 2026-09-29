@@ -1,0 +1,418 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-095",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-095.json",
+    "hash": "aed7270561452ea8eb2f240ba47fb8021c4d6edd81cdf5da32bc3011ad949782"
+  },
+  "scope": [
+    "oracle.profile.held-out-cohort",
+    "oracle.profile.gate",
+    "oracle.profile.publication"
+  ],
+  "outOfScope": [
+    "Changing default Oracle planner, facade or Core defaults outside the explicit profile publication.",
+    "A second attempt ledger, evidence manifest or Harbor adapter outside @exharness/benchmark.",
+    "Tuning thresholds or cohort after any held-out execution.",
+    "Claims of productivity or cost savings beyond the reduced gate outcome."
+  ],
+  "constraints": [
+    "All units and attempts are registered through @exharness/benchmark public exports; UNKNOWN measurements stay null/UNKNOWN.",
+    "Cohort, arms, candidate profile digest and thresholds are frozen in a committed protocol before the first held-out attempt; the harness refuses to run otherwise.",
+    "The held-out cohort is disjoint from BB-065 calibration tasks and BB-077/BB-081 development and held-out digests.",
+    "Research consumes BB-094 and BB-065 as planned contracts; the Worker binds DONE BB-094 and BB-065.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "The decision is produced only by the frozen deterministic reducer from recorded attempts; Jev validates evidence but cannot change the outcome.",
+    "Any UNKNOWN required measurement, provenance violation or currentness violation prevents PUBLISH.",
+    "A supported Oracle profile is published only on PUBLISH_ORACLE_PROFILE_V1; foundation remains supported otherwise."
+  ],
+  "architectureDecisions": [
+    "D1 — Protocol file scripts/oracle-context-intelligence/profile-acceptance-protocol.json = ORACLE_PROFILE_ACCEPTANCE_V1 {cohortRule, excludedDigests, arms, candidateProfile{digest, planningStrategy, budgetProfileId, progression}, fixedFactors, repeats: 2, gate, reducerVersion}; protocolDigest recorded before execution.",
+    "D2 — Cohort rule: from the Terminal-Bench 2.1 manifest pinned by BB-065, exclude BB-065 calibration digests and BB-077/BB-081 development and held-out digests, order remaining task digests by sha256(seed + digest) with seed fixed in the protocol, take the first 6. Selection is reproducible and not chosen by the Worker.",
+    "D3 — Arms: O0 STATIC_CONTEXT_CONTROL, O1 ORACLE_FOUNDATION_V1 (post BB-087), O2 frozen candidate composed from BB-091 decision, BB-093 budget profile and BB-092 progression policy; if BB-091 returned KEEP_DETERMINISTIC_V1, O2 uses DETERMINISTIC_V1 with the budget profile. Core profile = the supported profile recorded by BB-094.",
+    "D4 — Execution: harness scripts/oracle-context-intelligence/profile-acceptance.mjs --mode run registers the experiment, units (task x arm x repeat) and attempts via createExperimentRegistration, createBenchmarkUnit and AttemptLedger; balanced arm order per task; fresh session per unit; retries are new attempts.",
+    "D5 — Gate (preregistered, conjunctive, O2 vs O1): per-task accepted-success count O2 >= O1; zero provenance or currentness violations in O2; median prompt input tokens ratio O2/O1 <= 0.90; median normalized cost ratio <= 1.00; median elapsed ratio <= 1.10. Any required measurement UNKNOWN for a unit makes the gate INCONCLUSIVE.",
+    "D6 — Reducer oracle-profile-reducer returns PUBLISH_ORACLE_PROFILE_V1, KEEP_FOUNDATION or INCONCLUSIVE from recorded attempts and the protocol only; --mode reduce re-derives the decision from the ledger and must match the recorded decision.",
+    "D7 — Publication: only PUBLISH writes docs/living/system/oracle/profile-acceptance.md with ORACLE_PROFILE_V1 = candidate digest and binds protocolDigest, ledger audit and decision; KEEP_FOUNDATION or INCONCLUSIVE are recorded in the same doc without a supported-profile claim.",
+    "D8 — benchmark-profile.mjs: remove the vacuous `|| true` assertion and extend validate mode with the O2 arm and the D5 gate schema, keeping ORACLE_CONTEXT_BENCHMARK_V1 O0/O1 semantics.",
+    "D9 — Offline verification: reducer fixtures (publish, keep, inconclusive, unknown-measurement, violation) and protocol validation run in CI without credentials; the live run is Worker evidence attached through claimEvidence, never simulated."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/benchmark/**",
+      "benchmarks/substrate/**",
+      "packages/oracle/**",
+      "scripts/oracle-context-intelligence/**",
+      "docs/blackboard/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/benchmark/**"
+    ],
+    "write": [
+      "scripts/oracle-context-intelligence/profile-acceptance.mjs",
+      "scripts/oracle-context-intelligence/profile-acceptance-protocol.json",
+      "scripts/oracle-context-intelligence/oracle-profile-reducer.mjs",
+      "scripts/oracle-context-intelligence/benchmark-profile.mjs",
+      "test/oracle-profile-acceptance.test.mjs",
+      "test/oracle-context-intelligence-benchmark-contract.test.mjs",
+      "docs/living/system/oracle/profile-acceptance.md"
+    ],
+    "forbiddenWrite": [
+      "packages/**",
+      "benchmarks/substrate/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+      "scripts/oracle-context-intelligence/benchmark-profile.mjs",
+      "test/oracle-context-intelligence-benchmark-contract.test.mjs",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-094.json"
+    ],
+    "expectedNew": [
+      "scripts/oracle-context-intelligence/profile-acceptance.mjs",
+      "scripts/oracle-context-intelligence/profile-acceptance-protocol.json",
+      "scripts/oracle-context-intelligence/oracle-profile-reducer.mjs",
+      "test/oracle-profile-acceptance.test.mjs",
+      "docs/living/system/oracle/profile-acceptance.md"
+    ],
+    "expectedTests": [
+      "test/oracle-profile-acceptance.test.mjs",
+      "test/oracle-context-intelligence-benchmark-contract.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "A1 — Protocol + cohort [PA1]: write the protocol per D1-D3, implement deterministic cohort selection and the pre-execution freeze check; tests prove disjointness and reproducibility.",
+    "A2 — Reducer [PA2]: implement D5-D6 with fixture ledgers for every outcome and the UNKNOWN/violation paths.",
+    "A3 — Harness + benchmark contract [PA1, PA3]: implement D4 against @exharness/benchmark public exports and D8 in benchmark-profile.mjs; offline tests cover registration shape with a stub substrate port.",
+    "A4 — Held-out run + publication [PA3]: execute --mode run on the frozen protocol, attach ledger/audit as claimEvidence, run --mode reduce, write the D7 Living Doc; run test:oracle and npm run verify."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "PA1",
+      "statement": "The protocol freezes a reproducible held-out cohort disjoint from BB-065/077/081 digests, arms O0/O1/O2 with candidate digest, fixed factors and gate before execution, and the harness refuses to run on an unfrozen or modified protocol.",
+      "verificationIds": [
+        "acceptance"
+      ],
+      "evidenceRequired": [
+        "Cohort reproducibility, disjointness and freeze-refusal tests."
+      ]
+    },
+    {
+      "id": "PA2",
+      "statement": "The deterministic reducer applies the conjunctive gate per task, returns INCONCLUSIVE on any UNKNOWN required measurement and blocks PUBLISH on any provenance/currentness violation; reduce mode reproduces recorded decisions.",
+      "verificationIds": [
+        "acceptance"
+      ],
+      "evidenceRequired": [
+        "Reducer fixture outputs for publish, keep, inconclusive, unknown and violation cases."
+      ]
+    },
+    {
+      "id": "PA3",
+      "statement": "Every unit and attempt is registered through @exharness/benchmark, the vacuous benchmark-profile assertion is removed, and the Living Doc records the reduced decision with a supported profile only on PUBLISH.",
+      "verificationIds": [
+        "benchmark-contract",
+        "acceptance",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Benchmark-contract test, ledger audit evidence, reduce output, Living Doc diff and repository verify log."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The decision is produced only by the frozen deterministic reducer from recorded attempts; Jev validates evidence but cannot change the outcome.",
+      "criterionIds": [
+        "PA2",
+        "PA3"
+      ]
+    },
+    {
+      "invariant": "Any UNKNOWN required measurement, provenance violation or currentness violation prevents PUBLISH.",
+      "criterionIds": [
+        "PA2"
+      ]
+    },
+    {
+      "invariant": "A supported Oracle profile is published only on PUBLISH_ORACLE_PROFILE_V1; foundation remains supported otherwise.",
+      "criterionIds": [
+        "PA3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "acceptance",
+      "command": "node --test test/oracle-profile-acceptance.test.mjs"
+    },
+    {
+      "id": "benchmark-contract",
+      "command": "node --test test/oracle-context-intelligence-benchmark-contract.test.mjs"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "scripts/oracle-context-intelligence/benchmark-profile.mjs",
+      "finding": "DELIVERED_TRUTH: validate mode contains an always-true `|| true` assertion and defines only O0/O1."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "finding": "PLANNED_CONTRACT: append-only AttemptLedger, nullable accounting, audit; downstream must not reimplement ledger truth."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+      "finding": "PLANNED_CONTRACT: deterministic reducer pattern and reserved held-out digests that must be excluded."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-094",
+      "BB-065"
+    ],
+    "workerStart": "Confirm DONE BB-094 (supported Core profile record), BB-065 public exports and Terminal-Bench manifest, and recorded BB-091/BB-093 outputs for O2 composition.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "ORACLE_CONTEXT_BENCHMARK_V1 validate script"
+      ],
+      "PLANNED_CONTRACT": [
+        "BB-065 @exharness/benchmark",
+        "BB-081 reserved digests",
+        "BB-091 decision",
+        "BB-093 budget profile",
+        "BB-094 supported Core profile"
+      ],
+      "RESEARCH_DESIRED_STATE": [
+        "ORACLE_PROFILE_ACCEPTANCE_V1 and reducer defined here"
+      ]
+    },
+    "contradiction": "Missing benchmark exports, unavailable manifest or fewer than 6 eligible disjoint tasks => PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-094 and BB-065 DONE.",
+    "completion": "All criterion checks + repository regression + recorded held-out decision + profile-acceptance Living Doc + independent Worker Jev judgment.",
+    "forbidden": "No post-hoc tuning, no second ledger, no simulated live evidence, no PUBLISH on UNKNOWN."
+  },
+  "ciContract": {
+    "checks": [
+      "acceptance",
+      "benchmark-contract",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "ORACLE_CONTEXT_BENCHMARK_V1 O0/O1 semantics",
+      "@exharness/benchmark kernel"
+    ],
+    "add": [
+      "profile acceptance protocol, harness and reducer",
+      "tests",
+      "Living Doc"
+    ],
+    "rollback": "Remove harness/protocol/reducer and Living Doc; restore benchmark-profile.mjs without the O2 extension, keeping the vacuous-assertion removal."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-095 objective + BB-064 benchmark handoff + BB-065/BB-081 planned contracts",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-094/BB-065",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "frozen protocol + registered held-out attempts + deterministic decision + Living truth",
+      "forbidden": [
+        "tune after execution",
+        "second attempt ledger",
+        "simulate live evidence"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/oracle/profile-acceptance.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "The Oracle profile-acceptance Living Doc records the frozen protocol, held-out cohort identity, reduced decision and a supported Oracle profile only when the decision is PUBLISH_ORACLE_PROFILE_V1."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify a sealed held-out cohort disjoint from BB-077/BB-081 reserved digests, frozen arms O0 static control, O1 foundation and O2 frozen candidate, and fixed factors reused from ORACLE_CONTEXT_BENCHMARK_V1.",
+      "criterionIds": [
+        "PA1"
+      ],
+      "planElements": [
+        "A1"
+      ],
+      "verificationIds": [
+        "acceptance"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+          "match": "four reserved Terminal-Bench 2.1 held-out digests"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "External sanity deterministically seals exactly two pinned Terminal-Bench 2.1 tasks"
+        }
+      ],
+      "supportingPlanFields": [
+        "dependencyResolution"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify a preregistered conjunctive gate with per-task quality non-inferiority, zero provenance/currentness violations and prompt-input/cost ceilings, where UNKNOWN required measurements yield INCONCLUSIVE.",
+      "criterionIds": [
+        "PA2"
+      ],
+      "planElements": [
+        "A2"
+      ],
+      "verificationIds": [
+        "acceptance"
+      ],
+      "decisionIndexes": [
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-081.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+          "match": "Jev validates evidence claims but cannot rewrite the reducer outcome"
+        }
+      ],
+      "supportingPlanFields": [
+        "deliveryContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify a deterministic reducer returning PUBLISH_ORACLE_PROFILE_V1, KEEP_FOUNDATION or INCONCLUSIVE, publication only on PUBLISH, and registration of every unit/attempt through @exharness/benchmark.",
+      "criterionIds": [
+        "PA3"
+      ],
+      "planElements": [
+        "A3",
+        "A4"
+      ],
+      "verificationIds": [
+        "benchmark-contract",
+        "acceptance",
+        "repository"
+      ],
+      "decisionIndexes": [
+        3,
+        6,
+        7,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+        "scripts/oracle-context-intelligence/benchmark-profile.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "AttemptLedger is append-only"
+        },
+        {
+          "ref": "scripts/oracle-context-intelligence/benchmark-profile.mjs",
+          "match": "|| true)"
+        }
+      ],
+      "supportingPlanFields": [
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "PA1",
+        "PA2",
+        "PA3"
+      ],
+      "planElements": [
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
+      "verificationIds": [
+        "acceptance",
+        "benchmark-contract",
+        "repository"
+      ],
+      "decisionIndexes": [
+        0,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-094.json",
+        "test/oracle-context-intelligence-benchmark-contract.test.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-094.json",
+          "match": "ORACLE_CORE_INTERACTION_V1"
+        },
+        {
+          "ref": "test/oracle-context-intelligence-benchmark-contract.test.mjs",
+          "match": "O0_STATIC_CONTEXT_CONTROL"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Running --mode run with an uncommitted, modified or digest-mismatched protocol is refused before any attempt.",
+    "A cohort containing any BB-065 calibration or BB-077/BB-081 reserved digest fails selection; fewer than 6 eligible tasks stops PLAN_INPUT_CONTRADICTION.",
+    "Re-running selection with the same seed yields a different cohort: test failure.",
+    "Any unit with UNKNOWN required tokens, cost or quality makes the decision INCONCLUSIVE, never PUBLISH.",
+    "Any provenance or currentness violation in O2 prevents PUBLISH even if all ratios pass.",
+    "A task where O2 accepted-success count is below O1 blocks PUBLISH regardless of aggregate ratios.",
+    "Reduce mode producing a decision different from the recorded one fails.",
+    "benchmark-profile.mjs retaining any `|| true` assertion fails the benchmark-contract test.",
+    "Writes under packages/** or benchmarks/substrate/** fail repository scope verification."
+  ]
+}
