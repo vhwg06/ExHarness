@@ -52,6 +52,18 @@ test('partial reuse needs strongly fenced optional absence; unsatisfiable never 
   assert.equal(isReusableResolution(partial, r2, [present, weakAbsent]), false);
 });
 
+test('graph-derived items close over authoritative leaves; weak/malformed provenance fails', (t) => {
+  const r = req();
+  const leaf = obs();
+  const graphReceipt = defineContextResolutionReceipt({ reuseKey: reuseKey({ requirementId: r.requirementId, resolverConfigDigest: resolverConfigDigest(config), sourceObservations: [leaf], derivationInputs: [defineDerivationInput({ evidenceId: 'e', providerId: 'graph', operation: 'TRAVERSE_GRAPH', providerRevision: 'g1' })] }), requirementId: r.requirementId, resolutionId: 'b'.repeat(64), materializationId: 'c'.repeat(64), resolutionArtifactRef: 'resolution://g', resolverConfigDigest: resolverConfigDigest(config), sourceObservations: [leaf], derivationInputs: [defineDerivationInput({ evidenceId: 'e', providerId: 'graph', operation: 'TRAVERSE_GRAPH', providerRevision: 'g1' })], itemLineage: [{ itemDigest: 'd'.repeat(64), sourceObservationIds: ['e'], provenanceRefs: ['repo/graph@head'] }] });
+  assert.equal(evaluateReceiptCurrentness(graphReceipt, [leaf]).status, 'CURRENT');
+  const weakLeaf = defineSourceObservation({ evidenceId: 'e', source: { kind: 'REPOSITORY', ref: 'repo', snapshot: { mode: 'CURRENT' } }, observed: { state: 'PRESENT', snapshotRef: 'head', validators: [{ kind: 'REVISION', value: 'head', strength: 'WEAK' }], authorityRef: 'REPOSITORY:repo', authorityRevision: 'head' } });
+  const weakRes = defineContextResolution({ requirementId: r.requirementId, step: { index: 0, previousResolutionId: null }, status: 'COMPLETE', items: [{ evidenceId: 'e', rank: 0, source: { kind: 'REPOSITORY', ref: 'repo', snapshotRef: 'head', itemRef: 'a' }, currentness: { validators: [{ kind: 'REVISION', value: 'head', strength: 'WEAK' }] }, provenance: [{ kind: 'SOURCE_REF', ref: 'x' }], content: 'c' }], unresolved: [], consumed: { items: 1, materializedBytes: 5000, providerCalls: 1, resolutionSteps: 1 } }, r);
+  assert.equal(isReusableResolution(weakRes, r, [weakLeaf]), false);
+  assert.throws(() => defineSourceObservation({ evidenceId: 'e', source: { kind: 'REPOSITORY', ref: 'repo', snapshot: { mode: 'CURRENT' } }, observed: { state: 'PRESENT', validators: [], authorityRef: 'R' } }), /snapshotRef/);
+  t.diagnostic('graph TRAVERSE_GRAPH closes over authoritative leaf; REQUIRED CURRENT with only WEAK validator is not reusable; PRESENT without snapshotRef is malformed');
+});
+
 test('coordinator double-fences pre/post observations and never auto-retries', async (t) => {
   let head = 'h1';
   const catalog = createSourceCatalog({ snapshotAuthorities: [{ sourceKind: 'REPOSITORY', refPrefix: '', observe: async () => ({ snapshotRef: head }) }] });
