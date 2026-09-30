@@ -239,6 +239,20 @@ test('WORKER_TARGET (c): WORKER target with candidateSha or mergeSha is rejected
   assert.throws(() => verifyTarget(f2, candidate(t, f2, { target: 'BB-6' }), 'BB-6'), /retains worker authority: BB-6 mergeSha/);
 });
 
+test('WORKER_TARGET (g): a pre-assigned evidenceRef pointer is not authority unless the implementation result exists', t => {
+  // Readiness publication sets evidenceRef to the future implementation-result path before any worker ran.
+  const evidence = 'docs/blackboard/artifacts/ready-implement-plan/BB-6.implementation-result.json';
+  const f1 = fixture(t);
+  rebaseTrustedTarget(f1, 'BB-6', x => { x.contract.evidenceRef = evidence; });
+  assert.equal(fs.existsSync(path.join(f1.root, evidence)), false);
+  const result = verifyTarget(f1, candidate(t, f1, { target: 'BB-6' }), 'BB-6');
+  assert.equal(result.publication, 'OBJECTIVE_SUPERSESSION');
+  const f2 = fixture(t);
+  writeJson(f2.root, evidence, { artifactType: 'IMPLEMENTATION_RESULT' });
+  rebaseTrustedTarget(f2, 'BB-6', x => { x.contract.evidenceRef = evidence; });
+  assert.throws(() => verifyTarget(f2, candidate(t, f2, { target: 'BB-6' }), 'BB-6'), /retains worker authority: BB-6 evidenceRef/);
+});
+
 test('WORKER_TARGET (d): WORKER readiness evaluation modified instead of deleted is rejected', t => {
   // Old code never reaches the retention audit for a WORKER target; the fix
   // reuses the existing deletable logic and fails on rewrite.
