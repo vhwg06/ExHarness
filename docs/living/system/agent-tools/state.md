@@ -74,6 +74,16 @@ Run observation is described in `observation.md`:
 
 `runSupervisedTask` accepts an optional `invocationObserver` (default null). The supervisor awaits it inside ACT after the candidate commit and before cleanup; with it null, supervision is unchanged.
 
+## Durable recovery
+
+Opt-in crash resume is described in `recovery.md`: `runSupervisedTask` with
+`recoveryDir` persists the worktree, the Core session and an
+`AGENT_TOOL_RUN_HANDLE_V1` handle until `disposeRecoverableRun(handle)`, and
+`resumeSupervisedTask` continues the same attempt after a crash, refusing to
+start a second lineage when the worktree, digest, source HEAD or handle currency
+does not check out. Without `recoveryDir` the temporary worktree is still
+disposed in a `finally` block.
+
 ## Trust boundary
 
 The adapters are not a sandbox. A live run executes the agent with the user's CLI permissions and credentials under the user account, with cwd at a temporary git worktree only. The CLI can still read or write paths outside that worktree. ExHarness's own git operations preserve the source repository's HEAD, branch refs and working tree; they do not constrain what the agent process itself does. Sandbox, network and credential isolation is not provided by this package; it is separate open work on the Blackboard.
