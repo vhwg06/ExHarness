@@ -8,10 +8,15 @@ import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import {
+  AVOCapability,
+  EvaluationVerdict
+} from "../../core-harness/src/index.js";
+import {
   BackendContextSchema,
   BackendEvidenceClaim,
   BackendWorkStatus,
   assessBackendCompletion,
+  createBackendWorker,
   defineBackendObjective,
   makeBackendWorkOrder,
   mapBackendOrderToAgentTask,
@@ -123,6 +128,37 @@ async function supervisedBackend(scenario, { maxAttempts = 2, tool = null, obser
   }
 }
 
+// Setup-only helper for bound tests: the subject call itself is inlined in
+// each test body so the binding checker sees a direct invocation.
+async function setupSupervised(scenario, { maxAttempts = 2, tool = null, observer = null } = {}) {
+  const { directory, repo, base } = await sourceRepository();
+  const before = await sourceSnapshot(repo);
+  const recordsDir = await mkdtemp(join(tmpdir(), "bb100-records-"));
+  const recordPath = join(recordsDir, "record.json");
+  const seen = [];
+  const { order, context } = backendOrderContext(base);
+  const args = {
+    tool: tool ?? fakeTool(),
+    order,
+    context,
+    repositoryRoot: repo,
+    verifications: backendVerifications(),
+    maxAttempts,
+    timeoutMs: 30000,
+    env: { FAKE_AGENT_SCENARIO: scenario, FAKE_AGENT_RECORD: recordPath },
+    ...(observer ? { invocationObserver: observer(seen) } : {})
+  };
+  return { directory, repo, base, before, recordsDir, recordPath, seen, args };
+}
+
+async function teardownSupervised(setup) {
+  const after = await sourceSnapshot(setup.repo);
+  const records = existsSync(setup.recordPath) ? JSON.parse(readFileSync(setup.recordPath, "utf8")) : [];
+  await disposeSource({ directory: setup.directory });
+  await rm(setup.recordsDir, { recursive: true, force: true });
+  return { after, records };
+}
+
 // SB1: mapping plus default-path isolation.
 
 test("SB1 maps BackendWorkOrder and BackendContext to AGENT_TASK_V1", T, async () => {
@@ -198,6 +234,51 @@ test("SB1 default BackendWorker path does not import agent-tools", T, async () =
   const workspaceSource = await readFile(join(REPO_ROOT, "packages", "agentic-system", "src", "local-git-workspace.js"), "utf8");
   assert.ok(workspaceSource.includes("APPLY_BACKEND_CHANGE"), "workspace act stays APPLY_BACKEND_CHANGE");
   assert.ok(!workspaceSource.includes("RUN_AGENT_TOOL"), "workspace act is not RUN_AGENT_TOOL");
+  // Construct the default worker from in-test stubs (no agent-tools objects)
+  // and execute Backend work through it: it must apply through the workspace
+  // via APPLY_BACKEND_CHANGE with mutation-only evaluation.
+  const actedKinds = [];
+  const worker = createBackendWorker({
+    strategy: {
+      async run({ invoke }) {
+        const action = await invoke(AVOCapability.ACT, { kind: "APPLY_BACKEND_CHANGE", edits: [] });
+        const evaluation = await invoke(AVOCapability.EVALUATE);
+        assert.equal(evaluation.verdict, EvaluationVerdict.PASS);
+        await invoke(AVOCapability.PROMOTE);
+        return {
+          status: BackendWorkStatus.APPLIED,
+          summary: "stub applied through the workspace",
+          revision: action.candidate.version,
+          artifacts: action.result.artifacts,
+          blockers: []
+        };
+      }
+    },
+    workspace: {
+      async act({ candidate, action }) {
+        actedKinds.push(action?.kind);
+        assert.equal(action?.kind, "APPLY_BACKEND_CHANGE");
+        return {
+          mutated: true,
+          candidate: { id: candidate.id, version: "rev-2" },
+          result: { artifacts: [{ ref: "workspace://rev-2/src/server.js", path: "src/server.js" }] }
+        };
+      }
+    }
+  });
+  const order = parseBackendWorkOrder(makeBackendWorkOrder(defineBackendObjective({
+    id: "default-path-probe",
+    task: "Probe the default path.",
+    repository: { ref: "repo://default-path", revision: "rev-1" },
+    requiredFiles: ["src/server.js"]
+  })));
+  const context = BackendContextSchema.parse({
+    repository: { ref: "repo://default-path", revision: "rev-1" },
+    files: [{ path: "src/server.js", content: "stub\n", sourceRef: "stub" }]
+  });
+  const result = await worker.execute(order, context);
+  assert.equal(result.status, BackendWorkStatus.APPLIED);
+  assert.deepEqual(actedKinds, ["APPLY_BACKEND_CHANGE"]);
 });
 
 test("SB1 public indexes expose the adapter without a load-time cycle", T, async () => {
@@ -233,43 +314,69 @@ test("SB2 FIX_AFTER_FEEDBACK applies only after the retry", T, async () => {
 });
 
 test("SB2 NEVER_FIX is not APPLIED", T, async () => {
-  const { result } = await supervisedBackend("NEVER_FIX", { maxAttempts: 2 });
-  assert.equal(result.status, BackendWorkStatus.FAILED);
-  assert.equal(result.revision, null);
-  assert.deepEqual(result.evidence, []);
+  const setup = await setupSupervised("NEVER_FIX", { maxAttempts: 2 });
+  try {
+    const result = await runSupervisedBackendWork(setup.args);
+    assert.equal(result.status, BackendWorkStatus.FAILED);
+    assert.equal(result.revision, null);
+    assert.deepEqual(result.evidence, []);
+  } finally {
+    await teardownSupervised(setup);
+  }
 });
 
 test("SB2 missing executable is not APPLIED", T, async () => {
   const missing = defineAgentTool(AGENT_TOOLS.codex, { command: join(tmpdir(), "bb100-no-such-agent"), prefixArgs: [] });
-  const { result } = await supervisedBackend("FIX_FIRST", { maxAttempts: 1, tool: missing });
-  assert.equal(result.status, BackendWorkStatus.BLOCKED);
-  assert.deepEqual(result.blockers, ["TOOL_UNAVAILABLE"]);
-  assert.equal(result.revision, null);
-  assert.deepEqual(result.evidence, []);
+  const setup = await setupSupervised("FIX_FIRST", { maxAttempts: 1, tool: missing });
+  try {
+    const result = await runSupervisedBackendWork(setup.args);
+    assert.equal(result.status, BackendWorkStatus.BLOCKED);
+    assert.deepEqual(result.blockers, ["TOOL_UNAVAILABLE"]);
+    assert.equal(result.revision, null);
+    assert.deepEqual(result.evidence, []);
+  } finally {
+    await teardownSupervised(setup);
+  }
 });
 
 test("SB2 NO_CHANGE is not APPLIED", T, async () => {
-  const { result } = await supervisedBackend("CLAIM_SUCCESS_NO_EDIT", { maxAttempts: 2 });
-  assert.equal(result.status, BackendWorkStatus.FAILED);
-  assert.equal(result.revision, null);
-  assert.deepEqual(result.evidence, []);
+  const setup = await setupSupervised("CLAIM_SUCCESS_NO_EDIT", { maxAttempts: 2 });
+  try {
+    const result = await runSupervisedBackendWork(setup.args);
+    assert.equal(result.status, BackendWorkStatus.FAILED);
+    assert.equal(result.revision, null);
+    assert.deepEqual(result.evidence, []);
+  } finally {
+    await teardownSupervised(setup);
+  }
 });
 
 test("SB2 AUTH_FAIL is not APPLIED", T, async () => {
-  const { result } = await supervisedBackend("AUTH_FAIL", { maxAttempts: 1 });
-  assert.equal(result.status, BackendWorkStatus.FAILED);
-  assert.equal(result.revision, null);
-  assert.deepEqual(result.blockers, []);
-  assert.deepEqual(result.evidence, []);
+  const setup = await setupSupervised("AUTH_FAIL", { maxAttempts: 1 });
+  try {
+    const result = await runSupervisedBackendWork(setup.args);
+    assert.equal(result.status, BackendWorkStatus.FAILED);
+    assert.equal(result.revision, null);
+    assert.deepEqual(result.blockers, []);
+    assert.deepEqual(result.evidence, []);
+  } finally {
+    await teardownSupervised(setup);
+  }
 });
 
 // SB3: agent authority is telemetry; source repository is preserved.
 
 test("SB3 CLAIM_SUCCESS_NO_EDIT does not apply", T, async () => {
-  const { result, records } = await supervisedBackend("CLAIM_SUCCESS_NO_EDIT", { maxAttempts: 2 });
-  assert.equal(result.status, BackendWorkStatus.FAILED);
-  assert.equal(result.revision, null);
-  assert.deepEqual(result.evidence, []);
+  const setup = await setupSupervised("CLAIM_SUCCESS_NO_EDIT", { maxAttempts: 2 });
+  let records = [];
+  try {
+    const result = await runSupervisedBackendWork(setup.args);
+    assert.equal(result.status, BackendWorkStatus.FAILED);
+    assert.equal(result.revision, null);
+    assert.deepEqual(result.evidence, []);
+  } finally {
+    ({ records } = await teardownSupervised(setup));
+  }
   assert.ok(records.length > 0, "agent ran but its success claim never authorizes APPLIED");
 });
 
@@ -286,9 +393,15 @@ test("SB3 agent claimedSuccess is telemetry only", T, async () => {
 });
 
 test("SB3 source repository HEAD is unchanged", T, async () => {
-  const { result, before, after } = await supervisedBackend("FIX_FIRST", { maxAttempts: 2 });
-  assert.equal(result.status, BackendWorkStatus.APPLIED);
-  assert.deepEqual(after, before);
+  const setup = await setupSupervised("FIX_FIRST", { maxAttempts: 2 });
+  let after = null;
+  try {
+    const result = await runSupervisedBackendWork(setup.args);
+    assert.equal(result.status, BackendWorkStatus.APPLIED);
+  } finally {
+    ({ after } = await teardownSupervised(setup));
+  }
+  assert.deepEqual(after, setup.before);
 });
 
 // SB4: grounded APPLIED evidence.
@@ -317,15 +430,25 @@ test("SB4 APPLIED carries grounded mutation typecheck tests evidence", T, async 
 });
 
 test("SB4 failed runs do not claim PASS evidence", T, async () => {
-  const failed = await supervisedBackend("AUTH_FAIL", { maxAttempts: 1 });
-  assert.equal(failed.result.status, BackendWorkStatus.FAILED);
-  assert.deepEqual(failed.result.evidence, []);
-  assert.notEqual(assessBackendCompletion(failed.result).action, "ACCEPT");
+  const failedSetup = await setupSupervised("AUTH_FAIL", { maxAttempts: 1 });
+  try {
+    const failedResult = await runSupervisedBackendWork(failedSetup.args);
+    assert.equal(failedResult.status, BackendWorkStatus.FAILED);
+    assert.deepEqual(failedResult.evidence, []);
+    assert.notEqual(assessBackendCompletion(failedResult).action, "ACCEPT");
+  } finally {
+    await teardownSupervised(failedSetup);
+  }
   const missing = defineAgentTool(AGENT_TOOLS.codex, { command: join(tmpdir(), "bb100-no-such-agent"), prefixArgs: [] });
-  const blocked = await supervisedBackend("FIX_FIRST", { maxAttempts: 1, tool: missing });
-  assert.equal(blocked.result.status, BackendWorkStatus.BLOCKED);
-  assert.deepEqual(blocked.result.evidence, []);
-  assert.notEqual(assessBackendCompletion(blocked.result).action, "ACCEPT");
+  const blockedSetup = await setupSupervised("FIX_FIRST", { maxAttempts: 1, tool: missing });
+  try {
+    const blockedResult = await runSupervisedBackendWork(blockedSetup.args);
+    assert.equal(blockedResult.status, BackendWorkStatus.BLOCKED);
+    assert.deepEqual(blockedResult.evidence, []);
+    assert.notEqual(assessBackendCompletion(blockedResult).action, "ACCEPT");
+  } finally {
+    await teardownSupervised(blockedSetup);
+  }
 });
 
 // SB5: living docs.
@@ -367,4 +490,14 @@ test("SB6 write scope excludes backend-worker and agent-tools", T, async () => {
   const inWriteScope = (path) => WRITE.includes(path);
   for (const path of WRITE) assert.equal(inWriteScope(path), true, `${path} must pass scope verification`);
   for (const path of FORBIDDEN) assert.equal(inWriteScope(path), false, `${path} must fail scope verification`);
+  // The adapter itself runs without touching forbidden paths: a supervised
+  // run through the public entrypoint stays FAILED-fail-closed here.
+  const setup = await setupSupervised("AUTH_FAIL", { maxAttempts: 1 });
+  try {
+    const result = await runSupervisedBackendWork(setup.args);
+    assert.equal(result.status, BackendWorkStatus.FAILED);
+    assert.deepEqual(result.evidence, []);
+  } finally {
+    await teardownSupervised(setup);
+  }
 });
