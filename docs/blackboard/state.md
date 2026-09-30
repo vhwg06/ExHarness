@@ -41,7 +41,7 @@ NONE
 ## Schedulable tasks
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
-- BB-077 [WORKER/EXECUTION] — Research harness-isolation economics on shared benchmark kernel
+- BB-078 [WORKER/EXECUTION] — Implement durable detached operation scheduling
 - BB-093 [WORKER/EXECUTION] — Implement model-aware context budget profiles
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
@@ -76,14 +76,14 @@ BB-070 [BLOCKED_BY BB-069,BB-055] <- BB-069, BB-055
 BB-071 [BLOCKED_BY BB-070,BB-057] <- BB-070, BB-057
 BB-072 [BLOCKED_BY BB-068,BB-058] <- BB-068, BB-058
 BB-073 [BLOCKED_BY BB-070,BB-072] <- BB-070, BB-072
-BB-074 [BLOCKED_BY BB-071,BB-073,BB-077,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
+BB-074 [BLOCKED_BY BB-071,BB-073,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [BLOCKED_BY BB-074,BB-059] <- BB-074, BB-059
 BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
-BB-077 [WORKER_SCHEDULABLE] <- BB-065
-BB-078 [BLOCKED_BY BB-077] <- BB-077
-BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
+BB-077 [DONE] <- BB-065
+BB-078 [WORKER_SCHEDULABLE] <- BB-077
+BB-079 [BLOCKED_BY BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
-BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
+BB-081 [BLOCKED_BY BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
 BB-083 [BLOCKED_BY BB-059] <- BB-059, BB-064, BB-065
 BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
