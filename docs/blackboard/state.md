@@ -21,7 +21,7 @@ next-work-id: BB-106
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,12 +31,19 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-101
 ```
 
 ## Active work
 
-NONE
+
+BB-101
+task: Resume a supervised agent-tool run after process death
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-101/current.json
+components: integration/agent-tools
+worker: grok-bot
 
 ## Schedulable tasks
 
@@ -45,7 +52,6 @@ NONE
 - BB-092 [WORKER/EXECUTION] — Implement bounded explicit progressive resolution
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
-- BB-101 [WORKER/EXECUTION] — Resume a supervised agent-tool run after process death
 - BB-102 [WORKER/EXECUTION] — Resolve declared agent-tool files through the Oracle facade
 - BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
 - BB-104 [RESEARCH_SA/RESEARCH] — Run one local Backend-then-QA slice from an operator CLI
@@ -104,7 +110,7 @@ BB-097 [DONE] <- BB-096
 BB-098 [DONE] <- BB-097
 BB-099 [WORKER_SCHEDULABLE] <- BB-098, BB-065
 BB-100 [WORKER_SCHEDULABLE] <- BB-096, BB-097
-BB-101 [WORKER_SCHEDULABLE] <- BB-097
+BB-101 [ACTIVE] <- BB-097
 BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
 BB-104 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-102

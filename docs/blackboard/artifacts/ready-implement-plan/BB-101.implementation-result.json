@@ -1,0 +1,175 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-101-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-101.json",
+    "hash": "3ca609329e264a50a7ba3114e624c02782b0910fc65bebd845f542c0de6fdb32"
+  },
+  "candidateSha": "2e125ab9a6e2c4f4af476d182eb5b5c2f8bcf914",
+  "baselineSha": "a49502a86e08a56e45acdb7dd2167f623d6053b0",
+  "candidateTree": "4fd7cca9780f5f7b6b3892f6b6e051893d5355f1",
+  "verificationRuns": [
+    {
+      "id": "rc1-handle",
+      "command": "node --test --test-name-pattern=\"^RC1 \" packages/agent-tools/test/recovery.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2e125ab9a6e2c4f4af476d182eb5b5c2f8bcf914",
+      "logRef": "docs/blackboard/evidence/BB-101/rc1-handle.txt",
+      "logHash": "ef9472a074e2990f0d6a825f4b4e95e2fd0ee93e82cc4ea142b1c5c944bb0056"
+    },
+    {
+      "id": "rc2-default",
+      "command": "node --test --test-name-pattern=\"^RC2 \" packages/agent-tools/test/recovery.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2e125ab9a6e2c4f4af476d182eb5b5c2f8bcf914",
+      "logRef": "docs/blackboard/evidence/BB-101/rc2-default.txt",
+      "logHash": "b1eee90a2f28f28b9c1d901472cd69d8515d4972dcb6c865b639a718232ea0c9"
+    },
+    {
+      "id": "rc3-resume",
+      "command": "node --test --test-name-pattern=\"^RC3 \" packages/agent-tools/test/recovery.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2e125ab9a6e2c4f4af476d182eb5b5c2f8bcf914",
+      "logRef": "docs/blackboard/evidence/BB-101/rc3-resume.txt",
+      "logHash": "65a2681797ad563f7d79d80e8266366aca53befe25edc0e9807cb07cd276d35e"
+    },
+    {
+      "id": "rc4-refuse",
+      "command": "node --test --test-name-pattern=\"^RC4 \" packages/agent-tools/test/recovery.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2e125ab9a6e2c4f4af476d182eb5b5c2f8bcf914",
+      "logRef": "docs/blackboard/evidence/BB-101/rc4-refuse.txt",
+      "logHash": "597cc807013b507019b8ab349bcf4785549162d5dba1db7d4856a58e57af81b7"
+    },
+    {
+      "id": "rc5-docs",
+      "command": "node --test --test-name-pattern=\"^RC5 \" packages/agent-tools/test/recovery.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2e125ab9a6e2c4f4af476d182eb5b5c2f8bcf914",
+      "logRef": "docs/blackboard/evidence/BB-101/rc5-docs.txt",
+      "logHash": "7cf2bb9d20621c61f2ef11b6db0c3377d8259e544d4733c8e22eba101ef6787a"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2e125ab9a6e2c4f4af476d182eb5b5c2f8bcf914",
+      "logRef": "docs/blackboard/evidence/BB-101/agent-tools.txt",
+      "logHash": "83033e23a38a264fe59c7b2e613dd119107f3b9c436cdb5792dc4e1991b65839"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2e125ab9a6e2c4f4af476d182eb5b5c2f8bcf914",
+      "logRef": "docs/blackboard/evidence/BB-101/docs.txt",
+      "logHash": "e4947f4124d7945cd2fe1a68c224ece89e9c294da38af5146428e206284c2d2c"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2e125ab9a6e2c4f4af476d182eb5b5c2f8bcf914",
+      "logRef": "docs/blackboard/evidence/BB-101/repository.txt",
+      "logHash": "086a9017504669981dce2991455bad1be07b6688847a4820e8cc20a564a50c46"
+    }
+  ],
+  "claims": [
+    {
+      "id": "RC1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-101/rc1-handle.txt",
+        "docs/blackboard/evidence/BB-101/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "RC2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-101/rc2-default.txt",
+        "docs/blackboard/evidence/BB-101/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-RC-dispose",
+          "logRef": "docs/blackboard/evidence/BB-101/rc2-default.txt",
+          "testRef": "packages/agent-tools/test/recovery.test.js",
+          "bodyHash": "83cb79038b17ba42bbd1571114c8ca83e85d4d51430ed2e05427968b4dad3180"
+        }
+      ]
+    },
+    {
+      "id": "RC3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-101/rc3-resume.txt",
+        "docs/blackboard/evidence/BB-101/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-RC-lineage",
+          "logRef": "docs/blackboard/evidence/BB-101/rc3-resume.txt",
+          "testRef": "packages/agent-tools/test/recovery.test.js",
+          "bodyHash": "847393e1d679c2cb720430d7c4d8ea8675da72bd92ab7ddeb4c04fbf0d821d13"
+        }
+      ]
+    },
+    {
+      "id": "RC4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-101/rc4-refuse.txt",
+        "docs/blackboard/evidence/BB-101/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-RC-missing",
+          "logRef": "docs/blackboard/evidence/BB-101/rc4-refuse.txt",
+          "testRef": "packages/agent-tools/test/recovery.test.js",
+          "bodyHash": "0b0ef2cac77e8d1eb432ca1cb6ea4e6c07f857be783a950a7c4dbaa4c2f5d0ed"
+        },
+        {
+          "id": "NC-RC-digest",
+          "logRef": "docs/blackboard/evidence/BB-101/rc4-refuse.txt",
+          "testRef": "packages/agent-tools/test/recovery.test.js",
+          "bodyHash": "ffc66b1e4bad8a452613175c6d92a6e9fe8a9b6d33a620946c6d3a6d1eaf060f"
+        },
+        {
+          "id": "NC-RC-head",
+          "logRef": "docs/blackboard/evidence/BB-101/rc4-refuse.txt",
+          "testRef": "packages/agent-tools/test/recovery.test.js",
+          "bodyHash": "eaf578ca96ab439ee1799448420b14794d08d6cf26f9f65f84fd1a1e774e2fd9"
+        },
+        {
+          "id": "NC-RC-stale",
+          "logRef": "docs/blackboard/evidence/BB-101/rc4-refuse.txt",
+          "testRef": "packages/agent-tools/test/recovery.test.js",
+          "bodyHash": "4e49f7b66c253065daff713d35023ec20866021cf316091bfd491dd23391a8d7"
+        }
+      ]
+    },
+    {
+      "id": "RC5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-101/rc5-docs.txt",
+        "docs/blackboard/evidence/BB-101/docs.txt",
+        "docs/blackboard/evidence/BB-101/repository.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-RC-scope",
+          "logRef": "docs/blackboard/evidence/BB-101/rc5-docs.txt",
+          "testRef": "packages/agent-tools/test/recovery.test.js",
+          "bodyHash": "672c71932ffd4a2080dd11587d6a72a4387e42a6c1347b055f12acfece9c419a"
+        }
+      ]
+    }
+  ]
+}
