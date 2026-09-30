@@ -29,6 +29,18 @@ Delivery evidence for the Living Docs question (`LIVING_DELIVERY_EVIDENCE_V3`, c
 
 A missing or malformed change map, a body that differs from the bound source hash, a changed ref outside the materialized sources, or a batch that still exceeds the limit fails closed. Criterion questions are unchanged by V3.
 
+Source selection for criterion questions (`CRITERION_RANKED_SOURCE_V2`, current). Each criterion question of a batched worker evaluation receives up to five relevant candidate sources. Sources up to 4,000 characters are sent whole. The original selection (`CRITERION_TERM_LINES_V1`) took every line containing any criterion word, in file order, until 2,800 characters. Generic words such as "the", "and", "set" or "new" match almost every line, so for a large new module this degenerated into the file head. BB-082's CONTRACT and RETENTION questions never saw the receipt schema or the retained-receipt check, and Jev correctly answered `INSUFFICIENT_EVIDENCE`. V2 ranks the lines of each larger relevant source instead:
+
+- each criterion term is weighted by how rare it is in that file;
+- common English and JavaScript words, and terms found on more than 20% of the file's non-empty lines, carry no weight;
+- a line's score is the sum of its term weights, doubled when the candidate changed the line (from `candidateChanges`), plus a small bonus for declaration, comment and test-title lines;
+- the first three lines are kept, then the highest-scoring lines (ties in line order), each with the preceding line and up to three following lines, until 4,000 characters;
+- the excerpt lists numbered lines in file order with `…` at gaps and keeps the full source `hash` and `bytes`.
+
+Selection is deterministic. A missing or malformed change map, or an unknown strategy, fails closed. The Living Docs question is unaffected.
+
+New batched worker evaluations record `metrics.batching.criterionSourceStrategy: CRITERION_RANKED_SOURCE_V2`. Retained evaluations without the field validate with the original selection, byte-for-byte against their own manifest. `publish:blackboard-evaluation` rejects a new batched worker evaluation that does not use the current criterion source strategy.
+
 New batched worker evaluations record `metrics.batching.livingExcerptStrategy: LIVING_DELIVERY_EVIDENCE_V3`, and validation recomputes the manifest with the recorded strategy. Retained evaluations keep validating byte-for-byte against their own manifest: `LIVING_CHANGED_SECTIONS_V2` evaluations (BB-096, BB-053) with their recorded strategy, and evaluations without the field with the implied `LIVING_SCOPED_SECTIONS_V1` selection (A17/Integration C sections, or the first section plus up to two scope-matching headings). `publish:blackboard-evaluation` rejects a new batched worker evaluation that does not use the current strategy: `LIVING_SCOPED_SECTIONS_V1` could hide the sections a candidate changed (BB-096's `A18` section was never sent to Jev), and `LIVING_CHANGED_SECTIONS_V2` could withhold all delivery evidence from the Living Docs question.
 
 Research must replace generic migration verification mappings with criterion-specific commands and negative cases before readiness.

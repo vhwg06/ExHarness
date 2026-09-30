@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { canonical, hash } from '../scripts/blackboard-delivery-contract.mjs';
 import {
-  LIVING_EXCERPT_STRATEGIES, WORKER_BATCH_LIMITS, evaluate, livingDocChanges, markdownSections, validateEvaluation,
+  CRITERION_SOURCE_STRATEGIES, LIVING_EXCERPT_STRATEGIES, WORKER_BATCH_LIMITS, evaluate, livingDocChanges, markdownSections, validateEvaluation,
   workerBatchManifest, workerQuestionBatches, workerQuestionPayload
 } from '../scripts/blackboard-jev.mjs';
 
@@ -171,14 +171,15 @@ test('new batched evaluations record DELIVERY; retained CHANGED and SCOPED evalu
   };
   const evaluation = await evaluate(materialized, { root: r.root, fetchImpl, apiKey: 'fixture-key', bypassCache: true });
   assert.equal(evaluation.metrics.batching.livingExcerptStrategy, DELIVERY);
+  assert.equal(evaluation.metrics.batching.criterionSourceStrategy, CRITERION_SOURCE_STRATEGIES.RANKED);
   const living = sent.find(body => body.questions.LIVING_DOCS).state;
   assert.match(living.sources[0].body, /A18 — Local git workspace/);
   assert.deepEqual(living.verification.map(run => run.id), ['unit'], 'Living Docs question receives the plan verification runs');
   assert.equal(living.evidenceFiles[0].excerpted, true);
   assert.equal(validateEvaluation(evaluation, materialized), evaluation);
   const retainedAs = (strategy, record) => {
-    const manifest = workerBatchManifest(full, { livingExcerptStrategy: strategy, livingChanges });
-    const { livingExcerptStrategy, ...rest } = evaluation.metrics.batching;
+    const manifest = workerBatchManifest(full, { livingExcerptStrategy: strategy, criterionSourceStrategy: CRITERION_SOURCE_STRATEGIES.TERM_LINES, livingChanges, candidateChanges: {} });
+    const { livingExcerptStrategy, criterionSourceStrategy, ...rest } = evaluation.metrics.batching;
     return { ...evaluation, metrics: { ...evaluation.metrics, batching: { ...rest, ...(record ? { livingExcerptStrategy: strategy } : {}), manifest } } };
   };
   const changed = retainedAs(CHANGED, true), scoped = retainedAs(SCOPED, false);

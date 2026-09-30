@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { hash, read, write, planHash, assertPlan, localPath, assertDeliveryArtifact } from '../scripts/blackboard-delivery-contract.mjs';
-import { materialize, evaluate, validateResponse, callJev, assertReady, validateEvaluation, workerBatchManifest, workerBatchStrategy, LIVING_EXCERPT_STRATEGIES, CURRENT_LIVING_EXCERPT_STRATEGY } from '../scripts/blackboard-jev.mjs';
+import { materialize, evaluate, validateResponse, callJev, assertReady, validateEvaluation, workerBatchManifest, workerBatchStrategy, LIVING_EXCERPT_STRATEGIES, CURRENT_LIVING_EXCERPT_STRATEGY, CRITERION_SOURCE_STRATEGIES, CURRENT_CRITERION_SOURCE_STRATEGY } from '../scripts/blackboard-jev.mjs';
 import { publishEvaluation, verifyDelivery, publishDelivery, collectEvidence, importEvaluationEvidence } from '../scripts/blackboard-delivery.mjs';
 import { migrate } from '../scripts/blackboard-delivery-migrate.mjs';
 
@@ -295,17 +295,21 @@ test('worker materialization derives the Living Doc and candidate change maps an
   assert.equal('livingChanges' in input.payload.state,false,'change map does not alter stateHash/cacheKey');
   assert.equal('candidateChanges' in input.payload.state,false,'candidate change map does not alter stateHash/cacheKey');
   const evaluation=await f.ev();
-  const withBatching=strategy=>{
-    const manifest=workerBatchManifest(input.payload,{livingExcerptStrategy:strategy,livingChanges:input.livingChanges,candidateChanges:input.candidateChanges});
-    return {...evaluation,metrics:{...evaluation.metrics,batching:{strategy:workerBatchStrategy(manifest),...(strategy===LIVING_EXCERPT_STRATEGIES.SCOPED?{}:{livingExcerptStrategy:strategy}),manifest,cacheHits:0}}};
+  const withBatching=(strategy,criterion=CURRENT_CRITERION_SOURCE_STRATEGY)=>{
+    const manifest=workerBatchManifest(input.payload,{livingExcerptStrategy:strategy,criterionSourceStrategy:criterion,livingChanges:input.livingChanges,candidateChanges:input.candidateChanges});
+    return {...evaluation,metrics:{...evaluation.metrics,batching:{strategy:workerBatchStrategy(manifest),...(strategy===LIVING_EXCERPT_STRATEGIES.SCOPED?{}:{livingExcerptStrategy:strategy}),...(criterion===CRITERION_SOURCE_STRATEGIES.TERM_LINES?{}:{criterionSourceStrategy:criterion}),manifest,cacheHits:0}}};
   };
   const before=read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase;
   for(const strategy of [LIVING_EXCERPT_STRATEGIES.SCOPED,LIVING_EXCERPT_STRATEGIES.CHANGED]){
-    const retained=withBatching(strategy);
+    const retained=withBatching(strategy,CRITERION_SOURCE_STRATEGIES.TERM_LINES);
     assert.equal(validateEvaluation(retained,input),retained,`retained ${strategy} evaluations still validate`);
     assert.throws(()=>publishEvaluation(f.root,'BB-1',retained),/retired Living Doc excerpt strategy/);
     assert.equal(read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase,before,'rejected publication leaves the Board unchanged');
   }
+  const retainedCriterion=withBatching(CURRENT_LIVING_EXCERPT_STRATEGY,CRITERION_SOURCE_STRATEGIES.TERM_LINES);
+  assert.equal(validateEvaluation(retainedCriterion,input),retainedCriterion,'retained V3 evaluations without a criterion strategy still validate');
+  assert.throws(()=>publishEvaluation(f.root,'BB-1',retainedCriterion),/retired criterion source excerpt strategy/);
+  assert.equal(read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase,before,'rejected publication leaves the Board unchanged');
   publishEvaluation(f.root,'BB-1',withBatching(CURRENT_LIVING_EXCERPT_STRATEGY));
   assert.equal(read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase,'MERGE_PENDING');
 });
