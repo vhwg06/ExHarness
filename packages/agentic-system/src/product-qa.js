@@ -112,7 +112,7 @@ export function defineQualityAcceptance(raw) {
   return frozenCopy(raw);
 }
 
-export function createQualityAcceptancePublisher({ domainArtifactRegistry, organizationArtifactRegistry, deploymentReleaseController, artifactRegistry, qualityAcceptanceHeadStore, snapshotResolver, acceptanceAuthorityRef }) {
+export function createQualityAcceptancePublisher({ domainArtifactRegistry, organizationArtifactRegistry, deploymentReleaseController, artifactRegistry, qualityAcceptanceHeadStore, snapshotResolver, acceptanceAuthorityRef, projectGuard = null, projectIdForEnvironment = null }) {
   invariant(domainArtifactRegistry && typeof domainArtifactRegistry.resolveExecutionJudgmentBundle === "function", "QualityAcceptance publisher requires the domain execution artifact registry");
   invariant(organizationArtifactRegistry && typeof organizationArtifactRegistry.resolveDomainExecutionInput === "function", "QualityAcceptance publisher requires the organization artifact registry");
   invariant(deploymentReleaseController && typeof deploymentReleaseController.withCurrentReleaseGuard === "function", "QualityAcceptance publisher requires the release-head guard");
@@ -140,7 +140,14 @@ export function createQualityAcceptancePublisher({ domainArtifactRegistry, organ
     invariant(observation.snapshotRef === snapshotRef && observation.releaseRef === snapshot.releaseRef && snapshot.observerRefs.includes(observation.observerRef), "runtime observation does not come from a trusted observer for this snapshot");
     invariant(observation.acceptable === true, `runtime identity ${observation.status} is not acceptable`);
     const subjectKey = qualityAcceptanceSubjectKey(snapshot.environmentRef);
-    return deploymentReleaseController.withCurrentReleaseGuard({ environmentRef: snapshot.environmentRef, releaseRef: snapshot.releaseRef, headRevision: snapshot.releaseHeadRevision }, async () => {
+    // Optional Integration G binding: quality publications can additionally
+    // serialize with product history/closure on the shared project guard.
+    // Absent by default; delivered E/F behavior unchanged.
+    const projectId = typeof projectIdForEnvironment === "function" ? projectIdForEnvironment(snapshot.environmentRef) : null;
+    const withProject = projectGuard != null && projectId != null && typeof projectGuard.withProduct === "function"
+      ? (action) => projectGuard.withProduct(projectId, action)
+      : (action) => action();
+    return withProject(() => deploymentReleaseController.withCurrentReleaseGuard({ environmentRef: snapshot.environmentRef, releaseRef: snapshot.releaseRef, headRevision: snapshot.releaseHeadRevision }, async () => {
       const head = await qualityAcceptanceHeadStore.current(subjectKey);
       const acceptance = defineQualityAcceptance({
         kind: "QUALITY_ACCEPTANCE",
@@ -161,7 +168,7 @@ export function createQualityAcceptancePublisher({ domainArtifactRegistry, organ
       const acceptanceRef = await artifactRegistry.putQualityAcceptance(acceptance);
       invariant(await qualityAcceptanceHeadStore.compareAndSwap(subjectKey, head?.revision ?? null, { acceptanceRef, releaseRef: snapshot.releaseRef }), "QualityAcceptance head CAS conflict");
       return deepFreeze({ acceptanceRef, acceptance });
-    });
+    }));
   }
 
   async function resolve(acceptanceRef) {
