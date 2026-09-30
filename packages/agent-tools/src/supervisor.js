@@ -3,9 +3,20 @@
 // bounded retry with verification feedback and promotion. The agent's exit status and message
 // are telemetry only. The CLI itself is not sandboxed: it runs with the user's permissions.
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import {
+  AGENT_TOOL_RUN_HANDLE_VERSION,
+  RecoveryError,
+  createFileSessionStore,
+  handlePath,
+  readAgentToolRunHandle,
+  reopenRecoverableWorkspace,
+  verifyAgentToolRunHandle,
+  writeAgentToolRunHandle
+} from "./recovery.js";
 import {
   AVOCapability,
   EvaluationValidity,
@@ -103,16 +114,69 @@ export function buildFeedback(failures, maxFeedbackChars) {
  * Core strategy for one supervised task: up to maxAttempts × (ACT, every verifier, EVALUATE),
  * then PROMOTE only for a mutating ACT whose evaluation is PASS.
  */
-export function createSupervisedAgentStrategy({ task, maxAttempts = 3, maxFeedbackChars = 8000 }) {
+export function createSupervisedAgentStrategy({
+  task,
+  maxAttempts = 3,
+  maxFeedbackChars = 8000,
+  startAttempt = 1,
+  initialSessionRef = null,
+  initialFeedback = "",
+  skipFirstAct = false,
+  onActCompleted = null,
+  onAttemptCompleted = null
+}) {
   if (!Number.isInteger(maxAttempts) || maxAttempts <= 0) throw new TypeError("maxAttempts must be a positive integer");
   if (!Number.isInteger(maxFeedbackChars) || maxFeedbackChars <= FEEDBACK_HEADER.length) throw new TypeError("maxFeedbackChars must be an integer larger than the feedback header");
+  if (!Number.isInteger(startAttempt) || startAttempt < 1 || startAttempt > maxAttempts) throw new TypeError("startAttempt must be an integer between 1 and maxAttempts");
+  if (initialSessionRef !== null && (typeof initialSessionRef !== "string" || initialSessionRef.length === 0)) throw new TypeError("initialSessionRef must be null or a non-empty string");
+  if (typeof initialFeedback !== "string") throw new TypeError("initialFeedback must be a string");
+  if (typeof skipFirstAct !== "boolean") throw new TypeError("skipFirstAct must be a boolean");
+  if (onActCompleted !== null && typeof onActCompleted !== "function") throw new TypeError("onActCompleted must be null or a function");
+  if (onAttemptCompleted !== null && typeof onAttemptCompleted !== "function") throw new TypeError("onAttemptCompleted must be null or a function");
   return Object.freeze({
     async run({ input, invoke }) {
       let currentCandidate = input.candidate;
-      let sessionRef = null;
-      let feedback = "";
+      let sessionRef = initialSessionRef;
+      let feedback = initialFeedback;
       const attempts = [];
-      for (let index = 1; index <= maxAttempts; index += 1) {
+      for (let index = startAttempt; index <= maxAttempts; index += 1) {
+        const skipped = skipFirstAct && index === startAttempt;
+        if (skipped) {
+          // Resume of a crashed attempt whose ACT already completed: the candidate and
+          // tool session are durable, so only verification and evaluation re-run.
+          const mutated = currentCandidate.version !== task.baseRevision;
+          const resume = index === 1 ? null : { sessionRef };
+          const attempt = {
+            index,
+            resume,
+            outcome: mutated ? AttemptOutcome.CANDIDATE_CREATED : AttemptOutcome.NO_CHANGE,
+            exitCode: null,
+            timedOut: false,
+            durationMs: 0,
+            claimedSuccess: false,
+            candidateSha: currentCandidate.version,
+            mutated,
+            foldedAgentCommits: 0,
+            verification: [],
+            feedbackChars: feedback.length
+          };
+          attempts.push(attempt);
+          const failures = [];
+          for (const verifier of input.verifiers) {
+            const artifact = await invoke(verifier.capability, { attemptIndex: index });
+            const record = { name: verifier.name, status: artifact.status, reason: verificationReason(artifact) };
+            attempt.verification.push(record);
+            if (artifact.status !== VerificationStatus.PASS) failures.push({ ...record, output: artifact.summary });
+          }
+          const evaluation = await invoke(AVOCapability.EVALUATE, { attemptIndex: index });
+          if (evaluation.verdict === EvaluationVerdict.PASS && mutated) {
+            await invoke(AVOCapability.PROMOTE, null);
+            return { status: AgentTaskStatus.ACCEPTED, attempts, acceptedSha: currentCandidate.version };
+          }
+          if (failures.length > 0) feedback = buildFeedback(failures, maxFeedbackChars);
+          if (onAttemptCompleted) await onAttemptCompleted({ attemptIndex: index, candidateSha: currentCandidate.version, toolSessionRef: sessionRef, feedback, mutated });
+          continue;
+        }
         const prompt = feedback ? `${task.prompt}\n\n${feedback}` : task.prompt;
         const resume = index === 1 ? null : { sessionRef };
         const acted = await invoke(AVOCapability.ACT, { kind: RUN_AGENT_TOOL, attemptIndex: index, prompt, resume });
@@ -137,6 +201,7 @@ export function createSupervisedAgentStrategy({ task, maxAttempts = 3, maxFeedba
           return { status: AgentTaskStatus.TOOL_UNAVAILABLE, attempts, acceptedSha: null };
         }
         if (invocation?.sessionRef) sessionRef = invocation.sessionRef;
+        if (onActCompleted) await onActCompleted({ attemptIndex: index, candidateSha: currentCandidate.version, toolSessionRef: sessionRef, feedback, mutated: acted.mutated === true });
         const failures = [];
         for (const verifier of input.verifiers) {
           const artifact = await invoke(verifier.capability, { attemptIndex: index });
@@ -150,6 +215,7 @@ export function createSupervisedAgentStrategy({ task, maxAttempts = 3, maxFeedba
           return { status: AgentTaskStatus.ACCEPTED, attempts, acceptedSha: currentCandidate.version };
         }
         if (failures.length > 0) feedback = buildFeedback(failures, maxFeedbackChars);
+        if (onAttemptCompleted) await onAttemptCompleted({ attemptIndex: index, candidateSha: currentCandidate.version, toolSessionRef: sessionRef, feedback, mutated: acted.mutated === true });
       }
       return { status: AgentTaskStatus.EXHAUSTED, attempts, acceptedSha: null };
     }
@@ -227,10 +293,64 @@ async function probeToolVersion(tool, cwd, env) {
   return line ?? null;
 }
 
+function buildSupervisedVerifiers(task, worktreeRoot) {
+  return task.verifications.map((verification) => createLocalCommandVerifier({
+    name: verification.name,
+    claim: `agent-task.${verification.name}`,
+    root: worktreeRoot,
+    command: verification.command,
+    args: [...verification.args],
+    timeoutMs: verification.timeoutMs,
+    requireUnchangedTree: true
+  }));
+}
+
+function supervisedObjective(claims) {
+  return {
+    // PASS only when every declared verifier recorded PASS for the current candidate;
+    // the agent's claim and message never contribute.
+    async evaluate({ candidate, verifications }) {
+      const passed = new Set(verifications
+        .filter((item) => item.status === VerificationStatus.PASS && item.candidate?.version === candidate.version)
+        .map((item) => item.claim));
+      const missing = [...claims].filter((claim) => !passed.has(claim));
+      return {
+        validity: EvaluationValidity.VALID,
+        verdict: missing.length === 0 ? EvaluationVerdict.PASS : EvaluationVerdict.GAP,
+        evidence: missing.length === 0 ? [`agent-task-verified:${candidate.version}`] : missing.map((claim) => `agent-task-unverified:${claim}`)
+      };
+    }
+  };
+}
+
+function checkSupervisedOutcome(outcome, variation) {
+  if ((outcome.status === AgentTaskStatus.ACCEPTED) !== variation.lineage.advanced) {
+    throw new Error("supervised agent result disagrees with ExHarness lineage promotion");
+  }
+  if (outcome.status === AgentTaskStatus.ACCEPTED && variation.lineage.after?.candidate?.version !== outcome.acceptedSha) {
+    throw new Error("accepted candidate differs from the promoted lineage head");
+  }
+}
+
+function freezeSupervisedResult({ taskId, tool, toolVersion, outcome }) {
+  return Object.freeze({
+    taskId,
+    tool: tool.id,
+    toolVersion,
+    status: outcome.status,
+    attempts: outcome.attempts,
+    acceptedSha: outcome.acceptedSha
+  });
+}
+
 /**
  * Runs one AGENT_TASK_V1 under ExHarness supervision and returns AGENT_SUPERVISED_RESULT_V1.
  * The agent runs with cwd at a unique temporary worktree; the source repository's HEAD, branch
  * refs and working tree are not changed by ExHarness's own git operations.
+ *
+ * Without recoveryDir the run still uses a unique mkdtemp scratch worktree that is disposed
+ * in a finally block. With recoveryDir the worktree, logs, Core session and handle survive
+ * until disposeRecoverableRun(handle); onHandleWrite(handle) is awaited after each persist.
  */
 export async function runSupervisedTask({
   tool,
@@ -243,12 +363,19 @@ export async function runSupervisedTask({
   env = {},
   eventSinks = [],
   tracer = null,
-  invocationObserver = null
+  invocationObserver = null,
+  recoveryDir = null,
+  onHandleWrite = null
 }) {
   const task = validateAgentTask(rawTask);
   if (invocationObserver !== null && typeof invocationObserver !== "function") throw new TypeError("invocationObserver must be null or a function");
   if (!Object.values(PermissionProfile).includes(permissionProfile)) throw new TypeError(`unknown permission profile: ${permissionProfile}`);
   if (!Number.isInteger(timeoutMs) || timeoutMs <= 0) throw new TypeError("timeoutMs must be a positive integer");
+  if (recoveryDir !== null && (typeof recoveryDir !== "string" || recoveryDir.length === 0)) throw new TypeError("recoveryDir must be null or a non-empty string");
+  if (onHandleWrite !== null && typeof onHandleWrite !== "function") throw new TypeError("onHandleWrite must be null or a function");
+  if (recoveryDir !== null) {
+    return runRecoverableTask({ tool, task, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, recoveryDir, onHandleWrite });
+  }
   const strategy = createSupervisedAgentStrategy({ task, maxAttempts, maxFeedbackChars });
   const scratch = await mkdtemp(join(tmpdir(), "exharness-agent-"));
   const worktreeRoot = join(scratch, "worktree");
@@ -258,15 +385,7 @@ export async function runSupervisedTask({
     await mkdir(logDir);
     workspace = await createLocalGitWorkspace({ repositoryRoot: task.repositoryRoot, baseRevision: task.baseRevision, worktreeRoot });
     const toolVersion = await probeToolVersion(tool, workspace.root, env);
-    const verifiers = task.verifications.map((verification) => createLocalCommandVerifier({
-      name: verification.name,
-      claim: `agent-task.${verification.name}`,
-      root: workspace.root,
-      command: verification.command,
-      args: [...verification.args],
-      timeoutMs: verification.timeoutMs,
-      requireUnchangedTree: true
-    }));
+    const verifiers = buildSupervisedVerifiers(task, workspace.root);
     const claims = new Set(verifiers.map((verifier) => `agent-task.${verifier.name}`));
     const harness = createHarness({
       strategy,
@@ -274,21 +393,7 @@ export async function runSupervisedTask({
       verifiers,
       verificationPolicy: { requirements: [...claims].map((claim) => ({ claim })) },
       variationPolicy: { maxCapabilityCalls: maxAttempts * (verifiers.length + 3) },
-      objective: {
-        // PASS only when every declared verifier recorded PASS for the current candidate;
-        // the agent's claim and message never contribute.
-        async evaluate({ candidate, verifications }) {
-          const passed = new Set(verifications
-            .filter((item) => item.status === VerificationStatus.PASS && item.candidate?.version === candidate.version)
-            .map((item) => item.claim));
-          const missing = [...claims].filter((claim) => !passed.has(claim));
-          return {
-            validity: EvaluationValidity.VALID,
-            verdict: missing.length === 0 ? EvaluationVerdict.PASS : EvaluationVerdict.GAP,
-            evidence: missing.length === 0 ? [`agent-task-verified:${candidate.version}`] : missing.map((claim) => `agent-task-unverified:${claim}`)
-          };
-        }
-      },
+      objective: supervisedObjective(claims),
       eventSinks,
       tracer
     });
@@ -297,20 +402,8 @@ export async function runSupervisedTask({
     const variation = await harness.vary(sessionId);
     if (variation.failure) throw new Error(`supervised agent run failed: ${variation.failure.message}`);
     const outcome = variation.result;
-    if ((outcome.status === AgentTaskStatus.ACCEPTED) !== variation.lineage.advanced) {
-      throw new Error("supervised agent result disagrees with ExHarness lineage promotion");
-    }
-    if (outcome.status === AgentTaskStatus.ACCEPTED && variation.lineage.after?.candidate?.version !== outcome.acceptedSha) {
-      throw new Error("accepted candidate differs from the promoted lineage head");
-    }
-    return Object.freeze({
-      taskId: task.id,
-      tool: tool.id,
-      toolVersion,
-      status: outcome.status,
-      attempts: outcome.attempts,
-      acceptedSha: outcome.acceptedSha
-    });
+    checkSupervisedOutcome(outcome, variation);
+    return freezeSupervisedResult({ taskId: task.id, tool, toolVersion, outcome });
   } finally {
     try {
       if (workspace) await workspace.dispose();
@@ -318,4 +411,278 @@ export async function runSupervisedTask({
       await rm(scratch, { recursive: true, force: true });
     }
   }
+}
+
+async function persistRecoverableHandle({ recoveryDir, fields, onHandleWrite }) {
+  const handle = await writeAgentToolRunHandle(recoveryDir, fields);
+  if (onHandleWrite !== null) await onHandleWrite(handle);
+  return handle;
+}
+
+/**
+ * First run of a recoverable supervised task. The worktree, logs, Core session and
+ * handle survive in recoveryDir until disposeRecoverableRun(handle). The worktree is
+ * never disposed here, not even on ACCEPTED, EXHAUSTED or throw.
+ */
+async function runRecoverableTask({ tool, task, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, recoveryDir, onHandleWrite }) {
+  const root = resolve(recoveryDir);
+  if (existsSync(handlePath(root))) {
+    throw new RecoveryError("HANDLE_CURRENT", `a current handle already exists in ${root}`);
+  }
+  const worktreeRoot = join(root, "worktree");
+  const logDir = join(root, "logs");
+  const sessionDir = join(root, "core-session");
+  await mkdir(logDir, { recursive: true });
+  await mkdir(sessionDir, { recursive: true });
+  const sourceHead = (await git(task.repositoryRoot, ["rev-parse", "HEAD"])).trim();
+  const sessionId = `agent-task:${task.id}`;
+  const sessionStore = createFileSessionStore({ directory: sessionDir });
+  const workspace = await createLocalGitWorkspace({ repositoryRoot: task.repositoryRoot, baseRevision: task.baseRevision, worktreeRoot });
+  const toolVersion = await probeToolVersion(tool, workspace.root, env);
+  const verifiers = buildSupervisedVerifiers(task, workspace.root);
+  const claims = new Set(verifiers.map((verifier) => `agent-task.${verifier.name}`));
+  const baseFields = {
+    version: AGENT_TOOL_RUN_HANDLE_VERSION,
+    taskId: task.id,
+    repositoryRoot: resolve(task.repositoryRoot),
+    baseRevision: task.baseRevision,
+    sourceHead,
+    recoveryDir: root,
+    worktreeRoot: resolve(worktreeRoot),
+    coreSessionId: sessionId,
+    toolId: tool.id,
+    toolVersion,
+    maxAttempts
+  };
+  let lastToolSessionRef = null;
+  let lastFeedback = "";
+  let lastCandidateSha = task.baseRevision;
+  let lastAttemptIndex = 1;
+  const strategy = createSupervisedAgentStrategy({
+    task,
+    maxAttempts,
+    maxFeedbackChars,
+    onActCompleted: async ({ attemptIndex, candidateSha, toolSessionRef, feedback }) => {
+      lastToolSessionRef = toolSessionRef;
+      lastFeedback = feedback;
+      lastCandidateSha = candidateSha;
+      lastAttemptIndex = attemptIndex;
+      await persistRecoverableHandle({
+        recoveryDir: root,
+        onHandleWrite,
+        fields: { ...baseFields, candidateSha, toolSessionRef, attemptIndex, phase: "ACT_COMPLETED", status: "RUNNING", feedback }
+      });
+    },
+    onAttemptCompleted: async ({ attemptIndex, candidateSha, toolSessionRef, feedback }) => {
+      lastToolSessionRef = toolSessionRef;
+      lastFeedback = feedback;
+      lastCandidateSha = candidateSha;
+      lastAttemptIndex = attemptIndex;
+      await persistRecoverableHandle({
+        recoveryDir: root,
+        onHandleWrite,
+        fields: { ...baseFields, candidateSha, toolSessionRef, attemptIndex, phase: "ATTEMPT_COMPLETED", status: "RUNNING", feedback }
+      });
+    }
+  });
+  const harness = createHarness({
+    strategy,
+    environment: agentToolEnvironment({ workspace, tool, model, permissionProfile, env, timeoutMs, logDir, invocationObserver }),
+    verifiers,
+    verificationPolicy: { requirements: [...claims].map((claim) => ({ claim })) },
+    variationPolicy: { maxCapabilityCalls: maxAttempts * (verifiers.length + 3) },
+    objective: supervisedObjective(claims),
+    sessionStore,
+    recoveryPolicy: { staleAfterMs: 0 },
+    eventSinks,
+    tracer
+  });
+  await harness.start({ sessionId, work: { id: task.id, prompt: task.prompt }, seedCandidate: { id: task.id, version: task.baseRevision } });
+  // No try/finally disposal: the worktree and handle stay durable across crashes.
+  const variation = await harness.vary(sessionId);
+  if (variation.failure) throw new Error(`supervised agent run failed: ${variation.failure.message}`);
+  const outcome = variation.result;
+  checkSupervisedOutcome(outcome, variation);
+  const terminalAttempts = outcome.attempts ?? [];
+  const terminalIndex = terminalAttempts.at(-1)?.index ?? lastAttemptIndex;
+  const terminalCandidate = outcome.acceptedSha ?? terminalAttempts.at(-1)?.candidateSha ?? lastCandidateSha;
+  await persistRecoverableHandle({
+    recoveryDir: root,
+    onHandleWrite,
+    fields: { ...baseFields, candidateSha: terminalCandidate, toolSessionRef: lastToolSessionRef, attemptIndex: terminalIndex, phase: "ATTEMPT_COMPLETED", status: outcome.status, feedback: lastFeedback }
+  });
+  return freezeSupervisedResult({ taskId: task.id, tool, toolVersion, outcome });
+}
+
+/**
+ * Resumes a recoverable supervised run after a crash. Reopens the same worktree and
+ * Core session, continues the tool session when the adapter supports it, and never
+ * mints a second lineage for the handle. Fail-closed with RecoveryError and no
+ * mkdtemp when the worktree is missing, a digest mismatches, the source HEAD drifted
+ * or the handle is stale or complete.
+ *
+ * The original task (prompt plus verifications) must be supplied again; its identity
+ * (id, repositoryRoot, baseRevision) must match the handle.
+ */
+export async function resumeSupervisedTask(
+  handle,
+  {
+    tool,
+    task: rawTask = null,
+    model = null,
+    maxAttempts = null,
+    timeoutMs = 600000,
+    maxFeedbackChars = 8000,
+    permissionProfile = PermissionProfile.WORKSPACE_EDIT,
+    env = {},
+    eventSinks = [],
+    tracer = null,
+    invocationObserver = null,
+    onHandleWrite = null
+  } = {}
+) {
+  if (!tool || typeof tool !== "object") throw new RecoveryError("HANDLE_INVALID", "resumeSupervisedTask requires a tool adapter");
+  if (invocationObserver !== null && typeof invocationObserver !== "function") throw new TypeError("invocationObserver must be null or a function");
+  if (!Object.values(PermissionProfile).includes(permissionProfile)) throw new TypeError(`unknown permission profile: ${permissionProfile}`);
+  if (!Number.isInteger(timeoutMs) || timeoutMs <= 0) throw new TypeError("timeoutMs must be a positive integer");
+  if (onHandleWrite !== null && typeof onHandleWrite !== "function") throw new TypeError("onHandleWrite must be null or a function");
+  if (!handle || typeof handle !== "object") throw new RecoveryError("HANDLE_INVALID", "resumeSupervisedTask requires a handle");
+  verifyAgentToolRunHandle(handle);
+  const root = resolve(handle.recoveryDir);
+  let disk;
+  try {
+    disk = await readAgentToolRunHandle(root);
+  } catch (error) {
+    if (error instanceof RecoveryError) throw error;
+    throw new RecoveryError("HANDLE_INVALID", `cannot read handle in ${root}`);
+  }
+  verifyAgentToolRunHandle(disk);
+  if (disk.digest !== handle.digest) {
+    throw new RecoveryError("STALE_HANDLE", "the handle on disk is newer than the provided handle");
+  }
+  if (["ACCEPTED", "EXHAUSTED", "TOOL_UNAVAILABLE"].includes(handle.status)) {
+    throw new RecoveryError("HANDLE_COMPLETE", `handle is already ${handle.status}`);
+  }
+  if (tool.id !== handle.toolId) {
+    throw new RecoveryError("TOOL_MISMATCH", `tool ${tool.id} does not match handle tool ${handle.toolId}`);
+  }
+  const resolvedMaxAttempts = maxAttempts ?? handle.maxAttempts;
+  if (!Number.isInteger(resolvedMaxAttempts) || resolvedMaxAttempts <= 0) throw new TypeError("maxAttempts must be a positive integer");
+  const liveHead = await git(handle.repositoryRoot, ["rev-parse", "HEAD"]).catch(() => null);
+  if (liveHead === null || liveHead.trim() !== handle.sourceHead) {
+    throw new RecoveryError("SOURCE_HEAD_DRIFT", "source repository HEAD drifted from handle.sourceHead");
+  }
+  const workspace = await reopenRecoverableWorkspace({ repositoryRoot: handle.repositoryRoot, worktreeRoot: handle.worktreeRoot });
+  const sessionDir = join(root, "core-session");
+  const logDir = join(root, "logs");
+  await mkdir(logDir, { recursive: true });
+  const sessionStore = createFileSessionStore({ directory: sessionDir });
+  const sessionId = handle.coreSessionId;
+  // The task body (prompt plus verifications) is not part of the handle; the caller
+  // supplies it again and its identity must match the handle.
+  let task;
+  if (rawTask !== null) {
+    task = validateAgentTask(rawTask);
+    if (task.id !== handle.taskId || resolve(task.repositoryRoot) !== resolve(handle.repositoryRoot) || task.baseRevision !== handle.baseRevision) {
+      throw new RecoveryError("HANDLE_INVALID", "resume task identity does not match the handle");
+    }
+    if (task.verifications.length === 0) throw new RecoveryError("HANDLE_INVALID", "resume task verifications are required");
+  } else {
+    throw new RecoveryError("HANDLE_INVALID", "resumeSupervisedTask requires the original task");
+  }
+  const toolVersion = await probeToolVersion(tool, workspace.root, env);
+  const verifiers = buildSupervisedVerifiers(task, workspace.root);
+  const claims = new Set(verifiers.map((verifier) => `agent-task.${verifier.name}`));
+  const resumeAtCompletion = handle.phase === "ATTEMPT_COMPLETED";
+  const startAttempt = resumeAtCompletion ? handle.attemptIndex + 1 : handle.attemptIndex;
+  if (startAttempt > resolvedMaxAttempts) {
+    await persistRecoverableHandle({
+      recoveryDir: root,
+      onHandleWrite,
+      fields: {
+        version: AGENT_TOOL_RUN_HANDLE_VERSION, taskId: handle.taskId, repositoryRoot: handle.repositoryRoot,
+        baseRevision: handle.baseRevision, sourceHead: handle.sourceHead, worktreeRoot: handle.worktreeRoot,
+        candidateSha: handle.candidateSha, coreSessionId: sessionId, toolId: handle.toolId, toolVersion,
+        maxAttempts: resolvedMaxAttempts, attemptIndex: handle.attemptIndex, phase: "ATTEMPT_COMPLETED",
+        status: "EXHAUSTED", feedback: handle.feedback, createdAt: handle.createdAt, toolSessionRef: handle.toolSessionRef
+      }
+    });
+    return Object.freeze({ taskId: task.id, tool: tool.id, toolVersion, status: AgentTaskStatus.EXHAUSTED, attempts: [], acceptedSha: null });
+  }
+  const baseFields = {
+    version: AGENT_TOOL_RUN_HANDLE_VERSION,
+    taskId: task.id,
+    repositoryRoot: resolve(task.repositoryRoot),
+    baseRevision: task.baseRevision,
+    sourceHead: handle.sourceHead,
+    recoveryDir: root,
+    worktreeRoot: resolve(handle.worktreeRoot),
+    coreSessionId: sessionId,
+    toolId: tool.id,
+    toolVersion,
+    maxAttempts: resolvedMaxAttempts
+  };
+  let lastToolSessionRef = handle.toolSessionRef;
+  let lastFeedback = handle.feedback;
+  let lastCandidateSha = handle.candidateSha;
+  let lastAttemptIndex = handle.attemptIndex;
+  const strategy = createSupervisedAgentStrategy({
+    task,
+    maxAttempts: resolvedMaxAttempts,
+    maxFeedbackChars,
+    startAttempt,
+    initialSessionRef: handle.toolSessionRef,
+    initialFeedback: handle.feedback,
+    skipFirstAct: !resumeAtCompletion,
+    onActCompleted: async ({ attemptIndex, candidateSha, toolSessionRef, feedback }) => {
+      lastToolSessionRef = toolSessionRef;
+      lastFeedback = feedback;
+      lastCandidateSha = candidateSha;
+      lastAttemptIndex = attemptIndex;
+      await persistRecoverableHandle({
+        recoveryDir: root,
+        onHandleWrite,
+        fields: { ...baseFields, candidateSha, toolSessionRef, attemptIndex, phase: "ACT_COMPLETED", status: "RUNNING", feedback }
+      });
+    },
+    onAttemptCompleted: async ({ attemptIndex, candidateSha, toolSessionRef, feedback }) => {
+      lastToolSessionRef = toolSessionRef;
+      lastFeedback = feedback;
+      lastCandidateSha = candidateSha;
+      lastAttemptIndex = attemptIndex;
+      await persistRecoverableHandle({
+        recoveryDir: root,
+        onHandleWrite,
+        fields: { ...baseFields, candidateSha, toolSessionRef, attemptIndex, phase: "ATTEMPT_COMPLETED", status: "RUNNING", feedback }
+      });
+    }
+  });
+  const harness = createHarness({
+    strategy,
+    environment: agentToolEnvironment({ workspace, tool, model, permissionProfile, env, timeoutMs, logDir, invocationObserver }),
+    verifiers,
+    verificationPolicy: { requirements: [...claims].map((claim) => ({ claim })) },
+    variationPolicy: { maxCapabilityCalls: resolvedMaxAttempts * (verifiers.length + 3) },
+    objective: supervisedObjective(claims),
+    sessionStore,
+    recoveryPolicy: { staleAfterMs: 0 },
+    eventSinks,
+    tracer
+  });
+  // Never harness.start: the session already exists. Recover the interrupted
+  // variation (force: the process died) then run the next variation.
+  await harness.recover(sessionId, { force: true });
+  const variation = await harness.vary(sessionId);
+  if (variation.failure) throw new Error(`supervised agent run failed: ${variation.failure.message}`);
+  const outcome = variation.result;
+  checkSupervisedOutcome(outcome, variation);
+  const terminalAttempts = outcome.attempts ?? [];
+  const terminalIndex = terminalAttempts.at(-1)?.index ?? lastAttemptIndex;
+  const terminalCandidate = outcome.acceptedSha ?? terminalAttempts.at(-1)?.candidateSha ?? lastCandidateSha;
+  await persistRecoverableHandle({
+    recoveryDir: root,
+    onHandleWrite,
+    fields: { ...baseFields, candidateSha: terminalCandidate, toolSessionRef: lastToolSessionRef, attemptIndex: terminalIndex, phase: "ATTEMPT_COMPLETED", status: outcome.status, feedback: lastFeedback }
+  });
+  return freezeSupervisedResult({ taskId: task.id, tool, toolVersion, outcome });
 }
