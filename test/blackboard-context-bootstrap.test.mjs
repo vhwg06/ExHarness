@@ -20,7 +20,8 @@ test("fresh implementation bootstrap obeys canonical graph or fails closed with 
   assert.deepEqual(session.context.components,active[0].components);
 
   if(session.lane==="WORKER"){
-    assert.equal(session.phase,"EXECUTION");
+    assert.equal(session.phase,active[0].phase);
+    assert.ok(["EXECUTION","REPAIR","JUDGMENT","MERGE_PENDING"].includes(session.phase));
     assert.equal(session.intent,"IMPLEMENT_EXACT_READY_PLAN");
     assert.equal(session.context.claimPolicy,null);
   }else if(session.lane==="RESEARCH_SA"){
