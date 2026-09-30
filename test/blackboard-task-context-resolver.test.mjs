@@ -69,6 +69,13 @@ test("research may materialize ahead of an unfinished execution dependency witho
   const graph=structuredClone(readWorkGraph());
   const registry=readComponentRegistry();
   const task=graph.tasks.find(item=>item.id==="BB-054");
+  // Keep this case independent of live delivery progress: BB-053 must be an
+  // unfinished execution dependency here even after it is delivered on main.
+  const producer=graph.tasks.find(item=>item.id==="BB-053");
+  producer.status="PLANNED";
+  producer.lane="WORKER";
+  producer.phase="EXECUTION";
+  delete producer.contract.deliveryRef;
   task.status="PLANNED";
   task.lane="RESEARCH_SA";
   task.phase="RESEARCH";
