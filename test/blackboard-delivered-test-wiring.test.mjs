@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -8,7 +9,8 @@ import { createOracleContextResolver } from '../packages/oracle/src/index.js';
 import { verifySupersession } from '../scripts/blackboard-objective-supersession.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const readPackageScripts = () => JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).scripts;
+const packageJsonPath = () => process.env.TW_PACKAGE_JSON || path.join(root, 'package.json');
+const readPackageScripts = () => JSON.parse(fs.readFileSync(packageJsonPath(), 'utf8')).scripts;
 const stubCatalog = () => ({ authorityFor: () => ({}), validateCandidate: () => true });
 const stubPlanner = () => ({ plan: () => ({}), execute: async () => ({}) });
 const listOracleTestFiles = () => fs.readdirSync(path.join(root, 'test')).filter((name) => /^oracle-.*\.test\.mjs$/.test(name)).sort();
@@ -34,10 +36,31 @@ function workGraphScriptCoverage(script) {
     : ['test/blackboard-objective-supersession.test.mjs'];
 }
 
-test('TW1 test:oracle includes the oracle test glob', () => {
-  const script = readPackageScripts()['test:oracle'];
-  const files = listOracleTestFiles();
+function assertOracleWiring(scripts, files) {
+  const script = scripts?.['test:oracle'];
+  assert.ok(typeof script === 'string', 'test:oracle script must exist');
+  assert.ok(
+    String(script).includes('test/oracle-*.test.mjs'),
+    'test:oracle must include test/oracle-*.test.mjs'
+  );
   assert.deepEqual(oracleScriptCoverage(script, files), []);
+}
+
+function assertWorkGraphWiring(scripts) {
+  const script = scripts?.['test:blackboard-work-graph'];
+  assert.ok(typeof script === 'string', 'test:blackboard-work-graph script must exist');
+  assert.ok(
+    String(script).includes('test/blackboard-objective-supersession.test.mjs'),
+    'test:blackboard-work-graph must include test/blackboard-objective-supersession.test.mjs'
+  );
+  assert.deepEqual(workGraphScriptCoverage(script), []);
+}
+
+test('TW1 test:oracle includes the oracle test glob', () => {
+  const scripts = readPackageScripts();
+  const files = listOracleTestFiles();
+  assertOracleWiring(scripts, files);
+  const script = scripts['test:oracle'];
   const globRemoved = String(script).replace('test/oracle-*.test.mjs', '');
   assert.ok(oracleScriptCoverage(globRemoved, files).includes('test/oracle-*.test.mjs'), 'omitting the oracle glob must be reported');
   const singleFile = 'node --test packages/oracle/test/*.test.js test/oracle-context-intelligence-architecture.test.mjs';
@@ -52,11 +75,59 @@ test('TW1 test:oracle includes the oracle test glob', () => {
   const resolver = createOracleContextResolver({ sourceCatalog: stubCatalog(), retrievalPlanner: stubPlanner() });
   assert.equal(typeof resolver.resolve, 'function');
   assert.equal(typeof resolver.preObserve, 'function');
+  if (!process.env.TW_NEGATIVE_CHILD) {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tw1-'));
+    try {
+      const realPkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+      const mutated = JSON.parse(JSON.stringify(realPkg));
+      mutated.scripts = {
+        ...realPkg.scripts,
+        'test:oracle': String(realPkg.scripts['test:oracle']).replace('test/oracle-*.test.mjs', '').trim(),
+      };
+      assert.ok(!String(mutated.scripts['test:oracle']).includes('test/oracle-*.test.mjs'), 'mutated copy must omit the oracle glob');
+      const mutatedPath = path.join(tmpDir, 'package.json');
+      fs.writeFileSync(mutatedPath, JSON.stringify(mutated, null, 2));
+      const thisFile = fileURLToPath(import.meta.url);
+      const childArgs = ['--test', '--test-name-pattern', '^TW1 ', thisFile];
+      const mutatedEnv = { ...process.env, TW_PACKAGE_JSON: mutatedPath, TW_NEGATIVE_CHILD: '1' };
+      delete mutatedEnv.NODE_TEST_CONTEXT;
+      const controlEnv = { ...process.env, TW_PACKAGE_JSON: path.join(root, 'package.json'), TW_NEGATIVE_CHILD: '1' };
+      delete controlEnv.NODE_TEST_CONTEXT;
+      let childOutput = '';
+      let childStatus = 0;
+      try {
+        childOutput = execFileSync(process.execPath, childArgs, {
+          cwd: root,
+          encoding: 'utf8',
+          env: mutatedEnv,
+        });
+        childStatus = 0;
+      } catch (e) {
+        childStatus = e.status ?? 1;
+        childOutput = String(e.stdout ?? '') + String(e.stderr ?? '');
+      }
+      assert.notEqual(childStatus, 0, `mutated TW1 child must fail (got ${childStatus}): ${String(childOutput).slice(0, 2000)}`);
+      assert.ok(String(childOutput).includes('not ok'), `mutated TW1 child output must contain failure: ${String(childOutput).slice(0, 2000)}`);
+      assert.ok(
+        String(childOutput).includes('test/oracle-*.test.mjs'),
+        `mutated TW1 child output must mention the missing path: ${String(childOutput).slice(0, 2000)}`
+      );
+      const controlOutput = execFileSync(process.execPath, childArgs, {
+        cwd: root,
+        encoding: 'utf8',
+        env: controlEnv,
+      });
+      assert.ok(String(controlOutput).includes('ok'), 'control TW1 child must pass');
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  }
 });
 
 test('TW2 test:blackboard-work-graph includes supersession tests', () => {
-  const script = readPackageScripts()['test:blackboard-work-graph'];
-  assert.deepEqual(workGraphScriptCoverage(script), []);
+  const scripts = readPackageScripts();
+  assertWorkGraphWiring(scripts);
+  const script = scripts['test:blackboard-work-graph'];
   const removed = String(script).replace('test/blackboard-objective-supersession.test.mjs', '');
   assert.deepEqual(workGraphScriptCoverage(removed), ['test/blackboard-objective-supersession.test.mjs']);
   assert.equal(fs.existsSync(path.join(root, 'test/blackboard-objective-supersession.test.mjs')), true);
@@ -64,6 +135,58 @@ test('TW2 test:blackboard-work-graph includes supersession tests', () => {
     () => verifySupersession({ trustedRoot: root, subjectRoot: root, prBaseSha: 'x', candidateSha: 'y', targetWorkId: 'NOT-A-TARGET' }),
     /invalid supersession target/
   );
+  if (!process.env.TW_NEGATIVE_CHILD) {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tw2-'));
+    try {
+      const realPkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+      const mutated = JSON.parse(JSON.stringify(realPkg));
+      mutated.scripts = {
+        ...realPkg.scripts,
+        'test:blackboard-work-graph': String(realPkg.scripts['test:blackboard-work-graph'])
+          .replace('test/blackboard-objective-supersession.test.mjs', '')
+          .trim(),
+      };
+      assert.ok(
+        !String(mutated.scripts['test:blackboard-work-graph']).includes('test/blackboard-objective-supersession.test.mjs'),
+        'mutated copy must omit the supersession path'
+      );
+      const mutatedPath = path.join(tmpDir, 'package.json');
+      fs.writeFileSync(mutatedPath, JSON.stringify(mutated, null, 2));
+      const thisFile = fileURLToPath(import.meta.url);
+      const childArgs = ['--test', '--test-name-pattern', '^TW2 ', thisFile];
+      const mutatedEnv = { ...process.env, TW_PACKAGE_JSON: mutatedPath, TW_NEGATIVE_CHILD: '1' };
+      delete mutatedEnv.NODE_TEST_CONTEXT;
+      const controlEnv = { ...process.env, TW_PACKAGE_JSON: path.join(root, 'package.json'), TW_NEGATIVE_CHILD: '1' };
+      delete controlEnv.NODE_TEST_CONTEXT;
+      let childOutput = '';
+      let childStatus = 0;
+      try {
+        childOutput = execFileSync(process.execPath, childArgs, {
+          cwd: root,
+          encoding: 'utf8',
+          env: mutatedEnv,
+        });
+        childStatus = 0;
+      } catch (e) {
+        childStatus = e.status ?? 1;
+        childOutput = String(e.stdout ?? '') + String(e.stderr ?? '');
+      }
+      assert.notEqual(childStatus, 0, `mutated TW2 child must fail (got ${childStatus}): ${String(childOutput).slice(0, 2000)}`);
+      assert.ok(String(childOutput).includes('not ok'), `mutated TW2 child output must contain failure: ${String(childOutput).slice(0, 2000)}`);
+      assert.ok(
+        String(childOutput).includes('test/blackboard-objective-supersession.test.mjs'),
+        `mutated TW2 child output must mention the missing path: ${String(childOutput).slice(0, 2000)}`
+      );
+      const controlOutput = execFileSync(process.execPath, childArgs, {
+        cwd: root,
+        encoding: 'utf8',
+        env: controlEnv,
+      });
+      assert.ok(String(controlOutput).includes('ok'), 'control TW2 child must pass');
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  }
 });
 
 test('TW3 test/delivery remains absent', () => {
