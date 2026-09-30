@@ -23,6 +23,19 @@ Source-synchronized ExHarness Core checkpoint. Open Core gaps/problems live only
 
 - `createAgentRuntime()` accepts `contextRequirementBlocks` and an injected `contextResolver`; selected requirements resolve once before prompt/model work, then project to fixed context blocks. Core does not select providers or interpret Oracle schema. The delivered Oracle facade plugs into this port; resolver failure stops before model dispatch with no automatic retry.
 
+## Synchronous harness-economics benchmark
+
+`benchmarks/harness-efficiency/` measures what quality, cost, latency and failure behavior is attributable to the harness orchestration path under an otherwise fixed benchmark contract. It compares two arms over the same JavaScript CodeAct strategy, executor, model route, task cohort, prompt, tool surface, evaluator and budgets:
+
+- `DIRECT_CODEACT` — the strategy through a benchmark-owned minimal orchestration shim;
+- `CORE_SYNC` — the same strategy through the synchronous `createAgentRuntime` Core path.
+
+The experiment is a consumer of the shared benchmark kernel (`@exharness/benchmark`, package root only) and the sealed calibrated substrate manifest. It owns only the two arm adapters, the fixed-factor protocol, the development/held-out cohort with three alternating paired repeats, economics observations, the comparison reducer/report and the held-out handoff. Experiment registration, AttemptLedger, evidence manifests, accounting normalization, audit and Harbor substrate behavior stay upstream; the run fails closed when the kernel contract or substrate manifest is missing or incompatible.
+
+Measured baseline (deterministic fixture run, no live model calls): six development tasks x three paired repeats x two arms = 36 attempts plus one deterministic retry (37 settled). Every settled attempt reopens clean under kernel audit (37/37 PASS). The report is a multidimensional vector — accepted quality, known cost/tokens, model turns, tool calls, elapsed and MODEL/CALL interval-derived timing, cache CONFIRMED/MISS/ELIGIBLE/UNKNOWN, no-progress/failure fingerprints and repeat consistency — with paired distributions and medians, no best-of-k filtering and no opaque winner score.
+
+Limitations: fixture economics only (no provider observations, so cost/token/cache stay null/UNKNOWN); six development tasks, so no significance claim; the four-task held-out set is reserved and never executes here; async scheduling, cache-stable context and steering/recovery capabilities are out of scope, as is any promotion decision. A versioned comparison manifest, held-out manifest and preregistered quality/safety/economics/context/interaction/latency gate are frozen for the future held-out decision before any async result exists.
+
 ## Current authority boundary
 
 ```text

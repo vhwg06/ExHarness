@@ -194,4 +194,34 @@ Application WorkOrder/Worker/Advisor/completion abstractions remain owned by Age
 
 ## SOURCE
 
-Current implementation authority includes `agent-runtime.js`, `avo-harness.js`, `effect-aware-harness.js`, `avo-action-effect.js`, `core-harness.js`, `deliberation.js`, `deliberation-controller.js`, `action-effect.js`, `grounded-cognition.js`, `effect-reconciliation.js`, `semantic-memory*.js`, `spontaneous-recall.js`, `search-investment.js` and `evaluation-freshness.js`. Concrete recovery-composition contract evidence lives in `test/recovery-composition.test.js`; the current no-facade constraint is stated directly above; no separate decision-history document is required.
+## SYNCHRONOUS HARNESS-ECONOMICS BASELINE
+
+The comparison in `benchmarks/harness-efficiency/` isolates orchestration cost without changing Core behavior:
+
+```text
+preregistered cohort (6 tasks x 3 repeats x 2 arms)
+  -> fixed-factor protocol binds model/task/prompt/workspace/tools/evaluator/budget
+  -> arm adapters return raw producer observations only
+  -> shared kernel registers experiments/units, ledgers attempts, binds evidence,
+     normalizes outcome/accounting, audits
+  -> economics observations: model turns, tool calls, monotonic MODEL/CALL
+     intervals, stable-prefix/dynamic-suffix hashes, cache eligibility labels
+  -> reducer: paired distributions/medians over ALL attempts (retries included),
+     nullable UNKNOWN preserved, no winner score
+  -> versioned comparison manifest + held-out manifest + preregistered gate
+```
+
+Cache labels are conservative: provider cached tokens above zero prove CONFIRMED, known zero is MISS, a repeated stable prefix without provider evidence is ELIGIBLE, and anything else is UNKNOWN. A repeated prefix never proves a provider cache hit. Missing cost/token/cache observations stay null and every retry stays in the ledger and in denominators; producer or provider termination never rewrites independent verifier quality.
+
+To reproduce the deterministic baseline locally (no credentials, no model calls):
+
+```text
+preflight()         -> kernel + substrate manifest check
+runCohort()         -> 36 paired attempts + 1 retry, all settled
+auditAttempt()      -> 37/37 PASS on reopened evidence
+buildReport()       -> multidimensional vector report, no winner score
+buildHandoff()      -> versioned comparison / held-out / gate handoff
+node --test benchmarks/harness-efficiency/test/*.test.mjs
+```
+
+The held-out task set and the promotion gate are frozen inputs to a future decision owned elsewhere; this baseline executes no async candidate and publishes no promotion verdict.

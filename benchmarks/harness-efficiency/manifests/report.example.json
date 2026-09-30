@@ -1,0 +1,1978 @@
+{
+  "kind": "BB077_SYNC_BASELINE_REPORT_V1",
+  "experimentId": "BB077-HARNESS-ECONOMICS-SYNC",
+  "protocolHash": "sha256:42fae1eb56785dbbf1c254933acbd56e11f54a67a5a780944ad4ca0f0ad8adcc",
+  "substrateDigest": "sha256:f905ba7561550bc5959592cb9185884f902ef57094ce76e0c404947439cd99f0",
+  "attempts": 37,
+  "arms": [
+    "DIRECT_CODEACT",
+    "CORE_SYNC"
+  ],
+  "comparison": {
+    "kind": "BB077_COMPARISON_V1",
+    "perTask": {
+      "fix-git": {
+        "pairId": "fix-git",
+        "repeats": 3,
+        "arms": {
+          "DIRECT_CODEACT": {
+            "attempts": 4,
+            "accepted": 3,
+            "rejected": 1,
+            "notEvaluated": 0,
+            "modelTurns": {
+              "count": 4,
+              "values": [
+                4,
+                4,
+                4,
+                4
+              ],
+              "median": 4,
+              "min": 4,
+              "max": 4
+            },
+            "toolCalls": {
+              "count": 4,
+              "values": [
+                6,
+                6,
+                6,
+                6
+              ],
+              "median": 6,
+              "min": 6,
+              "max": 6
+            },
+            "elapsedMs": {
+              "count": 4,
+              "values": [
+                910,
+                910,
+                910,
+                910
+              ],
+              "median": 910,
+              "min": 910,
+              "max": 910
+            },
+            "modelActiveMs": {
+              "count": 4,
+              "values": [
+                620,
+                620,
+                620,
+                620
+              ],
+              "median": 620,
+              "min": 620,
+              "max": 620
+            },
+            "capabilityActiveMs": {
+              "count": 4,
+              "values": [
+                240,
+                240,
+                240,
+                240
+              ],
+              "median": 240,
+              "min": 240,
+              "max": 240
+            },
+            "unattributedHarnessMs": {
+              "count": 4,
+              "values": [
+                290,
+                290,
+                290,
+                290
+              ],
+              "median": 290,
+              "min": 290,
+              "max": 290
+            },
+            "providerCostUsd": {
+              "count": 4,
+              "known": 1,
+              "unknown": 3,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 4,
+              "known": 3,
+              "unknown": 1,
+              "values": [
+                900,
+                1100,
+                1200
+              ],
+              "median": 1100
+            },
+            "outputTokens": {
+              "count": 4,
+              "known": 2,
+              "unknown": 2,
+              "values": [
+                250,
+                300
+              ],
+              "median": 275
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 4
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 4
+            }
+          },
+          "CORE_SYNC": {
+            "attempts": 3,
+            "accepted": 2,
+            "rejected": 1,
+            "notEvaluated": 0,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                5,
+                5,
+                5
+              ],
+              "median": 5,
+              "min": 5,
+              "max": 5
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                7,
+                7,
+                7
+              ],
+              "median": 7,
+              "min": 7,
+              "max": 7
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                1173,
+                1173,
+                1173
+              ],
+              "median": 1173,
+              "min": 1173,
+              "max": 1173
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                815,
+                815,
+                815
+              ],
+              "median": 815,
+              "min": 815,
+              "max": 815
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                308,
+                308,
+                308
+              ],
+              "median": 308,
+              "min": 308,
+              "max": 308
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                358,
+                358,
+                358
+              ],
+              "median": 358,
+              "min": 358,
+              "max": 358
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 2,
+              "unknown": 1,
+              "values": [
+                900,
+                1200
+              ],
+              "median": 1050
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                300
+              ],
+              "median": 300
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          }
+        },
+        "paired": {
+          "modelTurnsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "toolCallsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "elapsedMsDelta": {
+            "count": 3,
+            "values": [
+              263,
+              263,
+              263
+            ],
+            "median": 263,
+            "min": 263,
+            "max": 263
+          }
+        }
+      },
+      "cancel-async-tasks": {
+        "pairId": "cancel-async-tasks",
+        "repeats": 3,
+        "arms": {
+          "DIRECT_CODEACT": {
+            "attempts": 3,
+            "accepted": 1,
+            "rejected": 1,
+            "notEvaluated": 1,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                4,
+                4,
+                4
+              ],
+              "median": 4,
+              "min": 4,
+              "max": 4
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                6,
+                6,
+                6
+              ],
+              "median": 6,
+              "min": 6,
+              "max": 6
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                910,
+                910,
+                910
+              ],
+              "median": 910,
+              "min": 910,
+              "max": 910
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                620,
+                620,
+                620
+              ],
+              "median": 620,
+              "min": 620,
+              "max": 620
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                240,
+                240,
+                240
+              ],
+              "median": 240,
+              "min": 240,
+              "max": 240
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                290,
+                290,
+                290
+              ],
+              "median": 290,
+              "min": 290,
+              "max": 290
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                900
+              ],
+              "median": 900
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 0,
+              "unknown": 3,
+              "values": [],
+              "median": null
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          },
+          "CORE_SYNC": {
+            "attempts": 3,
+            "accepted": 1,
+            "rejected": 1,
+            "notEvaluated": 1,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                5,
+                5,
+                5
+              ],
+              "median": 5,
+              "min": 5,
+              "max": 5
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                7,
+                7,
+                7
+              ],
+              "median": 7,
+              "min": 7,
+              "max": 7
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                1173,
+                1173,
+                1173
+              ],
+              "median": 1173,
+              "min": 1173,
+              "max": 1173
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                815,
+                815,
+                815
+              ],
+              "median": 815,
+              "min": 815,
+              "max": 815
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                308,
+                308,
+                308
+              ],
+              "median": 308,
+              "min": 308,
+              "max": 308
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                358,
+                358,
+                358
+              ],
+              "median": 358,
+              "min": 358,
+              "max": 358
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                900
+              ],
+              "median": 900
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 0,
+              "unknown": 3,
+              "values": [],
+              "median": null
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          }
+        },
+        "paired": {
+          "modelTurnsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "toolCallsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "elapsedMsDelta": {
+            "count": 3,
+            "values": [
+              263,
+              263,
+              263
+            ],
+            "median": 263,
+            "min": 263,
+            "max": 263
+          }
+        }
+      },
+      "query-optimize": {
+        "pairId": "query-optimize",
+        "repeats": 3,
+        "arms": {
+          "DIRECT_CODEACT": {
+            "attempts": 3,
+            "accepted": 2,
+            "rejected": 0,
+            "notEvaluated": 1,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                4,
+                4,
+                4
+              ],
+              "median": 4,
+              "min": 4,
+              "max": 4
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                6,
+                6,
+                6
+              ],
+              "median": 6,
+              "min": 6,
+              "max": 6
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                910,
+                910,
+                910
+              ],
+              "median": 910,
+              "min": 910,
+              "max": 910
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                620,
+                620,
+                620
+              ],
+              "median": 620,
+              "min": 620,
+              "max": 620
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                240,
+                240,
+                240
+              ],
+              "median": 240,
+              "min": 240,
+              "max": 240
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                290,
+                290,
+                290
+              ],
+              "median": 290,
+              "min": 290,
+              "max": 290
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 2,
+              "unknown": 1,
+              "values": [
+                900,
+                1200
+              ],
+              "median": 1050
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                300
+              ],
+              "median": 300
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          },
+          "CORE_SYNC": {
+            "attempts": 3,
+            "accepted": 2,
+            "rejected": 0,
+            "notEvaluated": 1,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                5,
+                5,
+                5
+              ],
+              "median": 5,
+              "min": 5,
+              "max": 5
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                7,
+                7,
+                7
+              ],
+              "median": 7,
+              "min": 7,
+              "max": 7
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                1173,
+                1173,
+                1173
+              ],
+              "median": 1173,
+              "min": 1173,
+              "max": 1173
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                815,
+                815,
+                815
+              ],
+              "median": 815,
+              "min": 815,
+              "max": 815
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                308,
+                308,
+                308
+              ],
+              "median": 308,
+              "min": 308,
+              "max": 308
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                358,
+                358,
+                358
+              ],
+              "median": 358,
+              "min": 358,
+              "max": 358
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 2,
+              "unknown": 1,
+              "values": [
+                900,
+                1200
+              ],
+              "median": 1050
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                300
+              ],
+              "median": 300
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          }
+        },
+        "paired": {
+          "modelTurnsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "toolCallsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "elapsedMsDelta": {
+            "count": 3,
+            "values": [
+              263,
+              263,
+              263
+            ],
+            "median": 263,
+            "min": 263,
+            "max": 263
+          }
+        }
+      },
+      "nginx-request-logging": {
+        "pairId": "nginx-request-logging",
+        "repeats": 3,
+        "arms": {
+          "DIRECT_CODEACT": {
+            "attempts": 3,
+            "accepted": 1,
+            "rejected": 1,
+            "notEvaluated": 1,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                4,
+                4,
+                4
+              ],
+              "median": 4,
+              "min": 4,
+              "max": 4
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                6,
+                6,
+                6
+              ],
+              "median": 6,
+              "min": 6,
+              "max": 6
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                910,
+                910,
+                910
+              ],
+              "median": 910,
+              "min": 910,
+              "max": 910
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                620,
+                620,
+                620
+              ],
+              "median": 620,
+              "min": 620,
+              "max": 620
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                240,
+                240,
+                240
+              ],
+              "median": 240,
+              "min": 240,
+              "max": 240
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                290,
+                290,
+                290
+              ],
+              "median": 290,
+              "min": 290,
+              "max": 290
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 0,
+              "unknown": 3,
+              "values": [],
+              "median": null
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                1200
+              ],
+              "median": 1200
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                300
+              ],
+              "median": 300
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          },
+          "CORE_SYNC": {
+            "attempts": 3,
+            "accepted": 1,
+            "rejected": 1,
+            "notEvaluated": 1,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                5,
+                5,
+                5
+              ],
+              "median": 5,
+              "min": 5,
+              "max": 5
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                7,
+                7,
+                7
+              ],
+              "median": 7,
+              "min": 7,
+              "max": 7
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                1173,
+                1173,
+                1173
+              ],
+              "median": 1173,
+              "min": 1173,
+              "max": 1173
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                815,
+                815,
+                815
+              ],
+              "median": 815,
+              "min": 815,
+              "max": 815
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                308,
+                308,
+                308
+              ],
+              "median": 308,
+              "min": 308,
+              "max": 308
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                358,
+                358,
+                358
+              ],
+              "median": 358,
+              "min": 358,
+              "max": 358
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 0,
+              "unknown": 3,
+              "values": [],
+              "median": null
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                1200
+              ],
+              "median": 1200
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                300
+              ],
+              "median": 300
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          }
+        },
+        "paired": {
+          "modelTurnsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "toolCallsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "elapsedMsDelta": {
+            "count": 3,
+            "values": [
+              263,
+              263,
+              263
+            ],
+            "median": 263,
+            "min": 263,
+            "max": 263
+          }
+        }
+      },
+      "fix-code-vulnerability": {
+        "pairId": "fix-code-vulnerability",
+        "repeats": 3,
+        "arms": {
+          "DIRECT_CODEACT": {
+            "attempts": 3,
+            "accepted": 2,
+            "rejected": 1,
+            "notEvaluated": 0,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                4,
+                4,
+                4
+              ],
+              "median": 4,
+              "min": 4,
+              "max": 4
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                6,
+                6,
+                6
+              ],
+              "median": 6,
+              "min": 6,
+              "max": 6
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                910,
+                910,
+                910
+              ],
+              "median": 910,
+              "min": 910,
+              "max": 910
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                620,
+                620,
+                620
+              ],
+              "median": 620,
+              "min": 620,
+              "max": 620
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                240,
+                240,
+                240
+              ],
+              "median": 240,
+              "min": 240,
+              "max": 240
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                290,
+                290,
+                290
+              ],
+              "median": 290,
+              "min": 290,
+              "max": 290
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 2,
+              "unknown": 1,
+              "values": [
+                900,
+                1200
+              ],
+              "median": 1050
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                300
+              ],
+              "median": 300
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          },
+          "CORE_SYNC": {
+            "attempts": 3,
+            "accepted": 2,
+            "rejected": 1,
+            "notEvaluated": 0,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                5,
+                5,
+                5
+              ],
+              "median": 5,
+              "min": 5,
+              "max": 5
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                7,
+                7,
+                7
+              ],
+              "median": 7,
+              "min": 7,
+              "max": 7
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                1173,
+                1173,
+                1173
+              ],
+              "median": 1173,
+              "min": 1173,
+              "max": 1173
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                815,
+                815,
+                815
+              ],
+              "median": 815,
+              "min": 815,
+              "max": 815
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                308,
+                308,
+                308
+              ],
+              "median": 308,
+              "min": 308,
+              "max": 308
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                358,
+                358,
+                358
+              ],
+              "median": 358,
+              "min": 358,
+              "max": 358
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 2,
+              "unknown": 1,
+              "values": [
+                900,
+                1200
+              ],
+              "median": 1050
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                300
+              ],
+              "median": 300
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          }
+        },
+        "paired": {
+          "modelTurnsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "toolCallsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "elapsedMsDelta": {
+            "count": 3,
+            "values": [
+              263,
+              263,
+              263
+            ],
+            "median": 263,
+            "min": 263,
+            "max": 263
+          }
+        }
+      },
+      "sqlite-db-truncate": {
+        "pairId": "sqlite-db-truncate",
+        "repeats": 3,
+        "arms": {
+          "DIRECT_CODEACT": {
+            "attempts": 3,
+            "accepted": 1,
+            "rejected": 1,
+            "notEvaluated": 1,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                4,
+                4,
+                4
+              ],
+              "median": 4,
+              "min": 4,
+              "max": 4
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                6,
+                6,
+                6
+              ],
+              "median": 6,
+              "min": 6,
+              "max": 6
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                910,
+                910,
+                910
+              ],
+              "median": 910,
+              "min": 910,
+              "max": 910
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                620,
+                620,
+                620
+              ],
+              "median": 620,
+              "min": 620,
+              "max": 620
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                240,
+                240,
+                240
+              ],
+              "median": 240,
+              "min": 240,
+              "max": 240
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                290,
+                290,
+                290
+              ],
+              "median": 290,
+              "min": 290,
+              "max": 290
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                900
+              ],
+              "median": 900
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 0,
+              "unknown": 3,
+              "values": [],
+              "median": null
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          },
+          "CORE_SYNC": {
+            "attempts": 3,
+            "accepted": 1,
+            "rejected": 1,
+            "notEvaluated": 1,
+            "modelTurns": {
+              "count": 3,
+              "values": [
+                5,
+                5,
+                5
+              ],
+              "median": 5,
+              "min": 5,
+              "max": 5
+            },
+            "toolCalls": {
+              "count": 3,
+              "values": [
+                7,
+                7,
+                7
+              ],
+              "median": 7,
+              "min": 7,
+              "max": 7
+            },
+            "elapsedMs": {
+              "count": 3,
+              "values": [
+                1173,
+                1173,
+                1173
+              ],
+              "median": 1173,
+              "min": 1173,
+              "max": 1173
+            },
+            "modelActiveMs": {
+              "count": 3,
+              "values": [
+                815,
+                815,
+                815
+              ],
+              "median": 815,
+              "min": 815,
+              "max": 815
+            },
+            "capabilityActiveMs": {
+              "count": 3,
+              "values": [
+                308,
+                308,
+                308
+              ],
+              "median": 308,
+              "min": 308,
+              "max": 308
+            },
+            "unattributedHarnessMs": {
+              "count": 3,
+              "values": [
+                358,
+                358,
+                358
+              ],
+              "median": 358,
+              "min": 358,
+              "max": 358
+            },
+            "providerCostUsd": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                0.004
+              ],
+              "median": 0.004
+            },
+            "inputTokens": {
+              "count": 3,
+              "known": 1,
+              "unknown": 2,
+              "values": [
+                900
+              ],
+              "median": 900
+            },
+            "outputTokens": {
+              "count": 3,
+              "known": 0,
+              "unknown": 3,
+              "values": [],
+              "median": null
+            },
+            "cacheLabels": {
+              "ELIGIBLE": 3
+            },
+            "noProgress": 0,
+            "failureFingerprints": {
+              "NONE": 3
+            }
+          }
+        },
+        "paired": {
+          "modelTurnsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "toolCallsDelta": {
+            "count": 3,
+            "values": [
+              1,
+              1,
+              1
+            ],
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "elapsedMsDelta": {
+            "count": 3,
+            "values": [
+              263,
+              263,
+              263
+            ],
+            "median": 263,
+            "min": 263,
+            "max": 263
+          }
+        }
+      }
+    },
+    "overall": {
+      "attempts": 37,
+      "byArm": {
+        "DIRECT_CODEACT": {
+          "attempts": 19,
+          "accepted": 10,
+          "rejected": 5,
+          "notEvaluated": 4,
+          "modelTurns": {
+            "count": 19,
+            "values": [
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4
+            ],
+            "median": 4,
+            "min": 4,
+            "max": 4
+          },
+          "toolCalls": {
+            "count": 19,
+            "values": [
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6,
+              6
+            ],
+            "median": 6,
+            "min": 6,
+            "max": 6
+          },
+          "elapsedMs": {
+            "count": 19,
+            "values": [
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910,
+              910
+            ],
+            "median": 910,
+            "min": 910,
+            "max": 910
+          },
+          "modelActiveMs": {
+            "count": 19,
+            "values": [
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620,
+              620
+            ],
+            "median": 620,
+            "min": 620,
+            "max": 620
+          },
+          "capabilityActiveMs": {
+            "count": 19,
+            "values": [
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240,
+              240
+            ],
+            "median": 240,
+            "min": 240,
+            "max": 240
+          },
+          "unattributedHarnessMs": {
+            "count": 19,
+            "values": [
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290,
+              290
+            ],
+            "median": 290,
+            "min": 290,
+            "max": 290
+          },
+          "providerCostUsd": {
+            "count": 19,
+            "known": 5,
+            "unknown": 14,
+            "values": [
+              0.004,
+              0.004,
+              0.004,
+              0.004,
+              0.004
+            ],
+            "median": 0.004
+          },
+          "inputTokens": {
+            "count": 19,
+            "known": 10,
+            "unknown": 9,
+            "values": [
+              900,
+              900,
+              900,
+              900,
+              900,
+              1100,
+              1200,
+              1200,
+              1200,
+              1200
+            ],
+            "median": 1000
+          },
+          "outputTokens": {
+            "count": 19,
+            "known": 5,
+            "unknown": 14,
+            "values": [
+              250,
+              300,
+              300,
+              300,
+              300
+            ],
+            "median": 300
+          },
+          "cacheLabels": {
+            "ELIGIBLE": 19
+          },
+          "noProgress": 0,
+          "failureFingerprints": {
+            "NONE": 19
+          }
+        },
+        "CORE_SYNC": {
+          "attempts": 18,
+          "accepted": 9,
+          "rejected": 5,
+          "notEvaluated": 4,
+          "modelTurns": {
+            "count": 18,
+            "values": [
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5
+            ],
+            "median": 5,
+            "min": 5,
+            "max": 5
+          },
+          "toolCalls": {
+            "count": 18,
+            "values": [
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7
+            ],
+            "median": 7,
+            "min": 7,
+            "max": 7
+          },
+          "elapsedMs": {
+            "count": 18,
+            "values": [
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173,
+              1173
+            ],
+            "median": 1173,
+            "min": 1173,
+            "max": 1173
+          },
+          "modelActiveMs": {
+            "count": 18,
+            "values": [
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815,
+              815
+            ],
+            "median": 815,
+            "min": 815,
+            "max": 815
+          },
+          "capabilityActiveMs": {
+            "count": 18,
+            "values": [
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308,
+              308
+            ],
+            "median": 308,
+            "min": 308,
+            "max": 308
+          },
+          "unattributedHarnessMs": {
+            "count": 18,
+            "values": [
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358,
+              358
+            ],
+            "median": 358,
+            "min": 358,
+            "max": 358
+          },
+          "providerCostUsd": {
+            "count": 18,
+            "known": 5,
+            "unknown": 13,
+            "values": [
+              0.004,
+              0.004,
+              0.004,
+              0.004,
+              0.004
+            ],
+            "median": 0.004
+          },
+          "inputTokens": {
+            "count": 18,
+            "known": 9,
+            "unknown": 9,
+            "values": [
+              900,
+              900,
+              900,
+              900,
+              900,
+              1200,
+              1200,
+              1200,
+              1200
+            ],
+            "median": 900
+          },
+          "outputTokens": {
+            "count": 18,
+            "known": 4,
+            "unknown": 14,
+            "values": [
+              300,
+              300,
+              300,
+              300
+            ],
+            "median": 300
+          },
+          "cacheLabels": {
+            "ELIGIBLE": 18
+          },
+          "noProgress": 0,
+          "failureFingerprints": {
+            "NONE": 18
+          }
+        }
+      }
+    }
+  },
+  "audits": [],
+  "limitations": [
+    "deterministic fixture baseline; no live model or provider observation",
+    "six development tasks only; held-out set untouched",
+    "small cohort: no significance claim",
+    "unknown provider cost/token/cache stays null/UNKNOWN"
+  ]
+}
