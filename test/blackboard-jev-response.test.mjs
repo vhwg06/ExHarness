@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { callJev, validateResponse, evaluate, validateEvaluation, workerBatchManifest, workerQuestionPayload, LIVING_EXCERPT_STRATEGIES } from '../scripts/blackboard-jev.mjs';
+import { callJev, validateResponse, PROBABILITY_REPORTED_DECIMALS, probabilitySumTolerance, evaluate, validateEvaluation, workerBatchManifest, workerQuestionPayload, LIVING_EXCERPT_STRATEGIES } from '../scripts/blackboard-jev.mjs';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -13,11 +13,27 @@ function response(probabilities) {
     type: 'choice', choice: 'SATISFIED', confidence: 0.5, probabilities
   }}, usage: { input_tokens: 1, output_tokens: 1 } };
 }
-test('probability diagnostics retain strict normalization and identify the failing question', () => {
+test('probability diagnostics reject sums beyond reporting precision and identify the failing question', () => {
   assert.throws(() => validateResponse(response({ SATISFIED: 0.6, INSUFFICIENT_EVIDENCE: 0.3 }), payload),
     /invalid probabilities: objective-0; validRange=true; sum=0.8999999999999999; count=2/);
-  assert.throws(() => validateResponse(response({ SATISFIED: 0.99998, INSUFFICIENT_EVIDENCE: 0 }), payload), /invalid probabilities/);
+  assert.throws(() => validateResponse(response({ SATISFIED: 0.98, INSUFFICIENT_EVIDENCE: 0 }), payload), /invalid probabilities/);
+  assert.throws(() => validateResponse(response({ SATISFIED: 0.7, INSUFFICIENT_EVIDENCE: 0.32 }), payload), /invalid probabilities/);
   assert.doesNotThrow(() => validateResponse(response({ SATISFIED: 0.7, INSUFFICIENT_EVIDENCE: 0.3 }), payload));
+  assert.doesNotThrow(() => validateResponse(response({ SATISFIED: 0.99998, INSUFFICIENT_EVIDENCE: 0 }), payload));
+});
+test('two-decimal rounded probabilities are accepted verbatim within n half-units, never renormalized', () => {
+  assert.equal(PROBABILITY_REPORTED_DECIMALS, 2);
+  assert.ok(Math.abs(probabilitySumTolerance(4) - 0.02) < 1e-8);
+  const four = { type: 'choice', criteria: { SATISFIED: 'a', INSUFFICIENT_EVIDENCE: 'b', IMPLEMENTATION_DEFECT: 'c', PLAN_INPUT_CONTRADICTION: 'd' } };
+  const wide = { model: payload.model, questions: { 'readiness-negativeCaseBindings': four } };
+  const answer = probabilities => ({ model: payload.model, answers: { 'readiness-negativeCaseBindings': { type: 'choice', choice: 'SATISFIED', confidence: 0.5, probabilities } }, usage: { input_tokens: 1, output_tokens: 1 } });
+  // Observed provider shape: four two-decimal values summing to 0.99.
+  const rounded = { SATISFIED: 0.52, INSUFFICIENT_EVIDENCE: 0.2, IMPLEMENTATION_DEFECT: 0.07, PLAN_INPUT_CONTRADICTION: 0.2 };
+  const accepted = validateResponse(answer(rounded), wide);
+  assert.deepEqual(accepted.answers['readiness-negativeCaseBindings'].probabilities, rounded);
+  assert.doesNotThrow(() => validateResponse(answer({ SATISFIED: 0.52, INSUFFICIENT_EVIDENCE: 0.21, IMPLEMENTATION_DEFECT: 0.07, PLAN_INPUT_CONTRADICTION: 0.22 }), wide));
+  assert.throws(() => validateResponse(answer({ SATISFIED: 0.5, INSUFFICIENT_EVIDENCE: 0.2, IMPLEMENTATION_DEFECT: 0.07, PLAN_INPUT_CONTRADICTION: 0.2 }), wide), /invalid probabilities: readiness-negativeCaseBindings; validRange=true; sum=0.97/);
+  assert.throws(() => validateResponse(answer({ SATISFIED: 0.4, INSUFFICIENT_EVIDENCE: 0.45, IMPLEMENTATION_DEFECT: 0.07, PLAN_INPUT_CONTRADICTION: 0.07 }), wide), /choice is not maximum probability/);
 });
 test('malformed probability data is not echoed or retried', async () => {
   let calls = 0;
