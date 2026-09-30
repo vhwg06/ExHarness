@@ -76,7 +76,7 @@ test("Strategy-only change does not advance product history.", async (t) => {
 
 test("history exposes no scheduling or dispatch authority", async (t) => {
   const w = await newWorld(t);
-  assert.deepEqual(Object.keys(w.history).sort(), ["appendTransition", "current", "reconcile", "subjectKey", "withCurrentHistoryGuard", "withProductGuard"]);
+  assert.deepEqual(Object.keys(w.history).sort(), ["appendTransition", "current", "readChain", "reconcile", "subjectKey", "withCurrentHistoryGuard", "withProductGuard"]);
   for (const forbidden of ["schedule", "dispatch", "claim", "nextDomain", "execute"]) {
     assert.equal(w.history[forbidden], undefined);
   }

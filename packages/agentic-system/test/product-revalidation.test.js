@@ -17,36 +17,17 @@ async function newWorld(t) {
   const guard = createProductMutationGuard();
   const history = createProductHistoryController({ artifactStore, headStore: createJsonCasHeadStore({ path: join(dir, "history.json") }), mutationGuard: guard });
   const acceptance = createProductAcceptanceAuthority({ artifactStore, headStore: createJsonCasHeadStore({ path: join(dir, "policy.json") }), mutationGuard: guard });
-  const claims = new Map([["product-1", []]]);
-  const obligations = new Map([["product-1", []]]);
-  const releases = new Map();
-  const qualities = new Map();
-  const builder = createProductStateProjectionBuilder({
-    productHistory: history,
-    acceptanceAuthority: acceptance,
-    artifactResolvers: {
-      listSemanticClaims: async (pid) => [...(claims.get(pid) ?? [])],
-      listObligations: async (pid) => [...(obligations.get(pid) ?? [])],
-      currentRelease: async (pid) => releases.get(pid) ?? null,
-      currentQuality: async (pid) => qualities.get(pid) ?? null,
-    },
-    artifactStore,
-  });
-  const closure = createProductClosureController({
-    projectionBuilder: builder,
-    productHistory: history,
-    acceptanceAuthority: acceptance,
-    artifactStore,
-    outcomeHeadStore: createJsonCasHeadStore({ path: join(dir, "outcomes.json") }),
-  });
-  return { dir, artifactStore, history, acceptance, builder, closure, claims, obligations, releases, qualities };
+  const builder = createProductStateProjectionBuilder({ productHistory: history, acceptanceAuthority: acceptance, artifactStore, mutationGuard: guard });
+  const closure = createProductClosureController({ projectionBuilder: builder, productHistory: history, acceptanceAuthority: acceptance, artifactStore, outcomeHeadStore: createJsonCasHeadStore({ path: join(dir, "outcomes.json") }), mutationGuard: guard });
+  return { dir, artifactStore, guard, history, acceptance, builder, closure };
 }
 
 async function seedEligible(w) {
   await w.acceptance.publishPolicy({ productId: "product-1", policy: { policyId: "policy-1", criterionRefs: ["criterion:login"] } });
-  w.releases.set("product-1", { releaseRef: "deployment-release:sha256:" + "a".repeat(64), release: {} });
-  w.qualities.set("product-1", { acceptanceRef: "quality-acceptance:sha256:" + "b".repeat(64), acceptance: {}, current: true });
-  await w.history.appendTransition({ productId: "product-1", transitionKind: "SEMANTIC_PUBLICATION", transitionRefs: [], authorityHeads: {} });
+  const relRef = await w.artifactStore.put("deployment-release", { kind: "DEPLOYMENT_RELEASE", version: 1, environmentRef: "env-1" });
+  await w.history.appendTransition({ productId: "product-1", transitionKind: "RELEASE_PUBLICATION", transitionRefs: [relRef], authorityHeads: {} });
+  const qaRef = await w.artifactStore.put("quality-acceptance", { kind: "QUALITY_ACCEPTANCE", version: 1, environmentRef: "env-1", releaseRef: relRef });
+  await w.history.appendTransition({ productId: "product-1", transitionKind: "QUALITY_ACCEPTANCE", transitionRefs: [qaRef], authorityHeads: {} });
 }
 
 test("Old outcome stays historical but non-current after product drift.", async (t) => {
@@ -56,7 +37,8 @@ test("Old outcome stays historical but non-current after product drift.", async 
   const closed = await w.closure.close({ projectionRef: built.projectionRef });
   assert.equal((await w.closure.currentOutcome({ productId: "product-1" })).status, "CURRENT");
   // A new accepted closure-relevant revision advances history to Hn+1.
-  await w.history.appendTransition({ productId: "product-1", transitionKind: "ACCEPTED_PRODUCT_REVISION", transitionRefs: ["semantic-claim:sha256:" + "c".repeat(64)], authorityHeads: {} });
+  const lateRef = await w.artifactStore.put("semantic-claim", { kind: "SEMANTIC_CLAIM", version: 1, productId: "product-1", subjectKey: "late", status: "ACTIVE" });
+  await w.history.appendTransition({ productId: "product-1", transitionKind: "ACCEPTED_PRODUCT_REVISION", transitionRefs: [lateRef], authorityHeads: {} });
   const revalidated = await w.closure.currentOutcome({ productId: "product-1" });
   assert.equal(revalidated.status, "HISTORICAL");
   assert.equal(revalidated.outcomeRef, closed.outcomeRef);
@@ -94,7 +76,8 @@ test("Historical artifact overwrite is rejected.", async (t) => {
   const closed = await w.closure.close({ projectionRef: built.projectionRef });
   const before = await w.artifactStore.resolve(closed.outcomeRef);
   // Correction is a new immutable claim; the historical bytes never change.
-  await w.history.appendTransition({ productId: "product-1", transitionKind: "ACCEPTED_PRODUCT_REVISION", transitionRefs: [], authorityHeads: {} });
+  const lateRef = await w.artifactStore.put("semantic-claim", { kind: "SEMANTIC_CLAIM", version: 1, productId: "product-1", subjectKey: "late", status: "ACTIVE" });
+  await w.history.appendTransition({ productId: "product-1", transitionKind: "ACCEPTED_PRODUCT_REVISION", transitionRefs: [lateRef], authorityHeads: {} });
   const fresh = await w.builder.build({ productId: "product-1", rootIntentRef: "intent:root-1" });
   const closed2 = await w.closure.close({ projectionRef: fresh.projectionRef });
   assert.notEqual(closed2.outcomeRef, closed.outcomeRef);

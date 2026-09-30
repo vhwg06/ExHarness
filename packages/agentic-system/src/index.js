@@ -252,4 +252,4 @@ export {PRODUCT_QA_DOMAIN,createProductQaCompletionEvaluator,createProductQaExec
 export {createProductMutationGuard,createProductHistoryController,defineProductHistoryCommit,productHistorySubjectKey,ProductHistoryDriftError,ProductHistoryConflictError} from "./product-history.js";
 export {createProductAcceptanceAuthority,defineProductAcceptancePolicy,defineProductAcceptanceWaiver,productAcceptanceSubjectKey,waiverSetDigestFor} from "./product-acceptance-policy.js";
 export {createProductStateProjectionBuilder} from "./product-state-projection.js";
-export {createProductClosureController,defineProductOutcomeClaim,productOutcomeSubjectKey,ProductClosureStaleError,ProductClosureNotReadyError} from "./product-closure.js";
+export {createProductClosureController,defineProductOutcomeClaim,productOutcomeSubjectKey,ProductClosureStaleError,ProductClosureNotReadyError,ProductClosureConflictError} from "./product-closure.js";

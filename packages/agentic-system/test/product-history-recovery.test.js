@@ -32,22 +32,16 @@ async function newWorld(t, live) {
   const guard = createProductMutationGuard();
   const history = createProductHistoryController({ artifactStore, headStore, mutationGuard: guard, authorityReaders: live ? (pid) => live.read(pid) : null });
   const acceptance = createProductAcceptanceAuthority({ artifactStore, headStore: policyHeads, mutationGuard: guard });
-  const claims = new Map([["product-1", []]]);
-  const obligations = new Map([["product-1", []]]);
-  const releases = new Map([["product-1", { releaseRef: "deployment-release:sha256:" + "e".repeat(64), release: { environmentRef: "env-1" } }]]);
-  const qualities = new Map([["product-1", { acceptanceRef: "quality-acceptance:sha256:" + "f".repeat(64), acceptance: {}, current: true }]]);
-  const builder = createProductStateProjectionBuilder({
-    productHistory: history,
-    acceptanceAuthority: acceptance,
-    artifactResolvers: {
-      listSemanticClaims: async (pid) => [...(claims.get(pid) ?? [])],
-      listObligations: async (pid) => [...(obligations.get(pid) ?? [])],
-      currentRelease: async (pid) => releases.get(pid) ?? null,
-      currentQuality: async (pid) => qualities.get(pid) ?? null,
-    },
-    artifactStore,
-  });
-  return { dir, artifactStore, headStore, policyHeads, guard, history, acceptance, builder, claims, obligations, releases, qualities };
+  const builder = createProductStateProjectionBuilder({ productHistory: history, acceptanceAuthority: acceptance, artifactStore, mutationGuard: guard });
+  return { dir, artifactStore, headStore, policyHeads, guard, history, acceptance, builder };
+}
+
+async function seedFoldEligible(w) {
+  await w.acceptance.publishPolicy({ productId: "product-1", policy: { policyId: "policy-1", criterionRefs: ["criterion:login"] } });
+  const relRef = await w.artifactStore.put("deployment-release", { kind: "DEPLOYMENT_RELEASE", version: 1, environmentRef: "env-1" });
+  await w.history.appendTransition({ productId: "product-1", transitionKind: "RELEASE_PUBLICATION", transitionRefs: [relRef], authorityHeads: { release: "r1", quality: "q1" } });
+  const qaRef = await w.artifactStore.put("quality-acceptance", { kind: "QUALITY_ACCEPTANCE", version: 1, environmentRef: "env-1", releaseRef: relRef });
+  await w.history.appendTransition({ productId: "product-1", transitionKind: "QUALITY_ACCEPTANCE", transitionRefs: [qaRef], authorityHeads: { release: "r1", quality: "q1" } });
 }
 
 test("Crash authority/history drift is NOT_READY until reconciliation.", async (t) => {
@@ -61,9 +55,7 @@ test("Crash authority/history drift is NOT_READY until reconciliation.", async (
     assert.match(e.message, /drift|RECOVERY/i);
     return true;
   });
-  // Guarded reads also fail closed while drifted.
-  const head = await w.headStore.current("product-history-head:" + (await import("../src/product-history.js").then((m) => m.productHistorySubjectKey("product-1").split(":")[1])));
-  void head;
+  await assert.rejects(w.history.readChain({ productId: "product-1" }), /drift|RECOVERY/i);
   // Wrong observations cannot reconcile; the exact live heads are required.
   await assert.rejects(
     w.history.reconcile({ productId: "product-1", transitionKind: "RELEASE_PUBLICATION", transitionRefs: [], authorityHeads: { release: "r1", quality: "q1" } }),
@@ -83,8 +75,7 @@ test("Crash authority/history drift is NOT_READY until reconciliation.", async (
 test("fresh process reconstructs the same current subject from durable refs", async (t) => {
   const live = liveHeads();
   const w = await newWorld(t, live);
-  await w.acceptance.publishPolicy({ productId: "product-1", policy: { policyId: "p1", criterionRefs: ["criterion:login"] } });
-  await w.history.appendTransition({ productId: "product-1", transitionKind: "SEMANTIC_PUBLICATION", transitionRefs: [], authorityHeads: { release: "r1", quality: "q1" } });
+  await seedFoldEligible(w);
   const beforeHistory = await w.history.current({ productId: "product-1" });
   const beforeBuilt = await w.builder.build({ productId: "product-1", rootIntentRef: "intent:root-1" });
   assert.equal(beforeBuilt.projection.readiness, "ELIGIBLE_FOR_CLOSURE");
@@ -96,17 +87,7 @@ test("fresh process reconstructs the same current subject from durable refs", as
   const guard2 = createProductMutationGuard();
   const history2 = createProductHistoryController({ artifactStore: artifactStore2, headStore: headStore2, mutationGuard: guard2, authorityReaders: (pid) => live.read(pid) });
   const acceptance2 = createProductAcceptanceAuthority({ artifactStore: artifactStore2, headStore: policyHeads2, mutationGuard: guard2 });
-  const builder2 = createProductStateProjectionBuilder({
-    productHistory: history2,
-    acceptanceAuthority: acceptance2,
-    artifactResolvers: {
-      listSemanticClaims: async () => [],
-      listObligations: async () => [],
-      currentRelease: async () => w.releases.get("product-1"),
-      currentQuality: async () => w.qualities.get("product-1"),
-    },
-    artifactStore: artifactStore2,
-  });
+  const builder2 = createProductStateProjectionBuilder({ productHistory: history2, acceptanceAuthority: acceptance2, artifactStore: artifactStore2, mutationGuard: guard2 });
   const afterHistory = await history2.current({ productId: "product-1" });
   assert.deepEqual(afterHistory, beforeHistory);
   const afterBuilt = await builder2.build({ productId: "product-1", rootIntentRef: "intent:root-1" });

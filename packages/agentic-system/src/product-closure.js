@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { ProductHistoryDriftError } from "./product-history.js";
 
 function invariant(condition, message) {
   if (!condition) throw new TypeError(message);
@@ -37,6 +38,18 @@ export class ProductClosureNotReadyError extends TypeError {
   }
 }
 
+export class ProductClosureConflictError extends TypeError {
+  constructor(message) {
+    super(message);
+    this.name = "ProductClosureConflictError";
+    this.code = "OUTCOME_CAS_CONFLICT";
+  }
+}
+
+function isRecoveryRequired(error) {
+  return error instanceof ProductHistoryDriftError || error?.code === "RECOVERY_REQUIRED";
+}
+
 export function defineProductOutcomeClaim(raw) {
   invariant(raw && typeof raw === "object" && !Array.isArray(raw), "ProductOutcomeClaim required");
   invariant(raw.kind === "PRODUCT_OUTCOME_CLAIM" && raw.version === 1, "ProductOutcomeClaim kind/version mismatch");
@@ -47,31 +60,25 @@ export function defineProductOutcomeClaim(raw) {
   return freeze(raw);
 }
 
-// Currentness-fenced closure. close() resolves the stored projection, holds
-// the project history and acceptance guards, re-reads the exact
-// generation/digest/policy revision/waiverSetDigest, requires equality with
-// the pinned subject plus ELIGIBLE_FOR_CLOSURE, writes one immutable
-// ProductOutcomeClaim and CAS-advances the latest-outcome head. Historical
+// Currentness-fenced closure. close() resolves the stored projection, then
+// holds the product-history guard AND the acceptance guard (fixed order
+// history -> acceptance) across the whole sequence: the freshness re-read,
+// writing the immutable ProductOutcomeClaim and the outcome-head CAS. No
+// Hn+1 or policy/waiver change can land between check and commit. Historical
 // claims are never mutated and never imply current DONE.
-export function createProductClosureController({ projectionBuilder, productHistory, acceptanceAuthority, artifactStore, outcomeHeadStore } = {}) {
+export function createProductClosureController({ projectionBuilder, productHistory, acceptanceAuthority, artifactStore, outcomeHeadStore, mutationGuard = null } = {}) {
   invariant(projectionBuilder && typeof projectionBuilder.resolve === "function", "closure controller requires the projection builder");
-  invariant(productHistory && typeof productHistory.current === "function", "closure controller requires the product history controller");
+  invariant(productHistory && typeof productHistory.readChain === "function", "closure controller requires the product history controller (readChain)");
   invariant(acceptanceAuthority && typeof acceptanceAuthority.resolveCurrent === "function", "closure controller requires the acceptance authority");
   invariant(artifactStore && typeof artifactStore.put === "function" && typeof artifactStore.resolve === "function", "closure controller requires an immutable artifact store");
   invariant(outcomeHeadStore && typeof outcomeHeadStore.current === "function" && typeof outcomeHeadStore.compareAndSwap === "function", "closure controller requires a CAS outcome head store");
-
-  async function guardedFreshness(productId, subject) {
-    const run = async () => {
-      const history = await productHistory.current({ productId });
-      const acceptance = await acceptanceAuthority.resolveCurrent({ productId });
-      return { history, acceptance };
-    };
-    // Hold the history key while re-reading so no Hn+1 can commit mid-check.
-    if (typeof productHistory.withProductGuard === "function") return productHistory.withProductGuard({ productId }, run);
-    return run();
-  }
+  invariant(mutationGuard && typeof mutationGuard.withProduct === "function" && typeof mutationGuard.withAcceptance === "function", "closure controller requires the shared product mutation guard");
 
   async function close({ projectionRef } = {}) {
+    const args = arguments[0] ?? {};
+    for (const key of Object.keys(args)) {
+      invariant(key === "projectionRef", `close accepts no caller-selected refs; ${key} is not accepted`);
+    }
     requireText(projectionRef, "projectionRef");
     const projection = await projectionBuilder.resolve(projectionRef);
     invariant(projection.kind === "PRODUCT_STATE_PROJECTION" && projection.version === 1, "projection kind/version mismatch");
@@ -81,51 +88,40 @@ export function createProductClosureController({ projectionBuilder, productHisto
     const subject = projection.subject;
     const productId = requireText(subject.productId, "projection subject productId");
 
-    const { history, acceptance } = await guardedFreshness(productId, subject);
-    if (
-      history == null ||
-      history.generation !== subject.historyGeneration ||
-      history.historyDigest !== subject.historyDigest ||
-      history.commitRef !== subject.historyCommitRef
-    ) {
-      throw new ProductClosureStaleError("projection history head Hn is stale; a closure-relevant Hn+1 transition requires re-evaluation");
-    }
-    if (
-      acceptance.policyRef !== subject.policyRef ||
-      acceptance.policyRevision !== subject.policyRevision ||
-      acceptance.waiverSetDigest !== subject.waiverSetDigest
-    ) {
-      throw new ProductClosureStaleError("acceptance-policy/waiver head drifted; the old projection subject is non-current");
-    }
-    // Second guarded re-read immediately before commit: any Hn+1 or policy
-    // drift that landed before the final commit still rejects the stale basis.
-    const recheck = await guardedFreshness(productId, subject);
-    if (
-      recheck.history.generation !== subject.historyGeneration ||
-      recheck.history.historyDigest !== subject.historyDigest
-    ) {
-      throw new ProductClosureStaleError("product history advanced before the final closure commit");
-    }
-    if (
-      recheck.acceptance.policyRevision !== subject.policyRevision ||
-      recheck.acceptance.waiverSetDigest !== subject.waiverSetDigest
-    ) {
-      throw new ProductClosureStaleError("acceptance policy advanced before the final closure commit");
-    }
+    return mutationGuard.withProduct(productId, () => mutationGuard.withAcceptance(productId, async () => {
+      const observed = await productHistory.readChain({ productId });
+      if (
+        observed.head == null ||
+        observed.generation !== subject.historyGeneration ||
+        observed.historyDigest !== subject.historyDigest ||
+        observed.commitRef !== subject.historyCommitRef
+      ) {
+        throw new ProductClosureStaleError("projection history head Hn is stale; a closure-relevant Hn+1 transition requires re-evaluation");
+      }
+      const acceptance = await acceptanceAuthority.resolveCurrent({ productId });
+      if (
+        acceptance.policyRef !== subject.policyRef ||
+        acceptance.policyRevision !== subject.policyRevision ||
+        acceptance.waiverSetDigest !== subject.waiverSetDigest
+      ) {
+        throw new ProductClosureStaleError("acceptance-policy/waiver head drifted; the old projection subject is non-current");
+      }
 
-    const claim = {
-      kind: "PRODUCT_OUTCOME_CLAIM",
-      version: 1,
-      productId,
-      projectionRef,
-      subject: structuredClone(subject),
-      readiness: projection.readiness,
-      activeSetDigest: projection.activeSetDigest,
-    };
-    const outcomeRef = await artifactStore.put("product-outcome-claim", structuredClone(claim));
-    const subjectKey = productOutcomeSubjectKey(productId);
-    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const claim = {
+        kind: "PRODUCT_OUTCOME_CLAIM",
+        version: 1,
+        productId,
+        projectionRef,
+        subject: structuredClone(subject),
+        readiness: projection.readiness,
+        activeSetDigest: projection.activeSetDigest,
+      };
+      const outcomeRef = await artifactStore.put("product-outcome-claim", structuredClone(claim));
+      const subjectKey = productOutcomeSubjectKey(productId);
       const head = await outcomeHeadStore.current(subjectKey);
+      if (head != null && (head.value.historyGeneration ?? 0) > subject.historyGeneration) {
+        throw new ProductClosureStaleError("a newer closure already advanced the outcome head beyond this subject");
+      }
       const next = {
         outcomeRef,
         projectionRef,
@@ -134,17 +130,19 @@ export function createProductClosureController({ projectionBuilder, productHisto
         policyRevision: subject.policyRevision,
         waiverSetDigest: subject.waiverSetDigest,
       };
-      if (await outcomeHeadStore.compareAndSwap(subjectKey, head?.revision ?? null, next)) {
-        const stored = await outcomeHeadStore.current(subjectKey);
-        return freeze({ outcomeRef, outcome: defineProductOutcomeClaim(claim), head: stored });
+      if (!(await outcomeHeadStore.compareAndSwap(subjectKey, head?.revision ?? null, next))) {
+        throw new ProductClosureConflictError("product outcome CAS conflict");
       }
-    }
-    throw new TypeError("product outcome CAS contention");
+      const stored = await outcomeHeadStore.current(subjectKey);
+      return freeze({ outcomeRef, outcome: defineProductOutcomeClaim(claim), head: stored });
+    }));
   }
 
   // Resolve the latest immutable claim and revalidate it against the current
   // canonical subject. CURRENT only when the pinned subject still equals
-  // current history/policy/waiver state and a fresh rebuild stays eligible.
+  // current history/policy/waiver state and a pinned rebuild stays eligible.
+  // Only history/authority drift (RECOVERY_REQUIRED) maps to NOT_READY; any
+  // other error propagates.
   async function currentOutcome({ productId } = {}) {
     requireText(productId, "productId");
     const subjectKey = productOutcomeSubjectKey(productId);
@@ -153,13 +151,15 @@ export function createProductClosureController({ projectionBuilder, productHisto
     const raw = await artifactStore.resolve(head.value.outcomeRef);
     const outcome = defineProductOutcomeClaim(raw);
     let history = null;
-    let acceptance = null;
     try {
       history = await productHistory.current({ productId });
-      acceptance = await acceptanceAuthority.resolveCurrent({ productId });
-    } catch {
-      return freeze({ status: "NOT_READY", reason: "RECOVERY_REQUIRED", outcome, outcomeRef: head.value.outcomeRef });
+    } catch (error) {
+      if (isRecoveryRequired(error)) {
+        return freeze({ status: "NOT_READY", reason: "RECOVERY_REQUIRED", outcome, outcomeRef: head.value.outcomeRef });
+      }
+      throw error;
     }
+    const acceptance = await acceptanceAuthority.resolveCurrent({ productId });
     const pinned = outcome.subject;
     const matches =
       history != null &&
@@ -173,9 +173,12 @@ export function createProductClosureController({ projectionBuilder, productHisto
     }
     let rebuilt = null;
     try {
-      rebuilt = await projectionBuilder.build({ productId, rootIntentRef: pinned.rootIntentRef });
-    } catch {
-      return freeze({ status: "NOT_READY", reason: "REBUILD_FAILED", outcome, outcomeRef: head.value.outcomeRef });
+      rebuilt = await projectionBuilder.rebuild({ subject: pinned });
+    } catch (error) {
+      if (isRecoveryRequired(error)) {
+        return freeze({ status: "NOT_READY", reason: "RECOVERY_REQUIRED", outcome, outcomeRef: head.value.outcomeRef });
+      }
+      throw error;
     }
     if (rebuilt.projection.readiness !== "ELIGIBLE_FOR_CLOSURE") {
       return freeze({ status: "HISTORICAL", reason: "NO_LONGER_ELIGIBLE", outcome, outcomeRef: head.value.outcomeRef });

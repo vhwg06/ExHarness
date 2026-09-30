@@ -10,121 +10,110 @@ import { createProductAcceptanceAuthority } from "../src/product-acceptance-poli
 import { createProductStateProjectionBuilder } from "../src/product-state-projection.js";
 import { createProductClosureController } from "../src/product-closure.js";
 
-function barrier() {
-  let open;
-  const opened = new Promise((resolve) => { open = resolve; });
-  let arrive;
-  const arrived = new Promise((resolve) => { arrive = resolve; });
-  return { open, opened, arrive, arrived };
-}
-
-async function newWorld(t) {
+async function newWorld(t, { live = null } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "exharness-bb055-closurerace-"));
   t.after(() => rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 20 }));
   const artifactStore = createJsonImmutableArtifactStore({ path: join(dir, "artifacts.json") });
   const guard = createProductMutationGuard();
-  const historyHeads = createJsonCasHeadStore({ path: join(dir, "history.json") });
-  const policyHeads = createJsonCasHeadStore({ path: join(dir, "policy.json") });
-  const history = createProductHistoryController({ artifactStore, headStore: historyHeads, mutationGuard: guard });
-  const acceptance = createProductAcceptanceAuthority({ artifactStore, headStore: policyHeads, mutationGuard: guard });
-  const releases = new Map();
-  const qualities = new Map();
-  const builder = createProductStateProjectionBuilder({
-    productHistory: history,
-    acceptanceAuthority: acceptance,
-    artifactResolvers: {
-      listSemanticClaims: async () => [],
-      listObligations: async () => [],
-      currentRelease: async (pid) => releases.get(pid) ?? null,
-      currentQuality: async (pid) => qualities.get(pid) ?? null,
-    },
-    artifactStore,
-  });
-  const closure = createProductClosureController({
-    projectionBuilder: builder,
-    productHistory: history,
-    acceptanceAuthority: acceptance,
-    artifactStore,
-    outcomeHeadStore: createJsonCasHeadStore({ path: join(dir, "outcomes.json") }),
-  });
-  return { dir, artifactStore, history, historyHeads, acceptance, policyHeads, builder, closure, releases, qualities };
+  const history = createProductHistoryController({ artifactStore, headStore: createJsonCasHeadStore({ path: join(dir, "history.json") }), mutationGuard: guard, authorityReaders: live });
+  const acceptance = createProductAcceptanceAuthority({ artifactStore, headStore: createJsonCasHeadStore({ path: join(dir, "policy.json") }), mutationGuard: guard });
+  const builder = createProductStateProjectionBuilder({ productHistory: history, acceptanceAuthority: acceptance, artifactStore, mutationGuard: guard });
+  const outcomeHeadStore = createJsonCasHeadStore({ path: join(dir, "outcomes.json") });
+  const closure = createProductClosureController({ projectionBuilder: builder, productHistory: history, acceptanceAuthority: acceptance, artifactStore, outcomeHeadStore, mutationGuard: guard });
+  return { dir, artifactStore, guard, history, acceptance, builder, closure, outcomeHeadStore };
 }
 
-async function seedEligible(w) {
+async function seedEligible(w, heads = {}) {
   await w.acceptance.publishPolicy({ productId: "product-1", policy: { policyId: "policy-1", criterionRefs: ["criterion:login"] } });
-  w.releases.set("product-1", { releaseRef: "deployment-release:sha256:" + "a".repeat(64), release: {} });
-  w.qualities.set("product-1", { acceptanceRef: "quality-acceptance:sha256:" + "b".repeat(64), acceptance: {}, current: true });
-  await w.history.appendTransition({ productId: "product-1", transitionKind: "SEMANTIC_PUBLICATION", transitionRefs: [], authorityHeads: {} });
+  const relRef = await w.artifactStore.put("deployment-release", { kind: "DEPLOYMENT_RELEASE", version: 1, environmentRef: "env-1" });
+  await w.history.appendTransition({ productId: "product-1", transitionKind: "RELEASE_PUBLICATION", transitionRefs: [relRef], authorityHeads: heads });
+  const qaRef = await w.artifactStore.put("quality-acceptance", { kind: "QUALITY_ACCEPTANCE", version: 1, environmentRef: "env-1", releaseRef: relRef });
+  await w.history.appendTransition({ productId: "product-1", transitionKind: "QUALITY_ACCEPTANCE", transitionRefs: [qaRef], authorityHeads: heads });
 }
 
 test("Hn projection cannot close after Hn+1.", async (t) => {
   const w = await newWorld(t);
   await seedEligible(w);
   const atHn = await w.builder.build({ productId: "product-1", rootIntentRef: "intent:root-1" });
-
-  // Barrier inside the guarded freshness re-read: pause close just before its
-  // final currentness check, land Hn+1, then let close resume. It must reject.
-  const gate = barrier();
-  const originalCurrent = w.history.current.bind(w.history);
-  let calls = 0;
-  const patchedHistory = Object.freeze({ ...w.history, current: async (args) => {
-    calls += 1;
-    if (calls === 2) {
-      gate.arrive();
-      await gate.opened;
-    }
-    return originalCurrent(args);
-  } });
-  const { createProductClosureController: createClosure } = await import("../src/product-closure.js");
-  const { createJsonCasHeadStore: openHeads } = await import("../src/organization-authority-store.js");
-  const racingClosure = createClosure({
-    projectionBuilder: w.builder,
-    productHistory: patchedHistory,
-    acceptanceAuthority: w.acceptance,
-    artifactStore: w.artifactStore,
-    outcomeHeadStore: openHeads({ path: join(w.dir, "outcomes.json") }),
+  // Ordering (a): Hn+1 lands first through the SAME shared guard, then the
+  // stale close must reject.
+  const lateRef = await w.artifactStore.put("semantic-claim", { kind: "SEMANTIC_CLAIM", version: 1, productId: "product-1", subjectKey: "late", status: "ACTIVE" });
+  await w.history.appendTransition({ productId: "product-1", transitionKind: "ACCEPTED_PRODUCT_REVISION", transitionRefs: [lateRef], authorityHeads: {} });
+  await assert.rejects(w.closure.close({ projectionRef: atHn.projectionRef }), (e) => {
+    assert.equal(e.code, "STALE_PROJECTION");
+    return true;
   });
-  const closing = assert.rejects(racingClosure.close({ projectionRef: atHn.projectionRef }), /stale|advanced/i);
-  await gate.arrived;
-  // Land Hn+1 through an independent writer guard on the same durable stores
-  // (a crash-window authority commit that does not wait on close's guard).
-  const writer = createProductHistoryController({ artifactStore: w.artifactStore, headStore: w.historyHeads, mutationGuard: createProductMutationGuard() });
-  await writer.appendTransition({ productId: "product-1", transitionKind: "ACCEPTED_PRODUCT_REVISION", transitionRefs: ["semantic-claim:sha256:" + "c".repeat(64)], authorityHeads: {} });
-  gate.open();
-  await closing;
-  const current = await w.closure.currentOutcome({ productId: "product-1" });
-  assert.notEqual(current.status, "CURRENT");
+  assert.notEqual((await w.closure.currentOutcome({ productId: "product-1" })).status, "CURRENT");
 });
 
-test("policy drift before the final commit yields no current outcome", async (t) => {
+test("close first holds the guard: Hn+1 waits, lands after the outcome, outcome turns HISTORICAL", async (t) => {
   const w = await newWorld(t);
   await seedEligible(w);
   const atHn = await w.builder.build({ productId: "product-1", rootIntentRef: "intent:root-1" });
 
-  const gate = barrier();
-  const originalResolve = w.acceptance.resolveCurrent.bind(w.acceptance);
-  let calls = 0;
-  const patchedAcceptance = Object.freeze({ ...w.acceptance, resolveCurrent: async (args) => {
-    calls += 1;
-    if (calls === 2) {
-      gate.arrive();
-      await gate.opened;
-    }
-    return originalResolve(args);
-  } });
-  const { createProductClosureController: createClosure2 } = await import("../src/product-closure.js");
-  const { createJsonCasHeadStore: openHeads2 } = await import("../src/organization-authority-store.js");
-  const racingClosure = createClosure2({
+  // Pause the outcome-head CAS inside the guard-spanning close. A competing
+  // Hn+1 append through the SAME shared guard must wait for the commit.
+  let releaseCas;
+  const casGate = new Promise((resolve) => { releaseCas = resolve; });
+  let arrived;
+  const arrivedGate = new Promise((resolve) => { arrived = resolve; });
+  const rawHeads = w.outcomeHeadStore;
+  const gatedHeads = Object.freeze({
+    current: (...args) => rawHeads.current(...args),
+    async compareAndSwap(...args) {
+      arrived();
+      await casGate;
+      return rawHeads.compareAndSwap(...args);
+    },
+  });
+  const gatedClosure = createProductClosureController({
     projectionBuilder: w.builder,
     productHistory: w.history,
-    acceptanceAuthority: patchedAcceptance,
+    acceptanceAuthority: w.acceptance,
     artifactStore: w.artifactStore,
-    outcomeHeadStore: openHeads2({ path: join(w.dir, "outcomes.json") }),
+    outcomeHeadStore: gatedHeads,
+    mutationGuard: w.guard,
   });
-  const closing = assert.rejects(racingClosure.close({ projectionRef: atHn.projectionRef }), /non-current|drift|advanced/i);
-  await gate.arrived;
-  await w.acceptance.publishPolicy({ productId: "product-1", policy: { policyId: "policy-1", criterionRefs: ["criterion:login", "criterion:checkout"] } });
-  gate.open();
-  await closing;
-  assert.equal((await w.closure.currentOutcome({ productId: "product-1" })).status, "NO_OUTCOME");
+  const closing = gatedClosure.close({ projectionRef: atHn.projectionRef });
+  await arrivedGate;
+  let appended = false;
+  const lateRef = await w.artifactStore.put("semantic-claim", { kind: "SEMANTIC_CLAIM", version: 1, productId: "product-1", subjectKey: "late", status: "ACTIVE" });
+  const appending = w.history.appendTransition({ productId: "product-1", transitionKind: "ACCEPTED_PRODUCT_REVISION", transitionRefs: [lateRef], authorityHeads: {} })
+    .then((result) => { appended = true; return result; });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  assert.equal(appended, false, "Hn+1 append waits while close holds the guard across check and commit");
+  releaseCas();
+  const closed = await closing;
+  assert.equal(closed.head.value.historyGeneration, atHn.subject.historyGeneration);
+  await appending;
+  assert.equal((await w.history.current({ productId: "product-1" })).generation, atHn.subject.historyGeneration + 1);
+  const revalidated = await w.closure.currentOutcome({ productId: "product-1" });
+  assert.equal(revalidated.status, "HISTORICAL");
+  assert.equal(revalidated.reason, "PRODUCT_DRIFT");
+  assert.equal(revalidated.outcomeRef, closed.outcomeRef);
+});
+
+test("a writer that bypasses the guard leaves NOT_READY until reconcile", async (t) => {
+  const liveState = { release: "r1", quality: "q1" };
+  const live = (productId) => {
+    assert.equal(productId, "product-1");
+    return structuredClone(liveState);
+  };
+  const w = await newWorld(t, { live });
+  await seedEligible(w, { release: "r1", quality: "q1" });
+  const built = await w.builder.build({ productId: "product-1", rootIntentRef: "intent:root-1" });
+  await w.closure.close({ projectionRef: built.projectionRef });
+  assert.equal((await w.closure.currentOutcome({ productId: "product-1" })).status, "CURRENT");
+  // Crash window: the authority moved to r2 but the writer bypassed the
+  // shared guard and never committed history. Reads fail closed.
+  liveState.release = "r2";
+  const drifted = await w.closure.currentOutcome({ productId: "product-1" });
+  assert.equal(drifted.status, "NOT_READY");
+  assert.equal(drifted.reason, "RECOVERY_REQUIRED");
+  // Deterministic reconciliation restores a committable head; the old outcome
+  // is then historical under the newer generation.
+  const reconciled = await w.history.reconcile({ productId: "product-1", transitionKind: "RELEASE_PUBLICATION", transitionRefs: [], authorityHeads: { release: "r2", quality: "q1" } });
+  assert.equal(reconciled.reconciled, true);
+  const after = await w.closure.currentOutcome({ productId: "product-1" });
+  assert.equal(after.status, "HISTORICAL");
 });

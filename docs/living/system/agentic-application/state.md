@@ -250,7 +250,7 @@ Current source adds a product-level completeness boundary above the domain autho
 
 - one `ProductHistoryHead` per product (`CAS {generation, commitRef, historyDigest}`) over immutable `ProductHistoryCommit` records persisted in the shared immutable artifact store; each commit binds its predecessor plus the exact observed closure-relevant authority heads, and fresh readers revalidate the whole chain;
 - one product acceptance head per product pinning the exact immutable policy revision plus the complete sorted applicable waiver set and its digest;
-- one disposable deterministic `ProductStateProjection` per pinned `{history, policy, waivers}` subject, rebuilt from canonical resolvers only;
+- one disposable deterministic `ProductStateProjection` per pinned `{history, policy, waivers}` subject, folded from the validated history chain (genesis to pinned head) with per-ref immutable resolution only — resolvers never enumerate live state — plus a pinned `rebuild({subject})` that stays byte-identical while uncommitted store artifacts have no effect;
 - one `product-outcome-head` per product pointing at the latest immutable `ProductOutcomeClaim`; older claims remain resolvable but revalidate to `HISTORICAL` once history or policy advances.
 
 Durable stores are the existing JSON immutable-artifact and CAS-head stores, so a fresh process reconstructs the same current subject and projection from disk without prior conversation state. Closure-relevant lineage, release and quality publishers can share the same `createProductMutationGuard()` instance as history and closure; delivered Integration C/E/F behavior is unchanged when the optional guard binding is absent. Strategy-only revisions never advance the history head or invalidate current closure.

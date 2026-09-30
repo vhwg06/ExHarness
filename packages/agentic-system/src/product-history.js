@@ -192,6 +192,29 @@ export function createProductHistoryController({ artifactStore, headStore, mutat
     return { subjectKey, head, commit, commitRef: head.value.commitRef };
   }
 
+  async function readChainUnlocked(productId) {
+    const { subjectKey, head, commit, commitRef } = await readHead(productId);
+    if (head == null) return freeze({ subjectKey, head: null, commit: null, commitRef: null, chain: [] });
+    const chain = await validateChain(head.value.commitRef);
+    const live = await readLiveHeads(productId);
+    if (live != null && !sameHeads(commit.authorityHeads, live)) {
+      throw new ProductHistoryDriftError(
+        `closure-relevant authority drift for ${productId}: canonical history commits to an older state until reconciliation`
+      );
+    }
+    return freeze({
+      subjectKey,
+      head,
+      commit,
+      commitRef,
+      generation: head.value.generation,
+      historyDigest: head.value.historyDigest,
+      headRevision: head.revision,
+      authorityHeads: commit.authorityHeads,
+      chain,
+    });
+  }
+
   async function appendLocked({ productId, transitionKind, transitionRefs, authorityHeads }) {
     assertClosureRelevant(transitionKind);
     const refs = [...new Set(transitionRefs.map((r) => requireText(r, "transitionRef")))].sort();
@@ -222,24 +245,28 @@ export function createProductHistoryController({ artifactStore, headStore, mutat
 
     async current({ productId } = {}) {
       requireText(productId, "productId");
-      const { subjectKey, head, commit, commitRef } = await readHead(productId);
-      if (head == null) return null;
-      const live = await readLiveHeads(productId);
-      if (live != null && !sameHeads(commit.authorityHeads, live)) {
-        throw new ProductHistoryDriftError(
-          `closure-relevant authority drift for ${productId}: canonical history commits to an older state until reconciliation`
-        );
-      }
+      const observed = await readChainUnlocked(productId);
+      if (observed.head == null) return null;
       return freeze({
-        subjectKey,
-        generation: head.value.generation,
-        commitRef,
-        historyDigest: head.value.historyDigest,
-        headRevision: head.revision,
-        authorityHeads: commit.authorityHeads,
-        transitionKind: commit.transitionKind,
-        transitionRefs: commit.transitionRefs,
+        subjectKey: observed.subjectKey,
+        generation: observed.generation,
+        commitRef: observed.commitRef,
+        historyDigest: observed.historyDigest,
+        headRevision: observed.headRevision,
+        authorityHeads: observed.authorityHeads,
+        transitionKind: observed.commit.transitionKind,
+        transitionRefs: observed.commit.transitionRefs,
       });
+    },
+
+    // Unguarded validated chain read for the deterministic projection fold.
+    // The caller must hold the product history guard across head read, chain
+    // fold, artifact resolution and the acceptance read so one projection can
+    // never mix Hn with later state. Includes the same fail-closed live
+    // authority drift check as current().
+    async readChain({ productId } = {}) {
+      requireText(productId, "productId");
+      return readChainUnlocked(productId);
     },
 
     // Run action while the product history key is held and the observed head
