@@ -195,6 +195,9 @@ export function checkBinding({ binding, log, testSource }) {
   const invoked = tokens.some((t, k) => t.type === 'ident' && t.value === binding.subjectSymbol && tokens[k - 1]?.value !== 'function' && (
     (tokens[k + 1]?.type === 'punct' && tokens[k + 1].value === '(') ||
     (tokens[k + 1]?.value === '?.' && tokens[k + 2]?.value === '(') ||
+    // A subject that is an object (an adapter or facade) is invoked through one of its methods.
+    (['.', '?.'].includes(tokens[k + 1]?.value) && tokens[k - 1]?.value !== '.' && tokens[k - 1]?.value !== '?.' &&
+      tokens[k + 2]?.type === 'ident' && tokens[k + 3]?.value === '(') ||
     (tokens[k - 1]?.type === 'ident' && tokens[k - 1].value === 'new')));
   if (!invoked) return { ok: false, reason: 'SUBJECT_NOT_INVOKED', body };
   if (VACUOUS.some(p => p.test(code))) return { ok: false, reason: 'VACUOUS_ASSERTION', body };

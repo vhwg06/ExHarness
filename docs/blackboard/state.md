@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-106
+next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -45,11 +45,15 @@ NONE
 - BB-092 [WORKER/EXECUTION] — Implement bounded explicit progressive resolution
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
-- BB-101 [WORKER/EXECUTION] — Resume a supervised agent-tool run after process death
 - BB-102 [WORKER/EXECUTION] — Resolve declared agent-tool files through the Oracle facade
 - BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
-- BB-104 [RESEARCH_SA/RESEARCH] — Run one local Backend-then-QA slice from an operator CLI
 - BB-105 [WORKER/EXECUTION] — Add Grok Build as a supported agent tool
+- BB-106 [RESEARCH_SA/RESEARCH] — Wire delivered Oracle and supersession regression tests into npm test and verify
+- BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
+- BB-108 [RESEARCH_SA/RESEARCH] — Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
+- BB-120 [RESEARCH_SA/RESEARCH] — Allowlist agent-tools child environment
+- BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
+- BB-122 [RESEARCH_SA/RESEARCH] — Add OpenCode as a supported agent tool
 
 ## Dependency graph
 
@@ -104,11 +108,17 @@ BB-097 [DONE] <- BB-096
 BB-098 [DONE] <- BB-097
 BB-099 [WORKER_SCHEDULABLE] <- BB-098, BB-065
 BB-100 [WORKER_SCHEDULABLE] <- BB-096, BB-097
-BB-101 [WORKER_SCHEDULABLE] <- BB-097
+BB-101 [DONE] <- BB-097
 BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
-BB-104 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-102
+BB-104 [BLOCKED_BY BB-100,BB-102] <- BB-100, BB-101, BB-102
 BB-105 [WORKER_SCHEDULABLE] <- BB-097, BB-098
+BB-106 [RESEARCH_SCHEDULABLE] <- BB-082, BB-087, BB-088
+BB-107 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088, BB-089
+BB-108 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088
+BB-120 [RESEARCH_SCHEDULABLE] <- BB-097
+BB-121 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-120
+BB-122 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
 ```
 
 ## Context semantics
