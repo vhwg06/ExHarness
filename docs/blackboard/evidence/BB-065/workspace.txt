@@ -1,0 +1,571 @@
+TAP version 13
+# Subtest: a fresh process reopens the untouched experiment and every attempt audits PASS
+ok 1 - a fresh process reopens the untouched experiment and every attempt audits PASS
+  ---
+  duration_ms: 617.947867
+  type: 'test'
+  ...
+# Subtest: a tampered artifact after settlement fails audit
+ok 2 - a tampered artifact after settlement fails audit
+  ---
+  duration_ms: 107.270859
+  type: 'test'
+  ...
+# Subtest: a tampered verifier result or raw Harbor result fails audit
+ok 3 - a tampered verifier result or raw Harbor result fails audit
+  ---
+  duration_ms: 176.832202
+  type: 'test'
+  ...
+# Subtest: a missing verifier output or missing raw result fails audit
+ok 4 - a missing verifier output or missing raw result fails audit
+  ---
+  duration_ms: 302.618632
+  type: 'test'
+  ...
+# Subtest: zero-filling unknown usage in a settled record fails audit
+ok 5 - zero-filling unknown usage in a settled record fails audit
+  ---
+  duration_ms: 92.504833
+  type: 'test'
+  ...
+# Subtest: a rewritten outcome (NOT_EVALUATED forged to REJECTED) fails audit
+ok 6 - a rewritten outcome (NOT_EVALUATED forged to REJECTED) fails audit
+  ---
+  duration_ms: 121.809535
+  type: 'test'
+  ...
+# Subtest: a removed attempt (retry erasing the failed original) fails audit
+ok 7 - a removed attempt (retry erasing the failed original) fails audit
+  ---
+  duration_ms: 89.237584
+  type: 'test'
+  ...
+# Subtest: a STARTED attempt that never settled is reported, not silently dropped
+ok 8 - a STARTED attempt that never settled is reported, not silently dropped
+  ---
+  duration_ms: 72.513659
+  type: 'test'
+  ...
+# Subtest: a changed registration (fixed factor edited after STARTED) fails audit
+ok 9 - a changed registration (fixed factor edited after STARTED) fails audit
+  ---
+  duration_ms: 96.916521
+  type: 'test'
+  ...
+# Subtest: a downstream consumer may import only node built-ins and the package root
+ok 10 - a downstream consumer may import only node built-ins and the package root
+  ---
+  duration_ms: 1.451933
+  type: 'test'
+  ...
+# Subtest: re-implementing kernel truth downstream is detected
+ok 11 - re-implementing kernel truth downstream is detected
+  ---
+  duration_ms: 0.627056
+  type: 'test'
+  ...
+# Subtest: the downstream contract fixture runs both arms through the ledger and audit catches tampering
+ok 12 - the downstream contract fixture runs both arms through the ledger and audit catches tampering
+  ---
+  duration_ms: 30.062802
+  type: 'test'
+  ...
+# Subtest: scope globs and decision-key scan
+ok 13 - scope globs and decision-key scan
+  ---
+  duration_ms: 0.762994
+  type: 'test'
+  ...
+# Subtest: the sealed calibration manifest is valid, model-free and covers every fixture
+ok 14 - the sealed calibration manifest is valid, model-free and covers every fixture
+  ---
+  duration_ms: 6.778849
+  type: 'test'
+  ...
+# Subtest: the matrix contains the plan truth-table rows
+ok 15 - the matrix contains the plan truth-table rows
+  ---
+  duration_ms: 3.614983
+  type: 'test'
+  ...
+# Subtest: structural defects are reported before anything runs
+ok 16 - structural defects are reported before anything runs
+  ---
+  duration_ms: 1.748585
+  type: 'test'
+  ...
+# Subtest: compareCase reports every mismatching dimension and nothing else
+ok 17 - compareCase reports every mismatching dimension and nothing else
+  ---
+  duration_ms: 0.394168
+  type: 'test'
+  ...
+# Subtest: observe reads quality from the settled record and producer status from the normalization input
+ok 18 - observe reads quality from the settled record and producer status from the normalization input
+  ---
+  duration_ms: 0.307815
+  type: 'test'
+  ...
+# Subtest: committed sealed manifest passes with two oracle 5/5 and nop fail 1/1 tasks
+ok 19 - committed sealed manifest passes with two oracle 5/5 and nop fail 1/1 tasks
+  ---
+  duration_ms: 2048.236652
+  type: 'test'
+  ...
+# Subtest: selected tasks swapped after seeing outcomes fail the preregistered rule
+ok 20 - selected tasks swapped after seeing outcomes fail the preregistered rule
+  ---
+  duration_ms: 2087.091533
+  type: 'test'
+  ...
+# Subtest: removing a reserved task fails reservation recomputation
+ok 21 - removing a reserved task fails reservation recomputation
+  ---
+  duration_ms: 1837.806649
+  type: 'test'
+  ...
+# Subtest: a control oracle tally rewritten to include REJECTED fails the evidence check
+ok 22 - a control oracle tally rewritten to include REJECTED fails the evidence check
+  ---
+  duration_ms: 1864.391018
+  type: 'test'
+  ...
+# Subtest: a modified control evidence file fails audit
+ok 23 - a modified control evidence file fails audit
+  ---
+  duration_ms: 1824.380759
+  type: 'test'
+  ...
+# Subtest: reordering preregistration candidateOrder fails the digest check
+ok 24 - reordering preregistration candidateOrder fails the digest check
+  ---
+  duration_ms: 1758.811295
+  type: 'test'
+  ...
+# Subtest: codingModelCalls set to 1 fails the no-coding-model check
+ok 25 - codingModelCalls set to 1 fails the no-coding-model check
+  ---
+  duration_ms: 1734.411781
+  type: 'test'
+  ...
+# Subtest: dataset.toml parsing takes name and pinned digest of every task
+ok 26 - dataset.toml parsing takes name and pinned digest of every task
+  ---
+  duration_ms: 1.574974
+  type: 'test'
+  ...
+# Subtest: tasks named by whole word or referenced by digest in a canonical plan are reserved
+ok 27 - tasks named by whole word or referenced by digest in a canonical plan are reserved
+  ---
+  duration_ms: 0.739396
+  type: 'test'
+  ...
+# Subtest: candidate order is ascending pinned digest over the unreserved tasks
+ok 28 - candidate order is ascending pinned digest over the unreserved tasks
+  ---
+  duration_ms: 0.299406
+  type: 'test'
+  ...
+# Subtest: selection seals exactly two tasks after oracle 5/5 and nop fail 1/1, disqualifying in order
+ok 29 - selection seals exactly two tasks after oracle 5/5 and nop fail 1/1, disqualifying in order
+  ---
+  duration_ms: 0.482095
+  type: 'test'
+  ...
+# Subtest: an oracle that is NOT_EVALUATED also disqualifies (only ACCEPTED counts)
+ok 30 - an oracle that is NOT_EVALUATED also disqualifies (only ACCEPTED counts)
+  ---
+  duration_ms: 0.255892
+  type: 'test'
+  ...
+# Subtest: changing selection after seeing outcomes is INVALID: skipping ahead, extra runs, or running past two
+ok 31 - changing selection after seeing outcomes is INVALID: skipping ahead, extra runs, or running past two
+  ---
+  duration_ms: 0.197128
+  type: 'test'
+  ...
+# Subtest: fewer than two qualifying tasks is INCONCLUSIVE, never padded
+ok 32 - fewer than two qualifying tasks is INCONCLUSIVE, never padded
+  ---
+  duration_ms: 0.174278
+  type: 'test'
+  ...
+# Subtest: Harbor pin is the reviewed v0.23.0 commit
+ok 33 - Harbor pin is the reviewed v0.23.0 commit
+  ---
+  duration_ms: 0.810664
+  type: 'test'
+  ...
+# Subtest: failure mapping truth table: every Harbor exception maps to exactly one normalized dimension
+ok 34 - failure mapping truth table: every Harbor exception maps to exactly one normalized dimension
+  ---
+  duration_ms: 1.273389
+  type: 'test'
+  ...
+# Subtest: quality is never synthesized: no reward means ERROR, never FAIL or PASS
+ok 35 - quality is never synthesized: no reward means ERROR, never FAIL or PASS
+  ---
+  duration_ms: 0.148765
+  type: 'test'
+  ...
+# Subtest: usage comes only from fields Harbor reported; missing fields stay UNKNOWN, never zero
+ok 36 - usage comes only from fields Harbor reported; missing fields stay UNKNOWN, never zero
+  ---
+  duration_ms: 1.336794
+  type: 'test'
+  ...
+# Subtest: adapter satisfies SubstratePort and exposes the pinned identity
+ok 37 - adapter satisfies SubstratePort and exposes the pinned identity
+  ---
+  duration_ms: 5.815592
+  type: 'test'
+  ...
+# Subtest: one fresh Harbor trial per attempt with explicit task, trials dir and trial name; raw evidence captured
+ok 38 - one fresh Harbor trial per attempt with explicit task, trials dir and trial name; raw evidence captured
+  ---
+  duration_ms: 296.490403
+  type: 'test'
+  ...
+# Subtest: RESET_REUSED: the same attempt output root or trial cannot be prepared twice, even by a new adapter
+ok 39 - RESET_REUSED: the same attempt output root or trial cannot be prepared twice, even by a new adapter
+  ---
+  duration_ms: 117.856355
+  type: 'test'
+  ...
+# Subtest: FIXED_FACTOR_DRIFT: a task bundle or instruction that differs from the registered unit is refused
+ok 40 - FIXED_FACTOR_DRIFT: a task bundle or instruction that differs from the registered unit is refused
+  ---
+  duration_ms: 217.786031
+  type: 'test'
+  ...
+# Subtest: missing, malformed or foreign trial result is HARNESS_PROTOCOL and NOT_EVALUATED
+ok 41 - missing, malformed or foreign trial result is HARNESS_PROTOCOL and NOT_EVALUATED
+  ---
+  duration_ms: 405.209371
+  type: 'test'
+  ...
+# Subtest: a symlinked artifact is ARTIFACT_EXTRACTION, not a verifier judgement
+ok 42 - a symlinked artifact is ARTIFACT_EXTRACTION, not a verifier judgement
+  ---
+  duration_ms: 137.17804
+  type: 'test'
+  ...
+# Subtest: verifier crash is NOT_EVALUATED + VERIFIER_ERROR with the raw exception persisted
+ok 43 - verifier crash is NOT_EVALUATED + VERIFIER_ERROR with the raw exception persisted
+  ---
+  duration_ms: 142.499552
+  type: 'test'
+  ...
+# Subtest: provider rate limit with no artifact is NOT_EVALUATED and usage stays UNKNOWN
+ok 44 - provider rate limit with no artifact is NOT_EVALUATED and usage stays UNKNOWN
+  ---
+  duration_ms: 162.180525
+  type: 'test'
+  ...
+# Subtest: producer SUCCESS + verifier reward 0 is REJECTED and reported usage is kept without filling the rest
+ok 45 - producer SUCCESS + verifier reward 0 is REJECTED and reported usage is kept without filling the rest
+  ---
+  duration_ms: 329.468524
+  type: 'test'
+  ...
+# Subtest: evaluator identity is the pinned Harbor task verifier
+ok 46 - evaluator identity is the pinned Harbor task verifier
+  ---
+  duration_ms: 0.187389
+  type: 'test'
+  ...
+# Subtest: the retirement manifest gives every retired capability an explicit disposition
+ok 47 - the retirement manifest gives every retired capability an explicit disposition
+  ---
+  duration_ms: 7.645055
+  type: 'test'
+  ...
+# Subtest: the repository passes every retirement check
+ok 48 - the repository passes every retirement check
+  ---
+  duration_ms: 207.297976
+  type: 'test'
+  ...
+# Subtest: only the policing files may name the retired paths
+ok 49 - only the policing files may name the retired paths
+  ---
+  duration_ms: 2.137064
+  type: 'test'
+  ...
+# Subtest: fully reported usage is KNOWN, including reported zeros
+ok 50 - fully reported usage is KNOWN, including reported zeros
+  ---
+  duration_ms: 1.453747
+  type: 'test'
+  ...
+# Subtest: partially reported usage is PARTIAL and keeps the unreported fields null
+ok 51 - partially reported usage is PARTIAL and keeps the unreported fields null
+  ---
+  duration_ms: 3.091757
+  type: 'test'
+  ...
+# Subtest: absent usage is UNKNOWN with every numeric field null
+ok 52 - absent usage is UNKNOWN with every numeric field null
+  ---
+  duration_ms: 0.392074
+  type: 'test'
+  ...
+# Subtest: a zero written for an unreported field is rejected as zero-fill
+ok 53 - a zero written for an unreported field is rejected as zero-fill
+  ---
+  duration_ms: 0.629135
+  type: 'test'
+  ...
+# Subtest: accounting is deterministic and frozen
+ok 54 - accounting is deterministic and frozen
+  ---
+  duration_ms: 0.339974
+  type: 'test'
+  ...
+# Subtest: audit reopens evidence and recomputes candidate, evaluator, outcome, accounting and record identity
+ok 55 - audit reopens evidence and recomputes candidate, evaluator, outcome, accounting and record identity
+  ---
+  duration_ms: 7.935357
+  type: 'test'
+  ...
+# Subtest: a tampered artifact, result or verifier file fails audit
+ok 56 - a tampered artifact, result or verifier file fails audit
+  ---
+  duration_ms: 11.246368
+  type: 'test'
+  ...
+# Subtest: missing verifier or result evidence fails audit
+ok 57 - missing verifier or result evidence fails audit
+  ---
+  duration_ms: 8.333688
+  type: 'test'
+  ...
+# Subtest: a stored record that disagrees with materialized evidence fails audit
+ok 58 - a stored record that disagrees with materialized evidence fails audit
+  ---
+  duration_ms: 3.329488
+  type: 'test'
+  ...
+# Subtest: zero-filled unknown usage fails audit even when the record is resealed consistently
+ok 59 - zero-filled unknown usage fails audit even when the record is resealed consistently
+  ---
+  duration_ms: 12.73348
+  type: 'test'
+  ...
+# Subtest: fixed-factor drift, evaluator swap and reused reset identity fail audit
+ok 60 - fixed-factor drift, evaluator swap and reused reset identity fail audit
+  ---
+  duration_ms: 13.089746
+  type: 'test'
+  ...
+# Subtest: ledger binding is checked when events are supplied
+ok 61 - ledger binding is checked when events are supplied
+  ---
+  duration_ms: 1.540309
+  type: 'test'
+  ...
+# Subtest: package root exposes exactly the fourteen public exports
+ok 62 - package root exposes exactly the fourteen public exports
+  ---
+  duration_ms: 1.182149
+  type: 'test'
+  ...
+# Subtest: package.json is private, root-export-only and free of runtime dependencies
+ok 63 - package.json is private, root-export-only and free of runtime dependencies
+  ---
+  duration_ms: 7.948891
+  type: 'test'
+  ...
+# Subtest: deep imports are not part of the contract
+ok 64 - deep imports are not part of the contract
+  ---
+  duration_ms: 1.026593
+  type: 'test'
+  ...
+# Subtest: canonical schema kinds and outcome enums are exact and frozen
+ok 65 - canonical schema kinds and outcome enums are exact and frozen
+  ---
+  duration_ms: 0.334594
+  type: 'test'
+  ...
+# Subtest: assertSubstratePort requires identity/prepare/execute/collect and a truthful identity
+ok 66 - assertSubstratePort requires identity/prepare/execute/collect and a truthful identity
+  ---
+  duration_ms: 0.324991
+  type: 'test'
+  ...
+# Subtest: package source imports only Node built-ins and its own src modules
+ok 67 - package source imports only Node built-ins and its own src modules
+  ---
+  duration_ms: 15.765474
+  type: 'test'
+  ...
+# Subtest: package source names no product runtime, Harbor, provider SDK, Blackboard controller or retired baseline module
+ok 68 - package source names no product runtime, Harbor, provider SDK, Blackboard controller or retired baseline module
+  ---
+  duration_ms: 7.810738
+  type: 'test'
+  ...
+# Subtest: substrate and downstream code consume only the package root, never src deep paths
+ok 69 - substrate and downstream code consume only the package root, never src deep paths
+  ---
+  duration_ms: 21.34013
+  type: 'test'
+  ...
+# Subtest: no package outside the benchmark kernel is imported by it and the workspace wires test:benchmark
+ok 70 - no package outside the benchmark kernel is imported by it and the workspace wires test:benchmark
+  ---
+  duration_ms: 1.430696
+  type: 'test'
+  ...
+# Subtest: the retired baseline implementation and its tests are gone
+ok 71 - the retired baseline implementation and its tests are gone
+  ---
+  duration_ms: 1.065191
+  type: 'test'
+  ...
+# Subtest: manifest binds sorted path/digest identities and is deterministic
+ok 72 - manifest binds sorted path/digest identities and is deterministic
+  ---
+  duration_ms: 2.735759
+  type: 'test'
+  ...
+# Subtest: a modified manifest entry fails assertion
+ok 73 - a modified manifest entry fails assertion
+  ---
+  duration_ms: 0.751338
+  type: 'test'
+  ...
+# Subtest: required roles, normalized refs and unique refs are enforced
+ok 74 - required roles, normalized refs and unique refs are enforced
+  ---
+  duration_ms: 0.572702
+  type: 'test'
+  ...
+# Subtest: registration is digest-bound, deterministic and deeply frozen
+ok 75 - registration is digest-bound, deterministic and deeply frozen
+  ---
+  duration_ms: 2.171739
+  type: 'test'
+  ...
+# Subtest: any change to a bound registration field changes identity and fails assertion
+ok 76 - any change to a bound registration field changes identity and fails assertion
+  ---
+  duration_ms: 0.551888
+  type: 'test'
+  ...
+# Subtest: registration rejects missing, extra, duplicate and supplied-digest fields
+ok 77 - registration rejects missing, extra, duplicate and supplied-digest fields
+  ---
+  duration_ms: 0.450657
+  type: 'test'
+  ...
+# Subtest: STARTED is appended before execution and SETTLED seals the record; events are hash-chained
+ok 78 - STARTED is appended before execution and SETTLED seals the record; events are hash-chained
+  ---
+  duration_ms: 5.280034
+  type: 'test'
+  ...
+# Subtest: a retry is a new attempt linked by retryOfAttemptId and the failed attempt stays auditable
+ok 79 - a retry is a new attempt linked by retryOfAttemptId and the failed attempt stays auditable
+  ---
+  duration_ms: 10.835116
+  type: 'test'
+  ...
+# Subtest: settled attempts cannot be overwritten and there is no delete or mutation API
+ok 80 - settled attempts cannot be overwritten and there is no delete or mutation API
+  ---
+  duration_ms: 1.528264
+  type: 'test'
+  ...
+# Subtest: invalid retries are rejected
+ok 81 - invalid retries are rejected
+  ---
+  duration_ms: 0.915829
+  type: 'test'
+  ...
+# Subtest: experiment, unit and fixed-factor identity cannot change after the first STARTED attempt
+ok 82 - experiment, unit and fixed-factor identity cannot change after the first STARTED attempt
+  ---
+  duration_ms: 4.087623
+  type: 'test'
+  ...
+# Subtest: a fresh ledger replays materialized events exactly and rejects tampered events or records
+ok 83 - a fresh ledger replays materialized events exactly and rejects tampered events or records
+  ---
+  duration_ms: 4.274243
+  type: 'test'
+  ...
+# Subtest: producer SUCCESS with verifier FAIL is REJECTED/COMPLETED
+ok 84 - producer SUCCESS with verifier FAIL is REJECTED/COMPLETED
+  ---
+  duration_ms: 1.390602
+  type: 'test'
+  ...
+# Subtest: a verified artifact after budget exhaustion is ACCEPTED with BUDGET_EXHAUSTED
+ok 85 - a verified artifact after budget exhaustion is ACCEPTED with BUDGET_EXHAUSTED
+  ---
+  duration_ms: 0.237677
+  type: 'test'
+  ...
+# Subtest: provider timeout without an artifact is NOT_EVALUATED and can never be judged
+ok 86 - provider timeout without an artifact is NOT_EVALUATED and can never be judged
+  ---
+  duration_ms: 0.560001
+  type: 'test'
+  ...
+# Subtest: verifier crash is NOT_EVALUATED + VERIFIER_ERROR, never REJECTED
+ok 87 - verifier crash is NOT_EVALUATED + VERIFIER_ERROR, never REJECTED
+  ---
+  duration_ms: 0.263951
+  type: 'test'
+  ...
+# Subtest: artifact extraction failure is NOT_EVALUATED + ARTIFACT_EXTRACTION
+ok 88 - artifact extraction failure is NOT_EVALUATED + ARTIFACT_EXTRACTION
+  ---
+  duration_ms: 0.180329
+  type: 'test'
+  ...
+# Subtest: producer status and termination never synthesize quality
+ok 89 - producer status and termination never synthesize quality
+  ---
+  duration_ms: 0.432249
+  type: 'test'
+  ...
+# Subtest: an agent timeout with an evaluable workspace keeps verifier quality orthogonal
+ok 90 - an agent timeout with an evaluable workspace keeps verifier quality orthogonal
+  ---
+  duration_ms: 0.123684
+  type: 'test'
+  ...
+# Subtest: unit binds fixed factors into an immutable digest
+ok 91 - unit binds fixed factors into an immutable digest
+  ---
+  duration_ms: 1.488235
+  type: 'test'
+  ...
+# Subtest: fixed-factor drift is rejected, never rewritten
+ok 92 - fixed-factor drift is rejected, never rewritten
+  ---
+  duration_ms: 5.715352
+  type: 'test'
+  ...
+# Subtest: units must be preregistered by their experiment
+ok 93 - units must be preregistered by their experiment
+  ---
+  duration_ms: 0.469879
+  type: 'test'
+  ...
+1..93
+# tests 93
+# suites 0
+# pass 93
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13264.837308
+
+
+exitCode=0
