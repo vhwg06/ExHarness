@@ -1,0 +1,23 @@
+{
+  "kind": "BB077_FUTURE_GATE_V1",
+  "quality": {
+    "acceptedTaskRateCandidateGteCoreSync": true
+  },
+  "safety": {
+    "duplicateExternalEffects": 0,
+    "recoveryNegativesPass": true
+  },
+  "economics": {
+    "medianNormalizedCostRatioLte": 0.85
+  },
+  "context": {
+    "medianPromptInputTokenRatioLte": 0.9
+  },
+  "interaction": {
+    "medianModelTurnRatioLte": 1
+  },
+  "latency": {
+    "medianElapsedRatioLte": 1.1
+  },
+  "fallback": "INCONCLUSIVE-or-KEEP_SYNC on missing pairs, unknown primary accounting, drift, safety failure or quality regression"
+}
