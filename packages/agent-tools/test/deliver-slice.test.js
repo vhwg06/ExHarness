@@ -9,6 +9,7 @@ import {
   AgentTaskStatus,
   DeliverSliceStatus,
   LOCAL_SLICE_CLAIM_BOUNDARY,
+  RecoveryError,
   codexTool,
   commandDeliver,
   defineAgentTool,
@@ -141,6 +142,37 @@ test("DL1 deliver runs Backend then QA through runSupervisedTask", T, async () =
   }
 });
 
+test("DL1 deliver rejects bad manifests with usage exit 64", T, async () => {
+  const { root, base } = sourceRepository();
+  const scratch = tempDir("bb104-dl1-bad-");
+  try {
+    const record = join(scratch, "record.json");
+    const env = { FAKE_AGENT_RECORD: record, FAKE_AGENT_SCENARIO: "FIX_FIRST" };
+    const missing = await runBin(["deliver", "--slice", join(scratch, "no-such.json")], env);
+    assert.equal(missing.code, 64);
+    assert.match(missing.stderr, /deliver cannot read slice manifest/);
+    const badJson = join(scratch, "bad.json");
+    writeFileSync(badJson, "{ not json");
+    const invalid = await runBin(["deliver", "--slice", badJson], env);
+    assert.equal(invalid.code, 64);
+    assert.match(invalid.stderr, /deliver cannot read slice manifest/);
+    const badTool = join(scratch, "bad-tool.json");
+    writeFileSync(badTool, JSON.stringify(sliceFor(root, base, { tool: "nope" })));
+    const wrong = await runBin(["deliver", "--slice", badTool], env);
+    assert.equal(wrong.code, 64);
+    assert.match(wrong.stderr, /DELIVER_SLICE_V1 invalid/);
+    for (const out of [missing, invalid, wrong]) {
+      assert.equal(out.stdout, "", "a bad manifest prints no result");
+      assert.doesNotMatch(out.stdout, /ACCEPTED/);
+      assert.doesNotMatch(out.stderr, /^\s+at /m, "usage errors print no stack trace");
+    }
+    assert.equal(existsSync(record), false, "no agent was spawned for a bad manifest");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
 // ---------------------------------------------------------------- DL2 Backend then QA
 
 test("DL2 QA mutation fails the slice", T, async () => {
@@ -261,6 +293,85 @@ test("DL3 accepted handle skips Backend and runs QA", T, async () => {
   }
 });
 
+function backendTaskFor(root, base) {
+  return {
+    id: "slice-1",
+    repositoryRoot: root,
+    baseRevision: base,
+    prompt: "Fix sum in sum.mjs so that sum(a, b) returns a + b.",
+    verifications: [{ name: "unit", command: process.execPath, args: ["--test", "sum.test.mjs"], timeoutMs: 30000 }]
+  };
+}
+
+test("DL3 mismatched EXHAUSTED handle is refused and left untouched", T, async () => {
+  const { root, base } = sourceRepository();
+  const scratch = tempDir("bb104-dl3-mismatch-exh-");
+  const recoveryDir = join(scratch, "recovery");
+  try {
+    const first = await runSupervisedTask({
+      tool: fakeTool(codexTool),
+      task: backendTaskFor(root, base),
+      maxAttempts: 1,
+      timeoutMs: 30000,
+      recoveryDir,
+      env: { FAKE_AGENT_SCENARIO: "NEVER_FIX" }
+    });
+    assert.equal(first.status, AgentTaskStatus.EXHAUSTED);
+    const handle = await readAgentToolRunHandle(recoveryDir);
+    assert.equal(handle.status, "EXHAUSTED");
+    const beforeBytes = readFileSync(join(recoveryDir, "handle.json"), "utf8");
+    await assert.rejects(
+      runDeliverSlice(sliceFor(root, base, { id: "other-slice" }), {
+        tool: fakeTool(codexTool),
+        recoveryDir,
+        env: { FAKE_AGENT_SCENARIO: "FIX_FIRST" }
+      }),
+      (error) => error instanceof RecoveryError && error.code === "HANDLE_INVALID" && /recovery handle/.test(error.message)
+    );
+    assert.equal(existsSync(recoveryDir), true, "the foreign recovery dir is left untouched");
+    assert.equal(readFileSync(join(recoveryDir, "handle.json"), "utf8"), beforeBytes, "handle.json is byte-identical afterwards");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+test("DL3 mismatched ACCEPTED handle is refused without spawning", T, async () => {
+  const { root, base } = sourceRepository();
+  const scratch = tempDir("bb104-dl3-mismatch-acc-");
+  const recoveryDir = join(scratch, "recovery");
+  const record = join(scratch, "record.json");
+  try {
+    const first = await runSupervisedTask({
+      tool: fakeTool(codexTool),
+      task: backendTaskFor(root, base),
+      maxAttempts: 1,
+      timeoutMs: 30000,
+      recoveryDir,
+      env: { FAKE_AGENT_SCENARIO: "FIX_FIRST", FAKE_AGENT_RECORD: record }
+    });
+    assert.equal(first.status, AgentTaskStatus.ACCEPTED);
+    const handle = await readAgentToolRunHandle(recoveryDir);
+    assert.equal(handle.status, "ACCEPTED");
+    const beforeBytes = readFileSync(join(recoveryDir, "handle.json"), "utf8");
+    const spawnsBefore = JSON.parse(readFileSync(record, "utf8")).length;
+    await assert.rejects(
+      runDeliverSlice(sliceFor(root, base, { id: "other-slice" }), {
+        tool: fakeTool(codexTool),
+        recoveryDir,
+        env: { FAKE_AGENT_SCENARIO: "FIX_FIRST", FAKE_AGENT_RECORD: record }
+      }),
+      (error) => error instanceof RecoveryError && error.code === "HANDLE_INVALID" && /recovery handle/.test(error.message)
+    );
+    assert.equal(JSON.parse(readFileSync(record, "utf8")).length, spawnsBefore, "no agent process spawned");
+    assert.equal(existsSync(recoveryDir), true, "the foreign recovery dir is left untouched");
+    assert.equal(readFileSync(join(recoveryDir, "handle.json"), "utf8"), beforeBytes, "handle.json is byte-identical afterwards");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
 // ---------------------------------------------------------------- DL4 unavailable / exhausted
 
 test("DL4 missing tool is not ACCEPTED", T, async () => {
@@ -334,6 +445,7 @@ test("DL5 living operator docs omit work ids", T, () => {
   assert.match(operator, /deliver --slice/);
   assert.match(operator, /accepted.*commit/i, "QA is bound to the accepted Backend commit");
   assert.match(operator, /resum/i);
+  assert.match(operator, /HANDLE_INVALID/, "a foreign handle is refused and left untouched");
   assert.match(operator, /TOOL_UNAVAILABLE|NOT_INSTALLED/);
   assert.match(operator, /first-slice\s+product-value/);
   assert.match(operator, /controlled-benchmark pilot/);
@@ -341,6 +453,7 @@ test("DL5 living operator docs omit work ids", T, () => {
   for (const [name, body] of [["operator.md", operator], ["state.md", state]]) {
     assert.doesNotMatch(body, /BB-\d+/, `${name} carries no delivery-work id`);
     assert.doesNotMatch(body, /\bD0\d+\b/, `${name} carries no delivery-decision id`);
+    assert.doesNotMatch(body, /BB-?\d{2,}/i, `${name} carries no encoded work id either`);
   }
 });
 

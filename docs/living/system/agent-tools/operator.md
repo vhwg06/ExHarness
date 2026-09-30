@@ -56,6 +56,9 @@ With `recoveryDir` the Backend stage persists a durable run handle:
   on the recorded candidate sha;
 - an `EXHAUSTED` or `TOOL_UNAVAILABLE` handle: the slice returns that status
   without running QA.
+- a handle whose task identity (task id, repository root, base revision) does
+  not match the slice: the slice is refused with `HANDLE_INVALID` and the
+  recovery directory is left untouched.
 
 A crash after the Backend act can therefore resume and continue QA on the same
 accepted sha. A terminal slice disposes the recovery directory.
@@ -74,7 +77,7 @@ missing `--slice` (which throws before any agent process starts).
 This is a local composition slice: it shows the delivered Backend-to-QA
 composition runs end to end on this machine. It is not first-slice
 product-value evidence and not a controlled-benchmark pilot. Every slice result
-carries `claimBoundary: LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074` so it
-cannot be mistaken for either. The agent itself is not sandboxed: it runs with
+carries a `claimBoundary` field (exported as `LOCAL_SLICE_CLAIM_BOUNDARY`)
+marking it as a local composition slice, so it cannot be mistaken for either. The agent itself is not sandboxed: it runs with
 your CLI permissions, with cwd at a temporary git worktree only (see
 `state.md`).

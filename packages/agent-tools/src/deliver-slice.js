@@ -184,6 +184,15 @@ function backendTaskFor(slice) {
   };
 }
 
+/** A foreign recovery dir must never be consumed or destroyed: identity first. */
+function assertSliceHandleIdentity(handle, slice) {
+  if (handle.taskId !== slice.id
+    || resolve(handle.repositoryRoot) !== resolve(slice.repositoryRoot)
+    || handle.baseRevision !== slice.baseRevision) {
+    throw new RecoveryError("HANDLE_INVALID", "deliver slice identity does not match the recovery handle");
+  }
+}
+
 function sliceResult(fields) {
   return Object.freeze({
     sliceId: fields.sliceId,
@@ -362,6 +371,10 @@ export async function runDeliverSlice(sliceInput, options = {}) {
     else throw error;
   }
 
+  // Identity gate for every handle status: a mismatched handle is refused with
+  // HANDLE_INVALID before any resume, QA, or dispose touches the recovery dir.
+  if (existing !== null) assertSliceHandleIdentity(existing, slice);
+
   if (existing === null) {
     const tool = resolveSliceTool(slice.tool, command, toolOverride);
     if (!tool) {
@@ -402,11 +415,6 @@ export async function runDeliverSlice(sliceInput, options = {}) {
   }
   if (existing.status === "ACCEPTED") {
     // HANDLE_COMPLETE: never resumeSupervisedTask an accepted handle; QA the recorded candidate.
-    if (existing.taskId !== slice.id
-      || resolve(existing.repositoryRoot) !== resolve(slice.repositoryRoot)
-      || existing.baseRevision !== slice.baseRevision) {
-      throw new RecoveryError("HANDLE_INVALID", "deliver slice identity does not match the accepted handle");
-    }
     if (!SHA40.test(existing.candidateSha ?? "")) {
       await disposeRecoveryQuietly(recoveryDir);
       return sliceResult({

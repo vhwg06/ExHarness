@@ -189,11 +189,26 @@ async function commandSmoke(options) {
 /** Runs one local Backend-then-QA delivery slice; exit 0 only for ACCEPTED. */
 async function commandDeliverCli(options) {
   if (!options.slice) throw new UsageError("deliver requires --slice");
-  const result = await commandDeliver({
-    slice: options.slice,
-    command: options.command ?? null,
-    recoveryDir: options["recovery-dir"] ?? null
-  });
+  let result;
+  try {
+    result = await commandDeliver({
+      slice: options.slice,
+      command: options.command ?? null,
+      recoveryDir: options["recovery-dir"] ?? null
+    });
+  } catch (error) {
+    if (error instanceof UsageError) throw error;
+    // Manifest problems surface before any process starts: unreadable file,
+    // invalid JSON, or a manifest that fails validation are usage errors.
+    const message = String(error?.message ?? error).split("\n")[0];
+    if (error instanceof TypeError && message.includes("DELIVER_SLICE_V1 invalid")) {
+      throw new UsageError(`deliver invalid slice manifest: ${message}`);
+    }
+    if (message.startsWith("deliver cannot read slice manifest")) {
+      throw new UsageError(message);
+    }
+    throw error;
+  }
   print(result);
   if (result.status === DeliverSliceStatus.ACCEPTED) return 0;
   if (result.status === DeliverSliceStatus.TOOL_UNAVAILABLE) return 2;
