@@ -1,5 +1,8 @@
 // Direct and supervised observation: turns BB-097 invocations into AGENT_TOOL_RUN_TRACE_V1 records.
 import { randomUUID } from "node:crypto";
+import { chmod, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createTraceRecorder } from "../../core-harness/src/index.js";
 import { runAgentInvocation } from "./process-runner.js";
 import { createRedactor } from "./redaction.js";
@@ -23,13 +26,31 @@ export async function runObservedInvocation({
   if (!writer) throw new TypeError("runObservedInvocation requires a trace writer");
   if (typeof baseRevision !== "string" || baseRevision.length === 0) throw new TypeError("runObservedInvocation requires baseRevision");
   const startedAt = nowIso();
-  const invocation = await runAgentInvocation(tool, request, { cwd, env, timeoutMs, maxOutputBytes });
+  // Grok reads its prompt from --prompt-file. A direct caller has no supervisor log directory,
+  // so the prompt is staged in a private directory under os.tmpdir() (never inside the
+  // worktree) and removed once the invocation settles, whatever its outcome.
+  // request.cwd always carries the spawn cwd so the adapter can pass --cwd.
+  const effective = { ...request, cwd };
+  let stagedDir = null;
+  let invocation;
+  try {
+    if (tool.id === "grok" && (typeof effective.promptFile !== "string" || effective.promptFile.length === 0)) {
+      stagedDir = await mkdtemp(join(tmpdir(), "exharness-grok-prompt-"));
+      await chmod(stagedDir, 0o700);
+      const promptPath = join(stagedDir, "prompt.txt");
+      await writeFile(promptPath, String(request.prompt ?? ""), { encoding: "utf8", mode: 0o600 });
+      effective.promptFile = promptPath;
+    }
+    invocation = await runAgentInvocation(tool, effective, { cwd, env, timeoutMs, maxOutputBytes });
+  } finally {
+    if (stagedDir !== null) await rm(stagedDir, { recursive: true, force: true });
+  }
   const endedAt = nowIso();
   const diff = invocation.status === "TOOL_UNAVAILABLE"
     ? { filesChanged: 0, insertions: 0, deletions: 0, binaryFiles: 0 }
     : await workingTreeDiffStats(cwd, baseRevision);
   const body = await buildTraceBody({
-    runId, taskId, tool, toolVersion, arm, mode: TraceMode.DIRECT, attemptIndex, request, timeoutMs, invocation,
+    runId, taskId, tool, toolVersion, arm, mode: TraceMode.DIRECT, attemptIndex, request: effective, timeoutMs, invocation,
     startedAt, endedAt, diff, verification, harness: null, env: mergedEnv(env)
   });
   const trace = await writer.append(body, { extraEnv: env });
