@@ -1,0 +1,164 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-096-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-096",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-096.json",
+      "hash": "293b00379c3dbc1de566f45c6384ce3657c43cb3fffde278e4fad5c11900752f"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-096.json",
+      "hash": "8b48eb77ce87cae2d238295c2e056b9525e95de09499cc5755013f75e7903ebf"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-096.implementation-result.json",
+      "hash": "d47643ae603a2ae3bbb38333523f8269edef6397893880fd65d8275e90052985"
+    },
+    "candidateSha": "af7b592d6d86bb8026aa73a0f889d33d906a1542",
+    "candidateTree": "2ee46256684969405ada0dd7a195865f3cf1e518",
+    "baselineSha": "e6de6ceac2d4c70b7f0dce27f63aa3c0e2176552"
+  },
+  "stateHash": "6f0043569b328ea2af6bb164e7d8f5d789aaf41e96a85e77b19e5db3e7721568",
+  "specHash": "1fe589abc47e2497d1c18b0d16d632d4836e63f18eaa3a7b3e20bd3759dc92a6",
+  "cacheKey": "09185f469f2fede65d7b95582473c0102eb3e5fbd6caaaa58080e9e1938e6df4",
+  "model": "jev-1.13.0",
+  "answers": {
+    "RB1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.8,
+      "probabilities": {
+        "SATISFIED": 0.85,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.13
+      }
+    },
+    "RB2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.81,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "SATISFIED": 0.85,
+        "INSUFFICIENT_EVIDENCE": 0.13
+      }
+    },
+    "RB3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.53,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.03,
+        "SATISFIED": 0.64,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "INSUFFICIENT_EVIDENCE": 0.31
+      }
+    },
+    "RB4": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.81,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.11,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0.03,
+        "SATISFIED": 0.85
+      }
+    },
+    "RB5": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.42,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "INSUFFICIENT_EVIDENCE": 0.39,
+        "SATISFIED": 0.57
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.34,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.03,
+        "PLAN_INPUT_CONTRADICTION": 0.04,
+        "SATISFIED": 0.51,
+        "INSUFFICIENT_EVIDENCE": 0.42
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 57911,
+    "output_tokens": 423
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 6,
+    "latencyMs": 1193.4861369999999,
+    "payloadBytes": 320512,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_CHANGED_SECTIONS_V2",
+      "manifest": [
+        {
+          "id": "RB1",
+          "payloadHash": "0142a4b8a444048b38cfef15cbf95ffcccf34c0ec98b7250e11d3750a8b86b06",
+          "payloadBytes": 36824,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-096/agentic-regression.txt"
+          ]
+        },
+        {
+          "id": "RB2",
+          "payloadHash": "75103232aa3f9e73f4ef7a6a5a01cd4a8360b2bd24f809de9e8d3292765f2b7f",
+          "payloadBytes": 37043,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-096/agentic-regression.txt"
+          ]
+        },
+        {
+          "id": "RB3",
+          "payloadHash": "3cf9694756160ba62964c733d86d33bf994d3f59c94372be1928bb09057504b0",
+          "payloadBytes": 33581,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-096/agentic-regression.txt"
+          ]
+        },
+        {
+          "id": "RB4",
+          "payloadHash": "5ebbd2aec4b30300bf0172a254be4e12902ab55f27dd1be4746f638b18096af1",
+          "payloadBytes": 33650,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-096/agentic-regression.txt"
+          ]
+        },
+        {
+          "id": "RB5",
+          "payloadHash": "b54531d9171888932dcdba45f41aba970e8bfb3d405b231f5d79b50bc2d432cd",
+          "payloadBytes": 37239,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-096/repository.txt"
+          ]
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "0f6283e14c527ecdf79e4a114ba298fa59f0f67bb6b2e42c969dc095da7f62b6",
+          "payloadBytes": 12237
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
