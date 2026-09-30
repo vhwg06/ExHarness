@@ -1,0 +1,61 @@
+TAP version 13
+# Subtest: Omitted rejected claim still blocks.
+ok 1 - Omitted rejected claim still blocks.
+  ---
+  duration_ms: 33.530373
+  type: 'test'
+  ...
+# Subtest: Omitted blocking obligation still blocks.
+ok 2 - Omitted blocking obligation still blocks.
+  ---
+  duration_ms: 12.386842
+  type: 'test'
+  ...
+# Subtest: Policy/waiver drift invalidates old projection.
+ok 3 - Policy/waiver drift invalidates old projection.
+  ---
+  duration_ms: 19.710364
+  type: 'test'
+  ...
+# Subtest: rebuilding from the same pinned subject yields identical readiness and blockers
+ok 4 - rebuilding from the same pinned subject yields identical readiness and blockers
+  ---
+  duration_ms: 12.074461
+  type: 'test'
+  ...
+# Subtest: uncommitted store artifacts do not affect a pinned rebuild
+ok 5 - uncommitted store artifacts do not affect a pinned rebuild
+  ---
+  duration_ms: 13.214404
+  type: 'test'
+  ...
+# Subtest: later history commits supersede earlier state per kind
+ok 6 - later history commits supersede earlier state per kind
+  ---
+  duration_ms: 30.135917
+  type: 'test'
+  ...
+# Subtest: projection accepts no caller-selected completeness refs and no enumerating resolvers
+ok 7 - projection accepts no caller-selected completeness refs and no enumerating resolvers
+  ---
+  duration_ms: 9.63625
+  type: 'test'
+  ...
+# Subtest: an Hn+1 append during build waits for the guard and the projection pins Hn
+ok 8 - an Hn+1 append during build waits for the guard and the projection pins Hn
+  ---
+  duration_ms: 65.088352
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 255.204587
+
+
+exitCode=0
