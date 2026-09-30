@@ -215,6 +215,53 @@ If Core recovery itself blocks, the application checkpoint keeps `backendRecover
 
 Recovery success is not Backend acceptance. Any reconstructed normal Backend result still passes the same mutation/typecheck/tests/artifact evidence and completion policy.
 
+## Adversarial crash/race recovery workflow
+
+Each crash window below is recovered by the production owner of the affected subject, from durable canonical refs and CAS heads, with no central scheduler and no global reset. A fresh process reopens the same files and converges without conversation memory.
+
+```text
+kill after domain output, before publication
+  -> attempt head stays ACTIVE/RECOVERY_REQUIRED with its binding
+  -> fresh execute() reuses the same attempt id + binding via recover()
+  -> publishes at most once under the stable publication key
+
+kill after publication, before terminal commit/continuation
+  -> committed DomainPublicationReceipt is continuation truth
+  -> fresh execute() resolves the committed chain and skips the runtime rerun
+  -> terminal commit reuses the committed refs; reconcileWork() derives
+     downstream effects idempotently
+  -> duplicate recoverers converge on the same receipt; a late arrival
+     reuses the committed terminal head
+
+claim-generation takeover
+  -> old generation fails Board tuple + release-head checks
+  -> fenced before dispatch and before publication
+  -> the new generation still releases and executes
+
+semantic-input drift
+  -> stale publication blocked (consumed head no longer ACTIVE)
+  -> invalidation covers exactly the reverse-dependent closure
+  -> unrelated siblings stay current; a mid-flight race lands STALE,
+     never silently accepted
+
+deployment drift during QA
+  -> current QualityAcceptance from the old snapshot rejected
+  -> criterion/observation evidence stays immutable history
+  -> a fresh snapshot on the new release still reaches current acceptance
+
+closure racing upstream supersession
+  -> close first: outcome commits, then becomes HISTORICAL
+  -> supersession first: stale close aborts, nothing is current
+  -> overlap under the shared guard: never stale-current
+
+authority ahead of ProductHistoryHead
+  -> history/projection reads fail closed (RECOVERY_REQUIRED)
+  -> closure reads NOT_READY until reconcile() appends the exact
+     live-head transition, then currentness moves by new transition
+```
+
+Unaffected actionable work continues while affected subjects recover: recovery scope is the affected subject plus its reverse dependents, never the whole organization.
+
 ## Durable Blackboard lifecycle
 
 ```text
