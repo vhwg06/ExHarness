@@ -1,0 +1,175 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-103-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-103.json",
+    "hash": "4ed7085e20bf34f8a8967fbf911bd889a890a3ae2151655653a55db28b1ec650"
+  },
+  "candidateSha": "2ddc7c21a0d132be851eeaad3098eb6eda33c7cc",
+  "baselineSha": "33a253c408b2d5672108e53f3ceebd765a9a4a02",
+  "candidateTree": "7a2575cadea6c7c9684c8c0d27c49df6f9604da4",
+  "verificationRuns": [
+    {
+      "id": "mcp1-tools",
+      "command": "node --test --test-name-pattern=\"^MCP1 \" packages/agent-tools/test/mcp-server.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2ddc7c21a0d132be851eeaad3098eb6eda33c7cc",
+      "logRef": "docs/blackboard/evidence/BB-103/mcp1-tools.txt",
+      "logHash": "9a95038cdbc930c709020f41a25f346151c87ce14d15534ac00d87115d036273"
+    },
+    {
+      "id": "mcp2-forbidden",
+      "command": "node --test --test-name-pattern=\"^MCP2 \" packages/agent-tools/test/mcp-server.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2ddc7c21a0d132be851eeaad3098eb6eda33c7cc",
+      "logRef": "docs/blackboard/evidence/BB-103/mcp2-forbidden.txt",
+      "logHash": "d3ee1fdb83876a4644441d43d1b201c0e021381f883f801babfa732ec9e9e7c8"
+    },
+    {
+      "id": "mcp3-optin",
+      "command": "node --test --test-name-pattern=\"^MCP3 \" packages/agent-tools/test/mcp-server.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2ddc7c21a0d132be851eeaad3098eb6eda33c7cc",
+      "logRef": "docs/blackboard/evidence/BB-103/mcp3-optin.txt",
+      "logHash": "fa04dc30153303cc83c54b02dd959b291faeb0d1c26bee8452a5a1cc87ab09a7"
+    },
+    {
+      "id": "mcp4-authority",
+      "command": "node --test --test-name-pattern=\"^MCP4 \" packages/agent-tools/test/mcp-server.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2ddc7c21a0d132be851eeaad3098eb6eda33c7cc",
+      "logRef": "docs/blackboard/evidence/BB-103/mcp4-authority.txt",
+      "logHash": "a404ac999746cbded6aa20642c06cbaddf23a3d6ec1b89e489d6e0d7fee2a786"
+    },
+    {
+      "id": "mcp5-docs",
+      "command": "node --test --test-name-pattern=\"^MCP5 \" packages/agent-tools/test/mcp-server.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2ddc7c21a0d132be851eeaad3098eb6eda33c7cc",
+      "logRef": "docs/blackboard/evidence/BB-103/mcp5-docs.txt",
+      "logHash": "6637b16bf54baea92be99d14932ac08d383509359ce016ee14e77e56417c6c8e"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2ddc7c21a0d132be851eeaad3098eb6eda33c7cc",
+      "logRef": "docs/blackboard/evidence/BB-103/agent-tools.txt",
+      "logHash": "373cb3d1001419cde62eccaa04eb2c27e332ce7922151c6968b9a2bfaec5a614"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2ddc7c21a0d132be851eeaad3098eb6eda33c7cc",
+      "logRef": "docs/blackboard/evidence/BB-103/docs.txt",
+      "logHash": "574fc958e4da583ba122778c96fc0a4d11f09550cbe1034e6748af739eba8d55"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2ddc7c21a0d132be851eeaad3098eb6eda33c7cc",
+      "logRef": "docs/blackboard/evidence/BB-103/repository.txt",
+      "logHash": "2d9a2ed50d7046667a908c4a64c4ee4e32040c774b853505fa8d18933ffff632"
+    }
+  ],
+  "claims": [
+    {
+      "id": "MCP1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-103/mcp1-tools.txt",
+        "docs/blackboard/evidence/BB-103/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "MCP2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-103/mcp2-forbidden.txt",
+        "docs/blackboard/evidence/BB-103/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-MCP-promote",
+          "logRef": "docs/blackboard/evidence/BB-103/mcp2-forbidden.txt",
+          "testRef": "packages/agent-tools/test/mcp-server.test.js",
+          "bodyHash": "66a33fd3e14e80df5b4ac79fb0a5737d662d84db4251b3aca186ed418c98abcc"
+        },
+        {
+          "id": "NC-MCP-list",
+          "logRef": "docs/blackboard/evidence/BB-103/mcp2-forbidden.txt",
+          "testRef": "packages/agent-tools/test/mcp-server.test.js",
+          "bodyHash": "5637885a0883faf32ae58e94c3eeac225f14920003e577f3998fbe5ca2479e80"
+        },
+        {
+          "id": "NC-MCP-call-promote",
+          "logRef": "docs/blackboard/evidence/BB-103/mcp2-forbidden.txt",
+          "testRef": "packages/agent-tools/test/mcp-server.test.js",
+          "bodyHash": "27b4c6d148bfca35a7c94c431431992ad12c8cb53125999d61cccd504695bcc1"
+        }
+      ]
+    },
+    {
+      "id": "MCP3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-103/mcp3-optin.txt",
+        "docs/blackboard/evidence/BB-103/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-MCP-default",
+          "logRef": "docs/blackboard/evidence/BB-103/mcp3-optin.txt",
+          "testRef": "packages/agent-tools/test/mcp-server.test.js",
+          "bodyHash": "3bac18a01119098f3b53cf29458bb42e47f3908715df7f720ab10ac216271a5a"
+        },
+        {
+          "id": "NC-MCP-homedir",
+          "logRef": "docs/blackboard/evidence/BB-103/mcp3-optin.txt",
+          "testRef": "packages/agent-tools/test/mcp-server.test.js",
+          "bodyHash": "51dd098d813a2b1175c62a7330d3e05a1c56fa903ac0de5c2d5588a7f4bad2db"
+        }
+      ]
+    },
+    {
+      "id": "MCP4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-103/mcp4-authority.txt",
+        "docs/blackboard/evidence/BB-103/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-MCP-claim",
+          "logRef": "docs/blackboard/evidence/BB-103/mcp4-authority.txt",
+          "testRef": "packages/agent-tools/test/mcp-server.test.js",
+          "bodyHash": "82ec3abaa6997c0159600def896bc2c6566b4530558d0c0013968893a957d963"
+        }
+      ]
+    },
+    {
+      "id": "MCP5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-103/mcp5-docs.txt",
+        "docs/blackboard/evidence/BB-103/docs.txt",
+        "docs/blackboard/evidence/BB-103/repository.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-MCP-deps",
+          "logRef": "docs/blackboard/evidence/BB-103/mcp5-docs.txt",
+          "testRef": "packages/agent-tools/test/mcp-server.test.js",
+          "bodyHash": "90d605c251d818f81d72f987d49625ed65db9ee879402514c60f9400d53a26f0"
+        }
+      ]
+    }
+  ]
+}
