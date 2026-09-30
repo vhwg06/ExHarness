@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { callJev, validateResponse, evaluate, validateEvaluation, workerBatchManifest, workerQuestionPayload } from '../scripts/blackboard-jev.mjs';
+import { callJev, validateResponse, evaluate, validateEvaluation, workerBatchManifest, workerQuestionPayload, LIVING_EXCERPT_STRATEGIES } from '../scripts/blackboard-jev.mjs';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -79,7 +79,7 @@ test('worker batches retain every atomic answer, exact evidence and cache bindin
   assert.throws(() => validateEvaluation({ ...first, metrics: { ...first.metrics, batching: { ...first.metrics.batching, manifest: [] } } }, materialized), /worker batch manifest mismatch/);
 });
 
-test('worker batch includes scoped Living Docs without an Integration C heading', () => {
+test('retained SCOPED batch selection includes scoped Living Docs without an Integration C heading', () => {
   const body = '# Current state\nDelivery baseline summary.\n## Oracle\nUnrelated source.\n## Delivery baseline\nCurrent baseline boundary.';
   const state = {
     objective: {},
@@ -90,7 +90,7 @@ test('worker batch includes scoped Living Docs without an Integration C heading'
     sources: [{ ref: 'docs/living/system/state.md', hash: 'bound-hash', body }]
   };
   const result = workerQuestionPayload({ model: payload.model, state,
-    questions: { LIVING_DOCS: { type: 'choice', criteria: { SATISFIED: 'yes' } } } }, 'LIVING_DOCS');
+    questions: { LIVING_DOCS: { type: 'choice', criteria: { SATISFIED: 'yes' } } } }, 'LIVING_DOCS', { livingExcerptStrategy: LIVING_EXCERPT_STRATEGIES.SCOPED });
   const excerpt = result.state.sources[0];
   assert.match(excerpt.body, /Delivery baseline summary/);
   assert.match(excerpt.body, /Current baseline boundary/);

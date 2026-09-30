@@ -189,6 +189,7 @@ export function materialize(root, id, { readiness = false } = {}) {
       })
     : [];
   const state = { objective, plan: lane === 'WORKER' ? workerPlan : researchPlan, evidence: [], ...(objectiveScopedResearch ? { objectiveEvidence } : {}) };
+  let livingChanges = null;
   const question = (id, statement, evidencePath) => {
     const laneRule = lane === 'RESEARCH_SA'
       ? 'This is a RESEARCH_SA readiness judgment: the explicit plan fields and plan-derived evidence are the evidence of implementability. Do not require future worker code, candidate commits, runtime logs or delivery receipts at this lane.'
@@ -340,6 +341,10 @@ export function materialize(root, id, { readiness = false } = {}) {
     subject.evidence = { ref: task.contract.evidenceRef, hash: hash(evidence) };
     subject.candidateSha = evidence.candidateSha; subject.candidateTree = evidence.candidateTree;
     subject.baselineSha = evidence.baselineSha;
+    // Derived from the bound baseline/candidate commits; used only to select
+    // Living Doc sections for bounded worker batches. Not part of stateHash, so
+    // retained evaluations keep their cache keys.
+    livingChanges = livingDocChanges(root, evidence.baselineSha, evidence.candidateSha, livingDocs.refs);
   }
   // Operational limits/pricing do not change a semantic judgment or require another paid call.
   const stateHash = hash(state), specHash = hash({ policy:spec.policy, questions });
@@ -348,7 +353,7 @@ export function materialize(root, id, { readiness = false } = {}) {
   const payloadBytes=Buffer.byteLength(canonical(payload));
   const maxPayloadBytes=lane==='RESEARCH_SA'?Math.min(spec.maxPayloadBytes,spec.maxResearchPayloadBytes??98304):spec.maxPayloadBytes;
   check(payloadBytes <= maxPayloadBytes, 'payload exceeds budget; refine evidence without dropping required coverage');
-  return { lane, subject, payload, stateHash, specHash, cacheKey };
+  return { lane, subject, payload, stateHash, specHash, cacheKey, ...(livingChanges ? { livingChanges } : {}) };
 }
 export function validateResponse(response, payload) {
   check(response?.model === payload.model, 'response model mismatch');
@@ -433,6 +438,84 @@ export const WORKER_BATCH_LIMITS = Object.freeze({ maxBatchBytes: WORKER_BATCH_M
 export const WORKER_BATCH_STRATEGIES = Object.freeze({ ATOMIC: 'WORKER_ATOMIC_QUESTIONS_V1', BOUNDED: 'WORKER_BOUNDED_EVIDENCE_V2' });
 const EVIDENCE_EXCERPT_STRATEGY = 'EVIDENCE_LOG_EXCERPT_V1';
 const BATCH_SEVERITY = ['PLAN_INPUT_CONTRADICTION', 'IMPLEMENTATION_DEFECT', 'INSUFFICIENT_EVIDENCE'];
+// Living Doc selection for the Living Docs question of a bounded worker batch.
+// SCOPED is the original selection (A17/Integration C sections, or the first
+// section plus up to two scope-matching headings). It is implied by retained
+// evaluations whose batching record has no livingExcerptStrategy. CHANGED
+// sends the first section plus every whole section the candidate added or
+// modified (baseline..candidate diff hunks mapped to enclosing ##/### sections).
+export const LIVING_EXCERPT_STRATEGIES = Object.freeze({ SCOPED: 'LIVING_SCOPED_SECTIONS_V1', CHANGED: 'LIVING_CHANGED_SECTIONS_V2' });
+const LIVING_OMITTED_MARKER = '...[unchanged Living Doc sections omitted; the full document is bound by hash]...';
+/**
+ * Candidate-side changed line ranges ([first, last], 1-based) of each Living
+ * Doc between two exact commits. Diff options are pinned so the ranges do not
+ * depend on local git configuration.
+ */
+export function livingDocChanges(root, baselineSha, candidateSha, refs) {
+  check(/^[a-f0-9]{40}$/.test(baselineSha ?? '') && /^[a-f0-9]{40}$/.test(candidateSha ?? ''), 'Living Doc changes require exact commits');
+  const changes = {};
+  for (const ref of [...new Set(refs)].sort()) {
+    localPath(root, ref);
+    const diff = git(root, 'diff', '--no-ext-diff', '--no-textconv', '--no-color', '--no-renames', '--diff-algorithm=myers', '--unified=0', baselineSha, candidateSha, '--', ref);
+    const ranges = [];
+    for (const line of diff.split('\n')) {
+      const hunk = line.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/);
+      if (!hunk) continue;
+      const start = Number(hunk[1]), count = hunk[2] === undefined ? 1 : Number(hunk[2]);
+      // A pure deletion sits between candidate lines `start` and `start + 1`;
+      // both neighbours count as changed.
+      ranges.push(count > 0 ? [start, start + count - 1] : [Math.max(1, start), start + 1]);
+    }
+    changes[ref] = ranges;
+  }
+  return changes;
+}
+/** ##/### sections of a markdown body (headings inside fenced code are ignored); index 0 is the preamble. */
+export function markdownSections(body) {
+  const sections = [{ heading: null, start: 1, lines: [] }];
+  let fence = null;
+  body.split('\n').forEach((line, index) => {
+    if (!fence && /^#{2,3} /.test(line)) sections.push({ heading: line, start: index + 1, lines: [] });
+    sections.at(-1).lines.push(line);
+    const marker = line.match(/^ {0,3}(`{3,}|~{3,})/);
+    if (marker) {
+      if (!fence) fence = marker[1];
+      else if (marker[1][0] === fence[0] && marker[1].length >= fence.length && !line.slice(line.indexOf(marker[1]) + marker[1].length).trim()) fence = null;
+    }
+  });
+  return sections.map(section => ({ heading: section.heading, start: section.start, end: section.start + section.lines.length - 1, text: section.lines.join('\n') }));
+}
+function changedLivingExcerpt(source, ranges, scope = []) {
+  if (typeof source.body !== 'string') return source;
+  check(Array.isArray(ranges) && ranges.every(range => Array.isArray(range) && range.length === 2 && range.every(Number.isInteger) && range[0] >= 1 && range[1] >= range[0]), `Living Doc change map missing: ${source.ref}`);
+  const sections = markdownSections(source.body);
+  const lines = source.body.split('\n');
+  const sectionOf = line => sections.findLastIndex(section => section.start <= line);
+  const changed = new Set();
+  for (const [first, last] of ranges) {
+    const touched = [];
+    for (let line = first; line <= Math.min(last, lines.length); line++) touched.push(line);
+    // Blank separator lines added next to a new section do not make the
+    // neighbouring section "changed" unless the range is blank only.
+    const substantive = touched.filter(line => lines[line - 1].trim());
+    for (const line of substantive.length ? substantive : touched) changed.add(sectionOf(line));
+  }
+  if (!changed.size) return { ...livingExcerpt(source, scope), excerptStrategy: LIVING_EXCERPT_STRATEGIES.CHANGED, changedSections: [] };
+  const selected = [...new Set([0, ...changed])].sort((a, b) => a - b);
+  const parts = [];
+  selected.forEach((section, position) => {
+    if (position > 0 && section !== selected[position - 1] + 1) parts.push(LIVING_OMITTED_MARKER);
+    parts.push(sections[section].text);
+  });
+  if (selected.at(-1) !== sections.length - 1) parts.push(LIVING_OMITTED_MARKER);
+  return {
+    ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), body: parts.join('\n'), excerpted: true,
+    excerptStrategy: LIVING_EXCERPT_STRATEGIES.CHANGED,
+    changedSections: [...changed].sort((a, b) => a - b).map(section => sections[section].heading ?? '(preamble)'),
+    omittedSections: sections.length - selected.length,
+    deleted: source.deleted
+  };
+}
 function livingExcerpt(source, scope = []) {
   if (typeof source.body !== 'string') return source;
   const sections = source.body.split(/(?=^#{2,3} )/m);
@@ -523,8 +606,14 @@ export function excerptEvidenceLog(file, run = null, maxBytes = WORKER_EVIDENCE_
   check(payloadBytes(excerpt) <= maxBytes, `evidence excerpt exceeds budget: ${file.ref}`);
   return excerpt;
 }
-function workerQuestionBase(fullPayload, id) {
+function livingStrategyOf(options) {
+  const strategy = options?.livingExcerptStrategy ?? LIVING_EXCERPT_STRATEGIES.CHANGED;
+  check(Object.values(LIVING_EXCERPT_STRATEGIES).includes(strategy), 'unknown Living Doc excerpt strategy');
+  return strategy;
+}
+function workerQuestionBase(fullPayload, id, options = {}) {
   check(fullPayload?.state?.evidenceFiles && fullPayload.questions?.[id], 'worker batch requires a materialized question and evidence');
+  const livingStrategy = livingStrategyOf(options);
   const state = fullPayload.state;
   const claim = state.evidence.find(entry => entry.id === id);
   const criterion = state.plan.acceptanceCriteria.find(entry => entry.id === id);
@@ -589,7 +678,11 @@ function workerQuestionBase(fullPayload, id) {
     sources: state.sources.map(source => {
       if (source.body == null) return source;
       if (relevantSourceRefs.has(source.ref)) return boundedWorkerSource(source, terms);
-      if (source.ref.startsWith('docs/living/')) return livingExcerpt(source, state.plan.scope);
+      if (source.ref.startsWith('docs/living/')) {
+        return livingDocsQuestion && livingStrategy === LIVING_EXCERPT_STRATEGIES.CHANGED
+          ? changedLivingExcerpt(source, options.livingChanges?.[source.ref], state.plan.scope)
+          : livingExcerpt(source, state.plan.scope);
+      }
       return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), omitted: true, deleted: source.deleted };
     }),
     verification: selectedRuns,
@@ -612,8 +705,8 @@ function batchDescriptor(id, part, parts, refs) {
  * 3. otherwise evidence split across several bounded parts.
  * Fails closed when a single part cannot be represented within the limit.
  */
-export function workerQuestionBatches(fullPayload, id) {
-  const base = workerQuestionBase(fullPayload, id);
+export function workerQuestionBatches(fullPayload, id, options = {}) {
+  const base = workerQuestionBase(fullPayload, id, options);
   if (payloadBytes(base) <= WORKER_BATCH_MAX_BYTES) return [{ id, payload: base }];
   const runsByLog = new Map(base.state.verification.map(run => [run.logRef, run]));
   const excerpted = [];
@@ -652,8 +745,8 @@ export function workerQuestionBatches(fullPayload, id) {
   });
 }
 /** Single bounded payload for a question; fails closed if the question needs several parts. */
-export function workerQuestionPayload(fullPayload, id) {
-  const batches = workerQuestionBatches(fullPayload, id);
+export function workerQuestionPayload(fullPayload, id, options = {}) {
+  const batches = workerQuestionBatches(fullPayload, id, options);
   check(batches.length === 1, `worker batch exceeds bounded input: ${id}`);
   return batches[0].payload;
 }
@@ -663,11 +756,15 @@ function manifestEntry(batch) {
   if (batch.parts) { entry.part = batch.part; entry.parts = batch.parts; }
   return entry;
 }
-function workerBatches(fullPayload) {
-  return Object.keys(fullPayload.questions).flatMap(id => workerQuestionBatches(fullPayload, id));
+function workerBatches(fullPayload, options = {}) {
+  return Object.keys(fullPayload.questions).flatMap(id => workerQuestionBatches(fullPayload, id, options));
 }
-export function workerBatchManifest(fullPayload) {
-  return workerBatches(fullPayload).map(manifestEntry);
+export function workerBatchManifest(fullPayload, options = {}) {
+  return workerBatches(fullPayload, options).map(manifestEntry);
+}
+/** Batch options for a materialized input; a missing strategy means a retained SCOPED evaluation. */
+function batchOptions(materialized, livingExcerptStrategy = LIVING_EXCERPT_STRATEGIES.CHANGED) {
+  return { livingExcerptStrategy, livingChanges: materialized.livingChanges };
 }
 export function workerBatchStrategy(manifest) {
   return manifest.some(entry => entry.excerpted || entry.parts) ? WORKER_BATCH_STRATEGIES.BOUNDED : WORKER_BATCH_STRATEGIES.ATOMIC;
@@ -685,8 +782,8 @@ export function aggregateBatchAnswers(answers) {
   const rank = choice => { const index = BATCH_SEVERITY.indexOf(choice); return index < 0 ? BATCH_SEVERITY.length : index; };
   return unsatisfied.reduce((worst, answer) => rank(answer.choice) < rank(worst.choice) ? answer : worst);
 }
-async function evaluateWorkerBatches(fullPayload, { root, cacheDir, fetchImpl, apiKey, bypassCache }) {
-  const batches = workerBatches(fullPayload);
+async function evaluateWorkerBatches(fullPayload, { root, cacheDir, fetchImpl, apiKey, bypassCache, options }) {
+  const batches = workerBatches(fullPayload, options);
   const manifest = batches.map(manifestEntry);
   const partAnswers = {};
   let inputTokens = 0, outputTokens = 0, attempts = 0, retryAttempts = 0, cacheHits = 0;
@@ -728,16 +825,16 @@ export async function evaluate(materialized, { root = '.', cacheDir = '.cache/bl
     check(cached.cacheKey === cacheKey, 'cache key mismatch');
     response = validateResponse(cached.response, payload); cacheHit = true;
     if (cached.batching) {
-      const manifest = workerBatchManifest(payload);
+      const manifest = workerBatchManifest(payload, batchOptions(materialized, cached.batching.livingExcerptStrategy ?? LIVING_EXCERPT_STRATEGIES.SCOPED));
       check(lane === 'WORKER' && cached.batching.strategy === workerBatchStrategy(manifest) && canonical(cached.batching.manifest) === canonical(manifest), 'worker batch cache manifest mismatch');
       batching = cached.batching;
     }
   } else {
     if (lane === 'WORKER' && Buffer.byteLength(canonical(payload)) > WORKER_BATCH_MAX_BYTES) {
-      const result = await evaluateWorkerBatches(payload, { root, cacheDir, fetchImpl, apiKey, bypassCache });
+      const result = await evaluateWorkerBatches(payload, { root, cacheDir, fetchImpl, apiKey, bypassCache, options: batchOptions(materialized) });
       ({ response, attempts } = result);
       retryAttempts = result.retryAttempts;
-      batching = { strategy: workerBatchStrategy(result.manifest), manifest: result.manifest, cacheHits: result.cacheHits, ...(Object.keys(result.partChoices).length ? { partChoices: result.partChoices } : {}) };
+      batching = { strategy: workerBatchStrategy(result.manifest), livingExcerptStrategy: LIVING_EXCERPT_STRATEGIES.CHANGED, manifest: result.manifest, cacheHits: result.cacheHits, ...(Object.keys(result.partChoices).length ? { partChoices: result.partChoices } : {}) };
     } else {
       ({ response, attempts } = await callJev(payload, { fetchImpl, apiKey }));
       retryAttempts = attempts - 1;
@@ -756,7 +853,7 @@ export function validateEvaluation(evaluation, expected) {
   for (const key of ['stateHash', 'specHash', 'cacheKey']) check(evaluation[key] === expected[key], `stale evaluation ${key}`);
   validateResponse({ model: evaluation.model, answers: evaluation.answers, usage: evaluation.usage }, expected.payload);
   if (evaluation.metrics?.batching) {
-    const manifest = workerBatchManifest(expected.payload);
+    const manifest = workerBatchManifest(expected.payload, batchOptions(expected, evaluation.metrics.batching.livingExcerptStrategy ?? LIVING_EXCERPT_STRATEGIES.SCOPED));
     check(expected.lane === 'WORKER' && evaluation.metrics.batching.strategy === workerBatchStrategy(manifest), 'invalid worker batch strategy');
     check(canonical(evaluation.metrics.batching.manifest) === canonical(manifest), 'worker batch manifest mismatch');
   }
