@@ -3,6 +3,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { assertDeliveryArtifact, assertBinding, assertLivingDocs, read, write, localPath, hash, canonical, planHash, loadSubject, fail } from './blackboard-delivery-contract.mjs';
 import { materialize, validateEvaluation, assertReady, git } from './blackboard-jev.mjs';
+import { assertNegativeCaseEnforcement, checkBinding } from './blackboard-negative-case-binding.mjs';
 
 // These projections are rebuilt by the trusted controller during publication.
 // They are bindings/evidence, not product source that a merge must preserve.
@@ -96,13 +97,16 @@ export function collectEvidence(root, id) {
   const candidateSha = git(root, 'rev-parse', 'HEAD');
   const dirtySource=()=>[...git(root,'diff','--name-only','HEAD').split('\n'),...git(root,'ls-files','--others','--exclude-standard').split('\n')].filter(Boolean).filter(ref=>!ref.startsWith('docs/blackboard/')&&!ref.startsWith('artifacts/')&&!ref.startsWith('.cache/'));
   if (candidateSha !== task.contract.candidateSha || dirtySource().length) fail('verification requires clean exact candidate source');
+  assertNegativeCaseEnforcement(read(root, 'docs/blackboard/jev-policy.json'), id, plan);
   const boundPlanHash=planHash(plan);
   const controlChanges=()=>git(root,'diff','HEAD','--','docs/blackboard',`:(exclude)docs/blackboard/evidence/${id}`);
   const controlBefore=controlChanges();
   const directory = `docs/blackboard/evidence/${id}`;
   const verificationRuns = [];
   for (const v of plan.verificationPlan) {
-    const result = spawnSync(v.command, { cwd: root, shell: true, encoding: 'utf8', timeout: 300000, maxBuffer: 32 * 1024 * 1024 });
+    // Logs are bound by title, so nested runs must not inherit the parent test runner's serialized channel.
+    const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== 'NODE_TEST_CONTEXT'));
+    const result = spawnSync(v.command, { cwd: root, shell: true, encoding: 'utf8', timeout: 300000, maxBuffer: 32 * 1024 * 1024, env });
     const logRef = `${directory}/${v.id}.txt`;
     const log = `${result.stdout ?? ''}\n${result.stderr ?? ''}\nexitCode=${result.status}\n`;
     const filename = localPath(root, logRef);
@@ -112,6 +116,18 @@ export function collectEvidence(root, id) {
     verificationRuns.push({ id: v.id, command: v.command, status: 'PASSED', exitCode: 0, candidateSha, logRef, logHash: hash(log) });
   }
   const result = { kind: 'BLACKBOARD_ARTIFACT', version: 1, artifactType: 'IMPLEMENTATION_RESULT', artifactId: `${id}-evidence`, plan: { ref: task.contract.planRef, hash: planHash(plan) }, candidateSha, baselineSha: task.contract.baselineSha, candidateTree: git(root, 'rev-parse', 'HEAD^{tree}'), verificationRuns, claims: plan.acceptanceCriteria.map(c => ({ id: c.id, evidenceRefs: verificationRuns.filter(v => c.verificationIds.includes(v.id)).map(v => v.logRef) })) };
+  // Every plan-declared negative case must be bound to a passing, subject-invoking, non-vacuous executed test.
+  for (const binding of plan.negativeCaseBindings ?? []) {
+    const run = verificationRuns.find(v => v.id === binding.verificationId);
+    if (!run) fail(`negative case unbound: ${binding.id}: VERIFICATION_NOT_RUN`);
+    const log = fs.readFileSync(localPath(root, run.logRef), 'utf8');
+    let testSource;
+    try { testSource = git(root, 'show', `${candidateSha}:${binding.testRef}`); } catch { fail(`negative case unbound: ${binding.id}: TEST_SOURCE_MISSING`); }
+    const checked = checkBinding({ binding, log, testSource });
+    if (!checked.ok) fail(`negative case unbound: ${binding.id}: ${checked.reason}`);
+    const claim = result.claims.find(c => c.id === binding.criterionId);
+    (claim.negativeCases ??= []).push({ id: binding.id, logRef: run.logRef, testRef: binding.testRef, bodyHash: hash(checked.body) });
+  }
   // Additional domain evidence must be provided explicitly in the current claim mapping.
   for (const c of result.claims) for(const [index,sourceRef] of (task.contract.claimEvidence?.[c.id] ?? []).entries()) {
     const ref=`${directory}/${c.id}-observation-${index}.txt`;
