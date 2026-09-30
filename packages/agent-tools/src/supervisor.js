@@ -156,7 +156,7 @@ export function createSupervisedAgentStrategy({ task, maxAttempts = 3, maxFeedba
   });
 }
 
-function agentToolEnvironment({ workspace, tool, model, permissionProfile, env, timeoutMs, logDir }) {
+function agentToolEnvironment({ workspace, tool, model, permissionProfile, env, timeoutMs, logDir, invocationObserver = null }) {
   return {
     observe: (args) => workspace.observe(args),
     async act({ candidate, action }) {
@@ -165,8 +165,17 @@ function agentToolEnvironment({ workspace, tool, model, permissionProfile, env, 
       const head = (await git(root, ["rev-parse", "HEAD"])).trim();
       if (head !== candidate.version) throw new Error(`agent worktree HEAD ${head} differs from candidate ${candidate.version}`);
       const logFile = join(logDir, `attempt-${action.attemptIndex}.log`);
-      const run = await runAgentInvocation(tool, { prompt: action.prompt, resume: action.resume, model, permissionProfile, logFile }, { cwd: root, env, timeoutMs });
+      const request = { prompt: action.prompt, resume: action.resume, model, permissionProfile, logFile };
+      const startedAt = new Date().toISOString();
+      const run = await runAgentInvocation(tool, request, { cwd: root, env, timeoutMs });
+      const endedAt = new Date().toISOString();
+      // Optional BB-098 observation hook: awaited before cleanup, while the worktree and log exist.
+      const observe = async (outcome, candidateAfter, foldedAgentCommits) => {
+        if (invocationObserver === null) return;
+        await invocationObserver({ attemptIndex: action.attemptIndex, request, timeoutMs, invocation: run, startedAt, endedAt, logFile, worktree: root, candidateBefore: candidate.version, candidateAfter, outcome, foldedAgentCommits });
+      };
       if (run.status === InvocationStatus.TOOL_UNAVAILABLE) {
+        await observe(InvocationStatus.TOOL_UNAVAILABLE, candidate.version, 0);
         return { mutated: false, candidate, result: { outcome: InvocationStatus.TOOL_UNAVAILABLE, invocation: { exitCode: null, timedOut: false, durationMs: run.durationMs, claimedSuccess: false, sessionRef: null } } };
       }
       const parsed = run.timedOut ? { claimedSuccess: false, finalMessage: null, sessionRef: null } : tool.parseResult(run);
@@ -191,7 +200,10 @@ function agentToolEnvironment({ workspace, tool, model, permissionProfile, env, 
         await git(root, ["reset", "--soft", candidate.version]);
       }
       const status = await git(root, ["status", "--porcelain", "-z", "--untracked-files=all"]);
-      if (status === "") return { mutated: false, candidate, result: { invocation, outcome: AttemptOutcome.NO_CHANGE, foldedAgentCommits } };
+      if (status === "") {
+        await observe(AttemptOutcome.NO_CHANGE, candidate.version, foldedAgentCommits);
+        return { mutated: false, candidate, result: { invocation, outcome: AttemptOutcome.NO_CHANGE, foldedAgentCommits } };
+      }
       await git(root, ["add", "-A"]);
       await git(root, ["-c", "commit.gpgsign=false", "commit", "--no-verify", "-q", "-m", `${RUN_AGENT_TOOL} ${tool.id} attempt ${action.attemptIndex}`], {
         env: {
@@ -202,6 +214,7 @@ function agentToolEnvironment({ workspace, tool, model, permissionProfile, env, 
         }
       });
       const version = (await git(root, ["rev-parse", "HEAD"])).trim();
+      await observe(AttemptOutcome.CANDIDATE_CREATED, version, foldedAgentCommits);
       return { mutated: true, candidate: { id: candidate.id, version }, result: { invocation, outcome: AttemptOutcome.CANDIDATE_CREATED, foldedAgentCommits } };
     }
   };
@@ -229,9 +242,11 @@ export async function runSupervisedTask({
   permissionProfile = PermissionProfile.WORKSPACE_EDIT,
   env = {},
   eventSinks = [],
-  tracer = null
+  tracer = null,
+  invocationObserver = null
 }) {
   const task = validateAgentTask(rawTask);
+  if (invocationObserver !== null && typeof invocationObserver !== "function") throw new TypeError("invocationObserver must be null or a function");
   if (!Object.values(PermissionProfile).includes(permissionProfile)) throw new TypeError(`unknown permission profile: ${permissionProfile}`);
   if (!Number.isInteger(timeoutMs) || timeoutMs <= 0) throw new TypeError("timeoutMs must be a positive integer");
   const strategy = createSupervisedAgentStrategy({ task, maxAttempts, maxFeedbackChars });
@@ -255,7 +270,7 @@ export async function runSupervisedTask({
     const claims = new Set(verifiers.map((verifier) => `agent-task.${verifier.name}`));
     const harness = createHarness({
       strategy,
-      environment: agentToolEnvironment({ workspace, tool, model, permissionProfile, env, timeoutMs, logDir }),
+      environment: agentToolEnvironment({ workspace, tool, model, permissionProfile, env, timeoutMs, logDir, invocationObserver }),
       verifiers,
       verificationPolicy: { requirements: [...claims].map((claim) => ({ claim })) },
       variationPolicy: { maxCapabilityCalls: maxAttempts * (verifiers.length + 3) },

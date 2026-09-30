@@ -2,6 +2,8 @@
 // exharness-agent: run a CLI coding agent under ExHarness supervision.
 //   run   --tool <codex|kiro|agy> --task <task.json> [--command <path>] [--max-attempts N]
 //         [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]
+//         [--trace-dir <dir> [--arm <label>]]  append AGENT_TOOL_RUN_TRACE_V1 lines per attempt
+//   report <trace-dir>        verify the trace chain and print the DESCRIPTIVE AGENT_TOOL_RUN_REPORT_V1
 //   probe                     print the installed tool versions
 //   smoke --tool <t> [--command <path>] [--timeout-ms T]
 //         opt-in live check on a temporary repository with one failing test
@@ -15,13 +17,17 @@ import {
   AgentTaskStatus,
   InvocationStatus,
   PermissionProfile,
+  createRunTraceWriter,
+  createSupervisedObservation,
   defineAgentTool,
+  readTraces,
+  summarizeTraces,
   resolveExecutable,
   runProcess,
   runSupervisedTask
 } from "../src/index.js";
 
-const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy> [--command <path>] [--timeout-ms T]";
+const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy> [--command <path>] [--timeout-ms T]";
 
 class UsageError extends Error {}
 
@@ -74,14 +80,20 @@ async function commandRun(options) {
     print(unavailableResult(task?.id ?? null, options.tool));
     return 2;
   }
+  if (options.arm !== undefined && options["trace-dir"] === undefined) throw new UsageError("--arm requires --trace-dir");
+  const observation = options["trace-dir"] === undefined
+    ? null
+    : createSupervisedObservation({ tool, arm: options.arm ?? "EXHARNESS_SUPERVISED", taskId: task.id, writer: createRunTraceWriter({ dir: options["trace-dir"] }) });
   const result = await runSupervisedTask({
     tool,
     task,
     model: options.model ?? null,
     maxAttempts: positiveInteger(options["max-attempts"], "--max-attempts", 3),
     timeoutMs: positiveInteger(options["timeout-ms"], "--timeout-ms", 600000),
-    permissionProfile: permission
+    permissionProfile: permission,
+    ...(observation === null ? {} : { invocationObserver: observation.invocationObserver, eventSinks: observation.eventSinks, tracer: observation.tracer })
   });
+  if (observation !== null) await observation.finalize(result);
   print(result);
   return result.status === AgentTaskStatus.ACCEPTED ? 0 : result.status === AgentTaskStatus.EXHAUSTED ? 1 : 2;
 }
@@ -170,10 +182,25 @@ async function commandSmoke(options) {
   }
 }
 
+/** Verifies the trace chain (a broken chain exits 1) and prints the descriptive report. */
+function commandReport(rest) {
+  if (rest.length !== 1 || rest[0].startsWith("--")) throw new UsageError("report requires exactly one <trace-dir>");
+  let records;
+  try {
+    records = readTraces(rest[0]);
+  } catch (error) {
+    process.stderr.write(`${error.message}\n`);
+    return 1;
+  }
+  print(summarizeTraces(records));
+  return 0;
+}
+
 async function main(args) {
   const [command, ...rest] = args;
   try {
     if (command === "run") return await commandRun(parseOptions(rest));
+    if (command === "report") return commandReport(rest);
     if (command === "probe") return await commandProbe();
     if (command === "smoke") return await commandSmoke(parseOptions(rest));
     throw new UsageError(command ? `unknown command: ${command}` : "missing command");
