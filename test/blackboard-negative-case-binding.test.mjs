@@ -223,6 +223,12 @@ test('NB2 bound bodies must invoke the subject and contain a non-vacuous asserti
   assert.equal(body("subject(1); console.log('assert.ok(x)');").reason, 'NO_ASSERTION');
   assert.equal(body("assert.throws(subject); /* subject(1) */").reason, 'SUBJECT_NOT_INVOKED');
   assert.equal(body("function subject() {} assert.ok(1);").reason, 'SUBJECT_NOT_INVOKED');
+  // An object subject (adapter/facade) is invoked through one of its methods, not by property reads.
+  assert.equal(body('const { args } = subject.buildInvocation({ a: 1 }); assert.ok(args.includes(1));').ok, true);
+  assert.equal(body('assert.ok(subject?.run(1));').ok, true);
+  assert.equal(body('assert.equal(subject.name, "x");').reason, 'SUBJECT_NOT_INVOKED');
+  assert.equal(body('assert.equal(other.subject.name, "x");').reason, 'SUBJECT_NOT_INVOKED');
+  assert.equal(body('assert.ok(other.subject.run(1));').reason, 'SUBJECT_NOT_INVOKED');
 });
 
 test('NB2 collect fails closed on unbound negatives and records body hashes for passing bindings', async t => {

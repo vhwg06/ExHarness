@@ -1,0 +1,476 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-107",
+  "status": "READY",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-107.json",
+    "hash": "4e688bba8d65e6374a304f8ff997527d6bf83d5c2b2c053117759f3f02e4ab87"
+  },
+  "scope": [
+    "oracle.planner.reservation",
+    "oracle.planner.execute-budget"
+  ],
+  "outOfScope": [
+    "Changing ContextRequirement/ContextResolution schema or unresolved reason enum.",
+    "Changing provider descriptors or adding planner strategies (BB-091).",
+    "Token/render budget profiles (BB-093).",
+    "BB-106 test wiring and BB-108 facade TypeError (shared graph-boundary file: rebase if both land).",
+    "Adding a code field on execute() failures."
+  ],
+  "constraints": [
+    "Product edit is packages/oracle/src/retrieval-planner.js plus tests and Living docs named below.",
+    "Tests in packages/oracle/test/retrieval-planner.test.js titled RP1 and RP2 followed by a space.",
+    "Fail closed: never truncate candidate content to fit a reservation.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "A declared EXACT file whose materialized bytes fit remaining maxMaterializedBytes is not BUDGET_EXHAUSTED from a per-work 8192 cap.",
+    "Actual materialization over remaining budget is BUDGET_EXHAUSTED without truncation.",
+    "LOOKUP_SYMBOL and SEARCH_LEXICAL still both reserve when remaining.maxItems >= 2.",
+    "execute() failures remain {evidenceId, providerId, reason, detail}."
+  ],
+  "architectureDecisions": [
+    "D1 — Edit only packages/oracle/src/retrieval-planner.js reserve(). execute() budget checks stay on reservedBudget.",
+    "D2 — Drop Math.min(8192, remainingBytes). For READ_EXACT with N itemRefs on the evidence, each work gets items=1 and materializedBytes=Math.max(1, Math.floor(remainingBytes / remainingItemRefsFromThisEvidence)). For a single-itemRef evidence the one work therefore receives all remaining bytes. For TRAVERSE_GRAPH/FETCH_EXTERNAL, items=Math.max(1, remaining.maxItems-reserved.items) and materializedBytes=remainingBytes. For REPOSITORY without itemRefs, LOOKUP_SYMBOL and SEARCH_LEXICAL each keep items=1 so both still reserve; STRUCTURAL_MAP keeps items=1; each of those work units gets remainingBytes at reserve time divided by remaining operations still to reserve for that evidence.",
+    "D3 — RP1 in retrieval-planner.test.js: 9000-byte EXACT file, budget maxMaterializedBytes 40000, execute+facade COMPLETE with one candidate. This test fails on current main (BUDGET_EXHAUSTED). RP2: 9000-byte file with maxMaterializedBytes 100 stays UNSATISFIED BUDGET_EXHAUSTED and content is not truncated.",
+    "D4 — Keep execute() catch mapping: ProviderFailure.reason plus detail=error.message. Do not add code. Probe mappingKeys are evidenceId,providerId,reason,detail.",
+    "D5 — test/oracle-context-graph-boundary.test.mjs CG3 COMPLETE case currently asserts one path and truncated:true because items=1. After D2 TRAVERSE_GRAPH receives remaining maxItems (4 in that test), assert both importer paths and truncated false when both fit. packages/agentic-system/test/oracle-context-adoption.test.js comments about min(8192) stay valid as a lower bound if tests still pass; update comments if a 3*8192 comment would be false.",
+    "D6 — Living docs: docs/living/system/oracle/workflow.md and context-graph.md describe remaining-budget reservation, not a 8192-byte per-item cap. No Blackboard ids.",
+    "D7 — Evidence: planner-reservation-probe-result.json (9000-byte file, reserved 8192/1, facade UNSATISFIED BUDGET_EXHAUSTED).",
+    "D8 — Architecture export list unchanged."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "package.json"
+    ],
+    "write": [
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/test/retrieval-planner.test.js",
+      "test/oracle-context-graph-boundary.test.mjs",
+      "packages/agentic-system/test/oracle-context-adoption.test.js",
+      "docs/living/system/oracle/workflow.md",
+      "docs/living/system/oracle/context-graph.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/agent-tools/**",
+      "packages/oracle/src/context-contract.js",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/oracle-context-intelligence-research/BB-107.md",
+      "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json",
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/context-resolution.js",
+      "packages/oracle/test/retrieval-planner.test.js",
+      "test/oracle-context-graph-boundary.test.mjs",
+      "docs/living/system/oracle/workflow.md",
+      "docs/living/system/oracle/context-graph.md"
+    ],
+    "expectedNew": [],
+    "expectedTests": [
+      "packages/oracle/test/retrieval-planner.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Reservation [RP1]: implement D2; RP1 fails on current main then passes.",
+    "S2 — Fail-closed oversize [RP2]: RP2 plus graph-boundary CG3 item-count update (D5).",
+    "S3 — Docs [RP3]: D6 Living docs."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "RP1",
+      "statement": "A 9000-byte EXACT repository file under maxMaterializedBytes 40000 plans reservedBudget.materializedBytes > 8192 and resolves COMPLETE through execute() and createOracleContextResolver.",
+      "verificationIds": [
+        "rp1-fit",
+        "oracle"
+      ],
+      "evidenceRequired": [
+        "RP1 test output."
+      ]
+    },
+    {
+      "id": "RP2",
+      "statement": "A 9000-byte file under maxMaterializedBytes 100 is UNSATISFIED BUDGET_EXHAUSTED without truncated content, and LOOKUP_SYMBOL plus SEARCH_LEXICAL still both reserve when maxItems >= 2.",
+      "verificationIds": [
+        "rp2-oversize",
+        "oracle"
+      ],
+      "evidenceRequired": [
+        "RP2 test output."
+      ]
+    },
+    {
+      "id": "RP3",
+      "statement": "Living docs describe remaining-budget reservation without an 8192-byte per-item cap and contain no Blackboard ids.",
+      "verificationIds": [
+        "rp3-docs",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "RP3 docs output, verify:current-docs, npm test."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A declared EXACT file whose materialized bytes fit remaining maxMaterializedBytes is not BUDGET_EXHAUSTED from a per-work 8192 cap.",
+      "criterionIds": [
+        "RP1"
+      ]
+    },
+    {
+      "invariant": "Actual materialization over remaining budget is BUDGET_EXHAUSTED without truncation.",
+      "criterionIds": [
+        "RP2"
+      ]
+    },
+    {
+      "invariant": "LOOKUP_SYMBOL and SEARCH_LEXICAL still both reserve when remaining.maxItems >= 2.",
+      "criterionIds": [
+        "RP2"
+      ]
+    },
+    {
+      "invariant": "execute() failures remain {evidenceId, providerId, reason, detail}.",
+      "criterionIds": [
+        "RP2"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "rp1-fit",
+      "command": "node --test --test-name-pattern=\"^RP1 \" packages/oracle/test/retrieval-planner.test.js"
+    },
+    {
+      "id": "rp2-oversize",
+      "command": "node --test --test-name-pattern=\"^RP2 \" packages/oracle/test/retrieval-planner.test.js"
+    },
+    {
+      "id": "rp3-docs",
+      "command": "node --test --test-name-pattern=\"^RP3 \" packages/oracle/test/retrieval-planner.test.js"
+    },
+    {
+      "id": "oracle",
+      "command": "npm run test:oracle"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json",
+      "finding": "Executed: 9000-byte file, reserved items 1 / 8192 bytes, facade UNSATISFIED BUDGET_EXHAUSTED, execute failure keys evidenceId,providerId,reason,detail."
+    },
+    {
+      "ref": "packages/oracle/src/retrieval-planner.js",
+      "finding": "DELIVERED_TRUTH: bytes=Math.min(8192, remaining); items always incremented by 1."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-087",
+      "BB-088",
+      "BB-089"
+    ],
+    "workerStart": "Re-run node docs/blackboard/evidence/BB-107/planner-reservation-probe.mjs. Confirm reserve() still uses Math.min(8192, remaining).",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "createRetrievalPlanner",
+        "createOracleContextResolver",
+        "createExactRepositoryProvider"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "remaining-budget reservation without 8192 cap"
+      ]
+    },
+    "contradiction": "None. BB-091/BB-093 keep DETERMINISTIC_V1 routing; they do not require the 8192 cap."
+  },
+  "deliveryContract": {
+    "precondition": "BB-087 DONE, BB-088 DONE, BB-089 DONE.",
+    "completion": "RP runs + test:oracle + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No content truncation, no contract schema change, no execute() code field."
+  },
+  "ciContract": {
+    "checks": [
+      "rp1-fit",
+      "rp2-oversize",
+      "rp3-docs",
+      "oracle",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "execute() failure shape",
+      "READ_EXACT one work per itemRef",
+      "LOOKUP_SYMBOL then SEARCH_LEXICAL order"
+    ],
+    "add": [
+      "remaining-budget reservation",
+      "RP1 RP2 tests"
+    ],
+    "rollback": "Restore Math.min(8192, remaining) and items++ by 1; revert tests and Living docs."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-107 objective + reservation probe + retrieval-planner.js",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-087, BB-088, BB-089",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "No content truncation."
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/oracle/workflow.md",
+      "docs/living/system/oracle/context-graph.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs state that RetrievalPlanner reserves items and materialized bytes from remaining requirement budget with no 8192-byte per-work cap, that a file fitting remaining bytes materializes, and that oversize content is BUDGET_EXHAUSTED without truncation. Living docs contain no Blackboard ids."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify per-work reservedBudget.items and reservedBudget.materializedBytes derived from remaining requirement budget without a hard 8192-byte cap and without forcing items to 1 when remaining.maxItems allows more.",
+      "criterionIds": [
+        "RP1",
+        "RP2"
+      ],
+      "planElements": [
+        "S1"
+      ],
+      "verificationIds": [
+        "rp1-fit",
+        "rp2-oversize"
+      ],
+      "decisionIndexes": [
+        0,
+        1
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/retrieval-planner.js",
+        "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/retrieval-planner.js",
+          "match": "const bytes=Math.min(8192,remaining.maxMaterializedBytes-reserved.materializedBytes);"
+        },
+        {
+          "ref": "packages/oracle/src/retrieval-planner.js",
+          "match": "reserved.providerCalls++;reserved.items++;reserved.materializedBytes+=bytes;"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json",
+          "match": "\"materializedBytes\":8192"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify that a declared EXACT repository file whose materialized form is 9000 bytes under a 40000-byte budget resolves COMPLETE through the delivered facade, while a file that still exceeds remaining bytes is BUDGET_EXHAUSTED without truncation.",
+      "criterionIds": [
+        "RP1",
+        "RP2"
+      ],
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "rp1-fit",
+        "rp2-oversize"
+      ],
+      "decisionIndexes": [
+        2
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json",
+        "packages/oracle/src/retrieval-planner.js",
+        "packages/oracle/src/context-resolution.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json",
+          "match": "\"defectNineKbFileBudgetExhaustedUnder40k\":true"
+        },
+        {
+          "ref": "packages/oracle/src/retrieval-planner.js",
+          "match": "if(bytes>work.reservedBudget.materializedBytes)throw new ProviderFailure({reason:'BUDGET_EXHAUSTED'"
+        },
+        {
+          "ref": "packages/oracle/src/context-resolution.js",
+          "match": "const executed = await retrievalPlanner.execute(requirement, { remainingBudget: { ...requirement.budget }, existingEdges: [] });"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariants"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify Living docs that describe remaining-budget reservation instead of the 8192-byte per-item cap, with no Blackboard ids.",
+      "criterionIds": [
+        "RP3"
+      ],
+      "planElements": [
+        "S3"
+      ],
+      "verificationIds": [
+        "rp3-docs",
+        "docs"
+      ],
+      "decisionIndexes": [
+        5
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/workflow.md",
+        "docs/living/system/oracle/context-graph.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/workflow.md",
+          "match": "The delivered RetrievalPlanner reserves `min(8192, remaining)` materialized bytes per declared item"
+        },
+        {
+          "ref": "docs/living/system/oracle/context-graph.md",
+          "match": "The delivered planner reserves one item and up to 8,192 materialized bytes per `TRAVERSE_GRAPH` work."
+        }
+      ],
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed reservation probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "RP1",
+        "RP2",
+        "RP3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "rp1-fit",
+        "rp2-oversize",
+        "rp3-docs",
+        "repository"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research/BB-107.md",
+        "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json",
+          "match": "\"provider byte reservation exceeded\""
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research/BB-107.md",
+          "match": "9000-byte EXACT file, budget 40000"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A 9000-byte file under 40000 bytes remaining that is still BUDGET_EXHAUSTED from an 8192 reservation fails RP1.",
+    "Truncating a 9000-byte file to fit a 100-byte budget fails RP2.",
+    "LOOKUP_SYMBOL reserving all remaining items so SEARCH_LEXICAL is unreserved when maxItems is 2 fails RP2.",
+    "execute() failure objects gaining a code field or dropping detail fail RP2.",
+    "Living docs that still state a 8192-byte per-item cap fail RP3."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NC-RP-fit",
+      "negativeCaseIndex": 0,
+      "criterionId": "RP1",
+      "verificationId": "rp1-fit",
+      "testRef": "packages/oracle/test/retrieval-planner.test.js",
+      "testTitle": "RP1 9000-byte file under 40000 budget is COMPLETE",
+      "subjectSymbol": "createRetrievalPlanner"
+    },
+    {
+      "id": "NC-RP-truncate",
+      "negativeCaseIndex": 1,
+      "criterionId": "RP2",
+      "verificationId": "rp2-oversize",
+      "testRef": "packages/oracle/test/retrieval-planner.test.js",
+      "testTitle": "RP2 oversize file is BUDGET_EXHAUSTED without truncation",
+      "subjectSymbol": "createRetrievalPlanner"
+    },
+    {
+      "id": "NC-RP-lexical",
+      "negativeCaseIndex": 2,
+      "criterionId": "RP2",
+      "verificationId": "rp2-oversize",
+      "testRef": "packages/oracle/test/retrieval-planner.test.js",
+      "testTitle": "RP2 LOOKUP_SYMBOL and SEARCH_LEXICAL both reserve",
+      "subjectSymbol": "createRetrievalPlanner"
+    },
+    {
+      "id": "NC-RP-shape",
+      "negativeCaseIndex": 3,
+      "criterionId": "RP2",
+      "verificationId": "rp2-oversize",
+      "testRef": "packages/oracle/test/retrieval-planner.test.js",
+      "testTitle": "RP2 execute failures keep reason and detail only",
+      "subjectSymbol": "createRetrievalPlanner"
+    },
+    {
+      "id": "NC-RP-docs",
+      "negativeCaseIndex": 4,
+      "criterionId": "RP3",
+      "verificationId": "rp3-docs",
+      "testRef": "packages/oracle/test/retrieval-planner.test.js",
+      "testTitle": "RP3 Living docs omit the 8192-byte per-item cap",
+      "subjectSymbol": "createRetrievalPlanner"
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-107.readiness-jev-evaluation.json"
+}

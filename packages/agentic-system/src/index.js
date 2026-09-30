@@ -205,6 +205,10 @@ export {
   createLocalCommandVerifier
 } from "./local-command-verifier.js";
 export {
+  mapBackendOrderToAgentTask,
+  runSupervisedBackendWork
+} from "./supervised-backend.js";
+export {
   DOMAIN_EXECUTION_INPUT_KIND,
   createDomainExecutionInput,
   domainExecutionInputRef,

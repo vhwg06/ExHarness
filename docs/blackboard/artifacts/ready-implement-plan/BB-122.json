@@ -1,0 +1,640 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-122",
+  "status": "READY",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-122.json",
+    "hash": "91a46b40f88609b47b7d635a4036608113f1dd36ad1e3802851a5f17cc96a20c"
+  },
+  "scope": [
+    "agent-tools.cli-adapters.opencode",
+    "agent-tools.output-parsers.opencode",
+    "agent-tools.observation.opencode"
+  ],
+  "outOfScope": [
+    "Changing Codex, Kiro or agy argv, parsers or fixtures except adding opencode beside them in shared registries, CLI USAGE and AT4 probe JSON.",
+    "Fabricating Codex/Kiro/agy live results; those tools stay TOOL_UNAVAILABLE / NOT_INSTALLED / NOT_EVALUATED when missing.",
+    "Reading or writing ~/.opencode config, credentials or session databases.",
+    "A live model run in npm test, npm run verify, or this research (no paid API).",
+    "BB-099 experiment registration, BB-100 Backend adapter, BB-105 grok implementation."
+  ],
+  "constraints": [
+    "Code lives in packages/agent-tools; opencode tests in packages/agent-tools/test/opencode-adapter.test.js titled OC1..OC5 followed by a space with { timeout: 60000 }.",
+    "Existing BB-097/BB-098 tests keep passing; Codex/Kiro/agy usage objects keep their six fields.",
+    "Live opencode is only CLI probe/smoke; npm test and npm run verify never spawn the real opencode binary.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "A missing opencode executable is TOOL_UNAVAILABLE and never ACCEPTED.",
+    "Token and cost values are observed numbers from step_finish JSONL or null with a reason; nothing is estimated.",
+    "The task prompt is never stored verbatim in argvRedacted.",
+    "Codex, Kiro and agy behavior is unchanged when opencode is added to the registry.",
+    "npm test does not invoke a live opencode CLI."
+  ],
+  "architectureDecisions": [
+    "D1 — opencodeTool = defineAgentTool({ id: 'opencode', command: 'opencode', prefixArgs: [], versionArgs: ['--version'], buildInvocation, parseResult }). AGENT_TOOLS.opencode = opencodeTool. Export opencodeTool from tool-adapters.js and index.js. Adapter never reads homedir or ~/.opencode; operators use PATH or --command.",
+    "D2 — buildInvocation uses spawn cwd via request.cwd when it is a non-empty string. Args: ['run','--format','json', ...(cwd?['--dir',cwd]:[]), ...(model?['--model',model]:[]), ...permissionArgs, ...resumeArgs, prompt]. WORKSPACE_EDIT permissionArgs=[]; FULL_AUTO=['--auto']. Resume: sessionRef string → ['--session', sessionRef]; resume non-null without sessionRef → ['--continue']; resume null → []. stdin is always null. Do not pass top-level --prompt. Extra request fields such as logFile are ignored.",
+    "D3 — process-runner runAgentInvocation calls tool.buildInvocation({ ...request, timeoutMs, cwd }). Existing adapters ignore cwd. supervisor.js writes request including cwd: workspace.root. observation runObservedInvocation always sets request.cwd. If BB-105 already plumbed cwd, reuse it. redactArgv already rebuilds from the same request.",
+    "D4 — parseResult reads JSONL stdout. claimedSuccess = exitCode===0. sessionRef = first string sessionID on a parsed object, else null. finalMessage = last step text part or lastLines(stdout). parseOpencodeJsonl(stdout,{truncated}) walks lines: type==='step_finish' with part.tokens.input and part.tokens.output as integers are counted; sum input/output; optional reasoning and cache.read only when every counted event reported them; totalCostUsd is the sum of finite Number(part.cost), else null (opencode-only extra field; Codex/Kiro/agy usage objects stay six fields). source 'opencode.step_finish'. unavailableReason null only when at least one counted event exists. Missing/unparseable → OPENCODE_USAGE_NOT_REPORTED; truncated without those integers → OPENCODE_JSONL_TRUNCATED. toolEvents = { counts by type, invalidLines }. parseToolOutput('opencode', invocation) dispatches here.",
+    "D5 — CLI: USAGE and baseTool accept opencode. probe iterates AGENT_TOOLS so opencode appears as {installed,version}. smoke --tool opencode uses the same skip reasons. AT4 probe JSON must include opencode:{installed:false,version:null} on empty PATH beside whatever tools already exist (codex, kiro, agy, and grok if AGENT_TOOLS.grok exists). Live smoke stays out of npm test and npm run verify.",
+    "D6 — fake-opencode.mjs: --version prints 'fake-opencode 0.0.0'; honors FAKE_AGENT_SCENARIO like fake-agent.mjs (FIX_FIRST writes the built-in sum fix); prints JSONL including step_start, text, step_finish { part: { type:'step-finish', reason:'stop', tokens:{input,output,reasoning,cache:{read,write}}, cost } }. Fixtures opencode-usage.jsonl and opencode-no-usage.jsonl cover the parser. Tests never spawn a real opencode binary.",
+    "D7 — Evidence: executed opencode-cli-probe-result.json (version 1.18.33, HOME_INSTALL_EXISTS not on PATH, run --help flags --format json --dir --model --auto --continue --session positional message, --prompt absent on run, missing binary ENOENT, liveModelRun false). Delivered AGENT_TOOLS / parseToolOutput / runSupervisedTask / runObservedInvocation.",
+    "D8 — Living docs: state.md adapter table and CLI USAGE include opencode; observation.md per-tool row for opencode JSONL usage/cost; docs/living/system/state.md one-line inventory; packages/agent-tools/README.md. Living docs contain no Blackboard ids."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/README.md",
+      "packages/agent-tools/test/opencode-adapter.test.js",
+      "packages/agent-tools/test/agent-tools.test.js",
+      "packages/agent-tools/test/run-trace.test.js",
+      "packages/agent-tools/test/fixtures/fake-opencode.mjs",
+      "packages/agent-tools/test/fixtures/opencode-usage.jsonl",
+      "packages/agent-tools/test/fixtures/opencode-no-usage.jsonl",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/**",
+      "packages/benchmark/**",
+      "packages/agent-tools/test/scope-audit.mjs",
+      ".github/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/agent-tool-research/BB-122.md",
+      "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/agent-tools.test.js",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      "packages/agent-tools/test/scope-audit.mjs",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/state.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/test/opencode-adapter.test.js",
+      "packages/agent-tools/test/fixtures/fake-opencode.mjs",
+      "packages/agent-tools/test/fixtures/opencode-usage.jsonl",
+      "packages/agent-tools/test/fixtures/opencode-no-usage.jsonl"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/opencode-adapter.test.js",
+      "packages/agent-tools/test/agent-tools.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Adapter argv [OC1]: implement D1-D3 opencodeTool, AGENT_TOOLS.opencode, cwd/--dir plumbing. Tests assert WORKSPACE_EDIT/FULL_AUTO/resume argv and TypeError-free extra logFile.",
+    "S2 — Parser and traces [OC2]: implement D4 parseOpencodeJsonl. Fixtures opencode-usage.jsonl / opencode-no-usage.jsonl. Prompt sha256 present; argvRedacted contains no prompt string.",
+    "S3 — Direct, supervised, CLI [OC3,OC4]: fake-opencode FIX_FIRST through runObservedInvocation and runSupervisedTask; missing command TOOL_UNAVAILABLE; probe/smoke --tool opencode; AT4 probe JSON includes opencode:{installed:false,version:null} on empty PATH; npm test scripts still omit smoke.",
+    "S4 — Docs and scope [OC5]: Living docs and README; OC5 asserts opencode is named, no Blackboard ids, and auditPaths rejects packages/core-harness/** and docs/blackboard/**."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "OC1",
+      "statement": "AGENT_TOOLS.opencode builds a shell-free headless argv with opencode run --format json, optional --dir, optional --model, WORKSPACE_EDIT omitting --auto, FULL_AUTO passing --auto, resume flags, and a missing executable is TOOL_UNAVAILABLE.",
+      "verificationIds": [
+        "oc1-argv",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "OC1 test output."
+      ]
+    },
+    {
+      "id": "OC2",
+      "statement": "parseOpencodeJsonl reports integer token fields and finite totalCostUsd from step_finish events when present and otherwise null with OPENCODE_USAGE_NOT_REPORTED or OPENCODE_JSONL_TRUNCATED, never an estimate; traces carry promptSha256 and do not store the prompt verbatim in argvRedacted.",
+      "verificationIds": [
+        "oc2-parser",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "OC2 fixture and trace output."
+      ]
+    },
+    {
+      "id": "OC3",
+      "statement": "The same opencode adapter serves runObservedInvocation and runSupervisedTask; exharness-agent probe and smoke accept --tool opencode; live smoke is not part of npm test or npm run verify.",
+      "verificationIds": [
+        "oc3-arms",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "OC3 test output and package.json script assertions."
+      ]
+    },
+    {
+      "id": "OC4",
+      "statement": "A deterministic fake opencode CLI covers FIX_FIRST and usage JSONL; a missing opencode command is TOOL_UNAVAILABLE and never ACCEPTED.",
+      "verificationIds": [
+        "oc4-fake",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "OC4 fake CLI and missing-binary output."
+      ]
+    },
+    {
+      "id": "OC5",
+      "statement": "Living docs and the package README list opencode beside Codex, Kiro and agy without Blackboard ids, and the candidate writes only sourceScope.write paths.",
+      "verificationIds": [
+        "oc5-docs",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "OC5 docs/scope output, verify:current-docs and npm test logs."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A missing opencode executable is TOOL_UNAVAILABLE and never ACCEPTED.",
+      "criterionIds": [
+        "OC1",
+        "OC4"
+      ]
+    },
+    {
+      "invariant": "Token and cost values are observed numbers from step_finish JSONL or null with a reason; nothing is estimated.",
+      "criterionIds": [
+        "OC2"
+      ]
+    },
+    {
+      "invariant": "The task prompt is never stored verbatim in argvRedacted.",
+      "criterionIds": [
+        "OC2"
+      ]
+    },
+    {
+      "invariant": "Codex, Kiro and agy behavior is unchanged when opencode is added to the registry.",
+      "criterionIds": [
+        "OC3",
+        "OC5"
+      ]
+    },
+    {
+      "invariant": "npm test does not invoke a live opencode CLI.",
+      "criterionIds": [
+        "OC3"
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "oc1-argv",
+      "command": "node --test --test-name-pattern=\"^OC1 \" packages/agent-tools/test/opencode-adapter.test.js"
+    },
+    {
+      "id": "oc2-parser",
+      "command": "node --test --test-name-pattern=\"^OC2 \" packages/agent-tools/test/opencode-adapter.test.js"
+    },
+    {
+      "id": "oc3-arms",
+      "command": "node --test --test-name-pattern=\"^OC3 \" packages/agent-tools/test/opencode-adapter.test.js"
+    },
+    {
+      "id": "oc4-fake",
+      "command": "node --test --test-name-pattern=\"^OC4 \" packages/agent-tools/test/opencode-adapter.test.js"
+    },
+    {
+      "id": "oc5-docs",
+      "command": "node --test --test-name-pattern=\"^OC5 \" packages/agent-tools/test/opencode-adapter.test.js"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json",
+      "finding": "Executed: opencode 1.18.33 at ~/.opencode/bin/opencode, not on PATH; run --help has --format json --dir --model --auto --continue --session positional message; --prompt not on run; missing binary ENOENT; liveModelRun false."
+    },
+    {
+      "ref": "packages/agent-tools/src/tool-adapters.js",
+      "finding": "DELIVERED_TRUTH: AGENT_TOOLS is {codex, kiro, agy} only."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-097",
+      "BB-098"
+    ],
+    "workerStart": "Re-run node docs/blackboard/evidence/BB-122/opencode-cli-probe.mjs. Confirm AGENT_TOOLS still lacks opencode. If grok is present, add opencode beside it and extend AT4 probe JSON to include both. Confirm fake-agent.mjs still exists. Confirm process-runner buildInvocation cwd plumbing (BB-105 may already have added it).",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "AGENT_TOOLS",
+        "defineAgentTool",
+        "runAgentInvocation",
+        "runObservedInvocation",
+        "runSupervisedTask",
+        "parseToolOutput",
+        "redactArgv",
+        "exharness-agent probe/smoke",
+        "fake-agent.mjs",
+        "opencode 1.18.33 help/version/ENOENT"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "opencodeTool",
+        "parseOpencodeJsonl",
+        "fake-opencode.mjs",
+        "step_finish usage fields"
+      ]
+    },
+    "contradiction": "None. OpenCode is an additional adapter on delivered seams. Parser shape is pinned from executed help plus committed fixtures; research performed no model call."
+  },
+  "deliveryContract": {
+    "precondition": "BB-097 DONE and BB-098 DONE.",
+    "completion": "All OC criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No ~/.opencode reads, no fabricated Codex/Kiro/agy live results, no live opencode in npm test, no paid model call."
+  },
+  "ciContract": {
+    "checks": [
+      "oc1-argv",
+      "oc2-parser",
+      "oc3-arms",
+      "oc4-fake",
+      "oc5-docs",
+      "agent-tools",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "codexTool",
+      "kiroTool",
+      "agyTool",
+      "parseCodexJsonl",
+      "parseKiroOutput",
+      "parseAgyOutput",
+      "runSupervisedTask default options"
+    ],
+    "add": [
+      "opencodeTool",
+      "parseOpencodeJsonl",
+      "fake-opencode.mjs",
+      "opencode-adapter tests",
+      "Living doc opencode rows"
+    ],
+    "rollback": "Remove opencodeTool, parser branch, fixtures, opencode-adapter.test.js and Living/README opencode sentences; revert AGENT_TOOLS, CLI USAGE and AT4 probe JSON."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-122 objective + executed opencode CLI probe + delivered agent-tools sources",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-097, BB-098",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "No ~/.opencode reads, no live opencode in npm test."
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs list opencode as a supported agent-tool adapter with headless run --format json, JSONL step_finish usage/cost when reported, TOOL_UNAVAILABLE when missing, and the same no-sandbox trust boundary as the other CLIs. Living docs contain no Blackboard ids."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify an opencode adapter in the delivered AGENT_TOOLS registry that builds a shell-free headless invocation with opencode run --format json, optional --dir cwd, optional --model, WORKSPACE_EDIT without --auto, FULL_AUTO with --auto, resume via --session or --continue, a version probe, and TOOL_UNAVAILABLE when the executable is missing.",
+      "criterionIds": [
+        "OC1",
+        "OC4"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "oc1-argv",
+        "oc4-fake"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/tool-adapters.js",
+        "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json",
+        "packages/agent-tools/src/process-runner.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/tool-adapters.js",
+          "match": "export const AGENT_TOOLS = Object.freeze({ codex: codexTool, kiro: kiroTool, agy: agyTool });"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json",
+          "match": "\"formatJsonChoice\": true"
+        },
+        {
+          "ref": "packages/agent-tools/src/process-runner.js",
+          "match": "const { args, stdin = null } = tool.buildInvocation({ ...request, timeoutMs });"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify an opencode JSONL parser that reports integer token fields and finite cost from step_finish events when present, and otherwise records null with an explicit unavailable reason, never an estimate; traces redact the prompt.",
+      "criterionIds": [
+        "OC2"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "oc2-parser"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/output-parsers.js",
+        "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json",
+        "packages/agent-tools/src/run-trace.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/output-parsers.js",
+          "match": "if (toolId === \"agy\") return parseAgyOutput();"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json",
+          "match": "\"liveModelRun\": false"
+        },
+        {
+          "ref": "packages/agent-tools/src/run-trace.js",
+          "match": "argv as launched, with the prompt replaced by its digest"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariants"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify that the same adapter serves direct runObservedInvocation and supervised runSupervisedTask arms, and that exharness-agent probe and smoke accept --tool opencode with live smoke remaining opt-in and absent from npm test.",
+      "criterionIds": [
+        "OC3"
+      ],
+      "planElements": [
+        "S3"
+      ],
+      "verificationIds": [
+        "oc3-arms"
+      ],
+      "decisionIndexes": [
+        2,
+        4
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/observation.js",
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/bin/exharness-agent.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/observation.js",
+          "match": "export async function runObservedInvocation({"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "export async function runSupervisedTask({"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "run --tool <codex|kiro|agy>"
+        }
+      ],
+      "supportingPlanFields": [
+        "verificationPlan"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify a deterministic fake opencode CLI fixture, named tests, Living docs and the package README that list opencode beside Codex, Kiro and agy.",
+      "criterionIds": [
+        "OC4",
+        "OC5"
+      ],
+      "planElements": [
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "oc4-fake",
+        "oc5-docs",
+        "docs"
+      ],
+      "decisionIndexes": [
+        5,
+        7
+      ],
+      "sourceRefs": [
+        "docs/living/system/agent-tools/state.md",
+        "docs/living/system/agent-tools/observation.md",
+        "packages/agent-tools/test/agent-tools.test.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "ExHarness supervises an external CLI coding agent (Codex, Kiro or agy) from outside."
+        },
+        {
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "| any | none | null for a timed-out or missing tool | `TIMED_OUT`, `TOOL_UNAVAILABLE` |"
+        },
+        {
+          "ref": "packages/agent-tools/test/agent-tools.test.js",
+          "match": "codex: { installed: false, version: null }, kiro: { installed: false, version: null }, agy: { installed: false, version: null }"
+        }
+      ],
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed opencode CLI probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "OC1",
+        "OC2",
+        "OC3",
+        "OC4",
+        "OC5"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "oc1-argv",
+        "oc2-parser",
+        "oc3-arms",
+        "oc4-fake",
+        "oc5-docs",
+        "repository"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-122.md",
+        "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-122.md",
+          "match": "`opencode run --format json` + positional message"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json",
+          "match": "\"missingBinaryIsEnoent\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeVerificationCases"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A missing opencode executable returns TOOL_UNAVAILABLE and is never ACCEPTED.",
+    "WORKSPACE_EDIT argv does not include --auto.",
+    "An opencode JSONL stream without integer step_finish tokens yields null tokens with OPENCODE_USAGE_NOT_REPORTED, not zeros.",
+    "argvRedacted does not contain the raw task prompt string.",
+    "Root package.json test and verify scripts do not invoke smoke:agent-tools.",
+    "auditPaths rejects a write under packages/core-harness.",
+    "FULL_AUTO argv includes --auto."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NC-OC-missing",
+      "negativeCaseIndex": 0,
+      "criterionId": "OC4",
+      "verificationId": "oc4-fake",
+      "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+      "testTitle": "OC4 missing opencode executable is TOOL_UNAVAILABLE",
+      "subjectSymbol": "runAgentInvocation"
+    },
+    {
+      "id": "NC-OC-workspace",
+      "negativeCaseIndex": 1,
+      "criterionId": "OC1",
+      "verificationId": "oc1-argv",
+      "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+      "testTitle": "OC1 WORKSPACE_EDIT does not pass --auto",
+      "subjectSymbol": "opencodeTool"
+    },
+    {
+      "id": "NC-OC-nousage",
+      "negativeCaseIndex": 2,
+      "criterionId": "OC2",
+      "verificationId": "oc2-parser",
+      "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+      "testTitle": "OC2 usage-free opencode JSONL is null with OPENCODE_USAGE_NOT_REPORTED",
+      "subjectSymbol": "parseOpencodeJsonl"
+    },
+    {
+      "id": "NC-OC-prompt",
+      "negativeCaseIndex": 3,
+      "criterionId": "OC2",
+      "verificationId": "oc2-parser",
+      "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+      "testTitle": "OC2 argvRedacted does not contain the prompt",
+      "subjectSymbol": "redactArgv"
+    },
+    {
+      "id": "NC-OC-npmtest",
+      "negativeCaseIndex": 4,
+      "criterionId": "OC3",
+      "verificationId": "oc3-arms",
+      "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+      "testTitle": "OC3 npm test does not run live opencode smoke",
+      "subjectSymbol": "opencodeTool"
+    },
+    {
+      "id": "NC-OC-scope",
+      "negativeCaseIndex": 5,
+      "criterionId": "OC5",
+      "verificationId": "oc5-docs",
+      "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+      "testTitle": "OC5 write scope excludes core-harness",
+      "subjectSymbol": "auditPaths"
+    },
+    {
+      "id": "NC-OC-fullauto",
+      "negativeCaseIndex": 6,
+      "criterionId": "OC1",
+      "verificationId": "oc1-argv",
+      "testRef": "packages/agent-tools/test/opencode-adapter.test.js",
+      "testTitle": "OC1 FULL_AUTO passes --auto",
+      "subjectSymbol": "opencodeTool"
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-122.readiness-jev-evaluation.json"
+}

@@ -1,6 +1,7 @@
 // AGENT_TOOL_ADAPTER_V1: frozen, shell-free argv contracts for external CLI coding agents.
-// Codex (codex-cli 0.158.0), Kiro (kiro-cli-chat 2.24.1) and agy (1.1.1). An adapter only builds
-// argument arrays and parses output; it never reads or writes CLI configuration or credentials.
+// Codex (codex-cli 0.158.0), Kiro (kiro-cli-chat 2.24.1), agy (1.1.1) and Grok Build (grok).
+// An adapter only builds argument arrays and parses output; it never reads or writes CLI
+// configuration or credentials.
 
 export const AGENT_TOOL_ADAPTER_VERSION = "AGENT_TOOL_ADAPTER_V1";
 
@@ -150,4 +151,81 @@ export const agyTool = defineAgentTool({
   }
 });
 
-export const AGENT_TOOLS = Object.freeze({ codex: codexTool, kiro: kiroTool, agy: agyTool });
+/** Default model pinned on every grok invocation unless request.model overrides it. */
+export const GROK_DEFAULT_MODEL = "grok-4.6";
+
+/**
+ * Reads the first balanced JSON object in stdout. Returns { value, text } where text is the
+ * raw object slice, or null when stdout holds no parseable JSON object.
+ */
+function firstJsonObject(stdout) {
+  const raw = String(stdout ?? "");
+  const start = raw.indexOf("{");
+  if (start < 0) return null;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < raw.length; index += 1) {
+    const char = raw[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') inString = true;
+    else if (char === "{") depth += 1;
+    else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        const text = raw.slice(start, index + 1);
+        try { return { value: JSON.parse(text), text }; } catch { return null; }
+      }
+    }
+  }
+  return null;
+}
+
+export const grokTool = defineAgentTool({
+  id: "grok",
+  command: "grok",
+  prefixArgs: [],
+  versionArgs: ["--version"],
+  buildInvocation(request) {
+    const permissionProfile = assertInvocationRequest(request);
+    const { prompt, resume = null, model = null, promptFile, cwd } = request;
+    if (typeof promptFile !== "string" || promptFile.length === 0) throw new TypeError("grok invocation requires promptFile");
+    // A positional prompt fails without a TTY; the prompt travels only via --prompt-file.
+    // request.cwd carries the spawn cwd so the adapter can pass --cwd; other adapters ignore it.
+    const cwdArgs = typeof cwd === "string" && cwd.length > 0 ? ["--cwd", cwd] : [];
+    const permission = permissionProfile === PermissionProfile.FULL_AUTO
+      ? ["--always-approve"]
+      : ["--permission-mode", "acceptEdits"];
+    const resumeArgs = resume === null
+      ? []
+      : (typeof resume.sessionRef === "string" ? ["--resume", resume.sessionRef] : ["--continue"]);
+    return {
+      args: [
+        "--output-format", "json",
+        "--model", model ?? GROK_DEFAULT_MODEL,
+        ...cwdArgs,
+        ...permission,
+        "--disable-web-search",
+        "--no-subagents",
+        "--no-auto-update",
+        ...resumeArgs,
+        "--prompt-file", promptFile
+      ],
+      stdin: null
+    };
+  },
+  parseResult({ exitCode, stdout }) {
+    const found = firstJsonObject(stdout);
+    const value = found && found.value && typeof found.value === "object" ? found.value : null;
+    const sessionRef = value && typeof value.sessionId === "string" && value.sessionId.length > 0 ? value.sessionId : null;
+    const finalMessage = value && typeof value.text === "string" ? value.text.slice(0, 2000) : lastLines(stdout);
+    return { claimedSuccess: exitCode === 0, finalMessage, sessionRef };
+  }
+});
+
+export const AGENT_TOOLS = Object.freeze({ codex: codexTool, kiro: kiroTool, agy: agyTool, grok: grokTool });

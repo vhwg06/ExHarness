@@ -6,6 +6,8 @@ export const UsageUnavailableReason = Object.freeze({
   CODEX_STREAM_TRUNCATED: "CODEX_STREAM_TRUNCATED",
   KIRO_TEXT_OUTPUT_NO_USAGE: "KIRO_TEXT_OUTPUT_NO_USAGE",
   AGY_USAGE_NOT_REPORTED: "AGY_USAGE_NOT_REPORTED",
+  GROK_USAGE_NOT_REPORTED: "GROK_USAGE_NOT_REPORTED",
+  GROK_JSON_TRUNCATED: "GROK_JSON_TRUNCATED",
   TIMED_OUT: "TIMED_OUT",
   TOOL_UNAVAILABLE: "TOOL_UNAVAILABLE",
   UNKNOWN_TOOL: "UNKNOWN_TOOL"
@@ -65,6 +67,80 @@ export function parseAgyOutput() {
   return { toolEvents: null, usage: nullUsage("agy.stdout", UsageUnavailableReason.AGY_USAGE_NOT_REPORTED) };
 }
 
+/** Extracts the first balanced JSON object from stdout; null when none parses. */
+function firstGrokJson(stdout) {
+  const raw = String(stdout ?? "");
+  const start = raw.indexOf("{");
+  if (start < 0) return null;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < raw.length; index += 1) {
+    const char = raw[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') inString = true;
+    else if (char === "{") depth += 1;
+    else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        const text = raw.slice(start, index + 1);
+        try {
+          const value = JSON.parse(text);
+          return { value: value && typeof value === "object" ? value : null, text };
+        } catch { return { value: null, text, invalid: true }; }
+      }
+    }
+  }
+  return { value: null, text: null, invalid: true };
+}
+
+/**
+ * Grok `--output-format json` object. Token fields are observed integers from usage (zero is
+ * observed); totalCostUsd is the observed finite Number(total_cost_usd). Anything absent stays
+ * null with GROK_USAGE_NOT_REPORTED (or GROK_JSON_TRUNCATED for a truncated stream); nothing
+ * is estimated. Codex/Kiro/agy usage objects keep their six fields; only grok carries
+ * totalCostUsd.
+ */
+export function parseGrokJson(stdout, { truncated = false } = {}) {
+  const found = firstGrokJson(stdout);
+  const value = found?.value ?? null;
+  const usage = value?.usage && typeof value.usage === "object" ? value.usage : null;
+  const inputTokens = usage && isCount(usage.input_tokens) ? usage.input_tokens : null;
+  const outputTokens = usage && isCount(usage.output_tokens) ? usage.output_tokens : null;
+  if (inputTokens === null || outputTokens === null) {
+    return {
+      toolEvents: null,
+      usage: {
+        ...nullUsage("grok.output.json", truncated ? UsageUnavailableReason.GROK_JSON_TRUNCATED : UsageUnavailableReason.GROK_USAGE_NOT_REPORTED),
+        totalCostUsd: null
+      }
+    };
+  }
+  const cost = Number(value.total_cost_usd);
+  const invalidJson = found.invalid === true || String(stdout ?? "").trim() !== String(found.text).trim();
+  return {
+    toolEvents: {
+      num_turns: Number.isInteger(value.num_turns) ? value.num_turns : null,
+      stopReason: typeof value.stopReason === "string" ? value.stopReason : null,
+      invalidJson
+    },
+    usage: {
+      inputTokens,
+      cachedInputTokens: isCount(usage.cache_read_input_tokens) ? usage.cache_read_input_tokens : null,
+      outputTokens,
+      reasoningOutputTokens: isCount(usage.reasoning_tokens) ? usage.reasoning_tokens : null,
+      source: "grok.output.json",
+      unavailableReason: null,
+      totalCostUsd: Number.isFinite(cost) ? cost : null
+    }
+  };
+}
+
 /** Dispatches on tool id and invocation status. */
 export function parseToolOutput(toolId, invocation) {
   if (invocation.status === "TOOL_UNAVAILABLE") return { toolEvents: null, usage: nullUsage(`${toolId}.invocation`, UsageUnavailableReason.TOOL_UNAVAILABLE) };
@@ -75,5 +151,6 @@ export function parseToolOutput(toolId, invocation) {
   if (toolId === "codex") return parseCodexJsonl(invocation.stdout, { truncated: invocation.truncated?.stdout === true });
   if (toolId === "kiro") return parseKiroOutput();
   if (toolId === "agy") return parseAgyOutput();
+  if (toolId === "grok") return parseGrokJson(invocation.stdout, { truncated: invocation.truncated?.stdout === true });
   return { toolEvents: null, usage: nullUsage(`${toolId}.invocation`, UsageUnavailableReason.UNKNOWN_TOOL) };
 }
