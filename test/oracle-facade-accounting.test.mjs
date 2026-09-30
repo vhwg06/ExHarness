@@ -190,3 +190,175 @@ test('FA4 Core injected port projects a COMPLETE facade resolution once', async 
   assert.equal(fixed[0].value.status, 'COMPLETE');
   assert.equal(fixed[0].value.items, 1);
 });
+
+// Required evidence whose source has no registered snapshot authority never
+// throws the catalog TypeError from the facade: it resolves UNSATISFIED with
+// typed CURRENTNESS_UNVERIFIABLE and zero provider retrieve calls.
+test('FA5 missing snapshot authority does not throw TypeError', async () => {
+  const catalog = O.createSourceCatalog({ providers: [provider()], snapshotAuthorities: [] });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner });
+  const result = await resolver.resolve(requirement(budget()));
+  assert.equal(result.outcome, 'FRESH');
+  assert.equal(result.resolution.status, 'UNSATISFIED');
+  assert.deepEqual(result.resolution.unresolved, [{ evidenceId: 'e1', reason: 'CURRENTNESS_UNVERIFIABLE' }]);
+  assert.equal(result.resolution.items.length, 0);
+  assert.throws(() => O.assertConsumableContextResolution(result.resolution, requirement(budget())));
+});
+
+test('FA5 missing authority makes zero retrieve calls', async () => {
+  let retrieves = 0;
+  const catalog = O.createSourceCatalog({ providers: [provider({ onRetrieve: () => { retrieves++; } })], snapshotAuthorities: [] });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner });
+  const result = await resolver.resolve(requirement(budget(), [evidence('e1'), evidence('e2', 'OPTIONAL')]));
+  assert.equal(retrieves, 0);
+  assert.equal(result.resolution.status, 'UNSATISFIED');
+  assert.deepEqual(result.resolution.unresolved, [
+    { evidenceId: 'e1', reason: 'CURRENTNESS_UNVERIFIABLE' },
+    { evidenceId: 'e2', reason: 'CURRENTNESS_UNVERIFIABLE' },
+  ]);
+  assert.deepEqual(result.failures, []);
+});
+
+// Mixed authority: one REQUIRED evidence has a snapshot authority (refPrefix
+// 'repo-a' matches only 'repo-a') and another does not. The authorised
+// evidence resolves through the filtered sub-requirement while the other is
+// typed CURRENTNESS_UNVERIFIABLE with zero retrieve calls for it.
+const refEchoProvider = ({ onRetrieve = () => {} } = {}) => ({
+  descriptor: { providerId: 'p-mixed', sourceKinds: ['REPOSITORY'], operations: ['READ_EXACT'], snapshotModes: ['EXACT', 'CURRENT'], currentnessValidators: ['REVISION'], maxConcurrentCalls: 1, costClass: 'LOW' },
+  async retrieve(work) {
+    onRetrieve(work);
+    return [{ evidenceId: work.evidenceId, source: { kind: 'REPOSITORY', ref: work.sourceConstraint.ref, snapshotRef: SNAP, itemRef: work.sourceConstraint.itemRef }, validators: [{ kind: 'REVISION', value: SNAP, strength: 'STRONG' }], provenance: [{ kind: 'SOURCE_REF', ref: `${work.sourceConstraint.ref}@${SNAP}:${work.sourceConstraint.itemRef}` }], content: 'xxxxx', providerEvidence: { providerId: 'p-mixed', operation: work.operation } }];
+  },
+});
+const mixedEvidence = (id, ref) => ({ id, necessity: 'REQUIRED', need: 'fixture need', source: { kind: 'REPOSITORY', ref, snapshot: { mode: 'CURRENT' }, itemRefs: [`${id}.js`] }, requiredProvenance: [] });
+
+test('FA5 mixed authority retrieves only authorised evidence', async () => {
+  const retrieved = [];
+  const catalog = O.createSourceCatalog({
+    providers: [refEchoProvider({ onRetrieve: (work) => { retrieved.push(work.evidenceId); } })],
+    snapshotAuthorities: [{ sourceKind: 'REPOSITORY', refPrefix: 'repo-a', observe: async () => ({ snapshotRef: SNAP }) }],
+  });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner });
+  const result = await resolver.resolve(requirement(budget(), [mixedEvidence('e1', 'repo-a'), mixedEvidence('e2', 'repo-b')]));
+  assert.deepEqual(retrieved, ['e1']);
+  assert.deepEqual(result.resolution.items.map((i) => i.evidenceId), ['e1']);
+  assert.equal(result.resolution.status, 'UNSATISFIED');
+  assert.deepEqual(result.resolution.unresolved, [{ evidenceId: 'e2', reason: 'CURRENTNESS_UNVERIFIABLE' }]);
+  assert.throws(() => O.assertConsumableContextResolution(result.resolution, requirement(budget(), [mixedEvidence('e1', 'repo-a'), mixedEvidence('e2', 'repo-b')])));
+});
+
+test('FA5 mixed authority drift still throws STALE_DURING_RESOLUTION', async () => {
+  let observations = 0;
+  const retrieved = [];
+  const catalog = O.createSourceCatalog({
+    providers: [refEchoProvider({ onRetrieve: (work) => { retrieved.push(work.evidenceId); } })],
+    snapshotAuthorities: [{ sourceKind: 'REPOSITORY', refPrefix: 'repo-a', observe: async () => ({ snapshotRef: ++observations > 2 ? 'rev-2' : SNAP }) }],
+  });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner });
+  await assert.rejects(
+    resolver.resolve(requirement(budget(), [mixedEvidence('e1', 'repo-a'), mixedEvidence('e2', 'repo-b')])),
+    (error) => error.name === 'DurabilityFailure' && error.reason === 'STALE_DURING_RESOLUTION',
+  );
+  assert.deepEqual(retrieved, ['e1']);
+});
+
+// A budget smaller than the empty-resolution materialization never throws
+// consumed below materialization/step: it resolves UNSATISFIED with typed
+// BUDGET_EXHAUSTED. ProviderFailure still does not escape, and currentness
+// drift still throws DurabilityFailure STALE_DURING_RESOLUTION.
+test('FA6 one-byte budget is BUDGET_EXHAUSTED not TypeError', async () => {
+  const catalog = O.createSourceCatalog({ providers: [provider()], snapshotAuthorities: [authority()] });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner });
+  const exact = { id: 'e1', necessity: 'REQUIRED', need: 'fixture need', source: { kind: 'REPOSITORY', ref: 'repo', snapshot: { mode: 'EXACT', ref: SNAP }, itemRefs: ['e1.js'] }, requiredProvenance: [] };
+  const req = requirement(budget({ maxMaterializedBytes: 1 }), [exact]);
+  const result = await resolver.resolve(req);
+  assert.equal(result.outcome, 'FRESH');
+  assert.equal(result.resolution.status, 'UNSATISFIED');
+  assert.deepEqual(result.resolution.unresolved, [{ evidenceId: 'e1', reason: 'BUDGET_EXHAUSTED' }]);
+  assert.equal(result.resolution.items.length, 0);
+  assert.equal(result.resolution.consumed.materializedBytes, result.resolution.materialization.bytes);
+  assert.throws(() => O.assertConsumableContextResolution(result.resolution, req));
+  // The underflow diagnostic exceeds its budget, so contract validation rejects it.
+  assert.throws(() => O.defineContextResolution(result.resolution, req), /budget exceeded/);
+});
+
+test('FA6 ProviderFailure does not escape resolve', async () => {
+  const catalog = O.createSourceCatalog({ providers: [provider({ fail: () => true })], snapshotAuthorities: [authority()] });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner });
+  const result = await resolver.resolve(requirement(budget()));
+  assert.equal(result.resolution.status, 'UNSATISFIED');
+  assert.deepEqual(result.resolution.unresolved, [{ evidenceId: 'e1', reason: 'SOURCE_FAILURE' }]);
+  assert.equal(result.failures.length, 1);
+  assert.equal(result.failures[0].reason, 'SOURCE_FAILURE');
+  assert.equal(typeof result.resolution.resolutionId, 'string');
+});
+
+test('FA6 currentness drift still throws STALE_DURING_RESOLUTION', async () => {
+  let observations = 0;
+  const catalog = O.createSourceCatalog({ providers: [provider()], snapshotAuthorities: [authority(async () => ({ snapshotRef: ++observations > 2 ? 'rev-2' : SNAP }))] });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner });
+  await assert.rejects(resolver.resolve(requirement(budget())), (error) => error.name === 'DurabilityFailure' && error.reason === 'STALE_DURING_RESOLUTION');
+});
+
+test('FA6 OPTIONAL-only underflow is UNSATISFIED not PARTIAL', async () => {
+  const catalog = O.createSourceCatalog({ providers: [provider()], snapshotAuthorities: [authority()] });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner });
+  const exact = { id: 'e1', necessity: 'OPTIONAL', need: 'fixture need', source: { kind: 'REPOSITORY', ref: 'repo', snapshot: { mode: 'EXACT', ref: SNAP }, itemRefs: ['e1.js'] }, requiredProvenance: [] };
+  const req = requirement(budget({ maxMaterializedBytes: 1 }), [exact]);
+  const result = await resolver.resolve(req);
+  assert.equal(result.outcome, 'FRESH');
+  assert.equal(result.resolution.status, 'UNSATISFIED');
+  assert.deepEqual(result.resolution.unresolved, [{ evidenceId: 'e1', reason: 'BUDGET_EXHAUSTED' }]);
+  assert.equal(result.resolution.items.length, 0);
+  assert.throws(() => O.defineContextResolution(result.resolution, req));
+});
+
+test('FA6 underflow with durability configured does not throw or publish', async () => {
+  let publishes = 0;
+  const durability = {
+    async resolve() { return null; },
+    async publish() { publishes++; return null; },
+  };
+  const catalog = O.createSourceCatalog({ providers: [provider()], snapshotAuthorities: [authority()] });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner, durability });
+  const exact = { id: 'e1', necessity: 'REQUIRED', need: 'fixture need', source: { kind: 'REPOSITORY', ref: 'repo', snapshot: { mode: 'EXACT', ref: SNAP }, itemRefs: ['e1.js'] }, requiredProvenance: [] };
+  const result = await resolver.resolve(requirement(budget({ maxMaterializedBytes: 1 }), [exact]));
+  assert.equal(result.outcome, 'FRESH');
+  assert.equal(result.resolution.status, 'UNSATISFIED');
+  assert.deepEqual(result.resolution.unresolved, [{ evidenceId: 'e1', reason: 'BUDGET_EXHAUSTED' }]);
+  assert.equal(result.reuseKey, null);
+  assert.equal(result.receiptRef, null);
+  assert.equal(publishes, 0);
+});
+
+// Living Docs describe the two typed fail-closed facade resolutions: a
+// missing snapshot authority yields UNSATISFIED CURRENTNESS_UNVERIFIABLE
+// (never a thrown TypeError) and an underflow budget yields UNSATISFIED
+// BUDGET_EXHAUSTED.
+test('FA7 Living docs describe typed missing-authority unresolved', async () => {
+  const catalog = O.createSourceCatalog({ providers: [provider()], snapshotAuthorities: [] });
+  const retrievalPlanner = O.createRetrievalPlanner({ catalog });
+  const resolver = O.createOracleContextResolver({ sourceCatalog: catalog, retrievalPlanner });
+  const result = await resolver.resolve(requirement(budget()));
+  assert.equal(result.resolution.status, 'UNSATISFIED');
+  assert.deepEqual(result.resolution.unresolved, [{ evidenceId: 'e1', reason: 'CURRENTNESS_UNVERIFIABLE' }]);
+  const graphDoc = fs.readFileSync(new URL('../docs/living/system/oracle/context-graph.md', import.meta.url), 'utf8');
+  const stateDoc = fs.readFileSync(new URL('../docs/living/system/oracle/state.md', import.meta.url), 'utf8');
+  for (const doc of [graphDoc, stateDoc]) {
+    assert.match(doc, /CURRENTNESS_UNVERIFIABLE/);
+    assert.match(doc, /BUDGET_EXHAUSTED/);
+    assert.doesNotMatch(doc, /BB-\d+/);
+  }
+  assert.match(graphDoc, /authority is registered, the facade returns `UNSATISFIED` with `CURRENTNESS_UNVERIFIABLE`/);
+  assert.doesNotMatch(graphDoc, /pre-observation rejects with the catalog/);
+  assert.match(stateDoc, /missing snapshot authority[^.]*UNSATISFIED[^.]*CURRENTNESS_UNVERIFIABLE/);
+});
