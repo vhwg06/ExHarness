@@ -46,7 +46,7 @@ NONE
 - BB-088 [WORKER/EXECUTION] — Productize authoritative snapshot-bound Context Graph
 - BB-089 [WORKER/EXECUTION] — Adopt Oracle facade for Backend/QA production context
 - BB-090 [WORKER/EXECUTION] — Bind declared negative cases to executed subject-invoking tests in the Worker gate
-- BB-096 [WORKER/EXECUTION] — Bind delivered Backend/QA acceptance to a real repository and real verification processes
+- BB-097 [WORKER/EXECUTION] — Run Codex, Kiro and agy under ExHarness supervision
 - BB-098 [RESEARCH_SA/RESEARCH] — Observe supervised and direct agent-tool runs
 - BB-099 [RESEARCH_SA/RESEARCH] — Measure ExHarness-supervised versus direct agent-tool delivery
 
@@ -98,8 +98,8 @@ BB-092 [BLOCKED_BY BB-091] <- BB-091
 BB-093 [BLOCKED_BY BB-092] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094,BB-065] <- BB-094, BB-065
-BB-096 [WORKER_SCHEDULABLE] <- ROOT
-BB-097 [BLOCKED_BY BB-096] <- BB-096
+BB-096 [DONE] <- ROOT
+BB-097 [WORKER_SCHEDULABLE] <- BB-096
 BB-098 [RESEARCH_SCHEDULABLE] <- BB-097
 BB-099 [RESEARCH_SCHEDULABLE] <- BB-098, BB-065
 ```
