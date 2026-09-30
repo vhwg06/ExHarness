@@ -149,6 +149,19 @@ export function taskReadiness(graph,taskId){
   return blockedBy.length?{taskId,ready:false,reason:"DEPENDENCIES_NOT_DONE",blockedBy}:{taskId,ready:true,reason:"DIRECT_DEPENDENCIES_DONE",blockedBy:[]};
 }
 
+export function directDependentIds(graph,taskId){
+  return graph.tasks.filter(t=>t.dependencies.some(d=>d.taskId===taskId)).map(t=>t.id).sort();
+}
+// Contract keys that survive a return to research under a replacement objective.
+export const RESEARCH_RESET_CONTRACT_KEYS=Object.freeze(["objectiveRef","planRef","researchBaselineSha"]);
+export function assertResearchReset(task){
+  if(task?.status!=="PLANNED"||task.lane!=="RESEARCH_SA"||task.phase!=="RESEARCH")fail(`reset requires PLANNED RESEARCH_SA/RESEARCH: ${task?.id}`);
+  if(task.claim!=null||task.currentContextRef!=null)fail(`reset task cannot keep claim or active context: ${task.id}`);
+  const stale=Object.keys(task.contract??{}).filter(k=>!RESEARCH_RESET_CONTRACT_KEYS.includes(k));
+  if(stale.length)fail(`reset task retains stale authority: ${task.id} ${stale.join(",")}`);
+  return task;
+}
+
 export function schedulableTasks(graph){
   return graph.tasks.filter(t=>taskReadiness(graph,t.id).ready).map(t=>t.id);
 }

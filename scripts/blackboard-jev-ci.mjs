@@ -3,6 +3,7 @@ import path from 'node:path';
 import { read, write, fail, localPath, planHash } from './blackboard-delivery-contract.mjs';
 import { git, materialize, evaluate, validateEvaluation } from './blackboard-jev.mjs';
 import { collectEvidence } from './blackboard-delivery.mjs';
+import { detectSupersessions, supersessionFence, assertObjectivesUnchanged, verifySupersession } from './blackboard-objective-supersession.mjs';
 
 const [command]=process.argv.slice(2);
 const id=process.env.WORK_ID,sha=process.env.CANDIDATE_SHA;
@@ -66,9 +67,16 @@ if(command==='select') {
   const graph=read(trustedRoot,'docs/blackboard/work-graph.json');
   const publications=[];
   const research=[];
+  let supersessions=[];
   if(!id){
+    // OBJECTIVE_SUPERSESSION is detected before ordinary research routing; its target and direct
+    // dependents are judged only by the deterministic verify-supersession job.
+    const targets=detectSupersessions({trustedRoot,subjectRoot,trustedGraph:graph});
+    assertObjectivesUnchanged({trustedRoot,subjectRoot,trustedGraph:graph,exempt:targets});
+    supersessions=targets.map(target=>({id:target,sha}));
+    const fenced=supersessionFence(graph,targets);
     for(const task of graph.tasks){
-      if(task.status==='DONE'||task.lane!=='RESEARCH_SA')continue;
+      if(task.status==='DONE'||task.lane!=='RESEARCH_SA'||fenced.has(task.id))continue;
       const inspected=candidateResearchTask(graph,task);
       if(inspected.publication)publications.push({id:task.id,sha});
       else if(researchChanged(graph,task,inspected.candidate))research.push(task);
@@ -77,14 +85,19 @@ if(command==='select') {
   const selected=id
     ? graph.tasks.filter(t=>t.id===id&&t.status!=='DONE')
     : [
-        ...graph.tasks.filter(t=>t.status!=='DONE'&&t.lane==='WORKER'&&t.contract.candidateSha===sha),
+        ...graph.tasks.filter(t=>t.status!=='DONE'&&t.lane==='WORKER'&&t.contract.candidateSha===sha&&!supersessions.some(s=>s.id===t.id||t.dependencies.some(d=>d.taskId===s.id))),
         ...research
       ];
   if(id&&selected.length!==1)fail('work is not current');
   const work=[...new Map(selected.map(t=>[t.id,{id:t.id,sha:sha??t.contract.candidateSha}])).values()];
-  if(work.some(w=>!w.sha)||publications.some(w=>!w.sha))fail('candidate SHA required');
+  if(work.some(w=>!w.sha)||publications.some(w=>!w.sha)||supersessions.some(w=>!w.sha))fail('candidate SHA required');
   const trustedSha=git(trustedRoot,'rev-parse','HEAD');
-  fs.appendFileSync(process.env.GITHUB_OUTPUT,`work=${JSON.stringify(work)}\npublications=${JSON.stringify(publications)}\ntrusted_sha=${trustedSha}\n`);
+  fs.appendFileSync(process.env.GITHUB_OUTPUT,`work=${JSON.stringify(work)}\npublications=${JSON.stringify(publications)}\nsupersessions=${JSON.stringify(supersessions)}\ntrusted_sha=${trustedSha}\n`);
+} else if(command==='verify-supersession') {
+  // Deterministic, secret-free and data-only: trusted PR-base scripts read candidate files as JSON/bytes.
+  if(!/^BB-\d+$/.test(id??'')||!/^[a-f0-9]{40}$/.test(sha??''))fail('invalid CI subject');
+  const result=verifySupersession({trustedRoot:path.resolve(trustedRoot),subjectRoot:path.resolve(subjectRoot),prBaseSha:process.env.BASE_SHA,candidateSha:sha,targetWorkId:id});
+  console.log(JSON.stringify(result));
 } else if(command==='verify-publication') {
   if(!/^BB-\d+$/.test(id??'')||!/^[a-f0-9]{40}$/.test(sha??''))fail('invalid CI subject');
   const trusted=path.resolve(trustedRoot),root=path.resolve(subjectRoot);

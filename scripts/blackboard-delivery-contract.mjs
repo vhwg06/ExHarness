@@ -109,7 +109,29 @@ export function verdict(answers, lane) {
   if (lane === 'RESEARCH_SA' || choices.includes('PLAN_INPUT_CONTRADICTION')) return 'RESEARCH_REQUIRED';
   return 'REPAIR_REQUIRED';
 }
-export const deliveryTypes = new Set(['OBJECTIVE', 'READY_IMPLEMENT_PLAN', 'JEV_EVALUATION', 'DELIVERED_FEATURE']);
+export const deliveryTypes = new Set(['OBJECTIVE', 'READY_IMPLEMENT_PLAN', 'JEV_EVALUATION', 'DELIVERED_FEATURE', 'OBJECTIVE_SUPERSESSION']);
+export const supersessionDispositions = ['TERMINAL_UNCHANGED', 'RESET_RESEARCH', 'RETAIN_RESEARCH'];
+// Typed receipt authorizing replacement of one unfinished task objective at its stable path.
+export function assertObjectiveSupersession(a) {
+  if (a?.kind !== 'BLACKBOARD_ARTIFACT' || a.version !== 1 || a.artifactType !== 'OBJECTIVE_SUPERSESSION') fail('supersession kind/version/type');
+  const allowed = new Set(['kind', 'version', 'artifactType', 'artifactId', 'targetWorkId', 'trustedBaseSha', 'oldObjective', 'replacementObjective', 'planRef', 'reason', 'evidenceRefs', 'directDependents']);
+  for (const key of Object.keys(a)) if (!allowed.has(key)) fail(`supersession field not allowed: ${key}`);
+  if (!/^BB-\d+$/.test(a.targetWorkId ?? '')) fail('supersession targetWorkId');
+  if (a.artifactId !== `${a.targetWorkId}-supersession`) fail('supersession artifactId');
+  sha(a.trustedBaseSha, 'supersession trustedBaseSha');
+  binding(a.oldObjective, 'oldObjective'); binding(a.replacementObjective, 'replacementObjective');
+  nonempty(a.planRef, 'supersession planRef'); nonempty(a.reason, 'supersession reason');
+  list(a.evidenceRefs, 'supersession evidenceRefs');
+  if (!Array.isArray(a.directDependents)) fail('supersession directDependents');
+  for (const d of a.directDependents) {
+    if (!d || typeof d !== 'object' || Object.keys(d).some(k => !['taskId', 'disposition', 'planRef'].includes(k))) fail('supersession dependent shape');
+    if (!/^BB-\d+$/.test(d.taskId ?? '')) fail('supersession dependent taskId');
+    if (!supersessionDispositions.includes(d.disposition)) fail(`supersession dependent disposition: ${d.disposition}`);
+    if (d.planRef !== null && (typeof d.planRef !== 'string' || !d.planRef)) fail('supersession dependent planRef');
+  }
+  if (new Set(a.directDependents.map(d => d.taskId)).size !== a.directDependents.length) fail('duplicate supersession dependent');
+  return a;
+}
 export function assertDeliveryArtifact(a) {
   if (a?.kind !== 'BLACKBOARD_ARTIFACT' || a.version !== 1) fail('artifact kind/version');
   nonempty(a.artifactId, 'artifactId');
@@ -134,7 +156,8 @@ export function assertDeliveryArtifact(a) {
     binding(a.plan, 'delivery plan'); binding(a.evaluation, 'delivery evaluation');
     for (const k of ['candidateSha', 'candidateTree', 'mergeSha', 'observedMainSha']) sha(a[k], k);
     list(a.consolidatedRefs, 'consolidatedRefs');
-  } else fail('artifact type');
+  } else if (a.artifactType === 'OBJECTIVE_SUPERSESSION') assertObjectiveSupersession(a);
+  else fail('artifact type');
   return a;
 }
 export function scopeContains(pattern, file) {
