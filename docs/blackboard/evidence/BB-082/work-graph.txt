@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: outer Blackboard is a typed dependency graph with task scheduling and component context routing
+ok 1 - outer Blackboard is a typed dependency graph with task scheduling and component context routing
+  ---
+  duration_ms: 7.643571
+  type: 'test'
+  ...
+# Subtest: accepted worker cannot be claimed again while awaiting merge
+ok 2 - accepted worker cannot be claimed again while awaiting merge
+  ---
+  duration_ms: 0.858592
+  type: 'test'
+  ...
+# Subtest: task may span multiple components without creating multiple execution owners
+ok 3 - task may span multiple components without creating multiple execution owners
+  ---
+  duration_ms: 0.772581
+  type: 'test'
+  ...
+# Subtest: work graph rejects unknown component and dependency cycles
+ok 4 - work graph rejects unknown component and dependency cycles
+  ---
+  duration_ms: 2.720518
+  type: 'test'
+  ...
+# Subtest: non-active tasks cannot carry worker claim or current context
+ok 5 - non-active tasks cannot carry worker claim or current context
+  ---
+  duration_ms: 2.205534
+  type: 'test'
+  ...
+# Subtest: supersession direct dependents are exactly the tasks with an edge to the target
+ok 6 - supersession direct dependents are exactly the tasks with an edge to the target
+  ---
+  duration_ms: 1.701837
+  type: 'test'
+  ...
+# Subtest: supersession reset leaves non-active research with no stale readiness or worker authority
+ok 7 - supersession reset leaves non-active research with no stale readiness or worker authority
+  ---
+  duration_ms: 0.656622
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 74.483098
+
+
+exitCode=0

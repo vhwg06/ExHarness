@@ -1,0 +1,73 @@
+TAP version 13
+# Subtest: CONTRACT/TARGET_RESET/DEPENDENT_IMPACT: valid supersession resets target and conservatively classifies every direct dependent
+ok 1 - CONTRACT/TARGET_RESET/DEPENDENT_IMPACT: valid supersession resets target and conservatively classifies every direct dependent
+  ---
+  duration_ms: 107.488264
+  type: 'test'
+  ...
+# Subtest: CONTRACT: receipt schema is closed and typed
+ok 2 - CONTRACT: receipt schema is closed and typed
+  ---
+  duration_ms: 0.85
+  type: 'test'
+  ...
+# Subtest: FRESHNESS/INV-2: stale base, old hash, routing, plan and replacement-hash negatives fail closed
+ok 3 - FRESHNESS/INV-2: stale base, old hash, routing, plan and replacement-hash negatives fail closed
+  ---
+  duration_ms: 768.473138
+  type: 'test'
+  ...
+# Subtest: TARGET_RESET/INV-3: DONE/WORKER targets, retained authority and identity changes are rejected
+ok 4 - TARGET_RESET/INV-3: DONE/WORKER targets, retained authority and identity changes are rejected
+  ---
+  duration_ms: 949.619287
+  type: 'test'
+  ...
+# Subtest: DEPENDENT_IMPACT/INV-4: omitted, duplicated, misclassified or mutated dependents are rejected
+ok 5 - DEPENDENT_IMPACT/INV-4: omitted, duplicated, misclassified or mutated dependents are rejected
+  ---
+  duration_ms: 1189.845234
+  type: 'test'
+  ...
+# Subtest: RETENTION/MIGRATION_BOUNDARY: changed-path audit rejects code bundling, version siblings and history rewrites
+ok 6 - RETENTION/MIGRATION_BOUNDARY: changed-path audit rejects code bundling, version siblings and history rewrites
+  ---
+  duration_ms: 700.899492
+  type: 'test'
+  ...
+# Subtest: MIGRATION_BOUNDARY: this repository carries the mechanism only; no BB-065 objective migration is bundled
+ok 7 - MIGRATION_BOUNDARY: this repository carries the mechanism only; no BB-065 objective migration is bundled
+  ---
+  duration_ms: 3248.250721
+  type: 'test'
+  ...
+# Subtest: RETENTION: repository verification binds retained receipts to the current stable objective
+ok 8 - RETENTION: repository verification binds retained receipts to the current stable objective
+  ---
+  duration_ms: 89.617573
+  type: 'test'
+  ...
+# Subtest: TRUST_BOUNDARY: selector routes supersession to the deterministic verifier before research routing
+ok 9 - TRUST_BOUNDARY: selector routes supersession to the deterministic verifier before research routing
+  ---
+  duration_ms: 284.66572
+  type: 'test'
+  ...
+# Subtest: INV-1/TRUST_BOUNDARY: ordinary research candidates cannot redefine their own objective
+ok 10 - INV-1/TRUST_BOUNDARY: ordinary research candidates cannot redefine their own objective
+  ---
+  duration_ms: 182.613624
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7603.252303
+
+
+exitCode=0

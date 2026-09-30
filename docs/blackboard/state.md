@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,18 +31,24 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-082
 ```
 
 ## Active work
 
-NONE
+
+BB-082
+task: Define trusted objective supersession and research reset control
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-082/current.json
+components: outer/blackboard
+worker: grok-bot
 
 ## Schedulable tasks
 
 - BB-054 [WORKER/EXECUTION] — Implement exact deployment identity and Product QA acceptance
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
-- BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 - BB-088 [WORKER/EXECUTION] — Productize authoritative snapshot-bound Context Graph
 - BB-089 [WORKER/EXECUTION] — Adopt Oracle facade for Backend/QA production context
 - BB-097 [WORKER/EXECUTION] — Run Codex, Kiro and agy under ExHarness supervision
@@ -83,7 +89,7 @@ BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
 BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
-BB-082 [WORKER_SCHEDULABLE] <- ROOT
+BB-082 [ACTIVE] <- ROOT
 BB-083 [BLOCKED_BY BB-059,BB-065] <- BB-059, BB-064, BB-065
 BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
 BB-085 [BLOCKED_BY BB-084] <- BB-084
