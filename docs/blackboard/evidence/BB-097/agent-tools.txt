@@ -1,0 +1,145 @@
+TAP version 13
+# Subtest: AT1 codex builds exact first and resume invocations with the prompt on stdin for each permission profile
+ok 1 - AT1 codex builds exact first and resume invocations with the prompt on stdin for each permission profile
+  ---
+  duration_ms: 1.887872
+  type: 'test'
+  ...
+# Subtest: AT1 kiro builds exact first and resume invocations with the prompt as one argument
+ok 2 - AT1 kiro builds exact first and resume invocations with the prompt as one argument
+  ---
+  duration_ms: 0.262243
+  type: 'test'
+  ...
+# Subtest: AT1 agy builds exact first and resume invocations with a seconds print timeout and log file
+ok 3 - AT1 agy builds exact first and resume invocations with a seconds print timeout and log file
+  ---
+  duration_ms: 0.708303
+  type: 'test'
+  ...
+# Subtest: AT1 invalid requests are rejected and defineAgentTool replaces only the launch tuple
+ok 4 - AT1 invalid requests are rejected and defineAgentTool replaces only the launch tuple
+  ---
+  duration_ms: 0.485436
+  type: 'test'
+  ...
+# Subtest: AT1 executables resolve without a shell: script paths, POSIX PATH, win32 npm shims and native exe
+ok 5 - AT1 executables resolve without a shell: script paths, POSIX PATH, win32 npm shims and native exe
+  ---
+  duration_ms: 3.980181
+  type: 'test'
+  ...
+# Subtest: AT1 each adapter launches the fake CLI with the exact recorded argv and stdin, and a missing tool is TOOL_UNAVAILABLE
+ok 6 - AT1 each adapter launches the fake CLI with the exact recorded argv and stdin, and a missing tool is TOOL_UNAVAILABLE
+  ---
+  duration_ms: 105.012275
+  type: 'test'
+  ...
+# Subtest: AT2 a prompt with shell metacharacters reaches the tool verbatim and is never interpreted
+ok 7 - AT2 a prompt with shell metacharacters reaches the tool verbatim and is never interpreted
+  ---
+  duration_ms: 68.5388
+  type: 'test'
+  ...
+# Subtest: AT2 output is bounded per stream while the digest covers the full stream
+ok 8 - AT2 output is bounded per stream while the digest covers the full stream
+  ---
+  duration_ms: 33.054611
+  type: 'test'
+  ...
+# Subtest: AT2 a missing executable is TOOL_UNAVAILABLE without throwing
+ok 9 - AT2 a missing executable is TOOL_UNAVAILABLE without throwing
+  ---
+  duration_ms: 2.211417
+  type: 'test'
+  ...
+# Subtest: AT2 a hung tool is killed at timeoutMs together with its process tree
+ok 10 - AT2 a hung tool is killed at timeoutMs together with its process tree
+  ---
+  duration_ms: 1508.095433
+  type: 'test'
+  ...
+# Subtest: AT3 a verified candidate is promoted: ACCEPTED with one ExHarness commit and the source repository preserved
+ok 11 - AT3 a verified candidate is promoted: ACCEPTED with one ExHarness commit and the source repository preserved
+  ---
+  duration_ms: 271.396705
+  type: 'test'
+  ...
+# Subtest: AT3 failed verification is fed back through resume and the fix is accepted on the next attempt
+ok 12 - AT3 failed verification is fed back through resume and the fix is accepted on the next attempt
+  ---
+  duration_ms: 433.617502
+  type: 'test'
+  ...
+# Subtest: AT3 a tool that never fixes ends EXHAUSTED after exactly maxAttempts without promotion
+ok 13 - AT3 a tool that never fixes ends EXHAUSTED after exactly maxAttempts without promotion
+  ---
+  duration_ms: 611.001211
+  type: 'test'
+  ...
+# Subtest: AT3 a tool that claims success without editing is NO_CHANGE and never ACCEPTED
+ok 14 - AT3 a tool that claims success without editing is NO_CHANGE and never ACCEPTED
+  ---
+  duration_ms: 418.361005
+  type: 'test'
+  ...
+# Subtest: AT3 commits made by the agent are folded into exactly one candidate commit
+ok 15 - AT3 commits made by the agent are folded into exactly one candidate commit
+  ---
+  duration_ms: 294.576398
+  type: 'test'
+  ...
+# Subtest: AT3 a partial edit is rejected, its feedback drives the fix, and the accepted candidate builds on it
+ok 16 - AT3 a partial edit is rejected, its feedback drives the fix, and the accepted candidate builds on it
+  ---
+  duration_ms: 462.275699
+  type: 'test'
+  ...
+# Subtest: AT3 a failing tool, a missing tool and an invalid task are never ACCEPTED
+ok 17 - AT3 a failing tool, a missing tool and an invalid task are never ACCEPTED
+  ---
+  duration_ms: 353.291025
+  type: 'test'
+  ...
+# Subtest: AT3 verification feedback is bounded by maxFeedbackChars
+ok 18 - AT3 verification feedback is bounded by maxFeedbackChars
+  ---
+  duration_ms: 453.806896
+  type: 'test'
+  ...
+# Subtest: AT4 run prints AGENT_SUPERVISED_RESULT_V1 and reports ACCEPTED only after passing verification
+ok 19 - AT4 run prints AGENT_SUPERVISED_RESULT_V1 and reports ACCEPTED only after passing verification
+  ---
+  duration_ms: 996.736193
+  type: 'test'
+  ...
+# Subtest: AT4 smoke skips missing and unauthenticated tools and never reports ACCEPTED without passing verification
+ok 20 - AT4 smoke skips missing and unauthenticated tools and never reports ACCEPTED without passing verification
+  ---
+  duration_ms: 1659.447679
+  type: 'test'
+  ...
+# Subtest: AT4 root scripts run agent-tools tests in npm test while live smoke stays out of test and verify
+ok 21 - AT4 root scripts run agent-tools tests in npm test while live smoke stays out of test and verify
+  ---
+  duration_ms: 0.57454
+  type: 'test'
+  ...
+# Subtest: AT4 the Living doc states the trust boundary
+ok 22 - AT4 the Living doc states the trust boundary
+  ---
+  duration_ms: 0.41726
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7794.635158
+
+
+exitCode=0

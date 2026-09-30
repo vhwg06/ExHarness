@@ -43,7 +43,6 @@ NONE
 - BB-054 [WORKER/EXECUTION] — Implement exact deployment identity and Product QA acceptance
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-088 [WORKER/EXECUTION] — Productize authoritative snapshot-bound Context Graph
-- BB-097 [WORKER/EXECUTION] — Run Codex, Kiro and agy under ExHarness supervision
 - BB-098 [RESEARCH_SA/RESEARCH] — Observe supervised and direct agent-tool runs
 - BB-099 [RESEARCH_SA/RESEARCH] — Measure ExHarness-supervised versus direct agent-tool delivery
 
@@ -96,7 +95,7 @@ BB-093 [BLOCKED_BY BB-092] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094,BB-065] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
-BB-097 [WORKER_SCHEDULABLE] <- BB-096
+BB-097 [DONE] <- BB-096
 BB-098 [RESEARCH_SCHEDULABLE] <- BB-097
 BB-099 [RESEARCH_SCHEDULABLE] <- BB-098, BB-065
 ```

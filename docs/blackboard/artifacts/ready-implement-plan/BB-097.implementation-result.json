@@ -1,0 +1,109 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-097-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+    "hash": "65755c28b8e1870d374e8cea6d6cd5f7526c5ec1b9e546d8036ccbe1ed2ba47c"
+  },
+  "candidateSha": "0ac104ff04fe8113a36425d0237a71778b53ee71",
+  "baselineSha": "48b1b6067b646aec6b86a6c7d185e119c4ad1d6e",
+  "candidateTree": "9972b217e6328cdc691517478579ae6dbc0cbefd",
+  "verificationRuns": [
+    {
+      "id": "at1-adapters",
+      "command": "node --test --test-name-pattern=\"^AT1 \" packages/agent-tools/test/agent-tools.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0ac104ff04fe8113a36425d0237a71778b53ee71",
+      "logRef": "docs/blackboard/evidence/BB-097/at1-adapters.txt",
+      "logHash": "53067c16c4c01bb417ac2d0b295636bd02130c090791774e8f36a6e04268df97"
+    },
+    {
+      "id": "at2-runner",
+      "command": "node --test --test-name-pattern=\"^AT2 \" packages/agent-tools/test/agent-tools.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0ac104ff04fe8113a36425d0237a71778b53ee71",
+      "logRef": "docs/blackboard/evidence/BB-097/at2-runner.txt",
+      "logHash": "7b9b439937f950af5b1dd948c9cc731dc64ff013eb5efb7eecfb2847fea7a848"
+    },
+    {
+      "id": "at3-supervisor",
+      "command": "node --test --test-name-pattern=\"^AT3 \" packages/agent-tools/test/agent-tools.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0ac104ff04fe8113a36425d0237a71778b53ee71",
+      "logRef": "docs/blackboard/evidence/BB-097/at3-supervisor.txt",
+      "logHash": "51a3dbe5216f0e31c28d7be270598a63a299da921fc4bec0e28cc236bb220222"
+    },
+    {
+      "id": "at4-cli",
+      "command": "node --test --test-name-pattern=\"^AT4 \" packages/agent-tools/test/agent-tools.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0ac104ff04fe8113a36425d0237a71778b53ee71",
+      "logRef": "docs/blackboard/evidence/BB-097/at4-cli.txt",
+      "logHash": "4a18330d7a903ea01f2eccb6919296d0b88292240e0f9ee60d2d7ebb792b3827"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0ac104ff04fe8113a36425d0237a71778b53ee71",
+      "logRef": "docs/blackboard/evidence/BB-097/agent-tools.txt",
+      "logHash": "5f2e1861622b7e502c55f2ae2a57ee1d303a934bc21f46f3204a7edd2d700821"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0ac104ff04fe8113a36425d0237a71778b53ee71",
+      "logRef": "docs/blackboard/evidence/BB-097/docs.txt",
+      "logHash": "0456372e68ca8ca6cc3ea39cecad3b1b93102594dadb8adcc25e0875f9b1a341"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0ac104ff04fe8113a36425d0237a71778b53ee71",
+      "logRef": "docs/blackboard/evidence/BB-097/repository.txt",
+      "logHash": "6d39c1de68e90fbf71ecf7907cd227b43aad9f92cf5954588e7d1c778d1ba892"
+    }
+  ],
+  "claims": [
+    {
+      "id": "AT1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-097/at1-adapters.txt",
+        "docs/blackboard/evidence/BB-097/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "AT2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-097/at2-runner.txt",
+        "docs/blackboard/evidence/BB-097/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "AT3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-097/at3-supervisor.txt",
+        "docs/blackboard/evidence/BB-097/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "AT4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-097/at4-cli.txt",
+        "docs/blackboard/evidence/BB-097/docs.txt",
+        "docs/blackboard/evidence/BB-097/repository.txt"
+      ]
+    }
+  ]
+}
