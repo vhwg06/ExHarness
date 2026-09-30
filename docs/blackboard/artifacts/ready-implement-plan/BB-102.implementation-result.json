@@ -1,0 +1,202 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-102-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-102.json",
+    "hash": "e359925ccc82e2f2175b2424098136929558431df471229eb959584321eba646"
+  },
+  "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+  "baselineSha": "a4384c58c0099fb60976b5201c66232960873e53",
+  "candidateTree": "38c6bf7cd3d909fc8a482d969b4d4aab1406d94c",
+  "verificationRuns": [
+    {
+      "id": "cx1-schema",
+      "command": "node --test --test-name-pattern=\"^CX1 \" packages/agent-tools/test/task-context.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/cx1-schema.txt",
+      "logHash": "0068448f8c46bedf41a5b2f520b26a691c74e416ddd613198b2ffb2855326943"
+    },
+    {
+      "id": "cx2-project",
+      "command": "node --test --test-name-pattern=\"^CX2 \" packages/agent-tools/test/task-context.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/cx2-project.txt",
+      "logHash": "081332b2eb48bfd8530c81376568ca2099a0e5691ebf681324c30a40b5959976"
+    },
+    {
+      "id": "cx3-block",
+      "command": "node --test --test-name-pattern=\"^CX3 \" packages/agent-tools/test/task-context.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/cx3-block.txt",
+      "logHash": "8d1607512e90c5c8253a06ee961534979cc23d7bbd7ccd1a88d9ca5ef093296a"
+    },
+    {
+      "id": "cx4-default",
+      "command": "node --test --test-name-pattern=\"^CX4 \" packages/agent-tools/test/task-context.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/cx4-default.txt",
+      "logHash": "face09b76340da347f0378a82ed843ae10c02222311ae843b4def654715b7e6b"
+    },
+    {
+      "id": "cx5-docs",
+      "command": "node --test --test-name-pattern=\"^CX5 \" packages/agent-tools/test/task-context.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/cx5-docs.txt",
+      "logHash": "1d41770626928fb3fbfa1392f3b8e22cf421f1407b33c9c787475f31225bff3a"
+    },
+    {
+      "id": "cx6-scope",
+      "command": "node --test --test-name-pattern=\"^CX6 \" packages/agent-tools/test/task-context.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/cx6-scope.txt",
+      "logHash": "f1bd9c42048132d8eb87ded62cabe5b62ab814bdb1a461eb75ba5ca69ab67a31"
+    },
+    {
+      "id": "scope",
+      "command": "node packages/agent-tools/test/task-context-scope-audit.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/scope.txt",
+      "logHash": "b06a339f9828383d5597c85f169173edfe6a5f260cdcf45151fde1d31aef74b5"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/agent-tools.txt",
+      "logHash": "56640b06ab1e8896711f905962c6533e366ab692063f7fbc41c020539796f288"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/docs.txt",
+      "logHash": "20f23a77061178ef333f3268bccc1e8bd56ff29b244a0a5b640628cc265db1a9"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7bb68b30f53c2819bb71ffee0bb20fca6450fd16",
+      "logRef": "docs/blackboard/evidence/BB-102/repository.txt",
+      "logHash": "ee44702b432fac96ac1a61b0b656c95cacf0454c85535faf26e16c3b01b7bc64"
+    }
+  ],
+  "claims": [
+    {
+      "id": "CX1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-102/cx1-schema.txt",
+        "docs/blackboard/evidence/BB-102/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-CX-dotdot",
+          "logRef": "docs/blackboard/evidence/BB-102/cx1-schema.txt",
+          "testRef": "packages/agent-tools/test/task-context.test.js",
+          "bodyHash": "26b90f6e036e2098a49e0ae4f5ea167790af21c4d7ba3d3bee85872293543d99"
+        }
+      ]
+    },
+    {
+      "id": "CX2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-102/cx2-project.txt",
+        "docs/blackboard/evidence/BB-102/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-CX-exclude",
+          "logRef": "docs/blackboard/evidence/BB-102/cx2-project.txt",
+          "testRef": "packages/agent-tools/test/task-context.test.js",
+          "bodyHash": "98dba755e0a883b086d38c977affd3cb52a87858ac4c6d05816360f4eee0dd07"
+        }
+      ]
+    },
+    {
+      "id": "CX3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-102/cx3-block.txt",
+        "docs/blackboard/evidence/BB-102/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-CX-missing",
+          "logRef": "docs/blackboard/evidence/BB-102/cx3-block.txt",
+          "testRef": "packages/agent-tools/test/task-context.test.js",
+          "bodyHash": "2ce8253ee1a02c508d09fced0ac709784114ceab3f1a14d694225c20ec693abc"
+        },
+        {
+          "id": "NC-CX-budget",
+          "logRef": "docs/blackboard/evidence/BB-102/cx3-block.txt",
+          "testRef": "packages/agent-tools/test/task-context.test.js",
+          "bodyHash": "31d367102c549fd2e63b329919ebd3b72b1181077c552ed5b6be5838a21cd741"
+        },
+        {
+          "id": "NC-CX-stale",
+          "logRef": "docs/blackboard/evidence/BB-102/cx3-block.txt",
+          "testRef": "packages/agent-tools/test/task-context.test.js",
+          "bodyHash": "a0b7ad80623f9b642cd587ce88918d5651124f73d51892723e2bed7fdfcfbaf2"
+        }
+      ]
+    },
+    {
+      "id": "CX4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-102/cx4-default.txt",
+        "docs/blackboard/evidence/BB-102/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-CX-default",
+          "logRef": "docs/blackboard/evidence/BB-102/cx4-default.txt",
+          "testRef": "packages/agent-tools/test/task-context.test.js",
+          "bodyHash": "3037d32335fd0da8f3fe266b6246c75f6e1cd219c8a2dd6bf10c48ed37f15636"
+        }
+      ]
+    },
+    {
+      "id": "CX5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-102/cx5-docs.txt",
+        "docs/blackboard/evidence/BB-102/docs.txt",
+        "docs/blackboard/evidence/BB-102/repository.txt"
+      ]
+    },
+    {
+      "id": "CX6",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-102/cx6-scope.txt",
+        "docs/blackboard/evidence/BB-102/scope.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-CX-scope",
+          "logRef": "docs/blackboard/evidence/BB-102/cx6-scope.txt",
+          "testRef": "packages/agent-tools/test/task-context.test.js",
+          "bodyHash": "e4f170c0f16e69fb875d4d2a2d7394c205569ee8abd8386ab8143e43c1b5f0f7"
+        }
+      ]
+    }
+  ]
+}
