@@ -42,11 +42,9 @@ NONE
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
 - BB-077 [WORKER/EXECUTION] — Research harness-isolation economics on shared benchmark kernel
-- BB-092 [WORKER/EXECUTION] — Implement bounded explicit progressive resolution
+- BB-093 [WORKER/EXECUTION] — Implement model-aware context budget profiles
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
-- BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
-- BB-102 [WORKER/EXECUTION] — Resolve declared agent-tool files through the Oracle facade
-- BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
+- BB-104 [WORKER/EXECUTION] — Run one local Backend-then-QA slice from an operator CLI
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-108 [WORKER/EXECUTION] — Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
@@ -97,25 +95,25 @@ BB-088 [DONE] <- BB-087
 BB-089 [DONE] <- BB-087
 BB-090 [DONE] <- BB-056
 BB-091 [DONE] <- BB-088
-BB-092 [WORKER_SCHEDULABLE] <- BB-091
-BB-093 [BLOCKED_BY BB-092] <- BB-092
+BB-092 [DONE] <- BB-091
+BB-093 [WORKER_SCHEDULABLE] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
 BB-098 [DONE] <- BB-097
 BB-099 [WORKER_SCHEDULABLE] <- BB-098, BB-065
-BB-100 [WORKER_SCHEDULABLE] <- BB-096, BB-097
+BB-100 [DONE] <- BB-096, BB-097
 BB-101 [DONE] <- BB-097
-BB-102 [WORKER_SCHEDULABLE] <- BB-097
-BB-103 [WORKER_SCHEDULABLE] <- BB-097
-BB-104 [BLOCKED_BY BB-100,BB-102] <- BB-100, BB-101, BB-102
+BB-102 [DONE] <- BB-097
+BB-103 [DONE] <- BB-097
+BB-104 [WORKER_SCHEDULABLE] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
 BB-106 [WORKER_SCHEDULABLE] <- BB-082, BB-087, BB-088
 BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [WORKER_SCHEDULABLE] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097
-BB-121 [BLOCKED_BY BB-100,BB-120] <- BB-100, BB-101, BB-120
+BB-121 [BLOCKED_BY BB-120] <- BB-100, BB-101, BB-120
 BB-122 [WORKER_SCHEDULABLE] <- BB-097, BB-098
 ```
 
