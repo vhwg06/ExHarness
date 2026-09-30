@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-108",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-108.json",
     "hash": "7d2e5647ec620c952b79c8d70f90bd9fb8ad08a2f5d0a7260333cb6fc9b761d5"
@@ -40,7 +40,13 @@
     "D8 — Evidence: facade-throw-probe-result.json (TypeError missing authority; TypeError consumed below materialization/step; planner CURRENTNESS_UNVERIFIABLE)."
   ],
   "sourceScope": {
-    "read": ["packages/**", "test/**", "scripts/**", "docs/**", "package.json"],
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "package.json"
+    ],
     "write": [
       "packages/oracle/src/context-resolution.js",
       "test/oracle-facade-accounting.test.mjs",
@@ -83,48 +89,118 @@
     {
       "id": "FA5",
       "statement": "Required evidence with no registered snapshot authority makes createOracleContextResolver.resolve return UNSATISFIED CURRENTNESS_UNVERIFIABLE with zero retrieve calls and no thrown TypeError.",
-      "verificationIds": ["fa5-authority", "oracle"],
-      "evidenceRequired": ["FA5 and rewritten CG3 test output."]
+      "verificationIds": [
+        "fa5-authority",
+        "oracle"
+      ],
+      "evidenceRequired": [
+        "FA5 and rewritten CG3 test output."
+      ]
     },
     {
       "id": "FA6",
       "statement": "maxMaterializedBytes 1 makes resolve return UNSATISFIED BUDGET_EXHAUSTED and never throw consumed below materialization/step; ProviderFailure still does not escape; STALE_DURING_RESOLUTION still throws.",
-      "verificationIds": ["fa6-underflow", "oracle"],
-      "evidenceRequired": ["FA6 test output plus existing FA2/FA4."]
+      "verificationIds": [
+        "fa6-underflow",
+        "oracle"
+      ],
+      "evidenceRequired": [
+        "FA6 test output plus existing FA2/FA4."
+      ]
     },
     {
       "id": "FA7",
       "statement": "Living docs describe those two typed fail-closed resolutions without Blackboard ids.",
-      "verificationIds": ["fa7-docs", "docs", "repository"],
-      "evidenceRequired": ["FA7 docs output, verify:current-docs, npm test."]
+      "verificationIds": [
+        "fa7-docs",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "FA7 docs output, verify:current-docs, npm test."
+      ]
     }
   ],
   "invariantCoverage": [
-    { "invariant": "Missing snapshot authority on required evidence is UNSATISFIED CURRENTNESS_UNVERIFIABLE, never a thrown TypeError from resolve().", "criterionIds": ["FA5"] },
-    { "invariant": "Empty-resolution materialization over maxMaterializedBytes is BUDGET_EXHAUSTED, never TypeError consumed below materialization/step.", "criterionIds": ["FA6"] },
-    { "invariant": "ProviderFailure does not escape resolve().", "criterionIds": ["FA6"] },
-    { "invariant": "STALE_DURING_RESOLUTION still throws DurabilityFailure.", "criterionIds": ["FA6"] }
+    {
+      "invariant": "Missing snapshot authority on required evidence is UNSATISFIED CURRENTNESS_UNVERIFIABLE, never a thrown TypeError from resolve().",
+      "criterionIds": [
+        "FA5"
+      ]
+    },
+    {
+      "invariant": "Empty-resolution materialization over maxMaterializedBytes is BUDGET_EXHAUSTED, never TypeError consumed below materialization/step.",
+      "criterionIds": [
+        "FA6"
+      ]
+    },
+    {
+      "invariant": "ProviderFailure does not escape resolve().",
+      "criterionIds": [
+        "FA6"
+      ]
+    },
+    {
+      "invariant": "STALE_DURING_RESOLUTION still throws DurabilityFailure.",
+      "criterionIds": [
+        "FA6"
+      ]
+    }
   ],
   "verificationPlan": [
-    { "id": "fa5-authority", "command": "node --test --test-name-pattern=\"^FA5 \" test/oracle-facade-accounting.test.mjs" },
-    { "id": "fa6-underflow", "command": "node --test --test-name-pattern=\"^FA6 \" test/oracle-facade-accounting.test.mjs" },
-    { "id": "fa7-docs", "command": "node --test --test-name-pattern=\"^FA7 \" test/oracle-facade-accounting.test.mjs" },
-    { "id": "oracle", "command": "npm run test:oracle" },
-    { "id": "docs", "command": "npm run verify:current-docs" },
-    { "id": "repository", "command": "npm test" }
+    {
+      "id": "fa5-authority",
+      "command": "node --test --test-name-pattern=\"^FA5 \" test/oracle-facade-accounting.test.mjs"
+    },
+    {
+      "id": "fa6-underflow",
+      "command": "node --test --test-name-pattern=\"^FA6 \" test/oracle-facade-accounting.test.mjs"
+    },
+    {
+      "id": "fa7-docs",
+      "command": "node --test --test-name-pattern=\"^FA7 \" test/oracle-facade-accounting.test.mjs"
+    },
+    {
+      "id": "oracle",
+      "command": "npm run test:oracle"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
   ],
   "researchGaps": [],
   "researchEvidence": [
-    { "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json", "finding": "Executed: missing CONTEXT_GRAPH authority throws TypeError from resolve(); planner execute reports CURRENTNESS_UNVERIFIABLE; maxMaterializedBytes 1 throws consumed below materialization/step." },
-    { "ref": "packages/oracle/src/context-resolution.js", "finding": "DELIVERED_TRUTH: preObserve calls authorityFor without try/catch; overflow rethrows when dropOrder is exhausted." }
+    {
+      "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json",
+      "finding": "Executed: missing CONTEXT_GRAPH authority throws TypeError from resolve(); planner execute reports CURRENTNESS_UNVERIFIABLE; maxMaterializedBytes 1 throws consumed below materialization/step."
+    },
+    {
+      "ref": "packages/oracle/src/context-resolution.js",
+      "finding": "DELIVERED_TRUTH: preObserve calls authorityFor without try/catch; overflow rethrows when dropOrder is exhausted."
+    }
   ],
   "dependencyResolution": {
-    "direct": ["BB-087", "BB-088"],
+    "direct": [
+      "BB-087",
+      "BB-088"
+    ],
     "workerStart": "Re-run node docs/blackboard/evidence/BB-108/facade-throw-probe.mjs. Confirm CG3 without-authority still expects TypeError.",
     "sourceClassification": {
-      "DELIVERED_TRUTH": ["createOracleContextResolver", "authorityFor", "createRetrievalPlanner.execute"],
+      "DELIVERED_TRUTH": [
+        "createOracleContextResolver",
+        "authorityFor",
+        "createRetrievalPlanner.execute"
+      ],
       "PLANNED_CONTRACT": [],
-      "RESEARCH_DESIRED_STATE": ["typed CURRENTNESS_UNVERIFIABLE from facade", "typed BUDGET_EXHAUSTED for underflow"]
+      "RESEARCH_DESIRED_STATE": [
+        "typed CURRENTNESS_UNVERIFIABLE from facade",
+        "typed BUDGET_EXHAUSTED for underflow"
+      ]
     },
     "contradiction": "BB-088 G3 currently tests the TypeError. This task rewrites that test; it does not keep the throw as the product contract."
   },
@@ -134,17 +210,51 @@
     "forbidden": "No ProviderFailure escape, no swallowed STALE_DURING_RESOLUTION, no catalog.authorityFor signature change."
   },
   "ciContract": {
-    "checks": ["fa5-authority", "fa6-underflow", "fa7-docs", "oracle", "docs", "repository"],
+    "checks": [
+      "fa5-authority",
+      "fa6-underflow",
+      "fa7-docs",
+      "oracle",
+      "docs",
+      "repository"
+    ],
     "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
   },
   "migrationContract": {
-    "preserve": ["FA2 ProviderFailure typing", "FA4 STALE_DURING_RESOLUTION throw", "planner execute CURRENTNESS_UNVERIFIABLE"],
-    "add": ["preObserve typed skip", "underflow BUDGET_EXHAUSTED", "FA5 FA6 tests"],
+    "preserve": [
+      "FA2 ProviderFailure typing",
+      "FA4 STALE_DURING_RESOLUTION throw",
+      "planner execute CURRENTNESS_UNVERIFIABLE"
+    ],
+    "add": [
+      "preObserve typed skip",
+      "underflow BUDGET_EXHAUSTED",
+      "FA5 FA6 tests"
+    ],
     "rollback": "Restore preObserve throw and overflow rethrow; restore CG3 TypeError assertion; revert Living docs."
   },
   "laneContracts": [
-    { "lane": "RESEARCH_SA", "input": "BB-108 objective + facade-throw probe + context-resolution.js", "output": "READY_IMPLEMENT_PLAN", "binding": "objective hash + researchBaselineSha", "convergence": "researchGaps=[] + fresh Jev SATISFIED", "forbidden": ["product implementation", "self-issued readiness"] },
-    { "lane": "WORKER", "input": "exact READY plan + DONE BB-087, BB-088", "output": "DELIVERED_FEATURE", "binding": "plan hash + candidate/evidence + Jev", "convergence": "criterion runs + no forbidden writes + docs", "forbidden": ["No ProviderFailure escape."] }
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-108 objective + facade-throw probe + context-resolution.js",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-087, BB-088",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "No ProviderFailure escape."
+      ]
+    }
   ],
   "livingDocs": {
     "refs": [
@@ -158,58 +268,158 @@
   "objectiveCoverage": [
     {
       "objectiveCriterion": "Specify that required evidence whose source has no registered snapshot authority yields facade status UNSATISFIED with unresolved reason CURRENTNESS_UNVERIFIABLE and zero provider retrieve calls, never a thrown TypeError.",
-      "criterionIds": ["FA5"],
-      "planElements": ["S1"],
-      "verificationIds": ["fa5-authority"],
-      "decisionIndexes": [0, 1],
-      "sourceRefs": ["packages/oracle/src/context-resolution.js", "packages/oracle/src/source-catalog.js", "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json"],
-      "sourceAnchors": [
-        { "ref": "packages/oracle/src/context-resolution.js", "match": "const authority = sourceCatalog.authorityFor({ kind: e.source.kind, ref: e.source.ref });" },
-        { "ref": "packages/oracle/src/source-catalog.js", "match": "if(matches.length!==1)fail(`missing/ambiguous snapshot authority for ${source.kind}:${source.ref}`)" },
-        { "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json", "match": "\"defectMissingAuthorityThrowsTypeError\":true" }
+      "criterionIds": [
+        "FA5"
       ],
-      "supportingPlanFields": ["architectureDecisions"]
+      "planElements": [
+        "S1"
+      ],
+      "verificationIds": [
+        "fa5-authority"
+      ],
+      "decisionIndexes": [
+        0,
+        1
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/context-resolution.js",
+        "packages/oracle/src/source-catalog.js",
+        "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/context-resolution.js",
+          "match": "const authority = sourceCatalog.authorityFor({ kind: e.source.kind, ref: e.source.ref });"
+        },
+        {
+          "ref": "packages/oracle/src/source-catalog.js",
+          "match": "if(matches.length!==1)fail(`missing/ambiguous snapshot authority for ${source.kind}:${source.ref}`)"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json",
+          "match": "\"defectMissingAuthorityThrowsTypeError\":true"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions"
+      ]
     },
     {
       "objectiveCriterion": "Specify that a requirement whose empty item list still materializes more bytes than maxMaterializedBytes yields UNSATISFIED BUDGET_EXHAUSTED, never TypeError consumed below materialization/step.",
-      "criterionIds": ["FA6"],
-      "planElements": ["S2"],
-      "verificationIds": ["fa6-underflow"],
-      "decisionIndexes": [2],
-      "sourceRefs": ["packages/oracle/src/context-resolution.js", "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json"],
-      "sourceAnchors": [
-        { "ref": "packages/oracle/src/context-resolution.js", "match": "if (!(error instanceof TypeError) || error.message !== 'consumed below materialization/step' || dropped.size === dropOrder.length) throw error;" },
-        { "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json", "match": "\"defectTinyBudgetThrowsConsumedBelow\":true" },
-        { "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json", "match": "\"consumed below materialization/step\"" }
+      "criterionIds": [
+        "FA6"
       ],
-      "supportingPlanFields": ["invariants"]
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "fa6-underflow"
+      ],
+      "decisionIndexes": [
+        2
+      ],
+      "sourceRefs": [
+        "packages/oracle/src/context-resolution.js",
+        "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/oracle/src/context-resolution.js",
+          "match": "if (!(error instanceof TypeError) || error.message !== 'consumed below materialization/step' || dropped.size === dropOrder.length) throw error;"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json",
+          "match": "\"defectTinyBudgetThrowsConsumedBelow\":true"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json",
+          "match": "\"consumed below materialization/step\""
+        }
+      ],
+      "supportingPlanFields": [
+        "invariants"
+      ]
     },
     {
       "objectiveCriterion": "Specify Living docs that describe those two fail-closed typed resolutions without Blackboard ids, and update the delivered graph-boundary test that currently expects the TypeError.",
-      "criterionIds": ["FA5", "FA7"],
-      "planElements": ["S1", "S3"],
-      "verificationIds": ["fa5-authority", "fa7-docs", "docs"],
-      "decisionIndexes": [4, 6],
-      "sourceRefs": ["test/oracle-context-graph-boundary.test.mjs", "docs/living/system/oracle/context-graph.md", "docs/living/system/oracle/state.md"],
-      "sourceAnchors": [
-        { "ref": "test/oracle-context-graph-boundary.test.mjs", "match": "error instanceof TypeError && /missing\\/ambiguous snapshot authority for CONTEXT_GRAPH/.test(error.message)" },
-        { "ref": "docs/living/system/oracle/context-graph.md", "match": "the facade's pre-observation rejects with the catalog `TypeError`" },
-        { "ref": "docs/living/system/oracle/state.md", "match": "source errors are wrapped with the concrete failing boundary" }
+      "criterionIds": [
+        "FA5",
+        "FA7"
       ],
-      "supportingPlanFields": ["livingDocs"]
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "fa5-authority",
+        "fa7-docs",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        6
+      ],
+      "sourceRefs": [
+        "test/oracle-context-graph-boundary.test.mjs",
+        "docs/living/system/oracle/context-graph.md",
+        "docs/living/system/oracle/state.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "test/oracle-context-graph-boundary.test.mjs",
+          "match": "error instanceof TypeError && /missing\\/ambiguous snapshot authority for CONTEXT_GRAPH/.test(error.message)"
+        },
+        {
+          "ref": "docs/living/system/oracle/context-graph.md",
+          "match": "the facade's pre-observation rejects with the catalog `TypeError`"
+        },
+        {
+          "ref": "docs/living/system/oracle/state.md",
+          "match": "source errors are wrapped with the concrete failing boundary"
+        }
+      ],
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
     },
     {
       "objectiveCriterion": "Ground the design in the executed facade-throw probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
-      "criterionIds": ["FA5", "FA6", "FA7"],
-      "planElements": ["S1", "S2", "S3"],
-      "verificationIds": ["fa5-authority", "fa6-underflow", "fa7-docs", "repository"],
-      "decisionIndexes": [7],
-      "sourceRefs": ["docs/blackboard/process/oracle-context-intelligence-research/BB-108.md", "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json"],
-      "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json", "match": "\"plannerReportsCurrentnessUnverifiable\":true" },
-        { "ref": "docs/blackboard/process/oracle-context-intelligence-research/BB-108.md", "match": "BB-087 invariant: exceeding budget yields `BUDGET_EXHAUSTED`" }
+      "criterionIds": [
+        "FA5",
+        "FA6",
+        "FA7"
       ],
-      "supportingPlanFields": ["negativeVerificationCases"]
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "fa5-authority",
+        "fa6-underflow",
+        "fa7-docs",
+        "repository"
+      ],
+      "decisionIndexes": [
+        7
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research/BB-108.md",
+        "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json",
+          "match": "\"plannerReportsCurrentnessUnverifiable\":true"
+        },
+        {
+          "ref": "docs/blackboard/process/oracle-context-intelligence-research/BB-108.md",
+          "match": "BB-087 invariant: exceeding budget yields `BUDGET_EXHAUSTED`"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeVerificationCases"
+      ]
     }
   ],
   "negativeVerificationCases": [
@@ -221,11 +431,60 @@
     "Living docs that still describe the missing-authority TypeError as current facade behavior fail FA7."
   ],
   "negativeCaseBindings": [
-    { "id": "NC-FA-throw", "negativeCaseIndex": 0, "criterionId": "FA5", "verificationId": "fa5-authority", "testRef": "test/oracle-facade-accounting.test.mjs", "testTitle": "FA5 missing snapshot authority does not throw TypeError", "subjectSymbol": "createOracleContextResolver" },
-    { "id": "NC-FA-retrieve", "negativeCaseIndex": 1, "criterionId": "FA5", "verificationId": "fa5-authority", "testRef": "test/oracle-facade-accounting.test.mjs", "testTitle": "FA5 missing authority makes zero retrieve calls", "subjectSymbol": "createOracleContextResolver" },
-    { "id": "NC-FA-underflow", "negativeCaseIndex": 2, "criterionId": "FA6", "verificationId": "fa6-underflow", "testRef": "test/oracle-facade-accounting.test.mjs", "testTitle": "FA6 one-byte budget is BUDGET_EXHAUSTED not TypeError", "subjectSymbol": "createOracleContextResolver" },
-    { "id": "NC-FA-provider", "negativeCaseIndex": 3, "criterionId": "FA6", "verificationId": "fa6-underflow", "testRef": "test/oracle-facade-accounting.test.mjs", "testTitle": "FA6 ProviderFailure does not escape resolve", "subjectSymbol": "createOracleContextResolver" },
-    { "id": "NC-FA-drift", "negativeCaseIndex": 4, "criterionId": "FA6", "verificationId": "fa6-underflow", "testRef": "test/oracle-facade-accounting.test.mjs", "testTitle": "FA6 currentness drift still throws STALE_DURING_RESOLUTION", "subjectSymbol": "createOracleContextResolver" },
-    { "id": "NC-FA-docs", "negativeCaseIndex": 5, "criterionId": "FA7", "verificationId": "fa7-docs", "testRef": "test/oracle-facade-accounting.test.mjs", "testTitle": "FA7 Living docs describe typed missing-authority unresolved", "subjectSymbol": "createOracleContextResolver" }
-  ]
+    {
+      "id": "NC-FA-throw",
+      "negativeCaseIndex": 0,
+      "criterionId": "FA5",
+      "verificationId": "fa5-authority",
+      "testRef": "test/oracle-facade-accounting.test.mjs",
+      "testTitle": "FA5 missing snapshot authority does not throw TypeError",
+      "subjectSymbol": "createOracleContextResolver"
+    },
+    {
+      "id": "NC-FA-retrieve",
+      "negativeCaseIndex": 1,
+      "criterionId": "FA5",
+      "verificationId": "fa5-authority",
+      "testRef": "test/oracle-facade-accounting.test.mjs",
+      "testTitle": "FA5 missing authority makes zero retrieve calls",
+      "subjectSymbol": "createOracleContextResolver"
+    },
+    {
+      "id": "NC-FA-underflow",
+      "negativeCaseIndex": 2,
+      "criterionId": "FA6",
+      "verificationId": "fa6-underflow",
+      "testRef": "test/oracle-facade-accounting.test.mjs",
+      "testTitle": "FA6 one-byte budget is BUDGET_EXHAUSTED not TypeError",
+      "subjectSymbol": "createOracleContextResolver"
+    },
+    {
+      "id": "NC-FA-provider",
+      "negativeCaseIndex": 3,
+      "criterionId": "FA6",
+      "verificationId": "fa6-underflow",
+      "testRef": "test/oracle-facade-accounting.test.mjs",
+      "testTitle": "FA6 ProviderFailure does not escape resolve",
+      "subjectSymbol": "createOracleContextResolver"
+    },
+    {
+      "id": "NC-FA-drift",
+      "negativeCaseIndex": 4,
+      "criterionId": "FA6",
+      "verificationId": "fa6-underflow",
+      "testRef": "test/oracle-facade-accounting.test.mjs",
+      "testTitle": "FA6 currentness drift still throws STALE_DURING_RESOLUTION",
+      "subjectSymbol": "createOracleContextResolver"
+    },
+    {
+      "id": "NC-FA-docs",
+      "negativeCaseIndex": 5,
+      "criterionId": "FA7",
+      "verificationId": "fa7-docs",
+      "testRef": "test/oracle-facade-accounting.test.mjs",
+      "testTitle": "FA7 Living docs describe typed missing-authority unresolved",
+      "subjectSymbol": "createOracleContextResolver"
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-108.readiness-jev-evaluation.json"
 }
