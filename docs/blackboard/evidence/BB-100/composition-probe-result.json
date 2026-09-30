@@ -1,0 +1,178 @@
+{
+  "kind": "BB100_COMPOSITION_PROBE_RESULT",
+  "version": 1,
+  "node": "v20.19.2",
+  "checkedSha": "64e0f79d82ad6aa47244934f1507789205c9e18a",
+  "realCliInstalledOnProbeHost": {
+    "codex": false,
+    "kiro-cli": false,
+    "agy": false
+  },
+  "identifiers": {
+    "AGENT_TASK_VERSION": "AGENT_TASK_V1",
+    "AGENT_SUPERVISED_RESULT_VERSION": "AGENT_SUPERVISED_RESULT_V1",
+    "AgentTaskStatus": {
+      "ACCEPTED": "ACCEPTED",
+      "EXHAUSTED": "EXHAUSTED",
+      "TOOL_UNAVAILABLE": "TOOL_UNAVAILABLE"
+    },
+    "AttemptOutcome": {
+      "CANDIDATE_CREATED": "CANDIDATE_CREATED",
+      "NO_CHANGE": "NO_CHANGE"
+    },
+    "BackendWorkStatus": {
+      "APPLIED": "APPLIED",
+      "BLOCKED": "BLOCKED",
+      "FAILED": "FAILED"
+    },
+    "BackendEvidenceClaim": {
+      "MUTATION": "backend.mutation",
+      "TYPECHECK": "backend.typecheck",
+      "TESTS": "backend.tests"
+    },
+    "PermissionProfile": {
+      "WORKSPACE_EDIT": "WORKSPACE_EDIT",
+      "FULL_AUTO": "FULL_AUTO"
+    },
+    "runSupervisedTaskParams": [
+      "tool",
+      "task",
+      "model",
+      "maxAttempts",
+      "timeoutMs",
+      "maxFeedbackChars",
+      "permissionProfile",
+      "env",
+      "eventSinks",
+      "tracer",
+      "invocationObserver"
+    ],
+    "resultFields": [
+      "acceptedSha",
+      "attempts",
+      "status",
+      "taskId",
+      "tool",
+      "toolVersion"
+    ],
+    "agentTaskFields": [
+      "id",
+      "repositoryRoot",
+      "baseRevision",
+      "prompt",
+      "verifications"
+    ],
+    "coreEvidenceApis": [
+      "createEvidenceArtifact",
+      "evidenceFromVerificationArtifact",
+      "subjectFromValue",
+      "environmentRefFromValue"
+    ]
+  },
+  "schema": {
+    "backendWorkResultKeys": [
+      "artifacts",
+      "blockers",
+      "evidence",
+      "gaps",
+      "revision",
+      "status",
+      "summary"
+    ],
+    "hasReasonField": false,
+    "appliedWithoutWorker": true,
+    "appliedNeedsRevision": true,
+    "blockedNeedsBlockers": true,
+    "blockedToolUnavailable": true,
+    "contextRepositoryKeys": [
+      "ref",
+      "revision"
+    ],
+    "orderKeys": [
+      "constraints",
+      "id",
+      "objectiveId",
+      "repositoryRef",
+      "requiredFiles",
+      "revision",
+      "task"
+    ]
+  },
+  "completion": {
+    "emptyEvidence": "CONTINUE",
+    "grounded": "ACCEPT"
+  },
+  "supervisor": {
+    "invocationObserverDefaultNull": true,
+    "evaluateIsVerifierPass": true,
+    "importsAgenticIndex": true,
+    "workerEvaluateIsMutationOnly": true,
+    "workerImportsAgentTools": false,
+    "indexImportsAgentTools": false,
+    "mutationEvidenceExported": false,
+    "localWorkspaceExported": true
+  },
+  "scenarios": {
+    "FIX_FIRST": {
+      "status": "ACCEPTED",
+      "sourceUnchanged": true,
+      "reachable": true,
+      "checkoutPass": true,
+      "observer": [
+        "CANDIDATE_CREATED"
+      ]
+    },
+    "NEVER_FIX": {
+      "status": "EXHAUSTED",
+      "claimed": [
+        true,
+        true
+      ],
+      "sourceUnchanged": true
+    },
+    "CLAIM_SUCCESS_NO_EDIT": {
+      "status": "EXHAUSTED",
+      "outcomes": [
+        "NO_CHANGE",
+        "NO_CHANGE"
+      ],
+      "claimed": [
+        true,
+        true
+      ],
+      "mutated": [
+        false,
+        false
+      ]
+    },
+    "AUTH_FAIL": {
+      "status": "EXHAUSTED",
+      "mutated": [
+        false
+      ],
+      "claimed": [
+        false
+      ]
+    },
+    "missingExecutable": {
+      "status": "TOOL_UNAVAILABLE",
+      "acceptedSha": null
+    }
+  },
+  "conclusions": {
+    "backendStatusEnumIsAppliedFailedBlocked": true,
+    "schemaParsesAppliedWithoutBackendWorker": true,
+    "blockersNotReason": true,
+    "repositoryRootIsCallerPathNotContextRef": true,
+    "noChangeIsAttemptOutcome": true,
+    "claimSuccessNoEditIsExhausted": true,
+    "neverFixIsExhausted": true,
+    "authFailIsExhaustedNotUnavailable": true,
+    "missingExecutableIsToolUnavailable": true,
+    "acceptedShaCheckoutableAfterDispose": true,
+    "invocationObserverPresentDefaultNull": true,
+    "mutationHelpersArePrivate": true,
+    "completionNeedsClaimsAndArtifacts": true,
+    "defaultWorkerDoesNotImportAgentTools": true
+  }
+}
