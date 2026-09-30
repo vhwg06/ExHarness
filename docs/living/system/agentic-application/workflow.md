@@ -456,3 +456,10 @@ Backend acceptance authorizes creation of the QA handoff; QA acceptance authoriz
 Interrupted recovery only restores bounded execution authority. It cannot promote a candidate, manufacture Worker semantic results, bypass role evidence or authorize Blackboard completion.
 
 Blackboard problem completion remains a separate boundary: required review/acceptance obligations and unresolved current-work findings must be reconciled first.
+
+## Causal query rules
+
+- observation is query-only: `queryCurrent`/`queryHistorical` plus the `explainWhyNotDone`/`listRemainingWork`/`traceObligation`/`describeExecution`/`measureTiming`/`chainEvidence` readers;
+- every query starts from a pinned `CausalObservationSubject` (current queries pin first, historical queries never advance);
+- blocker, owner, execution-identity, timing and evidence answers cite durable refs or report `UNKNOWN`/`MISSING_PROVENANCE`;
+- observation never claims, dispatches, recovers, accepts, selects strategies or issues remediation: those stay with the owning production boundaries.

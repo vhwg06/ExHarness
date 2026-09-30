@@ -257,3 +257,20 @@ export {createProductMutationGuard,createProductHistoryController,defineProductH
 export {createProductAcceptanceAuthority,defineProductAcceptancePolicy,defineProductAcceptanceWaiver,productAcceptanceSubjectKey,waiverSetDigestFor} from "./product-acceptance-policy.js";
 export {createProductStateProjectionBuilder} from "./product-state-projection.js";
 export {createProductClosureController,defineProductOutcomeClaim,productOutcomeSubjectKey,ProductClosureStaleError,ProductClosureNotReadyError,ProductClosureConflictError} from "./product-closure.js";
+export {
+  CAUSAL_LIFECYCLE_EVENT_KINDS,
+  MISSING_PROVENANCE,
+  UNKNOWN_PROVENANCE,
+  defineCausalLifecycleEvidence,
+  createCausalLifecycleEvidenceSink,
+  listCausalLifecycleEvidence,
+  causalLifecycleListKey
+} from "./causal-provenance.js";
+export {
+  defineCausalObservationSubject,
+  createCausalReconstruction
+} from "./causal-reconstruction.js";
+export {
+  createOrganizationObserver,
+  ORGANIZATION_OBSERVER_QUERY_SURFACE
+} from "./organization-observer.js";

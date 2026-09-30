@@ -66,7 +66,7 @@ export function defineProductOutcomeClaim(raw) {
 // writing the immutable ProductOutcomeClaim and the outcome-head CAS. No
 // Hn+1 or policy/waiver change can land between check and commit. Historical
 // claims are never mutated and never imply current DONE.
-export function createProductClosureController({ projectionBuilder, productHistory, acceptanceAuthority, artifactStore, outcomeHeadStore, mutationGuard = null } = {}) {
+export function createProductClosureController({ projectionBuilder, productHistory, acceptanceAuthority, artifactStore, outcomeHeadStore, mutationGuard = null, causalSink = null } = {}) {
   invariant(projectionBuilder && typeof projectionBuilder.resolve === "function", "closure controller requires the projection builder");
   invariant(productHistory && typeof productHistory.readChain === "function", "closure controller requires the product history controller (readChain)");
   invariant(acceptanceAuthority && typeof acceptanceAuthority.resolveCurrent === "function", "closure controller requires the acceptance authority");
@@ -132,6 +132,10 @@ export function createProductClosureController({ projectionBuilder, productHisto
       };
       if (!(await outcomeHeadStore.compareAndSwap(subjectKey, head?.revision ?? null, next))) {
         throw new ProductClosureConflictError("product outcome CAS conflict");
+      }
+      if (causalSink) {
+        // Observational evidence only: sink failure never gates closure.
+        try { await causalSink.record({ kind: "CAUSAL_LIFECYCLE_EVIDENCE", version: 1, workId: `product:${productId}`, eventKind: "ACCEPTED", observedAt: new Date().toISOString(), projectId: productId, boundaryRef: outcomeRef }); } catch {}
       }
       const stored = await outcomeHeadStore.current(subjectKey);
       return freeze({ outcomeRef, outcome: defineProductOutcomeClaim(claim), head: stored });
