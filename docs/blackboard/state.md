@@ -21,7 +21,7 @@ next-work-id: BB-124
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,18 +31,24 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-093
 ```
 
 ## Active work
 
-NONE
+
+BB-093
+task: Implement model-aware context budget profiles
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-093/current.json
+components: oracle/infrastructure, core/context-resolution
+worker: grok-bot
 
 ## Schedulable tasks
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
 - BB-078 [WORKER/EXECUTION] — Implement durable detached operation scheduling
-- BB-093 [WORKER/EXECUTION] — Implement model-aware context budget profiles
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
@@ -96,7 +102,7 @@ BB-089 [DONE] <- BB-087
 BB-090 [DONE] <- BB-056
 BB-091 [DONE] <- BB-088
 BB-092 [DONE] <- BB-091
-BB-093 [WORKER_SCHEDULABLE] <- BB-092
+BB-093 [ACTIVE] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT

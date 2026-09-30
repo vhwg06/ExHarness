@@ -1,0 +1,147 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-093",
+  "taskId": "BB-093",
+  "featureId": "FEATURE-ORACLE-CONTEXT-BUDGETING",
+  "topicId": "TOPIC-ORACLE-CONTEXT-INTELLIGENCE",
+  "components": [
+    "oracle/infrastructure",
+    "core/context-resolution"
+  ],
+  "pipeline": "WORKER",
+  "lane": "WORKER",
+  "phase": "JUDGMENT",
+  "stage": "JUDGMENT",
+  "semanticArtifactRef": "docs/blackboard/artifacts/ready-implement-plan/BB-093.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-093.json",
+  "planHash": "c5ae88918d17b1c9cf616853130c07adca9c24405e705626da02d56f9b61c523",
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-092",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/oracle/progressive-resolution.md"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "docs/blackboard/process/oracle-reconciliation-phase.md",
+    "docs/living/system/core-harness/architecture.md",
+    "docs/living/system/core-harness/state.md",
+    "docs/living/system/core-harness/workflow.md",
+    "docs/living/system/oracle/progressive-resolution.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-093.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-093.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-093.readiness-jev-evaluation.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/oracle/**",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/context-resolution.js",
+      "test/oracle-*.test.mjs",
+      "docs/blackboard/process/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-092.json",
+      "docs/living/system/oracle/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/oracle/**",
+      "packages/core-harness/src/context.js",
+      "packages/core-harness/src/context-resolution.js",
+      "test/oracle-*.test.mjs",
+      "docs/blackboard/process/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-092.json",
+      "docs/living/system/oracle/**"
+    ],
+    "write": [
+      "packages/oracle/src/context-budget.js",
+      "packages/oracle/src/index.js",
+      "packages/oracle/test/context-budget.test.js",
+      "test/oracle-budget-render-fit.test.mjs",
+      "docs/living/system/oracle/context-budget.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/src/context-resolution.js",
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/providers/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "package.json",
+      "docs/blackboard/**"
+    ]
+  },
+  "artifactWriteScope": [],
+  "hardInvariants": [
+    "A derived budget never allows resolved context whose Core-rendered block exceeds the profile rendered ceiling.",
+    "Source identity is preserved: budgets drop whole items, never truncate or rewrite content.",
+    "Bytes are never presented as tokens; token counts exist only under a declared exact tokenizer identity."
+  ],
+  "verification": [
+    {
+      "id": "budget-unit",
+      "command": "node --test packages/oracle/test/context-budget.test.js"
+    },
+    {
+      "id": "render-fit",
+      "command": "node --test test/oracle-budget-render-fit.test.mjs"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "expectedOutputs": [
+    "DELIVERED_FEATURE"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "scripts/**",
+      "test/**",
+      "packages/core-harness/src/**",
+      "packages/core-harness/test/**",
+      "docs/living/system/core-harness/**"
+    ],
+    "contractRefs": [
+      "resolveBackendContext",
+      "resolveQaContext",
+      "repositoryReader.readFile",
+      "artifactReader.readArtifact",
+      "BackendContextSchema",
+      "QaContextSchema",
+      "ContextRequirementBlock",
+      "ContextResolver",
+      "AgentRuntime contextRequirementBlocks",
+      "PromptContext"
+    ]
+  }
+}
