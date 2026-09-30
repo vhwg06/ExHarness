@@ -1,0 +1,169 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-098-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-098",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-098.json",
+      "hash": "6db7e16818bda3a5f0bc7554143195fe976e2cb36fb1e28721d9d6f9da0637d1"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-098.json",
+      "hash": "7f81b60f7bfa33cc5a10f9a8f9d5587a5ad192b3309bfcb1f49c8491d53d11c0"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-098.implementation-result.json",
+      "hash": "a8447b00de367d20d20325038b7c719ed69947fe00cf47a4fc9caae60abff1bb"
+    },
+    "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+    "candidateTree": "4ac5f88f4c398eb676526e54b9fd60c86b486b08",
+    "baselineSha": "d3528b3691d7b30c4356bddaf88e66b1c477d110"
+  },
+  "stateHash": "7223f0ee2642ea6f25d398bd3a430f87576c1b4600eb9889c996a3293f795166",
+  "specHash": "cf6d8a621b83ad90a1fb9a67b11363bfa1dda085e9d4baf93455651f299cdcac",
+  "cacheKey": "34f78bd2d6c32c66f5e90d447d4c4b1b80c512ea04be6d858f609d33940add90",
+  "model": "jev-1.13.0",
+  "answers": {
+    "OB1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.94,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.03,
+        "SATISFIED": 0.96,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0.01
+      }
+    },
+    "OB2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.94,
+      "probabilities": {
+        "SATISFIED": 0.96,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.03
+      }
+    },
+    "OB3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.79,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.09,
+        "SATISFIED": 0.84,
+        "INSUFFICIENT_EVIDENCE": 0.03,
+        "IMPLEMENTATION_DEFECT": 0.04
+      }
+    },
+    "OB4": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.95,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.97,
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.03
+      }
+    },
+    "OB5": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.9,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.92,
+        "INSUFFICIENT_EVIDENCE": 0.07
+      }
+    },
+    "OB6": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.8,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.06,
+        "SATISFIED": 0.85,
+        "IMPLEMENTATION_DEFECT": 0.03,
+        "INSUFFICIENT_EVIDENCE": 0.06
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.99,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.01,
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.99
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 121694,
+    "output_tokens": 493
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 7,
+    "latencyMs": 1720.5299089999999,
+    "payloadBytes": 294927,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V3",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "OB1",
+          "payloadHash": "8fb320d0eda1d1b9d7ed1b5f4222a51503df96979e6f82a076bc62f5171df050",
+          "payloadBytes": 51210
+        },
+        {
+          "id": "OB2",
+          "payloadHash": "30ca6513297de7c6fa32fe2c012119cd866ae24efda748c51a3a01eea781d84a",
+          "payloadBytes": 50665
+        },
+        {
+          "id": "OB3",
+          "payloadHash": "d5d8252ed31a3e0e80514d50b9f5ad8866d53e01312b289521c991a827c0c1d1",
+          "payloadBytes": 52724
+        },
+        {
+          "id": "OB4",
+          "payloadHash": "9bfdfcf3b2d858cf0a05015e4fa6bbddd40946fbb1c9c8fb0eb24b359143cad3",
+          "payloadBytes": 53741
+        },
+        {
+          "id": "OB5",
+          "payloadHash": "579ba3f70b4f3735ba0573e6abf74ae34c262b7366480a7de76f690054637d12",
+          "payloadBytes": 59753,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-098/repository.txt"
+          ]
+        },
+        {
+          "id": "OB6",
+          "payloadHash": "a9ab0582d2401a74594df897ba57c3db61d293ec585d0fba0ec5519e45a4166b",
+          "payloadBytes": 45854
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "2c6cfab64690798429a3e0e7cb8ca98399ac956f50cad5f824bdb770146dcb2c",
+          "payloadBytes": 55874
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}

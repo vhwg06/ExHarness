@@ -1,0 +1,150 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-098-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-098.json",
+    "hash": "6db7e16818bda3a5f0bc7554143195fe976e2cb36fb1e28721d9d6f9da0637d1"
+  },
+  "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+  "baselineSha": "d3528b3691d7b30c4356bddaf88e66b1c477d110",
+  "candidateTree": "4ac5f88f4c398eb676526e54b9fd60c86b486b08",
+  "verificationRuns": [
+    {
+      "id": "ob1-trace",
+      "command": "node --test --test-name-pattern=\"^OB1 \" packages/agent-tools/test/run-trace.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/ob1-trace.txt",
+      "logHash": "167c8566d4e5fdc5bad6fe27f535fead0710b89e04bf40aa198e7b1215daeb4b"
+    },
+    {
+      "id": "ob2-parsers",
+      "command": "node --test --test-name-pattern=\"^OB2 \" packages/agent-tools/test/run-trace.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/ob2-parsers.txt",
+      "logHash": "4c774aeb279a349bb7a040876a2dd716c3337edbd89ac0debfedb3a7df19fa3c"
+    },
+    {
+      "id": "ob3-harness",
+      "command": "node --test --test-name-pattern=\"^OB3 \" packages/agent-tools/test/run-trace.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/ob3-harness.txt",
+      "logHash": "b39f58726ea36da5aec0bb0054211de17d1cd2f47fe8806f08e6ab6cfc120b7f"
+    },
+    {
+      "id": "ob4-redaction",
+      "command": "node --test --test-name-pattern=\"^OB4 \" packages/agent-tools/test/run-trace.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/ob4-redaction.txt",
+      "logHash": "21eaaf75fe6aa0af1f9723a4c11fccfdd6de453c53f9c293e31bba1beb458ffb"
+    },
+    {
+      "id": "ob5-report",
+      "command": "node --test --test-name-pattern=\"^OB5 \" packages/agent-tools/test/run-trace.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/ob5-report.txt",
+      "logHash": "5a6ff8185fea1d7230e9fbba58fc5468bb441cdb51d16b2f37988fa2a66b98ca"
+    },
+    {
+      "id": "ob6-scope",
+      "command": "node --test --test-name-pattern=\"^OB6 \" packages/agent-tools/test/run-trace.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/ob6-scope.txt",
+      "logHash": "ac7f37c35552701e22e69b12eb2055f51aaac3cf124c118b2f13bee4491cb73d"
+    },
+    {
+      "id": "scope",
+      "command": "node packages/agent-tools/test/scope-audit.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/scope.txt",
+      "logHash": "53cc8a77a621db30f638fedc778a7f972427633a393c3a048caefb0cbe4c4882"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/agent-tools.txt",
+      "logHash": "aa21c0551c8fda392b7c5b19ccf0f7fad4107f0c344ec4a0a216a90bf2c9e575"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/docs.txt",
+      "logHash": "6a519cb26ac5c929ae14e39c93480f43c1ca1ad644c6ec1855d7244a71c9e17c"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3128c0921b03fe25edb2fe569552bb00b2419804",
+      "logRef": "docs/blackboard/evidence/BB-098/repository.txt",
+      "logHash": "ffae04c924f36f8acc928f5f80f3e1c6cb0e9afba5384fe7162b6d2abcba0a35"
+    }
+  ],
+  "claims": [
+    {
+      "id": "OB1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-098/ob1-trace.txt",
+        "docs/blackboard/evidence/BB-098/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "OB2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-098/ob2-parsers.txt",
+        "docs/blackboard/evidence/BB-098/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "OB3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-098/ob3-harness.txt",
+        "docs/blackboard/evidence/BB-098/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "OB4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-098/ob4-redaction.txt",
+        "docs/blackboard/evidence/BB-098/agent-tools.txt"
+      ]
+    },
+    {
+      "id": "OB5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-098/ob5-report.txt",
+        "docs/blackboard/evidence/BB-098/docs.txt",
+        "docs/blackboard/evidence/BB-098/repository.txt"
+      ]
+    },
+    {
+      "id": "OB6",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-098/ob6-scope.txt",
+        "docs/blackboard/evidence/BB-098/scope.txt"
+      ]
+    }
+  ]
+}
