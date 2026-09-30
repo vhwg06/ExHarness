@@ -21,7 +21,7 @@ next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,12 +31,19 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-102
 ```
 
 ## Active work
 
-NONE
+
+BB-102
+task: Resolve declared agent-tool files through the Oracle facade
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-102/current.json
+components: integration/agent-tools, oracle/infrastructure
+worker: grok-bot
 
 ## Schedulable tasks
 
@@ -45,7 +52,6 @@ NONE
 - BB-092 [WORKER/EXECUTION] — Implement bounded explicit progressive resolution
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
-- BB-102 [WORKER/EXECUTION] — Resolve declared agent-tool files through the Oracle facade
 - BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
 - BB-105 [WORKER/EXECUTION] — Add Grok Build as a supported agent tool
 - BB-106 [RESEARCH_SA/RESEARCH] — Wire delivered Oracle and supersession regression tests into npm test and verify
@@ -109,7 +115,7 @@ BB-098 [DONE] <- BB-097
 BB-099 [WORKER_SCHEDULABLE] <- BB-098, BB-065
 BB-100 [WORKER_SCHEDULABLE] <- BB-096, BB-097
 BB-101 [DONE] <- BB-097
-BB-102 [WORKER_SCHEDULABLE] <- BB-097
+BB-102 [ACTIVE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
 BB-104 [BLOCKED_BY BB-100,BB-102] <- BB-100, BB-101, BB-102
 BB-105 [WORKER_SCHEDULABLE] <- BB-097, BB-098
