@@ -1,0 +1,91 @@
+TAP version 13
+# Subtest: FA1 small item under a 6000-byte budget resolves COMPLETE with exact counters
+ok 1 - FA1 small item under a 6000-byte budget resolves COMPLETE with exact counters
+  ---
+  duration_ms: 6.63553
+  type: 'test'
+  ...
+# Subtest: FA1 exact bytes: consumed.materializedBytes equals contract materialization and no constant counter remains
+ok 2 - FA1 exact bytes: consumed.materializedBytes equals contract materialization and no constant counter remains
+  ---
+  duration_ms: 2.857106
+  type: 'test'
+  ...
+# Subtest: FA1 zero reservations: all-UNSUPPORTED evidence reports providerCalls 0, never a floored 1
+ok 3 - FA1 zero reservations: all-UNSUPPORTED evidence reports providerCalls 0, never a floored 1
+  ---
+  duration_ms: 1.73145
+  type: 'test'
+  ...
+# Subtest: FA2 REQUIRED provider SOURCE_FAILURE returns UNSATISFIED with typed reason and diagnostics outside identity
+ok 4 - FA2 REQUIRED provider SOURCE_FAILURE returns UNSATISFIED with typed reason and diagnostics outside identity
+  ---
+  duration_ms: 1.471996
+  type: 'test'
+  ...
+# Subtest: FA2 OPTIONAL provider failure returns PARTIAL while REQUIRED evidence stays resolved
+ok 5 - FA2 OPTIONAL provider failure returns PARTIAL while REQUIRED evidence stays resolved
+  ---
+  duration_ms: 2.452727
+  type: 'test'
+  ...
+# Subtest: FA2 facade delegates to retrievalPlanner.execute() and no longer iterates planned work
+ok 6 - FA2 facade delegates to retrievalPlanner.execute() and no longer iterates planned work
+  ---
+  duration_ms: 1.037333
+  type: 'test'
+  ...
+# Subtest: FA3 planner BUDGET_EXHAUSTED for OPTIONAL evidence is preserved, never MISSING
+ok 7 - FA3 planner BUDGET_EXHAUSTED for OPTIONAL evidence is preserved, never MISSING
+  ---
+  duration_ms: 1.499078
+  type: 'test'
+  ...
+# Subtest: FA3 REQUIRED item larger than the byte budget yields UNSATISFIED BUDGET_EXHAUSTED, not a TypeError
+ok 8 - FA3 REQUIRED item larger than the byte budget yields UNSATISFIED BUDGET_EXHAUSTED, not a TypeError
+  ---
+  duration_ms: 0.856474
+  type: 'test'
+  ...
+# Subtest: FA3 facade materialization overflow drops OPTIONAL evidence first as BUDGET_EXHAUSTED
+ok 9 - FA3 facade materialization overflow drops OPTIONAL evidence first as BUDGET_EXHAUSTED
+  ---
+  duration_ms: 2.080693
+  type: 'test'
+  ...
+# Subtest: FA3 REQUIRED materialization overflow yields UNSATISFIED and never exceeds budget
+ok 10 - FA3 REQUIRED materialization overflow yields UNSATISFIED and never exceeds budget
+  ---
+  duration_ms: 1.41955
+  type: 'test'
+  ...
+# Subtest: FA4 pre/post currentness drift still throws DurabilityFailure STALE_DURING_RESOLUTION
+ok 11 - FA4 pre/post currentness drift still throws DurabilityFailure STALE_DURING_RESOLUTION
+  ---
+  duration_ms: 1.200473
+  type: 'test'
+  ...
+# Subtest: FA4 durability REUSED result passes through unchanged without re-planning or re-accounting
+ok 12 - FA4 durability REUSED result passes through unchanged without re-planning or re-accounting
+  ---
+  duration_ms: 1.088153
+  type: 'test'
+  ...
+# Subtest: FA4 Core injected port projects a COMPLETE facade resolution once
+ok 13 - FA4 Core injected port projects a COMPLETE facade resolution once
+  ---
+  duration_ms: 2.278034
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 121.838457
+
+
+exitCode=0

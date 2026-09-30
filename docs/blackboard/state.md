@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,25 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-087
 ```
 
 ## Active work
 
-NONE
+
+BB-087
+task: Fix Oracle facade budget accounting and typed provider failure
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-087/current.json
+components: oracle/infrastructure
+worker: grok-bot
 
 ## Schedulable tasks
 
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
-- BB-087 [WORKER/EXECUTION] — Fix Oracle facade budget accounting and typed provider failure
 - BB-090 [WORKER/EXECUTION] — Bind declared negative cases to executed subject-invoking tests in the Worker gate
 - BB-096 [WORKER/EXECUTION] — Bind delivered Backend/QA acceptance to a real repository and real verification processes
 - BB-098 [RESEARCH_SA/RESEARCH] — Observe supervised and direct agent-tool runs
@@ -88,7 +94,7 @@ BB-083 [BLOCKED_BY BB-059,BB-065] <- BB-059, BB-064, BB-065
 BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
 BB-085 [BLOCKED_BY BB-084] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
-BB-087 [WORKER_SCHEDULABLE] <- BB-064
+BB-087 [ACTIVE] <- BB-064
 BB-088 [BLOCKED_BY BB-087] <- BB-087
 BB-089 [BLOCKED_BY BB-087] <- BB-087
 BB-090 [WORKER_SCHEDULABLE] <- BB-056

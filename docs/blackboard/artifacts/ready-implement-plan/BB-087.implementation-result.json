@@ -1,0 +1,70 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-087-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-087.json",
+    "hash": "21f5c89a47785d6d9ed9aad2ad0e31d4c23a8b6c891fc2355f46fd756ec39274"
+  },
+  "candidateSha": "56f81df4d685c6456c64cc422268deed9e09c535",
+  "baselineSha": "57444d12b548a59e173010e06d19e07057e9a167",
+  "candidateTree": "5e8030be7a8827186b2fb15683e8b556c3f6a5ec",
+  "verificationRuns": [
+    {
+      "id": "facade-accounting",
+      "command": "node --test test/oracle-facade-accounting.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "56f81df4d685c6456c64cc422268deed9e09c535",
+      "logRef": "docs/blackboard/evidence/BB-087/facade-accounting.txt",
+      "logHash": "b777a4241c616d996d441d16ad55ad0b9d888beb5556ba002c9e8947b6b40ac0"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "node --test test/oracle-context-intelligence-foundation.test.mjs test/oracle-context-intelligence-benchmark-contract.test.mjs test/oracle-context-intelligence-architecture.test.mjs test/oracle-context-resolution-durability.test.mjs test/oracle-context-contract-boundary.test.mjs packages/core-harness/test/context-resolution.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "56f81df4d685c6456c64cc422268deed9e09c535",
+      "logRef": "docs/blackboard/evidence/BB-087/oracle-regression.txt",
+      "logHash": "5fa0312da60670eae8db85371ce0d1e76af43cd397e0c6e9f72e69b4db78d851"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "56f81df4d685c6456c64cc422268deed9e09c535",
+      "logRef": "docs/blackboard/evidence/BB-087/repository.txt",
+      "logHash": "fa2f035b6aa3c57e7f4bfdbafbc7de3c403d37342d29ad1df2253c012e6faf18"
+    }
+  ],
+  "claims": [
+    {
+      "id": "FA1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-087/facade-accounting.txt"
+      ]
+    },
+    {
+      "id": "FA2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-087/facade-accounting.txt"
+      ]
+    },
+    {
+      "id": "FA3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-087/facade-accounting.txt"
+      ]
+    },
+    {
+      "id": "FA4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-087/facade-accounting.txt",
+        "docs/blackboard/evidence/BB-087/oracle-regression.txt",
+        "docs/blackboard/evidence/BB-087/repository.txt"
+      ]
+    }
+  ]
+}
