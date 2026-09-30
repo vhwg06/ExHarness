@@ -216,10 +216,10 @@ export async function executeExternalPreflight({ outputRoot }) {
 }
 
 // ---- verification of the sealed manifest ----------------------------------------------------------
-export async function verifyExternalPreflight() {
+export async function verifyExternalPreflight({ root = REPO_ROOT } = {}) {
   const problems = [];
-  const manifest = await readJson(join(REPO_ROOT, MANIFEST_REF));
-  const preregistrationBytes = await readFile(join(REPO_ROOT, manifest.preregistrationRef));
+  const manifest = await readJson(join(root, MANIFEST_REF));
+  const preregistrationBytes = await readFile(join(root, manifest.preregistrationRef));
   const { preregistrationDigest, ...preregistration } = JSON.parse(preregistrationBytes);
   if (manifest.kind !== 'BENCHMARK_SUBSTRATE_MANIFEST_V1' || manifest.status !== 'SEALED') problems.push('manifest is not a sealed BENCHMARK_SUBSTRATE_MANIFEST_V1');
   if (fileDigest(JSON.stringify(preregistration)) !== preregistrationDigest || preregistrationDigest !== manifest.preregistrationDigest) problems.push('preregistration digest mismatch');
@@ -237,17 +237,17 @@ export async function verifyExternalPreflight() {
   const controls = {};
   const audits = [];
   for (const control of manifest.controls) {
-    const root = join(REPO_ROOT, control.experimentRef);
-    const audit = await auditExperiment(root);
+    const experimentRoot = join(root, control.experimentRef);
+    const audit = await auditExperiment(experimentRoot);
     audits.push({ experimentId: audit.experimentId, attempts: audit.attempts, status: audit.status });
     if (audit.status !== 'PASS') problems.push(`${control.name} control evidence fails audit: ${JSON.stringify(audit.findings.slice(0, 3))}`);
-    const registration = await readJson(join(root, 'registration.json'));
+    const registration = await readJson(join(experimentRoot, 'registration.json'));
     if (registration.protocol.hash !== preregistrationDigest) problems.push(`${control.name} controls are not bound to the preregistration`);
     const records = [];
-    for (const unitDir of (await readdir(root, { withFileTypes: true })).filter(entry => entry.isDirectory())) {
-      for (const attemptDir of await readdir(join(root, unitDir.name))) records.push(await readJson(join(root, unitDir.name, attemptDir, 'record.json')));
+    for (const unitDir of (await readdir(experimentRoot, { withFileTypes: true })).filter(entry => entry.isDirectory())) {
+      for (const attemptDir of await readdir(join(experimentRoot, unitDir.name))) records.push(await readJson(join(experimentRoot, unitDir.name, attemptDir, 'record.json')));
     }
-    const ledger = await readJson(join(root, 'ledger.json'));
+    const ledger = await readJson(join(experimentRoot, 'ledger.json'));
     const byAttempt = new Map(records.map(record => [record.attemptId, record]));
     const ordered = ledger.filter(event => event.type === 'SETTLED').map(event => byAttempt.get(event.attemptId));
     controls[control.name] = { oracle: ordered.filter(r => r.producer.kind === 'ORACLE').map(r => r.quality.verdict), nop: ordered.filter(r => r.producer.kind === 'NOP').map(r => r.quality.verdict) };

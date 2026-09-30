@@ -55,7 +55,17 @@ Limitations:
 
 ## External sanity
 
-EXTERNAL_SANITY_PLACEHOLDER
+`benchmarks/substrate/manifests/terminal-bench-2.1.json` is a sealed `BENCHMARK_SUBSTRATE_MANIFEST_V1` for Terminal-Bench 2.1 (`harbor-framework/terminal-bench-2-1` at `7131e4375048a0e408a8fb404b5f499d726b695b`, 89 tasks, dataset manifest bound by digest). It was produced once by `--mode external-preflight --execute`; the default mode only re-verifies it.
+
+- **Preregistration before any control.** `preregistration.json` binds the Harbor identity, the pinned source, the rule (oracle 5/5 `ACCEPTED`, then nop 1/1 `REJECTED`, select the first two) and the candidate order, and its digest is the protocol hash of every control experiment. Tasks named in, or referenced by digest from, the canonical downstream plans at the reservation commit are reserved and never become sanity tasks (18 tasks from three plans at main `86c2b737`). The remaining 71 tasks are ordered by ascending pinned bundle digest.
+- **Controls.** Candidates run strictly in that order with Harbor's `oracle` and `nop` agents only, each attempt through `AttemptLedger` and the Harbor adapter. A task stops at its first non-`ACCEPTED` oracle, and nothing runs after two tasks qualify. The sealed selection is `terminal-bench/hf-model-inference` and `terminal-bench/sparql-university` (the first two in digest order), each oracle 5/5 `ACCEPTED` and nop `REJECTED`. Their environments are pinned by image digest, `alexgshaw/hf-model-inference:20260430@sha256:0ef475ae…` and `alexgshaw/sparql-university:20251031@sha256:92fa4304…`, together with their instruction digests. The control evidence (records, manifests, raw Harbor results, verifier output, reset identities) is committed under `manifests/terminal-bench-2.1/`; Harbor's trial working directories are not.
+- **Verification.** It recomputes the pinned bundle digests, the reservation, the candidate order, the preregistration digest and the selection from the committed tallies. It fresh-audits both control experiments and rejects any selection that does not follow the rule, which includes one changed after outcomes were seen. It also confirms zero coding-model calls and that no downstream model result was read.
+- **Environment.** These task verifiers install their test tooling at run time, so container egress must work. On a Docker host with a stale `FORWARD DROP` policy for new bridge networks, every oracle fails at `apt-get`/`uv` before it can pass. Such a run must be discarded and executed again, never sealed.
+
+Limitations:
+
+- The two tasks prove that the substrate reproduces known-good and known-bad outcomes on real benchmark tasks. They say nothing about any harness or model.
+- Oracle runs download upstream images and packages, so a later re-execution depends on those remaining available at the pinned digests.
 
 ## Retired delivery baseline
 
