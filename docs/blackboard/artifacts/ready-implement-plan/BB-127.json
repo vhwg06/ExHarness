@@ -1,0 +1,187 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-127",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-127.json",
+    "hash": "287744eea0cd1a693dd275a88ea834c18d6e7c3bea390524ccaa7b467049816a"
+  },
+  "scope": [
+    "agent-tools.deliver-slice.protected-acceptance"
+  ],
+  "outOfScope": [
+    "OpenHands sandbox and generic SCM/CI publication (BB-067/068).",
+    "Changing existing BB-104 acceptance claims or calling this BB-069/074 live evidence."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
+    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+  ],
+  "invariants": [
+    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Compare protected-path rejection, base-pinned tests projected into a fresh checkout, and an external evaluator over the candidate artifact. Prefer an external operator-owned runner plus protected-path manifest for this bounded local profile.",
+    "Reuse BB-099 hidden acceptance separation and benchmark-kernel evidence semantics; do not make a new general evaluator framework or move Jev/product authority into the coding agent.",
+    "Do not claim an external file is inaccessible to an unsandboxed child. Prevent evaluator substitution via content binding, and restrict the profile to trusted local commands until BB-067 confinement exists."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "docs/blackboard/evidence/BB-127/discovery.json",
+      "docs/blackboard/process/delivery-value-improvement-research.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/src/local-acceptance.js",
+      "packages/agent-tools/test/local-protected-acceptance.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/local-protected-acceptance.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/**",
+      "packages/agentic-system/src/**",
+      "packages/agent-tools/test/**",
+      "packages/agentic-system/test/**",
+      "docs/blackboard/process/delivery-value-improvement-research.md",
+      "docs/blackboard/evidence/BB-127/discovery.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/local-acceptance.js",
+      "packages/agent-tools/test/local-protected-acceptance.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
+    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "PROTECTED_ACCEPTANCE",
+      "statement": "Evaluator bytes/config and protected paths are pinned outside the agent-writable checkout; independent acceptance reads the exact candidate and fails on missing/tampered provenance.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    },
+    {
+      "id": "QUALITY_BOUNDARY",
+      "statement": "Test deletion/no-op verifier fixtures cannot satisfy the protected outcome; genuine implementation fixes pass. Trusted local process execution remains an explicit support boundary.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agent-tools/test/local-protected-acceptance.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+      "criterionIds": [
+        "PROTECTED_ACCEPTANCE",
+        "QUALITY_BOUNDARY"
+      ]
+    },
+    {
+      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "criterionIds": [
+        "PROTECTED_ACCEPTANCE",
+        "QUALITY_BOUNDARY"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "PROTECTED_ACCEPTANCE",
+        "QUALITY_BOUNDARY"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Deleting repository assertions cannot pass the pinned external evaluator",
+    "Missing or changed external evaluator digest cannot grant acceptance"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_127_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "QUALITY_BOUNDARY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-protected-acceptance.test.js",
+      "testTitle": "BB-127 N1 Deleting repository assertions cannot pass the pinned external evaluator",
+      "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NEG_127_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "PROTECTED_ACCEPTANCE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/local-protected-acceptance.test.js",
+      "testTitle": "BB-127 N2 Missing or changed external evaluator digest cannot grant acceptance",
+      "subjectSymbol": "runDeliverSlice"
+    }
+  ],
+  "researchGaps": [
+    "Pin the local evaluator/manifest API, test changes policy, trusted-process threat boundary and compatibility labels; prototype tamper/deletion/real-fix cases before fresh Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Make local acceptance evidence resistant to test weakening and usable for a real developer handoff.",
+    "measurement": "Zero false ACCEPT for deterministic tamper fixtures; exact evaluator and candidate digests on every accepted result; fresh independent replay.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
+  }
+}

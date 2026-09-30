@@ -85,7 +85,7 @@ The concrete `createDurableBackendQaWorkflow(...)` path binds Backend -> QA exec
 - Oracle owns explicit source pull/dereference/adaptation into application-shaped context.
 - ExHarness Core owns agent execution mechanics, cognition, evidence/trust, lifecycle and recovery primitives.
 - Concrete infrastructure owns repository/artifact access, executors, storage, filesystem/network/process authority and credentials.
-- Agent tools (`packages/agent-tools/`) own outer supervision of external CLI coding agents (Codex, Kiro, agy, grok): the agent edits a temporary git worktree, and ExHarness owns candidate commits, declared verification, bounded feedback retry and promotion; the agent's claim is telemetry only. It is not a sandbox (see `agent-tools/state.md`).
+- Agent tools (`packages/agent-tools/`) own outer supervision of external CLI coding agents (Codex, Kiro, agy, grok, opencode): the agent edits a temporary git worktree, and ExHarness owns candidate commits, declared verification, bounded feedback retry and promotion; the agent's claim is telemetry only. It is not a sandbox (see `agent-tools/state.md`).
 - Benchmark measurement (`packages/benchmark/`, `benchmarks/substrate/`) owns development-benchmark experiment, attempt, outcome, accounting and evidence truth. It does not import product runtime and makes no harness, promotion or release decision.
 
 ## Delivered facts

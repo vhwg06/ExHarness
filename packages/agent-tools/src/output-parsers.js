@@ -8,6 +8,8 @@ export const UsageUnavailableReason = Object.freeze({
   AGY_USAGE_NOT_REPORTED: "AGY_USAGE_NOT_REPORTED",
   GROK_USAGE_NOT_REPORTED: "GROK_USAGE_NOT_REPORTED",
   GROK_JSON_TRUNCATED: "GROK_JSON_TRUNCATED",
+  OPENCODE_USAGE_NOT_REPORTED: "OPENCODE_USAGE_NOT_REPORTED",
+  OPENCODE_JSONL_TRUNCATED: "OPENCODE_JSONL_TRUNCATED",
   TIMED_OUT: "TIMED_OUT",
   TOOL_UNAVAILABLE: "TOOL_UNAVAILABLE",
   UNKNOWN_TOOL: "UNKNOWN_TOOL"
@@ -141,6 +143,55 @@ export function parseGrokJson(stdout, { truncated = false } = {}) {
   };
 }
 
+/**
+ * OpenCode `run --format json` JSONL stream. Counts events by type; sums usage only over
+ * `step_finish` events whose part.tokens carries integer input and output. Optional
+ * reasoning and cache.read fields stay null unless every counted event reported them.
+ * totalCostUsd is the sum only when every counted event reported a finite non-negative
+ * numeric part.cost (an explicit 0 on all steps is 0; otherwise null). It is an
+ * opencode-only extra field; Codex/Kiro/agy usage objects keep their six fields.
+ */
+export function parseOpencodeJsonl(stdout, { truncated = false } = {}) {
+  const counts = {};
+  let invalidLines = 0;
+  const steps = [];
+  for (const raw of String(stdout ?? "").split(/\r?\n/)) {
+    const line = raw.trim();
+    if (line.length === 0) continue;
+    let event;
+    try { event = JSON.parse(line); } catch { invalidLines += 1; continue; }
+    if (!event || typeof event !== "object" || typeof event.type !== "string") { invalidLines += 1; continue; }
+    counts[event.type] = (counts[event.type] ?? 0) + 1;
+    const tokens = event.part && typeof event.part === "object" ? event.part.tokens : null;
+    if (event.type === "step_finish" && tokens && isCount(tokens.input) && isCount(tokens.output)) {
+      steps.push({ tokens, cost: event.part.cost });
+    }
+  }
+  const toolEvents = { counts: Object.fromEntries(Object.entries(counts).sort(([a], [b]) => (a < b ? -1 : 1))), invalidLines };
+  if (steps.length === 0) {
+    return { toolEvents, usage: { ...nullUsage("opencode.step_finish", truncated ? UsageUnavailableReason.OPENCODE_JSONL_TRUNCATED : UsageUnavailableReason.OPENCODE_USAGE_NOT_REPORTED), totalCostUsd: null } };
+  }
+  const sum = (pick) => steps.reduce((total, step) => total + pick(step.tokens), 0);
+  const optional = (pick, reported) => (steps.every((step) => reported(step.tokens)) ? sum(pick) : null);
+  // A step's cost is observed only as a finite non-negative number; null, strings,
+  // booleans and negatives are unreported, never coerced to 0. The total is reported
+  // only when every counted event observed its cost (an explicit 0 on all steps is 0).
+  const observedCost = (cost) => (typeof cost === "number" && Number.isFinite(cost) && cost >= 0 ? cost : null);
+  const costs = steps.map((step) => observedCost(step.cost));
+  return {
+    toolEvents,
+    usage: {
+      inputTokens: sum((tokens) => tokens.input),
+      cachedInputTokens: optional((tokens) => tokens.cache.read, (tokens) => tokens.cache !== null && typeof tokens.cache === "object" && isCount(tokens.cache.read)),
+      outputTokens: sum((tokens) => tokens.output),
+      reasoningOutputTokens: optional((tokens) => tokens.reasoning, (tokens) => isCount(tokens.reasoning)),
+      source: "opencode.step_finish",
+      unavailableReason: null,
+      totalCostUsd: costs.every((cost) => cost !== null) ? costs.reduce((total, cost) => total + cost, 0) : null
+    }
+  };
+}
+
 /** Dispatches on tool id and invocation status. */
 export function parseToolOutput(toolId, invocation) {
   if (invocation.status === "TOOL_UNAVAILABLE") return { toolEvents: null, usage: nullUsage(`${toolId}.invocation`, UsageUnavailableReason.TOOL_UNAVAILABLE) };
@@ -152,5 +203,6 @@ export function parseToolOutput(toolId, invocation) {
   if (toolId === "kiro") return parseKiroOutput();
   if (toolId === "agy") return parseAgyOutput();
   if (toolId === "grok") return parseGrokJson(invocation.stdout, { truncated: invocation.truncated?.stdout === true });
+  if (toolId === "opencode") return parseOpencodeJsonl(invocation.stdout, { truncated: invocation.truncated?.stdout === true });
   return { toolEvents: null, usage: nullUsage(`${toolId}.invocation`, UsageUnavailableReason.UNKNOWN_TOOL) };
 }

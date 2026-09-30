@@ -195,7 +195,9 @@
         "FEATURE-AGENT-TOOL-VALUE",
         "FEATURE-AGENT-TOOL-GROK",
         "FEATURE-AGENT-TOOL-CHILD-ENV",
-        "FEATURE-AGENT-TOOL-OPENCODE"
+        "FEATURE-AGENT-TOOL-OPENCODE",
+        "BUG-AGENT-ACCOUNTING-COMPLETENESS",
+        "FEATURE-AGENT-RETRY-EFFICIENCY"
       ],
       "artifactRefs": [
         "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
@@ -212,7 +214,12 @@
         "FEATURE-AGENT-TOOL-ORACLE-CONTEXT",
         "FEATURE-AGENT-TOOL-MCP-GATE",
         "FEATURE-AGENT-TOOL-OPERATOR-SLICE",
-        "FEATURE-AGENT-TOOL-DURABLE-BOARD"
+        "FEATURE-AGENT-TOOL-DURABLE-BOARD",
+        "BUG-LOCAL-VERIFIER-ENV",
+        "BUG-SUPERVISED-RESUME-BINDING",
+        "FEATURE-LOCAL-PROTECTED-ACCEPTANCE",
+        "FEATURE-OPERATOR-TOOL-PARITY",
+        "FEATURE-LOCAL-REVIEW-BUNDLE"
       ],
       "artifactRefs": [
         "docs/blackboard/process/agent-tool-productization.md",
@@ -548,7 +555,7 @@
       "topicId": "TOPIC-CORE-HARNESS-EFFICIENCY",
       "kind": "FEATURE",
       "title": "Measure harness tax and pin async-first baseline",
-      "status": "PLANNED",
+      "status": "DONE",
       "taskIds": [
         "BB-077"
       ],
@@ -781,7 +788,7 @@
       "topicId": "TOPIC-ORACLE-CONTEXT-INTELLIGENCE",
       "kind": "FEATURE",
       "title": "Model-aware context budget profiles",
-      "status": "PLANNED",
+      "status": "DONE",
       "taskIds": [
         "BB-093"
       ],
@@ -924,7 +931,7 @@
       "topicId": "TOPIC-ORACLE-RECONCILIATION",
       "kind": "BUG",
       "title": "Oracle facade throws TypeError for missing snapshot authority and underflow budgets",
-      "status": "PLANNED",
+      "status": "DONE",
       "taskIds": [
         "BB-108"
       ],
@@ -1044,6 +1051,104 @@
         "docs/blackboard/process/agent-tool-research/BB-122.md"
       ],
       "acceptanceTaskId": "BB-122"
+    },
+    {
+      "id": "BUG-LOCAL-VERIFIER-ENV",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "BUG",
+      "title": "Constrain local verifier child environment",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-130"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-value-improvement-research.md"
+      ],
+      "acceptanceTaskId": "BB-130"
+    },
+    {
+      "id": "BUG-AGENT-ACCOUNTING-COMPLETENESS",
+      "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+      "kind": "BUG",
+      "title": "Preserve truthful partial usage and per-field accounting coverage",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-124"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-value-improvement-research.md"
+      ],
+      "acceptanceTaskId": "BB-124"
+    },
+    {
+      "id": "BUG-SUPERVISED-RESUME-BINDING",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "BUG",
+      "title": "Bind supervised resume to the exact task and execution contract",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-125"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-value-improvement-research.md"
+      ],
+      "acceptanceTaskId": "BB-125"
+    },
+    {
+      "id": "FEATURE-AGENT-RETRY-EFFICIENCY",
+      "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Stop repeated no-progress retries with evidence-bound feedback",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-126"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-value-improvement-research.md"
+      ],
+      "acceptanceTaskId": "BB-126"
+    },
+    {
+      "id": "FEATURE-LOCAL-PROTECTED-ACCEPTANCE",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Add externally pinned acceptance for local delivery slices",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-127"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-value-improvement-research.md"
+      ],
+      "acceptanceTaskId": "BB-127"
+    },
+    {
+      "id": "FEATURE-OPERATOR-TOOL-PARITY",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Expose delivered Grok and OpenCode adapters through operator delivery",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-128"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-value-improvement-research.md"
+      ],
+      "acceptanceTaskId": "BB-128"
+    },
+    {
+      "id": "FEATURE-LOCAL-REVIEW-BUNDLE",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Export a durable review bundle for the exact local candidate",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-129"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-value-improvement-research.md"
+      ],
+      "acceptanceTaskId": "BB-129"
     }
   ],
   "tasks": [
@@ -2509,7 +2614,7 @@
       "featureId": "FEATURE-HARNESS-ECONOMICS",
       "title": "Research harness-isolation economics on shared benchmark kernel",
       "kind": "IMPLEMENTATION",
-      "status": "PLANNED",
+      "status": "DONE",
       "complexity": "L",
       "components": [
         "core/async-runtime-efficiency"
@@ -2529,7 +2634,9 @@
           "docs/blackboard/process/harness-efficiency-research/BB-077.md",
           "docs/blackboard/process/harness-benchmark-program-research.md"
         ],
-        "outputRefs": [],
+        "outputRefs": [
+          "docs/blackboard/artifacts/ready-implement-plan/BB-077.delivered-feature.json"
+        ],
         "consolidatedRefs": [
           "docs/living/system/core-harness/state.md",
           "docs/living/system/core-harness/workflow.md"
@@ -2547,13 +2654,15 @@
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-077.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
         "researchBaselineSha": "edcd934afaa8c5c7e682af9121ca32984196bc59",
-        "baselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
+        "baselineSha": "6c9a746f96e277e25e6d7b9cf1daeffe2bf7fc02",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.implementation-result.json",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.readiness-jev-evaluation.json",
-        "lastEvaluatedInput": "894a442354c6e03fb16f3bfb05c6e93c147c686e3ef86e34b6690b838646f8da"
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.candidate-jev-evaluation.json",
+        "lastEvaluatedInput": "a527ebf51ab1c8b84686b34e1a49ced9580f18a5ee783ea970b3f75217eeb4de",
+        "candidateSha": "6beb39ad656cbb763993aa595b4db2eebdcb3433",
+        "deliveryRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.delivered-feature.json"
       },
       "lane": "WORKER",
-      "phase": "EXECUTION"
+      "phase": "DELIVERED"
     },
     {
       "id": "BB-078",
@@ -3408,7 +3517,7 @@
       "featureId": "FEATURE-ORACLE-CONTEXT-BUDGETING",
       "title": "Implement model-aware context budget profiles",
       "kind": "IMPLEMENTATION",
-      "status": "PLANNED",
+      "status": "DONE",
       "complexity": "M",
       "components": [
         "oracle/infrastructure",
@@ -3429,7 +3538,9 @@
           "docs/blackboard/process/gate-gap-and-oracle-continuations.md",
           "docs/blackboard/process/oracle-context-intelligence-research/BB-093.md"
         ],
-        "outputRefs": [],
+        "outputRefs": [
+          "docs/blackboard/artifacts/ready-implement-plan/BB-093.delivered-feature.json"
+        ],
         "consolidatedRefs": [
           "docs/living/system/oracle/context-budget.md"
         ]
@@ -3446,12 +3557,15 @@
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-093.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-093.json",
         "researchBaselineSha": "5daaa54ff4448f7e6ec3c33fe0f819daaa9b35a2",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-093.readiness-jev-evaluation.json",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-093.candidate-jev-evaluation.json",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-093.implementation-result.json",
-        "lastEvaluatedInput": "034c97e7f526bd60edb9a977ab96615beb748b64e8d616231723012c37ac9abd"
+        "lastEvaluatedInput": "6f7c3f9f8598cf832fe5e151064e9e9390a3abd89b240c3234c9229d3d10b42d",
+        "candidateSha": "ad29ea19a59d87652403f010a3398b798ca94c91",
+        "baselineSha": "a6663eabb1111df1b8aefef24c17336873232eb0",
+        "deliveryRef": "docs/blackboard/artifacts/ready-implement-plan/BB-093.delivered-feature.json"
       },
       "lane": "WORKER",
-      "phase": "EXECUTION"
+      "phase": "DELIVERED"
     },
     {
       "id": "BB-094",
@@ -4278,7 +4392,7 @@
       "featureId": "BUG-ORACLE-FACADE-TYPED-FAILURE",
       "title": "Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets",
       "kind": "RESEARCH",
-      "status": "PLANNED",
+      "status": "DONE",
       "complexity": "M",
       "components": [
         "oracle/infrastructure"
@@ -4305,7 +4419,8 @@
         ],
         "outputRefs": [
           "docs/blackboard/evidence/BB-108/facade-throw-probe.mjs",
-          "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json"
+          "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-108.delivered-feature.json"
         ],
         "consolidatedRefs": [
           "docs/living/system/oracle/context-graph.md",
@@ -4324,12 +4439,15 @@
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-108.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-108.json",
         "researchBaselineSha": "5bc5a33d3ee70c318e8da7ae07e0c968d608a853",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-108.readiness-jev-evaluation.json",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-108.candidate-jev-evaluation.json",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-108.implementation-result.json",
-        "lastEvaluatedInput": "7be0092aff2b10bc6b456f424f98d7b42c7631b03c0abd6098de717a5ca27943"
+        "lastEvaluatedInput": "6b455ec47fb05dbc5c4e38df5c313dddf5efd182a4511ec3dc326f68d317dc1e",
+        "candidateSha": "7aa127dd15b831221d3c5e3d56f4bc5ad8032ad3",
+        "baselineSha": "939a5893f418d2adbbf498744bb53b593c9a8642",
+        "deliveryRef": "docs/blackboard/artifacts/ready-implement-plan/BB-108.delivered-feature.json"
       },
       "lane": "WORKER",
-      "phase": "EXECUTION"
+      "phase": "DELIVERED"
     },
     {
       "id": "BB-120",
@@ -4509,10 +4627,552 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-123",
+      "featureId": null,
+      "title": "Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-105",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-102",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-123.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-123.json",
+          "docs/blackboard/process/agent-tool-research/BB-123.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-123/followup-probe.mjs",
+          "docs/blackboard/evidence/BB-123/followup-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/context.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify a grok cost guard so only a finite number >= 0 is reported as totalCostUsd while null, empty-string, boolean and numeric-string costs record null, with named tests calling parseGrokJson directly.",
+        "Specify a worktree-local grounded exclusion so projection never writes outside worktreeRoot, the source info/exclude stays byte-identical, and copies stay out of the candidate commit, with named tests calling projectAgentTaskContext directly on a linked worktree.",
+        "Specify named tests, Living observed-cost and exclusion text and the exact write scope for the fix.",
+        "Ground the design in the executed follow-up probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-123.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-123.json",
+        "researchBaselineSha": "b5ad0eac5d219f55d482db7984f715cf18882bbd"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-124",
+      "featureId": "BUG-AGENT-ACCOUNTING-COMPLETENESS",
+      "title": "Preserve truthful partial usage and per-field accounting coverage",
+      "kind": "BUGFIX",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-098",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-105",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-123",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-124.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-124.json",
+          "docs/blackboard/process/delivery-value-improvement-research.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-124/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Truncated/invalid/missing turn usage is explicitly incomplete and cannot contribute to complete totals; real zero remains observed zero.",
+        "Optional token/cost fields expose complete, partial and unavailable aggregation coverage; missing values never contribute fabricated zeros. Reuse the strict observed-cost parser owned by BB-123 without duplicating that implementation.",
+        "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-124-CHECK-1",
+          "title": "Pin source and distinguish facts from hypotheses",
+          "schedulable": false
+        },
+        {
+          "id": "BB-124-CHECK-2",
+          "title": "Run prototype and finalize negative-case evidence",
+          "schedulable": false
+        },
+        {
+          "id": "BB-124-CHECK-3",
+          "title": "Submit exact plan to independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-124.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-124.json",
+        "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-125",
+      "featureId": "BUG-SUPERVISED-RESUME-BINDING",
+      "title": "Bind supervised resume to the exact task and execution contract",
+      "kind": "BUGFIX",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-101",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-125.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-125.json",
+          "docs/blackboard/process/delivery-value-improvement-research.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-125/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Canonical task and execution bindings are persisted before first dispatch and revalidated before resume; changed prompt/verifier/model/permission/launch identity is rejected.",
+        "Unchanged bindings retain same worktree/Core/tool session; legacy handles without binding fail closed with an explicit migration or restart instruction, without manufacturing identity.",
+        "Fresh Jev readiness for the exact concrete plan; measured value remains subject to the existing benchmark gates."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-125-CHECK-1",
+          "title": "Pin source and distinguish facts from hypotheses",
+          "schedulable": false
+        },
+        {
+          "id": "BB-125-CHECK-2",
+          "title": "Run prototype and finalize negative-case evidence",
+          "schedulable": false
+        },
+        {
+          "id": "BB-125-CHECK-3",
+          "title": "Submit exact plan to independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-125.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-125.json",
+        "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-126",
+      "featureId": "FEATURE-AGENT-RETRY-EFFICIENCY",
+      "title": "Stop repeated no-progress retries with evidence-bound feedback",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-125",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-126.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-126.json",
+          "docs/blackboard/process/delivery-value-improvement-research.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-126/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "The policy uses tree/content plus verification-failure fingerprints, not commit SHA alone, and distinguishes no progress, changed candidate, changing diagnostics and infrastructure setup failure.",
+        "Frozen repeated-failure fixtures dispatch fewer calls; delayed-fix and legitimate multi-step fixtures retain accepted quality; stop reasons and saved work are recorded without asserting model-level gains.",
+        "Fresh Jev readiness for the exact concrete plan; measured value remains subject to the existing benchmark gates."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-126-CHECK-1",
+          "title": "Pin source and distinguish facts from hypotheses",
+          "schedulable": false
+        },
+        {
+          "id": "BB-126-CHECK-2",
+          "title": "Run prototype and finalize negative-case evidence",
+          "schedulable": false
+        },
+        {
+          "id": "BB-126-CHECK-3",
+          "title": "Submit exact plan to independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-126.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-126.json",
+        "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-127",
+      "featureId": "FEATURE-LOCAL-PROTECTED-ACCEPTANCE",
+      "title": "Add externally pinned acceptance for local delivery slices",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "integration/agent-tools",
+        "agentic/backend-qa-execution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-104",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-130",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-125",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-127.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-127.json",
+          "docs/blackboard/process/delivery-value-improvement-research.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-127/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Evaluator bytes/config and protected paths are pinned outside the agent-writable checkout; independent acceptance reads the exact candidate and fails on missing/tampered provenance.",
+        "Test deletion/no-op verifier fixtures cannot satisfy the protected outcome; genuine implementation fixes pass. Trusted local process execution remains an explicit support boundary.",
+        "Fresh Jev readiness for the exact concrete plan; measured value remains subject to the existing benchmark gates."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-127-CHECK-1",
+          "title": "Pin source and distinguish facts from hypotheses",
+          "schedulable": false
+        },
+        {
+          "id": "BB-127-CHECK-2",
+          "title": "Run prototype and finalize negative-case evidence",
+          "schedulable": false
+        },
+        {
+          "id": "BB-127-CHECK-3",
+          "title": "Submit exact plan to independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-127.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-127.json",
+        "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-128",
+      "featureId": "FEATURE-OPERATOR-TOOL-PARITY",
+      "title": "Expose delivered Grok and OpenCode adapters through operator delivery",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-104",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-122",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-128.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-128.json",
+          "docs/blackboard/process/delivery-value-improvement-research.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-128/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Delivered registered tools supporting the required headless/edit/resume contract can run Backend plus QA through deliver; unsupported capabilities fail before spawning.",
+        "Unknown tools, missing binaries and incompatible resume capability never return ACCEPTED; deterministic fixtures cover Grok and delivered OpenCode.",
+        "Fresh Jev readiness for the exact concrete plan; measured value remains subject to the existing benchmark gates."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-128-CHECK-1",
+          "title": "Pin source and distinguish facts from hypotheses",
+          "schedulable": false
+        },
+        {
+          "id": "BB-128-CHECK-2",
+          "title": "Run prototype and finalize negative-case evidence",
+          "schedulable": false
+        },
+        {
+          "id": "BB-128-CHECK-3",
+          "title": "Submit exact plan to independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-128.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-128.json",
+        "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-129",
+      "featureId": "FEATURE-LOCAL-REVIEW-BUNDLE",
+      "title": "Export a durable review bundle for the exact local candidate",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools",
+        "agentic/backend-qa-execution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-127",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-129.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-129.json",
+          "docs/blackboard/process/delivery-value-improvement-research.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-129/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Bundle contains exact base/candidate/tree, binary-capable patch or Git objects, changed-path summary and evaluator/result/log digests, with publication completed before scratch cleanup.",
+        "A fresh clone at the declared base imports/reconstructs the exact candidate and reruns the pinned evaluator; mismatched base, corrupted bundle and missing evidence fail explicitly.",
+        "Fresh Jev readiness for the exact concrete plan; measured value remains subject to the existing benchmark gates."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-129-CHECK-1",
+          "title": "Pin source and distinguish facts from hypotheses",
+          "schedulable": false
+        },
+        {
+          "id": "BB-129-CHECK-2",
+          "title": "Run prototype and finalize negative-case evidence",
+          "schedulable": false
+        },
+        {
+          "id": "BB-129-CHECK-3",
+          "title": "Submit exact plan to independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-129.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-129.json",
+        "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-130",
+      "featureId": "BUG-LOCAL-VERIFIER-ENV",
+      "title": "Constrain local verifier child environment",
+      "kind": "BUGFIX",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "agentic/backend-qa-execution",
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-096",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-120",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-130.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-130.json",
+          "docs/blackboard/process/delivery-value-improvement-research.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-130/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/state.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Parent-only planted secrets are absent from verifier children, an explicit overlay works, and NODE_TEST_CONTEXT is stripped.",
+        "Required PATH/platform variables remain available and Backend/QA verification results preserve revision/tree bindings.",
+        "Fresh Jev readiness for the exact concrete plan; measured value remains subject to the existing benchmark gates."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-130-CHECK-1",
+          "title": "Pin source and distinguish facts from hypotheses",
+          "schedulable": false
+        },
+        {
+          "id": "BB-130-CHECK-2",
+          "title": "Run prototype and finalize negative-case evidence",
+          "schedulable": false
+        },
+        {
+          "id": "BB-130-CHECK-3",
+          "title": "Submit exact plan to independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-130.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-130.json",
+        "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-123",
+    "nextWorkId": "BB-131",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
