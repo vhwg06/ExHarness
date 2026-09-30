@@ -12,3 +12,4 @@ export { createExternalSourceProvider } from './providers/external-source.js';
 export { SourceObservationState, defineSourceObservation, observationDigest, defineResolverConfiguration, resolverConfigDigest, defineDerivationInput, reuseKey, defineContextResolutionReceipt, receiptId, evaluateReceiptCurrentness, isReusableResolution, createDurableResolutionCoordinator, DurabilityFailure } from './resolution-durability.js';
 export { createResolutionStore, ResolutionStoreError } from './resolution-store.js';
 export { createOracleContextResolver } from './context-resolution.js';
+export { buildContextGraph, createAuthoritativeGraphClient, parseContextGraphRef, CONTEXT_GRAPH_EDGES_V1 } from './context-graph.js';
