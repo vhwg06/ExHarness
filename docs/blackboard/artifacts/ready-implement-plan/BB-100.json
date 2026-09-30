@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-100",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-100.json",
     "hash": "e0d9f5a72e1e6e661569f47ec9b782aa6fa3bc74dfa15dc130c135c0d96ace94"
@@ -16,12 +16,16 @@
     "Changing createBackendWorker evaluate, signatures or the default CodeAct path.",
     "Wiring runBackendThenQaObjective or durable Backend→QA (BB-104).",
     "OpenHands, DomainExecutionController runtime adapters, sandbox or SCM push (BB-066, BB-067, BB-068).",
-    "Oracle context on AGENT_TASK (BB-102); durable supervisor resume (BB-101); MCP server (BB-103)."
+    "Oracle context on AGENT_TASK (BB-102); durable supervisor resume (BB-101); MCP server (BB-103).",
+    "Modifying packages/agent-tools (including supervisor.js); observation is passthrough of the delivered default-null invocationObserver only and is never acceptance.",
+    "Depending on undelivered BB-054 or BB-065."
   ],
   "constraints": [
-    "New module packages/agentic-system/src/supervised-backend.js plus tests packages/agentic-system/test/bb100-supervised-backend.test.js titled SB1..SB5 followed by a space with { timeout: 60000 }.",
-    "The adapter imports runSupervisedTask, defineAgentTool and AgentTaskStatus from ../../agent-tools/src/index.js and createLocalGitWorkspace/createLocalCommandVerifier from the existing agentic index, the same relative convention agent-tools uses for Core.",
-    "createBackendWorker.js must not import agent-tools.",
+    "New module packages/agentic-system/src/supervised-backend.js plus tests packages/agentic-system/test/bb100-supervised-backend.test.js titled SB1..SB6 followed by a space with { timeout: 60000 }.",
+    "mapBackendOrderToAgentTask is synchronous and imports only in-package contracts (parseBackendWorkOrder, BackendContextSchema, BackendEvidenceClaim). runSupervisedBackendWork dynamically import()s ../../agent-tools/src/supervisor.js and ../../agent-tools/src/tool-adapters.js (leaf modules, not agent-tools/src/index.js) so the existing supervisor.js import of agentic-system/src/index.js cannot TDZ.",
+    "packages/agentic-system/src/index.js re-exports mapBackendOrderToAgentTask and runSupervisedBackendWork after the createLocalGitWorkspace and createLocalCommandVerifier exports.",
+    "createBackendWorker / packages/agentic-system/src/backend-worker.js must not import agent-tools. packages/agent-tools/** is forbiddenWrite.",
+    "APPLIED evidence is built with public Core createEvidenceArtifact / evidenceFromVerificationArtifact / subjectFromValue / environmentRefFromValue plus createLocalGitWorkspace / createLocalCommandVerifier. Do not export or import private backend-worker.js helpers.",
     "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
@@ -31,14 +35,17 @@
     "TOOL_UNAVAILABLE, EXHAUSTED and NO_CHANGE cannot produce BackendWorkStatus.APPLIED."
   ],
   "architectureDecisions": [
-    "D1 — Files: packages/agentic-system/src/supervised-backend.js exporting mapBackendOrderToAgentTask, runSupervisedBackendWork; packages/agentic-system/src/index.js re-exports those two; tests in packages/agentic-system/test/bb100-supervised-backend.test.js. Living: docs/living/system/agentic-application/state.md and capabilities.md.",
-    "D2 — mapBackendOrderToAgentTask(order, context, { verifications }) builds AGENT_TASK_V1 { id: order.id, repositoryRoot from context.repository or caller, baseRevision: order.revision (40-hex), prompt: order.objective text or caller prompt, verifications }. requiredFiles are not added here (BB-102). Context files are not copied into the prompt in this task.",
-    "D3 — runSupervisedBackendWork({ tool, order, context, verifications, maxAttempts, timeoutMs, permissionProfile, env }) validates the order, calls runSupervisedTask, and projects AGENT_SUPERVISED_RESULT_V1 to BackendWorkResultSchema: ACCEPTED -> APPLIED with revision = acceptedSha; EXHAUSTED/NO_CHANGE -> FAILED; TOOL_UNAVAILABLE -> BLOCKED with reason TOOL_UNAVAILABLE. Evidence artifacts use the existing mutation/typecheck/tests helpers from backend-worker.js only when status is APPLIED, bound to acceptedSha.",
-    "D4 — Do not inject createSupervisedAgentStrategy into createBackendWorker. Probe shows BackendWorker evaluate is mutation-only and workspace.act is not RUN_AGENT_TOOL.",
-    "D5 — Fake CLI tests reuse packages/agent-tools/test/fixtures/fake-agent.mjs via defineAgentTool and FAKE_AGENT_SCENARIO. SB3 covers FIX_FIRST APPLIED, NEVER_FIX FAILED, CLAIM_SUCCESS_NO_EDIT FAILED, AUTH_FAIL BLOCKED/FAILED without APPLIED, FIX_AFTER_FEEDBACK APPLIED only after retry.",
-    "D6 — createBackendWorker remains the default path. An SB1 test reads backend-worker.js source (or a dedicated import graph assertion) and asserts it does not contain 'agent-tools' or 'runSupervisedTask'.",
-    "D7 — Evidence basis: executed productization probe; BB-096 workspace/verifier; BB-097 supervisor.",
-    "D8 — Research gap closed at READY: confirm BackendWorkResultSchema status enum contains APPLIED/FAILED/BLOCKED as used in D3; if a status name differs, rename the projection to the delivered enum without widening it."
+    "D1 — Files: packages/agentic-system/src/supervised-backend.js exporting mapBackendOrderToAgentTask and runSupervisedBackendWork; packages/agentic-system/src/index.js re-exports those two after createLocalGitWorkspace / createLocalCommandVerifier; tests in packages/agentic-system/test/bb100-supervised-backend.test.js. Living: docs/living/system/agentic-application/state.md and capabilities.md. No package.json script; test:agentic already globs test/*.test.js. Fake CLI is the delivered packages/agent-tools/test/fixtures/fake-agent.mjs (read-only).",
+    "D2 — mapBackendOrderToAgentTask(order, context, { repositoryRoot, verifications, prompt }) uses parseBackendWorkOrder and BackendContextSchema.parse, then asserts context.repository.ref/revision match the order and context.files[].path equals order.requiredFiles. repositoryRoot is a required caller filesystem path; context.repository.ref is a logical id. prompt defaults to order.task. verifications is a non-empty array of { name, command, args, timeoutMs, claim } whose claims are unique and include BackendEvidenceClaim.TYPECHECK (backend.typecheck) and TESTS (backend.tests). Returns AGENT_TASK_V1 { id: order.id, repositoryRoot, baseRevision: order.revision, prompt, verifications: [{ name, command, args, timeoutMs }] }. No requiredFiles field (BB-102); context bytes stay out of the prompt. Invalid mapping throws TypeError; validateAgentTask still requires 40-hex baseRevision.",
+    "D3 — runSupervisedBackendWork({ tool, order, context, repositoryRoot, verifications, prompt, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver }) maps via D2, then import()s runSupervisedTask/AgentTaskStatus from ../../agent-tools/src/supervisor.js and PermissionProfile from tool-adapters.js (permissionProfile default WORKSPACE_EDIT; invocationObserver/eventSinks/tracer/model default null/[]/null/null). BackendWorkResultSchema.parse fields are status, summary, revision, artifacts, evidence, gaps, blockers. AgentTaskStatus.ACCEPTED + 40-hex acceptedSha is re-grounded (D3b). TOOL_UNAVAILABLE -> BackendWorkStatus.BLOCKED, blockers [\"TOOL_UNAVAILABLE\"], revision null, empty artifacts/evidence. EXHAUSTED (NEVER_FIX, AUTH_FAIL, CLAIM_SUCCESS_NO_EDIT / AttemptOutcome.NO_CHANGE) -> FAILED, revision null, empty evidence. AUTH_FAIL is EXHAUSTED. ACCEPTED with null acceptedSha or last attempt NO_CHANGE cannot be APPLIED.",
+    "D3b — After ACCEPTED, createLocalGitWorkspace({ repositoryRoot, baseRevision: acceptedSha, worktreeRoot: mkdtemp }). Re-run each D2 verification with createLocalCommandVerifier({ name, claim, root: workspace.root, command, args, timeoutMs, requireUnchangedTree: true }).verify({ candidate: { id: order.repositoryRef, version: acceptedSha } }). If backend.typecheck or backend.tests is not VerificationStatus.PASS, or git diff --name-only order.revision acceptedSha is empty, dispose and return FAILED. Else evidence producer identity supervised-backend-adapter: createEvidenceArtifact kind BACKEND_MUTATION, metadata.claim BackendEvidenceClaim.MUTATION PASS, content { beforeRevision: order.revision, afterRevision: acceptedSha, lineageAdvanced: true }, subjectFromValue({ repositoryRef, revision: acceptedSha }, { type: \"backend-candidate\", producer: { identity: \"supervised-backend-adapter\", roles: [\"executor\"] }, metadata: { objectiveId, workOrderId: order.id } }), environmentRefFromValue({ repositoryRef, baseRevision: order.revision, resultRevision: acceptedSha }, { name: \"supervised-backend-workspace\" }); typecheck/tests via evidenceFromVerificationArtifact. artifacts = { ref: `git:${acceptedSha}:${path}`, path }. Dispose in finally. APPLIED must assessBackendCompletion ACCEPT; FAILED/BLOCKED evidence is [].",
+    "D4 — Do not inject createSupervisedAgentStrategy into createBackendWorker. Probe: BackendWorker evaluate is mutation-only (candidate.version !== order.revision) and workspace.act is APPLY_BACKEND_CHANGE, not RUN_AGENT_TOOL.",
+    "D5 — Tests drive packages/agent-tools/test/fixtures/fake-agent.mjs via defineAgentTool(AGENT_TOOLS.codex|{kiro,agy}, { command: process.execPath, prefixArgs: [fake] }) and FAKE_AGENT_SCENARIO. FIX_FIRST -> APPLIED after verifier PASS at acceptedSha; FIX_AFTER_FEEDBACK -> APPLIED only after the retry; NEVER_FIX -> FAILED; CLAIM_SUCCESS_NO_EDIT -> FAILED with AttemptOutcome.NO_CHANGE; AUTH_FAIL -> FAILED (EXHAUSTED); missing command -> BLOCKED with blockers TOOL_UNAVAILABLE. Each run snapshots source HEAD, symbolic-ref, refs/heads and porcelain status and asserts equality afterwards.",
+    "D6 — SB1 reads packages/agentic-system/src/backend-worker.js as text and asserts it contains none of agent-tools, runSupervisedTask, createSupervisedAgentStrategy. SB1 also imports both packages/agentic-system/src/index.js and packages/agent-tools/src/index.js then calls mapBackendOrderToAgentTask (proves the public export and that mapping has no load-time agent-tools cycle).",
+    "D7 — Evidence basis: executed productization probe; executed composition probe over current main (status enums, schema keys, fake-CLI outcomes, acceptedSha checkoutable, invocationObserver present); delivered BB-096 workspace/verifier/completion; delivered BB-097 supervisor; delivered BB-098 default-null invocationObserver. BB-054 and BB-065 are not used.",
+    "D8 — Research gap closed: BackendWorkStatus is APPLIED/FAILED/BLOCKED; BackendWorkResultSchema.parse constructs APPLIED without createBackendWorker; D3 binds those identifiers. Remaining fail-closed: TOOL_UNAVAILABLE/EXHAUSTED/NO_CHANGE/failed re-ground never return APPLIED.",
+    "D9 — BB-098 re-ground: do not edit supervisor.js. Pass through invocationObserver (default null), eventSinks and tracer. Observation never decides BackendWorkStatus. Existing BB-097/BB-098 tests stay green because agent-tools is untouched.",
+    "D10 — ESM cycle: supervisor.js statically imports ../../agentic-system/src/index.js. supervised-backend.js therefore must not statically import agent-tools/src/index.js or supervisor.js. Dynamic import() inside runSupervisedBackendWork of the two leaf modules is the required seam. index.js may re-export the adapter after the local workspace/verifier named exports."
   ],
   "sourceScope": {
     "read": [
@@ -68,9 +75,17 @@
     "requiredExisting": [
       "docs/blackboard/process/agent-tool-productization.md",
       "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "docs/blackboard/evidence/BB-100/composition-probe.mjs",
+      "docs/blackboard/evidence/BB-100/composition-probe-result.json",
       "packages/agentic-system/src/backend-worker.js",
-      "packages/agent-tools/src/supervisor.js",
+      "packages/agentic-system/src/contracts.js",
+      "packages/agentic-system/src/local-git-workspace.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/backend-completion.js",
       "packages/agentic-system/src/index.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
       "docs/living/system/agent-tools/state.md"
     ],
     "expectedNew": [
@@ -82,110 +97,221 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Mapping [SB1]: implement D2 and D6. SB1 tests assert AGENT_TASK_V1 mapping and that backend-worker.js does not import agent-tools.",
-    "S2 — Adapter [SB2,SB3]: implement D3-D5. SB2/SB3 tests use the fake CLI on temp git repos for APPLIED/FAILED/BLOCKED projections and source-repo preservation.",
-    "S3 — Evidence [SB4]: APPLIED results carry grounded mutation/typecheck/tests evidence bound to acceptedSha; EXHAUSTED results do not.",
-    "S4 — Docs [SB5]: update Living application docs; run agentic tests, verify:current-docs and npm test."
+    "S1 — Mapping [SB1,SB6]: implement D2, D6, D10. SB1 tests assert AGENT_TASK_V1 mapping (repositoryRoot is the caller path, prompt is order.task, claims stripped, context match checks), that backend-worker.js does not import agent-tools, and that importing both public indexes then calling mapBackendOrderToAgentTask works. SB6 tests a write-scope matcher over this plan's sourceScope (no git history): write-scope paths pass; backend-worker.js, packages/agent-tools/**, packages/core-harness/**, packages/oracle/** and docs/blackboard/** fail.",
+    "S2 — Adapter [SB2,SB3]: implement D3, D4, D5, D9. SB2/SB3 use the fake CLI on temp git repos: FIX_FIRST APPLIED, FIX_AFTER_FEEDBACK APPLIED only after retry, NEVER_FIX FAILED, CLAIM_SUCCESS_NO_EDIT FAILED, AUTH_FAIL FAILED, missing executable BLOCKED/TOOL_UNAVAILABLE, source-repo HEAD/refs/status preserved, invocationObserver default null.",
+    "S3 — Evidence [SB4]: implement D3b. APPLIED results carry mutation/typecheck/tests PASS evidence bound to acceptedSha plus git:<sha>:<path> artifacts; default assessBackendCompletion is ACCEPT. EXHAUSTED/TOOL_UNAVAILABLE results have empty evidence and cannot be ACCEPT.",
+    "S4 — Docs [SB5]: update Living application state.md and capabilities.md (no Blackboard ids); distinguish the opt-in supervised Backend path (verifier-PASS at acceptedSha) from the default CodeAct BackendWorker path and from OpenHands domain-runtime execution. Run agentic tests, verify:current-docs and npm test."
   ],
   "acceptanceCriteria": [
     {
       "id": "SB1",
-      "statement": "The opt-in adapter maps BackendWorkOrder plus BackendContext to AGENT_TASK_V1, and createBackendWorker never imports agent-tools.",
-      "verificationIds": ["sb1-mapping", "agentic"],
-      "evidenceRequired": ["SB1 test output."]
+      "statement": "The opt-in adapter maps BackendWorkOrder plus BackendContext to AGENT_TASK_V1 with caller repositoryRoot, and createBackendWorker never imports agent-tools.",
+      "verificationIds": [
+        "sb1-mapping",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "SB1 test output."
+      ]
     },
     {
       "id": "SB2",
-      "statement": "TOOL_UNAVAILABLE, EXHAUSTED and NO_CHANGE cannot produce APPLIED; only verifier-PASS ACCEPTED projects to APPLIED at acceptedSha.",
-      "verificationIds": ["sb2-projection", "agentic"],
-      "evidenceRequired": ["SB2 test output over fake CLI scenarios."]
+      "statement": "TOOL_UNAVAILABLE, EXHAUSTED and NO_CHANGE cannot produce APPLIED; only verifier-PASS ACCEPTED that re-grounds at acceptedSha projects to APPLIED.",
+      "verificationIds": [
+        "sb2-projection",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "SB2 test output over fake CLI scenarios."
+      ]
     },
     {
       "id": "SB3",
       "statement": "Agent claimedSuccess is telemetry only; ExHarness git operations preserve the source repository HEAD, branch refs and working tree.",
-      "verificationIds": ["sb3-authority", "agentic"],
-      "evidenceRequired": ["SB3 test output including CLAIM_SUCCESS_NO_EDIT and source HEAD check."]
+      "verificationIds": [
+        "sb3-authority",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "SB3 test output including CLAIM_SUCCESS_NO_EDIT and source HEAD check."
+      ]
     },
     {
       "id": "SB4",
-      "statement": "APPLIED results carry grounded mutation/typecheck/tests evidence bound to the accepted commit; failed runs do not claim that evidence.",
-      "verificationIds": ["sb4-evidence", "agentic"],
-      "evidenceRequired": ["SB4 test output."]
+      "statement": "APPLIED results carry grounded mutation/typecheck/tests evidence bound to the accepted commit and default completion ACCEPT; failed runs do not claim that evidence.",
+      "verificationIds": [
+        "sb4-evidence",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "SB4 test output."
+      ]
     },
     {
       "id": "SB5",
-      "statement": "Living docs distinguish the opt-in supervised Backend path from default CodeAct and from BB-066 OpenHands domain runtime.",
-      "verificationIds": ["sb5-docs", "docs", "repository"],
-      "evidenceRequired": ["SB5 test output, docs diff, verify:current-docs and npm test logs."]
+      "statement": "Living docs distinguish the opt-in supervised Backend path from default CodeAct BackendWorker and from OpenHands domain-runtime execution, without Blackboard ids.",
+      "verificationIds": [
+        "sb5-docs",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "SB5 test output, docs diff, verify:current-docs and npm test logs."
+      ]
+    },
+    {
+      "id": "SB6",
+      "statement": "The candidate writes only sourceScope.write paths and leaves Core, Oracle, agent-tools, backend-worker.js and docs/blackboard untouched.",
+      "verificationIds": [
+        "sb6-scope",
+        "agentic"
+      ],
+      "evidenceRequired": [
+        "SB6 test output over the write-scope matcher."
+      ]
     }
   ],
   "invariantCoverage": [
     {
       "invariant": "APPLIED requires every declared Backend verification PASS at the exact candidate commit; agent claimedSuccess and mutation-only evaluate never authorize APPLIED on this path.",
-      "criterionIds": ["SB2", "SB3", "SB4"]
+      "criterionIds": [
+        "SB2",
+        "SB3",
+        "SB4"
+      ]
     },
     {
       "invariant": "The default createBackendWorker path never constructs agent-tools objects.",
-      "criterionIds": ["SB1"]
+      "criterionIds": [
+        "SB1"
+      ]
     },
     {
       "invariant": "ExHarness git operations preserve the source repository HEAD, branch refs and working tree.",
-      "criterionIds": ["SB3"]
+      "criterionIds": [
+        "SB3"
+      ]
     },
     {
       "invariant": "TOOL_UNAVAILABLE, EXHAUSTED and NO_CHANGE cannot produce BackendWorkStatus.APPLIED.",
-      "criterionIds": ["SB2"]
+      "criterionIds": [
+        "SB2"
+      ]
     }
   ],
   "verificationPlan": [
-    { "id": "sb1-mapping", "command": "node --test --test-name-pattern=\"^SB1 \" packages/agentic-system/test/bb100-supervised-backend.test.js" },
-    { "id": "sb2-projection", "command": "node --test --test-name-pattern=\"^SB2 \" packages/agentic-system/test/bb100-supervised-backend.test.js" },
-    { "id": "sb3-authority", "command": "node --test --test-name-pattern=\"^SB3 \" packages/agentic-system/test/bb100-supervised-backend.test.js" },
-    { "id": "sb4-evidence", "command": "node --test --test-name-pattern=\"^SB4 \" packages/agentic-system/test/bb100-supervised-backend.test.js" },
-    { "id": "sb5-docs", "command": "node --test --test-name-pattern=\"^SB5 \" packages/agentic-system/test/bb100-supervised-backend.test.js" },
-    { "id": "agentic", "command": "npm run test:agentic" },
-    { "id": "docs", "command": "npm run verify:current-docs" },
-    { "id": "repository", "command": "npm test" }
+    {
+      "id": "sb1-mapping",
+      "command": "node --test --test-name-pattern=\"^SB1 \" packages/agentic-system/test/bb100-supervised-backend.test.js"
+    },
+    {
+      "id": "sb2-projection",
+      "command": "node --test --test-name-pattern=\"^SB2 \" packages/agentic-system/test/bb100-supervised-backend.test.js"
+    },
+    {
+      "id": "sb3-authority",
+      "command": "node --test --test-name-pattern=\"^SB3 \" packages/agentic-system/test/bb100-supervised-backend.test.js"
+    },
+    {
+      "id": "sb4-evidence",
+      "command": "node --test --test-name-pattern=\"^SB4 \" packages/agentic-system/test/bb100-supervised-backend.test.js"
+    },
+    {
+      "id": "sb5-docs",
+      "command": "node --test --test-name-pattern=\"^SB5 \" packages/agentic-system/test/bb100-supervised-backend.test.js"
+    },
+    {
+      "id": "sb6-scope",
+      "command": "node --test --test-name-pattern=\"^SB6 \" packages/agentic-system/test/bb100-supervised-backend.test.js"
+    },
+    {
+      "id": "agentic",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
   ],
-  "researchGaps": [
-    "Confirm delivered BackendWorkResultSchema status names (APPLIED/FAILED/BLOCKED or equivalent) and bind D3 to those exact identifiers before READY."
-  ],
+  "researchGaps": [],
   "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-100/composition-probe-result.json",
+      "finding": "Executed over current main 64e0f79d: BackendWorkStatus APPLIED/FAILED/BLOCKED; schema parses APPLIED without createBackendWorker; blockers not reason; repositoryRoot is caller path; NO_CHANGE is AttemptOutcome; CLAIM_SUCCESS_NO_EDIT/NEVER_FIX/AUTH_FAIL are EXHAUSTED; missing executable is TOOL_UNAVAILABLE; acceptedSha checkoutable after dispose with verifier PASS; invocationObserver present default-null; mutation helpers private; completion needs claims+artifacts; backend-worker.js does not import agent-tools."
+    },
     {
       "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json",
       "finding": "Executed: backendFacts.importsAgentTools false; objectivePassOnAnyMutation true; supervisor does not import BackendWorker."
     },
     {
       "ref": "packages/agentic-system/src/backend-worker.js",
-      "finding": "DELIVERED_TRUTH: createBackendWorker injects strategy and workspace.act; evaluate PASSes when candidate.version !== order.revision."
+      "finding": "DELIVERED_TRUTH: createBackendWorker injects strategy and workspace.act; evaluate PASSes when candidate.version !== order.revision; mutationEvidence is not exported."
     },
     {
       "ref": "packages/agent-tools/src/supervisor.js",
-      "finding": "DELIVERED_TRUTH: runSupervisedTask is a closed harness loop with verifier-PASS acceptance."
+      "finding": "DELIVERED_TRUTH: runSupervisedTask is a closed harness loop with verifier-PASS acceptance; AgentTaskStatus ACCEPTED|EXHAUSTED|TOOL_UNAVAILABLE; additive default-null invocationObserver; statically imports agentic-system/src/index.js."
+    },
+    {
+      "ref": "packages/agentic-system/src/contracts.js",
+      "finding": "DELIVERED_TRUTH: BackendWorkStatus APPLIED/BLOCKED/FAILED; BackendWorkResult keys status/summary/revision/artifacts/evidence/gaps/blockers; BackendEvidenceClaim backend.mutation/typecheck/tests; BackendContext.repository is {ref, revision}."
     }
   ],
   "dependencyResolution": {
-    "direct": ["BB-096", "BB-097"],
-    "workerStart": "Confirm DONE BB-096 exports createLocalGitWorkspace/createLocalCommandVerifier and DONE BB-097 exports runSupervisedTask/defineAgentTool/fake-agent.mjs.",
+    "direct": [
+      "BB-096",
+      "BB-097"
+    ],
+    "workerStart": "Re-run docs/blackboard/evidence/BB-100/composition-probe.mjs on the baseline and confirm conclusions (especially acceptedShaCheckoutableAfterDispose and invocationObserverPresentDefaultNull). Confirm DONE BB-096 exports createLocalGitWorkspace/createLocalCommandVerifier/assessBackendCompletion and DONE BB-097 exports runSupervisedTask/defineAgentTool/fake-agent.mjs. BB-098 is delivered observation only: pass through invocationObserver; do not edit supervisor.js. Do not start from BB-054 or BB-065.",
     "sourceClassification": {
-      "DELIVERED_TRUTH": ["createBackendWorker", "runSupervisedTask", "BB-096 workspace/verifier"],
+      "DELIVERED_TRUTH": [
+        "createBackendWorker",
+        "runSupervisedTask",
+        "invocationObserver",
+        "BB-096 workspace/verifier/completion",
+        "BB-097 supervisor and fake CLI",
+        "BB-098 observation option"
+      ],
       "PLANNED_CONTRACT": [],
-      "RESEARCH_DESIRED_STATE": ["supervised-backend adapter defined here"]
+      "RESEARCH_DESIRED_STATE": [
+        "supervised-backend adapter defined here"
+      ]
     },
-    "contradiction": "If BackendWorkResultSchema cannot represent APPLIED at an accepted commit without going through createBackendWorker evaluate, stop PLAN_INPUT_CONTRADICTION."
+    "contradiction": "If BackendWorkResultSchema cannot represent APPLIED at an accepted commit without going through createBackendWorker evaluate, stop PLAN_INPUT_CONTRADICTION. Probe resolved this: the schema parses APPLIED independently. If acceptedSha is not checkoutable after runSupervisedTask returns, stop PLAN_INPUT_CONTRADICTION (probe: checkoutable). If a static agent-tools import from agentic index TDZ-crashes because supervisor.js imports that index, use D10 dynamic import; if even dynamic import cannot call runSupervisedTask, stop PLAN_INPUT_CONTRADICTION."
   },
   "deliveryContract": {
-    "precondition": "BB-096 DONE and BB-097 DONE.",
+    "precondition": "BB-096 DONE and BB-097 DONE. BB-098 observation is delivered and unused for acceptance.",
     "completion": "All SB criterion runs + test:agentic + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
-    "forbidden": "No default-path behavior change, no OpenHands, no durable-workflow wiring, no sandbox."
+    "forbidden": "No default-path behavior change, no OpenHands, no durable-workflow wiring, no sandbox, no agent-tools source edits, no BB-054/BB-065 dependency."
   },
   "ciContract": {
-    "checks": ["sb1-mapping", "sb2-projection", "sb3-authority", "sb4-evidence", "sb5-docs", "agentic", "docs", "repository"],
+    "checks": [
+      "sb1-mapping",
+      "sb2-projection",
+      "sb3-authority",
+      "sb4-evidence",
+      "sb5-docs",
+      "sb6-scope",
+      "agentic",
+      "docs",
+      "repository"
+    ],
     "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
   },
   "migrationContract": {
-    "preserve": ["createBackendWorker", "BackendWorkResultSchema", "agent-tools supervisor"],
-    "add": ["supervised-backend.js", "bb100 tests", "Living docs"],
+    "preserve": [
+      "createBackendWorker",
+      "BackendWorkResultSchema",
+      "agent-tools supervisor including invocationObserver"
+    ],
+    "add": [
+      "supervised-backend.js",
+      "bb100 tests",
+      "Living docs"
+    ],
     "rollback": "Remove supervised-backend.js, its export, tests and Living-doc paragraphs."
   },
   "laneContracts": [
@@ -195,7 +321,11 @@
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + fresh Jev SATISFIED",
-      "forbidden": ["product implementation", "planned dependency as delivered truth", "self-issued readiness"]
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
     },
     {
       "lane": "WORKER",
@@ -203,7 +333,9 @@
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash + candidate/evidence + Jev",
       "convergence": "criterion runs + no forbidden writes + docs",
-      "forbidden": ["No default-path behavior change, no OpenHands, no durable-workflow wiring, no sandbox."]
+      "forbidden": [
+        "No default-path behavior change, no OpenHands, no durable-workflow wiring, no sandbox, no agent-tools source edits."
+      ]
     }
   ],
   "livingDocs": {
@@ -212,80 +344,223 @@
       "docs/living/system/agentic-application/capabilities.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe the opt-in supervised Backend adapter, its verifier-PASS acceptance, and that default CodeAct BackendWorker and BB-066 OpenHands remain separate seams."
+    "statement": "Living docs describe the opt-in supervised Backend adapter (BackendWorkOrder plus caller repositoryRoot mapped to AGENT_TASK_V1, verifier-PASS acceptance at acceptedSha, BackendWorkResult APPLIED/FAILED/BLOCKED), that default CodeAct BackendWorker is unchanged, and that OpenHands domain-runtime execution remains a separate seam. Living docs contain no Blackboard ids."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
     {
       "objectiveCriterion": "Specify an opt-in adapter that maps BackendWorkOrder plus BackendContext to AGENT_TASK_V1, runs the delivered supervised loop, and projects AGENT_SUPERVISED_RESULT_V1 onto BackendWorkResultSchema with grounded mutation/typecheck/tests evidence at the accepted commit.",
-      "criterionIds": ["SB1", "SB2", "SB4"],
-      "planElements": ["S1", "S2", "S3"],
-      "verificationIds": ["sb1-mapping", "sb2-projection", "sb4-evidence"],
-      "decisionIndexes": [1, 2],
-      "sourceRefs": ["docs/blackboard/process/agent-tool-productization.md", "packages/agent-tools/src/supervisor.js"],
-      "sourceAnchors": [
-        { "ref": "docs/blackboard/process/agent-tool-productization.md", "match": "Register BB-100" },
-        { "ref": "packages/agent-tools/src/supervisor.js", "match": "runSupervisedTask" }
+      "criterionIds": [
+        "SB1",
+        "SB2",
+        "SB4"
       ],
-      "supportingPlanFields": ["architectureDecisions"]
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "sb1-mapping",
+        "sb2-projection",
+        "sb4-evidence"
+      ],
+      "decisionIndexes": [
+        1,
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/agent-tool-productization.md",
+        "packages/agent-tools/src/supervisor.js",
+        "docs/blackboard/evidence/BB-100/composition-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/agent-tool-productization.md",
+          "match": "Register BB-100"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "runSupervisedTask"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-100/composition-probe-result.json",
+          "match": "\"acceptedShaCheckoutableAfterDispose\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope"
+      ]
     },
     {
       "objectiveCriterion": "Specify fail-closed behavior: TOOL_UNAVAILABLE, EXHAUSTED, NO_CHANGE and failed verification cannot produce APPLIED; the default createBackendWorker path never constructs agent-tools objects.",
-      "criterionIds": ["SB1", "SB2"],
-      "planElements": ["S1", "S2"],
-      "verificationIds": ["sb1-mapping", "sb2-projection"],
-      "decisionIndexes": [3, 5],
-      "sourceRefs": ["docs/blackboard/evidence/BB-100/productization-probe-result.json", "packages/agentic-system/src/backend-worker.js"],
-      "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"importsAgentTools\": false" },
-        { "ref": "packages/agentic-system/src/backend-worker.js", "match": "candidate.version !== order.revision" }
+      "criterionIds": [
+        "SB1",
+        "SB2"
       ],
-      "supportingPlanFields": ["invariants"]
+      "planElements": [
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "sb1-mapping",
+        "sb2-projection"
+      ],
+      "decisionIndexes": [
+        2,
+        4,
+        5,
+        6,
+        8
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+        "packages/agentic-system/src/backend-worker.js",
+        "docs/blackboard/evidence/BB-100/composition-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+          "match": "\"importsAgentTools\": false"
+        },
+        {
+          "ref": "packages/agentic-system/src/backend-worker.js",
+          "match": "candidate.version !== order.revision"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-100/composition-probe-result.json",
+          "match": "\"missingExecutableIsToolUnavailable\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariants"
+      ]
     },
     {
       "objectiveCriterion": "Specify that agent claimedSuccess is telemetry only and that ExHarness git operations preserve the source repository HEAD, branch refs and working tree.",
-      "criterionIds": ["SB3"],
-      "planElements": ["S2"],
-      "verificationIds": ["sb3-authority"],
-      "decisionIndexes": [4],
-      "sourceRefs": ["docs/living/system/agent-tools/state.md"],
-      "sourceAnchors": [
-        { "ref": "docs/living/system/agent-tools/state.md", "match": "The agent's exit status, success claim and final message are recorded as telemetry only" }
+      "criterionIds": [
+        "SB3"
       ],
-      "supportingPlanFields": ["invariants"]
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "sb3-authority"
+      ],
+      "decisionIndexes": [
+        5
+      ],
+      "sourceRefs": [
+        "docs/living/system/agent-tools/state.md",
+        "docs/blackboard/evidence/BB-100/composition-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "The agent's exit status, success claim and final message are recorded as telemetry only"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-100/composition-probe-result.json",
+          "match": "\"claimSuccessNoEditIsExhausted\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariants"
+      ]
     },
     {
       "objectiveCriterion": "Specify Living docs distinguishing the opt-in supervised Backend path from the default CodeAct path and from BB-066 OpenHands domain runtime.",
-      "criterionIds": ["SB5"],
-      "planElements": ["S4"],
-      "verificationIds": ["sb5-docs", "docs"],
-      "decisionIndexes": [0],
-      "sourceRefs": ["docs/blackboard/process/agent-tool-productization.md"],
-      "sourceAnchors": [
-        { "ref": "docs/blackboard/process/agent-tool-productization.md", "match": "BB-066 is OpenHands under" }
+      "criterionIds": [
+        "SB5"
       ],
-      "supportingPlanFields": ["livingDocs"]
+      "planElements": [
+        "S4"
+      ],
+      "verificationIds": [
+        "sb5-docs",
+        "docs"
+      ],
+      "decisionIndexes": [
+        0
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/agent-tool-productization.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/agent-tool-productization.md",
+          "match": "BB-066 is OpenHands under"
+        }
+      ],
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
     },
     {
       "objectiveCriterion": "Ground the design in the executed productization probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
-      "criterionIds": ["SB1", "SB2", "SB3", "SB4", "SB5"],
-      "planElements": ["S1", "S2", "S3", "S4"],
-      "verificationIds": ["sb1-mapping", "sb2-projection", "sb3-authority", "sb4-evidence", "sb5-docs", "repository"],
-      "decisionIndexes": [6],
-      "sourceRefs": ["docs/blackboard/evidence/BB-100/productization-probe-result.json"],
-      "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "BB100_AGENT_TOOL_PRODUCTIZATION_PROBE_RESULT" }
+      "criterionIds": [
+        "SB1",
+        "SB2",
+        "SB3",
+        "SB4",
+        "SB5",
+        "SB6"
       ],
-      "supportingPlanFields": ["negativeVerificationCases"]
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "sb1-mapping",
+        "sb2-projection",
+        "sb3-authority",
+        "sb4-evidence",
+        "sb5-docs",
+        "sb6-scope",
+        "repository"
+      ],
+      "decisionIndexes": [
+        7,
+        9,
+        10
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+        "docs/blackboard/evidence/BB-100/composition-probe-result.json",
+        "packages/agentic-system/src/contracts.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+          "match": "BB100_AGENT_TOOL_PRODUCTIZATION_PROBE_RESULT"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-100/composition-probe-result.json",
+          "match": "BB100_COMPOSITION_PROBE_RESULT"
+        },
+        {
+          "ref": "packages/agentic-system/src/contracts.js",
+          "match": "APPLIED: \"APPLIED\""
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeVerificationCases"
+      ]
     }
   ],
   "negativeVerificationCases": [
     "createBackendWorker used without the adapter never imports or constructs agent-tools objects.",
     "CLAIM_SUCCESS_NO_EDIT cannot project to APPLIED.",
     "NEVER_FIX after maxAttempts projects to FAILED not APPLIED.",
-    "A missing executable projects to BLOCKED/TOOL_UNAVAILABLE not APPLIED.",
+    "A missing executable projects to BLOCKED with blockers TOOL_UNAVAILABLE not APPLIED.",
     "Source repository HEAD is unchanged after a successful APPLIED run.",
-    "A write under packages/agent-tools or packages/agentic-system/src/backend-worker.js fails scope verification."
+    "A write under packages/agent-tools or packages/agentic-system/src/backend-worker.js fails scope verification.",
+    "AUTH_FAIL projects to FAILED (EXHAUSTED), never APPLIED or TOOL_UNAVAILABLE.",
+    "FAILED and BLOCKED results carry empty evidence and cannot pass default assessBackendCompletion ACCEPT.",
+    "AttemptOutcome.NO_CHANGE cannot project to APPLIED."
   ],
   "negativeCaseBindings": [
     {
@@ -336,11 +611,39 @@
     {
       "id": "NC-SB-scope",
       "negativeCaseIndex": 5,
-      "criterionId": "SB5",
-      "verificationId": "repository",
+      "criterionId": "SB6",
+      "verificationId": "sb6-scope",
       "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
-      "testTitle": "SB5 write scope excludes backend-worker and agent-tools",
+      "testTitle": "SB6 write scope excludes backend-worker and agent-tools",
+      "subjectSymbol": "runSupervisedBackendWork"
+    },
+    {
+      "id": "NC-SB-auth",
+      "negativeCaseIndex": 6,
+      "criterionId": "SB2",
+      "verificationId": "sb2-projection",
+      "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+      "testTitle": "SB2 AUTH_FAIL is not APPLIED",
+      "subjectSymbol": "runSupervisedBackendWork"
+    },
+    {
+      "id": "NC-SB-empty-evidence",
+      "negativeCaseIndex": 7,
+      "criterionId": "SB4",
+      "verificationId": "sb4-evidence",
+      "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+      "testTitle": "SB4 failed runs do not claim PASS evidence",
+      "subjectSymbol": "runSupervisedBackendWork"
+    },
+    {
+      "id": "NC-SB-no-change",
+      "negativeCaseIndex": 8,
+      "criterionId": "SB2",
+      "verificationId": "sb2-projection",
+      "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+      "testTitle": "SB2 NO_CHANGE is not APPLIED",
       "subjectSymbol": "runSupervisedBackendWork"
     }
-  ]
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-100.readiness-jev-evaluation.json"
 }

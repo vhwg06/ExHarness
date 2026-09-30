@@ -1,0 +1,31 @@
+TAP version 13
+# Subtest: a deployment change before QA starts invalidates the verification target and publishes no acceptance
+ok 1 - a deployment change before QA starts invalidates the verification target and publishes no acceptance
+  ---
+  duration_ms: 258.643478
+  type: 'test'
+  ...
+# Subtest: a deployment change during QA prevents current QualityAcceptance for the changed release
+ok 2 - a deployment change during QA prevents current QualityAcceptance for the changed release
+  ---
+  duration_ms: 182.06821
+  type: 'test'
+  ...
+# Subtest: final QualityAcceptance commit holds the release guard so a concurrent release cannot become accepted
+ok 3 - final QualityAcceptance commit holds the release guard so a concurrent release cannot become accepted
+  ---
+  duration_ms: 226.668859
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 782.000542
+
+
+exitCode=0

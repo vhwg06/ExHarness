@@ -377,11 +377,16 @@ export function materialize(root, id, { readiness = false } = {}) {
   const stateHash = hash(state), specHash = hash({ policy:spec.policy, questions });
   const cacheKey = hash({ stateHash, specHash, model: spec.model, policy: POLICY, lane });
   const payload = { model: spec.model, state, questions };
-  const payloadBytes=Buffer.byteLength(canonical(payload));
   const maxPayloadBytes=lane==='RESEARCH_SA'?Math.min(spec.maxPayloadBytes,spec.maxResearchPayloadBytes??98304):spec.maxPayloadBytes;
-  check(payloadBytes <= maxPayloadBytes, 'payload exceeds budget; refine evidence without dropping required coverage');
+  checkPayloadBudget(payload, { lane, maxPayloadBytes, batchOptions: lane === 'WORKER' ? () => batchOptions({ livingChanges, candidateChanges, changeSet }) : null });
   return { lane, subject, payload, stateHash, specHash, cacheKey, ...(livingChanges ? { livingChanges } : {}), ...(candidateChanges ? { candidateChanges } : {}), ...(changeSet ? { changeSet } : {}) };
 }
+// Jev reports each probability at PROBABILITY_REPORTED_DECIMALS decimals. Rounding each of n
+// reported values moves their sum by at most n half-units of the last reported decimal, so a sum
+// within that bound is the rounding of a normalized distribution and is accepted verbatim (it is
+// never renormalized); a sum further from 1 is a malformed distribution and is rejected.
+export const PROBABILITY_REPORTED_DECIMALS = 2;
+export function probabilitySumTolerance(count) { return count * 0.5 * 10 ** -PROBABILITY_REPORTED_DECIMALS + 1e-9; }
 export function validateResponse(response, payload) {
   check(response?.model === payload.model, 'response model mismatch');
   check(response.answers && canonical(Object.keys(response.answers).sort()) === canonical(Object.keys(payload.questions).sort()), 'response question IDs mismatch');
@@ -394,7 +399,7 @@ export function validateResponse(response, payload) {
     const validRange = values.every(x => Number.isFinite(x) && x >= 0 && x <= 1);
     const sum = validRange ? values.reduce((x, y) => x + y, 0) : null;
     // Only report trusted question IDs and numeric aggregates; never echo provider text.
-    check(validRange && Math.abs(sum - 1) < 1e-5, `invalid probabilities: ${id}; validRange=${validRange}; sum=${sum}; count=${values.length}`);
+    check(validRange && Math.abs(sum - 1) <= probabilitySumTolerance(values.length), `invalid probabilities: ${id}; validRange=${validRange}; sum=${sum}; count=${values.length}`);
     check(a.probabilities[a.choice] >= Math.max(...values) - 1e-8, 'choice is not maximum probability');
   }
   for (const k of ['input_tokens', 'output_tokens']) check(Number.isInteger(response.usage?.[k]) && response.usage[k] >= 0, 'invalid usage');
@@ -444,8 +449,8 @@ export async function callJev(payload, { apiKey = process.env.TYPESAFE_API_KEY, 
       return { response: validateResponse(body, payload), attempts };
     } catch (error) {
       // A syntactically successful provider response may still violate the
-      // trusted typed-response contract (for example rounded probabilities
-      // that do not sum to 1). Do not normalize or accept it. Retry the
+      // trusted typed-response contract (for example probabilities whose sum
+      // is off by more than reporting precision). Do not normalize or accept it. Retry the
       // provider once, then preserve the strict validation failure.
       if (attempts === 2 || Date.now() >= deadline) throw error;
       continue;
@@ -1122,6 +1127,28 @@ function manifestEntry(batch) {
 }
 function workerBatches(fullPayload, options = {}) {
   return Object.keys(fullPayload.questions).flatMap(id => workerQuestionBatches(fullPayload, id, options));
+}
+/**
+ * The payload budget bounds what one provider request can carry.
+ * A payload that is sent whole (every RESEARCH_SA payload, and a WORKER payload within the batch limit)
+ * must itself fit `maxPayloadBytes`. A larger WORKER payload is never sent whole: evaluate() sends only its
+ * bounded per-question batches, so the budget applies to each batch. Materialization therefore builds the
+ * exact batch manifest evaluate() will use and fails closed when any batch cannot fit, before any provider
+ * call. The full canonical state stays local; it is hashed into stateHash/cacheKey, not transmitted.
+ */
+export function checkPayloadBudget(payload, { lane, maxPayloadBytes, batchOptions = null }) {
+  check(Number.isInteger(maxPayloadBytes) && maxPayloadBytes > 0, 'invalid payload budget');
+  const bytes = payloadBytes(payload);
+  if (lane !== 'WORKER' || bytes <= WORKER_BATCH_MAX_BYTES) {
+    check(bytes <= maxPayloadBytes, 'payload exceeds budget; refine evidence without dropping required coverage');
+    return { mode: 'SINGLE_REQUEST', payloadBytes: bytes, requests: 1, maxRequestBytes: bytes, totalRequestBytes: bytes };
+  }
+  check(WORKER_BATCH_MAX_BYTES <= maxPayloadBytes, 'payload exceeds budget; worker batch limit is above the policy request budget');
+  const manifest = workerBatchManifest(payload, typeof batchOptions === 'function' ? batchOptions() : (batchOptions ?? {}));
+  const sizes = manifest.map(entry => entry.payloadBytes);
+  const maxRequestBytes = Math.max(...sizes);
+  check(maxRequestBytes <= Math.min(WORKER_BATCH_MAX_BYTES, maxPayloadBytes), 'payload exceeds budget; refine evidence without dropping required coverage');
+  return { mode: 'BOUNDED_BATCHES', payloadBytes: bytes, requests: manifest.length, maxRequestBytes, totalRequestBytes: sizes.reduce((a, b) => a + b, 0) };
 }
 export function workerBatchManifest(fullPayload, options = {}) {
   return workerBatches(fullPayload, options).map(manifestEntry);

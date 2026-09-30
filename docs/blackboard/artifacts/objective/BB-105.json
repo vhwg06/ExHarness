@@ -1,0 +1,40 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-105",
+  "outcome": "Grok Build is a first-class @exharness/agent-tools adapter (id grok) for both direct and ExHarness-supervised arms, so a host with an authenticated grok CLI can produce real run traces and usage/cost, while missing Codex/Kiro/agy stay TOOL_UNAVAILABLE / NOT_EVALUATED and are never fabricated.",
+  "currentProblem": "Executed probe: Grok Build 1.0.44 is installed at ~/.grok/bin/grok, authenticated, and a headless --output-format json --prompt-file run with -m grok-4.6 edited hello.txt to hi and returned usage/cost/sessionId. AGENT_TOOLS is only {codex, kiro, agy}; those binaries are NOT_INSTALLED on this host. grok is not on the default PATH.",
+  "scope": [
+    "agent-tools.cli-adapters.grok",
+    "agent-tools.output-parsers.grok",
+    "agent-tools.observation.grok"
+  ],
+  "constraints": [
+    "Adapters never read or write user CLI configuration or credentials and use the existing authenticated CLI state.",
+    "Live grok runs are opt-in (CLI smoke/probe) and excluded from npm test and npm run verify.",
+    "Codex, Kiro and agy contracts stay unchanged; a missing binary remains TOOL_UNAVAILABLE / NOT_INSTALLED and is never a fabricated ACCEPT or usage number.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify a grok adapter in the delivered AGENT_TOOLS registry that builds a shell-free headless invocation with JSON output, pinned model, cwd, prompt-file outside the worktree, permission-profile mapping to --always-approve or --permission-mode acceptEdits, default --disable-web-search and --no-subagents, a version probe, and TOOL_UNAVAILABLE when the executable is missing.",
+    "Specify a grok output parser that reports real token usage and total_cost_usd from grok JSON when those fields are present as numbers, and otherwise records null with an explicit unavailable reason, never an estimate; traces redact the prompt.",
+    "Specify that the same adapter serves direct runObservedInvocation and supervised runSupervisedTask arms, and that exharness-agent probe and smoke accept --tool grok with live smoke remaining opt-in and absent from npm test.",
+    "Specify a deterministic fake grok CLI fixture, named tests, Living docs and the package README that list grok beside Codex, Kiro and agy.",
+    "Ground the design in the executed grok CLI probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-research/BB-105.md",
+    "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json",
+    "packages/agent-tools/src/tool-adapters.js",
+    "packages/agent-tools/src/output-parsers.js",
+    "packages/agent-tools/src/process-runner.js",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/agent-tools/src/observation.js",
+    "packages/agent-tools/src/index.js",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/agent-tools/observation.md"
+  ]
+}

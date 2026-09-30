@@ -197,6 +197,25 @@ Frontend is a first-class execution domain (`frontend-contracts.js`, `frontend-c
 
 **Failure semantics:** non-actionable or wrong-domain keys return `NOOP`/`REJECTED` with no side effect; claim contention returns `NOOP CLAIM_CONTENDED`; zero, multiple or mismatched execution inputs fail before worker dispatch; runtime failure leaves the domain's own attempt `RECOVERY_REQUIRED` and is reported through that host's settled result or `onError` hook.
 
-**Does not imply:** a global scheduler, role registry, next-role/next-domain/stage API, priority or ranking, exactly-once transport, strategy selection inside activation, obligation creation/invalidation by activation, or deployment/product QA/closure semantics. Canonical invalidation and release fencing stay with dependency invalidation.
+**Does not imply:** a global scheduler, role registry, next-role/next-domain/stage API, priority or ranking, exactly-once transport, strategy selection inside activation, obligation creation/invalidation by activation, or closure semantics. Deployment and Product QA acceptance are separate domains (A20). Canonical invalidation and release fencing stay with dependency invalidation.
 
 Evidence: `domain-activation.test.js`, `activation-recovery.test.js`, `domain-host-autonomy.test.js`, `frontend-domain.test.js`, `fe-be-parallel.test.js`, `partial-invalidation.test.js`, plus the `bb047`/`bb048` regressions.
+
+## A20 — Exact deployment identity and Product QA acceptance
+
+Integration E/F adds a DevOps domain and a Product QA domain on the existing `DomainExecutionController`. Every link from accepted source to accepted product quality is an immutable, content-addressed artifact in `createDeploymentArtifactRegistry(...)`:
+
+```text
+accepted FE/BE source delivery -> BuildProvenance -> DeployableArtifactRef (per component)
+-> DevOps DeploymentExecutionEvidence -> DeploymentRelease (current head per environment)
+-> AcceptanceSnapshot (release + AcceptancePolicy) -> RuntimeObservationEvidence + QaCriterionEvidence
+-> Product QA judgment -> QualityAcceptance (current head per environment)
+```
+
+**Guarantees:** a deployable exists only for an ACCEPTed source delivery of its own domain and records the exact artifact digest; a release requires both BACKEND and FRONTEND deployables and an ACCEPTed DevOps judgment whose published evidence names exactly those deployables; the release head and QualityAcceptance head advance only by compare-and-swap, and replaying the same release is idempotent; snapshots are deterministic, so resolving a snapshot recomputes it from its release and policy and rejects substitution; runtime identity is classified only by a trusted observer against the snapshot's expected digests (`MATCH`/`MISMATCH`/`MIXED`/`UNKNOWN`), never from release data or agent self-report; Product QA acceptance is published only while the snapshot's release is still current, so a release change before start blocks the run and a change during the run rejects publication; superseded releases, snapshots and acceptances keep resolving unchanged after heads advance.
+
+**Failure semantics:** missing or non-accepted provenance, extra or missing components, digest mismatch, snapshot substitution, untrusted observers and release drift all fail closed with no head change; failed, blocked or inconclusive criteria yield `REMEDIATION_REQUIRED`, not acceptance.
+
+**Does not imply:** live deployment to real infrastructure, rollback orchestration, runtime monitoring beyond one observation per snapshot, or DevOps authority over quality acceptance.
+
+Evidence: `deployable-provenance.test.js`, `deployment-release.test.js`, `acceptance-snapshot.test.js`, `runtime-observation.test.js`, `product-qa.test.js`, `product-qa-race.test.js`, `deployment-provenance-chain.test.js`.

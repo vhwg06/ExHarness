@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-105
+next-work-id: BB-106
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -40,15 +40,15 @@ NONE
 
 ## Schedulable tasks
 
-- BB-054 [WORKER/EXECUTION] — Implement exact deployment identity and Product QA acceptance
+- BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-091 [WORKER/EXECUTION] — Research and ablate retrieval planner strategies
-- BB-099 [RESEARCH_SA/RESEARCH] — Measure ExHarness-supervised versus direct agent-tool delivery
-- BB-100 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as an opt-in Backend adapter
-- BB-101 [RESEARCH_SA/RESEARCH] — Resume a supervised agent-tool run after process death
-- BB-102 [RESEARCH_SA/RESEARCH] — Resolve declared agent-tool files through the Oracle facade
+- BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
+- BB-101 [WORKER/EXECUTION] — Resume a supervised agent-tool run after process death
+- BB-102 [WORKER/EXECUTION] — Resolve declared agent-tool files through the Oracle facade
 - BB-103 [RESEARCH_SA/RESEARCH] — Expose verification and status as stdio MCP tools
 - BB-104 [RESEARCH_SA/RESEARCH] — Run one local Backend-then-QA slice from an operator CLI
+- BB-105 [RESEARCH_SA/RESEARCH] — Add Grok Build as a supported agent tool
 
 ## Dependency graph
 
@@ -56,8 +56,8 @@ NONE
 BB-048 [DONE] <- ROOT
 BB-052 [DONE] <- BB-048
 BB-053 [DONE] <- BB-052
-BB-054 [WORKER_SCHEDULABLE] <- BB-053
-BB-055 [BLOCKED_BY BB-054] <- BB-054
+BB-054 [DONE] <- BB-053
+BB-055 [WORKER_SCHEDULABLE] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [BLOCKED_BY BB-055] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
@@ -101,12 +101,13 @@ BB-095 [BLOCKED_BY BB-094,BB-065] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
 BB-098 [DONE] <- BB-097
-BB-099 [RESEARCH_SCHEDULABLE] <- BB-098, BB-065
-BB-100 [RESEARCH_SCHEDULABLE] <- BB-096, BB-097
-BB-101 [RESEARCH_SCHEDULABLE] <- BB-097
-BB-102 [RESEARCH_SCHEDULABLE] <- BB-097
+BB-099 [BLOCKED_BY BB-065] <- BB-098, BB-065
+BB-100 [WORKER_SCHEDULABLE] <- BB-096, BB-097
+BB-101 [WORKER_SCHEDULABLE] <- BB-097
+BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [RESEARCH_SCHEDULABLE] <- BB-097
 BB-104 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-102
+BB-105 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
 ```
 
 ## Context semantics
