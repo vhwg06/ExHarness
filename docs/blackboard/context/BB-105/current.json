@@ -1,0 +1,163 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-105",
+  "taskId": "BB-105",
+  "featureId": "FEATURE-AGENT-TOOL-GROK",
+  "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+  "components": [
+    "integration/agent-tools"
+  ],
+  "pipeline": "WORKER",
+  "lane": "WORKER",
+  "phase": "JUDGMENT",
+  "stage": "JUDGMENT",
+  "semanticArtifactRef": "docs/blackboard/artifacts/ready-implement-plan/BB-105.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-105.json",
+  "planHash": "403128a01ea08546a053b95c50cebfb0018d617ba35d4fb9eb3218031ad4cb89",
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-097",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/agent-tools/state.md",
+        "docs/living/system/state.md"
+      ]
+    },
+    {
+      "taskId": "BB-098",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/agent-tools/observation.md",
+        "docs/living/system/agent-tools/state.md"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/state.md",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/agent-tools/observation.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-105.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-105.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-105.readiness-jev-evaluation.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/README.md",
+      "packages/agent-tools/test/grok-adapter.test.js",
+      "packages/agent-tools/test/agent-tools.test.js",
+      "packages/agent-tools/test/run-trace.test.js",
+      "packages/agent-tools/test/fixtures/fake-grok.mjs",
+      "packages/agent-tools/test/fixtures/grok-usage.json",
+      "packages/agent-tools/test/fixtures/grok-no-usage.json",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md",
+      "docs/living/system/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/**",
+      "packages/benchmark/**",
+      "packages/agent-tools/test/scope-audit.mjs",
+      ".github/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "artifactWriteScope": [],
+  "hardInvariants": [
+    "A missing grok executable is TOOL_UNAVAILABLE and never ACCEPTED.",
+    "Token and cost values are observed numbers from grok JSON or null with a reason; nothing is estimated.",
+    "The task prompt is never stored verbatim in argvRedacted.",
+    "Codex, Kiro and agy behavior is unchanged when grok is added to the registry.",
+    "npm test does not invoke a live grok CLI."
+  ],
+  "verification": [
+    {
+      "id": "gr1-argv",
+      "command": "node --test --test-name-pattern=\"^GR1 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "gr2-parser",
+      "command": "node --test --test-name-pattern=\"^GR2 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "gr3-arms",
+      "command": "node --test --test-name-pattern=\"^GR3 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "gr4-fake",
+      "command": "node --test --test-name-pattern=\"^GR4 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "gr5-docs",
+      "command": "node --test --test-name-pattern=\"^GR5 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
+  ],
+  "expectedOutputs": [
+    "DELIVERED_FEATURE"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agent-tools/**",
+      "benchmarks/agent-tools/**"
+    ],
+    "contractRefs": [
+      "AGENT_TOOL_ADAPTER_V1",
+      "AGENT_TASK_V1",
+      "AGENT_SUPERVISED_RESULT_V1",
+      "AGENT_TOOL_RUN_TRACE_V1"
+    ]
+  }
+}
