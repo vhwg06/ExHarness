@@ -74,10 +74,11 @@ The client builds the graph once per snapshot and reuses it in memory by `graphI
 - If the graph snapshot equals the authoritative snapshot, the resolution is `COMPLETE` with both strong validators.
 - If the graph was built at a different snapshot, the result is `STALE`, and REQUIRED evidence makes the resolution `UNSATISFIED`.
 - If an authority reports no snapshot, the result is `CURRENTNESS_UNVERIFIABLE`, and REQUIRED evidence makes the resolution `UNSATISFIED`.
-- If no `CONTEXT_GRAPH` authority is registered, the facade's pre-observation rejects with the catalog `TypeError` ("missing/ambiguous snapshot authority") before any graph client call. The planner on its own reports `CURRENTNESS_UNVERIFIABLE`.
+- If no `CONTEXT_GRAPH` authority is registered, the facade returns `UNSATISFIED` with `CURRENTNESS_UNVERIFIABLE` for the required evidence without throwing and before any graph client call, so zero provider retrieve calls happen for that evidence. The planner on its own reports `CURRENTNESS_UNVERIFIABLE`.
+- A budget smaller than the empty-resolution materialization (for example a one-byte `maxMaterializedBytes`) yields `UNSATISFIED` with `BUDGET_EXHAUSTED` from the facade rather than a thrown `TypeError`. This underflow diagnostic is the single case where the returned resolution is not an ordinary contract resolution: its `consumed.materializedBytes` carries the exact empty-list materialization bytes, which exceed the tiny budget, so contract validation (`defineContextResolution` / `assertConsumableContextResolution`) rejects it and it is never consumable.
 
 ## Verification
 
 - `node --test packages/oracle/test/context-graph.test.js` covers extraction, identity, declared edges, grammar, traversal, truncation and provenance with an in-memory exact-snapshot reader.
 - `node --test test/oracle-context-graph-boundary.test.mjs` covers the composition through the delivered seam, catalog, planner and facade. It also builds a real git-backed snapshot of `packages/oracle/src` and `packages/agentic-system/src` at `HEAD`: the graph is deterministic, has no unprovenanced edge, and its `IMPORTED_BY` result for `context-contract.js` equals the set of files that literally import it.
-- `npm run test:oracle` includes the unit test and the architecture guard, which pins the Oracle root export list.
+- `npm run test:oracle` runs `packages/oracle/test` and every root `test/oracle-*.test.mjs` suite (for example the architecture, facade-accounting and graph-boundary suites). The architecture guard pins the Oracle root export list.
