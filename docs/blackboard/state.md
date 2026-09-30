@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-088
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-088
-task: Productize authoritative snapshot-bound Context Graph
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-088/current.json
-components: oracle/infrastructure
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -92,7 +85,7 @@ BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
 BB-085 [BLOCKED_BY BB-084] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
 BB-087 [DONE] <- BB-064
-BB-088 [ACTIVE] <- BB-087
+BB-088 [PLANNED] <- BB-087
 BB-089 [DONE] <- BB-087
 BB-090 [DONE] <- BB-056
 BB-091 [BLOCKED_BY BB-088] <- BB-088
