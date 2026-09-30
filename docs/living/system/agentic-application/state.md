@@ -28,6 +28,14 @@ Source-synchronized application-layer projection. All unresolved application wor
 - QA issues deterministically request remediation/continuation;
 - interrupted QA can be explicitly redispatched against the same accepted Backend target after the abandoned application execution generation is fenced out.
 
+## Local git workspace and command verifier
+
+- Backend `workspace.act(...)` and verifiers are injected adapters; default tests still use injected fixtures.
+- `createLocalGitWorkspace({ repositoryRoot, baseRevision, worktreeRoot })` creates a detached git worktree at an existing 40-hex base commit. `act(...)` accepts only `APPLY_BACKEND_CHANGE` with declared `edits`, rejects unsafe paths (absolute, parent traversal, drive letter, `.git` segment, backslash) before writing, requires worktree HEAD to equal the candidate version, and commits with a fixed local identity. It returns `mutated: false` when nothing changed and `git:<sha>:<path>` artifact refs otherwise. The source repository's HEAD, branches and working tree are never modified; `dispose()` removes the worktree.
+- `createLocalCommandVerifier({ name, claim, root, command, args, ... })` runs one argument-array process with `shell: false`. A HEAD that differs from the candidate version fails as `REVISION_MISMATCH` without spawning; exit 0 is PASS, non-zero is FAIL, a timeout kills the process tree and is INCONCLUSIVE, and a changed checkout or HEAD is `TREE_MUTATED` FAIL. Evidence carries the revision, exit, reason and full-stream SHA-256 digests; the summary keeps bounded output.
+- With these adapters, a Backend run driven by a Core CodeAct strategy with a deterministic model reaches ACCEPT only when its real commit makes the real test pass, and QA on the accepted revision uses the same verifier on a second worktree.
+- The adapters are trusted local fixtures, not a sandbox: commands run with the caller's privileges, network and filesystem. Sandbox/network/tool isolation is separate planned work. There is no live model provider; no network model is called.
+
 ## Current orchestration state
 
 The package exposes `createApplicationOrchestrator(...)` for durable Blackboard lifecycle control and `createJsonBlackboardStore(...)` for JSON persistence.
