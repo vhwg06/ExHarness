@@ -4509,10 +4509,65 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-123",
+      "featureId": null,
+      "title": "Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-105",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-102",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-123.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-123.json",
+          "docs/blackboard/process/agent-tool-research/BB-123.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-123/followup-probe.mjs",
+          "docs/blackboard/evidence/BB-123/followup-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/context.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify a grok cost guard so only a finite number >= 0 is reported as totalCostUsd while null, empty-string, boolean and numeric-string costs record null, with named tests calling parseGrokJson directly.",
+        "Specify a worktree-local grounded exclusion so projection never writes outside worktreeRoot, the source info/exclude stays byte-identical, and copies stay out of the candidate commit, with named tests calling projectAgentTaskContext directly on a linked worktree.",
+        "Specify named tests, Living observed-cost and exclusion text and the exact write scope for the fix.",
+        "Ground the design in the executed follow-up probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-123.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-123.json",
+        "researchBaselineSha": "b5ad0eac5d219f55d482db7984f715cf18882bbd"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-123",
+    "nextWorkId": "BB-124",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
