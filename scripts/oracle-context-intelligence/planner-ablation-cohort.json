@@ -1,0 +1,123 @@
+{
+  "kind": "ORACLE_PLANNER_ABLATION_COHORT_V1",
+  "snapshotRef": "be9afd2e559c030942447eed02fb21157a95b109",
+  "repositoryRef": "exharness",
+  "corpusRoots": [
+    "packages/oracle/src",
+    "packages/agentic-system/src"
+  ],
+  "k": 3,
+  "budget": {
+    "maxItems": 3,
+    "maxProviderCalls": 3,
+    "maxMaterializedBytes": 24576,
+    "maxResolutionSteps": 1
+  },
+  "thresholds": {
+    "minMeanRecallGain": 0.05,
+    "maxBytesRatio": 1.25,
+    "perQueryNonInferior": true
+  },
+  "recallDefinition": "Recall@k = |top-k selected distinct itemRefs intersect relevant| / min(k, |relevant|); MRR = 1/rank of first relevant itemRef in top-k else 0; k = budget.maxItems (3).",
+  "queries": [
+    {
+      "componentId": "agentic/organization-work",
+      "query": "OrganizationWorkContract ClaimReleaseReceipt",
+      "relevant": [
+        "packages/agentic-system/src/application-orchestrator.js",
+        "packages/agentic-system/src/organization-authority.js",
+        "packages/agentic-system/src/organization-claim.js",
+        "packages/agentic-system/src/organization-work.js"
+      ]
+    },
+    {
+      "componentId": "agentic/domain-execution-control",
+      "query": "ExecutionPolicy ExecutionStrategy ExecutionAttemptBinding DomainPublicationReceipt",
+      "relevant": [
+        "packages/agentic-system/src/domain-execution-control.js"
+      ]
+    },
+    {
+      "componentId": "agentic/product-qa",
+      "query": "AcceptanceSnapshot RuntimeObservation QualityAcceptance",
+      "relevant": [
+        "packages/agentic-system/src/qa-application.js",
+        "packages/agentic-system/src/qa-worker.js"
+      ]
+    },
+    {
+      "componentId": "agentic/how-evolution",
+      "query": "Evaluator.evaluate VerificationPolicy TrustBoundary SelfUpgradeExperimentProtocol ExecutionPolicy ExecutionStrategyDescriptor ExecutionAttemptBinding",
+      "relevant": [
+        "packages/agentic-system/src/domain-execution-control.js",
+        "packages/agentic-system/src/self-upgrade-pilot.js"
+      ]
+    },
+    {
+      "componentId": "oracle/infrastructure",
+      "query": "resolveBackendContext resolveQaContext repositoryReader.readFile artifactReader.readArtifact BackendContextSchema QaContextSchema",
+      "relevant": [
+        "packages/agentic-system/src/backend-application.js",
+        "packages/agentic-system/src/oracle.js",
+        "packages/agentic-system/src/qa-application.js"
+      ]
+    },
+    {
+      "componentId": "agentic/backend-qa-execution",
+      "query": "LOCAL_GIT_WORKSPACE_V1 LOCAL_COMMAND_VERIFIER_V1",
+      "relevant": [
+        "packages/agentic-system/src/backend-worker.js",
+        "packages/agentic-system/src/local-command-verifier.js",
+        "packages/agentic-system/src/local-git-workspace.js",
+        "packages/agentic-system/src/qa-worker.js"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "componentId": "agentic/product-lineage",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "agentic/domain-activation",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "agentic/deployment",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "agentic/product-closure",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "outer/blackboard",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "agentic/causal-observation",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "core/context-resolution",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "core/async-runtime-efficiency",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "agentic/feedback-lifecycle",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "agentic/self-improve",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    },
+    {
+      "componentId": "integration/agent-tools",
+      "reason": "no concrete .js sourceRoots under corpusRoots that exist at snapshotRef"
+    }
+  ],
+  "cohortDigest": "e6850e3e14251c5211be3d2b728edf531cf004fdaa158ac761bdc65f13cb8634"
+}
