@@ -1,0 +1,35 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-123",
+  "outcome": "Grok usage costs stay observed-only and grounded context is excluded worktree-locally, so no run fabricates a $0 cost from a missing cost and no grounded run writes the source repository's metadata.",
+  "currentProblem": "Executed probe docs/blackboard/evidence/BB-123/followup-probe.mjs: parseGrokJson coerces total_cost_usd null/\"\"/true/\"0.5\" to totalCostUsd 0/0/1/0.5 via Number(value.total_cost_usd), recording an observed $0 cost for a null cost; projectAgentTaskContext appends .exharness/ to the source repository shared .git/info/exclude through a linked worktree created by the delivered createLocalGitWorkspace (excludeResolvedInsideWorktree false, sourceExcludeChanged true), contradicting the Living claim that the source repository is never written.",
+  "scope": [
+    "agent-tools.output-parsers.grok-cost",
+    "agent-tools.task-context.worktree-exclusion"
+  ],
+  "constraints": [
+    "Observed-only cost: only a total_cost_usd that is typeof number, finite and >= 0 is an observed totalCostUsd; anything else stays null with the existing unavailable reason.",
+    "Worktree-local exclusion only: the source repository info/exclude stays byte-identical and grounded copies still never enter the candidate commit.",
+    "Do not change Codex, Kiro, agy or grok argv, adapters or fixtures except the grok cost guard and its tests.",
+    "Do not change Oracle resolution, budgets, snapshot authorities or the agentic-system workspace adapter.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify a grok cost guard so only a finite number >= 0 is reported as totalCostUsd while null, empty-string, boolean and numeric-string costs record null, with named tests calling parseGrokJson directly.",
+    "Specify a worktree-local grounded exclusion so projection never writes outside worktreeRoot, the source info/exclude stays byte-identical, and copies stay out of the candidate commit, with named tests calling projectAgentTaskContext directly on a linked worktree.",
+    "Specify named tests, Living observed-cost and exclusion text and the exact write scope for the fix.",
+    "Ground the design in the executed follow-up probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-research/BB-123.md",
+    "docs/blackboard/evidence/BB-123/followup-probe-result.json",
+    "packages/agent-tools/src/output-parsers.js",
+    "packages/agent-tools/src/task-context.js",
+    "packages/agentic-system/src/local-git-workspace.js",
+    "docs/living/system/agent-tools/context.md",
+    "docs/living/system/agent-tools/observation.md"
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-124",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-124.json",
+    "hash": "9b7459c45debcf0dd4d6094f942e856ae07be0fdb6f400bc9c7df18f90f8b285"
+  },
+  "scope": [
+    "agent-tools.observation.usage-completeness",
+    "agent-tools.report.field-coverage"
+  ],
+  "outOfScope": [
+    "Rewriting BB-099 experiment or loosening its thresholds.",
+    "Inventing Kiro/agy usage schemas or inferring tokens from text.",
+    "Grok total_cost_usd type/null normalization and grounded exclusion fixes owned by the existing main BB-123."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
+    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+  ],
+  "invariants": [
+    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Prefer conservative null complete totals plus separately labelled observed partial counts; do not infer unreported tokens or prices. Consider streaming collection only if a bounded real-output probe justifies the extra complexity.",
+    "Reuse the observed-cost guard delivered by BB-123 unchanged. Add per-field coverage for optional token/cost aggregates; a sum over reporting records is not a complete total over the cohort. Do not infer unreported tokens or prices."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/src/run-trace.js",
+      "docs/blackboard/evidence/BB-124/discovery.json",
+      "docs/blackboard/process/delivery-value-improvement-research.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/test/accounting-completeness.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/accounting-completeness.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/**",
+      "packages/agentic-system/src/**",
+      "packages/agent-tools/test/**",
+      "packages/agentic-system/test/**",
+      "docs/blackboard/process/delivery-value-improvement-research.md",
+      "docs/blackboard/evidence/BB-124/discovery.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/test/accounting-completeness.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
+    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "USAGE_TRUTH",
+      "statement": "Truncated/invalid/missing turn usage is explicitly incomplete and cannot contribute to complete totals; real zero remains observed zero.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    },
+    {
+      "id": "FIELD_COVERAGE",
+      "statement": "Optional token/cost fields expose complete, partial and unavailable aggregation coverage; missing values never contribute fabricated zeros. Reuse the strict observed-cost parser owned by BB-123 without duplicating that implementation.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agent-tools/test/accounting-completeness.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+      "criterionIds": [
+        "USAGE_TRUTH",
+        "FIELD_COVERAGE"
+      ]
+    },
+    {
+      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "criterionIds": [
+        "USAGE_TRUTH",
+        "FIELD_COVERAGE"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "USAGE_TRUTH",
+        "FIELD_COVERAGE"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Truncated stream with a completed turn cannot be complete usage",
+    "Missing optional fields cannot be reported as complete per-field totals"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_124_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "USAGE_TRUTH",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/accounting-completeness.test.js",
+      "testTitle": "BB-124 N1 Truncated stream with a completed turn cannot be complete usage",
+      "subjectSymbol": "parseToolOutput"
+    },
+    {
+      "id": "NEG_124_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "FIELD_COVERAGE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/accounting-completeness.test.js",
+      "testTitle": "BB-124 N2 Missing optional fields cannot be reported as complete per-field totals",
+      "subjectSymbol": "summarizeTraces"
+    }
+  ],
+  "researchGaps": [
+    "Ratify the trace compatibility strategy and field-level completeness representation, including aggregation of optional token fields; pin fixtures before Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Prevent incomplete token/accounting coverage from appearing to demonstrate a cost advantage.",
+    "measurement": "Every incomplete trace has explicit coverage; complete per-tool comparison uses matched observed coverage or reports INCONCLUSIVE.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
+  }
+}
