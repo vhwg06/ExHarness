@@ -1,0 +1,205 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-100-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-100.json",
+    "hash": "8a0f527767922717dc186296e792587cc49fc56e1c3ee18791c6820835b1c030"
+  },
+  "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+  "baselineSha": "a4384c58c0099fb60976b5201c66232960873e53",
+  "candidateTree": "be7ebb83e03df2201433152deaf6fcc7e1aa2d59",
+  "verificationRuns": [
+    {
+      "id": "sb1-mapping",
+      "command": "node --test --test-name-pattern=\"^SB1 \" packages/agentic-system/test/bb100-supervised-backend.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+      "logRef": "docs/blackboard/evidence/BB-100/sb1-mapping.txt",
+      "logHash": "e61b712beccff8da67e011cffa87dd83a9fa0517e7c2703361625c7d7474ec0a"
+    },
+    {
+      "id": "sb2-projection",
+      "command": "node --test --test-name-pattern=\"^SB2 \" packages/agentic-system/test/bb100-supervised-backend.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+      "logRef": "docs/blackboard/evidence/BB-100/sb2-projection.txt",
+      "logHash": "672805cbd0befe2f3920c943f8a7f42aad02591d20ab312f83b5e4fb35c42fc8"
+    },
+    {
+      "id": "sb3-authority",
+      "command": "node --test --test-name-pattern=\"^SB3 \" packages/agentic-system/test/bb100-supervised-backend.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+      "logRef": "docs/blackboard/evidence/BB-100/sb3-authority.txt",
+      "logHash": "3ecdb660ecbff3c312e7a7a4f4b447e91a966adb7b4915f543cef65312ffdb27"
+    },
+    {
+      "id": "sb4-evidence",
+      "command": "node --test --test-name-pattern=\"^SB4 \" packages/agentic-system/test/bb100-supervised-backend.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+      "logRef": "docs/blackboard/evidence/BB-100/sb4-evidence.txt",
+      "logHash": "86a463e12c5562397344a69f6127c73f19c9209f7f2ef9993a1aec325a51ee6d"
+    },
+    {
+      "id": "sb5-docs",
+      "command": "node --test --test-name-pattern=\"^SB5 \" packages/agentic-system/test/bb100-supervised-backend.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+      "logRef": "docs/blackboard/evidence/BB-100/sb5-docs.txt",
+      "logHash": "beea1522f292feec5bb60099366e29f006a6facb729be6b353418213d494c5b4"
+    },
+    {
+      "id": "sb6-scope",
+      "command": "node --test --test-name-pattern=\"^SB6 \" packages/agentic-system/test/bb100-supervised-backend.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+      "logRef": "docs/blackboard/evidence/BB-100/sb6-scope.txt",
+      "logHash": "69bebe1f5f316d95b13348fe34a920f1e429c5b8b53d723681dcb106bc8bfc99"
+    },
+    {
+      "id": "agentic",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+      "logRef": "docs/blackboard/evidence/BB-100/agentic.txt",
+      "logHash": "2a14fe17ec9a4ef51f6ec3b5cb7e9fa1c6c5ad1639dbe24f4aedea6bc92e6f9a"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+      "logRef": "docs/blackboard/evidence/BB-100/docs.txt",
+      "logHash": "8611ac051a883ca3fab38c504f2e57f690afec4c0399781e7be7fa974068c240"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "3e7ebb3717e524394aa8635b9189296362eebb9d",
+      "logRef": "docs/blackboard/evidence/BB-100/repository.txt",
+      "logHash": "dda097d910bfcd6e5d9e5aee05040cdcb2878b622696d576f902cf007fd77f95"
+    }
+  ],
+  "claims": [
+    {
+      "id": "SB1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-100/sb1-mapping.txt",
+        "docs/blackboard/evidence/BB-100/agentic.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-SB-default",
+          "logRef": "docs/blackboard/evidence/BB-100/sb1-mapping.txt",
+          "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+          "bodyHash": "43735ed6343851c27fbd4812c044c8ff19763d82acc3dea34df3fc4f5ea8d4ea"
+        }
+      ]
+    },
+    {
+      "id": "SB2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-100/sb2-projection.txt",
+        "docs/blackboard/evidence/BB-100/agentic.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-SB-never",
+          "logRef": "docs/blackboard/evidence/BB-100/sb2-projection.txt",
+          "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+          "bodyHash": "14304cf0269a3f249f13e96767f6a85ea0c665af532bae9c175f480f9eefa0e7"
+        },
+        {
+          "id": "NC-SB-missing",
+          "logRef": "docs/blackboard/evidence/BB-100/sb2-projection.txt",
+          "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+          "bodyHash": "7886e1021465ac69243c4016e171b88a0700f384f472346335816c8d1c2ad34c"
+        },
+        {
+          "id": "NC-SB-auth",
+          "logRef": "docs/blackboard/evidence/BB-100/sb2-projection.txt",
+          "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+          "bodyHash": "ecfc6e85e334e46af1b8635190847f19f29033f0733e5379227ebb15bc9365b0"
+        },
+        {
+          "id": "NC-SB-no-change",
+          "logRef": "docs/blackboard/evidence/BB-100/sb2-projection.txt",
+          "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+          "bodyHash": "04221ef15cb41f4d47f2e81800b4ed5362892c0a6d9f4a05115477deca136294"
+        }
+      ]
+    },
+    {
+      "id": "SB3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-100/sb3-authority.txt",
+        "docs/blackboard/evidence/BB-100/agentic.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-SB-claim",
+          "logRef": "docs/blackboard/evidence/BB-100/sb3-authority.txt",
+          "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+          "bodyHash": "52043ce10aa4624a60124845f05a0943bf133ec7e0ad60a1f4e4d06d63a3cd38"
+        },
+        {
+          "id": "NC-SB-head",
+          "logRef": "docs/blackboard/evidence/BB-100/sb3-authority.txt",
+          "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+          "bodyHash": "2ef4dc20cf8ec790d60fd2e65cc9adbfe60417b80c0823de5d8477ed0506af68"
+        }
+      ]
+    },
+    {
+      "id": "SB4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-100/sb4-evidence.txt",
+        "docs/blackboard/evidence/BB-100/agentic.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-SB-empty-evidence",
+          "logRef": "docs/blackboard/evidence/BB-100/sb4-evidence.txt",
+          "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+          "bodyHash": "1467becf186f7a6b664767e9c44fec116c12a594f61cd77221d7f25815ceebf4"
+        }
+      ]
+    },
+    {
+      "id": "SB5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-100/sb5-docs.txt",
+        "docs/blackboard/evidence/BB-100/docs.txt",
+        "docs/blackboard/evidence/BB-100/repository.txt"
+      ]
+    },
+    {
+      "id": "SB6",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-100/sb6-scope.txt",
+        "docs/blackboard/evidence/BB-100/agentic.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-SB-scope",
+          "logRef": "docs/blackboard/evidence/BB-100/sb6-scope.txt",
+          "testRef": "packages/agentic-system/test/bb100-supervised-backend.test.js",
+          "bodyHash": "6ef09c8d90ec936b88254f3d45b26bf7dce4892fd860e04ef8b01424b2147f25"
+        }
+      ]
+    }
+  ]
+}
