@@ -1,0 +1,198 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-125",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-125.json",
+    "hash": "0b8a676ce632fd4f8c70f4bef8f9d6819f602398c65a100c6940f8ef1b5e2fd9"
+  },
+  "scope": [
+    "agent-tools.recovery.exact-task-binding"
+  ],
+  "outOfScope": [
+    "Objective supersession control-plane changes (BB-082).",
+    "Automatically approving requirement changes or rotating execution authority."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
+    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+  ],
+  "invariants": [
+    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Bind canonical normalized original task, verifications and declared context identity separately from materialized prompt; bind authority-bearing model/permission/tool launch fields and declared limits before spawning. Never hash or store credential values.",
+    "Reject drift before reopening side effects; no same-id fallback. Treat supported credential rotation as an explicit out-of-band operational policy, not permission or model drift.",
+    "Do not retrofit terminal BB-101 artifacts. Define a fail-closed compatibility boundary for existing handle files and test unchanged recovery with the delivered crash fixture."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/src/recovery.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "docs/blackboard/evidence/BB-125/discovery.json",
+      "docs/blackboard/process/delivery-value-improvement-research.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/test/recovery-contract-binding.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/recovery-contract-binding.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agent-tools/src/recovery.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/**",
+      "packages/agentic-system/src/**",
+      "packages/agent-tools/test/**",
+      "packages/agentic-system/test/**",
+      "docs/blackboard/process/delivery-value-improvement-research.md",
+      "docs/blackboard/evidence/BB-125/discovery.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/recovery.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/test/recovery-contract-binding.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
+    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "EXACT_RESUME",
+      "statement": "Canonical task and execution bindings are persisted before first dispatch and revalidated before resume; changed prompt/verifier/model/permission/launch identity is rejected.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    },
+    {
+      "id": "LEGACY_AND_RECOVERY",
+      "statement": "Unchanged bindings retain same worktree/Core/tool session; legacy handles without binding fail closed with an explicit migration or restart instruction, without manufacturing identity.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agent-tools/test/recovery-contract-binding.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+      "criterionIds": [
+        "EXACT_RESUME",
+        "LEGACY_AND_RECOVERY"
+      ]
+    },
+    {
+      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "criterionIds": [
+        "EXACT_RESUME",
+        "LEGACY_AND_RECOVERY"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "EXACT_RESUME",
+        "LEGACY_AND_RECOVERY"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Same id with changed verifier must be rejected before any verification",
+    "Same id with changed prompt must be rejected before dispatch",
+    "Legacy handle cannot acquire a self-asserted contract binding"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_125_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "EXACT_RESUME",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/recovery-contract-binding.test.js",
+      "testTitle": "BB-125 N1 Same id with changed verifier must be rejected before any verification",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NEG_125_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "EXACT_RESUME",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/recovery-contract-binding.test.js",
+      "testTitle": "BB-125 N2 Same id with changed prompt must be rejected before dispatch",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NEG_125_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "LEGACY_AND_RECOVERY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/recovery-contract-binding.test.js",
+      "testTitle": "BB-125 N3 Legacy handle cannot acquire a self-asserted contract binding",
+      "subjectSymbol": "resumeSupervisedTask"
+    }
+  ],
+  "researchGaps": [
+    "Specify the original-versus-materialized context digest, versioned handle compatibility, configurable-limit policy and migration instruction; execute unchanged and drift probes before Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Prevent a resumed run from silently changing the task or acceptance gate.",
+    "measurement": "All contract drift cases stop before spawn/verifier; unchanged crash-resume retains one semantic attempt and candidate identity.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
+  }
+}

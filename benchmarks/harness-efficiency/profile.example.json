@@ -1,0 +1,25 @@
+{
+  "kind": "BB077_PROFILE_EXAMPLE_V1",
+  "model": {
+    "transport": "OpenRouter",
+    "model": "anthropic/claude-sonnet-4.6",
+    "provider": "Anthropic",
+    "fallback": "disabled"
+  },
+  "strategy": {
+    "strategy": "javascript-codeact",
+    "actionType": "execute_javascript",
+    "executor": "reference-javascript-session-executor@1",
+    "capabilities": ["execute_javascript", "read_file", "write_file"]
+  },
+  "evaluator": "harbor-task-verifier@0.23.0",
+  "budget": {
+    "wallMs": 600000,
+    "inputTokens": null,
+    "outputTokens": null,
+    "costUsd": null,
+    "toolCalls": 200
+  },
+  "normalizationNote": "Provider-observed charged cost is primary when present. The frozen 2026-09-27 table (fresh input $3.00/M, output $15.00/M, cache read $0.30/M, 5-minute write $3.75/M) is experiment metadata, never benchmark-kernel policy. Unknown usage stays null/UNKNOWN.",
+  "liveRun": "No live model call is made by the deterministic fixture baseline. A live run would reuse this profile with the preregistered development cohort and the sealed substrate manifest."
+}

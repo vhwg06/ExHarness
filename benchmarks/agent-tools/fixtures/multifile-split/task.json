@@ -1,0 +1,27 @@
+{
+  "id": "multifile-split",
+  "category": "multi-file",
+  "prompt": "Split math.mjs into lib/add.mjs (exports add) and lib/mul.mjs (exports mul). math.mjs must re-export both from those modules and define no arithmetic itself. Run `node --test test/visible.test.mjs` to check.",
+  "visibleVerifications": [
+    {
+      "name": "visible",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/visible.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ],
+  "hiddenVerifications": [
+    {
+      "name": "hidden",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/hidden.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ]
+}
