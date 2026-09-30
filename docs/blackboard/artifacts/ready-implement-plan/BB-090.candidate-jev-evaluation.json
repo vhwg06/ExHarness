@@ -1,0 +1,145 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-090-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-090",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-090.json",
+      "hash": "e13d52a53a99f4421ad2559e98c2b912e623b6e5dcd2d8ddf135cf9101a7d186"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-090.json",
+      "hash": "8b9d3357e5ace07a79fbffa88e3178d30f6efd593091493debf8fe8973ae9c9c"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-090.implementation-result.json",
+      "hash": "180d784700e615d7dc3a7410af323fc5100b28d1e0763efc3a19c3ab9a7f2eda"
+    },
+    "candidateSha": "09d86857db753281dbededcf238ae1582376530f",
+    "candidateTree": "6b22cdac732ae1f8facb84ed11136c9027bc2250",
+    "baselineSha": "78b986dc491d748f83892518c543172eb59ee821"
+  },
+  "stateHash": "84633d8f67e9fd0ebb9ce507fcf11d05de498f3ca56d54bbbdf855e3113a6cb7",
+  "specHash": "68fa75241f845ffde13b40b16f2cad6c36581c72e0530143fa5ddb6c6a9c4d91",
+  "cacheKey": "2c29073769dbb76a8fa16f872b1ffe114c738bd191291bfc6cdfbe16e76db12f",
+  "model": "jev-1.13.0",
+  "answers": {
+    "NB1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.85,
+      "probabilities": {
+        "SATISFIED": 0.88,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.03,
+        "INSUFFICIENT_EVIDENCE": 0.08
+      }
+    },
+    "NB2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.67,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.21,
+        "IMPLEMENTATION_DEFECT": 0.03,
+        "SATISFIED": 0.75,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "NB3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.59,
+      "probabilities": {
+        "SATISFIED": 0.69,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.28,
+        "IMPLEMENTATION_DEFECT": 0.02
+      }
+    },
+    "NB4": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.39,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.43,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "SATISFIED": 0.54,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.89,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.92,
+        "INSUFFICIENT_EVIDENCE": 0.06,
+        "IMPLEMENTATION_DEFECT": 0.02
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 71124,
+    "output_tokens": 353
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 5,
+    "latencyMs": 1408.586642,
+    "payloadBytes": 439165,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V3",
+      "manifest": [
+        {
+          "id": "NB1",
+          "payloadHash": "426329e6c2f4d901afdc08a6b772d7962281aaba101a097aecaf84bf23c61226",
+          "payloadBytes": 49443,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-090/blackboard-regression.txt"
+          ]
+        },
+        {
+          "id": "NB2",
+          "payloadHash": "6f5008649bdc854a17bdd7a7485b97b34386fa5457f8af75ddfb92314b43dc11",
+          "payloadBytes": 49297,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-090/blackboard-regression.txt"
+          ]
+        },
+        {
+          "id": "NB3",
+          "payloadHash": "f6fb804d85e9a6cf8648dbc3e916be6559660e5e7d470ed677d77398ce98f6ae",
+          "payloadBytes": 48928,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-090/blackboard-regression.txt"
+          ]
+        },
+        {
+          "id": "NB4",
+          "payloadHash": "878f37e278f8553e513576000f465c5db41d1f68c14c49487063e115e714ebdc",
+          "payloadBytes": 49465,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-090/repository.txt"
+          ]
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "c623ad4c2b35b917df48de7d0cb155e31ebb9b868d9a2d62324173a627e1edfc",
+          "payloadBytes": 43116
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}

@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-090
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-090
-task: Bind declared negative cases to executed subject-invoking tests in the Worker gate
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-090/current.json
-components: outer/blackboard
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -98,7 +91,7 @@ BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
 BB-087 [DONE] <- BB-064
 BB-088 [WORKER_SCHEDULABLE] <- BB-087
 BB-089 [WORKER_SCHEDULABLE] <- BB-087
-BB-090 [ACTIVE] <- BB-056
+BB-090 [PLANNED] <- BB-056
 BB-091 [BLOCKED_BY BB-088] <- BB-088
 BB-092 [BLOCKED_BY BB-091] <- BB-091
 BB-093 [BLOCKED_BY BB-092] <- BB-092
