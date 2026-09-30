@@ -21,7 +21,7 @@ next-work-id: BB-131
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-099
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-099
-task: Measure ExHarness-supervised versus direct agent-tool delivery
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-099/current.json
-components: integration/agent-tools
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -113,7 +106,7 @@ BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
 BB-098 [DONE] <- BB-097
-BB-099 [ACTIVE] <- BB-098, BB-065
+BB-099 [PLANNED] <- BB-098, BB-065
 BB-100 [DONE] <- BB-096, BB-097
 BB-101 [DONE] <- BB-097
 BB-102 [DONE] <- BB-097
