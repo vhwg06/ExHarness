@@ -36,6 +36,15 @@ Source-synchronized application-layer projection. All unresolved application wor
 - With these adapters, a Backend run driven by a Core CodeAct strategy with a deterministic model reaches ACCEPT only when its real commit makes the real test pass, and QA on the accepted revision uses the same verifier on a second worktree.
 - The adapters are trusted local fixtures, not a sandbox: commands run with the caller's privileges, network and filesystem. Sandbox/network/tool isolation is separate planned work. There is no live model provider; no network model is called.
 
+## Opt-in supervised Backend adapter
+
+- `mapBackendOrderToAgentTask(order, context, { repositoryRoot, verifications, prompt })` binds a `BackendWorkOrder` plus already-resolved `BackendContext` to `AGENT_TASK_V1`: the task id comes from the order, `repositoryRoot` is a required caller filesystem path (the context repository ref is a logical id, not a path), the prompt defaults to the order task with context bytes kept out of it, and the declared verifications keep their Backend claims (`backend.typecheck`, `backend.tests`) while the mapped task carries only name/command/args/timeoutMs. Context/order mismatches and missing required claims fail closed with `TypeError`.
+- `runSupervisedBackendWork(...)` runs the delivered supervised agent-tools loop over that task and projects the supervised result onto the unchanged `BackendWorkResult` schema. The adapter never injects agent supervision into `createBackendWorker`; the default CodeAct BackendWorker path is unchanged and never constructs agent-tools objects.
+- `ACCEPTED` is re-grounded before it can become `APPLIED`: the accepted commit is checked out in an isolated detached worktree, every declared Backend verification is re-run there with a mutated tree failing closed, and `APPLIED` additionally requires `backend.typecheck` and `backend.tests` to report `PASS` at that exact commit plus a non-empty diff against the order revision. `APPLIED` evidence carries a `BACKEND_MUTATION` artifact plus typecheck/tests verification evidence bound to the accepted commit and `git:<sha>:<path>` artifacts, which the default completion policy accepts.
+- Fail-closed projection: a missing executable reports `BLOCKED` with blockers `TOOL_UNAVAILABLE`; an exhausted loop (including authentication failure, never-fixing runs and no-change attempts) reports `FAILED`; an accepted commit without a committable revision, a no-change final attempt, or a failed re-ground reports `FAILED`, never `APPLIED`. `FAILED` and `BLOCKED` results carry empty evidence. The agent exit status and success claim are telemetry only.
+- ExHarness git operations preserve the source repository `HEAD`, branch refs and working tree; supervision and re-grounding happen in temporary worktrees that are disposed afterwards.
+- OpenHands domain-runtime execution under the domain execution controller remains a separate seam and is not part of this adapter.
+
 ## Current orchestration state
 
 The package exposes `createApplicationOrchestrator(...)` for durable Blackboard lifecycle control and `createJsonBlackboardStore(...)` for JSON persistence.
