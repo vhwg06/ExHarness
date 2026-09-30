@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-120",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-120.json",
     "hash": "2a3f71e2e5d08387d6a17181e48a8655ac100eaec8c2bac809b2d0ede53b5168"
@@ -93,64 +93,121 @@
     {
       "id": "EN1",
       "statement": "AGENT_CHILD_INHERITED_ENV is exported and childEnvironment copies only those names from process.env, never a wholesale process.env spread.",
-      "verificationIds": ["en1-allowlist", "agent-tools"],
-      "evidenceRequired": ["EN1 test output."]
+      "verificationIds": [
+        "en1-allowlist",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "EN1 test output."
+      ]
     },
     {
       "id": "EN2",
       "statement": "A secret present only on process.env and absent from the caller overlay is missing from the child; overlay keys are present even when they are not on the allowlist.",
-      "verificationIds": ["en2-secrets", "agent-tools"],
-      "evidenceRequired": ["EN2 planted-secret and overlay output."]
+      "verificationIds": [
+        "en2-secrets",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "EN2 planted-secret and overlay output."
+      ]
     },
     {
       "id": "EN3",
       "statement": "NODE_TEST_CONTEXT is never present in the child environment.",
-      "verificationIds": ["en2-secrets", "agent-tools"],
-      "evidenceRequired": ["EN3 NODE_TEST_CONTEXT assertion."]
+      "verificationIds": [
+        "en2-secrets",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "EN3 NODE_TEST_CONTEXT assertion."
+      ]
     },
     {
       "id": "EN4",
       "statement": "PATH and HOME are inherited when set on the parent.",
-      "verificationIds": ["en4-path-home", "agent-tools"],
-      "evidenceRequired": ["EN4 PATH/HOME output."]
+      "verificationIds": [
+        "en4-path-home",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "EN4 PATH/HOME output."
+      ]
     },
     {
       "id": "EN5",
       "statement": "Living docs state the allowlisted child env and that the package is still not a sandbox, with no Blackboard ids, and the candidate writes only sourceScope.write paths.",
-      "verificationIds": ["en5-docs", "docs", "repository"],
-      "evidenceRequired": ["EN5 docs/scope output, verify:current-docs and npm test logs."]
+      "verificationIds": [
+        "en5-docs",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "EN5 docs/scope output, verify:current-docs and npm test logs."
+      ]
     }
   ],
   "invariantCoverage": [
     {
       "invariant": "A secret present only on process.env and absent from the caller overlay is missing from the child environment.",
-      "criterionIds": ["EN2"]
+      "criterionIds": [
+        "EN2"
+      ]
     },
     {
       "invariant": "Caller env overlay keys are present in the child even when they are not on the allowlist.",
-      "criterionIds": ["EN2"]
+      "criterionIds": [
+        "EN2"
+      ]
     },
     {
       "invariant": "PATH and HOME are inherited when set on the parent.",
-      "criterionIds": ["EN4"]
+      "criterionIds": [
+        "EN4"
+      ]
     },
     {
       "invariant": "NODE_TEST_CONTEXT is never present in the child.",
-      "criterionIds": ["EN3"]
+      "criterionIds": [
+        "EN3"
+      ]
     },
     {
       "invariant": "This package is still not a sandbox.",
-      "criterionIds": ["EN5"]
+      "criterionIds": [
+        "EN5"
+      ]
     }
   ],
   "verificationPlan": [
-    { "id": "en1-allowlist", "command": "node --test --test-name-pattern=\"^EN1 \" packages/agent-tools/test/child-env.test.js" },
-    { "id": "en2-secrets", "command": "node --test --test-name-pattern=\"^EN2 |^EN3 \" packages/agent-tools/test/child-env.test.js" },
-    { "id": "en4-path-home", "command": "node --test --test-name-pattern=\"^EN4 \" packages/agent-tools/test/child-env.test.js" },
-    { "id": "en5-docs", "command": "node --test --test-name-pattern=\"^EN5 \" packages/agent-tools/test/child-env.test.js" },
-    { "id": "agent-tools", "command": "npm run test:agent-tools" },
-    { "id": "docs", "command": "npm run verify:current-docs" },
-    { "id": "repository", "command": "npm test" }
+    {
+      "id": "en1-allowlist",
+      "command": "node --test --test-name-pattern=\"^EN1 \" packages/agent-tools/test/child-env.test.js"
+    },
+    {
+      "id": "en2-secrets",
+      "command": "node --test --test-name-pattern=\"^EN2 |^EN3 \" packages/agent-tools/test/child-env.test.js"
+    },
+    {
+      "id": "en4-path-home",
+      "command": "node --test --test-name-pattern=\"^EN4 \" packages/agent-tools/test/child-env.test.js"
+    },
+    {
+      "id": "en5-docs",
+      "command": "node --test --test-name-pattern=\"^EN5 \" packages/agent-tools/test/child-env.test.js"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
   ],
   "researchGaps": [],
   "researchEvidence": [
@@ -164,12 +221,23 @@
     }
   ],
   "dependencyResolution": {
-    "direct": ["BB-097"],
+    "direct": [
+      "BB-097"
+    ],
     "workerStart": "Re-run node docs/blackboard/evidence/BB-120/env-allowlist-probe.mjs. Confirm childEnvironment still spreads process.env. Confirm fake-agent.mjs still reads FAKE_AGENT_SCENARIO from env.",
     "sourceClassification": {
-      "DELIVERED_TRUTH": ["childEnvironment spreads process.env", "runProcess", "runAgentInvocation", "NODE_TEST_CONTEXT strip", "fake-agent.mjs FAKE_AGENT_SCENARIO"],
+      "DELIVERED_TRUTH": [
+        "childEnvironment spreads process.env",
+        "runProcess",
+        "runAgentInvocation",
+        "NODE_TEST_CONTEXT strip",
+        "fake-agent.mjs FAKE_AGENT_SCENARIO"
+      ],
       "PLANNED_CONTRACT": [],
-      "RESEARCH_DESIRED_STATE": ["AGENT_CHILD_INHERITED_ENV", "allowlisted childEnvironment"]
+      "RESEARCH_DESIRED_STATE": [
+        "AGENT_CHILD_INHERITED_ENV",
+        "allowlisted childEnvironment"
+      ]
     },
     "contradiction": "None. BB-067 is a different launch seam. BB-099 records inherit-all and does not edit process-runner."
   },
@@ -179,12 +247,29 @@
     "forbidden": "No sandbox claim, no wholesale process.env copy, no observation.js mergedEnv change."
   },
   "ciContract": {
-    "checks": ["en1-allowlist", "en2-secrets", "en4-path-home", "en5-docs", "agent-tools", "docs", "repository"],
+    "checks": [
+      "en1-allowlist",
+      "en2-secrets",
+      "en4-path-home",
+      "en5-docs",
+      "agent-tools",
+      "docs",
+      "repository"
+    ],
     "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
   },
   "migrationContract": {
-    "preserve": ["runAgentInvocation cwd/timeout/maxOutputBytes", "ENOENT TOOL_UNAVAILABLE", "FAKE_AGENT_SCENARIO overlay"],
-    "add": ["AGENT_CHILD_INHERITED_ENV", "allowlisted childEnvironment", "child-env tests", "Living allowlist sentence"],
+    "preserve": [
+      "runAgentInvocation cwd/timeout/maxOutputBytes",
+      "ENOENT TOOL_UNAVAILABLE",
+      "FAKE_AGENT_SCENARIO overlay"
+    ],
+    "add": [
+      "AGENT_CHILD_INHERITED_ENV",
+      "allowlisted childEnvironment",
+      "child-env tests",
+      "Living allowlist sentence"
+    ],
     "rollback": "Restore process.env spread minus NODE_TEST_CONTEXT; remove export, tests and Living sentence."
   },
   "laneContracts": [
@@ -194,7 +279,11 @@
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + fresh Jev SATISFIED",
-      "forbidden": ["product implementation", "planned dependency as delivered truth", "self-issued readiness"]
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
     },
     {
       "lane": "WORKER",
@@ -202,11 +291,15 @@
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash + candidate/evidence + Jev",
       "convergence": "criterion runs + no forbidden writes + docs",
-      "forbidden": ["No sandbox claim, no process.env spread."]
+      "forbidden": [
+        "No sandbox claim, no process.env spread."
+      ]
     }
   ],
   "livingDocs": {
-    "refs": ["docs/living/system/agent-tools/state.md"],
+    "refs": [
+      "docs/living/system/agent-tools/state.md"
+    ],
     "questionId": "LIVING_DOCS",
     "statement": "Living docs state that agent-tool child processes inherit an explicit environment allowlist plus the caller overlay, that host secrets in process.env are not copied, and that the package is still not a sandbox. Living docs contain no Blackboard ids."
   },
@@ -214,86 +307,195 @@
   "objectiveCoverage": [
     {
       "objectiveCriterion": "Specify an exported inherited-environment allowlist used by the process runner so spawn no longer copies process.env wholesale, while still dropping NODE_TEST_CONTEXT.",
-      "criterionIds": ["EN1", "EN3"],
-      "planElements": ["S1"],
-      "verificationIds": ["en1-allowlist", "en2-secrets"],
-      "decisionIndexes": [0, 1],
+      "criterionIds": [
+        "EN1",
+        "EN3"
+      ],
+      "planElements": [
+        "S1"
+      ],
+      "verificationIds": [
+        "en1-allowlist",
+        "en2-secrets"
+      ],
+      "decisionIndexes": [
+        0,
+        1
+      ],
       "sourceRefs": [
         "packages/agent-tools/src/process-runner.js",
         "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json"
       ],
       "sourceAnchors": [
-        { "ref": "packages/agent-tools/src/process-runner.js", "match": "const { NODE_TEST_CONTEXT, ...inherited } = process.env;" },
-        { "ref": "packages/agent-tools/src/process-runner.js", "match": "return { ...inherited, ...env };" },
-        { "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json", "match": "\"childEnvironmentSpreadsProcessEnv\": true" }
+        {
+          "ref": "packages/agent-tools/src/process-runner.js",
+          "match": "const { NODE_TEST_CONTEXT, ...inherited } = process.env;"
+        },
+        {
+          "ref": "packages/agent-tools/src/process-runner.js",
+          "match": "return { ...inherited, ...env };"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json",
+          "match": "\"childEnvironmentSpreadsProcessEnv\": true"
+        }
       ],
-      "supportingPlanFields": ["architectureDecisions"]
+      "supportingPlanFields": [
+        "architectureDecisions"
+      ]
     },
     {
       "objectiveCriterion": "Specify that a secret present only on process.env and absent from the caller overlay is missing from the child, and that overlay keys are present even when they are not on the allowlist.",
-      "criterionIds": ["EN2"],
-      "planElements": ["S2"],
-      "verificationIds": ["en2-secrets"],
-      "decisionIndexes": [1, 3],
+      "criterionIds": [
+        "EN2"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "en2-secrets"
+      ],
+      "decisionIndexes": [
+        1,
+        3
+      ],
       "sourceRefs": [
         "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json",
         "packages/agent-tools/src/process-runner.js"
       ],
       "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json", "match": "\"plantedSecretInherited\": true" },
-        { "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json", "match": "\"awsSecretInherited\": true" },
-        { "ref": "packages/agent-tools/src/process-runner.js", "match": "env: childEnvironment(env)," }
+        {
+          "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json",
+          "match": "\"plantedSecretInherited\": true"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json",
+          "match": "\"awsSecretInherited\": true"
+        },
+        {
+          "ref": "packages/agent-tools/src/process-runner.js",
+          "match": "env: childEnvironment(env),"
+        }
       ],
-      "supportingPlanFields": ["invariants"]
+      "supportingPlanFields": [
+        "invariants"
+      ]
     },
     {
       "objectiveCriterion": "Specify that PATH and HOME remain inherited when set on the parent so CLI homedir authentication keeps working.",
-      "criterionIds": ["EN4"],
-      "planElements": ["S3"],
-      "verificationIds": ["en4-path-home"],
-      "decisionIndexes": [2],
+      "criterionIds": [
+        "EN4"
+      ],
+      "planElements": [
+        "S3"
+      ],
+      "verificationIds": [
+        "en4-path-home"
+      ],
+      "decisionIndexes": [
+        2
+      ],
       "sourceRefs": [
         "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json",
         "docs/living/system/agent-tools/state.md"
       ],
       "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json", "match": "\"pathInherited\": true" },
-        { "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json", "match": "\"homeInherited\": true" },
-        { "ref": "docs/living/system/agent-tools/state.md", "match": "The adapters are not a sandbox." }
+        {
+          "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json",
+          "match": "\"pathInherited\": true"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json",
+          "match": "\"homeInherited\": true"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "The adapters are not a sandbox."
+        }
       ],
-      "supportingPlanFields": ["architectureDecisions"]
+      "supportingPlanFields": [
+        "architectureDecisions"
+      ]
     },
     {
       "objectiveCriterion": "Specify named tests, Living trust-boundary text and index exports for the allowlist.",
-      "criterionIds": ["EN1", "EN5"],
-      "planElements": ["S1", "S4"],
-      "verificationIds": ["en1-allowlist", "en5-docs", "docs"],
-      "decisionIndexes": [4, 7],
+      "criterionIds": [
+        "EN1",
+        "EN5"
+      ],
+      "planElements": [
+        "S1",
+        "S4"
+      ],
+      "verificationIds": [
+        "en1-allowlist",
+        "en5-docs",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        7
+      ],
       "sourceRefs": [
         "packages/agent-tools/src/index.js",
         "docs/living/system/agent-tools/state.md"
       ],
       "sourceAnchors": [
-        { "ref": "packages/agent-tools/src/index.js", "match": "runAgentInvocation," },
-        { "ref": "docs/living/system/agent-tools/state.md", "match": "Sandbox, network and credential isolation is not provided by this package" }
+        {
+          "ref": "packages/agent-tools/src/index.js",
+          "match": "runAgentInvocation,"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "Sandbox, network and credential isolation is not provided by this package"
+        }
       ],
-      "supportingPlanFields": ["livingDocs"]
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
     },
     {
       "objectiveCriterion": "Ground the design in the executed env-allowlist probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
-      "criterionIds": ["EN1", "EN2", "EN3", "EN4", "EN5"],
-      "planElements": ["S1", "S2", "S3", "S4"],
-      "verificationIds": ["en1-allowlist", "en2-secrets", "en4-path-home", "en5-docs", "repository"],
-      "decisionIndexes": [5],
+      "criterionIds": [
+        "EN1",
+        "EN2",
+        "EN3",
+        "EN4",
+        "EN5"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "en1-allowlist",
+        "en2-secrets",
+        "en4-path-home",
+        "en5-docs",
+        "repository"
+      ],
+      "decisionIndexes": [
+        5
+      ],
       "sourceRefs": [
         "docs/blackboard/process/agent-tool-research/BB-120.md",
         "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json"
       ],
       "sourceAnchors": [
-        { "ref": "docs/blackboard/process/agent-tool-research/BB-120.md", "match": "Allowlist `AGENT_CHILD_INHERITED_ENV`" },
-        { "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json", "match": "\"childEnvironmentExported\": false" }
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-120.md",
+          "match": "Allowlist `AGENT_CHILD_INHERITED_ENV`"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json",
+          "match": "\"childEnvironmentExported\": false"
+        }
       ],
-      "supportingPlanFields": ["negativeVerificationCases"]
+      "supportingPlanFields": [
+        "negativeVerificationCases"
+      ]
     }
   ],
   "negativeVerificationCases": [
@@ -349,5 +551,6 @@
       "testTitle": "EN5 write scope excludes core-harness",
       "subjectSymbol": "auditPaths"
     }
-  ]
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.readiness-jev-evaluation.json"
 }

@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-106",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-106.json",
     "hash": "5f480f862415b632f2c59750b9ff7b1f9480e3b05136846709f8d7bd5c93a537"
@@ -40,7 +40,15 @@
     "D8 — .github/workflows stay as npm run verify; no workflow edit required once D1/D2 land."
   ],
   "sourceScope": {
-    "read": ["packages/**", "test/**", "scripts/**", "docs/**", "README.md", "package.json", ".github/**"],
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json",
+      ".github/**"
+    ],
     "write": [
       "package.json",
       "test/blackboard-delivered-test-wiring.test.mjs",
@@ -80,49 +88,125 @@
     {
       "id": "TW1",
       "statement": "test:oracle runs packages/oracle/test/*.test.js and the test/oracle-*.test.mjs glob including facade-accounting, graph-boundary and foundation.",
-      "verificationIds": ["tw1-scripts", "oracle"],
-      "evidenceRequired": ["TW1 test output and test:oracle log."]
+      "verificationIds": [
+        "tw1-scripts",
+        "oracle"
+      ],
+      "evidenceRequired": [
+        "TW1 test output and test:oracle log."
+      ]
     },
     {
       "id": "TW2",
       "statement": "test:blackboard-work-graph runs test/blackboard-objective-supersession.test.mjs.",
-      "verificationIds": ["tw2-supersession", "blackboard"],
-      "evidenceRequired": ["TW2 test output and test:blackboard-work-graph log."]
+      "verificationIds": [
+        "tw2-supersession",
+        "blackboard"
+      ],
+      "evidenceRequired": [
+        "TW2 test output and test:blackboard-work-graph log."
+      ]
     },
     {
       "id": "TW3",
       "statement": "Living docs name those standing commands without Blackboard ids, test/delivery stays absent, and npm test does not run smoke:agent-tools.",
-      "verificationIds": ["tw3-docs", "docs", "repository"],
-      "evidenceRequired": ["TW3 docs output, verify:current-docs, npm test."]
+      "verificationIds": [
+        "tw3-docs",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "TW3 docs output, verify:current-docs, npm test."
+      ]
     }
   ],
   "invariantCoverage": [
-    { "invariant": "npm test and npm run verify never call live Jev or live agent-tools smoke.", "criterionIds": ["TW3"] },
-    { "invariant": "test/delivery remains absent.", "criterionIds": ["TW3"] },
-    { "invariant": "A standing script used by npm test runs every existing test/oracle-*.test.mjs file.", "criterionIds": ["TW1"] },
-    { "invariant": "A standing script used by npm run verify runs test/blackboard-objective-supersession.test.mjs.", "criterionIds": ["TW2"] }
+    {
+      "invariant": "npm test and npm run verify never call live Jev or live agent-tools smoke.",
+      "criterionIds": [
+        "TW3"
+      ]
+    },
+    {
+      "invariant": "test/delivery remains absent.",
+      "criterionIds": [
+        "TW3"
+      ]
+    },
+    {
+      "invariant": "A standing script used by npm test runs every existing test/oracle-*.test.mjs file.",
+      "criterionIds": [
+        "TW1"
+      ]
+    },
+    {
+      "invariant": "A standing script used by npm run verify runs test/blackboard-objective-supersession.test.mjs.",
+      "criterionIds": [
+        "TW2"
+      ]
+    }
   ],
   "verificationPlan": [
-    { "id": "tw1-scripts", "command": "node --test --test-name-pattern=\"^TW1 \" test/blackboard-delivered-test-wiring.test.mjs" },
-    { "id": "tw2-supersession", "command": "node --test --test-name-pattern=\"^TW2 \" test/blackboard-delivered-test-wiring.test.mjs" },
-    { "id": "tw3-docs", "command": "node --test --test-name-pattern=\"^TW3 \" test/blackboard-delivered-test-wiring.test.mjs" },
-    { "id": "oracle", "command": "npm run test:oracle" },
-    { "id": "blackboard", "command": "npm run test:blackboard-work-graph" },
-    { "id": "docs", "command": "npm run verify:current-docs" },
-    { "id": "repository", "command": "npm test" }
+    {
+      "id": "tw1-scripts",
+      "command": "node --test --test-name-pattern=\"^TW1 \" test/blackboard-delivered-test-wiring.test.mjs"
+    },
+    {
+      "id": "tw2-supersession",
+      "command": "node --test --test-name-pattern=\"^TW2 \" test/blackboard-delivered-test-wiring.test.mjs"
+    },
+    {
+      "id": "tw3-docs",
+      "command": "node --test --test-name-pattern=\"^TW3 \" test/blackboard-delivered-test-wiring.test.mjs"
+    },
+    {
+      "id": "oracle",
+      "command": "npm run test:oracle"
+    },
+    {
+      "id": "blackboard",
+      "command": "npm run test:blackboard-work-graph"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
   ],
   "researchGaps": [],
   "researchEvidence": [
-    { "ref": "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json", "finding": "Executed: eight delivered test files omitted from standing npm scripts; architecture wired; kernel CI runs npm run verify; test/delivery absent." },
-    { "ref": "package.json", "finding": "DELIVERED_TRUTH: test:oracle lists only packages/oracle/test/*.test.js and test/oracle-context-intelligence-architecture.test.mjs." }
+    {
+      "ref": "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json",
+      "finding": "Executed: eight delivered test files omitted from standing npm scripts; architecture wired; kernel CI runs npm run verify; test/delivery absent."
+    },
+    {
+      "ref": "package.json",
+      "finding": "DELIVERED_TRUTH: test:oracle lists only packages/oracle/test/*.test.js and test/oracle-context-intelligence-architecture.test.mjs."
+    }
   ],
   "dependencyResolution": {
-    "direct": ["BB-082", "BB-087", "BB-088"],
+    "direct": [
+      "BB-082",
+      "BB-087",
+      "BB-088"
+    ],
     "workerStart": "Re-run node docs/blackboard/evidence/BB-106/test-wiring-probe.mjs. Confirm the eight files still exist and still are omitted. Confirm test/delivery is still absent.",
     "sourceClassification": {
-      "DELIVERED_TRUTH": ["package.json scripts", "test/oracle-*.test.mjs files", "test/blackboard-objective-supersession.test.mjs", "verify:blackboard-work-graph"],
+      "DELIVERED_TRUTH": [
+        "package.json scripts",
+        "test/oracle-*.test.mjs files",
+        "test/blackboard-objective-supersession.test.mjs",
+        "verify:blackboard-work-graph"
+      ],
       "PLANNED_CONTRACT": [],
-      "RESEARCH_DESIRED_STATE": ["test:oracle glob test/oracle-*.test.mjs", "supersession on test:blackboard-work-graph", "TW1 TW2 TW3 tests"]
+      "RESEARCH_DESIRED_STATE": [
+        "test:oracle glob test/oracle-*.test.mjs",
+        "supersession on test:blackboard-work-graph",
+        "TW1 TW2 TW3 tests"
+      ]
     },
     "contradiction": "None. Wiring is additive to delivered scripts."
   },
@@ -132,17 +216,53 @@
     "forbidden": "No live Jev in npm test, no restored test/delivery, no packages/** product edits."
   },
   "ciContract": {
-    "checks": ["tw1-scripts", "tw2-supersession", "tw3-docs", "oracle", "blackboard", "docs", "repository"],
+    "checks": [
+      "tw1-scripts",
+      "tw2-supersession",
+      "tw3-docs",
+      "oracle",
+      "blackboard",
+      "docs",
+      "repository"
+    ],
     "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
   },
   "migrationContract": {
-    "preserve": ["test:core", "test:agentic", "test:agent-tools", "test:oracle packages/oracle/test/*.test.js glob"],
-    "add": ["test/oracle-*.test.mjs on test:oracle", "supersession file on test:blackboard-work-graph", "TW tests"],
+    "preserve": [
+      "test:core",
+      "test:agentic",
+      "test:agent-tools",
+      "test:oracle packages/oracle/test/*.test.js glob"
+    ],
+    "add": [
+      "test/oracle-*.test.mjs on test:oracle",
+      "supersession file on test:blackboard-work-graph",
+      "TW tests"
+    ],
     "rollback": "Revert package.json scripts, delete the TW test, revert the two Living docs."
   },
   "laneContracts": [
-    { "lane": "RESEARCH_SA", "input": "BB-106 objective + wiring probe + package.json", "output": "READY_IMPLEMENT_PLAN", "binding": "objective hash + researchBaselineSha", "convergence": "researchGaps=[] + fresh Jev SATISFIED", "forbidden": ["product implementation", "self-issued readiness"] },
-    { "lane": "WORKER", "input": "exact READY plan + DONE BB-082, BB-087, BB-088", "output": "DELIVERED_FEATURE", "binding": "plan hash + candidate/evidence + Jev", "convergence": "criterion runs + no forbidden writes + docs", "forbidden": ["No live Jev in npm test."] }
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-106 objective + wiring probe + package.json",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-082, BB-087, BB-088",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "No live Jev in npm test."
+      ]
+    }
   ],
   "livingDocs": {
     "refs": [
@@ -156,58 +276,164 @@
   "objectiveCoverage": [
     {
       "objectiveCriterion": "Specify that test:oracle runs every existing test/oracle-*.test.mjs file in addition to packages/oracle/test/*.test.js, so npm test and kernel CI execute the delivered Oracle boundary, facade, foundation, durability and provider suites.",
-      "criterionIds": ["TW1"],
-      "planElements": ["S1"],
-      "verificationIds": ["tw1-scripts", "oracle"],
-      "decisionIndexes": [0, 7],
-      "sourceRefs": ["package.json", "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json", ".github/workflows/test.yml"],
-      "sourceAnchors": [
-        { "ref": "package.json", "match": "\"test:oracle\": \"node --test packages/oracle/test/*.test.js test/oracle-context-intelligence-architecture.test.mjs\"" },
-        { "ref": "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json", "match": "\"test/oracle-facade-accounting.test.mjs\"" },
-        { "ref": ".github/workflows/test.yml", "match": "run: npm run verify" }
+      "criterionIds": [
+        "TW1"
       ],
-      "supportingPlanFields": ["architectureDecisions"]
+      "planElements": [
+        "S1"
+      ],
+      "verificationIds": [
+        "tw1-scripts",
+        "oracle"
+      ],
+      "decisionIndexes": [
+        0,
+        7
+      ],
+      "sourceRefs": [
+        "package.json",
+        "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json",
+        ".github/workflows/test.yml"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "package.json",
+          "match": "\"test:oracle\": \"node --test packages/oracle/test/*.test.js test/oracle-context-intelligence-architecture.test.mjs\""
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json",
+          "match": "\"test/oracle-facade-accounting.test.mjs\""
+        },
+        {
+          "ref": ".github/workflows/test.yml",
+          "match": "run: npm run verify"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions"
+      ]
     },
     {
       "objectiveCriterion": "Specify that a standing script used by npm run verify runs test/blackboard-objective-supersession.test.mjs.",
-      "criterionIds": ["TW2"],
-      "planElements": ["S2"],
-      "verificationIds": ["tw2-supersession", "blackboard"],
-      "decisionIndexes": [1],
-      "sourceRefs": ["package.json", "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json", "test/blackboard-objective-supersession.test.mjs"],
-      "sourceAnchors": [
-        { "ref": "package.json", "match": "\"test:blackboard-work-graph\": \"node --test test/blackboard-work-graph.test.mjs test/blackboard-task-context-resolver.test.mjs\"" },
-        { "ref": "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json", "match": "\"test/blackboard-objective-supersession.test.mjs\"" },
-        { "ref": "test/blackboard-objective-supersession.test.mjs", "match": "verifySupersession, verifyRetainedSupersessions, expectedDependents" }
+      "criterionIds": [
+        "TW2"
       ],
-      "supportingPlanFields": ["verificationPlan"]
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "tw2-supersession",
+        "blackboard"
+      ],
+      "decisionIndexes": [
+        1
+      ],
+      "sourceRefs": [
+        "package.json",
+        "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json",
+        "test/blackboard-objective-supersession.test.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "package.json",
+          "match": "\"test:blackboard-work-graph\": \"node --test test/blackboard-work-graph.test.mjs test/blackboard-task-context-resolver.test.mjs\""
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json",
+          "match": "\"test/blackboard-objective-supersession.test.mjs\""
+        },
+        {
+          "ref": "test/blackboard-objective-supersession.test.mjs",
+          "match": "verifySupersession, verifyRetainedSupersessions, expectedDependents"
+        }
+      ],
+      "supportingPlanFields": [
+        "verificationPlan"
+      ]
     },
     {
       "objectiveCriterion": "Specify a named regression test that fails on current main when any of those delivered files is omitted from those scripts, plus Living docs that name the standing commands without Blackboard ids.",
-      "criterionIds": ["TW1", "TW2", "TW3"],
-      "planElements": ["S1", "S2", "S3"],
-      "verificationIds": ["tw1-scripts", "tw2-supersession", "tw3-docs", "docs"],
-      "decisionIndexes": [2, 4],
-      "sourceRefs": ["docs/living/system/oracle/context-graph.md", "docs/living/system/state.md", "package.json"],
-      "sourceAnchors": [
-        { "ref": "docs/living/system/oracle/context-graph.md", "match": "includes the unit test and the architecture guard" },
-        { "ref": "docs/living/system/state.md", "match": "The PR test workflow routes such a receipt to the deterministic, secret-free `objective-supersession-verify` job instead of Jev." },
-        { "ref": "package.json", "match": "\"smoke:agent-tools\": \"node packages/agent-tools/bin/exharness-agent.mjs smoke\"" }
+      "criterionIds": [
+        "TW1",
+        "TW2",
+        "TW3"
       ],
-      "supportingPlanFields": ["livingDocs"]
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "tw1-scripts",
+        "tw2-supersession",
+        "tw3-docs",
+        "docs"
+      ],
+      "decisionIndexes": [
+        2,
+        4
+      ],
+      "sourceRefs": [
+        "docs/living/system/oracle/context-graph.md",
+        "docs/living/system/state.md",
+        "package.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/oracle/context-graph.md",
+          "match": "includes the unit test and the architecture guard"
+        },
+        {
+          "ref": "docs/living/system/state.md",
+          "match": "The PR test workflow routes such a receipt to the deterministic, secret-free `objective-supersession-verify` job instead of Jev."
+        },
+        {
+          "ref": "package.json",
+          "match": "\"smoke:agent-tools\": \"node packages/agent-tools/bin/exharness-agent.mjs smoke\""
+        }
+      ],
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
     },
     {
       "objectiveCriterion": "Ground the design in the executed wiring probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
-      "criterionIds": ["TW1", "TW2", "TW3"],
-      "planElements": ["S1", "S2", "S3"],
-      "verificationIds": ["tw1-scripts", "tw2-supersession", "tw3-docs", "repository"],
-      "decisionIndexes": [5],
-      "sourceRefs": ["docs/blackboard/process/blackboard-control-research/BB-106.md", "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json"],
-      "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json", "match": "\"omittedFromStandingScripts\"" },
-        { "ref": "docs/blackboard/process/blackboard-control-research/BB-106.md", "match": "Eight delivered files exist and are omitted" }
+      "criterionIds": [
+        "TW1",
+        "TW2",
+        "TW3"
       ],
-      "supportingPlanFields": ["negativeVerificationCases"]
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "tw1-scripts",
+        "tw2-supersession",
+        "tw3-docs",
+        "repository"
+      ],
+      "decisionIndexes": [
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/blackboard-control-research/BB-106.md",
+        "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json",
+          "match": "\"omittedFromStandingScripts\""
+        },
+        {
+          "ref": "docs/blackboard/process/blackboard-control-research/BB-106.md",
+          "match": "Eight delivered files exist and are omitted"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeVerificationCases"
+      ]
     }
   ],
   "negativeVerificationCases": [
@@ -218,10 +444,51 @@
     "Living docs containing a Blackboard id fail TW3."
   ],
   "negativeCaseBindings": [
-    { "id": "NC-TW-oracle", "negativeCaseIndex": 0, "criterionId": "TW1", "verificationId": "tw1-scripts", "testRef": "test/blackboard-delivered-test-wiring.test.mjs", "testTitle": "TW1 test:oracle includes the oracle test glob", "subjectSymbol": "createOracleContextResolver" },
-    { "id": "NC-TW-supersession", "negativeCaseIndex": 1, "criterionId": "TW2", "verificationId": "tw2-supersession", "testRef": "test/blackboard-delivered-test-wiring.test.mjs", "testTitle": "TW2 test:blackboard-work-graph includes supersession tests", "subjectSymbol": "verifySupersession" },
-    { "id": "NC-TW-delivery", "negativeCaseIndex": 2, "criterionId": "TW3", "verificationId": "tw3-docs", "testRef": "test/blackboard-delivered-test-wiring.test.mjs", "testTitle": "TW3 test/delivery remains absent", "subjectSymbol": "createOracleContextResolver" },
-    { "id": "NC-TW-smoke", "negativeCaseIndex": 3, "criterionId": "TW3", "verificationId": "tw3-docs", "testRef": "test/blackboard-delivered-test-wiring.test.mjs", "testTitle": "TW3 npm test does not run smoke:agent-tools", "subjectSymbol": "createOracleContextResolver" },
-    { "id": "NC-TW-bbid", "negativeCaseIndex": 4, "criterionId": "TW3", "verificationId": "tw3-docs", "testRef": "test/blackboard-delivered-test-wiring.test.mjs", "testTitle": "TW3 Living docs contain no Blackboard ids", "subjectSymbol": "verifySupersession" }
-  ]
+    {
+      "id": "NC-TW-oracle",
+      "negativeCaseIndex": 0,
+      "criterionId": "TW1",
+      "verificationId": "tw1-scripts",
+      "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+      "testTitle": "TW1 test:oracle includes the oracle test glob",
+      "subjectSymbol": "createOracleContextResolver"
+    },
+    {
+      "id": "NC-TW-supersession",
+      "negativeCaseIndex": 1,
+      "criterionId": "TW2",
+      "verificationId": "tw2-supersession",
+      "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+      "testTitle": "TW2 test:blackboard-work-graph includes supersession tests",
+      "subjectSymbol": "verifySupersession"
+    },
+    {
+      "id": "NC-TW-delivery",
+      "negativeCaseIndex": 2,
+      "criterionId": "TW3",
+      "verificationId": "tw3-docs",
+      "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+      "testTitle": "TW3 test/delivery remains absent",
+      "subjectSymbol": "createOracleContextResolver"
+    },
+    {
+      "id": "NC-TW-smoke",
+      "negativeCaseIndex": 3,
+      "criterionId": "TW3",
+      "verificationId": "tw3-docs",
+      "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+      "testTitle": "TW3 npm test does not run smoke:agent-tools",
+      "subjectSymbol": "createOracleContextResolver"
+    },
+    {
+      "id": "NC-TW-bbid",
+      "negativeCaseIndex": 4,
+      "criterionId": "TW3",
+      "verificationId": "tw3-docs",
+      "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+      "testTitle": "TW3 Living docs contain no Blackboard ids",
+      "subjectSymbol": "verifySupersession"
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-106.readiness-jev-evaluation.json"
 }
