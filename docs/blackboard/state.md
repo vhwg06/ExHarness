@@ -40,7 +40,7 @@ NONE
 
 ## Schedulable tasks
 
-- BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
+- BB-054 [WORKER/EXECUTION] — Implement exact deployment identity and Product QA acceptance
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 - BB-088 [WORKER/EXECUTION] — Productize authoritative snapshot-bound Context Graph
@@ -55,8 +55,8 @@ NONE
 ```text
 BB-048 [DONE] <- ROOT
 BB-052 [DONE] <- BB-048
-BB-053 [WORKER_SCHEDULABLE] <- BB-052
-BB-054 [BLOCKED_BY BB-053] <- BB-053
+BB-053 [DONE] <- BB-052
+BB-054 [WORKER_SCHEDULABLE] <- BB-053
 BB-055 [BLOCKED_BY BB-054] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [BLOCKED_BY BB-055] <- BB-055

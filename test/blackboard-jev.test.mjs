@@ -342,6 +342,8 @@ test('migration normalizes legacy directories and rewrites graph bindings',t=>{
   const graph=read(root,'docs/blackboard/work-graph.json');
   const task=graph.tasks.find(item=>item.id==='BB-053');
   delete task.contract;delete task.lane;delete task.phase;
+  // Legacy unfinished work, independent of BB-053's live delivery status.
+  task.status='PLANNED';
   task.artifacts.inputRefs=[
     'docs/blackboard/artifacts/implementation-input/integration-d-domain-activation-parallel-autonomy.json',
     'docs/blackboard/artifacts/implementation-spec/integration-d-domain-activation-parallel-autonomy.json'
