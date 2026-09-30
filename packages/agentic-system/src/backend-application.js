@@ -96,10 +96,10 @@ function requirePreparedBackend(prepared) {
   return Object.freeze({ objective, order, context });
 }
 
-export async function prepareBackendObjective(rawObjective, { repositoryReader }) {
+export async function prepareBackendObjective(rawObjective, { repositoryReader, oracleResolution }) {
   const objective = BackendObjectiveSchema.parse(rawObjective);
   const order = makeBackendWorkOrder(objective);
-  const context = await resolveBackendContext(order, { repositoryReader });
+  const context = await resolveBackendContext(order, { repositoryReader, oracleResolution });
   return Object.freeze({ objective, order, context });
 }
 
@@ -165,11 +165,12 @@ export async function recoverPreparedBackendObjective(rawPrepared, {
 
 export async function runBackendObjective(rawObjective, {
   repositoryReader,
+  oracleResolution,
   backendWorker,
   completionPolicy = defineBackendCompletionPolicy(),
   backendAdvisor = null
 }) {
-  const prepared = await prepareBackendObjective(rawObjective, { repositoryReader });
+  const prepared = await prepareBackendObjective(rawObjective, { repositoryReader, oracleResolution });
   return runPreparedBackendObjective(prepared, {
     backendWorker,
     completionPolicy,
@@ -179,11 +180,12 @@ export async function runBackendObjective(rawObjective, {
 
 export async function recoverBackendObjective(rawObjective, {
   repositoryReader,
+  oracleResolution,
   backendWorker,
   completionPolicy = defineBackendCompletionPolicy(),
   backendAdvisor = null
 }) {
-  const prepared = await prepareBackendObjective(rawObjective, { repositoryReader });
+  const prepared = await prepareBackendObjective(rawObjective, { repositoryReader, oracleResolution });
   return recoverPreparedBackendObjective(prepared, {
     backendWorker,
     completionPolicy,
