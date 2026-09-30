@@ -21,7 +21,7 @@ next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-108
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-108
-task: Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-108/current.json
-components: oracle/infrastructure
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -116,7 +109,7 @@ BB-104 [DONE] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
 BB-106 [WORKER_SCHEDULABLE] <- BB-082, BB-087, BB-088
 BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
-BB-108 [ACTIVE] <- BB-087, BB-088
+BB-108 [PLANNED] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097
 BB-121 [BLOCKED_BY BB-120] <- BB-100, BB-101, BB-120
 BB-122 [WORKER_SCHEDULABLE] <- BB-097, BB-098
