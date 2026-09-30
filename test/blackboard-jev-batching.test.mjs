@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { canonical, hash } from '../scripts/blackboard-delivery-contract.mjs';
 import {
-  OMITTED_SOURCE_INDEX_STRATEGY, WORKER_BATCH_LIMITS, WORKER_BATCH_STRATEGIES, aggregateBatchAnswers, evaluate, excerptEvidenceLog,
+  OMITTED_SOURCE_INDEX_STRATEGY, WORKER_BATCH_LIMITS, checkPayloadBudget, WORKER_BATCH_STRATEGIES, aggregateBatchAnswers, evaluate, excerptEvidenceLog,
   validateEvaluation, workerBatchManifest, workerBatchStrategy, workerQuestionBatches, workerQuestionPayload, withOmittedSourceIndex
 } from '../scripts/blackboard-jev.mjs';
 
@@ -245,4 +245,31 @@ test('the source index still fails closed when the indexed input cannot fit', ()
   const { full, changeSet } = indexedFixture(700);
   full.state.plan.constraints = ['c'.repeat(70000)];
   assert.throws(() => workerQuestionBatches(full, 'A', { changeSet }), /worker batch exceeds bounded input: A/);
+});
+
+test('payload budget bounds each provider request: a batched worker state may exceed it while every batch fits', () => {
+  const full = fixture({ evidence: { A: [log('unit', tapLog(120))], B: [log('integration', tapLog(120))] } });
+  const total = bytes(full);
+  assert.ok(total > WORKER_BATCH_LIMITS.maxBatchBytes * 2, 'fixture is larger than two batches');
+  const budget = checkPayloadBudget(full, { lane: 'WORKER', maxPayloadBytes: total - 1 });
+  assert.equal(budget.mode, 'BOUNDED_BATCHES');
+  assert.equal(budget.payloadBytes, total);
+  assert.equal(budget.requests, workerBatchManifest(full).length);
+  assert.ok(budget.maxRequestBytes <= WORKER_BATCH_LIMITS.maxBatchBytes);
+  assert.deepEqual(budget.maxRequestBytes, Math.max(...workerBatchManifest(full).map(entry => entry.payloadBytes)));
+});
+
+test('payload budget fails closed for whole-sent payloads and for a batch that cannot fit', () => {
+  const small = fixture({ evidence: { A: [log('unit', tapLog(2))] } });
+  assert.equal(checkPayloadBudget(small, { lane: 'WORKER', maxPayloadBytes: 524288 }).mode, 'SINGLE_REQUEST');
+  assert.throws(() => checkPayloadBudget(small, { lane: 'WORKER', maxPayloadBytes: bytes(small) - 1 }), /payload exceeds budget/);
+  const large = fixture({ evidence: { A: [log('unit', tapLog(120))] } });
+  // Research payloads are sent whole, so their total size is the request size.
+  assert.throws(() => checkPayloadBudget(large, { lane: 'RESEARCH_SA', maxPayloadBytes: bytes(large) - 1 }), /payload exceeds budget/);
+  // A policy request budget below the worker batch limit cannot be met by bounded batches.
+  assert.throws(() => checkPayloadBudget(large, { lane: 'WORKER', maxPayloadBytes: WORKER_BATCH_LIMITS.maxBatchBytes - 1 }), /payload exceeds budget/);
+  // A question whose non-evidence input alone exceeds the batch limit still fails before any provider call.
+  const bloated = fixture({ evidence: { A: [log('unit', tapLog(2))] }, extraPlan: { constraints: ['x'.repeat(WORKER_BATCH_LIMITS.maxBatchBytes)] } });
+  assert.throws(() => checkPayloadBudget(bloated, { lane: 'WORKER', maxPayloadBytes: 524288 }), /worker batch exceeds bounded input/);
+  assert.throws(() => checkPayloadBudget(small, { lane: 'WORKER', maxPayloadBytes: 0 }), /invalid payload budget/);
 });

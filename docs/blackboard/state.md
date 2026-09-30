@@ -44,7 +44,7 @@ NONE
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-091 [WORKER/EXECUTION] — Research and ablate retrieval planner strategies
 - BB-099 [RESEARCH_SA/RESEARCH] — Measure ExHarness-supervised versus direct agent-tool delivery
-- BB-100 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as an opt-in Backend adapter
+- BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
 - BB-101 [WORKER/EXECUTION] — Resume a supervised agent-tool run after process death
 - BB-102 [RESEARCH_SA/RESEARCH] — Resolve declared agent-tool files through the Oracle facade
 - BB-103 [RESEARCH_SA/RESEARCH] — Expose verification and status as stdio MCP tools
@@ -103,7 +103,7 @@ BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
 BB-098 [DONE] <- BB-097
 BB-099 [RESEARCH_SCHEDULABLE] <- BB-098, BB-065
-BB-100 [RESEARCH_SCHEDULABLE] <- BB-096, BB-097
+BB-100 [WORKER_SCHEDULABLE] <- BB-096, BB-097
 BB-101 [WORKER_SCHEDULABLE] <- BB-097
 BB-102 [RESEARCH_SCHEDULABLE] <- BB-097
 BB-103 [RESEARCH_SCHEDULABLE] <- BB-097
