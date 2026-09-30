@@ -3,6 +3,8 @@
 //   run   --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N]
 //         [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]
 //         [--trace-dir <dir> [--arm <label>]]  append AGENT_TOOL_RUN_TRACE_V1 lines per attempt
+//   deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]
+//         run one local Backend-then-QA delivery slice with independent QA
 //   report <trace-dir>        verify the trace chain and print the DESCRIPTIVE AGENT_TOOL_RUN_REPORT_V1
 //   probe                     print the installed tool versions
 //   smoke --tool <t> [--command <path>] [--timeout-ms T]
@@ -15,8 +17,10 @@ import { join } from "node:path";
 import {
   AGENT_TOOLS,
   AgentTaskStatus,
+  DeliverSliceStatus,
   InvocationStatus,
   PermissionProfile,
+  commandDeliver,
   createRunTraceWriter,
   createSupervisedObservation,
   defineAgentTool,
@@ -27,7 +31,7 @@ import {
   runSupervisedTask
 } from "../src/index.js";
 
-const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy|grok> [--command <path>] [--timeout-ms T]";
+const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy|grok> [--command <path>] [--timeout-ms T]";
 
 class UsageError extends Error {}
 
@@ -182,6 +186,20 @@ async function commandSmoke(options) {
   }
 }
 
+/** Runs one local Backend-then-QA delivery slice; exit 0 only for ACCEPTED. */
+async function commandDeliverCli(options) {
+  if (!options.slice) throw new UsageError("deliver requires --slice");
+  const result = await commandDeliver({
+    slice: options.slice,
+    command: options.command ?? null,
+    recoveryDir: options["recovery-dir"] ?? null
+  });
+  print(result);
+  if (result.status === DeliverSliceStatus.ACCEPTED) return 0;
+  if (result.status === DeliverSliceStatus.TOOL_UNAVAILABLE) return 2;
+  return 1;
+}
+
 /** Verifies the trace chain (a broken chain exits 1) and prints the descriptive report. */
 function commandReport(rest) {
   if (rest.length !== 1 || rest[0].startsWith("--")) throw new UsageError("report requires exactly one <trace-dir>");
@@ -200,6 +218,7 @@ async function main(args) {
   const [command, ...rest] = args;
   try {
     if (command === "run") return await commandRun(parseOptions(rest));
+    if (command === "deliver") return await commandDeliverCli(parseOptions(rest));
     if (command === "report") return commandReport(rest);
     if (command === "probe") return await commandProbe();
     if (command === "smoke") return await commandSmoke(parseOptions(rest));

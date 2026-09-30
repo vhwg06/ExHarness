@@ -75,3 +75,12 @@ export {
 } from "./run-trace.js";
 export { createHarnessCapture, createSupervisedObservation, runObservedInvocation } from "./observation.js";
 export { AGENT_TOOL_RUN_REPORT_VERSION, summarizeTraces } from "./report.js";
+export {
+  DELIVER_SLICE_VERSION,
+  LOCAL_SLICE_CLAIM_BOUNDARY,
+  DeliverSliceStatus,
+  commandDeliver,
+  runDeliverSlice,
+  runSliceQa,
+  validateDeliverSlice
+} from "./deliver-slice.js";

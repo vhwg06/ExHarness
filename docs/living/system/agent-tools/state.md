@@ -98,6 +98,15 @@ start a second lineage when the worktree, digest, source HEAD or handle currency
 does not check out. Without `recoveryDir` the temporary worktree is still
 disposed in a `finally` block.
 
+## Operator deliver slice
+
+One local Backend-then-QA delivery slice is available as
+`exharness-agent deliver --slice <manifest.json>`. The manifest shape, the QA
+binding to the accepted Backend commit, resume through the recovery handle and
+missing-tool behavior are described in `operator.md`. The slice is local
+composition feasibility only: not first-slice product-value evidence and not a
+controlled-benchmark pilot.
+
 ## Trust boundary
 
 The adapters are not a sandbox. A live run executes the agent with the user's CLI permissions and credentials under the user account, with cwd at a temporary git worktree only. The CLI can still read or write paths outside that worktree. ExHarness's own git operations preserve the source repository's HEAD, branch refs and working tree; they do not constrain what the agent process itself does. Sandbox, network and credential isolation is not provided by this package; it is separate open work on the Blackboard.
