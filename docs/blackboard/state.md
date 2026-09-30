@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-106
+next-work-id: BB-124
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -49,6 +49,9 @@ NONE
 - BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
 - BB-104 [RESEARCH_SA/RESEARCH] — Run one local Backend-then-QA slice from an operator CLI
 - BB-105 [WORKER/EXECUTION] — Add Grok Build as a supported agent tool
+- BB-120 [RESEARCH_SA/RESEARCH] — Allowlist agent-tools child environment
+- BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
+- BB-122 [RESEARCH_SA/RESEARCH] — Add OpenCode as a supported agent tool
 
 ## Dependency graph
 
@@ -108,6 +111,9 @@ BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
 BB-104 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-102
 BB-105 [WORKER_SCHEDULABLE] <- BB-097, BB-098
+BB-120 [RESEARCH_SCHEDULABLE] <- BB-097
+BB-121 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-120
+BB-122 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
 ```
 
 ## Context semantics

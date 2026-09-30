@@ -1,0 +1,42 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-122",
+  "outcome": "OpenCode is a first-class @exharness/agent-tools adapter (id opencode) for both direct and ExHarness-supervised arms, so a host with an authenticated opencode CLI can produce real run traces and usage/cost, while missing Codex/Kiro/agy stay TOOL_UNAVAILABLE / NOT_EVALUATED and are never fabricated.",
+  "currentProblem": "Executed probe: OpenCode 1.18.33 is installed at ~/.opencode/bin/opencode and is not on the default PATH. opencode run --help documents --format json, --dir, --model, --auto, --continue, --session and positional message. AGENT_TOOLS is only {codex, kiro, agy}. No live model run was performed.",
+  "scope": [
+    "agent-tools.cli-adapters.opencode",
+    "agent-tools.output-parsers.opencode",
+    "agent-tools.observation.opencode"
+  ],
+  "constraints": [
+    "Adapters never read or write user CLI configuration or credentials and use the existing authenticated CLI state.",
+    "Live opencode runs are opt-in (CLI smoke/probe) and excluded from npm test and npm run verify. This research performed no model call.",
+    "Codex, Kiro and agy contracts stay unchanged; a missing binary remains TOOL_UNAVAILABLE / NOT_INSTALLED and is never a fabricated ACCEPT or usage number.",
+    "Do not read ~/.opencode config, credentials or session databases.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify an opencode adapter in the delivered AGENT_TOOLS registry that builds a shell-free headless invocation with opencode run --format json, optional --dir cwd, optional --model, WORKSPACE_EDIT without --auto, FULL_AUTO with --auto, resume via --session or --continue, a version probe, and TOOL_UNAVAILABLE when the executable is missing.",
+    "Specify an opencode JSONL parser that reports integer token fields and finite cost from step_finish events when present, and otherwise records null with an explicit unavailable reason, never an estimate; traces redact the prompt.",
+    "Specify that the same adapter serves direct runObservedInvocation and supervised runSupervisedTask arms, and that exharness-agent probe and smoke accept --tool opencode with live smoke remaining opt-in and absent from npm test.",
+    "Specify a deterministic fake opencode CLI fixture, named tests, Living docs and the package README that list opencode beside Codex, Kiro and agy.",
+    "Ground the design in the executed opencode CLI probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-research/BB-122.md",
+    "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json",
+    "packages/agent-tools/src/tool-adapters.js",
+    "packages/agent-tools/src/output-parsers.js",
+    "packages/agent-tools/src/process-runner.js",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/agent-tools/src/observation.js",
+    "packages/agent-tools/src/index.js",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "packages/agent-tools/test/agent-tools.test.js",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/agent-tools/observation.md"
+  ]
+}

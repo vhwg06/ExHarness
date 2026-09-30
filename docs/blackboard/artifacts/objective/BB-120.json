@@ -1,0 +1,35 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-120",
+  "outcome": "Agent-tool child processes inherit only an explicit environment allowlist plus the caller overlay, so host secrets in process.env never reach Codex, Kiro, agy, grok or later adapters unless the operator passes them in env.",
+  "currentProblem": "Executed probe: process-runner childEnvironment spreads process.env (minus NODE_TEST_CONTEXT) and overlays env. A planted EXHARNESS_PLANTED_SECRET and AWS_SECRET_ACCESS_KEY on the parent were present in the child; PATH and HOME were also inherited; childEnvironment is not exported. BB-067 sandboxes OpenHands, not this spawn.",
+  "scope": [
+    "agent-tools.process-runner.child-env",
+    "agent-tools.trust-boundary.env-allowlist"
+  ],
+  "constraints": [
+    "Allowlist inheritance only; this is not a sandbox, gVisor wrap, network policy or FS confinement (BB-067 remains OpenHands).",
+    "Caller env overlay still wins for test fixtures (FAKE_AGENT_SCENARIO) and operator-supplied variables.",
+    "PATH and HOME stay inherited so authenticated CLIs can resolve binaries and homedir config without reading those files from ExHarness.",
+    "Do not change Codex, Kiro or agy argv, parsers or fixtures except tests that assert child env.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify an exported inherited-environment allowlist used by the process runner so spawn no longer copies process.env wholesale, while still dropping NODE_TEST_CONTEXT.",
+    "Specify that a secret present only on process.env and absent from the caller overlay is missing from the child, and that overlay keys are present even when they are not on the allowlist.",
+    "Specify that PATH and HOME remain inherited when set on the parent so CLI homedir authentication keeps working.",
+    "Specify named tests, Living trust-boundary text and index exports for the allowlist.",
+    "Ground the design in the executed env-allowlist probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-research/BB-120.md",
+    "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json",
+    "packages/agent-tools/src/process-runner.js",
+    "packages/agent-tools/src/index.js",
+    "packages/agent-tools/src/observation.js",
+    "docs/living/system/agent-tools/state.md"
+  ]
+}
