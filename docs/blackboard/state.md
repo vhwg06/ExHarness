@@ -21,7 +21,7 @@ next-work-id: BB-131
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,25 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-106
 ```
 
 ## Active work
 
-NONE
+
+BB-106
+task: Wire delivered Oracle and supersession regression tests into npm test and verify
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-106/current.json
+components: outer/blackboard, oracle/infrastructure
+worker: grok-bot
 
 ## Schedulable tasks
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
 - BB-078 [WORKER/EXECUTION] — Implement durable detached operation scheduling
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
-- BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-122 [WORKER/EXECUTION] — Add OpenCode as a supported agent tool
@@ -114,7 +120,7 @@ BB-102 [DONE] <- BB-097
 BB-103 [DONE] <- BB-097
 BB-104 [DONE] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
-BB-106 [WORKER_SCHEDULABLE] <- BB-082, BB-087, BB-088
+BB-106 [ACTIVE] <- BB-082, BB-087, BB-088
 BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [DONE] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097

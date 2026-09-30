@@ -1,0 +1,138 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-106-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-106.json",
+    "hash": "0b8467eca3d0572efac36e35e813e9b6c8c61452d39f68cbdd4342d107c7e0cd"
+  },
+  "candidateSha": "87263153e8023c1568c65e262bdf8e19f6ff0d46",
+  "baselineSha": "95ea311518b757818b509fcc4dfaf19b81d75c47",
+  "candidateTree": "4483ea2511dbacda147df2d2e44b3c7dcd829981",
+  "verificationRuns": [
+    {
+      "id": "tw1-scripts",
+      "command": "node --test --test-name-pattern=\"^TW1 \" test/blackboard-delivered-test-wiring.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87263153e8023c1568c65e262bdf8e19f6ff0d46",
+      "logRef": "docs/blackboard/evidence/BB-106/tw1-scripts.txt",
+      "logHash": "96afc51be33ef87369030f43ad7ed516c9f902aaed50943c3aa7938ff3d39187"
+    },
+    {
+      "id": "tw2-supersession",
+      "command": "node --test --test-name-pattern=\"^TW2 \" test/blackboard-delivered-test-wiring.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87263153e8023c1568c65e262bdf8e19f6ff0d46",
+      "logRef": "docs/blackboard/evidence/BB-106/tw2-supersession.txt",
+      "logHash": "2846ed4ca0abbc8538729629fb7697ecdc305d35b6ba97908f7d2322772d8cab"
+    },
+    {
+      "id": "tw3-docs",
+      "command": "node --test --test-name-pattern=\"^TW3 \" test/blackboard-delivered-test-wiring.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87263153e8023c1568c65e262bdf8e19f6ff0d46",
+      "logRef": "docs/blackboard/evidence/BB-106/tw3-docs.txt",
+      "logHash": "60db5db8f64bfd281bf5a5ff496055a3eb63701e576d636196e842f48392e560"
+    },
+    {
+      "id": "oracle",
+      "command": "npm run test:oracle",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87263153e8023c1568c65e262bdf8e19f6ff0d46",
+      "logRef": "docs/blackboard/evidence/BB-106/oracle.txt",
+      "logHash": "bb2e287604a2d4f3848fdc161d2c14e40b049af5dc273d7085a75abf4a8e9b61"
+    },
+    {
+      "id": "blackboard",
+      "command": "npm run test:blackboard-work-graph",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87263153e8023c1568c65e262bdf8e19f6ff0d46",
+      "logRef": "docs/blackboard/evidence/BB-106/blackboard.txt",
+      "logHash": "7c3d8cf6cf60c2fbcfc3923a73c18722b097deb2aa47d277e6087fb1c80dcf28"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87263153e8023c1568c65e262bdf8e19f6ff0d46",
+      "logRef": "docs/blackboard/evidence/BB-106/docs.txt",
+      "logHash": "a3d31545e9ffe4081cf327cb92a100ac1743c11840e80b747a527eea54a06243"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87263153e8023c1568c65e262bdf8e19f6ff0d46",
+      "logRef": "docs/blackboard/evidence/BB-106/repository.txt",
+      "logHash": "b59b2735ea660c1b017e63c59bc5c9597372956e32f83e3c286e3fb360dab545"
+    }
+  ],
+  "claims": [
+    {
+      "id": "TW1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-106/tw1-scripts.txt",
+        "docs/blackboard/evidence/BB-106/oracle.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-TW-oracle",
+          "logRef": "docs/blackboard/evidence/BB-106/tw1-scripts.txt",
+          "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+          "bodyHash": "60f5d28cd0309c93b2ece67c1a01e754d5040d39ae12883c4f700c35802f0546"
+        }
+      ]
+    },
+    {
+      "id": "TW2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-106/tw2-supersession.txt",
+        "docs/blackboard/evidence/BB-106/blackboard.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-TW-supersession",
+          "logRef": "docs/blackboard/evidence/BB-106/tw2-supersession.txt",
+          "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+          "bodyHash": "1426e2376f097e6a889233c0d5d47a8e49dc0ad028877fa8ad029e5524c19c09"
+        }
+      ]
+    },
+    {
+      "id": "TW3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-106/tw3-docs.txt",
+        "docs/blackboard/evidence/BB-106/docs.txt",
+        "docs/blackboard/evidence/BB-106/repository.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-TW-delivery",
+          "logRef": "docs/blackboard/evidence/BB-106/tw3-docs.txt",
+          "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+          "bodyHash": "71ce445626dd6a5cf633346b8b3ca043b24952479cb340e08242ebef61d9bd55"
+        },
+        {
+          "id": "NC-TW-smoke",
+          "logRef": "docs/blackboard/evidence/BB-106/tw3-docs.txt",
+          "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+          "bodyHash": "1435d9ca06e3e87d77a78cffb5f7651d0210767e2682ef03279074b99fd8bf31"
+        },
+        {
+          "id": "NC-TW-bbid",
+          "logRef": "docs/blackboard/evidence/BB-106/tw3-docs.txt",
+          "testRef": "test/blackboard-delivered-test-wiring.test.mjs",
+          "bodyHash": "6164528efc67858dff948b67770f0698256fa75a636211753395e8165913a4ad"
+        }
+      ]
+    }
+  ]
+}
