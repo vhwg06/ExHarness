@@ -294,9 +294,12 @@ test('worker materialization derives the Living Doc and candidate change maps an
   assert.equal(input.candidateChanges['source.js'].body,'export const answer = 2;','body is the bound (trimEnd) candidate source');
   assert.equal('livingChanges' in input.payload.state,false,'change map does not alter stateHash/cacheKey');
   assert.equal('candidateChanges' in input.payload.state,false,'candidate change map does not alter stateHash/cacheKey');
+  assert.deepEqual(input.changeSet.refs,[...input.changeSet.refs].sort(),'change set refs are sorted');
+  assert.ok(input.changeSet.refs.includes('source.js')&&input.changeSet.refs.includes('docs/living/system/state.md'),'change set lists every changed ref, Living Docs included');
+  assert.equal('changeSet' in input.payload.state,false,'change set does not alter stateHash/cacheKey');
   const evaluation=await f.ev();
   const withBatching=(strategy,criterion=CURRENT_CRITERION_SOURCE_STRATEGY)=>{
-    const manifest=workerBatchManifest(input.payload,{livingExcerptStrategy:strategy,criterionSourceStrategy:criterion,livingChanges:input.livingChanges,candidateChanges:input.candidateChanges});
+    const manifest=workerBatchManifest(input.payload,{livingExcerptStrategy:strategy,criterionSourceStrategy:criterion,livingChanges:input.livingChanges,candidateChanges:input.candidateChanges,changeSet:input.changeSet});
     return {...evaluation,metrics:{...evaluation.metrics,batching:{strategy:workerBatchStrategy(manifest),...(strategy===LIVING_EXCERPT_STRATEGIES.SCOPED?{}:{livingExcerptStrategy:strategy}),...(criterion===CRITERION_SOURCE_STRATEGIES.TERM_LINES?{}:{criterionSourceStrategy:criterion}),manifest,cacheHits:0}}};
   };
   const before=read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase;

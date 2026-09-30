@@ -57,7 +57,7 @@ test('worker batches retain every atomic answer, exact evidence and cache bindin
     questions: { A: question, B: question }
   };
   const subject = { workId: 'BB-T', plan: { ref: 'plan.json', hash: 'a'.repeat(64) } };
-  const materialized = { lane: 'WORKER', subject, payload: fullPayload, stateHash: 'b'.repeat(64), specHash: 'c'.repeat(64), cacheKey: 'd'.repeat(64) };
+  const materialized = { lane: 'WORKER', subject, payload: fullPayload, stateHash: 'b'.repeat(64), specHash: 'c'.repeat(64), cacheKey: 'd'.repeat(64), changeSet: { refs: [], sourceScope: { write: [], forbiddenWrite: [] } } };
   let calls = 0;
   const fetchImpl = async (_url, options) => {
     calls += 1;
@@ -70,7 +70,7 @@ test('worker batches retain every atomic answer, exact evidence and cache bindin
   const first = await evaluate(materialized, { root, fetchImpl, apiKey: 'fixture-key' });
   assert.equal(calls, 2);
   assert.equal(first.verdict, 'SATISFIED');
-  assert.deepEqual(first.metrics.batching.manifest, workerBatchManifest(fullPayload));
+  assert.deepEqual(first.metrics.batching.manifest, workerBatchManifest(fullPayload, { changeSet: materialized.changeSet }));
   assert.deepEqual(first.usage, { input_tokens: 200, output_tokens: 20 });
   assert.equal(validateEvaluation(first, materialized), first);
   const second = await evaluate(materialized, { root, fetchImpl, apiKey: 'fixture-key' });

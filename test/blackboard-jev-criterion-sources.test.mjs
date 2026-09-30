@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { canonical, hash } from '../scripts/blackboard-delivery-contract.mjs';
 import {
-  CRITERION_SOURCE_STRATEGIES, CURRENT_CRITERION_SOURCE_STRATEGY, rankedWorkerSource, workerBatchManifest, workerQuestionPayload
+  CRITERION_SOURCE_STRATEGIES, CURRENT_CRITERION_SOURCE_STRATEGY, rankedWorkerSource, workerBatchManifest, workerQuestionBatches, workerQuestionPayload
 } from '../scripts/blackboard-jev.mjs';
 
 // CRITERION_RANKED_SOURCE_V2: criterion questions of a bounded worker batch
 // receive the source lines a criterion is about, not the file head.
 // CRITERION_CHANGED_SOURCES_V3 (current) additionally makes every candidate-changed
 // source eligible, including one the full state sends only as a hash stub.
-const { TERM_LINES, RANKED, CHANGED } = CRITERION_SOURCE_STRATEGIES;
+const { TERM_LINES, RANKED, CHANGED, CHANGE_SET } = CRITERION_SOURCE_STRATEGIES;
 const MODEL = 'jev-1.13.0';
 const IMPL = 'scripts/receipt.mjs';
 const criteria = { SATISFIED: 'Supported', IMPLEMENTATION_DEFECT: 'Defect', INSUFFICIENT_EVIDENCE: 'Missing', PLAN_INPUT_CONTRADICTION: 'Contradiction' };
@@ -49,9 +49,9 @@ function payload(sourceBody = body) {
 }
 const sourceOf = (options, p = payload()) => workerQuestionPayload(p, 'RECEIPT', options).state.sources[0];
 
-test('CHANGED is the current criterion source strategy', () => {
-  assert.equal(CURRENT_CRITERION_SOURCE_STRATEGY, CHANGED);
-  assert.deepEqual(Object.values(CRITERION_SOURCE_STRATEGIES), ['CRITERION_TERM_LINES_V1', 'CRITERION_RANKED_SOURCE_V2', 'CRITERION_CHANGED_SOURCES_V3']);
+test('CHANGE_SET is the current criterion source strategy', () => {
+  assert.equal(CURRENT_CRITERION_SOURCE_STRATEGY, CHANGE_SET);
+  assert.deepEqual(Object.values(CRITERION_SOURCE_STRATEGIES), ['CRITERION_TERM_LINES_V1', 'CRITERION_RANKED_SOURCE_V2', 'CRITERION_CHANGED_SOURCES_V3', 'CRITERION_CHANGE_SET_V4']);
 });
 
 test('ranked selection reaches the specific code that generic criterion words hid', () => {
@@ -154,5 +154,64 @@ test('changed selection bounds each source and the number of sources', () => {
     assert.equal(source.excerptStrategy, CHANGED);
     assert.ok(source.body.length <= 3000);
     assert.match(source.body, /^302: export function assertReceipt/m, 'changed lines are kept');
+  }
+});
+
+// CRITERION_CHANGE_SET_V4: the changed-file set with its checked write scope, and the
+// changed Living Doc sections for a criterion that names the Living Docs.
+const LIVING = 'docs/living/system/state.md';
+const livingBody = ['# State', '', 'Preamble.', '', '## Unrelated heading', '', 'Old text.', '', '## Receipt workflow', '', 'The receipt is typed.'].join('\n');
+function livingPayload(criterionStatement) {
+  const p = payload();
+  p.state.plan.acceptanceCriteria[0].statement = criterionStatement;
+  p.state.sources.push({ ref: LIVING, hash: hash(livingBody), body: livingBody, deleted: false });
+  return p;
+}
+const changeSet = { refs: [LIVING, IMPL], sourceScope: { write: ['scripts/**', LIVING], forbiddenWrite: ['docs/blackboard/**'] } };
+const v4 = { candidateChanges: {}, livingChanges: { [LIVING]: [[11, 11]] }, changeSet };
+
+test('change-set selection gives criterion questions the checked changed-file set', () => {
+  const question = workerQuestionPayload(payload(), 'RECEIPT', v4);
+  assert.equal(question.state.changeSet.strategy, CHANGE_SET);
+  assert.deepEqual(question.state.changeSet.refs, changeSet.refs);
+  assert.deepEqual(question.state.changeSet.sourceScope, changeSet.sourceScope);
+  assert.match(question.state.changeSet.instructions, /inside a write pattern and outside every forbiddenWrite pattern/);
+  assert.equal(workerQuestionPayload(payload(), 'RECEIPT', { ...v4, criterionSourceStrategy: CHANGED }).state.changeSet, undefined, 'V3 has no change set');
+  assert.equal(workerQuestionPayload(payload(), 'LIVING_DOCS', v4).state.changeSet, undefined, 'the Living Docs question is unaffected');
+  assert.throws(() => workerQuestionPayload(payload(), 'RECEIPT', { ...v4, changeSet: { refs: 'x' } }), /candidate change set missing/);
+});
+
+test('a criterion that names the Living Docs receives their changed sections; others keep the scoped selection', () => {
+  const living = workerQuestionPayload(livingPayload('The receipt is typed and the Living Doc describes the receipt workflow.'), 'RECEIPT', v4).state.sources.find(source => source.ref === LIVING);
+  assert.match(living.body, /## Receipt workflow\n\nThe receipt is typed\./);
+  assert.doesNotMatch(living.body, /Old text/);
+  assert.deepEqual(living.changedSections, ['## Receipt workflow']);
+  assert.equal(living.hash, hash(livingBody));
+  assert.match(workerQuestionPayload(livingPayload('The Living Doc names the receipt.'), 'RECEIPT', v4).state.changeSet.instructions, /every section the candidate changed/);
+  const other = workerQuestionPayload(livingPayload('The receipt is typed.'), 'RECEIPT', v4).state.sources.find(source => source.ref === LIVING);
+  const v3 = workerQuestionPayload(livingPayload('The receipt is typed.'), 'RECEIPT', { ...v4, criterionSourceStrategy: CHANGED }).state.sources.find(source => source.ref === LIVING);
+  assert.deepEqual(other, v3, 'a criterion without Living Docs keeps the scoped selection');
+  assert.throws(() => workerQuestionPayload(livingPayload('The Living Doc names the receipt.'), 'RECEIPT', { ...v4, livingChanges: undefined }), /Living Doc change map missing/);
+  assert.throws(() => workerQuestionPayload(livingPayload('The Living Doc names the receipt.'), 'RECEIPT', { ...v4, livingChanges: { [LIVING]: [[0, 1]] } }), /Living Doc change map missing/);
+  const unplanned = workerQuestionPayload(livingPayload('The Living Doc names the receipt.'), 'RECEIPT', { ...v4, livingChanges: {} }).state.sources.find(source => source.ref === LIVING);
+  assert.equal(unplanned.changedSections, undefined, 'a Living Doc outside the plan change map keeps the scoped selection');
+});
+
+test('change-set selection keeps a criterion in one part with compact log excerpts before splitting', () => {
+  const p = payload();
+  const refs = Array.from({ length: 8 }, (_, i) => `evidence/log${i}.txt`);
+  const log = i => Array.from({ length: 400 }, (_, n) => `ok ${n + 1} - log ${i} test ${n} ${'z'.repeat(20)}`).join('\n');
+  p.state.evidence = [{ id: 'RECEIPT', evidenceRefs: refs }];
+  p.state.evidenceFiles = refs.map((ref, i) => ({ ref, hash: hash(log(i)), body: log(i) }));
+  p.state.verification = refs.map((ref, i) => ({ id: `run${i}`, command: `npm run run${i}`, exitCode: 0, logRef: ref }));
+  const v3 = workerQuestionBatches(p, 'RECEIPT', { ...v4, criterionSourceStrategy: CHANGED });
+  assert.ok(v3.length > 1, 'V3 splits the evidence across parts');
+  const [one, ...rest] = workerQuestionBatches(p, 'RECEIPT', v4);
+  assert.equal(rest.length, 0, 'V4 keeps every log in one part');
+  assert.deepEqual(one.excerpted, refs);
+  assert.ok(Buffer.byteLength(canonical(one.payload)) <= 60000);
+  for (const [i, file] of one.payload.state.evidenceFiles.entries()) {
+    assert.equal(file.hash, hash(log(i)));
+    assert.ok(Buffer.byteLength(canonical(file)) <= 3072);
   }
 });

@@ -194,7 +194,7 @@ export function materialize(root, id, { readiness = false } = {}) {
       })
     : [];
   const state = { objective, plan: lane === 'WORKER' ? workerPlan : researchPlan, evidence: [], ...(objectiveScopedResearch ? { objectiveEvidence } : {}) };
-  let livingChanges = null, candidateChanges = null;
+  let livingChanges = null, candidateChanges = null, changeSet = null;
   const question = (id, statement, evidencePath) => {
     const laneRule = lane === 'RESEARCH_SA'
       ? 'This is a RESEARCH_SA readiness judgment: the explicit plan fields and plan-derived evidence are the evidence of implementability. Do not require future worker code, candidate commits, runtime logs or delivery receipts at this lane.'
@@ -370,6 +370,8 @@ export function materialize(root, id, { readiness = false } = {}) {
     // retained evaluations keep their cache keys.
     livingChanges = livingDocChanges(root, evidence.baselineSha, evidence.candidateSha, livingDocs.refs);
     candidateChanges = candidateSourceChanges(root, evidence.baselineSha, evidence.candidateSha, changed.filter(ref => !ref.startsWith('docs/living/')), state.sources);
+    // Every changed ref has passed the write-scope check above.
+    changeSet = { refs: [...changed].sort(), sourceScope: { write: [...plan.sourceScope.write], forbiddenWrite: [...plan.sourceScope.forbiddenWrite] } };
   }
   // Operational limits/pricing do not change a semantic judgment or require another paid call.
   const stateHash = hash(state), specHash = hash({ policy:spec.policy, questions });
@@ -378,7 +380,7 @@ export function materialize(root, id, { readiness = false } = {}) {
   const payloadBytes=Buffer.byteLength(canonical(payload));
   const maxPayloadBytes=lane==='RESEARCH_SA'?Math.min(spec.maxPayloadBytes,spec.maxResearchPayloadBytes??98304):spec.maxPayloadBytes;
   check(payloadBytes <= maxPayloadBytes, 'payload exceeds budget; refine evidence without dropping required coverage');
-  return { lane, subject, payload, stateHash, specHash, cacheKey, ...(livingChanges ? { livingChanges } : {}), ...(candidateChanges ? { candidateChanges } : {}) };
+  return { lane, subject, payload, stateHash, specHash, cacheKey, ...(livingChanges ? { livingChanges } : {}), ...(candidateChanges ? { candidateChanges } : {}), ...(changeSet ? { changeSet } : {}) };
 }
 export function validateResponse(response, payload) {
   check(response?.model === payload.model, 'response model mismatch');
@@ -663,8 +665,12 @@ function boundedWorkerSource(source, terms) {
 // RANKED (current) weights each term by how rare it is in the file, drops
 // generic terms, favours lines the candidate changed and declaration/test
 // lines, and keeps the highest-ranked lines with a small window of context.
-export const CRITERION_SOURCE_STRATEGIES = Object.freeze({ TERM_LINES: 'CRITERION_TERM_LINES_V1', RANKED: 'CRITERION_RANKED_SOURCE_V2', CHANGED: 'CRITERION_CHANGED_SOURCES_V3' });
-export const CURRENT_CRITERION_SOURCE_STRATEGY = CRITERION_SOURCE_STRATEGIES.CHANGED;
+export const CRITERION_SOURCE_STRATEGIES = Object.freeze({ TERM_LINES: 'CRITERION_TERM_LINES_V1', RANKED: 'CRITERION_RANKED_SOURCE_V2', CHANGED: 'CRITERION_CHANGED_SOURCES_V3', CHANGE_SET: 'CRITERION_CHANGE_SET_V4' });
+export const CURRENT_CRITERION_SOURCE_STRATEGY = CRITERION_SOURCE_STRATEGIES.CHANGE_SET;
+// CRITERION_CHANGE_SET_V4 = V3 source selection plus, for every criterion question, the
+// candidate's changed-file set with the plan write scope the gate checked it against, and,
+// for a criterion that names the Living Docs, the changed sections of each Living Doc.
+const LIVING_DOC_CRITERION = /\bliving[ -]?docs?\b/i;
 // CRITERION_CHANGED_SOURCES_V3 selection bounds: up to six sources, 3,000 characters each
 // (18,000 in total, below V2's five sources of 4,000). A candidate-changed source gets a
 // fixed bonus; content relevance counts distinct criterion terms in the body, capped.
@@ -819,7 +825,14 @@ function workerQuestionBase(fullPayload, id, options = {}) {
     .filter(Boolean));
   const terms = [...new Set([id, criterion?.statement ?? '', ...(criterion?.evidenceRequired ?? []), ...checkIds]
     .flatMap(value => String(value).toLowerCase().match(/[a-z0-9]{3,}/g) ?? []))];
-  const changedSources = criterionStrategy === CRITERION_SOURCE_STRATEGIES.CHANGED;
+  const changeSetStrategy = criterionStrategy === CRITERION_SOURCE_STRATEGIES.CHANGE_SET && Boolean(criterion);
+  const changedSources = criterionStrategy === CRITERION_SOURCE_STRATEGIES.CHANGED || criterionStrategy === CRITERION_SOURCE_STRATEGIES.CHANGE_SET;
+  // The evaluation path (batchOptions) always supplies the materialized change set and fails
+  // closed without it; a direct caller that passes none gets V3 sources without the block.
+  const changeSet = changeSetStrategy ? options.changeSet ?? null : null;
+  if (changeSet !== null) check(Array.isArray(changeSet.refs) && changeSet.refs.every(ref => typeof ref === 'string') &&
+    Array.isArray(changeSet.sourceScope?.write) && Array.isArray(changeSet.sourceScope?.forbiddenWrite), 'candidate change set missing');
+  const livingCriterion = changeSetStrategy && LIVING_DOC_CRITERION.test([criterion.statement, ...(criterion.evidenceRequired ?? [])].join('\n'));
   // V3: a changed source that the full state sends as a hash stub is eligible with its
   // candidate body, which must match the bound source hash.
   const candidateBody = source => {
@@ -894,6 +907,11 @@ function workerQuestionBase(fullPayload, id, options = {}) {
         return rankedWorkerSource(source, terms, options.candidateChanges[source.ref]?.ranges ?? []);
       }
       if (source.ref.startsWith('docs/living/')) {
+        if (livingCriterion) {
+          check(options.livingChanges && typeof options.livingChanges === 'object', `Living Doc change map missing: ${source.ref}`);
+          // Only the plan's Living Docs carry a change map; another Living Doc source keeps the scoped selection.
+          if (Object.hasOwn(options.livingChanges, source.ref)) return changedLivingExcerpt(source, options.livingChanges[source.ref], state.plan.scope);
+        }
         return livingDocsQuestion && livingStrategy === LIVING_EXCERPT_STRATEGIES.CHANGED
           ? changedLivingExcerpt(source, options.livingChanges?.[source.ref], state.plan.scope)
           : livingExcerpt(source, state.plan.scope);
@@ -901,7 +919,13 @@ function workerQuestionBase(fullPayload, id, options = {}) {
       return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), omitted: true, deleted: source.deleted };
     }),
     verification: selectedRuns,
-    evidenceFiles: selectedFiles
+    evidenceFiles: selectedFiles,
+    ...(changeSet ? { changeSet: {
+      strategy: CRITERION_SOURCE_STRATEGIES.CHANGE_SET,
+      refs: [...changeSet.refs],
+      sourceScope: changeSet.sourceScope,
+      instructions: 'refs is every file the candidate changed relative to its baseline (git diff --name-only baseline..candidate). The trusted gate checked each ref against sourceScope before this evaluation: it is inside a write pattern and outside every forbiddenWrite pattern. Sources not sent in full are bound by hash in the full evaluation state.' + (livingCriterion ? ' Living Docs are sent as their preamble plus every section the candidate changed.' : '')
+    } } : {})
   };
   return { model: fullPayload.model, state: batchState, questions: { [id]: fullPayload.questions[id] } };
 }
@@ -981,6 +1005,19 @@ export function workerQuestionBatches(fullPayload, id, options = {}) {
   });
   const excerptedPayload = withFiles(base, files);
   if (payloadBytes(excerptedPayload) <= WORKER_BATCH_MAX_BYTES) return [{ id, payload: excerptedPayload, excerpted }];
+  // CRITERION_CHANGE_SET_V4: before splitting a criterion's evidence across parts (each part
+  // is judged against the whole criterion), keep every log in one part as the compact
+  // hash-bound excerpt the Living Docs question already uses.
+  if (criterionStrategyOf(options) === CRITERION_SOURCE_STRATEGIES.CHANGE_SET) {
+    const compactRefs = [];
+    const compact = base.state.evidenceFiles.map(file => {
+      if (typeof file.body !== 'string' || payloadBytes(file) <= LIVING_EVIDENCE_LOG_BYTES) return file;
+      compactRefs.push(file.ref);
+      return excerptEvidenceLog(file, runsByLog.get(file.ref) ?? null, LIVING_EVIDENCE_LOG_BYTES);
+    });
+    const compactPayload = withFiles(base, compact);
+    if (payloadBytes(compactPayload) <= WORKER_BATCH_MAX_BYTES) return [{ id, payload: compactPayload, excerpted: compactRefs }];
+  }
   // Split evidence into parts. Measure with worst-case descriptors so the
   // final payloads (with exact part numbers) cannot grow past the limit.
   const worst = 9999;
@@ -1028,7 +1065,8 @@ export function workerBatchManifest(fullPayload, options = {}) {
 }
 /** Batch options for a materialized input; a missing strategy means a retained SCOPED evaluation. */
 function batchOptions(materialized, livingExcerptStrategy = CURRENT_LIVING_EXCERPT_STRATEGY, criterionSourceStrategy = CURRENT_CRITERION_SOURCE_STRATEGY) {
-  return { livingExcerptStrategy, criterionSourceStrategy, livingChanges: materialized.livingChanges, candidateChanges: materialized.candidateChanges };
+  if (criterionSourceStrategy === CRITERION_SOURCE_STRATEGIES.CHANGE_SET) check(materialized.changeSet, 'candidate change set missing');
+  return { livingExcerptStrategy, criterionSourceStrategy, livingChanges: materialized.livingChanges, candidateChanges: materialized.candidateChanges, changeSet: materialized.changeSet };
 }
 /** Batch options recorded by a (possibly retained) batching record; missing fields imply the original selections. */
 function recordedBatchOptions(materialized, batching) {

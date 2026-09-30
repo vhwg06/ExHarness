@@ -161,7 +161,7 @@ test('new batched evaluations record DELIVERY; retained CHANGED and SCOPED evalu
   const livingChanges = livingDocChanges(r.root, r.baseline, r.candidate, [DOC]);
   const full = payload();
   full.state.evidenceFiles[0].body = 'p'.repeat(62000); full.state.evidenceFiles[0].hash = hash(full.state.evidenceFiles[0].body);
-  const materialized = { lane: 'WORKER', subject: { workId: 'BB-T', plan: { ref: 'plan.json', hash: 'a'.repeat(64) } }, payload: full, stateHash: 'b'.repeat(64), specHash: 'c'.repeat(64), cacheKey: 'd'.repeat(64), livingChanges, candidateChanges: {} };
+  const materialized = { lane: 'WORKER', subject: { workId: 'BB-T', plan: { ref: 'plan.json', hash: 'a'.repeat(64) } }, payload: full, stateHash: 'b'.repeat(64), specHash: 'c'.repeat(64), cacheKey: 'd'.repeat(64), livingChanges, candidateChanges: {}, changeSet: { refs: [], sourceScope: { write: [], forbiddenWrite: [] } } };
   assert.ok(bytes(full) > WORKER_BATCH_LIMITS.maxBatchBytes, 'fixture is batched');
   const sent = [];
   const fetchImpl = async (_url, options) => {
@@ -171,7 +171,7 @@ test('new batched evaluations record DELIVERY; retained CHANGED and SCOPED evalu
   };
   const evaluation = await evaluate(materialized, { root: r.root, fetchImpl, apiKey: 'fixture-key', bypassCache: true });
   assert.equal(evaluation.metrics.batching.livingExcerptStrategy, DELIVERY);
-  assert.equal(evaluation.metrics.batching.criterionSourceStrategy, CRITERION_SOURCE_STRATEGIES.CHANGED);
+  assert.equal(evaluation.metrics.batching.criterionSourceStrategy, CRITERION_SOURCE_STRATEGIES.CHANGE_SET);
   const living = sent.find(body => body.questions.LIVING_DOCS).state;
   assert.match(living.sources[0].body, /A18 — Local git workspace/);
   assert.deepEqual(living.verification.map(run => run.id), ['unit'], 'Living Docs question receives the plan verification runs');

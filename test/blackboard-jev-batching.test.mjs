@@ -99,8 +99,9 @@ test('question over the batch limit fits after excerpting its oversized log', ()
 });
 
 test('evidence that still exceeds the limit is split into bounded parts covering every file', () => {
-  // Each log is below the excerpt threshold, so excerpting alone cannot make the question fit.
-  const logs = Array.from({ length: 12 }, (_, index) => log(`check-${String(index).padStart(2, '0')}`, 'x'.repeat(7000)));
+  // Each log is below both excerpt thresholds (8,192 and the compact 3,072 bytes), so
+  // excerpting alone cannot make the question fit.
+  const logs = Array.from({ length: 30 }, (_, index) => log(`check-${String(index).padStart(2, '0')}`, 'x'.repeat(2800)));
   const full = fixture({ evidence: { A: logs } });
   const batches = workerQuestionBatches(full, 'A');
   assert.ok(batches.length > 1);
@@ -143,9 +144,9 @@ test('split evaluation calls each part once, propagates any unsatisfied part and
   t.after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(join(root, 'docs/blackboard'), { recursive: true });
   writeFileSync(join(root, 'docs/blackboard/jev-policy.json'), JSON.stringify({ model: MODEL, policy: 'atomic-claims-1' }));
-  const logs = Array.from({ length: 12 }, (_, index) => log(`check-${String(index).padStart(2, '0')}`, 'x'.repeat(7000)));
+  const logs = Array.from({ length: 30 }, (_, index) => log(`check-${String(index).padStart(2, '0')}`, 'x'.repeat(2800)));
   const full = fixture({ evidence: { A: logs, B: [log('repository', tapLog(150))] } });
-  const materialized = { lane: 'WORKER', subject: { workId: 'BB-T', plan: { ref: 'plan.json', hash: 'a'.repeat(64) } }, payload: full, stateHash: 'b'.repeat(64), specHash: 'c'.repeat(64), cacheKey: 'd'.repeat(64) };
+  const materialized = { lane: 'WORKER', subject: { workId: 'BB-T', plan: { ref: 'plan.json', hash: 'a'.repeat(64) } }, payload: full, stateHash: 'b'.repeat(64), specHash: 'c'.repeat(64), cacheKey: 'd'.repeat(64), changeSet: { refs: [], sourceScope: { write: [], forbiddenWrite: [] } } };
   const parts = workerQuestionBatches(full, 'A').length;
   const run = async failingPart => {
     const sent = [];
