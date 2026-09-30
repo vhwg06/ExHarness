@@ -663,8 +663,15 @@ function boundedWorkerSource(source, terms) {
 // RANKED (current) weights each term by how rare it is in the file, drops
 // generic terms, favours lines the candidate changed and declaration/test
 // lines, and keeps the highest-ranked lines with a small window of context.
-export const CRITERION_SOURCE_STRATEGIES = Object.freeze({ TERM_LINES: 'CRITERION_TERM_LINES_V1', RANKED: 'CRITERION_RANKED_SOURCE_V2' });
-export const CURRENT_CRITERION_SOURCE_STRATEGY = CRITERION_SOURCE_STRATEGIES.RANKED;
+export const CRITERION_SOURCE_STRATEGIES = Object.freeze({ TERM_LINES: 'CRITERION_TERM_LINES_V1', RANKED: 'CRITERION_RANKED_SOURCE_V2', CHANGED: 'CRITERION_CHANGED_SOURCES_V3' });
+export const CURRENT_CRITERION_SOURCE_STRATEGY = CRITERION_SOURCE_STRATEGIES.CHANGED;
+// CRITERION_CHANGED_SOURCES_V3 selection bounds: up to six sources, 3,000 characters each
+// (18,000 in total, below V2's five sources of 4,000). A candidate-changed source gets a
+// fixed bonus; content relevance counts distinct criterion terms in the body, capped.
+const CHANGED_SOURCE_LIMIT = 6;
+const CHANGED_SOURCE_CHARS = 3000;
+const CHANGED_SOURCE_BONUS = 12;
+const CHANGED_CONTENT_TERM_CAP = 10;
 const RANKED_SOURCE_CHARS = 4000;
 const RANKED_LINE_CHARS = 300;
 const RANKED_MAX_TERM_SHARE = 0.2;
@@ -812,19 +819,35 @@ function workerQuestionBase(fullPayload, id, options = {}) {
     .filter(Boolean));
   const terms = [...new Set([id, criterion?.statement ?? '', ...(criterion?.evidenceRequired ?? []), ...checkIds]
     .flatMap(value => String(value).toLowerCase().match(/[a-z0-9]{3,}/g) ?? []))];
-  const sourceScores = state.sources.filter(source => typeof source.body === 'string' && !source.ref.startsWith('docs/living/'))
+  const changedSources = criterionStrategy === CRITERION_SOURCE_STRATEGIES.CHANGED;
+  // V3: a changed source that the full state sends as a hash stub is eligible with its
+  // candidate body, which must match the bound source hash.
+  const candidateBody = source => {
+    if (typeof source.body === 'string') return source.body;
+    if (!changedSources || source.deleted) return null;
+    const change = options.candidateChanges?.[source.ref];
+    if (typeof change?.body !== 'string') return null;
+    check(hash(change.body) === source.hash, `candidate change body differs from bound source: ${source.ref}`);
+    return change.body;
+  };
+  const contentTerms = terms.filter(term => term.length >= 3 && !RANKED_STOP_TERMS.has(term));
+  const sourceScores = state.sources.filter(source => !source.ref.startsWith('docs/living/') && candidateBody(source) !== null)
     .map(source => {
       const filename = source.ref.toLowerCase().split('/').at(-1);
       const parts = filename.match(/[a-z0-9]+/g) ?? [];
       const fixtureMatch = checkIds.has('fixture') && source.ref.includes('/fixture/') ? 3 : 0;
       const isTest = /\.test\.(?:js|mjs)$/.test(filename);
-      const score = isTest ? (testRefs.has(source.ref) ? 100 : 0) :
+      const v2 = isTest ? (testRefs.has(source.ref) ? 100 : 0) :
         fixtureMatch + (checkIds.has('runner') && filename === 'run.mjs' ? 20 : 0) +
         (checkIds.has('live') && filename === 'provider-export.mjs' ? 20 : 0) +
         3 * terms.filter(term => parts.some(part => part.includes(term) || (part.length >= 3 && term.includes(part)))).length;
-      return { ref: source.ref, score };
+      if (!changedSources) return { ref: source.ref, score: v2 };
+      const changed = Object.hasOwn(options.candidateChanges ?? {}, source.ref);
+      const lower = candidateBody(source).toLowerCase();
+      const content = changed ? Math.min(CHANGED_CONTENT_TERM_CAP, contentTerms.filter(term => lower.includes(term)).length) : 0;
+      return { ref: source.ref, score: v2 + (changed ? CHANGED_SOURCE_BONUS + content : 0) };
     }).filter(source => source.score > 0)
-    .sort((a, b) => b.score - a.score || a.ref.localeCompare(b.ref)).slice(0, 5);
+    .sort((a, b) => b.score - a.score || a.ref.localeCompare(b.ref)).slice(0, changedSources ? CHANGED_SOURCE_LIMIT : 5);
   const relevantSourceRefs = new Set(sourceScores.map(source => source.ref));
   const projectedPlan = livingDocsQuestion ? {
     kind: state.plan.kind,
@@ -857,6 +880,13 @@ function workerQuestionBase(fullPayload, id, options = {}) {
     plan: projectedPlan,
     evidence: claim ? [claim] : [],
     sources: state.sources.map(source => {
+      if (changedSources && relevantSourceRefs.has(source.ref)) {
+        check(options.candidateChanges && typeof options.candidateChanges === 'object', 'candidate change map missing');
+        const body = candidateBody(source);
+        const bodied = typeof source.body === 'string' ? source : { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(body), body, deleted: source.deleted };
+        const excerpt = rankedWorkerSource(bodied, terms, options.candidateChanges[source.ref]?.ranges ?? [], CHANGED_SOURCE_CHARS);
+        return excerpt.excerpted ? { ...excerpt, excerptStrategy: CRITERION_SOURCE_STRATEGIES.CHANGED } : excerpt;
+      }
       if (source.body == null) return source;
       if (relevantSourceRefs.has(source.ref)) {
         if (criterionStrategy === CRITERION_SOURCE_STRATEGIES.TERM_LINES) return boundedWorkerSource(source, terms);

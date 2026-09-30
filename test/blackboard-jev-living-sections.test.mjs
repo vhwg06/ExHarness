@@ -171,7 +171,7 @@ test('new batched evaluations record DELIVERY; retained CHANGED and SCOPED evalu
   };
   const evaluation = await evaluate(materialized, { root: r.root, fetchImpl, apiKey: 'fixture-key', bypassCache: true });
   assert.equal(evaluation.metrics.batching.livingExcerptStrategy, DELIVERY);
-  assert.equal(evaluation.metrics.batching.criterionSourceStrategy, CRITERION_SOURCE_STRATEGIES.RANKED);
+  assert.equal(evaluation.metrics.batching.criterionSourceStrategy, CRITERION_SOURCE_STRATEGIES.CHANGED);
   const living = sent.find(body => body.questions.LIVING_DOCS).state;
   assert.match(living.sources[0].body, /A18 — Local git workspace/);
   assert.deepEqual(living.verification.map(run => run.id), ['unit'], 'Living Docs question receives the plan verification runs');

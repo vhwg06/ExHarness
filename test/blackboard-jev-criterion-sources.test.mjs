@@ -7,7 +7,9 @@ import {
 
 // CRITERION_RANKED_SOURCE_V2: criterion questions of a bounded worker batch
 // receive the source lines a criterion is about, not the file head.
-const { TERM_LINES, RANKED } = CRITERION_SOURCE_STRATEGIES;
+// CRITERION_CHANGED_SOURCES_V3 (current) additionally makes every candidate-changed
+// source eligible, including one the full state sends only as a hash stub.
+const { TERM_LINES, RANKED, CHANGED } = CRITERION_SOURCE_STRATEGIES;
 const MODEL = 'jev-1.13.0';
 const IMPL = 'scripts/receipt.mjs';
 const criteria = { SATISFIED: 'Supported', IMPLEMENTATION_DEFECT: 'Defect', INSUFFICIENT_EVIDENCE: 'Missing', PLAN_INPUT_CONTRADICTION: 'Contradiction' };
@@ -47,15 +49,15 @@ function payload(sourceBody = body) {
 }
 const sourceOf = (options, p = payload()) => workerQuestionPayload(p, 'RECEIPT', options).state.sources[0];
 
-test('RANKED is the current criterion source strategy', () => {
-  assert.equal(CURRENT_CRITERION_SOURCE_STRATEGY, RANKED);
-  assert.deepEqual(Object.values(CRITERION_SOURCE_STRATEGIES), ['CRITERION_TERM_LINES_V1', 'CRITERION_RANKED_SOURCE_V2']);
+test('CHANGED is the current criterion source strategy', () => {
+  assert.equal(CURRENT_CRITERION_SOURCE_STRATEGY, CHANGED);
+  assert.deepEqual(Object.values(CRITERION_SOURCE_STRATEGIES), ['CRITERION_TERM_LINES_V1', 'CRITERION_RANKED_SOURCE_V2', 'CRITERION_CHANGED_SOURCES_V3']);
 });
 
 test('ranked selection reaches the specific code that generic criterion words hid', () => {
   const legacy = sourceOf({ criterionSourceStrategy: TERM_LINES, candidateChanges: {} });
   assert.doesNotMatch(legacy.body, /assertReceipt/, 'the original selection is exhausted by generic lines at the file head');
-  const ranked = sourceOf({ candidateChanges: {} });
+  const ranked = sourceOf({ criterionSourceStrategy: RANKED, candidateChanges: {} });
   assert.equal(ranked.excerptStrategy, RANKED);
   assert.equal(ranked.hash, hash(body));
   assert.equal(ranked.bytes, Buffer.byteLength(body));
@@ -64,7 +66,11 @@ test('ranked selection reaches the specific code that generic criterion words hi
   for (const line of [301, 302, 303, 304]) assert.match(ranked.body, new RegExp(`^${line}: `, 'm'));
   assert.match(ranked.body, /^1: export const helper0/m, 'the file header is kept');
   assert.match(ranked.body, /^…$/m, 'gaps are marked');
-  assert.deepEqual(sourceOf({ candidateChanges: {} }), ranked, 'deterministic');
+  assert.deepEqual(sourceOf({ criterionSourceStrategy: RANKED, candidateChanges: {} }), ranked, 'deterministic');
+  const current = sourceOf({ candidateChanges: {} });
+  assert.equal(current.excerptStrategy, CHANGED);
+  assert.ok(current.body.length <= 3000);
+  for (const line of [301, 302, 303, 304]) assert.match(current.body, new RegExp(`^${line}: `, 'm'));
 });
 
 test('candidate-changed lines outrank equally relevant unchanged lines', () => {
@@ -95,4 +101,58 @@ test('ranked selection fails closed without a valid change map or with an unknow
   assert.throws(() => sourceOf({ candidateChanges: { [IMPL]: { ranges: [[0, 2]] } } }), /candidate change map missing/);
   assert.throws(() => sourceOf({ criterionSourceStrategy: 'NEWEST', candidateChanges: {} }), /unknown criterion source excerpt strategy/);
   assert.ok(sourceOf({ criterionSourceStrategy: TERM_LINES }), 'the retained selection needs no change map');
+});
+
+// A plan whose implementation file is neither expectedNew nor expectedTests: the full
+// state carries it only as a hash stub, and its filename shares no criterion term.
+function stubPayload(changedBody) {
+  const p = payload();
+  const helper = 'export const unrelatedHelper = 1;';
+  p.state.sources = [
+    { ref: 'scripts/adapter.mjs', hash: hash(changedBody), bytes: Buffer.byteLength(changedBody), omitted: true, deleted: false },
+    { ref: 'scripts/unrelated.mjs', hash: hash(helper), bytes: Buffer.byteLength(helper), omitted: true, deleted: false },
+    { ref: IMPL, hash: hash('export const receipt = 1;'), body: 'export const receipt = 1;', deleted: false }
+  ];
+  return p;
+}
+const changedCode = ['// adapter', ...schema].join('\n');
+const refsOf = question => Object.fromEntries(question.state.sources.map(source => [source.ref, source]));
+
+test('changed selection sends a candidate-changed source that the full state omits', () => {
+  const p = stubPayload(changedCode);
+  const candidateChanges = { 'scripts/adapter.mjs': { ranges: [[1, 7]], body: changedCode } };
+  const ranked = refsOf(workerQuestionPayload(p, 'RECEIPT', { criterionSourceStrategy: RANKED, candidateChanges }));
+  assert.equal(ranked['scripts/adapter.mjs'].body, undefined, 'the retained selection never sees stubbed sources');
+  const current = refsOf(workerQuestionPayload(p, 'RECEIPT', { candidateChanges }));
+  const adapter = current['scripts/adapter.mjs'];
+  assert.equal(adapter.body, changedCode);
+  assert.equal(adapter.hash, hash(changedCode));
+  assert.equal(adapter.omitted, undefined);
+  assert.equal(current['scripts/unrelated.mjs'].body, undefined, 'unchanged stubbed sources stay stubs');
+  assert.equal(current[IMPL].body, 'export const receipt = 1;');
+  assert.equal(canonical(workerQuestionPayload(p, 'RECEIPT', { candidateChanges })), canonical(workerQuestionPayload(p, 'RECEIPT', { candidateChanges })), 'deterministic');
+});
+
+test('changed selection fails closed on a candidate body that differs from the bound source', () => {
+  const p = stubPayload(changedCode);
+  assert.throws(() => workerQuestionPayload(p, 'RECEIPT', { candidateChanges: { 'scripts/adapter.mjs': { ranges: [[1, 2]], body: `${changedCode}\n// tampered` } } }), /candidate change body differs from bound source: scripts\/adapter.mjs/);
+  const missing = refsOf(workerQuestionPayload(p, 'RECEIPT', { candidateChanges: { 'scripts/adapter.mjs': { ranges: [[1, 2]] } } }));
+  assert.equal(missing['scripts/adapter.mjs'].body, undefined, 'a change without a body cannot be sent');
+});
+
+test('changed selection bounds each source and the number of sources', () => {
+  const p = payload();
+  const candidateChanges = {};
+  p.state.sources = Array.from({ length: 9 }, (_, i) => {
+    const text = `${body}\n// receipt module ${i}`;
+    candidateChanges[`scripts/m${i}.mjs`] = { ranges: [[301, 304]], body: text };
+    return { ref: `scripts/m${i}.mjs`, hash: hash(text), bytes: Buffer.byteLength(text), omitted: true, deleted: false };
+  });
+  const sent = workerQuestionPayload(p, 'RECEIPT', { candidateChanges }).state.sources.filter(source => typeof source.body === 'string');
+  assert.equal(sent.length, 6);
+  for (const source of sent) {
+    assert.equal(source.excerptStrategy, CHANGED);
+    assert.ok(source.body.length <= 3000);
+    assert.match(source.body, /^302: export function assertReceipt/m, 'changed lines are kept');
+  }
 });
