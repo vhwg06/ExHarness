@@ -1,0 +1,35 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE_SUPERSESSION",
+  "artifactId": "BB-120-supersession",
+  "targetWorkId": "BB-120",
+  "trustedBaseSha": "5391d1a855bdf92f1d598982edefb7acc1144070",
+  "oldObjective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-120.json",
+    "hash": "2a3f71e2e5d08387d6a17181e48a8655ac100eaec8c2bac809b2d0ede53b5168"
+  },
+  "replacementObjective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-120.json",
+    "hash": "68cad5144c5030234bc7768ef201368d11428c5b89bcb06b1221772be354e5c4"
+  },
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.json",
+  "reason": "The READY plan's child-environment rule (allowlist plus caller overlay only) cannot be implemented as specified: the delivered bin calls runSupervisedTask with no env and the supervisor defaults env to {}, so the executed probe shows D2 drops 2/2 test-control variables and 6/6 representative operator auth names, breaking 3 delivered tests outside the old write scope and live auth for all 5 tools. The objective must add per-tool declared auth passthrough and an end-to-end caller overlay.",
+  "evidenceRefs": [
+    "docs/blackboard/evidence/BB-120/plan-defect-probe.mjs",
+    "docs/blackboard/evidence/BB-120/plan-defect-probe-result.json",
+    "docs/blackboard/evidence/BB-120/plan-defect-revision.md"
+  ],
+  "directDependents": [
+    {
+      "taskId": "BB-121",
+      "disposition": "RESET_RESEARCH",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-121.json"
+    },
+    {
+      "taskId": "BB-130",
+      "disposition": "RETAIN_RESEARCH",
+      "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-130.json"
+    }
+  ]
+}
