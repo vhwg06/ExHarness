@@ -21,7 +21,7 @@ next-work-id: BB-124
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-122
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-122
-task: Add OpenCode as a supported agent tool
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-122/current.json
-components: integration/agent-tools
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -120,7 +113,7 @@ BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [WORKER_SCHEDULABLE] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097
 BB-121 [BLOCKED_BY BB-120] <- BB-100, BB-101, BB-120
-BB-122 [ACTIVE] <- BB-097, BB-098
+BB-122 [PLANNED] <- BB-097, BB-098
 BB-123 [RESEARCH_SCHEDULABLE] <- BB-105, BB-102
 ```
 
