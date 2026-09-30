@@ -479,7 +479,7 @@ test("AT4 smoke skips missing and unauthenticated tools and never reports ACCEPT
     assert.equal(fixed.json.smoke, AgentTaskStatus.ACCEPTED);
     assert.equal(fixed.json.result.attempts.at(-1).verification[0].status, "PASS");
     const probe = await runBin(["probe"], { PATH: empty, Path: empty });
-    assert.deepEqual(probe.json.tools, { codex: { installed: false, version: null }, kiro: { installed: false, version: null }, agy: { installed: false, version: null }, grok: { installed: false, version: null } });
+    assert.deepEqual(probe.json.tools, { codex: { installed: false, version: null }, kiro: { installed: false, version: null }, agy: { installed: false, version: null }, grok: { installed: false, version: null }, opencode: { installed: false, version: null } });
   } finally {
     rmSync(empty, { recursive: true, force: true });
   }

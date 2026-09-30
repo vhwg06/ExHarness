@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // exharness-agent: run a CLI coding agent under ExHarness supervision.
-//   run   --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N]
+//   run   --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N]
 //         [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]
 //         [--trace-dir <dir> [--arm <label>]]  append AGENT_TOOL_RUN_TRACE_V1 lines per attempt
 //   eval  --tool <id>[,<id>] --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N]
@@ -35,7 +35,7 @@ import {
 } from "../src/index.js";
 import { EvalUsageError, runAgentToolsEval } from "../src/experiment/index.js";
 
-const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\n       exharness-agent eval --tool <id> --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N] [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy|grok> [--command <path>] [--timeout-ms T]";
+const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\n       exharness-agent eval --tool <id> --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N] [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy|grok|opencode> [--command <path>] [--timeout-ms T]";
 
 class UsageError extends Error {}
 
