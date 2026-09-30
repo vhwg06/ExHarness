@@ -1,0 +1,43 @@
+TAP version 13
+# Subtest: package source imports only Node built-ins and its own src modules
+ok 1 - package source imports only Node built-ins and its own src modules
+  ---
+  duration_ms: 9.328094
+  type: 'test'
+  ...
+# Subtest: package source names no product runtime, Harbor, provider SDK, Blackboard controller or retired baseline module
+ok 2 - package source names no product runtime, Harbor, provider SDK, Blackboard controller or retired baseline module
+  ---
+  duration_ms: 3.086275
+  type: 'test'
+  ...
+# Subtest: substrate and downstream code consume only the package root, never src deep paths
+ok 3 - substrate and downstream code consume only the package root, never src deep paths
+  ---
+  duration_ms: 9.887565
+  type: 'test'
+  ...
+# Subtest: no package outside the benchmark kernel is imported by it and the workspace wires test:benchmark
+ok 4 - no package outside the benchmark kernel is imported by it and the workspace wires test:benchmark
+  ---
+  duration_ms: 1.259904
+  type: 'test'
+  ...
+# Subtest: the retired baseline implementation and its tests are gone
+ok 5 - the retired baseline implementation and its tests are gone
+  ---
+  duration_ms: 0.746015
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 79.573617
+
+
+exitCode=0

@@ -1,0 +1,221 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-065-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+    "hash": "cfd44b6f9fbc1e2db7c2fb3334f8f73314bdae45b25569f7c153c1c7e3898f75"
+  },
+  "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+  "baselineSha": "08fb3e5f273a33c6a4f229e63533caee88a8d573",
+  "candidateTree": "ba591ba3259d76860f4ac0972bbaeed2a200c1f1",
+  "verificationRuns": [
+    {
+      "id": "package-contract",
+      "command": "node --test packages/benchmark/test/contracts.test.js packages/benchmark/test/experiment.test.js packages/benchmark/test/unit.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/package-contract.txt",
+      "logHash": "79209efa915bbf048d60e412f9ed21c11678c5bc0e6d2ba2be51548c3ab15836"
+    },
+    {
+      "id": "ledger",
+      "command": "node --test packages/benchmark/test/ledger.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/ledger.txt",
+      "logHash": "3bd7a791bbec7af404a74ae6c2e455779659d71a1946933339db67ac7d280e02"
+    },
+    {
+      "id": "outcome",
+      "command": "node --test packages/benchmark/test/outcome.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/outcome.txt",
+      "logHash": "02bb3b436614f9577119027a336c199c6adf0431ce63ff4392aa5fb282940a26"
+    },
+    {
+      "id": "accounting",
+      "command": "node --test packages/benchmark/test/accounting.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/accounting.txt",
+      "logHash": "1f462b1a041b82cacd583b7b1aed6fc2953397030c04249277b50908e5d3ad59"
+    },
+    {
+      "id": "audit",
+      "command": "node --test packages/benchmark/test/evidence.test.js packages/benchmark/test/audit.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/audit.txt",
+      "logHash": "3ad231146aa543448d3a66b7f2c7920e07bd8837dfe18e0f1bc0790e8e0f58c7"
+    },
+    {
+      "id": "dependency-boundary",
+      "command": "node --test packages/benchmark/test/dependency-boundary.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/dependency-boundary.txt",
+      "logHash": "fdaf5da3d778a2815c20d4bfcf4d9cccdfe3fa40d91690c21b700d64b09858e5"
+    },
+    {
+      "id": "harbor-adapter",
+      "command": "python3 -m pytest benchmarks/substrate/test/test_harbor_agent.py && node --test benchmarks/substrate/test/harbor-adapter.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/harbor-adapter.txt",
+      "logHash": "fef70293c48062762647b698a29f6ff6a1f3b0004fb48809f35c6e527ecea585"
+    },
+    {
+      "id": "calibration",
+      "command": "node benchmarks/substrate/run.mjs --mode local-calibration",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/calibration.txt",
+      "logHash": "edba1ae4999227f811903bbff83b97e28583ec56c68d2f8740d5e1944805779d"
+    },
+    {
+      "id": "audit-reopen",
+      "command": "node --test benchmarks/substrate/test/audit-reopen.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/audit-reopen.txt",
+      "logHash": "adfffc79a057908f8795466443e4a7a9e411f3204e9bf649bd30e28841280afd"
+    },
+    {
+      "id": "external-preflight",
+      "command": "node benchmarks/substrate/run.mjs --mode external-preflight",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/external-preflight.txt",
+      "logHash": "48b74725a0768089aefb057f59348d72b03866819096fa54ca417463fdbd07b7"
+    },
+    {
+      "id": "legacy-retirement",
+      "command": "node benchmarks/substrate/run.mjs --mode verify-legacy-retirement",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/legacy-retirement.txt",
+      "logHash": "dbf396c44675b2a883109ba21925bbe528ac69e28b212bf568f4b7b5af03b98b"
+    },
+    {
+      "id": "downstream-contract",
+      "command": "node benchmarks/substrate/run.mjs --mode verify-downstream --consumer BB-077",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/downstream-contract.txt",
+      "logHash": "91586b3e64545f09927c7599e92993c26d1b86819ea0a1a5337aa5e7cf53a6b6"
+    },
+    {
+      "id": "product-boundary",
+      "command": "node benchmarks/substrate/run.mjs --mode verify-product-boundary",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/product-boundary.txt",
+      "logHash": "78aca5ab9164243d4450c3c1d64bc509543f1a3dcf5148b2ef91bce92a3701a1"
+    },
+    {
+      "id": "workspace",
+      "command": "npm run test:benchmark",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/workspace.txt",
+      "logHash": "7b5c22af3c1dfe0900428488662f3b88e7ed77dfc49f339c4ef7993434805541"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+      "logRef": "docs/blackboard/evidence/BB-065/repository.txt",
+      "logHash": "55aecf605aca7c140f8cc039c321c3ce2d5e5204f004cb1db69b0622f360a9f6"
+    }
+  ],
+  "claims": [
+    {
+      "id": "PACKAGE_CONTRACT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/package-contract.txt",
+        "docs/blackboard/evidence/BB-065/dependency-boundary.txt"
+      ]
+    },
+    {
+      "id": "ATTEMPT_LEDGER",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/ledger.txt",
+        "docs/blackboard/evidence/BB-065/calibration.txt"
+      ]
+    },
+    {
+      "id": "HARBOR_BOUNDARY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/dependency-boundary.txt",
+        "docs/blackboard/evidence/BB-065/harbor-adapter.txt"
+      ]
+    },
+    {
+      "id": "OUTCOME_MATRIX",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/outcome.txt",
+        "docs/blackboard/evidence/BB-065/calibration.txt"
+      ]
+    },
+    {
+      "id": "ACCOUNTING",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/accounting.txt",
+        "docs/blackboard/evidence/BB-065/audit.txt",
+        "docs/blackboard/evidence/BB-065/calibration.txt"
+      ]
+    },
+    {
+      "id": "EVIDENCE_AUDIT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/audit.txt",
+        "docs/blackboard/evidence/BB-065/audit-reopen.txt"
+      ]
+    },
+    {
+      "id": "EXTERNAL_SANITY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/external-preflight.txt"
+      ]
+    },
+    {
+      "id": "LEGACY_RETIREMENT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/dependency-boundary.txt",
+        "docs/blackboard/evidence/BB-065/legacy-retirement.txt"
+      ]
+    },
+    {
+      "id": "DOWNSTREAM_HANDOFF",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/dependency-boundary.txt",
+        "docs/blackboard/evidence/BB-065/downstream-contract.txt"
+      ]
+    },
+    {
+      "id": "PRODUCT_BOUNDARY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-065/product-boundary.txt"
+      ]
+    }
+  ]
+}

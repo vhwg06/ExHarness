@@ -1,0 +1,105 @@
+{
+  "mode": "external-preflight",
+  "status": "PASS",
+  "manifest": "benchmarks/substrate/manifests/terminal-bench-2.1.json",
+  "sourceCommit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+  "harbor": {
+    "substrate": "harbor",
+    "version": "0.23.0",
+    "distributionVersion": "0.23.0",
+    "commit": "1e5c5c6db929a10a140d05e606882c671ae20729",
+    "tag": "v0.23.0",
+    "sourceTreeDigest": "sha256:c2ade5874e901c2d36fc44ae9cb01db2450adf44b111fe18b598c743a6a79134"
+  },
+  "reserved": [
+    "terminal-bench/db-wal-recovery",
+    "terminal-bench/fix-git",
+    "terminal-bench/query-optimize",
+    "terminal-bench/pypi-server",
+    "terminal-bench/git-leak-recovery",
+    "terminal-bench/build-cython-ext",
+    "terminal-bench/custom-memory-heap-crash",
+    "terminal-bench/modernize-scientific-stack",
+    "terminal-bench/sanitize-git-repo",
+    "terminal-bench/git-multibranch",
+    "terminal-bench/sqlite-db-truncate",
+    "terminal-bench/kv-store-grpc",
+    "terminal-bench/nginx-request-logging",
+    "terminal-bench/sqlite-with-gcov",
+    "terminal-bench/cancel-async-tasks",
+    "terminal-bench/fix-code-vulnerability",
+    "terminal-bench/openssl-selfsigned-cert",
+    "terminal-bench/configure-git-webserver"
+  ],
+  "candidateOrderHead": [
+    "terminal-bench/hf-model-inference",
+    "terminal-bench/sparql-university",
+    "terminal-bench/path-tracing-reverse",
+    "terminal-bench/feal-linear-cryptanalysis",
+    "terminal-bench/extract-moves-from-video",
+    "terminal-bench/model-extraction-relu-logits",
+    "terminal-bench/largest-eigenval",
+    "terminal-bench/extract-elf"
+  ],
+  "controls": [
+    {
+      "name": "terminal-bench/hf-model-inference",
+      "oracle": [
+        "ACCEPTED",
+        "ACCEPTED",
+        "ACCEPTED",
+        "ACCEPTED",
+        "ACCEPTED"
+      ],
+      "nop": [
+        "REJECTED"
+      ]
+    },
+    {
+      "name": "terminal-bench/sparql-university",
+      "oracle": [
+        "ACCEPTED",
+        "ACCEPTED",
+        "ACCEPTED",
+        "ACCEPTED",
+        "ACCEPTED"
+      ],
+      "nop": [
+        "REJECTED"
+      ]
+    }
+  ],
+  "disqualified": [],
+  "selected": [
+    {
+      "name": "terminal-bench/hf-model-inference",
+      "digest": "sha256:01370f37e61286f920dfca1e471496640ebcc8d06e1cc48d874c790715dbd4ad",
+      "dockerImage": "alexgshaw/hf-model-inference:20260430",
+      "environmentIdentity": "docker-image:alexgshaw/hf-model-inference:20260430@sha256:0ef475aebda8abb8cbf3a1d97aee8ac4b09ca9720550e25a4a46a47930cd3bad",
+      "instructionDigest": "sha256:29151c5b2306f522f38fa905de3d34566865829355e5ca0895f4fca04d51dcc1"
+    },
+    {
+      "name": "terminal-bench/sparql-university",
+      "digest": "sha256:02aeca67b6c5b0d2d72c91ab471beb51ded6f42f0dc3dec580e20d489f09a867",
+      "dockerImage": "alexgshaw/sparql-university:20251031",
+      "environmentIdentity": "docker-image:alexgshaw/sparql-university:20251031@sha256:92fa4304e51167f9fb4466144eba33ef9272a7df0ac1cab9fc3986bccd1ab708",
+      "instructionDigest": "sha256:22eeab47d3b27b06df2627b3c21cfbd579ed7dcc85ebcb7c4b3a241c3c35f449"
+    }
+  ],
+  "controlAudits": [
+    {
+      "experimentId": "TB21-CONTROL-hf-model-inference",
+      "attempts": 6,
+      "status": "PASS"
+    },
+    {
+      "experimentId": "TB21-CONTROL-sparql-university",
+      "attempts": 6,
+      "status": "PASS"
+    }
+  ],
+  "problems": []
+}
+
+
+exitCode=0
