@@ -193,7 +193,9 @@
         "FEATURE-AGENT-TOOL-SUPERVISION",
         "FEATURE-AGENT-TOOL-OBSERVATION",
         "FEATURE-AGENT-TOOL-VALUE",
-        "FEATURE-AGENT-TOOL-GROK"
+        "FEATURE-AGENT-TOOL-GROK",
+        "FEATURE-AGENT-TOOL-CHILD-ENV",
+        "FEATURE-AGENT-TOOL-OPENCODE"
       ],
       "artifactRefs": [
         "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
@@ -209,7 +211,8 @@
         "FEATURE-AGENT-TOOL-DURABLE-RECOVERY",
         "FEATURE-AGENT-TOOL-ORACLE-CONTEXT",
         "FEATURE-AGENT-TOOL-MCP-GATE",
-        "FEATURE-AGENT-TOOL-OPERATOR-SLICE"
+        "FEATURE-AGENT-TOOL-OPERATOR-SLICE",
+        "FEATURE-AGENT-TOOL-DURABLE-BOARD"
       ],
       "artifactRefs": [
         "docs/blackboard/process/agent-tool-productization.md",
@@ -999,6 +1002,48 @@
         "docs/blackboard/process/agent-tool-research/BB-104.md"
       ],
       "acceptanceTaskId": "BB-104"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-CHILD-ENV",
+      "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Allowlist agent-tools child environment",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-120"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-120.md"
+      ],
+      "acceptanceTaskId": "BB-120"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-DURABLE-BOARD",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Opt-in supervised Backend on the durable Board",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-121"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-121.md"
+      ],
+      "acceptanceTaskId": "BB-121"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-OPENCODE",
+      "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Add OpenCode as a supported agent tool",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-122"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-122.md"
+      ],
+      "acceptanceTaskId": "BB-122"
     }
   ],
   "tasks": [
@@ -4243,10 +4288,180 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-120",
+      "featureId": "FEATURE-AGENT-TOOL-CHILD-ENV",
+      "title": "Allowlist agent-tools child environment",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-120.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-120.json",
+          "docs/blackboard/process/agent-tool-research/BB-120.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-120/env-allowlist-probe.mjs",
+          "docs/blackboard/evidence/BB-120/env-allowlist-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify an exported inherited-environment allowlist used by the process runner so spawn no longer copies process.env wholesale, while still dropping NODE_TEST_CONTEXT.",
+        "Specify that a secret present only on process.env and absent from the caller overlay is missing from the child, and that overlay keys are present even when they are not on the allowlist.",
+        "Specify that PATH and HOME remain inherited when set on the parent so CLI homedir authentication keeps working.",
+        "Specify named tests, Living trust-boundary text and index exports for the allowlist.",
+        "Ground the design in the executed env-allowlist probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-120.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.json",
+        "researchBaselineSha": "16fbfeea9c5b8673c8db555fd31d69772a8896d2"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-121",
+      "featureId": "FEATURE-AGENT-TOOL-DURABLE-BOARD",
+      "title": "Compose supervised agent-tools as durable Backend→QA execution",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/backend-qa-execution",
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-100",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-101",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-120",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-121.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-121.json",
+          "docs/blackboard/process/agent-tool-research/BB-121.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-121/durable-board-probe.mjs",
+          "docs/blackboard/evidence/BB-121/durable-board-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/state.md",
+          "docs/living/system/agentic-application/capabilities.md",
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify a createSupervisedBackendWorker factory that implements execute/recover by calling the BB-100 adapter and projecting APPLIED/FAILED/BLOCKED onto the delivered BackendWorker execute/recover contract used by runPreparedBackendObjective.",
+        "Specify that createDurableBackendQaWorkflow and runBackendThenQaObjective reach QA_PENDING / QA after fake-CLI FIX_FIRST APPLIED, and that TOOL_UNAVAILABLE is BLOCKED and EXHAUSTED is FAILED, never APPLIED.",
+        "Specify crash-resume of BACKEND_PENDING through the BB-101 handle when recoveryDir is set, and BLOCKED recover when it is not.",
+        "Specify Living docs for the opt-in durable supervised Backend path versus default CodeAct and versus BB-066 OpenHands.",
+        "Ground the design in the executed durable-board probe and the BB-100/BB-101 planned contracts and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-121.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-121.json",
+        "researchBaselineSha": "16fbfeea9c5b8673c8db555fd31d69772a8896d2"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-122",
+      "featureId": "FEATURE-AGENT-TOOL-OPENCODE",
+      "title": "Add OpenCode as a supported agent tool",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-098",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-122.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-122.json",
+          "docs/blackboard/process/agent-tool-research/BB-122.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-122/opencode-cli-probe.mjs",
+          "docs/blackboard/evidence/BB-122/opencode-cli-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/observation.md",
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify an opencode adapter in the delivered AGENT_TOOLS registry that builds a shell-free headless invocation with opencode run --format json, optional --dir cwd, optional --model, WORKSPACE_EDIT without --auto, FULL_AUTO with --auto, resume via --session or --continue, a version probe, and TOOL_UNAVAILABLE when the executable is missing.",
+        "Specify an opencode JSONL parser that reports integer token fields and finite cost from step_finish events when present, and otherwise records null with an explicit unavailable reason, never an estimate; traces redact the prompt.",
+        "Specify that the same adapter serves direct runObservedInvocation and supervised runSupervisedTask arms, and that exharness-agent probe and smoke accept --tool opencode with live smoke remaining opt-in and absent from npm test.",
+        "Specify a deterministic fake opencode CLI fixture, named tests, Living docs and the package README that list opencode beside Codex, Kiro and agy.",
+        "Ground the design in the executed opencode CLI probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-122.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-122.json",
+        "researchBaselineSha": "16fbfeea9c5b8673c8db555fd31d69772a8896d2"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-109",
+    "nextWorkId": "BB-123",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

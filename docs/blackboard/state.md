@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-109
+next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -52,6 +52,9 @@ NONE
 - BB-106 [RESEARCH_SA/RESEARCH] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-108 [RESEARCH_SA/RESEARCH] — Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
+- BB-120 [RESEARCH_SA/RESEARCH] — Allowlist agent-tools child environment
+- BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
+- BB-122 [RESEARCH_SA/RESEARCH] — Add OpenCode as a supported agent tool
 
 ## Dependency graph
 
@@ -114,6 +117,9 @@ BB-105 [WORKER_SCHEDULABLE] <- BB-097, BB-098
 BB-106 [RESEARCH_SCHEDULABLE] <- BB-082, BB-087, BB-088
 BB-107 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088
+BB-120 [RESEARCH_SCHEDULABLE] <- BB-097
+BB-121 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-120
+BB-122 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
 ```
 
 ## Context semantics
