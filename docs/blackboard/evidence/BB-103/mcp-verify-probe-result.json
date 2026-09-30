@@ -1,0 +1,77 @@
+{
+  "kind": "BB103_MCP_VERIFY_PROBE_RESULT",
+  "version": 1,
+  "headSha": "655e0c55e1551a8bfe3b67f9c5a22f76ce175eb9",
+  "runOpts": [
+    "tool",
+    "task",
+    "model",
+    "maxAttempts",
+    "timeoutMs",
+    "maxFeedbackChars",
+    "permissionProfile",
+    "env",
+    "eventSinks",
+    "tracer",
+    "invocationObserver"
+  ],
+  "strategyOpts": [
+    "task",
+    "maxAttempts",
+    "maxFeedbackChars"
+  ],
+  "verifier": {
+    "fail": {
+      "status": "FAIL",
+      "reason": "FAIL"
+    },
+    "pass": {
+      "status": "PASS",
+      "reason": "PASS"
+    },
+    "mismatch": {
+      "status": "FAIL",
+      "reason": "REVISION_MISMATCH"
+    }
+  },
+  "supervised": {
+    "passStatus": "ACCEPTED",
+    "resultFields": [
+      "acceptedSha",
+      "attempts",
+      "status",
+      "taskId",
+      "tool",
+      "toolVersion"
+    ],
+    "claimStatus": "EXHAUSTED",
+    "claimOutcomes": [
+      [
+        "NO_CHANGE",
+        false,
+        true
+      ],
+      [
+        "NO_CHANGE",
+        false,
+        true
+      ]
+    ]
+  },
+  "conclusions": {
+    "agentToolsHasNoMcpExport": true,
+    "mcpVerifyOptionAbsent": true,
+    "invocationObserverPresentDefaultNull": true,
+    "strategyOptionsAreTaskMaxAttemptsMaxFeedbackChars": true,
+    "zeroRuntimeNpmDependencies": true,
+    "createLocalCommandVerifierIsIndependentVerifySeam": true,
+    "verifierReasonLivesInEvidenceLine": true,
+    "revisionMismatchIsFail": true,
+    "claimSuccessNoEditCannotPromote": true,
+    "invocationObserverStillFires": true,
+    "envWouldReachAgentChild": true,
+    "adaptersDoNotCarryMcpArgv": true,
+    "ndjsonFakeClientWorksWithoutSdkOrLiveCli": true,
+    "noListenApiInCurrentAgentTools": true
+  }
+}
