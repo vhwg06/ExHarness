@@ -48,7 +48,7 @@ NONE
 - BB-102 [WORKER/EXECUTION] — Resolve declared agent-tool files through the Oracle facade
 - BB-103 [RESEARCH_SA/RESEARCH] — Expose verification and status as stdio MCP tools
 - BB-104 [RESEARCH_SA/RESEARCH] — Run one local Backend-then-QA slice from an operator CLI
-- BB-105 [RESEARCH_SA/RESEARCH] — Add Grok Build as a supported agent tool
+- BB-105 [WORKER/EXECUTION] — Add Grok Build as a supported agent tool
 
 ## Dependency graph
 
@@ -107,7 +107,7 @@ BB-101 [WORKER_SCHEDULABLE] <- BB-097
 BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [RESEARCH_SCHEDULABLE] <- BB-097
 BB-104 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-102
-BB-105 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
+BB-105 [WORKER_SCHEDULABLE] <- BB-097, BB-098
 ```
 
 ## Context semantics
