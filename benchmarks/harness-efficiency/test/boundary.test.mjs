@@ -1,8 +1,11 @@
 // BOUNDARY: only benchmark comparison tooling and Living truth change. No
 // writes to packages/benchmark, benchmarks/substrate, Core product runtime or
 // async capability implementation. Hermetic: read-only scans plus a
-// forbidden-prefix check over git status (untracked files from other work are
-// ignored; only forbidden writes fail).
+// forbidden-prefix check over the candidate's own changes (committed diff
+// against the main line plus working-tree entries). Blackboard gate-owned
+// bookkeeping paths are exempt (see boundary-paths.mjs): the evidence gate
+// writes them into the checkout itself, so they are unrelated to the
+// candidate.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -10,23 +13,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { scratchDir } from './helpers.mjs';
-
+import { importSpecifiers, scratchDir } from './helpers.mjs';
+import { classifyEntries } from '../boundary-paths.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
 const REPO = path.resolve(HERE, '..', '..', '..');
-
-const WRITE_SCOPE = ['benchmarks/harness-efficiency/', 'docs/living/system/core-harness/'];
-const FORBIDDEN = [
-  'packages/benchmark/',
-  'benchmarks/substrate/',
-  'packages/core-harness/src/',
-  'packages/agentic-system/',
-  '.github/',
-  'docs/blackboard/',
-  'package.json',
-  'scripts/blackboard-jev.mjs'
-];
 
 let tmp;
 test.before(() => { tmp = scratchDir('boundary'); assert.ok(fs.statSync(tmp).isDirectory()); });
@@ -55,8 +46,11 @@ test('implementation sources never target forbidden write areas', async () => {
   for (const file of sources) {
     const code = stripComments(fs.readFileSync(file, 'utf8'));
     assert.ok(!writeToForbidden.test(code), `${path.relative(REPO, file)} writes outside the write scope`);
-    for (const prefix of ['packages/benchmark/', 'packages/agentic-system/']) {
-      assert.ok(!code.includes(prefix), `${path.relative(REPO, file)} reaches into forbidden code ${prefix}`);
+    // Reaching into forbidden code means importing it, not merely naming the
+    // path (the boundary-paths classifier itself lists forbidden prefixes).
+    for (const spec of importSpecifiers(code)) {
+      assert.ok(!spec.includes('packages/benchmark/') && !spec.includes('packages/agentic-system/'),
+        `${path.relative(REPO, file)} imports forbidden code ${spec}`);
     }
     // Core may be used only through its public entry; any other deep file is
     // a violation.
@@ -95,21 +89,79 @@ test('no async capability implementation or promotion verdict exists here', asyn
   }
 });
 
-test('no benchmark-kernel, substrate or product runtime diff is introduced', async () => {
-  let status;
+function mergeBase(cwd) {
+  for (const ref of ['origin/main', 'main']) {
+    try {
+      const out = execFileSync('git', ['merge-base', 'HEAD', ref], { cwd, encoding: 'utf8' }).trim();
+      if (out) return out;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+function committedEntries(cwd) {
+  const base = mergeBase(cwd);
+  if (!base) return [];
+  const out = execFileSync('git', ['diff', '--name-only', base, 'HEAD'], { cwd, encoding: 'utf8' });
+  return out.split('\n').map((line) => line.trim()).filter(Boolean)
+    .map((file) => ({ file, tracked: true }));
+}
+
+function workingTreeEntries(cwd) {
+  const status = execFileSync('git', ['status', '--short'], { cwd, encoding: 'utf8' });
+  return status.split('\n').map((line) => line.trimEnd()).filter((line) => line.trim().length > 0)
+    .map((line) => ({
+      code: line.slice(0, 2).trim(),
+      file: line.slice(3).trim().split(/\s+/).pop()
+    }))
+    .map(({ code, file }) => ({ file, tracked: code !== '??' }));
+}
+
+test('no benchmark-kernel, substrate or product runtime diff is introduced', async (t) => {
+  let entries;
   try {
-    status = execFileSync('git', ['status', '--short'], { cwd: REPO, encoding: 'utf8' });
+    entries = [...committedEntries(REPO), ...workingTreeEntries(REPO)];
   } catch {
+    t.skip('git unavailable');
     return;
   }
-  const changed = status.split('\n').map((line) => line.trimEnd()).filter((line) => line.trim().length > 0)
-    .map((line) => ({ code: line.slice(0, 2).trim(), file: line.slice(3).trim().split(/\s+/).pop() }));
-  const forbiddenWrites = changed
-    .filter(({ file }) => FORBIDDEN.some((prefix) => file === prefix || file.startsWith(prefix)))
-    .map(({ file }) => file);
-  assert.deepEqual(forbiddenWrites, [], `forbidden writes: ${forbiddenWrites.join(', ')}`);
-  const trackedOutsideScope = changed
-    .filter(({ code, file }) => code !== '??' && !WRITE_SCOPE.some((prefix) => file.startsWith(prefix)))
-    .map(({ file }) => file);
-  assert.deepEqual(trackedOutsideScope, [], `tracked edits outside write scope: ${trackedOutsideScope.join(', ')}`);
+  const unique = [...new Map(entries.map((entry) => [entry.file, entry])).values()];
+  const { forbidden, outsideScope } = classifyEntries(unique);
+  assert.deepEqual(forbidden, [], `forbidden writes: ${forbidden.join(', ')}`);
+  assert.deepEqual(outsideScope, [], `tracked edits outside write scope: ${outsideScope.join(', ')}`);
+});
+
+test('gate bookkeeping is exempt but other blackboard and kernel paths stay forbidden', async () => {
+  const { isForbidden } = await import('../boundary-paths.mjs');
+  // Gate-owned bookkeeping: accepted in both assertions.
+  for (const file of [
+    'docs/blackboard/state.md',
+    'docs/blackboard/work-graph.json',
+    'docs/blackboard/context/BB-077/t',
+    'docs/blackboard/evidence/BB-077/t',
+    'docs/blackboard/artifacts/blackboard-foo.json'
+  ]) {
+    assert.equal(isForbidden(file), false, `${file} must be exempt`);
+  }
+  // Everything else under docs/blackboard/ stays forbidden, so widening the
+  // exemption to all of docs/blackboard/ would fail this test.
+  for (const file of [
+    'docs/blackboard/artifacts/objective/X.json',
+    'docs/blackboard/artifacts/ready-implement-plan/X.json',
+    'docs/blackboard/process/notes.md',
+    'packages/benchmark/x.js',
+    'benchmarks/substrate/x',
+    'package.json'
+  ]) {
+    assert.equal(isForbidden(file), true, `${file} must stay forbidden`);
+  }
+  const { forbidden, outsideScope } = classifyEntries([
+    { file: 'docs/blackboard/state.md', tracked: true },
+    { file: 'docs/blackboard/context/BB-077/t', tracked: false },
+    { file: 'docs/blackboard/artifacts/objective/X.json', tracked: true }
+  ]);
+  assert.deepEqual(forbidden, ['docs/blackboard/artifacts/objective/X.json']);
+  assert.deepEqual(outsideScope, []);
 });
