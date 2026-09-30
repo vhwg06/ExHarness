@@ -1,10 +1,12 @@
 export {
   AGENT_TOOLS,
   AGENT_TOOL_ADAPTER_VERSION,
+  GROK_DEFAULT_MODEL,
   PermissionProfile,
   agyTool,
   codexTool,
   defineAgentTool,
+  grokTool,
   kiroTool
 } from "./tool-adapters.js";
 export {
@@ -28,7 +30,7 @@ export {
   validateAgentTask
 } from "./supervisor.js";
 export { REDACTED, SECRET_PATTERNS, createRedactor, redact, redactedExcerpt, secretValues } from "./redaction.js";
-export { UsageUnavailableReason, parseAgyOutput, parseCodexJsonl, parseKiroOutput, parseToolOutput } from "./output-parsers.js";
+export { UsageUnavailableReason, parseAgyOutput, parseCodexJsonl, parseGrokJson, parseKiroOutput, parseToolOutput } from "./output-parsers.js";
 export {
   AGENT_TOOL_RUN_TRACE_VERSION,
   TRACE_FILE,

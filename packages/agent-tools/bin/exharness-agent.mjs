@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // exharness-agent: run a CLI coding agent under ExHarness supervision.
-//   run   --tool <codex|kiro|agy> --task <task.json> [--command <path>] [--max-attempts N]
+//   run   --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N]
 //         [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]
 //         [--trace-dir <dir> [--arm <label>]]  append AGENT_TOOL_RUN_TRACE_V1 lines per attempt
 //   report <trace-dir>        verify the trace chain and print the DESCRIPTIVE AGENT_TOOL_RUN_REPORT_V1
@@ -27,7 +27,7 @@ import {
   runSupervisedTask
 } from "../src/index.js";
 
-const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy> [--command <path>] [--timeout-ms T]";
+const USAGE = "usage: exharness-agent run --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\n       exharness-agent report <trace-dir>\n       exharness-agent probe\n       exharness-agent smoke --tool <codex|kiro|agy|grok> [--command <path>] [--timeout-ms T]";
 
 class UsageError extends Error {}
 
