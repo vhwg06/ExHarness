@@ -548,7 +548,7 @@
       "topicId": "TOPIC-CORE-HARNESS-EFFICIENCY",
       "kind": "FEATURE",
       "title": "Measure harness tax and pin async-first baseline",
-      "status": "PLANNED",
+      "status": "DONE",
       "taskIds": [
         "BB-077"
       ],
@@ -2509,7 +2509,7 @@
       "featureId": "FEATURE-HARNESS-ECONOMICS",
       "title": "Research harness-isolation economics on shared benchmark kernel",
       "kind": "IMPLEMENTATION",
-      "status": "PLANNED",
+      "status": "DONE",
       "complexity": "L",
       "components": [
         "core/async-runtime-efficiency"
@@ -2529,7 +2529,9 @@
           "docs/blackboard/process/harness-efficiency-research/BB-077.md",
           "docs/blackboard/process/harness-benchmark-program-research.md"
         ],
-        "outputRefs": [],
+        "outputRefs": [
+          "docs/blackboard/artifacts/ready-implement-plan/BB-077.delivered-feature.json"
+        ],
         "consolidatedRefs": [
           "docs/living/system/core-harness/state.md",
           "docs/living/system/core-harness/workflow.md"
@@ -2547,13 +2549,15 @@
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-077.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
         "researchBaselineSha": "edcd934afaa8c5c7e682af9121ca32984196bc59",
-        "baselineSha": "aa91ba16548f31772d441f51975917397cbf73d7",
+        "baselineSha": "6c9a746f96e277e25e6d7b9cf1daeffe2bf7fc02",
         "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.implementation-result.json",
-        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.readiness-jev-evaluation.json",
-        "lastEvaluatedInput": "894a442354c6e03fb16f3bfb05c6e93c147c686e3ef86e34b6690b838646f8da"
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.candidate-jev-evaluation.json",
+        "lastEvaluatedInput": "a527ebf51ab1c8b84686b34e1a49ced9580f18a5ee783ea970b3f75217eeb4de",
+        "candidateSha": "6beb39ad656cbb763993aa595b4db2eebdcb3433",
+        "deliveryRef": "docs/blackboard/artifacts/ready-implement-plan/BB-077.delivered-feature.json"
       },
       "lane": "WORKER",
-      "phase": "EXECUTION"
+      "phase": "DELIVERED"
     },
     {
       "id": "BB-078",
@@ -4513,10 +4517,65 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-123",
+      "featureId": null,
+      "title": "Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-105",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-102",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-123.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-123.json",
+          "docs/blackboard/process/agent-tool-research/BB-123.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-123/followup-probe.mjs",
+          "docs/blackboard/evidence/BB-123/followup-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/context.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify a grok cost guard so only a finite number >= 0 is reported as totalCostUsd while null, empty-string, boolean and numeric-string costs record null, with named tests calling parseGrokJson directly.",
+        "Specify a worktree-local grounded exclusion so projection never writes outside worktreeRoot, the source info/exclude stays byte-identical, and copies stay out of the candidate commit, with named tests calling projectAgentTaskContext directly on a linked worktree.",
+        "Specify named tests, Living observed-cost and exclusion text and the exact write scope for the fix.",
+        "Ground the design in the executed follow-up probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-123.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-123.json",
+        "researchBaselineSha": "b5ad0eac5d219f55d482db7984f715cf18882bbd"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-123",
+    "nextWorkId": "BB-124",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: both arms share the exact fixed-factor identity
+ok 1 - both arms share the exact fixed-factor identity
+  ---
+  duration_ms: 36.241838
+  type: 'test'
+  ...
+# Subtest: arms differ only in benchmark-owned orchestration
+ok 2 - arms differ only in benchmark-owned orchestration
+  ---
+  duration_ms: 11.757616
+  type: 'test'
+  ...
+# Subtest: both adapters really invoke the strategy with measured turns and calls
+ok 3 - both adapters really invoke the strategy with measured turns and calls
+  ---
+  duration_ms: 3.955712
+  type: 'test'
+  ...
+# Subtest: CORE_SYNC runs through createAgentRuntime while DIRECT does not
+ok 4 - CORE_SYNC runs through createAgentRuntime while DIRECT does not
+  ---
+  duration_ms: 3.500561
+  type: 'test'
+  ...
+# Subtest: an arm that changes model input is detected by the fixed digest
+ok 5 - an arm that changes model input is detected by the fixed digest
+  ---
+  duration_ms: 0.434171
+  type: 'test'
+  ...
+# Subtest: changed workspace, tools, evaluator or budget break pair identity
+ok 6 - changed workspace, tools, evaluator or budget break pair identity
+  ---
+  duration_ms: 1.334921
+  type: 'test'
+  ...
+# Subtest: protocol rejects a pair that varies more than the arm
+ok 7 - protocol rejects a pair that varies more than the arm
+  ---
+  duration_ms: 0.29523
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 127.054684
+
+
+exitCode=0
