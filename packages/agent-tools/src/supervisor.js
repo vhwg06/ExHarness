@@ -4,7 +4,7 @@
 // are telemetry only. The CLI itself is not sandboxed: it runs with the user's permissions.
 import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import {
@@ -231,7 +231,11 @@ function agentToolEnvironment({ workspace, tool, model, permissionProfile, env, 
       const head = (await git(root, ["rev-parse", "HEAD"])).trim();
       if (head !== candidate.version) throw new Error(`agent worktree HEAD ${head} differs from candidate ${candidate.version}`);
       const logFile = join(logDir, `attempt-${action.attemptIndex}.log`);
-      const request = { prompt: action.prompt, resume: action.resume, model, permissionProfile, logFile };
+      // Grok reads its prompt from --prompt-file; the file lives in the supervisor log
+      // directory (outside the worktree) next to the attempt log. Other adapters ignore it.
+      const promptFile = join(logDir, `attempt-${action.attemptIndex}.prompt.txt`);
+      await writeFile(promptFile, action.prompt, "utf8");
+      const request = { prompt: action.prompt, resume: action.resume, model, permissionProfile, logFile, promptFile, cwd: root };
       const startedAt = new Date().toISOString();
       const run = await runAgentInvocation(tool, request, { cwd: root, env, timeoutMs });
       const endedAt = new Date().toISOString();
