@@ -1,0 +1,49 @@
+TAP version 13
+# Subtest: INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+ok 1 - INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+  ---
+  duration_ms: 24.061495
+  type: 'test'
+  ...
+# Subtest: AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+ok 2 - AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+  ---
+  duration_ms: 87.82941
+  type: 'test'
+  ...
+# Subtest: INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+ok 3 - INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+  ---
+  duration_ms: 59.719615
+  type: 'test'
+  ...
+# Subtest: AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+ok 4 - AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+  ---
+  duration_ms: 58.98456
+  type: 'test'
+  ...
+# Subtest: AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+ok 5 - AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+  ---
+  duration_ms: 30.843286
+  type: 'test'
+  ...
+# Subtest: INV-5 activation and its currentness reader hold no obligation write capability
+ok 6 - INV-5 activation and its currentness reader hold no obligation write capability
+  ---
+  duration_ms: 6.158411
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 374.578358
+
+
+exitCode=0
