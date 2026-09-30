@@ -1,0 +1,49 @@
+TAP version 13
+# Subtest: an ACCEPT DevOps completion publishes one immutable DeploymentRelease and CAS-advances the environment head
+ok 1 - an ACCEPT DevOps completion publishes one immutable DeploymentRelease and CAS-advances the environment head
+  ---
+  duration_ms: 100.670097
+  type: 'test'
+  ...
+# Subtest: DevOps strategy success without an ACCEPT completion cannot publish a DeploymentRelease
+ok 2 - DevOps strategy success without an ACCEPT completion cannot publish a DeploymentRelease
+  ---
+  duration_ms: 51.265534
+  type: 'test'
+  ...
+# Subtest: a failed rollout publishes no deployment evidence and cannot become a release
+ok 3 - a failed rollout publishes no deployment evidence and cannot become a release
+  ---
+  duration_ms: 81.556006
+  type: 'test'
+  ...
+# Subtest: only DevOps can advance DeploymentReleaseHead; a Product QA judgment cannot publish a release
+ok 4 - only DevOps can advance DeploymentReleaseHead; a Product QA judgment cannot publish a release
+  ---
+  duration_ms: 15.935489
+  type: 'test'
+  ...
+# Subtest: a newer release becomes current while the previous release stays resolvable unchanged
+ok 5 - a newer release becomes current while the previous release stays resolvable unchanged
+  ---
+  duration_ms: 155.175055
+  type: 'test'
+  ...
+# Subtest: the release-head guard rejects a stale release and holds back release publication while held
+ok 6 - the release-head guard rejects a stale release and holds back release publication while held
+  ---
+  duration_ms: 166.845086
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 696.634963
+
+
+exitCode=0
