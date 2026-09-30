@@ -817,13 +817,21 @@ function workerQuestionBase(fullPayload, id, options = {}) {
   const livingStrategy = livingStrategyOf(options);
   const criterionStrategy = criterionStrategyOf(options);
   const state = fullPayload.state;
-  const claim = state.evidence.find(entry => entry.id === id);
-  const criterion = state.plan.acceptanceCriteria.find(entry => entry.id === id);
+  // NEGATIVE_CASE_EVIDENCE_V1: a negative-case question is judged on its bound
+  // state.negativeCaseEvidence entry (the extracted test body), its parent criterion
+  // and only the verification run its binding names. No criterion question changes.
+  const negative = state.negativeCaseEvidence?.find(entry => entry.id === id) ?? null;
+  const binding = negative ? state.plan.negativeCaseBindings?.find(entry => entry.id === id) ?? null : null;
+  const negativeRun = binding ? state.verification.find(run => run.id === binding.verificationId) ?? null : null;
+  check(!negative || (binding && negativeRun && binding.criterionId === negative.criterionId), `worker negative case unbound: ${id}`);
+  const claim = negative ? null : state.evidence.find(entry => entry.id === id);
+  const criterion = state.plan.acceptanceCriteria.find(entry => entry.id === (negative ? negative.criterionId : id));
+  check(!negative || criterion, `worker negative case criterion missing: ${id}`);
   const livingDocsQuestion = id === state.plan.livingDocs.questionId;
   if (livingDocsQuestion && livingStrategy === LIVING_EXCERPT_STRATEGIES.DELIVERY) return livingDeliveryBase(fullPayload, id, options);
-  check(Boolean(claim) === Boolean(criterion), `worker criterion/evidence mismatch: ${id}`);
-  const evidenceRefs = new Set(claim?.evidenceRefs ?? []);
-  const checkIds = new Set(criterion?.verificationIds ?? []);
+  if (!negative) check(Boolean(claim) === Boolean(criterion), `worker criterion/evidence mismatch: ${id}`);
+  const evidenceRefs = new Set(negative ? [negativeRun.logRef] : claim?.evidenceRefs ?? []);
+  const checkIds = new Set(negative ? [binding.verificationId] : criterion?.verificationIds ?? []);
   const selectedRuns = state.verification.filter(run => checkIds.has(run.id) || evidenceRefs.has(run.logRef) ||
     (livingDocsQuestion && state.plan.sourceSeams.expectedTests.some(ref => run.command === `node --test ${ref}`)));
   const selectedFiles = state.evidenceFiles.filter(file => evidenceRefs.has(file.ref) ||
@@ -832,7 +840,9 @@ function workerQuestionBase(fullPayload, id, options = {}) {
   const testRefs = new Set(selectedRuns
     .map(run => run.command.match(/^node --test ([^ ]+\.test\.(?:js|mjs))$/)?.[1])
     .filter(Boolean));
-  const terms = [...new Set([id, criterion?.statement ?? '', ...(criterion?.evidenceRequired ?? []), ...checkIds]
+  if (negative) testRefs.add(negative.testRef);
+  const terms = [...new Set([id, criterion?.statement ?? '', ...(criterion?.evidenceRequired ?? []), ...checkIds,
+    ...(negative ? [negative.testTitle, negative.subjectSymbol] : [])]
     .flatMap(value => String(value).toLowerCase().match(/[a-z0-9]{3,}/g) ?? []))];
   const changeSetStrategy = criterionStrategy === CRITERION_SOURCE_STRATEGIES.CHANGE_SET && Boolean(criterion);
   const changedSources = criterionStrategy === CRITERION_SOURCE_STRATEGIES.CHANGED || criterionStrategy === CRITERION_SOURCE_STRATEGIES.CHANGE_SET;
@@ -895,12 +905,14 @@ function workerQuestionBase(fullPayload, id, options = {}) {
     sourceSeams: state.plan.sourceSeams,
     livingDocs: state.plan.livingDocs,
     acceptanceCriteria: criterion ? [criterion] : state.plan.acceptanceCriteria,
-    verificationPlan: state.plan.verificationPlan.filter(run => checkIds.has(run.id))
+    verificationPlan: state.plan.verificationPlan.filter(run => checkIds.has(run.id)),
+    ...(negative ? { negativeCaseBindings: [binding] } : {})
   };
   const batchState = {
     objective: state.objective,
     plan: projectedPlan,
     evidence: claim ? [claim] : [],
+    ...(negative ? { negativeCaseEvidence: [negative] } : {}),
     sources: state.sources.map(source => {
       if (changedSources && relevantSourceRefs.has(source.ref)) {
         check(options.candidateChanges && typeof options.candidateChanges === 'object', 'candidate change map missing');
