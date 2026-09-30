@@ -1,0 +1,33 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-124",
+  "outcome": "Agent traces and summaries distinguish complete, partial and unavailable usage and expose per-field accounting coverage without treating partial observations as full totals.",
+  "currentProblem": "The executed parser probe marks a truncated Codex stream with one completed turn as complete usage, and report aggregation counts it as covered. Optional token fields are summed over only the records that report them without declaring field-level coverage. Grok cost normalization is separately owned by the concurrent main BB-123 task.",
+  "scope": [
+    "agent-tools.observation.usage-completeness",
+    "agent-tools.report.field-coverage"
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
+    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption.",
+    "Grok cost validation and grounded context exclusion remain exclusively owned by the existing main BB-123; this additive task may not modify their accepted or drafted contracts."
+  ],
+  "successCriteria": [
+    "Truncated/invalid/missing turn usage is explicitly incomplete and cannot contribute to complete totals; real zero remains observed zero.",
+    "Optional token/cost fields expose complete, partial and unavailable aggregation coverage; missing values never contribute fabricated zeros. Reuse the strict observed-cost parser owned by BB-123 without duplicating that implementation.",
+    "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/delivery-value-improvement-research.md",
+    "docs/blackboard/evidence/BB-124/discovery.json",
+    "packages/agent-tools/src/output-parsers.js",
+    "packages/agent-tools/src/report.js",
+    "packages/agent-tools/src/run-trace.js",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/agent-tools/observation.md"
+  ]
+}

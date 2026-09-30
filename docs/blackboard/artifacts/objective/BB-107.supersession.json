@@ -1,0 +1,24 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE_SUPERSESSION",
+  "artifactId": "BB-107-supersession",
+  "targetWorkId": "BB-107",
+  "trustedBaseSha": "95ea311518b757818b509fcc4dfaf19b81d75c47",
+  "oldObjective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-107.json",
+    "hash": "4e688bba8d65e6374a304f8ff997527d6bf83d5c2b2c053117759f3f02e4ab87"
+  },
+  "replacementObjective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-107.json",
+    "hash": "49a39756355f66470307a8bd91958d7a113ed2693f26377d145d6e9fbe918f05"
+  },
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-107.json",
+  "reason": "The READY plan's D2 per-evidence byte split starves GRAPH expansion: the executed probe shows the delivered pinned scenario flips from EXPANDED with 2 candidates to SKIPPED BUDGET_EXHAUSTED with 1, contradicting two pinned planning-strategies tests. The objective must add GRAPH non-starvation and a share-of-remaining-budget reservation rule.",
+  "evidenceRefs": [
+    "docs/blackboard/evidence/BB-107/plan-defect-probe.mjs",
+    "docs/blackboard/evidence/BB-107/plan-defect-probe-result.json",
+    "docs/blackboard/evidence/BB-107/plan-defect-revision.md"
+  ],
+  "directDependents": []
+}

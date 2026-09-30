@@ -303,14 +303,14 @@ test('worker materialization derives the Living Doc and candidate change maps an
     return {...evaluation,metrics:{...evaluation.metrics,batching:{strategy:workerBatchStrategy(manifest),...(strategy===LIVING_EXCERPT_STRATEGIES.SCOPED?{}:{livingExcerptStrategy:strategy}),...(criterion===CRITERION_SOURCE_STRATEGIES.TERM_LINES?{}:{criterionSourceStrategy:criterion}),manifest,cacheHits:0}}};
   };
   const before=read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase;
-  for(const strategy of [LIVING_EXCERPT_STRATEGIES.SCOPED,LIVING_EXCERPT_STRATEGIES.CHANGED]){
+  for(const strategy of [LIVING_EXCERPT_STRATEGIES.SCOPED,LIVING_EXCERPT_STRATEGIES.CHANGED,LIVING_EXCERPT_STRATEGIES.DELIVERY]){
     const retained=withBatching(strategy,CRITERION_SOURCE_STRATEGIES.TERM_LINES);
     assert.equal(validateEvaluation(retained,input),retained,`retained ${strategy} evaluations still validate`);
     assert.throws(()=>publishEvaluation(f.root,'BB-1',retained),/retired Living Doc excerpt strategy/);
     assert.equal(read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase,before,'rejected publication leaves the Board unchanged');
   }
   const retainedCriterion=withBatching(CURRENT_LIVING_EXCERPT_STRATEGY,CRITERION_SOURCE_STRATEGIES.TERM_LINES);
-  assert.equal(validateEvaluation(retainedCriterion,input),retainedCriterion,'retained V3 evaluations without a criterion strategy still validate');
+  assert.equal(validateEvaluation(retainedCriterion,input),retainedCriterion,'retained current-strategy evaluations without a criterion strategy still validate');
   assert.throws(()=>publishEvaluation(f.root,'BB-1',retainedCriterion),/retired criterion source excerpt strategy/);
   assert.equal(read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase,before,'rejected publication leaves the Board unchanged');
   publishEvaluation(f.root,'BB-1',withBatching(CURRENT_LIVING_EXCERPT_STRATEGY));

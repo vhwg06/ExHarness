@@ -232,7 +232,7 @@ Evidence: `deployable-provenance.test.js`, `deployment-release.test.js`, `accept
 
 **Does not imply:** a change to the default CodeAct Backend path, durable workflow wiring, sandbox or SCM-push delivery, or OpenHands domain-runtime execution, which remains a separate seam under the domain execution controller.
 
-Evidence: `bb100-supervised-backend.test.js`.
+Evidence: `supervised-backend-delivery.test.js`.
 
 ## A22 — Integration G: canonical product history, deterministic projection and currentness-fenced closure
 
