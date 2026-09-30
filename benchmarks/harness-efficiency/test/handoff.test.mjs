@@ -19,6 +19,8 @@ test('handoff carries versioned comparison, held-out and gate on the same backbo
   const { buildHandoff } = await import('../handoff.mjs');
   const handoff = await buildHandoff({ binding, comparison });
   assert.equal(handoff.comparison.kind, 'BB077_COMPARISON_MANIFEST_V1');
+  assert.equal(handoff.comparison.dataKind, 'OFFLINE_SCRIPTED_FIXTURE');
+  assert.equal(handoff.comparison.liveBaseline, 'NOT_EXECUTED');
   assert.equal(handoff.heldOut.kind, 'BB077_HELD_OUT_V1');
   assert.equal(handoff.heldOutSetId, 'BB081-HELD-OUT-V1');
   assert.equal(handoff.gate.kind, 'BB077_FUTURE_GATE_V1');

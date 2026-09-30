@@ -72,6 +72,26 @@ test('implementation imports stay on the public package root', async () => {
   }
 });
 
+test('Core is imported only through its public entry', async () => {
+  const files = implSources();
+  let coreUsers = 0;
+  for (const file of files) {
+    const code = stripComments(fs.readFileSync(file, 'utf8'));
+    for (const spec of importSpecifiers(code)) {
+      if (spec.includes('core-harness')) {
+        assert.ok(spec.endsWith('packages/core-harness/src/index.js'),
+          `${path.relative(REPO, file)} must import Core only via packages/core-harness/src/index.js`);
+        coreUsers += 1;
+      }
+    }
+    const deep = [...code.matchAll(/core-harness\/src\/([A-Za-z0-9_.-]+)/g)].map((match) => match[1]);
+    for (const hit of deep) {
+      assert.equal(hit, 'index.js', `${path.relative(REPO, file)} deep-imports Core file ${hit}`);
+    }
+  }
+  assert.ok(coreUsers >= 3, 'both arm adapters and the executor fixture drive the public Core entry');
+});
+
 test('deep imports are detected and rejected', async () => {
   const { loadKernel } = await import('../preflight.mjs');
   await loadKernel();

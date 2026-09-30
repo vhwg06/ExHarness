@@ -28,6 +28,8 @@ export function futureGate() {
 export function comparisonManifest({ binding, comparison }) {
   return Object.freeze({
     kind: COMPARISON_CONTRACT_VERSION,
+    dataKind: 'OFFLINE_SCRIPTED_FIXTURE',
+    liveBaseline: 'NOT_EXECUTED',
     cohortId: binding.cohortId,
     substrateDigest: binding.substrateDigest,
     metricVector: Object.freeze([

@@ -15,12 +15,20 @@ test('economics observations derive from shared records with monotonic intervals
   for (const item of settled) {
     const economics = item.economics;
     assert.equal(economics.kind, 'BB077_ECONOMICS_OBSERVATION_V1');
-    assert.ok(economics.modelTurns > 0);
-    assert.ok(economics.toolCalls >= 0);
+    // Timeout attempts fault before the first recorded model call; every
+    // other attempt really executed turns and calls.
+    if (item.record.providerStatus === 'PROVIDER_TIMEOUT') {
+      assert.equal(economics.modelTurns, 0);
+    } else {
+      assert.ok(economics.modelTurns > 0);
+      assert.ok(economics.toolCalls > 0);
+      assert.match(economics.stablePrefixHash, /^sha256:[0-9a-f]{64}$/);
+    }
+    assert.equal(economics.modelTurns, economics.modelIntervals.length);
+    assert.equal(economics.toolCalls, economics.callIntervals.length);
     assert.ok(economics.modelIntervals.every((value) => value >= 0));
     assert.ok(economics.callIntervals.every((value) => value >= 0));
-    assert.match(economics.stablePrefixHash, /^sha256:[0-9a-f]{64}$/);
-    assert.ok(economics.stablePrefixBytes > 0);
+    assert.ok(economics.stablePrefixBytes >= 0);
     assert.ok(['CONFIRMED', 'MISS', 'ELIGIBLE', 'UNKNOWN'].includes(economics.cacheLabel));
   }
   void tmp;
@@ -51,6 +59,8 @@ test('report carries the multidimensional vector with no winner score', async ()
   const { buildReport, assertNoWinnerScore } = await import('../report.mjs');
   const report = await buildReport({ registration, ledger, comparison, binding, audits: [] });
   assert.equal(report.kind, 'BB077_SYNC_BASELINE_REPORT_V1');
+  assert.equal(report.dataKind, 'OFFLINE_SCRIPTED_FIXTURE');
+  assert.equal(report.liveBaseline, 'NOT_EXECUTED');
   assert.equal(report.attempts, 37);
   assert.deepEqual(report.arms, ['DIRECT_CODEACT', 'CORE_SYNC']);
   assert.ok(!('winner' in report) && !('score' in report));

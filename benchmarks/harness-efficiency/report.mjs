@@ -21,6 +21,8 @@ export function buildReport({ registration, ledger, comparison, binding, audits 
   }
   const report = Object.freeze({
     kind: 'BB077_SYNC_BASELINE_REPORT_V1',
+    dataKind: 'OFFLINE_SCRIPTED_FIXTURE',
+    liveBaseline: 'NOT_EXECUTED',
     experimentId: registration.experimentId,
     protocolHash: registration.protocol.hash,
     substrateDigest: binding.substrateDigest,

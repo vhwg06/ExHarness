@@ -55,8 +55,14 @@ test('implementation sources never target forbidden write areas', async () => {
   for (const file of sources) {
     const code = stripComments(fs.readFileSync(file, 'utf8'));
     assert.ok(!writeToForbidden.test(code), `${path.relative(REPO, file)} writes outside the write scope`);
-    for (const prefix of ['packages/benchmark/', 'packages/core-harness/src/', 'packages/agentic-system/']) {
+    for (const prefix of ['packages/benchmark/', 'packages/agentic-system/']) {
       assert.ok(!code.includes(prefix), `${path.relative(REPO, file)} reaches into forbidden code ${prefix}`);
+    }
+    // Core may be used only through its public entry; any other deep file is
+    // a violation.
+    const coreDeep = [...code.matchAll(/core-harness\/src\/([A-Za-z0-9_.-]+)/g)].map((match) => match[1]);
+    for (const hit of coreDeep) {
+      assert.equal(hit, 'index.js', `${path.relative(REPO, file)} deep-imports Core file ${hit}`);
     }
   }
   void tmp;

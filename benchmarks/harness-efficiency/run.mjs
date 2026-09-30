@@ -1,8 +1,13 @@
 // S3/S5 — Kernel integration: registers the experiment/units and routes every
 // attempt through the shared AttemptLedger plus upstream evidence/accounting/
 // audit APIs. Adapters contribute experiment-specific raw observations only.
-// Deterministic and model-free: no live provider calls.
+// The committed cohort is a deterministic OFFLINE fixture: the scripted model
+// decides the producer outcome, the independent evaluator step below owns the
+// verdict, and no live provider call is ever made here. See --live for the
+// fail-closed live entry point (never invoked by tests).
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import {
   ARMS,
   COHORT_ID,
@@ -23,6 +28,7 @@ import {
 } from './constants.mjs';
 import { createCoreSyncAdapter } from './adapters/core-sync.mjs';
 import { createDirectCodeactAdapter } from './adapters/direct-codeact.mjs';
+import { buildTaskScript } from './adapters/shared.mjs';
 import { observeEconomics } from './economics.mjs';
 import { assertNotHeldOut, cohortBinding, cohortUnitIds, unitIdFor } from './protocol.mjs';
 import { reduceComparison } from './reducer.mjs';
@@ -42,28 +48,30 @@ export function adapters() {
   });
 }
 
-// Deterministic fixture script per (task, repeat). Both arms share the script
-// so quality ties and only orchestration-driven economics vary. Covers
-// ACCEPTED/REJECTED/NOT_EVALUATED with KNOWN/PARTIAL/UNKNOWN accounting.
-export function defaultScript({ taskIndex, repeatIndex }) {
-  switch ((taskIndex + repeatIndex) % 4) {
-    case 0:
-      return { verdict: 'PASS', usage: { inputTokens: 1200, outputTokens: 300 } };
-    case 1:
-      return { verdict: 'FAIL', usage: null };
-    case 2:
-      return { verdict: 'PASS', usage: { inputTokens: 900, providerCostUsd: 0.004 } };
-    default:
-      return { verdict: 'NOT_RUN', provider: 'PROVIDER_TIMEOUT' };
-  }
+// Deterministic fixture script per (task, repeat), shared by both arms. The
+// script drives the real strategy run; the independent evaluator step below
+// owns the verdict. Covers ACCEPTED/REJECTED/NOT_EVALUATED with
+// KNOWN/PARTIAL/UNKNOWN accounting.
+export function defaultScript({ taskId, taskIndex, repeatIndex }) {
+  return buildTaskScript({ taskId, taskIndex, repeatIndex });
 }
 
-function outcomeInputFor(script) {
-  if (script.verdict === 'NOT_RUN') {
+// Independent evaluator step. Runs AFTER the producer settled and reads only
+// the candidate artifact the producer wrote: marker good->PASS, bad->FAIL.
+// The producer result never carries quality.
+export function evaluateArtifact({ marker }) {
+  if (marker !== 'good' && marker !== 'bad') {
+    throw new Error(`PRECONDITION: evaluator needs artifact marker good|bad, found ${marker ?? 'none'}`);
+  }
+  return { verdict: marker === 'good' ? 'PASS' : 'FAIL', identity: EVALUATOR_IDENTITY, evidenceRef: 'verifier/reward.txt' };
+}
+
+function outcomeInputFor({ raw, evaluation }) {
+  if (raw.status === 'ERROR') {
     return {
-      producerStatus: 'PRODUCER_TIMEOUT',
+      producerStatus: 'PRODUCER_ERROR',
       termination: 'AGENT_ERROR',
-      providerStatus: script.provider ?? 'PROVIDER_TIMEOUT',
+      providerStatus: raw.errorCode === 'PROVIDER_TIMEOUT' ? 'PROVIDER_TIMEOUT' : 'NONE',
       infrastructureStatus: 'NONE',
       candidate: { extractionStatus: 'NOT_PRODUCED', evaluable: false },
       evaluator: { verdict: 'NOT_RUN', identity: EVALUATOR_IDENTITY, evidenceRef: null }
@@ -75,7 +83,7 @@ function outcomeInputFor(script) {
     providerStatus: 'NONE',
     infrastructureStatus: 'NONE',
     candidate: { extractionStatus: 'EXTRACTED', evaluable: true },
-    evaluator: { verdict: script.verdict, identity: EVALUATOR_IDENTITY, evidenceRef: 'verifier/reward.txt' }
+    evaluator: evaluation
   };
 }
 
@@ -143,7 +151,7 @@ export async function runCohort({ kernel, manifest, rawManifest, scripts = {}, w
   const stores = new Map();
   let clock = 0;
   const scriptFor = (taskId, taskIndex, repeatIndex, arm) =>
-    scripts[`${taskId}:${arm}:r${repeatIndex}`] ?? scripts[`${taskId}:r${repeatIndex}`] ?? defaultScript({ taskIndex, repeatIndex });
+    scripts[`${taskId}:${arm}:r${repeatIndex}`] ?? scripts[`${taskId}:r${repeatIndex}`] ?? defaultScript({ taskId, taskIndex, repeatIndex });
 
   async function executeAttempt({ unit, attemptId, retryOfAttemptId = null, script }) {
     const task = DEVELOPMENT_TASKS.find((entry) => unitIdFor({ taskId: entry.id, arm: unit.arm, repeatIndex: unit.repeatIndex }) === unit.unitId);
@@ -151,13 +159,17 @@ export async function runCohort({ kernel, manifest, rawManifest, scripts = {}, w
     const startedAt = new Date(T0_MS + clock * 1000).toISOString();
     ledger.beginAttempt({ unitId: unit.unitId, attemptId, retryOfAttemptId, startedAt });
     const adapter = armAdapters[unit.arm];
-    const raw = adapter.run({ taskId: task.id, bundleDigest: task.bundleDigest, attemptId, script });
+    // The adapter really executes the shared strategy here; every number in
+    // `raw` was measured from that run.
+    const raw = await adapter.run({ taskId: task.id, bundleDigest: task.bundleDigest, attemptId, script });
     const trialId = `${unit.unitId}--${attemptId}`;
     const usageObservation = usageObservationFor({ arm: unit.arm, script });
     const usage = kernel.normalizeAccounting(usageObservation);
-    const outcomeInput = outcomeInputFor(script);
+    // Independent evaluator step: judges only the artifact the producer wrote.
+    const evaluation = raw.status === 'ERROR' ? null : evaluateArtifact({ marker: raw.result?.marker ?? null });
+    const outcomeInput = outcomeInputFor({ raw, evaluation });
     const outcome = kernel.normalizeOutcome(outcomeInput);
-    const elapsedMs = raw.modelIntervals.reduce((a, b) => a + b, 0) + raw.callIntervals.reduce((a, b) => a + b, 0) + 50;
+    const elapsedMs = raw.elapsedMs;
     const endedAt = new Date(Date.parse(startedAt) + elapsedMs).toISOString();
     clock += 1;
     const economics = observeEconomics({
@@ -175,7 +187,10 @@ export async function runCohort({ kernel, manifest, rawManifest, scripts = {}, w
       entries.push({ role, ref, digest: digestOf(bytes), bytes: bytes.length });
       return ref;
     };
-    put('RAW_RESULT', 'raw/result.json', { arm: unit.arm, unitId: unit.unitId, attemptId, trialId });
+    put('RAW_RESULT', 'raw/result.json', {
+      arm: unit.arm, unitId: unit.unitId, attemptId, trialId,
+      status: raw.status, modelTurns: raw.modelTurns, toolCalls: raw.toolCalls, cellsExecuted: raw.cellsExecuted
+    });
     put('RESET_IDENTITY', 'reset.json', {
       kind: 'BENCHMARK_RESET_IDENTITY_V1', attemptId, trialId,
       workspaceRef: `ws/${unit.unitId}/${attemptId}`, outputRef: `out/${unit.unitId}/${attemptId}`, preexisting: []
@@ -186,8 +201,8 @@ export async function runCohort({ kernel, manifest, rawManifest, scripts = {}, w
     const extracted = outcomeInput.candidate.extractionStatus === 'EXTRACTED';
     let candidate;
     if (extracted) {
-      put('VERIFIER_OUTPUT', 'verifier/reward.txt', script.verdict === 'PASS' ? '1\n' : '0\n');
-      const artifactBytes = bytesOf(`${unit.arm} patch for ${task.id} ${attemptId}\n`);
+      put('VERIFIER_OUTPUT', 'verifier/reward.txt', evaluation.verdict === 'PASS' ? '1\n' : '0\n');
+      const artifactBytes = bytesOf(`patch for ${task.id}\nmarker:${raw.result.marker}\nterminal:${JSON.stringify(raw.result)}\n`);
       const artifactDigest = digestOf(artifactBytes);
       files.set('artifacts/patch.diff', artifactBytes);
       entries.push({ role: 'ARTIFACT', ref: 'artifacts/patch.diff', digest: artifactDigest, bytes: artifactBytes.length });
@@ -265,13 +280,21 @@ export async function runCohort({ kernel, manifest, rawManifest, scripts = {}, w
   // attempt settles the retry. History is append-only.
   if (withRetry) {
     const target = units[0];
-    const taskIndex = 0;
-    const taskId = DEVELOPMENT_TASKS[taskIndex].id;
+    const taskId = DEVELOPMENT_TASKS[0].id;
     await executeAttempt({
       unit: target,
       attemptId: `${target.unitId}--attempt-2`,
       retryOfAttemptId: `${target.unitId}--attempt-1`,
-      script: { verdict: 'PASS', usage: { inputTokens: 1100, outputTokens: 250 } }
+      script: {
+        kind: 'solve',
+        marker: 'good',
+        usage: { inputTokens: 1100, outputTokens: 250 },
+        cells: {
+          'explore': { toolCalls: [{ capability: 'record_note', input: { text: `retry:${taskId}` } }], stdout: 'surveyed' }
+        },
+        terminalCode: 'finish',
+        terminalValue: { ok: true, marker: 'good', taskId }
+      }
     });
   }
 
@@ -283,4 +306,40 @@ export async function runCohort({ kernel, manifest, rawManifest, scripts = {}, w
 
 function digestOf(bytes) {
   return `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
+}
+
+// S5 live entry point. Fail-closed: refuses to start unless the frozen route
+// credential and the Harbor substrate binary are present AND the substrate
+// manifest is sealed and compatible. Even then, live execution requires an
+// explicitly authorized paid run, which this offline fixture never performs
+// on its own. Tests must never invoke this path.
+export async function runLiveEntry({ env = process.env, harborBin = 'harbor' } = {}) {
+  if (!env.OPENROUTER_API_KEY) {
+    throw new Error('LIVE_REFUSED: OPENROUTER_API_KEY is not set; the frozen route credential is required');
+  }
+  const probed = spawnSync(harborBin, ['--version'], { encoding: 'utf8' });
+  if (probed.status !== 0) {
+    throw new Error(`LIVE_REFUSED: Harbor substrate binary ${harborBin} is not available`);
+  }
+  const { loadSubstrateManifest } = await import('./preflight.mjs');
+  await loadSubstrateManifest();
+  throw new Error('LIVE_REFUSED: no authorized paid run in this environment; the live synchronous baseline is pending');
+}
+
+const invokedAsCli = typeof process.argv?.[1] === 'string' && fileURLToPath(import.meta.url) === process.argv[1];
+if (invokedAsCli) {
+  const args = process.argv.slice(2);
+  if (args.includes('--live')) {
+    runLiveEntry().then(
+      () => process.exit(0),
+      (error) => {
+        process.stderr.write(`${error.message}\n`);
+        process.exit(2);
+      }
+    );
+  } else {
+    process.stderr.write('usage: node benchmarks/harness-efficiency/run.mjs --live\n');
+    process.stderr.write('Without --live this module is a library only; the committed cohort is an offline fixture.\n');
+    process.exit(2);
+  }
 }

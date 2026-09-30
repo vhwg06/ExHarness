@@ -82,6 +82,12 @@ test('verifier quality stays orthogonal to producer and provider termination', a
   assert.ok(accepted.length > 0);
 });
 
+test('live entry refuses without credentials and tests never run it', async () => {
+  const { runLiveEntry } = await import('../run.mjs');
+  await assert.rejects(runLiveEntry({ env: {}, harborBin: 'harbor' }), /LIVE_REFUSED/);
+  await assert.rejects(runLiveEntry({ env: { OPENROUTER_API_KEY: 'fixture' }, harborBin: 'definitely-not-a-binary-bb077' }), /LIVE_REFUSED/);
+});
+
 test('kernel audit passes for every settled attempt on reopened evidence', async () => {
   const { kernel, registration, ledger, settled, stores } = await runBaseline({ withRetry: true });
   const resetRegistry = new Set();

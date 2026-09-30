@@ -1,16 +1,20 @@
 // ARM_ISOLATION: DIRECT_CODEACT and CORE_SYNC share exact model/task/prompt/
 // workspace/tool/evaluator/budget identities and differ only in benchmark-owned
 // direct orchestration versus createAgentRuntime synchronous Core orchestration.
+// Both adapters really execute the shared JavaScript CodeAct strategy; every
+// reported number is measured from the run.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { scratchDir } from './helpers.mjs';
 import { DEVELOPMENT_TASKS } from '../constants.mjs';
+import { buildTaskScript } from '../adapters/shared.mjs';
 
 let tmp;
 test.before(() => { tmp = scratchDir('arms'); assert.ok(fs.statSync(tmp).isDirectory()); });
 
 const TASK = { taskId: DEVELOPMENT_TASKS[0].id, bundleDigest: DEVELOPMENT_TASKS[0].bundleDigest };
+const solveScript = () => buildTaskScript({ taskId: TASK.taskId, taskIndex: 0, repeatIndex: 0 });
 
 test('both arms share the exact fixed-factor identity', async () => {
   const { createDirectCodeactAdapter } = await import('../adapters/direct-codeact.mjs');
@@ -39,12 +43,57 @@ test('arms differ only in benchmark-owned orchestration', async () => {
   assert.notEqual(direct.orchestration, core.orchestration);
   assert.equal(direct.orchestration, 'direct-minimal-shim');
   assert.equal(core.orchestration, 'createAgentRuntime-sync');
-  const rawDirect = await direct.run({ ...TASK, attemptId: 'probe-1' });
-  const rawCore = await core.run({ ...TASK, attemptId: 'probe-1' });
+  const script = solveScript();
+  const rawDirect = await direct.run({ ...TASK, attemptId: 'probe-1', script });
+  const rawCore = await core.run({ ...TASK, attemptId: 'probe-1', script });
   assert.equal(rawDirect.orchestration, direct.orchestration);
   assert.equal(rawCore.orchestration, core.orchestration);
-  assert.ok(rawDirect.modelTurns > 0 && rawCore.modelTurns > 0);
-  assert.ok(rawDirect.toolCalls > 0 && rawCore.toolCalls > 0);
+  assert.equal(rawDirect.status, 'COMPLETED');
+  assert.equal(rawCore.status, 'COMPLETED');
+  assert.deepEqual(rawDirect.result, rawCore.result);
+});
+
+test('both adapters really invoke the strategy with measured turns and calls', async () => {
+  const { createDirectCodeactAdapter } = await import('../adapters/direct-codeact.mjs');
+  const direct = await createDirectCodeactAdapter();
+  const { createCoreSyncAdapter } = await import('../adapters/core-sync.mjs');
+  const core = await createCoreSyncAdapter();
+  const script = solveScript();
+  for (const [adapter, attemptId] of [[direct, 'measured-direct'], [core, 'measured-core']]) {
+    const raw = await adapter.run({ ...TASK, attemptId, script });
+    // The scripted model client recorded every real generate() invocation;
+    // the reported turn count must equal the recording, for BOTH arms.
+    assert.ok(raw.modelCalls.length > 0, `${raw.arm} invoked the model`);
+    assert.equal(raw.modelTurns, raw.modelCalls.length, `${raw.arm} modelTurns are measured`);
+    assert.equal(raw.modelIntervals.length, raw.modelTurns, `${raw.arm} MODEL intervals are per real call`);
+    assert.ok(raw.modelIntervals.every((value) => value > 0));
+    assert.equal(raw.callIntervals.length, raw.toolCalls, `${raw.arm} CALL intervals are per real call`);
+    assert.ok(raw.toolCalls > 0, `${raw.arm} drove real capability calls`);
+    assert.equal(raw.cellsExecuted, raw.modelTurns, 'one session cell per model turn');
+    assert.match(raw.stablePrefixHash, /^sha256:[0-9a-f]{64}$/);
+    assert.equal(raw.stablePrefixRepeats, true, 'stable prefix repeats across turns');
+    assert.ok(raw.modelCalls.every((call) => call.stablePrefixHash === raw.stablePrefixHash));
+    assert.match(raw.dynamicSuffixHash, /^sha256:[0-9a-f]{64}$/);
+    assert.ok(raw.elapsedMs > 0);
+  }
+});
+
+test('CORE_SYNC runs through createAgentRuntime while DIRECT does not', async () => {
+  const { createDirectCodeactAdapter } = await import('../adapters/direct-codeact.mjs');
+  const direct = await createDirectCodeactAdapter();
+  const { createCoreSyncAdapter } = await import('../adapters/core-sync.mjs');
+  const core = await createCoreSyncAdapter();
+  const script = solveScript();
+  const rawCore = await core.run({ ...TASK, attemptId: 'core-proof', script });
+  assert.ok(rawCore.coreEvidence, 'CORE_SYNC observes the Core runtime');
+  assert.ok(rawCore.coreEvidence.traceKinds.includes('MODEL'), 'Core recorded MODEL spans');
+  assert.equal(rawCore.coreEvidence.modelSpans, rawCore.modelTurns, 'one Core MODEL span per measured turn');
+  assert.ok(rawCore.coreEvidence.agentEventTypes.includes('MODEL_OUTPUT'), 'Core recorded model events');
+  assert.equal(rawCore.coreEvidence.modelOutputs, rawCore.modelTurns);
+  assert.ok(rawCore.coreEvidence.turnEvents > 0, 'Core recorded turn events');
+  const rawDirect = await direct.run({ ...TASK, attemptId: 'direct-proof', script });
+  assert.equal(rawDirect.coreEvidence, null, 'DIRECT never constructs the Core runtime');
+  assert.ok(rawDirect.shimAgentEvents.includes('MODEL_OUTPUT'), 'the shim still drove the real strategy');
 });
 
 test('an arm that changes model input is detected by the fixed digest', async () => {

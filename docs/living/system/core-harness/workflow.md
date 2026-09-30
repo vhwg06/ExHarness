@@ -194,34 +194,36 @@ Application WorkOrder/Worker/Advisor/completion abstractions remain owned by Age
 
 ## SOURCE
 
-## SYNCHRONOUS HARNESS-ECONOMICS BASELINE
+## SYNCHRONOUS HARNESS-ECONOMICS COMPARISON
 
-The comparison in `benchmarks/harness-efficiency/` isolates orchestration cost without changing Core behavior:
+The tooling in `benchmarks/harness-efficiency/` is built to isolate orchestration cost without changing Core behavior:
 
 ```text
 preregistered cohort (6 tasks x 3 repeats x 2 arms)
   -> fixed-factor protocol binds model/task/prompt/workspace/tools/evaluator/budget
-  -> arm adapters return raw producer observations only
+  -> both arm adapters really execute the shared JavaScript CodeAct strategy
+     (shim versus createAgentRuntime) against an offline scripted model client
+  -> arm adapters return measured raw producer observations only
   -> shared kernel registers experiments/units, ledgers attempts, binds evidence,
      normalizes outcome/accounting, audits
-  -> economics observations: model turns, tool calls, monotonic MODEL/CALL
-     intervals, stable-prefix/dynamic-suffix hashes, cache eligibility labels
+  -> economics observations: measured model turns, tool calls, fixture-clock
+     MODEL/CALL intervals, stable-prefix/dynamic-suffix hashes, cache labels
   -> reducer: paired distributions/medians over ALL attempts (retries included),
      nullable UNKNOWN preserved, no winner score
   -> versioned comparison manifest + held-out manifest + preregistered gate
 ```
 
-Cache labels are conservative: provider cached tokens above zero prove CONFIRMED, known zero is MISS, a repeated stable prefix without provider evidence is ELIGIBLE, and anything else is UNKNOWN. A repeated prefix never proves a provider cache hit. Missing cost/token/cache observations stay null and every retry stays in the ledger and in denominators; producer or provider termination never rewrites independent verifier quality.
+Cache labels are conservative: provider cached tokens above zero prove CONFIRMED, known zero is MISS, a repeated stable prefix without provider evidence is ELIGIBLE, and anything else is UNKNOWN. A repeated prefix never proves a provider cache hit. Missing cost/token/cache observations stay null and every retry stays in the ledger and in denominators; producer or provider termination never rewrites independent verifier quality. The independent evaluator step judges only the artifact the producer wrote.
 
-To reproduce the deterministic baseline locally (no credentials, no model calls):
+To reproduce the offline fixture pipeline locally (no credentials, no model calls):
 
 ```text
 preflight()         -> kernel + substrate manifest check
-runCohort()         -> 36 paired attempts + 1 retry, all settled
-auditAttempt()      -> 37/37 PASS on reopened evidence
+runCohort()         -> 36 paired strategy executions + 1 retry, all settled
+auditAttempt()      -> 37/37 PASS on reopened evidence (pipeline proof, not a measurement)
 buildReport()       -> multidimensional vector report, no winner score
 buildHandoff()      -> versioned comparison / held-out / gate handoff
 node --test benchmarks/harness-efficiency/test/*.test.mjs
 ```
 
-The held-out task set and the promotion gate are frozen inputs to a future decision owned elsewhere; this baseline executes no async candidate and publishes no promotion verdict.
+The committed report proves the pipeline runs end to end; it establishes no quality, cost or latency result. The live synchronous baseline on the frozen route has not been executed yet — `run.mjs --live` refuses without the route credential and Harbor substrate, and a live run additionally requires an explicitly authorized paid run. The held-out task set and the promotion gate are frozen inputs to a future decision owned elsewhere; this tooling executes no async candidate and publishes no promotion verdict.
