@@ -1,0 +1,64 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-092-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-092.json",
+    "hash": "5620f69804349c74f7203967cc689b92cf9ba6a3ede18600298d97f77972e810"
+  },
+  "candidateSha": "c0cd93154e6f168d3ac3f0e382481bf94a9cf16d",
+  "baselineSha": "33a253c408b2d5672108e53f3ceebd765a9a4a02",
+  "candidateTree": "e317267fe9ad8a360b67590623c1dca0d2618af3",
+  "verificationRuns": [
+    {
+      "id": "progressive",
+      "command": "node --test test/oracle-progressive-resolution.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c0cd93154e6f168d3ac3f0e382481bf94a9cf16d",
+      "logRef": "docs/blackboard/evidence/BB-092/progressive.txt",
+      "logHash": "fa123406bb174e79ed1dbbdb5ce2a9c51698baa1263b6c8bc9b12f6962b2774a"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c0cd93154e6f168d3ac3f0e382481bf94a9cf16d",
+      "logRef": "docs/blackboard/evidence/BB-092/oracle-regression.txt",
+      "logHash": "2376c3b8f52af5365eccb829083428d137248f03e21b956164aad58a4aade858"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "c0cd93154e6f168d3ac3f0e382481bf94a9cf16d",
+      "logRef": "docs/blackboard/evidence/BB-092/repository.txt",
+      "logHash": "f1ea67e23005b7a85ab490b440c954a8ea5d23c7a44a8d3844bd8e6ea1c43862"
+    }
+  ],
+  "claims": [
+    {
+      "id": "PR1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-092/progressive.txt"
+      ]
+    },
+    {
+      "id": "PR2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-092/progressive.txt"
+      ]
+    },
+    {
+      "id": "PR3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-092/progressive.txt",
+        "docs/blackboard/evidence/BB-092/oracle-regression.txt",
+        "docs/blackboard/evidence/BB-092/repository.txt"
+      ]
+    }
+  ]
+}

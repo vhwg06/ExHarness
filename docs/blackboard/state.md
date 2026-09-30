@@ -42,7 +42,7 @@ NONE
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
 - BB-077 [WORKER/EXECUTION] — Research harness-isolation economics on shared benchmark kernel
-- BB-092 [WORKER/EXECUTION] — Implement bounded explicit progressive resolution
+- BB-093 [WORKER/EXECUTION] — Implement model-aware context budget profiles
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
 - BB-104 [WORKER/EXECUTION] — Run one local Backend-then-QA slice from an operator CLI
@@ -96,8 +96,8 @@ BB-088 [DONE] <- BB-087
 BB-089 [DONE] <- BB-087
 BB-090 [DONE] <- BB-056
 BB-091 [DONE] <- BB-088
-BB-092 [WORKER_SCHEDULABLE] <- BB-091
-BB-093 [BLOCKED_BY BB-092] <- BB-092
+BB-092 [DONE] <- BB-091
+BB-093 [WORKER_SCHEDULABLE] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
