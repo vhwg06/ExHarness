@@ -14,14 +14,17 @@
     "agent-tools.value-reducer"
   ],
   "outOfScope": [
-    "In-tool MCP/hook integration arms (a later task if supervision shows value).",
-    "Public benchmark suites (Terminal-Bench, SWE-bench) in this task; organization-level delivery value (BB-074).",
-    "Reimplementing attempt ledger, evidence manifest, accounting or audit outside @exharness/benchmark.",
-    "Jev-authored or model-authored value verdicts; pooling results across tools."
+    "Implementing a grok adapter, grok argv or grok usage/cost parser (BB-105 PLANNED_CONTRACT).",
+    "In-tool MCP/hook integration arms.",
+    "Public benchmark suites (Terminal-Bench, SWE-bench); organization-level delivery value (BB-074).",
+    "Reimplementing AttemptLedger, evidence manifest, accounting or audit outside @exharness/benchmark.",
+    "Harbor SubstratePort; env allowlist of process-runner.js (spreads process.env).",
+    "Jev-authored or model-authored value verdicts; pooling results across tools.",
+    "OBJECTIVE_SUPERSESSION of BB-099; adding a BB-105 work-graph edge."
   ],
   "constraints": [
-    "Code lives in packages/agent-tools/src/experiment/{suite.js, arms.js, registration.js, runner.js, reducer.js} and fixtures in benchmarks/agent-tools/fixtures/<task-id>/{repo/**, hidden/**, solution.patch, task.json}; tests in packages/agent-tools/test/experiment.test.js titled EV1..EV4 followed by a space with { timeout: 120000 }.",
-    "The experiment imports @exharness/benchmark only through its package root entry ../../benchmark/src/index.js (BB-065 D1/D2, no deep imports) and BB-097/BB-098 only through ../src/index.js exports.",
+    "Code lives in packages/agent-tools/src/experiment/{suite.js,arms.js,registration.js,runner.js,reducer.js} and fixtures in benchmarks/agent-tools/fixtures/<task-id>/{repo/**,hidden/**,solution.patch,task.json}; tests in packages/agent-tools/test/experiment.test.js titled EV1..EV4 followed by a space with { timeout: 120000 }.",
+    "The experiment imports @exharness/benchmark only as the package-root specifier @exharness/benchmark (BB-065 D1/D2; candidate exports[\".\"] = ./src/index.js). Deep import ../../benchmark/src/index.js is forbidden. BB-097/BB-098 are consumed only through packages/agent-tools/src/index.js exports.",
     "Root package.json gains eval:agent-tools (node packages/agent-tools/bin/exharness-agent.mjs eval) that is not part of test or verify.",
     "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
@@ -32,15 +35,16 @@
     "Attempts, evidence and accounting are recorded only through the BB-065 benchmark kernel; results are reported per tool and never pooled."
   ],
   "architectureDecisions": [
-    "D1 — Suite: at least 8 owned fixtures covering bug fix, feature addition, test-guided refactor and multi-file change. Each task.json = { id, category, prompt, visibleVerifications, hiddenVerifications }. Calibration (EV1) proves for every fixture: base fails hidden, base+solution.patch passes hidden and visible, and hidden/** is absent from the agent worktree.",
-    "D2 — Arms per tool: DIRECT_SINGLE = one BB-097 runAgentInvocation; DIRECT_RETRY = up to K invocations with resume and the fixed prompt \"Continue until the task is complete.\" without verification output; EXHARNESS_SUPERVISED = BB-097 runSupervisedTask with maxAttempts K using visibleVerifications only. K = 3, invocation timeoutMs = 600000, permissionProfile WORKSPACE_EDIT, model = explicit value or TOOL_DEFAULT recorded. DIRECT_RETRY stops early only when the tool exits without changes on two consecutive invocations.",
-    "D3 — Registration: createExperimentRegistration (BB-065) with fixed factors { tool, toolVersion from probe, model, permissionProfile, K, timeouts }, arms, suite digest (sha256 over fixture files), repeats R = 3, seed, primary metric HIDDEN_ACCEPTANCE_RATE, decision rule D5 and cost cap maxInvocationsTotal. Written to artifacts/agent-tools/<runId>/registration.json before the first attempt; the runner refuses to start or resume when the recomputed registration digest or the live toolVersion differs.",
-    "D4 — Runner: for each tool, task, repeat and arm in a seeded shuffled order: the runner is the experiment-owned adapter over the BB-065 lifecycle (register experiment, register units, begin attempt, prepare, execute, collect, independent evaluate, normalize, settle, audit; BB-065 D5/D8) with one createBenchmarkUnit per (tool, fixture); AttemptLedger.beginAttempt; materialize fixture repo/** into a fresh temp git repository with one base commit, then a fresh BB-096 worktree at that base; execute the arm while writing BB-098 traces; checkpoint the final worktree as one commit; independent evaluation on a separate detached checkout of that commit with hidden/** copied in, running hiddenVerifications through BB-096 command verifiers; normalizeOutcome (ACCEPTED iff all hidden PASS; NOT_EVALUATED when the tool was unavailable or evaluation errored); normalizeAccounting { durationMs, invocations, tokens nullable }; createEvidenceManifest over trace and log digests; settleAttempt; auditAttempt in a fresh process at the end.",
-    "D5 — Reducer: per tool, pairs by (task, repeat). delta = acceptance(SUPERVISED) − acceptance(X) for X in {DIRECT_RETRY, DIRECT_SINGLE}; 10000 seeded paired-bootstrap resamples; 95% percentile interval. SUPERIOR when the lower bound > 0, INFERIOR when the upper bound < 0, else INCONCLUSIVE. Also reported per arm: falseSuccessRate = share of evaluated attempts whose arm completion claim is positive while hidden tests fail, where the claim is the last invocation exiting 0 for DIRECT_SINGLE/DIRECT_RETRY and status ACCEPTED for EXHARNESS_SUPERVISED, median duration, invocations and token totals with coverage. NOT_EVALUATED attempts are excluded from rates and reported as counts.",
-    "D6 — Calibration: one EV3 test per fake scenario from BB-097 (FIX_FIRST, FIX_AFTER_FEEDBACK, NEVER_FIX, CLAIM_SUCCESS_NO_EDIT), each over the same 2 fixtures with R = 2 and the full runner (12 attempts per test), runs tool codex with --command set to the BB-097 fake and env { FAKE_AGENT_SCENARIO, FAKE_AGENT_SOLUTION_PATCH: <fixture>/solution.patch } passed through the BB-097 env option (--fake-scenario is accepted only together with --command), and must yield: FIX_FIRST INCONCLUSIVE with delta 0; FIX_AFTER_FEEDBACK SUPERIOR against both direct arms; NEVER_FIX INCONCLUSIVE with all rates 0; CLAIM_SUCCESS_NO_EDIT falseSuccessRate 1 for direct arms and 0 for SUPERVISED.",
-    "D7 — Live pilot: `exharness-agent eval --tool <t> [--command <path>] [--out <dir>] [--tasks ids] [--repeats R] [--max-invocations N] [--fake-scenario S]` probes the tool, writes the registration, enforces maxInvocationsTotal and writes <out>/{registration.json, attempts/**, traces/**, report.json, report.md} where --out defaults to artifacts/agent-tools/<runId>; tests always pass an os.tmpdir() --out. An unavailable or unauthenticated tool yields NOT_EVALUATED attempts with a reason and no verdict.",
-    "D8 — Report: report.json/report.md list per tool the verdicts, intervals, rates, costs and coverage, the registration digest and the claim boundary (owned suite only; not universal value).",
-    "D9 — Evidence basis: BB-077 is internal DIRECT_CODEACT versus CORE_SYNC only; BB-065 D12 mandates kernel reuse; the executed probe shows all three tools installed with non-interactive and resume modes."
+    "D1 — Suite: 8 fixtures bug-sum, bug-clamp (bug-fix), feat-prefix, feat-count (feature), refactor-extract, refactor-rename (test-guided-refactor), multifile-split, multifile-config (multi-file). task.json = { id, category, prompt, visibleVerifications, hiddenVerifications }. Tree = repo/**, hidden/**, solution.patch, task.json. fixtures/manifest.json lists ids. EV1: base fails hidden; base+solution.patch passes hidden and visible; hidden/** absent from the agent worktree.",
+    "D2 — Arms, delivered names only: DIRECT_SINGLE = one runObservedInvocation; DIRECT_RETRY = up to K runObservedInvocation on the same worktree with resume and prompt \"Continue until the task is complete.\" (no verification output); EXHARNESS_SUPERVISED = runSupervisedTask with createSupervisedObservation (invocationObserver, eventSinks, tracer), maxAttempts K, visibleVerifications only. observeInvocation does not exist. K=3, timeoutMs=600000, permissionProfile WORKSPACE_EDIT. Model explicit or TOOL_DEFAULT in producerProfile.hash. DIRECT_RETRY stops after two consecutive no-change exits. Tools = AGENT_TOOLS keys plus grok iff AGENT_TOOLS.grok exists.",
+    "D3 — One createExperimentRegistration per tool: experimentId agent-tools-value:<tool>; protocol {id:AGENT_TOOLS_VALUE_V1, version:1, hash} over {arms,K,timeouts,permissionProfile,model,R,seed,HIDDEN_ACCEPTANCE_RATE,D5,maxInvocationsTotal,maxUsd}; workloadManifest {ref:benchmarks/agent-tools/fixtures, digest:suite sha256}; producerProfile {id:tool, hash} including expectedToolVersion; resourceBudget hash over {K,timeoutMs,maxInvocationsTotal,maxUsd}; evaluatorIdentity hidden-command-verifier; unitIds. createBenchmarkUnit per (fixture×arm×repeat). Write <out>/registration.json before beginAttempt; refuse on registrationDigest or live toolVersion mismatch.",
+    "D4 — Experiment-owned adapter (BB-065 D5/D8; not assertSubstratePort): AttemptLedger.registerUnit; beginAttempt; materialize repo/**; createLocalGitWorkspace; execute arm with traces; checkpoint; independent eval on a detached checkout with hidden/** via createLocalCommandVerifier; normalizeOutcome (all hidden PASS→ACCEPTED, FAIL→REJECTED, unavailable/error→NOT_EVALUATED); normalizeAccounting from traces plus providerCostUsd when grok reports total_cost_usd; createEvidenceManifest roles RAW_RESULT, USAGE_OBSERVATION, RESET_IDENTITY, NORMALIZATION, TRAJECTORY; settleAttempt; fresh-process auditAttempt. Producer exit is not quality.",
+    "D5 — Per tool, pair (task,repeat). delta = 1[ACCEPTED](SUPERVISED)−1[ACCEPTED](X) for X in {DIRECT_RETRY,DIRECT_SINGLE}; 10000 seeded paired-bootstrap; 95% interval. SUPERIOR if lower>0, INFERIOR if upper<0, else INCONCLUSIVE. Also falseSuccessRate (direct exit 0 or SUPERVISED ACCEPTED while REJECTED), median durationMs, invocations, covered tokens. NOT_EVALUATED excluded from rates; count with NOT_INSTALLED, ADAPTER_NOT_DELIVERED, TOOL_UNAVAILABLE, USD_CAP_UNENFORCEABLE, MAX_INVOCATIONS.",
+    "D6 — EV3 calibration: FIX_FIRST, FIX_AFTER_FEEDBACK, NEVER_FIX, CLAIM_SUCCESS_NO_EDIT on bug-sum+feat-prefix, R=2 (12 attempts), --tool codex --command packages/agent-tools/test/fixtures/fake-agent.mjs, env FAKE_AGENT_SCENARIO and FAKE_AGENT_SOLUTION_PATCH (--fake-scenario only with --command). FIX_FIRST INCONCLUSIVE delta 0; FIX_AFTER_FEEDBACK SUPERIOR vs both directs; NEVER_FIX INCONCLUSIVE rates 0; CLAIM_SUCCESS_NO_EDIT falseSuccessRate 1 direct / 0 SUPERVISED.",
+    "D7 — `exharness-agent eval --tool <id> [--command] [--model] [--out] [--tasks] [--repeats] [--max-invocations] [--max-usd] [--fake-scenario]`. Tests use os.tmpdir() --out. This-host grok: --tool grok --command /home/box/.grok/bin/grok --model grok-4.6 --tasks bug-sum,feat-prefix --repeats 1 --max-invocations 12 --max-usd 2. Overlay blanks TYPESAFE_API_KEY, GITHUB_TOKEN, GH_TOKEN, NPM_TOKEN, OPENAI_API_KEY, ANTHROPIC_API_KEY. Missing AGENT_TOOLS.grok → NOT_EVALUATED ADAPTER_NOT_DELIVERED; missing executable → NOT_INSTALLED. Codex/Kiro/agy here: NOT_INSTALLED, never fabricated. Unreported USD → invocation cap only, USD_CAP_UNENFORCEABLE. Live INCONCLUSIVE is valid.",
+    "D8 — report.json/md: per-tool verdicts, intervals, rates, costs, coverage, registrationDigest, claim boundary (owned suite; grok does not replace Codex/Kiro/agy). evaluation.md describes method without Blackboard ids; state.md gains Evaluation.",
+    "D9 — Evidence: BB-099 evaluation probe; BB-065 D1/D2/D5/D8/D11/D12 PLANNED_CONTRACT (candidate index matches D2); delivered runSupervisedTask, runObservedInvocation, createSupervisedObservation, fake-agent.mjs. BB-097 probe is argv history, not this-host install. process-runner inherits process.env; do not edit it.",
+    "D10 — `import { createExperimentRegistration, createBenchmarkUnit, AttemptLedger, normalizeOutcome, createEvidenceManifest, normalizeAccounting, auditAttempt, CONTRACT_KINDS, OUTCOME_ENUMS } from \"@exharness/benchmark\"` (package root; no ../../benchmark/src/index.js). No OBJECTIVE_SUPERSESSION. BB-105 is PLANNED_CONTRACT, not a graph edge. Do not add grokTool."
   ],
   "sourceScope": {
     "read": [
@@ -56,7 +60,6 @@
       "packages/agent-tools/src/experiment/**",
       "packages/agent-tools/src/index.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/package.json",
       "packages/agent-tools/test/experiment.test.js",
       "benchmarks/agent-tools/**",
       "package.json",
@@ -70,16 +73,30 @@
       "packages/benchmark/**",
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/redaction.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/test/agent-tools.test.js",
+      "packages/agent-tools/test/run-trace.test.js",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      ".github/**",
       "docs/blackboard/**"
     ]
   },
   "sourceSeams": {
     "requiredExisting": [
       "docs/blackboard/process/agent-tool-research/BB-099.md",
-      "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+      "docs/blackboard/evidence/BB-099/evaluation-probe-result.json",
       "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-098.json"
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md"
     ],
     "expectedNew": [
       "packages/agent-tools/src/experiment/suite.js",
@@ -88,17 +105,18 @@
       "packages/agent-tools/src/experiment/runner.js",
       "packages/agent-tools/src/experiment/reducer.js",
       "packages/agent-tools/test/experiment.test.js",
-      "benchmarks/agent-tools/fixtures"
+      "benchmarks/agent-tools/fixtures/manifest.json",
+      "docs/living/system/agent-tools/evaluation.md"
     ],
     "expectedTests": [
       "packages/agent-tools/test/experiment.test.js"
     ]
   },
   "implementationSlices": [
-    "S1 — Suite [EV1]: author 8 fixtures per D1 and suite.js (load, digest, calibrate). \"EV1 ...\" tests assert base-fails-hidden, solution-passes-all and hidden/** absence from a prepared worktree for every fixture.",
-    "S2 — Arms + registration + runner [EV2]: implement D2-D4 over the BB-065 public API. \"EV2 ...\" tests with fake CLIs assert one STARTED and one SETTLED ledger event per attempt, refusal on registration digest or toolVersion mismatch, hidden tests never present in the agent worktree, and audit passing in a fresh process.",
-    "S3 — Reducer + calibration [EV3]: implement D5-D6. Pure \"EV3 reducer ...\" tests on synthetic attempt records cover SUPERIOR, INFERIOR and INCONCLUSIVE boundaries and byte-identical output for identical seed and input; four \"EV3 calibration ...\" tests (one per scenario, 2 fixtures, R = 2) assert every D6 verdict through the full runner with the fake tool selected by --command.",
-    "S4 — Live pilot + docs [EV4]: implement D7-D8. \"EV4 ...\" tests run `eval --command <nonexistent path>` and assert NOT_EVALUATED attempts and no verdict, and run `eval --command <fake> --max-invocations 2` and assert execution stops with the remaining attempts NOT_EVALUATED. Write docs/living/system/agent-tools/evaluation.md, update state.md, run test:agent-tools, verify:current-docs and npm test; run a live pilot only when the user has authenticated CLIs and record its artifacts."
+    "S1 — Suite [EV1]: 8 fixtures per D1, suite.js, fixtures/manifest.json. \"EV1 ...\" tests: base-fails-hidden, solution-passes-all, hidden/** absent.",
+    "S2 — Arms + registration + runner [EV2]: D2-D4 over @exharness/benchmark. Export runExperiment, createAgentToolsRegistration. \"EV2 ...\" fake CLI: STARTED+SETTLED per attempt, digest/toolVersion refusal, hidden absent, mismatched K abort, fresh-process auditAttempt.",
+    "S3 — Reducer + calibration [EV3]: D5-D6. \"EV3 reducer ...\" synthetic SUPERIOR/INFERIOR/INCONCLUSIVE and byte-identical report.json; four \"EV3 calibration ...\" tests assert D6 via --command fake.",
+    "S4 — Live pilot + docs [EV4]: D7-D8, bin eval, eval:agent-tools, runAgentToolsEval. \"EV4 ...\": missing command NOT_EVALUATED; grok without adapter ADAPTER_NOT_DELIVERED; --max-invocations 2 leftover NOT_EVALUATED; auditPaths rejects packages/benchmark. Write evaluation.md and update state.md."
   ],
   "acceptanceCriteria": [
     {
@@ -136,14 +154,14 @@
     },
     {
       "id": "EV4",
-      "statement": "The opt-in live pilot is cost-capped, records NOT_EVALUATED instead of fabricating results for unavailable tools, and Living docs state the method and claim boundary.",
+      "statement": "The opt-in live pilot is cost-capped, records NOT_EVALUATED instead of fabricating results for unavailable tools including grok without adapter and Codex/Kiro/agy when missing, and Living docs state the method and claim boundary.",
       "verificationIds": [
         "ev4-pilot",
         "docs",
         "repository"
       ],
       "evidenceRequired": [
-        "EV4 test output, docs diff, verify:current-docs and npm test logs, and live pilot artifacts when credentials exist."
+        "EV4 test output, docs diff, verify:current-docs and npm test logs, and live grok pilot artifacts when the grok adapter and CLI exist."
       ]
     }
   ],
@@ -209,24 +227,28 @@
   "researchGaps": [],
   "researchEvidence": [
     {
+      "ref": "docs/blackboard/evidence/BB-099/evaluation-probe-result.json",
+      "finding": "DELIVERED_TRUTH: observeInvocation absent; runObservedInvocation/createSupervisedObservation/runSupervisedTask present; AGENT_TOOLS=codex,kiro,agy; this-host CLIs missing except grok 1.0.44 at /home/box/.grok/bin/grok; @exharness/benchmark ERR_MODULE_NOT_FOUND."
+    },
+    {
       "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-      "finding": "PLANNED_CONTRACT: @exharness/benchmark exports createExperimentRegistration, AttemptLedger, normalizeOutcome, normalizeAccounting, createEvidenceManifest and auditAttempt; D12 requires downstream studies to reuse it."
+      "finding": "PLANNED_CONTRACT: D1 package root; D2 export list matches candidate index.js; D5 adapters own process invocation."
     },
     {
-      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
-      "finding": "PLANNED_CONTRACT: runAgentInvocation, runSupervisedTask and fake CLI scenarios."
+      "ref": "packages/agent-tools/src/observation.js",
+      "finding": "DELIVERED_TRUTH: runObservedInvocation and createSupervisedObservation."
     },
     {
-      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-098.json",
-      "finding": "PLANNED_CONTRACT: AGENT_TOOL_RUN_TRACE_V1 traces with null-with-reason usage."
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "finding": "DELIVERED_TRUTH: runSupervisedTask({ invocationObserver = null })."
     },
     {
-      "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
-      "finding": "Executed: all three tools installed with non-interactive and resume modes."
+      "ref": "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      "finding": "DELIVERED_TRUTH: FIX_FIRST, FIX_AFTER_FEEDBACK, NEVER_FIX, CLAIM_SUCCESS_NO_EDIT."
     },
     {
       "ref": "docs/blackboard/process/agent-tool-research/BB-099.md",
-      "finding": "DIRECT_RETRY separates supervision value from extra attempts; public benchmarks and Jev value verdicts rejected."
+      "finding": "No OBJECTIVE_SUPERSESSION; grok live-pilot arm; BB-105 PLANNED_CONTRACT without a graph edge."
     }
   ],
   "dependencyResolution": {
@@ -234,26 +256,25 @@
       "BB-098",
       "BB-065"
     ],
-    "workerStart": "Confirm DONE BB-065 exports match D2 of its plan and DONE BB-097/BB-098 expose runAgentInvocation, runSupervisedTask, observeInvocation and fake scenarios as planned.",
+    "workerStart": "Re-bind DONE BB-065 D2 exports via import from @exharness/benchmark. Confirm runObservedInvocation, createSupervisedObservation, runSupervisedTask, fake scenarios. Include grok iff AGENT_TOOLS.grok exists; else NOT_EVALUATED ADAPTER_NOT_DELIVERED. No BB-105 graph edge.",
     "sourceClassification": {
       "DELIVERED_TRUTH": [
-        "installed agent CLIs per executed probe"
+        "runAgentInvocation, runSupervisedTask, runObservedInvocation, createSupervisedObservation, fake-agent.mjs, this-host CLI probe"
       ],
       "PLANNED_CONTRACT": [
-        "BB-065 benchmark kernel",
-        "BB-097 supervision",
-        "BB-098 observation"
+        "BB-065 @exharness/benchmark D2",
+        "BB-105 grokTool / total_cost_usd"
       ],
       "RESEARCH_DESIRED_STATE": [
-        "suite, arms, registration, runner, reducer and pilot defined here"
+        "suite, arms, registration, runner, reducer, grok live pilot"
       ]
     },
-    "contradiction": "If the delivered BB-065 API cannot record an attempt whose producer is an external CLI, or BB-097 cannot run a direct invocation in a prepared worktree, stop PLAN_INPUT_CONTRADICTION."
+    "contradiction": "If delivered BB-065 requires SubstratePort for every attempt, or runObservedInvocation cannot run in a prepared worktree, stop PLAN_INPUT_CONTRADICTION."
   },
   "deliveryContract": {
-    "precondition": "BB-098 DONE and BB-065 DONE.",
-    "completion": "All EV criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment; live pilot artifacts when credentials exist.",
-    "forbidden": "No fabricated live results, no pooled cross-tool verdicts, no kernel bypass, no hidden tests in agent worktrees."
+    "precondition": "BB-098 DONE and BB-065 DONE. BB-105 optional; grok is NOT_EVALUATED until grokTool exists.",
+    "completion": "All EV criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment; live grok pilot artifacts when adapter and CLI exist.",
+    "forbidden": "No fabricated live results, no pooled cross-tool verdicts, no kernel bypass, no hidden tests in agent worktrees, no grokTool implementation, no work-graph edit."
   },
   "ciContract": {
     "checks": [
@@ -269,17 +290,18 @@
   },
   "migrationContract": {
     "preserve": [
-      "all existing packages, APIs and tests"
+      "all existing packages, APIs and tests",
+      "BB-097/BB-098 supervisor, adapters, traces and fake CLI"
     ],
     "add": [
-      "BB-099 modules, tests and docs"
+      "BB-099 experiment modules, fixtures, eval CLI, tests and docs"
     ],
-    "rollback": "Remove the BB-099 modules, tests, scripts and docs."
+    "rollback": "Remove the BB-099 modules, fixtures, eval script, tests and docs."
   },
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-099 objective + executed agent CLI probe + delivered/planned sources",
+      "input": "BB-099 objective + executed evaluation probe + delivered/planned sources",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + fresh Jev SATISFIED",
@@ -296,7 +318,7 @@
       "binding": "plan hash + candidate/evidence + Jev",
       "convergence": "criterion runs + no forbidden writes + docs",
       "forbidden": [
-        "No fabricated live results, no pooled cross-tool verdicts, no kernel bypass, no hidden tests in agent worktrees."
+        "No fabricated live results, no pooled cross-tool verdicts, no kernel bypass, no hidden tests in agent worktrees, no grokTool implementation, no work-graph edit."
       ]
     }
   ],
@@ -306,7 +328,7 @@
       "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe the suite, arms, pre-registration, reducer, calibration verdicts, live pilot procedure and claim boundary."
+    "statement": "Living docs describe the suite, arms, per-tool pre-registration, reducer, calibration verdicts, grok live-pilot procedure, NOT_EVALUATED reasons and claim boundary, without Blackboard ids."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
@@ -326,16 +348,30 @@
         0
       ],
       "sourceRefs": [
-        "docs/blackboard/process/agent-tool-research/BB-099.md"
+        "docs/blackboard/process/agent-tool-research/BB-099.md",
+        "docs/blackboard/evidence/BB-099/evaluation-probe-result.json",
+        "docs/living/system/agent-tools/state.md"
       ],
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/process/agent-tool-research/BB-099.md",
           "match": "Hidden tests are stored outside the worktree"
+        },
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-099.md",
+          "match": "Owned local fixtures"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-099/evaluation-probe-result.json",
+          "match": "hasCreateLocalCommandVerifier"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "detached worktree at baseRevision"
         }
       ],
       "supportingPlanFields": [
-        "sourceScope"
+        "constraints"
       ]
     },
     {
@@ -355,17 +391,27 @@
         2
       ],
       "sourceRefs": [
-        "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
-        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+        "docs/blackboard/process/agent-tool-research/BB-099.md",
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/process-runner.js",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-065.json"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
-          "match": "createSupervisedAgentStrategy"
+          "ref": "docs/blackboard/process/agent-tool-research/BB-099.md",
+          "match": "the runner enforces the pre-registration digest"
         },
         {
-          "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
-          "match": "\"allHaveResume\": true"
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "export async function runSupervisedTask({"
+        },
+        {
+          "ref": "packages/agent-tools/src/process-runner.js",
+          "match": "export async function runAgentInvocation("
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "createExperimentRegistration, createBenchmarkUnit, AttemptLedger"
         }
       ],
       "supportingPlanFields": [
@@ -392,16 +438,26 @@
       ],
       "sourceRefs": [
         "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-        "docs/blackboard/artifacts/ready-implement-plan/BB-098.json"
+        "docs/living/system/agent-tools/observation.md",
+        "packages/agent-tools/src/observation.js",
+        "docs/blackboard/process/agent-tool-research/BB-099.md"
       ],
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-          "match": "AttemptLedger is append-only"
+          "match": "Adapters own real reset"
         },
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-098.json",
-          "match": "AGENT_TOOL_RUN_TRACE_V1"
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "Traces are evidence only."
+        },
+        {
+          "ref": "packages/agent-tools/src/observation.js",
+          "match": "export async function runObservedInvocation("
+        },
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-099.md",
+          "match": "seeded paired-bootstrap reducer"
         }
       ],
       "supportingPlanFields": [
@@ -429,12 +485,26 @@
         7
       ],
       "sourceRefs": [
-        "docs/blackboard/process/agent-tool-research/BB-099.md"
+        "docs/blackboard/process/agent-tool-research/BB-099.md",
+        "packages/agent-tools/test/fixtures/fake-agent.mjs",
+        "docs/blackboard/evidence/BB-099/evaluation-probe-result.json"
       ],
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/process/agent-tool-research/BB-099.md",
-          "match": "## Discriminating experiment"
+          "match": "Deterministic calibration over fake CLIs"
+        },
+        {
+          "ref": "packages/agent-tools/test/fixtures/fake-agent.mjs",
+          "match": "case \"FIX_AFTER_FEEDBACK\":"
+        },
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-099.md",
+          "match": "Opt-in cost-capped live grok pilot"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-099/evaluation-probe-result.json",
+          "match": "grokHomeExists"
         }
       ],
       "supportingPlanFields": [
@@ -463,24 +533,33 @@
         "repository"
       ],
       "decisionIndexes": [
-        8
+        8,
+        9
       ],
       "sourceRefs": [
+        "docs/blackboard/evidence/BB-099/evaluation-probe-result.json",
         "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+        "docs/blackboard/process/agent-tool-research/BB-099.md"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
-          "match": "BB-081, BB-074, BB-075 and BB-076 reuse the same experiment/unit/attempt/evidence/accounting backbone"
+          "ref": "docs/blackboard/evidence/BB-099/evaluation-probe-result.json",
+          "match": "hasObserveInvocation"
         },
         {
-          "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
-          "match": "\"allInstalled\": true"
+          "ref": "docs/blackboard/evidence/BB-099/evaluation-probe-result.json",
+          "match": "hasRunObservedInvocation"
+        },
+        {
+          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+          "match": "reuse the same experiment/unit/attempt/evidence/accounting backbone"
+        },
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-099.md",
+          "match": "No OBJECTIVE_SUPERSESSION."
         }
       ],
       "supportingPlanFields": [
-        "sourceSeams",
         "negativeVerificationCases"
       ]
     }
@@ -495,5 +574,88 @@
     "The same seed and inputs produce byte-identical report.json.",
     "Exceeding maxInvocationsTotal stops execution and marks remaining attempts NOT_EVALUATED.",
     "Any write to Core, Oracle, agentic-system, packages/benchmark, BB-097/BB-098 modules or docs/blackboard fails scope verification."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NC-EV-base-pass",
+      "negativeCaseIndex": 0,
+      "criterionId": "EV1",
+      "verificationId": "ev1-suite",
+      "testRef": "packages/agent-tools/test/experiment.test.js",
+      "testTitle": "EV1 base that already passes hidden fails calibration",
+      "subjectSymbol": "calibrateSuite"
+    },
+    {
+      "id": "NC-EV-hidden-absent",
+      "negativeCaseIndex": 1,
+      "criterionId": "EV2",
+      "verificationId": "ev2-runner",
+      "testRef": "packages/agent-tools/test/experiment.test.js",
+      "testTitle": "EV2 hidden directory is absent from the agent worktree",
+      "subjectSymbol": "runExperiment"
+    },
+    {
+      "id": "NC-EV-digest",
+      "negativeCaseIndex": 2,
+      "criterionId": "EV2",
+      "verificationId": "ev2-runner",
+      "testRef": "packages/agent-tools/test/experiment.test.js",
+      "testTitle": "EV2 registration digest mismatch refuses start",
+      "subjectSymbol": "runExperiment"
+    },
+    {
+      "id": "NC-EV-factors",
+      "negativeCaseIndex": 3,
+      "criterionId": "EV2",
+      "verificationId": "ev2-runner",
+      "testRef": "packages/agent-tools/test/experiment.test.js",
+      "testTitle": "EV2 mismatched K aborts the run",
+      "subjectSymbol": "runExperiment"
+    },
+    {
+      "id": "NC-EV-unavailable",
+      "negativeCaseIndex": 4,
+      "criterionId": "EV4",
+      "verificationId": "ev4-pilot",
+      "testRef": "packages/agent-tools/test/experiment.test.js",
+      "testTitle": "EV4 grok without adapter is NOT_EVALUATED with ADAPTER_NOT_DELIVERED",
+      "subjectSymbol": "runAgentToolsEval"
+    },
+    {
+      "id": "NC-EV-false-success",
+      "negativeCaseIndex": 5,
+      "criterionId": "EV3",
+      "verificationId": "ev3-reducer",
+      "testRef": "packages/agent-tools/test/experiment.test.js",
+      "testTitle": "EV3 CLAIM_SUCCESS_NO_EDIT is false success on direct arms",
+      "subjectSymbol": "reduceAttempts"
+    },
+    {
+      "id": "NC-EV-deterministic",
+      "negativeCaseIndex": 6,
+      "criterionId": "EV3",
+      "verificationId": "ev3-reducer",
+      "testRef": "packages/agent-tools/test/experiment.test.js",
+      "testTitle": "EV3 identical seed and inputs yield byte-identical report.json",
+      "subjectSymbol": "reduceAttempts"
+    },
+    {
+      "id": "NC-EV-cap",
+      "negativeCaseIndex": 7,
+      "criterionId": "EV4",
+      "verificationId": "ev4-pilot",
+      "testRef": "packages/agent-tools/test/experiment.test.js",
+      "testTitle": "EV4 max-invocations 2 marks remaining attempts NOT_EVALUATED",
+      "subjectSymbol": "runAgentToolsEval"
+    },
+    {
+      "id": "NC-EV-scope",
+      "negativeCaseIndex": 8,
+      "criterionId": "EV4",
+      "verificationId": "ev4-pilot",
+      "testRef": "packages/agent-tools/test/experiment.test.js",
+      "testTitle": "EV4 write-scope matcher rejects packages/benchmark",
+      "subjectSymbol": "auditPaths"
+    }
   ]
 }
