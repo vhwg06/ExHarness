@@ -1,0 +1,320 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-065-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-065",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.json",
+      "hash": "cfd44b6f9fbc1e2db7c2fb3334f8f73314bdae45b25569f7c153c1c7e3898f75"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-065.json",
+      "hash": "42eb06924000de4f7f98d5df3c24ea489616258821c6c40537a084f76c56aafe"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-065.implementation-result.json",
+      "hash": "dc02d6cd9004d02f63649dc36cf4e7b19ec367f4fb8093ad7ba88c606f97bdac"
+    },
+    "candidateSha": "bc56658e7c8f5e994e113b01d0f01cd5087a263e",
+    "candidateTree": "ba591ba3259d76860f4ac0972bbaeed2a200c1f1",
+    "baselineSha": "08fb3e5f273a33c6a4f229e63533caee88a8d573"
+  },
+  "stateHash": "13f10a5873a5b5ca59cda49f77ebb241363b45cd468863373107fa4637dda96f",
+  "specHash": "f7f985459f06e9c23f4b66734245ba68e7abbf69dc3cac24428b0d6fc70f3bb5",
+  "cacheKey": "c2fb0c00e834e4ec5e05d39994f650fa23cc067d68c760207996fc224d8def99",
+  "model": "jev-1.13.0",
+  "answers": {
+    "PACKAGE_CONTRACT": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.35,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.03,
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "INSUFFICIENT_EVIDENCE": 0.44,
+        "SATISFIED": 0.51
+      }
+    },
+    "ATTEMPT_LEDGER": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.98,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.99,
+        "INSUFFICIENT_EVIDENCE": 0.01
+      }
+    },
+    "HARBOR_BOUNDARY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.79,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "IMPLEMENTATION_DEFECT": 0.05,
+        "SATISFIED": 0.84,
+        "INSUFFICIENT_EVIDENCE": 0.09
+      }
+    },
+    "OUTCOME_MATRIX": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.96,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.01,
+        "SATISFIED": 0.97,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01
+      }
+    },
+    "ACCOUNTING": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.93,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.05,
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.95
+      }
+    },
+    "EVIDENCE_AUDIT": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.88,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.09,
+        "SATISFIED": 0.91
+      }
+    },
+    "EXTERNAL_SANITY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.92,
+      "probabilities": {
+        "SATISFIED": 0.94,
+        "INSUFFICIENT_EVIDENCE": 0.05,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0.01
+      }
+    },
+    "LEGACY_RETIREMENT": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.68,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.04,
+        "SATISFIED": 0.76,
+        "INSUFFICIENT_EVIDENCE": 0.19
+      }
+    },
+    "DOWNSTREAM_HANDOFF": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.94,
+      "probabilities": {
+        "SATISFIED": 0.96,
+        "IMPLEMENTATION_DEFECT": 0,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.04
+      }
+    },
+    "PRODUCT_BOUNDARY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.66,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.21,
+        "SATISFIED": 0.75,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.03
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.66,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "SATISFIED": 0.75,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.22
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 335071,
+    "output_tokens": 1386
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 19,
+    "latencyMs": 4394.001808,
+    "payloadBytes": 611995,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_SOURCE_INDEX_V3",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V3",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "PACKAGE_CONTRACT",
+          "payloadHash": "ec5e5aa614f1f02188a2f4bea52a5fc05af859d2a45ae09ed1fb7ef5869dc0fb",
+          "payloadBytes": 47269,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "ATTEMPT_LEDGER",
+          "payloadHash": "022b1e6935406eb1f0b878014936a9880a6c4565e4ee016497106f465961f989",
+          "payloadBytes": 56290,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "HARBOR_BOUNDARY",
+          "payloadHash": "5181b14dbf9de66c2a6650e1046c03af5df5c5f5083cfd126dde5931709e5fd6",
+          "payloadBytes": 48670,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "OUTCOME_MATRIX",
+          "payloadHash": "cce08422d4ad8191d026291c90d9283ef15fd26a1b6e0bf065f2137d2b82547e",
+          "payloadBytes": 57183,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "ACCOUNTING",
+          "payloadHash": "7507ca3dba9650ef4d81c5ef37c3436c530dd9ed8a8fcf09daf0c148deede668",
+          "payloadBytes": 58187,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "EVIDENCE_AUDIT",
+          "payloadHash": "a4d9220448f89dffe6b0a79d5dff79d9efadb97110931f35bb0588288e0cbfde",
+          "payloadBytes": 45281,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "EXTERNAL_SANITY",
+          "payloadHash": "d16d1b065df8778d5a46fb0237ebff70f7c0eb3b8bbf3b507687bdc10c48b47c",
+          "payloadBytes": 41249,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LEGACY_RETIREMENT",
+          "payloadHash": "3c00fd312b279300e362fab4eeb67a72d71f4d0248e6aaef5ff3cf128e121131",
+          "payloadBytes": 47033,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "DOWNSTREAM_HANDOFF",
+          "payloadHash": "b3c75c6c275992cf35d24ed95b6f73bbeb47976eccaeefd327d0a9bb1b89e21c",
+          "payloadBytes": 47433,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "PRODUCT_BOUNDARY",
+          "payloadHash": "06d045ed8e816a76d2ece434a0118b36b04c946abbb37579f63da88087c6b011",
+          "payloadBytes": 43791,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "5abc2b51b90690a1a2e4702b0bd74cebe7be6e4aed466f36f721a024fa1d4068",
+          "payloadBytes": 59374,
+          "part": 1,
+          "parts": 9,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "e24f7c8022f71e18dac8ecc5e3898ec344ad160b47de1480fc5b6c73a650a864",
+          "payloadBytes": 58807,
+          "part": 2,
+          "parts": 9,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "b57532192a61559bb0e9d2e89ec5c7654684228d4eb62d4e104565ff5638fa15",
+          "payloadBytes": 57313,
+          "part": 3,
+          "parts": 9,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "549be233bddaecf763dba7b0f6192b0ccb8ec1b2498c5f19977294c2a93aa7ab",
+          "payloadBytes": 57525,
+          "part": 4,
+          "parts": 9,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "702f60f21fae96c3f0b3b64095673f014de5576f9e29fc4494c79d777ca46bb8",
+          "payloadBytes": 58936,
+          "part": 5,
+          "parts": 9,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "8f5e47b426c4ee2517d6f934fb5b894d7d8de9db0c925ff5fbcc912164778f71",
+          "payloadBytes": 58979,
+          "part": 6,
+          "parts": 9,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "73679190d32f6e18e58a3c20e1848709ade8ea892ebcf68e2f3a21b855307606",
+          "payloadBytes": 57638,
+          "part": 7,
+          "parts": 9,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "b83f0b50a45dbd6a4dd14324cd5c8a7c5ce6579b92a3fe263f59aee417d81f4b",
+          "payloadBytes": 57551,
+          "part": 8,
+          "parts": 9,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "87b6ccdd5a3d1c92e32e241eeb682dc4605fac4a5ebbbfa64d63fcbafce49dfe",
+          "payloadBytes": 57545,
+          "part": 9,
+          "parts": 9,
+          "sourceIndex": "OMITTED_SOURCE_INDEX_V1"
+        }
+      ],
+      "cacheHits": 0,
+      "partChoices": {
+        "LIVING_DOCS": [
+          "SATISFIED",
+          "SATISFIED",
+          "SATISFIED",
+          "SATISFIED",
+          "SATISFIED",
+          "SATISFIED",
+          "SATISFIED",
+          "SATISFIED",
+          "SATISFIED"
+        ]
+      }
+    }
+  },
+  "policy": "atomic-claims-1"
+}

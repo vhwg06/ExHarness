@@ -1,0 +1,73 @@
+TAP version 13
+# Subtest: audit reopens evidence and recomputes candidate, evaluator, outcome, accounting and record identity
+ok 1 - audit reopens evidence and recomputes candidate, evaluator, outcome, accounting and record identity
+  ---
+  duration_ms: 8.772318
+  type: 'test'
+  ...
+# Subtest: a tampered artifact, result or verifier file fails audit
+ok 2 - a tampered artifact, result or verifier file fails audit
+  ---
+  duration_ms: 5.763648
+  type: 'test'
+  ...
+# Subtest: missing verifier or result evidence fails audit
+ok 3 - missing verifier or result evidence fails audit
+  ---
+  duration_ms: 5.193447
+  type: 'test'
+  ...
+# Subtest: a stored record that disagrees with materialized evidence fails audit
+ok 4 - a stored record that disagrees with materialized evidence fails audit
+  ---
+  duration_ms: 1.585162
+  type: 'test'
+  ...
+# Subtest: zero-filled unknown usage fails audit even when the record is resealed consistently
+ok 5 - zero-filled unknown usage fails audit even when the record is resealed consistently
+  ---
+  duration_ms: 2.365369
+  type: 'test'
+  ...
+# Subtest: fixed-factor drift, evaluator swap and reused reset identity fail audit
+ok 6 - fixed-factor drift, evaluator swap and reused reset identity fail audit
+  ---
+  duration_ms: 4.680009
+  type: 'test'
+  ...
+# Subtest: ledger binding is checked when events are supplied
+ok 7 - ledger binding is checked when events are supplied
+  ---
+  duration_ms: 1.793064
+  type: 'test'
+  ...
+# Subtest: manifest binds sorted path/digest identities and is deterministic
+ok 8 - manifest binds sorted path/digest identities and is deterministic
+  ---
+  duration_ms: 3.286037
+  type: 'test'
+  ...
+# Subtest: a modified manifest entry fails assertion
+ok 9 - a modified manifest entry fails assertion
+  ---
+  duration_ms: 0.846509
+  type: 'test'
+  ...
+# Subtest: required roles, normalized refs and unique refs are enforced
+ok 10 - required roles, normalized refs and unique refs are enforced
+  ---
+  duration_ms: 0.773153
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 98.488714
+
+
+exitCode=0

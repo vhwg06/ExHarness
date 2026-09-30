@@ -1,0 +1,61 @@
+TAP version 13
+# Subtest: ablation runs every arm through the planner at HEAD with the committed cohort digest
+ok 1 - ablation runs every arm through the planner at HEAD with the committed cohort digest
+  ---
+  duration_ms: 442.42599
+  type: 'test'
+  ...
+# Subtest: validate mode reproduces the recorded decision
+ok 2 - validate mode reproduces the recorded decision
+  ---
+  duration_ms: 0.24975
+  type: 'test'
+  ...
+# Subtest: forced-identical selections across all arms yield INCONCLUSIVE_NON_DISCRIMINATING, never RECOMMEND
+ok 3 - forced-identical selections across all arms yield INCONCLUSIVE_NON_DISCRIMINATING, never RECOMMEND
+  ---
+  duration_ms: 0.359245
+  type: 'test'
+  ...
+# Subtest: a candidate with one per-query recall below A0 is not recommended even with a higher mean
+ok 4 - a candidate with one per-query recall below A0 is not recommended even with a higher mean
+  ---
+  duration_ms: 0.249825
+  type: 'test'
+  ...
+# Subtest: validate with a tampered decision fails
+ok 5 - validate with a tampered decision fails
+  ---
+  duration_ms: 0.542917
+  type: 'test'
+  ...
+# Subtest: a tampered cohort (edited relevant set) fails with COHORT_DIGEST_MISMATCH
+ok 6 - a tampered cohort (edited relevant set) fails with COHORT_DIGEST_MISMATCH
+  ---
+  duration_ms: 12.855001
+  type: 'test'
+  ...
+# Subtest: cohort regeneration at the frozen snapshot is byte-stable
+ok 7 - cohort regeneration at the frozen snapshot is byte-stable
+  ---
+  duration_ms: 7.5864
+  type: 'test'
+  ...
+# Subtest: the reader uses git show only: a working-tree-only change does not affect results
+ok 8 - the reader uses git show only: a working-tree-only change does not affect results
+  ---
+  duration_ms: 35.158042
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 585.065948
+
+
+exitCode=0
