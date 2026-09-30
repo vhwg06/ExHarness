@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,12 +31,19 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-096
 ```
 
 ## Active work
 
-NONE
+
+BB-096
+task: Bind delivered Backend/QA acceptance to a real repository and real verification processes
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-096/current.json
+components: agentic/backend-qa-execution
+worker: grok-bot
 
 ## Schedulable tasks
 
@@ -46,7 +53,6 @@ NONE
 - BB-088 [WORKER/EXECUTION] — Productize authoritative snapshot-bound Context Graph
 - BB-089 [WORKER/EXECUTION] — Adopt Oracle facade for Backend/QA production context
 - BB-090 [WORKER/EXECUTION] — Bind declared negative cases to executed subject-invoking tests in the Worker gate
-- BB-096 [WORKER/EXECUTION] — Bind delivered Backend/QA acceptance to a real repository and real verification processes
 - BB-098 [RESEARCH_SA/RESEARCH] — Observe supervised and direct agent-tool runs
 - BB-099 [RESEARCH_SA/RESEARCH] — Measure ExHarness-supervised versus direct agent-tool delivery
 
@@ -98,7 +104,7 @@ BB-092 [BLOCKED_BY BB-091] <- BB-091
 BB-093 [BLOCKED_BY BB-092] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094,BB-065] <- BB-094, BB-065
-BB-096 [WORKER_SCHEDULABLE] <- ROOT
+BB-096 [ACTIVE] <- ROOT
 BB-097 [BLOCKED_BY BB-096] <- BB-096
 BB-098 [RESEARCH_SCHEDULABLE] <- BB-097
 BB-099 [RESEARCH_SCHEDULABLE] <- BB-098, BB-065

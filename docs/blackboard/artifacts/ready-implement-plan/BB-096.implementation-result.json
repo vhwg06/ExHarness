@@ -1,0 +1,125 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-096-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-096.json",
+    "hash": "293b00379c3dbc1de566f45c6384ce3657c43cb3fffde278e4fad5c11900752f"
+  },
+  "candidateSha": "421dc3f55efd536850883faaa0f1efd50b4dfd08",
+  "baselineSha": "72db4d52e03fb5537a96d2d5593a2dd30cac8e76",
+  "candidateTree": "a0ae7c76c7b70355eaf13b5601591762bebe25f6",
+  "verificationRuns": [
+    {
+      "id": "rb1-workspace",
+      "command": "node --test --test-name-pattern=\"^RB1 \" packages/agentic-system/test/bb096-real-backend-qa.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "421dc3f55efd536850883faaa0f1efd50b4dfd08",
+      "logRef": "docs/blackboard/evidence/BB-096/rb1-workspace.txt",
+      "logHash": "5509eb886b8a9698218172ba7993398677d968e5966a4f5514e7991d679bea84"
+    },
+    {
+      "id": "rb2-verifier",
+      "command": "node --test --test-name-pattern=\"^RB2 \" packages/agentic-system/test/bb096-real-backend-qa.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "421dc3f55efd536850883faaa0f1efd50b4dfd08",
+      "logRef": "docs/blackboard/evidence/BB-096/rb2-verifier.txt",
+      "logHash": "482db8ca61d22506ff20063399ce523d91a217f59450fae66b03ce4455495233"
+    },
+    {
+      "id": "rb3-backend",
+      "command": "node --test --test-name-pattern=\"^RB3 \" packages/agentic-system/test/bb096-real-backend-qa.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "421dc3f55efd536850883faaa0f1efd50b4dfd08",
+      "logRef": "docs/blackboard/evidence/BB-096/rb3-backend.txt",
+      "logHash": "cac2087d0ea3931e0d221239b2f8b439cd3e8f097b51936282ae5e4f28d17254"
+    },
+    {
+      "id": "rb4-qa",
+      "command": "node --test --test-name-pattern=\"^RB4 \" packages/agentic-system/test/bb096-real-backend-qa.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "421dc3f55efd536850883faaa0f1efd50b4dfd08",
+      "logRef": "docs/blackboard/evidence/BB-096/rb4-qa.txt",
+      "logHash": "90271f3e77403066ca36e74cdde287286e2b1f87bae25f56c1a5539825e775fd"
+    },
+    {
+      "id": "rb5-exports",
+      "command": "node --test --test-name-pattern=\"^RB5 \" packages/agentic-system/test/bb096-real-backend-qa.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "421dc3f55efd536850883faaa0f1efd50b4dfd08",
+      "logRef": "docs/blackboard/evidence/BB-096/rb5-exports.txt",
+      "logHash": "2d48edbba1fbacb3e8e59c7a6716e3e154f173a8fec43d121aafc03941bf9e35"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "421dc3f55efd536850883faaa0f1efd50b4dfd08",
+      "logRef": "docs/blackboard/evidence/BB-096/agentic-regression.txt",
+      "logHash": "b4bec4b75cd758685bdefd49ee062ec970caae9289ddc8054ca5156cdda3612e"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "421dc3f55efd536850883faaa0f1efd50b4dfd08",
+      "logRef": "docs/blackboard/evidence/BB-096/docs.txt",
+      "logHash": "3a69fe5c50f89dff669bf93a385173ea4e9743585511cc232345cca0247c9c9c"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "421dc3f55efd536850883faaa0f1efd50b4dfd08",
+      "logRef": "docs/blackboard/evidence/BB-096/repository.txt",
+      "logHash": "10f05b53558001024ff0da200b2d4aa1fbfaa56b47e0d345283761ec7c214950"
+    }
+  ],
+  "claims": [
+    {
+      "id": "RB1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-096/rb1-workspace.txt",
+        "docs/blackboard/evidence/BB-096/agentic-regression.txt"
+      ]
+    },
+    {
+      "id": "RB2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-096/rb2-verifier.txt",
+        "docs/blackboard/evidence/BB-096/agentic-regression.txt"
+      ]
+    },
+    {
+      "id": "RB3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-096/rb3-backend.txt",
+        "docs/blackboard/evidence/BB-096/agentic-regression.txt"
+      ]
+    },
+    {
+      "id": "RB4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-096/rb4-qa.txt",
+        "docs/blackboard/evidence/BB-096/agentic-regression.txt"
+      ]
+    },
+    {
+      "id": "RB5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-096/rb5-exports.txt",
+        "docs/blackboard/evidence/BB-096/docs.txt",
+        "docs/blackboard/evidence/BB-096/repository.txt"
+      ]
+    }
+  ]
+}
