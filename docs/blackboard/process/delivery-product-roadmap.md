@@ -1,7 +1,7 @@
 # ExHarness: delivery product roadmap
 
-Status: SCHEDULED RESEARCH; future capabilities are not delivered.
-Evidence checked: 2026-09-27. Source baseline for existing product research: aa91ba16548f31772d441f51975917397cbf73d7.
+Status: CROSS-TOPIC DIRECTION; task scheduling and delivery status are owned by the canonical graph.
+Current-state audit checked: 2026-09-30 at `29935fa23cb19af278a6fa8db68b9448bc6b1a0e`. Routing refreshed at `939a5893f418d2adbbf498744bb53b593c9a8642`; BB-104 is now DONE. Historical technology survey below remains dated 2026-09-27; it is not a fresh adoption verdict.
 Benchmark-program contract: `docs/blackboard/process/harness-benchmark-program-research.md`.
 Owner of scheduling: docs/blackboard/work-graph.json. This file owns the cross-topic product direction; the existing Integration and Oracle roadmaps retain their narrower contracts.
 
@@ -15,8 +15,9 @@ Value hypothesis: ExHarness improves software-delivery economics and reliability
 
 ## What exists and what remains
 
-Source/Living evidence confirms Core durable effects and recovery primitives, concrete Backend/QA Oracle resolution, organizational A.1 claim authority, and bounded Integration B runtime dispatch/recover/publication. Main exposes runtimeAdapter.dispatch/recover with a pinned attempt binding; that is a usable integration seam, not proof that a real coding-agent service has delivered a product.
-BB-052–058 have readiness judgments, but are not marked delivered. BB-059 and BB-060–064 are research. Oracle implementation still resides in agentic-system. This roadmap does not relabel these as production features.
+Current source and terminal receipts confirm the Oracle foundation/Context Graph/planner/progressive resolution, neutral benchmark package, real local git/command verification, supervised CLI agents, observation, durable recovery, Backend adapter, declared context and MCP verification. BB-052/053/054 and BB-096..103/105 are delivered. BB-104 local deliver is DONE in the refreshed graph, following merged PR #416 and its exact delivery receipt. BB-055/057..059, BB-066..081, BB-083..086, BB-093..095 and BB-099 remain planned rather than delivered.
+
+The current [research roadmap](research-roadmap.md) and [delivery improvement discovery](delivery-value-improvement-research.md) add a near-term local path: protect env/accounting/exact resume, expose available CLIs through deliver, bind independent acceptance, and export a portable reviewer handoff. This path reuses delivered source without waiting on the broad OpenHands/async program. Existing worker dependencies and acceptance gates remain intact; local source/fixture success does not prove BB-069/074 live value.
 
 ## Technology evidence and reuse decisions
 
@@ -89,9 +90,9 @@ Diagram shows phase relationships. Canonical direct task edges are in work-graph
 
 ## Research lane contract
 
-Every new task already has an OBJECTIVE, a DRAFT plan, context routing and a task-specific research brief. Start a fresh research session with an explicit ID. Recommended first: BB-065, then BB-066/067; Oracle 060–064 remains independently researchable.
+Each newly registered discovery task BB-123..129 has an OBJECTIVE, a DRAFT plan, context routing and a task-specific section in the discovery brief. Existing researched tasks retain their READY plans. Start Research with an explicit ID; BB-065 and Oracle foundation 060..064 are already DONE.
 
-BB-077 and BB-081 have been returned to Research/SA because the previous narrow sync-vs-async benchmark premise is no longer sufficient. BB-077 now researches a neutral fixed-factor harness-isolation protocol; BB-081 researches held-out component ablation and fault robustness. BB-078–080 remain implementation candidates but are worker-blocked by the reopened research dependency. BB-066 still depends on BB-081 so the real coding-agent runtime cannot silently freeze an unmeasured Core profile.
+The accepted research for BB-077 and BB-081 replaced the earlier narrow sync-vs-async premise with a neutral comparison protocol; both are now WORKER plans in the graph. Their plans own a neutral fixed-factor protocol and held-out component ablation/fault robustness. BB-078–080 remain implementation candidates waiting on BB-077 delivery; they are not reopened research. BB-066 still depends on BB-081 so the real coding-agent runtime cannot silently freeze an unmeasured Core profile.
 
 Each brief must converge through:
 1. Read the exact current source seam and dependency objectives/plans; distinguish delivered truth from design assumptions.
@@ -109,7 +110,7 @@ Source data and artifact content cannot grant authority. Oracle owns IO/adaptati
 
 The canonical cross-topic contract is `docs/blackboard/process/harness-benchmark-program-research.md`.
 
-BB-065 is now substrate calibration, not a product-value experiment. It must establish task/environment validity, independent verifier behavior, fresh resets, artifact extraction, complete usage/accounting and a failure model in which provider/termination state remains separate from quality.
+BB-065 delivered substrate calibration and the neutral kernel; it is not a product-value experiment. Its contract establishes task/environment validity, independent verifier behavior, fresh resets, artifact extraction, complete usage/accounting and a failure model in which provider/termination state remains separate from quality.
 
 BB-077 then isolates the harness variable under a fixed model snapshot, prompt/task input, initial workspace, resource ceiling, artifact extraction and evaluator. Research should evaluate Harbor as the neutral substrate and must include a minimal/direct control plus the current ExHarness Core. Report quality together with cost/tokens, latency, no-progress behavior, repeat consistency and failure fingerprints.
 
@@ -169,3 +170,9 @@ Briefs: [BB-097](agent-tool-research/BB-097.md) runs Codex, Kiro and agy under E
 | BB-104 | Operator `deliver` CLI composing 100+101+102 into one local Backend-then-QA slice | BB-100, BB-101, BB-102 |
 
 Not registered: sandbox (BB-067), OpenHands domain runtime (BB-066), BB-069 first-slice, generic PM/SA runtime. Research may run ahead; no existing READY/DONE task is reopened.
+
+## Additive delivery value improvements — BB-123..129
+
+[Research discovery](delivery-value-improvement-research.md) registers three bounded defects (verifier env, usage/cost completeness, exact resume binding) and four local delivery improvements (no-progress retry policy, protected evaluator, Grok/OpenCode operator parity, review/replay bundle). Executed local probes motivate each subject. All new plans are DRAFT in RESEARCH_SA; no existing research-ready or DONE task is reopened.
+
+Useful outcome: a developer uses an available CLI for one bounded repository change, receives a candidate checked by an independently pinned evaluator, and hands another developer a portable exact revision with inspectable evidence. This is a concrete local milestone; SCM automation, sandboxing, installable support, live comparative value and release remain owned by their existing tasks. Efficiency defaults require matched quality/coverage evidence, not a lower call count alone.

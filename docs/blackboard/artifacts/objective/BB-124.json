@@ -1,0 +1,31 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-124",
+  "outcome": "Agent traces and summaries distinguish complete, partial and unavailable usage; absent or null costs never become observed zero.",
+  "currentProblem": "Executed parser probe: truncated Codex output with one completed turn has unavailableReason=null; Grok total_cost_usd=null is coerced by Number(null) to zero. Report aggregation counts the partial trace as covered.",
+  "scope": [
+    "agent-tools.observation.usage-completeness"
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
+    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+  ],
+  "successCriteria": [
+    "Truncated/invalid/missing turn usage is explicitly incomplete and cannot contribute to complete totals; real zero remains observed zero.",
+    "Missing/null/blank/non-finite cost is unavailable; valid numeric reported cost is preserved and summaries expose per-field coverage.",
+    "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/delivery-value-improvement-research.md",
+    "docs/blackboard/evidence/BB-124/discovery.json",
+    "packages/agent-tools/src/output-parsers.js",
+    "packages/agent-tools/src/report.js",
+    "packages/agent-tools/src/run-trace.js",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/agent-tools/observation.md"
+  ]
+}
