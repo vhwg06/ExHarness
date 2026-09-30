@@ -1,0 +1,131 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-096",
+  "taskId": "BB-096",
+  "featureId": "FEATURE-DELIVERY-REAL-BACKEND-QA",
+  "topicId": "TOPIC-DELIVERY-FOUNDATION",
+  "components": [
+    "agentic/backend-qa-execution"
+  ],
+  "pipeline": "WORKER",
+  "lane": "WORKER",
+  "phase": "JUDGMENT",
+  "stage": "JUDGMENT",
+  "semanticArtifactRef": "docs/blackboard/artifacts/ready-implement-plan/BB-096.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-096.json",
+  "planHash": "293b00379c3dbc1de566f45c6384ce3657c43cb3fffde278e4fad5c11900752f",
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/agentic-application/state.md",
+    "docs/living/system/agentic-application/capabilities.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-096.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-096.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-096.readiness-jev-evaluation.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/local-git-workspace.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/bb096-real-backend-qa.test.js",
+      "README.md",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/src/backend-*.js",
+      "packages/agentic-system/src/qa-*.js",
+      "packages/agentic-system/test/durable-backend-qa.test.js",
+      "packages/agentic-system/test/wave-a.test.js",
+      "docs/blackboard/**",
+      "scripts/blackboard-*.mjs"
+    ]
+  },
+  "artifactWriteScope": [],
+  "hardInvariants": [
+    "Backend ACCEPT through the local adapters requires a real commit in the isolated worktree and a PASS tests record executed at that exact commit.",
+    "A verification record is PASS only for an exit-0 process run at HEAD == candidate.version whose run left HEAD and the working tree unchanged.",
+    "The source repository HEAD, branches and working tree are never modified by Backend or QA runs.",
+    "Core, Oracle, completion policies and existing fake-based agentic tests are unchanged."
+  ],
+  "verification": [
+    {
+      "id": "rb1-workspace",
+      "command": "node --test --test-name-pattern=\"^RB1 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "rb2-verifier",
+      "command": "node --test --test-name-pattern=\"^RB2 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "rb3-backend",
+      "command": "node --test --test-name-pattern=\"^RB3 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "rb4-qa",
+      "command": "node --test --test-name-pattern=\"^RB4 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "rb5-exports",
+      "command": "node --test --test-name-pattern=\"^RB5 \" packages/agentic-system/test/bb096-real-backend-qa.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
+  ],
+  "expectedOutputs": [
+    "DELIVERED_FEATURE"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**"
+    ],
+    "contractRefs": [
+      "LOCAL_GIT_WORKSPACE_V1",
+      "LOCAL_COMMAND_VERIFIER_V1"
+    ]
+  }
+}
