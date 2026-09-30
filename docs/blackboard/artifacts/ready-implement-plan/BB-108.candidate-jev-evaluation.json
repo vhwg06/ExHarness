@@ -1,0 +1,217 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-108-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-108",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-108.json",
+      "hash": "94cf3ddb1a7cf56caa67206f52f5e39040492f3169fe2d13e8d27bf46ec8b97a"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-108.json",
+      "hash": "7d2e5647ec620c952b79c8d70f90bd9fb8ad08a2f5d0a7260333cb6fc9b761d5"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-108.implementation-result.json",
+      "hash": "5cc11884b7f59d1d5f9fd76e73a988eb3e1db25c3b75f46078f72068ef4c3124"
+    },
+    "candidateSha": "7aa127dd15b831221d3c5e3d56f4bc5ad8032ad3",
+    "candidateTree": "e884461d833ba8db853cf2b05a75d07cc49375e6",
+    "baselineSha": "939a5893f418d2adbbf498744bb53b593c9a8642"
+  },
+  "stateHash": "15a59fb44b23ad1c49dfff3a4c48438f21092c721f40e52d1a50c4b92f4a539b",
+  "specHash": "d7b19b8ab772c647a996c5cbf36be5682b3f10c22dd9a06a1b8a10af25d40a98",
+  "cacheKey": "6b455ec47fb05dbc5c4e38df5c313dddf5efd182a4511ec3dc326f68d317dc1e",
+  "model": "jev-1.13.0",
+  "answers": {
+    "FA5": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.75,
+      "probabilities": {
+        "SATISFIED": 0.81,
+        "IMPLEMENTATION_DEFECT": 0.03,
+        "INSUFFICIENT_EVIDENCE": 0.14,
+        "PLAN_INPUT_CONTRADICTION": 0.02
+      }
+    },
+    "FA6": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.78,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.05,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "SATISFIED": 0.83,
+        "INSUFFICIENT_EVIDENCE": 0.1
+      }
+    },
+    "FA7": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.87,
+      "probabilities": {
+        "SATISFIED": 0.9,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.06,
+        "IMPLEMENTATION_DEFECT": 0.03
+      }
+    },
+    "NC-FA-throw": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.12,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.23,
+        "IMPLEMENTATION_DEFECT": 0.21,
+        "SATISFIED": 0.34,
+        "PLAN_INPUT_CONTRADICTION": 0.22
+      }
+    },
+    "NC-FA-retrieve": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.34,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.1,
+        "IMPLEMENTATION_DEFECT": 0.16,
+        "SATISFIED": 0.5,
+        "INSUFFICIENT_EVIDENCE": 0.24
+      }
+    },
+    "NC-FA-underflow": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.16,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.14,
+        "INSUFFICIENT_EVIDENCE": 0.22,
+        "PLAN_INPUT_CONTRADICTION": 0.27,
+        "SATISFIED": 0.37
+      }
+    },
+    "NC-FA-provider": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.38,
+      "probabilities": {
+        "SATISFIED": 0.53,
+        "IMPLEMENTATION_DEFECT": 0.1,
+        "INSUFFICIENT_EVIDENCE": 0.23,
+        "PLAN_INPUT_CONTRADICTION": 0.14
+      }
+    },
+    "NC-FA-drift": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.47,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.13,
+        "SATISFIED": 0.6,
+        "IMPLEMENTATION_DEFECT": 0.03,
+        "INSUFFICIENT_EVIDENCE": 0.24
+      }
+    },
+    "NC-FA-docs": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.31,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.28,
+        "IMPLEMENTATION_DEFECT": 0.13,
+        "PLAN_INPUT_CONTRADICTION": 0.11,
+        "SATISFIED": 0.48
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.98,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.99,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.01
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 101076,
+    "output_tokens": 722
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 10,
+    "latencyMs": 2189.6957760000005,
+    "payloadBytes": 291110,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V3",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "FA5",
+          "payloadHash": "44f28437f09dd39ae0112ccce9a8fc8b7538dd4c95335942e48befbbc783e5c3",
+          "payloadBytes": 44306
+        },
+        {
+          "id": "FA6",
+          "payloadHash": "a045b05e67047f9068ffdbd44678440e2ef27d5335297f8bd52d04aee8ae1a62",
+          "payloadBytes": 44539
+        },
+        {
+          "id": "FA7",
+          "payloadHash": "5787fbf9cc06ee31c7275ccc0b9b028349d2fa3a005f98c78960034a82b55224",
+          "payloadBytes": 36582,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-108/repository.txt"
+          ]
+        },
+        {
+          "id": "NC-FA-throw",
+          "payloadHash": "a247eb975bb2f2b6a25c82645b173ea3f637ddfe2b3e4b9c267da277980bc559",
+          "payloadBytes": 27157
+        },
+        {
+          "id": "NC-FA-retrieve",
+          "payloadHash": "bdb2e2497f787e0a5ecca300acd1266b380f36350b7ccc5cce16a280964d884b",
+          "payloadBytes": 27116
+        },
+        {
+          "id": "NC-FA-underflow",
+          "payloadHash": "aae8b40a80faaeb6af10304d8050c6c6d3a47eceaa923c09fedec45db347da00",
+          "payloadBytes": 27879
+        },
+        {
+          "id": "NC-FA-provider",
+          "payloadHash": "c0bf74b73034bb25f04ec7bec5f668828ff83c253549754dde1f6986840ac302",
+          "payloadBytes": 27188
+        },
+        {
+          "id": "NC-FA-drift",
+          "payloadHash": "a9473a903e590ae2e29df710f534cb51688fc4d0335d260cdd015a26d3fe06ea",
+          "payloadBytes": 27113
+        },
+        {
+          "id": "NC-FA-docs",
+          "payloadHash": "04af387965c25dee4f53163666c06753f5fe250cf96a9be6be5da18040c2de02",
+          "payloadBytes": 29731
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "b0010558e95216cd051f9423206ddda45eed7e6d952b49da9147e1d8d7fd6398",
+          "payloadBytes": 30380
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}

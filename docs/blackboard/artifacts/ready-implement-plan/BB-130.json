@@ -1,0 +1,184 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-130",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-130.json",
+    "hash": "d8aa871604ac3677c7bf23ac6edd958d41ce1f0d54bfc1d3656f9937098e275f"
+  },
+  "scope": [
+    "agentic.local-command-verifier.child-env"
+  ],
+  "outOfScope": [
+    "Sandbox/network/FS confinement owned by BB-067.",
+    "Changing the accepted BB-120 task or plan."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
+    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+  ],
+  "invariants": [
+    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Apply the BB-120 inherited-environment semantics to the independent local verifier runner with an explicit verifier env overlay; do not introduce agentic-system -> agent-tools imports or a dependency cycle.",
+    "Use synthetic planted variables and boolean-only observations; never collect actual credentials. Preserve shell:false and the existing revision/tree mutation checks."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/index.js",
+      "docs/blackboard/evidence/BB-130/discovery.json",
+      "docs/blackboard/process/delivery-value-improvement-research.md"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/test/local-verifier-environment.test.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/local-verifier-environment.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agent-tools/src/**",
+      "packages/agentic-system/src/**",
+      "packages/agent-tools/test/**",
+      "packages/agentic-system/test/**",
+      "docs/blackboard/process/delivery-value-improvement-research.md",
+      "docs/blackboard/evidence/BB-130/discovery.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/local-verifier-environment.test.js",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
+    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "ENV_BOUNDARY",
+      "statement": "Parent-only planted secrets are absent from verifier children, an explicit overlay works, and NODE_TEST_CONTEXT is stripped.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    },
+    {
+      "id": "COMPATIBILITY",
+      "statement": "Required PATH/platform variables remain available and Backend/QA verification results preserve revision/tree bindings.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+      "criterionIds": [
+        "ENV_BOUNDARY",
+        "COMPATIBILITY"
+      ]
+    },
+    {
+      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "criterionIds": [
+        "ENV_BOUNDARY",
+        "COMPATIBILITY"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "ENV_BOUNDARY",
+        "COMPATIBILITY"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Parent-only secret must not reach verifier child",
+    "NODE_TEST_CONTEXT overlay cannot revive the parent test channel"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_123_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "ENV_BOUNDARY",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/local-verifier-environment.test.js",
+      "testTitle": "BB-130 N1 Parent-only secret must not reach verifier child",
+      "subjectSymbol": "createLocalCommandVerifier"
+    },
+    {
+      "id": "NEG_123_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "ENV_BOUNDARY",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/local-verifier-environment.test.js",
+      "testTitle": "BB-130 N2 NODE_TEST_CONTEXT overlay cannot revive the parent test channel",
+      "subjectSymbol": "createLocalCommandVerifier"
+    }
+  ],
+  "researchGaps": [
+    "Finalize the shared-versus-local allowlist seam after BB-120 delivery and pin platform compatibility cases; then submit the exact draft to fresh Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Close the remaining credential inheritance path in every local Backend/QA check.",
+    "measurement": "Zero inherited synthetic secrets across agent and verifier spawns; existing local Backend/QA regressions pass.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
+  }
+}

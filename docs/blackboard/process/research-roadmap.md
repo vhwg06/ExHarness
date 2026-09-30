@@ -1,130 +1,57 @@
-# ExHarness research roadmap: desired state vs delivered truth
+# ExHarness research roadmap: delivery value and current truth
 
-Checked: 2026-09-30. Grounded on origin/main `16fbfeea` (roadmap) and `fdb953c1` (defect audit), then updated to the graph at registration: BB-065 and BB-091 are DONE, BB-104 is READY, and BB-100, BB-101 and BB-105 have worker candidates in review.
+Checked: 2026-09-30. Probe baseline: `29935fa23cb19af278a6fa8db68b9448bc6b1a0e`; routing snapshot refreshed at `939a5893f418d2adbbf498744bb53b593c9a8642`. Scheduling authority is `docs/blackboard/work-graph.json`; this is a value-priority view, not a second work graph.
 
-Classification: **DELIVERED_TRUTH** = living docs + current packages; **PLANNED_CONTRACT** = READY/PLANNED graph tasks; **RESEARCH_DESIRED_STATE** = process briefs not yet tasked.
+DELIVERED_TRUTH is grounded in current source/Living and terminal receipts. SOURCE_PRESENT means implementation exists on main while its graph receipt is pending. PLANNED_CONTRACT means an existing plan; RESEARCH_DESIRED_STATE is an unaccepted improvement. Do not collapse these labels.
 
-## Per product area
+## Current areas
 
-### Core harness
+| Area | Current truth | Remaining gap / existing owner | Canonical task snapshot |
+|---|---|---|---|
+| Core / benchmark | Neutral benchmark package and sync Core are delivered. | The offline BB-077 implementation is now source-present on main; its graph receipt is pending and no live comparative result is claimed. Async candidates and held-out ablation remain planned. | DONE: BB-065; planned: BB-077, BB-078, BB-079, BB-080, BB-081 |
+| Oracle | Foundation, Context Graph, opt-in Backend/QA adoption, planner strategies and progressive resolution are delivered. | Budget profiles / Core conformance / held-out acceptance remain planned; reservation and typed boundary defects are already BB-107/108. | DONE: BB-060, BB-061, BB-062, BB-063, BB-064, BB-087, BB-088, BB-089, BB-091, BB-092; planned: BB-093, BB-094, BB-095, BB-107, BB-108 |
+| Application | Cross-domain authority, activation and exact deployment QA are delivered. | Closure, recovery, observation and HOW remain planned. | DONE: BB-052, BB-053, BB-054; planned: BB-055, BB-057, BB-058, BB-059 |
+| Agent tools | Real worktree verification, supervision, traces, Backend adapter, durable recovery, Oracle files, MCP and Grok are delivered. BB-104 local deliver is now DONE after its exact delivery receipt. | Verifier env, accounting and resume-binding probes expose additional gaps. Durable Board/OpenCode/agent-env remain planned. | DONE: BB-096, BB-097, BB-098, BB-100, BB-101, BB-102, BB-103, BB-104, BB-105; planned: BB-120, BB-121, BB-122 |
+| Feedback | Existing correctness feedback and routing remain delivered primitives. | Observed / Feedback Lifecycle / Self-Improve additive plans are Worker-blocked; no research reopening. | DONE: none; planned: BB-083, BB-084, BB-085, BB-086 |
+| Broader delivery | Real local execution exists; the planned OpenHands/sandbox/SCM path is distinct. | No installed supported product or controlled end-to-end value claim yet. | DONE: none; planned: BB-066, BB-067, BB-068, BB-069, BB-070, BB-071, BB-072, BB-073, BB-074, BB-075, BB-076 |
+| Outer Blackboard | Two lanes, objective supersession and negative binding are delivered. | Use the current gates; standing test wiring repair is BB-106, no new generic control-plane expansion. | DONE: BB-056, BB-082, BB-090; planned: BB-106 |
 
-**Desired end state.** Async-first Core with detached operations, cache-stable result context and steering/wakeup, accepted only after a fixed-factor harness-isolation protocol and held-out ablation (process: `harness-efficiency-phase.md`, `harness-benchmark-program-research.md`).
+## New research from executed delivery-path probes
 
-**Delivered truth.** `packages/core-harness/` — `createHarness` / AVO effect journal (`INTENDED → DISPATCHED → CONFIRMED|UNKNOWN`), `createResumableAgentRuntime`, interrupted-variation recovery, ActionIntent, grounded REFLECTION/INTENT, injected `contextResolver` port. Living: `docs/living/system/core-harness/{state,capabilities,workflow}.md`.
+[Discovery and trade-offs](delivery-value-improvement-research.md) contains exact source evidence, alternative designs, direct dependencies and proposed implementation seams. Reproduce with `node docs/blackboard/evidence/BB-130/local-delivery-audit.mjs`. Seven synthetic local probes made zero provider calls.
 
-**Gap.** Sync Core is the product path. Async profile is unbuilt.
-
-**Covered by.** BB-077 (harness isolation; RESEARCH returned), BB-078–080 (implementation, blocked on BB-077), BB-081 (held-out ablation; depends BB-077–080). BB-065 (kernel) is DONE.
-
-### Oracle context intelligence
-
-**Desired end state.** Infrastructure-owned context IO with truthful budgets, snapshot-bound Context Graph, Backend/QA facade adoption, then BB-064 `continuationSchedule`: planner ablation → progressive resolution → budget profiles → Core profiles → held-out acceptance (`oracle-post-foundation-discovery.md`, `gate-gap-and-oracle-continuations.md`).
-
-**Delivered truth.** `@exharness/oracle` facade `createOracleContextResolver` (BB-087 accounting/typed failure), Context Graph (BB-088), Backend/QA opt-in adoption (BB-089). Living: `docs/living/system/oracle/{state,capabilities,workflow,artifact-manifest}.md`.
-
-**Gap.** Planner still has a weak retrieval benchmark (BB-062 ranks with its own `rank()`, not the planner). Progressive resolution, budgets, Core profiles and held-out acceptance are unbuilt. Facade still hard-codes step 0.
-
-**Covered by.** BB-091 (DONE: planning strategies), BB-092–095 (blocked in order; BB-094 also waits on BB-081; BB-095 waits on BB-065).
-
-### Agentic application
-
-**Desired end state.** A developer supplies a bounded delivery objective and receives a reviewable, independently verified change, with pause/resume, requirement change, and installable operations (`delivery-product-roadmap.md`). Durable Backend→QA is a product execution path, not only a CodeAct demo.
-
-**Delivered truth.** Backend/QA slices, `createApplicationOrchestrator`, `createDurableBackendQaWorkflow` / `runBackendThenQaObjective`, local git workspace + command verifiers (BB-096), organization A.1 + bounded domain execution (BB-048–054). Living: `docs/living/system/agentic-application/{state,capabilities,workflow}.md`. Probe: durable workflow parameters are `backendWorker` + CodeAct; zero `agent-tools` hits (`docs/blackboard/evidence/BB-121/durable-board-probe-result.json`).
-
-**Gap.** Completeness/closure (BB-055). OpenHands runtime, sandbox, SCM, first slice, lifecycle, ops, pilot (BB-066–076). Supervised agents are not a Board execution strategy (G3). Feedback/self-improve (BB-083–086).
-
-**Covered by.** BB-055, BB-057–059, BB-066–076, BB-083–086, BB-100 (opt-in adapter, WORKER), BB-104 (operator `deliver`, READY), **BB-121 (new)**.
-
-### Agent-tools
-
-**Desired end state.** Outer supervision of real CLIs as a product Backend strategy: isolated child env, durable resume, Oracle-declared context, optional MCP verify, operator slice, measured supervised-vs-direct value on two real CLIs.
-
-**Delivered truth.** `packages/agent-tools/` — Codex/Kiro/agy adapters, `runSupervisedTask`, observation traces (BB-097/098). Living: `docs/living/system/agent-tools/{state,observation}.md`. `AGENT_TOOLS = {codex,kiro,agy}`. Host: grok 1.0.44 and opencode 1.18.33 installed off PATH; Codex/Kiro/agy `NOT_INSTALLED`.
-
-**Gap.**
-
-| Gap | Status |
-|---|---|
-| Grok adapter | Covered: BB-105 WORKER |
-| Supervised Backend adapter | Covered: BB-100 WORKER |
-| Crash-resume | Covered: BB-101 WORKER |
-| Oracle `requiredFiles` | Covered: BB-102 WORKER |
-| MCP verify/status | Covered: BB-103 WORKER |
-| Operator `deliver` | Covered: BB-104 READY |
-| Supervised vs direct eval | Covered: BB-099 READY (BB-065 DONE) |
-| Child env inherit-all (`process.env` spread) | **Open → BB-120** |
-| Durable Board injection | **Open → BB-121** |
-| Second real CLI (opencode) | **Open → BB-122** |
-| Kiro/agy token usage (G7) | Open, not registered (no live `kiro-cli`; parser would be fabricated) |
-
-### Benchmark
-
-**Desired end state.** Neutral kernel + Harbor substrate; harness isolation; delivery-value profile (`harness-benchmark-program-research.md`).
-
-**Delivered truth.** `packages/benchmark/` (BB-065 DONE). Harbor adapter, local calibration, Terminal-Bench 2.1 preflight. Living: `docs/living/system/benchmark/state.md`. No comparative harness result.
-
-**Gap.** No comparative harness result yet. Downstream consumers BB-077/074/099/095 are unblocked by BB-065.
-
-**Covered by.** BB-065, BB-077, BB-074, BB-081, BB-095, BB-099.
-
-### Blackboard control plane
-
-**Desired end state.** Two-lane OBJECTIVE → RESEARCH_SA → WORKER → DELIVERED_FEATURE with exact bindings, negative-case tests, objective supersession (`docs/blackboard/contracts.md`, `jev.md`).
-
-**Delivered truth.** BB-056 two-lane Jev, BB-082 supersession, BB-090 negative-case bindings (`negativeCaseBindingsFromWorkId: BB-100`). Living: `docs/living/system/state.md` outer-Blackboard section.
-
-**Gap.** No high-value uncovered control-plane gap. Remaining work is using the gate, not extending it.
-
-**Covered by.** BB-056/082/090 DONE.
-
-## Ranked uncovered gaps (dependency order)
-
-| Rank | Gap | Value | Deps | Already tasked? | New id |
-|---|---|---|---|---|---|
-| 1 | G4 child-env allowlist | Stops host secrets reaching every agent CLI; unblocks safe G3 | BB-097 DONE | No | **BB-120** |
-| 2 | G3 durable Board supervised Backend | Makes Codex/Kiro/agy/grok a product Board strategy, not a CLI demo | BB-100, BB-101, BB-120 | No (BB-100/104 explicitly deferred it) | **BB-121** |
-| 3 | OpenCode adapter | Second real CLI on this host; BB-099 can compare two live tools once grok+opencode exist | BB-097, BB-098 DONE | No (BB-105 is grok only) | **BB-122** |
-| 4 | G7 Kiro/agy usage | Cost axis of BB-099 stays Codex/grok/opencode-only without it | BB-098; live `kiro-cli` for schema | No | *deferred* |
-
-Do not duplicate: BB-055, BB-066–076, BB-077–081, BB-083–086, BB-091–095, BB-099–105, BB-067 sandbox, BB-069 first slice.
-
-## OpenCode evaluation (rank 3)
-
-Installed at `~/.opencode/bin/opencode` 1.18.33, not on PATH (same pattern as grok). `opencode run --help`: `--format json`, `--dir`, `--model`, `--auto`, `--continue`, `--session`, positional `message`. `--prompt` is TUI-only. Missing binary ENOENT. Research performed **no model call**. Parser is fixture-driven from documented JSONL `step_finish` tokens/cost. Mirrors BB-105. Lets BB-099 (which already iterates `AGENT_TOOLS` keys) compare two real CLIs on this host.
-
-## Registered tasks
-
-| Id | One-line objective | Dependencies |
-|---|---|---|
-| BB-120 | Allowlist agent-tools child env so `process.env` secrets are not inherited | BB-097 (DONE) |
-| BB-121 | Inject `createSupervisedBackendWorker` into durable Backend→QA | BB-100, BB-101, BB-120 |
-| BB-122 | OpenCode first-class adapter (`opencode run --format json`) | BB-097, BB-098 (DONE) |
-
-The roadmap took ids from BB-120 and the defect audit took BB-106..BB-108, so BB-109..BB-119 are unused. `allocation.nextWorkId` is `BB-123`.
-
-## Delivered-task defect audit
-
-Every WORKER task with status DONE was audited against its claims. Probes are under `docs/blackboard/evidence/BB-106..108/`.
-
-| Lead | Result | Fix task |
-|---|---|---|
-| Facade throws `TypeError` when CONTEXT_GRAPH evidence has no snapshot authority (and on 1-byte budgets); the planner alone reports `CURRENTNESS_UNVERIFIABLE` | Confirmed | **BB-108**: typed `UNSATISFIED` reasons |
-| Planner reserves one item and `min(8192, remaining)` bytes, so a file above 8 KiB is `BUDGET_EXHAUSTED` under any budget (inherited by opt-in Backend/QA adoption) | Confirmed | **BB-107**: reserve from the remaining budget |
-| Planner `execute()` drops a provider error's extra `code` | Confirmed, mitigated: `detail` keeps the message and the application reader prefixes `error.code` | Not registered (low) |
-| Delivered regression suites not in any standing script: objective supersession, facade accounting, context-graph boundary, Oracle contract/provider/durability/foundation suites | Confirmed (8 files) | **BB-106**: wire them into `npm test` / verify / kernel CI |
-| `test/delivery` unwired | Refuted: the directory was retired | none |
-| Weak Living Docs Jev for the integration-EF delivery (0.48) | Refuted as a product defect: the named APIs exist and match the docs | none |
-
-Evaluator defect found while delivering: in bounded worker batches, negative-case questions received no bound evidence, so they always returned `INSUFFICIENT_EVIDENCE`. Fixed at the root in `NEGATIVE_CASE_EVIDENCE_V1` (`docs/blackboard/jev.md`).
-
-## Prioritized RESEARCH_SA → WORKER queue
-
-| Priority | Task | Why first | Depends on | Worker note |
+| Task | Classification | Concrete improvement | Direct dependencies | Priority / value |
 |---|---|---|---|---|
-| 1 | BB-106 test wiring | Cheap; protects every delivered Oracle and Blackboard guarantee from silent regression | BB-082, BB-087, BB-088 (DONE) | none |
-| 2 | BB-108 facade typed failures | A raw throw breaks the facade's typed-failure contract | BB-087, BB-088 (DONE) | Shares `test/oracle-context-graph-boundary.test.mjs` with BB-107; serialize the two |
-| 3 | BB-107 planner reservation | A user-visible budget hole on the opt-in Oracle path | BB-087, BB-088, BB-089 (DONE) | After BB-108 |
-| 4 | BB-120 child-env allowlist | Host secrets currently reach every agent CLI | BB-097 (DONE) | After BB-105 lands (`process-runner.js`) |
-| 5 | BB-122 OpenCode adapter | Second real CLI on this host, so BB-099 can compare two live tools | BB-097, BB-098 (DONE) | After BB-105 lands (same adapter files) |
-| 6 | BB-121 durable Board supervised Backend | Makes supervised agents a product Board strategy | BB-100, BB-101, BB-120 | Last |
+| BB-130 | Confirmed defect | Constrain verifier child env; BB-120 covers agent child env only | BB-096, BB-120 | P0: close remaining implicit credential inheritance |
+| BB-124 | Confirmed defect | Preserve partial usage and complete per-field accounting coverage | BB-098, BB-105, BB-123 | P0: credible economics, no false zero cost |
+| BB-125 | Confirmed defect | Exact task/config binding before resumed side effects | BB-101 | P0: prevent changed task/gate under same id |
+| BB-126 | Improvement hypothesis with observed waste | Opt-in no-progress stop + evidence-bound repair feedback | BB-125 | P2: fewer wasted invocations, delayed-fix non-regression |
+| BB-127 | Confirmed local acceptance gap | Externally pinned local evaluator and protected manifest | BB-104, BB-130, BB-125 | P1: agent-edited test cannot substitute acceptance |
+| BB-128 | Confirmed operator mismatch | Grok/OpenCode capability parity in deliver | BB-104, BB-122 | P1: small usable increment for available CLI |
+| BB-129 | Confirmed handoff gap; GC loss untested | Portable exact candidate review/replay bundle | BB-127 | P1: another developer can inspect and use the result |
+
+All seven are PLANNED RESEARCH_SA/RESEARCH with DRAFT plans, proposed future tests, task-specific researchGaps and no readiness/delivery verdict. Research can run ahead; Worker waits for the listed dependencies DONE. Existing task bodies/plans/judgments remain unchanged. One canonical objective/plan/discovery artifact per new task; allocation is BB-131.
+
+## Delivery queue by useful outcome
+
+1. **Protect the existing path:** finish BB-106/108/107 and BB-120, then prioritize BB-125/123/124. These are real bounded defects, not new architecture programs.
+2. **Make the local path usable:** BB-122 then BB-128; BB-121 composes supervised agents into durable Board. BB-104 is delivered in the refreshed graph.
+3. **Return a change another developer can trust:** BB-127 protected local acceptance then BB-129 review/replay handoff. These do not wait on the OpenHands/async profile; their own direct edges still apply.
+4. **Prove efficiency before expanding:** BB-099 per-tool fixed-factor comparison and BB-077 harness isolation. Research BB-126 now, but measure held-out accepted quality and observed cost coverage before a runtime default/promotion decision.
+5. **Continue the broader product:** BB-055/057..059, BB-066..076, BB-078..081, BB-093..095 and BB-083..086 keep their accepted sequence. Release and end-to-end value remain BB-074/076 obligations.
+
+These priorities are not dependency edges. Serialize/rebase overlapping supervisor/recovery/deliver-slice writes without inventing semantic dependencies.
+
+## Existing work to reuse, not duplicate
+
+- BB-106 test wiring, BB-107 planner reservation and BB-108 typed facade boundaries already own the confirmed Oracle/regression debt.
+- BB-120 explicit inherited agent env; BB-121 durable supervised Backend strategy; BB-122 OpenCode adapter.
+- BB-067 sandbox, time/token/cost ceilings and cancellation; BB-068 SCM/CI; BB-072 operations; BB-073 installable support. New local tasks do not claim these capabilities.
+- BB-099 owns supervised/direct/DIRECT_RETRY study; BB-074 owns end-to-end value, reviewer/human effort and lifecycle; BB-075/086 own evaluated HOW improvement and promotion.
+- BB-083/084/085/086 preserve Observed Implementation -> Feedback Lifecycle -> Self-Improve separation. Single-run retry efficiency is not cross-episode learning.
+
+## Evidence and research exit
+
+The [source ledger](../evidence/BB-130/research-sources.json) pins primary docs and a 1,000-star-eligible Codex source example. External practices justify discriminating experiments, not an ExHarness productivity claim. Local probes establish reproducible gaps; live provider quality, saved cost and release behavior remain unmeasured.
+
+Research must finish the exact API/compatibility/threat/measurement gaps, objective coverage/source anchors and named subject-invoking negative bindings before fresh Jev. DRAFT tests are proposed implementation outputs, not files claimed to exist now. Keep paid/model experiments optional and budgeted, preserve failed/inconclusive findings, and report accepted quality, observed accounting coverage, elapsed time, reviewer steps and repeated-run reliability separately.

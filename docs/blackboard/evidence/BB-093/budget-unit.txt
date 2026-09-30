@@ -1,0 +1,73 @@
+TAP version 13
+# Subtest: budget profile validates and carries a deterministic profileId
+ok 1 - budget profile validates and carries a deterministic profileId
+  ---
+  duration_ms: 3.568295
+  type: 'test'
+  ...
+# Subtest: budget profile rejects non-positive counters
+ok 2 - budget profile rejects non-positive counters
+  ---
+  duration_ms: 0.534255
+  type: 'test'
+  ...
+# Subtest: budget derivation rejects a maxMaterializedBytes at or below zero
+ok 3 - budget derivation rejects a maxMaterializedBytes at or below zero
+  ---
+  duration_ms: 0.490153
+  type: 'test'
+  ...
+# Subtest: deriveRequirementBudget derives the exact requirement budget
+ok 4 - deriveRequirementBudget derives the exact requirement budget
+  ---
+  duration_ms: 0.747862
+  type: 'test'
+  ...
+# Subtest: deriveNextStepBudget returns the remaining per-counter budget
+ok 5 - deriveNextStepBudget returns the remaining per-counter budget
+  ---
+  duration_ms: 1.300932
+  type: 'test'
+  ...
+# Subtest: deriveNextStepBudget rejects any exhausted counter
+ok 6 - deriveNextStepBudget rejects any exhausted counter
+  ---
+  duration_ms: 0.515568
+  type: 'test'
+  ...
+# Subtest: measureTokens reports UNKNOWN without a declared tokenizer
+ok 7 - measureTokens reports UNKNOWN without a declared tokenizer
+  ---
+  duration_ms: 0.215113
+  type: 'test'
+  ...
+# Subtest: measureTokens reports UNKNOWN on tokenizer identity mismatch
+ok 8 - measureTokens reports UNKNOWN on tokenizer identity mismatch
+  ---
+  duration_ms: 0.346612
+  type: 'test'
+  ...
+# Subtest: measureTokens reports the injected count under an exact tokenizer identity
+ok 9 - measureTokens reports the injected count under an exact tokenizer identity
+  ---
+  duration_ms: 0.371034
+  type: 'test'
+  ...
+# Subtest: oracle budget source imports no Core module
+ok 10 - oracle budget source imports no Core module
+  ---
+  duration_ms: 1.121311
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 84.91303
+
+
+exitCode=0
