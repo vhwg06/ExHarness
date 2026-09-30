@@ -377,9 +377,8 @@ export function materialize(root, id, { readiness = false } = {}) {
   const stateHash = hash(state), specHash = hash({ policy:spec.policy, questions });
   const cacheKey = hash({ stateHash, specHash, model: spec.model, policy: POLICY, lane });
   const payload = { model: spec.model, state, questions };
-  const payloadBytes=Buffer.byteLength(canonical(payload));
   const maxPayloadBytes=lane==='RESEARCH_SA'?Math.min(spec.maxPayloadBytes,spec.maxResearchPayloadBytes??98304):spec.maxPayloadBytes;
-  check(payloadBytes <= maxPayloadBytes, 'payload exceeds budget; refine evidence without dropping required coverage');
+  checkPayloadBudget(payload, { lane, maxPayloadBytes, batchOptions: lane === 'WORKER' ? () => batchOptions({ livingChanges, candidateChanges, changeSet }) : null });
   return { lane, subject, payload, stateHash, specHash, cacheKey, ...(livingChanges ? { livingChanges } : {}), ...(candidateChanges ? { candidateChanges } : {}), ...(changeSet ? { changeSet } : {}) };
 }
 export function validateResponse(response, payload) {
@@ -1122,6 +1121,28 @@ function manifestEntry(batch) {
 }
 function workerBatches(fullPayload, options = {}) {
   return Object.keys(fullPayload.questions).flatMap(id => workerQuestionBatches(fullPayload, id, options));
+}
+/**
+ * The payload budget bounds what one provider request can carry.
+ * A payload that is sent whole (every RESEARCH_SA payload, and a WORKER payload within the batch limit)
+ * must itself fit `maxPayloadBytes`. A larger WORKER payload is never sent whole: evaluate() sends only its
+ * bounded per-question batches, so the budget applies to each batch. Materialization therefore builds the
+ * exact batch manifest evaluate() will use and fails closed when any batch cannot fit, before any provider
+ * call. The full canonical state stays local; it is hashed into stateHash/cacheKey, not transmitted.
+ */
+export function checkPayloadBudget(payload, { lane, maxPayloadBytes, batchOptions = null }) {
+  check(Number.isInteger(maxPayloadBytes) && maxPayloadBytes > 0, 'invalid payload budget');
+  const bytes = payloadBytes(payload);
+  if (lane !== 'WORKER' || bytes <= WORKER_BATCH_MAX_BYTES) {
+    check(bytes <= maxPayloadBytes, 'payload exceeds budget; refine evidence without dropping required coverage');
+    return { mode: 'SINGLE_REQUEST', payloadBytes: bytes, requests: 1, maxRequestBytes: bytes, totalRequestBytes: bytes };
+  }
+  check(WORKER_BATCH_MAX_BYTES <= maxPayloadBytes, 'payload exceeds budget; worker batch limit is above the policy request budget');
+  const manifest = workerBatchManifest(payload, typeof batchOptions === 'function' ? batchOptions() : (batchOptions ?? {}));
+  const sizes = manifest.map(entry => entry.payloadBytes);
+  const maxRequestBytes = Math.max(...sizes);
+  check(maxRequestBytes <= Math.min(WORKER_BATCH_MAX_BYTES, maxPayloadBytes), 'payload exceeds budget; refine evidence without dropping required coverage');
+  return { mode: 'BOUNDED_BATCHES', payloadBytes: bytes, requests: manifest.length, maxRequestBytes, totalRequestBytes: sizes.reduce((a, b) => a + b, 0) };
 }
 export function workerBatchManifest(fullPayload, options = {}) {
   return workerBatches(fullPayload, options).map(manifestEntry);
