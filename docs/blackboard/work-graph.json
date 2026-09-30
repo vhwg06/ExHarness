@@ -189,10 +189,12 @@
       "featureIds": [
         "FEATURE-AGENT-TOOL-SUPERVISION",
         "FEATURE-AGENT-TOOL-OBSERVATION",
-        "FEATURE-AGENT-TOOL-VALUE"
+        "FEATURE-AGENT-TOOL-VALUE",
+        "FEATURE-AGENT-TOOL-GROK"
       ],
       "artifactRefs": [
-        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+        "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json"
       ]
     },
     {
@@ -868,6 +870,20 @@
         "docs/blackboard/process/agent-tool-research/BB-099.md"
       ],
       "acceptanceTaskId": "BB-099"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-GROK",
+      "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+      "kind": "FEATURE",
+      "title": "Add Grok Build as a supported agent tool",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-105"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-105.md"
+      ],
+      "acceptanceTaskId": "BB-105"
     },
     {
       "id": "FEATURE-AGENT-TOOL-BACKEND-STRATEGY",
@@ -3655,7 +3671,7 @@
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-099.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-099.json",
-        "researchBaselineSha": "d8efa2225501ddf39d19f77723fff1aaa6291b80"
+        "researchBaselineSha": "2815b5c56320e8e9158e4fd351363cb0b0432e2c"
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
@@ -3813,10 +3829,13 @@
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-102.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-102.json",
-        "researchBaselineSha": "7de5761c31d8799021361fb158db756e8e266943"
+        "researchBaselineSha": "e1bc04363bf88c797e8af9535b4adf689fd5d0cb",
+        "evaluationRef": "docs/blackboard/artifacts/ready-implement-plan/BB-102.readiness-jev-evaluation.json",
+        "evidenceRef": "docs/blackboard/artifacts/ready-implement-plan/BB-102.implementation-result.json",
+        "lastEvaluatedInput": "f2a00a63cded9a6dc3a7df8bdbfa07767d85b8591b241f8a422feb1477682645"
       },
-      "lane": "RESEARCH_SA",
-      "phase": "RESEARCH"
+      "lane": "WORKER",
+      "phase": "EXECUTION"
     },
     {
       "id": "BB-103",
@@ -3924,10 +3943,67 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-105",
+      "featureId": "FEATURE-AGENT-TOOL-GROK",
+      "title": "Add Grok Build as a supported agent tool",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-098",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-105.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-105.json",
+          "docs/blackboard/process/agent-tool-research/BB-105.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-105/grok-cli-probe.mjs",
+          "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/observation.md",
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify a grok adapter in the delivered AGENT_TOOLS registry that builds a shell-free headless invocation with JSON output, pinned model, cwd, prompt-file outside the worktree, permission-profile mapping to --always-approve or --permission-mode acceptEdits, default --disable-web-search and --no-subagents, a version probe, and TOOL_UNAVAILABLE when the executable is missing.",
+        "Specify a grok output parser that reports real token usage and total_cost_usd from grok JSON when those fields are present as numbers, and otherwise records null with an explicit unavailable reason, never an estimate; traces redact the prompt.",
+        "Specify that the same adapter serves direct runObservedInvocation and supervised runSupervisedTask arms, and that exharness-agent probe and smoke accept --tool grok with live smoke remaining opt-in and absent from npm test.",
+        "Specify a deterministic fake grok CLI fixture, named tests, Living docs and the package README that list grok beside Codex, Kiro and agy.",
+        "Ground the design in the executed grok CLI probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-105.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-105.json",
+        "researchBaselineSha": "c09b703ff0645efb989c8cd7db69ae7112ac3e94"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-105",
+    "nextWorkId": "BB-106",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

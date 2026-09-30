@@ -1,0 +1,264 @@
+{
+  "kind": "BB105_GROK_CLI_PROBE_RESULT",
+  "schemaVersion": 1,
+  "platform": "linux-x64",
+  "node": "v22.23.3",
+  "grokOnDefaultPath": false,
+  "resolvedBinary": {
+    "found": true,
+    "source": "HOME_INSTALL_EXISTS",
+    "layout": "~/.grok/bin/grok"
+  },
+  "cliVersion": {
+    "exitCode": 0,
+    "text": "grok 1.0.44 (5b807183dd79)"
+  },
+  "help": {
+    "exitCode": 0,
+    "flags": {
+      "--prompt-file": true,
+      "--output-format": true,
+      "json": true,
+      "streaming-messages-json": true,
+      "-m": true,
+      "--model": true,
+      "--cwd": true,
+      "--always-approve": true,
+      "--allow": true,
+      "--deny": true,
+      "--no-subagents": true,
+      "--disable-web-search": true,
+      "--no-auto-update": false,
+      "-r": true,
+      "--resume": true,
+      "--session-id": true,
+      "-p": true,
+      "--single": true,
+      "--permission-mode": true,
+      "--continue": true,
+      "acceptEdits": true,
+      "bypassPermissions": true
+    },
+    "helpLines": [
+      "--always-approve",
+      "--disable-web-search",
+      "When resuming (`--resume` / `--continue`), create a new session ID instead of reusing the original (optionally set via `--session-id`)",
+      "JSON Schema for structured output. When set, the model is constrained to produce JSON matching this schema. Implies --output-format json. Example: --json-schema '{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"}}}'",
+      "--no-subagents",
+      "--permission-mode <MODE>",
+      "--prompt-file <PATH>",
+      "-r, --resume [<SESSION_ID_OR_TITLE>]",
+      "-s, --session-id <SESSION_ID>",
+      "Use a specific session UUID for a **new** conversation (must be a valid UUID and must not already exist under the target session directory). With `--resume`/`--continue`, only valid together with `--fork-session` (names the forked session). Does not resume existing sessions, use `--resume` / `--continue` instead",
+      "Start the session in a new git worktree, optionally named. With `--resume` of a remote session, pass `--restore-code` to apply the snapshot codebase (conversation is restored either way)"
+    ]
+  },
+  "hiddenFlags": {
+    "noAutoUpdateAccepted": true,
+    "unknownFlagRejected": true
+  },
+  "missingBinary": {
+    "command": "grok-not-installed-bb105",
+    "errorCode": "ENOENT",
+    "exitCode": null,
+    "timedOut": false
+  },
+  "configLocationsPresent": {
+    "grok ~/.grok": true,
+    "grok ~/.grok/bin/grok": true
+  },
+  "liveRuns": [
+    {
+      "id": "live-1-prompt-file-json",
+      "argv": [
+        "--output-format",
+        "json",
+        "-m",
+        "grok-4.6",
+        "--cwd",
+        "<temp-git-repo>",
+        "--always-approve",
+        "--disable-web-search",
+        "--no-subagents",
+        "--no-auto-update",
+        "--prompt-file",
+        "<temp-git-repo>/PROMPT.txt"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "timedOut": false,
+      "error": null,
+      "durationMs": 5917,
+      "stdoutChars": 856,
+      "stderrChars": 0,
+      "stderrExcerpt": "",
+      "json": {
+        "parsed": true,
+        "parseError": null,
+        "topLevelKeys": [
+          "modelUsage",
+          "num_turns",
+          "requestId",
+          "sessionId",
+          "stopReason",
+          "text",
+          "total_cost_usd",
+          "total_cost_usd_ticks",
+          "usage"
+        ],
+        "usageKeys": [
+          "cache_creation_input_tokens",
+          "cache_read_input_tokens",
+          "input_tokens",
+          "output_tokens",
+          "reasoning_tokens",
+          "total_tokens"
+        ],
+        "usageView": {
+          "sessionId": "01a0f279-85a4-7231-a9c7-05080eb6dd2e",
+          "requestIdPresent": true,
+          "stopReason": "end_turn",
+          "num_turns": 3,
+          "total_cost_usd": 0.01200404,
+          "total_cost_usd_ticks": 120040400,
+          "usage": {
+            "input_tokens": null,
+            "cache_read_input_tokens": 42752,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 239,
+            "reasoning_tokens": 117
+          },
+          "textChars": 176,
+          "inputTokensKeyPresent": true,
+          "inputTokensValueNote": "usage.input_tokens key was present; the integer was not retained after a first-pass substring redaction of TOKEN. Parser must still read the field when it is an integer."
+        }
+      },
+      "editedCwd": {
+        "helloTxtExists": true,
+        "helloTxt": "hi",
+        "porcelain": "?? PROMPT.txt\n?? hello.txt"
+      }
+    },
+    {
+      "id": "live-2-positional-prompt-json",
+      "argv": [
+        "--output-format",
+        "json",
+        "-m",
+        "grok-4.6",
+        "--cwd",
+        "<temp-git-repo>",
+        "--always-approve",
+        "--disable-web-search",
+        "--no-subagents",
+        "--no-auto-update",
+        "Create a file named hello.txt containing exactly the two characters hi and nothing else. Do not create other files. Do not run tests. Do not use web search."
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "timedOut": false,
+      "error": null,
+      "durationMs": 50,
+      "stdoutChars": 0,
+      "stderrChars": 46,
+      "stderrExcerpt": "Error: No such device or address (os error 6)",
+      "json": {
+        "parsed": false,
+        "parseError": "no-json-object",
+        "topLevelKeys": [],
+        "usageKeys": [],
+        "usageView": null
+      },
+      "editedCwd": {
+        "helloTxtExists": false,
+        "helloTxt": null,
+        "porcelain": ""
+      }
+    }
+  ],
+  "conclusions": {
+    "grokInstalledButNotOnDefaultPath": true,
+    "headlessJson": true,
+    "streamingMessagesJson": true,
+    "promptFile": true,
+    "positionalPrompt": true,
+    "modelFlag": true,
+    "cwdFlag": true,
+    "alwaysApprove": true,
+    "allowDeny": true,
+    "noSubagents": true,
+    "disableWebSearch": true,
+    "noAutoUpdateHidden": true,
+    "resumeFlag": true,
+    "sessionIdIsNewOnly": true,
+    "permissionModeAcceptEdits": true,
+    "missingBinaryIsEnoent": true,
+    "liveJsonTopLevelKeys": [
+      "modelUsage",
+      "num_turns",
+      "requestId",
+      "sessionId",
+      "stopReason",
+      "text",
+      "total_cost_usd",
+      "total_cost_usd_ticks",
+      "usage"
+    ],
+    "liveUsageKeys": [
+      "cache_creation_input_tokens",
+      "cache_read_input_tokens",
+      "input_tokens",
+      "output_tokens",
+      "reasoning_tokens",
+      "total_tokens"
+    ],
+    "liveUsageView": {
+      "sessionId": "01a0f279-85a4-7231-a9c7-05080eb6dd2e",
+      "requestIdPresent": true,
+      "stopReason": "end_turn",
+      "num_turns": 3,
+      "total_cost_usd": 0.01200404,
+      "total_cost_usd_ticks": 120040400,
+      "usage": {
+        "input_tokens": null,
+        "cache_read_input_tokens": 42752,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 239,
+        "reasoning_tokens": 117
+      },
+      "textChars": 176,
+      "inputTokensKeyPresent": true,
+      "inputTokensValueNote": "usage.input_tokens key was present; the integer was not retained after a first-pass substring redaction of TOKEN. Parser must still read the field when it is an integer."
+    },
+    "liveEditedHelloTxt": true,
+    "liveHelloTxt": "hi",
+    "positionalPromptEnxioWithoutTty": true,
+    "headlessRequiresPromptFile": true,
+    "permissionMapping": {
+      "WORKSPACE_EDIT": [
+        "--permission-mode",
+        "acceptEdits"
+      ],
+      "FULL_AUTO": [
+        "--always-approve"
+      ]
+    },
+    "resumeMapping": {
+      "withSessionRef": [
+        "--resume",
+        "<sessionId>"
+      ],
+      "withoutSessionRef": [
+        "--continue"
+      ]
+    },
+    "usageMapping": {
+      "inputTokens": "usage.input_tokens",
+      "cachedInputTokens": "usage.cache_read_input_tokens",
+      "outputTokens": "usage.output_tokens",
+      "totalCostUsd": "total_cost_usd",
+      "sessionRef": "sessionId",
+      "absentReason": "GROK_USAGE_NOT_REPORTED"
+    }
+  }
+}
