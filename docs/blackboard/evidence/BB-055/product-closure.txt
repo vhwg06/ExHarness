@@ -1,0 +1,37 @@
+TAP version 13
+# Subtest: eligible projection closes and becomes CURRENT
+ok 1 - eligible projection closes and becomes CURRENT
+  ---
+  duration_ms: 43.489839
+  type: 'test'
+  ...
+# Subtest: NOT_READY projection cannot close
+ok 2 - NOT_READY projection cannot close
+  ---
+  duration_ms: 17.811793
+  type: 'test'
+  ...
+# Subtest: Hn projection cannot close after Hn+1.
+ok 3 - Hn projection cannot close after Hn+1.
+  ---
+  duration_ms: 25.015977
+  type: 'test'
+  ...
+# Subtest: a newer outcome head rejects a superseded close without blind retry
+ok 4 - a newer outcome head rejects a superseded close without blind retry
+  ---
+  duration_ms: 33.914725
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 189.456553
+
+
+exitCode=0

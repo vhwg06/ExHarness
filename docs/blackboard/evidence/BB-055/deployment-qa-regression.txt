@@ -1,0 +1,103 @@
+TAP version 13
+# Subtest: an ACCEPT DevOps completion publishes one immutable DeploymentRelease and CAS-advances the environment head
+ok 1 - an ACCEPT DevOps completion publishes one immutable DeploymentRelease and CAS-advances the environment head
+  ---
+  duration_ms: 175.750419
+  type: 'test'
+  ...
+# Subtest: DevOps strategy success without an ACCEPT completion cannot publish a DeploymentRelease
+ok 2 - DevOps strategy success without an ACCEPT completion cannot publish a DeploymentRelease
+  ---
+  duration_ms: 84.692354
+  type: 'test'
+  ...
+# Subtest: a failed rollout publishes no deployment evidence and cannot become a release
+ok 3 - a failed rollout publishes no deployment evidence and cannot become a release
+  ---
+  duration_ms: 119.36823
+  type: 'test'
+  ...
+# Subtest: only DevOps can advance DeploymentReleaseHead; a Product QA judgment cannot publish a release
+ok 4 - only DevOps can advance DeploymentReleaseHead; a Product QA judgment cannot publish a release
+  ---
+  duration_ms: 18.582379
+  type: 'test'
+  ...
+# Subtest: a newer release becomes current while the previous release stays resolvable unchanged
+ok 5 - a newer release becomes current while the previous release stays resolvable unchanged
+  ---
+  duration_ms: 223.294501
+  type: 'test'
+  ...
+# Subtest: the release-head guard rejects a stale release and holds back release publication while held
+ok 6 - the release-head guard rejects a stale release and holds back release publication while held
+  ---
+  duration_ms: 234.59776
+  type: 'test'
+  ...
+# Subtest: a deployment change before QA starts invalidates the verification target and publishes no acceptance
+ok 7 - a deployment change before QA starts invalidates the verification target and publishes no acceptance
+  ---
+  duration_ms: 370.485775
+  type: 'test'
+  ...
+# Subtest: a deployment change during QA prevents current QualityAcceptance for the changed release
+ok 8 - a deployment change during QA prevents current QualityAcceptance for the changed release
+  ---
+  duration_ms: 260.972234
+  type: 'test'
+  ...
+# Subtest: final QualityAcceptance commit holds the release guard so a concurrent release cannot become accepted
+ok 9 - final QualityAcceptance commit holds the release guard so a concurrent release cannot become accepted
+  ---
+  duration_ms: 294.146486
+  type: 'test'
+  ...
+# Subtest: matching independent observation, passing criteria and an ACCEPT QA completion publish one QualityAcceptance
+ok 10 - matching independent observation, passing criteria and an ACCEPT QA completion publish one QualityAcceptance
+  ---
+  duration_ms: 226.253988
+  type: 'test'
+  ...
+# Subtest: an independent observer mismatch yields no QualityAcceptance
+ok 11 - an independent observer mismatch yields no QualityAcceptance
+  ---
+  duration_ms: 179.529622
+  type: 'test'
+  ...
+# Subtest: a mixed old/new rollout is not accepted by default
+ok 12 - a mixed old/new rollout is not accepted by default
+  ---
+  duration_ms: 173.042479
+  type: 'test'
+  ...
+# Subtest: a matching runtime observation without an ACCEPT completion and publication creates no QualityAcceptance
+ok 13 - a matching runtime observation without an ACCEPT completion and publication creates no QualityAcceptance
+  ---
+  duration_ms: 147.718086
+  type: 'test'
+  ...
+# Subtest: QA strategy SUCCEEDED with a non-ACCEPT completion creates no QualityAcceptance
+ok 14 - QA strategy SUCCEEDED with a non-ACCEPT completion creates no QualityAcceptance
+  ---
+  duration_ms: 116.612099
+  type: 'test'
+  ...
+# Subtest: DevOps cannot issue a QA verdict and a QA judgment for another snapshot cannot accept this one
+ok 15 - DevOps cannot issue a QA verdict and a QA judgment for another snapshot cannot accept this one
+  ---
+  duration_ms: 147.31909
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1123.066448
+
+
+exitCode=0
