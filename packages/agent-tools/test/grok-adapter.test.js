@@ -23,8 +23,10 @@ import {
   runObservedInvocation,
   runSupervisedTask,
   summarizeTraces,
-  createRunTraceWriter
+  createRunTraceWriter,
+  createRedactor
 } from "../src/index.js";
+import { redactArgv } from "../src/run-trace.js";
 import { auditPaths } from "./scope-audit.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -218,6 +220,9 @@ test("GR2 argvRedacted does not contain the prompt", T, async () => {
     });
     assert.equal(trace.promptSha256, sha256(prompt));
     assert.equal(trace.argvRedacted.join("\n").includes(prompt), false, "argvRedacted never stores the prompt verbatim");
+    const redactor = createRedactor({ env: {} });
+    const directArgv = redactArgv(grokTool, { prompt, resume: null, permissionProfile: PermissionProfile.WORKSPACE_EDIT, promptFile: join(dir, "prompt.txt"), cwd: root }, 30000, redactor);
+    assert.equal(directArgv.join("\n").includes(prompt), false, "redactArgv never stores the prompt verbatim");
     assert.deepEqual(readTraces(dir).length, 1);
     const report = summarizeTraces(readTraces(dir));
     assert.equal(report.groups[0].usage.totalCostUsdOverCoveredTraces, 0.01200404);
@@ -320,6 +325,9 @@ test("GR3 npm test does not run live grok smoke", T, () => {
   for (const name of ["test", "verify"]) assert.doesNotMatch(scripts[name], /smoke:agent-tools|exharness-agent\.mjs smoke/, `${name} runs no live agent`);
   assert.equal(scripts["smoke:agent-tools"], "node packages/agent-tools/bin/exharness-agent.mjs smoke");
   assert.match(readFileSync(BIN, "utf8"), /codex\|kiro\|agy\|grok/);
+  const { args, stdin } = grokTool.buildInvocation({ prompt: "smoke check", resume: null, permissionProfile: PermissionProfile.WORKSPACE_EDIT, promptFile: join(tmpdir(), "prompt.txt"), cwd: tmpdir() });
+  assert.equal(args.some((word) => /smoke/.test(word)), false, "grok argv never triggers a live smoke run");
+  assert.equal(stdin, null);
 });
 
 // ---------------------------------------------------------------- GR4 fake CLI and missing binary
