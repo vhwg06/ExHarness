@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { createBenchmarkUnit, createExperimentRegistration } from "@exharness/benchmark";
+import { createBenchmarkUnit, createExperimentRegistration } from "../../../benchmark/src/index.js";
 import { ARMS, assertMatchedFactors } from "./arms.js";
 
 export const PROTOCOL_ID = "AGENT_TOOLS_VALUE_V1";

@@ -57,7 +57,7 @@ Producer exit status is telemetry and never quality.
 
 ## Pre-registration and records
 
-Each tool gets one experiment registration (`agent-tools-value:<tool>`), made through the shared benchmark kernel (`@exharness/benchmark`, package root only). The registration contains:
+Each tool gets one experiment registration (`agent-tools-value:<tool>`), made through the shared benchmark kernel (the `packages/benchmark` public entry `src/index.js`, imported by relative path so no install step is needed). The registration contains:
 - a protocol hash over the arms, fixed factors, repeats, seed, decision rule and caps;
 - the suite digest;
 - a producer profile, including the expected tool version;

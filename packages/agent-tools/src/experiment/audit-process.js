@@ -3,7 +3,7 @@
 // kernel auditAttempt with the persisted ledger events and a shared reset registry.
 import { readFile, readdir } from "node:fs/promises";
 import { join, normalize, sep } from "node:path";
-import { auditAttempt } from "@exharness/benchmark";
+import { auditAttempt } from "../../../benchmark/src/index.js";
 
 const out = process.argv[2];
 const readJson = async (path) => JSON.parse(await readFile(path, "utf8"));

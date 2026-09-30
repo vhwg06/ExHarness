@@ -7,7 +7,7 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { AttemptLedger, createEvidenceManifest, normalizeAccounting, normalizeOutcome } from "@exharness/benchmark";
+import { AttemptLedger, createEvidenceManifest, normalizeAccounting, normalizeOutcome } from "../../../benchmark/src/index.js";
 import { createLocalCommandVerifier, createLocalGitWorkspace } from "../../../agentic-system/src/index.js";
 import { InvocationStatus, runProcess } from "../process-runner.js";
 import { createRunTraceWriter } from "../run-trace.js";
