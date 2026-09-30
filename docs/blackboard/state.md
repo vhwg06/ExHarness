@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-082
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-082
-task: Define trusted objective supersession and research reset control
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-082/current.json
-components: outer/blackboard
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -89,7 +82,7 @@ BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
 BB-081 [BLOCKED_BY BB-077,BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
-BB-082 [ACTIVE] <- ROOT
+BB-082 [PLANNED] <- ROOT
 BB-083 [BLOCKED_BY BB-059,BB-065] <- BB-059, BB-064, BB-065
 BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
 BB-085 [BLOCKED_BY BB-084] <- BB-084
