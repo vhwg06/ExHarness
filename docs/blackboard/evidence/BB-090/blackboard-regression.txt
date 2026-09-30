@@ -1,0 +1,637 @@
+
+> verify:blackboard-context
+> npm run verify:blackboard-artifacts && npm run verify:blackboard-work-graph && node scripts/blackboard-context-verify.mjs && npm run test:blackboard-context && npm run test:blackboard-jev && npm run eval:blackboard-context
+
+
+> verify:blackboard-artifacts
+> node scripts/blackboard-artifact-verify.mjs && npm run test:blackboard-artifacts
+
+{"ok":true,"blackboardArtifacts":176,"files":["docs/blackboard/artifacts/objective/BB-048.json","docs/blackboard/artifacts/objective/BB-048.source.json","docs/blackboard/artifacts/objective/BB-052.json","docs/blackboard/artifacts/objective/BB-052.source.json","docs/blackboard/artifacts/objective/BB-053.json","docs/blackboard/artifacts/objective/BB-053.source.json","docs/blackboard/artifacts/objective/BB-054.json","docs/blackboard/artifacts/objective/BB-054.source.json","docs/blackboard/artifacts/objective/BB-055.json","docs/blackboard/artifacts/objective/BB-055.source.json","docs/blackboard/artifacts/objective/BB-056.json","docs/blackboard/artifacts/objective/BB-057.json","docs/blackboard/artifacts/objective/BB-058.json","docs/blackboard/artifacts/objective/BB-059.json","docs/blackboard/artifacts/objective/BB-060.json","docs/blackboard/artifacts/objective/BB-061.json","docs/blackboard/artifacts/objective/BB-062.json","docs/blackboard/artifacts/objective/BB-063.json","docs/blackboard/artifacts/objective/BB-064.json","docs/blackboard/artifacts/objective/BB-065.json","docs/blackboard/artifacts/objective/BB-066.json","docs/blackboard/artifacts/objective/BB-067.json","docs/blackboard/artifacts/objective/BB-068.json","docs/blackboard/artifacts/objective/BB-069.json","docs/blackboard/artifacts/objective/BB-070.json","docs/blackboard/artifacts/objective/BB-071.json","docs/blackboard/artifacts/objective/BB-072.json","docs/blackboard/artifacts/objective/BB-073.json","docs/blackboard/artifacts/objective/BB-074.json","docs/blackboard/artifacts/objective/BB-075.json","docs/blackboard/artifacts/objective/BB-076.json","docs/blackboard/artifacts/objective/BB-077.json","docs/blackboard/artifacts/objective/BB-078.json","docs/blackboard/artifacts/objective/BB-079.json","docs/blackboard/artifacts/objective/BB-080.json","docs/blackboard/artifacts/objective/BB-081.json","docs/blackboard/artifacts/objective/BB-082.json","docs/blackboard/artifacts/objective/BB-083.json","docs/blackboard/artifacts/objective/BB-084.json","docs/blackboard/artifacts/objective/BB-085.json","docs/blackboard/artifacts/objective/BB-086.json","docs/blackboard/artifacts/objective/BB-087.json","docs/blackboard/artifacts/objective/BB-088.json","docs/blackboard/artifacts/objective/BB-089.json","docs/blackboard/artifacts/objective/BB-090.json","docs/blackboard/artifacts/objective/BB-091.json","docs/blackboard/artifacts/objective/BB-092.json","docs/blackboard/artifacts/objective/BB-093.json","docs/blackboard/artifacts/objective/BB-094.json","docs/blackboard/artifacts/objective/BB-095.json","docs/blackboard/artifacts/objective/BB-096.json","docs/blackboard/artifacts/objective/BB-097.json","docs/blackboard/artifacts/objective/BB-098.json","docs/blackboard/artifacts/objective/BB-099.json","docs/blackboard/artifacts/ready-implement-plan/BB-048.implementation-result.json","docs/blackboard/artifacts/ready-implement-plan/BB-048.json","docs/blackboard/artifacts/ready-implement-plan/BB-048.judgment.json","docs/blackboard/artifacts/ready-implement-plan/BB-048.source.json","docs/blackboard/artifacts/ready-implement-plan/BB-052.candidate-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-052.delivered-feature.json","docs/blackboard/artifacts/ready-implement-plan/BB-052.implementation-result.json","docs/blackboard/artifacts/ready-implement-plan/BB-052.json","docs/blackboard/artifacts/ready-implement-plan/BB-052.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-052.source.json","docs/blackboard/artifacts/ready-implement-plan/BB-053.json","docs/blackboard/artifacts/ready-implement-plan/BB-053.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-053.source.json","docs/blackboard/artifacts/ready-implement-plan/BB-054.json","docs/blackboard/artifacts/ready-implement-plan/BB-054.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-054.source.json","docs/blackboard/artifacts/ready-implement-plan/BB-055.json","docs/blackboard/artifacts/ready-implement-plan/BB-055.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-056.candidate-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-056.delivered-feature.json","docs/blackboard/artifacts/ready-implement-plan/BB-056.implementation-result.json","docs/blackboard/artifacts/ready-implement-plan/BB-056.json","docs/blackboard/artifacts/ready-implement-plan/BB-056.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-057.json","docs/blackboard/artifacts/ready-implement-plan/BB-057.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-058.json","docs/blackboard/artifacts/ready-implement-plan/BB-058.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-059.json","docs/blackboard/artifacts/ready-implement-plan/BB-059.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-060.candidate-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-060.delivered-feature.json","docs/blackboard/artifacts/ready-implement-plan/BB-060.implementation-result.json","docs/blackboard/artifacts/ready-implement-plan/BB-060.json","docs/blackboard/artifacts/ready-implement-plan/BB-060.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-061.candidate-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-061.delivered-feature.json","docs/blackboard/artifacts/ready-implement-plan/BB-061.implementation-result.json","docs/blackboard/artifacts/ready-implement-plan/BB-061.json","docs/blackboard/artifacts/ready-implement-plan/BB-061.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-062.candidate-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-062.delivered-feature.json","docs/blackboard/artifacts/ready-implement-plan/BB-062.implementation-result.json","docs/blackboard/artifacts/ready-implement-plan/BB-062.json","docs/blackboard/artifacts/ready-implement-plan/BB-062.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-063.candidate-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-063.delivered-feature.json","docs/blackboard/artifacts/ready-implement-plan/BB-063.implementation-result.json","docs/blackboard/artifacts/ready-implement-plan/BB-063.json","docs/blackboard/artifacts/ready-implement-plan/BB-063.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-064.candidate-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-064.delivered-feature.json","docs/blackboard/artifacts/ready-implement-plan/BB-064.implementation-result.json","docs/blackboard/artifacts/ready-implement-plan/BB-064.json","docs/blackboard/artifacts/ready-implement-plan/BB-064.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-065.json","docs/blackboard/artifacts/ready-implement-plan/BB-065.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-066.json","docs/blackboard/artifacts/ready-implement-plan/BB-066.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-067.json","docs/blackboard/artifacts/ready-implement-plan/BB-067.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-068.json","docs/blackboard/artifacts/ready-implement-plan/BB-068.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-069.json","docs/blackboard/artifacts/ready-implement-plan/BB-069.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-070.json","docs/blackboard/artifacts/ready-implement-plan/BB-070.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-071.json","docs/blackboard/artifacts/ready-implement-plan/BB-071.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-072.json","docs/blackboard/artifacts/ready-implement-plan/BB-072.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-073.json","docs/blackboard/artifacts/ready-implement-plan/BB-073.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-074.json","docs/blackboard/artifacts/ready-implement-plan/BB-074.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-075.json","docs/blackboard/artifacts/ready-implement-plan/BB-075.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-076.json","docs/blackboard/artifacts/ready-implement-plan/BB-076.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-077.json","docs/blackboard/artifacts/ready-implement-plan/BB-077.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-078.json","docs/blackboard/artifacts/ready-implement-plan/BB-078.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-079.json","docs/blackboard/artifacts/ready-implement-plan/BB-079.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-080.json","docs/blackboard/artifacts/ready-implement-plan/BB-080.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-081.json","docs/blackboard/artifacts/ready-implement-plan/BB-081.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-082.json","docs/blackboard/artifacts/ready-implement-plan/BB-082.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-083.json","docs/blackboard/artifacts/ready-implement-plan/BB-083.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-084.json","docs/blackboard/artifacts/ready-implement-plan/BB-084.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-085.json","docs/blackboard/artifacts/ready-implement-plan/BB-085.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-086.json","docs/blackboard/artifacts/ready-implement-plan/BB-086.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-087.json","docs/blackboard/artifacts/ready-implement-plan/BB-087.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-088.json","docs/blackboard/artifacts/ready-implement-plan/BB-088.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-089.json","docs/blackboard/artifacts/ready-implement-plan/BB-089.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-090.json","docs/blackboard/artifacts/ready-implement-plan/BB-090.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-091.json","docs/blackboard/artifacts/ready-implement-plan/BB-091.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-092.json","docs/blackboard/artifacts/ready-implement-plan/BB-092.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-093.json","docs/blackboard/artifacts/ready-implement-plan/BB-093.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-094.json","docs/blackboard/artifacts/ready-implement-plan/BB-094.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-095.json","docs/blackboard/artifacts/ready-implement-plan/BB-095.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-096.json","docs/blackboard/artifacts/ready-implement-plan/BB-096.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-097.json","docs/blackboard/artifacts/ready-implement-plan/BB-097.readiness-jev-evaluation.json","docs/blackboard/artifacts/ready-implement-plan/BB-098.json","docs/blackboard/artifacts/ready-implement-plan/BB-099.json"]}
+
+> test:blackboard-artifacts
+> node --test test/blackboard-artifact-*.test.mjs
+
+TAP version 13
+# Subtest: accepted implementation input is semantic and valid
+ok 1 - accepted implementation input is semantic and valid
+  ---
+  duration_ms: 1.146577
+  type: 'test'
+  ...
+# Subtest: procedural command field is rejected
+ok 2 - procedural command field is rejected
+  ---
+  duration_ms: 0.479539
+  type: 'test'
+  ...
+# Subtest: source scope cannot leak into semantic artifact
+ok 3 - source scope cannot leak into semantic artifact
+  ---
+  duration_ms: 0.148406
+  type: 'test'
+  ...
+# Subtest: implementation input must be accepted
+ok 4 - implementation input must be accepted
+  ---
+  duration_ms: 0.922759
+  type: 'test'
+  ...
+# Subtest: readiness decision binds work directly without helper-context identity
+ok 5 - readiness decision binds work directly without helper-context identity
+  ---
+  duration_ms: 0.286968
+  type: 'test'
+  ...
+# Subtest: implementation result records facts and exact execution authority
+ok 6 - implementation result records facts and exact execution authority
+  ---
+  duration_ms: 0.236333
+  type: 'test'
+  ...
+# Subtest: implementation result cannot claim a verdict
+ok 7 - implementation result cannot claim a verdict
+  ---
+  duration_ms: 0.217764
+  type: 'test'
+  ...
+# Subtest: independent judgment may accept only fully satisfied assessments
+ok 8 - independent judgment may accept only fully satisfied assessments
+  ---
+  duration_ms: 0.218611
+  type: 'test'
+  ...
+# Subtest: judgment subject rejects helper-context identity
+ok 9 - judgment subject rejects helper-context identity
+  ---
+  duration_ms: 0.284337
+  type: 'test'
+  ...
+# Subtest: accept judgment with a finding fails closed
+ok 10 - accept judgment with a finding fails closed
+  ---
+  duration_ms: 0.333104
+  type: 'test'
+  ...
+# Subtest: FINDINGS judgment requires a concrete finding
+ok 11 - FINDINGS judgment requires a concrete finding
+  ---
+  duration_ms: 0.197955
+  type: 'test'
+  ...
+# Subtest: CONTEXT_STALE is not a valid finding type
+ok 12 - CONTEXT_STALE is not a valid finding type
+  ---
+  duration_ms: 0.156106
+  type: 'test'
+  ...
+# Subtest: implementation spec preserves worker-ready HOW without becoming routing authority
+ok 13 - implementation spec preserves worker-ready HOW without becoming routing authority
+  ---
+  duration_ms: 0.254968
+  type: 'test'
+  ...
+# Subtest: implementation spec cannot become routing authority
+ok 14 - implementation spec cannot become routing authority
+  ---
+  duration_ms: 0.183885
+  type: 'test'
+  ...
+# Subtest: implementation spec preserves origin work id as provenance only
+ok 15 - implementation spec preserves origin work id as provenance only
+  ---
+  duration_ms: 0.111982
+  type: 'test'
+  ...
+# Subtest: artifact validator rejects legacy top-level directories
+ok 16 - artifact validator rejects legacy top-level directories
+  ---
+  duration_ms: 1.710149
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 71.07528
+
+> verify:blackboard-work-graph
+> node scripts/blackboard-work-graph.mjs && npm run verify:blackboard-delivery-contracts && npm run verify:blackboard-state && npm run test:blackboard-work-graph
+
+{"ok":true,"phase":"INTEGRATION","schedulable":["BB-053","BB-065","BB-082","BB-087","BB-096","BB-098","BB-099"],"tasks":49,"components":17}
+
+> verify:blackboard-delivery-contracts
+> node scripts/blackboard-delivery-verify.mjs
+
+{"ok":true,"contract":"OBJECTIVE_PLAN_DELIVERY"}
+
+> verify:blackboard-state
+> node scripts/blackboard-state-project.mjs --verify
+
+{"ok":true,"state":"docs/blackboard/state.md"}
+
+> test:blackboard-work-graph
+> node --test test/blackboard-work-graph.test.mjs test/blackboard-task-context-resolver.test.mjs
+
+TAP version 13
+# Subtest: task context is deterministically derived from one task and its components
+ok 1 - task context is deterministically derived from one task and its components
+  ---
+  duration_ms: 105.1815
+  type: 'test'
+  ...
+# Subtest: DONE dependency contributes consolidated Living truth, not historical delivery transcript
+ok 2 - DONE dependency contributes consolidated Living truth, not historical delivery transcript
+  ---
+  duration_ms: 96.82351
+  type: 'test'
+  ...
+# Subtest: repository-wide discovery is progressive only and absent from deterministic required refs
+ok 3 - repository-wide discovery is progressive only and absent from deterministic required refs
+  ---
+  duration_ms: 96.170171
+  type: 'test'
+  ...
+# Subtest: blocked worker cannot materialize execution context before direct dependencies are done
+ok 4 - blocked worker cannot materialize execution context before direct dependencies are done
+  ---
+  duration_ms: 4.691417
+  type: 'test'
+  ...
+# Subtest: research may materialize ahead of an unfinished execution dependency without treating it as delivered truth
+ok 5 - research may materialize ahead of an unfinished execution dependency without treating it as delivered truth
+  ---
+  duration_ms: 6.639402
+  type: 'test'
+  ...
+# Subtest: outer Blackboard is a typed dependency graph with task scheduling and component context routing
+ok 6 - outer Blackboard is a typed dependency graph with task scheduling and component context routing
+  ---
+  duration_ms: 8.126409
+  type: 'test'
+  ...
+# Subtest: accepted worker cannot be claimed again while awaiting merge
+ok 7 - accepted worker cannot be claimed again while awaiting merge
+  ---
+  duration_ms: 0.740404
+  type: 'test'
+  ...
+# Subtest: task may span multiple components without creating multiple execution owners
+ok 8 - task may span multiple components without creating multiple execution owners
+  ---
+  duration_ms: 0.624835
+  type: 'test'
+  ...
+# Subtest: work graph rejects unknown component and dependency cycles
+ok 9 - work graph rejects unknown component and dependency cycles
+  ---
+  duration_ms: 2.803013
+  type: 'test'
+  ...
+# Subtest: non-active tasks cannot carry worker claim or current context
+ok 10 - non-active tasks cannot carry worker claim or current context
+  ---
+  duration_ms: 1.781786
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 380.112737
+{"ok":true,"items":[{"itemId":"BB-090","resolved":4}]}
+
+> test:blackboard-context
+> node --test test/blackboard-context-*.test.mjs
+
+TAP version 13
+# Subtest: generator cannot turn review into implementation without decision
+ok 1 - generator cannot turn review into implementation without decision
+  ---
+  duration_ms: 1.186045
+  type: 'test'
+  ...
+# Subtest: current readiness context transitions to execution without context lineage
+ok 2 - current readiness context transitions to execution without context lineage
+  ---
+  duration_ms: 0.796971
+  type: 'test'
+  ...
+# Subtest: execution transitions by overwriting current helper context with candidate judgment
+ok 3 - execution transitions by overwriting current helper context with candidate judgment
+  ---
+  duration_ms: 0.425936
+  type: 'test'
+  ...
+# Subtest: FINDINGS judgment alone can open bounded repair execution
+ok 4 - FINDINGS judgment alone can open bounded repair execution
+  ---
+  duration_ms: 0.662649
+  type: 'test'
+  ...
+# Subtest: ACCEPT judgment cannot authorize repair
+ok 5 - ACCEPT judgment cannot authorize repair
+  ---
+  duration_ms: 0.243
+  type: 'test'
+  ...
+# Subtest: implementation worker fails without semantic artifact
+ok 6 - implementation worker fails without semantic artifact
+  ---
+  duration_ms: 1.113165
+  type: 'test'
+  ...
+# Subtest: helper context itself cannot become authority subject
+ok 7 - helper context itself cannot become authority subject
+  ---
+  duration_ms: 0.409903
+  type: 'test'
+  ...
+# Subtest: fresh implementation bootstrap obeys canonical graph or fails closed with no active implementation task
+ok 8 - fresh implementation bootstrap obeys canonical graph or fails closed with no active implementation task
+  ---
+  duration_ms: 107.975494
+  type: 'test'
+  ...
+# Subtest: review context is read-only and loads only explicit refs
+ok 9 - review context is read-only and loads only explicit refs
+  ---
+  duration_ms: 1.638766
+  type: 'test'
+  ...
+# Subtest: review cannot authorize writes
+ok 10 - review cannot authorize writes
+  ---
+  duration_ms: 0.481503
+  type: 'test'
+  ...
+# Subtest: write forbidden overlap fails closed
+ok 11 - write forbidden overlap fails closed
+  ---
+  duration_ms: 0.142634
+  type: 'test'
+  ...
+# Subtest: board binding is exact ref only
+ok 12 - board binding is exact ref only
+  ---
+  duration_ms: 0.46727
+  type: 'test'
+  ...
+# Subtest: generation in current-context is rejected
+ok 13 - generation in current-context is rejected
+  ---
+  duration_ms: 0.245762
+  type: 'test'
+  ...
+# Subtest: duplicate item binding fails closed
+ok 14 - duplicate item binding fails closed
+  ---
+  duration_ms: 0.121408
+  type: 'test'
+  ...
+# Subtest: helper context rejects history/stale fields
+ok 15 - helper context rejects history/stale fields
+  ---
+  duration_ms: 1.098905
+  type: 'test'
+  ...
+# Subtest: implementation worker context requires exact semantic JSON input
+ok 16 - implementation worker context requires exact semantic JSON input
+  ---
+  duration_ms: 0.23364
+  type: 'test'
+  ...
+# Subtest: board implementation input ref parses independently from current context
+ok 17 - board implementation input ref parses independently from current context
+  ---
+  duration_ms: 0.422403
+  type: 'test'
+  ...
+# Subtest: implementation worker lane and action must agree
+ok 18 - implementation worker lane and action must agree
+  ---
+  duration_ms: 0.423133
+  type: 'test'
+  ...
+# Subtest: execution context requires exact authority ref
+ok 19 - execution context requires exact authority ref
+  ---
+  duration_ms: 0.214709
+  type: 'test'
+  ...
+# Subtest: candidate judgment requires exact implementation result and candidate
+ok 20 - candidate judgment requires exact implementation result and candidate
+  ---
+  duration_ms: 0.154141
+  type: 'test'
+  ...
+# Subtest: board lane parses as an exact scalar
+ok 21 - board lane parses as an exact scalar
+  ---
+  duration_ms: 0.181955
+  type: 'test'
+  ...
+# Subtest: implementation worker may bind canonical implementation spec as explicit input
+ok 22 - implementation worker may bind canonical implementation spec as explicit input
+  ---
+  duration_ms: 0.115979
+  type: 'test'
+  ...
+# Subtest: repository active contexts are selected from canonical work graph
+ok 23 - repository active contexts are selected from canonical work graph
+  ---
+  duration_ms: 106.287003
+  type: 'test'
+  ...
+# Subtest: singular verifier requires explicit selection when multiple graph tasks are active
+ok 24 - singular verifier requires explicit selection when multiple graph tasks are active
+  ---
+  duration_ms: 1.295237
+  type: 'test'
+  ...
+# Subtest: ACTIVE task without graph-bound current context fails closed at graph validation
+ok 25 - ACTIVE task without graph-bound current context fails closed at graph validation
+  ---
+  duration_ms: 0.671041
+  type: 'test'
+  ...
+# Subtest: candidate judgment binds exact semantic/result/candidate subject without helper-context identity
+ok 26 - candidate judgment binds exact semantic/result/candidate subject without helper-context identity
+  ---
+  duration_ms: 0.226854
+  type: 'test'
+  ...
+# Subtest: profiles preserve one semantic artifact while changing projection
+ok 27 - profiles preserve one semantic artifact while changing projection
+  ---
+  duration_ms: 4.713579
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 182.86483
+
+> test:blackboard-jev
+> node --test test/blackboard-jev.test.mjs test/blackboard-negative-case-binding.test.mjs
+
+TAP version 13
+# Subtest: research objective questions receive bounded objective-to-criterion-to-slice evidence
+ok 1 - research objective questions receive bounded objective-to-criterion-to-slice evidence
+  ---
+  duration_ms: 57.758306
+  type: 'test'
+  ...
+# Subtest: readiness batches atomic questions, honors low-confidence typed SATISFIED and caches semantic input
+ok 2 - readiness batches atomic questions, honors low-confidence typed SATISFIED and caches semantic input
+  ---
+  duration_ms: 76.082381
+  type: 'test'
+  ...
+# Subtest: plan changes at same ref invalidate readiness and stale publication
+ok 3 - plan changes at same ref invalidate readiness and stale publication
+  ---
+  duration_ms: 36.250721
+  type: 'test'
+  ...
+# Subtest: objective binding and typed plan invariants fail closed
+ok 4 - objective binding and typed plan invariants fail closed
+  ---
+  duration_ms: 22.073604
+  type: 'test'
+  ...
+# Subtest: worker evidence binds exact plan, source tree, logs and all claims
+ok 5 - worker evidence binds exact plan, source tree, logs and all claims
+  ---
+  duration_ms: 97.485293
+  type: 'test'
+  ...
+# Subtest: worker exit requires a Living Doc update and Jev claim
+ok 6 - worker exit requires a Living Doc update and Jev claim
+  ---
+  duration_ms: 71.01751
+  type: 'test'
+  ...
+# Subtest: readiness cannot authorize a worker without a Living Docs contract
+ok 7 - readiness cannot authorize a worker without a Living Docs contract
+  ---
+  duration_ms: 36.896142
+  type: 'test'
+  ...
+# Subtest: implementation defect repairs worker; plan contradiction returns research and revokes readiness
+ok 8 - implementation defect repairs worker; plan contradiction returns research and revokes readiness
+  ---
+  duration_ms: 238.357471
+  type: 'test'
+  ...
+# Subtest: malformed responses reject missing/extra IDs, invalid types/options/probabilities/model
+ok 9 - malformed responses reject missing/extra IDs, invalid types/options/probabilities/model
+  ---
+  duration_ms: 28.760338
+  type: 'test'
+  ...
+# Subtest: research evidence is bounded while full-source changes still invalidate semantic cache
+ok 10 - research evidence is bounded while full-source changes still invalidate semantic cache
+  ---
+  duration_ms: 66.036288
+  type: 'test'
+  ...
+# Subtest: API has bounded retry, no auth retry and missing key fails without network
+ok 11 - API has bounded retry, no auth retry and missing key fails without network
+  ---
+  duration_ms: 41.735731
+  type: 'test'
+  ...
+# Subtest: API retries one malformed typed response without relaxing validation
+ok 12 - API retries one malformed typed response without relaxing validation
+  ---
+  duration_ms: 35.011684
+  type: 'test'
+  ...
+# Subtest: end-to-end only exact candidate in main may publish delivery
+ok 13 - end-to-end only exact candidate in main may publish delivery
+  ---
+  duration_ms: 312.728251
+  type: 'test'
+  ...
+# Subtest: timing-only log changes preserve semantic cache identity but substantive evidence invalidates it
+ok 14 - timing-only log changes preserve semantic cache identity but substantive evidence invalidates it
+  ---
+  duration_ms: 198.111602
+  type: 'test'
+  ...
+# Subtest: current main cannot have reverted an otherwise merged and accepted candidate
+ok 15 - current main cannot have reverted an otherwise merged and accepted candidate
+  ---
+  duration_ms: 241.358028
+  type: 'test'
+  ...
+# Subtest: delivery permits regenerated control-plane projections after the exact candidate merge
+ok 16 - delivery permits regenerated control-plane projections after the exact candidate merge
+  ---
+  duration_ms: 282.919426
+  type: 'test'
+  ...
+# Subtest: unresolved research gaps block readiness and verification cannot inherit the provider key
+ok 17 - unresolved research gaps block readiness and verification cannot inherit the provider key
+  ---
+  duration_ms: 26.479761
+  type: 'test'
+  ...
+# Subtest: collector executes the declared command and retains canonical evidence for fresh checkouts
+ok 18 - collector executes the declared command and retains canonical evidence for fresh checkouts
+  ---
+  duration_ms: 176.308813
+  type: 'test'
+  ...
+# Subtest: CI bundle restores exact canonical evidence before publication and rejects tampered logs
+ok 19 - CI bundle restores exact canonical evidence before publication and rejects tampered logs
+  ---
+  duration_ms: 177.133623
+  type: 'test'
+  ...
+# Subtest: merged tree changed after candidate cannot claim delivery
+ok 20 - merged tree changed after candidate cannot claim delivery
+  ---
+  duration_ms: 246.380047
+  type: 'test'
+  ...
+# Subtest: migration is idempotent and leaves terminal canonical evidence untouched
+ok 21 - migration is idempotent and leaves terminal canonical evidence untouched
+  ---
+  duration_ms: 35.739962
+  type: 'test'
+  ...
+# Subtest: migration normalizes legacy directories and rewrites graph bindings
+ok 22 - migration normalizes legacy directories and rewrites graph bindings
+  ---
+  duration_ms: 267.253757
+  type: 'test'
+  ...
+# Subtest: CI selector routes exact research plan candidates from PR heads and merged main commits
+ok 23 - CI selector routes exact research plan candidates from PR heads and merged main commits
+  ---
+  duration_ms: 195.676993
+  type: 'test'
+  ...
+# Subtest: CI selector judges RESEARCH_SA even when execution dependencies are not DONE
+ok 24 - CI selector judges RESEARCH_SA even when execution dependencies are not DONE
+  ---
+  duration_ms: 107.111935
+  type: 'test'
+  ...
+# Subtest: CI selector verifies canonical SATISFIED readiness publication instead of reporting fake Jev success
+ok 25 - CI selector verifies canonical SATISFIED readiness publication instead of reporting fake Jev success
+  ---
+  duration_ms: 244.484149
+  type: 'test'
+  ...
+# Subtest: CI keeps Blackboard routing inside the PR test workflow and Jev evaluation reusable
+ok 26 - CI keeps Blackboard routing inside the PR test workflow and Jev evaluation reusable
+  ---
+  duration_ms: 0.63087
+  type: 'test'
+  ...
+# Subtest: NB1 bindings must cover every negative case exactly once with known criterion, verification and expected test
+ok 27 - NB1 bindings must cover every negative case exactly once with known criterion, verification and expected test
+  ---
+  duration_ms: 31.403378
+  type: 'test'
+  ...
+# Subtest: NB1 enforcement applies only at or above the policy work-id threshold
+ok 28 - NB1 enforcement applies only at or above the policy work-id threshold
+  ---
+  duration_ms: 124.984621
+  type: 'test'
+  ...
+# Subtest: NB1 repository plans still validate unchanged under the delivered policy
+ok 29 - NB1 repository plans still validate unchanged under the delivered policy
+  ---
+  duration_ms: 20.886846
+  type: 'test'
+  ...
+# Subtest: NB2 spec and TAP logs bind exact passing titles only
+ok 30 - NB2 spec and TAP logs bind exact passing titles only
+  ---
+  duration_ms: 1.427298
+  type: 'test'
+  ...
+# Subtest: NB2 extraction tokenizes quotes, templates, regexes and comments and requires one exact match
+ok 31 - NB2 extraction tokenizes quotes, templates, regexes and comments and requires one exact match
+  ---
+  duration_ms: 2.713115
+  type: 'test'
+  ...
+# Subtest: NB2 bound bodies must invoke the subject and contain a non-vacuous assertion
+ok 32 - NB2 bound bodies must invoke the subject and contain a non-vacuous assertion
+  ---
+  duration_ms: 2.517707
+  type: 'test'
+  ...
+# Subtest: NB2 collect fails closed on unbound negatives and records body hashes for passing bindings
+ok 33 - NB2 collect fails closed on unbound negatives and records body hashes for passing bindings
+  ---
+  duration_ms: 1823.27437
+  type: 'test'
+  ...
+# Subtest: NB3 worker materialization emits one atomic question per binding with the extracted body
+ok 34 - NB3 worker materialization emits one atomic question per binding with the extracted body
+  ---
+  duration_ms: 758.214973
+  type: 'test'
+  ...
+# Subtest: NB3 plans without bindings keep identical questions and state
+ok 35 - NB3 plans without bindings keep identical questions and state
+  ---
+  duration_ms: 32.418519
+  type: 'test'
+  ...
+# Subtest: NB4 real BB-064 fail-closed test bound to createOracleContextResolver fails SUBJECT_NOT_INVOKED
+ok 36 - NB4 real BB-064 fail-closed test bound to createOracleContextResolver fails SUBJECT_NOT_INVOKED
+  ---
+  duration_ms: 4.194708
+  type: 'test'
+  ...
+# BB-064 fail-closed negatives cannot become current model context: SUBJECT_NOT_INVOKED for createOracleContextResolver (2 assertions)
+# Subtest: NB4 BB-064 eight failureMatrix classes bound to one title fail coverage
+ok 37 - NB4 BB-064 eight failureMatrix classes bound to one title fail coverage
+  ---
+  duration_ms: 1.037548
+  type: 'test'
+  ...
+# Subtest: NB4 no DONE artifact is modified or deleted relative to main
+ok 38 - NB4 no DONE artifact is modified or deleted relative to main
+  ---
+  duration_ms: 9.304087
+  type: 'test'
+  ...
+# docs/blackboard/artifacts changes vs 57444d12b548: none
+1..38
+# tests 38
+# suites 0
+# pass 38
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3414.50732
+
+> eval:blackboard-context
+> node scripts/blackboard-context-eval.mjs
+
+{"failedScenarios":0,"transcriptReads":0,"broadSearchRootsAutoLoaded":0,"deterministicContextReduction":true,"allDeterministicControlsPass":true,"valueGatePass":true}
+
+
+exitCode=0

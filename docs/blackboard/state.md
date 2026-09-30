@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,12 +31,19 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-090
 ```
 
 ## Active work
 
-NONE
+
+BB-090
+task: Bind declared negative cases to executed subject-invoking tests in the Worker gate
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-090/current.json
+components: outer/blackboard
+worker: grok-bot
 
 ## Schedulable tasks
 
@@ -44,7 +51,6 @@ NONE
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
 - BB-087 [WORKER/EXECUTION] — Fix Oracle facade budget accounting and typed provider failure
-- BB-090 [WORKER/EXECUTION] — Bind declared negative cases to executed subject-invoking tests in the Worker gate
 - BB-096 [WORKER/EXECUTION] — Bind delivered Backend/QA acceptance to a real repository and real verification processes
 - BB-098 [RESEARCH_SA/RESEARCH] — Observe supervised and direct agent-tool runs
 - BB-099 [RESEARCH_SA/RESEARCH] — Measure ExHarness-supervised versus direct agent-tool delivery
@@ -91,7 +97,7 @@ BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
 BB-087 [WORKER_SCHEDULABLE] <- BB-064
 BB-088 [BLOCKED_BY BB-087] <- BB-087
 BB-089 [BLOCKED_BY BB-087] <- BB-087
-BB-090 [WORKER_SCHEDULABLE] <- BB-056
+BB-090 [ACTIVE] <- BB-056
 BB-091 [BLOCKED_BY BB-088] <- BB-088
 BB-092 [BLOCKED_BY BB-091] <- BB-091
 BB-093 [BLOCKED_BY BB-092] <- BB-092
