@@ -12,7 +12,7 @@ import {
 
 const MODEL = 'jev-1.13.0';
 const DOC = 'docs/living/system/agentic-application/capabilities.md';
-const { SCOPED, CHANGED } = LIVING_EXCERPT_STRATEGIES;
+const { SCOPED, CHANGED, DELIVERY } = LIVING_EXCERPT_STRATEGIES;
 const bytes = value => Buffer.byteLength(canonical(value));
 const criteria = { SATISFIED: 'Supported', IMPLEMENTATION_DEFECT: 'Defect', INSUFFICIENT_EVIDENCE: 'Missing', PLAN_INPUT_CONTRADICTION: 'Contradiction' };
 const question = { type: 'choice', instructions: 'Judge the evidence', criteria };
@@ -88,7 +88,7 @@ test('Living Docs question receives every whole section the candidate added or m
   const r = repo(t);
   const livingChanges = livingDocChanges(r.root, r.baseline, r.candidate, [DOC]);
   const full = payload();
-  const source = workerQuestionPayload(full, 'LIVING_DOCS', { livingChanges }).state.sources[0];
+  const source = workerQuestionPayload(full, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges }).state.sources[0];
   assert.equal(source.excerptStrategy, CHANGED);
   assert.deepEqual(source.changedSections, ['## A18 — Local git workspace and command verification adapters', '## Boundaries']);
   assert.equal(source.hash, hash(candidateDoc));
@@ -103,7 +103,7 @@ test('Living Docs question receives every whole section the candidate added or m
   // The SCOPED selection that retained evaluations used would have hidden A18.
   const scoped = workerQuestionPayload(full, 'LIVING_DOCS', { livingExcerptStrategy: SCOPED }).state.sources[0];
   assert.doesNotMatch(scoped.body, /A18/);
-  assert.deepEqual(workerQuestionPayload(full, 'LIVING_DOCS', { livingChanges }), workerQuestionPayload(full, 'LIVING_DOCS', { livingChanges }), 'deterministic');
+  assert.deepEqual(workerQuestionPayload(full, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges }), workerQuestionPayload(full, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges }), 'deterministic');
 });
 
 test('criterion questions keep the SCOPED Living Doc selection byte-for-byte', () => {
@@ -114,7 +114,7 @@ test('criterion questions keep the SCOPED Living Doc selection byte-for-byte', (
 
 test('a Living Doc with no changed lines falls back to the SCOPED selection', () => {
   const full = payload();
-  const source = workerQuestionPayload(full, 'LIVING_DOCS', { livingChanges: { [DOC]: [] } }).state.sources[0];
+  const source = workerQuestionPayload(full, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges: { [DOC]: [] } }).state.sources[0];
   const scoped = workerQuestionPayload(full, 'LIVING_DOCS', { livingExcerptStrategy: SCOPED }).state.sources[0];
   assert.deepEqual(source, { ...scoped, excerptStrategy: CHANGED, changedSections: [] });
 });
@@ -122,16 +122,18 @@ test('a Living Doc with no changed lines falls back to the SCOPED selection', ()
 test('blank separator lines do not mark the neighbouring section as changed', () => {
   const full = payload();
   // Candidate lines 12 (blank line closing Integration C details) and 13-14 (new A18 heading and text).
-  const source = workerQuestionPayload(full, 'LIVING_DOCS', { livingChanges: { [DOC]: [[12, 14]] } }).state.sources[0];
+  const source = workerQuestionPayload(full, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges: { [DOC]: [[12, 14]] } }).state.sources[0];
   assert.deepEqual(source.changedSections, ['## A18 — Local git workspace and command verification adapters']);
-  const blankOnly = workerQuestionPayload(full, 'LIVING_DOCS', { livingChanges: { [DOC]: [[12, 12]] } }).state.sources[0];
+  const blankOnly = workerQuestionPayload(full, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges: { [DOC]: [[12, 12]] } }).state.sources[0];
   assert.deepEqual(blankOnly.changedSections, ['### Integration C details']);
 });
 
 test('Living Docs selection fails closed without a valid change map or with an unknown strategy', () => {
   const full = payload();
-  assert.throws(() => workerQuestionBatches(full, 'LIVING_DOCS'), /Living Doc change map missing/);
-  assert.throws(() => workerQuestionBatches(full, 'LIVING_DOCS', { livingChanges: { [DOC]: [[0, 3]] } }), /Living Doc change map missing/);
+  assert.throws(() => workerQuestionBatches(full, 'LIVING_DOCS'), /candidate change map missing/);
+  assert.throws(() => workerQuestionBatches(full, 'LIVING_DOCS', { candidateChanges: {} }), /Living Doc change map missing/);
+  assert.throws(() => workerQuestionBatches(full, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED }), /Living Doc change map missing/);
+  assert.throws(() => workerQuestionBatches(full, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges: { [DOC]: [[0, 3]] } }), /Living Doc change map missing/);
   assert.throws(() => workerQuestionBatches(full, 'LIVING_DOCS', { livingChanges: {}, livingExcerptStrategy: 'NEWEST' }), /unknown Living Doc excerpt strategy/);
 });
 
@@ -144,23 +146,22 @@ test('changed sections stay within the batch limit using bounded evidence excerp
   const full = payload({ doc, evidenceBody: lines.join('\n') });
   const lastLine = doc.split('\n').length;
   const livingChanges = { [DOC]: [[13, lastLine]] };
-  const [batch, ...rest] = workerQuestionBatches(full, 'LIVING_DOCS', { livingChanges });
+  const [batch, ...rest] = workerQuestionBatches(full, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges });
   assert.equal(rest.length, 0);
   assert.ok(bytes(batch.payload) <= WORKER_BATCH_LIMITS.maxBatchBytes);
   assert.ok(batch.payload.state.sources[0].body.includes('Adapter detail line.'), 'whole changed section is sent');
   const huge = payload({ doc: `${candidateDoc}\n## A19\n${'x'.repeat(70000)}` });
-  assert.throws(() => workerQuestionBatches(huge, 'LIVING_DOCS', { livingChanges: { [DOC]: [[13, 30]] } }), /worker batch exceeds bounded input: LIVING_DOCS/);
+  assert.throws(() => workerQuestionBatches(huge, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges: { [DOC]: [[13, 30]] } }), /worker batch exceeds bounded input: LIVING_DOCS/);
 });
 
-test('new batched evaluations record CHANGED; retained evaluations without a strategy validate as SCOPED', async t => {
+test('new batched evaluations record DELIVERY; retained CHANGED and SCOPED evaluations still validate', async t => {
   const r = repo(t);
   fs.mkdirSync(path.join(r.root, 'docs/blackboard'), { recursive: true });
   fs.writeFileSync(path.join(r.root, 'docs/blackboard/jev-policy.json'), JSON.stringify({ model: MODEL, policy: 'atomic-claims-1' }));
   const livingChanges = livingDocChanges(r.root, r.baseline, r.candidate, [DOC]);
-  const full = payload({ constraints: ['c'.repeat(61000 - bytes(payload()))] });
-  full.state.plan.constraints = [];
+  const full = payload();
   full.state.evidenceFiles[0].body = 'p'.repeat(62000); full.state.evidenceFiles[0].hash = hash(full.state.evidenceFiles[0].body);
-  const materialized = { lane: 'WORKER', subject: { workId: 'BB-T', plan: { ref: 'plan.json', hash: 'a'.repeat(64) } }, payload: full, stateHash: 'b'.repeat(64), specHash: 'c'.repeat(64), cacheKey: 'd'.repeat(64), livingChanges };
+  const materialized = { lane: 'WORKER', subject: { workId: 'BB-T', plan: { ref: 'plan.json', hash: 'a'.repeat(64) } }, payload: full, stateHash: 'b'.repeat(64), specHash: 'c'.repeat(64), cacheKey: 'd'.repeat(64), livingChanges, candidateChanges: {} };
   assert.ok(bytes(full) > WORKER_BATCH_LIMITS.maxBatchBytes, 'fixture is batched');
   const sent = [];
   const fetchImpl = async (_url, options) => {
@@ -169,17 +170,24 @@ test('new batched evaluations record CHANGED; retained evaluations without a str
     return new Response(JSON.stringify({ model: MODEL, answers: { [id]: { type: 'choice', choice: 'SATISFIED', confidence: 0.9, probabilities: { SATISFIED: 1, IMPLEMENTATION_DEFECT: 0, INSUFFICIENT_EVIDENCE: 0, PLAN_INPUT_CONTRADICTION: 0 } } }, usage: { input_tokens: 10, output_tokens: 1 } }), { status: 200 });
   };
   const evaluation = await evaluate(materialized, { root: r.root, fetchImpl, apiKey: 'fixture-key', bypassCache: true });
-  assert.equal(evaluation.metrics.batching.livingExcerptStrategy, CHANGED);
-  const living = sent.find(body => body.questions.LIVING_DOCS).state.sources[0];
-  assert.match(living.body, /A18 — Local git workspace/);
+  assert.equal(evaluation.metrics.batching.livingExcerptStrategy, DELIVERY);
+  const living = sent.find(body => body.questions.LIVING_DOCS).state;
+  assert.match(living.sources[0].body, /A18 — Local git workspace/);
+  assert.deepEqual(living.verification.map(run => run.id), ['unit'], 'Living Docs question receives the plan verification runs');
+  assert.equal(living.evidenceFiles[0].excerpted, true);
   assert.equal(validateEvaluation(evaluation, materialized), evaluation);
-  const scopedManifest = workerBatchManifest(full, { livingExcerptStrategy: SCOPED });
-  assert.notDeepEqual(scopedManifest, evaluation.metrics.batching.manifest);
-  const { livingExcerptStrategy, ...legacyBatching } = evaluation.metrics.batching;
-  const retained = { ...evaluation, metrics: { ...evaluation.metrics, batching: { ...legacyBatching, manifest: scopedManifest } } };
-  assert.equal(validateEvaluation(retained, materialized), retained, 'retained evaluation validates with its implied SCOPED selection');
-  assert.throws(() => validateEvaluation({ ...evaluation, metrics: { ...evaluation.metrics, batching: legacyBatching } }, materialized), /worker batch manifest mismatch/);
-  assert.throws(() => validateEvaluation({ ...retained, metrics: { ...retained.metrics, batching: { ...retained.metrics.batching, livingExcerptStrategy: CHANGED } } }, materialized), /worker batch manifest mismatch/);
+  const retainedAs = (strategy, record) => {
+    const manifest = workerBatchManifest(full, { livingExcerptStrategy: strategy, livingChanges });
+    const { livingExcerptStrategy, ...rest } = evaluation.metrics.batching;
+    return { ...evaluation, metrics: { ...evaluation.metrics, batching: { ...rest, ...(record ? { livingExcerptStrategy: strategy } : {}), manifest } } };
+  };
+  const changed = retainedAs(CHANGED, true), scoped = retainedAs(SCOPED, false);
+  assert.notDeepEqual(changed.metrics.batching.manifest, evaluation.metrics.batching.manifest);
+  assert.notDeepEqual(scoped.metrics.batching.manifest, changed.metrics.batching.manifest);
+  assert.equal(validateEvaluation(changed, materialized), changed, 'retained CHANGED evaluation (BB-096, BB-053) validates');
+  assert.equal(validateEvaluation(scoped, materialized), scoped, 'retained evaluation without a strategy validates as SCOPED');
+  assert.throws(() => validateEvaluation({ ...changed, metrics: { ...changed.metrics, batching: { ...changed.metrics.batching, livingExcerptStrategy: DELIVERY } } }, materialized), /worker batch manifest mismatch/);
   assert.throws(() => validateEvaluation({ ...evaluation, metrics: { ...evaluation.metrics, batching: { ...evaluation.metrics.batching, livingExcerptStrategy: 'NEWEST' } } }, materialized), /unknown Living Doc excerpt strategy/);
+  assert.throws(() => validateEvaluation(evaluation, { ...materialized, candidateChanges: undefined }), /candidate change map missing/);
   assert.throws(() => validateEvaluation(evaluation, { ...materialized, livingChanges: undefined }), /Living Doc change map missing/);
 });

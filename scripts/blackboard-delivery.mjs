@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { assertDeliveryArtifact, assertBinding, assertLivingDocs, read, write, localPath, hash, canonical, planHash, loadSubject, fail } from './blackboard-delivery-contract.mjs';
-import { materialize, validateEvaluation, assertReady, git, LIVING_EXCERPT_STRATEGIES } from './blackboard-jev.mjs';
+import { materialize, validateEvaluation, assertReady, git, CURRENT_LIVING_EXCERPT_STRATEGY } from './blackboard-jev.mjs';
 
 // These projections are rebuilt by the trusted controller during publication.
 // They are bindings/evidence, not product source that a merge must preserve.
@@ -35,9 +35,9 @@ export function publishEvaluation(root, id, evaluation) {
     if (task.lane !== evaluation.lane && !readinessRetry) fail('publication lane changed');
     const expected = materialize(root, id, { readiness: evaluation.lane === 'RESEARCH_SA' });
     validateEvaluation(evaluation, expected);
-    // Retained SCOPED batch evaluations still validate, but a new batched worker
-    // judgment must have seen the Living Doc sections the candidate changed.
-    if (evaluation.lane === 'WORKER' && evaluation.metrics?.batching && evaluation.metrics.batching.livingExcerptStrategy !== LIVING_EXCERPT_STRATEGIES.CHANGED && !(existing && canonical(existing) === canonical(evaluation))) fail('worker evaluation uses a retired Living Doc excerpt strategy');
+    // Retained batch evaluations keep validating with their recorded Living Doc
+    // strategy, but a new batched worker judgment must use the current one.
+    if (evaluation.lane === 'WORKER' && evaluation.metrics?.batching && evaluation.metrics.batching.livingExcerptStrategy !== CURRENT_LIVING_EXCERPT_STRATEGY && !(existing && canonical(existing) === canonical(evaluation))) fail('worker evaluation uses a retired Living Doc excerpt strategy');
     if (existing?.cacheKey === evaluation.cacheKey && canonical(existing.subject) === canonical(evaluation.subject) && existing.verdict !== evaluation.verdict) fail('unstable replay cannot replace current judgment');
     if (evaluation.lane === 'RESEARCH_SA' && evaluation.verdict === 'SATISFIED') {
       const livingDocs = assertLivingDocs(plan);

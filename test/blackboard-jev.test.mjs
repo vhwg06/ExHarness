@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { hash, read, write, planHash, assertPlan, localPath, assertDeliveryArtifact } from '../scripts/blackboard-delivery-contract.mjs';
-import { materialize, evaluate, validateResponse, callJev, assertReady, validateEvaluation, workerBatchManifest, workerBatchStrategy, LIVING_EXCERPT_STRATEGIES } from '../scripts/blackboard-jev.mjs';
+import { materialize, evaluate, validateResponse, callJev, assertReady, validateEvaluation, workerBatchManifest, workerBatchStrategy, LIVING_EXCERPT_STRATEGIES, CURRENT_LIVING_EXCERPT_STRATEGY } from '../scripts/blackboard-jev.mjs';
 import { publishEvaluation, verifyDelivery, publishDelivery, collectEvidence, importEvaluationEvidence } from '../scripts/blackboard-delivery.mjs';
 import { migrate } from '../scripts/blackboard-delivery-migrate.mjs';
 
@@ -285,22 +285,28 @@ test('CI bundle restores exact canonical evidence before publication and rejects
   fs.writeFileSync(path.join(bundle,'evidence/BB-1/unit.txt'),'tampered');
   assert.throws(()=>importEvaluationEvidence(f.root,'BB-1',evaluation,bundle),/digest mismatch/);
 });
-test('worker materialization derives the Living Doc change map and publication rejects the retired SCOPED batch selection',async t=>{
+test('worker materialization derives the Living Doc and candidate change maps and publication rejects retired batch selections',async t=>{
   const f=fixture(t);await f.ready();f.candidate();
   const input=materialize(f.root,'BB-1');
   assert.deepEqual(input.livingChanges,{'docs/living/system/state.md':[[3,3]]});
+  assert.deepEqual(Object.keys(input.candidateChanges),['source.js'],'candidate change map covers changed non-Living sources only');
+  assert.deepEqual(input.candidateChanges['source.js'].ranges,[[1,1]]);
+  assert.equal(input.candidateChanges['source.js'].body,'export const answer = 2;','body is the bound (trimEnd) candidate source');
   assert.equal('livingChanges' in input.payload.state,false,'change map does not alter stateHash/cacheKey');
+  assert.equal('candidateChanges' in input.payload.state,false,'candidate change map does not alter stateHash/cacheKey');
   const evaluation=await f.ev();
   const withBatching=strategy=>{
-    const manifest=workerBatchManifest(input.payload,{livingExcerptStrategy:strategy,livingChanges:input.livingChanges});
-    return {...evaluation,metrics:{...evaluation.metrics,batching:{strategy:workerBatchStrategy(manifest),...(strategy===LIVING_EXCERPT_STRATEGIES.CHANGED?{livingExcerptStrategy:strategy}:{}),manifest,cacheHits:0}}};
+    const manifest=workerBatchManifest(input.payload,{livingExcerptStrategy:strategy,livingChanges:input.livingChanges,candidateChanges:input.candidateChanges});
+    return {...evaluation,metrics:{...evaluation.metrics,batching:{strategy:workerBatchStrategy(manifest),...(strategy===LIVING_EXCERPT_STRATEGIES.SCOPED?{}:{livingExcerptStrategy:strategy}),manifest,cacheHits:0}}};
   };
-  const retained=withBatching(LIVING_EXCERPT_STRATEGIES.SCOPED);
-  assert.equal(validateEvaluation(retained,input),retained,'retained SCOPED evaluations still validate');
   const before=read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase;
-  assert.throws(()=>publishEvaluation(f.root,'BB-1',retained),/retired Living Doc excerpt strategy/);
-  assert.equal(read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase,before,'rejected publication leaves the Board unchanged');
-  publishEvaluation(f.root,'BB-1',withBatching(LIVING_EXCERPT_STRATEGIES.CHANGED));
+  for(const strategy of [LIVING_EXCERPT_STRATEGIES.SCOPED,LIVING_EXCERPT_STRATEGIES.CHANGED]){
+    const retained=withBatching(strategy);
+    assert.equal(validateEvaluation(retained,input),retained,`retained ${strategy} evaluations still validate`);
+    assert.throws(()=>publishEvaluation(f.root,'BB-1',retained),/retired Living Doc excerpt strategy/);
+    assert.equal(read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase,before,'rejected publication leaves the Board unchanged');
+  }
+  publishEvaluation(f.root,'BB-1',withBatching(CURRENT_LIVING_EXCERPT_STRATEGY));
   assert.equal(read(f.root,'docs/blackboard/work-graph.json').tasks[0].phase,'MERGE_PENDING');
 });
 test('merged tree changed after candidate cannot claim delivery',async t=>{
