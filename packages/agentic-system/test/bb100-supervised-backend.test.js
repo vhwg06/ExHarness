@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -279,6 +279,70 @@ test("SB1 default BackendWorker path does not import agent-tools", T, async () =
   const result = await worker.execute(order, context);
   assert.equal(result.status, BackendWorkStatus.APPLIED);
   assert.deepEqual(actedKinds, ["APPLY_BACKEND_CHANGE"]);
+  // Runtime proof in a fresh child process: a resolve hook records every
+  // loaded module URL while the default worker executes to APPLIED. No
+  // resolved URL may point into packages/agent-tools.
+  const resolveScratch = await mkdtemp(join(tmpdir(), "bb100-resolve-"));
+  const urlsFile = join(resolveScratch, "resolved-urls.txt");
+  const hookSource = [
+    "import fs from 'node:fs';",
+    "const NL = String.fromCharCode(10);",
+    "export async function resolve(specifier, context, nextResolve) {",
+    "  const resolved = await nextResolve(specifier, context);",
+    "  try { fs.appendFileSync(process.env.BB100_RESOLVED_URLS_FILE, resolved.url + NL); } catch {}",
+    "  return resolved;",
+    "}"
+  ].join(String.fromCharCode(10));
+  const agenticIndexUrl = pathToFileURL(join(REPO_ROOT, "packages", "agentic-system", "src", "index.js")).href;
+  const coreIndexUrl = pathToFileURL(join(REPO_ROOT, "packages", "core-harness", "src", "index.js")).href;
+  const childScript = [
+    "import { register } from 'node:module';",
+    "import fs from 'node:fs';",
+    "register('data:text/javascript,' + " + JSON.stringify(encodeURIComponent(hookSource)) + ");",
+    "const agentic = await import(" + JSON.stringify(agenticIndexUrl) + ");",
+    "const core = await import(" + JSON.stringify(coreIndexUrl) + ");",
+    "const actedKinds = [];",
+    "const worker = agentic.createBackendWorker({",
+    "  strategy: {",
+    "    async run({ invoke }) {",
+    "      const action = await invoke(core.AVOCapability.ACT, { kind: 'APPLY_BACKEND_CHANGE', edits: [] });",
+    "      await invoke(core.AVOCapability.EVALUATE);",
+    "      await invoke(core.AVOCapability.PROMOTE);",
+    "      return { status: agentic.BackendWorkStatus.APPLIED, summary: 'child applied', revision: action.candidate.version, artifacts: action.result.artifacts, blockers: [] };",
+    "    }",
+    "  },",
+    "  workspace: {",
+    "    async act({ candidate, action }) {",
+    "      actedKinds.push(action?.kind);",
+    "      if (action?.kind !== 'APPLY_BACKEND_CHANGE') throw new Error('unexpected act kind');",
+    "      return { mutated: true, candidate: { id: candidate.id, version: 'rev-2' }, result: { artifacts: [{ ref: 'workspace://rev-2/src/server.js', path: 'src/server.js' }] } };",
+    "    }",
+    "  }",
+    "});",
+    "const order = agentic.parseBackendWorkOrder(agentic.makeBackendWorkOrder(agentic.defineBackendObjective({ id: 'child-probe', task: 'Probe.', repository: { ref: 'repo://child', revision: 'rev-1' }, requiredFiles: ['src/server.js'] })));",
+    "const context = agentic.BackendContextSchema.parse({ repository: { ref: 'repo://child', revision: 'rev-1' }, files: [{ path: 'src/server.js', content: 'stub', sourceRef: 'stub' }] });",
+    "const outcome = await worker.execute(order, context);",
+    "const recorded = fs.readFileSync(process.env.BB100_RESOLVED_URLS_FILE, 'utf8').split(String.fromCharCode(10)).filter((line) => line.length > 0);",
+    "console.log(JSON.stringify({ status: outcome.status, actedKinds, urlCount: recorded.length, agentToolsUrls: recorded.filter((url) => url.includes('/packages/agent-tools/')) }));"
+  ].join(String.fromCharCode(10));
+  try {
+    const completion = spawnSync(process.execPath, ["--input-type=module", "-e", childScript], {
+      cwd: REPO_ROOT,
+      shell: false,
+      encoding: "utf8",
+      timeout: 120000,
+      maxBuffer: 16 * 1024 * 1024,
+      env: { ...process.env, BB100_RESOLVED_URLS_FILE: urlsFile }
+    });
+    assert.equal(completion.status, 0, `resolve-hook child failed: ${(completion.stderr ?? "").slice(-2000)}`);
+    const payload = JSON.parse(completion.stdout);
+    assert.equal(payload.status, "APPLIED");
+    assert.deepEqual(payload.actedKinds, ["APPLY_BACKEND_CHANGE"]);
+    assert.ok(payload.urlCount > 50, `expected module resolutions recorded, saw ${payload.urlCount}`);
+    assert.deepEqual(payload.agentToolsUrls, []);
+  } finally {
+    await rm(resolveScratch, { recursive: true, force: true });
+  }
 });
 
 test("SB1 public indexes expose the adapter without a load-time cycle", T, async () => {
