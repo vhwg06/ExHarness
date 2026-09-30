@@ -135,6 +135,13 @@ const probe = {
     adaptersDoNotCarryMcpArgv: !mcpRe.test(adaptersSrc) && !mcpRe.test(cliSrc),
     ndjsonFakeClientWorksWithoutSdkOrLiveCli: ndjson?.result?.protocolVersion === "2025-03-26",
     noListenApiInCurrentAgentTools: !/createServer|\.listen\(/.test(supervisorSrc + adaptersSrc + cliSrc)
+  },
+  sdkEligibility: {
+    officialPackage: "@modelcontextprotocol/server",
+    officialSpec: "2026-07-28",
+    officialLicense: "MIT",
+    selected: "zero-dependency NDJSON JSON-RPC 2025-03-26 initialize/tools/list/tools/call",
+    rejectedRuntimeImport: "@modelcontextprotocol/server"
   }
 };
 for (const dir of [vDir, sDir, cDir]) fs.rmSync(dir, { recursive: true, force: true });
