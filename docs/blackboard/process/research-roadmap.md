@@ -18,19 +18,19 @@ DELIVERED_TRUTH is grounded in current source/Living and terminal receipts. SOUR
 
 ## New research from executed delivery-path probes
 
-[Discovery and trade-offs](delivery-value-improvement-research.md) contains exact source evidence, alternative designs, direct dependencies and proposed implementation seams. Reproduce with `node docs/blackboard/evidence/BB-123/local-delivery-audit.mjs`. Seven synthetic local probes made zero provider calls.
+[Discovery and trade-offs](delivery-value-improvement-research.md) contains exact source evidence, alternative designs, direct dependencies and proposed implementation seams. Reproduce with `node docs/blackboard/evidence/BB-130/local-delivery-audit.mjs`. Seven synthetic local probes made zero provider calls.
 
 | Task | Classification | Concrete improvement | Direct dependencies | Priority / value |
 |---|---|---|---|---|
-| BB-123 | Confirmed defect | Constrain verifier child env; BB-120 covers agent child env only | BB-096, BB-120 | P0: close remaining implicit credential inheritance |
-| BB-124 | Confirmed defect | Preserve partial/null accounting and complete per-field coverage | BB-098, BB-105 | P0: credible economics, no false zero cost |
+| BB-130 | Confirmed defect | Constrain verifier child env; BB-120 covers agent child env only | BB-096, BB-120 | P0: close remaining implicit credential inheritance |
+| BB-124 | Confirmed defect | Preserve partial usage and complete per-field accounting coverage | BB-098, BB-105, BB-123 | P0: credible economics, no false zero cost |
 | BB-125 | Confirmed defect | Exact task/config binding before resumed side effects | BB-101 | P0: prevent changed task/gate under same id |
 | BB-126 | Improvement hypothesis with observed waste | Opt-in no-progress stop + evidence-bound repair feedback | BB-125 | P2: fewer wasted invocations, delayed-fix non-regression |
-| BB-127 | Confirmed local acceptance gap | Externally pinned local evaluator and protected manifest | BB-104, BB-123, BB-125 | P1: agent-edited test cannot substitute acceptance |
+| BB-127 | Confirmed local acceptance gap | Externally pinned local evaluator and protected manifest | BB-104, BB-130, BB-125 | P1: agent-edited test cannot substitute acceptance |
 | BB-128 | Confirmed operator mismatch | Grok/OpenCode capability parity in deliver | BB-104, BB-122 | P1: small usable increment for available CLI |
 | BB-129 | Confirmed handoff gap; GC loss untested | Portable exact candidate review/replay bundle | BB-127 | P1: another developer can inspect and use the result |
 
-All seven are PLANNED RESEARCH_SA/RESEARCH with DRAFT plans, proposed future tests, task-specific researchGaps and no readiness/delivery verdict. Research can run ahead; Worker waits for the listed dependencies DONE. Existing task bodies/plans/judgments remain unchanged. One canonical objective/plan/discovery artifact per new task; allocation is BB-130.
+All seven are PLANNED RESEARCH_SA/RESEARCH with DRAFT plans, proposed future tests, task-specific researchGaps and no readiness/delivery verdict. Research can run ahead; Worker waits for the listed dependencies DONE. Existing task bodies/plans/judgments remain unchanged. One canonical objective/plan/discovery artifact per new task; allocation is BB-131.
 
 ## Delivery queue by useful outcome
 
@@ -52,6 +52,6 @@ These priorities are not dependency edges. Serialize/rebase overlapping supervis
 
 ## Evidence and research exit
 
-The [source ledger](../evidence/BB-123/research-sources.json) pins primary docs and a 1,000-star-eligible Codex source example. External practices justify discriminating experiments, not an ExHarness productivity claim. Local probes establish reproducible gaps; live provider quality, saved cost and release behavior remain unmeasured.
+The [source ledger](../evidence/BB-130/research-sources.json) pins primary docs and a 1,000-star-eligible Codex source example. External practices justify discriminating experiments, not an ExHarness productivity claim. Local probes establish reproducible gaps; live provider quality, saved cost and release behavior remain unmeasured.
 
 Research must finish the exact API/compatibility/threat/measurement gaps, objective coverage/source anchors and named subject-invoking negative bindings before fresh Jev. DRAFT tests are proposed implementation outputs, not files claimed to exist now. Keep paid/model experiments optional and budgeted, preserve failed/inconclusive findings, and report accepted quality, observed accounting coverage, elapsed time, reviewer steps and repeated-run reliability separately.

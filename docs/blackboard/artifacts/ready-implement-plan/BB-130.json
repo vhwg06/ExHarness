@@ -2,20 +2,18 @@
   "kind": "BLACKBOARD_ARTIFACT",
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
-  "artifactId": "BB-124",
+  "artifactId": "BB-130",
   "status": "DRAFT",
   "objective": {
-    "ref": "docs/blackboard/artifacts/objective/BB-124.json",
-    "hash": "9b7459c45debcf0dd4d6094f942e856ae07be0fdb6f400bc9c7df18f90f8b285"
+    "ref": "docs/blackboard/artifacts/objective/BB-130.json",
+    "hash": "d8aa871604ac3677c7bf23ac6edd958d41ce1f0d54bfc1d3656f9937098e275f"
   },
   "scope": [
-    "agent-tools.observation.usage-completeness",
-    "agent-tools.report.field-coverage"
+    "agentic.local-command-verifier.child-env"
   ],
   "outOfScope": [
-    "Rewriting BB-099 experiment or loosening its thresholds.",
-    "Inventing Kiro/agy usage schemas or inferring tokens from text.",
-    "Grok total_cost_usd type/null normalization and grounded exclusion fixes owned by the existing main BB-123."
+    "Sandbox/network/FS confinement owned by BB-067.",
+    "Changing the accepted BB-120 task or plan."
   ],
   "constraints": [
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
@@ -29,43 +27,40 @@
     "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
   ],
   "architectureDecisions": [
-    "Prefer conservative null complete totals plus separately labelled observed partial counts; do not infer unreported tokens or prices. Consider streaming collection only if a bounded real-output probe justifies the extra complexity.",
-    "Reuse the observed-cost guard delivered by BB-123 unchanged. Add per-field coverage for optional token/cost aggregates; a sum over reporting records is not a complete total over the cohort. Do not infer unreported tokens or prices."
+    "Apply the BB-120 inherited-environment semantics to the independent local verifier runner with an explicit verifier env overlay; do not introduce agentic-system -> agent-tools imports or a dependency cycle.",
+    "Use synthetic planted variables and boolean-only observations; never collect actual credentials. Preserve shell:false and the existing revision/tree mutation checks."
   ],
   "sourceSeams": {
     "requiredExisting": [
-      "packages/agent-tools/src/output-parsers.js",
-      "packages/agent-tools/src/report.js",
-      "packages/agent-tools/src/run-trace.js",
-      "docs/blackboard/evidence/BB-124/discovery.json",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/index.js",
+      "docs/blackboard/evidence/BB-130/discovery.json",
       "docs/blackboard/process/delivery-value-improvement-research.md"
     ],
     "expectedNew": [
-      "packages/agent-tools/test/accounting-completeness.test.js"
+      "packages/agentic-system/test/local-verifier-environment.test.js"
     ],
     "expectedTests": [
-      "packages/agent-tools/test/accounting-completeness.test.js"
+      "packages/agentic-system/test/local-verifier-environment.test.js"
     ]
   },
   "sourceScope": {
     "read": [
-      "packages/agent-tools/src/output-parsers.js",
-      "packages/agent-tools/src/report.js",
-      "packages/agent-tools/src/run-trace.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/index.js",
       "packages/agent-tools/src/**",
       "packages/agentic-system/src/**",
       "packages/agent-tools/test/**",
       "packages/agentic-system/test/**",
       "docs/blackboard/process/delivery-value-improvement-research.md",
-      "docs/blackboard/evidence/BB-124/discovery.json"
+      "docs/blackboard/evidence/BB-130/discovery.json"
     ],
     "write": [
-      "packages/agent-tools/src/output-parsers.js",
-      "packages/agent-tools/src/report.js",
-      "packages/agent-tools/src/run-trace.js",
-      "packages/agent-tools/test/accounting-completeness.test.js",
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/local-verifier-environment.test.js",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agent-tools/state.md"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
@@ -82,8 +77,8 @@
   ],
   "acceptanceCriteria": [
     {
-      "id": "USAGE_TRUTH",
-      "statement": "Truncated/invalid/missing turn usage is explicitly incomplete and cannot contribute to complete totals; real zero remains observed zero.",
+      "id": "ENV_BOUNDARY",
+      "statement": "Parent-only planted secrets are absent from verifier children, an explicit overlay works, and NODE_TEST_CONTEXT is stripped.",
       "verificationIds": [
         "focused"
       ],
@@ -92,8 +87,8 @@
       ]
     },
     {
-      "id": "FIELD_COVERAGE",
-      "statement": "Optional token/cost fields expose complete, partial and unavailable aggregation coverage; missing values never contribute fabricated zeros. Reuse the strict observed-cost parser owned by BB-123 without duplicating that implementation.",
+      "id": "COMPATIBILITY",
+      "statement": "Required PATH/platform variables remain available and Backend/QA verification results preserve revision/tree bindings.",
       "verificationIds": [
         "focused"
       ],
@@ -105,7 +100,7 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/accounting-completeness.test.js"
+      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js"
     },
     {
       "id": "agent-tools-regression",
@@ -124,65 +119,65 @@
     {
       "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
       "criterionIds": [
-        "USAGE_TRUTH",
-        "FIELD_COVERAGE"
+        "ENV_BOUNDARY",
+        "COMPATIBILITY"
       ]
     },
     {
       "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
       "criterionIds": [
-        "USAGE_TRUTH",
-        "FIELD_COVERAGE"
+        "ENV_BOUNDARY",
+        "COMPATIBILITY"
       ]
     },
     {
       "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
       "criterionIds": [
-        "USAGE_TRUTH",
-        "FIELD_COVERAGE"
+        "ENV_BOUNDARY",
+        "COMPATIBILITY"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "Truncated stream with a completed turn cannot be complete usage",
-    "Missing optional fields cannot be reported as complete per-field totals"
+    "Parent-only secret must not reach verifier child",
+    "NODE_TEST_CONTEXT overlay cannot revive the parent test channel"
   ],
   "negativeCaseBindings": [
     {
-      "id": "NEG_124_1",
+      "id": "NEG_123_1",
       "negativeCaseIndex": 0,
-      "criterionId": "USAGE_TRUTH",
+      "criterionId": "ENV_BOUNDARY",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/accounting-completeness.test.js",
-      "testTitle": "BB-124 N1 Truncated stream with a completed turn cannot be complete usage",
-      "subjectSymbol": "parseToolOutput"
+      "testRef": "packages/agentic-system/test/local-verifier-environment.test.js",
+      "testTitle": "BB-130 N1 Parent-only secret must not reach verifier child",
+      "subjectSymbol": "createLocalCommandVerifier"
     },
     {
-      "id": "NEG_124_2",
+      "id": "NEG_123_2",
       "negativeCaseIndex": 1,
-      "criterionId": "FIELD_COVERAGE",
+      "criterionId": "ENV_BOUNDARY",
       "verificationId": "focused",
-      "testRef": "packages/agent-tools/test/accounting-completeness.test.js",
-      "testTitle": "BB-124 N2 Missing optional fields cannot be reported as complete per-field totals",
-      "subjectSymbol": "summarizeTraces"
+      "testRef": "packages/agentic-system/test/local-verifier-environment.test.js",
+      "testTitle": "BB-130 N2 NODE_TEST_CONTEXT overlay cannot revive the parent test channel",
+      "subjectSymbol": "createLocalCommandVerifier"
     }
   ],
   "researchGaps": [
-    "Ratify the trace compatibility strategy and field-level completeness representation, including aggregation of optional token fields; pin fixtures before Jev.",
+    "Finalize the shared-versus-local allowlist seam after BB-120 delivery and pin platform compatibility cases; then submit the exact draft to fresh Jev.",
     "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
   ],
   "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
   "livingDocs": {
     "refs": [
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
     "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
   },
   "valueHypothesis": {
-    "expectedValue": "Prevent incomplete token/accounting coverage from appearing to demonstrate a cost advantage.",
-    "measurement": "Every incomplete trace has explicit coverage; complete per-tool comparison uses matched observed coverage or reports INCONCLUSIVE.",
+    "expectedValue": "Close the remaining credential inheritance path in every local Backend/QA check.",
+    "measurement": "Zero inherited synthetic secrets across agent and verifier spawns; existing local Backend/QA regressions pass.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
   }

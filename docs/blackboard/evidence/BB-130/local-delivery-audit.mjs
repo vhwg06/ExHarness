@@ -37,7 +37,7 @@ try {
   try {
     const verifier = createLocalCommandVerifier({ ...checks[0], claim: 'env', root: r.dir, command: process.execPath, args: ['-e', 'process.stdout.write(String(Object.hasOwn(process.env,"EXHARNESS_ROADMAP_PLANTED_SECRET")))'] });
     const out = await verifier.verify({ candidate: { version: r.base } });
-    save('BB-123', { plantedVariableInheritedByVerifier: out.summary.endsWith('true'), verifierStatus: out.status, actualHostSecretRead: false });
+    save('BB-130', { plantedVariableInheritedByVerifier: out.summary.endsWith('true'), verifierStatus: out.status, actualHostSecretRead: false });
     assert.ok(out.summary.endsWith('true'));
   } finally { if (prior === undefined) delete process.env[key]; else process.env[key] = prior; }
   const partial = parseCodexJsonl('{"type":"turn.completed","usage":{"input_tokens":10,"output_tokens":2}}\n', { truncated: true });

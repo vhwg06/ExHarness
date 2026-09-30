@@ -6,179 +6,515 @@
   "status": "DRAFT",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-123.json",
-    "hash": "0f66b6fb73fb3b55c274320ae34ba6c725ec97864946a8e2b392b9654e09cb33"
+    "hash": "e0f253e10d51a08ee5973ea67b632a1782f81c73668cadf95b46ed7aae6f9cb6"
   },
   "scope": [
-    "agentic.local-command-verifier.child-env"
+    "agent-tools.output-parsers.grok-cost",
+    "agent-tools.task-context.worktree-exclusion"
   ],
   "outOfScope": [
-    "Sandbox/network/FS confinement owned by BB-067.",
-    "Changing the accepted BB-120 task or plan."
+    "Changing Codex, Kiro, agy or grok argv, adapters or fixtures beyond the grok cost guard.",
+    "Changing Oracle resolution, budgets, snapshot authorities or the agentic-system workspace adapter.",
+    "Sandbox, gVisor, network allowlists or FS confinement (BB-067).",
+    "Narrowing observation.js mergedEnv used for trace redaction.",
+    "BB-120 child env, BB-122 opencode."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
-    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
-    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+    "Code lives in packages/agent-tools/src/output-parsers.js and task-context.js; tests in packages/agent-tools/test/followup-correctness.test.js titled FU1..FU3 followed by a space.",
+    "Existing BB-105 grok and BB-102 grounded-context tests keep passing; usage-bearing grok JSON with a numeric cost still reports that cost.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
-    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "Only a total_cost_usd that is typeof number, finite and >= 0 is an observed totalCostUsd; anything else is null.",
+    "Projection never writes outside worktreeRoot; the source repository info/exclude stays byte-identical.",
+    "Grounded copies never enter the candidate commit.",
+    "Living docs state observed-only cost and worktree-local exclusion with no Blackboard ids."
   ],
   "architectureDecisions": [
-    "Apply the BB-120 inherited-environment semantics to the independent local verifier runner with an explicit verifier env overlay; do not introduce agentic-system -> agent-tools imports or a dependency cycle.",
-    "Use synthetic planted variables and boolean-only observations; never collect actual credentials. Preserve shell:false and the existing revision/tree mutation checks."
+    "D1 — Grok cost guard in parseGrokJson: read value.total_cost_usd raw and report it only when typeof raw === \"number\" && Number.isFinite(raw) && raw >= 0, else null. Delete the Number(value.total_cost_usd) coercion so null/\"\"/true/\"0.5\" can never become 0/0/1/0.5. Update the function comment to observed-only cost.",
+    "D2 — Numeric zero stays an observed 0; NaN, Infinity and negative numbers are not observed costs and report null. Token parsing (integer usage tokens, null with GROK_USAGE_NOT_REPORTED/GROK_JSON_TRUNCATED) is unchanged.",
+    "D3 — projectAgentTaskContext writes a worktree-local .exharness/.gitignore containing \"*\\n\" instead of resolving git rev-parse --git-path info/exclude and appending .exharness/. No git metadata path is opened for writing; readFile/appendFile against info/exclude are removed.",
+    "D4 — Candidate-commit exclusion is preserved worktree-locally: the .gitignore keeps git status clean for .exharness/context copies and the copies never enter the candidate commit. The grounded prompt prefix and fail-closed AgentTaskContextError behavior are unchanged.",
+    "D5 — Tests FU1 call parseGrokJson directly over a usage-bearing cost matrix (null, \"\", true, \"0.5\", NaN, -1, 0, 0.5); tests FU2 call projectAgentTaskContext directly on a scratch source repo plus a linked worktree from the delivered createLocalGitWorkspace, asserting byte-identical source info/exclude and candidate-commit exclusion. Hermetic os.tmpdir scratch; no network, no credentials, no real agent CLIs.",
+    "D6 — Living docs/living/system/agent-tools/observation.md grok row: totalCostUsd is observed only for a finite total_cost_usd number >= 0, else null, never zero-filled. Living docs/living/system/agent-tools/context.md: exclusion is worktree-local (.exharness/.gitignore) and the source repository is never written. No Blackboard ids.",
+    "D7 — Evidence: executed followup-probe-result.json (DELIVERED_TRUTH: grokNullCost 0, grokEmptyStringCost 0, grokTrueCost 1, grokNumericStringCost 0.5, excludeResolvedInsideWorktree false, sourceExcludeChanged true).",
+    "D8 — auditPaths against this plan rejects packages/agentic-system/** and docs/blackboard/**."
   ],
-  "sourceSeams": {
-    "requiredExisting": [
-      "packages/agentic-system/src/local-command-verifier.js",
-      "packages/agentic-system/src/index.js",
-      "docs/blackboard/evidence/BB-123/discovery.json",
-      "docs/blackboard/process/delivery-value-improvement-research.md"
-    ],
-    "expectedNew": [
-      "packages/agentic-system/test/local-verifier-environment.test.js"
-    ],
-    "expectedTests": [
-      "packages/agentic-system/test/local-verifier-environment.test.js"
-    ]
-  },
   "sourceScope": {
     "read": [
-      "packages/agentic-system/src/local-command-verifier.js",
-      "packages/agentic-system/src/index.js",
-      "packages/agent-tools/src/**",
-      "packages/agentic-system/src/**",
-      "packages/agent-tools/test/**",
-      "packages/agentic-system/test/**",
-      "docs/blackboard/process/delivery-value-improvement-research.md",
-      "docs/blackboard/evidence/BB-123/discovery.json"
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
     ],
     "write": [
-      "packages/agentic-system/src/local-command-verifier.js",
-      "packages/agentic-system/src/index.js",
-      "packages/agentic-system/test/local-verifier-environment.test.js",
-      "docs/living/system/agentic-application/state.md",
-      "docs/living/system/agent-tools/state.md"
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/task-context.js",
+      "packages/agent-tools/test/followup-correctness.test.js",
+      "docs/living/system/agent-tools/context.md",
+      "docs/living/system/agent-tools/observation.md"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
       "packages/oracle/**",
+      "packages/agentic-system/**",
       "packages/benchmark/**",
-      "docs/blackboard/**",
-      ".github/**"
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/test/scope-audit.mjs",
+      ".github/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/agent-tool-research/BB-123.md",
+      "docs/blackboard/evidence/BB-123/followup-probe-result.json",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/task-context.js",
+      "packages/agentic-system/src/local-git-workspace.js",
+      "packages/agent-tools/test/scope-audit.mjs",
+      "docs/living/system/agent-tools/context.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/test/followup-correctness.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/followup-correctness.test.js"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
-    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — Observed-only cost [FU1]: implement D1–D2 cost guard. Tests assert the full cost matrix through parseGrokJson.",
+    "S2 — Worktree-local exclusion [FU2]: implement D3–D4 gitignore projection. Tests assert byte-identical source info/exclude and candidate-commit exclusion through projectAgentTaskContext.",
+    "S3 — Docs and scope [FU3]: Living observed-cost and exclusion sentences; auditPaths rejects agentic-system."
   ],
   "acceptanceCriteria": [
     {
-      "id": "ENV_BOUNDARY",
-      "statement": "Parent-only planted secrets are absent from verifier children, an explicit overlay works, and NODE_TEST_CONTEXT is stripped.",
+      "id": "FU1",
+      "statement": "A grok JSON with a finite total_cost_usd number >= 0 reports that cost; null, empty-string, boolean, numeric-string, NaN, infinite and negative costs report totalCostUsd null and never a coerced number.",
       "verificationIds": [
-        "focused"
+        "fu1-cost",
+        "followup",
+        "agent-tools"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "FU1 cost-matrix output."
       ]
     },
     {
-      "id": "COMPATIBILITY",
-      "statement": "Required PATH/platform variables remain available and Backend/QA verification results preserve revision/tree bindings.",
+      "id": "FU2",
+      "statement": "Projecting grounded context into a linked worktree writes the exclusion inside the worktree only, leaves the source repository info/exclude byte-identical, and keeps the copies out of the candidate commit.",
       "verificationIds": [
-        "focused"
+        "fu2-context",
+        "followup",
+        "agent-tools"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "FU2 linked-worktree output."
+      ]
+    },
+    {
+      "id": "FU3",
+      "statement": "Living docs state the observed-only cost and the worktree-local exclusion with no Blackboard ids, and the candidate writes only sourceScope.write paths.",
+      "verificationIds": [
+        "fu3-docs",
+        "followup",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "FU3 docs/scope output, verify:current-docs and npm test logs."
+      ]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Only a total_cost_usd that is typeof number, finite and >= 0 is an observed totalCostUsd; anything else is null.",
+      "criterionIds": [
+        "FU1"
+      ]
+    },
+    {
+      "invariant": "Projection never writes outside worktreeRoot; the source repository info/exclude stays byte-identical.",
+      "criterionIds": [
+        "FU2"
+      ]
+    },
+    {
+      "invariant": "Grounded copies never enter the candidate commit.",
+      "criterionIds": [
+        "FU2"
+      ]
+    },
+    {
+      "invariant": "Living docs state observed-only cost and worktree-local exclusion with no Blackboard ids.",
+      "criterionIds": [
+        "FU3"
       ]
     }
   ],
   "verificationPlan": [
     {
-      "id": "focused",
-      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js"
+      "id": "fu1-cost",
+      "command": "node --test --test-name-pattern=\"^FU1 \" packages/agent-tools/test/followup-correctness.test.js"
     },
     {
-      "id": "agent-tools-regression",
+      "id": "fu2-context",
+      "command": "node --test --test-name-pattern=\"^FU2 \" packages/agent-tools/test/followup-correctness.test.js"
+    },
+    {
+      "id": "fu3-docs",
+      "command": "node --test --test-name-pattern=\"^FU3 \" packages/agent-tools/test/followup-correctness.test.js"
+    },
+    {
+      "id": "followup",
+      "command": "node --test packages/agent-tools/test/followup-correctness.test.js"
+    },
+    {
+      "id": "agent-tools",
       "command": "npm run test:agent-tools"
-    },
-    {
-      "id": "agentic-regression",
-      "command": "npm run test:agentic"
     },
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
-  "invariantCoverage": [
+  "researchGaps": [],
+  "researchEvidence": [
     {
-      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
-      "criterionIds": [
-        "ENV_BOUNDARY",
-        "COMPATIBILITY"
+      "ref": "docs/blackboard/evidence/BB-123/followup-probe-result.json",
+      "finding": "DELIVERED_TRUTH: grokNullCost 0, grokEmptyStringCost 0, grokTrueCost 1, grokNumericStringCost 0.5; groundedProjected 1; excludeResolvedInsideWorktree false; sourceExcludeChanged true."
+    },
+    {
+      "ref": "packages/agent-tools/src/output-parsers.js",
+      "finding": "DELIVERED_TRUTH: const cost = Number(value.total_cost_usd); usage totalCostUsd is Number.isFinite(cost) ? cost : null, so null/\"\"/true/\"0.5\" coerce to 0/0/1/0.5."
+    },
+    {
+      "ref": "packages/agent-tools/src/task-context.js",
+      "finding": "DELIVERED_TRUTH: projectAgentTaskContext resolves git rev-parse --git-path info/exclude in the worktree and appends .exharness/, which in a linked worktree is the source repository shared exclude file."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-105",
+      "BB-102"
+    ],
+    "workerStart": "Re-run node docs/blackboard/evidence/BB-123/followup-probe.mjs. Confirm grok null/\"\"/true/\"0.5\" still coerce to 0/0/1/0.5 and sourceExcludeChanged is still true. Confirm delivered BB-105 grok and BB-102 task-context tests still pass.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "parseGrokJson Number() cost coercion",
+        "info/exclude append in projectAgentTaskContext",
+        "createLocalGitWorkspace git worktree add",
+        "grok usage-bearing token parsing",
+        "fail-closed AgentTaskContextError"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "observed-only grok cost guard",
+        "worktree-local .exharness/.gitignore exclusion"
+      ]
+    },
+    "contradiction": "None. BB-120 allowlists child env at a different seam. BB-067 is gVisor OpenHands, not this projection."
+  },
+  "deliveryContract": {
+    "precondition": "BB-105 DONE, BB-102 DONE.",
+    "completion": "All FU criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No estimated or zero-filled costs, no source-repository writes, no Oracle or adapter argv changes."
+  },
+  "ciContract": {
+    "checks": [
+      "fu1-cost",
+      "fu2-context",
+      "fu3-docs",
+      "followup",
+      "agent-tools",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "numeric observed totalCostUsd",
+      "usage-bearing grok token parsing",
+      "grounded prompt prefix and .exharness/context copies",
+      "fail-closed AgentTaskContextError"
+    ],
+    "add": [
+      "observed-only cost guard",
+      "worktree-local .gitignore exclusion",
+      "followup-correctness tests",
+      "Living cost/exclusion sentences"
+    ],
+    "rollback": "Restore Number() cost coercion; restore info/exclude append; remove tests and Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-123 objective + executed follow-up probe + delivered output-parsers and task-context",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
       ]
     },
     {
-      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-105 + DONE BB-102",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "No coerced costs, no source-repo writes."
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/context.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs state that grok totalCostUsd is observed only when total_cost_usd is a finite number >= 0 (never zero-filled) and that grounded copies are excluded worktree-locally without writing the source repository. Living docs contain no Blackboard ids."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify a grok cost guard so only a finite number >= 0 is reported as totalCostUsd while null, empty-string, boolean and numeric-string costs record null, with named tests calling parseGrokJson directly.",
       "criterionIds": [
-        "ENV_BOUNDARY",
-        "COMPATIBILITY"
+        "FU1"
+      ],
+      "planElements": [
+        "S1"
+      ],
+      "verificationIds": [
+        "fu1-cost",
+        "followup",
+        "agent-tools"
+      ],
+      "decisionIndexes": [
+        0,
+        1
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/output-parsers.js",
+        "docs/blackboard/evidence/BB-123/followup-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/output-parsers.js",
+          "match": "const cost = Number(value.total_cost_usd);"
+        },
+        {
+          "ref": "packages/agent-tools/src/output-parsers.js",
+          "match": "totalCostUsd: Number.isFinite(cost) ? cost : null"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-123/followup-probe-result.json",
+          "match": "\"grokNullCost\": 0"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-123/followup-probe-result.json",
+          "match": "\"grokTrueCost\": 1"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions"
       ]
     },
     {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "objectiveCriterion": "Specify a worktree-local grounded exclusion so projection never writes outside worktreeRoot, the source info/exclude stays byte-identical, and copies stay out of the candidate commit, with named tests calling projectAgentTaskContext directly on a linked worktree.",
       "criterionIds": [
-        "ENV_BOUNDARY",
-        "COMPATIBILITY"
+        "FU2"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "fu2-context",
+        "followup",
+        "agent-tools"
+      ],
+      "decisionIndexes": [
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/task-context.js",
+        "docs/blackboard/evidence/BB-123/followup-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/task-context.js",
+          "match": "const excludeRef = gitPath(worktreeRoot, [\"rev-parse\", \"--git-path\", \"info/exclude\"]);"
+        },
+        {
+          "ref": "packages/agent-tools/src/task-context.js",
+          "match": "await appendFile(excludePath,"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-123/followup-probe-result.json",
+          "match": "\"sourceExcludeChanged\": true"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-123/followup-probe-result.json",
+          "match": "\"excludeResolvedInsideWorktree\": false"
+        }
+      ],
+      "supportingPlanFields": [
+        "invariants"
+      ]
+    },
+    {
+      "objectiveCriterion": "Specify named tests, Living observed-cost and exclusion text and the exact write scope for the fix.",
+      "criterionIds": [
+        "FU1",
+        "FU3"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "fu1-cost",
+        "fu3-docs",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        5,
+        7
+      ],
+      "sourceRefs": [
+        "docs/living/system/agent-tools/observation.md",
+        "docs/living/system/agent-tools/context.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "plus the observed finite `total_cost_usd` (`totalCostUsd`)"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/context.md",
+          "match": "The source repository is never written."
+        }
+      ],
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed follow-up probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": [
+        "FU1",
+        "FU2",
+        "FU3"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "fu1-cost",
+        "fu2-context",
+        "fu3-docs",
+        "followup",
+        "repository"
+      ],
+      "decisionIndexes": [
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-123.md",
+        "docs/blackboard/evidence/BB-123/followup-probe-result.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-123.md",
+          "match": "observed-only cost guard"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-123/followup-probe-result.json",
+          "match": "\"kind\": \"BB-123_FOLLOWUP_PROBE_V1\""
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeVerificationCases"
       ]
     }
   ],
   "negativeVerificationCases": [
-    "Parent-only secret must not reach verifier child",
-    "NODE_TEST_CONTEXT overlay cannot revive the parent test channel"
+    "A grok JSON reporting total_cost_usd null is recorded as totalCostUsd null, not 0.",
+    "A grok JSON reporting total_cost_usd \"\" is recorded as totalCostUsd null, not 0.",
+    "A grok JSON reporting total_cost_usd true is recorded as totalCostUsd null, not 1.",
+    "A grok JSON reporting total_cost_usd \"0.5\" is recorded as totalCostUsd null, not 0.5.",
+    "Projecting grounded context into a linked worktree leaves the source repository info/exclude byte-identical.",
+    "Projected grounded copies are excluded worktree-locally and never enter the candidate commit."
   ],
   "negativeCaseBindings": [
     {
-      "id": "NEG_123_1",
+      "id": "NC-FU-null",
       "negativeCaseIndex": 0,
-      "criterionId": "ENV_BOUNDARY",
-      "verificationId": "focused",
-      "testRef": "packages/agentic-system/test/local-verifier-environment.test.js",
-      "testTitle": "BB-123 N1 Parent-only secret must not reach verifier child",
-      "subjectSymbol": "createLocalCommandVerifier"
+      "criterionId": "FU1",
+      "verificationId": "fu1-cost",
+      "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+      "testTitle": "FU1 null total_cost_usd is observed as null",
+      "subjectSymbol": "parseGrokJson"
     },
     {
-      "id": "NEG_123_2",
+      "id": "NC-FU-empty",
       "negativeCaseIndex": 1,
-      "criterionId": "ENV_BOUNDARY",
-      "verificationId": "focused",
-      "testRef": "packages/agentic-system/test/local-verifier-environment.test.js",
-      "testTitle": "BB-123 N2 NODE_TEST_CONTEXT overlay cannot revive the parent test channel",
-      "subjectSymbol": "createLocalCommandVerifier"
+      "criterionId": "FU1",
+      "verificationId": "fu1-cost",
+      "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+      "testTitle": "FU1 empty-string total_cost_usd is observed as null",
+      "subjectSymbol": "parseGrokJson"
+    },
+    {
+      "id": "NC-FU-bool",
+      "negativeCaseIndex": 2,
+      "criterionId": "FU1",
+      "verificationId": "fu1-cost",
+      "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+      "testTitle": "FU1 boolean total_cost_usd is observed as null",
+      "subjectSymbol": "parseGrokJson"
+    },
+    {
+      "id": "NC-FU-string",
+      "negativeCaseIndex": 3,
+      "criterionId": "FU1",
+      "verificationId": "fu1-cost",
+      "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+      "testTitle": "FU1 string total_cost_usd is observed as null",
+      "subjectSymbol": "parseGrokJson"
+    },
+    {
+      "id": "NC-FU-exclude",
+      "negativeCaseIndex": 4,
+      "criterionId": "FU2",
+      "verificationId": "fu2-context",
+      "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+      "testTitle": "FU2 source info/exclude stays byte-identical",
+      "subjectSymbol": "projectAgentTaskContext"
+    },
+    {
+      "id": "NC-FU-candidate",
+      "negativeCaseIndex": 5,
+      "criterionId": "FU2",
+      "verificationId": "fu2-context",
+      "testRef": "packages/agent-tools/test/followup-correctness.test.js",
+      "testTitle": "FU2 grounded copies never enter the candidate commit",
+      "subjectSymbol": "projectAgentTaskContext"
     }
-  ],
-  "researchGaps": [
-    "Finalize the shared-versus-local allowlist seam after BB-120 delivery and pin platform compatibility cases; then submit the exact draft to fresh Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
-  "livingDocs": {
-    "refs": [
-      "docs/living/system/agentic-application/state.md",
-      "docs/living/system/agent-tools/state.md"
-    ],
-    "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
-  },
-  "valueHypothesis": {
-    "expectedValue": "Close the remaining credential inheritance path in every local Backend/QA check.",
-    "measurement": "Zero inherited synthetic secrets across agent and verifier spawns; existing local Backend/QA regressions pass.",
-    "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
-  }
+  ]
 }

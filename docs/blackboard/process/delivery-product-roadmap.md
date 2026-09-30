@@ -90,7 +90,7 @@ Diagram shows phase relationships. Canonical direct task edges are in work-graph
 
 ## Research lane contract
 
-Each newly registered discovery task BB-123..129 has an OBJECTIVE, a DRAFT plan, context routing and a task-specific section in the discovery brief. Existing researched tasks retain their READY plans. Start Research with an explicit ID; BB-065 and Oracle foundation 060..064 are already DONE.
+Each newly registered discovery task BB-124..130 has an OBJECTIVE, a DRAFT plan, context routing and a task-specific section in the discovery brief. Existing researched tasks retain their READY plans. Start Research with an explicit ID; BB-065 and Oracle foundation 060..064 are already DONE.
 
 The accepted research for BB-077 and BB-081 replaced the earlier narrow sync-vs-async premise with a neutral comparison protocol; both are now WORKER plans in the graph. Their plans own a neutral fixed-factor protocol and held-out component ablation/fault robustness. BB-078–080 remain implementation candidates waiting on BB-077 delivery; they are not reopened research. BB-066 still depends on BB-081 so the real coding-agent runtime cannot silently freeze an unmeasured Core profile.
 
@@ -171,7 +171,7 @@ Briefs: [BB-097](agent-tool-research/BB-097.md) runs Codex, Kiro and agy under E
 
 Not registered: sandbox (BB-067), OpenHands domain runtime (BB-066), BB-069 first-slice, generic PM/SA runtime. Research may run ahead; no existing READY/DONE task is reopened.
 
-## Additive delivery value improvements — BB-123..129
+## Additive delivery value improvements — BB-124..130
 
 [Research discovery](delivery-value-improvement-research.md) registers three bounded defects (verifier env, usage/cost completeness, exact resume binding) and four local delivery improvements (no-progress retry policy, protected evaluator, Grok/OpenCode operator parity, review/replay bundle). Executed local probes motivate each subject. All new plans are DRAFT in RESEARCH_SA; no existing research-ready or DONE task is reopened.
 

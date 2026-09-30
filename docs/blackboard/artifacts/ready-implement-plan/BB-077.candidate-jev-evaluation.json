@@ -1,0 +1,182 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-077-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-077",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.json",
+      "hash": "6d3d5de86c499d4ad934a942b8a5f70a55f0d0270e6a04701579067b0d511d18"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-077.json",
+      "hash": "02163346bb3daecccb01285a4886f1081ce177c1b91caadf97ff0dcd6dd4012e"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-077.implementation-result.json",
+      "hash": "788ccdee5a68d31523c014464972029dc89fd9a15f194f79aee06b5271b5ef6c"
+    },
+    "candidateSha": "6beb39ad656cbb763993aa595b4db2eebdcb3433",
+    "candidateTree": "28a1f6679206c9e658a1f8071a51cda9fc38ca7d",
+    "baselineSha": "6c9a746f96e277e25e6d7b9cf1daeffe2bf7fc02"
+  },
+  "stateHash": "abe120790612afad832f002d3688d675baed466cf0db4e5c3bcdccda72112b72",
+  "specHash": "6f804faf0012c4a72d86d0a5d5f887172e6c25cc67d0ca9372f0194ca96d4be7",
+  "cacheKey": "a527ebf51ab1c8b84686b34e1a49ced9580f18a5ee783ea970b3f75217eeb4de",
+  "model": "jev-1.13.0",
+  "answers": {
+    "KERNEL_CONSUMER": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.54,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.04,
+        "IMPLEMENTATION_DEFECT": 0.1,
+        "INSUFFICIENT_EVIDENCE": 0.2,
+        "SATISFIED": 0.66
+      }
+    },
+    "ARM_ISOLATION": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.62,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.05,
+        "SATISFIED": 0.72,
+        "IMPLEMENTATION_DEFECT": 0.08,
+        "INSUFFICIENT_EVIDENCE": 0.15
+      }
+    },
+    "COHORT": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.51,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.34,
+        "SATISFIED": 0.64
+      }
+    },
+    "ECONOMICS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.69,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "SATISFIED": 0.77,
+        "INSUFFICIENT_EVIDENCE": 0.17,
+        "IMPLEMENTATION_DEFECT": 0.04
+      }
+    },
+    "COMPLETE_ATTEMPTS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.91,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "SATISFIED": 0.92,
+        "INSUFFICIENT_EVIDENCE": 0.06
+      }
+    },
+    "BB081_HANDOFF": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.73,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "SATISFIED": 0.8,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.18
+      }
+    },
+    "BOUNDARY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.75,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.08,
+        "PLAN_INPUT_CONTRADICTION": 0.03,
+        "INSUFFICIENT_EVIDENCE": 0.08,
+        "SATISFIED": 0.81
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.95,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.02,
+        "SATISFIED": 0.96
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 144987,
+    "output_tokens": 581
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 8,
+    "latencyMs": 2013.3006529999998,
+    "payloadBytes": 432031,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_ATOMIC_QUESTIONS_V1",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V3",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "KERNEL_CONSUMER",
+          "payloadHash": "eb8e7618d7915c554a2c3812f0a194d647deedc484c34a574bf2f68488f8f607",
+          "payloadBytes": 53294
+        },
+        {
+          "id": "ARM_ISOLATION",
+          "payloadHash": "24a193de8832809e99e0ebe488dff030444a9c512cf85d1fb766c537abd5f5d5",
+          "payloadBytes": 53975
+        },
+        {
+          "id": "COHORT",
+          "payloadHash": "1727e270761ba1911ba3ae850dc2d7ff7ace5281611453bf47f4efddeec21249",
+          "payloadBytes": 50700
+        },
+        {
+          "id": "ECONOMICS",
+          "payloadHash": "1aef0a148d7066813503d6bc9f127d8ee5b25d62ee283b176fe153bd9b2e414c",
+          "payloadBytes": 54063
+        },
+        {
+          "id": "COMPLETE_ATTEMPTS",
+          "payloadHash": "7e2058c5b7f10847efc82a51e6e14709240ccee9e2c8335a1c229ebfc3e4bb1e",
+          "payloadBytes": 54030
+        },
+        {
+          "id": "BB081_HANDOFF",
+          "payloadHash": "5e618f8df5325b3f63191750651a15cf7fe9c045aa9c0fd6ff6b52c09c29fb45",
+          "payloadBytes": 50143
+        },
+        {
+          "id": "BOUNDARY",
+          "payloadHash": "08607da33f1240d55e701374d0e737f7dd47c23d2af24f5d0bdd86b378a35b7d",
+          "payloadBytes": 53251
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "49ff848e3c9c4c31a92956389a131ce6d3d68be52f9c0a8e7593be993dc43546",
+          "payloadBytes": 58518
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}

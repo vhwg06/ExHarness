@@ -1,6 +1,6 @@
 # Delivery value and improvement discovery
 
-Checked: 2026-09-30. Source baseline: `29935fa23cb19af278a6fa8db68b9448bc6b1a0e`. Routing refreshed at `939a5893f418d2adbbf498744bb53b593c9a8642` (BB-104 is now DONE). Status: **RESEARCH DISCOVERY; BB-123..129 DRAFT, not READY or delivered**.
+Checked: 2026-09-30. Source baseline: `29935fa23cb19af278a6fa8db68b9448bc6b1a0e`. Routing refreshed at `939a5893f418d2adbbf498744bb53b593c9a8642` (BB-104 is now DONE). Status: **RESEARCH DISCOVERY; BB-124..130 DRAFT, not READY or delivered**.
 
 User direction: improve what is weak, and research capabilities that can ship with a large effect on delivery value. The scope here is the delivered local agent-tool path. No previous objective, plan or Jev judgment is rewritten.
 
@@ -14,12 +14,12 @@ RESEARCH_DESIRED_STATE: exact recovery contract binding, truthful accounting, in
 
 ## Facts and practical consequences
 
-Reproduce all local findings with `node docs/blackboard/evidence/BB-123/local-delivery-audit.mjs`. Each discovery.json pins the baseline and records zero provider calls. Synthetic fixtures use a deliberately broken sum implementation; no actual host secrets are read.
+Reproduce all local findings with `node docs/blackboard/evidence/BB-130/local-delivery-audit.mjs`. Each discovery.json pins the baseline and records zero provider calls. Synthetic fixtures use a deliberately broken sum implementation; no actual host secrets are read.
 
 | Evidence | Observed fact | Consequence / limit |
 |---|---|---|
-| BB-123 | Verifier child inherits a planted parent-only variable | BB-120 covers a different runner; local checks need their own bounded env contract. |
-| BB-124 | Truncated Codex stream is marked complete; null Grok cost becomes zero | Economic reports can appear more complete/cheaper than observed; fix before interpreting cost comparisons. |
+| BB-130 | Verifier child inherits a planted parent-only variable | BB-120 covers a different runner; local checks need their own bounded env contract. |
+| BB-124 | Truncated Codex stream is marked complete; null Grok cost becomes zero (owned by main BB-123) | Economic reports can appear more complete/cheaper than observed; fix before interpreting cost comparisons. |
 | BB-125 | Same-id resume with a new prompt and always-pass verifier accepts a broken candidate | Task identity needs content/config binding, not only id/repository/base. |
 | BB-126 | Three identical no-edit candidates cause three verifier executions | Potential retry waste; early stopping may harm delayed fixes, so compare policies first. |
 | BB-127 | Removing a repository test assertion passes Backend and fresh QA while code is still wrong | Fresh checkout does not independently pin evaluator content. This is a local trusted-command boundary, not a sandbox exploit. |
@@ -31,7 +31,8 @@ Reproduce all local findings with `node docs/blackboard/evidence/BB-123/local-de
 | Existing owner | Reuse / boundary |
 |---|---|
 | BB-106..108 | Test wiring and Oracle failure/reservation defects already tasked; prioritize rather than reopen. |
-| BB-120 | Agent CLI environment only. BB-123 covers local-command-verifier spawn, including QA; preserve package dependency direction. |
+| BB-123 | Owns observed-only Grok cost normalization and grounded-context exclusion. BB-124 consumes its cost contract and adds usage/aggregate coverage. |
+| BB-120 | Agent CLI environment only. BB-130 covers local-command-verifier spawn, including QA; preserve package dependency direction. |
 | BB-101 | Preserve its delivered recovery behavior/evidence; BB-125 fixes uncovered content/config drift in a new task. |
 | BB-099 | Owns supervised/direct/DIRECT_RETRY value and external hidden acceptance calibration. New retry/accounting work consumes its protocol without changing the accepted experiment. |
 | BB-104 / BB-121 | Local CLI composition / durable Board strategy. BB-127..129 are additive evaluator, capability and handoff contracts, not a second workflow. |
@@ -49,26 +50,26 @@ Reproduce all local findings with `node docs/blackboard/evidence/BB-123/local-de
 6. **Tool parity:** use registered delivered capability rather than another static whitelist. Unknown/missing/unsupported tools fail before dispatch. OpenCode is not fabricated as delivered.
 7. **Handoff:** compare SHA-only, binary patch and incremental Git bundle. A patch aids review; a bundle preserves exact commit objects and declared prerequisites. Prefer both with an atomic manifest, published before scratch cleanup, using a temporary export repository so source branches remain untouched.
 
-Primary source ledger: `docs/blackboard/evidence/BB-123/research-sources.json`. Anthropic engineering supports outcome-based evaluation and using observed redundant calls to target improvements, not a claim of ExHarness value. Node documents explicit child env/process control; Git documents portable bundle/prerequisite checks. The sole public repository example is openai/codex (127,383 stars at lookup; Apache-2.0; pinned source commit), meeting the user 1,000-star floor. No new framework adoption is needed for the initial candidate designs.
+Primary source ledger: `docs/blackboard/evidence/BB-130/research-sources.json`. Anthropic engineering supports outcome-based evaluation and using observed redundant calls to target improvements, not a claim of ExHarness value. Node documents explicit child env/process control; Git documents portable bundle/prerequisite checks. The sole public repository example is openai/codex (127,383 stars at lookup; Apache-2.0; pinned source commit), meeting the user 1,000-star floor. No new framework adoption is needed for the initial candidate designs.
 
 ## Concrete task contracts and measurement
 
 | Task | Output | Direct Worker dependencies | Value / evidence gate |
 |---|---|---|---|
-| 123 | Constrain local verifier child environment | BB-096, BB-120 | Zero inherited synthetic secrets across agent and verifier spawns; existing local Backend/QA regressions pass. |
-| 124 | Preserve truthful partial usage and missing cost accounting | BB-098, BB-105 | Every incomplete trace has explicit coverage; complete per-tool comparison uses matched observed coverage or reports INCONCLUSIVE. |
+| 130 | Constrain local verifier child environment | BB-096, BB-120 | Zero inherited synthetic secrets across agent and verifier spawns; existing local Backend/QA regressions pass. |
+| 124 | Preserve partial usage and per-field accounting coverage | BB-098, BB-105, BB-123 | Every incomplete trace has explicit coverage; complete per-tool comparison uses matched observed coverage or reports INCONCLUSIVE. |
 | 125 | Bind supervised resume to the exact task and execution contract | BB-101 | All contract drift cases stop before spawn/verifier; unchanged crash-resume retains one semantic attempt and candidate identity. |
 | 126 | Stop repeated no-progress retries with evidence-bound feedback | BB-125 | Invocation/verifier count and elapsed time on repeat fixtures; paired held-out accepted quality and cost in BB-099-compatible studies. |
-| 127 | Add externally pinned acceptance for local delivery slices | BB-104, BB-123, BB-125 | Zero false ACCEPT for deterministic tamper fixtures; exact evaluator and candidate digests on every accepted result; fresh independent replay. |
+| 127 | Add externally pinned acceptance for local delivery slices | BB-104, BB-130, BB-125 | Zero false ACCEPT for deterministic tamper fixtures; exact evaluator and candidate digests on every accepted result; fresh independent replay. |
 | 128 | Expose delivered Grok and OpenCode adapters through operator delivery | BB-104, BB-122 | One manifest-to-Backend-to-QA fixture per supported adapter; optional live smoke separately labelled feasibility, not value. |
 | 129 | Export a durable review bundle for the exact local candidate | BB-127 | Exact candidate tree reconstructed in a fresh clone with no source worktree/conversation; timed reviewer steps and replay coverage. |
 
-Task ids are BB-123..129; each task has a distinct Feature/Bug, exact objective, DRAFT plan, explicit components, proposed file scope, named negative tests and one discovery artifact. Embedded subtasks are checklists, not scheduling units. Allocation advances to BB-130.
+Task ids are BB-124..130; each task has a distinct Feature/Bug, exact objective, DRAFT plan, explicit components, proposed file scope, named negative tests and one discovery artifact. Embedded subtasks are checklists, not scheduling units. Allocation advances to BB-131.
 
 ## Delivery order
 
-1. Close existing repair candidates BB-106/108/107 and environment BB-120; run research for BB-123/124/125 immediately in parallel with dependency execution (without creating new worker claims here).
-2. Prioritize exact resume binding BB-125 and verifier env BB-123, then accounting BB-124. These protect useful existing runs and credible comparison evidence.
+1. Close existing repair candidates BB-106/108/107 and environment BB-120; run research for BB-130/124/125 immediately in parallel with dependency execution (without creating new worker claims here).
+2. Prioritize exact resume binding BB-125 and verifier env BB-130, then accounting BB-124. These protect useful existing runs and credible comparison evidence.
 3. Ship local capability parity BB-128 after BB-122 delivery (BB-104 is DONE); this is the smallest operator-visible increment.
 4. Research and implement protected acceptance BB-127, then review handoff BB-129. Exit is an exact externally checked candidate another developer can replay.
 5. Evaluate retry policy BB-126 with non-regression controls; use the existing BB-099 benchmark before asserting cost or productivity gains. This is independent of the broad OpenHands/async program.
@@ -78,3 +79,7 @@ This order is a value priority, not additional dependency edges or a runtime rol
 ## Research exit and remaining uncertainty
 
 The probes establish gaps, not completed improvements. Drafts still require their task-specific compatibility/threat/measurement decisions, source anchors and objective coverage, then fresh Jev SATISFIED. No readiness, provider performance, runtime cost saving or product release claim is made here. Live experiments are optional, explicitly bounded and separate from offline calibration; report quality, cost coverage, lead time, reviewer effort and repeated-run reliability rather than one opaque score. A live request-tracker pilot remains BB-069/074, not this discovery.
+
+## Concurrent registration
+
+Main reserved BB-123 for observed-only Grok cost and grounded-context exclusion. The verifier-environment task uses BB-130; BB-124 depends on BB-123 and covers partial usage and aggregate field coverage. Existing main tasks, objectives, plans and evidence are preserved. Historical discovery remains bound to its source baseline.
