@@ -6,7 +6,7 @@ function text(v, l) { if (typeof v !== 'string' || !v.trim()) fail(`${l} must be
 
 export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, durability = null, resolverConfiguration = null } = {}) {
   if (!sourceCatalog || typeof sourceCatalog.authorityFor !== 'function' || typeof sourceCatalog.validateCandidate !== 'function') fail('sourceCatalog with authorityFor/validateCandidate required');
-  if (!retrievalPlanner || typeof retrievalPlanner.plan !== 'function') fail('retrievalPlanner with plan() required');
+  if (!retrievalPlanner || typeof retrievalPlanner.plan !== 'function' || typeof retrievalPlanner.execute !== 'function') fail('retrievalPlanner with plan()/execute() required');
   if (durability !== null && (typeof durability !== 'object' || typeof durability.resolve !== 'function')) fail('durability must expose resolve() or be null');
 
   async function preObserve(requirement) {
@@ -39,34 +39,55 @@ export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, d
         if (String(e.reason ?? e.message).includes('NOT_REUSABLE') === false) throw e;
       }
     }
-    const planned = retrievalPlanner.plan(requirement, { remainingBudget: { ...requirement.budget }, existingEdges: [] });
-    const candidates = [];
-    for (const work of planned.work ?? []) {
-      const registration = sourceCatalog.provider(work.providerId);
-      if (!registration) fail(`provider not registered: ${work.providerId}`);
-      const raws = await registration.retrieve(work);
-      for (const raw of raws) {
-        const validated = await sourceCatalog.validateCandidate(raw, { requirement, providerId: work.providerId });
-        candidates.push(validated);
-      }
-    }
+    // D1: candidate collection is delegated to the delivered planner execution,
+    // which applies per-work reservations and types every provider failure.
+    const executed = await retrievalPlanner.execute(requirement, { remainingBudget: { ...requirement.budget }, existingEdges: [] });
+    const evidenceIds = new Set(requirement.evidence.map((e) => e.id));
     const byEvidence = new Map();
-    for (const c of candidates) {
+    for (const c of executed.candidates) {
+      if (!evidenceIds.has(c.evidenceId)) fail(`planner returned candidate for unknown evidence: ${c.evidenceId}`);
       if (!byEvidence.has(c.evidenceId)) byEvidence.set(c.evidenceId, []);
       byEvidence.get(c.evidenceId).push(c);
     }
-    const items = [];
-    const unresolved = [];
+    // D6: planner and execution reasons are preserved verbatim; MISSING only
+    // covers evidence that has neither a candidate nor a typed reason.
+    const unresolved = executed.unresolved.map((u) => ({ evidenceId: u.evidenceId, reason: u.reason }));
     for (const e of requirement.evidence) {
-      const list = (byEvidence.get(e.id) ?? []).slice(0, 3);
-      if (!list.length) {
-        unresolved.push({ evidenceId: e.id, reason: 'MISSING' });
-        continue;
-      }
-      list.forEach((c, rank) => items.push({ evidenceId: c.evidenceId, rank, source: c.source, currentness: { validators: c.validators }, provenance: c.provenance, content: c.content }));
+      if (!byEvidence.has(e.id) && !unresolved.some((u) => u.evidenceId === e.id)) unresolved.push({ evidenceId: e.id, reason: 'MISSING' });
     }
-    const consumed = { items: Math.max(items.length, 1), materializedBytes: 40000, providerCalls: Math.max(planned.work?.length ?? 1, 1), resolutionSteps: 1 };
-    const resolution = defineContextResolution({ requirementId: requirement.requirementId, step: { index: 0, previousResolutionId: null }, status: unresolved.some((u) => requirement.evidence.find((e) => e.id === u.evidenceId)?.necessity === 'REQUIRED') ? 'UNSATISFIED' : unresolved.length ? 'PARTIAL' : 'COMPLETE', items, unresolved, consumed }, requirement);
+    // D3: planner order, rank per evidence; the planner already bounded items by budget.maxItems.
+    const itemsFor = (dropped) => {
+      const out = [];
+      for (const e of requirement.evidence) {
+        if (dropped.has(e.id)) continue;
+        (byEvidence.get(e.id) ?? []).forEach((c, rank) => out.push({ evidenceId: c.evidenceId, rank, source: c.source, currentness: { validators: c.validators }, provenance: c.provenance, content: c.content }));
+      }
+      return out;
+    };
+    const statusFor = (list) => list.some((u) => requirement.evidence.find((e) => e.id === u.evidenceId)?.necessity === 'REQUIRED') ? 'UNSATISFIED' : list.length ? 'PARTIAL' : 'COMPLETE';
+    // D2: reservation-based provider calls from the delivered execute() output, never floored.
+    const providerCalls = executed.planned.reserved.providerCalls;
+    const build = (items, list, materializedBytes) => defineContextResolution({ requirementId: requirement.requirementId, step: { index: 0, previousResolutionId: null }, status: statusFor(list), items, unresolved: list, consumed: { items: items.length, materializedBytes, providerCalls, resolutionSteps: 1 } }, requirement);
+    // D5 overflow order: lowest-priority (latest) OPTIONAL evidence first, then REQUIRED evidence.
+    const dropOrder = [...requirement.evidence.filter((e) => e.necessity === 'OPTIONAL').reverse(), ...requirement.evidence.filter((e) => e.necessity === 'REQUIRED').reverse()]
+      .filter((e) => byEvidence.has(e.id)).map((e) => e.id);
+    const dropped = new Set();
+    let items, finalUnresolved, sized;
+    for (;;) {
+      items = itemsFor(dropped);
+      finalUnresolved = [...unresolved, ...[...dropped].map((evidenceId) => ({ evidenceId, reason: 'BUDGET_EXHAUSTED' }))];
+      try {
+        // D4 pass 1: the contract computes the exact materialization size under the full byte budget.
+        sized = build(items, finalUnresolved, requirement.budget.maxMaterializedBytes);
+        break;
+      } catch (error) {
+        if (!(error instanceof TypeError) || error.message !== 'consumed below materialization/step' || dropped.size === dropOrder.length) throw error;
+        dropped.add(dropOrder[dropped.size]);
+      }
+    }
+    // D4 pass 2: report exactly the contract-computed materialization bytes (identity excludes consumed).
+    const resolution = build(items, finalUnresolved, sized.materialization.bytes);
+    const failures = executed.failures.map((f) => ({ evidenceId: f.evidenceId, providerId: f.providerId, reason: f.reason, detail: f.detail }));
     const post = await preObserve(requirement);
     const preDigests = new Map(pre.map((o) => [o.evidenceId, observationDigest(o)]));
     for (const o of post) {
@@ -77,7 +98,7 @@ export function createOracleContextResolver({ sourceCatalog, retrievalPlanner, d
         throw err;
       }
     }
-    return { outcome: 'FRESH', resolution, preObservations: pre, postObservations: post, reuseKey: null, receiptRef: null };
+    return { outcome: 'FRESH', resolution, preObservations: pre, postObservations: post, reuseKey: null, receiptRef: null, failures };
   }
 
   return Object.freeze({ resolve, preObserve });
