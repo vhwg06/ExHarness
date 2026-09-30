@@ -21,7 +21,7 @@ next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-105
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-105
-task: Add Grok Build as a supported agent tool
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-105/current.json
-components: integration/agent-tools
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -118,7 +111,7 @@ BB-101 [DONE] <- BB-097
 BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
 BB-104 [BLOCKED_BY BB-100,BB-102] <- BB-100, BB-101, BB-102
-BB-105 [ACTIVE] <- BB-097, BB-098
+BB-105 [PLANNED] <- BB-097, BB-098
 BB-106 [RESEARCH_SCHEDULABLE] <- BB-082, BB-087, BB-088
 BB-107 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088
