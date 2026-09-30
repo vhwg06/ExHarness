@@ -1,0 +1,139 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-089-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-089",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-089.json",
+      "hash": "564346a108e1e18e286090ab5b0e51cac1a00c99bae411f68cb766ebcefa1ca4"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-089.json",
+      "hash": "491f194c9a7197e779d6d23b6ad44fa121c7ac114f51525f531700c0183d96e9"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-089.implementation-result.json",
+      "hash": "22e69274ab439e2a442dea9099cd228618afca880d90501ba392931e95c682cc"
+    },
+    "candidateSha": "5775c5f8abb4fa32d4de029dd371db7e775e7825",
+    "candidateTree": "0dac5ce440bdd5e352438f7ba324c610325ea883",
+    "baselineSha": "1462a8fb8a317858be3af4f00218e64f1caa1abd"
+  },
+  "stateHash": "4254729817dd8ce6b7013ab2d9192084a63091181aafbf6d1c65ad4a8b3601e4",
+  "specHash": "7ccba5aed5da586e68027f3bde2507d626c970a0d8645e44787e683b1dc7c125",
+  "cacheKey": "a6cdf8ae886f799d9f9a92d40e7a1ba9daccd78bcd4ca556982d53a4e4164928",
+  "model": "jev-1.13.0",
+  "answers": {
+    "AD1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.89,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.08,
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.92,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "AD2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.89,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.08,
+        "SATISFIED": 0.92
+      }
+    },
+    "AD3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.81,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.06,
+        "INSUFFICIENT_EVIDENCE": 0.05,
+        "IMPLEMENTATION_DEFECT": 0.03,
+        "SATISFIED": 0.86
+      }
+    },
+    "AD4": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.74,
+      "probabilities": {
+        "SATISFIED": 0.8,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.17
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.99,
+      "probabilities": {
+        "SATISFIED": 0.99,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.01
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 72972,
+    "output_tokens": 353
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 5,
+    "latencyMs": 1223.670664,
+    "payloadBytes": 379627,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V3",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "AD1",
+          "payloadHash": "5085a212e727c3e248421bfb663e23ee9e56d55c266176e6e0dddc4486ee538c",
+          "payloadBytes": 43922
+        },
+        {
+          "id": "AD2",
+          "payloadHash": "d81710e7f91b06a9fa73752f3f22b30c3699d3a82abcc6efa5f19a64abc72cd2",
+          "payloadBytes": 43654
+        },
+        {
+          "id": "AD3",
+          "payloadHash": "a530ea65e240ab9e3ff72d507062a1a3d62a036c56e4a6574396c00b8d20dbd4",
+          "payloadBytes": 45569
+        },
+        {
+          "id": "AD4",
+          "payloadHash": "6ce43fac0f1d98206aee01ec49406b8318fef3fe8aad5e9f20d3fb29309046ea",
+          "payloadBytes": 55757,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-089/adoption.txt",
+            "docs/blackboard/evidence/BB-089/agentic-regression.txt",
+            "docs/blackboard/evidence/BB-089/repository.txt"
+          ]
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "a9a07074b77155f8ad98b1a928dc19b2d3385a425755e666d9ad276608e84924",
+          "payloadBytes": 40530
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}

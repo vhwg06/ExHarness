@@ -1,0 +1,85 @@
+TAP version 13
+# Subtest: A1 Backend requirement maps declared files in order to REQUIRED EXACT REPOSITORY evidence
+ok 1 - A1 Backend requirement maps declared files in order to REQUIRED EXACT REPOSITORY evidence
+  ---
+  duration_ms: 3.317264
+  type: 'test'
+  ...
+# Subtest: A1 QA requirement maps declared path-bearing artifacts with producer/revision/acceptance provenance
+ok 2 - A1 QA requirement maps declared path-bearing artifacts with producer/revision/acceptance provenance
+  ---
+  duration_ms: 1.066704
+  type: 'test'
+  ...
+# Subtest: A1 missing, zero, negative or fractional maxMaterializedBytes is rejected before any read
+ok 3 - A1 missing, zero, negative or fractional maxMaterializedBytes is rejected before any read
+  ---
+  duration_ms: 1.426562
+  type: 'test'
+  ...
+# Subtest: A1 a pathless QA artifact is rejected with a typed error on the Oracle path but resolves on the compatibility path
+ok 4 - A1 a pathless QA artifact is rejected with a typed error on the Oracle path but resolves on the compatibility path
+  ---
+  duration_ms: 0.724356
+  type: 'test'
+  ...
+# Subtest: A2 COMPLETE Backend resolution projects to a BackendContextSchema-valid context with original sourceRef
+ok 5 - A2 COMPLETE Backend resolution projects to a BackendContextSchema-valid context with original sourceRef
+  ---
+  duration_ms: 8.467911
+  type: 'test'
+  ...
+# Subtest: A2 COMPLETE QA resolution projects to a QaContextSchema-valid context with acceptance provenance
+ok 6 - A2 COMPLETE QA resolution projects to a QaContextSchema-valid context with acceptance provenance
+  ---
+  duration_ms: 4.007307
+  type: 'test'
+  ...
+# Subtest: A2 a repository reader failure blocks with SOURCE_FAILURE and detail before any Worker call
+ok 7 - A2 a repository reader failure blocks with SOURCE_FAILURE and detail before any Worker call
+  ---
+  duration_ms: 6.413575
+  type: 'test'
+  ...
+# Subtest: A2 a QA artifact reader failure blocks with SOURCE_FAILURE, keeps the reader error code, and never calls the Worker
+ok 8 - A2 a QA artifact reader failure blocks with SOURCE_FAILURE, keeps the reader error code, and never calls the Worker
+  ---
+  duration_ms: 3.669385
+  type: 'test'
+  ...
+# Subtest: A2 declared context larger than maxMaterializedBytes is BUDGET_EXHAUSTED and blocks without truncation
+ok 9 - A2 declared context larger than maxMaterializedBytes is BUDGET_EXHAUSTED and blocks without truncation
+  ---
+  duration_ms: 5.78531
+  type: 'test'
+  ...
+# Subtest: A2 delivered planner reservation: one declared item larger than 8,192 materialized bytes blocks even under a large budget
+ok 10 - A2 delivered planner reservation: one declared item larger than 8,192 materialized bytes blocks even under a large budget
+  ---
+  duration_ms: 2.494921
+  type: 'test'
+  ...
+# Subtest: A2 projection rejects any non-COMPLETE or incomplete resolution defensively
+ok 11 - A2 projection rejects any non-COMPLETE or incomplete resolution defensively
+  ---
+  duration_ms: 0.361963
+  type: 'test'
+  ...
+# Subtest: A2 end-to-end: runBackendObjective, prepareBackendObjective, recoverBackendObjective and runQaObjective deliver the Oracle-projected context
+ok 12 - A2 end-to-end: runBackendObjective, prepareBackendObjective, recoverBackendObjective and runQaObjective deliver the Oracle-projected context
+  ---
+  duration_ms: 19.516773
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 185.326108
+
+
+exitCode=0

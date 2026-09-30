@@ -1,0 +1,81 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-089-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-089.json",
+    "hash": "564346a108e1e18e286090ab5b0e51cac1a00c99bae411f68cb766ebcefa1ca4"
+  },
+  "candidateSha": "5775c5f8abb4fa32d4de029dd371db7e775e7825",
+  "baselineSha": "1462a8fb8a317858be3af4f00218e64f1caa1abd",
+  "candidateTree": "0dac5ce440bdd5e352438f7ba324c610325ea883",
+  "verificationRuns": [
+    {
+      "id": "adoption",
+      "command": "node --test packages/agentic-system/test/oracle-context-adoption.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5775c5f8abb4fa32d4de029dd371db7e775e7825",
+      "logRef": "docs/blackboard/evidence/BB-089/adoption.txt",
+      "logHash": "0b52bb2caa3db80d71a19159978bf2c7097ada2b86e0ec1829f83e9d05cf0b89"
+    },
+    {
+      "id": "equivalence",
+      "command": "node --test packages/agentic-system/test/oracle-context-equivalence.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5775c5f8abb4fa32d4de029dd371db7e775e7825",
+      "logRef": "docs/blackboard/evidence/BB-089/equivalence.txt",
+      "logHash": "742d57512972eb32c8fd20f9d0ca595ab5805633fb5acd2ec4a6d3f4beb65482"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5775c5f8abb4fa32d4de029dd371db7e775e7825",
+      "logRef": "docs/blackboard/evidence/BB-089/agentic-regression.txt",
+      "logHash": "0cd9c6ca27a7a47cacb2bf5573a418f58664847df9f0f0b3deeac4e3d04ce589"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5775c5f8abb4fa32d4de029dd371db7e775e7825",
+      "logRef": "docs/blackboard/evidence/BB-089/repository.txt",
+      "logHash": "6eb9f760d35702e73a71e874e7ccacd2da09415e56e5004a5ae52ef7630234c7"
+    }
+  ],
+  "claims": [
+    {
+      "id": "AD1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-089/adoption.txt"
+      ]
+    },
+    {
+      "id": "AD2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-089/adoption.txt"
+      ]
+    },
+    {
+      "id": "AD3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-089/adoption.txt",
+        "docs/blackboard/evidence/BB-089/equivalence.txt"
+      ]
+    },
+    {
+      "id": "AD4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-089/adoption.txt",
+        "docs/blackboard/evidence/BB-089/equivalence.txt",
+        "docs/blackboard/evidence/BB-089/agentic-regression.txt",
+        "docs/blackboard/evidence/BB-089/repository.txt"
+      ]
+    }
+  ]
+}
