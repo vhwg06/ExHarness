@@ -462,7 +462,11 @@ const WORKER_EXCERPT_LINE_CHARS = 300;
 const WORKER_EXCERPT_MAX_FAILING = 40;
 const WORKER_EXCERPT_MAX_SCRIPTS = 60;
 export const WORKER_BATCH_LIMITS = Object.freeze({ maxBatchBytes: WORKER_BATCH_MAX_BYTES, evidenceExcerptBytes: WORKER_EVIDENCE_EXCERPT_BYTES });
-export const WORKER_BATCH_STRATEGIES = Object.freeze({ ATOMIC: 'WORKER_ATOMIC_QUESTIONS_V1', BOUNDED: 'WORKER_BOUNDED_EVIDENCE_V2' });
+export const WORKER_BATCH_STRATEGIES = Object.freeze({ ATOMIC: 'WORKER_ATOMIC_QUESTIONS_V1', BOUNDED: 'WORKER_BOUNDED_EVIDENCE_V2', SOURCE_INDEX: 'WORKER_SOURCE_INDEX_V3' });
+// Last-resort representation for a question whose non-evidence input alone cannot fit:
+// omitted source stubs become a directory index (at most this many groups).
+export const OMITTED_SOURCE_INDEX_STRATEGY = 'OMITTED_SOURCE_INDEX_V1';
+const OMITTED_SOURCE_INDEX_MAX_GROUPS = 32;
 const EVIDENCE_EXCERPT_STRATEGY = 'EVIDENCE_LOG_EXCERPT_V1';
 const BATCH_SEVERITY = ['PLAN_INPUT_CONTRADICTION', 'IMPLEMENTATION_DEFECT', 'INSUFFICIENT_EVIDENCE'];
 // Living Doc selection for the Living Docs question of a bounded worker batch.
@@ -995,6 +999,64 @@ function batchDescriptor(id, part, parts, refs) {
  */
 export function workerQuestionBatches(fullPayload, id, options = {}) {
   const base = workerQuestionBase(fullPayload, id, options);
+  try { return boundedQuestionBatches(base, id, options); }
+  catch (error) {
+    // OMITTED_SOURCE_INDEX_V1: only a question that no earlier stage can represent is retried
+    // with its hash-stub sources summarized by directory; every other batch keeps its identity.
+    if (!String(error?.message).endsWith(`worker batch exceeds bounded input: ${id}`)) throw error;
+    const indexed = withOmittedSourceIndex(base);
+    if (indexed === null) throw error;
+    return boundedQuestionBatches(indexed, id, options).map(batch => ({ ...batch, sourceIndex: OMITTED_SOURCE_INDEX_STRATEGY }));
+  }
+}
+/**
+ * Summarizes a batch's omitted sources (hash stubs) by directory. The full evaluation
+ * state still binds every source by ref and hash; the index carries their count, total
+ * bytes and the hash of the exact stub list. A criterion question that is not a Living
+ * Doc criterion receives Living Docs only as scoped background, so under the index that
+ * background is bound by hash too. changeSet.refs keeps the changed files sent in
+ * state.sources; refCount/refsHash bind the complete changed-file list.
+ */
+export function withOmittedSourceIndex(base) {
+  const livingQuestion = Object.hasOwn(base.questions ?? {}, base.state.plan?.livingDocs?.questionId ?? '');
+  const sources = base.state.sources.map(source => !livingQuestion && source.ref.startsWith('docs/living/') && typeof source.body === 'string' && source.excerptStrategy === undefined
+    ? { ref: source.ref, hash: source.hash, bytes: source.bytes ?? Buffer.byteLength(source.body), omitted: true, deleted: source.deleted } : source);
+  const stubs = sources.filter(source => typeof source.body !== 'string');
+  if (stubs.length === 0) return null;
+  const changed = new Set(base.state.changeSet?.refs ?? []);
+  const dirs = stubs.map(source => source.ref.split('/').slice(0, -1));
+  let groups = new Map();
+  for (let depth = Math.max(0, ...dirs.map(dir => dir.length)); depth >= 0; depth -= 1) {
+    groups = new Map();
+    stubs.forEach((source, index) => {
+      const dir = dirs[index].slice(0, depth).join('/') || '.';
+      const group = groups.get(dir) ?? { dir, files: 0, changed: 0, deleted: 0, bytes: 0 };
+      group.files += 1;
+      if (changed.has(source.ref)) group.changed += 1;
+      if (source.deleted) group.deleted += 1;
+      group.bytes += source.bytes ?? 0;
+      groups.set(dir, group);
+    });
+    if (groups.size <= OMITTED_SOURCE_INDEX_MAX_GROUPS) break;
+  }
+  const sent = sources.filter(source => typeof source.body === 'string');
+  const state = { ...base.state, sources: sent, omittedSources: {
+    strategy: OMITTED_SOURCE_INDEX_STRATEGY,
+    count: stubs.length,
+    bytes: stubs.reduce((total, source) => total + (source.bytes ?? 0), 0),
+    hash: hash(stubs),
+    directories: [...groups.values()].sort((a, b) => a.dir.localeCompare(b.dir)),
+    instructions: 'Sources not sent in state.sources are summarized here by directory (files, changed, deleted and byte counts). Each is bound by ref and hash in the full evaluation state; hash binds their exact stub list.'
+  } };
+  if (base.state.changeSet) {
+    const refs = base.state.changeSet.refs;
+    const listed = new Set(sent.map(source => source.ref));
+    state.changeSet = { ...base.state.changeSet, refs: refs.filter(ref => listed.has(ref)), refCount: refs.length, refsHash: hash(refs),
+      instructions: `${base.state.changeSet.instructions} Under ${OMITTED_SOURCE_INDEX_STRATEGY}, refs lists only the changed files sent in state.sources; refCount and refsHash bind the complete changed-file list and state.omittedSources summarizes the rest by directory.` };
+  }
+  return { ...base, state };
+}
+function boundedQuestionBatches(base, id, options) {
   if (payloadBytes(base) <= WORKER_BATCH_MAX_BYTES) return [{ id, payload: base }];
   const runsByLog = new Map(base.state.verification.map(run => [run.logRef, run]));
   const excerpted = [];
@@ -1055,6 +1117,7 @@ function manifestEntry(batch) {
   const entry = { id: batch.id, payloadHash: hash(batch.payload), payloadBytes: payloadBytes(batch.payload) };
   if (batch.excerpted?.length) entry.excerpted = [...batch.excerpted].sort();
   if (batch.parts) { entry.part = batch.part; entry.parts = batch.parts; }
+  if (batch.sourceIndex) entry.sourceIndex = batch.sourceIndex;
   return entry;
 }
 function workerBatches(fullPayload, options = {}) {
@@ -1073,6 +1136,7 @@ function recordedBatchOptions(materialized, batching) {
   return batchOptions(materialized, batching.livingExcerptStrategy ?? LIVING_EXCERPT_STRATEGIES.SCOPED, batching.criterionSourceStrategy ?? CRITERION_SOURCE_STRATEGIES.TERM_LINES);
 }
 export function workerBatchStrategy(manifest) {
+  if (manifest.some(entry => entry.sourceIndex)) return WORKER_BATCH_STRATEGIES.SOURCE_INDEX;
   return manifest.some(entry => entry.excerpted || entry.parts) ? WORKER_BATCH_STRATEGIES.BOUNDED : WORKER_BATCH_STRATEGIES.ATOMIC;
 }
 /**
