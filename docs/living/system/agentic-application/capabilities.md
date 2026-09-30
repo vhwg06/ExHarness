@@ -172,3 +172,16 @@ Semantic revisions, obligations, accepted derivation edges and currentness trans
 The invalidation controller blocks affected eligible work and routes claimed work through canonical organization invalidation and release fencing. Claim/release, execution entry and publication also reject non-current obligation revisions. Reconciliation can be rerun after interruption using durable work-contract provenance. Product lineage does not add Board dependencies or choose workers, runtimes, strategies or priorities.
 
 Evidence: `cross-domain-obligation.test.js`, `dependency-invalidation.test.js`, `lineage-race.test.js`, and `ba-sa-vertical.test.js`. Autonomous activation and global product closure remain outside this capability.
+
+## A18 — Local git workspace and command verification adapters
+
+**Outcome:** Backend mutation and Backend/QA verification can run against a real local git checkout instead of injected fixtures.
+
+**Guarantees:** `createLocalGitWorkspace` commits only declared, path-validated edits inside an isolated detached worktree at an exact base commit and leaves the source repository's HEAD, branches and working tree unchanged. `createLocalCommandVerifier` runs one argument-array process with `shell: false`, binds its verification record to the checked-out revision, refuses a revision mismatch without spawning, and reports a mutated checkout as `TREE_MUTATED`. Backend ACCEPT through these adapters requires a real commit whose real tests pass.
+
+**Failure semantics:** unsafe paths and revision mismatches fail closed before any write; a timeout kills the process tree and is INCONCLUSIVE; a non-zero exit or spawn error is FAIL.
+
+**Limits:** the adapters are not a sandbox; they are trusted local fixtures running with the caller's privileges, network and filesystem, and sandbox/network/tool isolation is separate planned work. There is no live model provider; proofs drive a Core CodeAct strategy with a deterministic model. No SCM push, CI or PR delivery is implied. Default tests still use injected fixtures.
+
+Evidence: `bb096-real-backend-qa.test.js`.
+

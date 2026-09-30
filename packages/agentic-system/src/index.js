@@ -187,3 +187,13 @@ export {defineCrossDomainObligation,crossDomainObligationSubjectKey,crossDomainO
 export {createProductLineageStore,defineSemanticClaim,semanticClaimRevisionRef,semanticClaimSubjectKey,reverseSemanticClosure} from "./product-lineage.js";
 export {createDomainWriteAuthority,defineDomainWriteAuthorityPolicy,domainWriteAuthoritySubjectKey,createDomainPublicationGate} from "./domain-write-authority.js";
 export {createDependencyInvalidationController} from "./dependency-invalidation.js";
+export {
+  LOCAL_WORKSPACE_IDENTITY,
+  LocalWorkspaceErrorCode,
+  assertSafeWorkspacePath,
+  createLocalGitWorkspace
+} from "./local-git-workspace.js";
+export {
+  LocalVerificationReason,
+  createLocalCommandVerifier
+} from "./local-command-verifier.js";
