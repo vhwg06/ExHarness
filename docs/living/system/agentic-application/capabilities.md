@@ -219,3 +219,17 @@ accepted FE/BE source delivery -> BuildProvenance -> DeployableArtifactRef (per 
 **Does not imply:** live deployment to real infrastructure, rollback orchestration, runtime monitoring beyond one observation per snapshot, or DevOps authority over quality acceptance.
 
 Evidence: `deployable-provenance.test.js`, `deployment-release.test.js`, `acceptance-snapshot.test.js`, `runtime-observation.test.js`, `product-qa.test.js`, `product-qa-race.test.js`, `deployment-provenance-chain.test.js`.
+
+## A21 — Opt-in supervised Backend execution
+
+**Outcome:** Backend work can run through the delivered supervised CLI-agent loop as an explicit opt-in, producing the unchanged `BackendWorkResult` shape with verifier-grounded acceptance.
+
+**Requires:** a concrete `BackendWorkOrder` plus already-resolved `BackendContext`, a caller filesystem `repositoryRoot`, and a non-empty declared verification set carrying the `backend.typecheck` and `backend.tests` claims. The adapter maps these to `AGENT_TASK_V1` (order id, caller root, order revision as base, order task as prompt, claims stripped from the verifier entries).
+
+**Guarantees:** an `ACCEPTED` supervised result becomes `APPLIED` only after re-grounding: the accepted commit (`acceptedSha`) is checked out in an isolated worktree, every declared verification is re-run there, `backend.typecheck` and `backend.tests` must report `PASS` at that exact commit, and the commit must advance the order revision. `APPLIED` carries grounded `BACKEND_MUTATION` plus typecheck/tests evidence bound to the accepted commit and `git:<sha>:<path>` artifacts, which the default Backend completion policy accepts. The default CodeAct `BackendWorker` path is unchanged and never constructs agent-tools objects.
+
+**Failure semantics:** a missing executable yields `BLOCKED` with blockers `TOOL_UNAVAILABLE`; an exhausted loop (authentication failure, never-fixing runs, no-change attempts) yields `FAILED`; a failed re-ground yields `FAILED`, never `APPLIED`. `FAILED` and `BLOCKED` results carry empty evidence and cannot satisfy the default completion policy. The agent exit status and success claim are telemetry only; ExHarness git operations preserve the source repository `HEAD`, branch refs and working tree.
+
+**Does not imply:** a change to the default CodeAct Backend path, durable workflow wiring, sandbox or SCM-push delivery, or OpenHands domain-runtime execution, which remains a separate seam under the domain execution controller.
+
+Evidence: `bb100-supervised-backend.test.js`.
