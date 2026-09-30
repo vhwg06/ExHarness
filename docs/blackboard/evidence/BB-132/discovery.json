@@ -1,0 +1,27 @@
+{
+  "kind": "ROADMAP_DISCOVERY_EVIDENCE",
+  "classification": "EXECUTED_MANIFEST_BOUNDARY_AUDIT_AND_PRIMARY_SOURCE_RESEARCH",
+  "baselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+  "providerCalls": 0,
+  "auditRef": "docs/blackboard/evidence/BB-131/capability-audit.json",
+  "sourceLedgerRef": "docs/blackboard/process/delivery-capability-sources.json",
+  "capabilityGap": "The delivered Product QA strategy requires an injected criterionVerifier and local delivery accepts arbitrary command checks. No named browser journey verifier profile maps protected criteria to UI actions, reload behavior and retained DOM/network evidence. The manifest audit ignores proposed browserJourneys; this is a missing integration profile rather than a defect in generic verifier authority.",
+  "hypothesis": "Give a reviewer evidence that the feature works through its user workflow, including interactions missed by build-only checks.",
+  "sourceIds": [
+    "microsoft/playwright",
+    "ANTHROPIC_APP_HARNESS",
+    "ANTHROPIC_EVALS"
+  ],
+  "plannedExperiment": "Compare build/health-only checks with independent browser journeys on correct, inert-submit, stale-list and missing-persistence fixtures. Predeclare the seeded defect matrix; record missed criteria, false accepts, setup failures and review steps. No live model is needed for calibration.",
+  "experimentStatus": "NOT_RUN; only the source/manifest boundary audit has executed",
+  "directDependencies": [
+    "BB-054",
+    "BB-131",
+    "BB-127"
+  ],
+  "nonDuplication": [
+    "A new QA judgment or publication authority",
+    "General autonomous visual design grading, accessibility certification and arbitrary browser automation",
+    "Changing accepted BB-054/069 contracts or declaring live feature delivery from fixture tests"
+  ]
+}

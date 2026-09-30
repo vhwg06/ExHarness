@@ -1,0 +1,27 @@
+{
+  "kind": "ROADMAP_DISCOVERY_EVIDENCE",
+  "classification": "EXECUTED_MANIFEST_BOUNDARY_AUDIT_AND_PRIMARY_SOURCE_RESEARCH",
+  "baselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+  "providerCalls": 0,
+  "auditRef": "docs/blackboard/evidence/BB-131/capability-audit.json",
+  "sourceLedgerRef": "docs/blackboard/process/delivery-capability-sources.json",
+  "capabilityGap": "Local command verification can run caller-authored tests and Product QA can consume injected criterion evidence, but there is no named local API/state compatibility profile. A synthetic compatibility descriptor is ignored by the local manifest. Schema-derived checks alone cannot establish business semantics or preservation of prior records.",
+  "hypothesis": "Make useful existing-repository features deliverable without silently breaking current consumers or destroying existing data.",
+  "sourceIds": [
+    "schemathesis/schemathesis",
+    "testcontainers/testcontainers-node",
+    "SWE_CI"
+  ],
+  "plannedExperiment": "Run an initial accepted fixture and a follow-up field/validation migration against the same independent prior-client/data assertions. Seed response incompatibility and data deletion. Report defect detection, retained behavior, setup failures and reviewer reproducer completeness.",
+  "experimentStatus": "NOT_RUN; only the source/manifest boundary audit has executed",
+  "directDependencies": [
+    "BB-054",
+    "BB-131",
+    "BB-127"
+  ],
+  "nonDuplication": [
+    "Production database rollout/rollback automation",
+    "A replacement benchmark package or new generic migration framework",
+    "Claiming schema-valid responses imply business correctness or product acceptance"
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-133",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-133.json",
+    "hash": "6bff84303b468188c7113868cca07fd3213c4ae24ab3af6e144637a10787be28"
+  },
+  "scope": [
+    "product-qa.api-state-profile",
+    "local-delivery.backward-compatibility"
+  ],
+  "outOfScope": [
+    "Production database rollout/rollback automation",
+    "A replacement benchmark package or new generic migration framework",
+    "Claiming schema-valid responses imply business correctness or product acceptance"
+  ],
+  "constraints": [
+    "RESEARCH_SA discovery only. The plan is DRAFT; product source changes require an exact independently READY plan and delivered direct dependencies.",
+    "Generic command checks and injected verifiers already exist. Package the named local profile without replacing product authority or claiming generic checks are incapable of browser/API testing.",
+    "Repository metadata and primary reports motivate prototypes; no benchmark score, saved effort or new capability is claimed from a source survey.",
+    "Public OSS examples require at least 1000 GitHub stars at lookup. Pin release/source, inspect relevant implementation/tests and reproduce the seam before adoption.",
+    "Keep the two Blackboard boundaries distinct: this graph routes ExHarness development; new profiles execute within the product/runtime boundary."
+  ],
+  "invariants": [
+    "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+    "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects."
+  ],
+  "architectureDecisions": [
+    "Compare a small deterministic HTTP/client and database fixture verifier with a pinned Schemathesis CLI adapter for schema-derived/stateful probes. Business invariants and the prior contract remain independently owned.",
+    "Use disposable service/data fixtures through BB-131, optionally backed by Testcontainers. Bound request count and destructive operations to owned test data; never infer a production migration policy.",
+    "Publish criterion evidence through the existing QA seam. BB-071/074 consume a two-change compatibility cohort; this profile does not reimplement change invalidation or the benchmark substrate."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/product-qa.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "docs/blackboard/process/delivery-capability-discovery.md",
+      "docs/blackboard/process/delivery-capability-sources.json",
+      "docs/blackboard/evidence/BB-133/discovery.json"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/src/api-state-verifier.js",
+      "packages/agentic-system/test/api-state-verifier.test.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/api-state-verifier.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/product-qa.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agent-tools/src/deliver-slice.js",
+      "docs/blackboard/process/delivery-capability-discovery.md",
+      "docs/blackboard/process/delivery-capability-sources.json",
+      "docs/blackboard/evidence/BB-133/discovery.json",
+      "packages/agent-tools/src/**",
+      "packages/agentic-system/src/**"
+    ],
+    "write": [
+      "packages/agentic-system/src/api-state-verifier.js",
+      "packages/agentic-system/test/api-state-verifier.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1: Research and execute the discriminating prototype; ratify the exact local profile, compatibility boundary and external runner selection before READY.",
+    "S2: After delivered direct dependencies and fresh READY, implement the named adapter and focused criterion/negative fixtures without changing existing authority.",
+    "S3: Reproduce from fresh state, retain subject-bound evidence and reconcile Living documentation before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "COMPATIBLE_BEHAVIOR",
+      "statement": "An operator-pinned prior API/client contract and business assertions pass against the candidate; create/update/read and seeded old-record preservation are verified across one declared migration and restart, with exact schema/data/evaluator/preview identities.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+      ]
+    },
+    {
+      "id": "DESTRUCTIVE_CHANGE_REJECTION",
+      "statement": "Breaking required-field/response changes, deleted old rows, state reset, weakened schemas/assertions and setup failures cannot PASS; reset affects only owned fixtures and a minimized request/data reproducer is retained.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking positive/negative fixtures and exact candidate/environment/evaluator-bound output. Discovery source survey is motivation only."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agentic-system/test/api-state-verifier.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
+      "criterionIds": [
+        "COMPATIBLE_BEHAVIOR",
+        "DESTRUCTIVE_CHANGE_REJECTION"
+      ]
+    },
+    {
+      "invariant": "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
+      "criterionIds": [
+        "COMPATIBLE_BEHAVIOR",
+        "DESTRUCTIVE_CHANGE_REJECTION"
+      ]
+    },
+    {
+      "invariant": "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects.",
+      "criterionIds": [
+        "COMPATIBLE_BEHAVIOR",
+        "DESTRUCTIVE_CHANGE_REJECTION"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A migration that deletes seeded old records cannot PASS preserved-state criteria",
+    "Weakening a candidate OpenAPI schema cannot replace the operator-pinned prior compatibility contract"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_133_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "DESTRUCTIVE_CHANGE_REJECTION",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N1 A migration that deletes seeded old records cannot PASS preserved-state criteria",
+      "subjectSymbol": "createApiStateVerifier"
+    },
+    {
+      "id": "NEG_133_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "DESTRUCTIVE_CHANGE_REJECTION",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/api-state-verifier.test.js",
+      "testTitle": "BB-133 N2 Weakening a candidate OpenAPI schema cannot replace the operator-pinned prior compatibility contract",
+      "subjectSymbol": "createApiStateVerifier"
+    }
+  ],
+  "researchGaps": [
+    "Ratify one HTTP/schema plus persistent-store profile and prior-client/migration semantics; split API and migration work if the discriminating prototype cannot remain bounded.",
+    "Inspect pinned Schemathesis/Testcontainers implementation tests; compare external Python CLI cost with minimal Node HTTP assertions and finalize reproducibility/seed limits.",
+    "Execute correct, breaking-client and data-loss fixtures from clean state, pin the prior contract and independent business oracle, and finalize Jev evidence routing."
+  ],
+  "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Describe the delivered profile, exact identity binding, supported environment and limitations after Worker delivery, without roadmap status or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Make useful existing-repository features deliverable without silently breaking current consumers or destroying existing data.",
+    "measurement": "Run an initial accepted fixture and a follow-up field/validation migration against the same independent prior-client/data assertions. Seed response incompatibility and data deletion. Report defect detection, retained behavior, setup failures and reviewer reproducer completeness.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-074 owns human-effort/value claims; BB-099 owns supervised/direct agent comparison",
+    "goNoGo": "Advance only if the prototype enables the stated capability, correctly rejects every declared seeded violation and has explicit support/setup limits. Otherwise narrow the profile or KEEP_BASELINE; no default promotion from the source survey."
+  }
+}

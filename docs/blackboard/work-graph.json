@@ -225,6 +225,20 @@
         "docs/blackboard/process/agent-tool-productization.md",
         "docs/blackboard/evidence/BB-100/productization-probe-result.json"
       ]
+    },
+    {
+      "id": "TOPIC-LOCAL-WEB-CAPABILITIES",
+      "title": "Useful local web delivery capabilities",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-LOCAL-REPRODUCIBLE-PREVIEW",
+        "FEATURE-INDEPENDENT-BROWSER-JOURNEYS",
+        "FEATURE-API-DATA-COMPATIBILITY"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-capability-discovery.md",
+        "docs/blackboard/process/delivery-capability-sources.json"
+      ]
     }
   ],
   "features": [
@@ -1149,6 +1163,48 @@
         "docs/blackboard/process/delivery-value-improvement-research.md"
       ],
       "acceptanceTaskId": "BB-129"
+    },
+    {
+      "id": "FEATURE-LOCAL-REPRODUCIBLE-PREVIEW",
+      "topicId": "TOPIC-LOCAL-WEB-CAPABILITIES",
+      "kind": "FEATURE",
+      "title": "Prepare a reproducible repository preview for local feature delivery",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-131"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-capability-discovery.md"
+      ],
+      "acceptanceTaskId": "BB-131"
+    },
+    {
+      "id": "FEATURE-INDEPENDENT-BROWSER-JOURNEYS",
+      "topicId": "TOPIC-LOCAL-WEB-CAPABILITIES",
+      "kind": "FEATURE",
+      "title": "Verify local web feature journeys through an independently pinned browser evaluator",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-132"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-capability-discovery.md"
+      ],
+      "acceptanceTaskId": "BB-132"
+    },
+    {
+      "id": "FEATURE-API-DATA-COMPATIBILITY",
+      "topicId": "TOPIC-LOCAL-WEB-CAPABILITIES",
+      "kind": "FEATURE",
+      "title": "Verify API compatibility and persisted state for local feature changes",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-133"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/delivery-capability-discovery.md"
+      ],
+      "acceptanceTaskId": "BB-133"
     }
   ],
   "tasks": [
@@ -4501,7 +4557,7 @@
     {
       "id": "BB-121",
       "featureId": "FEATURE-AGENT-TOOL-DURABLE-BOARD",
-      "title": "Compose supervised agent-tools as durable Backend→QA execution",
+      "title": "Compose supervised agent-tools as durable Backend\u2192QA execution",
       "kind": "RESEARCH",
       "status": "PLANNED",
       "complexity": "L",
@@ -5166,10 +5222,241 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-131",
+      "featureId": "FEATURE-LOCAL-REPRODUCIBLE-PREVIEW",
+      "title": "Prepare a reproducible repository preview for local feature delivery",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "integration/agent-tools",
+        "agentic/backend-qa-execution",
+        "agentic/deployment"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-104",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-130",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-131.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-131.json",
+          "docs/blackboard/process/delivery-capability-discovery.md",
+          "docs/blackboard/process/delivery-capability-sources.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-131/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agentic-application/capabilities.md"
+        ]
+      },
+      "expectedOutputs": [
+        "A declared supported profile starts from the exact candidate/config/input digests and records owned endpoints, service image/version identities, readiness observations and the reset dataset; process creation alone is not READY.",
+        "Missing commands/runtime, readiness timeout, config drift, occupied foreign ports and interrupted start produce typed unresolved/failed outcomes, preserve diagnostics and clean only owned resources.",
+        "Fresh exact Jev readiness; fixture capability evidence and live/pilot value remain distinct."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-131-CHECK-1",
+          "title": "Ratify supported profile and compare OSS reuse",
+          "schedulable": false
+        },
+        {
+          "id": "BB-131-CHECK-2",
+          "title": "Run discriminating capability/negative prototype",
+          "schedulable": false
+        },
+        {
+          "id": "BB-131-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-131.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-131.json",
+        "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-132",
+      "featureId": "FEATURE-INDEPENDENT-BROWSER-JOURNEYS",
+      "title": "Verify local web feature journeys through an independently pinned browser evaluator",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/product-qa",
+        "agentic/deployment",
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-054",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-131",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-127",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-132.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-132.json",
+          "docs/blackboard/process/delivery-capability-discovery.md",
+          "docs/blackboard/process/delivery-capability-sources.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-132/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agentic-application/capabilities.md"
+        ]
+      },
+      "expectedOutputs": [
+        "A protected create/list/update and validation journey invokes the running app, reloads and checks expected visible/persisted behavior; criterion-specific PASS/FAIL/INCONCLUSIVE includes evaluator, preview, fixture, browser and candidate identities.",
+        "Missing observations, skipped assertions, changed evaluator, wrong release, browser setup failure or substituted screenshots cannot count as PASS; seeded inert-button and stale-list candidates are rejected with retained diagnostic evidence.",
+        "Fresh exact Jev readiness; fixture capability evidence and live/pilot value remain distinct."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-132-CHECK-1",
+          "title": "Ratify supported profile and compare OSS reuse",
+          "schedulable": false
+        },
+        {
+          "id": "BB-132-CHECK-2",
+          "title": "Run discriminating capability/negative prototype",
+          "schedulable": false
+        },
+        {
+          "id": "BB-132-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-132.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-132.json",
+        "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-133",
+      "featureId": "FEATURE-API-DATA-COMPATIBILITY",
+      "title": "Verify API compatibility and persisted state for local feature changes",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/product-qa",
+        "agentic/deployment",
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-054",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-131",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-127",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-133.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-133.json",
+          "docs/blackboard/process/delivery-capability-discovery.md",
+          "docs/blackboard/process/delivery-capability-sources.json"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-133/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agentic-application/capabilities.md"
+        ]
+      },
+      "expectedOutputs": [
+        "An operator-pinned prior API/client contract and business assertions pass against the candidate; create/update/read and seeded old-record preservation are verified across one declared migration and restart, with exact schema/data/evaluator/preview identities.",
+        "Breaking required-field/response changes, deleted old rows, state reset, weakened schemas/assertions and setup failures cannot PASS; reset affects only owned fixtures and a minimized request/data reproducer is retained.",
+        "Fresh exact Jev readiness; fixture capability evidence and live/pilot value remain distinct."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-133-CHECK-1",
+          "title": "Ratify supported profile and compare OSS reuse",
+          "schedulable": false
+        },
+        {
+          "id": "BB-133-CHECK-2",
+          "title": "Run discriminating capability/negative prototype",
+          "schedulable": false
+        },
+        {
+          "id": "BB-133-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-133.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-133.json",
+        "researchBaselineSha": "e9007f861fd95c678c0c4048bb3d82626855bda1"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-131",
+    "nextWorkId": "BB-134",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
