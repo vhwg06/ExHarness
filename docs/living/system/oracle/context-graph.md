@@ -80,4 +80,4 @@ The client builds the graph once per snapshot and reuses it in memory by `graphI
 
 - `node --test packages/oracle/test/context-graph.test.js` covers extraction, identity, declared edges, grammar, traversal, truncation and provenance with an in-memory exact-snapshot reader.
 - `node --test test/oracle-context-graph-boundary.test.mjs` covers the composition through the delivered seam, catalog, planner and facade. It also builds a real git-backed snapshot of `packages/oracle/src` and `packages/agentic-system/src` at `HEAD`: the graph is deterministic, has no unprovenanced edge, and its `IMPORTED_BY` result for `context-contract.js` equals the set of files that literally import it.
-- `npm run test:oracle` runs `packages/oracle/test` and the `test/oracle-*.test.mjs` glob, which covers the boundary, facade-accounting, foundation, durability, provider and architecture suites. The architecture guard pins the Oracle root export list.
+- `npm run test:oracle` runs `packages/oracle/test` and every root `test/oracle-*.test.mjs` suite (for example the architecture, facade-accounting and graph-boundary suites). The architecture guard pins the Oracle root export list.
