@@ -47,7 +47,6 @@ NONE
 - BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
 - BB-102 [WORKER/EXECUTION] — Resolve declared agent-tool files through the Oracle facade
 - BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
-- BB-105 [WORKER/EXECUTION] — Add Grok Build as a supported agent tool
 - BB-106 [RESEARCH_SA/RESEARCH] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-108 [RESEARCH_SA/RESEARCH] — Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
@@ -112,7 +111,7 @@ BB-101 [DONE] <- BB-097
 BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
 BB-104 [BLOCKED_BY BB-100,BB-102] <- BB-100, BB-101, BB-102
-BB-105 [WORKER_SCHEDULABLE] <- BB-097, BB-098
+BB-105 [DONE] <- BB-097, BB-098
 BB-106 [RESEARCH_SCHEDULABLE] <- BB-082, BB-087, BB-088
 BB-107 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088
