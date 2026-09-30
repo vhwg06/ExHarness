@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-124
+next-work-id: BB-131
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -48,6 +48,13 @@ NONE
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-122 [WORKER/EXECUTION] — Add OpenCode as a supported agent tool
 - BB-123 [RESEARCH_SA/RESEARCH] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
+- BB-124 [RESEARCH_SA/RESEARCH] — Preserve truthful partial usage and per-field accounting coverage
+- BB-125 [RESEARCH_SA/RESEARCH] — Bind supervised resume to the exact task and execution contract
+- BB-126 [RESEARCH_SA/RESEARCH] — Stop repeated no-progress retries with evidence-bound feedback
+- BB-127 [RESEARCH_SA/RESEARCH] — Add externally pinned acceptance for local delivery slices
+- BB-128 [RESEARCH_SA/RESEARCH] — Expose delivered Grok and OpenCode adapters through operator delivery
+- BB-129 [RESEARCH_SA/RESEARCH] — Export a durable review bundle for the exact local candidate
+- BB-130 [RESEARCH_SA/RESEARCH] — Constrain local verifier child environment
 
 ## Dependency graph
 
@@ -114,6 +121,13 @@ BB-120 [WORKER_SCHEDULABLE] <- BB-097
 BB-121 [BLOCKED_BY BB-120] <- BB-100, BB-101, BB-120
 BB-122 [WORKER_SCHEDULABLE] <- BB-097, BB-098
 BB-123 [RESEARCH_SCHEDULABLE] <- BB-105, BB-102
+BB-124 [RESEARCH_SCHEDULABLE] <- BB-098, BB-105, BB-123
+BB-125 [RESEARCH_SCHEDULABLE] <- BB-101
+BB-126 [RESEARCH_SCHEDULABLE] <- BB-125
+BB-127 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130, BB-125
+BB-128 [RESEARCH_SCHEDULABLE] <- BB-104, BB-122
+BB-129 [RESEARCH_SCHEDULABLE] <- BB-127
+BB-130 [RESEARCH_SCHEDULABLE] <- BB-096, BB-120
 ```
 
 ## Context semantics
