@@ -171,4 +171,20 @@ Semantic revisions, obligations, accepted derivation edges and currentness trans
 
 The invalidation controller blocks affected eligible work and routes claimed work through canonical organization invalidation and release fencing. Claim/release, execution entry and publication also reject non-current obligation revisions. Reconciliation can be rerun after interruption using durable work-contract provenance. Product lineage does not add Board dependencies or choose workers, runtimes, strategies or priorities.
 
-Evidence: `cross-domain-obligation.test.js`, `dependency-invalidation.test.js`, `lineage-race.test.js`, and `ba-sa-vertical.test.js`. Autonomous activation and global product closure remain outside this capability.
+Evidence: `cross-domain-obligation.test.js`, `dependency-invalidation.test.js`, `lineage-race.test.js`, and `ba-sa-vertical.test.js`. Autonomous activation is delivered separately by A18; global product closure remains outside this capability.
+
+## A18 — Domain-local activation and independent Frontend/Backend autonomy
+
+Integration D adds level-triggered, domain-local activation over persisted organization work. `createDomainActivationSource({discovery})` delegates `scan({owningDomain})` to the delivered `listEligible({owningDomain})` and rereads the canonical Board item + `ORGANIZATION_WORK_CONTRACT` for one exact key `{projectId,workId,owningDomain}`. `createDomainActivation(...)` reconciles that exact key only: it admits work when configured host domain, key domain and `WorkContract.owningDomain` agree, claims with the host-configured principal, releases canonically, rechecks exact obligation currentness, and then passes only `{itemId,claimGeneration,receiptRef}` to `DomainExecutionController.execute(...)`.
+
+`createDomainActivationHost(...)` runs an idempotent `start()` (immediate then periodic scan), `scanOnce()` (scan then `Promise.allSettled` over exact-key reconciles), a same-domain exact-key `notify(...)` and a host-local `stop()` that cancels its timer and drains its own in-flight reconciles. `createFrontendBackendDomainRuntime({backendHost,frontendHost})` starts/stops two separate hosts with `Promise.allSettled`.
+
+Frontend is a first-class execution domain (`frontend-contracts.js`, `frontend-completion.js`, `frontend-worker.js`, `frontend-application.js`). `createFrontendExecutionStrategy(...)` and `createBackendExecutionStrategy(...)` are runtime adapters for their own DomainExecutionControllers; each resolves exactly one content-addressed `DOMAIN_EXECUTION_INPUT` from the WorkContract's `requiredArtifactRefs` before any worker call.
+
+**Guarantees:** lost hints are recovered by the next canonical scan (startup or periodic); duplicate scan/notify/reconcile hints converge on one claim, one attempt and one dispatch through the existing claim/release and attempt heads; wrong-domain keys, contracts or principals cannot claim, attempt or dispatch; hint fields cannot supply principal, policy, strategy, runtime, obligation or publication authority; obligation drift between release and execute yields NOOP before any attempt; Frontend and Backend dispatch concurrently without a stage barrier, and one domain's runtime or host failure stays local to that domain.
+
+**Failure semantics:** non-actionable or wrong-domain keys return `NOOP`/`REJECTED` with no side effect; claim contention returns `NOOP CLAIM_CONTENDED`; zero, multiple or mismatched execution inputs fail before worker dispatch; runtime failure leaves the domain's own attempt `RECOVERY_REQUIRED` and is reported through that host's settled result or `onError` hook.
+
+**Does not imply:** a global scheduler, role registry, next-role/next-domain/stage API, priority or ranking, exactly-once transport, strategy selection inside activation, obligation creation/invalidation by activation, or deployment/product QA/closure semantics. Canonical invalidation and release fencing stay with dependency invalidation.
+
+Evidence: `domain-activation.test.js`, `activation-recovery.test.js`, `domain-host-autonomy.test.js`, `frontend-domain.test.js`, `fe-be-parallel.test.js`, `partial-invalidation.test.js`, plus the `bb047`/`bb048` regressions.

@@ -456,3 +456,33 @@ publicationStoreRevision
 Those fields are historical proof of the exact mutation gate used for the commit. They do not become new authority for future writes.
 
 `EXECUTION_ATTEMPT_TRANSITION` records `observedHeadRevision` for every transition that advances an existing attempt head; the first ABSENT -> ACTIVE transition records no predecessor revision. Fresh reconstruction walks the immutable transition sequence, reconstructs the exact nonterminal head value after each transition, derives its CAS revision and requires the next transition's `observedHeadRevision` to match. Status continuity alone is insufficient.
+
+## Domain activation and FE/BE execution contract
+
+### Activation key and canonical source
+
+An activation key is exactly `{projectId,workId,owningDomain}`; every other hint field is ignored. `scan({owningDomain})` returns keys for `listEligible({owningDomain})` results. `read(key)` rereads the canonical Board item and WorkContract and returns `null` when the work is not READY/REOPENED in that domain. Queue, cursor, timer and hint state are disposable latency state, never canonical work truth.
+
+### Reconcile outcome
+
+`reconcile(key)` returns an immutable `{state,reason?,key,...}` with `state` in `EXECUTED | NOOP | REJECTED` and `reason` in `DOMAIN_MISMATCH | NOT_ACTIONABLE | CONTRACT_MISMATCH | OBLIGATION_NOT_CURRENT | OBLIGATION_DRIFT_AFTER_RELEASE | CLAIM_CONTENDED | DUPLICATE_IN_FLIGHT`. `EXECUTED` carries `contractRef`, `claimGeneration`, `receiptRef` and the controller's execution identity (`executionAttemptId`, `bindingRef`, `completionDecisionRef`, `publicationReceiptRef`, `judgmentBundleRef`). Ordering is fixed: domain admission -> canonical reread -> pre-claim obligation currentness -> claim (host principal) -> release -> post-release currentness recheck -> `execute({itemId,claimGeneration,receiptRef})`.
+
+### Obligation currentness reader
+
+`createObligationCurrentnessReader({resolveObligation,currentHead})` exposes only `current(obligationRef) -> {obligationRef,subjectKey,revision,status}`. `obligationCurrentnessFromLineage({lineage})` binds it to the product lineage read surface (`resolve`, `snapshot`). Work is current only when `status == ACTIVE`, `revision == WorkContract.crossDomainObligationRef` and `subjectKey == WorkContract.crossDomainObligationSubjectKey`. The reader has no write, invalidation or fencing capability.
+
+### Runtime adapter input
+
+`DomainExecutionController` passes `{binding,contract,input,runtimeInvocationKey}` to `runtimeAdapter.dispatch/recover`, where `contract` is the exact released-claim WorkContract. Only the controller resolves policy/strategy, binds the attempt, revalidates the release and attests the runtime.
+
+### DomainExecutionInput
+
+`DOMAIN_EXECUTION_INPUT` v1 is `{kind,version,projectId,owningDomain,workloadType,objective}` addressed as `domain-execution-input:sha256:<digest>` and stored through `putDomainExecutionInput` / `resolveDomainExecutionInput` on the organization artifact registry. Principal, policy, strategy, runtime, next-role/domain, priority, stage and obligation fields are rejected. Execution requires exactly one such ref in `requiredArtifactRefs`, matching the contract's project, owning domain and workload type.
+
+### Frontend domain
+
+`FrontendObjective -> FrontendWorkOrder (<id>:frontend) -> FrontendContext -> FrontendWorkResult (APPLIED | BLOCKED | FAILED)`. Frontend completion accepts only grounded `frontend.mutation`, `frontend.typecheck` and `frontend.tests` evidence plus artifact presence; a policy cannot drop those claims. `prepareFrontendObjective`, `runPreparedFrontendObjective` and `recoverPreparedFrontendObjective` depend on no Backend stage, session or completion state.
+
+### Domain strategies
+
+`createBackendExecutionStrategy(...)` / `createFrontendExecutionStrategy(...)` accept only their own domain's contracts, map WorkContract + input to the domain objective (id = Board item id), run prepare/run/recover, and map results to the controller: accepted `APPLIED -> SUCCEEDED` with output artifacts, derivation edges from the input ref and evidence ids as verification candidates; `BLOCKED -> BLOCKED`; `FAILED` or unaccepted work -> `FAILED` with completion reasons as counterevidence. The Backend strategy never calls the Backend -> QA composite flow.

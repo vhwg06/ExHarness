@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { dirname } from "node:path";
 import { promises as nodeFs } from "node:fs";
+import { createDomainExecutionInputRegistry } from "./domain-execution-input.js";
 
 function invariant(condition,message){if(!condition) throw new TypeError(message);}
 function requireText(value,name){invariant(typeof value==="string"&&value.trim(),`${name} must be a non-empty string`);return value;}
@@ -65,7 +66,10 @@ export function createJsonImmutableArtifactStore({path,fs=nodeFs}){
 
 export function createOrganizationArtifactRegistry({store}){
   invariant(store&&typeof store.put==="function"&&typeof store.resolve==="function","artifact registry requires immutable artifact store");
+  const executionInputs=createDomainExecutionInputRegistry({store});
   return Object.freeze({
+    putDomainExecutionInput:executionInputs.putDomainExecutionInput,
+    resolveDomainExecutionInput:executionInputs.resolveDomainExecutionInput,
     async putWorkContract(value){
       const artifact=structuredClone(value);
       delete artifact.contractRef;
