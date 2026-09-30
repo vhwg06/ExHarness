@@ -21,7 +21,7 @@ next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,12 +31,19 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-104
 ```
 
 ## Active work
 
-NONE
+
+BB-104
+task: Run one local Backend-then-QA slice from an operator CLI
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-104/current.json
+components: integration/agent-tools, agentic/backend-qa-execution
+worker: grok-bot
 
 ## Schedulable tasks
 
@@ -44,7 +51,6 @@ NONE
 - BB-077 [WORKER/EXECUTION] — Research harness-isolation economics on shared benchmark kernel
 - BB-093 [WORKER/EXECUTION] — Implement model-aware context budget profiles
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
-- BB-104 [WORKER/EXECUTION] — Run one local Backend-then-QA slice from an operator CLI
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-108 [WORKER/EXECUTION] — Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
@@ -107,7 +113,7 @@ BB-100 [DONE] <- BB-096, BB-097
 BB-101 [DONE] <- BB-097
 BB-102 [DONE] <- BB-097
 BB-103 [DONE] <- BB-097
-BB-104 [WORKER_SCHEDULABLE] <- BB-100, BB-101, BB-102
+BB-104 [ACTIVE] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
 BB-106 [WORKER_SCHEDULABLE] <- BB-082, BB-087, BB-088
 BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
