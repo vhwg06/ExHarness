@@ -1,0 +1,49 @@
+TAP version 13
+# Subtest: CG3 CURRENT graph evidence at the authoritative snapshot resolves COMPLETE with REVISION and CONTENT_DIGEST strong validators
+ok 1 - CG3 CURRENT graph evidence at the authoritative snapshot resolves COMPLETE with REVISION and CONTENT_DIGEST strong validators
+  ---
+  duration_ms: 9.039641
+  type: 'test'
+  ...
+# Subtest: CG3 a graph built at an older snapshot than the authority is STALE and REQUIRED evidence is UNSATISFIED
+ok 2 - CG3 a graph built at an older snapshot than the authority is STALE and REQUIRED evidence is UNSATISFIED
+  ---
+  duration_ms: 1.921353
+  type: 'test'
+  ...
+# Subtest: CG3 an authority that reports no snapshot is CURRENTNESS_UNVERIFIABLE and REQUIRED evidence is UNSATISFIED
+ok 3 - CG3 an authority that reports no snapshot is CURRENTNESS_UNVERIFIABLE and REQUIRED evidence is UNSATISFIED
+  ---
+  duration_ms: 1.446472
+  type: 'test'
+  ...
+# Subtest: CG3 without a CONTEXT_GRAPH authority the facade rejects before any graphClient call and the planner reports CURRENTNESS_UNVERIFIABLE
+ok 4 - CG3 without a CONTEXT_GRAPH authority the facade rejects before any graphClient call and the planner reports CURRENTNESS_UNVERIFIABLE
+  ---
+  duration_ms: 1.41877
+  type: 'test'
+  ...
+# Subtest: CG3 a tiny maxMaterializedBytes budget is rejected by the delivered planner as BUDGET_EXHAUSTED
+ok 5 - CG3 a tiny maxMaterializedBytes budget is rejected by the delivered planner as BUDGET_EXHAUSTED
+  ---
+  duration_ms: 1.528106
+  type: 'test'
+  ...
+# Subtest: CG4 a graph built from this repository at exact HEAD is deterministic, fully provenanced and answers IMPORTED_BY literally
+ok 6 - CG4 a graph built from this repository at exact HEAD is deterministic, fully provenanced and answers IMPORTED_BY literally
+  ---
+  duration_ms: 924.546719
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1006.920224
+
+
+exitCode=0

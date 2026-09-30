@@ -1,0 +1,85 @@
+TAP version 13
+# Subtest: CG1 static relative imports and re-exports become normalized FILE edges; out-of-root targets are EXTERNAL_BOUNDARY nodes
+ok 1 - CG1 static relative imports and re-exports become normalized FILE edges; out-of-root targets are EXTERNAL_BOUNDARY nodes
+  ---
+  duration_ms: 3.193877
+  type: 'test'
+  ...
+# Subtest: CG1 dynamic import() and bare specifiers produce no edge and are listed in graph.limits
+ok 2 - CG1 dynamic import() and bare specifiers produce no edge and are listed in graph.limits
+  ---
+  duration_ms: 0.881959
+  type: 'test'
+  ...
+# Subtest: CG1 every edge carries AUTHORITATIVE_SOURCE provenance with a snapshot-qualified ref and the file digest
+ok 3 - CG1 every edge carries AUTHORITATIVE_SOURCE provenance with a snapshot-qualified ref and the file digest
+  ---
+  duration_ms: 0.578443
+  type: 'test'
+  ...
+# Subtest: CG1 declared CONTEXT_GRAPH_EDGES_V1 edges are provenanced by the edge file; malformed files and unknown relations fail the build
+ok 4 - CG1 declared CONTEXT_GRAPH_EDGES_V1 edges are provenanced by the edge file; malformed files and unknown relations fail the build
+  ---
+  duration_ms: 2.161948
+  type: 'test'
+  ...
+# Subtest: CG1 the build reads only the requested exact snapshot, and a reader asked for another revision fails
+ok 5 - CG1 the build reads only the requested exact snapshot, and a reader asked for another revision fails
+  ---
+  duration_ms: 0.583031
+  type: 'test'
+  ...
+# Subtest: CG1 repeated builds are deterministic: same graphId, node order and edge order sorted by from,to,relation
+ok 6 - CG1 repeated builds are deterministic: same graphId, node order and edge order sorted by from,to,relation
+  ---
+  duration_ms: 0.839618
+  type: 'test'
+  ...
+# Subtest: CG2 parseContextGraphRef accepts only the D6 grammar and rejects anything else with a typed ProviderFailure
+ok 7 - CG2 parseContextGraphRef accepts only the D6 grammar and rejects anything else with a typed ProviderFailure
+  ---
+  duration_ms: 0.557679
+  type: 'test'
+  ...
+# Subtest: CG2 IMPORTS and IMPORTED_BY traverse breadth-first up to hops, ordered by (distance, node id), with AUTHORITATIVE_SOURCE provenance on every path
+ok 8 - CG2 IMPORTS and IMPORTED_BY traverse breadth-first up to hops, ordered by (distance, node id), with AUTHORITATIVE_SOURCE provenance on every path
+  ---
+  duration_ms: 1.968287
+  type: 'test'
+  ...
+# Subtest: CG2 more reachable paths than maxItems returns exactly maxItems in deterministic order with truncated:true
+ok 9 - CG2 more reachable paths than maxItems returns exactly maxItems in deterministic order with truncated:true
+  ---
+  duration_ms: 1.208445
+  type: 'test'
+  ...
+# Subtest: CG2 an absent anchor, unknown relation, invalid hops or foreign repository is a typed ProviderFailure, never a fuzzy match
+ok 10 - CG2 an absent anchor, unknown relation, invalid hops or foreign repository is a typed ProviderFailure, never a fuzzy match
+  ---
+  duration_ms: 1.127403
+  type: 'test'
+  ...
+# Subtest: CG2 CURRENT traversal uses currentSnapshot() and EXACT uses the source snapshot ref
+ok 11 - CG2 CURRENT traversal uses currentSnapshot() and EXACT uses the source snapshot ref
+  ---
+  duration_ms: 0.923955
+  type: 'test'
+  ...
+# Subtest: CG2 the delivered provider seam rejects a graph path without AUTHORITATIVE_SOURCE provenance
+ok 12 - CG2 the delivered provider seam rejects a graph path without AUTHORITATIVE_SOURCE provenance
+  ---
+  duration_ms: 0.380607
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 91.468051
+
+
+exitCode=0
