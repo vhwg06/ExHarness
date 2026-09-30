@@ -1,0 +1,43 @@
+TAP version 13
+# Subtest: fully reported usage is KNOWN, including reported zeros
+ok 1 - fully reported usage is KNOWN, including reported zeros
+  ---
+  duration_ms: 1.514326
+  type: 'test'
+  ...
+# Subtest: partially reported usage is PARTIAL and keeps the unreported fields null
+ok 2 - partially reported usage is PARTIAL and keeps the unreported fields null
+  ---
+  duration_ms: 0.823942
+  type: 'test'
+  ...
+# Subtest: absent usage is UNKNOWN with every numeric field null
+ok 3 - absent usage is UNKNOWN with every numeric field null
+  ---
+  duration_ms: 0.455706
+  type: 'test'
+  ...
+# Subtest: a zero written for an unreported field is rejected as zero-fill
+ok 4 - a zero written for an unreported field is rejected as zero-fill
+  ---
+  duration_ms: 0.754426
+  type: 'test'
+  ...
+# Subtest: accounting is deterministic and frozen
+ok 5 - accounting is deterministic and frozen
+  ---
+  duration_ms: 0.437085
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 73.898347
+
+
+exitCode=0

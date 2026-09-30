@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: producer SUCCESS with verifier FAIL is REJECTED/COMPLETED
+ok 1 - producer SUCCESS with verifier FAIL is REJECTED/COMPLETED
+  ---
+  duration_ms: 1.357041
+  type: 'test'
+  ...
+# Subtest: a verified artifact after budget exhaustion is ACCEPTED with BUDGET_EXHAUSTED
+ok 2 - a verified artifact after budget exhaustion is ACCEPTED with BUDGET_EXHAUSTED
+  ---
+  duration_ms: 0.217954
+  type: 'test'
+  ...
+# Subtest: provider timeout without an artifact is NOT_EVALUATED and can never be judged
+ok 3 - provider timeout without an artifact is NOT_EVALUATED and can never be judged
+  ---
+  duration_ms: 0.542683
+  type: 'test'
+  ...
+# Subtest: verifier crash is NOT_EVALUATED + VERIFIER_ERROR, never REJECTED
+ok 4 - verifier crash is NOT_EVALUATED + VERIFIER_ERROR, never REJECTED
+  ---
+  duration_ms: 0.256088
+  type: 'test'
+  ...
+# Subtest: artifact extraction failure is NOT_EVALUATED + ARTIFACT_EXTRACTION
+ok 5 - artifact extraction failure is NOT_EVALUATED + ARTIFACT_EXTRACTION
+  ---
+  duration_ms: 0.175176
+  type: 'test'
+  ...
+# Subtest: producer status and termination never synthesize quality
+ok 6 - producer status and termination never synthesize quality
+  ---
+  duration_ms: 0.436574
+  type: 'test'
+  ...
+# Subtest: an agent timeout with an evaluable workspace keeps verifier quality orthogonal
+ok 7 - an agent timeout with an evaluable workspace keeps verifier quality orthogonal
+  ---
+  duration_ms: 0.104795
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 76.091481
+
+
+exitCode=0

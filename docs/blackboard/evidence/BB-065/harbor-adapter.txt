@@ -1,0 +1,106 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+rootdir: /workspace/ExHarness-bb065b
+plugins: anyio-4.15.1, platformdirs-4.12.2
+collected 16 items
+
+benchmarks/substrate/test/test_harbor_agent.py ................          [100%]
+
+============================== 16 passed in 0.23s ==============================
+TAP version 13
+# Subtest: Harbor pin is the reviewed v0.23.0 commit
+ok 1 - Harbor pin is the reviewed v0.23.0 commit
+  ---
+  duration_ms: 0.929631
+  type: 'test'
+  ...
+# Subtest: failure mapping truth table: every Harbor exception maps to exactly one normalized dimension
+ok 2 - failure mapping truth table: every Harbor exception maps to exactly one normalized dimension
+  ---
+  duration_ms: 2.32917
+  type: 'test'
+  ...
+# Subtest: quality is never synthesized: no reward means ERROR, never FAIL or PASS
+ok 3 - quality is never synthesized: no reward means ERROR, never FAIL or PASS
+  ---
+  duration_ms: 0.185785
+  type: 'test'
+  ...
+# Subtest: usage comes only from fields Harbor reported; missing fields stay UNKNOWN, never zero
+ok 4 - usage comes only from fields Harbor reported; missing fields stay UNKNOWN, never zero
+  ---
+  duration_ms: 1.818355
+  type: 'test'
+  ...
+# Subtest: adapter satisfies SubstratePort and exposes the pinned identity
+ok 5 - adapter satisfies SubstratePort and exposes the pinned identity
+  ---
+  duration_ms: 6.145254
+  type: 'test'
+  ...
+# Subtest: one fresh Harbor trial per attempt with explicit task, trials dir and trial name; raw evidence captured
+ok 6 - one fresh Harbor trial per attempt with explicit task, trials dir and trial name; raw evidence captured
+  ---
+  duration_ms: 219.617801
+  type: 'test'
+  ...
+# Subtest: RESET_REUSED: the same attempt output root or trial cannot be prepared twice, even by a new adapter
+ok 7 - RESET_REUSED: the same attempt output root or trial cannot be prepared twice, even by a new adapter
+  ---
+  duration_ms: 81.89351
+  type: 'test'
+  ...
+# Subtest: FIXED_FACTOR_DRIFT: a task bundle or instruction that differs from the registered unit is refused
+ok 8 - FIXED_FACTOR_DRIFT: a task bundle or instruction that differs from the registered unit is refused
+  ---
+  duration_ms: 176.122194
+  type: 'test'
+  ...
+# Subtest: missing, malformed or foreign trial result is HARNESS_PROTOCOL and NOT_EVALUATED
+ok 9 - missing, malformed or foreign trial result is HARNESS_PROTOCOL and NOT_EVALUATED
+  ---
+  duration_ms: 380.174616
+  type: 'test'
+  ...
+# Subtest: a symlinked artifact is ARTIFACT_EXTRACTION, not a verifier judgement
+ok 10 - a symlinked artifact is ARTIFACT_EXTRACTION, not a verifier judgement
+  ---
+  duration_ms: 138.611714
+  type: 'test'
+  ...
+# Subtest: verifier crash is NOT_EVALUATED + VERIFIER_ERROR with the raw exception persisted
+ok 11 - verifier crash is NOT_EVALUATED + VERIFIER_ERROR with the raw exception persisted
+  ---
+  duration_ms: 132.098904
+  type: 'test'
+  ...
+# Subtest: provider rate limit with no artifact is NOT_EVALUATED and usage stays UNKNOWN
+ok 12 - provider rate limit with no artifact is NOT_EVALUATED and usage stays UNKNOWN
+  ---
+  duration_ms: 118.997421
+  type: 'test'
+  ...
+# Subtest: producer SUCCESS + verifier reward 0 is REJECTED and reported usage is kept without filling the rest
+ok 13 - producer SUCCESS + verifier reward 0 is REJECTED and reported usage is kept without filling the rest
+  ---
+  duration_ms: 253.883565
+  type: 'test'
+  ...
+# Subtest: evaluator identity is the pinned Harbor task verifier
+ok 14 - evaluator identity is the pinned Harbor task verifier
+  ---
+  duration_ms: 0.149518
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1584.20487
+
+
+exitCode=0

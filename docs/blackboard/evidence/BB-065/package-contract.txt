@@ -1,0 +1,79 @@
+TAP version 13
+# Subtest: package root exposes exactly the fourteen public exports
+ok 1 - package root exposes exactly the fourteen public exports
+  ---
+  duration_ms: 1.337135
+  type: 'test'
+  ...
+# Subtest: package.json is private, root-export-only and free of runtime dependencies
+ok 2 - package.json is private, root-export-only and free of runtime dependencies
+  ---
+  duration_ms: 4.047487
+  type: 'test'
+  ...
+# Subtest: deep imports are not part of the contract
+ok 3 - deep imports are not part of the contract
+  ---
+  duration_ms: 0.914435
+  type: 'test'
+  ...
+# Subtest: canonical schema kinds and outcome enums are exact and frozen
+ok 4 - canonical schema kinds and outcome enums are exact and frozen
+  ---
+  duration_ms: 0.30153
+  type: 'test'
+  ...
+# Subtest: assertSubstratePort requires identity/prepare/execute/collect and a truthful identity
+ok 5 - assertSubstratePort requires identity/prepare/execute/collect and a truthful identity
+  ---
+  duration_ms: 0.296099
+  type: 'test'
+  ...
+# Subtest: registration is digest-bound, deterministic and deeply frozen
+ok 6 - registration is digest-bound, deterministic and deeply frozen
+  ---
+  duration_ms: 2.494964
+  type: 'test'
+  ...
+# Subtest: any change to a bound registration field changes identity and fails assertion
+ok 7 - any change to a bound registration field changes identity and fails assertion
+  ---
+  duration_ms: 0.631603
+  type: 'test'
+  ...
+# Subtest: registration rejects missing, extra, duplicate and supplied-digest fields
+ok 8 - registration rejects missing, extra, duplicate and supplied-digest fields
+  ---
+  duration_ms: 0.508215
+  type: 'test'
+  ...
+# Subtest: unit binds fixed factors into an immutable digest
+ok 9 - unit binds fixed factors into an immutable digest
+  ---
+  duration_ms: 1.649483
+  type: 'test'
+  ...
+# Subtest: fixed-factor drift is rejected, never rewritten
+ok 10 - fixed-factor drift is rejected, never rewritten
+  ---
+  duration_ms: 0.999519
+  type: 'test'
+  ...
+# Subtest: units must be preregistered by their experiment
+ok 11 - units must be preregistered by their experiment
+  ---
+  duration_ms: 0.435094
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 86.885957
+
+
+exitCode=0
