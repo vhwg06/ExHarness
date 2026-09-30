@@ -1,0 +1,73 @@
+TAP version 13
+# Subtest: raw ExecutionPolicy head storage is not exposed on the application package surface
+ok 1 - raw ExecutionPolicy head storage is not exposed on the application package surface
+  ---
+  duration_ms: 1.033318
+  type: 'test'
+  ...
+# Subtest: policy promotion cannot pass the final guard before first-attempt CAS commits
+ok 2 - policy promotion cannot pass the final guard before first-attempt CAS commits
+  ---
+  duration_ms: 48.901237
+  type: 'test'
+  ...
+# Subtest: BB-048 emits a resolvable judgment chain and keeps runtime result separate from acceptance/publication
+ok 3 - BB-048 emits a resolvable judgment chain and keeps runtime result separate from acceptance/publication
+  ---
+  duration_ms: 42.8273
+  type: 'test'
+  ...
+# Subtest: recovery reuses the exact binding and ignores a later policy promotion
+ok 4 - recovery reuses the exact binding and ignores a later policy promotion
+  ---
+  duration_ms: 17.714891
+  type: 'test'
+  ...
+# Subtest: claim-generation takeover recovers the same semantic attempt while recording the current release
+ok 5 - claim-generation takeover recovers the same semantic attempt while recording the current release
+  ---
+  duration_ms: 21.918809
+  type: 'test'
+  ...
+# Subtest: publication commit fences lifecycle and writer authority until canonical publish completes
+ok 6 - publication commit fences lifecycle and writer authority until canonical publish completes
+  ---
+  duration_ms: 25.176916
+  type: 'test'
+  ...
+# Subtest: concurrent recovery converges on one idempotent canonical publication
+ok 7 - concurrent recovery converges on one idempotent canonical publication
+  ---
+  duration_ms: 24.318572
+  type: 'test'
+  ...
+# Subtest: stale released claim fails before policy resolution or runtime dispatch
+ok 8 - stale released claim fails before policy resolution or runtime dispatch
+  ---
+  duration_ms: 4.690401
+  type: 'test'
+  ...
+# Subtest: strategy descriptor refuses a cross-domain dispatcher kind
+ok 9 - strategy descriptor refuses a cross-domain dispatcher kind
+  ---
+  duration_ms: 0.452652
+  type: 'test'
+  ...
+# Subtest: strategy success cannot self-authorize domain ACCEPT or publication
+ok 10 - strategy success cannot self-authorize domain ACCEPT or publication
+  ---
+  duration_ms: 15.586504
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 317.707726
+
+
+exitCode=0

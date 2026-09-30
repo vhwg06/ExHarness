@@ -1,0 +1,73 @@
+TAP version 13
+# Subtest: INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+ok 1 - INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+  ---
+  duration_ms: 24.315412
+  type: 'test'
+  ...
+# Subtest: AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+ok 2 - AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+  ---
+  duration_ms: 93.499649
+  type: 'test'
+  ...
+# Subtest: INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+ok 3 - INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+  ---
+  duration_ms: 53.626211
+  type: 'test'
+  ...
+# Subtest: AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+ok 4 - AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+  ---
+  duration_ms: 61.475069
+  type: 'test'
+  ...
+# Subtest: AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+ok 5 - AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+  ---
+  duration_ms: 29.830474
+  type: 'test'
+  ...
+# Subtest: INV-5 activation and its currentness reader hold no obligation write capability
+ok 6 - INV-5 activation and its currentness reader hold no obligation write capability
+  ---
+  duration_ms: 6.544588
+  type: 'test'
+  ...
+# Subtest: AC-5/INV-6 distinct FE/BE contracts, policies and adapters both dispatch before either completes
+ok 7 - AC-5/INV-6 distinct FE/BE contracts, policies and adapters both dispatch before either completes
+  ---
+  duration_ms: 153.778474
+  type: 'test'
+  ...
+# Subtest: AC-6/INV-7 a Frontend outage after both dispatches start stays host-local; Backend reaches terminal
+ok 8 - AC-6/INV-7 a Frontend outage after both dispatches start stays host-local; Backend reaches terminal
+  ---
+  duration_ms: 112.191139
+  type: 'test'
+  ...
+# Subtest: AC-6 reverse outage: a Backend failure cannot gate Frontend progress
+ok 9 - AC-6 reverse outage: a Backend failure cannot gate Frontend progress
+  ---
+  duration_ms: 101.502067
+  type: 'test'
+  ...
+# Subtest: INV-6 Frontend modules import no Backend stage/session/completion; Backend strategy never calls Backend->QA
+ok 10 - INV-6 Frontend modules import no Backend stage/session/completion; Backend strategy never calls Backend->QA
+  ---
+  duration_ms: 2.076584
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 753.193829
+
+
+exitCode=0

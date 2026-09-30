@@ -1,0 +1,211 @@
+TAP version 13
+# Subtest: durable CAS authority heads survive restart and stale writers fail closed
+ok 1 - durable CAS authority heads survive restart and stale writers fail closed
+  ---
+  duration_ms: 11.858212
+  type: 'test'
+  ...
+# Subtest: materialization is exact-scope, deterministic, and duplicate retries converge
+ok 2 - materialization is exact-scope, deterministic, and duplicate retries converge
+  ---
+  duration_ms: 33.424435
+  type: 'test'
+  ...
+# Subtest: domain authorization precedes claim and CLAIMED stays provisional until durable release
+ok 3 - domain authorization precedes claim and CLAIMED stays provisional until durable release
+  ---
+  duration_ms: 37.653127
+  type: 'test'
+  ...
+# Subtest: real Blackboard mutation fence prevents lifecycle invalidation from committing through publication
+ok 4 - real Blackboard mutation fence prevents lifecycle invalidation from committing through publication
+  ---
+  duration_ms: 95.187996
+  type: 'test'
+  ...
+# Subtest: claim recovery advances generation and fences the prior released capability
+ok 5 - claim recovery advances generation and fences the prior released capability
+  ---
+  duration_ms: 34.674827
+  type: 'test'
+  ...
+# Subtest: execution-entry policy revocation reopens Board work before fencing the historical release
+ok 6 - execution-entry policy revocation reopens Board work before fencing the historical release
+  ---
+  duration_ms: 42.095807
+  type: 'test'
+  ...
+# Subtest: execution-entry work authorization revocation blocks Board work before fencing release
+ok 7 - execution-entry work authorization revocation blocks Board work before fencing release
+  ---
+  duration_ms: 31.095268
+  type: 'test'
+  ...
+# Subtest: canonical Board invalidation commits before release fencing, so fence failure remains safe
+ok 8 - canonical Board invalidation commits before release fencing, so fence failure remains safe
+  ---
+  duration_ms: 30.748674
+  type: 'test'
+  ...
+# Subtest: work-authorization invalidation blocks canonical work without incrementing generation
+ok 9 - work-authorization invalidation blocks canonical work without incrementing generation
+  ---
+  duration_ms: 27.837722
+  type: 'test'
+  ...
+# Subtest: fresh process resolves work contract from durable ref and rejects untrusted authority publisher
+ok 10 - fresh process resolves work contract from durable ref and rejects untrusted authority publisher
+  ---
+  duration_ms: 20.286259
+  type: 'test'
+  ...
+# Subtest: same invalidation replay reconciles a prior Board-first fence crash
+ok 11 - same invalidation replay reconciles a prior Board-first fence crash
+  ---
+  duration_ms: 42.739042
+  type: 'test'
+  ...
+# Subtest: raw CAS self-grant cannot authorize because head must resolve a verified immutable artifact
+ok 12 - raw CAS self-grant cannot authorize because head must resolve a verified immutable artifact
+  ---
+  duration_ms: 12.282399
+  type: 'test'
+  ...
+# Subtest: ACTIVE to ACTIVE policy drift across claim invalidates the provisional claim
+ok 13 - ACTIVE to ACTIVE policy drift across claim invalidates the provisional claim
+  ---
+  duration_ms: 29.195086
+  type: 'test'
+  ...
+# Subtest: materialization authority loss across claim blocks work instead of reopening it
+ok 14 - materialization authority loss across claim blocks work instead of reopening it
+  ---
+  duration_ms: 25.73333
+  type: 'test'
+  ...
+# Subtest: post-release stale policy commits Board invalidation before release fencing
+ok 15 - post-release stale policy commits Board invalidation before release fencing
+  ---
+  duration_ms: 32.384211
+  type: 'test'
+  ...
+# Subtest: caller context cannot impersonate a policy-authorized execution principal
+ok 16 - caller context cannot impersonate a policy-authorized execution principal
+  ---
+  duration_ms: 12.787751
+  type: 'test'
+  ...
+# Subtest: claim release head is project-scoped and ref-only while receipt is immutable
+ok 17 - claim release head is project-scoped and ref-only while receipt is immutable
+  ---
+  duration_ms: 24.398685
+  type: 'test'
+  ...
+# Subtest: organization invalidation persists exact immutable provenance and reuses it on replay
+ok 18 - organization invalidation persists exact immutable provenance and reuses it on replay
+  ---
+  duration_ms: 30.161849
+  type: 'test'
+  ...
+# Subtest: materialization authorization drift after Board publication blocks the new work
+ok 19 - materialization authorization drift after Board publication blocks the new work
+  ---
+  duration_ms: 21.695159
+  type: 'test'
+  ...
+# Subtest: caller cannot substitute a different materialization grant for the grant that created the Board item
+ok 20 - caller cannot substitute a different materialization grant for the grant that created the Board item
+  ---
+  duration_ms: 20.322636
+  type: 'test'
+  ...
+# Subtest: fresh process reconciliation completes and reconstructs release for the same claim generation
+ok 21 - fresh process reconciliation completes and reconstructs release for the same claim generation
+  ---
+  duration_ms: 30.787568
+  type: 'test'
+  ...
+# Subtest: reauthorization cannot create a second live Board item for the same logical obligation
+ok 22 - reauthorization cannot create a second live Board item for the same logical obligation
+  ---
+  duration_ms: 17.907891
+  type: 'test'
+  ...
+# Subtest: immutable authority artifacts persist canonical verified publisher provenance
+ok 23 - immutable authority artifacts persist canonical verified publisher provenance
+  ---
+  duration_ms: 11.052493
+  type: 'test'
+  ...
+# Subtest: concurrent identical materializations converge on one Board item and one receipt
+ok 24 - concurrent identical materializations converge on one Board item and one receipt
+  ---
+  duration_ms: 16.178339
+  type: 'test'
+  ...
+# Subtest: organization discovery is read-only and filters eligible work by owning domain
+ok 25 - organization discovery is read-only and filters eligible work by owning domain
+  ---
+  duration_ms: 15.871383
+  type: 'test'
+  ...
+# Subtest: organization discovery excludes work whose declared dependency is not DONE
+ok 26 - organization discovery excludes work whose declared dependency is not DONE
+  ---
+  duration_ms: 13.131323
+  type: 'test'
+  ...
+# Subtest: released receipt records pinned authority-policy revisions and canonical principal ref
+ok 27 - released receipt records pinned authority-policy revisions and canonical principal ref
+  ---
+  duration_ms: 22.441976
+  type: 'test'
+  ...
+# Subtest: ACTIVE execution policy with a different pinned authority revision cannot authorize the work
+ok 28 - ACTIVE execution policy with a different pinned authority revision cannot authorize the work
+  ---
+  duration_ms: 16.495045
+  type: 'test'
+  ...
+# Subtest: execution entry invalidates and fences when current policy artifact is missing
+ok 29 - execution entry invalidates and fences when current policy artifact is missing
+  ---
+  duration_ms: 34.040029
+  type: 'test'
+  ...
+# Subtest: fresh reconciliation blocks work when materialization authority artifact is missing
+ok 30 - fresh reconciliation blocks work when materialization authority artifact is missing
+  ---
+  duration_ms: 34.19426
+  type: 'test'
+  ...
+# Subtest: release fences its old capability when Board generation drifts after release publication
+ok 31 - release fences its old capability when Board generation drifts after release publication
+  ---
+  duration_ms: 26.466357
+  type: 'test'
+  ...
+# Subtest: execution entry final Board re-read rejects concurrent claim recovery and fences old release
+ok 32 - execution entry final Board re-read rejects concurrent claim recovery and fences old release
+  ---
+  duration_ms: 30.860131
+  type: 'test'
+  ...
+# Subtest: reconciliation final Board re-read returns stale claim and fences release after concurrent recovery
+ok 33 - reconciliation final Board re-read returns stale claim and fences release after concurrent recovery
+  ---
+  duration_ms: 30.233242
+  type: 'test'
+  ...
+1..33
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1048.318064
+
+
+exitCode=0

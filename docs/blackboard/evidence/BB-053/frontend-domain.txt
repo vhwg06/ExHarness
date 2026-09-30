@@ -1,0 +1,79 @@
+TAP version 13
+# Subtest: INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+ok 1 - INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+  ---
+  duration_ms: 26.163313
+  type: 'test'
+  ...
+# Subtest: AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+ok 2 - AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+  ---
+  duration_ms: 98.444903
+  type: 'test'
+  ...
+# Subtest: INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+ok 3 - INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+  ---
+  duration_ms: 59.426503
+  type: 'test'
+  ...
+# Subtest: AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+ok 4 - AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+  ---
+  duration_ms: 62.185999
+  type: 'test'
+  ...
+# Subtest: AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+ok 5 - AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+  ---
+  duration_ms: 29.67587
+  type: 'test'
+  ...
+# Subtest: INV-5 activation and its currentness reader hold no obligation write capability
+ok 6 - INV-5 activation and its currentness reader hold no obligation write capability
+  ---
+  duration_ms: 6.808122
+  type: 'test'
+  ...
+# Subtest: Frontend completion requires frontend.mutation, frontend.typecheck and frontend.tests evidence
+ok 7 - Frontend completion requires frontend.mutation, frontend.typecheck and frontend.tests evidence
+  ---
+  duration_ms: 2.262513
+  type: 'test'
+  ...
+# Subtest: Frontend application prepares, runs and recovers on its own worker and session store
+ok 8 - Frontend application prepares, runs and recovers on its own worker and session store
+  ---
+  duration_ms: 2.179723
+  type: 'test'
+  ...
+# Subtest: DomainExecutionInput is content addressed and rejects authority/HOW fields
+ok 9 - DomainExecutionInput is content addressed and rejects authority/HOW fields
+  ---
+  duration_ms: 0.620251
+  type: 'test'
+  ...
+# Subtest: AC-5 Frontend strategy executes exact FRONTEND WorkContract + input through DomainExecutionController
+ok 10 - AC-5 Frontend strategy executes exact FRONTEND WorkContract + input through DomainExecutionController
+  ---
+  duration_ms: 49.917321
+  type: 'test'
+  ...
+# Subtest: zero, multiple or mismatched DomainExecutionInputs fail before any Frontend worker call
+ok 11 - zero, multiple or mismatched DomainExecutionInputs fail before any Frontend worker call
+  ---
+  duration_ms: 58.801655
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 505.77555
+
+
+exitCode=0

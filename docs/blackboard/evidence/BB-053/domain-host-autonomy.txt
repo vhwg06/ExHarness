@@ -1,0 +1,79 @@
+TAP version 13
+# Subtest: INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+ok 1 - INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+  ---
+  duration_ms: 25.891865
+  type: 'test'
+  ...
+# Subtest: AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+ok 2 - AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+  ---
+  duration_ms: 88.251052
+  type: 'test'
+  ...
+# Subtest: INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+ok 3 - INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+  ---
+  duration_ms: 57.685397
+  type: 'test'
+  ...
+# Subtest: AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+ok 4 - AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+  ---
+  duration_ms: 76.218721
+  type: 'test'
+  ...
+# Subtest: AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+ok 5 - AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+  ---
+  duration_ms: 28.149804
+  type: 'test'
+  ...
+# Subtest: INV-5 activation and its currentness reader hold no obligation write capability
+ok 6 - INV-5 activation and its currentness reader hold no obligation write capability
+  ---
+  duration_ms: 6.629209
+  type: 'test'
+  ...
+# Subtest: AC-1/AC-7 host start is idempotent and runs an immediate then periodic canonical scan
+ok 7 - AC-1/AC-7 host start is idempotent and runs an immediate then periodic canonical scan
+  ---
+  duration_ms: 114.469651
+  type: 'test'
+  ...
+# Subtest: notify accepts only a same-domain exact key and never executes other-domain work
+ok 8 - notify accepts only a same-domain exact key and never executes other-domain work
+  ---
+  duration_ms: 13.856108
+  type: 'test'
+  ...
+# Subtest: stop cancels and drains only its own host; the sibling host keeps scanning
+ok 9 - stop cancels and drains only its own host; the sibling host keeps scanning
+  ---
+  duration_ms: 76.329354
+  type: 'test'
+  ...
+# Subtest: INV-7 a failing Frontend host start does not gate Backend startup or progress
+ok 10 - INV-7 a failing Frontend host start does not gate Backend startup or progress
+  ---
+  duration_ms: 50.849802
+  type: 'test'
+  ...
+# Subtest: composition requires separate hosts bound to their own domains and exposes no ordering API
+ok 11 - composition requires separate hosts bound to their own domains and exposes no ordering API
+  ---
+  duration_ms: 9.81488
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 666.77186
+
+
+exitCode=0
