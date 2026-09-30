@@ -49,6 +49,7 @@ function decideQaCompletion(completion) {
 export async function runQaObjective(rawObjective, {
   handoff,
   artifactReader,
+  oracleResolution,
   qaWorker,
   completionPolicy = defineQaCompletionPolicy()
 }) {
@@ -56,7 +57,7 @@ export async function runQaObjective(rawObjective, {
   invariant(qaWorker && typeof qaWorker.execute === "function", "runQaObjective requires qaWorker.execute()");
 
   const order = makeQaWorkOrder(objective, handoff);
-  const context = await resolveQaContext(order, { artifactReader });
+  const context = await resolveQaContext(order, { artifactReader, oracleResolution });
   const result = await qaWorker.execute(order, context);
   const completion = assessQaCompletion(result, { policy: completionPolicy });
   const decision = decideQaCompletion(completion);
