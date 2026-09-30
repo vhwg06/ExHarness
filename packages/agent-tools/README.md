@@ -6,6 +6,7 @@ Outer supervision of CLI coding agents (Codex, Kiro, agy, grok) under ExHarness 
 - Run observation: `exharness-agent run … --trace-dir <dir>` writes digest-chained, redacted `AGENT_TOOL_RUN_TRACE_V1` traces, and `exharness-agent report <dir>` prints a descriptive per-tool/arm report (`docs/living/system/agent-tools/observation.md`).
 - `npm run smoke:agent-tools -- --tool <codex|kiro|agy|grok>`: opt-in live check against an installed, authenticated CLI. It is not part of `npm test` or `npm run verify`.
 - Durable recovery: `runSupervisedTask` with `recoveryDir` plus `resumeSupervisedTask` resume the same attempt after a crash (see `docs/living/system/agent-tools/recovery.md`).
+- Operator slice: `exharness-agent deliver --slice <manifest.json>` runs Backend then independent QA on a fresh checkout of the accepted commit, with resume and missing-tool handling (see `docs/living/system/agent-tools/operator.md`). The slice is local composition feasibility only: not first-slice product-value evidence and not a controlled-benchmark pilot.
 - MCP verification queries: `runSupervisedTask` with opt-in `mcpVerify` starts a stdio server exposing `exharness_verify` and `exharness_status` for that worktree only (see `docs/living/system/agent-tools/mcp.md`).
 - Grounded context: tasks may declare `requiredFiles` resolved as snapshot-bound Oracle context before spawn (see `docs/living/system/agent-tools/context.md`).
 

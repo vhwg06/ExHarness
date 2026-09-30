@@ -69,9 +69,13 @@ test('CG3 an authority that reports no snapshot is CURRENTNESS_UNVERIFIABLE and 
   assert.throws(() => O.assertConsumableContextResolution(resolution, requirement()));
 });
 
-test('CG3 without a CONTEXT_GRAPH authority the facade rejects before any graphClient call and the planner reports CURRENTNESS_UNVERIFIABLE', async () => {
+test('CG3 without a CONTEXT_GRAPH authority the facade returns UNSATISFIED CURRENTNESS_UNVERIFIABLE with zero graphClient calls and the planner reports CURRENTNESS_UNVERIFIABLE', async () => {
   const { facade, traverseCalls, retrievalPlanner } = compose({ authorities: [] });
-  await assert.rejects(facade.resolve(requirement()), error => error instanceof TypeError && /missing\/ambiguous snapshot authority for CONTEXT_GRAPH/.test(error.message));
+  const result = await facade.resolve(requirement());
+  assert.equal(result.resolution.status, 'UNSATISFIED');
+  assert.deepEqual(result.resolution.unresolved, [{ evidenceId: 'importers', reason: 'CURRENTNESS_UNVERIFIABLE' }]);
+  assert.equal(result.resolution.items.length, 0);
+  assert.throws(() => O.assertConsumableContextResolution(result.resolution, requirement()));
   assert.equal(traverseCalls.length, 0);
   const executed = await retrievalPlanner.execute(O.defineContextRequirement(requirement()), { remainingBudget: { ...requirement().budget }, existingEdges: [] });
   assert.equal(executed.candidates.length, 0);
