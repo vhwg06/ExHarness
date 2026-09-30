@@ -75,6 +75,8 @@ Valid findings are cached as well as SATISFIED answers. Unchanged input never re
 
 API requests have a 30-second deadline and at most one transport/429/5xx retry. Auth/schema errors are not retried. Retry-After must fit within the deadline. Missing key, timeout and invalid responses cannot produce an evaluation artifact or a satisfied check. Non-success provider responses retain a bounded response body in the trusted CI error so request-shape/context failures are diagnosable without exposing credentials.
 
+Each answer must name a criterion option, carry a probability for every option and choose a maximum-probability option. Jev reports probabilities at two decimals, so rounding n values moves their sum by up to n half-units of the second decimal: a sum within `n × 0.005` of 1 is accepted verbatim and never renormalized (four options: 0.98–1.02); a sum further from 1 is a malformed distribution, rejected after the single allowed retry.
+
 Metrics include request attempts, cache hit, payload bytes, token usage, latency, typed distributions and estimated cost. `pricing: null` means unknown monetary cost. To estimate cost, configure model, source URL, date, inputPerMillion and outputPerMillion; never infer a price from token count alone.
 
 `npm run eval:blackboard-jev-stability` makes three uncached runs per labeled fixture for both lanes. It reports agreement, verdict flips, false-satisfied cases, usage and cost. It never publishes canonical judgment. It requires a real API key and is excluded from normal verification.

@@ -1,0 +1,43 @@
+{
+  "kind": "EXPERIMENT_REGISTRATION_V1",
+  "experimentId": "TB21-CONTROL-hf-model-inference",
+  "protocol": {
+    "id": "TB21-EXTERNAL-SANITY",
+    "version": "1",
+    "hash": "sha256:22e8802d9f4e4d6d8f45fca3505d6f1bcf17c3c33851a438816594bbfb69e570"
+  },
+  "sourceIdentity": "terminal-bench:7131e4375048a0e408a8fb404b5f499d726b695b",
+  "workloadManifest": {
+    "ref": "https://github.com/harbor-framework/terminal-bench-2-1.git#7131e4375048a0e408a8fb404b5f499d726b695b:tasks/dataset.toml",
+    "digest": "sha256:d90b4389992d07ed6f4ab8de963a70241eaa4b60072eeaec4c3b261b6c4a6dd8"
+  },
+  "environmentIdentity": "docker-image:alexgshaw/hf-model-inference:20260430@sha256:0ef475aebda8abb8cbf3a1d97aee8ac4b09ca9720550e25a4a46a47930cd3bad",
+  "producerProfile": {
+    "id": "harbor-oracle-nop-controls",
+    "hash": "sha256:a5025fcc21ff40c58236ef8d7648391a0f88120fc6d40dec6c2b417d52669849"
+  },
+  "resourceBudget": {
+    "id": "task-declared-timeouts",
+    "hash": "sha256:951ae476f4d078a25b7a487430148971e3a2222d93c4e0a932442440807eb3b7"
+  },
+  "artifactPolicy": {
+    "declaredBy": "task.toml artifacts",
+    "candidate": "task environment state judged by the task verifier"
+  },
+  "evaluatorIdentity": "harbor-task-verifier@0.23.0",
+  "resetPolicy": {
+    "newHarborTrialPerAttempt": true,
+    "newAttemptOutputRoot": true,
+    "harborEnvironmentDelete": true
+  },
+  "unitIds": [
+    "hf-model-inference--ORACLE--r0",
+    "hf-model-inference--ORACLE--r1",
+    "hf-model-inference--ORACLE--r2",
+    "hf-model-inference--ORACLE--r3",
+    "hf-model-inference--ORACLE--r4",
+    "hf-model-inference--NOP--r0"
+  ],
+  "createdAt": "2026-09-30T11:18:11.524Z",
+  "registrationDigest": "sha256:c838896d919efe8ee8569a52cc371e72d48ee258f2d7d4f0487c63972bce54f8"
+}

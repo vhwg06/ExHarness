@@ -1,0 +1,47 @@
+{
+  "kind": "BENCHMARK_LEGACY_RETIREMENT_V1",
+  "schemaVersion": 1,
+  "baselineCommit": "70185535276c6d2f7c1c12832f3e06cbaee91f0a",
+  "retiredRoots": ["scripts/delivery/baseline", "test/delivery"],
+  "retiredFiles": { "scripts/delivery/baseline": 37, "test/delivery": 11 },
+  "consumerScan": "git grep -l delivery/baseline <baselineCommit> -- ':!docs/blackboard/**'",
+  "inventory": [
+    { "path": "scripts/delivery/baseline/README.md", "kind": "IMPLEMENTATION", "action": "DELETE" },
+    { "path": "scripts/delivery/baseline/prepare-profile.mjs", "kind": "IMPLEMENTATION", "action": "DELETE" },
+    { "path": "scripts/delivery/baseline/requirements.lock", "kind": "IMPLEMENTATION", "action": "DELETE" },
+    { "path": "scripts/delivery/baseline/study.mjs", "kind": "IMPLEMENTATION", "action": "DELETE" },
+    { "path": "test/delivery/baseline-arms.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-canary.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-contract.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-controlled-audit.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-e2e-deterministic.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-factual-audit.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-fixture.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-jev-value.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-recovery.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-report.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "test/delivery/baseline-runner.test.mjs", "kind": "TEST_CONSUMER", "action": "DELETE" },
+    { "path": "docs/living/system/state.md", "kind": "DOCUMENTATION", "action": "REWRITE_AS_RETIRED" },
+    { "path": "test/blackboard-jev-response.test.mjs", "kind": "STRING_FIXTURE", "action": "KEEP", "reason": "uses a synthetic verification command string as Jev payload data; it neither imports nor executes the retired tests" }
+  ],
+  "productRuntimeDependency": "none: no packages/** file referenced scripts/delivery/baseline at the baseline commit",
+  "matrix": [
+    { "legacy": "scripts/delivery/baseline/study.mjs", "disposition": "DROP", "owner": "none" },
+    { "legacy": "scripts/delivery/baseline/core-arm.mjs", "disposition": "DOWNSTREAM_OWNER", "owner": "BB-077" },
+    { "legacy": "scripts/delivery/baseline/jev-value.mjs", "disposition": "DROP", "owner": "none" },
+    { "legacy": "scripts/delivery/baseline/provider_budget.py", "disposition": "REIMPLEMENT_GENERIC", "owner": "packages/benchmark/src/accounting.js" },
+    { "legacy": "scripts/delivery/baseline/provider-export.mjs", "disposition": "REIMPLEMENT_GENERIC", "owner": "packages/benchmark/src/evidence.js + packages/benchmark/src/audit.js" },
+    { "legacy": "scripts/delivery/baseline/report.mjs", "disposition": "DROP", "owner": "downstream experiment reducers" },
+    { "legacy": "scripts/delivery/baseline/mini_driver.py", "disposition": "DROP", "owner": "none" },
+    { "legacy": "scripts/delivery/baseline/fixture/**", "disposition": "REQUALIFY", "owner": "benchmarks/substrate/fixtures/**", "note": "requalified as new Harbor fixture tasks; no legacy fixture file is copied" },
+    { "legacy": "test/delivery/baseline-*.test.mjs", "disposition": "DROP", "owner": "none" }
+  ],
+  "unmatrixedImplementation": "every other retired baseline module (canary, contract, controlled-audit, controlled-trials, factual-audit, qualification, resource-bridge, resource-state, session-store, run, verify, prepare-profile, probe_driver, core-value-protocol.json, value-protocol.json, profile.json, Dockerfile, README, package and requirements files) served only the retired DIRECT-vs-Core study and is dropped with it",
+  "equivalence": [
+    { "semantic": "absent usage stays UNKNOWN/null and is never zero-filled; unreported cache detail stays null", "legacy": "scripts/delivery/baseline/provider_budget.py", "replacement": "packages/benchmark/src/accounting.js", "tests": ["packages/benchmark/test/accounting.test.js", "packages/benchmark/test/audit.test.js"] },
+    { "semantic": "materialized evidence is reopened by digest and altered evidence is rejected", "legacy": "scripts/delivery/baseline/provider-export.mjs", "replacement": "packages/benchmark/src/evidence.js + packages/benchmark/src/audit.js", "tests": ["packages/benchmark/test/audit.test.js", "benchmarks/substrate/test/audit-reopen.test.mjs"] }
+  ],
+  "notEquivalenceTargets": ["DIRECT-vs-Core six-pair study", "CORE_VALUE / CORE_VALUE_V2 protocols", "core-arm orchestration", "mini-SWE-specific driver semantics", "Jev-value benchmark judgment", "provider recovery coupled to the retired study", "study and controlled-trial reducers"],
+  "deletionGate": ["local-calibration PASS", "audit-reopen PASS", "external-preflight PASS", "downstream-contract PASS", "root entrypoints cut", "forbidden-reference scan clean"],
+  "historicalProvenance": "retired files remain recoverable from Git at baselineCommit; no archive or version sibling is added"
+}
