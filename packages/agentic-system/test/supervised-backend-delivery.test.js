@@ -35,10 +35,10 @@ const here = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(here, "..", "..", "..");
 const FAKE = join(REPO_ROOT, "packages", "agent-tools", "test", "fixtures", "fake-agent.mjs");
 const GIT_ENV = Object.freeze({
-  GIT_AUTHOR_NAME: "bb100",
-  GIT_AUTHOR_EMAIL: "bb100@localhost.invalid",
-  GIT_COMMITTER_NAME: "bb100",
-  GIT_COMMITTER_EMAIL: "bb100@localhost.invalid",
+  GIT_AUTHOR_NAME: "supervised-backend",
+  GIT_AUTHOR_EMAIL: "supervised-backend@localhost.invalid",
+  GIT_COMMITTER_NAME: "supervised-backend",
+  GIT_COMMITTER_EMAIL: "supervised-backend@localhost.invalid",
   GIT_CONFIG_NOSYSTEM: "1"
 });
 
@@ -50,7 +50,7 @@ async function git(cwd, args) {
 }
 
 async function sourceRepository() {
-  const directory = await mkdtemp(join(tmpdir(), "bb100-source-"));
+  const directory = await mkdtemp(join(tmpdir(), "supervised-backend-source-"));
   const repo = join(directory, "repo");
   const { mkdir, writeFile } = await import("node:fs/promises");
   await mkdir(repo, { recursive: true });
@@ -95,7 +95,7 @@ function backendOrderContext(base) {
   })));
   const context = BackendContextSchema.parse({
     repository: { ref: "repo://supervised-backend-test", revision: base },
-    files: [{ path: "sum.mjs", content: "export const sum = (a, b) => a - b;\n", sourceRef: "bb100-fixture" }]
+    files: [{ path: "sum.mjs", content: "export const sum = (a, b) => a - b;\n", sourceRef: "supervised-backend-fixture" }]
   });
   return { order, context };
 }
@@ -103,7 +103,7 @@ function backendOrderContext(base) {
 async function supervisedBackend(scenario, { maxAttempts = 2, tool = null, observer = null, recordIn = null } = {}) {
   const { directory, repo, base } = await sourceRepository();
   const before = await sourceSnapshot(repo);
-  const recordsDir = recordIn ?? await mkdtemp(join(tmpdir(), "bb100-records-"));
+  const recordsDir = recordIn ?? await mkdtemp(join(tmpdir(), "supervised-backend-records-"));
   const recordPath = join(recordsDir, "record.json");
   const seen = [];
   try {
@@ -133,7 +133,7 @@ async function supervisedBackend(scenario, { maxAttempts = 2, tool = null, obser
 async function setupSupervised(scenario, { maxAttempts = 2, tool = null, observer = null } = {}) {
   const { directory, repo, base } = await sourceRepository();
   const before = await sourceSnapshot(repo);
-  const recordsDir = await mkdtemp(join(tmpdir(), "bb100-records-"));
+  const recordsDir = await mkdtemp(join(tmpdir(), "supervised-backend-records-"));
   const recordPath = join(recordsDir, "record.json");
   const seen = [];
   const { order, context } = backendOrderContext(base);
@@ -282,14 +282,14 @@ test("SB1 default BackendWorker path does not import agent-tools", T, async () =
   // Runtime proof in a fresh child process: a resolve hook records every
   // loaded module URL while the default worker executes to APPLIED. No
   // resolved URL may point into packages/agent-tools.
-  const resolveScratch = await mkdtemp(join(tmpdir(), "bb100-resolve-"));
+  const resolveScratch = await mkdtemp(join(tmpdir(), "supervised-backend-resolve-"));
   const urlsFile = join(resolveScratch, "resolved-urls.txt");
   const hookSource = [
     "import fs from 'node:fs';",
     "const NL = String.fromCharCode(10);",
     "export async function resolve(specifier, context, nextResolve) {",
     "  const resolved = await nextResolve(specifier, context);",
-    "  try { fs.appendFileSync(process.env.BB100_RESOLVED_URLS_FILE, resolved.url + NL); } catch {}",
+    "  try { fs.appendFileSync(process.env.SUPERVISED_BACKEND_RESOLVED_URLS_FILE, resolved.url + NL); } catch {}",
     "  return resolved;",
     "}"
   ].join(String.fromCharCode(10));
@@ -322,7 +322,7 @@ test("SB1 default BackendWorker path does not import agent-tools", T, async () =
     "const order = agentic.parseBackendWorkOrder(agentic.makeBackendWorkOrder(agentic.defineBackendObjective({ id: 'child-probe', task: 'Probe.', repository: { ref: 'repo://child', revision: 'rev-1' }, requiredFiles: ['src/server.js'] })));",
     "const context = agentic.BackendContextSchema.parse({ repository: { ref: 'repo://child', revision: 'rev-1' }, files: [{ path: 'src/server.js', content: 'stub', sourceRef: 'stub' }] });",
     "const outcome = await worker.execute(order, context);",
-    "const recorded = fs.readFileSync(process.env.BB100_RESOLVED_URLS_FILE, 'utf8').split(String.fromCharCode(10)).filter((line) => line.length > 0);",
+    "const recorded = fs.readFileSync(process.env.SUPERVISED_BACKEND_RESOLVED_URLS_FILE, 'utf8').split(String.fromCharCode(10)).filter((line) => line.length > 0);",
     "console.log(JSON.stringify({ status: outcome.status, actedKinds, urlCount: recorded.length, agentToolsUrls: recorded.filter((url) => url.includes('/packages/agent-tools/')) }));"
   ].join(String.fromCharCode(10));
   try {
@@ -332,7 +332,7 @@ test("SB1 default BackendWorker path does not import agent-tools", T, async () =
       encoding: "utf8",
       timeout: 120000,
       maxBuffer: 16 * 1024 * 1024,
-      env: { ...process.env, BB100_RESOLVED_URLS_FILE: urlsFile }
+      env: { ...process.env, SUPERVISED_BACKEND_RESOLVED_URLS_FILE: urlsFile }
     });
     assert.equal(completion.status, 0, `resolve-hook child failed: ${(completion.stderr ?? "").slice(-2000)}`);
     const payload = JSON.parse(completion.stdout);
@@ -390,7 +390,7 @@ test("SB2 NEVER_FIX is not APPLIED", T, async () => {
 });
 
 test("SB2 missing executable is not APPLIED", T, async () => {
-  const missing = defineAgentTool(AGENT_TOOLS.codex, { command: join(tmpdir(), "bb100-no-such-agent"), prefixArgs: [] });
+  const missing = defineAgentTool(AGENT_TOOLS.codex, { command: join(tmpdir(), "supervised-backend-no-such-agent"), prefixArgs: [] });
   const setup = await setupSupervised("FIX_FIRST", { maxAttempts: 1, tool: missing });
   try {
     const result = await runSupervisedBackendWork(setup.args);
@@ -503,7 +503,7 @@ test("SB4 failed runs do not claim PASS evidence", T, async () => {
   } finally {
     await teardownSupervised(failedSetup);
   }
-  const missing = defineAgentTool(AGENT_TOOLS.codex, { command: join(tmpdir(), "bb100-no-such-agent"), prefixArgs: [] });
+  const missing = defineAgentTool(AGENT_TOOLS.codex, { command: join(tmpdir(), "supervised-backend-no-such-agent"), prefixArgs: [] });
   const blockedSetup = await setupSupervised("FIX_FIRST", { maxAttempts: 1, tool: missing });
   try {
     const blockedResult = await runSupervisedBackendWork(blockedSetup.args);
@@ -537,7 +537,7 @@ test("SB6 write scope excludes backend-worker and agent-tools", T, async () => {
   const WRITE = [
     "packages/agentic-system/src/supervised-backend.js",
     "packages/agentic-system/src/index.js",
-    "packages/agentic-system/test/bb100-supervised-backend.test.js",
+    "packages/agentic-system/test/supervised-backend-delivery.test.js",
     "docs/living/system/agentic-application/state.md",
     "docs/living/system/agentic-application/capabilities.md"
   ];

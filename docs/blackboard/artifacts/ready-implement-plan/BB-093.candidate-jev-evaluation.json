@@ -1,0 +1,122 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-093-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-093",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-093.json",
+      "hash": "c5ae88918d17b1c9cf616853130c07adca9c24405e705626da02d56f9b61c523"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-093.json",
+      "hash": "a0bc59ebd2640df83eeb40743f1104c8a3fa09119233657e056f0b4e7c1a6206"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-093.implementation-result.json",
+      "hash": "3c0b896d6a7aa62b4cad2d4ea101bbd390458d2b91d39a39a75f1096d64b1173"
+    },
+    "candidateSha": "ad29ea19a59d87652403f010a3398b798ca94c91",
+    "candidateTree": "b30afee347ae266916015b6828eab591a8c87325",
+    "baselineSha": "a6663eabb1111df1b8aefef24c17336873232eb0"
+  },
+  "stateHash": "a49e63aa25f6f4cf2806f3210c2f976884fc8fe712e6667117c72c72b76baf6d",
+  "specHash": "c0d29ab4bf2e5be3d3a586fb6ce03f2afee65191cd7cb3628a591bff2fa187e0",
+  "cacheKey": "6f7c3f9f8598cf832fe5e151064e9e9390a3abd89b240c3234c9229d3d10b42d",
+  "model": "jev-1.13.0",
+  "answers": {
+    "BU1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.85,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.05,
+        "SATISFIED": 0.89,
+        "INSUFFICIENT_EVIDENCE": 0.05
+      }
+    },
+    "BU2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.89,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.05,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "SATISFIED": 0.91
+      }
+    },
+    "BU3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.64,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.23,
+        "SATISFIED": 0.73,
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "IMPLEMENTATION_DEFECT": 0.02
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.98,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.98,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.01
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 42062,
+    "output_tokens": 283
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 4,
+    "latencyMs": 819.5047,
+    "payloadBytes": 343576,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V3",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "BU1",
+          "payloadHash": "ce18c872544ce88bcfb363b5b989847aea6ec8bc6785ec8a3965af23401f7c40",
+          "payloadBytes": 27251
+        },
+        {
+          "id": "BU2",
+          "payloadHash": "1f1403c8ee6450568a7e3aaa1440cf143b62d22bf6d2e321e6aea077019ca686",
+          "payloadBytes": 27805
+        },
+        {
+          "id": "BU3",
+          "payloadHash": "13f67c234490de79d3e8907928a0f22e7448ba91f48f8459a18c1506efb277de",
+          "payloadBytes": 47233,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-093/oracle-regression.txt",
+            "docs/blackboard/evidence/BB-093/repository.txt"
+          ]
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "1ac6c829ca60c61c3703b43f3d26140b1b0a1f2eb956531bda8ee27d8b3e77f7",
+          "payloadBytes": 33281
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
