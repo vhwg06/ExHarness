@@ -21,7 +21,7 @@ next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-092
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-092
-task: Implement bounded explicit progressive resolution
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-092/current.json
-components: oracle/infrastructure
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -102,7 +95,7 @@ BB-088 [DONE] <- BB-087
 BB-089 [DONE] <- BB-087
 BB-090 [DONE] <- BB-056
 BB-091 [DONE] <- BB-088
-BB-092 [ACTIVE] <- BB-091
+BB-092 [PLANNED] <- BB-091
 BB-093 [BLOCKED_BY BB-092] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
