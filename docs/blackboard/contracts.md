@@ -47,6 +47,10 @@ Status: **CURRENT TYPED WORK / CONTEXT CONTRACT**
 29. Plan content binds the exact objective ref/hash. Readiness evaluates source at the exact recorded research baseline; worker source changes do not rewrite that baseline.
 30. `WORKER` consumes the exact ready plan ref/content hash and dependency truth. Its plan must declare the current Living Doc refs that describe the implementation. It converges only to `DELIVERED_FEATURE` after those refs are changed in the candidate and accepted by Jev.
 31. Worker cannot redefine its plan. Plan/input contradictions return to Research/SA and revoke readiness. Research cannot claim delivery.
+31a. Research cannot redefine its objective. Ordinary Research/Worker candidates may not change `objectiveRef`, `planRef` or trusted objective bytes. The only way to replace an unfinished task objective is a typed `OBJECTIVE_SUPERSESSION` receipt at `docs/blackboard/artifacts/objective/<WORK_ID>.supersession.json`. It binds `targetWorkId`, `trustedBaseSha` (the exact PR base), old and replacement objective `{ref,hash}` at the same stable path, `planRef`, `reason`, `evidenceRefs` and the complete `directDependents` manifest.
+31b. Supersession applies only to an unfinished `RESEARCH_SA` target. A valid publication moves it to non-active `PLANNED RESEARCH_SA/RESEARCH`: claim and current context are removed, and the contract keeps only `objectiveRef`, `planRef` and `researchBaselineSha`. Readiness, evaluation, candidate, evidence and delivery fields are removed. The plan at the same ref becomes `DRAFT` without `readinessRef` and is bound to the replacement hash. Id, feature, title, components, dependency edges and artifacts are preserved.
+31c. Every trusted direct dependent is declared exactly once and handled conservatively. DONE work is `TERMINAL_UNCHANGED` (byte-identical). Unfinished WORKER/READY work is `RESET_RESEARCH`: it returns to non-active research, its plan content stays the same with DRAFT status, and stale authority is stripped. RESEARCH_SA work is `RETAIN_RESEARCH`: it stays non-active research with its refs and plan unchanged. All other tasks, features and topics are unchanged.
+31d. The trusted PR-base verifier (`verify-supersession`, sibling job `objective-supersession-verify`) checks the receipt against trusted bytes. It fails closed on a stale base/old hash (compare-and-swap), wrong refs, self-redefinition and hidden or mutated dependents. It also rejects unrelated paths, version siblings, rewritten historical artifacts and any bundled `scripts/`, `packages/`, `test/` or `.github/` change. It reads candidate files as data, executes no candidate code, uses no secrets and makes no provider call. Merge of the verified PR is the publication authorization.
 
 ## Implementation lanes and artifacts
 
@@ -64,7 +68,7 @@ Status: **CURRENT TYPED WORK / CONTEXT CONTRACT**
 
 39. `current-only` means one canonical artifact per semantic subject, not active-work-only.
 40. Work completion removes active routing/context but does not delete canonical delivery artifacts.
-41. Artifact deletion requires explicit semantic retirement/supersession.
+41. Artifact deletion requires explicit semantic retirement/supersession. A supersession overwrites the canonical unfinished objective/plan in place and retains its receipt. Retained receipts must bind the current objective hash. Prior bodies live only in Git history, with no `gNNNN`/version siblings. Migration of any specific task's objective (for example BB-065) is a separate publication after the mechanism is delivered.
 42. Task outputs aggregate through Feature/Bug and Topic consolidation into Living Docs.
 43. Once a dependency is DONE and consolidated, future context prefers Living/current truth over historical task transcript.
 44. Git retains revision history; fresh workers do not reconstruct context from Git history.

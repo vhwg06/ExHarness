@@ -75,6 +75,7 @@ jobs:
     outputs:
       work: ${{ steps.select.outputs.work }}
       publications: ${{ steps.select.outputs.publications }}
+      supersessions: ${{ steps.select.outputs.supersessions }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -98,9 +99,14 @@ jobs:
         env:
           WORK: ${{ steps.select.outputs.work }}
           PUBLICATIONS: ${{ steps.select.outputs.publications }}
+          SUPERSESSIONS: ${{ steps.select.outputs.supersessions }}
         run: |
           work_count="$(jq 'length' <<<"$WORK")"
           publication_count="$(jq 'length' <<<"$PUBLICATIONS")"
+          supersession_count="$(jq 'length' <<<"$SUPERSESSIONS")"
+          if [ "$supersession_count" -gt 0 ]; then
+            echo "::notice::Blackboard objective supersession verification required for $supersession_count subject(s)."
+          fi
           if [ "$work_count" -gt 0 ]; then
             echo "::notice::Blackboard semantic judgment required for $work_count subject(s)."
           elif [ "$publication_count" -gt 0 ]; then
@@ -157,3 +163,40 @@ jobs:
           TRUSTED_ROOT: trusted
           SUBJECT_ROOT: subject
         run: node trusted/scripts/blackboard-jev-ci.mjs verify-publication
+
+  objective-supersession-verify:
+    name: objective-supersession-verify
+    needs: blackboard
+    if: needs.blackboard.outputs.supersessions != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        work: ${{ fromJSON(needs.blackboard.outputs.supersessions) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.work.sha }}
+          path: subject
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Deterministic and secret-free: trusted PR-base scripts read candidate files as data only.
+      - name: Verify objective supersession publication
+        env:
+          WORK_ID: ${{ matrix.work.id }}
+          CANDIDATE_SHA: ${{ matrix.work.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          TRUSTED_ROOT: trusted
+          SUBJECT_ROOT: subject
+        run: node trusted/scripts/blackboard-jev-ci.mjs verify-supersession

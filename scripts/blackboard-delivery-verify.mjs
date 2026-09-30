@@ -1,5 +1,6 @@
 import { read, assertDeliveryArtifact, assertBinding, assertLivingDocs, planHash, fail } from './blackboard-delivery-contract.mjs';
 import { assertReady } from './blackboard-jev.mjs';
+import { verifyRetainedSupersessions } from './blackboard-objective-supersession.mjs';
 
 export function verifyDeliveryContracts(root='.') {
   const graph=read(root,'docs/blackboard/work-graph.json');
@@ -24,6 +25,8 @@ export function verifyDeliveryContracts(root='.') {
       }
     }
   }
+  // Retained OBJECTIVE_SUPERSESSION receipts must bind the current stable objective; no version siblings.
+  verifyRetainedSupersessions(root,graph);
   return true;
 }
 if(process.argv[1]?.endsWith('blackboard-delivery-verify.mjs')) {

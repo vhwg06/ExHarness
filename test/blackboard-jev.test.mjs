@@ -523,4 +523,13 @@ test('CI keeps Blackboard routing inside the PR test workflow and Jev evaluation
   assert.match(testWorkflow,/needs: \[living-doc-impact, kernel\]/);
   assert.match(testWorkflow,/trusted_sha: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
   assert.match(testWorkflow,/candidate_sha: \$\{\{ matrix\.work\.sha \}\}/);
+  // OBJECTIVE_SUPERSESSION runs as a deterministic sibling job: trusted scripts, no secrets, no Jev.
+  assert.match(testWorkflow,/supersessions: \$\{\{ steps\.select\.outputs\.supersessions \}\}/);
+  const supersession=testWorkflow.slice(testWorkflow.indexOf('  objective-supersession-verify:'));
+  assert.match(supersession,/name: objective-supersession-verify/);
+  assert.match(supersession,/if: needs\.blackboard\.outputs\.supersessions != '\[\]'/);
+  assert.match(supersession,/ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}\n\s+path: trusted/);
+  assert.match(supersession,/BASE_SHA: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
+  assert.match(supersession,/run: node trusted\/scripts\/blackboard-jev-ci\.mjs verify-supersession/);
+  assert.doesNotMatch(supersession,/secrets|TYPESAFE_API_KEY|blackboard-jev\.yml|npm (ci|install|run)|subject\/scripts/);
 });
