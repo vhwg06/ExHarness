@@ -184,7 +184,7 @@ test('API retries one malformed typed response without relaxing validation',asyn
   const malformed=()=>{
     const body=f.response(payload);
     const first=Object.values(body.answers)[0];
-    first.probabilities={SATISFIED:0.5,IMPLEMENTATION_DEFECT:0.2,INSUFFICIENT_EVIDENCE:0.2,PLAN_INPUT_CONTRADICTION:0.09};
+    first.probabilities={SATISFIED:0.5,IMPLEMENTATION_DEFECT:0.2,INSUFFICIENT_EVIDENCE:0.2,PLAN_INPUT_CONTRADICTION:0.05};
     return body;
   };
   let calls=0;

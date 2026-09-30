@@ -1,0 +1,20 @@
+schema_version = "1.1"
+artifacts = ["/app/out"]
+
+[task]
+name = "exharness-substrate/substrate-failure-01"
+description = "Model-free failure normalization: timeout, provider failure, unknown usage, artifact extraction and verifier error."
+
+[verifier]
+timeout_sec = 120.0
+
+[agent]
+timeout_sec = 120.0
+
+[environment]
+build_timeout_sec = 600.0
+cpus = 1
+memory_mb = 512
+storage_mb = 1024
+gpus = 0
+allow_internet = false

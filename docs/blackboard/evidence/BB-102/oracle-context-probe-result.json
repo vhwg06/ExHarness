@@ -1,0 +1,53 @@
+{
+  "kind": "BB102_ORACLE_CONTEXT_PROBE_RESULT",
+  "version": 1,
+  "checkedSha": "a461f9ddcad7afa9ee1c2d1f00337626739d79da",
+  "identifiers": {
+    "oracleExports": [
+      "createOracleContextResolver",
+      "createExactRepositoryProvider",
+      "createSourceCatalog",
+      "createRetrievalPlanner",
+      "assertConsumableContextResolution",
+      "defineContextRequirement",
+      "DurabilityFailure"
+    ],
+    "agentTaskStatus": [
+      "ACCEPTED",
+      "EXHAUSTED",
+      "TOOL_UNAVAILABLE"
+    ],
+    "runSupervisedTaskOptions": [
+      "tool",
+      "task",
+      "model",
+      "maxAttempts",
+      "timeoutMs",
+      "maxFeedbackChars",
+      "permissionProfile",
+      "env",
+      "eventSinks",
+      "tracer",
+      "invocationObserver"
+    ]
+  },
+  "facade": {
+    "missing": "SOURCE_FAILURE",
+    "budget1": "consumed below materialization/step",
+    "budget2": "BUDGET_EXHAUSTED",
+    "stale": "STALE_DURING_RESOLUTION",
+    "gitExact": "COMPLETE"
+  },
+  "conclusions": {
+    "facadeResolvesExactGitRevision": true,
+    "missingFileIsUnsatisfiedSourceFailure": true,
+    "budgetOneThrowsConsumedBelowMaterialization": true,
+    "budgetTwoIsUnsatisfiedBudgetExhausted": true,
+    "staleFenceThrowsDurabilityFailure": true,
+    "agentTaskStatusHasNoContextValue": true,
+    "validateAgentTaskCurrentlyDropsRequiredFiles": true,
+    "invocationObserverPresentOnSupervisor": true,
+    "contextWriteDirtiesWorktreeUntilExcluded": true,
+    "assertSafeWorkspacePathRejectsEscape": true
+  }
+}

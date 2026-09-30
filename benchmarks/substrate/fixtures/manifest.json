@@ -1,0 +1,42 @@
+{
+  "kind": "BENCHMARK_SUBSTRATE_FIXTURES_V1",
+  "schemaVersion": 1,
+  "substrate": "harbor",
+  "credentialFree": true,
+  "modelFree": true,
+  "baseImage": "debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251",
+  "fixtures": [
+    {
+      "id": "SUBSTRATE-PASS-01",
+      "path": "fixtures/SUBSTRATE-PASS-01",
+      "purpose": "oracle writes the exact expected artifact; independent verifier passes; nop fails",
+      "bundleDigest": "sha256:d940edccb24299016acee77099006a429051fbb736fe08ceaf4392e17b228228",
+      "instructionDigest": "sha256:2e8c373c5ddb7f7e92401477984747408f76e74c6f6b99ee8c23b40f12d090b6",
+      "environmentIdentity": "docker-build-context:sha256:88f37d306cfba19de13490e526b337803bdb84c4fcf7a8a931410f18e20d26bb"
+    },
+    {
+      "id": "SUBSTRATE-ARTIFACT-01",
+      "path": "fixtures/SUBSTRATE-ARTIFACT-01",
+      "purpose": "nested artifact plus the candidate's own digest manifest proves collection identity and fresh-process audit reopening",
+      "bundleDigest": "sha256:11fdd32a31daf15c5a99a7616242980c106b9dfe5d5010e1e1b9a641f1986ea5",
+      "instructionDigest": "sha256:5f5243bba3d3f76d0f6dc924f0ed6506539c3e50ab9baddf866ed864f3bebb56",
+      "environmentIdentity": "docker-build-context:sha256:88f37d306cfba19de13490e526b337803bdb84c4fcf7a8a931410f18e20d26bb"
+    },
+    {
+      "id": "SUBSTRATE-REJECT-01",
+      "path": "fixtures/SUBSTRATE-REJECT-01",
+      "purpose": "producer reports success but writes the wrong artifact; the independent verifier rejects",
+      "bundleDigest": "sha256:fc5b299a5f2494bd15375100855e32f68a18f7da899e85bfdee96fe4e275de33",
+      "instructionDigest": "sha256:2e8c373c5ddb7f7e92401477984747408f76e74c6f6b99ee8c23b40f12d090b6",
+      "environmentIdentity": "docker-build-context:sha256:88f37d306cfba19de13490e526b337803bdb84c4fcf7a8a931410f18e20d26bb"
+    },
+    {
+      "id": "SUBSTRATE-FAILURE-01",
+      "path": "fixtures/SUBSTRATE-FAILURE-01",
+      "purpose": "model-free normalization of agent timeout, provider timeout/rate limit/5xx, unknown usage, artifact extraction failure, verifier error and bootstrap failure",
+      "bundleDigest": "sha256:5099ddf33e381e29c5b16317f36bfba456dc428cd2875e56bb2047b9be7c5184",
+      "instructionDigest": "sha256:2e8c373c5ddb7f7e92401477984747408f76e74c6f6b99ee8c23b40f12d090b6",
+      "environmentIdentity": "docker-build-context:sha256:88f37d306cfba19de13490e526b337803bdb84c4fcf7a8a931410f18e20d26bb"
+    }
+  ]
+}

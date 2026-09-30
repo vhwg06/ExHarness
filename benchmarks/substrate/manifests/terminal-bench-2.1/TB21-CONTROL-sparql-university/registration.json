@@ -1,0 +1,43 @@
+{
+  "kind": "EXPERIMENT_REGISTRATION_V1",
+  "experimentId": "TB21-CONTROL-sparql-university",
+  "protocol": {
+    "id": "TB21-EXTERNAL-SANITY",
+    "version": "1",
+    "hash": "sha256:22e8802d9f4e4d6d8f45fca3505d6f1bcf17c3c33851a438816594bbfb69e570"
+  },
+  "sourceIdentity": "terminal-bench:7131e4375048a0e408a8fb404b5f499d726b695b",
+  "workloadManifest": {
+    "ref": "https://github.com/harbor-framework/terminal-bench-2-1.git#7131e4375048a0e408a8fb404b5f499d726b695b:tasks/dataset.toml",
+    "digest": "sha256:d90b4389992d07ed6f4ab8de963a70241eaa4b60072eeaec4c3b261b6c4a6dd8"
+  },
+  "environmentIdentity": "docker-image:alexgshaw/sparql-university:20251031@sha256:92fa4304e51167f9fb4466144eba33ef9272a7df0ac1cab9fc3986bccd1ab708",
+  "producerProfile": {
+    "id": "harbor-oracle-nop-controls",
+    "hash": "sha256:a5025fcc21ff40c58236ef8d7648391a0f88120fc6d40dec6c2b417d52669849"
+  },
+  "resourceBudget": {
+    "id": "task-declared-timeouts",
+    "hash": "sha256:47a6f6dd9ce0fc7631ef607e900fcd039b2d064ea90545645b49c678cddc9585"
+  },
+  "artifactPolicy": {
+    "declaredBy": "task.toml artifacts",
+    "candidate": "task environment state judged by the task verifier"
+  },
+  "evaluatorIdentity": "harbor-task-verifier@0.23.0",
+  "resetPolicy": {
+    "newHarborTrialPerAttempt": true,
+    "newAttemptOutputRoot": true,
+    "harborEnvironmentDelete": true
+  },
+  "unitIds": [
+    "sparql-university--ORACLE--r0",
+    "sparql-university--ORACLE--r1",
+    "sparql-university--ORACLE--r2",
+    "sparql-university--ORACLE--r3",
+    "sparql-university--ORACLE--r4",
+    "sparql-university--NOP--r0"
+  ],
+  "createdAt": "2026-09-30T11:22:18.578Z",
+  "registrationDigest": "sha256:c72ebfec2c90ac528e0670f3c00a7ede5e836fda01dbf75b2cb94462aec16e69"
+}
