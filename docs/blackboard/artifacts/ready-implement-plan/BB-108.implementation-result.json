@@ -1,0 +1,135 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-108-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-108.json",
+    "hash": "94cf3ddb1a7cf56caa67206f52f5e39040492f3169fe2d13e8d27bf46ec8b97a"
+  },
+  "candidateSha": "7aa127dd15b831221d3c5e3d56f4bc5ad8032ad3",
+  "baselineSha": "939a5893f418d2adbbf498744bb53b593c9a8642",
+  "candidateTree": "e884461d833ba8db853cf2b05a75d07cc49375e6",
+  "verificationRuns": [
+    {
+      "id": "fa5-authority",
+      "command": "node --test --test-name-pattern=\"^FA5 \" test/oracle-facade-accounting.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7aa127dd15b831221d3c5e3d56f4bc5ad8032ad3",
+      "logRef": "docs/blackboard/evidence/BB-108/fa5-authority.txt",
+      "logHash": "fbfb207454f5ca29852c1021d39aca58a30d9df54b557b166b25d45e0421093a"
+    },
+    {
+      "id": "fa6-underflow",
+      "command": "node --test --test-name-pattern=\"^FA6 \" test/oracle-facade-accounting.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7aa127dd15b831221d3c5e3d56f4bc5ad8032ad3",
+      "logRef": "docs/blackboard/evidence/BB-108/fa6-underflow.txt",
+      "logHash": "a4087d1f7d171a1ffae0d3d29912f1b7c059a521fc3a35db71330073794a9a7d"
+    },
+    {
+      "id": "fa7-docs",
+      "command": "node --test --test-name-pattern=\"^FA7 \" test/oracle-facade-accounting.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7aa127dd15b831221d3c5e3d56f4bc5ad8032ad3",
+      "logRef": "docs/blackboard/evidence/BB-108/fa7-docs.txt",
+      "logHash": "3bf5a5453a046c0c8a26d7be5ac552243a376b352a786d0108511138ffe649e2"
+    },
+    {
+      "id": "oracle",
+      "command": "npm run test:oracle",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7aa127dd15b831221d3c5e3d56f4bc5ad8032ad3",
+      "logRef": "docs/blackboard/evidence/BB-108/oracle.txt",
+      "logHash": "5ed1698fdec6a427ed4d8d6c0ab8d5c6fb50ba1ac2c2df9c7bca3c217cf80d81"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7aa127dd15b831221d3c5e3d56f4bc5ad8032ad3",
+      "logRef": "docs/blackboard/evidence/BB-108/docs.txt",
+      "logHash": "3f1a969f95c3f7d4a08e046a94f262a1033fde069600745fd29911f81a08d8be"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "7aa127dd15b831221d3c5e3d56f4bc5ad8032ad3",
+      "logRef": "docs/blackboard/evidence/BB-108/repository.txt",
+      "logHash": "985f812a434908be47b6366776e5463c4ee8da3af4e743956d20edd2e109e123"
+    }
+  ],
+  "claims": [
+    {
+      "id": "FA5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-108/fa5-authority.txt",
+        "docs/blackboard/evidence/BB-108/oracle.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-FA-throw",
+          "logRef": "docs/blackboard/evidence/BB-108/fa5-authority.txt",
+          "testRef": "test/oracle-facade-accounting.test.mjs",
+          "bodyHash": "a39d0f61ad97fec186a33d8d85e95866479c2c654d8ee19ab7e497bc61f3c984"
+        },
+        {
+          "id": "NC-FA-retrieve",
+          "logRef": "docs/blackboard/evidence/BB-108/fa5-authority.txt",
+          "testRef": "test/oracle-facade-accounting.test.mjs",
+          "bodyHash": "0f52a10f07c2fa3b00370b20cbc3e28bc26bf32cd6e990511384ce35405afc9f"
+        }
+      ]
+    },
+    {
+      "id": "FA6",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-108/fa6-underflow.txt",
+        "docs/blackboard/evidence/BB-108/oracle.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-FA-underflow",
+          "logRef": "docs/blackboard/evidence/BB-108/fa6-underflow.txt",
+          "testRef": "test/oracle-facade-accounting.test.mjs",
+          "bodyHash": "f185302b4f5b5625aa0b97b790bd537f0416a13de40d74a8e177ce4bb5574a5e"
+        },
+        {
+          "id": "NC-FA-provider",
+          "logRef": "docs/blackboard/evidence/BB-108/fa6-underflow.txt",
+          "testRef": "test/oracle-facade-accounting.test.mjs",
+          "bodyHash": "62430a843571ca89a56a4445e7be2f65ac0d5d9b62d91ed3149b227b5e648b09"
+        },
+        {
+          "id": "NC-FA-drift",
+          "logRef": "docs/blackboard/evidence/BB-108/fa6-underflow.txt",
+          "testRef": "test/oracle-facade-accounting.test.mjs",
+          "bodyHash": "569c28e86cbbf9435a6f3f007b0b71d0cab6e3e6abcb63b98733ced0f0d1af60"
+        }
+      ]
+    },
+    {
+      "id": "FA7",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-108/fa7-docs.txt",
+        "docs/blackboard/evidence/BB-108/docs.txt",
+        "docs/blackboard/evidence/BB-108/repository.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-FA-docs",
+          "logRef": "docs/blackboard/evidence/BB-108/fa7-docs.txt",
+          "testRef": "test/oracle-facade-accounting.test.mjs",
+          "bodyHash": "214b582442a9f323922e532c4bac64a94f93ada83d5225566d81919e4f8723b7"
+        }
+      ]
+    }
+  ]
+}
