@@ -1,0 +1,67 @@
+TAP version 13
+# Subtest: kernel exposes the required public exports from the package root
+ok 1 - kernel exposes the required public exports from the package root
+  ---
+  duration_ms: 12.363253
+  type: 'test'
+  ...
+# Subtest: implementation imports stay on the public package root
+ok 2 - implementation imports stay on the public package root
+  ---
+  duration_ms: 2.80462
+  type: 'test'
+  ...
+# Subtest: Core is imported only through its public entry
+ok 3 - Core is imported only through its public entry
+  ---
+  duration_ms: 1.24992
+  type: 'test'
+  ...
+# Subtest: deep imports are detected and rejected
+ok 4 - deep imports are detected and rejected
+  ---
+  duration_ms: 0.300914
+  type: 'test'
+  ...
+# Subtest: local ledger, evidence, accounting or audit reimplementations are detected
+ok 5 - local ledger, evidence, accounting or audit reimplementations are detected
+  ---
+  duration_ms: 1.495141
+  type: 'test'
+  ...
+# Subtest: direct Harbor imports or spawns are detected
+ok 6 - direct Harbor imports or spawns are detected
+  ---
+  duration_ms: 1.197327
+  type: 'test'
+  ...
+# Subtest: preflight fails closed on an incompatible substrate manifest
+ok 7 - preflight fails closed on an incompatible substrate manifest
+  ---
+  duration_ms: 6.194627
+  type: 'test'
+  ...
+# Subtest: preflight requires BB-065 DONE and stops without fallback
+ok 8 - preflight requires BB-065 DONE and stops without fallback
+  ---
+  duration_ms: 1.748808
+  type: 'test'
+  ...
+# Subtest: substrate descriptor validates through the kernel port contract only
+ok 9 - substrate descriptor validates through the kernel port contract only
+  ---
+  duration_ms: 1.215171
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 85.924845
+
+
+exitCode=0

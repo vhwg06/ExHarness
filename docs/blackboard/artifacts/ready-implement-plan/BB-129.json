@@ -1,0 +1,190 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-129",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-129.json",
+    "hash": "521c19c7359ac6e08272ec69cb4c78c3b5fde831490b9d17bd12ffbe3af36555"
+  },
+  "scope": [
+    "agent-tools.deliver-slice.review-handoff"
+  ],
+  "outOfScope": [
+    "Generic GitHub/GitLab automation, PR publication and CI adapter (BB-068).",
+    "Full installable distribution and release claims (BB-073/076)."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
+    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+  ],
+  "invariants": [
+    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Compare raw SHA, binary Git diff, and incremental Git bundle. Prefer a content-addressed external output directory containing a manifest, binary patch for review and a verified incremental bundle when exact commit retention is required.",
+    "Use a private transport ref only in a temporary export repository to construct the bundle; do not silently create a source branch or push a PR. Bind base prerequisites explicitly.",
+    "Publish atomically before cleanup; exclude prompts and credentials. Packaging is not publication approval or a product-value verdict; SCM bridge remains BB-068."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/README.md",
+      "docs/blackboard/evidence/BB-129/discovery.json",
+      "docs/blackboard/process/delivery-value-improvement-research.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/src/review-bundle.js",
+      "packages/agent-tools/test/review-bundle.test.js"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/review-bundle.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/README.md",
+      "packages/agent-tools/src/**",
+      "packages/agentic-system/src/**",
+      "packages/agent-tools/test/**",
+      "packages/agentic-system/test/**",
+      "docs/blackboard/process/delivery-value-improvement-research.md",
+      "docs/blackboard/evidence/BB-129/discovery.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/README.md",
+      "packages/agent-tools/src/review-bundle.js",
+      "packages/agent-tools/test/review-bundle.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
+    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "REVIEW_ARTIFACT",
+      "statement": "Bundle contains exact base/candidate/tree, binary-capable patch or Git objects, changed-path summary and evaluator/result/log digests, with publication completed before scratch cleanup.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    },
+    {
+      "id": "FRESH_REPLAY",
+      "statement": "A fresh clone at the declared base imports/reconstructs the exact candidate and reruns the pinned evaluator; mismatched base, corrupted bundle and missing evidence fail explicitly.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agent-tools/test/review-bundle.test.js"
+    },
+    {
+      "id": "agent-tools-regression",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+      "criterionIds": [
+        "REVIEW_ARTIFACT",
+        "FRESH_REPLAY"
+      ]
+    },
+    {
+      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "criterionIds": [
+        "REVIEW_ARTIFACT",
+        "FRESH_REPLAY"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "REVIEW_ARTIFACT",
+        "FRESH_REPLAY"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Corrupted bundle must fail digest verification before import",
+    "A different base cannot be silently used for exact candidate replay"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_129_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "FRESH_REPLAY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/review-bundle.test.js",
+      "testTitle": "BB-129 N1 Corrupted bundle must fail digest verification before import",
+      "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NEG_129_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "FRESH_REPLAY",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/review-bundle.test.js",
+      "testTitle": "BB-129 N2 A different base cannot be silently used for exact candidate replay",
+      "subjectSymbol": "runDeliverSlice"
+    }
+  ],
+  "researchGaps": [
+    "Prototype incremental bundle generation/import without mutating source refs; decide binary/large-output limits and failure cleanup; measure fresh reviewer steps before Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/observation.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Turn a local accepted SHA into a change another developer can review and use.",
+    "measurement": "Exact candidate tree reconstructed in a fresh clone with no source worktree/conversation; timed reviewer steps and replay coverage.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
+  }
+}
