@@ -13,18 +13,21 @@
     "oracle.exact-requirement.agent-task"
   ],
   "outOfScope": [
-    "Lexical, semantic, graph or CURRENT retrieval.",
-    "Rewriting BB-089 Backend/QA adoption.",
-    "Mandatory requiredFiles; widening AgentTaskStatus.",
-    "Oracle/Core/agentic-system packages; BB-097 adapters, process-runner, tests; BB-098 tests.",
+    "Lexical, semantic, graph or CURRENT retrieval for agent-tools (objective: EXACT declared-file only).",
+    "Rewriting BB-089 Backend/QA production adoption (different consumer).",
+    "Making requiredFiles mandatory; widening AgentTaskStatus with CONTEXT_UNSATISFIED.",
+    "Edits to packages/oracle, packages/core-harness, packages/agentic-system; BB-097 tool-adapters.js, process-runner.js, agent-tools.test.js; BB-098 run-trace.test.js.",
     "CLI, MCP, Backend adapter, recovery, deliver (BB-100/101/103/104).",
-    "BB-054 and BB-065."
+    "BB-054 and BB-065 (not delivered; not prerequisites)."
   ],
   "constraints": [
-    "New code in packages/agent-tools/src/task-context.js; tests in packages/agent-tools/test/task-context.test.js titled CX1..CX6 plus a space, { timeout: 60000 }.",
-    "Import Oracle from ../../oracle/src/index.js (createOracleContextResolver, createExactRepositoryProvider, createSourceCatalog, createRetrievalPlanner, assertConsumableContextResolution, defineContextRequirement, DurabilityFailure).",
-    "supervisor.js only adds resolve/project/grounded-prompt when requiredFiles is non-empty; invocationObserver stays default-null.",
-    "Living docs under docs/living/system/agent-tools/ must not contain Blackboard ids."
+    "Oracle remains EXACT declared-file resolution via createOracleContextResolver; no lexical, semantic or graph retrieval.",
+    "requiredFiles is optional; omitted or [] callers stay byte-identical (no catalog, same frozen task keys).",
+    "UNSATISFIED, STALE or budget-exhausted resolution throws AgentTaskContextError code CONTEXT_UNSATISFIED before createLocalGitWorkspace and before spawn.",
+    "New modules: packages/agent-tools/src/task-context.js and packages/agent-tools/test/task-context.test.js (titles CX1..CX6 plus a space, { timeout: 60000 }).",
+    "Import Oracle from ../../oracle/src/index.js: createOracleContextResolver, createExactRepositoryProvider, createSourceCatalog, createRetrievalPlanner, assertConsumableContextResolution, defineContextRequirement, DurabilityFailure.",
+    "supervisor.js only calls resolveAgentTaskContext/projectAgentTaskContext when requiredFiles is non-empty; invocationObserver stays default-null.",
+    "Living docs under docs/living/system/agent-tools/ must not contain Blackboard ids; BB-089 is not rewritten."
   ],
   "invariants": [
     "UNSATISFIED, STALE or budget-exhausted resolution blocks before any agent process starts.",
@@ -81,9 +84,14 @@
       "docs/blackboard/evidence/BB-100/productization-probe-result.json",
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      "packages/oracle/src/index.js",
       "packages/oracle/src/context-resolution.js",
+      "packages/oracle/src/source-catalog.js",
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/src/resolution-durability.js",
       "packages/agentic-system/src/local-git-workspace.js",
       "docs/living/system/agent-tools/state.md",
+      "docs/living/system/oracle/state.md",
       "docs/blackboard/artifacts/ready-implement-plan/BB-089.json"
     ],
     "expectedNew": [
@@ -97,11 +105,11 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Schema [CX1]: D1 on validateAgentTask; export AgentTaskContextError, CONTEXT_UNSATISFIED, GROUNDED_CONTEXT_HEADER, resolveAgentTaskContext, projectAgentTaskContext, createGitRepositoryReader from task-context.js and index.js. Tests: \"CX1 optional requiredFiles maps to EXACT ContextRequirement\"; \"CX1 path with .. is rejected\"; \"CX1 absolute path is rejected\".",
-    "S2 — Resolve/project [CX2,CX3]: D2–D5. Tests: \"CX2 consumable items project into prompt and worktree with sourceRef\"; \"CX2 grounded context files are git-excluded from the candidate\"; \"CX3 missing required file does not spawn\"; \"CX3 budget exhaustion does not spawn\" (bytes 2 and 1); \"CX3 stale snapshot does not spawn\".",
-    "S3 — Default [CX4]: \"CX4 tasks without requiredFiles never construct Oracle\" (module-mock counts 0; repositoryReader unused; fake-CLI ACCEPTED). agent-tools.test.js and run-trace.test.js unmodified.",
-    "S4 — Docs [CX5]: D8. \"CX5 living docs describe the agent-tools Oracle consumer\" asserts requiredFiles/EXACT/prefix/exclude/AgentTaskContextError and no /\\bBB-\\d+\\b/.",
-    "S5 — Scope [CX6]: D9. \"CX6 write scope excludes packages/oracle\". Then test:agent-tools, verify:current-docs, npm test."
+    "S1 — Schema [CX1, cx1-schema]: packages/agent-tools/src/task-context.js exports AgentTaskContextError, CONTEXT_UNSATISFIED, GROUNDED_CONTEXT_HEADER, resolveAgentTaskContext, projectAgentTaskContext, createGitRepositoryReader; packages/agent-tools/src/index.js re-exports them; validateAgentTask in packages/agent-tools/src/supervisor.js accepts optional requiredFiles. Tests in packages/agent-tools/test/task-context.test.js: \"CX1 optional requiredFiles maps to EXACT ContextRequirement\"; \"CX1 path with .. is rejected\"; \"CX1 absolute path is rejected\".",
+    "S2 — Resolve/project [CX2, CX3, cx2-project, cx3-block]: resolveAgentTaskContext and projectAgentTaskContext in task-context.js; runSupervisedTask in supervisor.js calls them before createLocalGitWorkspace / after worktree exists. Tests: \"CX2 consumable items project into prompt and worktree with sourceRef\"; \"CX2 grounded context files are git-excluded from the candidate\"; \"CX3 missing required file does not spawn\"; \"CX3 budget exhaustion does not spawn\"; \"CX3 stale snapshot does not spawn\".",
+    "S3 — Default [CX4, cx4-default]: resolveAgentTaskContext returns {used:false} with zero createSourceCatalog/createExactRepositoryProvider/createRetrievalPlanner/createOracleContextResolver calls when requiredFiles is omitted or []. Test: \"CX4 tasks without requiredFiles never construct Oracle\". packages/agent-tools/test/agent-tools.test.js and run-trace.test.js unmodified.",
+    "S4 — Docs [CX5, cx5-docs, docs]: write docs/living/system/agent-tools/context.md; update docs/living/system/agent-tools/state.md and packages/agent-tools/README.md. Test: \"CX5 living docs describe the agent-tools Oracle consumer\".",
+    "S5 — Scope [CX6, cx6-scope, scope]: packages/agent-tools/test/task-context-scope-audit.mjs exports/reuses auditPaths. Test: \"CX6 write scope excludes packages/oracle\". Then npm run test:agent-tools, npm run verify:current-docs, npm test."
   ],
   "acceptanceCriteria": [
     {
@@ -228,12 +236,16 @@
       "verificationIds": ["cx1-schema"],
       "decisionIndexes": [0, 1],
       "sourceRefs": [
-        "packages/oracle/src/context-resolution.js",
-        "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json"
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+        "packages/agent-tools/src/supervisor.js",
+        "docs/blackboard/process/agent-tool-research/BB-102.md",
+        "packages/oracle/src/context-resolution.js"
       ],
       "sourceAnchors": [
-        { "ref": "packages/oracle/src/context-resolution.js", "match": "export function createOracleContextResolver(" },
-        { "ref": "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json", "match": "\"facadeResolvesExactGitRevision\": true" }
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"hasRequiredFilesField\": false" },
+        { "ref": "packages/agent-tools/src/supervisor.js", "match": "export function validateAgentTask(task)" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-102.md", "match": "snapshot: { mode: \"EXACT\", ref: revision }" },
+        { "ref": "packages/oracle/src/context-resolution.js", "match": "export function createOracleContextResolver(" }
       ]
     },
     {
@@ -243,10 +255,15 @@
       "verificationIds": ["cx2-project"],
       "decisionIndexes": [3],
       "sourceRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-102.md",
+        "packages/oracle/src/source-catalog.js",
         "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json"
       ],
       "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json", "match": "\"contextWriteDirtiesWorktreeUntilExcluded\": true" }
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-102.md", "match": "ExHarness grounded context:" },
+        { "ref": "packages/oracle/src/source-catalog.js", "match": "kind:'SOURCE_REF',ref:file.sourceRef" },
+        { "ref": "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json", "match": "\"contextWriteDirtiesWorktreeUntilExcluded\": true" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-102.md", "match": "do not import `backendContextRequirement`" }
       ]
     },
     {
@@ -257,11 +274,14 @@
       "decisionIndexes": [2, 4],
       "sourceRefs": [
         "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json",
-        "packages/agent-tools/src/supervisor.js"
+        "packages/agentic-system/src/local-git-workspace.js",
+        "docs/blackboard/process/agent-tool-research/BB-102.md"
       ],
       "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json", "match": "\"agentTaskStatusHasNoContextValue\": true" },
-        { "ref": "packages/agent-tools/src/supervisor.js", "match": "invocationObserver = null" }
+        { "ref": "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json", "match": "\"budget2\": \"BUDGET_EXHAUSTED\"" },
+        { "ref": "packages/agentic-system/src/local-git-workspace.js", "match": "throw unsafe(\"parent traversal\")" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-102.md", "match": "never construct a catalog and never throw" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-102.md", "match": "throws before `createLocalGitWorkspace`" }
       ]
     },
     {
@@ -272,10 +292,15 @@
       "decisionIndexes": [7],
       "sourceRefs": [
         "docs/living/system/agent-tools/state.md",
-        "docs/blackboard/artifacts/ready-implement-plan/BB-089.json"
+        "docs/blackboard/artifacts/ready-implement-plan/BB-089.json",
+        "docs/blackboard/process/agent-tool-research/BB-102.md",
+        "docs/living/system/oracle/state.md"
       ],
       "sourceAnchors": [
-        { "ref": "docs/living/system/agent-tools/state.md", "match": "AGENT_TASK_V1 { id, repositoryRoot, baseRevision, prompt, verifications[] }" }
+        { "ref": "docs/living/system/agent-tools/state.md", "match": "AGENT_TASK_V1 { id, repositoryRoot, baseRevision, prompt, verifications[] }" },
+        { "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-089.json", "match": "oracle.adoption.backend-context" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-102.md", "match": "this task does not rewrite it" },
+        { "ref": "docs/living/system/oracle/state.md", "match": "resolveBackendContext(order, { repositoryReader })" }
       ]
     },
     {
@@ -286,10 +311,14 @@
       "decisionIndexes": [6, 8],
       "sourceRefs": [
         "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+        "packages/oracle/src/index.js",
         "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json"
       ],
       "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"hasRequiredFilesField\": false" }
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"hasRequiredFilesField\": false" },
+        { "ref": "packages/oracle/src/index.js", "match": "export { createOracleContextResolver } from './context-resolution.js'" },
+        { "ref": "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json", "match": "\"assertConsumableContextResolution\"" },
+        { "ref": "docs/blackboard/evidence/BB-102/oracle-context-probe-result.json", "match": "\"stale\": \"STALE_DURING_RESOLUTION\"" }
       ]
     }
   ],
