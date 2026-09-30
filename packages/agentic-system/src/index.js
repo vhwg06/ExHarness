@@ -197,3 +197,42 @@ export {
   LocalVerificationReason,
   createLocalCommandVerifier
 } from "./local-command-verifier.js";
+export {
+  DOMAIN_EXECUTION_INPUT_KIND,
+  createDomainExecutionInput,
+  domainExecutionInputRef,
+  isDomainExecutionInputRef,
+  resolveContractExecutionInput
+} from "./domain-execution-input.js";
+export {
+  ObligationCurrentnessStatus,
+  activationKey,
+  createDomainActivationSource,
+  createObligationCurrentnessReader,
+  obligationCurrentnessFromLineage
+} from "./domain-activation-source.js";
+export {ActivationOutcome,ActivationReason,createDomainActivation} from "./domain-activation.js";
+export {createDomainActivationHost} from "./domain-activation-host.js";
+export {createFrontendBackendDomainRuntime} from "./domain-runtime-composition.js";
+export {BACKEND_DOMAIN,createBackendExecutionStrategy} from "./backend-execution-strategy.js";
+export {
+  FrontendContextSchema,
+  FrontendEvidenceClaim,
+  FrontendObjectiveSchema,
+  FrontendRunAction,
+  FrontendWorkResultSchema,
+  FrontendWorkStatus,
+  defineFrontendObjective,
+  makeFrontendWorkOrder,
+  parseFrontendWorkOrder
+} from "./frontend-contracts.js";
+export {
+  FRONTEND_REQUIRED_EVIDENCE_CLAIMS,
+  FrontendCompletionAction,
+  FrontendCompletionReason,
+  assessFrontendCompletion,
+  defineFrontendCompletionPolicy
+} from "./frontend-completion.js";
+export {FrontendRecoveryAction,createFrontendWorker,createInMemoryFrontendSessionStore} from "./frontend-worker.js";
+export {prepareFrontendObjective,recoverPreparedFrontendObjective,runPreparedFrontendObjective} from "./frontend-application.js";
+export {FRONTEND_DOMAIN,createFrontendExecutionStrategy} from "./frontend-execution-strategy.js";
