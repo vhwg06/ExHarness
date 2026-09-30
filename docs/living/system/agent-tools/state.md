@@ -99,6 +99,15 @@ start a second lineage when the worktree, digest, source HEAD or handle currency
 does not check out. Without `recoveryDir` the temporary worktree is still
 disposed in a `finally` block.
 
+## Operator deliver slice
+
+One local Backend-then-QA delivery slice is available as
+`exharness-agent deliver --slice <manifest.json>`. The manifest shape, the QA
+binding to the accepted Backend commit, resume through the recovery handle and
+missing-tool behavior are described in `operator.md`. The slice is local
+composition feasibility only: not first-slice product-value evidence and not a
+controlled-benchmark pilot.
+
 ## MCP verification queries
 
 The stdio MCP server (`createExharnessMcpVerifyServer` in `mcp-server.js`, details
