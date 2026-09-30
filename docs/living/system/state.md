@@ -93,6 +93,7 @@ The concrete `createDurableBackendQaWorkflow(...)` path binds Backend -> QA exec
 - Oracle owns explicit source pull/dereference/adaptation into application-shaped context.
 - ExHarness Core owns agent execution mechanics, cognition, evidence/trust, lifecycle and recovery primitives.
 - Concrete infrastructure owns repository/artifact access, executors, storage, filesystem/network/process authority and credentials.
+- Agent tools (`packages/agent-tools/`) own outer supervision of external CLI coding agents (Codex, Kiro, agy): the agent edits a temporary git worktree, and ExHarness owns candidate commits, declared verification, bounded feedback retry and promotion; the agent's claim is telemetry only. It is not a sandbox (see `agent-tools/state.md`).
 
 ## Delivered facts
 
@@ -117,7 +118,6 @@ The concrete `createDurableBackendQaWorkflow(...)` path binds Backend -> QA exec
 - follow-up findings require a provenance ref before current/existing/new-work reconciliation.
 - JSON-backed Board state survives a new Orchestrator instance.
 - No generic Worker, WorkOrder, Advisor, role registry, workflow graph, Teacher registry, Reviewer registry or generic workflow Orchestrator/DSL is implemented.
-- `packages/agent-tools/` supervises external CLI coding agents (Codex, Kiro, agy) from outside Core: the agent edits a temporary git worktree, and ExHarness owns candidate commits, declared verification, bounded feedback retry and promotion; the agent's claim is telemetry only. It is not a sandbox (see `agent-tools/state.md`).
 
 The concrete `ApplicationOrchestrator` is application workflow/Board control, not a generic workflow engine.
 
