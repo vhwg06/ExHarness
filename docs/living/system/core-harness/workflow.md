@@ -182,6 +182,49 @@ A confirmed mutating effect may therefore be ahead of Core candidate persistence
 
 Tracing and semantic memory are context/evidence inputs, never recovery authority by themselves.
 
+## DETACHED OPERATION PATH
+
+Detached scheduling is a transport projection over the existing effect boundary; it adds no new correctness, acceptance or external-effect authority:
+
+```text
+manager.capability(name).execute(input, runtime)
+  -> existing effect.operationKey()               (exact semantic identity)
+  -> durable RUNNING record, generation 1         (compare-and-set persisted first)
+  -> handle returns immediately                   (background continues independently)
+  -> underlying effect capability runs with AbortSignal + scheduler binding
+  -> journal INTENDED -> DISPATCHED -> CONFIRMED | UNKNOWN   (unchanged authority)
+  -> scheduler converges to exactly one terminal
+       SUCCEEDED (only from journal CONFIRMED)
+     | FAILED    (deterministic pre-dispatch failure only)
+     | CANCELLED (cancel fence, per replay-policy matrix)
+     | UNKNOWN   (unresolved ambiguity, escalated explicitly)
+```
+
+Recovery and cancellation ordering:
+
+```text
+manager.recover()
+  -> CAS-increment generation (one current generation across managers)
+  -> verify exact capability/input/call/turn/action/effect binding, else UNKNOWN
+  -> CONFIRMED        -> SUCCEEDED with the confirmed result
+  -> absent/INTENDED  -> execute the exact capability (no dispatch recorded yet)
+  -> DISPATCHED/UNKNOWN -> existing reconcileEffectOperation()
+       CONTINUE -> SUCCEEDED | RETRY (same operation, no cancel fence) | ESCALATE -> UNKNOWN
+
+manager.cancel(operationId)
+  -> CAS RUNNING -> CANCEL_REQUESTED (fences dispatch/retry) + cooperative abort
+  -> CONFIRMED at settle time -> SUCCEEDED (confirmation wins the race)
+  -> pre-dispatch  -> CANCELLED (all policies)
+  -> post-dispatch -> PURE: CANCELLED once settled
+                      IDEMPOTENT: UNKNOWN unless confirmed
+                      OBSERVABLE: SUCCEEDED if observed satisfied,
+                                  CANCELLED if settled and observed absent,
+                                  UNKNOWN on observer failure or unsettled attempt
+                      NON_RECONCILABLE: UNKNOWN
+```
+
+Consumers observe transitions with monotonic sequence and deterministic transition ids and must deduplicate by transition id; repeated delivery never creates a second semantic completion, and stale generations cannot publish authoritative terminal transitions. Synchronous capabilities keep working unchanged alongside detached wrappers. Wakeup/steering integration and cache-stable context projection over these updates are explicitly out of scope here.
+
 ## CURRENT ABSTRACTION BOUNDARY
 
 The concrete recovery composition shows insufficient repeated pressure for a higher-level executable Core lifecycle facade.
