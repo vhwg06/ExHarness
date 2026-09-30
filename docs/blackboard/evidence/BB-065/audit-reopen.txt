@@ -1,0 +1,67 @@
+TAP version 13
+# Subtest: a fresh process reopens the untouched experiment and every attempt audits PASS
+ok 1 - a fresh process reopens the untouched experiment and every attempt audits PASS
+  ---
+  duration_ms: 513.163654
+  type: 'test'
+  ...
+# Subtest: a tampered artifact after settlement fails audit
+ok 2 - a tampered artifact after settlement fails audit
+  ---
+  duration_ms: 94.579395
+  type: 'test'
+  ...
+# Subtest: a tampered verifier result or raw Harbor result fails audit
+ok 3 - a tampered verifier result or raw Harbor result fails audit
+  ---
+  duration_ms: 165.713511
+  type: 'test'
+  ...
+# Subtest: a missing verifier output or missing raw result fails audit
+ok 4 - a missing verifier output or missing raw result fails audit
+  ---
+  duration_ms: 238.358688
+  type: 'test'
+  ...
+# Subtest: zero-filling unknown usage in a settled record fails audit
+ok 5 - zero-filling unknown usage in a settled record fails audit
+  ---
+  duration_ms: 74.731685
+  type: 'test'
+  ...
+# Subtest: a rewritten outcome (NOT_EVALUATED forged to REJECTED) fails audit
+ok 6 - a rewritten outcome (NOT_EVALUATED forged to REJECTED) fails audit
+  ---
+  duration_ms: 85.113894
+  type: 'test'
+  ...
+# Subtest: a removed attempt (retry erasing the failed original) fails audit
+ok 7 - a removed attempt (retry erasing the failed original) fails audit
+  ---
+  duration_ms: 78.871771
+  type: 'test'
+  ...
+# Subtest: a STARTED attempt that never settled is reported, not silently dropped
+ok 8 - a STARTED attempt that never settled is reported, not silently dropped
+  ---
+  duration_ms: 54.797461
+  type: 'test'
+  ...
+# Subtest: a changed registration (fixed factor edited after STARTED) fails audit
+ok 9 - a changed registration (fixed factor edited after STARTED) fails audit
+  ---
+  duration_ms: 113.881694
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1492.681759
+
+
+exitCode=0

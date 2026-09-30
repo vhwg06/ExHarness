@@ -1,0 +1,326 @@
+{
+  "mode": "local-calibration",
+  "status": "PASS",
+  "harbor": {
+    "substrate": "harbor",
+    "version": "0.23.0",
+    "distributionVersion": "0.23.0",
+    "commit": "1e5c5c6db929a10a140d05e606882c671ae20729",
+    "tag": "v0.23.0",
+    "sourceTreeDigest": "sha256:c2ade5874e901c2d36fc44ae9cb01db2450adf44b111fe18b598c743a6a79134"
+  },
+  "experimentId": "SUBSTRATE-LOCAL-CALIBRATION",
+  "registrationDigest": "sha256:35fa69cb4b0e573adea3959c3a438f557ae21e6b8526f32a7af7d6362c2c58fc",
+  "outputRoot": "/tmp/exharness-benchmark-substrate/local-calibration-2026-09-30T13-45-53-055Z-1437690/SUBSTRATE-LOCAL-CALIBRATION",
+  "codingModelCalls": 0,
+  "ledger": {
+    "events": 32,
+    "attempts": 16,
+    "settled": 16,
+    "retryPreserved": {
+      "retry": "FAILURE-RETRY-AFTER-TIMEOUT-attempt-1",
+      "of": "FAILURE-PROVIDER-TIMEOUT-attempt-1",
+      "originalStillSettled": true,
+      "originalQuality": "NOT_EVALUATED"
+    }
+  },
+  "distinctTrials": 16,
+  "cases": [
+    {
+      "caseId": "PASS-ORACLE",
+      "attemptId": "PASS-ORACLE-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-ddab9344106fb87f371faf84",
+      "observed": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 1
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:bd6200f275ae0c869b5c9df3b6a00c4abb7fe1f793c4105d3415b138d3cadb91"
+    },
+    {
+      "caseId": "PASS-ORACLE-REPEAT",
+      "attemptId": "PASS-ORACLE-REPEAT-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-9015d554d76c285bd6d48eac",
+      "observed": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 1
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:eaa2ede86312bf358bb62ef1790be04a6a4aa7eb097d163ec67019629805eb16"
+    },
+    {
+      "caseId": "PASS-NOP",
+      "attemptId": "PASS-NOP-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-17e8e4c9513cf07d9996a823",
+      "observed": {
+        "quality": "REJECTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 0
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:06e4f41f26adc3217a84f99009a1633549df036188208777ee57c754ece8d78b"
+    },
+    {
+      "caseId": "ARTIFACT-ORACLE",
+      "attemptId": "ARTIFACT-ORACLE-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-43c1afffc5cbd35a8f57582f",
+      "observed": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 2
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:fedd8fe2092fbd3f04274e41b85c7ef050e2ea0d7a09ddf6aa82e455b4d26fe2"
+    },
+    {
+      "caseId": "ARTIFACT-NOP",
+      "attemptId": "ARTIFACT-NOP-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-03a1788076842118ead938c2",
+      "observed": {
+        "quality": "REJECTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 0
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:93d0ec0a0118800aa4e72593fed1c02b8cc588108b9d8d86639aabe6dafba981"
+    },
+    {
+      "caseId": "REJECT-PRODUCER-SUCCESS",
+      "attemptId": "REJECT-PRODUCER-SUCCESS-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-888f88879bc2b20ec7f4c7af",
+      "observed": {
+        "quality": "REJECTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 1
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:fb3ed553a66e0f33e27d99752bf25527e6a0902c37e44723c81d651fd7fabbdd"
+    },
+    {
+      "caseId": "FAILURE-BUDGET-VALID",
+      "attemptId": "FAILURE-BUDGET-VALID-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-42ace0af3d6b877a9a318f76",
+      "observed": {
+        "quality": "ACCEPTED",
+        "termination": "BUDGET_EXHAUSTED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "PARTIAL",
+        "producerStatus": "BUDGET_STOP",
+        "artifactFiles": 1
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:685d35b8bf8e276b234a70d9e518495a2c4ea57c0308ecb96cd5a16eab6cfc07"
+    },
+    {
+      "caseId": "FAILURE-USAGE-REPORTED-ZERO",
+      "attemptId": "FAILURE-USAGE-REPORTED-ZERO-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-72189ba4afb115131a111a86",
+      "observed": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "PARTIAL",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 1
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:892637a5d68ac5dc82ad46809f595b83a5206cb214fe13bcf8d9dcd604f981cd"
+    },
+    {
+      "caseId": "FAILURE-PROVIDER-TIMEOUT",
+      "attemptId": "FAILURE-PROVIDER-TIMEOUT-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-fc51f56c383fbfe06b671d77",
+      "observed": {
+        "quality": "NOT_EVALUATED",
+        "termination": "AGENT_ERROR",
+        "providerStatus": "PROVIDER_TIMEOUT",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "ERROR",
+        "artifactFiles": 0
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:80bf187c9c3cc91b57d79e9bc6c33d4faa1d15a44a445765f963c932a780a548"
+    },
+    {
+      "caseId": "FAILURE-RETRY-AFTER-TIMEOUT",
+      "attemptId": "FAILURE-RETRY-AFTER-TIMEOUT-attempt-1",
+      "retryOfAttemptId": "FAILURE-PROVIDER-TIMEOUT-attempt-1",
+      "trial": "x-a0a9410d2e912cbf0133ea40",
+      "observed": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 1
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:bc72c8b1ca0bc69c045237766404e458ae584b7dedf3f0f1814b8a72a6d54cab"
+    },
+    {
+      "caseId": "FAILURE-RATE-LIMIT",
+      "attemptId": "FAILURE-RATE-LIMIT-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-7112df797ab3f12250f4b96e",
+      "observed": {
+        "quality": "NOT_EVALUATED",
+        "termination": "AGENT_ERROR",
+        "providerStatus": "RATE_LIMITED",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "ERROR",
+        "artifactFiles": 0
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:9abe2acb9ba726be1dd15e3d992b6000a95bf85d84411229579142df6fcda43e"
+    },
+    {
+      "caseId": "FAILURE-PROVIDER-5XX",
+      "attemptId": "FAILURE-PROVIDER-5XX-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-dbfa43ea1d6dcbfcc2714294",
+      "observed": {
+        "quality": "NOT_EVALUATED",
+        "termination": "AGENT_ERROR",
+        "providerStatus": "PROVIDER_5XX",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "ERROR",
+        "artifactFiles": 0
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:ef24a5a06b3ff9a8a7bd4e3665431f47d6ad02e7650d165bd278e980e9f29e6c"
+    },
+    {
+      "caseId": "FAILURE-VERIFIER-CRASH",
+      "attemptId": "FAILURE-VERIFIER-CRASH-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-a1d0c8765b92eadeb33d3a67",
+      "observed": {
+        "quality": "NOT_EVALUATED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "VERIFIER_ERROR",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 1
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:ce8ce7aee2b8acf69ea1ff42b90220bb8b17c1cc30bcb21cb0d81a1887c493a6"
+    },
+    {
+      "caseId": "FAILURE-ARTIFACT-EXTRACTION",
+      "attemptId": "FAILURE-ARTIFACT-EXTRACTION-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-d929025476c65a47b68971fc",
+      "observed": {
+        "quality": "NOT_EVALUATED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "ARTIFACT_EXTRACTION",
+        "extractionStatus": "FAILED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS",
+        "artifactFiles": 0
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:f5012a3e458ff333e4a4713f3947bd8ab7e984d43dc4746c3487c576219614ce"
+    },
+    {
+      "caseId": "FAILURE-AGENT-TIMEOUT",
+      "attemptId": "FAILURE-AGENT-TIMEOUT-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-10d84742906880d6d683a063",
+      "observed": {
+        "quality": "REJECTED",
+        "termination": "AGENT_TIMEOUT",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "TIMEOUT",
+        "artifactFiles": 0
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:27e79273a62c5ae11f1610c324ba25754a05eb01ac28b84e9aa155aa7acfa251"
+    },
+    {
+      "caseId": "FAILURE-BOOTSTRAP",
+      "attemptId": "FAILURE-BOOTSTRAP-attempt-1",
+      "retryOfAttemptId": null,
+      "trial": "x-47f101621af353492c9f8dc8",
+      "observed": {
+        "quality": "NOT_EVALUATED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "ADAPTER_SETUP",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "NOT_STARTED",
+        "artifactFiles": 0
+      },
+      "mismatches": [],
+      "recordDigest": "sha256:9661d9e2af0f116aa8335c8c7bbb98f1091cb51d86a3635aa6960b113ba0dc20"
+    }
+  ],
+  "freshProcessAudit": {
+    "status": "PASS",
+    "attempts": 16,
+    "findings": []
+  }
+}
+
+
+exitCode=0
