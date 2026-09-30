@@ -1,0 +1,99 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-090-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-090.json",
+    "hash": "e13d52a53a99f4421ad2559e98c2b912e623b6e5dcd2d8ddf135cf9101a7d186"
+  },
+  "candidateSha": "09d86857db753281dbededcf238ae1582376530f",
+  "baselineSha": "78b986dc491d748f83892518c543172eb59ee821",
+  "candidateTree": "6b22cdac732ae1f8facb84ed11136c9027bc2250",
+  "verificationRuns": [
+    {
+      "id": "binding-schema",
+      "command": "node --test --test-name-pattern=\"^NB1 \" test/blackboard-negative-case-binding.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "09d86857db753281dbededcf238ae1582376530f",
+      "logRef": "docs/blackboard/evidence/BB-090/binding-schema.txt",
+      "logHash": "5a4dd65cf3dfe0a61a9a4a3e2b9c6250cf2c7d546b82c03a54d11f57d98bf3b5"
+    },
+    {
+      "id": "binding-evidence",
+      "command": "node --test --test-name-pattern=\"^NB2 \" test/blackboard-negative-case-binding.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "09d86857db753281dbededcf238ae1582376530f",
+      "logRef": "docs/blackboard/evidence/BB-090/binding-evidence.txt",
+      "logHash": "304f28c6dcfed8d6c76ef8d48d9cb5b8996e7852c65af49039cf67395a6b70f0"
+    },
+    {
+      "id": "binding-judgment",
+      "command": "node --test --test-name-pattern=\"^NB3 \" test/blackboard-negative-case-binding.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "09d86857db753281dbededcf238ae1582376530f",
+      "logRef": "docs/blackboard/evidence/BB-090/binding-judgment.txt",
+      "logHash": "ae11522acc08af17f2d70dfd150617f3b14ce49a9616148cc819f5447101e041"
+    },
+    {
+      "id": "bb064-reproduction",
+      "command": "node --test --test-name-pattern=\"^NB4 \" test/blackboard-negative-case-binding.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "09d86857db753281dbededcf238ae1582376530f",
+      "logRef": "docs/blackboard/evidence/BB-090/bb064-reproduction.txt",
+      "logHash": "5c56bcbcfff987684a71cdcaca3a60a4d49393efe5614693ba85e27e1d0043d8"
+    },
+    {
+      "id": "blackboard-regression",
+      "command": "npm run verify:blackboard-context",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "09d86857db753281dbededcf238ae1582376530f",
+      "logRef": "docs/blackboard/evidence/BB-090/blackboard-regression.txt",
+      "logHash": "fdc4a1cc62bd1ed1ffc4a3701bb8d70e5bceb132fcd03292e841fede898ad467"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "09d86857db753281dbededcf238ae1582376530f",
+      "logRef": "docs/blackboard/evidence/BB-090/repository.txt",
+      "logHash": "3b01a8688f5bda759ecb309ec210769bb8435466a36ea15ce1a83b25a939f103"
+    }
+  ],
+  "claims": [
+    {
+      "id": "NB1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-090/binding-schema.txt",
+        "docs/blackboard/evidence/BB-090/blackboard-regression.txt"
+      ]
+    },
+    {
+      "id": "NB2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-090/binding-evidence.txt",
+        "docs/blackboard/evidence/BB-090/blackboard-regression.txt"
+      ]
+    },
+    {
+      "id": "NB3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-090/binding-judgment.txt",
+        "docs/blackboard/evidence/BB-090/blackboard-regression.txt"
+      ]
+    },
+    {
+      "id": "NB4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-090/bb064-reproduction.txt",
+        "docs/blackboard/evidence/BB-090/repository.txt"
+      ]
+    }
+  ]
+}
