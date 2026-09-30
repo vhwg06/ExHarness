@@ -1,0 +1,31 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-126",
+  "outcome": "An opt-in supervised retry policy stops repeated no-progress or unrecoverable setup failures and preserves enough failing evidence for useful repair, while still allowing a delayed valid fix.",
+  "currentProblem": "Executed CLAIM_SUCCESS_NO_EDIT fixture exhausts three attempts on one identical candidate and executes the same failing verifier three times. Current feedback is a bounded output tail, and every failure takes the same retry path.",
+  "scope": [
+    "agent-tools.supervisor.progress-policy"
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
+    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+  ],
+  "successCriteria": [
+    "The policy uses tree/content plus verification-failure fingerprints, not commit SHA alone, and distinguishes no progress, changed candidate, changing diagnostics and infrastructure setup failure.",
+    "Frozen repeated-failure fixtures dispatch fewer calls; delayed-fix and legitimate multi-step fixtures retain accepted quality; stop reasons and saved work are recorded without asserting model-level gains.",
+    "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/delivery-value-improvement-research.md",
+    "docs/blackboard/evidence/BB-126/discovery.json",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/agent-tools/src/recovery.js",
+    "packages/agent-tools/src/run-trace.js",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/agent-tools/observation.md"
+  ]
+}

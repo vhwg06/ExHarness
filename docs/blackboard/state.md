@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-124
+next-work-id: BB-131
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -42,13 +42,18 @@ NONE
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
 - BB-078 [WORKER/EXECUTION] — Implement durable detached operation scheduling
-- BB-093 [WORKER/EXECUTION] — Implement model-aware context budget profiles
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
-- BB-108 [WORKER/EXECUTION] — Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-123 [RESEARCH_SA/RESEARCH] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
+- BB-124 [RESEARCH_SA/RESEARCH] — Preserve truthful partial usage and per-field accounting coverage
+- BB-125 [RESEARCH_SA/RESEARCH] — Bind supervised resume to the exact task and execution contract
+- BB-126 [RESEARCH_SA/RESEARCH] — Stop repeated no-progress retries with evidence-bound feedback
+- BB-127 [RESEARCH_SA/RESEARCH] — Add externally pinned acceptance for local delivery slices
+- BB-128 [RESEARCH_SA/RESEARCH] — Expose delivered Grok and OpenCode adapters through operator delivery
+- BB-129 [RESEARCH_SA/RESEARCH] — Export a durable review bundle for the exact local candidate
+- BB-130 [RESEARCH_SA/RESEARCH] — Constrain local verifier child environment
 
 ## Dependency graph
 
@@ -95,8 +100,8 @@ BB-089 [DONE] <- BB-087
 BB-090 [DONE] <- BB-056
 BB-091 [DONE] <- BB-088
 BB-092 [DONE] <- BB-091
-BB-093 [WORKER_SCHEDULABLE] <- BB-092
-BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
+BB-093 [DONE] <- BB-092
+BB-094 [BLOCKED_BY BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
@@ -110,11 +115,18 @@ BB-104 [DONE] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
 BB-106 [WORKER_SCHEDULABLE] <- BB-082, BB-087, BB-088
 BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
-BB-108 [WORKER_SCHEDULABLE] <- BB-087, BB-088
+BB-108 [DONE] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097
 BB-121 [BLOCKED_BY BB-120] <- BB-100, BB-101, BB-120
 BB-122 [DONE] <- BB-097, BB-098
 BB-123 [RESEARCH_SCHEDULABLE] <- BB-105, BB-102
+BB-124 [RESEARCH_SCHEDULABLE] <- BB-098, BB-105, BB-123
+BB-125 [RESEARCH_SCHEDULABLE] <- BB-101
+BB-126 [RESEARCH_SCHEDULABLE] <- BB-125
+BB-127 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130, BB-125
+BB-128 [RESEARCH_SCHEDULABLE] <- BB-104, BB-122
+BB-129 [RESEARCH_SCHEDULABLE] <- BB-127
+BB-130 [RESEARCH_SCHEDULABLE] <- BB-096, BB-120
 ```
 
 ## Context semantics

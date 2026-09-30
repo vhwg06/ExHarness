@@ -1,0 +1,31 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-129",
+  "outcome": "A local delivery result includes a durable portable candidate and concise verification/provenance manifest that another developer can inspect and replay without the original worktree or agent conversation.",
+  "currentProblem": "Executed local delivery returns a SHA with no named retention ref and no patch/bundle field, then disposes temporary worktrees. The object is readable immediately; loss after GC was not executed. No portable fresh-review handoff is implemented.",
+  "scope": [
+    "agent-tools.deliver-slice.review-handoff"
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
+    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
+    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+  ],
+  "successCriteria": [
+    "Bundle contains exact base/candidate/tree, binary-capable patch or Git objects, changed-path summary and evaluator/result/log digests, with publication completed before scratch cleanup.",
+    "A fresh clone at the declared base imports/reconstructs the exact candidate and reruns the pinned evaluator; mismatched base, corrupted bundle and missing evidence fail explicitly.",
+    "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/delivery-value-improvement-research.md",
+    "docs/blackboard/evidence/BB-129/discovery.json",
+    "packages/agent-tools/src/deliver-slice.js",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "packages/agent-tools/README.md",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/agent-tools/observation.md"
+  ]
+}

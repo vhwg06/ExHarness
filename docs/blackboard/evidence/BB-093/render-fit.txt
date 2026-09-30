@@ -1,0 +1,68 @@
+TAP version 13
+# measured block envelope: 203 chars; declared blockEnvelopeChars: 512
+# fixture ascii: materialized=2945B rendered=3146 chars ceiling=8192
+# fixture quotes: materialized=2828B rendered=3029 chars ceiling=8192
+# fixture bmp: materialized=3919B rendered=2520 chars ceiling=8192
+# fixture astral: materialized=4148B rendered=2369 chars ceiling=8192
+# fixture near-ascii: materialized=6640B rendered=6841 chars ceiling=8192
+# fixture near-quotes: materialized=6640B rendered=6841 chars ceiling=8192
+# Subtest: render-fit envelope: the profile declares at least the Core-measured empty-block envelope
+ok 1 - render-fit envelope: the profile declares at least the Core-measured empty-block envelope
+  ---
+  duration_ms: 2.732951
+  type: 'test'
+  ...
+# Subtest: render-fit fixtures resolve at the derived budget and render within the ceiling
+ok 2 - render-fit fixtures resolve at the derived budget and render within the ceiling
+  ---
+  duration_ms: 20.440787
+  type: 'test'
+  ...
+# Subtest: render-fit rejects a declared blockEnvelopeChars smaller than the measured Core envelope
+ok 3 - render-fit rejects a declared blockEnvelopeChars smaller than the measured Core envelope
+  ---
+  duration_ms: 0.700779
+  type: 'test'
+  ...
+# Subtest: render-fit fails any fixture whose Core-rendered block exceeds the ceiling
+ok 4 - render-fit fails any fixture whose Core-rendered block exceeds the ceiling
+  ---
+  duration_ms: 0.427549
+  type: 'test'
+  ...
+# Subtest: render-fit near-bound ascii fixture fills the derived byte budget and renders within the ceiling
+ok 5 - render-fit near-bound ascii fixture fills the derived byte budget and renders within the ceiling
+  ---
+  duration_ms: 3.614805
+  type: 'test'
+  ...
+# Subtest: render-fit near-bound quotes fixture fills the derived byte budget and renders within the ceiling
+ok 6 - render-fit near-bound quotes fixture fills the derived byte budget and renders within the ceiling
+  ---
+  duration_ms: 3.491037
+  type: 'test'
+  ...
+# Subtest: render-fit one byte over budget resolves BUDGET_EXHAUSTED with no items
+ok 7 - render-fit one byte over budget resolves BUDGET_EXHAUSTED with no items
+  ---
+  duration_ms: 2.476715
+  type: 'test'
+  ...
+# Subtest: over-budget context reports BUDGET_EXHAUSTED with whole items dropped and kept content byte-identical
+ok 8 - over-budget context reports BUDGET_EXHAUSTED with whole items dropped and kept content byte-identical
+  ---
+  duration_ms: 3.9619
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 112.877675
+
+
+exitCode=0
