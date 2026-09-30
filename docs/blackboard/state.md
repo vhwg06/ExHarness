@@ -48,7 +48,6 @@ NONE
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-108 [WORKER/EXECUTION] — Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
-- BB-122 [WORKER/EXECUTION] — Add OpenCode as a supported agent tool
 - BB-123 [RESEARCH_SA/RESEARCH] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
 
 ## Dependency graph
@@ -114,7 +113,7 @@ BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [WORKER_SCHEDULABLE] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097
 BB-121 [BLOCKED_BY BB-120] <- BB-100, BB-101, BB-120
-BB-122 [WORKER_SCHEDULABLE] <- BB-097, BB-098
+BB-122 [DONE] <- BB-097, BB-098
 BB-123 [RESEARCH_SCHEDULABLE] <- BB-105, BB-102
 ```
 
