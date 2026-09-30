@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
+import { assertNegativeCaseEnforcement, checkBinding } from './blackboard-negative-case-binding.mjs';
 import { assertDeliveryArtifact, assertBinding, assertLivingDocs, canonical, hash, read, write, localPath, loadSubject, planHash, planContent, outcomes, verdict, fail, scopeContains } from './blackboard-delivery-contract.mjs';
 
 export const MODEL = 'jev-1.13.0';
@@ -82,6 +83,8 @@ export function materialize(root, id, { readiness = false } = {}) {
   const spec = read(root, 'docs/blackboard/jev-policy.json');
   check(spec.model === MODEL && spec.policy === POLICY, 'unsupported evaluator policy/model');
   check(spec.confidenceGate==null||spec.confidenceGate===false,'confidence may not override typed choice');
+  // No-retrofit threshold: fails before any provider call when enforced negatives are unbound.
+  assertNegativeCaseEnforcement(spec, id, plan);
   const subject = { workId: id, plan: { ref: task.contract.planRef, hash: planHash(plan) }, objective: plan.objective };
   const questions = {};
   const workerPlan = {
@@ -106,6 +109,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     sourceScope: plan.sourceScope,
     implementationSlices: plan.implementationSlices,
     negativeVerificationCases: plan.negativeVerificationCases,
+    negativeCaseBindings: plan.negativeCaseBindings,
     acceptanceCriteria: plan.acceptanceCriteria,
     invariantCoverage: plan.invariantCoverage,
     verificationPlan: plan.verificationPlan,
@@ -133,6 +137,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     sourceScope: plan.sourceScope,
     implementationSlices: plan.implementationSlices,
     negativeVerificationCases: plan.negativeVerificationCases,
+    negativeCaseBindings: plan.negativeCaseBindings,
     acceptanceCriteria: plan.acceptanceCriteria,
     invariantCoverage: plan.invariantCoverage,
     verificationPlan: plan.verificationPlan,
@@ -210,6 +215,7 @@ export function materialize(root, id, { readiness = false } = {}) {
       implementationSlices: 'Implementation slices cover the objective without unresolved design decisions.'
     };
     for (const [key, statement] of Object.entries(readinessStatements)) question(`readiness-${key}`, statement, `\`state.plan.${key}\` and \`state.evidence\``);
+    if (plan.negativeCaseBindings?.length) question('readiness-negativeCaseBindings', `Each of the ${plan.negativeVerificationCases.length} negative verification cases is bound to exactly one distinct executed test title, owning criterion, verification run and subject symbol that the worker test must invoke.`, '`state.plan.negativeVerificationCases`, `state.plan.negativeCaseBindings` and `state.evidence`');
     const refs = [...new Set([...objective.currentSourceRefs, ...plan.sourceSeams.requiredExisting])];
     if (objectiveScopedResearch) {
       const sourceBodies=new Map();
@@ -238,7 +244,8 @@ export function materialize(root, id, { readiness = false } = {}) {
         acceptanceCriteria: plan.acceptanceCriteria?.map(({ id, statement, verificationIds, evidenceRequired }) => ({ id, statement, verificationIds, evidenceRequired })),
         implementationSlices: plan.implementationSlices,
         verificationPlan: plan.verificationPlan,
-        negativeVerificationCases: plan.negativeVerificationCases
+        negativeVerificationCases: plan.negativeVerificationCases,
+        negativeCaseBindings: plan.negativeCaseBindings
       }],
       ['blackboard://plan/source-seams', {
         requiredExisting: plan.sourceSeams?.requiredExisting,
@@ -336,6 +343,23 @@ export function materialize(root, id, { readiness = false } = {}) {
     for (const c of plan.acceptanceCriteria) {
       check(claimIds.has(c.id), `missing evidence claim: ${c.id}`);
       question(c.id, `${c.statement} Required evidence: ${c.evidenceRequired.join('; ')}`, `\`state.evidence\` entry with id ${c.id}, its referenced contents in \`state.evidenceFiles\`, \`state.sources\`, and \`state.verification\` runs ${c.verificationIds.join(', ')}`);
+    }
+    if (plan.negativeCaseBindings?.length) {
+      // One atomic question per binding, carrying the exact extracted test body from the candidate.
+      const collected = new Map(evidence.claims.flatMap(c => (c.negativeCases ?? []).map(n => [n.id, { ...n, criterionId: c.id }])));
+      state.negativeCaseEvidence = plan.negativeCaseBindings.map(binding => {
+        const record = collected.get(binding.id);
+        const run = evidence.verificationRuns.find(v => v.id === binding.verificationId);
+        check(record && run && record.criterionId === binding.criterionId && record.testRef === binding.testRef && record.logRef === run.logRef, `negative case unbound: ${binding.id}: NOT_COLLECTED`);
+        const checked = checkBinding({ binding, log: fs.readFileSync(localPath(root, run.logRef), 'utf8'), testSource: gitFile(root, evidence.candidateSha, binding.testRef) });
+        check(checked.ok, `negative case unbound: ${binding.id}: ${checked.reason}`);
+        check(hash(checked.body) === record.bodyHash, `negative case body changed: ${binding.id}`);
+        return { id: binding.id, negativeCase: plan.negativeVerificationCases[binding.negativeCaseIndex], criterionId: binding.criterionId, testRef: binding.testRef, testTitle: binding.testTitle, subjectSymbol: binding.subjectSymbol, body: checked.body };
+      });
+      for (const n of state.negativeCaseEvidence) {
+        const text = typeof n.negativeCase === 'string' ? n.negativeCase : canonical(n.negativeCase);
+        question(n.id, `The executed test ${n.testTitle} establishes negative case: ${text} against ${n.subjectSymbol}`, `\`state.negativeCaseEvidence\` entry with id ${n.id} (its extracted test body), its verification log in \`state.evidenceFiles\` and \`state.sources\` at ${n.testRef}`);
+      }
     }
     question(livingDocs.questionId, livingDocs.statement, `the Living Docs in \`state.sources\` at ${livingDocs.refs.join(', ')}, plus the exact candidate and verification evidence`);
     subject.evidence = { ref: task.contract.evidenceRef, hash: hash(evidence) };

@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { assertNegativeCaseBindings } from './blackboard-negative-case-binding.mjs';
 
 export const fail = message => { throw new Error(`BLACKBOARD_DELIVERY_INVALID: ${message}`); };
 export const canonical = value => JSON.stringify(normalize(value));
@@ -81,6 +82,7 @@ export function assertPlan(plan) {
     for (const id of mapping.criterionIds) if (!ids.has(id)) fail('unknown invariant criterion');
   }
   if (plan.livingDocs !== undefined) assertLivingDocs(plan);
+  if (plan.negativeCaseBindings !== undefined) assertNegativeCaseBindings(plan);
   if (plan.status === 'READY') nonempty(plan.readinessRef, 'readinessRef');
   return plan;
 }
