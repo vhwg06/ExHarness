@@ -149,12 +149,15 @@ test('NB1 repository plans still validate unchanged under the delivered policy',
     if (plan.artifactType !== 'READY_IMPLEMENT_PLAN') continue;
     assert.equal(assertPlan(plan), plan, name);
     const id = name.slice(0, -5);
+    const threshold = Number(policy.negativeCaseBindingsFromWorkId.slice(3));
     // Grandfathered: every task registered before the threshold keeps its plan valid without bindings.
-    if (Number(id.slice(3)) < Number(policy.negativeCaseBindingsFromWorkId.slice(3))) assert.doesNotThrow(() => assertNegativeCaseEnforcement(policy, id, plan), name);
+    // A task at or after the threshold may be registered with a DRAFT plan; once READY it must satisfy enforcement.
+    if (Number(id.slice(3)) < threshold || plan.status === 'READY') assert.doesNotThrow(() => assertNegativeCaseEnforcement(policy, id, plan), name);
     checked++;
   }
   assert.ok(checked > 10);
-  assert.ok(Number(policy.negativeCaseBindingsFromWorkId.slice(3)) >= Math.max(...graph.tasks.map(x => Number(x.id.slice(3)))));
+  // The threshold may not be moved past already-registered work silently: it must name a registered task.
+  assert.ok(graph.tasks.some(x => x.id === policy.negativeCaseBindingsFromWorkId), 'negativeCaseBindingsFromWorkId names a registered task');
 });
 
 test('NB2 spec and TAP logs bind exact passing titles only', () => {
