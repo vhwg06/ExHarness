@@ -3,7 +3,7 @@
   "version": 1,
   "artifactType": "READY_IMPLEMENT_PLAN",
   "artifactId": "BB-105",
-  "status": "DRAFT",
+  "status": "READY",
   "objective": {
     "ref": "docs/blackboard/artifacts/objective/BB-105.json",
     "hash": "46421eccaa1614f6fc5bc6e90010a4a63af590b613aaa6370492cdd3e2a3828f"
@@ -125,65 +125,127 @@
     {
       "id": "GR1",
       "statement": "AGENT_TOOLS.grok builds a shell-free headless argv with --output-format json, pinned --model (default grok-4.6), --cwd, --prompt-file, WORKSPACE_EDIT→--permission-mode acceptEdits, FULL_AUTO→--always-approve, --disable-web-search, --no-subagents, --no-auto-update, and resume flags; a missing executable is TOOL_UNAVAILABLE.",
-      "verificationIds": ["gr1-argv", "agent-tools"],
-      "evidenceRequired": ["GR1 test output."]
+      "verificationIds": [
+        "gr1-argv",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "GR1 test output."
+      ]
     },
     {
       "id": "GR2",
       "statement": "parseGrokJson reports integer token fields and finite totalCostUsd from grok JSON when present and otherwise null with GROK_USAGE_NOT_REPORTED or GROK_JSON_TRUNCATED, never an estimate; traces carry promptSha256 and do not store the prompt verbatim in argvRedacted.",
-      "verificationIds": ["gr2-parser", "agent-tools"],
-      "evidenceRequired": ["GR2 fixture and trace output."]
+      "verificationIds": [
+        "gr2-parser",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "GR2 fixture and trace output."
+      ]
     },
     {
       "id": "GR3",
       "statement": "The same grok adapter serves runObservedInvocation and runSupervisedTask; exharness-agent probe and smoke accept --tool grok; live smoke is not part of npm test or npm run verify.",
-      "verificationIds": ["gr3-arms", "agent-tools"],
-      "evidenceRequired": ["GR3 test output and package.json script assertions."]
+      "verificationIds": [
+        "gr3-arms",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "GR3 test output and package.json script assertions."
+      ]
     },
     {
       "id": "GR4",
       "statement": "A deterministic fake grok CLI covers FIX_FIRST and usage JSON; a missing grok command is TOOL_UNAVAILABLE and never ACCEPTED.",
-      "verificationIds": ["gr4-fake", "agent-tools"],
-      "evidenceRequired": ["GR4 fake CLI and missing-binary output."]
+      "verificationIds": [
+        "gr4-fake",
+        "agent-tools"
+      ],
+      "evidenceRequired": [
+        "GR4 fake CLI and missing-binary output."
+      ]
     },
     {
       "id": "GR5",
       "statement": "Living docs and the package README list grok beside Codex, Kiro and agy without Blackboard ids, and the candidate writes only sourceScope.write paths.",
-      "verificationIds": ["gr5-docs", "docs", "repository"],
-      "evidenceRequired": ["GR5 docs/scope output, verify:current-docs and npm test logs."]
+      "verificationIds": [
+        "gr5-docs",
+        "docs",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "GR5 docs/scope output, verify:current-docs and npm test logs."
+      ]
     }
   ],
   "invariantCoverage": [
     {
       "invariant": "A missing grok executable is TOOL_UNAVAILABLE and never ACCEPTED.",
-      "criterionIds": ["GR1", "GR4"]
+      "criterionIds": [
+        "GR1",
+        "GR4"
+      ]
     },
     {
       "invariant": "Token and cost values are observed numbers from grok JSON or null with a reason; nothing is estimated.",
-      "criterionIds": ["GR2"]
+      "criterionIds": [
+        "GR2"
+      ]
     },
     {
       "invariant": "The task prompt is never stored verbatim in argvRedacted.",
-      "criterionIds": ["GR2"]
+      "criterionIds": [
+        "GR2"
+      ]
     },
     {
       "invariant": "Codex, Kiro and agy behavior is unchanged when grok is added to the registry.",
-      "criterionIds": ["GR3", "GR5"]
+      "criterionIds": [
+        "GR3",
+        "GR5"
+      ]
     },
     {
       "invariant": "npm test does not invoke a live grok CLI.",
-      "criterionIds": ["GR3"]
+      "criterionIds": [
+        "GR3"
+      ]
     }
   ],
   "verificationPlan": [
-    { "id": "gr1-argv", "command": "node --test --test-name-pattern=\"^GR1 \" packages/agent-tools/test/grok-adapter.test.js" },
-    { "id": "gr2-parser", "command": "node --test --test-name-pattern=\"^GR2 \" packages/agent-tools/test/grok-adapter.test.js" },
-    { "id": "gr3-arms", "command": "node --test --test-name-pattern=\"^GR3 \" packages/agent-tools/test/grok-adapter.test.js" },
-    { "id": "gr4-fake", "command": "node --test --test-name-pattern=\"^GR4 \" packages/agent-tools/test/grok-adapter.test.js" },
-    { "id": "gr5-docs", "command": "node --test --test-name-pattern=\"^GR5 \" packages/agent-tools/test/grok-adapter.test.js" },
-    { "id": "agent-tools", "command": "npm run test:agent-tools" },
-    { "id": "docs", "command": "npm run verify:current-docs" },
-    { "id": "repository", "command": "npm test" }
+    {
+      "id": "gr1-argv",
+      "command": "node --test --test-name-pattern=\"^GR1 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "gr2-parser",
+      "command": "node --test --test-name-pattern=\"^GR2 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "gr3-arms",
+      "command": "node --test --test-name-pattern=\"^GR3 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "gr4-fake",
+      "command": "node --test --test-name-pattern=\"^GR4 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "gr5-docs",
+      "command": "node --test --test-name-pattern=\"^GR5 \" packages/agent-tools/test/grok-adapter.test.js"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
   ],
   "researchGaps": [],
   "researchEvidence": [
@@ -209,12 +271,30 @@
     }
   ],
   "dependencyResolution": {
-    "direct": ["BB-097", "BB-098"],
+    "direct": [
+      "BB-097",
+      "BB-098"
+    ],
     "workerStart": "Re-run node docs/blackboard/evidence/BB-105/grok-cli-probe.mjs --no-live for help/version/ENOENT, or with grok on PATH for live. Confirm AGENT_TOOLS still lacks grok. Confirm fake-agent.mjs still exists for Codex/Kiro/agy tests.",
     "sourceClassification": {
-      "DELIVERED_TRUTH": ["AGENT_TOOLS", "defineAgentTool", "runAgentInvocation", "runObservedInvocation", "runSupervisedTask", "parseToolOutput", "redactArgv", "exharness-agent probe/smoke", "fake-agent.mjs"],
+      "DELIVERED_TRUTH": [
+        "AGENT_TOOLS",
+        "defineAgentTool",
+        "runAgentInvocation",
+        "runObservedInvocation",
+        "runSupervisedTask",
+        "parseToolOutput",
+        "redactArgv",
+        "exharness-agent probe/smoke",
+        "fake-agent.mjs"
+      ],
       "PLANNED_CONTRACT": [],
-      "RESEARCH_DESIRED_STATE": ["grokTool", "parseGrokJson", "fake-grok.mjs", "GROK_DEFAULT_MODEL"]
+      "RESEARCH_DESIRED_STATE": [
+        "grokTool",
+        "parseGrokJson",
+        "fake-grok.mjs",
+        "GROK_DEFAULT_MODEL"
+      ]
     },
     "contradiction": "None. Grok is an additional adapter on delivered seams. Positional prompt is unsafe without a TTY; --prompt-file is the spawn-safe surface."
   },
@@ -224,12 +304,35 @@
     "forbidden": "No ~/.grok reads, no fabricated Codex/Kiro/agy live results, no live grok in npm test, no positional-prompt product argv."
   },
   "ciContract": {
-    "checks": ["gr1-argv", "gr2-parser", "gr3-arms", "gr4-fake", "gr5-docs", "agent-tools", "docs", "repository"],
+    "checks": [
+      "gr1-argv",
+      "gr2-parser",
+      "gr3-arms",
+      "gr4-fake",
+      "gr5-docs",
+      "agent-tools",
+      "docs",
+      "repository"
+    ],
     "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
   },
   "migrationContract": {
-    "preserve": ["codexTool", "kiroTool", "agyTool", "parseCodexJsonl", "parseKiroOutput", "parseAgyOutput", "runSupervisedTask default options"],
-    "add": ["grokTool", "parseGrokJson", "fake-grok.mjs", "grok-adapter tests", "Living doc grok rows"],
+    "preserve": [
+      "codexTool",
+      "kiroTool",
+      "agyTool",
+      "parseCodexJsonl",
+      "parseKiroOutput",
+      "parseAgyOutput",
+      "runSupervisedTask default options"
+    ],
+    "add": [
+      "grokTool",
+      "parseGrokJson",
+      "fake-grok.mjs",
+      "grok-adapter tests",
+      "Living doc grok rows"
+    ],
     "rollback": "Remove grokTool, parser branch, fixtures, grok-adapter.test.js and Living/README grok sentences; revert AGENT_TOOLS, CLI USAGE and request plumbing."
   },
   "laneContracts": [
@@ -239,7 +342,11 @@
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + fresh Jev SATISFIED",
-      "forbidden": ["product implementation", "planned dependency as delivered truth", "self-issued readiness"]
+      "forbidden": [
+        "product implementation",
+        "planned dependency as delivered truth",
+        "self-issued readiness"
+      ]
     },
     {
       "lane": "WORKER",
@@ -247,7 +354,9 @@
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash + candidate/evidence + Jev",
       "convergence": "criterion runs + no forbidden writes + docs",
-      "forbidden": ["No ~/.grok reads, no fabricated Codex/Kiro/agy live results, no live grok in npm test."]
+      "forbidden": [
+        "No ~/.grok reads, no fabricated Codex/Kiro/agy live results, no live grok in npm test."
+      ]
     }
   ],
   "livingDocs": {
@@ -263,91 +372,206 @@
   "objectiveCoverage": [
     {
       "objectiveCriterion": "Specify a grok adapter in the delivered AGENT_TOOLS registry that builds a shell-free headless invocation with JSON output, pinned model, cwd, prompt-file outside the worktree, permission-profile mapping to --always-approve or --permission-mode acceptEdits, default --disable-web-search and --no-subagents, a version probe, and TOOL_UNAVAILABLE when the executable is missing.",
-      "criterionIds": ["GR1", "GR4"],
-      "planElements": ["S1", "S3"],
-      "verificationIds": ["gr1-argv", "gr4-fake"],
-      "decisionIndexes": [0, 1, 2],
+      "criterionIds": [
+        "GR1",
+        "GR4"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "gr1-argv",
+        "gr4-fake"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
       "sourceRefs": [
         "packages/agent-tools/src/tool-adapters.js",
         "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json",
         "packages/agent-tools/src/process-runner.js"
       ],
       "sourceAnchors": [
-        { "ref": "packages/agent-tools/src/tool-adapters.js", "match": "export const AGENT_TOOLS = Object.freeze({ codex: codexTool, kiro: kiroTool, agy: agyTool });" },
-        { "ref": "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json", "match": "\"headlessRequiresPromptFile\": true" },
-        { "ref": "packages/agent-tools/src/process-runner.js", "match": "const { args, stdin = null } = tool.buildInvocation({ ...request, timeoutMs });" }
+        {
+          "ref": "packages/agent-tools/src/tool-adapters.js",
+          "match": "export const AGENT_TOOLS = Object.freeze({ codex: codexTool, kiro: kiroTool, agy: agyTool });"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json",
+          "match": "\"headlessRequiresPromptFile\": true"
+        },
+        {
+          "ref": "packages/agent-tools/src/process-runner.js",
+          "match": "const { args, stdin = null } = tool.buildInvocation({ ...request, timeoutMs });"
+        }
       ],
-      "supportingPlanFields": ["architectureDecisions"]
+      "supportingPlanFields": [
+        "architectureDecisions"
+      ]
     },
     {
       "objectiveCriterion": "Specify a grok output parser that reports real token usage and total_cost_usd from grok JSON when those fields are present as numbers, and otherwise records null with an explicit unavailable reason, never an estimate; traces redact the prompt.",
-      "criterionIds": ["GR2"],
-      "planElements": ["S2"],
-      "verificationIds": ["gr2-parser"],
-      "decisionIndexes": [3],
+      "criterionIds": [
+        "GR2"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "gr2-parser"
+      ],
+      "decisionIndexes": [
+        3
+      ],
       "sourceRefs": [
         "packages/agent-tools/src/output-parsers.js",
         "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json",
         "packages/agent-tools/src/run-trace.js"
       ],
       "sourceAnchors": [
-        { "ref": "packages/agent-tools/src/output-parsers.js", "match": "if (toolId === \"agy\") return parseAgyOutput();" },
-        { "ref": "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json", "match": "\"total_cost_usd\": 0.01200404" },
-        { "ref": "packages/agent-tools/src/run-trace.js", "match": "argv as launched, with the prompt replaced by its digest" }
+        {
+          "ref": "packages/agent-tools/src/output-parsers.js",
+          "match": "if (toolId === \"agy\") return parseAgyOutput();"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json",
+          "match": "\"total_cost_usd\": 0.01200404"
+        },
+        {
+          "ref": "packages/agent-tools/src/run-trace.js",
+          "match": "argv as launched, with the prompt replaced by its digest"
+        }
       ],
-      "supportingPlanFields": ["invariants"]
+      "supportingPlanFields": [
+        "invariants"
+      ]
     },
     {
       "objectiveCriterion": "Specify that the same adapter serves direct runObservedInvocation and supervised runSupervisedTask arms, and that exharness-agent probe and smoke accept --tool grok with live smoke remaining opt-in and absent from npm test.",
-      "criterionIds": ["GR3"],
-      "planElements": ["S3"],
-      "verificationIds": ["gr3-arms"],
-      "decisionIndexes": [2, 4],
+      "criterionIds": [
+        "GR3"
+      ],
+      "planElements": [
+        "S3"
+      ],
+      "verificationIds": [
+        "gr3-arms"
+      ],
+      "decisionIndexes": [
+        2,
+        4
+      ],
       "sourceRefs": [
         "packages/agent-tools/src/observation.js",
         "packages/agent-tools/src/supervisor.js",
         "packages/agent-tools/bin/exharness-agent.mjs"
       ],
       "sourceAnchors": [
-        { "ref": "packages/agent-tools/src/observation.js", "match": "export async function runObservedInvocation({" },
-        { "ref": "packages/agent-tools/src/supervisor.js", "match": "const request = { prompt: action.prompt, resume: action.resume, model, permissionProfile, logFile };" },
-        { "ref": "packages/agent-tools/bin/exharness-agent.mjs", "match": "run --tool <codex|kiro|agy>" }
+        {
+          "ref": "packages/agent-tools/src/observation.js",
+          "match": "export async function runObservedInvocation({"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "const request = { prompt: action.prompt, resume: action.resume, model, permissionProfile, logFile };"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "run --tool <codex|kiro|agy>"
+        }
       ],
-      "supportingPlanFields": ["verificationPlan"]
+      "supportingPlanFields": [
+        "verificationPlan"
+      ]
     },
     {
       "objectiveCriterion": "Specify a deterministic fake grok CLI fixture, named tests, Living docs and the package README that list grok beside Codex, Kiro and agy.",
-      "criterionIds": ["GR4", "GR5"],
-      "planElements": ["S3", "S4"],
-      "verificationIds": ["gr4-fake", "gr5-docs", "docs"],
-      "decisionIndexes": [5, 7],
+      "criterionIds": [
+        "GR4",
+        "GR5"
+      ],
+      "planElements": [
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "gr4-fake",
+        "gr5-docs",
+        "docs"
+      ],
+      "decisionIndexes": [
+        5,
+        7
+      ],
       "sourceRefs": [
         "docs/living/system/agent-tools/state.md",
         "docs/living/system/agent-tools/observation.md",
         "packages/agent-tools/src/index.js"
       ],
       "sourceAnchors": [
-        { "ref": "docs/living/system/agent-tools/state.md", "match": "ExHarness supervises an external CLI coding agent (Codex, Kiro or agy) from outside." },
-        { "ref": "docs/living/system/agent-tools/observation.md", "match": "| any | none | null for a timed-out or missing tool | `TIMED_OUT`, `TOOL_UNAVAILABLE` |" },
-        { "ref": "packages/agent-tools/src/index.js", "match": "agyTool," }
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "ExHarness supervises an external CLI coding agent (Codex, Kiro or agy) from outside."
+        },
+        {
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "| any | none | null for a timed-out or missing tool | `TIMED_OUT`, `TOOL_UNAVAILABLE` |"
+        },
+        {
+          "ref": "packages/agent-tools/src/index.js",
+          "match": "agyTool,"
+        }
       ],
-      "supportingPlanFields": ["livingDocs"]
+      "supportingPlanFields": [
+        "livingDocs"
+      ]
     },
     {
       "objectiveCriterion": "Ground the design in the executed grok CLI probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
-      "criterionIds": ["GR1", "GR2", "GR3", "GR4", "GR5"],
-      "planElements": ["S1", "S2", "S3", "S4"],
-      "verificationIds": ["gr1-argv", "gr2-parser", "gr3-arms", "gr4-fake", "gr5-docs", "repository"],
-      "decisionIndexes": [6],
+      "criterionIds": [
+        "GR1",
+        "GR2",
+        "GR3",
+        "GR4",
+        "GR5"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "verificationIds": [
+        "gr1-argv",
+        "gr2-parser",
+        "gr3-arms",
+        "gr4-fake",
+        "gr5-docs",
+        "repository"
+      ],
+      "decisionIndexes": [
+        6
+      ],
       "sourceRefs": [
         "docs/blackboard/process/agent-tool-research/BB-105.md",
         "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json"
       ],
       "sourceAnchors": [
-        { "ref": "docs/blackboard/process/agent-tool-research/BB-105.md", "match": "Headless spawn must use `--prompt-file`" },
-        { "ref": "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json", "match": "\"missingBinaryIsEnoent\": true" }
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-105.md",
+          "match": "Headless spawn must use `--prompt-file`"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-105/grok-cli-probe-result.json",
+          "match": "\"missingBinaryIsEnoent\": true"
+        }
       ],
-      "supportingPlanFields": ["negativeVerificationCases"]
+      "supportingPlanFields": [
+        "negativeVerificationCases"
+      ]
     }
   ],
   "negativeVerificationCases": [
@@ -433,5 +657,6 @@
       "testTitle": "GR1 FULL_AUTO passes always-approve",
       "subjectSymbol": "grokTool"
     }
-  ]
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-105.readiness-jev-evaluation.json"
 }
