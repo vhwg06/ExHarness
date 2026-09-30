@@ -43,7 +43,8 @@ NONE
 - BB-053 [WORKER/EXECUTION] — Implement domain activation and FE/BE parallel autonomy
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-082 [WORKER/EXECUTION] — Define trusted objective supersession and research reset control
-- BB-087 [WORKER/EXECUTION] — Fix Oracle facade budget accounting and typed provider failure
+- BB-088 [WORKER/EXECUTION] — Productize authoritative snapshot-bound Context Graph
+- BB-089 [WORKER/EXECUTION] — Adopt Oracle facade for Backend/QA production context
 - BB-090 [WORKER/EXECUTION] — Bind declared negative cases to executed subject-invoking tests in the Worker gate
 - BB-096 [WORKER/EXECUTION] — Bind delivered Backend/QA acceptance to a real repository and real verification processes
 - BB-098 [RESEARCH_SA/RESEARCH] — Observe supervised and direct agent-tool runs
@@ -88,9 +89,9 @@ BB-083 [BLOCKED_BY BB-059,BB-065] <- BB-059, BB-064, BB-065
 BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
 BB-085 [BLOCKED_BY BB-084] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
-BB-087 [WORKER_SCHEDULABLE] <- BB-064
-BB-088 [BLOCKED_BY BB-087] <- BB-087
-BB-089 [BLOCKED_BY BB-087] <- BB-087
+BB-087 [DONE] <- BB-064
+BB-088 [WORKER_SCHEDULABLE] <- BB-087
+BB-089 [WORKER_SCHEDULABLE] <- BB-087
 BB-090 [WORKER_SCHEDULABLE] <- BB-056
 BB-091 [BLOCKED_BY BB-088] <- BB-088
 BB-092 [BLOCKED_BY BB-091] <- BB-091

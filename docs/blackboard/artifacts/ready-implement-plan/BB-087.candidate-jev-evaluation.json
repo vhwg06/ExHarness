@@ -1,0 +1,135 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-087-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-087",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-087.json",
+      "hash": "21f5c89a47785d6d9ed9aad2ad0e31d4c23a8b6c891fc2355f46fd756ec39274"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-087.json",
+      "hash": "22cddb2c40dedf83f46b9927b7ba36d207e20adfbfc6fa9ba771531d188e9e42"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-087.implementation-result.json",
+      "hash": "fc8f99ec30889f399684be8b63ce1b1022dc658ffcd501c75efa85c9dd594317"
+    },
+    "candidateSha": "56f81df4d685c6456c64cc422268deed9e09c535",
+    "candidateTree": "5e8030be7a8827186b2fb15683e8b556c3f6a5ec",
+    "baselineSha": "57444d12b548a59e173010e06d19e07057e9a167"
+  },
+  "stateHash": "0abd35fd97e3d85ac3489b9dd1828fceb34fcd66f6ba757101c0345f889e4800",
+  "specHash": "07b815e18ae2e9bf70842582a9de8ff60755a29dfc378438bd97717b9e65e78c",
+  "cacheKey": "454022ab8f103a65ab851ed6856aea4de47ea29baf3a73ddc40e7076f97b1986",
+  "model": "jev-1.13.0",
+  "answers": {
+    "FA1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.58,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "SATISFIED": 0.6900000000000001,
+        "INSUFFICIENT_EVIDENCE": 0.29
+      }
+    },
+    "FA2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.42,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.41,
+        "SATISFIED": 0.57,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01
+      }
+    },
+    "FA3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.8,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.14,
+        "SATISFIED": 0.84,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "FA4": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.63,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.25,
+        "SATISFIED": 0.73,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.64,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.21,
+        "IMPLEMENTATION_DEFECT": 0.04,
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "SATISFIED": 0.73
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 40376,
+    "output_tokens": 353
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 5,
+    "latencyMs": 947.818996,
+    "payloadBytes": 265027,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "manifest": [
+        {
+          "id": "FA1",
+          "payloadHash": "44449202aed518b172e449556cb8681c6b910468b9bb213d501df25aa922042d",
+          "payloadBytes": 24835
+        },
+        {
+          "id": "FA2",
+          "payloadHash": "defd906760534f8d8f814fea556f1c52d17a2320f289290a7e35aaf3dc466755",
+          "payloadBytes": 24989
+        },
+        {
+          "id": "FA3",
+          "payloadHash": "26431660b4f123185df0d24159c1b35c5db7998341ed99f930f5f826f4b7ad3c",
+          "payloadBytes": 24691
+        },
+        {
+          "id": "FA4",
+          "payloadHash": "7280903c9315d0d59a30e208a445c26cc1c3aff1515f99c18379ff1ce2490cda",
+          "payloadBytes": 39830,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-087/repository.txt"
+          ]
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "cd6b358f70c7a7cf075efca53fe3c1acb80a4b947e5a1cf947868fca2ae69d2b",
+          "payloadBytes": 13566
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
