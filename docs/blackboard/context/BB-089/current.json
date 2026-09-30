@@ -1,0 +1,139 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-089",
+  "taskId": "BB-089",
+  "featureId": "FEATURE-ORACLE-APPLICATION-ADOPTION",
+  "topicId": "TOPIC-ORACLE-CONTEXT-INTELLIGENCE",
+  "components": [
+    "oracle/infrastructure"
+  ],
+  "pipeline": "WORKER",
+  "lane": "WORKER",
+  "phase": "JUDGMENT",
+  "stage": "JUDGMENT",
+  "semanticArtifactRef": "docs/blackboard/artifacts/ready-implement-plan/BB-089.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-089.json",
+  "planHash": "564346a108e1e18e286090ab5b0e51cac1a00c99bae411f68cb766ebcefa1ca4",
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-087",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/oracle/state.md"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "docs/blackboard/process/oracle-reconciliation-phase.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-089.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-089.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-089.readiness-jev-evaluation.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/blackboard/process/oracle-post-foundation-discovery.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-087.json"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/blackboard/process/oracle-post-foundation-discovery.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-061.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-087.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/oracle.js",
+      "packages/agentic-system/src/oracle-context-requirements.js",
+      "packages/agentic-system/src/backend-application.js",
+      "packages/agentic-system/src/qa-application.js",
+      "packages/agentic-system/src/index.js",
+      "packages/agentic-system/test/oracle-context-adoption.test.js",
+      "packages/agentic-system/test/oracle-context-equivalence.test.js",
+      "docs/living/system/oracle/workflow.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/src/contracts.js",
+      "packages/agentic-system/src/qa-contracts.js",
+      "packages/agentic-system/src/artifact-manifest.js",
+      "packages/agentic-system/src/backend-worker.js",
+      "packages/agentic-system/src/qa-worker.js",
+      "docs/blackboard/**",
+      "packages/agentic-system/src/durable-backend-qa.js",
+      "packages/agentic-system/src/composition.js"
+    ]
+  },
+  "artifactWriteScope": [],
+  "hardInvariants": [
+    "The Application alone decides required context; the Oracle path resolves exactly the declared files/artifacts and nothing else.",
+    "On identical inputs the Oracle path returns a context deep-equal to the compatibility path, including sourceRef and QA acceptance provenance.",
+    "Unresolved, partial, stale, provenance-mismatched or over-budget declared context never reaches a Worker.",
+    "Without the opt-in option, Backend and QA behavior and outputs are unchanged."
+  ],
+  "verification": [
+    {
+      "id": "adoption",
+      "command": "node --test packages/agentic-system/test/oracle-context-adoption.test.js"
+    },
+    {
+      "id": "equivalence",
+      "command": "node --test packages/agentic-system/test/oracle-context-equivalence.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "expectedOutputs": [
+    "DELIVERED_FEATURE"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "scripts/**",
+      "test/**"
+    ],
+    "contractRefs": [
+      "resolveBackendContext",
+      "resolveQaContext",
+      "repositoryReader.readFile",
+      "artifactReader.readArtifact",
+      "BackendContextSchema",
+      "QaContextSchema"
+    ]
+  }
+}

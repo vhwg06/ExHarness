@@ -1,0 +1,43 @@
+TAP version 13
+# Subtest: A3 Backend contexts are deepEqual across the compatibility and Oracle paths and equal the golden fixture
+ok 1 - A3 Backend contexts are deepEqual across the compatibility and Oracle paths and equal the golden fixture
+  ---
+  duration_ms: 12.810294
+  type: 'test'
+  ...
+# Subtest: A3 QA contexts are deepEqual across paths for the direct reader and the manifest-validating reader
+ok 2 - A3 QA contexts are deepEqual across paths for the direct reader and the manifest-validating reader
+  ---
+  duration_ms: 37.10713
+  type: 'test'
+  ...
+# Subtest: A3 changed bytes behind a stable ref block on both paths before QA; the Oracle error carries ARTIFACT_CONTENT_MISMATCH
+ok 3 - A3 changed bytes behind a stable ref block on both paths before QA; the Oracle error carries ARTIFACT_CONTENT_MISMATCH
+  ---
+  duration_ms: 10.550791
+  type: 'test'
+  ...
+# Subtest: A3 a provenance mismatch (wrong acceptance decision) blocks on both paths
+ok 4 - A3 a provenance mismatch (wrong acceptance decision) blocks on both paths
+  ---
+  duration_ms: 6.398145
+  type: 'test'
+  ...
+# Subtest: A3 the default path constructs no Oracle catalog, planner or resolver (module spy in a fresh process)
+ok 5 - A3 the default path constructs no Oracle catalog, planner or resolver (module spy in a fresh process)
+  ---
+  duration_ms: 119.39647
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 313.606131
+
+
+exitCode=0

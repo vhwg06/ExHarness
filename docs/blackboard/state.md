@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,25 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-089
 ```
 
 ## Active work
 
-NONE
+
+BB-089
+task: Adopt Oracle facade for Backend/QA production context
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-089/current.json
+components: oracle/infrastructure
+worker: grok-bot
 
 ## Schedulable tasks
 
 - BB-054 [WORKER/EXECUTION] — Implement exact deployment identity and Product QA acceptance
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-088 [WORKER/EXECUTION] — Productize authoritative snapshot-bound Context Graph
-- BB-089 [WORKER/EXECUTION] — Adopt Oracle facade for Backend/QA production context
 - BB-097 [WORKER/EXECUTION] — Run Codex, Kiro and agy under ExHarness supervision
 - BB-098 [RESEARCH_SA/RESEARCH] — Observe supervised and direct agent-tool runs
 - BB-099 [RESEARCH_SA/RESEARCH] — Measure ExHarness-supervised versus direct agent-tool delivery
@@ -89,7 +95,7 @@ BB-085 [BLOCKED_BY BB-084] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
 BB-087 [DONE] <- BB-064
 BB-088 [WORKER_SCHEDULABLE] <- BB-087
-BB-089 [WORKER_SCHEDULABLE] <- BB-087
+BB-089 [ACTIVE] <- BB-087
 BB-090 [DONE] <- BB-056
 BB-091 [BLOCKED_BY BB-088] <- BB-088
 BB-092 [BLOCKED_BY BB-091] <- BB-091
