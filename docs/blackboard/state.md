@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-096
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-096
-task: Bind delivered Backend/QA acceptance to a real repository and real verification processes
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-096/current.json
-components: agentic/backend-qa-execution
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -104,7 +97,7 @@ BB-092 [BLOCKED_BY BB-091] <- BB-091
 BB-093 [BLOCKED_BY BB-092] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094,BB-065] <- BB-094, BB-065
-BB-096 [ACTIVE] <- ROOT
+BB-096 [PLANNED] <- ROOT
 BB-097 [BLOCKED_BY BB-096] <- BB-096
 BB-098 [RESEARCH_SCHEDULABLE] <- BB-097
 BB-099 [RESEARCH_SCHEDULABLE] <- BB-098, BB-065
