@@ -40,7 +40,7 @@ NONE
 
 ## Schedulable tasks
 
-- BB-054 [WORKER/EXECUTION] — Implement exact deployment identity and Product QA acceptance
+- BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
 - BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-091 [WORKER/EXECUTION] — Research and ablate retrieval planner strategies
 - BB-099 [RESEARCH_SA/RESEARCH] — Measure ExHarness-supervised versus direct agent-tool delivery
@@ -56,8 +56,8 @@ NONE
 BB-048 [DONE] <- ROOT
 BB-052 [DONE] <- BB-048
 BB-053 [DONE] <- BB-052
-BB-054 [WORKER_SCHEDULABLE] <- BB-053
-BB-055 [BLOCKED_BY BB-054] <- BB-054
+BB-054 [DONE] <- BB-053
+BB-055 [WORKER_SCHEDULABLE] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [BLOCKED_BY BB-055] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
