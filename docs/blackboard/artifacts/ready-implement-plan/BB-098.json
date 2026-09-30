@@ -16,30 +16,33 @@
   "outOfScope": [
     "Deciding acceptance, arms semantics, suites or value verdicts (BB-099).",
     "OTel, Langfuse or any remote telemetry export; token estimation.",
-    "Changes to Core, Oracle, agentic-system or the BB-097 supervisor semantics beyond passing sinks through its existing eventSinks/tracer options.",
+    "Changes to Core, Oracle, agentic-system, the BB-097 adapters/process runner, or BB-097 supervisor semantics; the only supervisor change is the additive default-null invocationObserver option (D5).",
+    "Changing how an adapter invokes a CLI (e.g. requesting Kiro --output-format stream-json); that is an adapter change outside BB-098.",
     "Reading CLI session stores or configuration outside the paths the invocation itself was given."
   ],
   "constraints": [
-    "Code lives in packages/agent-tools/src/{run-trace.js, output-parsers.js, redaction.js, report.js} with tests in packages/agent-tools/test/run-trace.test.js titled OB1..OB5 followed by a space, each with { timeout: 60000 }.",
+    "Code lives in packages/agent-tools/src/{run-trace.js, output-parsers.js, redaction.js, report.js, observation.js} with tests in packages/agent-tools/test/run-trace.test.js titled OB1..OB6 followed by a space, each with { timeout: 60000 }.",
     "The trace writer uses only node built-ins; digests are sha256 hex.",
-    "bin/exharness-agent.mjs gains `report <trace-dir>`; root test:agent-tools already runs every packages/agent-tools/test/*.test.js file.",
+    "packages/agent-tools/src/supervisor.js changes only by adding the default-null invocationObserver option of D5; with it null the supervised result and every existing BB-097 test are unchanged.",
+    "bin/exharness-agent.mjs gains `report <trace-dir>` and an optional `run --trace-dir <dir>`; root test:agent-tools already runs every packages/agent-tools/test/*.test.js file.",
     "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
     "Trace values are observed or null with a reason; no metric is estimated or inferred from text length.",
     "No secret value from the environment or a known key pattern is ever written to a trace file.",
     "Traces are evidence only; neither the trace writer nor the report decides acceptance or value.",
-    "A trace file whose content no longer matches its digest chain is rejected."
+    "A trace file whose content no longer matches its digest chain is rejected.",
+    "Observing a run never changes its outcome: with invocationObserver null the BB-097 supervisor behaves byte-identically."
   ],
   "architectureDecisions": [
-    "D1 — AGENT_TOOL_RUN_TRACE_V1 = { kind, version, traceId, prevDigest, digest, taskId, tool, toolVersion, arm (caller-supplied label), attemptIndex, startedAt, endedAt, durationMs, exitCode, timedOut, argvRedacted, stdout: { sha256, bytes, truncated, excerpt }, stderr: { same }, toolEvents: { counts by type } | null, usage: { inputTokens, cachedInputTokens, outputTokens, source, unavailableReason }, diff: { filesChanged, insertions, deletions } from `git diff --numstat <base> <candidateOrWorkingTree>`, verification: [{ name, status, reason }], harness: { events: [{ type }], spans: [{ kind, name, status }] } | null }. Excerpts keep at most the last 4000 characters after redaction.",
-    "D2 — createRunTraceWriter({ dir }) appends one JSON line per trace to <dir>/traces.jsonl. digest = sha256 over the canonical JSON of the record without digest, with prevDigest equal to the previous line digest (null for the first). verifyTraceFile(path) recomputes the chain and throws TRACE_CHAIN_BROKEN on any mismatch or reorder.",
-    "D3 — observeInvocation({ invocation (BB-097 runAgentInvocation result), tool, toolVersion, arm, taskId, attemptIndex, worktree, baseRevision, candidate, verification, harnessCapture }) builds the record; it never reads files outside worktree and the invocation logFile.",
-    "D4 — Parsers: parseCodexJsonl(stdout) counts events by `type` and sums usage only from events carrying a `usage` object with numeric input_tokens/output_tokens (cached_input_tokens optional); if none, usage fields are null with unavailableReason CODEX_USAGE_NOT_REPORTED. Kiro: toolEvents null, usage null with KIRO_NO_STRUCTURED_OUTPUT. agy: the --log-file content is stored only as { sha256, bytes, excerpt }; usage null with AGY_USAGE_NOT_PARSED. Malformed JSONL lines are counted as invalidLines, never dropped silently.",
-    "D5 — Harness capture: createHarnessCapture() returns { eventSink, traceSink, snapshot() } where eventSink.write(event) records { type } and traceSink.write(span) records { kind, name, status }; passed through BB-097 runSupervisedTask({ eventSinks: [capture.eventSink], tracer: createTraceRecorder({ sinks: [capture.traceSink] }) }).",
-    "D6 — Redaction: redact(text, { env = process.env }) replaces with [REDACTED] every value of an environment variable whose name matches /(KEY|TOKEN|SECRET|PASSWORD|AUTH|COOKIE)/i and whose value length >= 8, and the patterns sk-[A-Za-z0-9_-]{16,}, ghp_[A-Za-z0-9]{20,}, github_pat_[A-Za-z0-9_]{20,}, AKIA[0-9A-Z]{16}, and Bearer\\s+[A-Za-z0-9._-]{16,}. It is applied to argv, excerpts and any parsed message before writing; digests are over raw bytes (one-way).",
-    "D7 — Report: summarizeTraces(records) groups by tool then arm (sorted) and returns runs, distinct tasks, invocations, verificationPassRate (share of traces whose verification is non-empty and all PASS), medianDurationMs, timeouts, and token totals with coverage = share of traces with non-null usage; totals are reported only over covered traces. `exharness-agent report <dir>` verifies the chain then prints JSON and a markdown table. The report is labelled DESCRIPTIVE and carries no acceptance or value field.",
-    "D8 — Evidence basis: executed probe (only codex --json; agy --log-file; kiro plain text) and delivered Core eventSinks/createTraceRecorder."
+    "D1 — AGENT_TOOL_RUN_TRACE_V1 = { kind, version, traceId, sequence, prevDigest, digest, runId, taskId, tool, toolVersion, arm (caller-supplied label, opaque), mode (DIRECT|SUPERVISED), attemptIndex, startedAt, endedAt (wall clock taken around the invocation), durationMs (runner value), status (COMPLETED|TIMED_OUT|TOOL_UNAVAILABLE), exitCode, signal, timedOut, promptSha256, argvRedacted, stdout/stderr: { sha256 (runner full-stream digest), capturedBytes, truncated, excerpt }, logFile: { sha256, bytes, excerpt } | null, toolEvents: { counts by type, invalidLines } | null, usage: { inputTokens, cachedInputTokens, outputTokens, reasoningOutputTokens, source, unavailableReason }, diff: { filesChanged, insertions, deletions, binaryFiles }, verification: [{ name, status, reason }], harness: { events: [{ type, capability, scope }], spans: [{ kind, name, status, durationMs, scope }] } | null }. argv elements equal to the prompt are replaced by `<prompt sha256=… chars=N>`; excerpts keep at most the last 4000 characters of the redacted text.",
+    "D2 — createRunTraceWriter({ dir }) appends one JSON line per trace to <dir>/traces.jsonl with sequence = previous + 1. digest = sha256 over the canonical JSON (sorted keys) of the record without digest, and prevDigest = the previous line digest (null for the first). verifyTraceFile(path) recomputes every digest, sequence and prevDigest link and throws an error with code TRACE_CHAIN_BROKEN on any edit, deletion, insertion or reorder; readTraces(dir) returns verified records.",
+    "D3 — Direct runs: runObservedInvocation({ tool, request, cwd, env, timeoutMs, maxOutputBytes, baseRevision, taskId, arm, attemptIndex, toolVersion, writer, verification = [] }) takes startedAt/endedAt around BB-097 runAgentInvocation, then builds and appends the trace with harness null. Diff = `git diff --numstat <baseRevision>` of the working tree plus untracked files from `git ls-files --others --exclude-standard` (each untracked text file counts as one file with insertions = its line count; binary numstat `-` counts in binaryFiles with null line counts). It reads nothing outside cwd and the invocation logFile, and writes nothing into cwd.",
+    "D4 — Parsers: parseCodexJsonl(stdout) counts events by `type` and sums usage only over `turn.completed` events whose `usage` has numeric input_tokens and output_tokens (cached_input_tokens and reasoning_output_tokens summed when numeric, else null); with no such event every token field is null and unavailableReason is CODEX_USAGE_NOT_REPORTED. A non-JSON line or a line without string `type` increments invalidLines and never aborts parsing; when stdout was truncated the reason is CODEX_STREAM_TRUNCATED unless usage was found. Kiro: toolEvents null, usage null, KIRO_TEXT_OUTPUT_NO_USAGE. agy: the --log-file is stored only as { sha256, bytes, excerpt }; usage null, AGY_USAGE_NOT_REPORTED. TOOL_UNAVAILABLE and TIMED_OUT runs carry usage null with TOOL_UNAVAILABLE or TIMED_OUT.",
+    "D5 — Supervised runs: BB-097 runSupervisedTask gains one option invocationObserver = null. When non-null it is awaited inside the ACT step after the candidate commit (or NO_CHANGE / TOOL_UNAVAILABLE) and before any cleanup with { attemptIndex, request, timeoutMs, invocation (raw runAgentInvocation result), startedAt, endedAt, logFile, worktree, candidateBefore, candidateAfter, outcome, foldedAgentCommits }; an observer error fails the supervised run instead of being hidden. createSupervisedObservation({ tool, arm, taskId, writer }) returns { invocationObserver, eventSinks, tracer, finalize(result) }: the observer redacts and parses immediately and computes diff = `git diff --numstat candidateBefore candidateAfter` in the live worktree; eventSink/traceSink keep only { type, capability: payload.name } and { kind, name, status, durationMs }; finalize joins result.attempts[i].verification and assigns captured entries to attempt windows that open at each CAPABILITY_INVOKED / CAPABILITY span named avo.act, run-level entries (HARNESS_*, AGENT_RUN_*, STRATEGY, AGENT_RUN) going to the last attempt with scope RUN, then appends one trace per attempt in order.",
+    "D6 — Redaction: redact(text, { env }) replaces with [REDACTED] every value of an environment variable whose name matches /(KEY|TOKEN|SECRET|PASSWORD|PASSWD|AUTH|COOKIE|CREDENTIAL)/i and whose value length >= 8 (env = process.env merged with the invocation env), and the patterns sk-[A-Za-z0-9_-]{16,}, ghp_[A-Za-z0-9]{20,}, github_pat_[A-Za-z0-9_]{20,}, AKIA[0-9A-Z]{16}, AIza[0-9A-Za-z_-]{35} and Bearer\\s+[A-Za-z0-9._-]{16,}. It runs on the full captured text before excerpting (a truncated capture first drops its trailing partial line) and on argv and log excerpts; the writer re-checks the serialized line against the same secret set and refuses to write on a match (SECRET_IN_TRACE). Digests are over raw bytes (one-way).",
+    "D7 — Report: summarizeTraces(records) verifies nothing itself, groups by tool then arm (sorted) and returns traces, distinct tasks, distinct runs, status counts, exitCode counts, timeouts, verification status counts, diff totals, duration { min, median, max }, and token totals with coveredTraces/uncoveredTraces and unavailableReason counts; totals sum covered traces only. `exharness-agent report <dir>` runs readTraces (so a broken chain exits non-zero) and prints { kind: AGENT_TOOL_RUN_REPORT_V1, label: DESCRIPTIVE, groups } JSON. No acceptance, winner, value or superiority field exists.",
+    "D8 — Evidence basis: executed BB-097 CLI probe (codex --json; agy --log-file; kiro plain text in the delivered adapter), executed BB-098 observation probe over the delivered BB-097 package (supervised result omits raw output and removes logs/worktree; Core events/spans and avo.act windows), delivered Core eventSinks/createTraceRecorder, and the upstream Codex exec_events usage schema."
   ],
   "sourceScope": {
     "read": [
@@ -56,9 +59,13 @@
       "packages/agent-tools/src/output-parsers.js",
       "packages/agent-tools/src/redaction.js",
       "packages/agent-tools/src/report.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/index.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/README.md",
       "packages/agent-tools/test/run-trace.test.js",
+      "packages/agent-tools/test/scope-audit.mjs",
       "packages/agent-tools/test/fixtures/**",
       "docs/living/system/agent-tools/observation.md",
       "docs/living/system/agent-tools/state.md"
@@ -67,8 +74,11 @@
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/agentic-system/**",
-      "packages/agent-tools/src/supervisor.js",
+      "packages/benchmark/**",
       "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/test/agent-tools.test.js",
+      ".github/**",
       "docs/blackboard/**"
     ]
   },
@@ -76,7 +86,12 @@
     "requiredExisting": [
       "docs/blackboard/process/agent-tool-research/BB-098.md",
       "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
-      "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+      "docs/blackboard/evidence/BB-098/observation-probe.mjs",
+      "docs/blackboard/evidence/BB-098/observation-probe-result.json",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
       "packages/core-harness/src/harness.js",
       "packages/core-harness/src/tracing.js"
     ],
@@ -85,23 +100,27 @@
       "packages/agent-tools/src/output-parsers.js",
       "packages/agent-tools/src/redaction.js",
       "packages/agent-tools/src/report.js",
-      "packages/agent-tools/test/run-trace.test.js"
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/test/run-trace.test.js",
+      "packages/agent-tools/test/scope-audit.mjs",
+      "docs/living/system/agent-tools/observation.md"
     ],
     "expectedTests": [
       "packages/agent-tools/test/run-trace.test.js"
     ]
   },
   "implementationSlices": [
-    "S1 — Trace schema + writer [OB1]: implement D1-D3. \"OB1 ...\" tests append traces from fake-CLI invocations on temp git repos, check diff numstat values, verify the chain, and assert TRACE_CHAIN_BROKEN after editing, deleting or reordering a line.",
-    "S2 — Parsers [OB2]: implement D4 with fixture outputs (codex JSONL with and without usage events and one malformed line, kiro stdout, agy log file). \"OB2 ...\" tests assert exact token sums for codex and null-with-reason for the others.",
-    "S3 — Harness capture [OB3]: implement D5. \"OB3 ...\" test runs BB-097 runSupervisedTask with the FIX_AFTER_FEEDBACK fake and asserts captured event types include HARNESS_VARIATION_STARTED and spans include STRATEGY, with direct traces carrying harness null.",
-    "S4 — Redaction [OB4]: implement D6. \"OB4 ...\" test plants an env secret and each key pattern into fake stdout/argv and asserts the bytes of traces.jsonl contain none of them.",
-    "S5 — Report + docs [OB5]: implement D7. \"OB5 ...\" tests assert deterministic identical output for identical input, coverage-limited token totals, no acceptance/value field, and the bin `report` rejecting a broken chain. Write docs/living/system/agent-tools/observation.md, update state.md, run test:agent-tools, verify:current-docs and npm test."
+    "S1 — Trace schema, writer, direct runs [OB1]: implement D1-D3. \"OB1 ...\" tests run runObservedInvocation with the BB-097 fake CLI on temp git repos, assert exact status/exit/timing/diff (tracked edit plus untracked file) values and sequence/prevDigest links, and assert TRACE_CHAIN_BROKEN after editing, deleting, inserting or reordering a line.",
+    "S2 — Parsers [OB2]: implement D4 with fixture outputs (a codex JSONL stream with two turn.completed usage events, one without usage, one malformed line, one truncated stream; kiro stdout; agy log file). \"OB2 ...\" tests assert exact token sums for codex and null-with-reason for the others, including TIMED_OUT and TOOL_UNAVAILABLE.",
+    "S3 — Supervised observation [OB3]: add the D5 invocationObserver to supervisor.js and implement createSupervisedObservation. \"OB3 ...\" tests run runSupervisedTask with the FIX_AFTER_FEEDBACK fake and assert one trace per attempt with that attempt's verification, avo.act-window events/spans, run-level entries only on the last trace, and non-empty diff only for the CANDIDATE_CREATED attempt; direct traces carry harness null; with invocationObserver null the supervised result equals the unobserved result.",
+    "S4 — Redaction [OB4]: implement D6. \"OB4 ...\" tests plant an env secret and each key pattern into fake stdout, stderr, argv (kiro/agy prompt) and the agy log, including a secret split across the truncation boundary, and assert the bytes of traces.jsonl contain none of them; a record that still contains a planted secret is refused with SECRET_IN_TRACE.",
+    "S5 — Report, CLI, docs [OB5]: implement D7 and the bin `report` / `run --trace-dir`. \"OB5 ...\" tests assert byte-identical report output for identical traces, coverage-limited token totals, no acceptance/value/winner key anywhere, and `report` exiting non-zero on a broken chain. Write docs/living/system/agent-tools/observation.md, update state.md and the package README.",
+    "S6 — Scope [OB6]: packages/agent-tools/test/scope-audit.mjs compares `git diff --name-only <merge-base with origin/main> HEAD` with this plan's sourceScope.write/forbiddenWrite and exits non-zero on any violation. \"OB6 ...\" tests check the audit's matcher on a forbidden path list and that the existing BB-097 test file is byte-identical to the baseline."
   ],
   "acceptanceCriteria": [
     {
       "id": "OB1",
-      "statement": "Each invocation yields one digest-chained AGENT_TOOL_RUN_TRACE_V1 line with exact timing, exit, diff and verification fields, and any edit, deletion or reorder is rejected.",
+      "statement": "Each direct invocation yields one digest-chained AGENT_TOOL_RUN_TRACE_V1 line with observed timing, status, exit, diff (including untracked files) and verification fields, and any edit, deletion, insertion or reorder is rejected with TRACE_CHAIN_BROKEN.",
       "verificationIds": [
         "ob1-trace",
         "agent-tools"
@@ -112,7 +131,7 @@
     },
     {
       "id": "OB2",
-      "statement": "Token usage is reported only when the tool reports it and is otherwise null with an explicit reason; malformed lines are counted.",
+      "statement": "Token usage is reported only from Codex turn.completed usage and is otherwise null with an explicit reason (Kiro, agy, timeout, unavailable, truncated or usage-free streams); malformed lines are counted.",
       "verificationIds": [
         "ob2-parsers",
         "agent-tools"
@@ -123,7 +142,7 @@
     },
     {
       "id": "OB3",
-      "statement": "Supervised traces carry ExHarness event and span summaries captured through the existing eventSinks/tracer options; direct traces carry none.",
+      "statement": "Supervised runs yield one trace per attempt joining raw-output excerpts, diff, that attempt's verification and its ExHarness event/span window through the default-null invocationObserver plus existing eventSinks/tracer; direct traces carry harness null; an unobserved supervised run is unchanged.",
       "verificationIds": [
         "ob3-harness",
         "agent-tools"
@@ -134,7 +153,7 @@
     },
     {
       "id": "OB4",
-      "statement": "No planted secret appears in any written trace byte.",
+      "statement": "No planted secret appears in any written trace byte, including secrets split by truncation, and a record still containing one is refused.",
       "verificationIds": [
         "ob4-redaction",
         "agent-tools"
@@ -145,7 +164,7 @@
     },
     {
       "id": "OB5",
-      "statement": "The descriptive report is deterministic, coverage-aware, carries no acceptance or value field, and Living docs describe observation.",
+      "statement": "The descriptive report is deterministic, coverage-aware, verifies the chain, carries no acceptance, winner or value field, and Living docs describe observation.",
       "verificationIds": [
         "ob5-report",
         "docs",
@@ -153,6 +172,17 @@
       ],
       "evidenceRequired": [
         "OB5 test output, docs diff, verify:current-docs and npm test logs."
+      ]
+    },
+    {
+      "id": "OB6",
+      "statement": "The candidate writes only sourceScope.write paths and leaves Core, Oracle, agentic-system, benchmark, the BB-097 adapters/process runner and BB-097 tests untouched.",
+      "verificationIds": [
+        "ob6-scope",
+        "scope"
+      ],
+      "evidenceRequired": [
+        "OB6 test output and scope audit output."
       ]
     }
   ],
@@ -181,6 +211,13 @@
       "criterionIds": [
         "OB1"
       ]
+    },
+    {
+      "invariant": "Observing a run never changes its outcome: with invocationObserver null the BB-097 supervisor behaves byte-identically.",
+      "criterionIds": [
+        "OB3",
+        "OB6"
+      ]
     }
   ],
   "verificationPlan": [
@@ -205,6 +242,14 @@
       "command": "node --test --test-name-pattern=\"^OB5 \" packages/agent-tools/test/run-trace.test.js"
     },
     {
+      "id": "ob6-scope",
+      "command": "node --test --test-name-pattern=\"^OB6 \" packages/agent-tools/test/run-trace.test.js"
+    },
+    {
+      "id": "scope",
+      "command": "node packages/agent-tools/test/scope-audit.mjs"
+    },
+    {
       "id": "agent-tools",
       "command": "npm run test:agent-tools"
     },
@@ -221,43 +266,46 @@
   "researchEvidence": [
     {
       "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
-      "finding": "Executed: codex exec --json exists; agy has --log-file; kiro-cli chat has no structured output flag."
+      "finding": "Executed: codex exec --json exists; agy has --log-file; the kiro-cli 2.24.1 help lists --output-format but the delivered adapter runs plain-text --no-interactive."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-098/observation-probe-result.json",
+      "finding": "Executed over delivered BB-097: runAgentInvocation returns stdout/stderr/digests/durationMs without timestamps; runSupervisedTask returns attempt summaries without raw output and removes logs and worktree; Core emits HARNESS_*, AGENT_RUN_*, CAPABILITY_* events and CAPABILITY/STRATEGY/AGENT_RUN spans with avo.act opening each attempt."
+    },
+    {
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "finding": "DELIVERED_TRUTH: runSupervisedTask({ eventSinks, tracer }) passes both to createHarness; act() calls runAgentInvocation then folds commits and deletes nothing until the finally block."
     },
     {
       "ref": "packages/core-harness/src/tracing.js",
       "finding": "DELIVERED_TRUTH: createTraceRecorder({ sinks }) writes each span to sink.write()."
     },
     {
-      "ref": "packages/core-harness/src/harness.js",
-      "finding": "DELIVERED_TRUTH: createHarness accepts eventSinks and tracer."
-    },
-    {
-      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
-      "finding": "PLANNED_CONTRACT: runAgentInvocation result shape and runSupervisedTask eventSinks/tracer options."
+      "ref": "docs/blackboard/process/agent-tool-research/BB-098.md",
+      "finding": "Upstream codex exec --json usage lives only on turn.completed (input_tokens, cached_input_tokens, output_tokens, reasoning_output_tokens); Kiro stream-json and agy log formats are undocumented for usage."
     }
   ],
   "dependencyResolution": {
     "direct": [
       "BB-097"
     ],
-    "workerStart": "Confirm DONE BB-097 runAgentInvocation result fields and runSupervisedTask eventSinks/tracer options match D3/D5; capture one real codex --json sample if credentials exist and compare its usage field names with D4.",
+    "workerStart": "Re-run docs/blackboard/evidence/BB-098/observation-probe.mjs on the baseline and confirm its conclusions; confirm the fake CLI still emits codex JSONL without usage so usage fixtures come from test/fixtures files, not the fake stream.",
     "sourceClassification": {
       "DELIVERED_TRUTH": [
-        "Core eventSinks and createTraceRecorder sinks"
+        "Core eventSinks and createTraceRecorder sinks",
+        "BB-097 runAgentInvocation, adapters and runSupervisedTask (DONE)"
       ],
-      "PLANNED_CONTRACT": [
-        "BB-097 runAgentInvocation and runSupervisedTask"
-      ],
+      "PLANNED_CONTRACT": [],
       "RESEARCH_DESIRED_STATE": [
-        "AGENT_TOOL_RUN_TRACE_V1, parsers, redaction and report defined here"
+        "AGENT_TOOL_RUN_TRACE_V1, invocationObserver, parsers, redaction and report defined here"
       ]
     },
-    "contradiction": "If BB-097 does not expose eventSinks/tracer passthrough or the invocation result lacks stdout/stderr/durationMs, stop PLAN_INPUT_CONTRADICTION."
+    "contradiction": "If the supervisor cannot call invocationObserver before cleanup without changing any existing BB-097 test outcome, stop PLAN_INPUT_CONTRADICTION."
   },
   "deliveryContract": {
     "precondition": "BB-097 DONE.",
-    "completion": "All OB criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
-    "forbidden": "No token estimation, no remote telemetry, no secret persistence, no acceptance/value fields in traces or reports."
+    "completion": "All OB criterion runs + scope audit + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No token estimation, no remote telemetry, no secret persistence, no acceptance/value fields in traces or reports, no supervisor behavior change when invocationObserver is null."
   },
   "ciContract": {
     "checks": [
@@ -266,6 +314,8 @@
       "ob3-harness",
       "ob4-redaction",
       "ob5-report",
+      "ob6-scope",
+      "scope",
       "agent-tools",
       "docs",
       "repository"
@@ -274,12 +324,13 @@
   },
   "migrationContract": {
     "preserve": [
-      "all existing packages, APIs and tests"
+      "all existing packages, APIs and tests",
+      "BB-097 supervised result shape and behavior with invocationObserver null"
     ],
     "add": [
-      "BB-098 modules, tests and docs"
+      "BB-098 modules, invocationObserver option, CLI report/--trace-dir, tests and docs"
     ],
-    "rollback": "Remove the BB-098 modules, tests, scripts and docs."
+    "rollback": "Remove the BB-098 modules, tests, CLI additions and docs, and the invocationObserver option."
   },
   "laneContracts": [
     {
@@ -301,7 +352,7 @@
       "binding": "plan hash + candidate/evidence + Jev",
       "convergence": "criterion runs + no forbidden writes + docs",
       "forbidden": [
-        "No token estimation, no remote telemetry, no secret persistence, no acceptance/value fields in traces or reports."
+        "No token estimation, no remote telemetry, no secret persistence, no acceptance/value fields in traces or reports, no supervisor behavior change when invocationObserver is null."
       ]
     }
   ],
@@ -311,39 +362,48 @@
       "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe the run trace schema, digest chain, per-tool observability limits, redaction and the descriptive report."
+    "statement": "Living docs describe the run trace schema, digest chain, direct and supervised capture (invocationObserver), per-tool observability limits (Codex usage only from turn.completed; Kiro and agy usage null), redaction and the descriptive report."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
     {
       "objectiveCriterion": "Specify an append-only, digest-chained AGENT_TOOL_RUN_TRACE_V1 record per agent invocation covering tool, version, arm label, timing, exit, bounded redacted output excerpts, repository diff statistics, verification outcomes and ExHarness events/spans when supervised.",
       "criterionIds": [
-        "OB1"
+        "OB1",
+        "OB3"
       ],
       "planElements": [
-        "S1"
+        "S1",
+        "S3"
       ],
       "verificationIds": [
         "ob1-trace",
+        "ob3-harness",
         "agent-tools"
       ],
       "decisionIndexes": [
         0,
         1,
-        2
+        2,
+        4
       ],
       "sourceRefs": [
-        "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+        "docs/blackboard/evidence/BB-098/observation-probe-result.json",
+        "packages/agent-tools/src/process-runner.js",
         "docs/blackboard/process/agent-tool-research/BB-098.md"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
-          "match": "runAgentInvocation"
+          "ref": "docs/blackboard/evidence/BB-098/observation-probe-result.json",
+          "match": "\"supervisedResultOmitsRawOutput\": true"
+        },
+        {
+          "ref": "packages/agent-tools/src/process-runner.js",
+          "match": "export async function runAgentInvocation("
         },
         {
           "ref": "docs/blackboard/process/agent-tool-research/BB-098.md",
-          "match": "## Approaches and evidence"
+          "match": "## Research revision r1"
         }
       ],
       "supportingPlanFields": [
@@ -366,7 +426,8 @@
         3
       ],
       "sourceRefs": [
-        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+        "docs/blackboard/process/agent-tool-research/BB-098.md"
       ],
       "sourceAnchors": [
         {
@@ -376,6 +437,10 @@
         {
           "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
           "match": "\"--log-file\": true"
+        },
+        {
+          "ref": "docs/blackboard/process/agent-tool-research/BB-098.md",
+          "match": "turn.completed"
         }
       ],
       "supportingPlanFields": [
@@ -430,17 +495,22 @@
         6
       ],
       "sourceRefs": [
-        "packages/core-harness/src/harness.js",
-        "packages/core-harness/src/tracing.js"
+        "packages/core-harness/src/tracing.js",
+        "packages/agent-tools/src/supervisor.js",
+        "docs/blackboard/evidence/BB-098/observation-probe-result.json"
       ],
       "sourceAnchors": [
         {
-          "ref": "packages/core-harness/src/harness.js",
+          "ref": "packages/core-harness/src/tracing.js",
+          "match": "export function createTraceRecorder({"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
           "match": "eventSinks = [],"
         },
         {
-          "ref": "packages/core-harness/src/tracing.js",
-          "match": "export function createTraceRecorder({"
+          "ref": "docs/blackboard/evidence/BB-098/observation-probe-result.json",
+          "match": "\"capabilityWindowsOpenAtAvoAct\": true"
         }
       ],
       "supportingPlanFields": [
@@ -454,14 +524,16 @@
         "OB2",
         "OB3",
         "OB4",
-        "OB5"
+        "OB5",
+        "OB6"
       ],
       "planElements": [
         "S1",
         "S2",
         "S3",
         "S4",
-        "S5"
+        "S5",
+        "S6"
       ],
       "verificationIds": [
         "ob1-trace",
@@ -469,18 +541,25 @@
         "ob3-harness",
         "ob4-redaction",
         "ob5-report",
+        "ob6-scope",
+        "scope",
         "repository"
       ],
       "decisionIndexes": [
         7
       ],
       "sourceRefs": [
-        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+        "docs/blackboard/evidence/BB-098/observation-probe-result.json"
       ],
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
           "match": "\"allInstalled\": true"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-098/observation-probe-result.json",
+          "match": "\"supervisedLogAndWorktreeRemovedOnReturn\": true"
         }
       ],
       "supportingPlanFields": [
@@ -490,13 +569,14 @@
     }
   ],
   "negativeVerificationCases": [
-    "A codex stream without any usage-bearing event yields null token fields with CODEX_USAGE_NOT_REPORTED, never zero.",
-    "Kiro and agy traces never carry numeric token values.",
+    "A codex stream without any turn.completed usage event yields null token fields with CODEX_USAGE_NOT_REPORTED, never zero.",
+    "Kiro, agy, TIMED_OUT and TOOL_UNAVAILABLE traces never carry numeric token values.",
     "A malformed JSONL line is counted in invalidLines and does not abort parsing.",
-    "Editing, deleting or reordering any trace line makes verifyTraceFile throw TRACE_CHAIN_BROKEN.",
-    "A planted environment secret or key-pattern string never appears in traces.jsonl bytes.",
-    "The report has no acceptance or value field and token totals exclude uncovered traces.",
-    "A direct (unsupervised) trace has harness null.",
-    "Any write to Core, Oracle, agentic-system, BB-097 supervisor/adapters or docs/blackboard fails scope verification."
+    "Editing, deleting, inserting or reordering any trace line makes verifyTraceFile throw TRACE_CHAIN_BROKEN.",
+    "A planted environment secret or key-pattern string, including one split at the capture truncation boundary, never appears in traces.jsonl bytes.",
+    "The report has no acceptance, winner or value field and token totals exclude uncovered traces.",
+    "A direct (unsupervised) trace has harness null; a supervised attempt trace carries only its own avo.act window plus RUN entries on the last attempt.",
+    "With invocationObserver null the supervised result and existing BB-097 tests are unchanged; an observer error fails the run instead of being swallowed.",
+    "Any write to Core, Oracle, agentic-system, benchmark, the BB-097 adapters/process runner, BB-097 tests or docs/blackboard fails the scope audit."
   ]
 }
