@@ -52,7 +52,7 @@
     "D7 — Failure mapping is fixed: ENV_BUILD for environment build; ENV_RUNTIME for environment runtime; ADAPTER_SETUP for custom-agent/bootstrap; HARNESS_PROTOCOL for missing/malformed trial contract; ARTIFACT_EXTRACTION for extraction; VERIFIER_ERROR + NOT_EVALUATED for verifier crash; AGENT_TIMEOUT for agent wall timeout; provider rate-limit/timeout/5xx remain providerStatus and do not synthesize quality.",
     "D8 — Lifecycle is register experiment -> register units -> begin attempt -> prepare -> execute -> collect -> independent evaluate when evaluable -> normalize outcome/accounting -> settle -> fresh-process audit. Producer exit status never substitutes for evaluator quality.",
     "D9 — Local calibration is credential-free/model-free. Four owned fixtures cover pass, artifact reopening, producer-success/verifier-fail and failure normalization. External sanity deterministically seals exactly two pinned Terminal-Bench 2.1 tasks after oracle 5/5 + nop fail 1/1.",
-    "D10 — Legacy migration is replacement-before-delete: inventory consumers, apply explicit disposition matrix, build/calibrate replacement, cut root entrypoints, run forbidden-reference scan, then delete scripts/delivery/baseline/**. Historical provenance remains only in Git.",
+    "D10 — Legacy migration is replacement-before-delete: inventory consumers, apply explicit disposition matrix, build/calibrate replacement, cut root entrypoints, run forbidden-reference scan, then delete scripts/delivery/baseline/** and its test/delivery/** tests. Historical provenance remains only in Git.",
     "D11 — BB-077 consumes only @exharness/benchmark public API plus BENCHMARK_SUBSTRATE_MANIFEST_V1 and owns DIRECT_CODEACT/CORE_SYNC adapters, fixed-factor protocol, economics metrics, cohort/repeats and comparison reducer. It cannot reimplement AttemptLedger/evidence/accounting truth.",
     "D12 — BB-081, BB-074, BB-075 and BB-076 reuse the same experiment/unit/attempt/evidence/accounting backbone. Their metrics/gates remain experiment-owned; bypassing kernel attempt/evidence truth is a contract violation."
   ],
@@ -123,7 +123,9 @@
       "benchmarks/substrate/**",
       "package.json",
       "docs/living/system/benchmark/**",
-      "scripts/delivery/baseline/**"
+      "scripts/delivery/baseline/**",
+      "test/delivery/**",
+      "docs/living/system/state.md"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
@@ -141,7 +143,7 @@
     "S3 — Deterministic calibration: implement four credential-free fixtures and prove producer success + verifier fail, accepted artifact after budget exhaustion, provider timeout/no artifact, UNKNOWN usage, retry preservation, reset isolation and verifier/artifact failures.",
     "S4 — Evidence and audit reopening: persist EVIDENCE_MANIFEST_V1, restart audit in a fresh process, reopen raw result/artifact/verifier/usage evidence, recompute normalized attempt/accounting digests and reject tampering, missing refs, identity drift or zero-filled unknown usage.",
     "S5 — External sanity: use pinned Terminal-Bench 2.1; deterministically select two bundles after oracle 5/5 and nop fail 1/1, seal identities before downstream model results, perform no coding-model call, and emit BENCHMARK_SUBSTRATE_MANIFEST_V1.",
-    "S6 — Legacy retirement and downstream handoff: only after S1-S5 pass, cut retired root entrypoints, delete scripts/delivery/baseline/** current implementation, run forbidden-reference scans, wire npm run test:benchmark, update Living benchmark truth, and prove a BB-077 fixture imports only public kernel exports plus substrate manifest."
+    "S6 — Legacy retirement and downstream handoff: only after S1-S5 pass, cut retired root entrypoints, delete scripts/delivery/baseline/** and its test/delivery/** tests, run forbidden-reference scans, wire npm run test:benchmark, update Living benchmark and system state truth, and prove a BB-077 fixture imports only public kernel exports plus substrate manifest."
   ],
   "acceptanceCriteria": [
     {
@@ -430,10 +432,11 @@
   ],
   "livingDocs": {
     "refs": [
-      "docs/living/system/benchmark/state.md"
+      "docs/living/system/benchmark/state.md",
+      "docs/living/system/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living benchmark truth records only the delivered @exharness/benchmark public contract, Harbor calibration identity, audit limitations, external-sanity manifest and retirement of the old current baseline path; it does not claim harness economics or product value."
+    "statement": "Living benchmark truth records only the delivered @exharness/benchmark public contract, Harbor calibration identity, audit limitations, external-sanity manifest and retirement of the old current baseline path; the system state no longer presents that path as current; neither claims harness economics or product value."
   },
   "benchmarkPackageContract": {
     "schemaVersion": 1,
@@ -544,7 +547,7 @@
       "run equivalence only for semantics intentionally preserved",
       "cut root entrypoints",
       "run forbidden-reference scan",
-      "delete scripts/delivery/baseline/**",
+      "delete scripts/delivery/baseline/** and test/delivery/**",
       "publish Living retirement truth"
     ],
     "matrix": [
@@ -587,6 +590,11 @@
         "legacy": "scripts/delivery/baseline/fixture/**",
         "disposition": "REQUALIFY",
         "owner": "benchmarks/substrate/fixtures/**"
+      },
+      {
+        "legacy": "test/delivery/baseline-*.test.mjs",
+        "disposition": "DROP",
+        "owner": "none"
       }
     ],
     "equivalenceRule": "Only semantics intentionally retained by the new contracts, such as null/UNKNOWN accounting and evidence-digest reopening, receive equivalence tests. Direct/Core/Jev-value behavior is not an equivalence target.",
