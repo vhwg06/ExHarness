@@ -1,0 +1,49 @@
+TAP version 13
+# Subtest: GR1 grok builds the exact WORKSPACE_EDIT argv with the default model
+ok 1 - GR1 grok builds the exact WORKSPACE_EDIT argv with the default model
+  ---
+  duration_ms: 1.679835
+  type: 'test'
+  ...
+# Subtest: GR1 FULL_AUTO passes always-approve
+ok 2 - GR1 FULL_AUTO passes always-approve
+  ---
+  duration_ms: 0.216225
+  type: 'test'
+  ...
+# Subtest: GR1 WORKSPACE_EDIT does not pass always-approve
+ok 3 - GR1 WORKSPACE_EDIT does not pass always-approve
+  ---
+  duration_ms: 0.159133
+  type: 'test'
+  ...
+# Subtest: GR1 grok argv uses prompt-file not positional prompt
+ok 4 - GR1 grok argv uses prompt-file not positional prompt
+  ---
+  duration_ms: 0.211869
+  type: 'test'
+  ...
+# Subtest: GR1 grok resume flags use resume with a session id and continue without one
+ok 5 - GR1 grok resume flags use resume with a session id and continue without one
+  ---
+  duration_ms: 0.314582
+  type: 'test'
+  ...
+# Subtest: GR1 grok requires a prompt file
+ok 6 - GR1 grok requires a prompt file
+  ---
+  duration_ms: 0.57003
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 129.367066
+
+
+exitCode=0

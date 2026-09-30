@@ -54,6 +54,16 @@ export {
   MCP_SERVER_INFO,
   createExharnessMcpVerifyServer
 } from "./mcp-server.js";
+export {
+  AgentTaskContextError,
+  CONTEXT_UNSATISFIED,
+  GROUNDED_CONTEXT_HEADER,
+  buildGroundedPromptPrefix,
+  createGitRepositoryReader,
+  projectAgentTaskContext,
+  resolveAgentTaskContext,
+  validateRequiredFiles
+} from "./task-context.js";
 export { REDACTED, SECRET_PATTERNS, createRedactor, redact, redactedExcerpt, secretValues } from "./redaction.js";
 export { UsageUnavailableReason, parseAgyOutput, parseCodexJsonl, parseGrokJson, parseKiroOutput, parseToolOutput } from "./output-parsers.js";
 export {
