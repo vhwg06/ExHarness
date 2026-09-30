@@ -1,0 +1,152 @@
+{
+  "kind": "BB099_EVALUATION_PROBE_RESULT",
+  "version": 1,
+  "sha": "c09b703ff0645efb989c8cd7db69ae7112ac3e94",
+  "platform": "linux-x64",
+  "node": "v20.19.2",
+  "deliveredExports": {
+    "names": [
+      "AGENT_SUPERVISED_RESULT_VERSION",
+      "AGENT_TASK_VERSION",
+      "AGENT_TOOLS",
+      "AGENT_TOOL_ADAPTER_VERSION",
+      "AGENT_TOOL_IDENTITY",
+      "AGENT_TOOL_RUN_REPORT_VERSION",
+      "AGENT_TOOL_RUN_TRACE_VERSION",
+      "AgentTaskStatus",
+      "AttemptOutcome",
+      "FEEDBACK_HEADER",
+      "InvocationStatus",
+      "PermissionProfile",
+      "REDACTED",
+      "RUN_AGENT_TOOL",
+      "SECRET_PATTERNS",
+      "TRACE_FILE",
+      "TraceError",
+      "TraceMode",
+      "UsageUnavailableReason",
+      "agyTool",
+      "buildFeedback",
+      "buildTraceBody",
+      "canonicalJson",
+      "codexTool",
+      "commitDiffStats",
+      "createHarnessCapture",
+      "createRedactor",
+      "createRunTraceWriter",
+      "createSupervisedAgentStrategy",
+      "createSupervisedObservation",
+      "defineAgentTool",
+      "killProcessTree",
+      "kiroTool",
+      "parseAgyOutput",
+      "parseCodexJsonl",
+      "parseKiroOutput",
+      "parseToolOutput",
+      "readTraces",
+      "redact",
+      "redactedExcerpt",
+      "resolveExecutable",
+      "runAgentInvocation",
+      "runObservedInvocation",
+      "runProcess",
+      "runSupervisedTask",
+      "secretValues",
+      "summarizeTraces",
+      "traceDigest",
+      "validateAgentTask",
+      "verifyTraceFile",
+      "workingTreeDiffStats"
+    ],
+    "hasObserveInvocation": false,
+    "hasRunObservedInvocation": true,
+    "hasCreateSupervisedObservation": true,
+    "hasRunSupervisedTask": true,
+    "hasRunAgentInvocation": true,
+    "hasDefineAgentTool": true,
+    "agentToolsKeys": [
+      "agy",
+      "codex",
+      "kiro"
+    ],
+    "agentTaskStatus": {
+      "ACCEPTED": "ACCEPTED",
+      "EXHAUSTED": "EXHAUSTED",
+      "TOOL_UNAVAILABLE": "TOOL_UNAVAILABLE"
+    },
+    "invocationStatus": {
+      "COMPLETED": "COMPLETED",
+      "TIMED_OUT": "TIMED_OUT",
+      "TOOL_UNAVAILABLE": "TOOL_UNAVAILABLE"
+    },
+    "permissionProfile": {
+      "WORKSPACE_EDIT": "WORKSPACE_EDIT",
+      "FULL_AUTO": "FULL_AUTO"
+    }
+  },
+  "sourceSeams": {
+    "supervisorHasInvocationObserverDefaultNull": true,
+    "observationExportsRunObservedInvocation": true,
+    "observationExportsCreateSupervisedObservation": true,
+    "childEnvironmentSpreadsProcessEnv": true,
+    "fakeScenarios": [
+      "FIX_FIRST",
+      "FIX_AFTER_FEEDBACK",
+      "NEVER_FIX",
+      "CLAIM_SUCCESS_NO_EDIT",
+      "SELF_COMMIT",
+      "PARTIAL_THEN_FIX",
+      "AUTH_FAIL",
+      "HANG"
+    ],
+    "hasCreateLocalGitWorkspace": true,
+    "hasCreateLocalCommandVerifier": true
+  },
+  "hostTools": {
+    "codex": null,
+    "kiro": null,
+    "kiro-cli": null,
+    "agy": null,
+    "grokOnPath": null,
+    "grokHomeExists": true,
+    "grokBin": "/home/box/.grok/bin/grok",
+    "grokVersion": "grok 1.0.44 (5b807183dd79)",
+    "grokHelpFlags": {
+      "outputFormat": true,
+      "json": true,
+      "singleDashP": true,
+      "resume": true,
+      "continue": true,
+      "alwaysApprove": true,
+      "permissionMode": true,
+      "model": true,
+      "usageCommand": true,
+      "agentCommand": true
+    }
+  },
+  "bb065": {
+    "planStatus": "READY",
+    "d1ExposesOnlyPackageRoot": true,
+    "d1NoDeepImport": true,
+    "d2PublicExports": "D2 — Public exports are exactly createExperimentRegistration, createBenchmarkUnit, AttemptLedger, normalizeOutcome, createEvidenceManifest, normalizeAccounting, auditAttempt, assertExperimentRegistration, assertBenchmarkUnit, assertAttemptRecord, assertEvidenceManifest, assertSubstratePort, CONTRACT_KINDS and OUTCOME_ENUMS.",
+    "d5AdaptersOwnProcessInvocation": true,
+    "d8Lifecycle": "D8 — Lifecycle is register experiment -> register units -> begin attempt -> prepare -> execute -> collect -> independent evaluate when evaluable -> normalize outcome/accounting -> settle -> fresh-process audit. Producer exit status never substitutes for evaluator quality.",
+    "d11ExperimentOwnedAdapter": true,
+    "d12ReuseKernel": true,
+    "packagesBenchmarkExists": false,
+    "benchmarkImport": {
+      "ok": false,
+      "errorCode": "ERR_MODULE_NOT_FOUND",
+      "message": "Cannot find package '@exharness/benchmark' imported from /workspace/ExHarness-r099/docs/blackboard/evidence/BB-099/evaluation-probe.mjs"
+    }
+  },
+  "workspace": {
+    "workspaces": [
+      "packages/*"
+    ],
+    "hasEvalAgentTools": false,
+    "agentToolsExports": {
+      ".": "./src/index.js"
+    }
+  }
+}
