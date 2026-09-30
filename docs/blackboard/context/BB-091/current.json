@@ -1,0 +1,138 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-091",
+  "taskId": "BB-091",
+  "featureId": "FEATURE-ORACLE-PLANNER-OPTIMIZATION",
+  "topicId": "TOPIC-ORACLE-CONTEXT-INTELLIGENCE",
+  "components": [
+    "oracle/infrastructure"
+  ],
+  "pipeline": "WORKER",
+  "lane": "WORKER",
+  "phase": "JUDGMENT",
+  "stage": "JUDGMENT",
+  "semanticArtifactRef": "docs/blackboard/artifacts/ready-implement-plan/BB-091.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-091.json",
+  "planHash": "66063c9db22bf8cb0f6b134889cfe0b9070e634377829696a3347a05439902b6",
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-088",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/oracle/context-graph.md"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "docs/blackboard/process/oracle-reconciliation-phase.md",
+    "docs/living/system/oracle/context-graph.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-091.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-091.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-091.readiness-jev-evaluation.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/oracle/**",
+      "scripts/oracle-context-intelligence/**",
+      "test/oracle-*.test.mjs",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/process/**",
+      "docs/blackboard/evidence/BB-091/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-088.json",
+      "docs/living/system/oracle/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/oracle/**",
+      "scripts/oracle-context-intelligence/**",
+      "test/oracle-*.test.mjs",
+      "docs/blackboard/component-registry.json",
+      "docs/blackboard/process/**",
+      "docs/blackboard/evidence/BB-091/**",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-088.json",
+      "docs/living/system/oracle/**"
+    ],
+    "write": [
+      "packages/oracle/src/planning-strategies.js",
+      "packages/oracle/src/index.js",
+      "packages/oracle/test/planning-strategies.test.js",
+      "scripts/oracle-context-intelligence/planner-ablation.mjs",
+      "scripts/oracle-context-intelligence/planner-ablation-cohort.json",
+      "test/oracle-planner-ablation.test.mjs",
+      "docs/living/system/oracle/planner.md"
+    ],
+    "forbiddenWrite": [
+      "packages/oracle/src/retrieval-planner.js",
+      "packages/oracle/src/source-catalog.js",
+      "packages/oracle/src/context-contract.js",
+      "packages/oracle/src/providers/**",
+      "packages/core-harness/**",
+      "packages/agentic-system/**",
+      "scripts/oracle-context-intelligence/bb062-retrieval-benchmark.mjs",
+      "docs/blackboard/**"
+    ]
+  },
+  "artifactWriteScope": [],
+  "hardInvariants": [
+    "Every strategy preserves reservation, EXACT/CURRENT, provenance and budget semantics of DETERMINISTIC_V1.",
+    "The decision is computed by a preregistered deterministic reducer; non-discriminating arms yield INCONCLUSIVE.",
+    "Defaults never change in this task; model-assisted planning is NOT_EVALUATED."
+  ],
+  "verification": [
+    {
+      "id": "strategies",
+      "command": "node --test packages/oracle/test/planning-strategies.test.js"
+    },
+    {
+      "id": "ablation",
+      "command": "node --test test/oracle-planner-ablation.test.mjs"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "expectedOutputs": [
+    "DELIVERED_FEATURE"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**",
+      "scripts/**",
+      "test/**"
+    ],
+    "contractRefs": [
+      "resolveBackendContext",
+      "resolveQaContext",
+      "repositoryReader.readFile",
+      "artifactReader.readArtifact",
+      "BackendContextSchema",
+      "QaContextSchema"
+    ]
+  }
+}
