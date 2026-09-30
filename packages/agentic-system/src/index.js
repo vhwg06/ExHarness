@@ -141,6 +141,13 @@ export {
   resolveQaContext
 } from "./oracle.js";
 export {
+  OracleContextBlockedError,
+  backendContextRequirement,
+  qaContextRequirement,
+  projectBackendContext,
+  projectQaContext
+} from "./oracle-context-requirements.js";
+export {
   BackendRecoveryAction,
   createBackendWorker
 } from "./backend-worker.js";
