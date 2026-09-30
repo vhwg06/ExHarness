@@ -88,6 +88,7 @@ class CalibrationProducerAgent(BaseAgent):
             await environment.exec(f"mkdir -p {CONTROL_DIR} && touch {CONTROL_DIR}/crash-verifier")
         if "sleep" in spec:
             await asyncio.sleep(spec["sleep"])
+            raise RuntimeError("agent-timeout mode outlived its sleep; Harbor must enforce the agent timeout")
         if "raise" in spec:
             raise RAISES[spec["raise"]](f"scripted provider failure: {spec['raise']}")
         for key, value in spec.get("usage", {}).items():
