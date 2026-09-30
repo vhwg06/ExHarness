@@ -1,0 +1,91 @@
+TAP version 13
+# Subtest: plan() of RRF and GRAPH deep-equals DETERMINISTIC_V1 plan() for the same requirement and options
+ok 1 - plan() of RRF and GRAPH deep-equals DETERMINISTIC_V1 plan() for the same requirement and options
+  ---
+  duration_ms: 5.710214
+  type: 'test'
+  ...
+# Subtest: RRF runs every reserved work unit and fuses by sum 1/(60+rank) with itemRef tie-break
+ok 2 - RRF runs every reserved work unit and fuses by sum 1/(60+rank) with itemRef tie-break
+  ---
+  duration_ms: 3.805852
+  type: 'test'
+  ...
+# Subtest: RRF breaks equal fusion scores by itemRef ascending
+ok 3 - RRF breaks equal fusion scores by itemRef ascending
+  ---
+  duration_ms: 0.94033
+  type: 'test'
+  ...
+# Subtest: provider returning more items than reserved fails BUDGET_EXHAUSTED in base and both strategies
+ok 4 - provider returning more items than reserved fails BUDGET_EXHAUSTED in base and both strategies
+  ---
+  duration_ms: 1.467638
+  type: 'test'
+  ...
+# Subtest: tiny maxMaterializedBytes gives identical unresolved reasons in all three planners
+ok 5 - tiny maxMaterializedBytes gives identical unresolved reasons in all three planners
+  ---
+  duration_ms: 1.867267
+  type: 'test'
+  ...
+# Subtest: CURRENT evidence with a stale snapshot authority is STALE in all three planners
+ok 6 - CURRENT evidence with a stale snapshot authority is STALE in all three planners
+  ---
+  duration_ms: 2.036604
+  type: 'test'
+  ...
+# Subtest: CURRENT evidence with no authority is CURRENTNESS_UNVERIFIABLE in all three planners
+ok 7 - CURRENT evidence with no authority is CURRENTNESS_UNVERIFIABLE in all three planners
+  ---
+  duration_ms: 2.183435
+  type: 'test'
+  ...
+# Subtest: EXACT snapshot mismatch candidate is rejected identically in all three planners
+ok 8 - EXACT snapshot mismatch candidate is rejected identically in all three planners
+  ---
+  duration_ms: 1.24779
+  type: 'test'
+  ...
+# Subtest: candidates keep provider provenance and graph-derived items carry AUTHORITATIVE_SOURCE
+ok 9 - candidates keep provider provenance and graph-derived items carry AUTHORITATIVE_SOURCE
+  ---
+  duration_ms: 4.177239
+  type: 'test'
+  ...
+# Subtest: GRAPH adds exactly one IMPORTS hop anchored at the top base candidate when budget remains
+ok 10 - GRAPH adds exactly one IMPORTS hop anchored at the top base candidate when budget remains
+  ---
+  duration_ms: 1.906602
+  type: 'test'
+  ...
+# Subtest: GRAPH skips with BUDGET_EXHAUSTED when no unreserved budget remains
+ok 11 - GRAPH skips with BUDGET_EXHAUSTED when no unreserved budget remains
+  ---
+  duration_ms: 1.331595
+  type: 'test'
+  ...
+# Subtest: GRAPH skips with NO_GRAPH_PROVIDER when no graph provider is registered
+ok 12 - GRAPH skips with NO_GRAPH_PROVIDER when no graph provider is registered
+  ---
+  duration_ms: 0.69743
+  type: 'test'
+  ...
+# Subtest: default createRetrievalPlanner still stops at the first successful provider
+ok 13 - default createRetrievalPlanner still stops at the first successful provider
+  ---
+  duration_ms: 0.44593
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 99.258193
+
+
+exitCode=0

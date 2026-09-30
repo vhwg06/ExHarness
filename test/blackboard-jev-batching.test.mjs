@@ -273,3 +273,42 @@ test('payload budget fails closed for whole-sent payloads and for a batch that c
   assert.throws(() => checkPayloadBudget(bloated, { lane: 'WORKER', maxPayloadBytes: 524288 }), /worker batch exceeds bounded input/);
   assert.throws(() => checkPayloadBudget(small, { lane: 'WORKER', maxPayloadBytes: 0 }), /invalid payload budget/);
 });
+
+test('a negative-case question batch carries its bound test body, parent criterion and only its bound run', () => {
+  const rc = log('rc-check', 'ok 1 - RC refuses stale input\n# pass 1\n# fail 0\n');
+  const other = log('other-check', 'ok 1 - other\n# pass 1\n# fail 0\n');
+  const payload = fixture({ evidence: { RC: [rc, other] } });
+  const binding = { id: 'NC-RC', negativeCaseIndex: 0, criterionId: 'RC', verificationId: 'rc-check', testRef: 'pkg/test/rc.test.js', testTitle: 'RC refuses stale input', subjectSymbol: 'resume' };
+  const entry = { id: 'NC-RC', negativeCase: 'Stale input refuses.', criterionId: 'RC', testRef: binding.testRef, testTitle: binding.testTitle, subjectSymbol: 'resume', body: "assert.throws(() => resume(stale), /STALE/);" };
+  payload.state.plan.negativeVerificationCases = ['Stale input refuses.'];
+  payload.state.plan.negativeCaseBindings = [binding];
+  payload.state.negativeCaseEvidence = [entry];
+  payload.questions['NC-RC'] = question;
+  const criterionBefore = workerQuestionPayload({ ...payload, state: { ...payload.state, negativeCaseEvidence: undefined } }, 'RC');
+  const nc = workerQuestionPayload(payload, 'NC-RC');
+  assert.deepEqual(Object.keys(nc.questions), ['NC-RC']);
+  assert.deepEqual(nc.state.negativeCaseEvidence, [entry]);
+  assert.deepEqual(nc.state.plan.negativeCaseBindings, [binding]);
+  assert.deepEqual(nc.state.plan.acceptanceCriteria.map(c => c.id), ['RC']);
+  assert.deepEqual(nc.state.verification.map(run => run.id), ['rc-check']);
+  assert.deepEqual(nc.state.evidenceFiles.map(file => file.ref), [rc.ref]);
+  assert.equal(nc.state.evidenceFiles[0].body, rc.body);
+  assert.deepEqual(nc.state.evidence, []);
+  // Criterion batches are unchanged by the presence of negative-case evidence.
+  const criterion = workerQuestionPayload(payload, 'RC');
+  assert.equal(canonical(criterion), canonical(criterionBefore));
+  assert.equal(Object.hasOwn(criterion.state, 'negativeCaseEvidence'), false);
+  assert.equal(Object.hasOwn(criterion.state.plan, 'negativeCaseBindings'), false);
+});
+
+test('a negative-case question whose bound run or criterion is missing fails closed', () => {
+  const rc = log('rc-check', 'ok 1 - RC\n');
+  const payload = fixture({ evidence: { RC: [rc] } });
+  const entry = { id: 'NC-RC', negativeCase: 'x', criterionId: 'RC', testRef: 't.test.js', testTitle: 'RC', subjectSymbol: 's', body: 's()' };
+  payload.state.negativeCaseEvidence = [entry];
+  payload.questions['NC-RC'] = question;
+  payload.state.plan.negativeCaseBindings = [{ id: 'NC-RC', criterionId: 'RC', verificationId: 'missing-run', testRef: 't.test.js' }];
+  assert.throws(() => workerQuestionPayload(payload, 'NC-RC'), /worker negative case unbound: NC-RC/);
+  payload.state.plan.negativeCaseBindings = [];
+  assert.throws(() => workerQuestionPayload(payload, 'NC-RC'), /worker negative case unbound: NC-RC/);
+});
