@@ -21,7 +21,7 @@ next-work-id: BB-124
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,12 +31,19 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-122
 ```
 
 ## Active work
 
-NONE
+
+BB-122
+task: Add OpenCode as a supported agent tool
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-122/current.json
+components: integration/agent-tools
+worker: grok-bot
 
 ## Schedulable tasks
 
@@ -48,7 +55,6 @@ NONE
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-108 [WORKER/EXECUTION] — Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
-- BB-122 [WORKER/EXECUTION] — Add OpenCode as a supported agent tool
 - BB-123 [RESEARCH_SA/RESEARCH] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
 
 ## Dependency graph
@@ -114,7 +120,7 @@ BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [WORKER_SCHEDULABLE] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097
 BB-121 [BLOCKED_BY BB-120] <- BB-100, BB-101, BB-120
-BB-122 [WORKER_SCHEDULABLE] <- BB-097, BB-098
+BB-122 [ACTIVE] <- BB-097, BB-098
 BB-123 [RESEARCH_SCHEDULABLE] <- BB-105, BB-102
 ```
 
