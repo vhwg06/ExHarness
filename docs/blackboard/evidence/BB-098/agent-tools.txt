@@ -1,0 +1,253 @@
+TAP version 13
+# Subtest: AT1 codex builds exact first and resume invocations with the prompt on stdin for each permission profile
+ok 1 - AT1 codex builds exact first and resume invocations with the prompt on stdin for each permission profile
+  ---
+  duration_ms: 1.973978
+  type: 'test'
+  ...
+# Subtest: AT1 kiro builds exact first and resume invocations with the prompt as one argument
+ok 2 - AT1 kiro builds exact first and resume invocations with the prompt as one argument
+  ---
+  duration_ms: 0.261253
+  type: 'test'
+  ...
+# Subtest: AT1 agy builds exact first and resume invocations with a seconds print timeout and log file
+ok 3 - AT1 agy builds exact first and resume invocations with a seconds print timeout and log file
+  ---
+  duration_ms: 0.493124
+  type: 'test'
+  ...
+# Subtest: AT1 invalid requests are rejected and defineAgentTool replaces only the launch tuple
+ok 4 - AT1 invalid requests are rejected and defineAgentTool replaces only the launch tuple
+  ---
+  duration_ms: 0.324937
+  type: 'test'
+  ...
+# Subtest: AT1 executables resolve without a shell: script paths, POSIX PATH, win32 npm shims and native exe
+ok 5 - AT1 executables resolve without a shell: script paths, POSIX PATH, win32 npm shims and native exe
+  ---
+  duration_ms: 2.700464
+  type: 'test'
+  ...
+# Subtest: AT1 each adapter launches the fake CLI with the exact recorded argv and stdin, and a missing tool is TOOL_UNAVAILABLE
+ok 6 - AT1 each adapter launches the fake CLI with the exact recorded argv and stdin, and a missing tool is TOOL_UNAVAILABLE
+  ---
+  duration_ms: 106.939599
+  type: 'test'
+  ...
+# Subtest: AT2 a prompt with shell metacharacters reaches the tool verbatim and is never interpreted
+ok 7 - AT2 a prompt with shell metacharacters reaches the tool verbatim and is never interpreted
+  ---
+  duration_ms: 68.709559
+  type: 'test'
+  ...
+# Subtest: AT2 output is bounded per stream while the digest covers the full stream
+ok 8 - AT2 output is bounded per stream while the digest covers the full stream
+  ---
+  duration_ms: 38.05027
+  type: 'test'
+  ...
+# Subtest: AT2 a missing executable is TOOL_UNAVAILABLE without throwing
+ok 9 - AT2 a missing executable is TOOL_UNAVAILABLE without throwing
+  ---
+  duration_ms: 2.836275
+  type: 'test'
+  ...
+# Subtest: AT2 a hung tool is killed at timeoutMs together with its process tree
+ok 10 - AT2 a hung tool is killed at timeoutMs together with its process tree
+  ---
+  duration_ms: 1507.795102
+  type: 'test'
+  ...
+# Subtest: AT3 a verified candidate is promoted: ACCEPTED with one ExHarness commit and the source repository preserved
+ok 11 - AT3 a verified candidate is promoted: ACCEPTED with one ExHarness commit and the source repository preserved
+  ---
+  duration_ms: 275.214872
+  type: 'test'
+  ...
+# Subtest: AT3 failed verification is fed back through resume and the fix is accepted on the next attempt
+ok 12 - AT3 failed verification is fed back through resume and the fix is accepted on the next attempt
+  ---
+  duration_ms: 419.390509
+  type: 'test'
+  ...
+# Subtest: AT3 a tool that never fixes ends EXHAUSTED after exactly maxAttempts without promotion
+ok 13 - AT3 a tool that never fixes ends EXHAUSTED after exactly maxAttempts without promotion
+  ---
+  duration_ms: 620.298383
+  type: 'test'
+  ...
+# Subtest: AT3 a tool that claims success without editing is NO_CHANGE and never ACCEPTED
+ok 14 - AT3 a tool that claims success without editing is NO_CHANGE and never ACCEPTED
+  ---
+  duration_ms: 387.221444
+  type: 'test'
+  ...
+# Subtest: AT3 commits made by the agent are folded into exactly one candidate commit
+ok 15 - AT3 commits made by the agent are folded into exactly one candidate commit
+  ---
+  duration_ms: 300.562062
+  type: 'test'
+  ...
+# Subtest: AT3 a partial edit is rejected, its feedback drives the fix, and the accepted candidate builds on it
+ok 16 - AT3 a partial edit is rejected, its feedback drives the fix, and the accepted candidate builds on it
+  ---
+  duration_ms: 430.899289
+  type: 'test'
+  ...
+# Subtest: AT3 a failing tool, a missing tool and an invalid task are never ACCEPTED
+ok 17 - AT3 a failing tool, a missing tool and an invalid task are never ACCEPTED
+  ---
+  duration_ms: 331.041001
+  type: 'test'
+  ...
+# Subtest: AT3 verification feedback is bounded by maxFeedbackChars
+ok 18 - AT3 verification feedback is bounded by maxFeedbackChars
+  ---
+  duration_ms: 428.277042
+  type: 'test'
+  ...
+# Subtest: AT4 run prints AGENT_SUPERVISED_RESULT_V1 and reports ACCEPTED only after passing verification
+ok 19 - AT4 run prints AGENT_SUPERVISED_RESULT_V1 and reports ACCEPTED only after passing verification
+  ---
+  duration_ms: 961.026819
+  type: 'test'
+  ...
+# Subtest: AT4 smoke skips missing and unauthenticated tools and never reports ACCEPTED without passing verification
+ok 20 - AT4 smoke skips missing and unauthenticated tools and never reports ACCEPTED without passing verification
+  ---
+  duration_ms: 1606.243636
+  type: 'test'
+  ...
+# Subtest: AT4 root scripts run agent-tools tests in npm test while live smoke stays out of test and verify
+ok 21 - AT4 root scripts run agent-tools tests in npm test while live smoke stays out of test and verify
+  ---
+  duration_ms: 0.623519
+  type: 'test'
+  ...
+# Subtest: AT4 the Living doc states the trust boundary
+ok 22 - AT4 the Living doc states the trust boundary
+  ---
+  duration_ms: 0.377245
+  type: 'test'
+  ...
+# Subtest: OB1 a direct invocation yields one chained trace with observed timing, status, exit, diff and verification
+ok 23 - OB1 a direct invocation yields one chained trace with observed timing, status, exit, diff and verification
+  ---
+  duration_ms: 62.644485
+  type: 'test'
+  ...
+# Subtest: OB1 appended traces link sequence and prevDigest in order
+ok 24 - OB1 appended traces link sequence and prevDigest in order
+  ---
+  duration_ms: 172.550664
+  type: 'test'
+  ...
+# Subtest: OB1 editing, deleting, inserting or reordering a trace line throws TRACE_CHAIN_BROKEN
+ok 25 - OB1 editing, deleting, inserting or reordering a trace line throws TRACE_CHAIN_BROKEN
+  ---
+  duration_ms: 166.51584
+  type: 'test'
+  ...
+# Subtest: OB2 codex usage is summed only from turn.completed events and malformed lines are counted
+ok 26 - OB2 codex usage is summed only from turn.completed events and malformed lines are counted
+  ---
+  duration_ms: 0.595863
+  type: 'test'
+  ...
+# Subtest: OB2 a codex stream without a usage-bearing turn.completed is null with CODEX_USAGE_NOT_REPORTED, never zero
+ok 27 - OB2 a codex stream without a usage-bearing turn.completed is null with CODEX_USAGE_NOT_REPORTED, never zero
+  ---
+  duration_ms: 68.609898
+  type: 'test'
+  ...
+# Subtest: OB2 a live codex trace reports exact usage from the stream and counts events
+ok 28 - OB2 a live codex trace reports exact usage from the stream and counts events
+  ---
+  duration_ms: 64.987228
+  type: 'test'
+  ...
+# Subtest: OB2 kiro, agy, timed-out and unavailable traces never carry numeric token values
+ok 29 - OB2 kiro, agy, timed-out and unavailable traces never carry numeric token values
+  ---
+  duration_ms: 1675.240094
+  type: 'test'
+  ...
+# Subtest: OB3 a supervised run yields one trace per attempt with its verification, diff and avo.act window
+ok 30 - OB3 a supervised run yields one trace per attempt with its verification, diff and avo.act window
+  ---
+  duration_ms: 383.067297
+  type: 'test'
+  ...
+# Subtest: OB3 direct traces carry harness null and an unobserved supervised run is unchanged
+ok 31 - OB3 direct traces carry harness null and an unobserved supervised run is unchanged
+  ---
+  duration_ms: 780.959612
+  type: 'test'
+  ...
+# Subtest: OB3 an observer error fails the supervised run instead of being swallowed
+ok 32 - OB3 an observer error fails the supervised run instead of being swallowed
+  ---
+  duration_ms: 124.159055
+  type: 'test'
+  ...
+# Subtest: OB4 planted env and key-pattern secrets never appear in trace bytes
+ok 33 - OB4 planted env and key-pattern secrets never appear in trace bytes
+  ---
+  duration_ms: 170.804825
+  type: 'test'
+  ...
+# Subtest: OB4 a secret split at the capture truncation boundary is dropped with the partial line
+ok 34 - OB4 a secret split at the capture truncation boundary is dropped with the partial line
+  ---
+  duration_ms: 57.654673
+  type: 'test'
+  ...
+# Subtest: OB4 a record that still contains a secret is refused with SECRET_IN_TRACE
+ok 35 - OB4 a record that still contains a secret is refused with SECRET_IN_TRACE
+  ---
+  duration_ms: 3.226095
+  type: 'test'
+  ...
+# Subtest: OB5 the report is deterministic, coverage-aware and carries no acceptance, winner or value field
+ok 36 - OB5 the report is deterministic, coverage-aware and carries no acceptance, winner or value field
+  ---
+  duration_ms: 229.266145
+  type: 'test'
+  ...
+# Subtest: OB5 the report CLI verifies the chain, prints the report and exits non-zero on a broken chain
+ok 37 - OB5 the report CLI verifies the chain, prints the report and exits non-zero on a broken chain
+  ---
+  duration_ms: 499.971518
+  type: 'test'
+  ...
+# Subtest: OB5 run --trace-dir writes supervised traces that the report reads
+ok 38 - OB5 run --trace-dir writes supervised traces that the report reads
+  ---
+  duration_ms: 417.328776
+  type: 'test'
+  ...
+# Subtest: OB5 the Living doc describes observation limits and redaction
+ok 39 - OB5 the Living doc describes observation limits and redaction
+  ---
+  duration_ms: 0.324413
+  type: 'test'
+  ...
+# Subtest: OB6 the scope matcher accepts write-scope paths and rejects forbidden product and Blackboard paths
+ok 40 - OB6 the scope matcher accepts write-scope paths and rejects forbidden product and Blackboard paths
+  ---
+  duration_ms: 5.024854
+  type: 'test'
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7601.456318
+
+
+exitCode=0
