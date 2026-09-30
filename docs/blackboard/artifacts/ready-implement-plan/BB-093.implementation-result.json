@@ -1,0 +1,73 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-093-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-093.json",
+    "hash": "c5ae88918d17b1c9cf616853130c07adca9c24405e705626da02d56f9b61c523"
+  },
+  "candidateSha": "ad29ea19a59d87652403f010a3398b798ca94c91",
+  "baselineSha": "a6663eabb1111df1b8aefef24c17336873232eb0",
+  "candidateTree": "b30afee347ae266916015b6828eab591a8c87325",
+  "verificationRuns": [
+    {
+      "id": "budget-unit",
+      "command": "node --test packages/oracle/test/context-budget.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "ad29ea19a59d87652403f010a3398b798ca94c91",
+      "logRef": "docs/blackboard/evidence/BB-093/budget-unit.txt",
+      "logHash": "a38d50b380584a1f6ca1997f63198bfb7cc856841f9ab9c630bd4106b57aa19c"
+    },
+    {
+      "id": "render-fit",
+      "command": "node --test test/oracle-budget-render-fit.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "ad29ea19a59d87652403f010a3398b798ca94c91",
+      "logRef": "docs/blackboard/evidence/BB-093/render-fit.txt",
+      "logHash": "6c7fefad5c9fcb00c727d831009143fd99c48c1d6355e97ea3cb90db23cc8122"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "ad29ea19a59d87652403f010a3398b798ca94c91",
+      "logRef": "docs/blackboard/evidence/BB-093/oracle-regression.txt",
+      "logHash": "3cf5e4daa7dd5ff85b1e1a7639db3344fd1b5ad7db937bcce08769035f6ab2f1"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "ad29ea19a59d87652403f010a3398b798ca94c91",
+      "logRef": "docs/blackboard/evidence/BB-093/repository.txt",
+      "logHash": "4ea80874f1d1b0689c4937482b23b46a92b7c96c7bf8dfd46da22315c73027f8"
+    }
+  ],
+  "claims": [
+    {
+      "id": "BU1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-093/budget-unit.txt"
+      ]
+    },
+    {
+      "id": "BU2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-093/render-fit.txt"
+      ]
+    },
+    {
+      "id": "BU3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-093/render-fit.txt",
+        "docs/blackboard/evidence/BB-093/oracle-regression.txt",
+        "docs/blackboard/evidence/BB-093/repository.txt"
+      ]
+    }
+  ]
+}

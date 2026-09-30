@@ -1,0 +1,506 @@
+TAP version 13
+# Subtest: repository provider reads in requested order and retains source refs
+ok 1 - repository provider reads in requested order and retains source refs
+  ---
+  duration_ms: 1.89484
+  type: 'test'
+  ...
+# Subtest: application artifact provider keeps identity and provenance
+ok 2 - application artifact provider keeps identity and provenance
+  ---
+  duration_ms: 0.634042
+  type: 'test'
+  ...
+# Subtest: providers fail closed on absent readers, rejection and malformed results
+ok 3 - providers fail closed on absent readers, rejection and malformed results
+  ---
+  duration_ms: 1.145613
+  type: 'test'
+  ...
+# Subtest: budget profile validates and carries a deterministic profileId
+ok 4 - budget profile validates and carries a deterministic profileId
+  ---
+  duration_ms: 2.206534
+  type: 'test'
+  ...
+# Subtest: budget profile rejects non-positive counters
+ok 5 - budget profile rejects non-positive counters
+  ---
+  duration_ms: 0.534794
+  type: 'test'
+  ...
+# Subtest: budget derivation rejects a maxMaterializedBytes at or below zero
+ok 6 - budget derivation rejects a maxMaterializedBytes at or below zero
+  ---
+  duration_ms: 0.545801
+  type: 'test'
+  ...
+# Subtest: deriveRequirementBudget derives the exact requirement budget
+ok 7 - deriveRequirementBudget derives the exact requirement budget
+  ---
+  duration_ms: 0.902204
+  type: 'test'
+  ...
+# Subtest: deriveNextStepBudget returns the remaining per-counter budget
+ok 8 - deriveNextStepBudget returns the remaining per-counter budget
+  ---
+  duration_ms: 0.501343
+  type: 'test'
+  ...
+# Subtest: deriveNextStepBudget rejects any exhausted counter
+ok 9 - deriveNextStepBudget rejects any exhausted counter
+  ---
+  duration_ms: 2.136697
+  type: 'test'
+  ...
+# Subtest: measureTokens reports UNKNOWN without a declared tokenizer
+ok 10 - measureTokens reports UNKNOWN without a declared tokenizer
+  ---
+  duration_ms: 0.584904
+  type: 'test'
+  ...
+# Subtest: measureTokens reports UNKNOWN on tokenizer identity mismatch
+ok 11 - measureTokens reports UNKNOWN on tokenizer identity mismatch
+  ---
+  duration_ms: 0.294806
+  type: 'test'
+  ...
+# Subtest: measureTokens reports the injected count under an exact tokenizer identity
+ok 12 - measureTokens reports the injected count under an exact tokenizer identity
+  ---
+  duration_ms: 0.389141
+  type: 'test'
+  ...
+# Subtest: oracle budget source imports no Core module
+ok 13 - oracle budget source imports no Core module
+  ---
+  duration_ms: 1.533841
+  type: 'test'
+  ...
+# Subtest: requirement semantic identity and strict provider-neutral parser
+ok 14 - requirement semantic identity and strict provider-neutral parser
+  ---
+  duration_ms: 5.562963
+  type: 'test'
+  ...
+# Subtest: provider-neutral evidence fixtures share one schema
+ok 15 - provider-neutral evidence fixtures share one schema
+  ---
+  duration_ms: 0.436772
+  type: 'test'
+  ...
+# Subtest: resolution binds source currentness provenance content and status
+ok 16 - resolution binds source currentness provenance content and status
+  ---
+  duration_ms: 4.44605
+  type: 'test'
+  ...
+# REQUIRED CURRENT rejects weak timestamp-only validator
+# REQUIRED MISSING -> UNSATISFIED, non-consumable
+# REQUIRED STALE -> UNSATISFIED, non-consumable
+# REQUIRED AMBIGUOUS -> UNSATISFIED, non-consumable
+# REQUIRED BUDGET_EXHAUSTED -> UNSATISFIED, non-consumable
+# REQUIRED CURRENTNESS_UNVERIFIABLE -> UNSATISFIED, non-consumable
+# Subtest: optional partial, required provenance and progression budgets
+ok 17 - optional partial, required provenance and progression budgets
+  ---
+  duration_ms: 1.705585
+  type: 'test'
+  ...
+# Subtest: exact snapshot, itemRef coverage, status and digest are fail closed
+ok 18 - exact snapshot, itemRef coverage, status and digest are fail closed
+  ---
+  duration_ms: 1.07152
+  type: 'test'
+  ...
+# Subtest: budget/currentness evidence: every counter and immutable step ceiling
+ok 19 - budget/currentness evidence: every counter and immutable step ceiling
+  ---
+  duration_ms: 2.160452
+  type: 'test'
+  ...
+# items hard budget rejects 5
+# materializedBytes hard budget rejects 4097
+# providerCalls hard budget rejects 5
+# resolutionSteps hard budget rejects 4
+# index 0 -> 1 -> 2 binds exact immutable parent; step 3 rejected
+# Subtest: provider-neutral fixture: semantic-code repository CURRENT
+ok 20 - provider-neutral fixture: semantic-code repository CURRENT
+  ---
+  duration_ms: 2.197169
+  type: 'test'
+  ...
+# {"kind":"REPOSITORY","mode":"CURRENT","requirementId":"577f664b9e763fd9b81068530c3a51b747153bbaca2e8da7a81314608e79eb65","resolutionId":"705a4ef6593ec63ce9b156d805e7c81ac6f73c6ac21198f6bebbd4a6d8e1b2d2","provenance":[]}
+# Subtest: provider-neutral fixture: lexical-search repository CURRENT
+ok 21 - provider-neutral fixture: lexical-search repository CURRENT
+  ---
+  duration_ms: 0.574613
+  type: 'test'
+  ...
+# {"kind":"REPOSITORY","mode":"CURRENT","requirementId":"552a21f94213e7ea26251f9ad72cbf4b31876133e2432a8712ab4a87e96fbcca","resolutionId":"9ffaeed0ba0b9d2e815d2383e8551219bd4a8f2813b5ffa283459482f283e503","provenance":[]}
+# Subtest: provider-neutral fixture: context-graph relationship CURRENT
+ok 22 - provider-neutral fixture: context-graph relationship CURRENT
+  ---
+  duration_ms: 4.82567
+  type: 'test'
+  ...
+# {"kind":"CONTEXT_GRAPH","mode":"CURRENT","requirementId":"0877f5061455e3b8bc4a4a70cf481d624dce112c6e100170e4a3a229a7065af0","resolutionId":"a77c2d442d0698b352a83aed0991ef8f3d20216e2bc2d77778085187fd9ae43e","provenance":[]}
+# Subtest: provider-neutral fixture: accepted application-artifact EXACT
+ok 23 - provider-neutral fixture: accepted application-artifact EXACT
+  ---
+  duration_ms: 7.829753
+  type: 'test'
+  ...
+# {"kind":"APPLICATION_ARTIFACT","mode":"EXACT","requirementId":"972ebf44a3184b107f12aca75d0ee4878bb81664a993a8e58cbb45ef093f895b","resolutionId":"5a2aeacf78ab95de277e54b7e74c1ce1573726ac7beb8c7b19caf10e28fbae33","provenance":[{"kind":"PRODUCER_WORK_ORDER","ref":"work-7"},{"kind":"ACCEPTANCE_DECISION","ref":"accepted-7","digest":"sha256:decision"}]}
+# Subtest: CG1 static relative imports and re-exports become normalized FILE edges; out-of-root targets are EXTERNAL_BOUNDARY nodes
+ok 24 - CG1 static relative imports and re-exports become normalized FILE edges; out-of-root targets are EXTERNAL_BOUNDARY nodes
+  ---
+  duration_ms: 3.168301
+  type: 'test'
+  ...
+# Subtest: CG1 dynamic import() and bare specifiers produce no edge and are listed in graph.limits
+ok 25 - CG1 dynamic import() and bare specifiers produce no edge and are listed in graph.limits
+  ---
+  duration_ms: 0.77832
+  type: 'test'
+  ...
+# Subtest: CG1 every edge carries AUTHORITATIVE_SOURCE provenance with a snapshot-qualified ref and the file digest
+ok 26 - CG1 every edge carries AUTHORITATIVE_SOURCE provenance with a snapshot-qualified ref and the file digest
+  ---
+  duration_ms: 1.426971
+  type: 'test'
+  ...
+# Subtest: CG1 declared CONTEXT_GRAPH_EDGES_V1 edges are provenanced by the edge file; malformed files and unknown relations fail the build
+ok 27 - CG1 declared CONTEXT_GRAPH_EDGES_V1 edges are provenanced by the edge file; malformed files and unknown relations fail the build
+  ---
+  duration_ms: 2.257526
+  type: 'test'
+  ...
+# Subtest: CG1 the build reads only the requested exact snapshot, and a reader asked for another revision fails
+ok 28 - CG1 the build reads only the requested exact snapshot, and a reader asked for another revision fails
+  ---
+  duration_ms: 0.682709
+  type: 'test'
+  ...
+# Subtest: CG1 repeated builds are deterministic: same graphId, node order and edge order sorted by from,to,relation
+ok 29 - CG1 repeated builds are deterministic: same graphId, node order and edge order sorted by from,to,relation
+  ---
+  duration_ms: 0.913171
+  type: 'test'
+  ...
+# Subtest: CG2 parseContextGraphRef accepts only the D6 grammar and rejects anything else with a typed ProviderFailure
+ok 30 - CG2 parseContextGraphRef accepts only the D6 grammar and rejects anything else with a typed ProviderFailure
+  ---
+  duration_ms: 0.6254
+  type: 'test'
+  ...
+# Subtest: CG2 IMPORTS and IMPORTED_BY traverse breadth-first up to hops, ordered by (distance, node id), with AUTHORITATIVE_SOURCE provenance on every path
+ok 31 - CG2 IMPORTS and IMPORTED_BY traverse breadth-first up to hops, ordered by (distance, node id), with AUTHORITATIVE_SOURCE provenance on every path
+  ---
+  duration_ms: 1.764838
+  type: 'test'
+  ...
+# Subtest: CG2 more reachable paths than maxItems returns exactly maxItems in deterministic order with truncated:true
+ok 32 - CG2 more reachable paths than maxItems returns exactly maxItems in deterministic order with truncated:true
+  ---
+  duration_ms: 1.248753
+  type: 'test'
+  ...
+# Subtest: CG2 an absent anchor, unknown relation, invalid hops or foreign repository is a typed ProviderFailure, never a fuzzy match
+ok 33 - CG2 an absent anchor, unknown relation, invalid hops or foreign repository is a typed ProviderFailure, never a fuzzy match
+  ---
+  duration_ms: 1.154454
+  type: 'test'
+  ...
+# Subtest: CG2 CURRENT traversal uses currentSnapshot() and EXACT uses the source snapshot ref
+ok 34 - CG2 CURRENT traversal uses currentSnapshot() and EXACT uses the source snapshot ref
+  ---
+  duration_ms: 0.895639
+  type: 'test'
+  ...
+# Subtest: CG2 the delivered provider seam rejects a graph path without AUTHORITATIVE_SOURCE provenance
+ok 35 - CG2 the delivered provider seam rejects a graph path without AUTHORITATIVE_SOURCE provenance
+  ---
+  duration_ms: 0.458362
+  type: 'test'
+  ...
+# Subtest: plan() of RRF and GRAPH deep-equals DETERMINISTIC_V1 plan() for the same requirement and options
+ok 36 - plan() of RRF and GRAPH deep-equals DETERMINISTIC_V1 plan() for the same requirement and options
+  ---
+  duration_ms: 6.469036
+  type: 'test'
+  ...
+# Subtest: RRF runs every reserved work unit and fuses by sum 1/(60+rank) with itemRef tie-break
+ok 37 - RRF runs every reserved work unit and fuses by sum 1/(60+rank) with itemRef tie-break
+  ---
+  duration_ms: 4.183936
+  type: 'test'
+  ...
+# Subtest: RRF breaks equal fusion scores by itemRef ascending
+ok 38 - RRF breaks equal fusion scores by itemRef ascending
+  ---
+  duration_ms: 0.898552
+  type: 'test'
+  ...
+# Subtest: provider returning more items than reserved fails BUDGET_EXHAUSTED in base and both strategies
+ok 39 - provider returning more items than reserved fails BUDGET_EXHAUSTED in base and both strategies
+  ---
+  duration_ms: 1.317413
+  type: 'test'
+  ...
+# Subtest: tiny maxMaterializedBytes gives identical unresolved reasons in all three planners
+ok 40 - tiny maxMaterializedBytes gives identical unresolved reasons in all three planners
+  ---
+  duration_ms: 1.630644
+  type: 'test'
+  ...
+# Subtest: CURRENT evidence with a stale snapshot authority is STALE in all three planners
+ok 41 - CURRENT evidence with a stale snapshot authority is STALE in all three planners
+  ---
+  duration_ms: 1.798188
+  type: 'test'
+  ...
+# Subtest: CURRENT evidence with no authority is CURRENTNESS_UNVERIFIABLE in all three planners
+ok 42 - CURRENT evidence with no authority is CURRENTNESS_UNVERIFIABLE in all three planners
+  ---
+  duration_ms: 2.06711
+  type: 'test'
+  ...
+# Subtest: EXACT snapshot mismatch candidate is rejected identically in all three planners
+ok 43 - EXACT snapshot mismatch candidate is rejected identically in all three planners
+  ---
+  duration_ms: 1.281193
+  type: 'test'
+  ...
+# Subtest: candidates keep provider provenance and graph-derived items carry AUTHORITATIVE_SOURCE
+ok 44 - candidates keep provider provenance and graph-derived items carry AUTHORITATIVE_SOURCE
+  ---
+  duration_ms: 5.466565
+  type: 'test'
+  ...
+# Subtest: GRAPH adds exactly one IMPORTS hop anchored at the top base candidate when budget remains
+ok 45 - GRAPH adds exactly one IMPORTS hop anchored at the top base candidate when budget remains
+  ---
+  duration_ms: 6.432666
+  type: 'test'
+  ...
+# Subtest: GRAPH skips with BUDGET_EXHAUSTED when no unreserved budget remains
+ok 46 - GRAPH skips with BUDGET_EXHAUSTED when no unreserved budget remains
+  ---
+  duration_ms: 1.152713
+  type: 'test'
+  ...
+# Subtest: GRAPH skips with NO_GRAPH_PROVIDER when no graph provider is registered
+ok 47 - GRAPH skips with NO_GRAPH_PROVIDER when no graph provider is registered
+  ---
+  duration_ms: 3.524168
+  type: 'test'
+  ...
+# Subtest: default createRetrievalPlanner still stops at the first successful provider
+ok 48 - default createRetrievalPlanner still stops at the first successful provider
+  ---
+  duration_ms: 0.52522
+  type: 'test'
+  ...
+# Subtest: lexical adapter binds indexed version and stale head fails authoritative check
+ok 49 - lexical adapter binds indexed version and stale head fails authoritative check
+  ---
+  duration_ms: 4.320078
+  type: 'test'
+  ...
+# Zoekt-like indexed old revision is rejected against authoritative new head
+# Subtest: semantic adapter handles unsupported language, missing and ambiguous symbols
+ok 50 - semantic adapter handles unsupported language, missing and ambiguous symbols
+  ---
+  duration_ms: 1.067782
+  type: 'test'
+  ...
+# unsupported language -> UNSUPPORTED; deleted symbol -> empty; ambiguous identity -> AMBIGUOUS
+# Subtest: structural map consumes existing typed edges and obeys item/byte bounds
+ok 51 - structural map consumes existing typed edges and obeys item/byte bounds
+  ---
+  duration_ms: 0.60659
+  type: 'test'
+  ...
+# Subtest: graph path needs authoritative provenance and external CURRENT needs validator
+ok 52 - graph path needs authoritative provenance and external CURRENT needs validator
+  ---
+  duration_ms: 0.463925
+  type: 'test'
+  ...
+# graph candidate lacks AUTHORITATIVE_SOURCE; external/MCP response weak-only validator rejected
+# Subtest: provider timeout is recorded as explicit source failure under reserved call
+ok 53 - provider timeout is recorded as explicit source failure under reserved call
+  ---
+  duration_ms: 2.048105
+  type: 'test'
+  ...
+# {"reservedCalls":1,"unresolved":[{"evidenceId":"e","reason":"SOURCE_FAILURE"}],"failures":[{"evidenceId":"e","providerId":"lexical-search","reason":"SOURCE_FAILURE","detail":"index timeout"}]}
+# Subtest: renamed exact item cannot masquerade as required source path
+ok 54 - renamed exact item cannot masquerade as required source path
+  ---
+  duration_ms: 0.381105
+  type: 'test'
+  ...
+# Subtest: strict provider descriptor and candidate reject authority and missing semantic evidence
+ok 55 - strict provider descriptor and candidate reject authority and missing semantic evidence
+  ---
+  duration_ms: 4.7986
+  type: 'test'
+  ...
+# Subtest: SourceCatalog requires one authoritative current snapshot and rejects stale index
+ok 56 - SourceCatalog requires one authoritative current snapshot and rejects stale index
+  ---
+  duration_ms: 3.138021
+  type: 'test'
+  ...
+# indexed old snapshot rejected against authoritative head
+# Subtest: exact repository/artifact wrappers retain source refs and lineage
+ok 57 - exact repository/artifact wrappers retain source refs and lineage
+  ---
+  duration_ms: 0.678433
+  type: 'test'
+  ...
+# Subtest: authoritative content digest can validate CURRENT without conflating digest and revision
+ok 58 - authoritative content digest can validate CURRENT without conflating digest and revision
+  ---
+  duration_ms: 0.705669
+  type: 'test'
+  ...
+# Subtest: exact provider may read CURRENT only with injected head lookup and independent catalog authority
+ok 59 - exact provider may read CURRENT only with injected head lookup and independent catalog authority
+  ---
+  duration_ms: 0.543453
+  type: 'test'
+  ...
+# Subtest: reuse identity separates config/source/derivation without touching resolutionId
+ok 60 - reuse identity separates config/source/derivation without touching resolutionId
+  ---
+  duration_ms: 3.921415
+  type: 'test'
+  ...
+# reuseKey 0a69b2fa7b8c stable; source/config/derivation change selects different key
+# Subtest: lineage and currentness fences fail closed on stale/unverifiable evidence
+ok 61 - lineage and currentness fences fail closed on stale/unverifiable evidence
+  ---
+  duration_ms: 3.152264
+  type: 'test'
+  ...
+# COMPLETE reusable; A->B reports changed e; lineage without authoritative observation rejected
+# Subtest: partial reuse needs strongly fenced optional absence; unsatisfiable never reusable
+ok 62 - partial reuse needs strongly fenced optional absence; unsatisfiable never reusable
+  ---
+  duration_ms: 9.271987
+  type: 'test'
+  ...
+# Subtest: graph-derived items close over authoritative leaves; weak/malformed provenance fails
+ok 63 - graph-derived items close over authoritative leaves; weak/malformed provenance fails
+  ---
+  duration_ms: 1.123707
+  type: 'test'
+  ...
+# graph TRAVERSE_GRAPH closes over authoritative leaf; REQUIRED CURRENT with only WEAK validator is not reusable; PRESENT without snapshotRef is malformed
+# Subtest: coordinator double-fences pre/post observations and never auto-retries
+ok 64 - coordinator double-fences pre/post observations and never auto-retries
+  ---
+  duration_ms: 5.786645
+  type: 'test'
+  ...
+# pre/post fences match on reuse; A->B selects different key; mid-resolve drift fails STALE_DURING_RESOLUTION without hidden retry
+# Subtest: immutable objects converge; digest mismatch fails closed
+ok 65 - immutable objects converge; digest mismatch fails closed
+  ---
+  duration_ms: 14.325346
+  type: 'test'
+  ...
+# same bytes converge to one immutable object; ref digest mismatch is corrupt
+# Subtest: exact reuse slots converge or conflict without last-writer-wins
+ok 66 - exact reuse slots converge or conflict without last-writer-wins
+  ---
+  duration_ms: 7.989909
+  type: 'test'
+  ...
+# same key+same id converges; same key+different id is NONDETERMINISTIC_RESOLUTION_CONFLICT
+# Subtest: 20 concurrent publishers converge; crash orphan retries cleanly
+ok 67 - 20 concurrent publishers converge; crash orphan retries cleanly
+  ---
+  duration_ms: 17.63013
+  type: 'test'
+  ...
+# 20 same-key publishers converge to one slot; orphan temp does not become canonical
+# Subtest: corrupted slot and leftover lock reject mutable-head caching
+ok 68 - corrupted slot and leftover lock reject mutable-head caching
+  ---
+  duration_ms: 2.070515
+  type: 'test'
+  ...
+# corrupted slot fails closed; stranded *.lock demonstrates rejected mutable lockfile-head mode
+# Subtest: deterministic plan reserves exact work in declared file order before invocation
+ok 69 - deterministic plan reserves exact work in declared file order before invocation
+  ---
+  duration_ms: 3.353948
+  type: 'test'
+  ...
+# {"work":[{"providerId":"exact","operation":"READ_EXACT","reservedBudget":{"providerCalls":1,"items":1,"materializedBytes":8192},"itemRef":"a.js"},{"providerId":"exact","operation":"READ_EXACT","reservedBudget":{"providerCalls":1,"items":1,"materializedBytes":8192},"itemRef":"b.js"}],"underBudget":[{"evidenceId":"e","reason":"BUDGET_EXHAUSTED"}]}
+# Subtest: semantic repository composes symbol and lexical; unsupported symbol falls back
+ok 70 - semantic repository composes symbol and lexical; unsupported symbol falls back
+  ---
+  duration_ms: 3.813532
+  type: 'test'
+  ...
+# {"orderedOperations":["LOOKUP_SYMBOL","SEARCH_LEXICAL"],"reserved":{"providerCalls":2,"items":2,"materializedBytes":16384,"resolutionSteps":1},"failures":[{"evidenceId":"e","providerId":"semantic","reason":"UNSUPPORTED","detail":"language unsupported"}],"finalCandidate":{"kind":"REPOSITORY","ref":"repo","snapshotRef":"head","itemRef":"a.js"}}
+# Subtest: graph and external kinds route only to their typed providers
+ok 71 - graph and external kinds route only to their typed providers
+  ---
+  duration_ms: 0.640968
+  type: 'test'
+  ...
+# graph/external/repository route by matching source kind without application scheduling
+# Subtest: budget and missing provider fail closed before source calls
+ok 72 - budget and missing provider fail closed before source calls
+  ---
+  duration_ms: 0.372855
+  type: 'test'
+  ...
+# Subtest: Oracle architecture boundary and dependency direction
+ok 73 - Oracle architecture boundary and dependency direction
+  ---
+  duration_ms: 7.729412
+  type: 'test'
+  ...
+# Subtest: architecture guard rejects mutated forbidden imports, loops, wiring, exports and authority
+ok 74 - architecture guard rejects mutated forbidden imports, loops, wiring, exports and authority
+  ---
+  duration_ms: 27.5055
+  type: 'test'
+  ...
+# Subtest: Living Docs mark delivered semantic contract and deferred limits without work IDs
+ok 75 - Living Docs mark delivered semantic contract and deferred limits without work IDs
+  ---
+  duration_ms: 0.553559
+  type: 'test'
+  ...
+# Subtest: research evidence and provider selection deferred with license
+ok 76 - research evidence and provider selection deferred with license
+  ---
+  duration_ms: 0.776303
+  type: 'test'
+  ...
+# Subtest: foundation facade stays infrastructure-owned with zero pre-render dispatch
+ok 77 - foundation facade stays infrastructure-owned with zero pre-render dispatch
+  ---
+  duration_ms: 1.344096
+  type: 'test'
+  ...
+1..77
+# tests 77
+# suites 0
+# pass 77
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 244.303604
+
+
+exitCode=0

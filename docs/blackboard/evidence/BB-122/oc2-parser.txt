@@ -1,0 +1,49 @@
+TAP version 13
+# Subtest: OC2 parseOpencodeJsonl reports observed tokens and cost from the usage fixture
+ok 1 - OC2 parseOpencodeJsonl reports observed tokens and cost from the usage fixture
+  ---
+  duration_ms: 2.308838
+  type: 'test'
+  ...
+# Subtest: OC2 usage-free opencode JSONL is null with OPENCODE_USAGE_NOT_REPORTED
+ok 2 - OC2 usage-free opencode JSONL is null with OPENCODE_USAGE_NOT_REPORTED
+  ---
+  duration_ms: 0.551557
+  type: 'test'
+  ...
+# Subtest: OC2 argvRedacted does not contain the prompt
+ok 3 - OC2 argvRedacted does not contain the prompt
+  ---
+  duration_ms: 81.965288
+  type: 'test'
+  ...
+# Subtest: OC2 opencode usage is partial-safe and other tools keep six fields
+ok 4 - OC2 opencode usage is partial-safe and other tools keep six fields
+  ---
+  duration_ms: 0.731052
+  type: 'test'
+  ...
+# Subtest: OC2 opencode cost is null unless every counted step reports a finite non-negative number
+ok 5 - OC2 opencode cost is null unless every counted step reports a finite non-negative number
+  ---
+  duration_ms: 0.409304
+  type: 'test'
+  ...
+# Subtest: OC2 opencode parseResult reports sessionRef and the last text part
+ok 6 - OC2 opencode parseResult reports sessionRef and the last text part
+  ---
+  duration_ms: 0.549482
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 219.094459
+
+
+exitCode=0

@@ -3,8 +3,8 @@
   "version": 1,
   "artifactType": "OBJECTIVE",
   "artifactId": "BB-107",
-  "outcome": "Oracle retrieval work units reserve items and materialized bytes from the remaining requirement budget, so a declared file that fits that remaining budget materializes instead of failing BUDGET_EXHAUSTED under a hard 8192-byte and one-item cap.",
-  "currentProblem": "Executed probe: createRetrievalPlanner.plan() reserves items:1 and materializedBytes:min(8192, remaining) per work unit. A 9000-byte EXACT repository file under maxMaterializedBytes 40000 is UNSATISFIED BUDGET_EXHAUSTED with detail provider byte reservation exceeded. execute() stores ProviderFailure reason and error.message as detail and drops any extra code field.",
+  "outcome": "Oracle retrieval work units reserve items and materialized bytes from the remaining requirement budget, so a declared file that fits that remaining budget materializes instead of failing BUDGET_EXHAUSTED under a hard 8192-byte and one-item cap, while the delivered GRAPH_EXPANDED_V1 expansion keeps unreserved budget to expand when the requirement leaves headroom.",
+  "currentProblem": "Executed probe: createRetrievalPlanner.plan() reserves items:1 and materializedBytes:min(8192, remaining) per work unit. A 9000-byte EXACT repository file under maxMaterializedBytes 40000 is UNSATISFIED BUDGET_EXHAUSTED with detail provider byte reservation exceeded (materialized need 9358 bytes vs 8192 reserved). execute() stores ProviderFailure reason and error.message as detail and drops any extra code field. Plan-defect probe (docs/blackboard/evidence/BB-107/plan-defect-probe-result.json): the READY plan's D2 rule (REPOSITORY ops split all remaining bytes across that evidence's ops: 10000+10000 of 20000) leaves free.materializedBytes=0, so GRAPH_EXPANDED_V1 always SKIPs BUDGET_EXHAUSTED on the pinned graph scenario where delivered main leaves 3616 bytes free and EXPANDs.",
   "scope": [
     "oracle.planner.reservation",
     "oracle.planner.execute-budget"
@@ -13,21 +13,27 @@
     "ContextRequirement/ContextResolution schema, unresolved reason enum and provider descriptors stay unchanged.",
     "Fail closed: actual materialization that exceeds remaining budget is BUDGET_EXHAUSTED, never truncated content.",
     "Do not change default DETERMINISTIC_V1 routing of operations; this task only changes per-work reservedBudget magnitudes.",
+    "GRAPH_EXPANDED_V1 expansion must not be starved: when the requirement budget leaves unreserved provider calls, items and bytes after the base plan, the expansion still reserves min(8192, free) bytes and EXPANDs; the pinned planning-strategies behaviour (two candidates / EXPANDED with budget headroom, SKIPPED when no unreserved budget remains) is DELIVERED_TRUTH per docs/blackboard/evidence/BB-107/plan-defect-probe-result.json.",
     "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
     "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
   ],
   "successCriteria": [
-    "Specify per-work reservedBudget.items and reservedBudget.materializedBytes derived from remaining requirement budget without a hard 8192-byte cap and without forcing items to 1 when remaining.maxItems allows more.",
+    "Specify per-work reservedBudget.items and reservedBudget.materializedBytes derived from remaining requirement budget without a hard 8192-byte cap and without forcing items to 1 when remaining.maxItems allows more, except REPOSITORY LOOKUP_SYMBOL/SEARCH_LEXICAL/STRUCTURAL_MAP keep items=1 so both operations still reserve and one item/call share remains for GRAPH expansion.",
     "Specify that a declared EXACT repository file whose materialized form is 9000 bytes under a 40000-byte budget resolves COMPLETE through the delivered facade, while a file that still exceeds remaining bytes is BUDGET_EXHAUSTED without truncation.",
+    "Specify that the corrected reservation leaves GRAPH expansion valid: the pinned graph scenario (budget 3/3/20000) still yields two candidates with expansion status EXPANDED, the tight budget (2/2/20000) still SKIPs BUDGET_EXHAUSTED, and CONTEXT_GRAPH TRAVERSE work keeps all remaining items/bytes so both importer paths fit.",
     "Specify Living docs that describe remaining-budget reservation instead of the 8192-byte per-item cap, with no Blackboard ids.",
-    "Ground the design in the executed reservation probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+    "Ground the design in the executed reservation probe and the plan-defect probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
   ],
   "currentSourceRefs": [
     "docs/blackboard/process/oracle-context-intelligence-research/BB-107.md",
     "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json",
+    "docs/blackboard/evidence/BB-107/plan-defect-probe.mjs",
+    "docs/blackboard/evidence/BB-107/plan-defect-probe-result.json",
     "packages/oracle/src/retrieval-planner.js",
     "packages/oracle/src/context-resolution.js",
+    "packages/oracle/src/planning-strategies.js",
     "packages/oracle/test/retrieval-planner.test.js",
+    "packages/oracle/test/planning-strategies.test.js",
     "test/oracle-context-graph-boundary.test.mjs",
     "docs/living/system/oracle/workflow.md",
     "docs/living/system/oracle/context-graph.md"

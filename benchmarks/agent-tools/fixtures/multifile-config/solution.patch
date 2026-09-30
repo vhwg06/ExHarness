@@ -1,0 +1,27 @@
+diff --git a/config.json b/config.json
+new file mode 100644
+index 0000000..f750bd1
+--- /dev/null
++++ b/config.json
+@@ -0,0 +1,3 @@
++{
++  "greeting": "Hello"
++}
+diff --git a/config.mjs b/config.mjs
+new file mode 100644
+index 0000000..5e9faae
+--- /dev/null
++++ b/config.mjs
+@@ -0,0 +1,3 @@
++import { readFileSync } from "node:fs";
++
++export const loadConfig = () => JSON.parse(readFileSync(new URL("./config.json", import.meta.url), "utf8"));
+diff --git a/greeting.mjs b/greeting.mjs
+index bc6beaa..a39f4ec 100644
+--- a/greeting.mjs
++++ b/greeting.mjs
+@@ -1 +1,3 @@
+-export const greet = (name) => `Hi, ${name}!`;
++import { loadConfig } from "./config.mjs";
++
++export const greet = (name) => `${loadConfig().greeting}, ${name}!`;

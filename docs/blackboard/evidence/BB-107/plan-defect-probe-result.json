@@ -1,0 +1,177 @@
+{
+  "kind": "BB107_PLAN_DEFECT_PROBE_RESULT",
+  "version": 1,
+  "pinnedTestFile": "packages/oracle/test/planning-strategies.test.js",
+  "pinnedFailingTitles": [
+    "candidates keep provider provenance and graph-derived items carry AUTHORITATIVE_SOURCE",
+    "GRAPH adds exactly one IMPORTS hop anchored at the top base candidate when budget remains"
+  ],
+  "deliveredBaseline": {
+    "baseReserved": {
+      "providerCalls": 2,
+      "items": 2,
+      "materializedBytes": 16384,
+      "resolutionSteps": 1
+    },
+    "baseWork": [
+      {
+        "operation": "LOOKUP_SYMBOL",
+        "reservedBudget": {
+          "providerCalls": 1,
+          "items": 1,
+          "materializedBytes": 8192
+        }
+      },
+      {
+        "operation": "SEARCH_LEXICAL",
+        "reservedBudget": {
+          "providerCalls": 1,
+          "items": 1,
+          "materializedBytes": 8192
+        }
+      }
+    ],
+    "unreservedFree": {
+      "providerCalls": 1,
+      "items": 1,
+      "materializedBytes": 3616
+    },
+    "graphExpansionReservationBytes": 3616,
+    "baseCandidateCount": 1,
+    "baseCandidateBytes": [
+      383
+    ],
+    "graphCandidateCount": 2,
+    "graphExpansionStatus": "EXPANDED",
+    "derivedCandidateBytes": 805
+  },
+  "rp1Baseline": {
+    "budget": {
+      "maxItems": 4,
+      "maxMaterializedBytes": 40000,
+      "maxProviderCalls": 4,
+      "maxResolutionSteps": 1
+    },
+    "reservedBytes": 8192,
+    "materializedNeedBytes": 9358,
+    "reservedCoversNeed": false,
+    "executeUnresolved": [
+      {
+        "evidenceId": "e1",
+        "reason": "BUDGET_EXHAUSTED"
+      }
+    ],
+    "defectPresent": true
+  },
+  "d2Simulation": {
+    "rule": "READ_EXACT floor(remBytes/remRefs); REPO floor(remBytes/remOps-per-evidence) items=1; TRAVERSE all-remaining",
+    "graphWorks": [
+      {
+        "kind": "REPO",
+        "items": 1,
+        "bytes": 10000
+      },
+      {
+        "kind": "REPO",
+        "items": 1,
+        "bytes": 10000
+      }
+    ],
+    "graphReserved": {
+      "reservedCalls": 2,
+      "reservedItems": 2,
+      "reservedBytes": 20000
+    },
+    "unreservedFree": {
+      "providerCalls": 1,
+      "items": 1,
+      "materializedBytes": 0
+    },
+    "graphExpansionReservationBytes": 0,
+    "predictedExpansion": "SKIPPED(BUDGET_EXHAUSTED)",
+    "predictedGraphCandidates": 1,
+    "contradicts": [
+      {
+        "title": "candidates keep provider provenance and graph-derived items carry AUTHORITATIVE_SOURCE",
+        "expected": "result.candidates.length === 2",
+        "underD2": "result.candidates.length === 1"
+      },
+      {
+        "title": "GRAPH adds exactly one IMPORTS hop anchored at the top base candidate when budget remains",
+        "expected": "expansion.status === 'EXPANDED'",
+        "underD2": "expansion.status === 'SKIPPED' (BUDGET_EXHAUSTED)"
+      }
+    ],
+    "starvesGraph": true,
+    "rp1Works": [
+      {
+        "kind": "READ_EXACT",
+        "items": 1,
+        "bytes": 40000
+      }
+    ]
+  },
+  "correctedRule": {
+    "rule": "READ_EXACT items=1 bytes=floor(remBytes/remRefs); REPO items=1 bytes=floor(remBytes/remCalls) with remCalls=remaining.maxProviderCalls-reserved.providerCalls; TRAVERSE items=remItems bytes=remBytes; no 8192 constant",
+    "graphWorks": [
+      {
+        "kind": "REPO",
+        "items": 1,
+        "bytes": 6666
+      },
+      {
+        "kind": "REPO",
+        "items": 1,
+        "bytes": 6667
+      }
+    ],
+    "graphReserved": {
+      "reservedCalls": 2,
+      "reservedItems": 2,
+      "reservedBytes": 13333
+    },
+    "unreservedFree": {
+      "providerCalls": 1,
+      "items": 1,
+      "materializedBytes": 6667
+    },
+    "graphExpansionReservationBytes": 6667,
+    "predictedExpansion": "EXPANDED",
+    "baseCandidateFits": true,
+    "derivedCandidateFits": true,
+    "rp1Works": [
+      {
+        "kind": "READ_EXACT",
+        "items": 1,
+        "bytes": 40000
+      }
+    ],
+    "rp1CoversNeed": true,
+    "oversizeWorks": [
+      {
+        "kind": "READ_EXACT",
+        "items": 1,
+        "bytes": 100
+      }
+    ],
+    "oversizeStaysExhausted": true,
+    "tightBudgetPredictedExpansion": "SKIPPED(BUDGET_EXHAUSTED)",
+    "tightBudgetStillSkips": true,
+    "cg3TraverseWorks": [
+      {
+        "kind": "TRAVERSE",
+        "items": 4,
+        "bytes": 20000
+      }
+    ],
+    "cg3KeepsBothPaths": true
+  },
+  "verdict": {
+    "defectReproduced": true,
+    "correctedKeepsGraph": true,
+    "correctedKeepsRp1": true,
+    "correctedKeepsOversizeFailClosed": true,
+    "correctedKeepsTightSkip": true,
+    "correctedKeepsCg3": true
+  }
+}

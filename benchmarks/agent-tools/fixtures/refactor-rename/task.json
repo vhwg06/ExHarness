@@ -1,0 +1,27 @@
+{
+  "id": "refactor-rename",
+  "category": "test-guided-refactor",
+  "prompt": "Rename the exported function calc in cart.mjs to computeTotal, and update checkout.mjs to use the new name. calc must no longer be exported. Run `node --test test/visible.test.mjs` to check.",
+  "visibleVerifications": [
+    {
+      "name": "visible",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/visible.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ],
+  "hiddenVerifications": [
+    {
+      "name": "hidden",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/hidden.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ]
+}
