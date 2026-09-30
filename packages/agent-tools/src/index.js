@@ -84,6 +84,22 @@ export {
 export { createHarnessCapture, createSupervisedObservation, runObservedInvocation } from "./observation.js";
 export { AGENT_TOOL_RUN_REPORT_VERSION, summarizeTraces } from "./report.js";
 export {
+  ARMS,
+  Arm,
+  BLANKED_ENV,
+  CLAIM_BOUNDARY as EVALUATION_CLAIM_BOUNDARY,
+  EvalUsageError,
+  NotEvaluatedReason,
+  REPORT_KIND as EVALUATION_REPORT_KIND,
+  Verdict as EvaluationVerdict,
+  calibrateSuite,
+  createAgentToolsRegistration,
+  loadSuite,
+  reduceAttempts,
+  runAgentToolsEval,
+  runExperiment
+} from "./experiment/index.js";
+export {
   DELIVER_SLICE_VERSION,
   LOCAL_SLICE_CLAIM_BOUNDARY,
   DeliverSliceStatus,

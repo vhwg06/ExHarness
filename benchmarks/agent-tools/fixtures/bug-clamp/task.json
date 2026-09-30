@@ -1,0 +1,27 @@
+{
+  "id": "bug-clamp",
+  "category": "bug-fix",
+  "prompt": "clamp(value, min, max) in clamp.mjs does not clamp correctly. Fix it so the result is always within [min, max]. Run `node --test test/visible.test.mjs` to check.",
+  "visibleVerifications": [
+    {
+      "name": "visible",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/visible.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ],
+  "hiddenVerifications": [
+    {
+      "name": "hidden",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/hidden.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ]
+}
