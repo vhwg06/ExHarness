@@ -421,6 +421,18 @@ export async function callJev(payload, { apiKey = process.env.TYPESAFE_API_KEY, 
   }
 }
 const WORKER_BATCH_MAX_BYTES = 60000;
+// Oversized evidence logs are replaced in a worker batch by a deterministic
+// excerpt no larger than this (canonical JSON bytes). The full log stays in
+// the evidence directory and in the full materialized state, which binds it by
+// hash; the excerpt carries that hash and byte length.
+const WORKER_EVIDENCE_EXCERPT_BYTES = 8192;
+const WORKER_EXCERPT_LINE_CHARS = 300;
+const WORKER_EXCERPT_MAX_FAILING = 40;
+const WORKER_EXCERPT_MAX_SCRIPTS = 60;
+export const WORKER_BATCH_LIMITS = Object.freeze({ maxBatchBytes: WORKER_BATCH_MAX_BYTES, evidenceExcerptBytes: WORKER_EVIDENCE_EXCERPT_BYTES });
+export const WORKER_BATCH_STRATEGIES = Object.freeze({ ATOMIC: 'WORKER_ATOMIC_QUESTIONS_V1', BOUNDED: 'WORKER_BOUNDED_EVIDENCE_V2' });
+const EVIDENCE_EXCERPT_STRATEGY = 'EVIDENCE_LOG_EXCERPT_V1';
+const BATCH_SEVERITY = ['PLAN_INPUT_CONTRADICTION', 'IMPLEMENTATION_DEFECT', 'INSUFFICIENT_EVIDENCE'];
 function livingExcerpt(source, scope = []) {
   if (typeof source.body !== 'string') return source;
   const sections = source.body.split(/(?=^#{2,3} )/m);
@@ -455,7 +467,63 @@ function boundedWorkerSource(source, terms) {
   }
   return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), body: excerpts.join('\n'), excerpted: true, deleted: source.deleted };
 }
-export function workerQuestionPayload(fullPayload, id) {
+const payloadBytes = value => Buffer.byteLength(canonical(value));
+// Bytes a line costs inside a JSON string, including its escaped newline.
+const jsonLineBytes = line => Buffer.byteLength(JSON.stringify(line)) - 2 + 2;
+const clipLine = line => [...line].length > WORKER_EXCERPT_LINE_CHARS ? `${[...line].slice(0, WORKER_EXCERPT_LINE_CHARS).join('')}…` : line;
+/**
+ * Deterministic bounded excerpt of one verification/evidence log.
+ * Keeps command, exit status, aggregated test counts, failing test names,
+ * npm script markers, and head/tail lines. `hash` and `bytes` identify the
+ * exact full log body that the full materialized state binds.
+ */
+export function excerptEvidenceLog(file, run = null, maxBytes = WORKER_EVIDENCE_EXCERPT_BYTES) {
+  check(file && typeof file.ref === 'string' && typeof file.body === 'string', 'evidence excerpt requires a log body');
+  const lines = file.body.split('\n');
+  const totals = {}, failing = [], scripts = [];
+  let logExitCode = null;
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    const count = line.match(/^\s*(?:#|ℹ)\s+(tests|suites|pass|fail|cancelled|skipped|todo)\s+(\d+)$/);
+    if (count) { totals[count[1]] = (totals[count[1]] ?? 0) + Number(count[2]); continue; }
+    const failed = line.match(/^\s*not ok \d+ - (.+)$/) ?? line.match(/^\s*✖ (.+)$/);
+    if (failed && !/^failing tests:?$/i.test(failed[1].trim())) {
+      const name = clipLine(failed[1].trim());
+      if (!failing.includes(name) && failing.length < WORKER_EXCERPT_MAX_FAILING) failing.push(name);
+    }
+    const script = line.match(/^> \S+@\S+ (\S+)$/);
+    if (script && !scripts.includes(script[1]) && scripts.length < WORKER_EXCERPT_MAX_SCRIPTS) scripts.push(script[1]);
+    const exit = line.match(/^exitCode=(-?\d+|null)$/);
+    if (exit) logExitCode = exit[1] === 'null' ? null : Number(exit[1]);
+  }
+  const envelope = {
+    ref: file.ref, hash: file.hash, bytes: Buffer.byteLength(file.body), lines: lines.length,
+    excerpted: true, excerptStrategy: EVIDENCE_EXCERPT_STRATEGY,
+    command: run?.command ?? null, exitCode: run?.exitCode ?? null,
+    summary: { totals, failing, failingTruncated: failing.length >= WORKER_EXCERPT_MAX_FAILING, scripts, logExitCode },
+    omittedLines: 0, body: ''
+  };
+  const marker = '...[bounded evidence excerpt; omitted lines are bound by hash]...';
+  const budget = maxBytes - payloadBytes(envelope) - jsonLineBytes(marker) - 32;
+  check(budget > 0, `evidence excerpt summary exceeds budget: ${file.ref}`);
+  const head = [], tail = [];
+  let used = 0, first = 0, last = lines.length - 1;
+  while (first <= last) {
+    const line = clipLine(lines[first]);
+    if (used + jsonLineBytes(line) > Math.floor(budget / 2)) break;
+    head.push(line); used += jsonLineBytes(line); first++;
+  }
+  while (last >= first) {
+    const line = clipLine(lines[last]);
+    if (used + jsonLineBytes(line) > budget) break;
+    tail.unshift(line); used += jsonLineBytes(line); last--;
+  }
+  const omittedLines = Math.max(0, last - first + 1);
+  const excerpt = { ...envelope, omittedLines, body: [...head, ...(omittedLines ? [marker] : []), ...tail].join('\n') };
+  check(payloadBytes(excerpt) <= maxBytes, `evidence excerpt exceeds budget: ${file.ref}`);
+  return excerpt;
+}
+function workerQuestionBase(fullPayload, id) {
   check(fullPayload?.state?.evidenceFiles && fullPayload.questions?.[id], 'worker batch requires a materialized question and evidence');
   const state = fullPayload.state;
   const claim = state.evidence.find(entry => entry.id === id);
@@ -527,27 +595,109 @@ export function workerQuestionPayload(fullPayload, id) {
     verification: selectedRuns,
     evidenceFiles: selectedFiles
   };
-  const payload = { model: fullPayload.model, state: batchState, questions: { [id]: fullPayload.questions[id] } };
-  check(Buffer.byteLength(canonical(payload)) <= WORKER_BATCH_MAX_BYTES, `worker batch exceeds bounded input: ${id}`);
-  return payload;
+  return { model: fullPayload.model, state: batchState, questions: { [id]: fullPayload.questions[id] } };
 }
-export function workerBatchManifest(fullPayload) {
-  return Object.keys(fullPayload.questions).map(id => {
-    const payload = workerQuestionPayload(fullPayload, id);
-    return { id, payloadHash: hash(payload), payloadBytes: Buffer.byteLength(canonical(payload)) };
+const withFiles = (base, evidenceFiles, batch) => ({ ...base, state: { ...base.state, evidenceFiles, ...(batch ? { batch } : {}) } });
+const evidenceStub = (file, part) => ({ ref: file.ref, hash: file.hash, bytes: file.bytes ?? Buffer.byteLength(file.body ?? ''), omitted: true, judgedInPart: part });
+function batchDescriptor(id, part, parts, refs) {
+  return {
+    questionId: id, part, parts, evidenceRefs: refs,
+    instructions: `Evidence for ${id} is split into ${parts} bounded parts. This part contains the evidence files listed in evidenceRefs; other files are identified by hash and judged in their own part. The question is SATISFIED only if every part is SATISFIED.`
+  };
+}
+/**
+ * Bounded batches for one worker question, in deterministic order:
+ * 1. the unchanged atomic payload when it fits (identity of existing evaluations);
+ * 2. otherwise the same payload with oversized evidence logs excerpted;
+ * 3. otherwise evidence split across several bounded parts.
+ * Fails closed when a single part cannot be represented within the limit.
+ */
+export function workerQuestionBatches(fullPayload, id) {
+  const base = workerQuestionBase(fullPayload, id);
+  if (payloadBytes(base) <= WORKER_BATCH_MAX_BYTES) return [{ id, payload: base }];
+  const runsByLog = new Map(base.state.verification.map(run => [run.logRef, run]));
+  const excerpted = [];
+  const files = base.state.evidenceFiles.map(file => {
+    if (typeof file.body !== 'string' || payloadBytes(file) <= WORKER_EVIDENCE_EXCERPT_BYTES) return file;
+    excerpted.push(file.ref);
+    return excerptEvidenceLog(file, runsByLog.get(file.ref) ?? null);
+  });
+  const excerptedPayload = withFiles(base, files);
+  if (payloadBytes(excerptedPayload) <= WORKER_BATCH_MAX_BYTES) return [{ id, payload: excerptedPayload, excerpted }];
+  // Split evidence into parts. Measure with worst-case descriptors so the
+  // final payloads (with exact part numbers) cannot grow past the limit.
+  const worst = 9999;
+  const measure = assigned => withFiles(base,
+    files.map(file => assigned.has(file.ref) ? file : evidenceStub(file, worst)),
+    batchDescriptor(id, worst, worst, [...assigned]));
+  const chunks = [];
+  let current = new Set();
+  for (const file of files) {
+    const next = new Set([...current, file.ref]);
+    if (payloadBytes(measure(next)) <= WORKER_BATCH_MAX_BYTES) { current = next; continue; }
+    check(current.size > 0, `worker batch exceeds bounded input: ${id}`);
+    chunks.push(current);
+    current = new Set([file.ref]);
+    check(payloadBytes(measure(current)) <= WORKER_BATCH_MAX_BYTES, `worker batch exceeds bounded input: ${id}`);
+  }
+  if (current.size) chunks.push(current);
+  check(chunks.length > 1, `worker batch exceeds bounded input: ${id}`);
+  const partOf = new Map(chunks.flatMap((chunk, index) => [...chunk].map(ref => [ref, index + 1])));
+  return chunks.map((chunk, index) => {
+    const payload = withFiles(base,
+      files.map(file => chunk.has(file.ref) ? file : evidenceStub(file, partOf.get(file.ref))),
+      batchDescriptor(id, index + 1, chunks.length, [...chunk]));
+    check(payloadBytes(payload) <= WORKER_BATCH_MAX_BYTES, `worker batch exceeds bounded input: ${id}`);
+    return { id, payload, excerpted: excerpted.filter(ref => chunk.has(ref)), part: index + 1, parts: chunks.length };
   });
 }
+/** Single bounded payload for a question; fails closed if the question needs several parts. */
+export function workerQuestionPayload(fullPayload, id) {
+  const batches = workerQuestionBatches(fullPayload, id);
+  check(batches.length === 1, `worker batch exceeds bounded input: ${id}`);
+  return batches[0].payload;
+}
+function manifestEntry(batch) {
+  const entry = { id: batch.id, payloadHash: hash(batch.payload), payloadBytes: payloadBytes(batch.payload) };
+  if (batch.excerpted?.length) entry.excerpted = [...batch.excerpted].sort();
+  if (batch.parts) { entry.part = batch.part; entry.parts = batch.parts; }
+  return entry;
+}
+function workerBatches(fullPayload) {
+  return Object.keys(fullPayload.questions).flatMap(id => workerQuestionBatches(fullPayload, id));
+}
+export function workerBatchManifest(fullPayload) {
+  return workerBatches(fullPayload).map(manifestEntry);
+}
+export function workerBatchStrategy(manifest) {
+  return manifest.some(entry => entry.excerpted || entry.parts) ? WORKER_BATCH_STRATEGIES.BOUNDED : WORKER_BATCH_STRATEGIES.ATOMIC;
+}
+/**
+ * Conservative aggregation of one question's part answers: SATISFIED only
+ * when every part is SATISFIED (then the least confident part is kept);
+ * otherwise the most severe non-SATISFIED part answer, earliest part first.
+ */
+export function aggregateBatchAnswers(answers) {
+  check(Array.isArray(answers) && answers.length > 0, 'batch aggregation requires answers');
+  if (answers.length === 1) return answers[0];
+  const unsatisfied = answers.filter(answer => answer.choice !== 'SATISFIED');
+  if (!unsatisfied.length) return answers.reduce((least, answer) => answer.confidence < least.confidence ? answer : least);
+  const rank = choice => { const index = BATCH_SEVERITY.indexOf(choice); return index < 0 ? BATCH_SEVERITY.length : index; };
+  return unsatisfied.reduce((worst, answer) => rank(answer.choice) < rank(worst.choice) ? answer : worst);
+}
 async function evaluateWorkerBatches(fullPayload, { root, cacheDir, fetchImpl, apiKey, bypassCache }) {
-  const manifest = workerBatchManifest(fullPayload);
-  const answers = {};
+  const batches = workerBatches(fullPayload);
+  const manifest = batches.map(manifestEntry);
+  const partAnswers = {};
   let inputTokens = 0, outputTokens = 0, attempts = 0, retryAttempts = 0, cacheHits = 0;
-  for (const batch of manifest) {
-    const payload = workerQuestionPayload(fullPayload, batch.id);
-    const ref = `${cacheDir}/batches/${batch.payloadHash}.json`;
+  for (const [index, batch] of batches.entries()) {
+    const { payload } = batch;
+    const entry = manifest[index];
+    const ref = `${cacheDir}/batches/${entry.payloadHash}.json`;
     let response;
     if (!bypassCache && fs.existsSync(localPath(root, ref))) {
       const saved = read(root, ref);
-      check(saved.payloadHash === batch.payloadHash, 'worker batch cache hash mismatch');
+      check(saved.payloadHash === entry.payloadHash, 'worker batch cache hash mismatch');
       response = validateResponse(saved.response, payload);
       cacheHits += 1;
     } else {
@@ -555,15 +705,17 @@ async function evaluateWorkerBatches(fullPayload, { root, cacheDir, fetchImpl, a
       response = result.response;
       attempts += result.attempts;
       retryAttempts += result.attempts - 1;
-      if (!bypassCache) write(root, ref, { payloadHash: batch.payloadHash, response });
+      if (!bypassCache) write(root, ref, { payloadHash: entry.payloadHash, response });
     }
-    answers[batch.id] = response.answers[batch.id];
+    (partAnswers[batch.id] ??= []).push(response.answers[batch.id]);
     inputTokens += response.usage.input_tokens;
     outputTokens += response.usage.output_tokens;
   }
+  const answers = Object.fromEntries(Object.entries(partAnswers).map(([id, parts]) => [id, aggregateBatchAnswers(parts)]));
+  const partChoices = Object.fromEntries(Object.entries(partAnswers).filter(([, parts]) => parts.length > 1).map(([id, parts]) => [id, parts.map(answer => answer.choice)]));
   return {
     response: validateResponse({ model: fullPayload.model, answers, usage: { input_tokens: inputTokens, output_tokens: outputTokens } }, fullPayload),
-    manifest, attempts, retryAttempts, cacheHits
+    manifest, attempts, retryAttempts, cacheHits, partChoices
   };
 }
 export async function evaluate(materialized, { root = '.', cacheDir = '.cache/blackboard-jev', fetchImpl, apiKey, bypassCache = false } = {}) {
@@ -576,7 +728,8 @@ export async function evaluate(materialized, { root = '.', cacheDir = '.cache/bl
     check(cached.cacheKey === cacheKey, 'cache key mismatch');
     response = validateResponse(cached.response, payload); cacheHit = true;
     if (cached.batching) {
-      check(lane === 'WORKER' && canonical(cached.batching.manifest) === canonical(workerBatchManifest(payload)), 'worker batch cache manifest mismatch');
+      const manifest = workerBatchManifest(payload);
+      check(lane === 'WORKER' && cached.batching.strategy === workerBatchStrategy(manifest) && canonical(cached.batching.manifest) === canonical(manifest), 'worker batch cache manifest mismatch');
       batching = cached.batching;
     }
   } else {
@@ -584,7 +737,7 @@ export async function evaluate(materialized, { root = '.', cacheDir = '.cache/bl
       const result = await evaluateWorkerBatches(payload, { root, cacheDir, fetchImpl, apiKey, bypassCache });
       ({ response, attempts } = result);
       retryAttempts = result.retryAttempts;
-      batching = { strategy: 'WORKER_ATOMIC_QUESTIONS_V1', manifest: result.manifest, cacheHits: result.cacheHits };
+      batching = { strategy: workerBatchStrategy(result.manifest), manifest: result.manifest, cacheHits: result.cacheHits, ...(Object.keys(result.partChoices).length ? { partChoices: result.partChoices } : {}) };
     } else {
       ({ response, attempts } = await callJev(payload, { fetchImpl, apiKey }));
       retryAttempts = attempts - 1;
@@ -603,8 +756,9 @@ export function validateEvaluation(evaluation, expected) {
   for (const key of ['stateHash', 'specHash', 'cacheKey']) check(evaluation[key] === expected[key], `stale evaluation ${key}`);
   validateResponse({ model: evaluation.model, answers: evaluation.answers, usage: evaluation.usage }, expected.payload);
   if (evaluation.metrics?.batching) {
-    check(expected.lane === 'WORKER' && evaluation.metrics.batching.strategy === 'WORKER_ATOMIC_QUESTIONS_V1', 'invalid worker batch strategy');
-    check(canonical(evaluation.metrics.batching.manifest) === canonical(workerBatchManifest(expected.payload)), 'worker batch manifest mismatch');
+    const manifest = workerBatchManifest(expected.payload);
+    check(expected.lane === 'WORKER' && evaluation.metrics.batching.strategy === workerBatchStrategy(manifest), 'invalid worker batch strategy');
+    check(canonical(evaluation.metrics.batching.manifest) === canonical(manifest), 'worker batch manifest mismatch');
   }
   return evaluation;
 }

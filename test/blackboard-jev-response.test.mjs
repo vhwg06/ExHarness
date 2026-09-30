@@ -32,7 +32,8 @@ test('malformed probability data is not echoed or retried', async () => {
     assert.doesNotMatch(error.message, /untrusted-secret-text|test-only-secret/);
     return true;
   });
-  assert.equal(calls, 1);
+  // A contract-violating response is retried exactly once (see callJev), never normalized.
+  assert.equal(calls, 2);
 });
 
 test('worker batches retain every atomic answer, exact evidence and cache binding', async t => {
