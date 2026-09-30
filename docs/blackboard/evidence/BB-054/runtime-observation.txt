@@ -1,0 +1,43 @@
+TAP version 13
+# Subtest: independent observation of exactly the expected digests is MATCH and acceptable
+ok 1 - independent observation of exactly the expected digests is MATCH and acceptable
+  ---
+  duration_ms: 104.865199
+  type: 'test'
+  ...
+# Subtest: a served identity that differs from the release is MISMATCH and not acceptable
+ok 2 - a served identity that differs from the release is MISMATCH and not acceptable
+  ---
+  duration_ms: 63.200854
+  type: 'test'
+  ...
+# Subtest: a mixed old/new rollout is MIXED and non-accepted by default
+ok 3 - a mixed old/new rollout is MIXED and non-accepted by default
+  ---
+  duration_ms: 71.133705
+  type: 'test'
+  ...
+# Subtest: a mixed rollout is acceptable only for the bounded digest set the pinned policy permits
+ok 4 - a mixed rollout is acceptable only for the bounded digest set the pinned policy permits
+  ---
+  duration_ms: 68.725535
+  type: 'test'
+  ...
+# Subtest: a DeploymentRelease or application self-report cannot be runtime observation evidence
+ok 5 - a DeploymentRelease or application self-report cannot be runtime observation evidence
+  ---
+  duration_ms: 70.234043
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 487.445231
+
+
+exitCode=0
