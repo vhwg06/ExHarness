@@ -44,7 +44,7 @@ NONE
 - BB-078 [WORKER/EXECUTION] — Implement durable detached operation scheduling
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
-- BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
+- BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-122 [WORKER/EXECUTION] — Add OpenCode as a supported agent tool
 - BB-123 [RESEARCH_SA/RESEARCH] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
@@ -115,7 +115,7 @@ BB-103 [DONE] <- BB-097
 BB-104 [DONE] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
 BB-106 [WORKER_SCHEDULABLE] <- BB-082, BB-087, BB-088
-BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
+BB-107 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [DONE] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097
 BB-121 [BLOCKED_BY BB-120] <- BB-100, BB-101, BB-120
