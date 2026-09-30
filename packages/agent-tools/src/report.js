@@ -23,6 +23,7 @@ function summarizeGroup(tool, arm, traces) {
   const diff = { filesChanged: 0, insertions: 0, deletions: 0, binaryFiles: 0 };
   const tokens = Object.fromEntries(TOKEN_FIELDS.map((field) => [field, null]));
   let coveredTraces = 0;
+  let totalCostUsdOverCoveredTraces = null;
   for (const trace of traces) {
     bump(status, trace.status);
     bump(exitCodes, trace.exitCode === null ? "null" : trace.exitCode);
@@ -36,6 +37,8 @@ function summarizeGroup(tool, arm, traces) {
       for (const field of TOKEN_FIELDS) {
         if (Number.isInteger(usage[field])) tokens[field] = (tokens[field] ?? 0) + usage[field];
       }
+      // Grok-only: sum the observed finite total_cost_usd over covered traces.
+      if (Number.isFinite(usage.totalCostUsd)) totalCostUsdOverCoveredTraces = (totalCostUsdOverCoveredTraces ?? 0) + usage.totalCostUsd;
     } else {
       bump(reasons, usage?.unavailableReason ?? "MISSING_USAGE");
     }
@@ -52,7 +55,7 @@ function summarizeGroup(tool, arm, traces) {
     verificationStatusCounts: sortedCounts(verification),
     diffTotals: diff,
     durationMs: { min: durations.length ? Math.min(...durations) : null, median: median(durations), max: durations.length ? Math.max(...durations) : null },
-    usage: { coveredTraces, uncoveredTraces: traces.length - coveredTraces, totalsOverCoveredTraces: tokens, unavailableReasonCounts: sortedCounts(reasons) }
+    usage: { coveredTraces, uncoveredTraces: traces.length - coveredTraces, totalsOverCoveredTraces: tokens, totalCostUsdOverCoveredTraces, unavailableReasonCounts: sortedCounts(reasons) }
   };
 }
 

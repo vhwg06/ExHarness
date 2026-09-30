@@ -4,7 +4,7 @@ Source-synchronized projection of `packages/agent-tools` (`@exharness/agent-tool
 
 ## Current implemented boundary
 
-ExHarness supervises an external CLI coding agent (Codex, Kiro or agy) from outside. The agent only edits a temporary git worktree. ExHarness owns candidate identity, verification, bounded retry with verification feedback, and promotion. The agent's exit status, success claim and final message are recorded as telemetry only and never contribute to acceptance.
+ExHarness supervises an external CLI coding agent (Codex, Kiro, agy or grok) from outside. The agent only edits a temporary git worktree. ExHarness owns candidate identity, verification, bounded retry with verification feedback, and promotion. The agent's exit status, success claim and final message are recorded as telemetry only and never contribute to acceptance.
 
 ```text
 AGENT_TASK_V1 { id, repositoryRoot, baseRevision, prompt, verifications[], requiredFiles? }
@@ -30,15 +30,16 @@ The tool process and the candidate commit both run inside Core ACT, so the Core 
 
 ## Tool adapters
 
-`AGENT_TOOL_ADAPTER_V1` adapters build exact argument arrays and parse output. They never read or write CLI configuration or credentials. The argv contract is frozen for codex-cli 0.158.0, kiro-cli-chat 2.24.1 and agy 1.1.1.
+`AGENT_TOOL_ADAPTER_V1` adapters build exact argument arrays and parse output. They never read or write CLI configuration or credentials. The argv contract is frozen for codex-cli 0.158.0, kiro-cli-chat 2.24.1, agy 1.1.1 and Grok Build.
 
 | Tool | First invocation | Resume | Session |
 | --- | --- | --- | --- |
 | `codex` | `exec --json --skip-git-repo-check --sandbox workspace-write [--model m] -`, prompt on stdin | `exec resume <sessionRef> --json -`, prompt on stdin | `thread_id` from the `--json` stream; no session id means a fresh first invocation |
 | `kiro` (`kiro-cli`) | `chat --no-interactive --trust-tools=fs_read,fs_write [--model m] <prompt>` | `--resume` after `chat` | resumed by worktree cwd |
 | `agy` | `--print <prompt> --mode accept-edits --print-timeout <s>s [--model m] --log-file <path>` | `--continue` first | resumed by worktree cwd |
+| `grok` | `--output-format json --model <m, default grok-4.6> [--cwd <dir>] --permission-mode acceptEdits --disable-web-search --no-subagents --no-auto-update --prompt-file <path>`, stdin null | `--resume <sessionId>`, or `--continue` without a session id | `sessionId` from the JSON object; the prompt travels only via `--prompt-file` |
 
-`FULL_AUTO` replaces the permission flags with `--sandbox danger-full-access`, `--trust-all-tools` or `--dangerously-skip-permissions`. `WORKSPACE_EDIT` is the default. The agy log file is written outside the worktree. Every retry sends the complete task plus the bounded feedback, because Kiro and agy resume by cwd and each task run uses a unique worktree.
+`FULL_AUTO` replaces the permission flags with `--sandbox danger-full-access`, `--trust-all-tools`, `--dangerously-skip-permissions` or `--always-approve` (grok). `WORKSPACE_EDIT` is the default. The agy log file is written outside the worktree. The grok prompt file lives in the supervisor log directory for supervised runs, or in a private directory under `os.tmpdir()` that is removed after the invocation for direct runs, never inside the worktree. Every retry sends the complete task plus the bounded feedback, because Kiro and agy resume by cwd and each task run uses a unique worktree.
 
 `defineAgentTool(base, { command, prefixArgs })` replaces the launch tuple atomically and keeps the adapter's argument builder and result parser.
 
@@ -57,7 +58,7 @@ The tool process and the candidate commit both run inside Core ACT, so the Core 
 
 `packages/agent-tools/bin/exharness-agent.mjs`:
 
-- `run --tool <codex|kiro|agy> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]` prints `AGENT_SUPERVISED_RESULT_V1`; exit 0 only for `ACCEPTED`.
+- `run --tool <codex|kiro|agy|grok> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]` prints `AGENT_SUPERVISED_RESULT_V1`; exit 0 only for `ACCEPTED`.
   With `--trace-dir <dir> [--arm <label>]` it also appends one `AGENT_TOOL_RUN_TRACE_V1` line per attempt (see `observation.md`).
 - `report <trace-dir>` verifies the trace digest chain and prints the DESCRIPTIVE `AGENT_TOOL_RUN_REPORT_V1`; a broken chain exits 1.
 - `probe` prints whether each tool is installed and its version.
@@ -70,7 +71,7 @@ Root scripts: `npm run test:agent-tools` runs the package tests with a determini
 Run observation is described in `observation.md`:
 
 - digest-chained run traces for direct runs (`runObservedInvocation`) and supervised runs (`createSupervisedObservation`);
-- per-tool usage limits, where only Codex `turn.completed` usage is observed;
+- per-tool usage limits, where only Codex `turn.completed` usage and grok `--output-format json` usage/cost are observed;
 - redaction before any trace byte is written;
 - a descriptive per-tool/arm report.
 
