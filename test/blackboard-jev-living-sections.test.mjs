@@ -154,7 +154,7 @@ test('changed sections stay within the batch limit using bounded evidence excerp
   assert.throws(() => workerQuestionBatches(huge, 'LIVING_DOCS', { livingExcerptStrategy: CHANGED, livingChanges: { [DOC]: [[13, 30]] } }), /worker batch exceeds bounded input: LIVING_DOCS/);
 });
 
-test('new batched evaluations record DELIVERY; retained CHANGED and SCOPED evaluations still validate', async t => {
+test('new batched evaluations record V4; retained V3, CHANGED and SCOPED evaluations still validate', async t => {
   const r = repo(t);
   fs.mkdirSync(path.join(r.root, 'docs/blackboard'), { recursive: true });
   fs.writeFileSync(path.join(r.root, 'docs/blackboard/jev-policy.json'), JSON.stringify({ model: MODEL, policy: 'atomic-claims-1' }));
@@ -170,7 +170,7 @@ test('new batched evaluations record DELIVERY; retained CHANGED and SCOPED evalu
     return new Response(JSON.stringify({ model: MODEL, answers: { [id]: { type: 'choice', choice: 'SATISFIED', confidence: 0.9, probabilities: { SATISFIED: 1, IMPLEMENTATION_DEFECT: 0, INSUFFICIENT_EVIDENCE: 0, PLAN_INPUT_CONTRADICTION: 0 } } }, usage: { input_tokens: 10, output_tokens: 1 } }), { status: 200 });
   };
   const evaluation = await evaluate(materialized, { root: r.root, fetchImpl, apiKey: 'fixture-key', bypassCache: true });
-  assert.equal(evaluation.metrics.batching.livingExcerptStrategy, DELIVERY);
+  assert.equal(evaluation.metrics.batching.livingExcerptStrategy, LIVING_EXCERPT_STRATEGIES.COHESIVE);
   assert.equal(evaluation.metrics.batching.criterionSourceStrategy, CRITERION_SOURCE_STRATEGIES.CHANGE_SET);
   const living = sent.find(body => body.questions.LIVING_DOCS).state;
   assert.match(living.sources[0].body, /A18 — Local git workspace/);
@@ -182,11 +182,13 @@ test('new batched evaluations record DELIVERY; retained CHANGED and SCOPED evalu
     const { livingExcerptStrategy, criterionSourceStrategy, ...rest } = evaluation.metrics.batching;
     return { ...evaluation, metrics: { ...evaluation.metrics, batching: { ...rest, ...(record ? { livingExcerptStrategy: strategy } : {}), manifest } } };
   };
-  const changed = retainedAs(CHANGED, true), scoped = retainedAs(SCOPED, false);
+  const changed = retainedAs(CHANGED, true), scoped = retainedAs(SCOPED, false), delivery = retainedAs(DELIVERY, true);
   assert.notDeepEqual(changed.metrics.batching.manifest, evaluation.metrics.batching.manifest);
   assert.notDeepEqual(scoped.metrics.batching.manifest, changed.metrics.batching.manifest);
+  assert.notDeepEqual(delivery.metrics.batching.manifest, evaluation.metrics.batching.manifest);
   assert.equal(validateEvaluation(changed, materialized), changed, 'retained CHANGED evaluation (BB-096, BB-053) validates');
   assert.equal(validateEvaluation(scoped, materialized), scoped, 'retained evaluation without a strategy validates as SCOPED');
+  assert.equal(validateEvaluation(delivery, materialized), delivery, 'retained V3 evaluation validates with its recorded strategy');
   assert.throws(() => validateEvaluation({ ...changed, metrics: { ...changed.metrics, batching: { ...changed.metrics.batching, livingExcerptStrategy: DELIVERY } } }, materialized), /worker batch manifest mismatch/);
   assert.throws(() => validateEvaluation({ ...evaluation, metrics: { ...evaluation.metrics, batching: { ...evaluation.metrics.batching, livingExcerptStrategy: 'NEWEST' } } }, materialized), /unknown Living Doc excerpt strategy/);
   assert.throws(() => validateEvaluation(evaluation, { ...materialized, candidateChanges: undefined }), /candidate change map missing/);
