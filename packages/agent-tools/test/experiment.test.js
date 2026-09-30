@@ -290,6 +290,92 @@ test("EV4 grok without adapter is NOT_EVALUATED with ADAPTER_NOT_DELIVERED", T, 
     const written = JSON.parse(readFileSync(join(scratch, "out", "report.json"), "utf8"));
     assert.equal(written.tools.grok.notEvaluatedReason, "ADAPTER_NOT_DELIVERED");
     assert.equal(existsSync(join(scratch, "out", "grok")), false, "nothing was registered or run for grok");
+
+    // Mixed run: an unavailable tool changes no other tool's rates.
+    const factors = { K: 2, timeoutMs: 30000 };
+    const seed = 23;
+    const mixed = await runAgentToolsEval({
+      tools: ["codex", "grok"], command: FAKE, out: join(scratch, "mixed"), tasks: ["bug-sum"], repeats: 1,
+      fakeScenario: "FIX_FIRST", seed, registry: NO_GROK_REGISTRY, factors
+    });
+    assert.equal(mixed.report.tools.grok.status, Verdict.NOT_EVALUATED);
+    assert.equal(mixed.report.tools.grok.notEvaluatedReason, NotEvaluatedReason.ADAPTER_NOT_DELIVERED);
+    assert.deepEqual(mixed.report.tools.grok.arms, {}, "unavailable grok ran no arm");
+    assert.deepEqual(mixed.report.tools.grok.comparisons ?? {}, {}, "unavailable grok has no verdicts");
+    assert.equal(mixed.runs.grok, undefined, "unavailable grok produced no run or attempts");
+    assert.equal("acceptanceRate" in mixed.report.tools.grok, false, "grok has no acceptance entry");
+    assert.equal("falseSuccessRate" in mixed.report.tools.grok, false, "grok has no false-success entry");
+    assert.equal("verdict" in mixed.report.tools.grok, false, "grok has no verdict entry");
+    assert.equal(mixed.report.tools.codex.status, "EVALUATED");
+    for (const arm of ARMS) {
+      assert.ok(mixed.report.tools.codex.arms[arm].attempts > 0, `${arm} attempted`);
+      assert.ok(mixed.report.tools.codex.arms[arm].evaluated > 0, `${arm} evaluated`);
+    }
+    const solo = await runAgentToolsEval({
+      tools: ["codex"], command: FAKE, out: join(scratch, "solo"), tasks: ["bug-sum"], repeats: 1,
+      fakeScenario: "FIX_FIRST", seed, registry: NO_GROK_REGISTRY, factors
+    });
+    for (const arm of ARMS) {
+      for (const field of ["attempts", "evaluated", "accepted", "acceptanceRate", "falseSuccessRate"]) {
+        assert.equal(
+          mixed.report.tools.codex.arms[arm][field],
+          solo.report.tools.codex.arms[arm][field],
+          `codex ${arm}.${field} identical with and without unavailable grok`
+        );
+      }
+    }
+    for (const arm of [Arm.DIRECT_SINGLE, Arm.DIRECT_RETRY]) {
+      assert.equal(
+        mixed.report.tools.codex.comparisons[arm].verdict,
+        solo.report.tools.codex.comparisons[arm].verdict,
+        `codex comparison ${arm} verdict identical with and without unavailable grok`
+      );
+    }
+
+    // Attempt-level unavailability is reported only at tool level: nothing is counted.
+    const missing = await runAgentToolsEval({
+      tools: ["codex"], command: join(scratch, "nonexistent-agent"), out: join(scratch, "missing"),
+      tasks: ["bug-sum"], registry: NO_GROK_REGISTRY
+    });
+    assert.equal(missing.report.tools.codex.status, Verdict.NOT_EVALUATED);
+    assert.equal(missing.report.tools.codex.notEvaluatedReason, NotEvaluatedReason.NOT_INSTALLED);
+    assert.deepEqual(missing.report.tools.codex.arms, {}, "no arm ran for a missing executable");
+    assert.equal(missing.runs.codex, undefined, "no run or attempt was recorded for a missing executable");
+    const missingJson = JSON.parse(readFileSync(join(scratch, "missing", "report.json"), "utf8"));
+    assert.ok(!JSON.stringify(missingJson.tools.codex).includes('"ACCEPTED"'), "no attempt recorded as ACCEPTED");
+    assert.ok(!JSON.stringify(missingJson.tools.codex).includes('"REJECTED"'), "no attempt recorded as REJECTED");
+    const missingMd = readFileSync(join(scratch, "missing", "report.md"), "utf8");
+    assert.ok(
+      missingMd.includes("No attempt was counted as a success or a failure."),
+      "report.md states nothing was counted"
+    );
+
+    // Rate exclusion directly: NOT_EVALUATED with TOOL_UNAVAILABLE never enters a rate.
+    const syntheticAttempts = [
+      { tool: "codex", taskId: "t0", arm: Arm.DIRECT_SINGLE, repeatIndex: 1, quality: "ACCEPTED", claimedSuccess: true, notEvaluatedReason: null, durationMs: 1000, invocations: 1, usage: { inputTokens: null, outputTokens: null, cachedTokens: null, providerCostUsd: null, status: "UNAVAILABLE" } },
+      { tool: "codex", taskId: "t1", arm: Arm.DIRECT_SINGLE, repeatIndex: 1, quality: "ACCEPTED", claimedSuccess: true, notEvaluatedReason: null, durationMs: 1000, invocations: 1, usage: { inputTokens: null, outputTokens: null, cachedTokens: null, providerCostUsd: null, status: "UNAVAILABLE" } },
+      { tool: "codex", taskId: "t2", arm: Arm.DIRECT_SINGLE, repeatIndex: 1, quality: "REJECTED", claimedSuccess: true, notEvaluatedReason: null, durationMs: 1000, invocations: 1, usage: { inputTokens: null, outputTokens: null, cachedTokens: null, providerCostUsd: null, status: "UNAVAILABLE" } },
+      { tool: "codex", taskId: "t3", arm: Arm.DIRECT_SINGLE, repeatIndex: 1, quality: "NOT_EVALUATED", claimedSuccess: false, notEvaluatedReason: "TOOL_UNAVAILABLE", durationMs: 0, invocations: 0, usage: { inputTokens: null, outputTokens: null, cachedTokens: null, providerCostUsd: null, status: "UNAVAILABLE" } },
+      { tool: "codex", taskId: "t4", arm: Arm.DIRECT_SINGLE, repeatIndex: 1, quality: "NOT_EVALUATED", claimedSuccess: false, notEvaluatedReason: "TOOL_UNAVAILABLE", durationMs: 0, invocations: 0, usage: { inputTokens: null, outputTokens: null, cachedTokens: null, providerCostUsd: null, status: "UNAVAILABLE" } },
+      { tool: "codex", taskId: "t5", arm: Arm.DIRECT_SINGLE, repeatIndex: 1, quality: "NOT_EVALUATED", claimedSuccess: false, notEvaluatedReason: "TOOL_UNAVAILABLE", durationMs: 0, invocations: 0, usage: { inputTokens: null, outputTokens: null, cachedTokens: null, providerCostUsd: null, status: "UNAVAILABLE" } }
+    ];
+    const reduced = reduceAttempts({ attempts: syntheticAttempts, seed: 1 });
+    const single = reduced.tools.codex.arms[Arm.DIRECT_SINGLE];
+    assert.equal(single.evaluated, 3);
+    assert.equal(single.acceptanceRate, 0.666667);
+    assert.equal(single.falseSuccessRate, 0.333333);
+    assert.equal(single.notEvaluated.TOOL_UNAVAILABLE, 3);
+    const extended = reduceAttempts({
+      attempts: [...syntheticAttempts,
+        { tool: "codex", taskId: "t6", arm: Arm.DIRECT_SINGLE, repeatIndex: 1, quality: "NOT_EVALUATED", claimedSuccess: false, notEvaluatedReason: "TOOL_UNAVAILABLE", durationMs: 0, invocations: 0, usage: { inputTokens: null, outputTokens: null, cachedTokens: null, providerCostUsd: null, status: "UNAVAILABLE" } },
+        { tool: "codex", taskId: "t7", arm: Arm.DIRECT_SINGLE, repeatIndex: 1, quality: "NOT_EVALUATED", claimedSuccess: false, notEvaluatedReason: "TOOL_UNAVAILABLE", durationMs: 0, invocations: 0, usage: { inputTokens: null, outputTokens: null, cachedTokens: null, providerCostUsd: null, status: "UNAVAILABLE" } }
+      ],
+      seed: 1
+    });
+    const singleExtended = extended.tools.codex.arms[Arm.DIRECT_SINGLE];
+    assert.equal(singleExtended.acceptanceRate, single.acceptanceRate, "extra NOT_EVALUATED leaves acceptanceRate unchanged");
+    assert.equal(singleExtended.falseSuccessRate, single.falseSuccessRate, "extra NOT_EVALUATED leaves falseSuccessRate unchanged");
+    assert.equal(singleExtended.notEvaluated.TOOL_UNAVAILABLE, 5);
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
