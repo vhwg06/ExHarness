@@ -1,0 +1,81 @@
+{
+  "kind": "BENCHMARK_ATTEMPT_RECORD_V1",
+  "experimentId": "TB21-CONTROL-hf-model-inference",
+  "cohortId": null,
+  "unitId": "hf-model-inference--ORACLE--r3",
+  "attemptId": "hf-model-inference--ORACLE--r3--attempt-1",
+  "retryOfAttemptId": null,
+  "protocolHash": "sha256:22e8802d9f4e4d6d8f45fca3505d6f1bcf17c3c33851a438816594bbfb69e570",
+  "task": {
+    "id": "terminal-bench/hf-model-inference",
+    "bundleDigest": "sha256:01370f37e61286f920dfca1e471496640ebcc8d06e1cc48d874c790715dbd4ad",
+    "environmentIdentity": "docker-image:alexgshaw/hf-model-inference:20260430@sha256:0ef475aebda8abb8cbf3a1d97aee8ac4b09ca9720550e25a4a46a47930cd3bad",
+    "instructionDigest": "sha256:29151c5b2306f522f38fa905de3d34566865829355e5ca0895f4fca04d51dcc1"
+  },
+  "runtime": {
+    "substrate": "harbor",
+    "substrateVersion": "0.23.0",
+    "substrateCommit": "1e5c5c6db929a10a140d05e606882c671ae20729",
+    "sourceSha": "3a7aa0fdb16b6ae0c613f2a534738e07e74f857f",
+    "profileHash": "sha256:a5025fcc21ff40c58236ef8d7648391a0f88120fc6d40dec6c2b417d52669849"
+  },
+  "producer": {
+    "kind": "ORACLE",
+    "identity": "harbor-oracle@0.23.0",
+    "model": null,
+    "provider": null
+  },
+  "budget": {
+    "wallMs": null,
+    "inputTokens": null,
+    "outputTokens": null,
+    "costUsd": null,
+    "toolCalls": null
+  },
+  "candidate": {
+    "artifactRef": null,
+    "artifactDigest": null,
+    "extractionStatus": "NOT_DECLARED"
+  },
+  "evidence": {
+    "substrateTrialRef": "x-e10cfdb26bc4a19e0c9bab2d",
+    "resultRef": "raw/result.json",
+    "trajectoryRef": null,
+    "verifierRefs": [
+      "verifier/reward.txt",
+      "verifier/ctrf.json"
+    ],
+    "artifactManifestRef": null,
+    "manifestDigest": "sha256:56c922275b89c66130c12156879700e529aa1d8dd99eb99ae54969431665845f"
+  },
+  "usage": {
+    "kind": "ACCOUNTING_V1",
+    "source": "harbor-agent-context:oracle",
+    "inputTokens": null,
+    "outputTokens": null,
+    "cachedTokens": null,
+    "cacheWriteTokens": null,
+    "providerCostUsd": null,
+    "normalizedCostUsd": null,
+    "status": "UNKNOWN",
+    "observedFields": [],
+    "accountingDigest": "sha256:ddb17f958577b66fee409cc5d332b074f8b2aa7dc0399825919f8ee358cbb3ea"
+  },
+  "timing": {
+    "startedAt": "2026-09-30T11:20:24.619269Z",
+    "endedAt": "2026-09-30T11:21:06.797038Z",
+    "elapsedMs": 42178,
+    "providerWaitMs": null,
+    "capabilityWaitMs": null
+  },
+  "quality": {
+    "verdict": "ACCEPTED",
+    "evaluatorIdentity": "harbor-task-verifier@0.23.0",
+    "evidenceRef": "verifier/reward.txt"
+  },
+  "termination": "COMPLETED",
+  "providerStatus": "NONE",
+  "infrastructureStatus": "NONE",
+  "failureFingerprint": null,
+  "recordDigest": "sha256:d722cd5360445e670dd8464f5decb2556774e9786e12be039526f9194038d26a"
+}
