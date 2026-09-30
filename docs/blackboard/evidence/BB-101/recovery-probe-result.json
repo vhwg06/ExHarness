@@ -1,0 +1,81 @@
+{
+  "kind": "BB101_RECOVERY_PROBE_RESULT",
+  "version": 1,
+  "node": "v20.19.2",
+  "headSha": "64e0f79d82ad6aa47244934f1507789205c9e18a",
+  "supervisor": {
+    "runSupervisedTaskOptions": [
+      "tool",
+      "task",
+      "model",
+      "maxAttempts",
+      "timeoutMs",
+      "maxFeedbackChars",
+      "permissionProfile",
+      "env",
+      "eventSinks",
+      "tracer",
+      "invocationObserver"
+    ],
+    "strategyOptions": [
+      "task",
+      "maxAttempts",
+      "maxFeedbackChars"
+    ],
+    "exportedResumeSupervisedTask": false,
+    "exportedDisposeRecoverableRun": false,
+    "exportedHandleVersion": null,
+    "sessionIdUsesRandomUUID": true,
+    "scratchIsMkdtemp": true,
+    "disposesWorktreeInFinally": true,
+    "mentionsRecoveryDir": false,
+    "mentionsResumeWorktree": false,
+    "passesSessionStore": false,
+    "invocationObserverDefaultNull": true,
+    "strategyLoopStartsAtOne": true,
+    "actThenVerifyThenEvaluate": true
+  },
+  "coreSession": {
+    "inMemoryContract": true,
+    "jsonBackendContract": true,
+    "resumeAfterNewInstanceSeesSameId": true,
+    "startRejectedExisting": true,
+    "varyWhileRunningCode": "RECOVERY_REQUIRED",
+    "recoverClosedRunning": true,
+    "secondVaryCompleted": true,
+    "createHarnessHas": true
+  },
+  "resumable": {
+    "exported": true,
+    "optionNames": [
+      "snapshot",
+      "runtimeCompatibilityTag",
+      "strategy"
+    ],
+    "hasStartVaryResume": false,
+    "snapshotsRuntimeConfiguration": true
+  },
+  "workspace": {
+    "alwaysWorktreeAdd": true,
+    "exportsReopen": true,
+    "secondAddFails": true
+  },
+  "adapters": {
+    "codexResumeUsesSessionRef": true,
+    "kiroResumeFlagIgnoresSessionRef": true,
+    "fakeHasFixAfterFeedback": true,
+    "canonicalJsonExported": true
+  },
+  "conclusions": {
+    "crashResumeSeamIsCreateHarnessSessionStore": true,
+    "inMemoryStoreIsNotCrashRecovery": true,
+    "createResumableAgentRuntimeIsNotTheSeam": true,
+    "interruptedVariationNeedsRecoverForce": true,
+    "startCannotMintASecondSession": true,
+    "worktreeMustBeReopenedNotAdded": true,
+    "defaultSupervisorStillMkdtempUuidDispose": true,
+    "invocationObserverIsDeliveredPassThrough": true,
+    "noResumeApiYet": true,
+    "fakeFixAfterFeedbackExists": true
+  }
+}
