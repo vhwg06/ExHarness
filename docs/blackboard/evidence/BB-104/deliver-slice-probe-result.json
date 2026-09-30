@@ -1,0 +1,102 @@
+{
+  "kind": "BB104_DELIVER_SLICE_PROBE_RESULT",
+  "version": 1,
+  "checkedSha": "21db7b0cc5436ba4f330548bd8b7d5fafe35857e",
+  "cli": {
+    "commands": [
+      "run",
+      "report",
+      "probe",
+      "smoke"
+    ],
+    "hasDeliver": false,
+    "toolUnavailable": true,
+    "notInstalled": true
+  },
+  "delivered": {
+    "agentTaskStatus": {
+      "ACCEPTED": "ACCEPTED",
+      "EXHAUSTED": "EXHAUSTED",
+      "TOOL_UNAVAILABLE": "TOOL_UNAVAILABLE"
+    },
+    "localVerificationReason": {
+      "PASS": "PASS",
+      "FAIL": "FAIL",
+      "TIMEOUT": "TIMEOUT",
+      "REVISION_MISMATCH": "REVISION_MISMATCH",
+      "TREE_MUTATED": "TREE_MUTATED",
+      "SPAWN_ERROR": "SPAWN_ERROR"
+    },
+    "toolIds": [
+      "agy",
+      "codex",
+      "kiro"
+    ],
+    "hasRunSupervisedBackendWork": false,
+    "hasResumeSupervisedTask": false,
+    "hasRunDeliverSlice": false,
+    "invocationObserver": true,
+    "recoveryDir": false,
+    "requiredFiles": false,
+    "compositionImportsAgentTools": false,
+    "indexExportsDeliver": false,
+    "operatorMd": false,
+    "supervisedBackendJs": false,
+    "recoveryJs": false
+  },
+  "planned": {
+    "bb100": {
+      "status": "READY",
+      "runSupervisedBackendWork": true,
+      "noRequiredFiles": true,
+      "noRecoveryDir": true
+    },
+    "bb101": {
+      "status": "READY",
+      "resumeSupervisedTask": true,
+      "handleComplete": true,
+      "recoveryDir": true
+    },
+    "bb102": {
+      "status": "DRAFT",
+      "optionalRequiredFiles": true
+    }
+  },
+  "verifierSeam": {
+    "mutatedFail": true,
+    "mismatchFail": true,
+    "qaSourceUnchanged": true
+  },
+  "backendThenQa": {
+    "status": "ACCEPTED",
+    "acceptedCheckout": {
+      "ok": true,
+      "qaPass": true,
+      "head": "0c53117311d868ec993361dcfe1d162417368307"
+    },
+    "sourceHeadPreserved": true
+  },
+  "conclusions": {
+    "hasDeliverCommand": false,
+    "cliCommandsAreRunReportProbeSmoke": true,
+    "runSupervisedBackendWorkNotExported": true,
+    "resumeSupervisedTaskNotExported": true,
+    "runDeliverSliceNotExported": true,
+    "agentTaskStatusTrio": true,
+    "invocationObserverDelivered": true,
+    "recoveryDirNotDelivered": true,
+    "validateAgentTaskDropsRequiredFiles": true,
+    "compositionDoesNotImportAgentTools": true,
+    "qaMutationFailsWithTreeMutated": true,
+    "qaDifferentRevisionFailsWithRevisionMismatch": true,
+    "acceptedShaCheckoutableAfterDispose": true,
+    "qaOnAcceptedShaPasses": true,
+    "sourceRepositoryHeadPreserved": true,
+    "bb100OmitsRequiredFilesAndRecoveryDir": true,
+    "bb101PlansResumeAndHandleComplete": true,
+    "bb102PlansOptionalRequiredFiles": true,
+    "smokePrintsNotInstalled": true,
+    "operatorLivingDocMissing": true,
+    "toolIdsAreCodexKiroAgy": true
+  }
+}
