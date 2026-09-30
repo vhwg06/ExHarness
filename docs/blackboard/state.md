@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-106
+next-work-id: BB-109
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -49,6 +49,9 @@ NONE
 - BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
 - BB-104 [RESEARCH_SA/RESEARCH] — Run one local Backend-then-QA slice from an operator CLI
 - BB-105 [WORKER/EXECUTION] — Add Grok Build as a supported agent tool
+- BB-106 [RESEARCH_SA/RESEARCH] — Wire delivered Oracle and supersession regression tests into npm test and verify
+- BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
+- BB-108 [RESEARCH_SA/RESEARCH] — Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets
 
 ## Dependency graph
 
@@ -108,6 +111,9 @@ BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
 BB-104 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-102
 BB-105 [WORKER_SCHEDULABLE] <- BB-097, BB-098
+BB-106 [RESEARCH_SCHEDULABLE] <- BB-082, BB-087, BB-088
+BB-107 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088, BB-089
+BB-108 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088
 ```
 
 ## Context semantics
