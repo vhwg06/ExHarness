@@ -45,6 +45,13 @@ export {
   verifyAgentToolRunHandle,
   writeAgentToolRunHandle
 } from "./recovery.js";
+export {
+  EXHARNESS_MCP_TOOLS,
+  MCP_FORBIDDEN_TOOL,
+  MCP_PROTOCOL_VERSION,
+  MCP_SERVER_INFO,
+  createExharnessMcpVerifyServer
+} from "./mcp-server.js";
 export { REDACTED, SECRET_PATTERNS, createRedactor, redact, redactedExcerpt, secretValues } from "./redaction.js";
 export { UsageUnavailableReason, parseAgyOutput, parseCodexJsonl, parseKiroOutput, parseToolOutput } from "./output-parsers.js";
 export {
