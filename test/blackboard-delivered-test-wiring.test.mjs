@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 import { createOracleContextResolver } from '../packages/oracle/src/index.js';
 import { verifySupersession } from '../scripts/blackboard-objective-supersession.mjs';
 
@@ -10,15 +11,43 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readPackageScripts = () => JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).scripts;
 const stubCatalog = () => ({ authorityFor: () => ({}), validateCandidate: () => true });
 const stubPlanner = () => ({ plan: () => ({}), execute: async () => ({}) });
+const listOracleTestFiles = () => fs.readdirSync(path.join(root, 'test')).filter((name) => /^oracle-.*\.test\.mjs$/.test(name)).sort();
+
+function oracleScriptCoverage(script, testDirFiles) {
+  const text = String(script ?? '');
+  const files = Array.isArray(testDirFiles) ? [...testDirFiles].sort() : [];
+  const missing = [];
+  if (!text.includes('packages/oracle/test/*.test.js')) missing.push('packages/oracle/test/*.test.js');
+  const hasGlob = text.includes('test/oracle-*.test.mjs');
+  if (!hasGlob) missing.push('test/oracle-*.test.mjs');
+  for (const file of files.filter((name) => /^oracle-.*\.test\.mjs$/.test(name))) {
+    const rel = `test/${file}`;
+    if (!hasGlob && !text.includes(rel) && !text.includes(file)) missing.push(rel);
+  }
+  return missing;
+}
+
+function workGraphScriptCoverage(script) {
+  const text = String(script ?? '');
+  return text.includes('test/blackboard-objective-supersession.test.mjs')
+    ? []
+    : ['test/blackboard-objective-supersession.test.mjs'];
+}
 
 test('TW1 test:oracle includes the oracle test glob', () => {
-  const scripts = readPackageScripts();
-  const script = scripts['test:oracle'];
-  assert.ok(typeof script === 'string' && script.includes('packages/oracle/test/*.test.js'), 'test:oracle must run packages/oracle/test/*.test.js');
-  assert.ok(script.includes('test/oracle-*.test.mjs'), 'test:oracle must include the test/oracle-*.test.mjs glob');
-  const oracleFiles = fs.readdirSync(path.join(root, 'test')).filter((name) => /^oracle-.*\.test\.mjs$/.test(name));
-  for (const required of ['oracle-facade-accounting', 'oracle-context-graph-boundary', 'oracle-context-intelligence-foundation']) {
-    assert.ok(oracleFiles.some((name) => name.includes(required)), `oracle glob must cover ${required}`);
+  const script = readPackageScripts()['test:oracle'];
+  const files = listOracleTestFiles();
+  assert.deepEqual(oracleScriptCoverage(script, files), []);
+  const globRemoved = String(script).replace('test/oracle-*.test.mjs', '');
+  assert.ok(oracleScriptCoverage(globRemoved, files).includes('test/oracle-*.test.mjs'), 'omitting the oracle glob must be reported');
+  const singleFile = 'node --test packages/oracle/test/*.test.js test/oracle-context-intelligence-architecture.test.mjs';
+  const singleMissing = oracleScriptCoverage(singleFile, files);
+  assert.ok(singleMissing.includes('test/oracle-*.test.mjs'), 'one explicit file must not satisfy the glob');
+  assert.ok(singleMissing.includes('test/oracle-facade-accounting.test.mjs'), 'one explicit file must leave facade-accounting uncovered');
+  assert.ok(!singleMissing.includes('test/oracle-context-intelligence-architecture.test.mjs'), 'the listed file counts as covered');
+  const expanded = execFileSync('sh', ['-c', 'ls test/oracle-*.test.mjs'], { cwd: root, encoding: 'utf8' }).trim().split(/\s+/).sort();
+  for (const file of files) {
+    assert.ok(expanded.includes(`test/${file}`), `the glob must expand to test/${file}`);
   }
   const resolver = createOracleContextResolver({ sourceCatalog: stubCatalog(), retrievalPlanner: stubPlanner() });
   assert.equal(typeof resolver.resolve, 'function');
@@ -26,9 +55,10 @@ test('TW1 test:oracle includes the oracle test glob', () => {
 });
 
 test('TW2 test:blackboard-work-graph includes supersession tests', () => {
-  const scripts = readPackageScripts();
-  const script = scripts['test:blackboard-work-graph'];
-  assert.ok(typeof script === 'string' && script.includes('test/blackboard-objective-supersession.test.mjs'), 'test:blackboard-work-graph must run test/blackboard-objective-supersession.test.mjs');
+  const script = readPackageScripts()['test:blackboard-work-graph'];
+  assert.deepEqual(workGraphScriptCoverage(script), []);
+  const removed = String(script).replace('test/blackboard-objective-supersession.test.mjs', '');
+  assert.deepEqual(workGraphScriptCoverage(removed), ['test/blackboard-objective-supersession.test.mjs']);
   assert.equal(fs.existsSync(path.join(root, 'test/blackboard-objective-supersession.test.mjs')), true);
   assert.throws(
     () => verifySupersession({ trustedRoot: root, subjectRoot: root, prBaseSha: 'x', candidateSha: 'y', targetWorkId: 'NOT-A-TARGET' }),
