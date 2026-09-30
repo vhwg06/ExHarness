@@ -1,0 +1,86 @@
+{
+  "kind": "BB-120_PLAN_DEFECT_PROBE_V1",
+  "staticFacts": {
+    "binRunOrSmokePassesEnvToSupervisor": false,
+    "supervisorDefaultsEnvToEmpty": true,
+    "deliveredBinTestsPassScenarioExplicitlyToBin": true,
+    "fakeCliReadsScenarioFromAmbientEnv": true
+  },
+  "defectD2WithSupervisorDefault": {
+    "overlayUsed": {},
+    "droppedTestControlVars": [
+      "FAKE_AGENT_SCENARIO",
+      "FAKE_AGENT_RECORD"
+    ],
+    "droppedRepresentativeAuthVars": [
+      "OPENAI_API_KEY",
+      "AWS_ACCESS_KEY_ID",
+      "AWS_SECRET_ACCESS_KEY",
+      "AGY_API_KEY",
+      "XAI_API_KEY",
+      "ANTHROPIC_API_KEY"
+    ],
+    "plantedSecretDropped": true,
+    "pathStillInherited": true
+  },
+  "d2ExplicitOverlayStillWorks": {
+    "scenarioPresent": true,
+    "authPresent": true
+  },
+  "liveOnCurrentMain": {
+    "overlayReachesChild": true,
+    "ambientPlantedSecretLeaksToChild": true,
+    "binScenarioReachesFakeOnlyViaAmbient": true
+  },
+  "affectedDeliveredTests": [
+    "AT4 run prints AGENT_SUPERVISED_RESULT_V1 and reports ACCEPTED only after passing verification",
+    "AT4 smoke skips missing and unauthenticated tools and never reports ACCEPTED without passing verification",
+    "GR3 exharness-agent probe and smoke accept grok"
+  ],
+  "affectedToolsLive": {
+    "codex": {
+      "ambientAuthDroppedByD2": true,
+      "representativeVars": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    "kiro": {
+      "ambientAuthDroppedByD2": true,
+      "representativeVars": [
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY"
+      ]
+    },
+    "agy": {
+      "ambientAuthDroppedByD2": true,
+      "representativeVars": [
+        "AGY_API_KEY"
+      ]
+    },
+    "grok": {
+      "ambientAuthDroppedByD2": true,
+      "representativeVars": [
+        "XAI_API_KEY"
+      ]
+    },
+    "opencode": {
+      "ambientAuthDroppedByD2": true,
+      "representativeVars": [
+        "ANTHROPIC_API_KEY"
+      ]
+    }
+  },
+  "correctedRule": {
+    "plantedSecretDropped": true,
+    "undeclaredAmbientAuthDropped": true,
+    "declaredAuthForwarded": true,
+    "fakeScenarioForwardedViaBinOverlay": true,
+    "fakeRecordForwardedViaBinOverlay": true,
+    "nodeTestContextDropped": true,
+    "overlayBeatsAllowlist": true,
+    "noWholesaleCopy": true,
+    "declaredAmbientAuthReachesChildWithoutOverlay": true,
+    "allCorrectedChecksPass": true
+  },
+  "note": "Representative auth names are illustrative operator-supplied examples, not in-repo documented truth: no adapter or doc in this repo names per-tool auth variables."
+}
