@@ -1,0 +1,97 @@
+TAP version 13
+# Subtest: progressive chaining: resolveNext returns step index+1 bound to the previous resolutionId
+ok 1 - progressive chaining: resolveNext returns step index+1 bound to the previous resolutionId
+  ---
+  duration_ms: 10.408105
+  type: 'test'
+  ...
+# Subtest: progressive retriable selection: only BUDGET_EXHAUSTED/SOURCE_FAILURE/DEFERRED evidence is re-attempted
+ok 2 - progressive retriable selection: only BUDGET_EXHAUSTED/SOURCE_FAILURE/DEFERRED evidence is re-attempted
+  ---
+  duration_ms: 4.91437
+  type: 'test'
+  ...
+# Subtest: progressive retriable set includes DEFERRED alongside SOURCE_FAILURE
+ok 3 - progressive retriable set includes DEFERRED alongside SOURCE_FAILURE
+  ---
+  duration_ms: 3.240513
+  type: 'test'
+  ...
+# Subtest: progressive budget: BUDGET_EXHAUSTED evidence is re-attempted under remaining budget with monotonic consumption
+ok 4 - progressive budget: BUDGET_EXHAUSTED evidence is re-attempted under remaining budget with monotonic consumption
+  ---
+  duration_ms: 3.262128
+  type: 'test'
+  ...
+# Subtest: progressive budget fence: a step that would exceed the requirement budget is rejected
+ok 5 - progressive budget fence: a step that would exceed the requirement budget is rejected
+  ---
+  duration_ms: 4.274102
+  type: 'test'
+  ...
+# Subtest: progressive verbatim: prior items are retained byte-identical in order and content
+ok 6 - progressive verbatim: prior items are retained byte-identical in order and content
+  ---
+  duration_ms: 2.807487
+  type: 'test'
+  ...
+# Subtest: progressive no-hidden-growth: chained steps add items only for previously unresolved evidence
+ok 7 - progressive no-hidden-growth: chained steps add items only for previously unresolved evidence
+  ---
+  duration_ms: 5.030586
+  type: 'test'
+  ...
+# Subtest: progressive refusal: a previous result for a different requirementId is rejected
+ok 8 - progressive refusal: a previous result for a different requirementId is rejected
+  ---
+  duration_ms: 2.807304
+  type: 'test'
+  ...
+# Subtest: progressive refusal: COMPLETE previous throws ALREADY_COMPLETE
+ok 9 - progressive refusal: COMPLETE previous throws ALREADY_COMPLETE
+  ---
+  duration_ms: 1.853514
+  type: 'test'
+  ...
+# Subtest: progressive refusal: exhausted steps throws STEPS_EXHAUSTED
+ok 10 - progressive refusal: exhausted steps throws STEPS_EXHAUSTED
+  ---
+  duration_ms: 2.170884
+  type: 'test'
+  ...
+# Subtest: progressive refusal: only non-retriable unresolved throws NOTHING_RETRIABLE
+ok 11 - progressive refusal: only non-retriable unresolved throws NOTHING_RETRIABLE
+  ---
+  duration_ms: 1.537551
+  type: 'test'
+  ...
+# Subtest: progressive currentness: drift of previously resolved evidence throws STALE_DURING_RESOLUTION
+ok 12 - progressive currentness: drift of previously resolved evidence throws STALE_DURING_RESOLUTION
+  ---
+  duration_ms: 2.636013
+  type: 'test'
+  ...
+# Subtest: pinned resolver: Core consumes a specific step once per call
+ok 13 - pinned resolver: Core consumes a specific step once per call
+  ---
+  duration_ms: 3.750822
+  type: 'test'
+  ...
+# Subtest: progressive scope: only the facade carries the progression surface
+ok 14 - progressive scope: only the facade carries the progression surface
+  ---
+  duration_ms: 0.764004
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 162.785908
+
+
+exitCode=0

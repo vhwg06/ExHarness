@@ -1,0 +1,41 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-121",
+  "outcome": "Durable ApplicationOrchestrator Backend→QA can execute Backend through the opt-in supervised agent-tools adapter, so production Board work can use Codex/Kiro/agy/grok as Backend rather than only mutation-only CodeAct, while the default createBackendWorker path stays unchanged.",
+  "currentProblem": "Executed probe: createDurableBackendQaWorkflow takes backendWorker and always calls runPreparedBackendObjective / recoverPreparedBackendObjective; durable-backend-qa.js and composition.js have zero agent-tools / runSupervisedBackendWork hits; packages/agentic-system/src/supervised-backend.js is absent on this tree (BB-100 PLANNED_CONTRACT).",
+  "scope": [
+    "agentic.backend-qa-execution.supervised-durable",
+    "agent-tools.backend-adapter.durable-board"
+  ],
+  "constraints": [
+    "Opt-in factory: default createDurableBackendQaWorkflow({ backendWorker: createBackendWorker(...) }) remains the CodeAct path.",
+    "Do not edit createBackendWorker or backend-worker.js. Do not statically import packages/agent-tools/src/index.js from agentic-system (BB-100 cycle rule).",
+    "BB-100 runSupervisedBackendWork and BB-101 resumeSupervisedTask are PLANNED_CONTRACT until those tasks are DONE; Worker binds delivered names at start.",
+    "BB-104 operator deliver CLI, BB-066 OpenHands, BB-067 sandbox and BB-069 first slice stay out of scope.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify a createSupervisedBackendWorker factory that implements execute/recover by calling the BB-100 adapter and projecting APPLIED/FAILED/BLOCKED onto the delivered BackendWorker execute/recover contract used by runPreparedBackendObjective.",
+    "Specify that createDurableBackendQaWorkflow and runBackendThenQaObjective reach QA_PENDING / QA after fake-CLI FIX_FIRST APPLIED, and that TOOL_UNAVAILABLE is BLOCKED and EXHAUSTED is FAILED, never APPLIED.",
+    "Specify crash-resume of BACKEND_PENDING through the BB-101 handle when recoveryDir is set, and BLOCKED recover when it is not.",
+    "Specify Living docs for the opt-in durable supervised Backend path versus default CodeAct and versus BB-066 OpenHands.",
+    "Ground the design in the executed durable-board probe and the BB-100/BB-101 planned contracts and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-research/BB-121.md",
+    "docs/blackboard/evidence/BB-121/durable-board-probe-result.json",
+    "packages/agentic-system/src/durable-backend-qa.js",
+    "packages/agentic-system/src/composition.js",
+    "packages/agentic-system/src/backend-application.js",
+    "packages/agentic-system/src/backend-worker.js",
+    "packages/agentic-system/src/contracts.js",
+    "packages/agentic-system/src/index.js",
+    "docs/living/system/agentic-application/state.md",
+    "docs/living/system/agentic-application/capabilities.md",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-100.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-101.json"
+  ]
+}
