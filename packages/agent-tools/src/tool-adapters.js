@@ -1,7 +1,9 @@
 // AGENT_TOOL_ADAPTER_V1: frozen, shell-free argv contracts for external CLI coding agents.
-// Codex (codex-cli 0.158.0), Kiro (kiro-cli-chat 2.24.1), agy (1.1.1) and Grok Build (grok).
+// Codex (codex-cli 0.158.0), Kiro (kiro-cli-chat 2.24.1), agy (1.1.1), Grok Build (grok)
+// and OpenCode (opencode 1.18.33).
 // An adapter only builds argument arrays and parses output; it never reads or writes CLI
-// configuration or credentials.
+// configuration or credentials (including ~/.opencode). Operators put the opencode binary
+// on PATH or pass it with --command.
 
 export const AGENT_TOOL_ADAPTER_VERSION = "AGENT_TOOL_ADAPTER_V1";
 
@@ -228,4 +230,65 @@ export const grokTool = defineAgentTool({
   }
 });
 
-export const AGENT_TOOLS = Object.freeze({ codex: codexTool, kiro: kiroTool, agy: agyTool, grok: grokTool });
+// OpenCode: `run --format json` emits JSONL events; a step_finish event carries the usage
+// tokens and cost in part.tokens/part.cost. The task message is always the positional
+// argument; stdin is null. --dir carries the spawn cwd. WORKSPACE_EDIT omits --auto;
+// FULL_AUTO passes --auto. Resume is --session <id>, or --continue without a session id.
+export const opencodeTool = defineAgentTool({
+  id: "opencode",
+  command: "opencode",
+  prefixArgs: [],
+  versionArgs: ["--version"],
+  buildInvocation(request) {
+    const permissionProfile = assertInvocationRequest(request);
+    const { prompt, resume = null, model = null, cwd = null } = request;
+    const dirArgs = typeof cwd === "string" && cwd.length > 0 ? ["--dir", cwd] : [];
+    const permissionArgs = permissionProfile === PermissionProfile.FULL_AUTO ? ["--auto"] : [];
+    const resumeArgs = resume === null
+      ? []
+      : (typeof resume.sessionRef === "string" ? ["--session", resume.sessionRef] : ["--continue"]);
+    // `--` ends option parsing (yargs-style `run [message..]`), so a prompt that
+    // begins with `-` is always the positional message, never an option.
+    return {
+      args: [
+        "run", "--format", "json",
+        ...dirArgs,
+        ...modelArgs(model),
+        ...permissionArgs,
+        ...resumeArgs,
+        "--",
+        prompt
+      ],
+      stdin: null
+    };
+  },
+  parseResult({ exitCode, stdout }) {
+    const { sessionRef, finalMessage } = parseOpencodeEvents(stdout);
+    return { claimedSuccess: exitCode === 0, finalMessage, sessionRef };
+  }
+});
+
+// Shared with parseOpencodeJsonl: first string sessionID wins; the final message is the
+// last text part, falling back to the tail of stdout.
+function parseOpencodeEvents(stdout) {
+  let sessionRef = null;
+  let finalMessage = null;
+  for (const line of String(stdout ?? "").split(/\r?\n/)) {
+    if (!line.trim().startsWith("{")) continue;
+    let event;
+    try { event = JSON.parse(line); } catch { continue; }
+    if (event === null || typeof event !== "object") continue;
+    if (sessionRef === null) {
+      const id = event.sessionID ?? event.sessionId ?? event.session_id ?? null;
+      if (typeof id === "string" && id.length > 0) sessionRef = id;
+    }
+    const part = event.part ?? null;
+    if (part && typeof part === "object" && part.type === "text" && typeof part.text === "string") {
+      finalMessage = part.text;
+    }
+  }
+  if (finalMessage === null) finalMessage = lastLines(stdout);
+  return { sessionRef, finalMessage };
+}
+
+export const AGENT_TOOLS = Object.freeze({ codex: codexTool, kiro: kiroTool, agy: agyTool, grok: grokTool, opencode: opencodeTool });
