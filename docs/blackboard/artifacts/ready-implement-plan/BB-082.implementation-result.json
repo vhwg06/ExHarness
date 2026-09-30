@@ -1,0 +1,135 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-082-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-082.json",
+    "hash": "87035a15cd1f4a4022062c76fa78692d81a9bb122f52d53ce2ec8ab2e8f09544"
+  },
+  "candidateSha": "38d7a27022e4dc5c1ea4ab1842a02415bb9a37a0",
+  "baselineSha": "fc532cd24e8a39a76067a241205835c1b2439dd7",
+  "candidateTree": "2bd4506ed560a1756e1d85b82912918b1e829cb1",
+  "verificationRuns": [
+    {
+      "id": "supersession",
+      "command": "node --test test/blackboard-objective-supersession.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "38d7a27022e4dc5c1ea4ab1842a02415bb9a37a0",
+      "logRef": "docs/blackboard/evidence/BB-082/supersession.txt",
+      "logHash": "586647a9f11ef2c28e905e5e2c6a405a2d55203710ca3cc82b540524d320fb48"
+    },
+    {
+      "id": "jev-ci",
+      "command": "node --test test/blackboard-jev.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "38d7a27022e4dc5c1ea4ab1842a02415bb9a37a0",
+      "logRef": "docs/blackboard/evidence/BB-082/jev-ci.txt",
+      "logHash": "c8600b9cc94730380a5211c26388533791cbf4f47cf16aa6f9ff206da8098997"
+    },
+    {
+      "id": "work-graph",
+      "command": "node --test test/blackboard-work-graph.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "38d7a27022e4dc5c1ea4ab1842a02415bb9a37a0",
+      "logRef": "docs/blackboard/evidence/BB-082/work-graph.txt",
+      "logHash": "4125afee72dc2fec137bd3c1098d4cb0bd04ce14e84bf2ba4b9ea5a00184d32d"
+    },
+    {
+      "id": "boundary",
+      "command": "node --test test/blackboard-objective-supersession.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "38d7a27022e4dc5c1ea4ab1842a02415bb9a37a0",
+      "logRef": "docs/blackboard/evidence/BB-082/boundary.txt",
+      "logHash": "6b8e3acf0c3088e2ef2e1c762653d8b0b014664c7a231e54260140828f61ca67"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "38d7a27022e4dc5c1ea4ab1842a02415bb9a37a0",
+      "logRef": "docs/blackboard/evidence/BB-082/repository.txt",
+      "logHash": "bc6130cc1ffcc120f1f8b4039fee3482d98b184219c8eb0c0ea6c8f51d9fe30b"
+    }
+  ],
+  "claims": [
+    {
+      "id": "CONTRACT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt"
+      ]
+    },
+    {
+      "id": "TRUST_BOUNDARY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt",
+        "docs/blackboard/evidence/BB-082/jev-ci.txt"
+      ]
+    },
+    {
+      "id": "FRESHNESS",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt"
+      ]
+    },
+    {
+      "id": "TARGET_RESET",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt",
+        "docs/blackboard/evidence/BB-082/work-graph.txt"
+      ]
+    },
+    {
+      "id": "DEPENDENT_IMPACT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt",
+        "docs/blackboard/evidence/BB-082/work-graph.txt"
+      ]
+    },
+    {
+      "id": "RETENTION",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt",
+        "docs/blackboard/evidence/BB-082/repository.txt"
+      ]
+    },
+    {
+      "id": "MIGRATION_BOUNDARY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/boundary.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt",
+        "docs/blackboard/evidence/BB-082/jev-ci.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt",
+        "docs/blackboard/evidence/BB-082/work-graph.txt"
+      ]
+    },
+    {
+      "id": "INV-4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-082/supersession.txt",
+        "docs/blackboard/evidence/BB-082/work-graph.txt"
+      ]
+    }
+  ]
+}
