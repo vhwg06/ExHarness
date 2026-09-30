@@ -1,0 +1,137 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-097-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-097",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+      "hash": "65755c28b8e1870d374e8cea6d6cd5f7526c5ec1b9e546d8036ccbe1ed2ba47c"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-097.json",
+      "hash": "b17af37a4c8caaf381b83b7dbd681a830d014c3b281f429fdca11bdea157f8b9"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.implementation-result.json",
+      "hash": "70739f5ad5380efea548fa4d8e0e39bd54dcd6d30aa59f2ff0048e17e9b3550c"
+    },
+    "candidateSha": "0ac104ff04fe8113a36425d0237a71778b53ee71",
+    "candidateTree": "9972b217e6328cdc691517478579ae6dbc0cbefd",
+    "baselineSha": "48b1b6067b646aec6b86a6c7d185e119c4ad1d6e"
+  },
+  "stateHash": "326e729dbed577f5b9ff3aaa86636b02dc30825236ff757d9e25c19a1a602f14",
+  "specHash": "dc27351560716c81ef7e0fc485fb09e4156b7ac312ab0008bb81c5674f1b300f",
+  "cacheKey": "439a6a6d83c4330c257cc255ae1b904fbaa5e919fcb5b9e932f1eb966221a225",
+  "model": "jev-1.13.0",
+  "answers": {
+    "AT1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.59,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.05,
+        "INSUFFICIENT_EVIDENCE": 0.24,
+        "SATISFIED": 0.69,
+        "PLAN_INPUT_CONTRADICTION": 0.02
+      }
+    },
+    "AT2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.98,
+      "probabilities": {
+        "SATISFIED": 0.99,
+        "IMPLEMENTATION_DEFECT": 0,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.01
+      }
+    },
+    "AT3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.76,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.14,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "SATISFIED": 0.83
+      }
+    },
+    "AT4": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.9,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.06,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "SATISFIED": 0.92
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.96,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.01,
+        "SATISFIED": 0.97
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 87451,
+    "output_tokens": 353
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 5,
+    "latencyMs": 1229.1039620000001,
+    "payloadBytes": 324675,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V3",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "AT1",
+          "payloadHash": "6a6b9920a75843d1f39ff83619f52bd24766027148ce5b4dd91b7849eb5285d2",
+          "payloadBytes": 54290
+        },
+        {
+          "id": "AT2",
+          "payloadHash": "451fb16d6e6664af8383ea4a29e75c13a055e5cb2da0768fb3e56d3c3a59af36",
+          "payloadBytes": 58228
+        },
+        {
+          "id": "AT3",
+          "payloadHash": "f74279e0e855c466a26549eb73966776c289f87dcd4d4b9fb70d469cb09555b7",
+          "payloadBytes": 59372
+        },
+        {
+          "id": "AT4",
+          "payloadHash": "4e8fc018a2937874f08c3912e18ca498517747d3d2fbd72886d1919967a2bb7d",
+          "payloadBytes": 59196,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-097/repository.txt"
+          ]
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "3f32fc7cfd2bbf68e2d17ff0f83c223d8e84e5b8120fd457fadf74583c40d0cd",
+          "payloadBytes": 53045
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
