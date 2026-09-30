@@ -99,6 +99,10 @@ start a second lineage when the worktree, digest, source HEAD or handle currency
 does not check out. Without `recoveryDir` the temporary worktree is still
 disposed in a `finally` block.
 
+## Evaluation
+
+`exharness-agent eval` runs the pre-registered agent-tools value evaluation. It compares `DIRECT_SINGLE`, `DIRECT_RETRY` and `EXHARNESS_SUPERVISED` on the owned eight-fixture suite in `benchmarks/agent-tools/fixtures/`. Hidden tests are applied only at independent evaluation. Records go through the shared benchmark kernel ledger, evidence manifests and fresh-process audit. A seeded paired bootstrap gives per-tool `SUPERIOR`, `INFERIOR` or `INCONCLUSIVE`, plus false-success, time, invocation and token metrics. Deterministic calibration with the fake CLI is part of `npm run test:agent-tools`. No live evaluation has been run. Tools without an adapter or executable are `NOT_EVALUATED`. Method, reasons, the grok pilot procedure and the claim boundary are in `evaluation.md`.
+
 ## Operator deliver slice
 
 One local Backend-then-QA delivery slice is available as
