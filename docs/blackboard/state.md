@@ -21,7 +21,7 @@ next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-104
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-104
-task: Run one local Backend-then-QA slice from an operator CLI
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-104/current.json
-components: integration/agent-tools, agentic/backend-qa-execution
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -113,7 +106,7 @@ BB-100 [DONE] <- BB-096, BB-097
 BB-101 [DONE] <- BB-097
 BB-102 [DONE] <- BB-097
 BB-103 [DONE] <- BB-097
-BB-104 [ACTIVE] <- BB-100, BB-101, BB-102
+BB-104 [PLANNED] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
 BB-106 [WORKER_SCHEDULABLE] <- BB-082, BB-087, BB-088
 BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
