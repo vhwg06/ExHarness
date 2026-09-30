@@ -56,10 +56,23 @@ The tool process and the candidate commit both run inside Core ACT, so the Core 
 `packages/agent-tools/bin/exharness-agent.mjs`:
 
 - `run --tool <codex|kiro|agy> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]` prints `AGENT_SUPERVISED_RESULT_V1`; exit 0 only for `ACCEPTED`.
+  With `--trace-dir <dir> [--arm <label>]` it also appends one `AGENT_TOOL_RUN_TRACE_V1` line per attempt (see `observation.md`).
+- `report <trace-dir>` verifies the trace digest chain and prints the DESCRIPTIVE `AGENT_TOOL_RUN_REPORT_V1`; a broken chain exits 1.
 - `probe` prints whether each tool is installed and its version.
 - `smoke --tool <t> [--command <path>]` creates a temporary repository with one failing test and runs the supervised loop. It prints `SKIPPED` with `NOT_INSTALLED` when the executable is missing, or `TOOL_FAILED_BEFORE_EDIT` when the tool exits non-zero without an edit on attempt 1 (how a missing login or credential surfaces).
 
 Root scripts: `npm run test:agent-tools` runs the package tests with a deterministic fake CLI and temporary git repositories, and is part of `npm test`. `npm run smoke:agent-tools` is the opt-in live check against an installed, authenticated CLI; it is not part of `npm test` or `npm run verify`.
+
+## Observation
+
+Run observation is described in `observation.md`:
+
+- digest-chained run traces for direct runs (`runObservedInvocation`) and supervised runs (`createSupervisedObservation`);
+- per-tool usage limits, where only Codex `turn.completed` usage is observed;
+- redaction before any trace byte is written;
+- a descriptive per-tool/arm report.
+
+`runSupervisedTask` accepts an optional `invocationObserver` (default null). The supervisor awaits it inside ACT after the candidate commit and before cleanup; with it null, supervision is unchanged.
 
 ## Trust boundary
 

@@ -1,0 +1,182 @@
+{
+  "kind": "BB098_OBSERVATION_PROBE_RESULT",
+  "version": 1,
+  "node": "v22.23.3",
+  "realCliInstalledOnProbeHost": {
+    "codex": false,
+    "kiro-cli": false,
+    "agy": false
+  },
+  "direct": {
+    "codex": {
+      "resultFields": [
+        "durationMs",
+        "exitCode",
+        "signal",
+        "status",
+        "stderr",
+        "stderrSha256",
+        "stdout",
+        "stdoutSha256",
+        "timedOut",
+        "truncated"
+      ],
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "stdoutIsJsonl": true,
+      "stdoutCarriesUsage": false,
+      "stdoutSha256IsFullStreamDigest": true,
+      "workingTreeChangedWithoutCommit": true
+    },
+    "kiro": {
+      "resultFields": [
+        "durationMs",
+        "exitCode",
+        "signal",
+        "status",
+        "stderr",
+        "stderrSha256",
+        "stdout",
+        "stdoutSha256",
+        "timedOut",
+        "truncated"
+      ],
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "stdoutIsJsonl": false,
+      "stdoutCarriesUsage": false,
+      "stdoutSha256IsFullStreamDigest": true,
+      "workingTreeChangedWithoutCommit": true
+    },
+    "agy": {
+      "resultFields": [
+        "durationMs",
+        "exitCode",
+        "signal",
+        "status",
+        "stderr",
+        "stderrSha256",
+        "stdout",
+        "stdoutSha256",
+        "timedOut",
+        "truncated"
+      ],
+      "status": "COMPLETED",
+      "exitCode": 0,
+      "stdoutIsJsonl": false,
+      "stdoutCarriesUsage": false,
+      "stdoutSha256IsFullStreamDigest": true,
+      "workingTreeChangedWithoutCommit": true
+    }
+  },
+  "supervised": {
+    "status": "ACCEPTED",
+    "resultFields": [
+      "acceptedSha",
+      "attempts",
+      "status",
+      "taskId",
+      "tool",
+      "toolVersion"
+    ],
+    "attemptFields": [
+      "candidateSha",
+      "claimedSuccess",
+      "durationMs",
+      "exitCode",
+      "feedbackChars",
+      "foldedAgentCommits",
+      "index",
+      "mutated",
+      "outcome",
+      "resume",
+      "timedOut",
+      "verification"
+    ],
+    "attemptCarriesRawStdout": false,
+    "attemptVerification": [
+      [
+        "test:FAIL"
+      ],
+      [
+        "test:PASS"
+      ]
+    ],
+    "agentLogDirExistsAfterReturn": false,
+    "eventTypes": [
+      "HARNESS_SESSION_STARTED",
+      "HARNESS_VARIATION_STARTED",
+      "AGENT_RUN_STARTED",
+      "CAPABILITY_INVOKED",
+      "CAPABILITY_STARTED",
+      "CAPABILITY_COMPLETED",
+      "AGENT_RUN_COMPLETED",
+      "HARNESS_VARIATION_COMPLETED"
+    ],
+    "capabilityInvocations": [
+      "avo.act",
+      "verify.test",
+      "avo.evaluate",
+      "avo.act",
+      "verify.test",
+      "avo.evaluate",
+      "avo.promote"
+    ],
+    "spans": [
+      {
+        "kind": "CAPABILITY",
+        "name": "avo.act",
+        "status": "OK"
+      },
+      {
+        "kind": "CAPABILITY",
+        "name": "verify.test",
+        "status": "OK"
+      },
+      {
+        "kind": "CAPABILITY",
+        "name": "avo.evaluate",
+        "status": "OK"
+      },
+      {
+        "kind": "CAPABILITY",
+        "name": "avo.act",
+        "status": "OK"
+      },
+      {
+        "kind": "CAPABILITY",
+        "name": "verify.test",
+        "status": "OK"
+      },
+      {
+        "kind": "CAPABILITY",
+        "name": "avo.evaluate",
+        "status": "OK"
+      },
+      {
+        "kind": "CAPABILITY",
+        "name": "avo.promote",
+        "status": "OK"
+      },
+      {
+        "kind": "STRATEGY",
+        "name": "strategy",
+        "status": "OK"
+      },
+      {
+        "kind": "AGENT_RUN",
+        "name": "agent.run",
+        "status": "OK"
+      }
+    ],
+    "eventPayloadCarriesPrompt": false
+  },
+  "conclusions": {
+    "directResultHasStdoutStderrDurationDigests": true,
+    "directResultHasNoStartEndTimestamps": true,
+    "supervisedResultOmitsRawOutput": true,
+    "supervisedLogAndWorktreeRemovedOnReturn": true,
+    "capabilityWindowsOpenAtAvoAct": true,
+    "fakeCodexStreamHasNoUsageEvent": true
+  }
+}
