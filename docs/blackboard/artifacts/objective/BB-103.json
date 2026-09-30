@@ -1,0 +1,35 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-103",
+  "outcome": "ExHarness exposes verification and run-status as MCP tools over stdio so a supervised CLI agent can query independent verification during its own loop, while promotion remains ExHarness-owned and is never an MCP tool.",
+  "currentProblem": "BB-097 deferred in-tool MCP and lifecycle hooks until supervision value is measured. Executed productization probe: agent-tools contains no MCP server. Executed BB-097 CLI probe: Codex and Kiro expose mcp add/list. Outer supervision remains the only verification path, and the agent cannot ask ExHarness whether the current tree would PASS.",
+  "scope": [
+    "agent-tools.mcp-verify-server",
+    "agent-tools.in-tool-verification-gate"
+  ],
+  "constraints": [
+    "MCP tools are verify and status only; there is no promote, accept, merge or credential tool.",
+    "Outer supervision remains the authority path; the MCP server is opt-in per run and never writes user CLI configuration.",
+    "agent-tools currently has zero runtime npm dependencies; adding @modelcontextprotocol/server requires a recorded comparison against a zero-dependency stdio implementation.",
+    "Sandbox, hooks that mutate ~/.codex or ~/.gemini, and replacing outer supervision are out of scope.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify a stdio MCP server that exposes exharness_verify (run declared command verifiers at the current worktree HEAD) and exharness_status (attempt index, last verification, candidate sha) with typed JSON results.",
+    "Specify that promote, ACCEPT and lineage mutation cannot be invoked through MCP, and that a planted promote tool name is rejected.",
+    "Specify opt-in wiring so a supervised run can launch the server for that worktree only, without writing Codex/Kiro/agy user config, and that a run without the option never listens.",
+    "Specify Living docs stating MCP is a transport for verification queries, not acceptance authority, plus an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+    "Ground the design in the executed productization probe, the BB-097 CLI MCP surfaces and the MCP TypeScript SDK eligibility check."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-productization.md",
+    "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+    "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+    "packages/agent-tools/src/index.js",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+    "docs/living/system/oracle/state.md"
+  ]
+}

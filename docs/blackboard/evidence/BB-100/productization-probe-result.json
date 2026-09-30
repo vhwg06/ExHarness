@@ -1,0 +1,155 @@
+{
+  "kind": "BB100_AGENT_TOOL_PRODUCTIZATION_PROBE_RESULT",
+  "version": 1,
+  "checkedAt": "2026-09-30",
+  "researchBaselineSha": "7de5761c31d8799021361fb158db756e8e266943",
+  "filesRead": [
+    "packages/agentic-system/src/backend-worker.js",
+    "packages/agentic-system/src/backend-application.js",
+    "packages/agentic-system/src/composition.js",
+    "packages/agentic-system/src/durable-backend-qa.js",
+    "packages/agentic-system/src/index.js",
+    "packages/agentic-system/src/domain-execution-control.js",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/agent-tools/src/tool-adapters.js",
+    "packages/agent-tools/src/index.js",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/agent-tools/state.md",
+    "docs/blackboard/work-graph.json"
+  ],
+  "backendFacts": {
+    "injectsStrategy": true,
+    "injectsWorkspaceAct": true,
+    "objectivePassOnAnyMutation": true,
+    "importsAgentTools": false,
+    "agenticImportHits": []
+  },
+  "supervisorFacts": {
+    "validateAgentTaskFields": [
+      "id",
+      "repositoryRoot",
+      "baseRevision",
+      "prompt",
+      "verifications"
+    ],
+    "hasRequiredFilesField": false,
+    "hasContextRequirement": false,
+    "sessionIdUsesRandomUUID": true,
+    "disposesWorktreeInFinally": true,
+    "scratchIsMkdtemp": true,
+    "noResumeWorktreeOption": true,
+    "importsBackendWorker": false
+  },
+  "mcpFacts": {
+    "agentToolsExportsMcp": false,
+    "supervisorMentionsMcp": false,
+    "adaptersMentionsMcp": false,
+    "cliMentionsMcp": false,
+    "oracleStateMcp": true
+  },
+  "cliFacts": {
+    "commands": [],
+    "hasDeliverCommand": false,
+    "hasBackendCommand": false
+  },
+  "oracleMcpAbsent": true,
+  "agentToolsTrustBoundary": true,
+  "existingAgentToolTasks": [
+    {
+      "id": "BB-097",
+      "title": "Run Codex, Kiro and agy under ExHarness supervision"
+    },
+    {
+      "id": "BB-098",
+      "title": "Observe supervised and direct agent-tool runs"
+    },
+    {
+      "id": "BB-099",
+      "title": "Measure ExHarness-supervised versus direct agent-tool delivery"
+    }
+  ],
+  "existingTitlesTouchingTheme": [
+    {
+      "id": "BB-048",
+      "title": "Deliver bounded domain execution control",
+      "status": "DONE"
+    },
+    {
+      "id": "BB-056",
+      "title": "Deliver two-lane outer Blackboard with Jev judgment",
+      "status": "DONE"
+    },
+    {
+      "id": "BB-069",
+      "title": "Prove first useful agent delivery through Oracle and independent QA",
+      "status": "PLANNED"
+    },
+    {
+      "id": "BB-070",
+      "title": "Deliver product from goal and partial artifacts across owned domains",
+      "status": "PLANNED"
+    },
+    {
+      "id": "BB-072",
+      "title": "Make delivery runs observable recoverable and cost bounded",
+      "status": "PLANNED"
+    },
+    {
+      "id": "BB-073",
+      "title": "Ship an installable supported delivery profile",
+      "status": "PLANNED"
+    },
+    {
+      "id": "BB-074",
+      "title": "Measure delivery-harness value under a controlled benchmark program",
+      "status": "PLANNED"
+    },
+    {
+      "id": "BB-075",
+      "title": "Validate one useful HOW improvement on held-out delivery tasks",
+      "status": "PLANNED"
+    },
+    {
+      "id": "BB-096",
+      "title": "Bind delivered Backend/QA acceptance to a real repository and real verification processes",
+      "status": "DONE"
+    },
+    {
+      "id": "BB-098",
+      "title": "Observe supervised and direct agent-tool runs",
+      "status": "PLANNED"
+    },
+    {
+      "id": "BB-099",
+      "title": "Measure ExHarness-supervised versus direct agent-tool delivery",
+      "status": "PLANNED"
+    }
+  ],
+  "nextWorkId": "BB-100",
+  "featureIdsTouchingAgentTools": [
+    "FEATURE-AGENT-TOOL-SUPERVISION",
+    "FEATURE-AGENT-TOOL-OBSERVATION",
+    "FEATURE-AGENT-TOOL-VALUE"
+  ],
+  "overlapChecks": {
+    "bb066IsOpenHandsDomainRuntime": true,
+    "bb067IsSandbox": false,
+    "bb069IsFirstSlice": true,
+    "bb089IsOracleBackendAdoption": true,
+    "noTaskComposesAgentToolsIntoBackend": true,
+    "noTaskDurableAgentToolRecovery": true,
+    "noTaskOracleContextForAgentTools": true,
+    "noTaskMcpGate": true,
+    "noTaskOperatorSlice": true
+  },
+  "coverageNeedlesUnmatched": [
+    "supervised agent as Backend",
+    "agent-tools Backend",
+    "durable agent-tool",
+    "Oracle-grounded agent-tool",
+    "MCP server",
+    "operator CLI",
+    "exharness deliver"
+  ]
+}

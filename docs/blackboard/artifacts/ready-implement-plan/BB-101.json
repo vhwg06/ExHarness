@@ -1,0 +1,335 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-101",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-101.json",
+    "hash": "590455243c502acff040d91500704ebf8f8cba1e6c2e120bae5f07032326b91f"
+  },
+  "scope": [
+    "agent-tools.durable-recovery",
+    "agent-tools.supervisor-resume"
+  ],
+  "outOfScope": [
+    "Sandbox isolation (BB-067).",
+    "OpenHands domain-runtime recovery (BB-066).",
+    "Changing default runSupervisedTask disposal when no recovery handle is requested.",
+    "BB-100 Backend adapter, BB-102 Oracle context, BB-103 MCP, BB-104 deliver CLI."
+  ],
+  "constraints": [
+    "Code lives in packages/agent-tools/src/recovery.js and additive options on runSupervisedTask in supervisor.js; tests in packages/agent-tools/test/recovery.test.js titled RC1..RC5 followed by a space with { timeout: 60000 }.",
+    "Default runSupervisedTask() without recoveryDir remains byte-identical including mkdtemp and finally-dispose.",
+    "If invocationObserver is present (BB-098), recovery passes it through; BB-098 is not a worker dependency.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "A current handle identifies one semantic attempt; resume cannot mint a second Core session or a second worktree for that handle.",
+    "Default runSupervisedTask without recoveryDir still disposes its worktree.",
+    "Missing worktree, digest mismatch, source HEAD drift, or a newer handle for the same task id refuses resume.",
+    "ExHarness git operations preserve the source repository HEAD, branch refs and working tree."
+  ],
+  "architectureDecisions": [
+    "D1 — AGENT_TOOL_RUN_HANDLE_V1 = { version, taskId, repositoryRoot, baseRevision, worktreeRoot, candidateSha, coreSessionId, toolId, toolVersion, toolSessionRef, attemptIndex, createdAt, digest }. digest is sha256 of the canonical JSON without the digest field. Written under recoveryDir/handle.json after each ACT that returns.",
+    "D2 — runSupervisedTask gains optional recoveryDir. When set, scratch is recoveryDir/worktree (created once), sessionId is agent-task:${task.id} (stable), handle is updated after each attempt, and the worktree is NOT disposed on success or EXHAUSTED; caller disposes via disposeRecoverableRun(handle). When recoveryDir is omitted, behavior matches BB-097 including finally dispose.",
+    "D3 — resumeSupervisedTask(handle, { tool, env, ... }) verifies digest, worktree exists, git rev-parse HEAD equals candidateSha or baseRevision as recorded, source repository HEAD equals the recorded observation or is reported as SOURCE_HEAD_DRIFT, then continues runSupervisedTask from attemptIndex+1 with resume.sessionRef.",
+    "D4 — Core session: inject a file-backed sessionStore under recoveryDir/core-session.json implementing load/save. Research gap: pin whether createResumableAgentRuntime is required; READY must name the delivered Core export actually used. In-memory sessionStore is not crash recovery.",
+    "D5 — Fail closed: resume with deleted worktree, rewritten digest, or a handle whose taskId already has a newer digest on disk returns a typed RECOVERY_REFUSED and does not mkdtemp.",
+    "D6 — Tests use fake CLI FIX_AFTER_FEEDBACK: after attempt 1, simulate crash by returning before attempt 2 and keeping recoveryDir; a new process/function call to resumeSupervisedTask must PROMOTE. Default path tests still pass with invocationObserver omitted.",
+    "D7 — Evidence basis: productization probe sessionIdUsesRandomUUID, disposesWorktreeInFinally, noResumeWorktreeOption; Core effect journal records RUN_AGENT_TOOL.",
+    "D8 — Living docs: docs/living/system/agent-tools/state.md plus new docs/living/system/agent-tools/recovery.md."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/recovery.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/test/recovery.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/recovery.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/agent-tool-productization.md",
+      "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/core-harness/src/harness.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/core-harness/state.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/src/recovery.js",
+      "packages/agent-tools/test/recovery.test.js",
+      "docs/living/system/agent-tools/recovery.md"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/recovery.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Handle schema [RC1]: implement D1 and digest verification.",
+    "S2 — Opt-in persistence [RC2]: implement D2 so default path still disposes.",
+    "S3 — Resume [RC3,RC4]: implement D3-D6 crash/resume and fail-closed refusals.",
+    "S4 — Docs [RC5]: Living recovery.md and state.md; test:agent-tools, verify:current-docs, npm test."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "RC1",
+      "statement": "AGENT_TOOL_RUN_HANDLE_V1 records task id, worktree path, base revision, candidate sha, Core sessionId, tool sessionRef, attempt index and a digest over the canonical body.",
+      "verificationIds": ["rc1-handle", "agent-tools"],
+      "evidenceRequired": ["RC1 test output."]
+    },
+    {
+      "id": "RC2",
+      "statement": "Default runSupervisedTask without recoveryDir still mkdtemps and disposes; with recoveryDir the worktree survives EXHAUSTED/ACCEPTED until disposeRecoverableRun.",
+      "verificationIds": ["rc2-default", "agent-tools"],
+      "evidenceRequired": ["RC2 test output."]
+    },
+    {
+      "id": "RC3",
+      "statement": "Crash after ACT resume reopens the same worktree and Core session, continues the tool session, and cannot mint a second lineage for that handle.",
+      "verificationIds": ["rc3-resume", "agent-tools"],
+      "evidenceRequired": ["RC3 FIX_AFTER_FEEDBACK crash/resume output."]
+    },
+    {
+      "id": "RC4",
+      "statement": "Missing worktree, digest mismatch, source HEAD drift or a stale handle refuses resume instead of starting a fresh mkdtemp run.",
+      "verificationIds": ["rc4-refuse", "agent-tools"],
+      "evidenceRequired": ["RC4 test output."]
+    },
+    {
+      "id": "RC5",
+      "statement": "Living docs describe the recovery handle, default-path disposal and fail-closed refusals.",
+      "verificationIds": ["rc5-docs", "docs", "repository"],
+      "evidenceRequired": ["RC5 docs diff, verify:current-docs and npm test logs."]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "A current handle identifies one semantic attempt; resume cannot mint a second Core session or a second worktree for that handle.",
+      "criterionIds": ["RC1", "RC3"]
+    },
+    {
+      "invariant": "Default runSupervisedTask without recoveryDir still disposes its worktree.",
+      "criterionIds": ["RC2"]
+    },
+    {
+      "invariant": "Missing worktree, digest mismatch, source HEAD drift, or a newer handle for the same task id refuses resume.",
+      "criterionIds": ["RC4"]
+    },
+    {
+      "invariant": "ExHarness git operations preserve the source repository HEAD, branch refs and working tree.",
+      "criterionIds": ["RC3", "RC4"]
+    }
+  ],
+  "verificationPlan": [
+    { "id": "rc1-handle", "command": "node --test --test-name-pattern=\"^RC1 \" packages/agent-tools/test/recovery.test.js" },
+    { "id": "rc2-default", "command": "node --test --test-name-pattern=\"^RC2 \" packages/agent-tools/test/recovery.test.js" },
+    { "id": "rc3-resume", "command": "node --test --test-name-pattern=\"^RC3 \" packages/agent-tools/test/recovery.test.js" },
+    { "id": "rc4-refuse", "command": "node --test --test-name-pattern=\"^RC4 \" packages/agent-tools/test/recovery.test.js" },
+    { "id": "rc5-docs", "command": "node --test --test-name-pattern=\"^RC5 \" packages/agent-tools/test/recovery.test.js" },
+    { "id": "agent-tools", "command": "npm run test:agent-tools" },
+    { "id": "docs", "command": "npm run verify:current-docs" },
+    { "id": "repository", "command": "npm test" }
+  ],
+  "researchGaps": [
+    "Pin the delivered Core persistence export used for crash resume (file-backed sessionStore versus createResumableAgentRuntime) before READY; in-memory is not sufficient."
+  ],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "finding": "Executed: sessionIdUsesRandomUUID true, disposesWorktreeInFinally true, noResumeWorktreeOption true."
+    },
+    {
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "finding": "DELIVERED_TRUTH: mkdtemp scratch, randomUUID sessionId, finally dispose."
+    },
+    {
+      "ref": "docs/living/system/core-harness/state.md",
+      "finding": "DELIVERED_TRUTH: createResumableAgentRuntime snapshots runtime configuration; effect journal records ACT identity."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": ["BB-097"],
+    "workerStart": "Re-run the productization probe and confirm runSupervisedTask still mkdtemps and disposes; confirm fake CLI FIX_AFTER_FEEDBACK still exists.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": ["runSupervisedTask", "Core createHarness sessionStore/load-save"],
+      "PLANNED_CONTRACT": ["BB-098 invocationObserver pass-through if present"],
+      "RESEARCH_DESIRED_STATE": ["AGENT_TOOL_RUN_HANDLE_V1 and resumeSupervisedTask defined here"]
+    },
+    "contradiction": "If Core cannot persist a session across process death with any delivered export, stop PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-097 DONE.",
+    "completion": "All RC criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No default-path disposal change, no sandbox, no second lineage on resume."
+  },
+  "ciContract": {
+    "checks": ["rc1-handle", "rc2-default", "rc3-resume", "rc4-refuse", "rc5-docs", "agent-tools", "docs", "repository"],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": ["default runSupervisedTask mkdtemp and dispose"],
+    "add": ["recovery.js", "recoveryDir option", "tests", "Living recovery.md"],
+    "rollback": "Remove recovery.js, recoveryDir option, tests and Living recovery.md."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-101 objective + executed productization probe + delivered sources",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": ["product implementation", "planned dependency as delivered truth", "self-issued readiness"]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-097",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": ["No default-path disposal change, no sandbox, no second lineage on resume."]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/recovery.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe AGENT_TOOL_RUN_HANDLE_V1, default disposal, crash resume and fail-closed refusals."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify a durable AGENT_TOOL_RUN_HANDLE_V1 recording task id, worktree path, base revision, candidate sha, Core sessionId, tool id/version, tool sessionRef, attempt index and handle digest.",
+      "criterionIds": ["RC1"],
+      "planElements": ["S1"],
+      "verificationIds": ["rc1-handle"],
+      "decisionIndexes": [0],
+      "sourceRefs": ["docs/blackboard/process/agent-tool-research/BB-101.md"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-101.md", "match": "What identity is the semantic attempt" }
+      ],
+      "supportingPlanFields": ["architectureDecisions"]
+    },
+    {
+      "objectiveCriterion": "Specify crash-after-ACT resume that reopens the same worktree, resumes the tool session when the adapter supports it, continues the same Core session, and never creates a second candidate lineage for that handle.",
+      "criterionIds": ["RC3"],
+      "planElements": ["S3"],
+      "verificationIds": ["rc3-resume"],
+      "decisionIndexes": [2, 3],
+      "sourceRefs": ["packages/agent-tools/src/supervisor.js"],
+      "sourceAnchors": [
+        { "ref": "packages/agent-tools/src/supervisor.js", "match": "agent-task:${task.id}:${randomUUID()}" }
+      ],
+      "supportingPlanFields": ["invariants"]
+    },
+    {
+      "objectiveCriterion": "Specify fail-closed behavior: missing worktree, digest mismatch, source HEAD drift, or a newer handle for the same task id refuses resume rather than starting a fresh mkdtemp run.",
+      "criterionIds": ["RC4"],
+      "planElements": ["S3"],
+      "verificationIds": ["rc4-refuse"],
+      "decisionIndexes": [4],
+      "sourceRefs": ["docs/blackboard/evidence/BB-100/productization-probe-result.json"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"noResumeWorktreeOption\": true" }
+      ],
+      "supportingPlanFields": ["negativeVerificationCases"]
+    },
+    {
+      "objectiveCriterion": "Specify that an unrecovered default run still disposes its worktree, plus Living docs for the recovery contract.",
+      "criterionIds": ["RC2", "RC5"],
+      "planElements": ["S2", "S4"],
+      "verificationIds": ["rc2-default", "rc5-docs", "docs"],
+      "decisionIndexes": [1, 7],
+      "sourceRefs": ["docs/blackboard/evidence/BB-100/productization-probe-result.json"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"disposesWorktreeInFinally\": true" }
+      ],
+      "supportingPlanFields": ["livingDocs"]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed productization probe and Core effect-journal behavior and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": ["RC1", "RC2", "RC3", "RC4", "RC5"],
+      "planElements": ["S1", "S2", "S3", "S4"],
+      "verificationIds": ["rc1-handle", "rc2-default", "rc3-resume", "rc4-refuse", "rc5-docs", "repository"],
+      "decisionIndexes": [6],
+      "sourceRefs": ["docs/living/system/core-harness/state.md"],
+      "sourceAnchors": [
+        { "ref": "docs/living/system/core-harness/state.md", "match": "createResumableAgentRuntime" }
+      ],
+      "supportingPlanFields": ["sourceSeams"]
+    }
+  ],
+  "negativeVerificationCases": [
+    "runSupervisedTask without recoveryDir still disposes the worktree after ACCEPTED.",
+    "Resume with a deleted worktree refuses and does not mkdtemp.",
+    "Resume with a rewritten handle digest refuses.",
+    "FIX_AFTER_FEEDBACK crash/resume promotes the same task id without a second worktree.",
+    "A write under packages/core-harness fails scope verification."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NC-RC-dispose",
+      "negativeCaseIndex": 0,
+      "criterionId": "RC2",
+      "verificationId": "rc2-default",
+      "testRef": "packages/agent-tools/test/recovery.test.js",
+      "testTitle": "RC2 default run still disposes the worktree",
+      "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NC-RC-missing",
+      "negativeCaseIndex": 1,
+      "criterionId": "RC4",
+      "verificationId": "rc4-refuse",
+      "testRef": "packages/agent-tools/test/recovery.test.js",
+      "testTitle": "RC4 deleted worktree refuses resume",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NC-RC-digest",
+      "negativeCaseIndex": 2,
+      "criterionId": "RC4",
+      "verificationId": "rc4-refuse",
+      "testRef": "packages/agent-tools/test/recovery.test.js",
+      "testTitle": "RC4 rewritten digest refuses resume",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NC-RC-lineage",
+      "negativeCaseIndex": 3,
+      "criterionId": "RC3",
+      "verificationId": "rc3-resume",
+      "testRef": "packages/agent-tools/test/recovery.test.js",
+      "testTitle": "RC3 crash resume keeps the same task id",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NC-RC-scope",
+      "negativeCaseIndex": 4,
+      "criterionId": "RC5",
+      "verificationId": "repository",
+      "testRef": "packages/agent-tools/test/recovery.test.js",
+      "testTitle": "RC5 write scope excludes core-harness",
+      "subjectSymbol": "runSupervisedTask"
+    }
+  ]
+}

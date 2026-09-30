@@ -1,0 +1,335 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-102",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-102.json",
+    "hash": "0741587ca72095154a795ba9991c5288f010c6c3df288536d7e9ced58fc87164"
+  },
+  "scope": [
+    "agent-tools.oracle-context",
+    "oracle.exact-requirement.agent-task"
+  ],
+  "outOfScope": [
+    "Lexical, semantic or graph retrieval for agent-tools.",
+    "BB-089 Backend/QA production adoption of the facade.",
+    "Making requiredFiles mandatory on AGENT_TASK_V1.",
+    "BB-100 Backend adapter, BB-101 recovery, BB-103 MCP, BB-104 deliver."
+  ],
+  "constraints": [
+    "Code lives in packages/agent-tools/src/task-context.js with additive optional requiredFiles on validateAgentTask; tests in packages/agent-tools/test/task-context.test.js titled CX1..CX5 followed by a space with { timeout: 60000 }.",
+    "Oracle is imported from ../../oracle/src/index.js (createOracleContextResolver, createExactRepositoryProvider, createSourceCatalog) the same relative convention as other packages.",
+    "Tasks without requiredFiles never construct a catalog or resolver.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "UNSATISFIED, STALE or budget-exhausted resolution blocks before any agent process starts.",
+    "Tasks without requiredFiles never construct an Oracle catalog.",
+    "Grounded files are EXACT at baseRevision with sourceRef; the agent cannot treat unresolved context as current.",
+    "Oracle internals (planner, catalog types) are not copied into tool adapters."
+  ],
+  "architectureDecisions": [
+    "D1 — AGENT_TASK_V1.requiredFiles is an optional array of relative POSIX paths. validateAgentTask accepts it when every path is a non-empty relative path without '..'. Omitted or empty means no Oracle work.",
+    "D2 — resolveAgentTaskContext(task, { repositoryReader, maxMaterializedBytes }) maps requiredFiles to an EXACT ContextRequirement at snapshot = task.baseRevision, catalog = createSourceCatalog with createExactRepositoryProvider wrapping repositoryReader.readFile({ repositoryRef: task.repositoryRoot, revision: task.baseRevision, path }).",
+    "D3 — Consumable projection: prompt prefix beginning exactly 'ExHarness grounded context:' with each file path and a bounded excerpt, plus write-only-into-worktree files at .exharness/context/<path> after the worktree exists and before spawn. The source repository is not written.",
+    "D4 — runSupervisedTask calls resolveAgentTaskContext before spawn when requiredFiles is non-empty. UNSATISFIED/PARTIAL-with-required-missing/STALE/BUDGET_EXHAUSTED throws or returns a typed CONTEXT_UNSATISFIED result without starting the tool. READY must pin thrown vs result-status to the delivered AgentTaskStatus enum without widening it silently; research gap if a new status is required.",
+    "D5 — Tests: a fixture file at a known revision resolves and appears in the prompt/worktree; a missing path does not spawn (fake CLI record file absent); maxMaterializedBytes: 1 does not spawn; a task without requiredFiles does not import/construct createOracleContextResolver (spy or module-load counter).",
+    "D6 — Evidence basis: productization probe hasRequiredFilesField false; delivered facade createOracleContextResolver; BB-089 is a different consumer.",
+    "D7 — Living: docs/living/system/agent-tools/state.md and docs/living/system/agent-tools/context.md; do not rewrite Oracle Backend/QA living docs as if BB-089 delivered this."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/task-context.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/test/task-context.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/context.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/**",
+      "docs/blackboard/**",
+      "docs/living/system/oracle/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/agent-tool-productization.md",
+      "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/oracle/src/context-resolution.js",
+      "docs/living/system/oracle/state.md",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-089.json"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/src/task-context.js",
+      "packages/agent-tools/test/task-context.test.js",
+      "docs/living/system/agent-tools/context.md"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/task-context.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Schema [CX1]: optional requiredFiles on validateAgentTask (D1).",
+    "S2 — Resolution [CX2,CX3]: EXACT facade mapping, projection, fail-closed before spawn (D2-D5).",
+    "S3 — Default path [CX4]: tasks without requiredFiles never construct Oracle.",
+    "S4 — Docs [CX5]: Living context.md; test:agent-tools, verify:current-docs, npm test."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "CX1",
+      "statement": "Optional AGENT_TASK requiredFiles maps to an EXACT ContextRequirement at baseRevision through createOracleContextResolver.",
+      "verificationIds": ["cx1-schema", "agent-tools"],
+      "evidenceRequired": ["CX1 test output."]
+    },
+    {
+      "id": "CX2",
+      "statement": "Consumable items project into the agent prompt and worktree .exharness/context files with sourceRef; Oracle internals stay out of tool adapters.",
+      "verificationIds": ["cx2-project", "agent-tools"],
+      "evidenceRequired": ["CX2 test output."]
+    },
+    {
+      "id": "CX3",
+      "statement": "Missing file, stale snapshot, budget exhaustion or a path outside the worktree blocks before spawn.",
+      "verificationIds": ["cx3-block", "agent-tools"],
+      "evidenceRequired": ["CX3 test output."]
+    },
+    {
+      "id": "CX4",
+      "statement": "Tasks without requiredFiles never construct an Oracle catalog and remain byte-identical to BB-097 callers.",
+      "verificationIds": ["cx4-default", "agent-tools"],
+      "evidenceRequired": ["CX4 test output."]
+    },
+    {
+      "id": "CX5",
+      "statement": "Living docs describe the agent-tools Oracle consumer as distinct from BB-089 Backend/QA adoption.",
+      "verificationIds": ["cx5-docs", "docs", "repository"],
+      "evidenceRequired": ["CX5 docs diff, verify:current-docs and npm test logs."]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "UNSATISFIED, STALE or budget-exhausted resolution blocks before any agent process starts.",
+      "criterionIds": ["CX3"]
+    },
+    {
+      "invariant": "Tasks without requiredFiles never construct an Oracle catalog.",
+      "criterionIds": ["CX4"]
+    },
+    {
+      "invariant": "Grounded files are EXACT at baseRevision with sourceRef; the agent cannot treat unresolved context as current.",
+      "criterionIds": ["CX1", "CX2", "CX3"]
+    },
+    {
+      "invariant": "Oracle internals (planner, catalog types) are not copied into tool adapters.",
+      "criterionIds": ["CX2", "CX5"]
+    }
+  ],
+  "verificationPlan": [
+    { "id": "cx1-schema", "command": "node --test --test-name-pattern=\"^CX1 \" packages/agent-tools/test/task-context.test.js" },
+    { "id": "cx2-project", "command": "node --test --test-name-pattern=\"^CX2 \" packages/agent-tools/test/task-context.test.js" },
+    { "id": "cx3-block", "command": "node --test --test-name-pattern=\"^CX3 \" packages/agent-tools/test/task-context.test.js" },
+    { "id": "cx4-default", "command": "node --test --test-name-pattern=\"^CX4 \" packages/agent-tools/test/task-context.test.js" },
+    { "id": "cx5-docs", "command": "node --test --test-name-pattern=\"^CX5 \" packages/agent-tools/test/task-context.test.js" },
+    { "id": "agent-tools", "command": "npm run test:agent-tools" },
+    { "id": "docs", "command": "npm run verify:current-docs" },
+    { "id": "repository", "command": "npm test" }
+  ],
+  "researchGaps": [
+    "Pin CONTEXT_UNSATISFIED as a new AgentTaskStatus versus a thrown typed error so existing AgentTaskStatus consumers do not silently treat it as EXHAUSTED."
+  ],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "finding": "Executed: hasRequiredFilesField false, hasContextRequirement false."
+    },
+    {
+      "ref": "packages/oracle/src/context-resolution.js",
+      "finding": "DELIVERED_TRUTH: createOracleContextResolver is the facade for EXACT resolution."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-089.json",
+      "finding": "PLANNED_CONTRACT: Backend/QA production adoption of the facade; different consumer from agent-tools."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": ["BB-097"],
+    "workerStart": "Confirm createOracleContextResolver is exported from packages/oracle/src/index.js and validateAgentTask still rejects unknown required fields only after this plan's optional requiredFiles is added.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": ["createOracleContextResolver", "validateAgentTask", "runSupervisedTask"],
+      "PLANNED_CONTRACT": ["BB-089 Backend/QA adoption (do not implement here)"],
+      "RESEARCH_DESIRED_STATE": ["optional requiredFiles and resolveAgentTaskContext defined here"]
+    },
+    "contradiction": "If the facade cannot resolve an EXACT file at a git revision through createExactRepositoryProvider, stop PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-097 DONE.",
+    "completion": "All CX criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No graph/semantic retrieval, no Oracle package rewrite, no mandatory requiredFiles."
+  },
+  "ciContract": {
+    "checks": ["cx1-schema", "cx2-project", "cx3-block", "cx4-default", "cx5-docs", "agent-tools", "docs", "repository"],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": ["AGENT_TASK_V1 callers without requiredFiles"],
+    "add": ["task-context.js", "optional requiredFiles", "tests", "Living context.md"],
+    "rollback": "Remove task-context.js, requiredFiles, tests and Living context.md."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-102 objective + executed productization probe + delivered Oracle facade",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": ["product implementation", "planned dependency as delivered truth", "self-issued readiness"]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-097",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": ["No graph/semantic retrieval, no Oracle package rewrite, no mandatory requiredFiles."]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/context.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe optional requiredFiles, EXACT Oracle resolution before spawn, and that this consumer is distinct from BB-089."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify an optional AGENT_TASK requiredFiles list mapped to an EXACT ContextRequirement at baseRevision and resolved through createOracleContextResolver.",
+      "criterionIds": ["CX1"],
+      "planElements": ["S1"],
+      "verificationIds": ["cx1-schema"],
+      "decisionIndexes": [0, 1],
+      "sourceRefs": ["packages/oracle/src/context-resolution.js"],
+      "sourceAnchors": [
+        { "ref": "packages/oracle/src/context-resolution.js", "match": "createOracleContextResolver" }
+      ],
+      "supportingPlanFields": ["architectureDecisions"]
+    },
+    {
+      "objectiveCriterion": "Specify projection of consumable items into the agent prompt or workspace as grounded excerpts with sourceRef, without copying Oracle internals into the tool adapter.",
+      "criterionIds": ["CX2"],
+      "planElements": ["S2"],
+      "verificationIds": ["cx2-project"],
+      "decisionIndexes": [2],
+      "sourceRefs": ["docs/blackboard/process/agent-tool-research/BB-102.md"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-102.md", "match": "Prompt prefix versus a worktree" }
+      ],
+      "supportingPlanFields": ["invariants"]
+    },
+    {
+      "objectiveCriterion": "Specify fail-closed behavior: missing file, stale snapshot, budget exhaustion or a path outside the worktree blocks before spawn; tasks without requiredFiles never construct an Oracle catalog.",
+      "criterionIds": ["CX3", "CX4"],
+      "planElements": ["S2", "S3"],
+      "verificationIds": ["cx3-block", "cx4-default"],
+      "decisionIndexes": [3, 4],
+      "sourceRefs": ["docs/blackboard/evidence/BB-100/productization-probe-result.json"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"hasRequiredFilesField\": false" }
+      ],
+      "supportingPlanFields": ["negativeVerificationCases"]
+    },
+    {
+      "objectiveCriterion": "Specify Living docs for the agent-tools Oracle consumer, distinct from BB-089 Backend/QA adoption.",
+      "criterionIds": ["CX5"],
+      "planElements": ["S4"],
+      "verificationIds": ["cx5-docs", "docs"],
+      "decisionIndexes": [6],
+      "sourceRefs": ["docs/blackboard/artifacts/ready-implement-plan/BB-089.json"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-089.json", "match": "oracle.adoption.backend-context" }
+      ],
+      "supportingPlanFields": ["livingDocs"]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed productization probe and the delivered Oracle facade and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": ["CX1", "CX2", "CX3", "CX4", "CX5"],
+      "planElements": ["S1", "S2", "S3", "S4"],
+      "verificationIds": ["cx1-schema", "cx2-project", "cx3-block", "cx4-default", "cx5-docs", "repository"],
+      "decisionIndexes": [5],
+      "sourceRefs": ["docs/living/system/oracle/state.md"],
+      "sourceAnchors": [
+        { "ref": "docs/living/system/oracle/state.md", "match": "createOracleContextResolver" }
+      ],
+      "supportingPlanFields": ["sourceSeams"]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A task without requiredFiles never constructs createOracleContextResolver.",
+    "A missing required file does not spawn the agent.",
+    "maxMaterializedBytes too small does not spawn the agent.",
+    "A required path containing .. is rejected by validateAgentTask.",
+    "A write under packages/oracle or docs/living/system/oracle fails scope verification."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NC-CX-default",
+      "negativeCaseIndex": 0,
+      "criterionId": "CX4",
+      "verificationId": "cx4-default",
+      "testRef": "packages/agent-tools/test/task-context.test.js",
+      "testTitle": "CX4 tasks without requiredFiles never construct Oracle",
+      "subjectSymbol": "validateAgentTask"
+    },
+    {
+      "id": "NC-CX-missing",
+      "negativeCaseIndex": 1,
+      "criterionId": "CX3",
+      "verificationId": "cx3-block",
+      "testRef": "packages/agent-tools/test/task-context.test.js",
+      "testTitle": "CX3 missing required file does not spawn",
+      "subjectSymbol": "resolveAgentTaskContext"
+    },
+    {
+      "id": "NC-CX-budget",
+      "negativeCaseIndex": 2,
+      "criterionId": "CX3",
+      "verificationId": "cx3-block",
+      "testRef": "packages/agent-tools/test/task-context.test.js",
+      "testTitle": "CX3 budget exhaustion does not spawn",
+      "subjectSymbol": "resolveAgentTaskContext"
+    },
+    {
+      "id": "NC-CX-dotdot",
+      "negativeCaseIndex": 3,
+      "criterionId": "CX1",
+      "verificationId": "cx1-schema",
+      "testRef": "packages/agent-tools/test/task-context.test.js",
+      "testTitle": "CX1 path with .. is rejected",
+      "subjectSymbol": "validateAgentTask"
+    },
+    {
+      "id": "NC-CX-scope",
+      "negativeCaseIndex": 4,
+      "criterionId": "CX5",
+      "verificationId": "repository",
+      "testRef": "packages/agent-tools/test/task-context.test.js",
+      "testTitle": "CX5 write scope excludes packages/oracle",
+      "subjectSymbol": "resolveAgentTaskContext"
+    }
+  ]
+}

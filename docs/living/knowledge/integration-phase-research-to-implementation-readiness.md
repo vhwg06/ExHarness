@@ -520,3 +520,7 @@ This research is PLANNED / RESEARCH_SA / RESEARCH with a DRAFT plan. It builds o
 ## Observed / Feedback / Self-Improve split
 
 The feedback research is split into three one-way capability layers (see the [split brief](../../blackboard/process/observed-feedback-self-improve-research.md)): Observed Implementation -> Feedback Lifecycle -> Self-Improve. These are planned capabilities, not delivered system truth. Research consumes READY/planned contracts labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; Worker execution binds only DONE dependencies.
+
+## Agent-tool productization
+
+The new [agent-tool productization brief](../../blackboard/process/agent-tool-productization.md) registers research so supervised Codex, Kiro and agy can be composed into Backend work, recovered after process death, grounded through the Oracle facade, queried over stdio MCP, and operated as one local Backend-then-QA slice. These are planned RESEARCH_SA tasks, not delivered system truth. They do not reopen OpenHands domain runtime, sandbox isolation, the first-slice delivery proof, or Backend/QA Oracle adoption.

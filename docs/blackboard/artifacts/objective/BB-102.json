@@ -1,0 +1,35 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-102",
+  "outcome": "An AGENT_TASK can declare required files that Oracle resolves through createOracleContextResolver as EXACT snapshot-bound context; the agent receives those bytes as grounded input and cannot treat unresolved or stale context as current.",
+  "currentProblem": "Executed probe: AGENT_TASK_V1 is {id, repositoryRoot, baseRevision, prompt, verifications} with no requiredFiles or contextRequirement, so supervised agents discover files themselves. BB-089 adopts the Oracle facade for Backend/QA production context, not for agent-tools.",
+  "scope": [
+    "agent-tools.oracle-context",
+    "oracle.exact-requirement.agent-task"
+  ],
+  "constraints": [
+    "Oracle remains EXACT declared-file resolution; no lexical, semantic or graph retrieval is introduced for agent-tools in this task.",
+    "requiredFiles is optional; existing AGENT_TASK_V1 callers without it stay byte-identical.",
+    "UNSATISFIED, STALE or budget-exhausted resolution blocks before any agent process starts.",
+    "BB-089 production Backend/QA adoption is a different consumer and is not rewritten here.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify an optional AGENT_TASK requiredFiles list mapped to an EXACT ContextRequirement at baseRevision and resolved through createOracleContextResolver.",
+    "Specify projection of consumable items into the agent prompt or workspace as grounded excerpts with sourceRef, without copying Oracle internals into the tool adapter.",
+    "Specify fail-closed behavior: missing file, stale snapshot, budget exhaustion or a path outside the worktree blocks before spawn; tasks without requiredFiles never construct an Oracle catalog.",
+    "Specify Living docs for the agent-tools Oracle consumer, distinct from BB-089 Backend/QA adoption.",
+    "Ground the design in the executed productization probe and the delivered Oracle facade and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-productization.md",
+    "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/oracle/src/context-resolution.js",
+    "docs/living/system/oracle/state.md",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-089.json"
+  ]
+}

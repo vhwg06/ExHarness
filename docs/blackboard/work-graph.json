@@ -194,6 +194,22 @@
       "artifactRefs": [
         "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
       ]
+    },
+    {
+      "id": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "title": "Productize supervised agent-tools into Application, Oracle, recovery, MCP and operator slice",
+      "status": "PLANNED",
+      "featureIds": [
+        "FEATURE-AGENT-TOOL-BACKEND-STRATEGY",
+        "FEATURE-AGENT-TOOL-DURABLE-RECOVERY",
+        "FEATURE-AGENT-TOOL-ORACLE-CONTEXT",
+        "FEATURE-AGENT-TOOL-MCP-GATE",
+        "FEATURE-AGENT-TOOL-OPERATOR-SLICE"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-productization.md",
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json"
+      ]
     }
   ],
   "features": [
@@ -852,6 +868,76 @@
         "docs/blackboard/process/agent-tool-research/BB-099.md"
       ],
       "acceptanceTaskId": "BB-099"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-BACKEND-STRATEGY",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Opt-in supervised agent-tools Backend adapter",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-100"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-100.md"
+      ],
+      "acceptanceTaskId": "BB-100"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-DURABLE-RECOVERY",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Durable crash/resume of a supervised agent-tool run",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-101"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-101.md"
+      ],
+      "acceptanceTaskId": "BB-101"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-ORACLE-CONTEXT",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Oracle-grounded declared context for agent-tool tasks",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-102"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-102.md"
+      ],
+      "acceptanceTaskId": "BB-102"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-MCP-GATE",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "ExHarness verification as stdio MCP tools",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-103"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-103.md"
+      ],
+      "acceptanceTaskId": "BB-103"
+    },
+    {
+      "id": "FEATURE-AGENT-TOOL-OPERATOR-SLICE",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Local operator Backend-then-QA delivery slice",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-104"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-104.md"
+      ],
+      "acceptanceTaskId": "BB-104"
     }
   ],
   "tasks": [
@@ -3569,10 +3655,269 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-100",
+      "featureId": "FEATURE-AGENT-TOOL-BACKEND-STRATEGY",
+      "title": "Compose supervised agent-tools as an opt-in Backend adapter",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "agentic/backend-qa-execution",
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-096",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-100.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-100.json",
+          "docs/blackboard/process/agent-tool-research/BB-100.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-100/productization-probe.mjs",
+          "docs/blackboard/evidence/BB-100/productization-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/state.md",
+          "docs/living/system/agentic-application/capabilities.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify an opt-in adapter that maps BackendWorkOrder plus BackendContext to AGENT_TASK_V1, runs the delivered supervised loop, and projects AGENT_SUPERVISED_RESULT_V1 onto BackendWorkResultSchema with grounded mutation/typecheck/tests evidence at the accepted commit.",
+        "Specify fail-closed behavior: TOOL_UNAVAILABLE, EXHAUSTED, NO_CHANGE and failed verification cannot produce APPLIED; the default createBackendWorker path never constructs agent-tools objects.",
+        "Specify that agent claimedSuccess is telemetry only and that ExHarness git operations preserve the source repository HEAD, branch refs and working tree.",
+        "Specify Living docs distinguishing the opt-in supervised Backend path from the default CodeAct path and from BB-066 OpenHands domain runtime.",
+        "Ground the design in the executed productization probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-100.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-100.json",
+        "researchBaselineSha": "7de5761c31d8799021361fb158db756e8e266943"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-101",
+      "featureId": "FEATURE-AGENT-TOOL-DURABLE-RECOVERY",
+      "title": "Resume a supervised agent-tool run after process death",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-101.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-101.json",
+          "docs/blackboard/process/agent-tool-research/BB-101.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/recovery.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify a durable AGENT_TOOL_RUN_HANDLE_V1 recording task id, worktree path, base revision, candidate sha, Core sessionId, tool id/version, tool sessionRef, attempt index and handle digest.",
+        "Specify crash-after-ACT resume that reopens the same worktree, resumes the tool session when the adapter supports it, continues the same Core session, and never creates a second candidate lineage for that handle.",
+        "Specify fail-closed behavior: missing worktree, digest mismatch, source HEAD drift, or a newer handle for the same task id refuses resume rather than starting a fresh mkdtemp run.",
+        "Specify that an unrecovered default run still disposes its worktree, plus Living docs for the recovery contract.",
+        "Ground the design in the executed productization probe and Core effect-journal behavior and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-101.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-101.json",
+        "researchBaselineSha": "7de5761c31d8799021361fb158db756e8e266943"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-102",
+      "featureId": "FEATURE-AGENT-TOOL-ORACLE-CONTEXT",
+      "title": "Resolve declared agent-tool files through the Oracle facade",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "integration/agent-tools",
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-102.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-102.json",
+          "docs/blackboard/process/agent-tool-research/BB-102.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/context.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify an optional AGENT_TASK requiredFiles list mapped to an EXACT ContextRequirement at baseRevision and resolved through createOracleContextResolver.",
+        "Specify projection of consumable items into the agent prompt or workspace as grounded excerpts with sourceRef, without copying Oracle internals into the tool adapter.",
+        "Specify fail-closed behavior: missing file, stale snapshot, budget exhaustion or a path outside the worktree blocks before spawn; tasks without requiredFiles never construct an Oracle catalog.",
+        "Specify Living docs for the agent-tools Oracle consumer, distinct from BB-089 Backend/QA adoption.",
+        "Ground the design in the executed productization probe and the delivered Oracle facade and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-102.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-102.json",
+        "researchBaselineSha": "7de5761c31d8799021361fb158db756e8e266943"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-103",
+      "featureId": "FEATURE-AGENT-TOOL-MCP-GATE",
+      "title": "Expose verification and status as stdio MCP tools",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-103.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-103.json",
+          "docs/blackboard/process/agent-tool-research/BB-103.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/mcp.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify a stdio MCP server that exposes exharness_verify (run declared command verifiers at the current worktree HEAD) and exharness_status (attempt index, last verification, candidate sha) with typed JSON results.",
+        "Specify that promote, ACCEPT and lineage mutation cannot be invoked through MCP, and that a planted promote tool name is rejected.",
+        "Specify opt-in wiring so a supervised run can launch the server for that worktree only, without writing Codex/Kiro/agy user config, and that a run without the option never listens.",
+        "Specify Living docs stating MCP is a transport for verification queries, not acceptance authority, plus an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+        "Ground the design in the executed productization probe, the BB-097 CLI MCP surfaces and the MCP TypeScript SDK eligibility check."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-103.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-103.json",
+        "researchBaselineSha": "7de5761c31d8799021361fb158db756e8e266943"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-104",
+      "featureId": "FEATURE-AGENT-TOOL-OPERATOR-SLICE",
+      "title": "Run one local Backend-then-QA slice from an operator CLI",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "L",
+      "components": [
+        "integration/agent-tools",
+        "agentic/backend-qa-execution"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-100",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-101",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-102",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-104.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-104.json",
+          "docs/blackboard/process/agent-tool-research/BB-104.md"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/operator.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify an exharness-agent deliver command that reads a slice manifest (repository, base revision, objective prompt, Backend verifications, QA verifications, optional requiredFiles, tool) and runs Backend then QA.",
+        "Specify independent QA on a read-only checkout of the accepted Backend commit, failing when QA mutates the tree or verifies a different revision.",
+        "Specify resume of an interrupted slice through the BB-101 handle, and TOOL_UNAVAILABLE / NOT_INSTALLED without fabricating ACCEPT.",
+        "Specify Living docs stating the local-slice trust boundary and that this is not BB-069/BB-074 evidence.",
+        "Ground the design in the executed productization probe and the BB-100/101/102 planned contracts and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-104.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-104.json",
+        "researchBaselineSha": "7de5761c31d8799021361fb158db756e8e266943"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-100",
+    "nextWorkId": "BB-105",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

@@ -1,0 +1,335 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-103",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-103.json",
+    "hash": "cffed28be67304966ee11a7be433cd0a868fef1272eeeb1d5563352a2ed2984c"
+  },
+  "scope": [
+    "agent-tools.mcp-verify-server",
+    "agent-tools.in-tool-verification-gate"
+  ],
+  "outOfScope": [
+    "MCP promote/accept/merge tools.",
+    "Writing user CLI configuration (~/.codex, ~/.gemini, Kiro hooks).",
+    "Replacing outer supervision; sandbox (BB-067); adding @modelcontextprotocol/server as a runtime dependency in this task.",
+    "BB-100 Backend adapter, BB-101 recovery, BB-102 context, BB-104 deliver."
+  ],
+  "constraints": [
+    "Code lives in packages/agent-tools/src/mcp-server.js with tests in packages/agent-tools/test/mcp-server.test.js titled MCP1..MCP5 followed by a space with { timeout: 60000 }.",
+    "Zero new runtime npm dependencies. The server speaks JSON-RPC stdio for initialize, tools/list and tools/call.",
+    "Opt-in only: runSupervisedTask({ mcpVerify: true }) launches the server bound to that worktree; default remains no listener.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "MCP tools are exharness_verify and exharness_status only; promote, accept and merge cannot be registered.",
+    "Outer supervision remains the only promotion authority.",
+    "A run without mcpVerify never listens on stdio or a socket.",
+    "The server never writes user CLI configuration or credentials."
+  ],
+  "architectureDecisions": [
+    "D1 — createExharnessMcpVerifyServer({ worktreeRoot, verifiers, attemptIndex, candidateSha }) returns { start({ stdin, stdout }), stop(), tools }. tools are frozen { exharness_verify, exharness_status }. Constructing with an extra promote/accept/merge tool throws.",
+    "D2 — Wire protocol: JSON-RPC 2.0 newline-delimited stdio. Methods: initialize -> protocol version 2026-07-28 capabilities tools; tools/list -> the two tools; tools/call name=exharness_verify -> run declared createLocalCommandVerifier set at worktree HEAD and return { ok, results: [{ name, status, reason }] }; tools/call name=exharness_status -> { attemptIndex, candidateSha, lastVerification }. Unknown names return JSON-RPC error.",
+    "D3 — Zero runtime dependency: implement the tiny stdio loop in-package. Official MCP TypeScript SDK (https://github.com/modelcontextprotocol/typescript-sdk, 13.5k stars, MIT) is an eligibility reference and a later optional adapter, not a runtime import in this task. Tests use an in-repo fake client.",
+    "D4 — Opt-in wiring: runSupervisedTask({ mcpVerify: false|undefined }) never calls createExharnessMcpVerifyServer. When true, the server is started for the worktree and stopped in finally; adapters are not given a config-file path. READY research gap: how Codex/Kiro discover the server without writing user config (stdio child vs env EXHARNESS_MCP_FD). Pin one before READY; default tests use a fake client on the server's stdio, not a live Codex mcp add.",
+    "D5 — exharness_verify never mutates lineage or calls PROMOTE. A test that the fake agent calls verify then claims success still requires outer verifier PASS to ACCEPTED.",
+    "D6 — Evidence basis: productization probe mcpFacts all false except oracleStateMcp; BB-097 CLI probe Codex/Kiro mcp add/list true; BB-097 outOfScope deferred in-tool MCP.",
+    "D7 — Living: docs/living/system/agent-tools/state.md and docs/living/system/agent-tools/mcp.md stating MCP is a verification query transport."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/mcp-server.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/test/mcp-server.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/mcp.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/**",
+      "docs/blackboard/**",
+      "package.json"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/agent-tool-productization.md",
+      "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+      "packages/agent-tools/src/index.js",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+      "docs/living/system/oracle/state.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/src/mcp-server.js",
+      "packages/agent-tools/test/mcp-server.test.js",
+      "docs/living/system/agent-tools/mcp.md"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/mcp-server.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Server [MCP1,MCP2]: tools list, verify/status handlers, reject promote (D1-D2).",
+    "S2 — Stdio [MCP3]: JSON-RPC loop with fake client (D3).",
+    "S3 — Opt-in [MCP4]: default run never listens; mcpVerify true starts/stops with the worktree (D4-D5).",
+    "S4 — Docs [MCP5]: Living mcp.md; test:agent-tools, verify:current-docs, npm test."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "MCP1",
+      "statement": "The stdio MCP server exposes exharness_verify and exharness_status with typed JSON results over tools/call.",
+      "verificationIds": ["mcp1-tools", "agent-tools"],
+      "evidenceRequired": ["MCP1 test output."]
+    },
+    {
+      "id": "MCP2",
+      "statement": "promote, ACCEPT and lineage mutation cannot be invoked through MCP; a planted promote tool name is rejected at construction.",
+      "verificationIds": ["mcp2-forbidden", "agent-tools"],
+      "evidenceRequired": ["MCP2 test output."]
+    },
+    {
+      "id": "MCP3",
+      "statement": "A supervised run without mcpVerify never listens; with mcpVerify the server is bound to that worktree and stopped in finally without writing user CLI config.",
+      "verificationIds": ["mcp3-optin", "agent-tools"],
+      "evidenceRequired": ["MCP3 test output."]
+    },
+    {
+      "id": "MCP4",
+      "statement": "Outer supervision remains the only promotion authority even when the fake agent calls exharness_verify.",
+      "verificationIds": ["mcp4-authority", "agent-tools"],
+      "evidenceRequired": ["MCP4 test output."]
+    },
+    {
+      "id": "MCP5",
+      "statement": "Living docs state MCP is a transport for verification queries, not acceptance authority, and that no runtime MCP SDK dependency was added.",
+      "verificationIds": ["mcp5-docs", "docs", "repository"],
+      "evidenceRequired": ["MCP5 docs diff, verify:current-docs and npm test logs."]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "MCP tools are exharness_verify and exharness_status only; promote, accept and merge cannot be registered.",
+      "criterionIds": ["MCP1", "MCP2"]
+    },
+    {
+      "invariant": "Outer supervision remains the only promotion authority.",
+      "criterionIds": ["MCP4"]
+    },
+    {
+      "invariant": "A run without mcpVerify never listens on stdio or a socket.",
+      "criterionIds": ["MCP3"]
+    },
+    {
+      "invariant": "The server never writes user CLI configuration or credentials.",
+      "criterionIds": ["MCP3", "MCP5"]
+    }
+  ],
+  "verificationPlan": [
+    { "id": "mcp1-tools", "command": "node --test --test-name-pattern=\"^MCP1 \" packages/agent-tools/test/mcp-server.test.js" },
+    { "id": "mcp2-forbidden", "command": "node --test --test-name-pattern=\"^MCP2 \" packages/agent-tools/test/mcp-server.test.js" },
+    { "id": "mcp3-optin", "command": "node --test --test-name-pattern=\"^MCP3 \" packages/agent-tools/test/mcp-server.test.js" },
+    { "id": "mcp4-authority", "command": "node --test --test-name-pattern=\"^MCP4 \" packages/agent-tools/test/mcp-server.test.js" },
+    { "id": "mcp5-docs", "command": "node --test --test-name-pattern=\"^MCP5 \" packages/agent-tools/test/mcp-server.test.js" },
+    { "id": "agent-tools", "command": "npm run test:agent-tools" },
+    { "id": "docs", "command": "npm run verify:current-docs" },
+    { "id": "repository", "command": "npm test" }
+  ],
+  "researchGaps": [
+    "Pin how a live Codex/Kiro process discovers the stdio server without writing user config (child stdio vs env file descriptor). Default tests use a fake client and must not require a live CLI."
+  ],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "finding": "Executed: agent-tools has no MCP exports, supervisor, adapters or CLI mentions."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+      "finding": "Executed: Codex mcp add/list and Kiro mcp add/list surfaces exist."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-097.json",
+      "finding": "PLANNED_CONTRACT at research time / DELIVERED_TRUTH for worker: in-tool MCP servers were out of scope for BB-097."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": ["BB-097"],
+    "workerStart": "Confirm agent-tools still has no runtime npm dependencies and the fake CLI still records argv.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": ["runSupervisedTask", "createLocalCommandVerifier", "BB-097 CLI MCP surfaces"],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": ["stdio MCP verify server defined here"]
+    },
+    "contradiction": "If JSON-RPC stdio cannot be tested without a live coding-agent CLI, stop PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-097 DONE.",
+    "completion": "All MCP criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No promote MCP tool, no user-config writes, no runtime SDK dependency, no default-path listener."
+  },
+  "ciContract": {
+    "checks": ["mcp1-tools", "mcp2-forbidden", "mcp3-optin", "mcp4-authority", "mcp5-docs", "agent-tools", "docs", "repository"],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": ["default runSupervisedTask with no MCP listener", "zero runtime npm dependencies"],
+    "add": ["mcp-server.js", "mcpVerify option", "tests", "Living mcp.md"],
+    "rollback": "Remove mcp-server.js, mcpVerify, tests and Living mcp.md."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-103 objective + productization probe + BB-097 CLI probe",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": ["product implementation", "planned dependency as delivered truth", "self-issued readiness"]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-097",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": ["No promote MCP tool, no user-config writes, no runtime SDK dependency, no default-path listener."]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/mcp.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe the stdio MCP verify/status tools, the forbidden promote surface, opt-in wiring and that MCP is not acceptance authority."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify a stdio MCP server that exposes exharness_verify (run declared command verifiers at the current worktree HEAD) and exharness_status (attempt index, last verification, candidate sha) with typed JSON results.",
+      "criterionIds": ["MCP1"],
+      "planElements": ["S1", "S2"],
+      "verificationIds": ["mcp1-tools"],
+      "decisionIndexes": [0, 1],
+      "sourceRefs": ["docs/blackboard/process/agent-tool-research/BB-103.md"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-103.md", "match": "exharness_verify" }
+      ],
+      "supportingPlanFields": ["architectureDecisions"]
+    },
+    {
+      "objectiveCriterion": "Specify that promote, ACCEPT and lineage mutation cannot be invoked through MCP, and that a planted promote tool name is rejected.",
+      "criterionIds": ["MCP2", "MCP4"],
+      "planElements": ["S1", "S3"],
+      "verificationIds": ["mcp2-forbidden", "mcp4-authority"],
+      "decisionIndexes": [4],
+      "sourceRefs": ["docs/blackboard/artifacts/objective/BB-103.json"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/artifacts/objective/BB-103.json", "match": "promotion remains ExHarness-owned" }
+      ],
+      "supportingPlanFields": ["invariants"]
+    },
+    {
+      "objectiveCriterion": "Specify opt-in wiring so a supervised run can launch the server for that worktree only, without writing Codex/Kiro/agy user config, and that a run without the option never listens.",
+      "criterionIds": ["MCP3"],
+      "planElements": ["S3"],
+      "verificationIds": ["mcp3-optin"],
+      "decisionIndexes": [3],
+      "sourceRefs": ["docs/blackboard/evidence/BB-100/productization-probe-result.json"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"cliMentionsMcp\": false" }
+      ],
+      "supportingPlanFields": ["negativeVerificationCases"]
+    },
+    {
+      "objectiveCriterion": "Specify Living docs stating MCP is a transport for verification queries, not acceptance authority, plus an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": ["MCP5"],
+      "planElements": ["S4"],
+      "verificationIds": ["mcp5-docs", "docs"],
+      "decisionIndexes": [6],
+      "sourceRefs": ["docs/living/system/oracle/state.md"],
+      "sourceAnchors": [
+        { "ref": "docs/living/system/oracle/state.md", "match": "no MCP client/adapter" }
+      ],
+      "supportingPlanFields": ["livingDocs"]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed productization probe, the BB-097 CLI MCP surfaces and the MCP TypeScript SDK eligibility check.",
+      "criterionIds": ["MCP1", "MCP2", "MCP3", "MCP4", "MCP5"],
+      "planElements": ["S1", "S2", "S3", "S4"],
+      "verificationIds": ["mcp1-tools", "mcp2-forbidden", "mcp3-optin", "mcp4-authority", "mcp5-docs", "repository"],
+      "decisionIndexes": [2, 5],
+      "sourceRefs": ["docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json", "match": "\"command\": \"codex mcp --help\"" }
+      ],
+      "supportingPlanFields": ["researchEvidence"]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Constructing the server with an exharness_promote tool throws.",
+    "tools/list does not contain promote, accept or merge.",
+    "runSupervisedTask without mcpVerify never calls createExharnessMcpVerifyServer.",
+    "CLAIM_SUCCESS_NO_EDIT after a verify call still cannot PROMOTE.",
+    "package.json gains no runtime dependency on @modelcontextprotocol/server."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NC-MCP-promote",
+      "negativeCaseIndex": 0,
+      "criterionId": "MCP2",
+      "verificationId": "mcp2-forbidden",
+      "testRef": "packages/agent-tools/test/mcp-server.test.js",
+      "testTitle": "MCP2 planted promote tool is rejected",
+      "subjectSymbol": "createExharnessMcpVerifyServer"
+    },
+    {
+      "id": "NC-MCP-list",
+      "negativeCaseIndex": 1,
+      "criterionId": "MCP2",
+      "verificationId": "mcp2-forbidden",
+      "testRef": "packages/agent-tools/test/mcp-server.test.js",
+      "testTitle": "MCP2 tools list has no promote",
+      "subjectSymbol": "createExharnessMcpVerifyServer"
+    },
+    {
+      "id": "NC-MCP-default",
+      "negativeCaseIndex": 2,
+      "criterionId": "MCP3",
+      "verificationId": "mcp3-optin",
+      "testRef": "packages/agent-tools/test/mcp-server.test.js",
+      "testTitle": "MCP3 default run never listens",
+      "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NC-MCP-claim",
+      "negativeCaseIndex": 3,
+      "criterionId": "MCP4",
+      "verificationId": "mcp4-authority",
+      "testRef": "packages/agent-tools/test/mcp-server.test.js",
+      "testTitle": "MCP4 verify call cannot promote",
+      "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NC-MCP-deps",
+      "negativeCaseIndex": 4,
+      "criterionId": "MCP5",
+      "verificationId": "repository",
+      "testRef": "packages/agent-tools/test/mcp-server.test.js",
+      "testTitle": "MCP5 package.json has no MCP SDK runtime dependency",
+      "subjectSymbol": "createExharnessMcpVerifyServer"
+    }
+  ]
+}

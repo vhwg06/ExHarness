@@ -1,0 +1,35 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-100",
+  "outcome": "Production Backend work can execute through the delivered supervised agent-tools loop as an opt-in adapter, producing the unchanged BackendWorkResult schema with verifier-grounded acceptance, while the default CodeAct BackendWorker path stays byte-identical.",
+  "currentProblem": "Executed probe: createBackendWorker injects strategy and workspace.act and treats any candidate.version change as PASS; runSupervisedTask is a closed loop that never imports BackendWorker; no packages/agentic-system module imports agent-tools. BB-066 plans OpenHands under DomainExecutionController, not Codex/Kiro/agy as Backend work.",
+  "scope": [
+    "agent-tools.backend-adapter",
+    "agentic.backend-qa-execution.opt-in-supervised"
+  ],
+  "constraints": [
+    "Additive and opt-in: createBackendWorker, BackendWorkResultSchema, BackendContextSchema and the default CodeAct path remain unchanged.",
+    "Acceptance stays with declared verification PASS at the exact candidate commit; agent exit status and BackendWorker mutation-only evaluate are never acceptance on this path.",
+    "The adapter maps a BackendWorkOrder plus already-resolved BackendContext to AGENT_TASK_V1 and calls the delivered runSupervisedTask; it does not inject createSupervisedAgentStrategy into createBackendWorker (different ACT kind and different objective).",
+    "Sandbox, SCM push, OpenHands and DomainExecutionController runtime adapters stay out of scope (BB-067, BB-068, BB-066).",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify an opt-in adapter that maps BackendWorkOrder plus BackendContext to AGENT_TASK_V1, runs the delivered supervised loop, and projects AGENT_SUPERVISED_RESULT_V1 onto BackendWorkResultSchema with grounded mutation/typecheck/tests evidence at the accepted commit.",
+    "Specify fail-closed behavior: TOOL_UNAVAILABLE, EXHAUSTED, NO_CHANGE and failed verification cannot produce APPLIED; the default createBackendWorker path never constructs agent-tools objects.",
+    "Specify that agent claimedSuccess is telemetry only and that ExHarness git operations preserve the source repository HEAD, branch refs and working tree.",
+    "Specify Living docs distinguishing the opt-in supervised Backend path from the default CodeAct path and from BB-066 OpenHands domain runtime.",
+    "Ground the design in the executed productization probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-productization.md",
+    "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+    "packages/agentic-system/src/backend-worker.js",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/agentic-system/src/index.js",
+    "docs/living/system/agent-tools/state.md"
+  ]
+}

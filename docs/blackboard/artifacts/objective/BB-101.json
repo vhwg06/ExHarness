@@ -1,0 +1,34 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-101",
+  "outcome": "A supervised agent-tool run can crash and resume the same semantic attempt: same worktree identity, same tool session, same Core session and same candidate sha, without minting a second lineage or changing the source repository.",
+  "currentProblem": "Executed probe: runSupervisedTask always mkdtemp, uses sessionId agent-task:${id}:${randomUUID()}, and disposes the worktree in finally. There is no resumeWorktree option, so process death loses the worktree even though Core journals each RUN_AGENT_TOOL ACT.",
+  "scope": [
+    "agent-tools.durable-recovery",
+    "agent-tools.supervisor-resume"
+  ],
+  "constraints": [
+    "Recovery reuses the same AGENT_TASK_V1 identity, worktree path, tool sessionRef and Core sessionId; it cannot start a second semantic attempt for that task id while a durable handle is current.",
+    "Default runSupervisedTask without a recovery handle remains byte-identical, including worktree disposal.",
+    "Sandbox isolation remains BB-067; observation traces remain BB-098 and must be passed through when present.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify a durable AGENT_TOOL_RUN_HANDLE_V1 recording task id, worktree path, base revision, candidate sha, Core sessionId, tool id/version, tool sessionRef, attempt index and handle digest.",
+    "Specify crash-after-ACT resume that reopens the same worktree, resumes the tool session when the adapter supports it, continues the same Core session, and never creates a second candidate lineage for that handle.",
+    "Specify fail-closed behavior: missing worktree, digest mismatch, source HEAD drift, or a newer handle for the same task id refuses resume rather than starting a fresh mkdtemp run.",
+    "Specify that an unrecovered default run still disposes its worktree, plus Living docs for the recovery contract.",
+    "Ground the design in the executed productization probe and Core effect-journal behavior and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-productization.md",
+    "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/core-harness/src/harness.js",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/core-harness/state.md"
+  ]
+}
