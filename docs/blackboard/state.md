@@ -42,13 +42,12 @@ NONE
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
 - BB-077 [WORKER/EXECUTION] — Research harness-isolation economics on shared benchmark kernel
-- BB-091 [WORKER/EXECUTION] — Research and ablate retrieval planner strategies
+- BB-092 [WORKER/EXECUTION] — Implement bounded explicit progressive resolution
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
 - BB-101 [WORKER/EXECUTION] — Resume a supervised agent-tool run after process death
 - BB-102 [WORKER/EXECUTION] — Resolve declared agent-tool files through the Oracle facade
 - BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
-- BB-104 [RESEARCH_SA/RESEARCH] — Run one local Backend-then-QA slice from an operator CLI
 - BB-105 [WORKER/EXECUTION] — Add Grok Build as a supported agent tool
 
 ## Dependency graph
@@ -94,8 +93,8 @@ BB-087 [DONE] <- BB-064
 BB-088 [DONE] <- BB-087
 BB-089 [DONE] <- BB-087
 BB-090 [DONE] <- BB-056
-BB-091 [WORKER_SCHEDULABLE] <- BB-088
-BB-092 [BLOCKED_BY BB-091] <- BB-091
+BB-091 [DONE] <- BB-088
+BB-092 [WORKER_SCHEDULABLE] <- BB-091
 BB-093 [BLOCKED_BY BB-092] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
@@ -107,7 +106,7 @@ BB-100 [WORKER_SCHEDULABLE] <- BB-096, BB-097
 BB-101 [WORKER_SCHEDULABLE] <- BB-097
 BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
-BB-104 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-102
+BB-104 [BLOCKED_BY BB-100,BB-101,BB-102] <- BB-100, BB-101, BB-102
 BB-105 [WORKER_SCHEDULABLE] <- BB-097, BB-098
 ```
 

@@ -1,0 +1,73 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-091-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-091.json",
+    "hash": "66063c9db22bf8cb0f6b134889cfe0b9070e634377829696a3347a05439902b6"
+  },
+  "candidateSha": "fe5c1e61f27e7c4344433dfabc0f0bb187d74eb0",
+  "baselineSha": "fdb953c1e85ff32b2d43f61d90bbf245e8aa2ff6",
+  "candidateTree": "c99491c8c797ff0c8c906487af91c74d799dc418",
+  "verificationRuns": [
+    {
+      "id": "strategies",
+      "command": "node --test packages/oracle/test/planning-strategies.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "fe5c1e61f27e7c4344433dfabc0f0bb187d74eb0",
+      "logRef": "docs/blackboard/evidence/BB-091/strategies.txt",
+      "logHash": "42c44855d4dceef6c5e527684afaf888424497229a01ec47f3a03e91bb1f1a2e"
+    },
+    {
+      "id": "ablation",
+      "command": "node --test test/oracle-planner-ablation.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "fe5c1e61f27e7c4344433dfabc0f0bb187d74eb0",
+      "logRef": "docs/blackboard/evidence/BB-091/ablation.txt",
+      "logHash": "9fb9518b1bfbe61019f4d8c09115281280da934ab5c4ba12c656d756d651d399"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "fe5c1e61f27e7c4344433dfabc0f0bb187d74eb0",
+      "logRef": "docs/blackboard/evidence/BB-091/oracle-regression.txt",
+      "logHash": "47bd62e4989dce0989584cc3eb2192222d9dd673bb8fcf4bc8d923a434b62a22"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "fe5c1e61f27e7c4344433dfabc0f0bb187d74eb0",
+      "logRef": "docs/blackboard/evidence/BB-091/repository.txt",
+      "logHash": "936d3d4e6496a13d674c4476be6473f804de05d1d7732174a18ecbed3bffcb3f"
+    }
+  ],
+  "claims": [
+    {
+      "id": "PL1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-091/ablation.txt"
+      ]
+    },
+    {
+      "id": "PL2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-091/strategies.txt"
+      ]
+    },
+    {
+      "id": "PL3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-091/ablation.txt",
+        "docs/blackboard/evidence/BB-091/oracle-regression.txt",
+        "docs/blackboard/evidence/BB-091/repository.txt"
+      ]
+    }
+  ]
+}

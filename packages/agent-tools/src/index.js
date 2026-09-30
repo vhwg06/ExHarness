@@ -26,9 +26,27 @@ export {
   RUN_AGENT_TOOL,
   buildFeedback,
   createSupervisedAgentStrategy,
+  resumeSupervisedTask,
   runSupervisedTask,
   validateAgentTask
 } from "./supervisor.js";
+export {
+  AGENT_TOOL_RUN_HANDLE_VERSION,
+  HANDLE_FILE,
+  HandlePhase,
+  HandleStatus,
+  RecoveryError,
+  createAgentToolRunHandle,
+  createFileSessionStore,
+  disposeRecoverableRun,
+  handleDigest,
+  handlePath,
+  readAgentToolRunHandle,
+  recoverablePaths,
+  reopenRecoverableWorkspace,
+  verifyAgentToolRunHandle,
+  writeAgentToolRunHandle
+} from "./recovery.js";
 export { REDACTED, SECRET_PATTERNS, createRedactor, redact, redactedExcerpt, secretValues } from "./redaction.js";
 export { UsageUnavailableReason, parseAgyOutput, parseCodexJsonl, parseGrokJson, parseKiroOutput, parseToolOutput } from "./output-parsers.js";
 export {
