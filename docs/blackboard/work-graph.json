@@ -30,7 +30,8 @@
         "FEATURE-ORACLE-CONNECTIVITY",
         "FEATURE-ORACLE-DURABILITY",
         "FEATURE-ORACLE-ACCEPTANCE",
-        "BUG-ORACLE-FACADE-ACCOUNTING"
+        "BUG-ORACLE-FACADE-ACCOUNTING",
+        "BUG-ORACLE-FACADE-TYPED-FAILURE"
       ],
       "artifactRefs": [
         "docs/blackboard/process/oracle-reconciliation-phase.md",
@@ -114,7 +115,8 @@
       "status": "PLANNED",
       "featureIds": [
         "FEATURE-OBJECTIVE-SUPERSESSION",
-        "BUG-WORKER-GATE-NEGATIVE-BINDING"
+        "BUG-WORKER-GATE-NEGATIVE-BINDING",
+        "BUG-DELIVERED-TEST-WIRING"
       ],
       "artifactRefs": [
         "docs/blackboard/contracts.md"
@@ -175,7 +177,8 @@
         "FEATURE-ORACLE-PROGRESSIVE-RESOLUTION",
         "FEATURE-ORACLE-CONTEXT-BUDGETING",
         "FEATURE-ORACLE-CORE-INTEGRATION",
-        "FEATURE-ORACLE-PROFILE-ACCEPTANCE"
+        "FEATURE-ORACLE-PROFILE-ACCEPTANCE",
+        "BUG-ORACLE-PLANNER-RESERVATION"
       ],
       "artifactRefs": [
         "docs/blackboard/process/oracle-post-foundation-discovery.md",
@@ -884,6 +887,48 @@
         "docs/blackboard/process/agent-tool-research/BB-105.md"
       ],
       "acceptanceTaskId": "BB-105"
+    },
+    {
+      "id": "BUG-DELIVERED-TEST-WIRING",
+      "topicId": "TOPIC-BLACKBOARD-CONTROL",
+      "kind": "BUG",
+      "title": "Delivered Oracle and supersession tests are omitted from standing npm scripts",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-106"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/blackboard-control-research/BB-106.md"
+      ],
+      "acceptanceTaskId": "BB-106"
+    },
+    {
+      "id": "BUG-ORACLE-PLANNER-RESERVATION",
+      "topicId": "TOPIC-ORACLE-CONTEXT-INTELLIGENCE",
+      "kind": "BUG",
+      "title": "Planner 8192-byte and one-item reservation rejects files that fit the requirement budget",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-107"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research/BB-107.md"
+      ],
+      "acceptanceTaskId": "BB-107"
+    },
+    {
+      "id": "BUG-ORACLE-FACADE-TYPED-FAILURE",
+      "topicId": "TOPIC-ORACLE-RECONCILIATION",
+      "kind": "BUG",
+      "title": "Oracle facade throws TypeError for missing snapshot authority and underflow budgets",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-108"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/oracle-context-intelligence-research/BB-108.md"
+      ],
+      "acceptanceTaskId": "BB-108"
     },
     {
       "id": "FEATURE-AGENT-TOOL-BACKEND-STRATEGY",
@@ -4020,10 +4065,188 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-106",
+      "featureId": "BUG-DELIVERED-TEST-WIRING",
+      "title": "Wire delivered Oracle and supersession regression tests into npm test and verify",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "outer/blackboard",
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-082",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-087",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-088",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-106.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-106.json",
+          "docs/blackboard/process/blackboard-control-research/BB-106.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-106/test-wiring-probe.mjs",
+          "docs/blackboard/evidence/BB-106/test-wiring-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/oracle/context-graph.md",
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify that test:oracle runs every existing test/oracle-*.test.mjs file in addition to packages/oracle/test/*.test.js, so npm test and kernel CI execute the delivered Oracle boundary, facade, foundation, durability and provider suites.",
+        "Specify that a standing script used by npm run verify runs test/blackboard-objective-supersession.test.mjs.",
+        "Specify a named regression test that fails on current main when any of those delivered files is omitted from those scripts, plus Living docs that name the standing commands without Blackboard ids.",
+        "Ground the design in the executed wiring probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-106.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-106.json",
+        "researchBaselineSha": "fdb953c1e85ff32b2d43f61d90bbf245e8aa2ff6"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-107",
+      "featureId": "BUG-ORACLE-PLANNER-RESERVATION",
+      "title": "Reserve planner work from remaining budget so files that fit the requirement materialize",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-087",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-088",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-089",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-107.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-107.json",
+          "docs/blackboard/process/oracle-context-intelligence-research/BB-107.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-107/planner-reservation-probe.mjs",
+          "docs/blackboard/evidence/BB-107/planner-reservation-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/oracle/workflow.md",
+          "docs/living/system/oracle/context-graph.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify per-work reservedBudget.items and reservedBudget.materializedBytes derived from remaining requirement budget without a hard 8192-byte cap and without forcing items to 1 when remaining.maxItems allows more.",
+        "Specify that a declared EXACT repository file whose materialized form is 9000 bytes under a 40000-byte budget resolves COMPLETE through the delivered facade, while a file that still exceeds remaining bytes is BUDGET_EXHAUSTED without truncation.",
+        "Specify Living docs that describe remaining-budget reservation instead of the 8192-byte per-item cap, with no Blackboard ids.",
+        "Ground the design in the executed reservation probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-107.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-107.json",
+        "researchBaselineSha": "fdb953c1e85ff32b2d43f61d90bbf245e8aa2ff6"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-108",
+      "featureId": "BUG-ORACLE-FACADE-TYPED-FAILURE",
+      "title": "Return typed unresolved reasons from the Oracle facade for missing snapshot authority and underflow budgets",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "M",
+      "components": [
+        "oracle/infrastructure"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-087",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-088",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-108.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-108.json",
+          "docs/blackboard/process/oracle-context-intelligence-research/BB-108.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-108/facade-throw-probe.mjs",
+          "docs/blackboard/evidence/BB-108/facade-throw-probe-result.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/oracle/context-graph.md",
+          "docs/living/system/oracle/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Specify that required evidence whose source has no registered snapshot authority yields facade status UNSATISFIED with unresolved reason CURRENTNESS_UNVERIFIABLE and zero provider retrieve calls, never a thrown TypeError.",
+        "Specify that a requirement whose empty item list still materializes more bytes than maxMaterializedBytes yields UNSATISFIED BUDGET_EXHAUSTED, never TypeError consumed below materialization/step.",
+        "Specify Living docs that describe those two fail-closed typed resolutions without Blackboard ids, and update the delivered graph-boundary test that currently expects the TypeError.",
+        "Ground the design in the executed facade-throw probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-108.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-108.json",
+        "researchBaselineSha": "fdb953c1e85ff32b2d43f61d90bbf245e8aa2ff6"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-106",
+    "nextWorkId": "BB-109",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"
