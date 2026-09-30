@@ -22,7 +22,7 @@
     "Adopting the graph in Backend/QA production context (BB-089 and later)."
   ],
   "constraints": [
-    "Additive: one new Oracle module, one index export line, tests and one Living Doc.",
+    "Additive: one new Oracle module, one index export line, the four D1 names added to the pinned Oracle root export list in test/oracle-context-intelligence-architecture.test.mjs, tests and one Living Doc.",
     "Graphs are built only from exact repository blobs at an exact snapshot and from committed CONTEXT_GRAPH_EDGES_V1 files at the same snapshot.",
     "The graph query is a source constraint (graph ref), never providerId/tool/operation fields in ContextRequirement (BB-061 D16).",
     "Research consumes the BB-087 fixed-facade desired state; the Worker binds only DONE BB-087.",
@@ -31,11 +31,11 @@
   "invariants": [
     "Every edge and every returned path carries AUTHORITATIVE_SOURCE provenance bound to the exact snapshot and file digest; no edge exists without it.",
     "The same snapshot and inputs always produce the same graphId, edge order and traversal output.",
-    "CURRENT graph evidence is consumable only when the graph snapshot equals the authoritative repository snapshot; otherwise it fails closed as STALE or CURRENTNESS_UNVERIFIABLE.",
+    "CURRENT graph evidence is consumable only when the graph snapshot equals the authoritative repository snapshot; otherwise it fails closed as STALE or CURRENTNESS_UNVERIFIABLE, and a composition without any CONTEXT_GRAPH authority is rejected by the facade before any provider call.",
     "Traversal is bounded by hops, items and bytes: more paths than maxItems are truncated deterministically with truncated:true, and content beyond the planner byte reservation is rejected by the delivered planner as BUDGET_EXHAUSTED; nothing expands beyond a bound."
   ],
   "architectureDecisions": [
-    "D1 — Add packages/oracle/src/context-graph.js exporting buildContextGraph, createAuthoritativeGraphClient, parseContextGraphRef and CONTEXT_GRAPH_EDGES_V1; export them from packages/oracle/src/index.js. No other Oracle source file changes.",
+    "D1 — Add packages/oracle/src/context-graph.js exporting buildContextGraph, createAuthoritativeGraphClient, parseContextGraphRef and CONTEXT_GRAPH_EDGES_V1; export them from packages/oracle/src/index.js. No other Oracle source file changes. The architecture guard test/oracle-context-intelligence-architecture.test.mjs pins the exact sorted Oracle root export list; its pinned list gains exactly these four names in sorted order and no other line of that test changes.",
     "D2 — buildContextGraph({snapshotReader, repositoryRef, snapshotRef, roots, edgeFiles=[]}) where snapshotReader exposes listFiles({repositoryRef, revision, roots}) and readFile({repositoryRef, revision, path}) -> {content, sourceRef}. It reads only the exact snapshot; working-tree or mutable reads are not possible through this interface.",
     "D3 — Extraction: static relative ES-module edges from `import ... from './x'` and `export ... from './x'` in .js/.mjs files under roots, normalized with posix path joins. Targets inside roots are FILE nodes; targets outside roots are EXTERNAL_BOUNDARY nodes (the probe found 16 such edges into packages/core-harness), never dropped silently. dynamic import() and bare package specifiers are excluded and listed in graph.limits.",
     "D4 — Declared edges: an edge file must parse as CONTEXT_GRAPH_EDGES_V1 {kind, version, edges:[{from, to, relation}]} with relation from a closed set; each declared edge's provenance is the edge file@snapshot plus its digest. Malformed edge files fail the build.",
@@ -43,7 +43,7 @@
     "D6 — Graph query ref grammar parsed by parseContextGraphRef: `context-graph://<repositoryRef>/<IMPORTS|IMPORTED_BY>/<hops 1|2>/<anchorPath>`. An unknown relation, hops outside 1..2, or an anchor absent from the graph yields a typed ProviderFailure MISSING or UNSUPPORTED, never a best-effort match.",
     "D7 — createAuthoritativeGraphClient({snapshotReader, repositoryRef, roots, edgeFiles, currentSnapshot}) implements graphClient.traverse({source, need, maxItems}) for the delivered createContextGraphProvider: EXACT uses source.snapshot.ref; CURRENT uses currentSnapshot(); it builds (or reuses an in-memory graph keyed by graphId) and returns {snapshotRef, validators:[{kind:REVISION, value:snapshotRef, strength:STRONG},{kind:CONTENT_DIGEST, value:graphId, strength:STRONG}], paths}. The semantic `need` text is not parsed.",
     "D8 — Paths: breadth-first from the anchor over the requested relation up to hops, ordered by (distance, node id); each path content is canonical JSON of its edge list; provenance lists each edge's AUTHORITATIVE_SOURCE entry. At most maxItems paths are returned; when more exist the client returns the first maxItems and marks truncated:true in path content, and byte limits remain enforced by the delivered planner reservation.",
-    "D9 — Currentness wiring: composition registers a CONTEXT_GRAPH snapshot authority whose observe() returns the authoritative repository snapshot for the graph's repositoryRef. The delivered SourceCatalog then rejects a graph built at a different snapshot as STALE and a missing authority as CURRENTNESS_UNVERIFIABLE; the graph never self-certifies CURRENT.",
+    "D9 — Currentness wiring: composition registers a CONTEXT_GRAPH snapshot authority whose observe() returns the authoritative repository snapshot for the graph's repositoryRef. Through the delivered SourceCatalog, planner and fixed facade (probe facade-currentness-probe-result.json): a graph built at a different snapshot is STALE and an authority that reports no snapshot is CURRENTNESS_UNVERIFIABLE, both UNSATISFIED for REQUIRED evidence; with no CONTEXT_GRAPH authority registered, the delivered facade pre-observation rejects with the catalog TypeError \"missing/ambiguous snapshot authority\" before any provider call, and the planner alone reports CURRENTNESS_UNVERIFIABLE. The graph never self-certifies CURRENT; context-resolution.js is not changed.",
     "D10 — Evidence basis: BB-062 experiment A (typed graph arm Recall@3 1.000, MRR 1.000 on Q1–Q4) and experiment B (399 vs 48,983 bytes) justify typed authoritative edges; BB-062 D9/D14 reject a graph database for this stage. The BB-088 probe shows a reverse-import projection of 1,939 bytes versus 53,407 raw bytes of the importing files. These are structural feasibility results, not quality or cost claims.",
     "D11 — Worker-start: BB-087 DONE with delivery receipt; confirm createContextGraphProvider, createSourceCatalog and the fixed facade are unchanged package-root exports; mismatch => PLAN_INPUT_CONTRADICTION."
   ],
@@ -61,6 +61,7 @@
       "packages/oracle/src/context-graph.js",
       "packages/oracle/src/index.js",
       "packages/oracle/test/context-graph.test.js",
+      "test/oracle-context-intelligence-architecture.test.mjs",
       "test/oracle-context-graph-boundary.test.mjs",
       "docs/living/system/oracle/context-graph.md"
     ],
@@ -87,7 +88,11 @@
       "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
       "packages/oracle/src/providers/context-graph.js",
       "packages/oracle/src/source-catalog.js",
-      "packages/oracle/src/index.js"
+      "packages/oracle/src/index.js",
+      "test/oracle-context-intelligence-architecture.test.mjs",
+      "packages/oracle/src/context-resolution.js",
+      "docs/blackboard/evidence/BB-088/facade-currentness-probe.mjs",
+      "docs/blackboard/evidence/BB-088/facade-currentness-probe-result.json"
     ],
     "expectedNew": [
       "packages/oracle/src/context-graph.js",
@@ -103,8 +108,8 @@
   "implementationSlices": [
     "G1 — Extraction + identity [CG1, INV-1, INV-2]: implement buildContextGraph per D2-D5. packages/oracle/test/context-graph.test.js uses an in-memory snapshotReader fixture keyed by (revision,path) that throws on any other revision; cases: import, re-export, ../ normalization, out-of-root EXTERNAL_BOUNDARY, dynamic import excluded + listed in limits, bare specifier excluded, declared edge file valid/malformed/unknown relation, repeated build graphId equality, edge sort order.",
     "G2 — Query + traversal [CG2, INV-4]: implement parseContextGraphRef (D6) and BFS (D8) in the same module; unit cases: IMPORTS vs IMPORTED_BY, hops 1 and 2, hops 0/3 rejected, unknown relation, absent anchor, ordering by (distance,id), maxItems truncation with truncated:true, every path provenance entry AUTHORITATIVE_SOURCE.",
-    "G3 — Client + currentness [CG3, INV-3]: implement createAuthoritativeGraphClient (D7). test/oracle-context-graph-boundary.test.mjs composes createContextGraphProvider({graphClient}) + createSourceCatalog with a CONTEXT_GRAPH snapshot authority (D9) + createRetrievalPlanner + createOracleContextResolver and resolves REQUIRED CONTEXT_GRAPH evidence: CURRENT at matching snapshot => COMPLETE with REVISION and CONTENT_DIGEST validators; authority reporting a newer snapshot => STALE => UNSATISFIED; no authority registered => CURRENTNESS_UNVERIFIABLE => UNSATISFIED; tiny maxMaterializedBytes => BUDGET_EXHAUSTED.",
-    "G4 — Real snapshot proof + Living truth [CG4]: the boundary test defines a git-backed snapshotReader (git ls-tree -r --name-only <sha> -- roots; git show <sha>:<path>) at `git rev-parse HEAD`, builds packages/oracle/src + packages/agentic-system/src twice, asserts equal graphId, zero edges without AUTHORITATIVE_SOURCE and that IMPORTED_BY of packages/oracle/src/context-contract.js returns only files that literally import it. Add the index export and docs/living/system/oracle/context-graph.md; run test:oracle and npm run verify."
+    "G3 — Client + currentness [CG3, INV-3]: implement createAuthoritativeGraphClient (D7). test/oracle-context-graph-boundary.test.mjs composes createContextGraphProvider({graphClient}) + createSourceCatalog with a CONTEXT_GRAPH snapshot authority (D9) + createRetrievalPlanner + createOracleContextResolver and resolves REQUIRED CONTEXT_GRAPH evidence: CURRENT at matching snapshot => COMPLETE with REVISION and CONTENT_DIGEST validators; authority reporting a newer snapshot => STALE => UNSATISFIED; authority reporting no snapshot => CURRENTNESS_UNVERIFIABLE => UNSATISFIED; no authority registered => facade resolve rejects with the catalog \"missing/ambiguous snapshot authority\" TypeError and zero graphClient calls, while retrievalPlanner.execute alone reports CURRENTNESS_UNVERIFIABLE; tiny maxMaterializedBytes => BUDGET_EXHAUSTED from the delivered planner.",
+    "G4 — Real snapshot proof + Living truth [CG4]: the boundary test defines a git-backed snapshotReader (git ls-tree -r --name-only <sha> -- roots; git show <sha>:<path>) at `git rev-parse HEAD`, builds packages/oracle/src + packages/agentic-system/src twice, asserts equal graphId, zero edges without AUTHORITATIVE_SOURCE and that IMPORTED_BY of packages/oracle/src/context-contract.js returns only files that literally import it. Add the index export, add exactly the four D1 names to the pinned export list in test/oracle-context-intelligence-architecture.test.mjs, and add docs/living/system/oracle/context-graph.md; run test:oracle and npm run verify."
   ],
   "acceptanceCriteria": [
     {
@@ -129,17 +134,17 @@
     },
     {
       "id": "CG3",
-      "statement": "Through the delivered provider seam, catalog, planner and fixed facade, CONTEXT_GRAPH evidence resolves COMPLETE with REVISION and CONTENT_DIGEST strong validators; a graph at a non-authoritative snapshot is STALE and a missing authority is CURRENTNESS_UNVERIFIABLE, both non-consumable when REQUIRED.",
+      "statement": "Through the delivered provider seam, catalog, planner and fixed facade, CONTEXT_GRAPH evidence resolves COMPLETE with REVISION and CONTENT_DIGEST strong validators; a graph at a non-authoritative snapshot is STALE and an authority that reports no snapshot is CURRENTNESS_UNVERIFIABLE, both UNSATISFIED when REQUIRED; with no CONTEXT_GRAPH authority registered the facade rejects before any graphClient call and the planner reports CURRENTNESS_UNVERIFIABLE.",
       "verificationIds": [
         "graph-boundary"
       ],
       "evidenceRequired": [
-        "Boundary test logs for positive, stale and missing-authority cases."
+        "Boundary test logs for positive, stale, unverifiable-snapshot and missing-authority cases."
       ]
     },
     {
       "id": "CG4",
-      "statement": "A graph built from this repository's exact HEAD snapshot is deterministic and fully provenanced, only authorized files change, no graph database or new dependency is introduced, and the Oracle context-graph Living Doc documents delivered scope and limits.",
+      "statement": "A graph built from this repository's exact HEAD snapshot is deterministic and fully provenanced, only authorized files change (the architecture guard changes only by the four D1 names in its pinned export list), no graph database or new dependency is introduced, and the Oracle context-graph Living Doc documents delivered scope and limits.",
       "verificationIds": [
         "graph-boundary",
         "oracle-regression",
@@ -166,7 +171,7 @@
       ]
     },
     {
-      "invariant": "CURRENT graph evidence is consumable only when the graph snapshot equals the authoritative repository snapshot; otherwise it fails closed as STALE or CURRENTNESS_UNVERIFIABLE.",
+      "invariant": "CURRENT graph evidence is consumable only when the graph snapshot equals the authoritative repository snapshot; otherwise it fails closed as STALE or CURRENTNESS_UNVERIFIABLE, and a composition without any CONTEXT_GRAPH authority is rejected by the facade before any provider call.",
       "criterionIds": [
         "CG3"
       ]
@@ -210,6 +215,14 @@
     {
       "ref": "packages/oracle/src/providers/context-graph.js",
       "finding": "DELIVERED_TRUTH: provider requires graphClient.traverse and rejects paths lacking AUTHORITATIVE_SOURCE provenance."
+    },
+    {
+      "ref": "test/oracle-context-intelligence-architecture.test.mjs",
+      "finding": "DELIVERED_TRUTH: the architecture guard pins the exact sorted Oracle root export list and reports \"Oracle exports\" on any difference; it runs in npm run test:oracle, so D1 requires the four names to be added there."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-088/facade-currentness-probe-result.json",
+      "finding": "Executed at 3d33e220 through the delivered provider seam, catalog, planner and facade: matching authority COMPLETE with REVISION+CONTENT_DIGEST STRONG; newer authority STALE/UNSATISFIED; authority without snapshot CURRENTNESS_UNVERIFIABLE/UNSATISFIED; no authority => facade TypeError before any provider call, planner alone CURRENTNESS_UNVERIFIABLE."
     }
   ],
   "dependencyResolution": {
@@ -219,11 +232,10 @@
     "workerStart": "D11 preflight before product writes.",
     "sourceClassification": {
       "DELIVERED_TRUTH": [
-        "createContextGraphProvider, createSourceCatalog, createRetrievalPlanner in @exharness/oracle"
+        "createContextGraphProvider, createSourceCatalog, createRetrievalPlanner in @exharness/oracle",
+        "BB-087 fixed createOracleContextResolver (truthful accounting, typed failures; DONE), including pre-observation through SourceCatalog.authorityFor"
       ],
-      "PLANNED_CONTRACT": [
-        "BB-087 fixed createOracleContextResolver (truthful accounting, typed failures)"
-      ],
+      "PLANNED_CONTRACT": [],
       "RESEARCH_DESIRED_STATE": [
         "BB-064 continuation ORACLE_CONTEXT_GRAPH",
         "context-graph.js contracts defined here"
@@ -253,9 +265,10 @@
     "add": [
       "context-graph.js",
       "tests",
-      "context-graph Living Doc"
+      "context-graph Living Doc",
+      "the four D1 names in the pinned architecture export list"
     ],
-    "rollback": "Remove the module, its index export, tests and Living Doc."
+    "rollback": "Remove the module, its index export, the four D1 names from the pinned architecture export list, tests and Living Doc."
   },
   "laneContracts": [
     {
@@ -378,7 +391,8 @@
         8
       ],
       "sourceRefs": [
-        "packages/oracle/src/source-catalog.js"
+        "packages/oracle/src/source-catalog.js",
+        "docs/blackboard/evidence/BB-088/facade-currentness-probe-result.json"
       ],
       "sourceAnchors": [
         {
@@ -388,6 +402,14 @@
         {
           "ref": "packages/oracle/src/source-catalog.js",
           "match": "missing/ambiguous snapshot authority"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-088/facade-currentness-probe-result.json",
+          "match": "\"unresolved\": [\n        \"CURRENTNESS_UNVERIFIABLE\"\n      ]"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-088/facade-currentness-probe-result.json",
+          "match": "\"message\": \"missing/ambiguous snapshot authority for CONTEXT_GRAPH:context-graph://repo/IMPORTED_BY/1/a.js\""
         }
       ],
       "supportingPlanFields": [
@@ -421,7 +443,8 @@
       ],
       "sourceRefs": [
         "docs/blackboard/process/oracle-context-intelligence-research/BB-062.md",
-        "docs/blackboard/evidence/BB-088/graph-probe-result.json"
+        "docs/blackboard/evidence/BB-088/graph-probe-result.json",
+        "test/oracle-context-intelligence-architecture.test.mjs"
       ],
       "sourceAnchors": [
         {
@@ -431,6 +454,10 @@
         {
           "ref": "docs/blackboard/evidence/BB-088/graph-probe-result.json",
           "match": "\"projectionBytes\": 1939"
+        },
+        {
+          "ref": "test/oracle-context-intelligence-architecture.test.mjs",
+          "match": "violations.push(\"Oracle exports\")"
         }
       ],
       "supportingPlanFields": [
@@ -449,7 +476,8 @@
     "Building twice from the same inputs yields a different graphId or edge order: test failure.",
     "A graph ref with unknown relation, hops 0 or 3, or an absent anchor yields a typed ProviderFailure, never a fuzzy match.",
     "More reachable paths than maxItems returns exactly maxItems in deterministic order with truncated:true.",
-    "CURRENT evidence resolved against a graph built at an older snapshot is STALE; a composition without a CONTEXT_GRAPH authority is CURRENTNESS_UNVERIFIABLE; REQUIRED evidence then yields UNSATISFIED.",
-    "Introducing a graph database, vector store or new package dependency, or editing provider seam/contract/facade files, fails repository scope verification."
+    "CURRENT evidence resolved against a graph built at an older snapshot is STALE and an authority reporting no snapshot is CURRENTNESS_UNVERIFIABLE, and REQUIRED evidence then yields UNSATISFIED; a composition without a CONTEXT_GRAPH authority is rejected by the facade with zero graphClient calls and is never COMPLETE.",
+    "Introducing a graph database, vector store or new package dependency, or editing provider seam/contract/facade files, fails repository scope verification.",
+    "An Oracle root export list that differs from the pinned list in test/oracle-context-intelligence-architecture.test.mjs (a missing D1 name or any extra export) fails oracle-regression."
   ]
 }

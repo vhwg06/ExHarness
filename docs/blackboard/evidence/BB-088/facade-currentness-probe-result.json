@@ -1,0 +1,78 @@
+{
+  "probe": "BB-088 facade currentness",
+  "executedAt": "3d33e2205261a3c868a30cba8005d801f9216d1a",
+  "command": "node docs/blackboard/evidence/BB-088/facade-currentness-probe.mjs",
+  "composition": "createContextGraphProvider(fake graphClient) + createSourceCatalog + createRetrievalPlanner + createOracleContextResolver (delivered @exharness/oracle at executedAt)",
+  "results": [
+    {
+      "case": "matching authoritative snapshot",
+      "facade": "RESOLVED",
+      "status": "COMPLETE",
+      "unresolved": [],
+      "validators": [
+        "REVISION:STRONG",
+        "CONTENT_DIGEST:STRONG"
+      ],
+      "facadeProviderCalls": 1,
+      "plannerOnly": {
+        "unresolved": [],
+        "candidates": 1
+      },
+      "plannerProviderCalls": 1
+    },
+    {
+      "case": "authority reports a newer snapshot",
+      "facade": "RESOLVED",
+      "status": "UNSATISFIED",
+      "unresolved": [
+        "STALE"
+      ],
+      "validators": [],
+      "facadeProviderCalls": 1,
+      "plannerOnly": {
+        "unresolved": [
+          "STALE"
+        ],
+        "candidates": 0
+      },
+      "plannerProviderCalls": 1
+    },
+    {
+      "case": "authority registered but reports no snapshot",
+      "facade": "RESOLVED",
+      "status": "UNSATISFIED",
+      "unresolved": [
+        "CURRENTNESS_UNVERIFIABLE"
+      ],
+      "validators": [],
+      "facadeProviderCalls": 1,
+      "plannerOnly": {
+        "unresolved": [
+          "CURRENTNESS_UNVERIFIABLE"
+        ],
+        "candidates": 0
+      },
+      "plannerProviderCalls": 1
+    },
+    {
+      "case": "no CONTEXT_GRAPH authority registered",
+      "facade": "THREW",
+      "errorName": "TypeError",
+      "message": "missing/ambiguous snapshot authority for CONTEXT_GRAPH:context-graph://repo/IMPORTED_BY/1/a.js",
+      "facadeProviderCalls": 0,
+      "plannerOnly": {
+        "unresolved": [
+          "CURRENTNESS_UNVERIFIABLE"
+        ],
+        "candidates": 0
+      },
+      "plannerProviderCalls": 1
+    }
+  ],
+  "findings": [
+    "A matching CONTEXT_GRAPH authority resolves COMPLETE with REVISION and CONTENT_DIGEST STRONG validators.",
+    "An authority reporting a newer snapshot yields UNSATISFIED with STALE through the facade.",
+    "A registered authority that reports no snapshot yields UNSATISFIED with CURRENTNESS_UNVERIFIABLE through the facade.",
+    "With no CONTEXT_GRAPH authority registered, the delivered facade pre-observation rejects with the catalog TypeError \"missing/ambiguous snapshot authority\" before any provider call; the planner alone reports CURRENTNESS_UNVERIFIABLE."
+  ]
+}
