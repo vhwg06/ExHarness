@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { canonical, hash } from '../scripts/blackboard-delivery-contract.mjs';
 import {
-  WORKER_BATCH_LIMITS, WORKER_BATCH_STRATEGIES, aggregateBatchAnswers, evaluate, excerptEvidenceLog,
-  validateEvaluation, workerBatchManifest, workerBatchStrategy, workerQuestionBatches, workerQuestionPayload
+  OMITTED_SOURCE_INDEX_STRATEGY, WORKER_BATCH_LIMITS, WORKER_BATCH_STRATEGIES, aggregateBatchAnswers, evaluate, excerptEvidenceLog,
+  validateEvaluation, workerBatchManifest, workerBatchStrategy, workerQuestionBatches, workerQuestionPayload, withOmittedSourceIndex
 } from '../scripts/blackboard-jev.mjs';
 
 const MODEL = 'jev-1.13.0';
@@ -178,4 +178,71 @@ test('split evaluation calls each part once, propagates any unsatisfied part and
   assert.equal(fail.evaluation.verdict, 'REPAIR_REQUIRED');
   assert.equal(fail.evaluation.metrics.batching.partChoices.A[1], 'INSUFFICIENT_EVIDENCE');
   assert.deepEqual(fail.sent.map(body => hash(body)), pass.sent.map(body => hash(body)), 'batch payloads are deterministic across runs');
+});
+
+function manySources(count) {
+  return Array.from({ length: count }, (_, index) => {
+    const ref = `benchmarks/substrate/manifests/run-${String(index % 40).padStart(2, '0')}/trial-${String(index).padStart(4, '0')}/evidence/raw/result-${index}.json`;
+    return { ref, hash: hash(ref), bytes: 300 + index, omitted: true, deleted: index % 7 === 0 };
+  });
+}
+function indexedFixture(count) {
+  const full = fixture({ evidence: { A: [log('unit', tapLog(2))] } });
+  const stubs = manySources(count);
+  const living = { ref: 'docs/living/system/state.md', hash: hash('living'), bytes: 4000, body: 'L'.repeat(4000), excerpted: false, deleted: false };
+  full.state.sources = [...stubs, living];
+  full.state.plan.livingDocs = { questionId: 'LIVING_DOCS', refs: [living.ref] };
+  const changeSet = { refs: [...stubs.map(source => source.ref), living.ref].sort(), sourceScope: { write: ['benchmarks/**', 'docs/living/**'], forbiddenWrite: [] } };
+  return { full, stubs, living, changeSet };
+}
+
+test('a question whose source stubs alone overflow is represented by a hash-bound directory index', () => {
+  const { full, stubs, living, changeSet } = indexedFixture(700);
+  const options = { changeSet };
+  const batches = workerQuestionBatches(full, 'A', options);
+  assert.equal(batches.length, 1);
+  const [batch] = batches;
+  assert.equal(batch.sourceIndex, OMITTED_SOURCE_INDEX_STRATEGY);
+  assert.ok(bytes(batch.payload) <= WORKER_BATCH_LIMITS.maxBatchBytes);
+  const index = batch.payload.state.omittedSources;
+  assert.equal(index.strategy, OMITTED_SOURCE_INDEX_STRATEGY);
+  // The scoped Living Doc background of a non-Living-Doc criterion is bound by hash under the index.
+  const livingStub = { ref: living.ref, hash: living.hash, bytes: living.bytes, omitted: true, deleted: false };
+  assert.equal(index.count, stubs.length + 1);
+  assert.equal(index.hash, hash([...stubs, livingStub]));
+  assert.equal(index.bytes, [...stubs, livingStub].reduce((total, source) => total + source.bytes, 0));
+  assert.ok(index.directories.length <= 32);
+  assert.equal(index.directories.reduce((total, group) => total + group.files, 0), stubs.length + 1);
+  assert.equal(index.directories.reduce((total, group) => total + group.deleted, 0), stubs.filter(source => source.deleted).length);
+  assert.equal(index.directories.reduce((total, group) => total + group.changed, 0), changeSet.refs.length);
+  assert.deepEqual(batch.payload.state.sources, []);
+  const sentChangeSet = batch.payload.state.changeSet;
+  assert.deepEqual(sentChangeSet.refs, []);
+  assert.equal(sentChangeSet.refCount, changeSet.refs.length);
+  assert.equal(sentChangeSet.refsHash, hash(changeSet.refs));
+  assert.deepEqual(sentChangeSet.sourceScope, changeSet.sourceScope);
+  assert.deepEqual(workerQuestionBatches(full, 'A', options), batches, 'index must be deterministic');
+  const manifest = workerBatchManifest(full, options);
+  assert.equal(manifest.find(entry => entry.id === 'A').sourceIndex, OMITTED_SOURCE_INDEX_STRATEGY);
+  assert.equal(workerBatchStrategy(manifest), WORKER_BATCH_STRATEGIES.SOURCE_INDEX);
+});
+
+test('the source index applies only when no earlier stage fits and keeps Living Docs for the Living Docs question', () => {
+  const small = indexedFixture(20);
+  const [fitting] = workerQuestionBatches(small.full, 'A', { changeSet: small.changeSet });
+  assert.equal(fitting.sourceIndex, undefined, 'a fitting question keeps its existing payload');
+  assert.equal(fitting.payload.state.omittedSources, undefined);
+  assert.equal(workerBatchStrategy(workerBatchManifest(small.full, { changeSet: small.changeSet })), WORKER_BATCH_STRATEGIES.ATOMIC);
+  const { full, living } = indexedFixture(700);
+  const livingBase = { model: MODEL, state: { ...full.state, evidence: [], sources: full.state.sources }, questions: { LIVING_DOCS: question } };
+  const indexed = withOmittedSourceIndex(livingBase);
+  assert.deepEqual(indexed.state.sources.map(source => source.ref), [living.ref]);
+  assert.equal(indexed.state.sources[0].body, living.body);
+  assert.equal(withOmittedSourceIndex({ ...livingBase, state: { ...livingBase.state, sources: [living] } }), null, 'nothing to index');
+});
+
+test('the source index still fails closed when the indexed input cannot fit', () => {
+  const { full, changeSet } = indexedFixture(700);
+  full.state.plan.constraints = ['c'.repeat(70000)];
+  assert.throws(() => workerQuestionBatches(full, 'A', { changeSet }), /worker batch exceeds bounded input: A/);
 });
