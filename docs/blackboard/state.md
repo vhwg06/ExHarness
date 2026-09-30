@@ -21,7 +21,7 @@ next-work-id: BB-106
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-091
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-091
-task: Research and ablate retrieval planner strategies
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-091/current.json
-components: oracle/infrastructure
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -99,7 +92,7 @@ BB-087 [DONE] <- BB-064
 BB-088 [DONE] <- BB-087
 BB-089 [DONE] <- BB-087
 BB-090 [DONE] <- BB-056
-BB-091 [ACTIVE] <- BB-088
+BB-091 [PLANNED] <- BB-088
 BB-092 [BLOCKED_BY BB-091] <- BB-091
 BB-093 [BLOCKED_BY BB-092] <- BB-092
 BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
