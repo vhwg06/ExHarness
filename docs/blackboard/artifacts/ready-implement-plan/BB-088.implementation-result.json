@@ -1,0 +1,79 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-088-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-088.json",
+    "hash": "ff91e2b5f8dfb9659c514c0fee0836faf3eab9b19d5630035fff5ee5d96727b3"
+  },
+  "candidateSha": "2d07e170aa06577d9777f86e7176a174977f4d1e",
+  "baselineSha": "2839cc5f0a0f98fe84e5f2b10de30e68120239cf",
+  "candidateTree": "fe6d522785725e5dfe20c05b285a2b7b5567e01e",
+  "verificationRuns": [
+    {
+      "id": "graph-unit",
+      "command": "node --test packages/oracle/test/context-graph.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2d07e170aa06577d9777f86e7176a174977f4d1e",
+      "logRef": "docs/blackboard/evidence/BB-088/graph-unit.txt",
+      "logHash": "45134898c5d7ffd7955fc0296a7cdc29cd2f858da771b683fb472c6e07e6fff0"
+    },
+    {
+      "id": "graph-boundary",
+      "command": "node --test test/oracle-context-graph-boundary.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2d07e170aa06577d9777f86e7176a174977f4d1e",
+      "logRef": "docs/blackboard/evidence/BB-088/graph-boundary.txt",
+      "logHash": "04c761d2760c9e16cf3cf124b407dddb3f0ea9ca85a7e9965b9996be9919f0cc"
+    },
+    {
+      "id": "oracle-regression",
+      "command": "npm run test:oracle",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2d07e170aa06577d9777f86e7176a174977f4d1e",
+      "logRef": "docs/blackboard/evidence/BB-088/oracle-regression.txt",
+      "logHash": "f2c93583e9e7f499b48a5cd4004e0fc8f31d9e366baf3d86eaf993b5f8553898"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "2d07e170aa06577d9777f86e7176a174977f4d1e",
+      "logRef": "docs/blackboard/evidence/BB-088/repository.txt",
+      "logHash": "bbd1804008ac87478f79664f85a58e78f9b234252f3fa3c1c43af8aef6a0db8a"
+    }
+  ],
+  "claims": [
+    {
+      "id": "CG1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-088/graph-unit.txt"
+      ]
+    },
+    {
+      "id": "CG2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-088/graph-unit.txt"
+      ]
+    },
+    {
+      "id": "CG3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-088/graph-boundary.txt"
+      ]
+    },
+    {
+      "id": "CG4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-088/graph-boundary.txt",
+        "docs/blackboard/evidence/BB-088/oracle-regression.txt",
+        "docs/blackboard/evidence/BB-088/repository.txt"
+      ]
+    }
+  ]
+}

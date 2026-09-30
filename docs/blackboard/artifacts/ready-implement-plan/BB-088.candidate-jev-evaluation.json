@@ -1,0 +1,138 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-088-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-088",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-088.json",
+      "hash": "ff91e2b5f8dfb9659c514c0fee0836faf3eab9b19d5630035fff5ee5d96727b3"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-088.json",
+      "hash": "9155a65f570c9444e486ac3567e88c87f8f31bb65353b6ba616d173e7ce4f081"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-088.implementation-result.json",
+      "hash": "9ad931973af6ae5a3bd77c6ec4e5e65d024d3b473e96dbc7326f976ba072bf74"
+    },
+    "candidateSha": "2d07e170aa06577d9777f86e7176a174977f4d1e",
+    "candidateTree": "fe6d522785725e5dfe20c05b285a2b7b5567e01e",
+    "baselineSha": "2839cc5f0a0f98fe84e5f2b10de30e68120239cf"
+  },
+  "stateHash": "76bceb33351cb8610f8478bcd988152ada5e98f753d52f9279e90bb13f4f8dfd",
+  "specHash": "f1607498f9bed64c83f31a30415ed09d6ee89825fe7c670738678f5fa2e9e7a9",
+  "cacheKey": "ab8cf0f79489d9f0f38a9250ac2719abe2cb2bb12a672a6881123661d82aceda",
+  "model": "jev-1.13.0",
+  "answers": {
+    "CG1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.85,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "INSUFFICIENT_EVIDENCE": 0.07,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "SATISFIED": 0.9
+      }
+    },
+    "CG2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.93,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "SATISFIED": 0.94,
+        "INSUFFICIENT_EVIDENCE": 0.04
+      }
+    },
+    "CG3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.9,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.05,
+        "SATISFIED": 0.92,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.02
+      }
+    },
+    "CG4": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.69,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "SATISFIED": 0.77,
+        "INSUFFICIENT_EVIDENCE": 0.19,
+        "IMPLEMENTATION_DEFECT": 0.03
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.96,
+      "probabilities": {
+        "SATISFIED": 0.97,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.01
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 67271,
+    "output_tokens": 353
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 5,
+    "latencyMs": 1263.711865,
+    "payloadBytes": 325539,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V3",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "CG1",
+          "payloadHash": "8d213ab0bab6cb3e6ae7b67fe8d68d0c12c87dcdcd53f25585cb849a9d501384",
+          "payloadBytes": 41811
+        },
+        {
+          "id": "CG2",
+          "payloadHash": "7482f4d032688019b01c387939395bf0fe8252d1b41f5993e739b6a4214f997e",
+          "payloadBytes": 40190
+        },
+        {
+          "id": "CG3",
+          "payloadHash": "c83926e8ef8ec5c07bdeb16596f7e9c4e47422d1be796fba42563a2af9c2b2a3",
+          "payloadBytes": 40557
+        },
+        {
+          "id": "CG4",
+          "payloadHash": "187b29ce9a2d1fc96d8f8a41f0289c9f48953752f8c59596b437a036556c4c61",
+          "payloadBytes": 51309,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-088/oracle-regression.txt",
+            "docs/blackboard/evidence/BB-088/repository.txt"
+          ]
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "8458169a5612b89ac8a0b327183c6f3646859b4701dd8f529da63a17148b011d",
+          "payloadBytes": 38916
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
