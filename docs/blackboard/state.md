@@ -21,7 +21,7 @@ next-work-id: BB-106
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,17 +31,23 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-065
 ```
 
 ## Active work
 
-NONE
+
+BB-065
+task: Establish neutral benchmark package and calibrated substrate
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-065/current.json
+components: agentic/domain-execution-control
+worker: grok-bot
 
 ## Schedulable tasks
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
-- BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
 - BB-091 [WORKER/EXECUTION] — Research and ablate retrieval planner strategies
 - BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
 - BB-101 [WORKER/EXECUTION] — Resume a supervised agent-tool run after process death
@@ -67,7 +73,7 @@ BB-061 [DONE] <- BB-060
 BB-062 [DONE] <- BB-061
 BB-063 [DONE] <- BB-062
 BB-064 [DONE] <- BB-060, BB-061, BB-062, BB-063
-BB-065 [WORKER_SCHEDULABLE] <- ROOT
+BB-065 [ACTIVE] <- ROOT
 BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
