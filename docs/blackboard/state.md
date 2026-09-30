@@ -45,7 +45,6 @@ NONE
 - BB-092 [WORKER/EXECUTION] — Implement bounded explicit progressive resolution
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-100 [WORKER/EXECUTION] — Compose supervised agent-tools as an opt-in Backend adapter
-- BB-102 [WORKER/EXECUTION] — Resolve declared agent-tool files through the Oracle facade
 - BB-103 [WORKER/EXECUTION] — Expose verification and status as stdio MCP tools
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
@@ -107,9 +106,9 @@ BB-098 [DONE] <- BB-097
 BB-099 [WORKER_SCHEDULABLE] <- BB-098, BB-065
 BB-100 [WORKER_SCHEDULABLE] <- BB-096, BB-097
 BB-101 [DONE] <- BB-097
-BB-102 [WORKER_SCHEDULABLE] <- BB-097
+BB-102 [DONE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
-BB-104 [BLOCKED_BY BB-100,BB-102] <- BB-100, BB-101, BB-102
+BB-104 [BLOCKED_BY BB-100] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
 BB-106 [WORKER_SCHEDULABLE] <- BB-082, BB-087, BB-088
 BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
