@@ -1,0 +1,655 @@
+TAP version 13
+# Subtest: AT1 codex builds exact first and resume invocations with the prompt on stdin for each permission profile
+ok 1 - AT1 codex builds exact first and resume invocations with the prompt on stdin for each permission profile
+  ---
+  duration_ms: 2.549835
+  type: 'test'
+  ...
+# Subtest: AT1 kiro builds exact first and resume invocations with the prompt as one argument
+ok 2 - AT1 kiro builds exact first and resume invocations with the prompt as one argument
+  ---
+  duration_ms: 0.332405
+  type: 'test'
+  ...
+# Subtest: AT1 agy builds exact first and resume invocations with a seconds print timeout and log file
+ok 3 - AT1 agy builds exact first and resume invocations with a seconds print timeout and log file
+  ---
+  duration_ms: 0.613664
+  type: 'test'
+  ...
+# Subtest: AT1 invalid requests are rejected and defineAgentTool replaces only the launch tuple
+ok 4 - AT1 invalid requests are rejected and defineAgentTool replaces only the launch tuple
+  ---
+  duration_ms: 0.434828
+  type: 'test'
+  ...
+# Subtest: AT1 executables resolve without a shell: script paths, POSIX PATH, win32 npm shims and native exe
+ok 5 - AT1 executables resolve without a shell: script paths, POSIX PATH, win32 npm shims and native exe
+  ---
+  duration_ms: 3.42456
+  type: 'test'
+  ...
+# Subtest: AT1 each adapter launches the fake CLI with the exact recorded argv and stdin, and a missing tool is TOOL_UNAVAILABLE
+ok 6 - AT1 each adapter launches the fake CLI with the exact recorded argv and stdin, and a missing tool is TOOL_UNAVAILABLE
+  ---
+  duration_ms: 125.754532
+  type: 'test'
+  ...
+# Subtest: AT2 a prompt with shell metacharacters reaches the tool verbatim and is never interpreted
+ok 7 - AT2 a prompt with shell metacharacters reaches the tool verbatim and is never interpreted
+  ---
+  duration_ms: 74.631999
+  type: 'test'
+  ...
+# Subtest: AT2 output is bounded per stream while the digest covers the full stream
+ok 8 - AT2 output is bounded per stream while the digest covers the full stream
+  ---
+  duration_ms: 34.707539
+  type: 'test'
+  ...
+# Subtest: AT2 a missing executable is TOOL_UNAVAILABLE without throwing
+ok 9 - AT2 a missing executable is TOOL_UNAVAILABLE without throwing
+  ---
+  duration_ms: 2.571894
+  type: 'test'
+  ...
+# Subtest: AT2 a hung tool is killed at timeoutMs together with its process tree
+ok 10 - AT2 a hung tool is killed at timeoutMs together with its process tree
+  ---
+  duration_ms: 1507.889643
+  type: 'test'
+  ...
+# Subtest: AT3 a verified candidate is promoted: ACCEPTED with one ExHarness commit and the source repository preserved
+ok 11 - AT3 a verified candidate is promoted: ACCEPTED with one ExHarness commit and the source repository preserved
+  ---
+  duration_ms: 289.995842
+  type: 'test'
+  ...
+# Subtest: AT3 failed verification is fed back through resume and the fix is accepted on the next attempt
+ok 12 - AT3 failed verification is fed back through resume and the fix is accepted on the next attempt
+  ---
+  duration_ms: 450.566625
+  type: 'test'
+  ...
+# Subtest: AT3 a tool that never fixes ends EXHAUSTED after exactly maxAttempts without promotion
+ok 13 - AT3 a tool that never fixes ends EXHAUSTED after exactly maxAttempts without promotion
+  ---
+  duration_ms: 660.007971
+  type: 'test'
+  ...
+# Subtest: AT3 a tool that claims success without editing is NO_CHANGE and never ACCEPTED
+ok 14 - AT3 a tool that claims success without editing is NO_CHANGE and never ACCEPTED
+  ---
+  duration_ms: 413.552336
+  type: 'test'
+  ...
+# Subtest: AT3 commits made by the agent are folded into exactly one candidate commit
+ok 15 - AT3 commits made by the agent are folded into exactly one candidate commit
+  ---
+  duration_ms: 310.894461
+  type: 'test'
+  ...
+# Subtest: AT3 a partial edit is rejected, its feedback drives the fix, and the accepted candidate builds on it
+ok 16 - AT3 a partial edit is rejected, its feedback drives the fix, and the accepted candidate builds on it
+  ---
+  duration_ms: 474.490857
+  type: 'test'
+  ...
+# Subtest: AT3 a failing tool, a missing tool and an invalid task are never ACCEPTED
+ok 17 - AT3 a failing tool, a missing tool and an invalid task are never ACCEPTED
+  ---
+  duration_ms: 362.317668
+  type: 'test'
+  ...
+# Subtest: AT3 verification feedback is bounded by maxFeedbackChars
+ok 18 - AT3 verification feedback is bounded by maxFeedbackChars
+  ---
+  duration_ms: 460.439704
+  type: 'test'
+  ...
+# Subtest: AT4 run prints AGENT_SUPERVISED_RESULT_V1 and reports ACCEPTED only after passing verification
+ok 19 - AT4 run prints AGENT_SUPERVISED_RESULT_V1 and reports ACCEPTED only after passing verification
+  ---
+  duration_ms: 1061.03162
+  type: 'test'
+  ...
+# Subtest: AT4 smoke skips missing and unauthenticated tools and never reports ACCEPTED without passing verification
+ok 20 - AT4 smoke skips missing and unauthenticated tools and never reports ACCEPTED without passing verification
+  ---
+  duration_ms: 1871.488429
+  type: 'test'
+  ...
+# Subtest: AT4 root scripts run agent-tools tests in npm test while live smoke stays out of test and verify
+ok 21 - AT4 root scripts run agent-tools tests in npm test while live smoke stays out of test and verify
+  ---
+  duration_ms: 0.60294
+  type: 'test'
+  ...
+# Subtest: AT4 the Living doc states the trust boundary
+ok 22 - AT4 the Living doc states the trust boundary
+  ---
+  duration_ms: 0.432893
+  type: 'test'
+  ...
+# Subtest: DL1 deliver without slice is usage error
+ok 23 - DL1 deliver without slice is usage error
+  ---
+  duration_ms: 132.70686
+  type: 'test'
+  ...
+# Subtest: DL1 deliver runs Backend then QA through runSupervisedTask
+ok 24 - DL1 deliver runs Backend then QA through runSupervisedTask
+  ---
+  duration_ms: 423.475226
+  type: 'test'
+  ...
+# Subtest: DL1 deliver rejects bad manifests with usage exit 64
+ok 25 - DL1 deliver rejects bad manifests with usage exit 64
+  ---
+  duration_ms: 354.355584
+  type: 'test'
+  ...
+# Subtest: DL2 QA mutation fails the slice
+ok 26 - DL2 QA mutation fails the slice
+  ---
+  duration_ms: 325.254556
+  type: 'test'
+  ...
+# Subtest: DL2 QA on a different revision fails
+ok 27 - DL2 QA on a different revision fails
+  ---
+  duration_ms: 46.413388
+  type: 'test'
+  ...
+# Subtest: DL3 crash resume continues QA on the same accepted sha
+ok 28 - DL3 crash resume continues QA on the same accepted sha
+  ---
+  duration_ms: 578.256008
+  type: 'test'
+  ...
+# Subtest: DL3 accepted handle skips Backend and runs QA
+ok 29 - DL3 accepted handle skips Backend and runs QA
+  ---
+  duration_ms: 382.004639
+  type: 'test'
+  ...
+# Subtest: DL3 mismatched EXHAUSTED handle is refused and left untouched
+ok 30 - DL3 mismatched EXHAUSTED handle is refused and left untouched
+  ---
+  duration_ms: 258.864368
+  type: 'test'
+  ...
+# Subtest: DL3 mismatched ACCEPTED handle is refused without spawning
+ok 31 - DL3 mismatched ACCEPTED handle is refused without spawning
+  ---
+  duration_ms: 267.658311
+  type: 'test'
+  ...
+# Subtest: DL4 missing tool is not ACCEPTED
+ok 32 - DL4 missing tool is not ACCEPTED
+  ---
+  duration_ms: 170.541338
+  type: 'test'
+  ...
+# Subtest: DL4 Backend EXHAUSTED does not run QA
+ok 33 - DL4 Backend EXHAUSTED does not run QA
+  ---
+  duration_ms: 385.428022
+  type: 'test'
+  ...
+# Subtest: DL5 claim boundary is not BB-069
+ok 34 - DL5 claim boundary is not BB-069
+  ---
+  duration_ms: 360.37593
+  type: 'test'
+  ...
+# Subtest: DL5 living operator docs omit work ids
+ok 35 - DL5 living operator docs omit work ids
+  ---
+  duration_ms: 0.573674
+  type: 'test'
+  ...
+# Subtest: DL5 write scope excludes supervisor and agentic-system
+ok 36 - DL5 write scope excludes supervisor and agentic-system
+  ---
+  duration_ms: 3.416933
+  type: 'test'
+  ...
+# Subtest: GR1 grok builds the exact WORKSPACE_EDIT argv with the default model
+ok 37 - GR1 grok builds the exact WORKSPACE_EDIT argv with the default model
+  ---
+  duration_ms: 1.837695
+  type: 'test'
+  ...
+# Subtest: GR1 FULL_AUTO passes always-approve
+ok 38 - GR1 FULL_AUTO passes always-approve
+  ---
+  duration_ms: 0.303914
+  type: 'test'
+  ...
+# Subtest: GR1 WORKSPACE_EDIT does not pass always-approve
+ok 39 - GR1 WORKSPACE_EDIT does not pass always-approve
+  ---
+  duration_ms: 0.185268
+  type: 'test'
+  ...
+# Subtest: GR1 grok argv uses prompt-file not positional prompt
+ok 40 - GR1 grok argv uses prompt-file not positional prompt
+  ---
+  duration_ms: 0.164121
+  type: 'test'
+  ...
+# Subtest: GR1 grok resume flags use resume with a session id and continue without one
+ok 41 - GR1 grok resume flags use resume with a session id and continue without one
+  ---
+  duration_ms: 0.371924
+  type: 'test'
+  ...
+# Subtest: GR1 grok requires a prompt file
+ok 42 - GR1 grok requires a prompt file
+  ---
+  duration_ms: 0.860471
+  type: 'test'
+  ...
+# Subtest: GR2 parseGrokJson reports observed tokens and cost from the usage fixture
+ok 43 - GR2 parseGrokJson reports observed tokens and cost from the usage fixture
+  ---
+  duration_ms: 0.821999
+  type: 'test'
+  ...
+# Subtest: GR2 usage-free grok JSON is null with GROK_USAGE_NOT_REPORTED
+ok 44 - GR2 usage-free grok JSON is null with GROK_USAGE_NOT_REPORTED
+  ---
+  duration_ms: 0.517418
+  type: 'test'
+  ...
+# Subtest: GR2 parseToolOutput dispatches grok and keeps six-field Codex Kiro agy usage objects
+ok 45 - GR2 parseToolOutput dispatches grok and keeps six-field Codex Kiro agy usage objects
+  ---
+  duration_ms: 1.313643
+  type: 'test'
+  ...
+# Subtest: GR2 argvRedacted does not contain the prompt
+ok 46 - GR2 argvRedacted does not contain the prompt
+  ---
+  duration_ms: 94.209701
+  type: 'test'
+  ...
+# Subtest: GR3 the same grok adapter serves direct and supervised arms
+ok 47 - GR3 the same grok adapter serves direct and supervised arms
+  ---
+  duration_ms: 308.855474
+  type: 'test'
+  ...
+# Subtest: GR3 direct grok run removes its staged prompt directory
+ok 48 - GR3 direct grok run removes its staged prompt directory
+  ---
+  duration_ms: 75.526985
+  type: 'test'
+  ...
+# Subtest: GR3 exharness-agent probe and smoke accept grok
+ok 49 - GR3 exharness-agent probe and smoke accept grok
+  ---
+  duration_ms: 849.418868
+  type: 'test'
+  ...
+# Subtest: GR3 npm test does not run live grok smoke
+ok 50 - GR3 npm test does not run live grok smoke
+  ---
+  duration_ms: 0.647852
+  type: 'test'
+  ...
+# Subtest: GR4 fake grok covers FIX_FIRST with JSON usage
+ok 51 - GR4 fake grok covers FIX_FIRST with JSON usage
+  ---
+  duration_ms: 73.417688
+  type: 'test'
+  ...
+# Subtest: GR4 missing grok executable is TOOL_UNAVAILABLE
+ok 52 - GR4 missing grok executable is TOOL_UNAVAILABLE
+  ---
+  duration_ms: 49.357418
+  type: 'test'
+  ...
+# Subtest: GR5 living docs and README list grok without work ids
+ok 53 - GR5 living docs and README list grok without work ids
+  ---
+  duration_ms: 0.649221
+  type: 'test'
+  ...
+# Subtest: GR5 write scope excludes core-harness
+ok 54 - GR5 write scope excludes core-harness
+  ---
+  duration_ms: 2.0623
+  type: 'test'
+  ...
+# Subtest: MCP1 verify and status over stdio
+ok 55 - MCP1 verify and status over stdio
+  ---
+  duration_ms: 289.068942
+  type: 'test'
+  ...
+# Subtest: MCP1 CLI validates verifier specs
+ok 56 - MCP1 CLI validates verifier specs
+  ---
+  duration_ms: 311.22642
+  type: 'test'
+  ...
+# Subtest: MCP1 CLI serves tools over stdio
+ok 57 - MCP1 CLI serves tools over stdio
+  ---
+  duration_ms: 120.914869
+  type: 'test'
+  ...
+# Subtest: MCP2 planted promote tool is rejected
+ok 58 - MCP2 planted promote tool is rejected
+  ---
+  duration_ms: 0.941984
+  type: 'test'
+  ...
+# Subtest: MCP2 tools list has no promote
+ok 59 - MCP2 tools list has no promote
+  ---
+  duration_ms: 23.057358
+  type: 'test'
+  ...
+# Subtest: MCP2 tools/call promote is unknown
+ok 60 - MCP2 tools/call promote is unknown
+  ---
+  duration_ms: 23.621336
+  type: 'test'
+  ...
+# Subtest: MCP3 default run never listens
+ok 61 - MCP3 default run never listens
+  ---
+  duration_ms: 250.963731
+  type: 'test'
+  ...
+# Subtest: MCP3 mcpVerify opt-in run completes
+ok 62 - MCP3 mcpVerify opt-in run completes
+  ---
+  duration_ms: 819.398177
+  type: 'test'
+  ...
+# Subtest: MCP3 mcpVerify does not write user CLI config
+ok 63 - MCP3 mcpVerify does not write user CLI config
+  ---
+  duration_ms: 230.463781
+  type: 'test'
+  ...
+# Subtest: MCP3 stop waits for in-flight verify
+ok 64 - MCP3 stop waits for in-flight verify
+  ---
+  duration_ms: 224.045814
+  type: 'test'
+  ...
+# Subtest: MCP4 verify call cannot promote
+ok 65 - MCP4 verify call cannot promote
+  ---
+  duration_ms: 353.921179
+  type: 'test'
+  ...
+# Subtest: MCP5 package.json has no MCP SDK runtime dependency
+ok 66 - MCP5 package.json has no MCP SDK runtime dependency
+  ---
+  duration_ms: 0.831319
+  type: 'test'
+  ...
+# Subtest: MCP5 living docs describe verification-query transport
+ok 67 - MCP5 living docs describe verification-query transport
+  ---
+  duration_ms: 0.880807
+  type: 'test'
+  ...
+# Subtest: RC1 handle records identity fields and digest
+ok 68 - RC1 handle records identity fields and digest
+  ---
+  duration_ms: 350.761132
+  type: 'test'
+  ...
+# Subtest: RC1 file session store roundtrips revisions across instances
+ok 69 - RC1 file session store roundtrips revisions across instances
+  ---
+  duration_ms: 5.197269
+  type: 'test'
+  ...
+# Subtest: RC2 default run still disposes the worktree
+ok 70 - RC2 default run still disposes the worktree
+  ---
+  duration_ms: 240.501376
+  type: 'test'
+  ...
+# Subtest: RC2 recoverable run survives until dispose
+ok 71 - RC2 recoverable run survives until dispose
+  ---
+  duration_ms: 531.008277
+  type: 'test'
+  ...
+# Subtest: RC3 crash resume keeps the same task id
+ok 72 - RC3 crash resume keeps the same task id
+  ---
+  duration_ms: 660.62524
+  type: 'test'
+  ...
+# Subtest: RC4 deleted worktree refuses resume
+ok 73 - RC4 deleted worktree refuses resume
+  ---
+  duration_ms: 257.480163
+  type: 'test'
+  ...
+# Subtest: RC4 rewritten digest refuses resume
+ok 74 - RC4 rewritten digest refuses resume
+  ---
+  duration_ms: 265.100644
+  type: 'test'
+  ...
+# Subtest: RC4 source HEAD drift refuses resume
+ok 75 - RC4 source HEAD drift refuses resume
+  ---
+  duration_ms: 301.723031
+  type: 'test'
+  ...
+# Subtest: RC4 stale handle refuses resume
+ok 76 - RC4 stale handle refuses resume
+  ---
+  duration_ms: 272.285689
+  type: 'test'
+  ...
+# Subtest: RC5 write scope excludes core-harness
+ok 77 - RC5 write scope excludes core-harness
+  ---
+  duration_ms: 3.003241
+  type: 'test'
+  ...
+# Subtest: RC5 living docs describe recovery
+ok 78 - RC5 living docs describe recovery
+  ---
+  duration_ms: 0.620834
+  type: 'test'
+  ...
+# Subtest: OB1 a direct invocation yields one chained trace with observed timing, status, exit, diff and verification
+ok 79 - OB1 a direct invocation yields one chained trace with observed timing, status, exit, diff and verification
+  ---
+  duration_ms: 88.859456
+  type: 'test'
+  ...
+# Subtest: OB1 appended traces link sequence and prevDigest in order
+ok 80 - OB1 appended traces link sequence and prevDigest in order
+  ---
+  duration_ms: 206.635635
+  type: 'test'
+  ...
+# Subtest: OB1 editing, deleting, inserting or reordering a trace line throws TRACE_CHAIN_BROKEN
+ok 81 - OB1 editing, deleting, inserting or reordering a trace line throws TRACE_CHAIN_BROKEN
+  ---
+  duration_ms: 188.029517
+  type: 'test'
+  ...
+# Subtest: OB2 codex usage is summed only from turn.completed events and malformed lines are counted
+ok 82 - OB2 codex usage is summed only from turn.completed events and malformed lines are counted
+  ---
+  duration_ms: 0.616972
+  type: 'test'
+  ...
+# Subtest: OB2 a codex stream without a usage-bearing turn.completed is null with CODEX_USAGE_NOT_REPORTED, never zero
+ok 83 - OB2 a codex stream without a usage-bearing turn.completed is null with CODEX_USAGE_NOT_REPORTED, never zero
+  ---
+  duration_ms: 60.80078
+  type: 'test'
+  ...
+# Subtest: OB2 a live codex trace reports exact usage from the stream and counts events
+ok 84 - OB2 a live codex trace reports exact usage from the stream and counts events
+  ---
+  duration_ms: 61.173102
+  type: 'test'
+  ...
+# Subtest: OB2 kiro, agy, timed-out and unavailable traces never carry numeric token values
+ok 85 - OB2 kiro, agy, timed-out and unavailable traces never carry numeric token values
+  ---
+  duration_ms: 1671.374322
+  type: 'test'
+  ...
+# Subtest: OB3 a supervised run yields one trace per attempt with its verification, diff and avo.act window
+ok 86 - OB3 a supervised run yields one trace per attempt with its verification, diff and avo.act window
+  ---
+  duration_ms: 425.761805
+  type: 'test'
+  ...
+# Subtest: OB3 direct traces carry harness null and an unobserved supervised run is unchanged
+ok 87 - OB3 direct traces carry harness null and an unobserved supervised run is unchanged
+  ---
+  duration_ms: 832.499366
+  type: 'test'
+  ...
+# Subtest: OB3 an observer error fails the supervised run instead of being swallowed
+ok 88 - OB3 an observer error fails the supervised run instead of being swallowed
+  ---
+  duration_ms: 131.589567
+  type: 'test'
+  ...
+# Subtest: OB4 planted env and key-pattern secrets never appear in trace bytes
+ok 89 - OB4 planted env and key-pattern secrets never appear in trace bytes
+  ---
+  duration_ms: 185.000052
+  type: 'test'
+  ...
+# Subtest: OB4 a secret split at the capture truncation boundary is dropped with the partial line
+ok 90 - OB4 a secret split at the capture truncation boundary is dropped with the partial line
+  ---
+  duration_ms: 59.667454
+  type: 'test'
+  ...
+# Subtest: OB4 a record that still contains a secret is refused with SECRET_IN_TRACE
+ok 91 - OB4 a record that still contains a secret is refused with SECRET_IN_TRACE
+  ---
+  duration_ms: 3.217228
+  type: 'test'
+  ...
+# Subtest: OB5 the report is deterministic, coverage-aware and carries no acceptance, winner or value field
+ok 92 - OB5 the report is deterministic, coverage-aware and carries no acceptance, winner or value field
+  ---
+  duration_ms: 254.238254
+  type: 'test'
+  ...
+# Subtest: OB5 the report CLI verifies the chain, prints the report and exits non-zero on a broken chain
+ok 93 - OB5 the report CLI verifies the chain, prints the report and exits non-zero on a broken chain
+  ---
+  duration_ms: 551.688169
+  type: 'test'
+  ...
+# Subtest: OB5 run --trace-dir writes supervised traces that the report reads
+ok 94 - OB5 run --trace-dir writes supervised traces that the report reads
+  ---
+  duration_ms: 471.847377
+  type: 'test'
+  ...
+# Subtest: OB5 the Living doc describes observation limits and redaction
+ok 95 - OB5 the Living doc describes observation limits and redaction
+  ---
+  duration_ms: 0.344739
+  type: 'test'
+  ...
+# Subtest: OB6 the scope matcher accepts write-scope paths and rejects forbidden product and Blackboard paths
+ok 96 - OB6 the scope matcher accepts write-scope paths and rejects forbidden product and Blackboard paths
+  ---
+  duration_ms: 6.327396
+  type: 'test'
+  ...
+# Subtest: CX1 optional requiredFiles maps to EXACT ContextRequirement
+ok 97 - CX1 optional requiredFiles maps to EXACT ContextRequirement
+  ---
+  duration_ms: 45.290054
+  type: 'test'
+  ...
+# Subtest: CX1 path with .. is rejected
+ok 98 - CX1 path with .. is rejected
+  ---
+  duration_ms: 0.628282
+  type: 'test'
+  ...
+# Subtest: CX1 absolute path is rejected
+ok 99 - CX1 absolute path is rejected
+  ---
+  duration_ms: 0.170179
+  type: 'test'
+  ...
+# Subtest: CX2 consumable items project into prompt and worktree with sourceRef
+ok 100 - CX2 consumable items project into prompt and worktree with sourceRef
+  ---
+  duration_ms: 289.71461
+  type: 'test'
+  ...
+# Subtest: CX2 grounded context files are git-excluded from the candidate
+ok 101 - CX2 grounded context files are git-excluded from the candidate
+  ---
+  duration_ms: 75.225774
+  type: 'test'
+  ...
+# Subtest: CX3 missing required file does not spawn
+ok 102 - CX3 missing required file does not spawn
+  ---
+  duration_ms: 28.806925
+  type: 'test'
+  ...
+# Subtest: CX3 budget exhaustion does not spawn
+ok 103 - CX3 budget exhaustion does not spawn
+  ---
+  duration_ms: 36.706767
+  type: 'test'
+  ...
+# Subtest: CX3 stale snapshot does not spawn
+ok 104 - CX3 stale snapshot does not spawn
+  ---
+  duration_ms: 36.441676
+  type: 'test'
+  ...
+# Subtest: CX4 tasks without requiredFiles never construct Oracle
+ok 105 - CX4 tasks without requiredFiles never construct Oracle
+  ---
+  duration_ms: 283.10429
+  type: 'test'
+  ...
+# Subtest: CX5 living docs describe the agent-tools Oracle consumer
+ok 106 - CX5 living docs describe the agent-tools Oracle consumer
+  ---
+  duration_ms: 1.003481
+  type: 'test'
+  ...
+# Subtest: CX6 write scope excludes packages/oracle
+ok 107 - CX6 write scope excludes packages/oracle
+  ---
+  duration_ms: 6.686061
+  type: 'test'
+  ...
+1..107
+# tests 107
+# suites 0
+# pass 107
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8261.654661
+
+
+exitCode=0
