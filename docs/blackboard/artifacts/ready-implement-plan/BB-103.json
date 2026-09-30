@@ -29,10 +29,10 @@
     "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "MCP tools are exharness_verify and exharness_status only; promote, accept and merge cannot be registered.",
-    "Outer supervision remains the only promotion authority.",
-    "A run without mcpVerify never listens or constructs the server; result shape and invocationObserver default-null stay unchanged.",
-    "The server never writes user CLI configuration or credentials."
+    "MCP tools are exharness_verify and exharness_status only; there is no promote, accept, merge or credential tool.",
+    "Outer supervision remains the authority path; MCP never promotes, ACCEPTs or mutates lineage.",
+    "mcpVerify is opt-in per run: default false never listens or constructs the server; when on, the server is bound to that worktree only.",
+    "The MCP server never writes Codex, Kiro or agy user CLI configuration (~/.codex, ~/.kiro, ~/.gemini)."
   ],
   "architectureDecisions": [
     "D1 — createExharnessMcpVerifyServer({ worktreeRoot, verifiers, status, tools }) returns { start({ stdin, stdout }), stop(), tools }. verifiers: non-empty [{ name, verify }] (createLocalCommandVerifier; verify({ candidate }) -> { claim, status, evidence, summary }). status defaults { attemptIndex: 0, candidateSha: null, lastVerification: null }. tools defaults ['exharness_verify','exharness_status']; any other name or /promote|accept|merge/i throws TypeError code MCP_FORBIDDEN_TOOL. Return tools is Object.freeze of those two. Exports: createExharnessMcpVerifyServer, MCP_PROTOCOL_VERSION ('2025-03-26'), MCP_FORBIDDEN_TOOL, MCP_SERVER_INFO ({ name: 'exharness-verify', version: '1.0.0' }), EXHARNESS_MCP_TOOLS ({ VERIFY: 'exharness_verify', STATUS: 'exharness_status' }).",
@@ -111,10 +111,10 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Server [MCP1,MCP2]: D1-D3 in mcp-server.js + fake-mcp-client.mjs; export from index.js. MCP1: tools/list; verify FAIL then PASS at temp HEAD; status reads mcpStatus. MCP2: planted exharness_promote throws MCP_FORBIDDEN_TOOL; list has no promote/accept/merge; tools/call exharness_promote -> -32601.",
-    "S2 — Opt-in [MCP3]: D4 on supervisor.js. Default FIX_FIRST: six-field result, no server. mcpVerify:{stdin,stdout} serves initialize during the run; stop() after return. HOME=temp writes no .codex/.kiro/.gemini. invocationObserver still fires.",
-    "S3 — Authority [MCP4]: D5. CLAIM_SUCCESS_NO_EDIT + concurrent exharness_verify -> EXHAUSTED, mutated false. mcp-server.js contains no PROMOTE.",
-    "S4 — Docs [MCP5]: D7. package.json has no dependencies; no @modelcontextprotocol import; living mcp.md/state.md have transport/authority/opt-in/protocolVersion and no delivery-work id. Then test:agent-tools, verify:current-docs, npm test."
+    "S1 — Server [MCP1,MCP2] mcp1-tools,mcp2-forbidden: create packages/agent-tools/src/mcp-server.js (createExharnessMcpVerifyServer, start, stop) and test/fixtures/fake-mcp-client.mjs; export createExharnessMcpVerifyServer from packages/agent-tools/src/index.js; tests in test/mcp-server.test.js.",
+    "S2 — Opt-in [MCP3] mcp3-optin: edit packages/agent-tools/src/supervisor.js runSupervisedTask (mcpVerify) and createSupervisedAgentStrategy (statusSink); default false never calls createExharnessMcpVerifyServer; {stdin,stdout} start/stop around the worktree.",
+    "S3 — Authority [MCP4] mcp4-authority: mcp-server.js exharness_verify calls createLocalCommandVerifier.verify only (no AVOCapability.PROMOTE); runSupervisedTask CLAIM_SUCCESS_NO_EDIT stays EXHAUSTED.",
+    "S4 — Docs [MCP5] mcp5-docs,docs,repository: write docs/living/system/agent-tools/mcp.md; update state.md and packages/agent-tools/README.md; assert no @modelcontextprotocol import."
   ],
   "acceptanceCriteria": [
     {
@@ -150,19 +150,19 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "MCP tools are exharness_verify and exharness_status only; promote, accept and merge cannot be registered.",
+      "invariant": "MCP tools are exharness_verify and exharness_status only; there is no promote, accept, merge or credential tool.",
       "criterionIds": ["MCP1", "MCP2"]
     },
     {
-      "invariant": "Outer supervision remains the only promotion authority.",
+      "invariant": "Outer supervision remains the authority path; MCP never promotes, ACCEPTs or mutates lineage.",
       "criterionIds": ["MCP4"]
     },
     {
-      "invariant": "A run without mcpVerify never listens or constructs the server; result shape and invocationObserver default-null stay unchanged.",
+      "invariant": "mcpVerify is opt-in per run: default false never listens or constructs the server; when on, the server is bound to that worktree only.",
       "criterionIds": ["MCP3"]
     },
     {
-      "invariant": "The server never writes user CLI configuration or credentials.",
+      "invariant": "The MCP server never writes Codex, Kiro or agy user CLI configuration (~/.codex, ~/.kiro, ~/.gemini).",
       "criterionIds": ["MCP3", "MCP5"]
     }
   ],
@@ -258,9 +258,14 @@
       "verificationIds": ["mcp1-tools"],
       "decisionIndexes": [0, 1],
       "sourceRefs": [
+        "docs/blackboard/process/agent-tool-research/BB-103.md",
+        "docs/blackboard/evidence/BB-103/mcp-verify-probe-result.json",
         "packages/agentic-system/src/local-command-verifier.js"
       ],
       "sourceAnchors": [
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-103.md", "match": "exharness_verify runs createLocalCommandVerifier.verify at worktree HEAD" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-103.md", "match": "exharness_status returns typed JSON { attemptIndex, candidateSha, lastVerification }" },
+        { "ref": "docs/blackboard/evidence/BB-103/mcp-verify-probe-result.json", "match": "\"ndjsonFakeClientWorksWithoutSdkOrLiveCli\": true" },
         { "ref": "packages/agentic-system/src/local-command-verifier.js", "match": "export function createLocalCommandVerifier(" }
       ],
       "supportingPlanFields": []
@@ -272,10 +277,16 @@
       "verificationIds": ["mcp2-forbidden", "mcp4-authority"],
       "decisionIndexes": [4],
       "sourceRefs": [
-        "docs/blackboard/artifacts/objective/BB-103.json"
+        "docs/blackboard/artifacts/objective/BB-103.json",
+        "packages/agent-tools/src/supervisor.js",
+        "docs/blackboard/evidence/BB-103/mcp-verify-probe-result.json",
+        "docs/blackboard/process/agent-tool-research/BB-103.md"
       ],
       "sourceAnchors": [
-        { "ref": "docs/blackboard/artifacts/objective/BB-103.json", "match": "promotion remains ExHarness-owned" }
+        { "ref": "docs/blackboard/artifacts/objective/BB-103.json", "match": "promotion remains ExHarness-owned" },
+        { "ref": "packages/agent-tools/src/supervisor.js", "match": "AVOCapability.PROMOTE" },
+        { "ref": "docs/blackboard/evidence/BB-103/mcp-verify-probe-result.json", "match": "\"claimSuccessNoEditCannotPromote\": true" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-103.md", "match": "planted exharness_promote is rejected at construction with MCP_FORBIDDEN_TOOL" }
       ],
       "supportingPlanFields": ["invariants"]
     },
@@ -286,10 +297,16 @@
       "verificationIds": ["mcp3-optin"],
       "decisionIndexes": [3],
       "sourceRefs": [
-        "packages/agent-tools/src/supervisor.js"
+        "packages/agent-tools/src/supervisor.js",
+        "docs/blackboard/evidence/BB-103/mcp-verify-probe-result.json",
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+        "docs/blackboard/process/agent-tool-research/BB-103.md"
       ],
       "sourceAnchors": [
-        { "ref": "packages/agent-tools/src/supervisor.js", "match": "invocationObserver = null" }
+        { "ref": "packages/agent-tools/src/supervisor.js", "match": "invocationObserver = null" },
+        { "ref": "docs/blackboard/evidence/BB-103/mcp-verify-probe-result.json", "match": "\"mcpVerifyOptionAbsent\": true" },
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"cliMentionsMcp\": false" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-103.md", "match": "mcpVerify default false never listens; opted-in server is bound to that worktree only" }
       ],
       "supportingPlanFields": ["negativeVerificationCases"]
     },
@@ -300,10 +317,16 @@
       "verificationIds": ["mcp5-docs", "docs"],
       "decisionIndexes": [6],
       "sourceRefs": [
-        "docs/living/system/oracle/state.md"
+        "docs/living/system/oracle/state.md",
+        "docs/blackboard/process/agent-tool-productization.md",
+        "docs/blackboard/process/agent-tool-research/BB-103.md",
+        "docs/living/system/agent-tools/state.md"
       ],
       "sourceAnchors": [
-        { "ref": "docs/living/system/oracle/state.md", "match": "no MCP client/adapter" }
+        { "ref": "docs/living/system/oracle/state.md", "match": "no MCP client/adapter" },
+        { "ref": "docs/blackboard/process/agent-tool-productization.md", "match": "MCP is a transport, not product authority" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-103.md", "match": "Living mcp.md states MCP is a transport for verification queries, not acceptance authority" },
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-103.md", "match": "file-level plan, negativeVerificationCases and node --test MCP1..MCP5 verification" }
       ],
       "supportingPlanFields": ["livingDocs"]
     },
@@ -314,10 +337,15 @@
       "verificationIds": ["mcp1-tools", "mcp2-forbidden", "mcp3-optin", "mcp4-authority", "mcp5-docs", "repository"],
       "decisionIndexes": [2, 5],
       "sourceRefs": [
-        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json"
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+        "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json",
+        "docs/blackboard/evidence/BB-103/mcp-verify-probe-result.json"
       ],
       "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json", "match": "\"command\": \"codex mcp --help\"" }
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"agentToolsExportsMcp\": false" },
+        { "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json", "match": "\"command\": \"codex mcp --help\"" },
+        { "ref": "docs/blackboard/evidence/BB-097/agent-cli-probe-result.json", "match": "\"command\": \"kiro-cli mcp --help\"" },
+        { "ref": "docs/blackboard/evidence/BB-103/mcp-verify-probe-result.json", "match": "\"selected\": \"zero-dependency NDJSON JSON-RPC 2025-03-26 initialize/tools/list/tools/call\"" }
       ],
       "supportingPlanFields": []
     }
