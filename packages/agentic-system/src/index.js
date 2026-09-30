@@ -243,3 +243,9 @@ export {
 export {FrontendRecoveryAction,createFrontendWorker,createInMemoryFrontendSessionStore} from "./frontend-worker.js";
 export {prepareFrontendObjective,recoverPreparedFrontendObjective,runPreparedFrontendObjective} from "./frontend-application.js";
 export {FRONTEND_DOMAIN,createFrontendExecutionStrategy} from "./frontend-execution-strategy.js";
+export {DEPLOYMENT_ARTIFACTS,DeployableComponentKind,REQUIRED_DEPLOYABLE_COMPONENTS,createDeploymentArtifactRegistry,defineBuildProvenance,defineDeployableArtifactRef,publishDeployableArtifact,resolveAcceptedSourceDelivery,resolveDeployableProvenance} from "./deployable-artifact.js";
+export {DEVOPS_DOMAIN,createDevOpsExecutionStrategy,parseDeploymentObjective} from "./devops-execution-strategy.js";
+export {DeploymentReleaseDriftError,createDeploymentMutationGuard,createDeploymentReleaseController,defineDeploymentRelease,deploymentReleaseSubjectKey} from "./deployment-release.js";
+export {createAcceptancePolicyResolver,createAcceptanceSnapshotBuilder,defineAcceptancePolicy,defineAcceptanceSnapshot} from "./acceptance-snapshot.js";
+export {RuntimeObservationStatus,classifyRuntimeIdentity,createRuntimeObserver,defineRuntimeObservationEvidence} from "./runtime-observation.js";
+export {PRODUCT_QA_DOMAIN,createProductQaCompletionEvaluator,createProductQaExecutionStrategy,createQualityAcceptancePublisher,defineQualityAcceptance,qualityAcceptanceSubjectKey} from "./product-qa.js";
