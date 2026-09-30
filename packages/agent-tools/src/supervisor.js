@@ -4,7 +4,7 @@
 // are telemetry only. The CLI itself is not sandboxed: it runs with the user's permissions.
 import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import {
@@ -26,6 +26,7 @@ import {
 } from "../../core-harness/src/index.js";
 import { createLocalCommandVerifier, createLocalGitWorkspace } from "../../agentic-system/src/index.js";
 import { InvocationStatus, runAgentInvocation, runProcess } from "./process-runner.js";
+import { projectAgentTaskContext, resolveAgentTaskContext, validateRequiredFiles } from "./task-context.js";
 import { PermissionProfile } from "./tool-adapters.js";
 
 export const AGENT_TASK_VERSION = "AGENT_TASK_V1";
@@ -72,12 +73,14 @@ export function validateAgentTask(task) {
     if (!Array.isArray(args) || args.some((arg) => typeof arg !== "string")) invalid(`verification ${name} args must be an array of strings`);
     if (!Number.isInteger(timeoutMs) || timeoutMs <= 0) invalid(`verification ${name} timeoutMs must be a positive integer`);
   }
+  const requiredFiles = validateRequiredFiles(task.requiredFiles);
   return Object.freeze({
     id: task.id,
     repositoryRoot: task.repositoryRoot,
     baseRevision: task.baseRevision,
     prompt: task.prompt,
-    verifications: Object.freeze(task.verifications.map((item) => Object.freeze({ name: item.name, command: item.command, args: Object.freeze([...item.args]), timeoutMs: item.timeoutMs })))
+    verifications: Object.freeze(task.verifications.map((item) => Object.freeze({ name: item.name, command: item.command, args: Object.freeze([...item.args]), timeoutMs: item.timeoutMs }))),
+    ...(requiredFiles === undefined ? {} : { requiredFiles })
   });
 }
 
@@ -231,7 +234,11 @@ function agentToolEnvironment({ workspace, tool, model, permissionProfile, env, 
       const head = (await git(root, ["rev-parse", "HEAD"])).trim();
       if (head !== candidate.version) throw new Error(`agent worktree HEAD ${head} differs from candidate ${candidate.version}`);
       const logFile = join(logDir, `attempt-${action.attemptIndex}.log`);
-      const request = { prompt: action.prompt, resume: action.resume, model, permissionProfile, logFile };
+      // Grok reads its prompt from --prompt-file; the file lives in the supervisor log
+      // directory (outside the worktree) next to the attempt log. Other adapters ignore it.
+      const promptFile = join(logDir, `attempt-${action.attemptIndex}.prompt.txt`);
+      await writeFile(promptFile, action.prompt, "utf8");
+      const request = { prompt: action.prompt, resume: action.resume, model, permissionProfile, logFile, promptFile, cwd: root };
       const startedAt = new Date().toISOString();
       const run = await runAgentInvocation(tool, request, { cwd: root, env, timeoutMs });
       const endedAt = new Date().toISOString();
@@ -364,19 +371,29 @@ export async function runSupervisedTask({
   eventSinks = [],
   tracer = null,
   invocationObserver = null,
+  repositoryReader = null,
+  maxMaterializedBytes = 1048576,
+  snapshotObserve = null,
   recoveryDir = null,
   onHandleWrite = null
 }) {
   const task = validateAgentTask(rawTask);
   if (invocationObserver !== null && typeof invocationObserver !== "function") throw new TypeError("invocationObserver must be null or a function");
+  // Grounded Oracle context resolves after validation and before any worktree
+  // exists. Only tasks that declare requiredFiles construct an Oracle catalog;
+  // anything unresolved throws AgentTaskContextError before spawn.
+  const agentContext = Array.isArray(task.requiredFiles) && task.requiredFiles.length > 0
+    ? await resolveAgentTaskContext(task, { repositoryReader, maxMaterializedBytes, snapshotObserve })
+    : null;
+  const strategyTask = agentContext?.used === true ? { ...task, prompt: `${agentContext.promptPrefix}\n\n${task.prompt}` } : task;
   if (!Object.values(PermissionProfile).includes(permissionProfile)) throw new TypeError(`unknown permission profile: ${permissionProfile}`);
   if (!Number.isInteger(timeoutMs) || timeoutMs <= 0) throw new TypeError("timeoutMs must be a positive integer");
   if (recoveryDir !== null && (typeof recoveryDir !== "string" || recoveryDir.length === 0)) throw new TypeError("recoveryDir must be null or a non-empty string");
   if (onHandleWrite !== null && typeof onHandleWrite !== "function") throw new TypeError("onHandleWrite must be null or a function");
   if (recoveryDir !== null) {
-    return runRecoverableTask({ tool, task, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, recoveryDir, onHandleWrite });
+    return runRecoverableTask({ tool, task: strategyTask, agentContext, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, recoveryDir, onHandleWrite });
   }
-  const strategy = createSupervisedAgentStrategy({ task, maxAttempts, maxFeedbackChars });
+  const strategy = createSupervisedAgentStrategy({ task: strategyTask, maxAttempts, maxFeedbackChars });
   const scratch = await mkdtemp(join(tmpdir(), "exharness-agent-"));
   const worktreeRoot = join(scratch, "worktree");
   const logDir = join(scratch, "logs");
@@ -384,6 +401,7 @@ export async function runSupervisedTask({
   try {
     await mkdir(logDir);
     workspace = await createLocalGitWorkspace({ repositoryRoot: task.repositoryRoot, baseRevision: task.baseRevision, worktreeRoot });
+    if (agentContext?.used === true) await projectAgentTaskContext(agentContext, { worktreeRoot: workspace.root });
     const toolVersion = await probeToolVersion(tool, workspace.root, env);
     const verifiers = buildSupervisedVerifiers(task, workspace.root);
     const claims = new Set(verifiers.map((verifier) => `agent-task.${verifier.name}`));
@@ -398,7 +416,7 @@ export async function runSupervisedTask({
       tracer
     });
     const sessionId = `agent-task:${task.id}:${randomUUID()}`;
-    await harness.start({ sessionId, work: { id: task.id, prompt: task.prompt }, seedCandidate: { id: task.id, version: task.baseRevision } });
+    await harness.start({ sessionId, work: { id: task.id, prompt: strategyTask.prompt }, seedCandidate: { id: task.id, version: task.baseRevision } });
     const variation = await harness.vary(sessionId);
     if (variation.failure) throw new Error(`supervised agent run failed: ${variation.failure.message}`);
     const outcome = variation.result;
@@ -424,7 +442,7 @@ async function persistRecoverableHandle({ recoveryDir, fields, onHandleWrite }) 
  * handle survive in recoveryDir until disposeRecoverableRun(handle). The worktree is
  * never disposed here, not even on ACCEPTED, EXHAUSTED or throw.
  */
-async function runRecoverableTask({ tool, task, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, recoveryDir, onHandleWrite }) {
+async function runRecoverableTask({ tool, task, agentContext = null, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, recoveryDir, onHandleWrite }) {
   const root = resolve(recoveryDir);
   if (existsSync(handlePath(root))) {
     throw new RecoveryError("HANDLE_CURRENT", `a current handle already exists in ${root}`);
@@ -438,6 +456,7 @@ async function runRecoverableTask({ tool, task, model, maxAttempts, timeoutMs, m
   const sessionId = `agent-task:${task.id}`;
   const sessionStore = createFileSessionStore({ directory: sessionDir });
   const workspace = await createLocalGitWorkspace({ repositoryRoot: task.repositoryRoot, baseRevision: task.baseRevision, worktreeRoot });
+  if (agentContext?.used === true) await projectAgentTaskContext(agentContext, { worktreeRoot: workspace.root });
   const toolVersion = await probeToolVersion(tool, workspace.root, env);
   const verifiers = buildSupervisedVerifiers(task, workspace.root);
   const claims = new Set(verifiers.map((verifier) => `agent-task.${verifier.name}`));

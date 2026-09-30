@@ -1,0 +1,183 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-105-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-105.json",
+    "hash": "403128a01ea08546a053b95c50cebfb0018d617ba35d4fb9eb3218031ad4cb89"
+  },
+  "candidateSha": "87976e6e813f2c879023c332200048f8c8153705",
+  "baselineSha": "ef63d54e053a5da54c03de4f97a815f141f1a674",
+  "candidateTree": "8b4a98d7e201165879547c586e54e0521d8e81dc",
+  "verificationRuns": [
+    {
+      "id": "gr1-argv",
+      "command": "node --test --test-name-pattern=\"^GR1 \" packages/agent-tools/test/grok-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87976e6e813f2c879023c332200048f8c8153705",
+      "logRef": "docs/blackboard/evidence/BB-105/gr1-argv.txt",
+      "logHash": "7a7604fc4bbebe4d439f670501e1724abb0402b2c3a21fd7293bde7015e35c97"
+    },
+    {
+      "id": "gr2-parser",
+      "command": "node --test --test-name-pattern=\"^GR2 \" packages/agent-tools/test/grok-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87976e6e813f2c879023c332200048f8c8153705",
+      "logRef": "docs/blackboard/evidence/BB-105/gr2-parser.txt",
+      "logHash": "5a4cd5d1e2fa11c3d027c1b9cc2475dcb38f1385a26d929dbfae02f069aed0ae"
+    },
+    {
+      "id": "gr3-arms",
+      "command": "node --test --test-name-pattern=\"^GR3 \" packages/agent-tools/test/grok-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87976e6e813f2c879023c332200048f8c8153705",
+      "logRef": "docs/blackboard/evidence/BB-105/gr3-arms.txt",
+      "logHash": "acd1bb91d4d4dbf39cf7670fd2e3e34fd4d62ddee8cf8365f3d4fd722c92ab5f"
+    },
+    {
+      "id": "gr4-fake",
+      "command": "node --test --test-name-pattern=\"^GR4 \" packages/agent-tools/test/grok-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87976e6e813f2c879023c332200048f8c8153705",
+      "logRef": "docs/blackboard/evidence/BB-105/gr4-fake.txt",
+      "logHash": "dd28bd23fa2e9e92c36d0b0000b7400a5509fff20b5d0e3dd05ad877ece271d9"
+    },
+    {
+      "id": "gr5-docs",
+      "command": "node --test --test-name-pattern=\"^GR5 \" packages/agent-tools/test/grok-adapter.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87976e6e813f2c879023c332200048f8c8153705",
+      "logRef": "docs/blackboard/evidence/BB-105/gr5-docs.txt",
+      "logHash": "168e05e781f080bec21f349bcfc0b5ad675aa86e27617920bffdcf46e6fb544a"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87976e6e813f2c879023c332200048f8c8153705",
+      "logRef": "docs/blackboard/evidence/BB-105/agent-tools.txt",
+      "logHash": "dfc038a0159b7e9e4560140536ac9c3c783cb89e167476c8380e8d37f5c86c72"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87976e6e813f2c879023c332200048f8c8153705",
+      "logRef": "docs/blackboard/evidence/BB-105/docs.txt",
+      "logHash": "c72cf285cbc5e0026d02f3b46b4808ecf0f74f1246a1eca0bb960acb48a5da8e"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87976e6e813f2c879023c332200048f8c8153705",
+      "logRef": "docs/blackboard/evidence/BB-105/repository.txt",
+      "logHash": "4d9c525fd7920c968246bbc3b19cc41382d13c6bff33ffecc900ce2245254813"
+    }
+  ],
+  "claims": [
+    {
+      "id": "GR1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-105/gr1-argv.txt",
+        "docs/blackboard/evidence/BB-105/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-GR-positional",
+          "logRef": "docs/blackboard/evidence/BB-105/gr1-argv.txt",
+          "testRef": "packages/agent-tools/test/grok-adapter.test.js",
+          "bodyHash": "96116836df430c4e9f873caa67e6b3b88f526cc032814ddab74836a82a9bc325"
+        },
+        {
+          "id": "NC-GR-workspace",
+          "logRef": "docs/blackboard/evidence/BB-105/gr1-argv.txt",
+          "testRef": "packages/agent-tools/test/grok-adapter.test.js",
+          "bodyHash": "47a32ee82a7bc6e65a8130129c480606b730029848cbdf6076b5b026230f10fe"
+        },
+        {
+          "id": "NC-GR-fullauto",
+          "logRef": "docs/blackboard/evidence/BB-105/gr1-argv.txt",
+          "testRef": "packages/agent-tools/test/grok-adapter.test.js",
+          "bodyHash": "aeb8df8d0fa98e56e0d321eedb3e8612fd3cfea7926a300bb345cde5334495cd"
+        }
+      ]
+    },
+    {
+      "id": "GR2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-105/gr2-parser.txt",
+        "docs/blackboard/evidence/BB-105/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-GR-nousage",
+          "logRef": "docs/blackboard/evidence/BB-105/gr2-parser.txt",
+          "testRef": "packages/agent-tools/test/grok-adapter.test.js",
+          "bodyHash": "e90f81c9d82795ba8f040074683b233b57ad29c7fc7fbc5ca45da4919cfb888b"
+        },
+        {
+          "id": "NC-GR-prompt",
+          "logRef": "docs/blackboard/evidence/BB-105/gr2-parser.txt",
+          "testRef": "packages/agent-tools/test/grok-adapter.test.js",
+          "bodyHash": "7f274be065644f89b13e0583de25c4d6f7519b6ccf1f7c50753b04bf9ecf38c4"
+        }
+      ]
+    },
+    {
+      "id": "GR3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-105/gr3-arms.txt",
+        "docs/blackboard/evidence/BB-105/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-GR-npmtest",
+          "logRef": "docs/blackboard/evidence/BB-105/gr3-arms.txt",
+          "testRef": "packages/agent-tools/test/grok-adapter.test.js",
+          "bodyHash": "44e124027dfbc461a9e0f1552a1cc93d63a4463ce75edf07efed2db062e35b67"
+        }
+      ]
+    },
+    {
+      "id": "GR4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-105/gr4-fake.txt",
+        "docs/blackboard/evidence/BB-105/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-GR-missing",
+          "logRef": "docs/blackboard/evidence/BB-105/gr4-fake.txt",
+          "testRef": "packages/agent-tools/test/grok-adapter.test.js",
+          "bodyHash": "47bf5ac957e5e87dbe06ae5f231183a53121c9dff46b74535aea28dd28850cdc"
+        }
+      ]
+    },
+    {
+      "id": "GR5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-105/gr5-docs.txt",
+        "docs/blackboard/evidence/BB-105/docs.txt",
+        "docs/blackboard/evidence/BB-105/repository.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-GR-scope",
+          "logRef": "docs/blackboard/evidence/BB-105/gr5-docs.txt",
+          "testRef": "packages/agent-tools/test/grok-adapter.test.js",
+          "bodyHash": "c0c2b3c12748e997bfcbbd71e088471fedd295c4a7ded0e1f48efada4acd86f8"
+        }
+      ]
+    }
+  ]
+}

@@ -201,7 +201,7 @@ export async function runAgentInvocation(tool, request, { cwd, env = {}, timeout
   if (typeof cwd !== "string" || cwd.length === 0) throw new TypeError("runAgentInvocation requires cwd");
   if (!Number.isInteger(timeoutMs) || timeoutMs <= 0) throw new TypeError("runAgentInvocation timeoutMs must be a positive integer");
   if (!Number.isInteger(maxOutputBytes) || maxOutputBytes <= 0) throw new TypeError("runAgentInvocation maxOutputBytes must be a positive integer");
-  const { args, stdin = null } = tool.buildInvocation({ ...request, timeoutMs });
+  const { args, stdin = null } = tool.buildInvocation({ ...request, timeoutMs, cwd });
   if (!Array.isArray(args) || args.some((arg) => typeof arg !== "string")) throw new TypeError(`${tool.id} buildInvocation must return string args`);
   const outcome = await spawnBounded({ command: tool.command, args: [...tool.prefixArgs, ...args], cwd, env, stdin, timeoutMs, maxOutputBytes });
   if (outcome.spawnError) {
