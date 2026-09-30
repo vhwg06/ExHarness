@@ -21,7 +21,7 @@ next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-100
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-100
-task: Compose supervised agent-tools as an opt-in Backend adapter
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-100/current.json
-components: agentic/backend-qa-execution, integration/agent-tools
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -112,7 +105,7 @@ BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
 BB-098 [DONE] <- BB-097
 BB-099 [WORKER_SCHEDULABLE] <- BB-098, BB-065
-BB-100 [ACTIVE] <- BB-096, BB-097
+BB-100 [PLANNED] <- BB-096, BB-097
 BB-101 [DONE] <- BB-097
 BB-102 [WORKER_SCHEDULABLE] <- BB-097
 BB-103 [WORKER_SCHEDULABLE] <- BB-097
