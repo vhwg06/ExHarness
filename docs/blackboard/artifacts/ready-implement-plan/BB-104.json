@@ -14,30 +14,35 @@
   ],
   "outOfScope": [
     "git push, remote CI, sandbox, OpenHands, DomainExecutionController dispatch.",
-    "Reporting this slice as BB-069 first-slice or BB-074 pilot value evidence.",
-    "Implementing BB-100, BB-101 or BB-102 themselves."
+    "Reporting this slice as first-slice product-value or controlled-benchmark pilot evidence.",
+    "Implementing BB-100, BB-101 or BB-102 themselves; calling runSupervisedBackendWork; editing supervisor.js.",
+    "A grok tool adapter (PLANNED_CONTRACT elsewhere); tool ids stay codex|kiro|agy.",
+    "Depending on undelivered BB-065."
   ],
   "constraints": [
-    "CLI subcommand deliver on packages/agent-tools/bin/exharness-agent.mjs; slice runner in packages/agent-tools/src/deliver-slice.js; tests in packages/agent-tools/test/deliver-slice.test.js titled DL1..DL5 followed by a space with { timeout: 120000 }.",
+    "CLI subcommand deliver on packages/agent-tools/bin/exharness-agent.mjs; runner in packages/agent-tools/src/deliver-slice.js; tests in packages/agent-tools/test/deliver-slice.test.js titled DL1..DL5 followed by a space with { timeout: 120000 }.",
+    "Backend stage calls runSupervisedTask (plus BB-101 recoveryDir/resumeSupervisedTask and BB-102 optional requiredFiles). Do not call runSupervisedBackendWork. Do not edit supervisor.js, tool-adapters.js, process-runner.js, or BB-097/BB-098 tests.",
     "Research may use BB-100/101/102 as PLANNED_CONTRACT; the Worker binds only DONE dependencies and imports their public exports.",
-    "Live tools are opt-in; npm test uses the fake CLI only.",
-    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+    "Live tools are opt-in; npm test uses the fake CLI only. Missing executable is TOOL_UNAVAILABLE / NOT_INSTALLED with non-zero exit, never smoke-style SKIPPED exit 0.",
+    "Living docs under docs/living/system/agent-tools/ must not contain Blackboard ids.",
+    "deliver-slice.js imports leaf modules (supervisor.js, recovery.js, local-git-workspace.js, local-command-verifier.js, tool-adapters.js, process-runner.js), not packages/agent-tools/src/index.js."
   ],
   "invariants": [
     "QA is non-mutating and bound to the accepted Backend commit; a QA write or a different revision fails the slice.",
     "TOOL_UNAVAILABLE and NOT_INSTALLED never print ACCEPTED.",
-    "The slice is local feasibility of the delivered composition, not BB-069 or BB-074 evidence.",
+    "The slice is local feasibility of the delivered composition, not first-slice product-value or controlled-benchmark pilot evidence.",
     "ExHarness git operations preserve the source repository HEAD, branch refs and working tree."
   ],
   "architectureDecisions": [
-    "D1 — DELIVER_SLICE_V1 manifest = { id, repositoryRoot, baseRevision, prompt, tool, backendVerifications, qaVerifications, requiredFiles?, recoveryDir?, maxAttempts?, timeoutMs? }. validateDeliverSlice rejects missing id/repo/40-hex revision/prompt/tool/non-empty backend and qa verification arrays.",
-    "D2 — exharness-agent deliver --slice <file> [--command <path>] [--recovery-dir <dir>] reads the manifest, calls runSupervisedBackendWork (BB-100) with mapped AGENT_TASK, then on APPLIED runs QA command verifiers via createLocalCommandVerifier on a fresh read-only checkout of acceptedSha with requireUnchangedTree true.",
-    "D3 — QA failure (mutation, revision mismatch, non-zero) yields slice status QA_FAILED with backendSha recorded; Backend EXHAUSTED/TOOL_UNAVAILABLE stops before QA. ACCEPTED requires both stages.",
-    "D4 — recoveryDir is passed to BB-101. Killing after Backend ACT and calling deliver again with the same recoveryDir resumes Backend then continues QA on the accepted sha. Missing tool prints TOOL_UNAVAILABLE / SKIPPED NOT_INSTALLED and never ACCEPTED.",
-    "D5 — requiredFiles is passed to BB-102 when present. Tests without it still run.",
-    "D6 — Docs and report.json include claimBoundary: LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074.",
-    "D7 — Evidence basis: productization probe hasDeliverCommand false; BB-069 objective is a different, blocked first-slice; composition.js does not import agent-tools.",
-    "D8 — Living: docs/living/system/agent-tools/state.md and docs/living/system/agent-tools/operator.md."
+    "D1 — DELIVER_SLICE_V1 (export DELIVER_SLICE_VERSION) = { id, repositoryRoot, baseRevision, prompt, tool, backendVerifications, qaVerifications, requiredFiles?, recoveryDir?, maxAttempts?, timeoutMs? }. validateDeliverSlice rejects missing id/repositoryRoot/40-hex baseRevision/prompt/tool (codex|kiro|agy only)/non-empty backendVerifications and qaVerifications arrays of { name, command, args, timeoutMs }. Extra fields ignored. commandDeliver(options) reads options.slice JSON; missing --slice throws without spawning. CLI: exharness-agent deliver --slice <file> [--command <path>] [--recovery-dir <dir>].",
+    "D2 — runDeliverSlice maps backendVerifications (+ optional requiredFiles) to AGENT_TASK_V1 and calls runSupervisedTask({ tool, task, recoveryDir, maxAttempts, timeoutMs, env, onHandleWrite, invocationObserver: null }). Do not call runSupervisedBackendWork (READY BB-100 omits recoveryDir and requiredFiles). Backend EXHAUSTED or TOOL_UNAVAILABLE returns that DeliverSliceStatus with qa null and backendSha null. Only AgentTaskStatus.ACCEPTED with 40-hex acceptedSha proceeds to QA.",
+    "D3 — Independent QA: createLocalGitWorkspace({ repositoryRoot, baseRevision: acceptedSha, worktreeRoot: mkdtemp }) then runSliceQa({ workspaceRoot, acceptedSha, qaVerifications }) via createLocalCommandVerifier({ name, claim: `qa.${name}`, root: workspaceRoot, command, args, timeoutMs, requireUnchangedTree: true }).verify({ candidate: { id: slice.id, version: acceptedSha } }). TREE_MUTATED or REVISION_MISMATCH or non-PASS → DeliverSliceStatus.QA_FAILED with backendSha recorded. All QA PASS → ACCEPTED. Dispose the QA worktree in finally. Do not reuse the Backend worktree.",
+    "D4 — recoveryDir (CLI --recovery-dir overrides manifest). No handle.json: runSupervisedTask({ recoveryDir }). Handle status RUNNING: resumeSupervisedTask then QA. ACCEPTED: do not call resumeSupervisedTask (HANDLE_COMPLETE); QA on handle.candidateSha. EXHAUSTED/TOOL_UNAVAILABLE: return that status, no QA. crash-deliver-slice.mjs calls runDeliverSlice with onHandleWrite process.exit(97) on phase ACT_COMPLETED attemptIndex 1; parent deliver with the same recoveryDir must ACCEPTED and keep the same backendSha. disposeRecoverableRun after a terminal slice. invocationObserver stays default-null.",
+    "D5 — requiredFiles is optional pass-through onto AGENT_TASK when non-empty. Tests omit it. BB-102 owns resolution.",
+    "D6 — Every result includes claimBoundary: LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074 (export LOCAL_SLICE_CLAIM_BOUNDARY). DeliverSliceStatus = ACCEPTED|QA_FAILED|EXHAUSTED|TOOL_UNAVAILABLE. Missing executable: commandDeliver returns TOOL_UNAVAILABLE, reason NOT_INSTALLED, never ACCEPTED, exit 2. CLI exit 0 only for ACCEPTED; 1 for QA_FAILED/EXHAUSTED; 64 for usage.",
+    "D7 — Evidence: executed deliver-slice-probe (no deliver command; TREE_MUTATED/REVISION_MISMATCH; acceptedSha checkoutable; composition.js does not import agent-tools; BB-100 omits requiredFiles/recoveryDir; BB-101 HANDLE_COMPLETE). Fake CLI packages/agent-tools/test/fixtures/fake-agent.mjs. Scope tests import auditPaths from test/scope-audit.mjs and do not edit it.",
+    "D8 — Living: docs/living/system/agent-tools/operator.md (deliver command, QA binding, resume, missing-tool, local-composition trust boundary as not first-slice product-value and not a controlled-benchmark pilot) plus a pointer in state.md and README. Living docs contain no Blackboard ids; the claim-boundary constant lives on the result object.",
+    "D9 — Files: packages/agent-tools/src/deliver-slice.js exports DELIVER_SLICE_VERSION, LOCAL_SLICE_CLAIM_BOUNDARY, DeliverSliceStatus, validateDeliverSlice, runSliceQa, runDeliverSlice, commandDeliver; index.js re-exports them; bin adds deliver; tests deliver-slice.test.js; fixture crash-deliver-slice.mjs. Do not edit supervisor.js."
   ],
   "sourceScope": {
     "read": [
@@ -52,7 +57,9 @@
       "packages/agent-tools/src/deliver-slice.js",
       "packages/agent-tools/src/index.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/README.md",
       "packages/agent-tools/test/deliver-slice.test.js",
+      "packages/agent-tools/test/fixtures/crash-deliver-slice.mjs",
       "docs/living/system/agent-tools/state.md",
       "docs/living/system/agent-tools/operator.md"
     ],
@@ -60,21 +67,48 @@
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/agentic-system/**",
-      "docs/blackboard/**"
+      "packages/benchmark/**",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/redaction.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/test/agent-tools.test.js",
+      "packages/agent-tools/test/run-trace.test.js",
+      "packages/agent-tools/test/scope-audit.mjs",
+      ".github/**",
+      "docs/blackboard/**",
+      "package.json"
     ]
   },
   "sourceSeams": {
     "requiredExisting": [
       "docs/blackboard/process/agent-tool-productization.md",
       "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "docs/blackboard/evidence/BB-104/deliver-slice-probe.mjs",
+      "docs/blackboard/evidence/BB-104/deliver-slice-probe-result.json",
       "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      "packages/agent-tools/test/scope-audit.mjs",
       "packages/agentic-system/src/composition.js",
+      "packages/agentic-system/src/local-command-verifier.js",
+      "packages/agentic-system/src/local-git-workspace.js",
       "docs/blackboard/artifacts/objective/BB-069.json",
-      "docs/living/system/agent-tools/state.md"
+      "docs/blackboard/artifacts/ready-implement-plan/BB-100.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-101.json",
+      "docs/blackboard/artifacts/ready-implement-plan/BB-102.json",
+      "docs/living/system/agent-tools/state.md",
+      "docs/blackboard/process/agent-tool-research/BB-104.md"
     ],
     "expectedNew": [
       "packages/agent-tools/src/deliver-slice.js",
       "packages/agent-tools/test/deliver-slice.test.js",
+      "packages/agent-tools/test/fixtures/crash-deliver-slice.mjs",
       "docs/living/system/agent-tools/operator.md"
     ],
     "expectedTests": [
@@ -82,41 +116,41 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Manifest + CLI [DL1]: D1 and deliver subcommand parsing.",
-    "S2 — Backend then QA [DL2,DL3]: D2-D3 independent QA on acceptedSha.",
-    "S3 — Resume and unavailable [DL4]: D4 recovery and TOOL_UNAVAILABLE.",
-    "S4 — Docs [DL5]: Living operator.md and claimBoundary; test:agent-tools, verify:current-docs, npm test."
+    "S1 — Manifest + CLI [DL1]: D1, D9. Tests: \"DL1 deliver without slice is usage error\"; \"DL1 deliver runs Backend then QA through runSupervisedTask\".",
+    "S2 — Backend then QA [DL2]: D2-D3, D6. Tests: \"DL2 QA mutation fails the slice\"; \"DL2 QA on a different revision fails\".",
+    "S3 — Resume and unavailable [DL3, DL4]: D4, D5. Tests: \"DL3 crash resume continues QA on the same accepted sha\"; \"DL4 missing tool is not ACCEPTED\"; \"DL4 Backend EXHAUSTED does not run QA\".",
+    "S4 — Docs and scope [DL5]: D7-D8. Tests: \"DL5 claim boundary is not BB-069\"; \"DL5 living operator docs omit work ids\"; \"DL5 write scope excludes supervisor and agentic-system\". Then npm run test:agent-tools, npm run verify:current-docs, npm test."
   ],
   "acceptanceCriteria": [
     {
       "id": "DL1",
-      "statement": "exharness-agent deliver reads a slice manifest and runs Backend then QA through the BB-100 adapter.",
+      "statement": "exharness-agent deliver reads a DELIVER_SLICE_V1 manifest and runs Backend then QA through runSupervisedTask; missing --slice is a usage error and does not spawn an agent.",
       "verificationIds": ["dl1-cli", "agent-tools"],
       "evidenceRequired": ["DL1 test output."]
     },
     {
       "id": "DL2",
-      "statement": "Independent QA runs on a read-only checkout of the accepted Backend commit and fails when QA mutates the tree or verifies a different revision.",
+      "statement": "Independent QA runs on a fresh detached checkout of the accepted Backend commit via createLocalCommandVerifier requireUnchangedTree and fails with TREE_MUTATED or REVISION_MISMATCH when QA mutates the tree or verifies a different revision.",
       "verificationIds": ["dl2-qa", "agent-tools"],
       "evidenceRequired": ["DL2 test output."]
     },
     {
       "id": "DL3",
-      "statement": "An interrupted slice resumes through the BB-101 handle and continues QA on the same accepted sha.",
+      "statement": "An interrupted slice resumes through the BB-101 handle: crash after Backend ACT continues the same attempt then QA on the same accepted sha; an ACCEPTED handle skips Backend (HANDLE_COMPLETE) and runs QA on candidateSha.",
       "verificationIds": ["dl3-resume", "agent-tools"],
-      "evidenceRequired": ["DL3 test output."]
+      "evidenceRequired": ["DL3 crash/resume test output."]
     },
     {
       "id": "DL4",
-      "statement": "Missing or unauthenticated tools yield TOOL_UNAVAILABLE / NOT_INSTALLED and never ACCEPTED.",
+      "statement": "Missing executable yields TOOL_UNAVAILABLE with reason NOT_INSTALLED and never ACCEPTED; Backend EXHAUSTED does not run QA and is not ACCEPTED.",
       "verificationIds": ["dl4-unavailable", "agent-tools"],
       "evidenceRequired": ["DL4 test output."]
     },
     {
       "id": "DL5",
-      "statement": "Living docs state the local-slice trust boundary and that this is not BB-069 or BB-074 evidence.",
+      "statement": "Living docs describe the deliver command, QA binding, resume and missing-tool behavior as a local composition slice that is not first-slice product-value or controlled-benchmark pilot evidence, without Blackboard ids; every result carries LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074; the candidate writes only sourceScope.write paths.",
       "verificationIds": ["dl5-docs", "docs", "repository"],
-      "evidenceRequired": ["DL5 docs diff, verify:current-docs and npm test logs."]
+      "evidenceRequired": ["DL5 docs, scope test output, verify:current-docs and npm test logs."]
     }
   ],
   "invariantCoverage": [
@@ -129,7 +163,7 @@
       "criterionIds": ["DL4"]
     },
     {
-      "invariant": "The slice is local feasibility of the delivered composition, not BB-069 or BB-074 evidence.",
+      "invariant": "The slice is local feasibility of the delivered composition, not first-slice product-value or controlled-benchmark pilot evidence.",
       "criterionIds": ["DL5"]
     },
     {
@@ -147,10 +181,12 @@
     { "id": "docs", "command": "npm run verify:current-docs" },
     { "id": "repository", "command": "npm test" }
   ],
-  "researchGaps": [
-    "Confirm BB-100 export name runSupervisedBackendWork and BB-101 resumeSupervisedTask are the public names at Worker start; rebind if research on those tasks renamed them."
-  ],
+  "researchGaps": [],
   "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-104/deliver-slice-probe-result.json",
+      "finding": "Executed on 21db7b0c: no deliver command; AgentTaskStatus trio; invocationObserver present; recoveryDir/requiredFiles/runSupervisedBackendWork/resumeSupervisedTask absent; TREE_MUTATED and REVISION_MISMATCH fail-closed; acceptedSha checkoutable after dispose with QA PASS; composition.js does not import agent-tools; BB-100 omits requiredFiles and recoveryDir; BB-101 HANDLE_COMPLETE on ACCEPTED; BB-102 optional requiredFiles."
+    },
     {
       "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json",
       "finding": "Executed: hasDeliverCommand false; CLI has no backend command."
@@ -166,32 +202,32 @@
   ],
   "dependencyResolution": {
     "direct": ["BB-100", "BB-101", "BB-102"],
-    "workerStart": "Confirm DONE BB-100 exports runSupervisedBackendWork, DONE BB-101 exports resumeSupervisedTask/recoveryDir, DONE BB-102 accepts optional requiredFiles.",
+    "workerStart": "Confirm DONE BB-100 exists (do not call runSupervisedBackendWork). Confirm DONE BB-101 exports resumeSupervisedTask, readAgentToolRunHandle, disposeRecoverableRun, recoveryDir, HANDLE_COMPLETE. Confirm DONE BB-102 accepts optional requiredFiles. Re-run deliver-slice-probe.mjs. Do not wait on BB-065 or a grok adapter.",
     "sourceClassification": {
-      "DELIVERED_TRUTH": ["exharness-agent CLI run/probe/smoke", "createLocalCommandVerifier"],
-      "PLANNED_CONTRACT": ["BB-100 adapter", "BB-101 recovery", "BB-102 requiredFiles"],
-      "RESEARCH_DESIRED_STATE": ["deliver subcommand and DELIVER_SLICE_V1 defined here"]
+      "DELIVERED_TRUTH": ["exharness-agent CLI run/report/probe/smoke", "runSupervisedTask", "invocationObserver", "createLocalCommandVerifier TREE_MUTATED/REVISION_MISMATCH", "createLocalGitWorkspace", "fake-agent.mjs"],
+      "PLANNED_CONTRACT": ["BB-100 runSupervisedBackendWork (not called)", "BB-101 resumeSupervisedTask/recoveryDir/HANDLE_COMPLETE", "BB-102 optional requiredFiles", "grok adapter (no edge)"],
+      "RESEARCH_DESIRED_STATE": ["deliver subcommand, DELIVER_SLICE_V1, runDeliverSlice, runSliceQa, commandDeliver, LOCAL_SLICE_CLAIM_BOUNDARY"]
     },
-    "contradiction": "If DONE BB-100 cannot be called without going through createBackendWorker mutation-only evaluate, stop PLAN_INPUT_CONTRADICTION."
+    "contradiction": "If DONE BB-101 resumeSupervisedTask is missing, or createLocalCommandVerifier no longer fails TREE_MUTATED/REVISION_MISMATCH, stop PLAN_INPUT_CONTRADICTION. Probe shows the verifier seam on current main. Not a contradiction that BB-100 omits recoveryDir/requiredFiles: this slice calls runSupervisedTask."
   },
   "deliveryContract": {
     "precondition": "BB-100 DONE, BB-101 DONE, BB-102 DONE.",
     "completion": "All DL criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
-    "forbidden": "No git push, no sandbox, no OpenHands, no BB-069/BB-074 value claim."
+    "forbidden": "No git push, no sandbox, no OpenHands, no first-slice or pilot value claim, no supervisor.js edits, no runSupervisedBackendWork call."
   },
   "ciContract": {
     "checks": ["dl1-cli", "dl2-qa", "dl3-resume", "dl4-unavailable", "dl5-docs", "agent-tools", "docs", "repository"],
     "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
   },
   "migrationContract": {
-    "preserve": ["existing run/report/probe/smoke commands"],
-    "add": ["deliver-slice.js", "deliver subcommand", "tests", "Living operator.md"],
-    "rollback": "Remove deliver-slice.js, deliver subcommand, tests and Living operator.md."
+    "preserve": ["existing run/report/probe/smoke commands", "invocationObserver default null", "supervisor.js"],
+    "add": ["deliver-slice.js", "deliver subcommand", "crash-deliver-slice.mjs", "tests", "Living operator.md"],
+    "rollback": "Remove deliver-slice.js, deliver subcommand, crash fixture, tests, operator.md pointer and index exports."
   },
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-104 objective + productization probe + BB-100/101/102 planned contracts",
+      "input": "BB-104 objective + deliver-slice probe + BB-100/101/102 planned contracts",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + fresh Jev SATISFIED",
@@ -203,7 +239,7 @@
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash + candidate/evidence + Jev",
       "convergence": "criterion runs + no forbidden writes + docs",
-      "forbidden": ["No git push, no sandbox, no OpenHands, no BB-069/BB-074 value claim."]
+      "forbidden": ["No git push, no sandbox, no OpenHands, no first-slice or pilot value claim, no supervisor.js edits."]
     }
   ],
   "livingDocs": {
@@ -212,7 +248,7 @@
       "docs/living/system/agent-tools/operator.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe the deliver command, QA binding, resume, unavailable-tool behavior and the LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074 claim boundary."
+    "statement": "Living docs describe the deliver command, QA binding to the accepted Backend commit, resume through a recovery handle, missing-tool TOOL_UNAVAILABLE behavior, and the local-composition trust boundary (not first-slice product-value, not a controlled-benchmark pilot), without Blackboard ids."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
@@ -221,12 +257,19 @@
       "criterionIds": ["DL1"],
       "planElements": ["S1", "S2"],
       "verificationIds": ["dl1-cli"],
-      "decisionIndexes": [0, 1],
-      "sourceRefs": ["packages/agent-tools/bin/exharness-agent.mjs"],
-      "sourceAnchors": [
-        { "ref": "packages/agent-tools/bin/exharness-agent.mjs", "match": "exharness-agent run --tool" }
+      "decisionIndexes": [0, 1, 4],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+        "docs/living/system/agent-tools/state.md",
+        "packages/agentic-system/src/composition.js"
       ],
-      "supportingPlanFields": ["architectureDecisions"]
+      "sourceAnchors": [
+        { "ref": "packages/agent-tools/bin/exharness-agent.mjs", "match": "if (command === \"run\") return await commandRun(parseOptions(rest));" },
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"hasDeliverCommand\": false" },
+        { "ref": "docs/living/system/agent-tools/state.md", "match": "AGENT_TASK_V1 { id, repositoryRoot, baseRevision, prompt, verifications[] }" },
+        { "ref": "packages/agentic-system/src/composition.js", "match": "export async function runBackendThenQaObjective({ backendObjective, qaObjective }, {" }
+      ]
     },
     {
       "objectiveCriterion": "Specify independent QA on a read-only checkout of the accepted Backend commit, failing when QA mutates the tree or verifies a different revision.",
@@ -234,23 +277,34 @@
       "planElements": ["S2"],
       "verificationIds": ["dl2-qa"],
       "decisionIndexes": [2],
-      "sourceRefs": ["docs/blackboard/process/agent-tool-research/BB-104.md"],
-      "sourceAnchors": [
-        { "ref": "docs/blackboard/process/agent-tool-research/BB-104.md", "match": "How is QA bound to the accepted Backend commit" }
+      "sourceRefs": [
+        "packages/agentic-system/src/local-command-verifier.js",
+        "packages/agentic-system/src/local-git-workspace.js",
+        "docs/blackboard/evidence/BB-104/deliver-slice-probe-result.json"
       ],
-      "supportingPlanFields": ["invariants"]
+      "sourceAnchors": [
+        { "ref": "packages/agentic-system/src/local-command-verifier.js", "match": "TREE_MUTATED: \"TREE_MUTATED\"" },
+        { "ref": "packages/agentic-system/src/local-command-verifier.js", "match": "REVISION_MISMATCH: \"REVISION_MISMATCH\"" },
+        { "ref": "packages/agentic-system/src/local-git-workspace.js", "match": "[\"worktree\", \"add\", \"--detach\", root, baseRevision]" },
+        { "ref": "docs/blackboard/evidence/BB-104/deliver-slice-probe-result.json", "match": "\"acceptedShaCheckoutableAfterDispose\": true" }
+      ]
     },
     {
       "objectiveCriterion": "Specify resume of an interrupted slice through the BB-101 handle, and TOOL_UNAVAILABLE / NOT_INSTALLED without fabricating ACCEPT.",
       "criterionIds": ["DL3", "DL4"],
       "planElements": ["S3"],
       "verificationIds": ["dl3-resume", "dl4-unavailable"],
-      "decisionIndexes": [3],
-      "sourceRefs": ["docs/blackboard/evidence/BB-100/productization-probe-result.json"],
-      "sourceAnchors": [
-        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"hasDeliverCommand\": false" }
+      "decisionIndexes": [3, 5],
+      "sourceRefs": [
+        "docs/blackboard/artifacts/ready-implement-plan/BB-101.json",
+        "packages/agent-tools/bin/exharness-agent.mjs"
       ],
-      "supportingPlanFields": ["negativeVerificationCases"]
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-101.json", "match": "resumeSupervisedTask(handle, { tool, env, invocationObserver" },
+        { "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-101.json", "match": "HANDLE_COMPLETE (resume when status is ACCEPTED" },
+        { "ref": "packages/agent-tools/bin/exharness-agent.mjs", "match": "status: AgentTaskStatus.TOOL_UNAVAILABLE" },
+        { "ref": "packages/agent-tools/bin/exharness-agent.mjs", "match": "reason: \"NOT_INSTALLED\"" }
+      ]
     },
     {
       "objectiveCriterion": "Specify Living docs stating the local-slice trust boundary and that this is not BB-069/BB-074 evidence.",
@@ -258,31 +312,47 @@
       "planElements": ["S4"],
       "verificationIds": ["dl5-docs", "docs"],
       "decisionIndexes": [5, 7],
-      "sourceRefs": ["docs/blackboard/artifacts/objective/BB-069.json"],
-      "sourceAnchors": [
-        { "ref": "docs/blackboard/artifacts/objective/BB-069.json", "match": "One bounded real feature reaches a reviewable candidate" }
+      "sourceRefs": [
+        "docs/living/system/agent-tools/state.md",
+        "docs/blackboard/artifacts/objective/BB-069.json",
+        "docs/blackboard/process/agent-tool-productization.md",
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json"
       ],
-      "supportingPlanFields": ["livingDocs"]
+      "sourceAnchors": [
+        { "ref": "docs/living/system/agent-tools/state.md", "match": "The adapters are not a sandbox" },
+        { "ref": "docs/blackboard/artifacts/objective/BB-069.json", "match": "One bounded real feature reaches a reviewable candidate" },
+        { "ref": "docs/blackboard/process/agent-tool-productization.md", "match": "BB-069 is the OpenHands + sandbox + preview first slice" },
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "Measure delivery-harness value under a controlled benchmark program" }
+      ]
     },
     {
       "objectiveCriterion": "Ground the design in the executed productization probe and the BB-100/101/102 planned contracts and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
       "criterionIds": ["DL1", "DL2", "DL3", "DL4", "DL5"],
       "planElements": ["S1", "S2", "S3", "S4"],
       "verificationIds": ["dl1-cli", "dl2-qa", "dl3-resume", "dl4-unavailable", "dl5-docs", "repository"],
-      "decisionIndexes": [6],
-      "sourceRefs": ["packages/agentic-system/src/composition.js"],
-      "sourceAnchors": [
-        { "ref": "packages/agentic-system/src/composition.js", "match": "runBackendThenQaObjective" }
+      "decisionIndexes": [6, 8],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-100.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-101.json",
+        "docs/blackboard/artifacts/ready-implement-plan/BB-102.json"
       ],
-      "supportingPlanFields": ["sourceSeams"]
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "BB100_AGENT_TOOL_PRODUCTIZATION_PROBE_RESULT" },
+        { "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-100.json", "match": "No requiredFiles field (BB-102)" },
+        { "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-101.json", "match": "resumeSupervisedTask(handle, { tool, env, invocationObserver" },
+        { "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-102.json", "match": "requiredFiles is optional" }
+      ]
     }
   ],
   "negativeVerificationCases": [
-    "A QA verifier that writes a file fails the slice.",
-    "QA pointed at a different revision than acceptedSha fails.",
-    "Missing --tool executable prints TOOL_UNAVAILABLE and not ACCEPTED.",
+    "A QA verifier that writes a file fails the slice with TREE_MUTATED / QA_FAILED and never ACCEPTED.",
+    "QA pointed at a different revision than acceptedSha fails with REVISION_MISMATCH / QA_FAILED.",
+    "Missing executable yields TOOL_UNAVAILABLE with reason NOT_INSTALLED and never ACCEPTED.",
     "deliver without --slice is a usage error and does not run an agent.",
-    "Report artifacts contain LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074."
+    "Every slice result carries claimBoundary LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074.",
+    "Backend EXHAUSTED (NEVER_FIX) leaves qa null and is not ACCEPTED.",
+    "A write under packages/agentic-system or packages/agent-tools/src/supervisor.js fails the scope matcher."
   ],
   "negativeCaseBindings": [
     {
@@ -301,7 +371,7 @@
       "verificationId": "dl2-qa",
       "testRef": "packages/agent-tools/test/deliver-slice.test.js",
       "testTitle": "DL2 QA on a different revision fails",
-      "subjectSymbol": "runDeliverSlice"
+      "subjectSymbol": "runSliceQa"
     },
     {
       "id": "NC-DL-missing",
@@ -310,7 +380,7 @@
       "verificationId": "dl4-unavailable",
       "testRef": "packages/agent-tools/test/deliver-slice.test.js",
       "testTitle": "DL4 missing tool is not ACCEPTED",
-      "subjectSymbol": "runDeliverSlice"
+      "subjectSymbol": "commandDeliver"
     },
     {
       "id": "NC-DL-usage",
@@ -319,7 +389,7 @@
       "verificationId": "dl1-cli",
       "testRef": "packages/agent-tools/test/deliver-slice.test.js",
       "testTitle": "DL1 deliver without slice is usage error",
-      "subjectSymbol": "runDeliverSlice"
+      "subjectSymbol": "commandDeliver"
     },
     {
       "id": "NC-DL-claim",
@@ -329,6 +399,24 @@
       "testRef": "packages/agent-tools/test/deliver-slice.test.js",
       "testTitle": "DL5 claim boundary is not BB-069",
       "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NC-DL-exhausted",
+      "negativeCaseIndex": 5,
+      "criterionId": "DL4",
+      "verificationId": "dl4-unavailable",
+      "testRef": "packages/agent-tools/test/deliver-slice.test.js",
+      "testTitle": "DL4 Backend EXHAUSTED does not run QA",
+      "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NC-DL-scope",
+      "negativeCaseIndex": 6,
+      "criterionId": "DL5",
+      "verificationId": "dl5-docs",
+      "testRef": "packages/agent-tools/test/deliver-slice.test.js",
+      "testTitle": "DL5 write scope excludes supervisor and agentic-system",
+      "subjectSymbol": "auditPaths"
     }
   ]
 }

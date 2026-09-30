@@ -1,0 +1,114 @@
+{
+  "kind": "BENCHMARK_DOWNSTREAM_VERIFICATION_V1",
+  "status": "PASS",
+  "consumer": "BB-077",
+  "importGraph": {
+    "benchmarks/substrate/downstream/bb077-contract-fixture.mjs": [
+      "@exharness/benchmark",
+      "node:crypto",
+      "node:fs/promises"
+    ]
+  },
+  "comparison": {
+    "kind": "BB077_FIXTURE_ARM_SUMMARY",
+    "perArm": {
+      "DIRECT_CODEACT": {
+        "attempts": 2,
+        "accepted": 2,
+        "rejected": 0,
+        "notEvaluated": 0,
+        "usageKnown": 0,
+        "usageUnknown": 2
+      },
+      "CORE_SYNC": {
+        "attempts": 2,
+        "accepted": 0,
+        "rejected": 2,
+        "notEvaluated": 0,
+        "usageKnown": 0,
+        "usageUnknown": 2
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "public-api-only-imports",
+      "status": "PASS",
+      "detail": {
+        "specifiers": [
+          "@exharness/benchmark",
+          "node:crypto",
+          "node:fs/promises"
+        ],
+        "violations": []
+      }
+    },
+    {
+      "name": "reads-substrate-manifest",
+      "status": "PASS"
+    },
+    {
+      "name": "no-duplicated-kernel-truth",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "consumer-owns-declared-logic",
+      "status": "PASS",
+      "detail": [
+        "DIRECT_CODEACT adapter",
+        "CORE_SYNC adapter",
+        "fixed-factor protocol",
+        "economics metrics",
+        "cohort/repeat schedule",
+        "harness comparison reducer"
+      ]
+    },
+    {
+      "name": "kernel-has-no-experiment-logic",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "uses-attempt-ledger",
+      "status": "PASS"
+    },
+    {
+      "name": "every-unit-settled-through-ledger",
+      "status": "PASS",
+      "detail": 4
+    },
+    {
+      "name": "ledger-replays-to-same-records",
+      "status": "PASS"
+    },
+    {
+      "name": "kernel-audit-passes",
+      "status": "PASS",
+      "detail": [
+        "PASS",
+        "PASS",
+        "PASS",
+        "PASS"
+      ]
+    },
+    {
+      "name": "settled-attempt-cannot-be-resettled",
+      "status": "PASS"
+    },
+    {
+      "name": "tampered-evidence-fails-kernel-audit",
+      "status": "PASS",
+      "detail": [
+        "TAMPERED"
+      ]
+    },
+    {
+      "name": "comparison-has-no-decision",
+      "status": "PASS"
+    }
+  ]
+}
+
+
+exitCode=0
