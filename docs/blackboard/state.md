@@ -42,7 +42,6 @@ NONE
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
 - BB-078 [WORKER/EXECUTION] — Implement durable detached operation scheduling
-- BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
@@ -107,7 +106,7 @@ BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
 BB-098 [DONE] <- BB-097
-BB-099 [WORKER_SCHEDULABLE] <- BB-098, BB-065
+BB-099 [DONE] <- BB-098, BB-065
 BB-100 [DONE] <- BB-096, BB-097
 BB-101 [DONE] <- BB-097
 BB-102 [DONE] <- BB-097
