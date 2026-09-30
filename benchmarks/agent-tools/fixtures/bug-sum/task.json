@@ -1,0 +1,27 @@
+{
+  "id": "bug-sum",
+  "category": "bug-fix",
+  "prompt": "sum(a, b) in sum.mjs returns the wrong result. Fix it so it returns the sum of its two arguments. Run `node --test test/visible.test.mjs` to check.",
+  "visibleVerifications": [
+    {
+      "name": "visible",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/visible.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ],
+  "hiddenVerifications": [
+    {
+      "name": "hidden",
+      "command": "node",
+      "args": [
+        "--test",
+        "test/hidden.test.mjs"
+      ],
+      "timeoutMs": 60000
+    }
+  ]
+}
