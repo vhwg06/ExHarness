@@ -182,3 +182,7 @@ The current contract suite covers:
 - interrupted trust-artifact publication leaving no poisoned final digest path and succeeding on retry;
 - competing identical trust-artifact publications converging on one immutable final payload;
 - existing QA-remediation and durable workflow behavior through the full repository test matrix.
+
+## Product QA quality acceptance
+
+Backend / QA project acceptance (above) accepts source work. Product quality acceptance is a separate authority: `createQualityAcceptancePublisher(...)` publishes `QualityAcceptance` only for an ACCEPTed Product QA judgment bound to one deterministic `AcceptanceSnapshot`, that is, an exact FE+BE `DeploymentRelease` plus an `AcceptancePolicy`, with trusted runtime observation evidence that matches the snapshot's digests. Publication is fenced on the release still being current. DevOps success, release publication and agent claims are never quality acceptance. A superseded acceptance stays resolvable, and `currentFor(environmentRef)` reports whether it is current.
