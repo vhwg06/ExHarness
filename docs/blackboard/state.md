@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-098
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-098
-task: Observe supervised and direct agent-tool runs
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-098/current.json
-components: integration/agent-tools
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -102,7 +95,7 @@ BB-094 [BLOCKED_BY BB-093,BB-081] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094,BB-065] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
-BB-098 [ACTIVE] <- BB-097
+BB-098 [PLANNED] <- BB-097
 BB-099 [RESEARCH_SCHEDULABLE] <- BB-098, BB-065
 ```
 
