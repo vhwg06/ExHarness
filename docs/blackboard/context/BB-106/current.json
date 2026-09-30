@@ -1,0 +1,160 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-106",
+  "taskId": "BB-106",
+  "featureId": "BUG-DELIVERED-TEST-WIRING",
+  "topicId": "TOPIC-BLACKBOARD-CONTROL",
+  "components": [
+    "outer/blackboard",
+    "oracle/infrastructure"
+  ],
+  "pipeline": "WORKER",
+  "lane": "WORKER",
+  "phase": "JUDGMENT",
+  "stage": "JUDGMENT",
+  "semanticArtifactRef": "docs/blackboard/artifacts/ready-implement-plan/BB-106.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-106.json",
+  "planHash": "0b8467eca3d0572efac36e35e813e9b6c8c61452d39f68cbdd4342d107c7e0cd",
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-082",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/state.md"
+      ]
+    },
+    {
+      "taskId": "BB-087",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/oracle/state.md"
+      ]
+    },
+    {
+      "taskId": "BB-088",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/oracle/context-graph.md"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/state.md",
+    "docs/living/system/oracle/architecture.md",
+    "docs/living/system/oracle/state.md",
+    "docs/living/system/oracle/semantics.md",
+    "docs/living/system/oracle/workflow.md",
+    "docs/blackboard/process/oracle-reconciliation-phase.md",
+    "docs/living/system/oracle/context-graph.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-106.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-106.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-106.readiness-jev-evaluation.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json",
+      ".github/**"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json",
+      ".github/**"
+    ],
+    "write": [
+      "package.json",
+      "test/blackboard-delivered-test-wiring.test.mjs",
+      "docs/living/system/oracle/context-graph.md",
+      "docs/living/system/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "artifactWriteScope": [],
+  "hardInvariants": [
+    "npm test and npm run verify never call live Jev or live agent-tools smoke.",
+    "test/delivery remains absent.",
+    "A standing script used by npm test runs every existing test/oracle-*.test.mjs file.",
+    "A standing script used by npm run verify runs test/blackboard-objective-supersession.test.mjs."
+  ],
+  "verification": [
+    {
+      "id": "tw1-scripts",
+      "command": "node --test --test-name-pattern=\"^TW1 \" test/blackboard-delivered-test-wiring.test.mjs"
+    },
+    {
+      "id": "tw2-supersession",
+      "command": "node --test --test-name-pattern=\"^TW2 \" test/blackboard-delivered-test-wiring.test.mjs"
+    },
+    {
+      "id": "tw3-docs",
+      "command": "node --test --test-name-pattern=\"^TW3 \" test/blackboard-delivered-test-wiring.test.mjs"
+    },
+    {
+      "id": "oracle",
+      "command": "npm run test:oracle"
+    },
+    {
+      "id": "blackboard",
+      "command": "npm run test:blackboard-work-graph"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
+  ],
+  "expectedOutputs": [
+    "DELIVERED_FEATURE"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "scripts/**",
+      "test/**",
+      "docs/blackboard/**",
+      ".github/workflows/**",
+      "packages/agentic-system/**",
+      "packages/oracle/**",
+      "docs/living/system/oracle/**",
+      "docs/living/system/agentic-application/**"
+    ],
+    "contractRefs": [
+      "docs/blackboard/contracts.md",
+      "resolveBackendContext",
+      "resolveQaContext",
+      "repositoryReader.readFile",
+      "artifactReader.readArtifact",
+      "BackendContextSchema",
+      "QaContextSchema"
+    ]
+  }
+}
