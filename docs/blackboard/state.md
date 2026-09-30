@@ -41,8 +41,8 @@ NONE
 ## Schedulable tasks
 
 - BB-054 [WORKER/EXECUTION] — Implement exact deployment identity and Product QA acceptance
-- BB-065 [WORKER/EXECUTION] — Establish neutral benchmark package and calibrated substrate
-- BB-088 [WORKER/EXECUTION] — Productize authoritative snapshot-bound Context Graph
+- BB-065 [RESEARCH_SA/RESEARCH] — Establish neutral benchmark package and calibrated substrate
+- BB-088 [RESEARCH_SA/RESEARCH] — Productize authoritative snapshot-bound Context Graph
 - BB-098 [RESEARCH_SA/RESEARCH] — Observe supervised and direct agent-tool runs
 - BB-099 [RESEARCH_SA/RESEARCH] — Measure ExHarness-supervised versus direct agent-tool delivery
 
@@ -63,7 +63,7 @@ BB-061 [DONE] <- BB-060
 BB-062 [DONE] <- BB-061
 BB-063 [DONE] <- BB-062
 BB-064 [DONE] <- BB-060, BB-061, BB-062, BB-063
-BB-065 [WORKER_SCHEDULABLE] <- ROOT
+BB-065 [RESEARCH_SCHEDULABLE] <- ROOT
 BB-066 [BLOCKED_BY BB-065,BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-065,BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
@@ -86,7 +86,7 @@ BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
 BB-085 [BLOCKED_BY BB-084] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
 BB-087 [DONE] <- BB-064
-BB-088 [WORKER_SCHEDULABLE] <- BB-087
+BB-088 [RESEARCH_SCHEDULABLE] <- BB-087
 BB-089 [DONE] <- BB-087
 BB-090 [DONE] <- BB-056
 BB-091 [BLOCKED_BY BB-088] <- BB-088
