@@ -7,7 +7,8 @@ export {
   codexTool,
   defineAgentTool,
   grokTool,
-  kiroTool
+  kiroTool,
+  opencodeTool
 } from "./tool-adapters.js";
 export {
   InvocationStatus,
@@ -65,7 +66,7 @@ export {
   validateRequiredFiles
 } from "./task-context.js";
 export { REDACTED, SECRET_PATTERNS, createRedactor, redact, redactedExcerpt, secretValues } from "./redaction.js";
-export { UsageUnavailableReason, parseAgyOutput, parseCodexJsonl, parseGrokJson, parseKiroOutput, parseToolOutput } from "./output-parsers.js";
+export { UsageUnavailableReason, parseAgyOutput, parseCodexJsonl, parseGrokJson, parseKiroOutput, parseOpencodeJsonl, parseToolOutput } from "./output-parsers.js";
 export {
   AGENT_TOOL_RUN_TRACE_VERSION,
   TRACE_FILE,
