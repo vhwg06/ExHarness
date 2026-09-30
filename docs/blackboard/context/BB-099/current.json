@@ -1,0 +1,160 @@
+{
+  "kind": "WORK_CONTEXT_SPEC",
+  "version": 1,
+  "contract": "OBJECTIVE_PLAN_DELIVERY",
+  "itemId": "BB-099",
+  "taskId": "BB-099",
+  "featureId": "FEATURE-AGENT-TOOL-VALUE",
+  "topicId": "TOPIC-AGENT-TOOL-INTEGRATION",
+  "components": [
+    "integration/agent-tools"
+  ],
+  "pipeline": "WORKER",
+  "lane": "WORKER",
+  "phase": "JUDGMENT",
+  "stage": "JUDGMENT",
+  "semanticArtifactRef": "docs/blackboard/artifacts/ready-implement-plan/BB-099.json",
+  "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-099.json",
+  "planHash": "9b97e1888c0a4859d820924d695048601008d7b94d6579fd0f045e9e97150fa8",
+  "action": {
+    "kind": "REVIEW",
+    "summary": "Follow the current lane contract; Jev owns semantic judgment."
+  },
+  "dependencyContext": [
+    {
+      "taskId": "BB-098",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/agent-tools/observation.md",
+        "docs/living/system/agent-tools/state.md"
+      ]
+    },
+    {
+      "taskId": "BB-065",
+      "source": "LIVING_CONSOLIDATED",
+      "refs": [
+        "docs/living/system/state.md",
+        "docs/living/system/benchmark/state.md"
+      ]
+    }
+  ],
+  "requiredCurrentSystemRefs": [
+    "docs/living/system/state.md",
+    "docs/living/system/agent-tools/observation.md",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/benchmark/state.md"
+  ],
+  "requiredInputRefs": [
+    "docs/blackboard/artifacts/objective/BB-099.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-099.json",
+    "docs/blackboard/artifacts/ready-implement-plan/BB-099.readiness-jev-evaluation.json"
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "benchmarks/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [],
+    "forbiddenWrite": [
+      "**"
+    ]
+  },
+  "executionSourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "benchmarks/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/experiment/**",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/experiment.test.js",
+      "benchmarks/agent-tools/**",
+      "package.json",
+      "docs/living/system/agent-tools/evaluation.md",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/**",
+      "packages/benchmark/**",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/output-parsers.js",
+      "packages/agent-tools/src/redaction.js",
+      "packages/agent-tools/src/report.js",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/process-runner.js",
+      "packages/agent-tools/test/agent-tools.test.js",
+      "packages/agent-tools/test/run-trace.test.js",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      ".github/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "artifactWriteScope": [],
+  "hardInvariants": [
+    "Value verdicts come only from independent hidden-test evaluation; tool claims, ExHarness verdicts and Jev prose are never value evidence.",
+    "The agent can neither read nor modify hidden acceptance tests during execution.",
+    "Arms of the same tool share tool version, model, permission profile, timeouts and attempt budget; any mismatch aborts the run.",
+    "Attempts, evidence and accounting are recorded only through the BB-065 benchmark kernel; results are reported per tool and never pooled."
+  ],
+  "verification": [
+    {
+      "id": "ev1-suite",
+      "command": "node --test --test-name-pattern=\"^EV1 \" packages/agent-tools/test/experiment.test.js"
+    },
+    {
+      "id": "ev2-runner",
+      "command": "node --test --test-name-pattern=\"^EV2 \" packages/agent-tools/test/experiment.test.js"
+    },
+    {
+      "id": "ev3-reducer",
+      "command": "node --test --test-name-pattern=\"^EV3 \" packages/agent-tools/test/experiment.test.js"
+    },
+    {
+      "id": "ev4-pilot",
+      "command": "node --test --test-name-pattern=\"^EV4 \" packages/agent-tools/test/experiment.test.js"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
+    }
+  ],
+  "expectedOutputs": [
+    "DELIVERED_FEATURE"
+  ],
+  "progressiveDiscovery": {
+    "mode": "ON_DEMAND_ONLY",
+    "searchRoots": [
+      "packages/agent-tools/**",
+      "benchmarks/agent-tools/**"
+    ],
+    "contractRefs": [
+      "AGENT_TOOL_ADAPTER_V1",
+      "AGENT_TASK_V1",
+      "AGENT_SUPERVISED_RESULT_V1",
+      "AGENT_TOOL_RUN_TRACE_V1"
+    ]
+  }
+}

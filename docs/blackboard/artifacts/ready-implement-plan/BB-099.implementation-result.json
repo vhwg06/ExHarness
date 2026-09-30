@@ -1,0 +1,171 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-099-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-099.json",
+    "hash": "9b97e1888c0a4859d820924d695048601008d7b94d6579fd0f045e9e97150fa8"
+  },
+  "candidateSha": "87c89927b67561cbba7a3ccf21dee0185c6d7457",
+  "baselineSha": "421d9dfabb6fe2dbab6ed52d1388a6328521ae53",
+  "candidateTree": "be85849547c5e4b140353e0b5717828e8f78bdc0",
+  "verificationRuns": [
+    {
+      "id": "ev1-suite",
+      "command": "node --test --test-name-pattern=\"^EV1 \" packages/agent-tools/test/experiment.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87c89927b67561cbba7a3ccf21dee0185c6d7457",
+      "logRef": "docs/blackboard/evidence/BB-099/ev1-suite.txt",
+      "logHash": "4370f8eadd3913c2c1730ed987153f6fc51e346e0c6e50e3c2133379d09322e5"
+    },
+    {
+      "id": "ev2-runner",
+      "command": "node --test --test-name-pattern=\"^EV2 \" packages/agent-tools/test/experiment.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87c89927b67561cbba7a3ccf21dee0185c6d7457",
+      "logRef": "docs/blackboard/evidence/BB-099/ev2-runner.txt",
+      "logHash": "d78ff5f860a01b163136b247aef4dd6a5c2158efd68e060d4ee8d1dd94068259"
+    },
+    {
+      "id": "ev3-reducer",
+      "command": "node --test --test-name-pattern=\"^EV3 \" packages/agent-tools/test/experiment.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87c89927b67561cbba7a3ccf21dee0185c6d7457",
+      "logRef": "docs/blackboard/evidence/BB-099/ev3-reducer.txt",
+      "logHash": "55ea89754f3c1a60521daa180a94592475d8256cf4071535fbd6ce09b09d8ee1"
+    },
+    {
+      "id": "ev4-pilot",
+      "command": "node --test --test-name-pattern=\"^EV4 \" packages/agent-tools/test/experiment.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87c89927b67561cbba7a3ccf21dee0185c6d7457",
+      "logRef": "docs/blackboard/evidence/BB-099/ev4-pilot.txt",
+      "logHash": "f95173ff85acb8030f8c84169f76c79e671ec8df313132d1e43dc55e2f8a391e"
+    },
+    {
+      "id": "agent-tools",
+      "command": "npm run test:agent-tools",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87c89927b67561cbba7a3ccf21dee0185c6d7457",
+      "logRef": "docs/blackboard/evidence/BB-099/agent-tools.txt",
+      "logHash": "fbbe1def914b431653a93de5a23e8cee0fa21fde2e10ee558aa5eb8120008644"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87c89927b67561cbba7a3ccf21dee0185c6d7457",
+      "logRef": "docs/blackboard/evidence/BB-099/docs.txt",
+      "logHash": "577bc00846d128fb6bee76e4be93558bd36253477e544d7c7040c4b31def8abf"
+    },
+    {
+      "id": "repository",
+      "command": "npm test",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "87c89927b67561cbba7a3ccf21dee0185c6d7457",
+      "logRef": "docs/blackboard/evidence/BB-099/repository.txt",
+      "logHash": "83335ad6b8570b95774146ea0e1c785ad3eebd44edefbb54f23087255aced1e9"
+    }
+  ],
+  "claims": [
+    {
+      "id": "EV1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-099/ev1-suite.txt",
+        "docs/blackboard/evidence/BB-099/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-EV-base-pass",
+          "logRef": "docs/blackboard/evidence/BB-099/ev1-suite.txt",
+          "testRef": "packages/agent-tools/test/experiment.test.js",
+          "bodyHash": "57af079fcbe73b15afcea45c289ed31f60e13c8b0f5a4b300504d003e93b642c"
+        }
+      ]
+    },
+    {
+      "id": "EV2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-099/ev2-runner.txt",
+        "docs/blackboard/evidence/BB-099/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-EV-hidden-absent",
+          "logRef": "docs/blackboard/evidence/BB-099/ev2-runner.txt",
+          "testRef": "packages/agent-tools/test/experiment.test.js",
+          "bodyHash": "3ea01fc0c8effb12ce28b9dcf30ec839c9c7ff2a6c0051cca197705fd662e5d3"
+        },
+        {
+          "id": "NC-EV-digest",
+          "logRef": "docs/blackboard/evidence/BB-099/ev2-runner.txt",
+          "testRef": "packages/agent-tools/test/experiment.test.js",
+          "bodyHash": "bdb179f631510a984af530d82b9d19edbccd3ac3c59a8a97ca9f771a64265ce9"
+        },
+        {
+          "id": "NC-EV-factors",
+          "logRef": "docs/blackboard/evidence/BB-099/ev2-runner.txt",
+          "testRef": "packages/agent-tools/test/experiment.test.js",
+          "bodyHash": "2dc9c9b2e7f205e79c7533c6022702d5849a58c4190f7cacc7748320f23f2d4f"
+        }
+      ]
+    },
+    {
+      "id": "EV3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-099/ev3-reducer.txt",
+        "docs/blackboard/evidence/BB-099/agent-tools.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-EV-false-success",
+          "logRef": "docs/blackboard/evidence/BB-099/ev3-reducer.txt",
+          "testRef": "packages/agent-tools/test/experiment.test.js",
+          "bodyHash": "71dc47ceef5668aebb66dc10bbec14652b136f8b8ee2b4a3ae4cfb9004465b0b"
+        },
+        {
+          "id": "NC-EV-deterministic",
+          "logRef": "docs/blackboard/evidence/BB-099/ev3-reducer.txt",
+          "testRef": "packages/agent-tools/test/experiment.test.js",
+          "bodyHash": "ab92ef578e2fcc47932cc055b3400973ad54717d6ee590b5462d396b4e6c46b3"
+        }
+      ]
+    },
+    {
+      "id": "EV4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-099/ev4-pilot.txt",
+        "docs/blackboard/evidence/BB-099/docs.txt",
+        "docs/blackboard/evidence/BB-099/repository.txt"
+      ],
+      "negativeCases": [
+        {
+          "id": "NC-EV-unavailable",
+          "logRef": "docs/blackboard/evidence/BB-099/ev4-pilot.txt",
+          "testRef": "packages/agent-tools/test/experiment.test.js",
+          "bodyHash": "a22f1402bcace5a6c325636cb71477f15a7dce48f3808955f18b981f31c82234"
+        },
+        {
+          "id": "NC-EV-cap",
+          "logRef": "docs/blackboard/evidence/BB-099/ev4-pilot.txt",
+          "testRef": "packages/agent-tools/test/experiment.test.js",
+          "bodyHash": "c31d7cab76a5c39a47675b7d57bc1895359d546a4c75724dde9170b10180ad2f"
+        },
+        {
+          "id": "NC-EV-scope",
+          "logRef": "docs/blackboard/evidence/BB-099/ev4-pilot.txt",
+          "testRef": "packages/agent-tools/test/experiment.test.js",
+          "bodyHash": "0274b5ca959cc9e431f9d14232caa9a25a601da54858f8543165b783dd216d4b"
+        }
+      ]
+    }
+  ]
+}
