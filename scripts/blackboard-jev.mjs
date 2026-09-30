@@ -653,6 +653,82 @@ function boundedWorkerSource(source, terms) {
   }
   return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), body: excerpts.join('\n'), excerpted: true, deleted: source.deleted };
 }
+// Source selection for criterion questions of a bounded worker batch.
+// TERM_LINES is the original selection (every line containing any criterion
+// term, in file order, until 2,800 characters). It is implied by retained
+// evaluations whose batching record has no criterionSourceStrategy. Generic
+// terms ("the", "and", "set", ...) match almost every line, so for a large new
+// module it degenerated into the file head and hid the code a criterion is
+// about (BB-082's CONTRACT/RETENTION answers were INSUFFICIENT_EVIDENCE).
+// RANKED (current) weights each term by how rare it is in the file, drops
+// generic terms, favours lines the candidate changed and declaration/test
+// lines, and keeps the highest-ranked lines with a small window of context.
+export const CRITERION_SOURCE_STRATEGIES = Object.freeze({ TERM_LINES: 'CRITERION_TERM_LINES_V1', RANKED: 'CRITERION_RANKED_SOURCE_V2' });
+export const CURRENT_CRITERION_SOURCE_STRATEGY = CRITERION_SOURCE_STRATEGIES.RANKED;
+const RANKED_SOURCE_CHARS = 4000;
+const RANKED_LINE_CHARS = 300;
+const RANKED_MAX_TERM_SHARE = 0.2;
+const RANKED_STOP_TERMS = new Set(['and', 'the', 'for', 'with', 'that', 'this', 'are', 'was', 'has', 'have', 'from', 'into', 'not', 'but', 'all', 'any', 'its', 'per', 'via', 'one', 'can', 'may', 'must', 'only', 'each', 'every', 'when', 'then', 'than', 'out', 'own', 'use', 'set', 'new', 'old', 'still', 'also', 'none', 'without', 'while', 'where', 'which', 'their', 'them', 'they', 'there', 'these', 'those', 'such', 'more', 'most', 'other', 'same', 'does', 'did', 'will', 'shall', 'should', 'would', 'could', 'being', 'been', 'rather', 'remain', 'remains', 'const', 'let', 'var', 'return', 'function', 'true', 'false', 'null', 'undefined']);
+function criterionStrategyOf(options) {
+  const strategy = options?.criterionSourceStrategy ?? CURRENT_CRITERION_SOURCE_STRATEGY;
+  check(Object.values(CRITERION_SOURCE_STRATEGIES).includes(strategy), 'unknown criterion source excerpt strategy');
+  return strategy;
+}
+/**
+ * Ranked, deterministic excerpt of one relevant source for a criterion
+ * question (CRITERION_RANKED_SOURCE_V2). `changedRanges` are the candidate's
+ * changed line ranges for this source (empty when unchanged). The entry keeps
+ * the full source hash and byte length.
+ */
+export function rankedWorkerSource(source, terms, changedRanges = [], maxChars = RANKED_SOURCE_CHARS) {
+  if (typeof source.body !== 'string') return source;
+  check(Array.isArray(changedRanges) && changedRanges.every(range => Array.isArray(range) && range.length === 2 && range.every(Number.isInteger) && range[0] >= 1 && range[1] >= range[0]), `candidate change map missing: ${source.ref}`);
+  if (source.body.length <= maxChars) return source;
+  const lines = source.body.split(/\r?\n/);
+  const lower = lines.map(line => line.toLowerCase());
+  const nonEmpty = Math.max(1, lower.filter(line => line.trim()).length);
+  const weights = new Map();
+  for (const term of [...new Set(terms)].sort()) {
+    if (term.length < 3 || RANKED_STOP_TERMS.has(term)) continue;
+    const df = lower.filter(line => line.includes(term)).length;
+    if (!df || df / nonEmpty > RANKED_MAX_TERM_SHARE) continue;
+    weights.set(term, Math.log((nonEmpty + 1) / (df + 1)) + 1);
+  }
+  const changed = new Set(changedRanges.flatMap(([first, last]) => {
+    const out = [];
+    for (let line = first; line <= Math.min(last, lines.length); line++) out.push(line - 1);
+    return out;
+  }));
+  const scored = [];
+  lower.forEach((line, index) => {
+    if (!line.trim()) return;
+    let score = 0;
+    for (const [term, weight] of weights) if (line.includes(term)) score += weight;
+    if (!score) return;
+    if (changed.has(index)) score *= 2;
+    if (OUTLINE_LINE.test(lines[index])) score += 1;
+    scored.push({ index, score: Math.round(score * 1e6) });
+  });
+  scored.sort((a, b) => b.score - a.score || a.index - b.index);
+  const render = index => `${index + 1}: ${clipLine(lines[index]).slice(0, RANKED_LINE_CHARS + 1)}`;
+  const cost = index => render(index).length + 1;
+  const selected = new Set();
+  let used = 0;
+  const take = index => { if (selected.has(index) || !lines[index].trim()) return true; if (used + cost(index) + 2 > maxChars) return false; selected.add(index); used += cost(index) + 2; return true; };
+  for (const index of [0, 1, 2]) if (index < lines.length) take(index);
+  for (const { index } of scored) {
+    if (!take(index)) continue;
+    // Context: the preceding line and up to three following lines.
+    for (const nearby of [index - 1, index + 1, index + 2, index + 3]) if (nearby >= 0 && nearby < lines.length && !take(nearby)) break;
+  }
+  const out = [];
+  let previous = null;
+  for (const index of [...selected].sort((a, b) => a - b)) {
+    if (previous !== null && index !== previous + 1) out.push('…');
+    out.push(render(index)); previous = index;
+  }
+  return { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(source.body), body: out.join('\n'), excerpted: true, excerptStrategy: CRITERION_SOURCE_STRATEGIES.RANKED, deleted: source.deleted };
+}
 const payloadBytes = value => Buffer.byteLength(canonical(value));
 // Bytes a line costs inside a JSON string, including its escaped newline.
 const jsonLineBytes = line => Buffer.byteLength(JSON.stringify(line)) - 2 + 2;
@@ -717,6 +793,7 @@ function livingStrategyOf(options) {
 function workerQuestionBase(fullPayload, id, options = {}) {
   check(fullPayload?.state?.evidenceFiles && fullPayload.questions?.[id], 'worker batch requires a materialized question and evidence');
   const livingStrategy = livingStrategyOf(options);
+  const criterionStrategy = criterionStrategyOf(options);
   const state = fullPayload.state;
   const claim = state.evidence.find(entry => entry.id === id);
   const criterion = state.plan.acceptanceCriteria.find(entry => entry.id === id);
@@ -781,7 +858,11 @@ function workerQuestionBase(fullPayload, id, options = {}) {
     evidence: claim ? [claim] : [],
     sources: state.sources.map(source => {
       if (source.body == null) return source;
-      if (relevantSourceRefs.has(source.ref)) return boundedWorkerSource(source, terms);
+      if (relevantSourceRefs.has(source.ref)) {
+        if (criterionStrategy === CRITERION_SOURCE_STRATEGIES.TERM_LINES) return boundedWorkerSource(source, terms);
+        check(options.candidateChanges && typeof options.candidateChanges === 'object', 'candidate change map missing');
+        return rankedWorkerSource(source, terms, options.candidateChanges[source.ref]?.ranges ?? []);
+      }
       if (source.ref.startsWith('docs/living/')) {
         return livingDocsQuestion && livingStrategy === LIVING_EXCERPT_STRATEGIES.CHANGED
           ? changedLivingExcerpt(source, options.livingChanges?.[source.ref], state.plan.scope)
@@ -916,8 +997,12 @@ export function workerBatchManifest(fullPayload, options = {}) {
   return workerBatches(fullPayload, options).map(manifestEntry);
 }
 /** Batch options for a materialized input; a missing strategy means a retained SCOPED evaluation. */
-function batchOptions(materialized, livingExcerptStrategy = CURRENT_LIVING_EXCERPT_STRATEGY) {
-  return { livingExcerptStrategy, livingChanges: materialized.livingChanges, candidateChanges: materialized.candidateChanges };
+function batchOptions(materialized, livingExcerptStrategy = CURRENT_LIVING_EXCERPT_STRATEGY, criterionSourceStrategy = CURRENT_CRITERION_SOURCE_STRATEGY) {
+  return { livingExcerptStrategy, criterionSourceStrategy, livingChanges: materialized.livingChanges, candidateChanges: materialized.candidateChanges };
+}
+/** Batch options recorded by a (possibly retained) batching record; missing fields imply the original selections. */
+function recordedBatchOptions(materialized, batching) {
+  return batchOptions(materialized, batching.livingExcerptStrategy ?? LIVING_EXCERPT_STRATEGIES.SCOPED, batching.criterionSourceStrategy ?? CRITERION_SOURCE_STRATEGIES.TERM_LINES);
 }
 export function workerBatchStrategy(manifest) {
   return manifest.some(entry => entry.excerpted || entry.parts) ? WORKER_BATCH_STRATEGIES.BOUNDED : WORKER_BATCH_STRATEGIES.ATOMIC;
@@ -978,7 +1063,7 @@ export async function evaluate(materialized, { root = '.', cacheDir = '.cache/bl
     check(cached.cacheKey === cacheKey, 'cache key mismatch');
     response = validateResponse(cached.response, payload); cacheHit = true;
     if (cached.batching) {
-      const manifest = workerBatchManifest(payload, batchOptions(materialized, cached.batching.livingExcerptStrategy ?? LIVING_EXCERPT_STRATEGIES.SCOPED));
+      const manifest = workerBatchManifest(payload, recordedBatchOptions(materialized, cached.batching));
       check(lane === 'WORKER' && cached.batching.strategy === workerBatchStrategy(manifest) && canonical(cached.batching.manifest) === canonical(manifest), 'worker batch cache manifest mismatch');
       batching = cached.batching;
     }
@@ -987,7 +1072,7 @@ export async function evaluate(materialized, { root = '.', cacheDir = '.cache/bl
       const result = await evaluateWorkerBatches(payload, { root, cacheDir, fetchImpl, apiKey, bypassCache, options: batchOptions(materialized) });
       ({ response, attempts } = result);
       retryAttempts = result.retryAttempts;
-      batching = { strategy: workerBatchStrategy(result.manifest), livingExcerptStrategy: CURRENT_LIVING_EXCERPT_STRATEGY, manifest: result.manifest, cacheHits: result.cacheHits, ...(Object.keys(result.partChoices).length ? { partChoices: result.partChoices } : {}) };
+      batching = { strategy: workerBatchStrategy(result.manifest), livingExcerptStrategy: CURRENT_LIVING_EXCERPT_STRATEGY, criterionSourceStrategy: CURRENT_CRITERION_SOURCE_STRATEGY, manifest: result.manifest, cacheHits: result.cacheHits, ...(Object.keys(result.partChoices).length ? { partChoices: result.partChoices } : {}) };
     } else {
       ({ response, attempts } = await callJev(payload, { fetchImpl, apiKey }));
       retryAttempts = attempts - 1;
@@ -1006,7 +1091,7 @@ export function validateEvaluation(evaluation, expected) {
   for (const key of ['stateHash', 'specHash', 'cacheKey']) check(evaluation[key] === expected[key], `stale evaluation ${key}`);
   validateResponse({ model: evaluation.model, answers: evaluation.answers, usage: evaluation.usage }, expected.payload);
   if (evaluation.metrics?.batching) {
-    const manifest = workerBatchManifest(expected.payload, batchOptions(expected, evaluation.metrics.batching.livingExcerptStrategy ?? LIVING_EXCERPT_STRATEGIES.SCOPED));
+    const manifest = workerBatchManifest(expected.payload, recordedBatchOptions(expected, evaluation.metrics.batching));
     check(expected.lane === 'WORKER' && evaluation.metrics.batching.strategy === workerBatchStrategy(manifest), 'invalid worker batch strategy');
     check(canonical(evaluation.metrics.batching.manifest) === canonical(manifest), 'worker batch manifest mismatch');
   }

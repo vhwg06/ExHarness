@@ -178,10 +178,10 @@ test('Living Docs question receives every verification run, every evidence log, 
 test('criterion questions are unchanged by the DELIVERY strategy', t => {
   const { full, candidateChanges, livingChanges } = inputs(t);
   for (const id of ['A', 'B'])
-    assert.equal(canonical(workerQuestionBatches(full, id, { livingChanges, candidateChanges })), canonical(workerQuestionBatches(full, id, { livingExcerptStrategy: CHANGED, livingChanges })));
+    assert.equal(canonical(workerQuestionBatches(full, id, { livingChanges, candidateChanges })), canonical(workerQuestionBatches(full, id, { livingExcerptStrategy: CHANGED, livingChanges, candidateChanges })));
   const current = workerBatchManifest(full, { livingChanges, candidateChanges });
-  const changed = workerBatchManifest(full, { livingExcerptStrategy: CHANGED, livingChanges });
-  const scoped = workerBatchManifest(full, { livingExcerptStrategy: SCOPED });
+  const changed = workerBatchManifest(full, { livingExcerptStrategy: CHANGED, livingChanges, candidateChanges });
+  const scoped = workerBatchManifest(full, { livingExcerptStrategy: SCOPED, candidateChanges });
   assert.deepEqual(current.filter(entry => entry.id !== 'LIVING_DOCS'), changed.filter(entry => entry.id !== 'LIVING_DOCS'));
   assert.notDeepEqual(current.find(entry => entry.id === 'LIVING_DOCS'), changed.find(entry => entry.id === 'LIVING_DOCS'));
   assert.notDeepEqual(changed.find(entry => entry.id === 'LIVING_DOCS'), scoped.find(entry => entry.id === 'LIVING_DOCS'));

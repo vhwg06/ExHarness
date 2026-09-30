@@ -116,7 +116,7 @@ test('worker batch includes bounded source for its verification and omits unrela
     ]
   };
   const result = workerQuestionPayload({ model: payload.model, state,
-    questions: { REGISTRATION: { type: 'choice', criteria: { SATISFIED: 'yes' } } } }, 'REGISTRATION');
+    questions: { REGISTRATION: { type: 'choice', criteria: { SATISFIED: 'yes' } } } }, 'REGISTRATION', { candidateChanges: {} });
   const selected = result.state.sources[0];
   assert.equal(selected.hash, 'bound-test');
   assert.equal(selected.excerpted, true);

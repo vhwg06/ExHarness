@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { assertDeliveryArtifact, assertBinding, assertLivingDocs, read, write, localPath, hash, canonical, planHash, loadSubject, fail } from './blackboard-delivery-contract.mjs';
-import { materialize, validateEvaluation, assertReady, git, CURRENT_LIVING_EXCERPT_STRATEGY } from './blackboard-jev.mjs';
+import { materialize, validateEvaluation, assertReady, git, CURRENT_LIVING_EXCERPT_STRATEGY, CURRENT_CRITERION_SOURCE_STRATEGY } from './blackboard-jev.mjs';
 import { assertNegativeCaseEnforcement, checkBinding } from './blackboard-negative-case-binding.mjs';
 
 // These projections are rebuilt by the trusted controller during publication.
@@ -39,6 +39,8 @@ export function publishEvaluation(root, id, evaluation) {
     // Retained batch evaluations keep validating with their recorded Living Doc
     // strategy, but a new batched worker judgment must use the current one.
     if (evaluation.lane === 'WORKER' && evaluation.metrics?.batching && evaluation.metrics.batching.livingExcerptStrategy !== CURRENT_LIVING_EXCERPT_STRATEGY && !(existing && canonical(existing) === canonical(evaluation))) fail('worker evaluation uses a retired Living Doc excerpt strategy');
+    // Likewise for the criterion-question source selection.
+    if (evaluation.lane === 'WORKER' && evaluation.metrics?.batching && evaluation.metrics.batching.criterionSourceStrategy !== CURRENT_CRITERION_SOURCE_STRATEGY && !(existing && canonical(existing) === canonical(evaluation))) fail('worker evaluation uses a retired criterion source excerpt strategy');
     if (existing?.cacheKey === evaluation.cacheKey && canonical(existing.subject) === canonical(evaluation.subject) && existing.verdict !== evaluation.verdict) fail('unstable replay cannot replace current judgment');
     if (evaluation.lane === 'RESEARCH_SA' && evaluation.verdict === 'SATISFIED') {
       const livingDocs = assertLivingDocs(plan);
