@@ -189,7 +189,7 @@ export function materialize(root, id, { readiness = false } = {}) {
       })
     : [];
   const state = { objective, plan: lane === 'WORKER' ? workerPlan : researchPlan, evidence: [], ...(objectiveScopedResearch ? { objectiveEvidence } : {}) };
-  let livingChanges = null;
+  let livingChanges = null, candidateChanges = null;
   const question = (id, statement, evidencePath) => {
     const laneRule = lane === 'RESEARCH_SA'
       ? 'This is a RESEARCH_SA readiness judgment: the explicit plan fields and plan-derived evidence are the evidence of implementability. Do not require future worker code, candidate commits, runtime logs or delivery receipts at this lane.'
@@ -345,6 +345,7 @@ export function materialize(root, id, { readiness = false } = {}) {
     // Living Doc sections for bounded worker batches. Not part of stateHash, so
     // retained evaluations keep their cache keys.
     livingChanges = livingDocChanges(root, evidence.baselineSha, evidence.candidateSha, livingDocs.refs);
+    candidateChanges = candidateSourceChanges(root, evidence.baselineSha, evidence.candidateSha, changed.filter(ref => !ref.startsWith('docs/living/')), state.sources);
   }
   // Operational limits/pricing do not change a semantic judgment or require another paid call.
   const stateHash = hash(state), specHash = hash({ policy:spec.policy, questions });
@@ -353,7 +354,7 @@ export function materialize(root, id, { readiness = false } = {}) {
   const payloadBytes=Buffer.byteLength(canonical(payload));
   const maxPayloadBytes=lane==='RESEARCH_SA'?Math.min(spec.maxPayloadBytes,spec.maxResearchPayloadBytes??98304):spec.maxPayloadBytes;
   check(payloadBytes <= maxPayloadBytes, 'payload exceeds budget; refine evidence without dropping required coverage');
-  return { lane, subject, payload, stateHash, specHash, cacheKey, ...(livingChanges ? { livingChanges } : {}) };
+  return { lane, subject, payload, stateHash, specHash, cacheKey, ...(livingChanges ? { livingChanges } : {}), ...(candidateChanges ? { candidateChanges } : {}) };
 }
 export function validateResponse(response, payload) {
   check(response?.model === payload.model, 'response model mismatch');
@@ -444,7 +445,23 @@ const BATCH_SEVERITY = ['PLAN_INPUT_CONTRADICTION', 'IMPLEMENTATION_DEFECT', 'IN
 // evaluations whose batching record has no livingExcerptStrategy. CHANGED
 // sends the first section plus every whole section the candidate added or
 // modified (baseline..candidate diff hunks mapped to enclosing ##/### sections).
-export const LIVING_EXCERPT_STRATEGIES = Object.freeze({ SCOPED: 'LIVING_SCOPED_SECTIONS_V1', CHANGED: 'LIVING_CHANGED_SECTIONS_V2' });
+// DELIVERY (current) keeps the CHANGED section selection and also gives the
+// Living Docs question the delivery evidence it must be checked against: every
+// plan verification run, a compact hash-bound excerpt of every evidence log,
+// the plan's criterion -> verification mapping, and hash-bound excerpts of the
+// candidate's changed lines in its non-doc sources.
+export const LIVING_EXCERPT_STRATEGIES = Object.freeze({ SCOPED: 'LIVING_SCOPED_SECTIONS_V1', CHANGED: 'LIVING_CHANGED_SECTIONS_V2', DELIVERY: 'LIVING_DELIVERY_EVIDENCE_V3' });
+export const CURRENT_LIVING_EXCERPT_STRATEGY = LIVING_EXCERPT_STRATEGIES.DELIVERY;
+const LIVING_EVIDENCE_LOG_BYTES = 3072;
+const LIVING_CHANGE_FILE_BYTES = 3072;
+const LIVING_CHANGE_TOTAL_BYTES = 18432;
+const LIVING_CHANGE_MIN_BYTES = 768;
+const CHANGE_EXCERPT_STRATEGY = 'CANDIDATE_CHANGE_EXCERPT_V1';
+// Outline lines of a changed source: top-level declarations/exports, comments,
+// markdown headings and test titles; then fail-closed lines (fail/throw).
+const OUTLINE_LINE = /^(?:export\b|(?:async\s+)?function\b|class\b|(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=|\s*\/\/|\s*\/\*|\s+\*|#{1,6}\s|\s*(?:test|it|describe)\(|\s*"[A-Za-z][\w:-]*"\s*:)/;
+const FAILURE_LINE = /\bfail\(|\bthrow\b/;
+export const LIVING_DELIVERY_LIMITS = Object.freeze({ evidenceLogBytes: LIVING_EVIDENCE_LOG_BYTES, changeFileBytes: LIVING_CHANGE_FILE_BYTES, changeTotalBytes: LIVING_CHANGE_TOTAL_BYTES });
 const LIVING_OMITTED_MARKER = '...[unchanged Living Doc sections omitted; the full document is bound by hash]...';
 /**
  * Candidate-side changed line ranges ([first, last], 1-based) of each Living
@@ -452,7 +469,10 @@ const LIVING_OMITTED_MARKER = '...[unchanged Living Doc sections omitted; the fu
  * depend on local git configuration.
  */
 export function livingDocChanges(root, baselineSha, candidateSha, refs) {
-  check(/^[a-f0-9]{40}$/.test(baselineSha ?? '') && /^[a-f0-9]{40}$/.test(candidateSha ?? ''), 'Living Doc changes require exact commits');
+  return candidateLineRanges(root, baselineSha, candidateSha, refs, 'Living Doc changes require exact commits');
+}
+function candidateLineRanges(root, baselineSha, candidateSha, refs, message) {
+  check(/^[a-f0-9]{40}$/.test(baselineSha ?? '') && /^[a-f0-9]{40}$/.test(candidateSha ?? ''), message);
   const changes = {};
   for (const ref of [...new Set(refs)].sort()) {
     localPath(root, ref);
@@ -469,6 +489,65 @@ export function livingDocChanges(root, baselineSha, candidateSha, refs) {
     changes[ref] = ranges;
   }
   return changes;
+}
+/**
+ * Candidate-side changed line ranges plus candidate body of each changed,
+ * present, text source. Each body must hash to the source hash bound in the
+ * materialized state, so the excerpt cannot drift from the judged candidate.
+ * Deleted and binary files carry no body (they stay hash stubs).
+ */
+export function candidateSourceChanges(root, baselineSha, candidateSha, refs, sources) {
+  const ranges = candidateLineRanges(root, baselineSha, candidateSha, refs, 'candidate changes require exact commits');
+  const changes = {};
+  for (const ref of Object.keys(ranges)) {
+    const bound = sources.find(source => source.ref === ref);
+    check(bound, `candidate change outside materialized sources: ${ref}`);
+    if (bound.deleted) { changes[ref] = { ranges: ranges[ref], deleted: true }; continue; }
+    const body = gitFile(root, candidateSha, ref);
+    check(hash(body) === bound.hash, `candidate change body differs from bound source: ${ref}`);
+    changes[ref] = body.includes('\0') ? { ranges: ranges[ref], binary: true } : { ranges: ranges[ref], body };
+  }
+  return changes;
+}
+/** Hash-bound excerpt of a source's changed candidate lines, numbered, within `maxBytes` canonical JSON bytes. */
+export function candidateChangeExcerpt(source, change, maxBytes = LIVING_CHANGE_FILE_BYTES) {
+  check(change && typeof change.body === 'string' && Array.isArray(change.ranges) && change.ranges.every(range => Array.isArray(range) && range.length === 2 && range.every(Number.isInteger) && range[0] >= 1 && range[1] >= range[0]), `candidate change map missing: ${source.ref}`);
+  check(hash(change.body) === source.hash, `candidate change body differs from bound source: ${source.ref}`);
+  const lines = change.body.split('\n');
+  const numbers = [...new Set(change.ranges.flatMap(([first, last]) => {
+    const out = [];
+    for (let line = first; line <= Math.min(last, lines.length); line++) out.push(line);
+    return out;
+  }))].sort((a, b) => a - b);
+  const envelope = { ref: source.ref, hash: source.hash, bytes: Buffer.byteLength(change.body), excerpted: true, excerptStrategy: CHANGE_EXCERPT_STRATEGY, changedLines: numbers.filter(number => lines[number - 1].trim()).length, omittedChangedLines: 0, body: '' };
+  const marker = '...[further changed lines omitted; the full candidate file is bound by hash]...';
+  const budget = maxBytes - payloadBytes(envelope) - jsonLineBytes(marker) - 16;
+  check(budget > 0, `candidate change excerpt exceeds budget: ${source.ref}`);
+  // Outline changed lines are kept first, then fail-closed lines, so a large
+  // new module is represented by its structure and failure contract; the
+  // remaining budget is filled with other changed lines in order.
+  const outline = number => OUTLINE_LINE.test(lines[number - 1]);
+  const failure = number => FAILURE_LINE.test(lines[number - 1]);
+  const lineCost = number => jsonLineBytes(`${number}: ${clipLine(lines[number - 1])}`) + jsonLineBytes('…');
+  const kept = new Set();
+  let used = 0;
+  for (const pass of [outline, failure, () => true]) {
+    for (const number of numbers) {
+      if (kept.has(number) || !pass(number) || !lines[number - 1].trim()) continue;
+      if (used + lineCost(number) > budget) continue;
+      kept.add(number); used += lineCost(number);
+    }
+  }
+  const out = [];
+  let previous = null;
+  for (const number of [...kept].sort((a, b) => a - b)) {
+    if (previous !== null && number !== previous + 1) out.push('…');
+    out.push(`${number}: ${clipLine(lines[number - 1])}`); previous = number;
+  }
+  const omittedChangedLines = numbers.filter(number => lines[number - 1].trim()).length - kept.size;
+  const excerpt = { ...envelope, omittedChangedLines, body: [...out, ...(omittedChangedLines ? [marker] : [])].join('\n') };
+  check(payloadBytes(excerpt) <= maxBytes, `candidate change excerpt exceeds budget: ${source.ref}`);
+  return excerpt;
 }
 /** ##/### sections of a markdown body (headings inside fenced code are ignored); index 0 is the preamble. */
 export function markdownSections(body) {
@@ -607,7 +686,7 @@ export function excerptEvidenceLog(file, run = null, maxBytes = WORKER_EVIDENCE_
   return excerpt;
 }
 function livingStrategyOf(options) {
-  const strategy = options?.livingExcerptStrategy ?? LIVING_EXCERPT_STRATEGIES.CHANGED;
+  const strategy = options?.livingExcerptStrategy ?? CURRENT_LIVING_EXCERPT_STRATEGY;
   check(Object.values(LIVING_EXCERPT_STRATEGIES).includes(strategy), 'unknown Living Doc excerpt strategy');
   return strategy;
 }
@@ -618,6 +697,7 @@ function workerQuestionBase(fullPayload, id, options = {}) {
   const claim = state.evidence.find(entry => entry.id === id);
   const criterion = state.plan.acceptanceCriteria.find(entry => entry.id === id);
   const livingDocsQuestion = id === state.plan.livingDocs.questionId;
+  if (livingDocsQuestion && livingStrategy === LIVING_EXCERPT_STRATEGIES.DELIVERY) return livingDeliveryBase(fullPayload, id, options);
   check(Boolean(claim) === Boolean(criterion), `worker criterion/evidence mismatch: ${id}`);
   const evidenceRefs = new Set(claim?.evidenceRefs ?? []);
   const checkIds = new Set(criterion?.verificationIds ?? []);
@@ -689,6 +769,55 @@ function workerQuestionBase(fullPayload, id, options = {}) {
     evidenceFiles: selectedFiles
   };
   return { model: fullPayload.model, state: batchState, questions: { [id]: fullPayload.questions[id] } };
+}
+const isTestRef = ref => /(^|\/)(test|tests)\/|\.test\.(?:js|mjs|cjs|ts)$/.test(ref);
+/**
+ * Living Docs question under LIVING_DELIVERY_EVIDENCE_V3: the changed Living
+ * Doc sections plus the delivery evidence the docs must be checked against.
+ * Every entry keeps the hash/byte identity bound by the full state.
+ */
+function livingDeliveryBase(fullPayload, id, options) {
+  const state = fullPayload.state;
+  check(!state.evidence.some(entry => entry.id === id), `worker criterion/evidence mismatch: ${id}`);
+  const runsByLog = new Map(state.verification.map(run => [run.logRef, run]));
+  const evidenceFiles = state.evidenceFiles.map(file =>
+    typeof file.body === 'string' && payloadBytes(file) > LIVING_EVIDENCE_LOG_BYTES ? excerptEvidenceLog(file, runsByLog.get(file.ref) ?? null, LIVING_EVIDENCE_LOG_BYTES) : file);
+  const changes = options.candidateChanges;
+  check(changes && typeof changes === 'object', 'candidate change map missing');
+  // Implementation sources first, then tests; each group in ref order.
+  const changedRefs = Object.keys(changes).filter(ref => typeof changes[ref].body === 'string')
+    .sort((a, b) => Number(isTestRef(a)) - Number(isTestRef(b)) || a.localeCompare(b));
+  const excerpts = new Map();
+  let remaining = LIVING_CHANGE_TOTAL_BYTES;
+  for (const ref of changedRefs) {
+    if (remaining < LIVING_CHANGE_MIN_BYTES) break;
+    const source = state.sources.find(entry => entry.ref === ref);
+    check(source, `candidate change outside materialized sources: ${ref}`);
+    const excerpt = candidateChangeExcerpt(source, changes[ref], Math.min(LIVING_CHANGE_FILE_BYTES, remaining));
+    excerpts.set(ref, excerpt); remaining -= payloadBytes(excerpt);
+  }
+  const stub = source => ({ ref: source.ref, hash: source.hash, bytes: source.bytes ?? Buffer.byteLength(source.body ?? ''), omitted: true, deleted: source.deleted });
+  const sources = state.sources.map(source => {
+    if (source.ref.startsWith('docs/living/')) return typeof source.body === 'string' ? changedLivingExcerpt(source, options.livingChanges?.[source.ref], state.plan.scope) : source;
+    if (excerpts.has(source.ref)) return excerpts.get(source.ref);
+    return source.body == null ? source : stub(source);
+  });
+  const plan = {
+    kind: state.plan.kind,
+    artifactType: state.plan.artifactType,
+    artifactId: state.plan.artifactId,
+    objective: state.plan.objective,
+    scope: state.plan.scope,
+    sourceSeams: state.plan.sourceSeams,
+    livingDocs: state.plan.livingDocs,
+    acceptanceCriteria: state.plan.acceptanceCriteria.map(({ id: criterionId, statement, verificationIds }) => ({ id: criterionId, statement, verificationIds })),
+    verificationPlan: state.plan.verificationPlan
+  };
+  const livingEvidence = {
+    strategy: LIVING_EXCERPT_STRATEGIES.DELIVERY,
+    instructions: 'Living Docs are sent as their preamble plus every section the candidate changed. Evidence logs are hash-bound excerpts (command, exit status, test totals, failing names, head and tail). Changed non-doc sources are hash-bound excerpts of the candidate\'s changed lines. Anything omitted is bound by hash in the full evaluation state.'
+  };
+  return { model: fullPayload.model, state: { objective: state.objective, plan, evidence: state.evidence, sources, verification: state.verification, evidenceFiles, livingEvidence }, questions: { [id]: fullPayload.questions[id] } };
 }
 const withFiles = (base, evidenceFiles, batch) => ({ ...base, state: { ...base.state, evidenceFiles, ...(batch ? { batch } : {}) } });
 const evidenceStub = (file, part) => ({ ref: file.ref, hash: file.hash, bytes: file.bytes ?? Buffer.byteLength(file.body ?? ''), omitted: true, judgedInPart: part });
@@ -763,8 +892,8 @@ export function workerBatchManifest(fullPayload, options = {}) {
   return workerBatches(fullPayload, options).map(manifestEntry);
 }
 /** Batch options for a materialized input; a missing strategy means a retained SCOPED evaluation. */
-function batchOptions(materialized, livingExcerptStrategy = LIVING_EXCERPT_STRATEGIES.CHANGED) {
-  return { livingExcerptStrategy, livingChanges: materialized.livingChanges };
+function batchOptions(materialized, livingExcerptStrategy = CURRENT_LIVING_EXCERPT_STRATEGY) {
+  return { livingExcerptStrategy, livingChanges: materialized.livingChanges, candidateChanges: materialized.candidateChanges };
 }
 export function workerBatchStrategy(manifest) {
   return manifest.some(entry => entry.excerpted || entry.parts) ? WORKER_BATCH_STRATEGIES.BOUNDED : WORKER_BATCH_STRATEGIES.ATOMIC;
@@ -834,7 +963,7 @@ export async function evaluate(materialized, { root = '.', cacheDir = '.cache/bl
       const result = await evaluateWorkerBatches(payload, { root, cacheDir, fetchImpl, apiKey, bypassCache, options: batchOptions(materialized) });
       ({ response, attempts } = result);
       retryAttempts = result.retryAttempts;
-      batching = { strategy: workerBatchStrategy(result.manifest), livingExcerptStrategy: LIVING_EXCERPT_STRATEGIES.CHANGED, manifest: result.manifest, cacheHits: result.cacheHits, ...(Object.keys(result.partChoices).length ? { partChoices: result.partChoices } : {}) };
+      batching = { strategy: workerBatchStrategy(result.manifest), livingExcerptStrategy: CURRENT_LIVING_EXCERPT_STRATEGY, manifest: result.manifest, cacheHits: result.cacheHits, ...(Object.keys(result.partChoices).length ? { partChoices: result.partChoices } : {}) };
     } else {
       ({ response, attempts } = await callJev(payload, { fetchImpl, apiKey }));
       retryAttempts = attempts - 1;
