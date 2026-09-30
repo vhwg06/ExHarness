@@ -21,7 +21,7 @@ next-work-id: BB-100
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-087
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-087
-task: Fix Oracle facade budget accounting and typed provider failure
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-087/current.json
-components: oracle/infrastructure
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -94,7 +87,7 @@ BB-083 [BLOCKED_BY BB-059,BB-065] <- BB-059, BB-064, BB-065
 BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
 BB-085 [BLOCKED_BY BB-084] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059,BB-065] <- BB-085, BB-059, BB-065
-BB-087 [ACTIVE] <- BB-064
+BB-087 [PLANNED] <- BB-064
 BB-088 [BLOCKED_BY BB-087] <- BB-087
 BB-089 [BLOCKED_BY BB-087] <- BB-087
 BB-090 [WORKER_SCHEDULABLE] <- BB-056
