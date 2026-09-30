@@ -1,7 +1,7 @@
 # Delivery capability discovery
 
 Checked: 2026-09-30. Executed audit source baseline: `e9007f861fd95c678c0c4048bb3d82626855bda1`.
-Routing refreshed against `5391d1a855bdf92f1d598982edefb7acc1144070`; BB-093/108 are DONE and BB-107 is back in Research.
+Routing refreshed against `9c2c8db52e7fcf1534e4e75b4582c206a5549f38`; BB-093/108/099 are DONE and BB-107/120/121 are in Research. Experiment tooling delivery does not establish live comparative value.
 User direction: discover useful capabilities with material delivery impact; defer optimization when the problem, target or measurement is unclear. This is Research, with three new DRAFT subjects and no implementation/readiness claim.
 
 ## Decision and useful milestone
