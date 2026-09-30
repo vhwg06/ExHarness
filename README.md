@@ -19,6 +19,8 @@ BackendObjective
   -> ExHarness Core
   -> grounded BackendWorkResult
   -> mutation + typecheck + tests evidence
+     from injected adapters (workspace.act + verifiers); delivered local
+     adapters: createLocalGitWorkspace + createLocalCommandVerifier
   -> BackendCompletionPolicy
   -> ACCEPT | CONTINUE | BLOCK | FAIL
 
@@ -33,6 +35,8 @@ Backend ACCEPT
   -> qa.behavior + qa.regression evidence
   -> QaCompletionPolicy
 ```
+
+Mutation, typecheck and tests evidence is only as real as the injected adapters. Default tests use injected fixtures. The delivered local adapters are `createLocalGitWorkspace` (commits declared edits in an isolated detached git worktree and never touches the source repository's HEAD, branches or working tree) and `createLocalCommandVerifier` (runs one argument-array process with `shell: false`, binds its record to the checked-out revision, and fails on a revision mismatch or a mutated checkout). They are trusted local fixtures, not a sandbox; sandbox/network/tool isolation is separate planned work (BB-067). There is no live model provider yet (BB-066); the end-to-end proof drives a Core CodeAct strategy with a deterministic model.
 
 The durable application coordination layer is implemented through `ApplicationOrchestrator` and its JSON-backed Blackboard store:
 
