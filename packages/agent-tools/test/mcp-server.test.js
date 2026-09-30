@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -21,6 +21,7 @@ import { FakeMcpClient } from "./fixtures/fake-mcp-client.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const FAKE = join(here, "fixtures", "fake-agent.mjs");
+const MCP_SERVER_PATH = join(here, "..", "src", "mcp-server.js");
 const REPO_ROOT = join(here, "..", "..", "..");
 const T = { timeout: 60000 };
 
@@ -137,8 +138,81 @@ test("MCP1 verify and status over stdio", T, async () => {
   }
 });
 
-// ---------------------------------------------------------------- MCP2 forbidden
+test("MCP1 CLI validates verifier specs", T, () => {
+  const noArgs = spawnSync(process.execPath, [MCP_SERVER_PATH], { shell: false, encoding: "utf8" });
+  assert.equal(noArgs.status, 64);
+  const { root } = sourceRepository();
+  try {
+    const missingCommand = spawnSync(
+      process.execPath,
+      [MCP_SERVER_PATH, "--worktree", root, "--verifiers", JSON.stringify([{ name: "unit" }])],
+      { shell: false, encoding: "utf8" }
+    );
+    assert.equal(missingCommand.status, 64);
+    const badArgs = spawnSync(
+      process.execPath,
+      [MCP_SERVER_PATH, "--worktree", root, "--verifiers", JSON.stringify([{ name: "unit", command: process.execPath, args: [42] }])],
+      { shell: false, encoding: "utf8" }
+    );
+    assert.equal(badArgs.status, 64);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
+test("MCP1 CLI serves tools over stdio", T, async () => {
+  const { root } = sourceRepository();
+  let child = null;
+  try {
+    const specs = JSON.stringify([{ name: "unit", command: process.execPath, args: ["--version"], timeoutMs: 10000 }]);
+    child = spawn(process.execPath, [MCP_SERVER_PATH, "--worktree", root, "--verifiers", specs], {
+      shell: false,
+      stdio: ["pipe", "pipe", "pipe"]
+    });
+    const byId = await new Promise((resolvePromise, rejectPromise) => {
+      const lines = new Map();
+      let buffer = "";
+      const timer = setTimeout(() => rejectPromise(new Error("CLI serving timed out")), 20000);
+      const done = () => {
+        if (lines.has(1) && lines.has(2)) {
+          clearTimeout(timer);
+          resolvePromise(lines);
+        }
+      };
+      child.stdout.setEncoding("utf8");
+      child.stdout.on("data", (chunk) => {
+        buffer += String(chunk);
+        let index = buffer.indexOf("\n");
+        while (index >= 0) {
+          const line = buffer.slice(0, index).trim();
+          buffer = buffer.slice(index + 1);
+          index = buffer.indexOf("\n");
+          if (line) {
+            const message = JSON.parse(line);
+            lines.set(message.id, message);
+            done();
+          }
+        }
+      });
+      child.on("error", (error) => { clearTimeout(timer); rejectPromise(error); });
+      child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-03-26" } })}\n`);
+      child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} })}\n`);
+    });
+    assert.equal(byId.get(1).result.protocolVersion, "2025-03-26");
+    assert.deepEqual(byId.get(2).result.tools.map((tool) => tool.name), ["exharness_verify", "exharness_status"]);
+  } finally {
+    if (child) {
+      child.kill();
+      await new Promise((resolve) => {
+        const timer = setTimeout(resolve, 5000);
+        child.on("close", () => { clearTimeout(timer); resolve(); });
+      });
+    }
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ---------------------------------------------------------------- MCP2 forbidden
 test("MCP2 planted promote tool is rejected", T, () => {
   const dir = tempDir("bb103-mcp-forbidden-");
   try {
@@ -209,6 +283,46 @@ test("MCP3 default run never listens", T, async () => {
   const scratch = tempDir("bb103-mcp3-records-");
   const record = join(scratch, "record.json");
   try {
+    // Structural proof: every createExharnessMcpVerifyServer( call site in
+    // supervisor.js is lexically nested inside an `if (mcpVerify)` block, and
+    // neither supervisor.js nor mcp-server.js touches node:net or .listen(.
+    const supervisorSrc = readFileSync(join(REPO_ROOT, "packages", "agent-tools", "src", "supervisor.js"), "utf8");
+    const mcpServerSrc = readFileSync(join(REPO_ROOT, "packages", "agent-tools", "src", "mcp-server.js"), "utf8");
+    for (const src of [supervisorSrc, mcpServerSrc]) {
+      assert.doesNotMatch(src, /node:net/);
+      assert.doesNotMatch(src, /\.listen\(/);
+    }
+    const cleaned = supervisorSrc
+      .replace(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g, (match) => " ".repeat(match.length))
+      .replace(/\/\*[\s\S]*?\*\//g, (match) => " ".repeat(match.length))
+      .replace(/\/\/[^\n]*/g, (match) => " ".repeat(match.length));
+    const callName = "createExharnessMcpVerifyServer(";
+    const callSites = [];
+    for (let from = 0; ; ) {
+      const found = cleaned.indexOf(callName, from);
+      if (found < 0) break;
+      callSites.push(found);
+      from = found + callName.length;
+    }
+    assert.ok(callSites.length >= 1, "expected at least one server call site");
+    const depthAt = new Array(cleaned.length + 1).fill(0);
+    let depth = 0;
+    for (let i = 0; i < cleaned.length; i += 1) {
+      depthAt[i] = depth;
+      if (cleaned[i] === "{") depth += 1;
+      else if (cleaned[i] === "}") depth -= 1;
+    }
+    depthAt[cleaned.length] = depth;
+    for (const site of callSites) {
+      const guardText = "if (mcpVerify)";
+      const guard = cleaned.lastIndexOf(guardText, site);
+      assert.ok(guard >= 0 && guard < site, "call site must follow an if (mcpVerify) guard");
+      const blockOpen = cleaned.indexOf("{", guard + guardText.length);
+      assert.ok(blockOpen >= 0 && blockOpen < site, "guard must open a block before the call site");
+      assert.ok(depthAt[site] > depthAt[blockOpen], "call site must be lexically inside the if (mcpVerify) block");
+    }
+    // Runtime proof: a default run attaches no new process.stdin listeners.
+    const listenersBefore = process.stdin.listenerCount("data");
     let observed = 0;
     const result = await runSupervisedTask({
       tool: fakeTool(codexTool),
@@ -218,6 +332,7 @@ test("MCP3 default run never listens", T, async () => {
       env: { FAKE_AGENT_SCENARIO: "FIX_FIRST", FAKE_AGENT_RECORD: record },
       invocationObserver: async () => { observed += 1; }
     });
+    assert.equal(process.stdin.listenerCount("data"), listenersBefore);
     assert.deepEqual(Object.keys(result).sort(), ["acceptedSha", "attempts", "status", "taskId", "tool", "toolVersion"]);
     assert.ok(observed >= 1, "invocationObserver still fires without mcpVerify");
   } finally {
@@ -230,19 +345,55 @@ test("MCP3 mcpVerify opt-in run completes", T, async () => {
   const { root, base } = sourceRepository();
   const scratch = tempDir("bb103-mcp3optin-records-");
   const record = join(scratch, "record.json");
+  const serverStdin = new PassThrough();
+  const serverStdout = new PassThrough();
+  const client = new FakeMcpClient({ writable: serverStdin, readable: serverStdout });
   try {
     let observed = 0;
+    let statusPayload = null;
+    let verifyPayload = null;
     const result = await runSupervisedTask({
       tool: fakeTool(codexTool),
       task: taskFor(root, base),
-      maxAttempts: 1,
+      maxAttempts: 2,
       timeoutMs: 30000,
-      env: { FAKE_AGENT_SCENARIO: "FIX_FIRST", FAKE_AGENT_RECORD: record },
-      invocationObserver: async () => { observed += 1; },
-      mcpVerify: true
+      env: { FAKE_AGENT_SCENARIO: "FIX_AFTER_FEEDBACK", FAKE_AGENT_RECORD: record },
+      invocationObserver: async () => {
+        observed += 1;
+        if (observed === 2) {
+          await client.initialize();
+          const statusResponse = await client.callTool("exharness_status");
+          statusPayload = JSON.parse(statusResponse.content[0].text);
+          const verifyResponse = await client.callTool("exharness_verify");
+          verifyPayload = JSON.parse(verifyResponse.content[0].text);
+        }
+      },
+      mcpVerify: { stdin: serverStdin, stdout: serverStdout }
     });
     assert.deepEqual(Object.keys(result).sort(), ["acceptedSha", "attempts", "status", "taskId", "tool", "toolVersion"]);
     assert.ok(observed >= 1, "invocationObserver still fires with mcpVerify");
+    assert.ok(statusPayload !== null && verifyPayload !== null, "status and verify answered during the run");
+    assert.ok(statusPayload.attemptIndex >= 1, "status reflects a completed attempt");
+    assert.match(statusPayload.candidateSha, /^[0-9a-f]{40}$/);
+    const catFile = spawnSync("git", ["cat-file", "-e", statusPayload.candidateSha], {
+      cwd: root,
+      shell: false,
+      encoding: "utf8",
+      env: { ...process.env, GIT_CONFIG_NOSYSTEM: "1" }
+    });
+    assert.equal(catFile.status, 0, "status candidateSha exists in the source repository object store");
+    assert.equal(verifyPayload.results[0].name, "unit");
+    // After the run the server was stopped in finally: a fresh request gets no reply.
+    let lateReply = null;
+    const onLateData = (chunk) => { lateReply = (lateReply ?? "") + String(chunk); };
+    serverStdout.on("data", onLateData);
+    try {
+      serverStdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 9999, method: "tools/list", params: {} })}\n`);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } finally {
+      serverStdout.off("data", onLateData);
+    }
+    assert.equal(lateReply, null, "stopped server sends no response");
   } finally {
     rmSync(root, { recursive: true, force: true });
     rmSync(scratch, { recursive: true, force: true });
@@ -277,6 +428,34 @@ test("MCP3 mcpVerify does not write user CLI config", T, async () => {
   }
 });
 
+test("MCP3 stop waits for in-flight verify", T, async () => {
+  const { root } = sourceRepository();
+  let server = null;
+  try {
+    let verifyDone = false;
+    server = createExharnessMcpVerifyServer({
+      worktreeRoot: root,
+      verifiers: [{
+        name: "slow",
+        verify: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          verifyDone = true;
+          return { claim: "agent-task.slow", status: "PASS", evidence: ["slow:reason=PASS"], summary: "slow PASS" };
+        }
+      }]
+    });
+    const serverStdin = new PassThrough();
+    const serverStdout = new PassThrough();
+    await server.start({ stdin: serverStdin, stdout: serverStdout });
+    serverStdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "exharness_verify", arguments: {} } })}\n`);
+    await server.stop();
+    assert.equal(verifyDone, true, "stop resolved only after the in-flight verify completed");
+  } finally {
+    if (server) await server.stop();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 // ---------------------------------------------------------------- MCP4 authority
 
 test("MCP4 verify call cannot promote", T, async () => {
@@ -288,12 +467,14 @@ test("MCP4 verify call cannot promote", T, async () => {
   const client = new FakeMcpClient({ writable: serverStdin, readable: serverStdout });
   try {
     let verifyPayload = null;
+    const capabilityEvents = [];
     const result = await runSupervisedTask({
       tool: fakeTool(codexTool),
       task: taskFor(root, base),
       maxAttempts: 1,
       timeoutMs: 30000,
       env: { FAKE_AGENT_SCENARIO: "CLAIM_SUCCESS_NO_EDIT", FAKE_AGENT_RECORD: record },
+      eventSinks: [{ name: "mcp4-promote-watch", write(event) { capabilityEvents.push(event); } }],
       invocationObserver: async () => {
         if (!verifyPayload) {
           await client.initialize();
@@ -310,6 +491,13 @@ test("MCP4 verify call cannot promote", T, async () => {
     assert.equal(result.attempts[0].mutated, false);
     assert.ok(verifyPayload !== null, "concurrent exharness_verify call completed");
     assert.equal(verifyPayload.results[0].name, "unit");
+    assert.equal(verifyPayload.ok, false, "unedited tree still fails verification");
+    assert.equal(verifyPayload.results[0].status, "FAIL");
+    assert.ok(capabilityEvents.some((event) => event?.type === "CAPABILITY_INVOKED"), "event sink captured capability invocations");
+    const promotes = capabilityEvents.filter(
+      (event) => event?.type === "CAPABILITY_INVOKED" && event?.payload?.name === "avo.promote"
+    );
+    assert.deepEqual(promotes, [], "no promote capability was invoked");
   } finally {
     rmSync(root, { recursive: true, force: true });
     rmSync(scratch, { recursive: true, force: true });

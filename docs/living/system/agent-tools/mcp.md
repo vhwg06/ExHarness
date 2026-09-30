@@ -29,7 +29,9 @@ agent ask what the current worktree would verify as.
 When on, the server is created for `workspace.root` with a live status object
 `{ attemptIndex: 0, candidateSha: <baseRevision>, lastVerification: null }`,
 updated through `statusSink` after ACT and after verifiers, and `stop()` runs in
-a `finally` block before the worktree is disposed. The server never writes user
+a `finally` block before the worktree is disposed. `stop()` detaches the
+listener first, waits for in-flight queries to finish, and afterwards no
+further messages are written. The server never writes user
 CLI configuration (no `.codex`, `.kiro` or `.gemini` entries) and never changes
 adapter argv. `invocationObserver` keeps its default (`null`) and payload.
 

@@ -85,6 +85,8 @@ export function createExharnessMcpVerifyServer({ worktreeRoot, verifiers, status
   const frozenTools = Object.freeze(ordered);
 
   let active = null;
+  const inFlight = new Set();
+  let stopped = false;
 
   async function handleVerify() {
     const head = await runProcess("git", ["rev-parse", "HEAD"], {
@@ -113,6 +115,7 @@ export function createExharnessMcpVerifyServer({ worktreeRoot, verifiers, status
   }
 
   function send(stream, message) {
+    if (stopped) return;
     stream.write(`${JSON.stringify(message)}\n`);
   }
 
@@ -151,6 +154,7 @@ export function createExharnessMcpVerifyServer({ worktreeRoot, verifiers, status
     if (!stdin || typeof stdin.on !== "function") throw new TypeError("start requires stdin");
     if (!stdout || typeof stdout.write !== "function") throw new TypeError("start requires stdout");
     if (active) throw new Error("MCP server already started");
+    stopped = false;
     let buffer = "";
     const onData = (chunk) => {
       buffer += String(chunk);
@@ -160,7 +164,12 @@ export function createExharnessMcpVerifyServer({ worktreeRoot, verifiers, status
         buffer = buffer.slice(index + 1);
         index = buffer.indexOf("\n");
         if (line.trim() === "") continue;
-        void handleLine(line);
+        const pending = handleLine(line);
+        inFlight.add(pending);
+        pending.then(
+          () => inFlight.delete(pending),
+          () => inFlight.delete(pending)
+        );
       }
     };
     const handleLine = async (line) => {
@@ -196,10 +205,12 @@ export function createExharnessMcpVerifyServer({ worktreeRoot, verifiers, status
     if (!active) return;
     const { stdin, onData } = active;
     active = null;
+    stopped = true;
     try {
       stdin.off?.("data", onData);
       stdin.removeListener?.("data", onData);
     } catch { /* already detached */ }
+    await Promise.allSettled([...inFlight]);
   }
 
   return { start, stop, tools: frozenTools };
@@ -217,21 +228,29 @@ function parseCliArgs(argv) {
 
 // CLI entry: node mcp-server.js --worktree <abs> --verifiers <json [{name,command,args,timeoutMs}]>
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const { worktree, verifiersJson } = parseCliArgs(process.argv.slice(2));
-  if (!worktree || !verifiersJson) {
-    process.stderr.write("usage: mcp-server.js --worktree <abs> --verifiers <json>\n");
+  const usage = (message) => {
+    process.stderr.write(`${message}\nusage: mcp-server.js --worktree <abs> --verifiers <json>\n`);
     process.exit(64);
-  }
+  };
+  const { worktree, verifiersJson } = parseCliArgs(process.argv.slice(2));
+  if (!worktree || !verifiersJson) usage("missing --worktree or --verifiers");
   let specs;
   try {
     specs = JSON.parse(verifiersJson);
   } catch {
-    process.stderr.write("invalid --verifiers JSON\n");
-    process.exit(64);
+    usage("invalid --verifiers JSON");
   }
-  if (!Array.isArray(specs) || specs.length === 0) {
-    process.stderr.write("invalid --verifiers JSON\n");
-    process.exit(64);
+  if (!Array.isArray(specs) || specs.length === 0) usage("invalid --verifiers JSON");
+  for (const spec of specs) {
+    if (!spec || typeof spec !== "object" || Array.isArray(spec)) usage("invalid --verifiers spec");
+    if (typeof spec.name !== "string" || spec.name.length === 0) usage("invalid --verifiers spec: name must be a non-empty string");
+    if (typeof spec.command !== "string" || spec.command.length === 0) usage("invalid --verifiers spec: command must be a non-empty string");
+    if (spec.args !== undefined && (!Array.isArray(spec.args) || spec.args.some((arg) => typeof arg !== "string"))) {
+      usage("invalid --verifiers spec: args must be an array of strings");
+    }
+    if (spec.timeoutMs !== undefined && (!Number.isInteger(spec.timeoutMs) || spec.timeoutMs <= 0)) {
+      usage("invalid --verifiers spec: timeoutMs must be a positive integer");
+    }
   }
   const verifiers = specs.map((spec) => createLocalCommandVerifier({
     name: spec.name,
