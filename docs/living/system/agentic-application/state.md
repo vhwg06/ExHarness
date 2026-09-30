@@ -243,3 +243,14 @@ Recovery is scan-based: a fresh host rediscovers READY/REOPENED work without any
 Current source has DevOps and Product QA domains that run through `DomainExecutionController` like the FE/BE domains: `deployable-artifact.js`, `devops-execution-strategy.js`, `deployment-release.js`, `acceptance-snapshot.js`, `runtime-observation.js` and `product-qa.js`, all exported from `index.js`. Artifacts live in the shared immutable artifact store. Release and QualityAcceptance heads are separate CAS head stores, one subject per environment.
 
 The deployment adapter, runtime probe and criterion verifiers are injected ports. Current tests use local deterministic adapters; there is no live infrastructure deployment. A fresh process can reconstruct the full chain from the durable stores alone.
+
+## Product history, projection and closure state
+
+Current source adds a product-level completeness boundary above the domain authorities (`product-history.js`, `product-acceptance-policy.js`, `product-state-projection.js`, `product-closure.js`, all exported from `index.js`):
+
+- one `ProductHistoryHead` per product (`CAS {generation, commitRef, historyDigest}`) over immutable `ProductHistoryCommit` records persisted in the shared immutable artifact store; each commit binds its predecessor plus the exact observed closure-relevant authority heads, and fresh readers revalidate the whole chain;
+- one product acceptance head per product pinning the exact immutable policy revision plus the complete sorted applicable waiver set and its digest;
+- one disposable deterministic `ProductStateProjection` per pinned `{history, policy, waivers}` subject, rebuilt from canonical resolvers only;
+- one `product-outcome-head` per product pointing at the latest immutable `ProductOutcomeClaim`; older claims remain resolvable but revalidate to `HISTORICAL` once history or policy advances.
+
+Durable stores are the existing JSON immutable-artifact and CAS-head stores, so a fresh process reconstructs the same current subject and projection from disk without prior conversation state. Closure-relevant lineage, release and quality publishers can share the same `createProductMutationGuard()` instance as history and closure; delivered Integration C/E/F behavior is unchanged when the optional guard binding is absent. Strategy-only revisions never advance the history head or invalidate current closure.

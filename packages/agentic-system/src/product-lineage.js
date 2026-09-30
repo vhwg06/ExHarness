@@ -47,9 +47,19 @@ function applyEvent(state,event){
 
 // The immutable journal is authoritative; no reverse-impact cache is required.
 // A single CAS root commits a whole publication/invalidation atomically.
-export function createProductLineageStore({path,artifactStore}){
+export function createProductLineageStore({path,artifactStore,projectGuard=null,projectId=null}){
   const roots=createJsonDomainExecutionPolicyStore({path});
   const key="product-lineage-journal";
+  // Optional Integration G binding: when a shared project mutation guard is
+  // configured, closure-relevant lineage mutations serialize with product
+  // history/closure commits on the same project key. Absent by default so
+  // delivered Integration C behavior is unchanged.
+  async function withProject(action){
+    if(projectGuard==null)return action();
+    if(typeof projectGuard.withProduct==="function"&&projectId!=null)return projectGuard.withProduct(projectId,action);
+    if(typeof projectGuard.withKey==="function"&&projectId!=null)return projectGuard.withKey(`product-history:${projectId}`,action);
+    return action();
+  }
   async function resolve(ref){
     const value=await artifactStore.resolve(ref);
     inv(value,"product artifact missing: "+ref);
@@ -67,6 +77,7 @@ export function createProductLineageStore({path,artifactStore}){
   async function snapshot(){const root=await roots.current(key);return snapshotAt(root?.value?.journalRef??null);}
   async function put(prefix,value){return artifactStore.put(prefix,canonicalProductValue(value));}
   async function mutate(build){
+    return withProject(async ()=>{
     for(let attempt=0;attempt<20;attempt++){
       const root=await roots.current(key),state=await snapshotAt(root?.value?.journalRef??null);
       const update=await build(state);
@@ -76,6 +87,7 @@ export function createProductLineageStore({path,artifactStore}){
       if(await roots.compareAndSwap(key,root?.revision??null,{journalRef}))return update.result;
     }
     throw new TypeError("product lineage CAS contention");
+    });
   }
   function transition(state,subjectKey,next,reasonRef){return {subjectKey,previous:state.heads[subjectKey]??null,next,reasonRef};}
   async function assertCurrent(ref){

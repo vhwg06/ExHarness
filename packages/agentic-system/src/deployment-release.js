@@ -50,7 +50,7 @@ export function defineDeploymentRelease(raw) {
   return frozenCopy(raw);
 }
 
-export function createDeploymentReleaseController({ artifactRegistry, releaseHeadStore, domainArtifactRegistry, organizationArtifactRegistry, mutationGuard = createDeploymentMutationGuard() }) {
+export function createDeploymentReleaseController({ artifactRegistry, releaseHeadStore, domainArtifactRegistry, organizationArtifactRegistry, mutationGuard = createDeploymentMutationGuard(), projectGuard = null, projectIdForEnvironment = null }) {
   invariant(artifactRegistry && typeof artifactRegistry.putDeploymentRelease === "function", "release controller requires the deployment artifact registry");
   invariant(releaseHeadStore && typeof releaseHeadStore.current === "function" && typeof releaseHeadStore.compareAndSwap === "function", "release controller requires a CAS head store");
   invariant(domainArtifactRegistry && typeof domainArtifactRegistry.resolveExecutionJudgmentBundle === "function", "release controller requires the domain execution artifact registry");
@@ -92,7 +92,14 @@ export function createDeploymentReleaseController({ artifactRegistry, releaseHea
     }
     const environmentRef = requireText(evidence.environmentRef, "deployment evidence environmentRef");
     const subjectKey = deploymentReleaseSubjectKey(environmentRef);
-    return mutationGuard.withEnvironment(environmentRef, async () => {
+    // Optional Integration G binding: closure-relevant release publications
+    // can additionally serialize with product history/closure on the same
+    // shared project guard. Absent by default; delivered E/F behavior unchanged.
+    const projectId = typeof projectIdForEnvironment === "function" ? projectIdForEnvironment(environmentRef) : null;
+    const withProject = projectGuard != null && projectId != null && typeof projectGuard.withProduct === "function"
+      ? (action) => projectGuard.withProduct(projectId, action)
+      : (action) => action();
+    return withProject(() => mutationGuard.withEnvironment(environmentRef, async () => {
       const head = await releaseHeadStore.current(subjectKey);
       if (head?.value?.releaseRef != null && (await resolveRelease(head.value.releaseRef)).devopsJudgmentBundleRef === judgmentBundleRef) {
         const replay = await current(environmentRef);
@@ -115,7 +122,7 @@ export function createDeploymentReleaseController({ artifactRegistry, releaseHea
       const generation = (head?.value?.generation ?? 0) + 1;
       invariant(await releaseHeadStore.compareAndSwap(subjectKey, head?.revision ?? null, { releaseRef, generation }), "DeploymentReleaseHead CAS conflict");
       return deepFreeze({ releaseRef, release, head: await current(environmentRef), replayed: false });
-    });
+    }));
   }
 
   // Runs action only while releaseRef at headRevision is the current release for the environment,

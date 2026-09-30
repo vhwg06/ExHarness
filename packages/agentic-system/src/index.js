@@ -249,3 +249,7 @@ export {DeploymentReleaseDriftError,createDeploymentMutationGuard,createDeployme
 export {createAcceptancePolicyResolver,createAcceptanceSnapshotBuilder,defineAcceptancePolicy,defineAcceptanceSnapshot} from "./acceptance-snapshot.js";
 export {RuntimeObservationStatus,classifyRuntimeIdentity,createRuntimeObserver,defineRuntimeObservationEvidence} from "./runtime-observation.js";
 export {PRODUCT_QA_DOMAIN,createProductQaCompletionEvaluator,createProductQaExecutionStrategy,createQualityAcceptancePublisher,defineQualityAcceptance,qualityAcceptanceSubjectKey} from "./product-qa.js";
+export {createProductMutationGuard,createProductHistoryController,defineProductHistoryCommit,productHistorySubjectKey,ProductHistoryDriftError,ProductHistoryConflictError} from "./product-history.js";
+export {createProductAcceptanceAuthority,defineProductAcceptancePolicy,defineProductAcceptanceWaiver,productAcceptanceSubjectKey,waiverSetDigestFor} from "./product-acceptance-policy.js";
+export {createProductStateProjectionBuilder} from "./product-state-projection.js";
+export {createProductClosureController,defineProductOutcomeClaim,productOutcomeSubjectKey,ProductClosureStaleError,ProductClosureNotReadyError} from "./product-closure.js";

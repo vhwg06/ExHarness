@@ -219,3 +219,17 @@ accepted FE/BE source delivery -> BuildProvenance -> DeployableArtifactRef (per 
 **Does not imply:** live deployment to real infrastructure, rollback orchestration, runtime monitoring beyond one observation per snapshot, or DevOps authority over quality acceptance.
 
 Evidence: `deployable-provenance.test.js`, `deployment-release.test.js`, `acceptance-snapshot.test.js`, `runtime-observation.test.js`, `product-qa.test.js`, `product-qa-race.test.js`, `deployment-provenance-chain.test.js`.
+
+## A21 — Canonical product history, deterministic projection and currentness-fenced closure
+
+Product readiness and closure are evaluated only from one canonical complete current product-history subject plus canonical acceptance-policy authority.
+
+**Outcome:** callers cannot manufacture `ELIGIBLE_FOR_CLOSURE` by omitting blocking claims, obligations, stale subjects or newer product transitions.
+
+**Guarantees:** `ProductHistoryHead` is the canonical completeness cursor per product (`CAS {generation, commitRef, historyDigest}` over immutable `ProductHistoryCommit` records that bind predecessor generation/digest plus exact authority-head observations); history carries only accepted closure-relevant transitions (semantic claim/obligation currentness, release/quality currentness, accepted product revisions, acceptance-policy/waiver revisions), never execution policy/strategy/attempt changes; the product acceptance authority pins one immutable policy revision plus the complete sorted/deduplicated applicable waiver set (no caller waiver subset); `ProductStateProjection` is a deterministic disposable reduction built from `{productId, rootIntentRef}` only, pinning exact history generation/digest plus policy ref/revision/waiverSetDigest; `close({projectionRef})` revalidates exact history/policy currentness under the shared project guard immediately before writing one immutable `ProductOutcomeClaim` and CAS-advancing the latest-outcome head; `currentOutcome({productId})` returns `CURRENT` only while the pinned subject still equals current history/policy state and a fresh rebuild stays eligible, otherwise `HISTORICAL`; authority/history drift after a crash is `RECOVERY_REQUIRED`/`NOT_READY` until deterministic reconciliation appends the exact missing transition; strategy-only changes leave the history head and closure currentness unmoved.
+
+**Failure semantics:** omitted rejected claims or blocking obligations still block; an `Hn` projection cannot close after an `Hn+1` transition or policy/waiver drift; historical claim, obligation, history-commit and outcome bytes are immutable and correct only through new transitions.
+
+**Does not imply:** organization scheduling, execution logging, Merkle inclusion proofs (v1 uses durable generation/digest CAS plus recovery under the trusted-store model), or reopening of terminal delivery records.
+
+Evidence: `product-history.test.js`, `product-history-recovery.test.js`, `product-state-projection.test.js`, `product-closure.test.js`, `product-closure-race.test.js`, `product-revalidation.test.js`, `product-completeness-chain.test.js`.
