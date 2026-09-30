@@ -84,8 +84,10 @@ function allowedChange(ref, allowed, deletable, prefixes) {
 // A supersession target is either unfinished RESEARCH_SA work (as before) or an
 // unclaimed WORKER task (PLANNED, claim === null) with no worker-candidate
 // authority in its trusted contract.
-export const WORKER_TARGET_AUTHORITY_FIELDS = Object.freeze(['candidateSha', 'baselineSha', 'mergeSha', 'deliveryRef', 'evidenceRef']);
-export function assertSupersessionTarget(trustedTask) {
+// Readiness publication pre-assigns `evidenceRef` to the future implementation-result path, so the
+// pointer alone is not authority: it counts only when that implementation result exists in trusted state.
+export const WORKER_TARGET_AUTHORITY_FIELDS = Object.freeze(['candidateSha', 'baselineSha', 'mergeSha', 'deliveryRef']);
+export function assertSupersessionTarget(trustedTask, { evidenceExists = () => true } = {}) {
   const id = trustedTask?.id;
   if (trustedTask?.status === 'DONE') fail(`supersession target must be unfinished work: ${id} is DONE`);
   if (trustedTask?.lane === 'RESEARCH_SA') return trustedTask;
@@ -93,6 +95,8 @@ export function assertSupersessionTarget(trustedTask) {
     if (trustedTask.status !== 'PLANNED') fail(`supersession target must be unclaimed PLANNED WORKER work: ${id} has status ${trustedTask.status}`);
     if (trustedTask.claim != null || trustedTask.currentContextRef != null) fail(`supersession target must be unclaimed PLANNED WORKER work: ${id} is claimed`);
     const held = WORKER_TARGET_AUTHORITY_FIELDS.filter(k => trustedTask.contract?.[k] !== undefined);
+    const evidenceRef = trustedTask.contract?.evidenceRef;
+    if (evidenceRef !== undefined && evidenceExists(evidenceRef)) held.push('evidenceRef');
     if (held.length) fail(`supersession target retains worker authority: ${id} ${held.join(',')}`);
     return trustedTask;
   }
@@ -114,7 +118,7 @@ export function verifySupersession({ trustedRoot, subjectRoot, prBaseSha, candid
   if (receipt.trustedBaseSha !== prBaseSha) fail('stale supersession: trustedBaseSha differs from PR base');
   const trustedTask = trustedGraph.tasks.find(t => t.id === id);
   if (!trustedTask?.contract) fail('supersession target is not contracted work');
-  assertSupersessionTarget(trustedTask);
+  assertSupersessionTarget(trustedTask, { evidenceExists: ref => typeof ref !== 'string' || fs.existsSync(localPath(trustedRoot, ref)) });
   const objectiveRef = trustedTask.contract.objectiveRef, planRef = trustedTask.contract.planRef;
   if (receipt.oldObjective.ref !== objectiveRef || receipt.replacementObjective.ref !== objectiveRef) fail('supersession must keep the stable objective path');
   if (receipt.planRef !== planRef) fail('supersession plan ref differs from trusted Board');
