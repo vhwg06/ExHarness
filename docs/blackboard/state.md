@@ -21,7 +21,7 @@ next-work-id: BB-123
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,17 +31,23 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-077
 ```
 
 ## Active work
 
-NONE
+
+BB-077
+task: Research harness-isolation economics on shared benchmark kernel
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-077/current.json
+components: core/async-runtime-efficiency
+worker: grok-bot
 
 ## Schedulable tasks
 
 - BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
-- BB-077 [WORKER/EXECUTION] — Research harness-isolation economics on shared benchmark kernel
 - BB-093 [WORKER/EXECUTION] — Implement model-aware context budget profiles
 - BB-099 [WORKER/EXECUTION] — Measure ExHarness-supervised versus direct agent-tool delivery
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
@@ -79,7 +85,7 @@ BB-073 [BLOCKED_BY BB-070,BB-072] <- BB-070, BB-072
 BB-074 [BLOCKED_BY BB-071,BB-073,BB-077,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [BLOCKED_BY BB-074,BB-059] <- BB-074, BB-059
 BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
-BB-077 [WORKER_SCHEDULABLE] <- BB-065
+BB-077 [ACTIVE] <- BB-065
 BB-078 [BLOCKED_BY BB-077] <- BB-077
 BB-079 [BLOCKED_BY BB-077,BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
