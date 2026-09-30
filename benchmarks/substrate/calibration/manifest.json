@@ -1,0 +1,314 @@
+{
+  "kind": "BENCHMARK_SUBSTRATE_CALIBRATION_V1",
+  "schemaVersion": 1,
+  "experimentId": "SUBSTRATE-LOCAL-CALIBRATION",
+  "protocol": {
+    "id": "SUBSTRATE-LOCAL-CALIBRATION",
+    "version": "1"
+  },
+  "evaluator": "harbor-task-verifier@0.23.0",
+  "budget": {
+    "wallMs": null,
+    "inputTokens": null,
+    "outputTokens": null,
+    "costUsd": null,
+    "toolCalls": null
+  },
+  "codingModelCalls": 0,
+  "truthTable": [
+    "producer SUCCESS + verifier FAIL => REJECTED / COMPLETED (REJECT-PRODUCER-SUCCESS)",
+    "budget stop with a valid artifact + verifier PASS => ACCEPTED / BUDGET_EXHAUSTED (FAILURE-BUDGET-VALID)",
+    "provider timeout, no artifact => NOT_EVALUATED / PROVIDER_TIMEOUT (FAILURE-PROVIDER-TIMEOUT)",
+    "usage absent => usage.status UNKNOWN with null numeric fields (every oracle/nop case)",
+    "retry success preserves the failed attempt (FAILURE-RETRY-AFTER-TIMEOUT retries FAILURE-PROVIDER-TIMEOUT)",
+    "tampered evidence => audit FAIL (audit-reopen test and the fresh-process audit of this run)"
+  ],
+  "cases": [
+    {
+      "caseId": "PASS-ORACLE",
+      "unitId": "UNIT-PASS-ORACLE",
+      "fixture": "SUBSTRATE-PASS-01",
+      "producer": {
+        "kind": "ORACLE"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "PASS-ORACLE-REPEAT",
+      "unitId": "UNIT-PASS-ORACLE-REPEAT",
+      "fixture": "SUBSTRATE-PASS-01",
+      "producer": {
+        "kind": "ORACLE"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "PASS-NOP",
+      "unitId": "UNIT-PASS-NOP",
+      "fixture": "SUBSTRATE-PASS-01",
+      "producer": {
+        "kind": "NOP"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "REJECTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "ARTIFACT-ORACLE",
+      "unitId": "UNIT-ARTIFACT-ORACLE",
+      "fixture": "SUBSTRATE-ARTIFACT-01",
+      "producer": {
+        "kind": "ORACLE"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN",
+        "artifactFiles": 2
+      }
+    },
+    {
+      "caseId": "ARTIFACT-NOP",
+      "unitId": "UNIT-ARTIFACT-NOP",
+      "fixture": "SUBSTRATE-ARTIFACT-01",
+      "producer": {
+        "kind": "NOP"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "REJECTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "REJECT-PRODUCER-SUCCESS",
+      "unitId": "UNIT-REJECT-PRODUCER-SUCCESS",
+      "fixture": "SUBSTRATE-REJECT-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "wrong-artifact"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "REJECTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN",
+        "producerStatus": "SUCCESS"
+      }
+    },
+    {
+      "caseId": "FAILURE-BUDGET-VALID",
+      "unitId": "UNIT-FAILURE-BUDGET-VALID",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "budget-stop-valid"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "ACCEPTED",
+        "termination": "BUDGET_EXHAUSTED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "PARTIAL"
+      }
+    },
+    {
+      "caseId": "FAILURE-USAGE-REPORTED-ZERO",
+      "unitId": "UNIT-FAILURE-USAGE-REPORTED-ZERO",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "usage-known"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "PARTIAL"
+      }
+    },
+    {
+      "caseId": "FAILURE-PROVIDER-TIMEOUT",
+      "unitId": "UNIT-FAILURE-PROVIDER-TIMEOUT",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "provider-timeout"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "NOT_EVALUATED",
+        "termination": "AGENT_ERROR",
+        "providerStatus": "PROVIDER_TIMEOUT",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "FAILURE-RETRY-AFTER-TIMEOUT",
+      "unitId": "UNIT-FAILURE-PROVIDER-TIMEOUT",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "correct"
+      },
+      "retryOfCaseId": "FAILURE-PROVIDER-TIMEOUT",
+      "expect": {
+        "quality": "ACCEPTED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "FAILURE-RATE-LIMIT",
+      "unitId": "UNIT-FAILURE-RATE-LIMIT",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "provider-rate-limit"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "NOT_EVALUATED",
+        "termination": "AGENT_ERROR",
+        "providerStatus": "RATE_LIMITED",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "FAILURE-PROVIDER-5XX",
+      "unitId": "UNIT-FAILURE-PROVIDER-5XX",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "provider-5xx"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "NOT_EVALUATED",
+        "termination": "AGENT_ERROR",
+        "providerStatus": "PROVIDER_5XX",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "FAILURE-VERIFIER-CRASH",
+      "unitId": "UNIT-FAILURE-VERIFIER-CRASH",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "verifier-crash"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "NOT_EVALUATED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "VERIFIER_ERROR",
+        "extractionStatus": "EXTRACTED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "FAILURE-ARTIFACT-EXTRACTION",
+      "unitId": "UNIT-FAILURE-ARTIFACT-EXTRACTION",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "artifact-broken"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "NOT_EVALUATED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "ARTIFACT_EXTRACTION",
+        "extractionStatus": "FAILED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "FAILURE-AGENT-TIMEOUT",
+      "unitId": "UNIT-FAILURE-AGENT-TIMEOUT",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "agent-timeout",
+        "agentTimeoutSec": 5
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "REJECTED",
+        "termination": "AGENT_TIMEOUT",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "NONE",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN"
+      }
+    },
+    {
+      "caseId": "FAILURE-BOOTSTRAP",
+      "unitId": "UNIT-FAILURE-BOOTSTRAP",
+      "fixture": "SUBSTRATE-FAILURE-01",
+      "producer": {
+        "kind": "CALIBRATION_PRODUCER",
+        "mode": "bootstrap-fail"
+      },
+      "retryOfCaseId": null,
+      "expect": {
+        "quality": "NOT_EVALUATED",
+        "termination": "COMPLETED",
+        "providerStatus": "NONE",
+        "infrastructureStatus": "ADAPTER_SETUP",
+        "extractionStatus": "NOT_PRODUCED",
+        "usageStatus": "UNKNOWN"
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+schema_version = "1.1"
+artifacts = ["/app/out"]
+
+[task]
+name = "exharness-substrate/substrate-reject-01"
+description = "Producer reports success with a wrong artifact; the independent verifier must reject."
+
+[verifier]
+timeout_sec = 120.0
+
+[agent]
+timeout_sec = 120.0
+
+[environment]
+build_timeout_sec = 600.0
+cpus = 1
+memory_mb = 512
+storage_mb = 1024
+gpus = 0
+allow_internet = false
