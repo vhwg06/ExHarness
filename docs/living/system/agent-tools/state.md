@@ -7,9 +7,11 @@ Source-synchronized projection of `packages/agent-tools` (`@exharness/agent-tool
 ExHarness supervises an external CLI coding agent (Codex, Kiro, agy or grok) from outside. The agent only edits a temporary git worktree. ExHarness owns candidate identity, verification, bounded retry with verification feedback, and promotion. The agent's exit status, success claim and final message are recorded as telemetry only and never contribute to acceptance.
 
 ```text
-AGENT_TASK_V1 { id, repositoryRoot, baseRevision, prompt, verifications[] }
- -> validateAgentTask (before any process starts)
+AGENT_TASK_V1 { id, repositoryRoot, baseRevision, prompt, verifications[], requiredFiles? }
+ -> validateAgentTask (before any process starts; unsafe requiredFiles paths rejected here)
+ -> resolveAgentTaskContext only when requiredFiles is non-empty (EXACT Oracle resolution at baseRevision)
  -> createLocalGitWorkspace: detached worktree at baseRevision under os.tmpdir()
+ -> projectAgentTaskContext into .exharness/context (git-excluded, never the candidate)
  -> createHarness(strategy = createSupervisedAgentStrategy, environment = agent-tool ACT)
     attempt 1..maxAttempts:
       AVOCapability.ACT { kind: RUN_AGENT_TOOL, attemptIndex, prompt, resume }
@@ -74,6 +76,17 @@ Run observation is described in `observation.md`:
 - a descriptive per-tool/arm report.
 
 `runSupervisedTask` accepts an optional `invocationObserver` (default null). The supervisor awaits it inside ACT after the candidate commit and before cleanup; with it null, supervision is unchanged.
+
+## Grounded context
+
+Optional Oracle-grounded inputs are described in `context.md`:
+
+- `AGENT_TASK_V1` may declare `requiredFiles`, resolved as `EXACT` snapshot-bound context at `baseRevision` before spawn through the delivered Oracle facade;
+- consumable items reach the agent as a prompt prefix beginning `ExHarness grounded context:` (path, `sourceRef:`, excerpt) plus full-byte copies at worktree `.exharness/context/<path>` that are git-excluded from the candidate;
+- missing files, stale snapshots and exhausted budgets throw `AgentTaskContextError` with code `CONTEXT_UNSATISFIED` before any agent process starts;
+- tasks without `requiredFiles` never construct an Oracle catalog and behave exactly as before.
+
+This consumer grounds supervised CLI agents. It is distinct from the Backend/QA production context adoption owned by the agentic-system package.
 
 ## Durable recovery
 
