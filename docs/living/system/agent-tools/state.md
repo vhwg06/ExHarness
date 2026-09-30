@@ -102,6 +102,29 @@ disposed in a `finally` block.
 
 `exharness-agent eval` runs the pre-registered agent-tools value evaluation. It compares `DIRECT_SINGLE`, `DIRECT_RETRY` and `EXHARNESS_SUPERVISED` on the owned eight-fixture suite in `benchmarks/agent-tools/fixtures/`. Hidden tests are applied only at independent evaluation. Records go through the shared benchmark kernel ledger, evidence manifests and fresh-process audit. A seeded paired bootstrap gives per-tool `SUPERIOR`, `INFERIOR` or `INCONCLUSIVE`, plus false-success, time, invocation and token metrics. Deterministic calibration with the fake CLI is part of `npm run test:agent-tools`. No live evaluation has been run. Tools without an adapter or executable are `NOT_EVALUATED`. Method, reasons, the grok pilot procedure and the claim boundary are in `evaluation.md`.
 
+## Operator deliver slice
+
+One local Backend-then-QA delivery slice is available as
+`exharness-agent deliver --slice <manifest.json>`. The manifest shape, the QA
+binding to the accepted Backend commit, resume through the recovery handle and
+missing-tool behavior are described in `operator.md`. The slice is local
+composition feasibility only: not first-slice product-value evidence and not a
+controlled-benchmark pilot.
+
+## MCP verification queries
+
+The stdio MCP server (`createExharnessMcpVerifyServer` in `mcp-server.js`, details
+in `mcp.md`) is a transport for verification queries, not acceptance authority.
+It exposes `exharness_verify` (`{ ok, results: [{ name, status, reason }] }`) and
+`exharness_status` (`{ attemptIndex, candidateSha, lastVerification }`) only;
+there is no promote, accept, merge or credential tool. `runSupervisedTask` opts
+in per run with `mcpVerify` (default `false`, so a default run never listens);
+when on, the server is bound to that worktree only, reports `protocolVersion:
+"2025-03-26"`, never writes user CLI configuration, and stops before the
+worktree is disposed. No runtime MCP SDK dependency was added. Outer supervision
+remains the only promotion path: a verify call during a no-edit success claim
+still leaves the run exhausted without mutating the candidate.
+
 ## Trust boundary
 
 The adapters are not a sandbox. A live run executes the agent with the user's CLI permissions and credentials under the user account, with cwd at a temporary git worktree only. The CLI can still read or write paths outside that worktree. ExHarness's own git operations preserve the source repository's HEAD, branch refs and working tree; they do not constrain what the agent process itself does. Sandbox, network and credential isolation is not provided by this package; it is separate open work on the Blackboard.

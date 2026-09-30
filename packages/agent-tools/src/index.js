@@ -48,6 +48,13 @@ export {
   writeAgentToolRunHandle
 } from "./recovery.js";
 export {
+  EXHARNESS_MCP_TOOLS,
+  MCP_FORBIDDEN_TOOL,
+  MCP_PROTOCOL_VERSION,
+  MCP_SERVER_INFO,
+  createExharnessMcpVerifyServer
+} from "./mcp-server.js";
+export {
   AgentTaskContextError,
   CONTEXT_UNSATISFIED,
   GROUNDED_CONTEXT_HEADER,
@@ -91,3 +98,12 @@ export {
   runAgentToolsEval,
   runExperiment
 } from "./experiment/index.js";
+export {
+  DELIVER_SLICE_VERSION,
+  LOCAL_SLICE_CLAIM_BOUNDARY,
+  DeliverSliceStatus,
+  commandDeliver,
+  runDeliverSlice,
+  runSliceQa,
+  validateDeliverSlice
+} from "./deliver-slice.js";

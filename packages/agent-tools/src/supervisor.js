@@ -7,6 +7,8 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { PassThrough } from "node:stream";
+import { createExharnessMcpVerifyServer } from "./mcp-server.js";
 import {
   AGENT_TOOL_RUN_HANDLE_VERSION,
   RecoveryError,
@@ -126,7 +128,8 @@ export function createSupervisedAgentStrategy({
   initialFeedback = "",
   skipFirstAct = false,
   onActCompleted = null,
-  onAttemptCompleted = null
+  onAttemptCompleted = null,
+  statusSink = null
 }) {
   if (!Number.isInteger(maxAttempts) || maxAttempts <= 0) throw new TypeError("maxAttempts must be a positive integer");
   if (!Number.isInteger(maxFeedbackChars) || maxFeedbackChars <= FEEDBACK_HEADER.length) throw new TypeError("maxFeedbackChars must be an integer larger than the feedback header");
@@ -136,11 +139,13 @@ export function createSupervisedAgentStrategy({
   if (typeof skipFirstAct !== "boolean") throw new TypeError("skipFirstAct must be a boolean");
   if (onActCompleted !== null && typeof onActCompleted !== "function") throw new TypeError("onActCompleted must be null or a function");
   if (onAttemptCompleted !== null && typeof onAttemptCompleted !== "function") throw new TypeError("onAttemptCompleted must be null or a function");
+  if (statusSink !== null && typeof statusSink !== "function") throw new TypeError("statusSink must be null or a function");
   return Object.freeze({
     async run({ input, invoke }) {
       let currentCandidate = input.candidate;
       let sessionRef = initialSessionRef;
       let feedback = initialFeedback;
+      let lastVerification = null;
       const attempts = [];
       for (let index = startAttempt; index <= maxAttempts; index += 1) {
         const skipped = skipFirstAct && index === startAttempt;
@@ -171,6 +176,8 @@ export function createSupervisedAgentStrategy({
             attempt.verification.push(record);
             if (artifact.status !== VerificationStatus.PASS) failures.push({ ...record, output: artifact.summary });
           }
+          lastVerification = attempt.verification.map((record) => ({ ...record }));
+          if (statusSink) await statusSink({ attemptIndex: index, candidateSha: currentCandidate.version, lastVerification });
           const evaluation = await invoke(AVOCapability.EVALUATE, { attemptIndex: index });
           if (evaluation.verdict === EvaluationVerdict.PASS && mutated) {
             await invoke(AVOCapability.PROMOTE, null);
@@ -205,6 +212,7 @@ export function createSupervisedAgentStrategy({
         }
         if (invocation?.sessionRef) sessionRef = invocation.sessionRef;
         if (onActCompleted) await onActCompleted({ attemptIndex: index, candidateSha: currentCandidate.version, toolSessionRef: sessionRef, feedback, mutated: acted.mutated === true });
+        if (statusSink) await statusSink({ attemptIndex: index, candidateSha: currentCandidate.version, lastVerification });
         const failures = [];
         for (const verifier of input.verifiers) {
           const artifact = await invoke(verifier.capability, { attemptIndex: index });
@@ -212,6 +220,8 @@ export function createSupervisedAgentStrategy({
           attempt.verification.push(record);
           if (artifact.status !== VerificationStatus.PASS) failures.push({ ...record, output: artifact.summary });
         }
+        lastVerification = attempt.verification.map((record) => ({ ...record }));
+        if (statusSink) await statusSink({ attemptIndex: index, candidateSha: currentCandidate.version, lastVerification });
         const evaluation = await invoke(AVOCapability.EVALUATE, { attemptIndex: index });
         if (evaluation.verdict === EvaluationVerdict.PASS && acted.mutated === true) {
           await invoke(AVOCapability.PROMOTE, null);
@@ -371,6 +381,7 @@ export async function runSupervisedTask({
   eventSinks = [],
   tracer = null,
   invocationObserver = null,
+  mcpVerify = false,
   repositoryReader = null,
   maxMaterializedBytes = 1048576,
   snapshotObserve = null,
@@ -379,6 +390,12 @@ export async function runSupervisedTask({
 }) {
   const task = validateAgentTask(rawTask);
   if (invocationObserver !== null && typeof invocationObserver !== "function") throw new TypeError("invocationObserver must be null or a function");
+  if (mcpVerify !== false && mcpVerify !== null && mcpVerify !== undefined && mcpVerify !== true) {
+    const streams = mcpVerify;
+    if (!streams || typeof streams !== "object" || Array.isArray(streams) || typeof streams.stdin?.on !== "function" || typeof streams.stdout?.write !== "function") {
+      throw new TypeError("mcpVerify must be false, true, or { stdin, stdout }");
+    }
+  }
   // Grounded Oracle context resolves after validation and before any worktree
   // exists. Only tasks that declare requiredFiles construct an Oracle catalog;
   // anything unresolved throws AgentTaskContextError before spawn.
@@ -391,19 +408,40 @@ export async function runSupervisedTask({
   if (recoveryDir !== null && (typeof recoveryDir !== "string" || recoveryDir.length === 0)) throw new TypeError("recoveryDir must be null or a non-empty string");
   if (onHandleWrite !== null && typeof onHandleWrite !== "function") throw new TypeError("onHandleWrite must be null or a function");
   if (recoveryDir !== null) {
-    return runRecoverableTask({ tool, task: strategyTask, agentContext, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, recoveryDir, onHandleWrite });
+    return runRecoverableTask({ tool, task: strategyTask, agentContext, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, mcpVerify, recoveryDir, onHandleWrite });
   }
-  const strategy = createSupervisedAgentStrategy({ task: strategyTask, maxAttempts, maxFeedbackChars });
+  const mcpStatus = { attemptIndex: 0, candidateSha: task.baseRevision, lastVerification: null };
+  const strategy = createSupervisedAgentStrategy({
+    task: strategyTask,
+    maxAttempts,
+    maxFeedbackChars,
+    statusSink: mcpVerify ? async ({ attemptIndex, candidateSha, lastVerification }) => {
+      mcpStatus.attemptIndex = attemptIndex;
+      mcpStatus.candidateSha = candidateSha;
+      mcpStatus.lastVerification = lastVerification;
+    } : null
+  });
   const scratch = await mkdtemp(join(tmpdir(), "exharness-agent-"));
   const worktreeRoot = join(scratch, "worktree");
   const logDir = join(scratch, "logs");
   let workspace = null;
+  let mcpServer = null;
   try {
     await mkdir(logDir);
     workspace = await createLocalGitWorkspace({ repositoryRoot: task.repositoryRoot, baseRevision: task.baseRevision, worktreeRoot });
     if (agentContext?.used === true) await projectAgentTaskContext(agentContext, { worktreeRoot: workspace.root });
     const toolVersion = await probeToolVersion(tool, workspace.root, env);
     const verifiers = buildSupervisedVerifiers(task, workspace.root);
+    if (mcpVerify) {
+      let streams;
+      if (mcpVerify === true) {
+        streams = { stdin: new PassThrough(), stdout: new PassThrough() };
+      } else {
+        streams = mcpVerify;
+      }
+      mcpServer = createExharnessMcpVerifyServer({ worktreeRoot: workspace.root, verifiers, status: mcpStatus });
+      await mcpServer.start(streams);
+    }
     const claims = new Set(verifiers.map((verifier) => `agent-task.${verifier.name}`));
     const harness = createHarness({
       strategy,
@@ -424,9 +462,13 @@ export async function runSupervisedTask({
     return freezeSupervisedResult({ taskId: task.id, tool, toolVersion, outcome });
   } finally {
     try {
-      if (workspace) await workspace.dispose();
+      if (mcpServer) await mcpServer.stop();
     } finally {
-      await rm(scratch, { recursive: true, force: true });
+      try {
+        if (workspace) await workspace.dispose();
+      } finally {
+        await rm(scratch, { recursive: true, force: true });
+      }
     }
   }
 }
@@ -442,7 +484,7 @@ async function persistRecoverableHandle({ recoveryDir, fields, onHandleWrite }) 
  * handle survive in recoveryDir until disposeRecoverableRun(handle). The worktree is
  * never disposed here, not even on ACCEPTED, EXHAUSTED or throw.
  */
-async function runRecoverableTask({ tool, task, agentContext = null, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, recoveryDir, onHandleWrite }) {
+async function runRecoverableTask({ tool, task, agentContext = null, model, maxAttempts, timeoutMs, maxFeedbackChars, permissionProfile, env, eventSinks, tracer, invocationObserver, mcpVerify = false, recoveryDir, onHandleWrite }) {
   const root = resolve(recoveryDir);
   if (existsSync(handlePath(root))) {
     throw new RecoveryError("HANDLE_CURRENT", `a current handle already exists in ${root}`);
@@ -477,10 +519,17 @@ async function runRecoverableTask({ tool, task, agentContext = null, model, maxA
   let lastFeedback = "";
   let lastCandidateSha = task.baseRevision;
   let lastAttemptIndex = 1;
+  const mcpStatus = { attemptIndex: 0, candidateSha: task.baseRevision, lastVerification: null };
+  const mcpStatusSink = mcpVerify ? async ({ attemptIndex, candidateSha, lastVerification }) => {
+    mcpStatus.attemptIndex = attemptIndex;
+    mcpStatus.candidateSha = candidateSha;
+    mcpStatus.lastVerification = lastVerification;
+  } : null;
   const strategy = createSupervisedAgentStrategy({
     task,
     maxAttempts,
     maxFeedbackChars,
+    statusSink: mcpStatusSink,
     onActCompleted: async ({ attemptIndex, candidateSha, toolSessionRef, feedback }) => {
       lastToolSessionRef = toolSessionRef;
       lastFeedback = feedback;
@@ -518,19 +567,34 @@ async function runRecoverableTask({ tool, task, agentContext = null, model, maxA
   });
   await harness.start({ sessionId, work: { id: task.id, prompt: task.prompt }, seedCandidate: { id: task.id, version: task.baseRevision } });
   // No try/finally disposal: the worktree and handle stay durable across crashes.
-  const variation = await harness.vary(sessionId);
-  if (variation.failure) throw new Error(`supervised agent run failed: ${variation.failure.message}`);
-  const outcome = variation.result;
-  checkSupervisedOutcome(outcome, variation);
-  const terminalAttempts = outcome.attempts ?? [];
-  const terminalIndex = terminalAttempts.at(-1)?.index ?? lastAttemptIndex;
-  const terminalCandidate = outcome.acceptedSha ?? terminalAttempts.at(-1)?.candidateSha ?? lastCandidateSha;
-  await persistRecoverableHandle({
-    recoveryDir: root,
-    onHandleWrite,
-    fields: { ...baseFields, candidateSha: terminalCandidate, toolSessionRef: lastToolSessionRef, attemptIndex: terminalIndex, phase: "ATTEMPT_COMPLETED", status: outcome.status, feedback: lastFeedback }
-  });
-  return freezeSupervisedResult({ taskId: task.id, tool, toolVersion, outcome });
+  let mcpServer = null;
+  if (mcpVerify) {
+    let streams;
+    if (mcpVerify === true) {
+      streams = { stdin: new PassThrough(), stdout: new PassThrough() };
+    } else {
+      streams = mcpVerify;
+    }
+    mcpServer = createExharnessMcpVerifyServer({ worktreeRoot: workspace.root, verifiers, status: mcpStatus });
+    await mcpServer.start(streams);
+  }
+  try {
+    const variation = await harness.vary(sessionId);
+    if (variation.failure) throw new Error(`supervised agent run failed: ${variation.failure.message}`);
+    const outcome = variation.result;
+    checkSupervisedOutcome(outcome, variation);
+    const terminalAttempts = outcome.attempts ?? [];
+    const terminalIndex = terminalAttempts.at(-1)?.index ?? lastAttemptIndex;
+    const terminalCandidate = outcome.acceptedSha ?? terminalAttempts.at(-1)?.candidateSha ?? lastCandidateSha;
+    await persistRecoverableHandle({
+      recoveryDir: root,
+      onHandleWrite,
+      fields: { ...baseFields, candidateSha: terminalCandidate, toolSessionRef: lastToolSessionRef, attemptIndex: terminalIndex, phase: "ATTEMPT_COMPLETED", status: outcome.status, feedback: lastFeedback }
+    });
+    return freezeSupervisedResult({ taskId: task.id, tool, toolVersion, outcome });
+  } finally {
+    if (mcpServer) await mcpServer.stop();
+  }
 }
 
 /**
