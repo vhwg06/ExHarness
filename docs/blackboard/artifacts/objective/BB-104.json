@@ -1,0 +1,35 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-104",
+  "outcome": "An operator can run one local Backend-then-QA delivery slice from a repository, a bounded objective and declared verifications through supervised agent-tools, with independent QA and durable resume, without sandbox, SCM push or OpenHands.",
+  "currentProblem": "The delivered CLI exposes run, report, probe and smoke for a single AGENT_TASK_V1. Nothing composes Backend then independent QA, Oracle-declared context and crash/resume into one operator command. BB-069 is the OpenHands plus sandbox plus preview first slice and is blocked on BB-065 through BB-068.",
+  "scope": [
+    "agent-tools.operator-deliver",
+    "agentic.local-backend-qa-slice"
+  ],
+  "constraints": [
+    "Local only: no git push, no remote CI, no sandbox, no OpenHands, no DomainExecutionController dispatch.",
+    "QA is non-mutating and bound to the accepted Backend commit; a QA mutation or a different revision fails.",
+    "This slice is feasibility of the delivered composition, not BB-069 product-value or BB-074 pilot evidence.",
+    "Research may use BB-100, BB-101 and BB-102 as PLANNED_CONTRACT; the Worker binds only DONE dependencies.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment.",
+    "Every input is labeled DELIVERED_TRUTH, PLANNED_CONTRACT or RESEARCH_DESIRED_STATE; planned contracts are never described as delivered."
+  ],
+  "successCriteria": [
+    "Specify an exharness-agent deliver command that reads a slice manifest (repository, base revision, objective prompt, Backend verifications, QA verifications, optional requiredFiles, tool) and runs Backend then QA.",
+    "Specify independent QA on a read-only checkout of the accepted Backend commit, failing when QA mutates the tree or verifies a different revision.",
+    "Specify resume of an interrupted slice through the BB-101 handle, and TOOL_UNAVAILABLE / NOT_INSTALLED without fabricating ACCEPT.",
+    "Specify Living docs stating the local-slice trust boundary and that this is not BB-069/BB-074 evidence.",
+    "Ground the design in the executed productization probe and the BB-100/101/102 planned contracts and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/agent-tool-productization.md",
+    "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "packages/agentic-system/src/composition.js",
+    "docs/blackboard/artifacts/objective/BB-069.json",
+    "docs/living/system/agent-tools/state.md"
+  ]
+}

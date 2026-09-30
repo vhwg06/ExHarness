@@ -1,0 +1,334 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-104",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-104.json",
+    "hash": "17543d286fa3f94ee49b0d922cb8521350b4497e572bd758d69c8d7032dca894"
+  },
+  "scope": [
+    "agent-tools.operator-deliver",
+    "agentic.local-backend-qa-slice"
+  ],
+  "outOfScope": [
+    "git push, remote CI, sandbox, OpenHands, DomainExecutionController dispatch.",
+    "Reporting this slice as BB-069 first-slice or BB-074 pilot value evidence.",
+    "Implementing BB-100, BB-101 or BB-102 themselves."
+  ],
+  "constraints": [
+    "CLI subcommand deliver on packages/agent-tools/bin/exharness-agent.mjs; slice runner in packages/agent-tools/src/deliver-slice.js; tests in packages/agent-tools/test/deliver-slice.test.js titled DL1..DL5 followed by a space with { timeout: 120000 }.",
+    "Research may use BB-100/101/102 as PLANNED_CONTRACT; the Worker binds only DONE dependencies and imports their public exports.",
+    "Live tools are opt-in; npm test uses the fake CLI only.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
+  ],
+  "invariants": [
+    "QA is non-mutating and bound to the accepted Backend commit; a QA write or a different revision fails the slice.",
+    "TOOL_UNAVAILABLE and NOT_INSTALLED never print ACCEPTED.",
+    "The slice is local feasibility of the delivered composition, not BB-069 or BB-074 evidence.",
+    "ExHarness git operations preserve the source repository HEAD, branch refs and working tree."
+  ],
+  "architectureDecisions": [
+    "D1 — DELIVER_SLICE_V1 manifest = { id, repositoryRoot, baseRevision, prompt, tool, backendVerifications, qaVerifications, requiredFiles?, recoveryDir?, maxAttempts?, timeoutMs? }. validateDeliverSlice rejects missing id/repo/40-hex revision/prompt/tool/non-empty backend and qa verification arrays.",
+    "D2 — exharness-agent deliver --slice <file> [--command <path>] [--recovery-dir <dir>] reads the manifest, calls runSupervisedBackendWork (BB-100) with mapped AGENT_TASK, then on APPLIED runs QA command verifiers via createLocalCommandVerifier on a fresh read-only checkout of acceptedSha with requireUnchangedTree true.",
+    "D3 — QA failure (mutation, revision mismatch, non-zero) yields slice status QA_FAILED with backendSha recorded; Backend EXHAUSTED/TOOL_UNAVAILABLE stops before QA. ACCEPTED requires both stages.",
+    "D4 — recoveryDir is passed to BB-101. Killing after Backend ACT and calling deliver again with the same recoveryDir resumes Backend then continues QA on the accepted sha. Missing tool prints TOOL_UNAVAILABLE / SKIPPED NOT_INSTALLED and never ACCEPTED.",
+    "D5 — requiredFiles is passed to BB-102 when present. Tests without it still run.",
+    "D6 — Docs and report.json include claimBoundary: LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074.",
+    "D7 — Evidence basis: productization probe hasDeliverCommand false; BB-069 objective is a different, blocked first-slice; composition.js does not import agent-tools.",
+    "D8 — Living: docs/living/system/agent-tools/state.md and docs/living/system/agent-tools/operator.md."
+  ],
+  "sourceScope": {
+    "read": [
+      "packages/**",
+      "test/**",
+      "scripts/**",
+      "docs/**",
+      "README.md",
+      "package.json"
+    ],
+    "write": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/index.js",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agent-tools/test/deliver-slice.test.js",
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/operator.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agentic-system/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "docs/blackboard/process/agent-tool-productization.md",
+      "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "packages/agent-tools/bin/exharness-agent.mjs",
+      "packages/agentic-system/src/composition.js",
+      "docs/blackboard/artifacts/objective/BB-069.json",
+      "docs/living/system/agent-tools/state.md"
+    ],
+    "expectedNew": [
+      "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/test/deliver-slice.test.js",
+      "docs/living/system/agent-tools/operator.md"
+    ],
+    "expectedTests": [
+      "packages/agent-tools/test/deliver-slice.test.js"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Manifest + CLI [DL1]: D1 and deliver subcommand parsing.",
+    "S2 — Backend then QA [DL2,DL3]: D2-D3 independent QA on acceptedSha.",
+    "S3 — Resume and unavailable [DL4]: D4 recovery and TOOL_UNAVAILABLE.",
+    "S4 — Docs [DL5]: Living operator.md and claimBoundary; test:agent-tools, verify:current-docs, npm test."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "DL1",
+      "statement": "exharness-agent deliver reads a slice manifest and runs Backend then QA through the BB-100 adapter.",
+      "verificationIds": ["dl1-cli", "agent-tools"],
+      "evidenceRequired": ["DL1 test output."]
+    },
+    {
+      "id": "DL2",
+      "statement": "Independent QA runs on a read-only checkout of the accepted Backend commit and fails when QA mutates the tree or verifies a different revision.",
+      "verificationIds": ["dl2-qa", "agent-tools"],
+      "evidenceRequired": ["DL2 test output."]
+    },
+    {
+      "id": "DL3",
+      "statement": "An interrupted slice resumes through the BB-101 handle and continues QA on the same accepted sha.",
+      "verificationIds": ["dl3-resume", "agent-tools"],
+      "evidenceRequired": ["DL3 test output."]
+    },
+    {
+      "id": "DL4",
+      "statement": "Missing or unauthenticated tools yield TOOL_UNAVAILABLE / NOT_INSTALLED and never ACCEPTED.",
+      "verificationIds": ["dl4-unavailable", "agent-tools"],
+      "evidenceRequired": ["DL4 test output."]
+    },
+    {
+      "id": "DL5",
+      "statement": "Living docs state the local-slice trust boundary and that this is not BB-069 or BB-074 evidence.",
+      "verificationIds": ["dl5-docs", "docs", "repository"],
+      "evidenceRequired": ["DL5 docs diff, verify:current-docs and npm test logs."]
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "QA is non-mutating and bound to the accepted Backend commit; a QA write or a different revision fails the slice.",
+      "criterionIds": ["DL2"]
+    },
+    {
+      "invariant": "TOOL_UNAVAILABLE and NOT_INSTALLED never print ACCEPTED.",
+      "criterionIds": ["DL4"]
+    },
+    {
+      "invariant": "The slice is local feasibility of the delivered composition, not BB-069 or BB-074 evidence.",
+      "criterionIds": ["DL5"]
+    },
+    {
+      "invariant": "ExHarness git operations preserve the source repository HEAD, branch refs and working tree.",
+      "criterionIds": ["DL1", "DL3"]
+    }
+  ],
+  "verificationPlan": [
+    { "id": "dl1-cli", "command": "node --test --test-name-pattern=\"^DL1 \" packages/agent-tools/test/deliver-slice.test.js" },
+    { "id": "dl2-qa", "command": "node --test --test-name-pattern=\"^DL2 \" packages/agent-tools/test/deliver-slice.test.js" },
+    { "id": "dl3-resume", "command": "node --test --test-name-pattern=\"^DL3 \" packages/agent-tools/test/deliver-slice.test.js" },
+    { "id": "dl4-unavailable", "command": "node --test --test-name-pattern=\"^DL4 \" packages/agent-tools/test/deliver-slice.test.js" },
+    { "id": "dl5-docs", "command": "node --test --test-name-pattern=\"^DL5 \" packages/agent-tools/test/deliver-slice.test.js" },
+    { "id": "agent-tools", "command": "npm run test:agent-tools" },
+    { "id": "docs", "command": "npm run verify:current-docs" },
+    { "id": "repository", "command": "npm test" }
+  ],
+  "researchGaps": [
+    "Confirm BB-100 export name runSupervisedBackendWork and BB-101 resumeSupervisedTask are the public names at Worker start; rebind if research on those tasks renamed them."
+  ],
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+      "finding": "Executed: hasDeliverCommand false; CLI has no backend command."
+    },
+    {
+      "ref": "docs/blackboard/artifacts/objective/BB-069.json",
+      "finding": "BB-069 is a different first-slice requiring Oracle plus isolated preview; it is not this local composition."
+    },
+    {
+      "ref": "packages/agentic-system/src/composition.js",
+      "finding": "DELIVERED_TRUTH: runBackendThenQaObjective does not import agent-tools."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": ["BB-100", "BB-101", "BB-102"],
+    "workerStart": "Confirm DONE BB-100 exports runSupervisedBackendWork, DONE BB-101 exports resumeSupervisedTask/recoveryDir, DONE BB-102 accepts optional requiredFiles.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": ["exharness-agent CLI run/probe/smoke", "createLocalCommandVerifier"],
+      "PLANNED_CONTRACT": ["BB-100 adapter", "BB-101 recovery", "BB-102 requiredFiles"],
+      "RESEARCH_DESIRED_STATE": ["deliver subcommand and DELIVER_SLICE_V1 defined here"]
+    },
+    "contradiction": "If DONE BB-100 cannot be called without going through createBackendWorker mutation-only evaluate, stop PLAN_INPUT_CONTRADICTION."
+  },
+  "deliveryContract": {
+    "precondition": "BB-100 DONE, BB-101 DONE, BB-102 DONE.",
+    "completion": "All DL criterion runs + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No git push, no sandbox, no OpenHands, no BB-069/BB-074 value claim."
+  },
+  "ciContract": {
+    "checks": ["dl1-cli", "dl2-qa", "dl3-resume", "dl4-unavailable", "dl5-docs", "agent-tools", "docs", "repository"],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": ["existing run/report/probe/smoke commands"],
+    "add": ["deliver-slice.js", "deliver subcommand", "tests", "Living operator.md"],
+    "rollback": "Remove deliver-slice.js, deliver subcommand, tests and Living operator.md."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-104 objective + productization probe + BB-100/101/102 planned contracts",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": ["product implementation", "planned dependency as delivered truth", "self-issued readiness"]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-100, BB-101, BB-102",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": ["No git push, no sandbox, no OpenHands, no BB-069/BB-074 value claim."]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agent-tools/state.md",
+      "docs/living/system/agent-tools/operator.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe the deliver command, QA binding, resume, unavailable-tool behavior and the LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074 claim boundary."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Specify an exharness-agent deliver command that reads a slice manifest (repository, base revision, objective prompt, Backend verifications, QA verifications, optional requiredFiles, tool) and runs Backend then QA.",
+      "criterionIds": ["DL1"],
+      "planElements": ["S1", "S2"],
+      "verificationIds": ["dl1-cli"],
+      "decisionIndexes": [0, 1],
+      "sourceRefs": ["packages/agent-tools/bin/exharness-agent.mjs"],
+      "sourceAnchors": [
+        { "ref": "packages/agent-tools/bin/exharness-agent.mjs", "match": "exharness-agent run --tool" }
+      ],
+      "supportingPlanFields": ["architectureDecisions"]
+    },
+    {
+      "objectiveCriterion": "Specify independent QA on a read-only checkout of the accepted Backend commit, failing when QA mutates the tree or verifies a different revision.",
+      "criterionIds": ["DL2"],
+      "planElements": ["S2"],
+      "verificationIds": ["dl2-qa"],
+      "decisionIndexes": [2],
+      "sourceRefs": ["docs/blackboard/process/agent-tool-research/BB-104.md"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/process/agent-tool-research/BB-104.md", "match": "How is QA bound to the accepted Backend commit" }
+      ],
+      "supportingPlanFields": ["invariants"]
+    },
+    {
+      "objectiveCriterion": "Specify resume of an interrupted slice through the BB-101 handle, and TOOL_UNAVAILABLE / NOT_INSTALLED without fabricating ACCEPT.",
+      "criterionIds": ["DL3", "DL4"],
+      "planElements": ["S3"],
+      "verificationIds": ["dl3-resume", "dl4-unavailable"],
+      "decisionIndexes": [3],
+      "sourceRefs": ["docs/blackboard/evidence/BB-100/productization-probe-result.json"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/evidence/BB-100/productization-probe-result.json", "match": "\"hasDeliverCommand\": false" }
+      ],
+      "supportingPlanFields": ["negativeVerificationCases"]
+    },
+    {
+      "objectiveCriterion": "Specify Living docs stating the local-slice trust boundary and that this is not BB-069/BB-074 evidence.",
+      "criterionIds": ["DL5"],
+      "planElements": ["S4"],
+      "verificationIds": ["dl5-docs", "docs"],
+      "decisionIndexes": [5, 7],
+      "sourceRefs": ["docs/blackboard/artifacts/objective/BB-069.json"],
+      "sourceAnchors": [
+        { "ref": "docs/blackboard/artifacts/objective/BB-069.json", "match": "One bounded real feature reaches a reviewable candidate" }
+      ],
+      "supportingPlanFields": ["livingDocs"]
+    },
+    {
+      "objectiveCriterion": "Ground the design in the executed productization probe and the BB-100/101/102 planned contracts and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness.",
+      "criterionIds": ["DL1", "DL2", "DL3", "DL4", "DL5"],
+      "planElements": ["S1", "S2", "S3", "S4"],
+      "verificationIds": ["dl1-cli", "dl2-qa", "dl3-resume", "dl4-unavailable", "dl5-docs", "repository"],
+      "decisionIndexes": [6],
+      "sourceRefs": ["packages/agentic-system/src/composition.js"],
+      "sourceAnchors": [
+        { "ref": "packages/agentic-system/src/composition.js", "match": "runBackendThenQaObjective" }
+      ],
+      "supportingPlanFields": ["sourceSeams"]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A QA verifier that writes a file fails the slice.",
+    "QA pointed at a different revision than acceptedSha fails.",
+    "Missing --tool executable prints TOOL_UNAVAILABLE and not ACCEPTED.",
+    "deliver without --slice is a usage error and does not run an agent.",
+    "Report artifacts contain LOCAL_COMPOSITION_SLICE_NOT_BB069_NOT_BB074."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NC-DL-mutate",
+      "negativeCaseIndex": 0,
+      "criterionId": "DL2",
+      "verificationId": "dl2-qa",
+      "testRef": "packages/agent-tools/test/deliver-slice.test.js",
+      "testTitle": "DL2 QA mutation fails the slice",
+      "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NC-DL-revision",
+      "negativeCaseIndex": 1,
+      "criterionId": "DL2",
+      "verificationId": "dl2-qa",
+      "testRef": "packages/agent-tools/test/deliver-slice.test.js",
+      "testTitle": "DL2 QA on a different revision fails",
+      "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NC-DL-missing",
+      "negativeCaseIndex": 2,
+      "criterionId": "DL4",
+      "verificationId": "dl4-unavailable",
+      "testRef": "packages/agent-tools/test/deliver-slice.test.js",
+      "testTitle": "DL4 missing tool is not ACCEPTED",
+      "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NC-DL-usage",
+      "negativeCaseIndex": 3,
+      "criterionId": "DL1",
+      "verificationId": "dl1-cli",
+      "testRef": "packages/agent-tools/test/deliver-slice.test.js",
+      "testTitle": "DL1 deliver without slice is usage error",
+      "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NC-DL-claim",
+      "negativeCaseIndex": 4,
+      "criterionId": "DL5",
+      "verificationId": "dl5-docs",
+      "testRef": "packages/agent-tools/test/deliver-slice.test.js",
+      "testTitle": "DL5 claim boundary is not BB-069",
+      "subjectSymbol": "runDeliverSlice"
+    }
+  ]
+}

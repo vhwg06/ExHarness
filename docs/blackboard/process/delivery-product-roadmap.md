@@ -147,10 +147,25 @@ BB-083 research is consumed as design input by three one-way layers: [BB-084](ob
 
 [Brief](gate-gap-and-oracle-continuations.md): BB-090 closes the Worker gate gap that let BB-064 pass with untested negatives (BB-064 stays DONE). BB-091..095 register the remaining BB-064 continuations in fixed order: planner ablation, progressive resolution, budget profiles, Core profile conformance, held-out profile acceptance.
 
-## Real Backend/QA execution � BB-096
+## Real Backend/QA execution � BB-096
 
 [Research brief](delivery-research/BB-096.md): the executed probe shows delivered Backend ACCEPT with PASS mutation/typecheck/tests on an unchanged real repository whose test fails; BB-096 adds a local git workspace and shell-free command verifier and proves Backend/QA through a real Core CodeAct strategy. Live provider, sandbox and SCM remain BB-066..068.
 
-## Agent-tool integration and measured value � BB-097..099
+## Agent-tool integration and measured value — BB-097..099
 
 Briefs: [BB-097](agent-tool-research/BB-097.md) runs Codex, Kiro and agy under ExHarness supervision (outer loop over the BB-096 workspace/verifiers), [BB-098](agent-tool-research/BB-098.md) observes every direct and supervised invocation as redacted digest-chained traces, [BB-099](agent-tool-research/BB-099.md) measures supervised versus direct delivery per tool with a DIRECT_RETRY control on the BB-065 benchmark kernel.
+
+
+## Agent-tool productization — BB-100..104
+
+[Discovery brief](agent-tool-productization.md): executed 2026-09-30 probe against delivered BB-096/BB-097. The three planes (Backend/QA, Oracle facade, agent-tools supervisor) do not currently compose. New RESEARCH_SA tasks, independent of BB-054/BB-065:
+
+| Task | Question | Worker dependencies |
+|---|---|---|
+| BB-100 | Opt-in Backend adapter: BackendWorkOrder → runSupervisedTask → BackendWorkResult; default CodeAct path unchanged | BB-096, BB-097 (DONE) |
+| BB-101 | Durable crash/resume of a supervised run (worktree + tool session + Core session) | BB-097 (DONE) |
+| BB-102 | Optional AGENT_TASK.requiredFiles through createOracleContextResolver (EXACT) | BB-097 (DONE) |
+| BB-103 | Stdio MCP tools for verify/status only; promote stays ExHarness-owned | BB-097 (DONE) |
+| BB-104 | Operator `deliver` CLI composing 100+101+102 into one local Backend-then-QA slice | BB-100, BB-101, BB-102 |
+
+Not registered: sandbox (BB-067), OpenHands domain runtime (BB-066), BB-069 first-slice, generic PM/SA runtime. Research may run ahead; no existing READY/DONE task is reopened.
