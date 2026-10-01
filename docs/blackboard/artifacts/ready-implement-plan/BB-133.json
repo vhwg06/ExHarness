@@ -32,7 +32,7 @@
   "architectureDecisions": [
     "D1: Select NODE_HTTP_SQLITE_LOCAL_V1: trusted local loopback HTTP service, Node 24.20.0/Linux x64 and an owned file-backed SQLite fixture. A finite externally pinned previous-client request/assertion manifest plus independent row assertions verifies one explicit forward migration and a fresh process restart; no inferred migration or generic OpenAPI compatibility claim.",
     "D2: Implement createApiStateVerifier as the existing Product QA criterionVerifier injection. Resolve an external protected profile by snapshotRef/verifierPolicyRef, validate all input digests before effects and emit PASS/FAIL/INCONCLUSIVE plus content-addressed evidenceRefs. Product QA observes runtime identity, aggregates criteria and owns QualityAcceptance publication unchanged.",
-    "D3: Preview and protected-evaluator dependencies are proposed shims, not delivered APIs. Require BB-131/127 DONE and rebind their delivered contracts before Worker. A shim owns the exact candidate checkout, dataset copy, service handles and restart. Migrate and restart the same owned database; do not reseed between releases. Cleanup acts only on handles/paths with a matching ownership token.",
+    "D3 (resolved): The worker implements the preview-snapshot and protected-evaluator adapters as plan-owned local shims with the exact interfaces declared in S1: a shim owns the candidate checkout, dataset copy, service handles and restart, migrates and restarts the same owned database without reseeding between releases, and cleans up only handles/paths with a matching ownership token. If BB-131/127 reach DONE before Worker starts, the worker rebinds to their delivered contracts instead; otherwise the plan-owned shims stand. No design decision remains open.",
     "D4: Do not adopt Schemathesis/Testcontainers. Inspected pinned source/tests support optional future adapters; Node avoids Python/container prerequisites. No external runtime or comparative cost/value claim.",
     "D5: Expose a callable factory via Product QA injection; no deliver manifest/CLI extension. Generic command checks remain usable. BB-071/074 own change/value and BB-129 owns handoff.",
     "D6: Keep DRAFT; only fresh independent Jev SATISFIED grants readiness. Calibration establishes prototype feasibility, not product implementation, dependency delivery or value."
@@ -82,10 +82,10 @@
     ]
   },
   "implementationSlices": [
-    "S1 \u2014 After dependencies DONE/fresh READY, implement factory, config/digest/criterion validation and snapshot-to-protected-profile resolver. Bind preview and ownership before effects.",
-    "S2 \u2014 Verify baseline client/seed, execute candidate forward migration, old-client/new-feature assertions and restart a fresh process on the same store. Record old/new row/schema facts, enforce budgets and dispose only owned resources.",
-    "S3 \u2014 Emit content-addressed criterion observations/reproducers with all identities through existing Product QA. Test actual factory injection, every named negative and complete positive flow. Adapter cannot publish acceptance.",
-    "S4 \u2014 Run focused/QA/regression/docs checks, reconcile Living limits and provide bound Worker logs/source evidence. Refresh READY if dependency APIs contradict proposed shims."
+    "S1 — After dependencies DONE/fresh READY, implement factory, config/digest/criterion validation and snapshot-to-protected-profile resolver. Bind preview and ownership before effects.",
+    "S2 — Verify baseline client/seed, execute candidate forward migration, old-client/new-feature assertions and restart a fresh process on the same store. Record old/new row/schema facts, enforce budgets and dispose only owned resources.",
+    "S3 — Emit content-addressed criterion observations/reproducers with all identities through existing Product QA. Test actual factory injection, every named negative and complete positive flow. Adapter cannot publish acceptance.",
+    "S4 — Run focused/QA/regression/docs checks, reconcile Living limits and provide bound Worker logs/source evidence. Rebind to BB-131/127 delivered contracts when DONE; otherwise keep the plan-owned shims from D3."
   ],
   "acceptanceCriteria": [
     {
@@ -153,23 +153,28 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agentic-system/test/api-state-verifier.test.js"
+      "command": "node --test packages/agentic-system/test/api-state-verifier.test.js",
+      "negativeCases": "focused must fail closed on all 13 negativeVerificationCases: deleted seeded rows, weakened schema, added required input, removed required response, corrupted old records, state reset on restart, changed evaluator digest, deleted assertions/no-op oracle, missing/wrong preview identity, migration failure, timeout/malformed response, foreign fixture disposal, unknown/unexecuted criterion."
     },
     {
       "id": "qa-authority",
-      "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/product-qa-race.test.js"
+      "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/product-qa-race.test.js",
+      "negativeCases": "qa-authority must reject acceptance when evaluator digest changes, assertions are deleted, or preview identity is missing/wrong."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "negativeCases": "regression must stay green; no silent behavior change."
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "negativeCases": "regression must stay green; no silent behavior change."
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "negativeCases": "docs must keep Living limits reconciled; no Blackboard ids in Living docs."
     }
   ],
   "invariantCoverage": [
@@ -603,22 +608,33 @@
         4
       ],
       "sourceRefs": [
+        "packages/agentic-system/src/local-command-verifier.js",
         "packages/agentic-system/src/product-qa.js",
         "docs/blackboard/evidence/BB-133/discovery.json"
       ],
       "sourceAnchors": [
         {
-          "ref": "packages/agentic-system/src/product-qa.js",
-          "match": "criterionVerifier.verify(deepFreeze("
+          "ref": "docs/blackboard/evidence/BB-133/discovery.json",
+          "match": "there is no named local API/state compatibility profile"
         },
         {
-          "ref": "docs/blackboard/evidence/BB-133/discovery.json",
-          "match": "Local command verification can run caller-authored tests"
+          "ref": "packages/agentic-system/src/local-command-verifier.js",
+          "match": "export function createLocalCommandVerifier({"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "criterionVerifier,"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "every pinned acceptance criterion must PASS"
         }
       ],
       "supportingPlanFields": [
-        "profileContract",
-        "dependencyContracts"
+        "valueHypothesis",
+        "dependencyResolution",
+        "implementationSlices",
+        "verificationPlan"
       ]
     },
     {
@@ -652,13 +668,19 @@
           "match": "criteria.results.every((result) => result.verdict === \"PASS\")"
         },
         {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "REMEDIATION_REQUIRED"
+        },
+        {
           "ref": "docs/blackboard/evidence/BB-133/discovery.json",
           "match": "Schema-derived checks alone cannot establish business semantics"
         }
       ],
       "supportingPlanFields": [
-        "profileContract",
-        "researchPrototype"
+        "valueHypothesis",
+        "dependencyResolution",
+        "implementationSlices",
+        "verificationPlan"
       ]
     },
     {
@@ -690,18 +712,28 @@
         5
       ],
       "sourceRefs": [
-        "docs/blackboard/evidence/BB-133/discovery.json"
+        "docs/blackboard/evidence/BB-133/discovery.json",
+        "packages/agentic-system/src/product-qa.js"
       ],
       "sourceAnchors": [
         {
           "ref": "docs/blackboard/evidence/BB-133/discovery.json",
-          "match": "\"experimentStatus\": \"NOT_RUN; only the source/manifest boundary audit has executed\""
+          "match": "\"experimentStatus\": \"NOT_RUN"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-133/discovery.json",
+          "match": "\"plannedExperiment\": \"Run an initial accepted fixture"
+        },
+        {
+          "ref": "packages/agentic-system/src/product-qa.js",
+          "match": "every pinned acceptance criterion must PASS"
         }
       ],
       "supportingPlanFields": [
-        "researchPrototype",
-        "researchSources",
-        "dependencyContracts"
+        "valueHypothesis",
+        "dependencyResolution",
+        "implementationSlices",
+        "verificationPlan"
       ]
     }
   ],
