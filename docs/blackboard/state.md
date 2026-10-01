@@ -50,7 +50,6 @@ NONE
 - BB-123 [WORKER/EXECUTION] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
 - BB-124 [RESEARCH_SA/RESEARCH] — Preserve truthful partial usage and per-field accounting coverage
 - BB-125 [RESEARCH_SA/RESEARCH] — Bind supervised resume to the exact task and execution contract
-- BB-126 [RESEARCH_SA/RESEARCH] — Stop repeated no-progress retries with evidence-bound feedback
 - BB-127 [RESEARCH_SA/RESEARCH] — Add externally pinned acceptance for local delivery slices
 - BB-128 [RESEARCH_SA/RESEARCH] — Expose delivered Grok and OpenCode adapters through operator delivery
 - BB-129 [RESEARCH_SA/RESEARCH] — Export a durable review bundle for the exact local candidate
@@ -136,7 +135,7 @@ BB-122 [DONE] <- BB-097, BB-098
 BB-123 [WORKER_SCHEDULABLE] <- BB-105, BB-102
 BB-124 [RESEARCH_SCHEDULABLE] <- BB-098, BB-105, BB-123
 BB-125 [RESEARCH_SCHEDULABLE] <- BB-101
-BB-126 [RESEARCH_SCHEDULABLE] <- BB-125
+BB-126 [BLOCKED_BY BB-125] <- BB-125
 BB-127 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130, BB-125
 BB-128 [RESEARCH_SCHEDULABLE] <- BB-104, BB-122
 BB-129 [RESEARCH_SCHEDULABLE] <- BB-127
