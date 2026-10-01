@@ -139,6 +139,7 @@ export async function resolveModelRoute(registry, route) {
   const adapter = defineModelAdapter({
     name: resolvedAdapter.name,
     version: resolvedAdapter.version,
+    asyncResultDelivery: resolvedAdapter.asyncResultDelivery,
     async generate(request) {
       generateCalls += 1;
       return resolvedAdapter.generate(request);

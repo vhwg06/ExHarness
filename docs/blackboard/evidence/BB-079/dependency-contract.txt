@@ -1,0 +1,169 @@
+TAP version 13
+# Subtest: RUNNING then terminal stages as distinct immutable items without rewriting committed bytes
+ok 1 - RUNNING then terminal stages as distinct immutable items without rewriting committed bytes
+  ---
+  duration_ms: 4.12868
+  type: 'test'
+  ...
+# Subtest: non-terminal items never expose result or error payloads
+ok 2 - non-terminal items never expose result or error payloads
+  ---
+  duration_ms: 0.329697
+  type: 'test'
+  ...
+# Subtest: terminal items project the delivered result and error only from operation truth
+ok 3 - terminal items project the delivered result and error only from operation truth
+  ---
+  duration_ms: 0.277763
+  type: 'test'
+  ...
+# Subtest: duplicate transitionId delivery is idempotent and creates no second item
+ok 4 - duplicate transitionId delivery is idempotent and creates no second item
+  ---
+  duration_ms: 0.487183
+  type: 'test'
+  ...
+# Subtest: reused transitionId with conflicting binding fails closed
+ok 5 - reused transitionId with conflicting binding fails closed
+  ---
+  duration_ms: 0.759416
+  type: 'test'
+  ...
+# Subtest: missing effect identity fails closed instead of projecting ambiguous context
+ok 6 - missing effect identity fails closed instead of projecting ambiguous context
+  ---
+  duration_ms: 0.261897
+  type: 'test'
+  ...
+# Subtest: malformed generation and sequence fail closed
+ok 7 - malformed generation and sequence fail closed
+  ---
+  duration_ms: 0.310075
+  type: 'test'
+  ...
+# Subtest: out-of-order sequences remain append-only without corrupting the committed prefix
+ok 8 - out-of-order sequences remain append-only without corrupting the committed prefix
+  ---
+  duration_ms: 0.631978
+  type: 'test'
+  ...
+# Subtest: committing an unknown or already-committed item fails closed
+ok 9 - committing an unknown or already-committed item fails closed
+  ---
+  duration_ms: 1.372754
+  type: 'test'
+  ...
+# Subtest: deliberate mutation of committed bytes is detected as prefix corruption
+ok 10 - deliberate mutation of committed bytes is detected as prefix corruption
+  ---
+  duration_ms: 0.745873
+  type: 'test'
+  ...
+# Subtest: each turn reports committed-prefix and staged-suffix digests with byte lengths
+ok 11 - each turn reports committed-prefix and staged-suffix digests with byte lengths
+  ---
+  duration_ms: 0.484879
+  type: 'test'
+  ...
+# Subtest: missing provider cache telemetry stays null and is never inferred from a stable digest
+ok 12 - missing provider cache telemetry stays null and is never inferred from a stable digest
+  ---
+  duration_ms: 0.515139
+  type: 'test'
+  ...
+# Subtest: reported provider cache telemetry is recorded separately from structural digests
+ok 13 - reported provider cache telemetry is recorded separately from structural digests
+  ---
+  duration_ms: 0.152157
+  type: 'test'
+  ...
+# Subtest: dependency manifest binds the exact DONE BB-077/BB-078 refs
+ok 14 - dependency manifest binds the exact DONE BB-077/BB-078 refs
+  ---
+  duration_ms: 0.410678
+  type: 'test'
+  ...
+# Subtest: dependency PLAN_INPUT_CONTRADICTION negatives fail closed
+ok 15 - dependency PLAN_INPUT_CONTRADICTION negatives fail closed
+  ---
+  duration_ms: 0.443982
+  type: 'test'
+  ...
+# Subtest: dependency DEPENDENCY binds the real DONE BB-077/BB-078 graph, receipts, results, judgments and Living refs
+ok 16 - dependency DEPENDENCY binds the real DONE BB-077/BB-078 graph, receipts, results, judgments and Living refs
+  ---
+  duration_ms: 16.487762
+  type: 'test'
+  ...
+# Subtest: projection truth cannot synthesize effect confirmation or product acceptance
+ok 17 - projection truth cannot synthesize effect confirmation or product acceptance
+  ---
+  duration_ms: 0.334464
+  type: 'test'
+  ...
+# Subtest: binding-corruption and unresolved ambiguity leave state unchanged
+ok 18 - binding-corruption and unresolved ambiguity leave state unchanged
+  ---
+  duration_ms: 0.318518
+  type: 'test'
+  ...
+# Subtest: projected items carry the exact plan identity fields
+ok 19 - projected items carry the exact plan identity fields
+  ---
+  duration_ms: 0.19666
+  type: 'test'
+  ...
+# Subtest: real BB-078 production stages through the operation record join, including a lawful generation advance
+ok 20 - real BB-078 production stages through the operation record join, including a lawful generation advance
+  ---
+  duration_ms: 4.814455
+  type: 'test'
+  ...
+# Subtest: a new transitionId for the same operation cannot change call or effect identity
+ok 21 - a new transitionId for the same operation cannot change call or effect identity
+  ---
+  duration_ms: 1.271078
+  type: 'test'
+  ...
+# Subtest: a forged transitionId that does not derive from its envelope fails closed
+ok 22 - a forged transitionId that does not derive from its envelope fails closed
+  ---
+  duration_ms: 0.401904
+  type: 'test'
+  ...
+# Subtest: staged payloads are deeply frozen against in-memory nested mutation
+ok 23 - staged payloads are deeply frozen against in-memory nested mutation
+  ---
+  duration_ms: 0.272724
+  type: 'test'
+  ...
+# Subtest: JSON round-trip restore keeps working checkpoints and rejects tampered ones
+ok 24 - JSON round-trip restore keeps working checkpoints and rejects tampered ones
+  ---
+  duration_ms: 1.751881
+  type: 'test'
+  ...
+# Subtest: mutated committed state is caught on every entry point, not only the optional helper
+ok 25 - mutated committed state is caught on every entry point, not only the optional helper
+  ---
+  duration_ms: 0.446527
+  type: 'test'
+  ...
+# Subtest: commit rejects duplicates and enforces staged projection order
+ok 26 - commit rejects duplicates and enforces staged projection order
+  ---
+  duration_ms: 0.637688
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 115.067872
+
+
+exitCode=0
