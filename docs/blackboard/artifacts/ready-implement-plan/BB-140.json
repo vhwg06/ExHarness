@@ -26,7 +26,7 @@
     "Unknown permission, non-positive timeout, and unknown eval flags fail as usage errors before any attempt starts. Omitted flags keep WORKSPACE_EDIT and 600000."
   ],
   "architectureDecisions": [
-    "D1 — EVAL_FLAGS add \"permission\" and \"timeout-ms\" only. Do not add K or max-attempts. commandEval overlays factors { permissionProfile, timeoutMs } into runAgentToolsEval, which already accepts factors = {} and spreads { ...factors, model }. K stays DEFAULT_FACTORS.K = 3. DELIVERED_TRUTH: evalFlagsHasPermission false, evalFlagsHasTimeoutMs false, evalFlagsHasK false, evalApiAcceptsFactors true, defaultFactorsHasPermission true, defaultFactorsHasTimeoutMs true.",
+    "D1 — EVAL_FLAGS add \"permission\" and \"timeout-ms\" only. Do not add K or max-attempts. commandEval overlays factors { permissionProfile, timeoutMs } into runAgentToolsEval, which already accepts factors = {} and spreads { ...factors, model }. K stays DEFAULT_FACTORS.K = 3. DELIVERED_TRUTH: evalFlagsHasPermission false, evalFlagsHasTimeoutMs false, evalFlagsHasK false, evalApiAcceptsFactors true, defaultFactorsHasPermission true, defaultFactorsHasTimeoutMs true. Exact delivered chain: commandEval -> runAgentToolsEval -> imported runExperiment in runner.js -> createAgentToolsRegistration in registration.js. runner merges DEFAULT_FACTORS and overlay once, supplies matched per-arm factors; registration protocolBody includes timeoutMs/permissionProfile/K and hashes them. No new registration.factors property is proposed.",
     "D2 — Validation before registration. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError like commandRun. timeoutMs = positiveInteger(options[\"timeout-ms\"], \"--timeout-ms\", 600000). Unknown eval flags already throw UsageError via if (!EVAL_FLAGS.includes(flag)). USAGE eval line gains [--permission WORKSPACE_EDIT|FULL_AUTO] [--timeout-ms T]. The delivered parser throws UsageError for missing option values before commandEval. Validate timeout-ms is a string when supplied before calling positiveInteger; missing/boolean permission and timeout are UsageError exit64.",
     "D3 — Do not write experiment/index.js or arms.js. FACTOR_MISMATCH still aborts mismatched arms. Suite, arms, reduceAttempts and claim boundary stay BB-099. Passing explicit WORKSPACE_EDIT/600000 when omitted is identical to DEFAULT_FACTORS.",
     "D4 — Focused tests implement testContract: P1 actual registered factors in every arm, P2 explicit permission with omitted timeout, N1 invalid permission, N2 omitted defaults, distinct N3 non-positive/non-integer timeout and N4 unknown flag cases. Every usage failure exits 64 as existing main() does and has no registration/dispatch side effects.",
@@ -39,7 +39,9 @@
       "packages/agent-tools/src/experiment/index.js",
       "packages/agent-tools/src/experiment/arms.js",
       "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
-      "docs/blackboard/process/operator-cli-factor-parity.md"
+      "docs/blackboard/process/operator-cli-factor-parity.md",
+      "packages/agent-tools/src/experiment/runner.js",
+      "packages/agent-tools/src/experiment/registration.js"
     ],
     "expectedNew": [
       "packages/agent-tools/test/eval-cli-factors.test.js"
@@ -78,7 +80,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — packages/agent-tools/bin/exharness-agent.mjs; FACTORS_PINNED. Append permission and timeout-ms to EVAL_FLAGS and eval USAGE. At commandEval preflight validate permission against PermissionProfile, parse timeout with positiveInteger; omitted WORKSPACE_EDIT/600000. Pass factors:{permissionProfile,timeoutMs} as a sibling of tools/out to runAgentToolsEval. Existing index forwards {...factors,model} into runToolExperiment; its matched factors are used for every arm, registration protocol/producer/budget hashes and arm requests. K remains3. No experiment/arms source changes. Focused CLI tests recompute protocol hash and inspect every arm budget plus fake argv; explicit, permission-only and omitted controls detect a dropped flag.",
+    "S1 — packages/agent-tools/bin/exharness-agent.mjs; FACTORS_PINNED. Append permission and timeout-ms to EVAL_FLAGS and eval USAGE. At commandEval preflight validate permission against PermissionProfile, parse timeout with positiveInteger; omitted WORKSPACE_EDIT/600000. Pass factors:{permissionProfile,timeoutMs} as a sibling of tools/out to runAgentToolsEval. Existing index forwards {...factors,model} into runExperiment; its matched factors are used for every arm, registration protocol/producer/budget hashes and arm requests. K remains3. No experiment/arms source changes. Focused CLI tests recompute protocol hash and inspect every arm budget plus fake argv; explicit, permission-only and omitted controls detect a dropped flag.",
     "S2 — Fail-closed fixtures [UNKNOWN_FACTORS_FAIL_CLOSED]: implement D4. N1 unknown permission; N2 omitted keeps WORKSPACE_EDIT/600000. Unknown flags and non-positive timeout fail before registration.",
     "S3 — Living docs [FACTORS_PINNED]: implement D5. evaluation.md and state.md name the flags, defaults, and fail-before-registration. No Blackboard ids."
   ],
@@ -91,7 +93,7 @@
         "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "P1 BIN eval FULL_AUTO/5000 registered on every arm; P2 omitted timeout keeps 600000."
+        "Future P1 spawns actual CLI with FULL_AUTO/5000 and fake FIX_FIRST, reads registration.json and each of the three arm record.json. Expected protocol.hash is recomputed from createAgentToolsRegistration with all ARMS factors identical; compare producerProfile/resourceBudget hashes too. Assert arm budget.wallMs is5000*toolCalls, K/toolCalls1 or3 unchanged, fake argv includes danger-full-access. P2 permission-only expects600000; N2 omitted expectsWORKSPACE_EDIT/600000. Different permission/timeout must alter the matching hashes; successful status alone never proves factors."
       ]
     },
     {
