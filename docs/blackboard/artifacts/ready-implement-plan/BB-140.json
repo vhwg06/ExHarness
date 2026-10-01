@@ -13,22 +13,25 @@
   ],
   "outOfScope": [
     "Changing the suite, arms, decision rule, or claim boundary owned by BB-099.",
-    "Exposing factor K as a separate CLI flag in this task, live evaluation, or a productivity claim."
+    "Exposing factor K as a CLI flag. K stays DEFAULT_FACTORS.K because it interacts with --max-invocations via maxInvocationsFor."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered DEFAULT_FACTORS, assertMatchedFactors and runAgentToolsEval. Do not change the suite, arms, decision rule, or claim boundary owned by BB-099.",
-    "Unknown permission values and non-positive timeouts fail closed before registration. Omitted flags keep DEFAULT_FACTORS.",
-    "No sandbox, SCM push, live evaluation, or productivity claim."
+    "Product edits are packages/agent-tools/bin/exharness-agent.mjs plus the named test and Living docs in sourceScope.write. experiment/index.js and arms.js are read-only.",
+    "Reuse delivered DEFAULT_FACTORS, assertMatchedFactors and runAgentToolsEval. Unknown permission and non-positive timeout fail before registration. Omitted flags keep WORKSPACE_EDIT and 600000.",
+    "Flag names are --permission and --timeout-ms, matching run. Unknown eval flags already fail via EVAL_FLAGS.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "Pinned permission and timeout appear in every arm of that tool; FACTOR_MISMATCH still aborts mismatched arms.",
-    "Unknown permission and non-positive timeout never start an attempt. Omitted flags keep WORKSPACE_EDIT and 600000.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "exharness-agent eval --permission and --timeout-ms appear in the registered factors for every arm of that tool.",
+    "Unknown permission, non-positive timeout, and unknown eval flags fail as usage errors before any attempt starts. Omitted flags keep WORKSPACE_EDIT and 600000."
   ],
   "architectureDecisions": [
-    "Add --permission and --timeout-ms to EVAL_FLAGS and pass them through runAgentToolsEval factors. Keep K at DEFAULT_FACTORS.K unless a later task owns it.",
-    "Validate permission against PermissionProfile and timeout as a positive integer before registration. Do not rewrite reduceAttempts or the claim boundary."
+    "D1 — EVAL_FLAGS add \"permission\" and \"timeout-ms\" only. Do not add K or max-attempts. commandEval overlays factors { permissionProfile, timeoutMs } into runAgentToolsEval, which already accepts factors = {} and spreads { ...factors, model }. K stays DEFAULT_FACTORS.K = 3. DELIVERED_TRUTH: evalFlagsHasPermission false, evalFlagsHasTimeoutMs false, evalFlagsHasK false, evalApiAcceptsFactors true, defaultFactorsHasPermission true, defaultFactorsHasTimeoutMs true.",
+    "D2 — Validation before registration. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError like commandRun. timeoutMs = positiveInteger(options[\"timeout-ms\"], \"--timeout-ms\", 600000). Unknown eval flags already throw UsageError via if (!EVAL_FLAGS.includes(flag)). USAGE eval line gains [--permission WORKSPACE_EDIT|FULL_AUTO] [--timeout-ms T].",
+    "D3 — Do not write experiment/index.js or arms.js. FACTOR_MISMATCH still aborts mismatched arms. Suite, arms, reduceAttempts and claim boundary stay BB-099. Passing explicit WORKSPACE_EDIT/600000 when omitted is identical to DEFAULT_FACTORS.",
+    "D4 — Tests in packages/agent-tools/test/eval-cli-factors.test.js. P1: spawn BIN eval --permission FULL_AUTO --timeout-ms 5000 --fake-scenario FIX_FIRST --command fake; registered factors for every arm of that tool show those values. P2: --permission FULL_AUTO with omitted --timeout-ms keeps 600000. N1: --permission NOPE exits 2 UsageError before any attempt. N2: omitted flags keep WORKSPACE_EDIT and 600000 (runAgentToolsEval with {} factors). Also unknown --nope-flag and --timeout-ms 0 fail before registration. Hermetic fake CLI.",
+    "D5 — Living docs. evaluation.md USAGE and the fixed-factors list name optional CLI --permission/--timeout-ms, omitted WORKSPACE_EDIT/600000, K stays 3, unknown permission/non-positive timeout/unknown flags fail before registration. state.md eval sentence names the same flags. No Blackboard ids.",
+    "D6 — Evidence at 5386e2ad: EVAL_FLAGS omits permission and timeout-ms; DEFAULT_FACTORS already has both plus K: 3."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -53,37 +56,42 @@
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-factor-parity.md",
-      "docs/blackboard/evidence/BB-139/cli-factor-audit.json"
+      "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+      "docs/living/system/agent-tools/**"
     ],
     "write": [
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/experiment/index.js",
       "packages/agent-tools/test/eval-cli-factors.test.js",
       "docs/living/system/agent-tools/evaluation.md",
       "docs/living/system/agent-tools/state.md"
     ],
     "forbiddenWrite": [
+      "packages/agent-tools/src/experiment/index.js",
+      "packages/agent-tools/src/experiment/arms.js",
+      "packages/agent-tools/src/supervisor.js",
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/benchmark/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin flag names, DEFAULT_FACTORS overlay and fail-closed permission/timeout parsing in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward only --permission and --timeout-ms on eval and the focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — CLI flags and factors overlay [FACTORS_PINNED]: implement D1–D3. EVAL_FLAGS gain permission and timeout-ms; commandEval overlays those factors; K stays 3.",
+    "S2 — Fail-closed fixtures [UNKNOWN_FACTORS_FAIL_CLOSED]: implement D4. N1 unknown permission; N2 omitted keeps WORKSPACE_EDIT/600000. Unknown flags and non-positive timeout fail before registration.",
+    "S3 — Living docs [FACTORS_PINNED]: implement D5. evaluation.md and state.md name the flags, defaults, and fail-before-registration. No Blackboard ids."
   ],
   "acceptanceCriteria": [
     {
       "id": "FACTORS_PINNED",
       "statement": "exharness-agent eval --permission and --timeout-ms appear in the registered factors for every arm of that tool.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the factor audit is motivation only."
+        "P1 BIN eval FULL_AUTO/5000 registered on every arm; P2 omitted timeout keeps 600000."
       ]
     },
     {
@@ -93,7 +101,7 @@
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the factor audit is motivation only."
+        "BB-140 N1 unknown --permission UsageError; N2 omitted keeps DEFAULT_FACTORS WORKSPACE_EDIT/600000."
       ]
     }
   ],
@@ -109,25 +117,22 @@
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Pinned permission and timeout appear in every arm of that tool; FACTOR_MISMATCH still aborts mismatched arms.",
+      "invariant": "exharness-agent eval --permission and --timeout-ms appear in the registered factors for every arm of that tool.",
       "criterionIds": [
         "FACTORS_PINNED"
       ]
     },
     {
-      "invariant": "Unknown permission and non-positive timeout never start an attempt. Omitted flags keep WORKSPACE_EDIT and 600000.",
+      "invariant": "Unknown permission, non-positive timeout, and unknown eval flags fail as usage errors before any attempt starts. Omitted flags keep WORKSPACE_EDIT and 600000.",
       "criterionIds": [
-        "UNKNOWN_FACTORS_FAIL_CLOSED"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "FACTORS_PINNED",
         "UNKNOWN_FACTORS_FAIL_CLOSED"
       ]
     }
@@ -156,23 +161,246 @@
       "subjectSymbol": "runAgentToolsEval"
     }
   ],
-  "researchGaps": [
-    "Ratify whether factor K stays default 3 because it interacts with --max-invocations, and the exact CLI flag names, before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/evaluation.md",
       "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living docs state that eval accepts --permission and --timeout-ms, that omitted flags keep WORKSPACE_EDIT and 600000, that K stays 3 and is not a CLI flag, and that unknown permission, non-positive timeout and unknown eval flags fail before registration. Living docs contain no Blackboard ids."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+      "finding": "DELIVERED_TRUTH at 5386e2ad: evalFlagsHasPermission false, evalFlagsHasTimeoutMs false, evalFlagsHasK false, evalApiAcceptsFactors true, defaultFactorsHasPermission true."
+    },
+    {
+      "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+      "finding": "DELIVERED_TRUTH: EVAL_FLAGS is tool/out/command/model/tasks/repeats/max-invocations/max-usd/fake-scenario/seed. Unknown flags throw. commandEval never passes factors."
+    },
+    {
+      "ref": "packages/agent-tools/src/experiment/arms.js",
+      "finding": "DELIVERED_TRUTH: DEFAULT_FACTORS is K 3, timeoutMs 600000, permissionProfile WORKSPACE_EDIT, model null. maxInvocationsFor uses factors.K."
+    },
+    {
+      "ref": "packages/agent-tools/src/experiment/index.js",
+      "finding": "DELIVERED_TRUTH: runAgentToolsEval already accepts factors = {} and spreads { ...factors, model } into runExperiment."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-099"
+    ],
+    "workerStart": "Confirm EVAL_FLAGS still omits permission/timeout-ms, DEFAULT_FACTORS still has both plus K: 3, and runAgentToolsEval still accepts factors. BB-099 DONE. Do not wait on BB-139.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "DEFAULT_FACTORS",
+        "runAgentToolsEval factors overlay",
+        "EVAL_FLAGS unknown-flag reject",
+        "commandRun permission/timeout validation"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "eval --permission/--timeout-ms",
+        "K stays 3",
+        "fail-before-registration"
+      ]
+    },
+    "contradiction": "None. K is not a CLI flag because it interacts with --max-invocations via maxInvocationsFor; BB-140 consumes that as a closed decision, not a remaining gap."
+  },
+  "deliveryContract": {
+    "precondition": "BB-099 DONE.",
+    "completion": "focused + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No experiment/index.js or arms.js edits, no K CLI flag, no suite/arms/claim-boundary change."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "agent-tools-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "DEFAULT_FACTORS",
+      "EVAL_FLAGS unknown-flag reject",
+      "suite/arms/claim boundary",
+      "K = 3"
+    ],
+    "add": [
+      "eval --permission/--timeout-ms",
+      "eval-cli-factors tests"
+    ],
+    "rollback": "Remove permission and timeout-ms from EVAL_FLAGS, commandEval factors and eval USAGE; delete eval-cli-factors.test.js; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-140 objective + cli-factor-audit.json + delivered EVAL_FLAGS/DEFAULT_FACTORS/runAgentToolsEval",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-099",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "experiment module edits, K CLI flag, suite/arms/claim-boundary change."
+      ]
+    }
+  ],
   "valueHypothesis": {
-    "expectedValue": "Eval can pin the permission and timeout factors the protocol already records, instead of silently defaulting.",
-    "measurement": "Fake-CLI eval fixture registers FULL_AUTO and a shorter timeout on every arm; unknown permission fails before registration.",
+    "expectedValue": "Eval CLI can pin permission and timeout factors DEFAULT_FACTORS already honors, without changing the protocol.",
+    "measurement": "Fake-CLI eval fixture registers FULL_AUTO/5000 on every arm; unknown permission fails before registration.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-099 for evaluation semantics; BB-074 for end-to-end value"
-  }
+    "valueOwner": "BB-099 for the protocol; BB-074 for end-to-end value"
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "exharness-agent eval --permission and --timeout-ms appear in the registered factors for every arm of that tool.",
+      "criterionIds": [
+        "FACTORS_PINNED"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "packages/agent-tools/src/experiment/index.js",
+        "packages/agent-tools/src/experiment/arms.js",
+        "docs/blackboard/evidence/BB-139/cli-factor-audit.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "const EVAL_FLAGS = Object.freeze([\"tool\", \"out\", \"command\", \"model\", \"tasks\", \"repeats\", \"max-invocations\", \"max-usd\", \"fake-scenario\", \"seed\"]);"
+        },
+        {
+          "ref": "packages/agent-tools/src/experiment/arms.js",
+          "match": "{ K: 3, timeoutMs: 600000, permissionProfile: PermissionProfile.WORKSPACE_EDIT, model: null }"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+          "match": "\"evalFlagsHasPermission\": false"
+        },
+        {
+          "ref": "packages/agent-tools/src/experiment/index.js",
+          "match": "export async function runAgentToolsEval({"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Unknown permission, non-positive timeout, and unknown eval flags fail as usage errors before any attempt starts. Omitted flags keep WORKSPACE_EDIT and 600000.",
+      "criterionIds": [
+        "UNKNOWN_FACTORS_FAIL_CLOSED"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "packages/agent-tools/src/experiment/arms.js",
+        "docs/blackboard/evidence/BB-139/cli-factor-audit.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "if (!EVAL_FLAGS.includes(flag)) throw new UsageError(`unknown eval flag --${flag}`)"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+          "match": "\"evalFlagsHasTimeoutMs\": false"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+          "match": "\"defaultFactorsHasPermission\": true"
+        },
+        {
+          "ref": "packages/agent-tools/src/experiment/arms.js",
+          "match": "export const DEFAULT_FACTORS = Object.freeze({ K: 3, timeoutMs: 600000, permissionProfile: PermissionProfile.WORKSPACE_EDIT, model: null });"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "FACTORS_PINNED",
+        "UNKNOWN_FACTORS_FAIL_CLOSED"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/operator-cli-factor-parity.md",
+        "docs/living/system/agent-tools/evaluation.md",
+        "docs/living/system/agent-tools/state.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/operator-cli-factor-parity.md",
+          "match": "| Eval permission / timeout factors"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/evaluation.md",
+          "match": "The fixed factors are the same for every arm of one tool:"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/evaluation.md",
+          "match": "timeoutMs = 600000 per invocation;"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "`exharness-agent eval` runs the pre-registered agent-tools value evaluation."
+        }
+      ],
+      "supportingPlanFields": [
+        "implementationSlices",
+        "verificationPlan"
+      ]
+    }
+  ]
 }
