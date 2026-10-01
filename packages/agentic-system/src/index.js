@@ -277,7 +277,6 @@ export {
   ORGANIZATION_OBSERVER_QUERY_SURFACE
 } from "./organization-observer.js";
 export {
-<<<<<<< HEAD
   GROUNDED_OBSERVATION_KIND,
   GROUNDED_OBSERVATION_VERSION,
   GROUNDED_FINDING_INPUT_KIND,
@@ -300,7 +299,7 @@ export {
   classifyGrounding,
   contextBindingIdFor
 } from "./observation-context-binding.js";
-=======
+export {
   HOW_EVOLUTION_DECISION_KIND,
   HOW_EVOLUTION_FINDING_KIND,
   HOW_EVOLUTION_JEV_QUESTION_IDS,
@@ -334,4 +333,3 @@ export {
   HOW_EVOLUTION_JEV_PROVIDER_URL,
   createHowEvolutionJevEvaluator
 } from "./how-evolution-jev-adapter.js";
->>>>>>> 8bc7d034 (BB-059: evidence-gated HOW evolution and Jev evaluation pipeline)

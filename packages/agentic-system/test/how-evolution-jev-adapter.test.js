@@ -214,8 +214,16 @@ test("AC-2: mock-fetch endpoint integration uses the exact SystemOne {model,stat
   assert.equal(seen.auth, "Bearer test-key-not-real");
   assert.equal(seen.payload.model, HOW_EVOLUTION_JEV_MODEL_SNAPSHOT);
   assert.ok(seen.payload.state && typeof seen.payload.state === "object");
-  assert.ok(Array.isArray(seen.payload.questions) && seen.payload.questions.length === 3);
-  assert.deepEqual(seen.payload.questions.map((entry) => entry.id).sort(), [...HOW_EVOLUTION_JEV_QUESTION_IDS].sort());
+  // Exact owner controller wire schema: questions is an OBJECT keyed by
+  // question ID ({[id]: {type: 'choice', instructions, criteria}}), not an array.
+  assert.ok(seen.payload.questions && typeof seen.payload.questions === "object" && !Array.isArray(seen.payload.questions));
+  assert.deepEqual(Object.keys(seen.payload.questions).sort(), [...HOW_EVOLUTION_JEV_QUESTION_IDS].sort());
+  for (const questionId of HOW_EVOLUTION_JEV_QUESTION_IDS) {
+    const question = seen.payload.questions[questionId];
+    assert.equal(question.type, "choice");
+    assert.ok(typeof question.instructions === "string" && question.instructions.length > 0);
+    assert.deepEqual(Object.keys(question.criteria).sort(), ["FAIL", "INCONCLUSIVE", "PASS"]);
+  }
   // The evaluator receives exact bounded hash-bound evidence bodies, not opaque refs.
   assert.equal(seen.payload.state.subject.protocolDigest, digestValue(protocol));
   assert.equal(seen.payload.state.subject.workContractRef, protocol.workContract.ref);
