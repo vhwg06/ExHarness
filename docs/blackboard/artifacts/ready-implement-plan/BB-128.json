@@ -12,34 +12,39 @@
     "agent-tools.deliver-slice.tool-capability-parity"
   ],
   "outOfScope": [
-    "Adding another CLI adapter or changing BB-105/122 accepted plans.",
-    "A new provider ranking or mandatory paid pilot."
+    "Adding another CLI adapter or changing BB-105/122 accepted adapter argv, parseResult or fixtures.",
+    "A new provider ranking or mandatory paid pilot.",
+    "Live grok/opencode smoke inside npm test."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
-    "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
-    "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
+    "Product edit is packages/agent-tools/src/deliver-slice.js SLICE_TOOLS plus tests and Living/README named in sourceScope.write. tool-adapters.js is read-only.",
+    "Fixtures use delivered fake-grok.mjs / fake-opencode.mjs via defineAgentTool(base, {command: process.execPath, prefixArgs: [fake]}); no provider calls, no credentials, no real grok/opencode binaries required.",
+    "Existing deliver-slice.test.js BB-104 tests stay green (codex|kiro|agy path unchanged).",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
-    "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "validateDeliverSlice accepts every AGENT_TOOLS id (codex, kiro, agy, grok, opencode) and rejects any other id with TypeError before any process starts.",
+    "Unknown tools, missing binaries and tool-mismatched resume never return ACCEPTED.",
+    "A grok or opencode slice with a fake adapter runs Backend plus independent QA to ACCEPTED without a live CLI."
   ],
   "architectureDecisions": [
-    "Resolve delivered adapters through AGENT_TOOLS with a minimal capability contract rather than growing another hard-coded tool list. Pin the BB-122 delivered adapter at Worker start.",
-    "Keep provider/auth/model inputs explicit; fixture tests do not call a model. Do not require Codex/Kiro/agy installation to exercise a supported local Grok/OpenCode path.",
-    "Replace the SLICE_TOOLS id whitelist with a no-spawn capability probe in packages/agent-tools/src/deliver-slice.js: probeDeliverCapability(tool) calls tool.buildInvocation with the exact deliver request shape {prompt, resume: null, model: null, permissionProfile: 'WORKSPACE_EDIT', logFile, promptFile, cwd, timeoutMs} and again with resume: {sessionRef: 'probe-session'}, then checks tool.parseResult({exitCode: 0, stdout: ''}) returns the {claimedSuccess, finalMessage, sessionRef} tuple. validateDeliverSlice accepts exactly the AGENT_TOOLS ids whose probe succeeds (codex, kiro, agy, grok, opencode at the contract baseline) and throws TypeError before any spawn otherwise. Missing binaries still fail through resolveExecutable to TOOL_UNAVAILABLE with reason NOT_INSTALLED; a tool-mismatched resume throws RecoveryError TOOL_MISMATCH in resumeSupervisedTask before spawn; a non-sha acceptance yields QA_FAILED with INVALID_ACCEPTED_SHA. None of these paths can fabricate ACCEPTED."
+    "D1 — Replace the parallel whitelist. In packages/agent-tools/src/deliver-slice.js set const SLICE_TOOLS = Object.freeze(Object.keys(AGENT_TOOLS)); validateDeliverSlice keeps `typeof slice.tool !== \"string\" || !SLICE_TOOLS.includes(slice.tool)` and the TypeError message becomes `tool must be one of ${SLICE_TOOLS.join(\"|\")}` (codex|kiro|agy|grok|opencode at this baseline). Do not add a second registry, ranking, or probeDeliverCapability runtime. DELIVERED_TRUTH: SLICE_TOOLS is frozen [\"codex\",\"kiro\",\"agy\"] while AGENT_TOOLS already includes grok and opencode; invalid(\"tool must be one of codex|kiro|agy\") is the executed rejection.",
+    "D2 — Headless/edit/resume contract is already AGENT_TOOL_ADAPTER_V1 on grokTool and opencodeTool (read-only). grok buildInvocation uses --prompt-file, --cwd, --permission-mode acceptEdits / --always-approve, --resume/--continue. opencode uses run --format json, --dir, --auto, --session/--continue, positional prompt after --. parseResult returns {claimedSuccess, finalMessage, sessionRef}. Worker does not edit tool-adapters.js. Pin at Worker start: AGENT_TOOLS keys equal SLICE_TOOLS.",
+    "D3 — Backend plus QA fixtures. P1: validateDeliverSlice accepts tool \"grok\"; runDeliverSlice(slice, {tool: defineAgentTool(grokTool, {command: process.execPath, prefixArgs: [fake-grok.mjs]}), env: {FAKE_AGENT_SCENARIO: \"FIX_FIRST\"}}) returns ACCEPTED with qa.passed. P2: same for opencode + fake-opencode.mjs. These reuse the BB-104 runDeliverSlice + fake-adapter pattern; they do not require Codex/Kiro/agy or a live grok/opencode install.",
+    "D4 — Fail-closed before ACCEPTED. N1: validateDeliverSlice({...slice, tool: \"not-a-tool\"}) throws TypeError matching /codex\\|kiro\\|agy\\|grok\\|opencode/ before spawn. N2: runDeliverSlice(grok slice, {command: join(dir, \"no-such-grok\")}) returns status TOOL_UNAVAILABLE reason NOT_INSTALLED (resolveSliceTool: AGENT_TOOLS[id] exists, resolveExecutable fails, returns null; runBackendFresh then yields NOT_INSTALLED). Subject is runDeliverSlice, not validateDeliverSlice — validateDeliverSlice does not look at binaries. N3: resumeSupervisedTask still throws RecoveryError TOOL_MISMATCH when tool.id !== handle.toolId before reopen/spawn (already delivered); fixture plants a codex handle and resumes with grokTool.",
+    "D5 — Tests in packages/agent-tools/test/deliver-tool-parity.test.js titled BB-128 N1/N2/N3 and P1/P2. Also assert Object.keys(AGENT_TOOLS) deepEqual SLICE_TOOLS via validateDeliverSlice accepting each key. Existing deliver-slice.test.js stays the BB-104 contract.",
+    "D6 — Living docs: docs/living/system/agent-tools/operator.md currently says `tool` is `codex`, `kiro` or `agy`; replace with the AGENT_TOOLS id set including grok and opencode, and that an unknown id fails in validateDeliverSlice before spawn and a missing binary is TOOL_UNAVAILABLE/NOT_INSTALLED. state.md operator-deliver pointer stays. README deliver sentence names grok and opencode. No Blackboard ids. bin USAGE for deliver stays --slice (tool lives in the manifest).",
+    "D7 — Evidence: discovery.json grokRegistered true, grokRejectedByDeliverManifest true, openCodeInput PLANNED_CONTRACT BB-122. BB-122 is now DONE so opencodeTool is DELIVERED_TRUTH; only SLICE_TOOLS excludes grok|opencode. exharness-agent run/smoke already list grok|opencode."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agent-tools/src/deliver-slice.js",
       "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/README.md",
       "docs/blackboard/evidence/BB-128/discovery.json",
       "docs/blackboard/process/delivery-value-improvement-research.md",
-      "packages/agent-tools/src/supervisor.js"
+      "docs/living/system/agent-tools/operator.md"
     ],
     "expectedNew": [
       "packages/agent-tools/test/deliver-tool-parity.test.js"
@@ -50,58 +55,59 @@
   },
   "sourceScope": {
     "read": [
-      "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/src/tool-adapters.js",
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/README.md",
       "packages/agent-tools/src/**",
-      "packages/agentic-system/src/**",
       "packages/agent-tools/test/**",
-      "packages/agentic-system/test/**",
+      "packages/agent-tools/bin/**",
       "docs/blackboard/process/delivery-value-improvement-research.md",
-      "docs/blackboard/evidence/BB-128/discovery.json"
+      "docs/blackboard/evidence/BB-128/discovery.json",
+      "docs/living/system/agent-tools/**"
     ],
     "write": [
       "packages/agent-tools/src/deliver-slice.js",
-      "packages/agent-tools/src/tool-adapters.js",
-      "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/README.md",
       "packages/agent-tools/test/deliver-tool-parity.test.js",
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
+      "packages/agent-tools/README.md",
+      "docs/living/system/agent-tools/operator.md",
+      "docs/living/system/agent-tools/state.md"
     ],
     "forbiddenWrite": [
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/benchmark/**",
+      "packages/agentic-system/**",
+      "packages/agent-tools/src/tool-adapters.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/test/deliver-slice.test.js",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 \u2014 Contract pinned (AGENT_TOOL_ADAPTER_V1) and discriminating prototype EXECUTED in research: the no-spawn probeDeliverCapability probe ran against all five delivered AGENT_TOOLS entries with the exact deliver request shape (resume null and resume {sessionRef}); per-adapter argv and result-tuple outcomes are recorded in researchEvidence and show grok|opencode satisfy the same headless/edit/resume contract as codex|kiro|agy. Worker implements probeDeliverCapability in deliver-slice.js per the recorded outcomes and replaces the SLICE_TOOLS whitelist; validateDeliverSlice accepts exactly the ids whose probe succeeds.",
-    "S2 \u2014 After fresh READY, implement only the declared seam and focused positive/negative fixtures: P1 grok manifest accepted by validateDeliverSlice, P2 opencode manifest accepted, N1 unknown tool rejected pre-spawn, N2 missing binary resolves to TOOL_UNAVAILABLE/NOT_INSTALLED, N3 tool-mismatched resume throws TOOL_MISMATCH before spawn.",
-    "S3 \u2014 Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — Whitelist [CAPABILITY_PARITY]: implement D1. validateDeliverSlice accepts grok and opencode; unknown ids still TypeError. P1/P2 validateDeliverSlice assertions.",
+    "S2 — Deliver path [CAPABILITY_PARITY, FAIL_CLOSED]: implement D3–D4. P1/P2 runDeliverSlice with fake-grok/fake-opencode reach ACCEPTED. N1 validateDeliverSlice unknown id. N2 runDeliverSlice missing binary TOOL_UNAVAILABLE/NOT_INSTALLED. N3 resumeSupervisedTask TOOL_MISMATCH.",
+    "S3 — Docs [CAPABILITY_PARITY]: implement D6 operator.md, state.md pointer, README. Existing deliver-slice.test.js green."
   ],
   "acceptanceCriteria": [
     {
       "id": "CAPABILITY_PARITY",
-      "statement": "Delivered registered tools satisfying the headless/edit/resume contract (proven by the no-spawn probeDeliverCapability probe: buildInvocation succeeds for the exact deliver request shape with resume null and resume {sessionRef}, and parseResult returns the {claimedSuccess, finalMessage, sessionRef} tuple) can run Backend plus QA through deliver; adapters failing the probe throw in validateDeliverSlice before any process starts.",
+      "statement": "validateDeliverSlice accepts tool grok and tool opencode; runDeliverSlice with fake-grok.mjs / fake-opencode.mjs adapters returns ACCEPTED after Backend plus independent QA; adapters whose id is not an AGENT_TOOLS key throw in validateDeliverSlice before any process starts.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "deliver-regression",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "P1 grok and P2 opencode runDeliverSlice ACCEPTED output; validateDeliverSlice accepts Object.keys(AGENT_TOOLS)."
       ]
     },
     {
       "id": "FAIL_CLOSED",
-      "statement": "Unknown tools, missing binaries and incompatible resume capability never return ACCEPTED: unknown ids throw in validateDeliverSlice pre-spawn, missing binaries resolve to TOOL_UNAVAILABLE with reason NOT_INSTALLED, and a resume whose tool id differs from the handle's recorded toolId throws RecoveryError TOOL_MISMATCH in resumeSupervisedTask before spawn; deterministic fixtures cover Grok and delivered OpenCode.",
+      "statement": "Unknown tool ids throw TypeError from validateDeliverSlice before spawn; a missing grok/opencode binary through runDeliverSlice returns TOOL_UNAVAILABLE with reason NOT_INSTALLED; a resume whose tool.id differs from handle.toolId throws RecoveryError TOOL_MISMATCH from resumeSupervisedTask before reopen or spawn. None of these paths return ACCEPTED.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "deliver-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "BB-128 N1 validateDeliverSlice, N2 runDeliverSlice, N3 resumeSupervisedTask output."
       ]
     }
   ],
@@ -111,38 +117,40 @@
       "command": "node --test packages/agent-tools/test/deliver-tool-parity.test.js"
     },
     {
+      "id": "deliver-regression",
+      "command": "node --test packages/agent-tools/test/deliver-slice.test.js"
+    },
+    {
       "id": "agent-tools-regression",
       "command": "npm run test:agent-tools"
     },
     {
-      "id": "agentic-regression",
-      "command": "npm run test:agentic"
-    },
-    {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "The exact task, candidate and evaluator identities bind every acceptance or resume claim; missing evidence never grants acceptance.",
+      "invariant": "validateDeliverSlice accepts every AGENT_TOOLS id (codex, kiro, agy, grok, opencode) and rejects any other id with TypeError before any process starts.",
       "criterionIds": [
         "CAPABILITY_PARITY",
         "FAIL_CLOSED"
       ]
     },
     {
-      "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
+      "invariant": "Unknown tools, missing binaries and tool-mismatched resume never return ACCEPTED.",
       "criterionIds": [
-        "CAPABILITY_PARITY",
         "FAIL_CLOSED"
       ]
     },
     {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "invariant": "A grok or opencode slice with a fake adapter runs Backend plus independent QA to ACCEPTED without a live CLI.",
       "criterionIds": [
-        "CAPABILITY_PARITY",
-        "FAIL_CLOSED"
+        "CAPABILITY_PARITY"
       ]
     }
   ],
@@ -168,7 +176,7 @@
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/deliver-tool-parity.test.js",
       "testTitle": "BB-128 N2 Missing delivered CLI cannot fabricate successful local delivery",
-      "subjectSymbol": "validateDeliverSlice"
+      "subjectSymbol": "runDeliverSlice"
     },
     {
       "id": "NEG_128_3",
@@ -184,46 +192,28 @@
   "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
-      "docs/living/system/agent-tools/state.md",
-      "docs/living/system/agent-tools/observation.md"
+      "docs/living/system/agent-tools/operator.md",
+      "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
-  },
-  "valueHypothesis": {
-    "expectedValue": "Unblock the operator product path for the actual available CLI and free-provider options.",
-    "measurement": "One manifest-to-Backend-to-QA fixture per supported adapter; optional live smoke separately labelled feasibility, not value.",
-    "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
+    "statement": "Living docs state that deliver slice.tool may be any AGENT_TOOLS id including grok and opencode, that an unknown id is rejected in validateDeliverSlice before spawn, and that a missing binary is TOOL_UNAVAILABLE with reason NOT_INSTALLED. Living docs contain no Blackboard ids."
   },
   "researchEvidence": [
     {
-      "ref": "packages/agent-tools/src/tool-adapters.js",
-      "finding": "EXECUTED no-spawn probe 2026-10-01 (local node, zero provider calls, zero spawns): called buildInvocation on every AGENT_TOOLS entry with the exact deliver request shape {prompt, resume, model:null, permissionProfile:'WORKSPACE_EDIT', logFile, promptFile, cwd, timeoutMs:1} for resume:null and resume:{sessionRef:'probe-session'}, then parseResult({exitCode:0, stdout:''}). All five adapters built argv without throwing and returned the {claimedSuccess, finalMessage, sessionRef} tuple. Argv per adapter \u2014 codex fresh: `codex exec --json --skip-git-repo-check --sandbox workspace-write -` (prompt on stdin), resume: `codex exec resume probe-session --json -`; kiro fresh: `kiro-cli chat --no-interactive --trust-tools=fs_read,fs_write probe`, resume adds `--resume`; agy fresh: `agy --print probe --mode accept-edits --print-timeout 1s --log-file probe.log`, resume adds `--continue`; grok fresh: `grok --output-format json --model grok-4.6 --cwd probe-cwd --permission-mode acceptEdits --disable-web-search --no-subagents --no-auto-update --prompt-file probe.prompt`, resume adds `--resume probe-session`; opencode fresh: `opencode run --format json --dir probe-cwd -- probe`, resume adds `--session probe-session`. parseResult tuples: all {claimedSuccess:true, finalMessage:null, sessionRef:null}. Conclusion: grok and opencode satisfy the same headless/edit/resume contract as the three deliver-admitted tools; the only deliver exclusion is the SLICE_TOOLS id whitelist. The deliver Backend path (runSupervisedTask) is tool-agnostic beyond this contract: the supervisor supplies logFile, promptFile, cwd and timeoutMs to every invocation, which are exactly the extra fields agy (logFile/timeoutMs) and grok (promptFile) require."
-    },
-    {
-      "ref": "packages/agent-tools/src/tool-adapters.js",
-      "finding": "DELIVERED_TRUTH: AGENT_TOOLS is frozen {codex, kiro, agy, grok, opencode} under AGENT_TOOL_ADAPTER_V1. Every adapter passes assertInvocationRequest: non-empty prompt, resume null|{sessionRef}, model null|string, permissionProfile in WORKSPACE_EDIT|FULL_AUTO. grokTool builds --output-format json --model <model|grok-4.6> [--cwd] [--always-approve | --permission-mode acceptEdits] [--resume <sessionRef> | --continue] --prompt-file; parseResult reads the first balanced JSON object for sessionId/text and returns claimedSuccess=(exitCode===0). opencodeTool builds run --format json [--dir cwd] [--model] [--auto for FULL_AUTO] [--session <id> | --continue] -- <prompt>; parseResult extracts sessionID and the last text part from JSONL, same {claimedSuccess, finalMessage, sessionRef} shape."
-    },
-    {
-      "ref": "packages/agent-tools/src/supervisor.js",
-      "finding": "DELIVERED_TRUTH: every agent invocation request is {prompt, resume, model, permissionProfile, logFile, promptFile, cwd: root} with promptFile written next to the attempt log outside the worktree. Grok's promptFile requirement and OpenCode's --dir cwd are therefore always satisfied on the deliver Backend path without manifest changes."
-    },
-    {
       "ref": "packages/agent-tools/src/deliver-slice.js",
-      "finding": "DELIVERED_TRUTH: SLICE_TOOLS=[codex,kiro,agy]; validateDeliverSlice throws TypeError 'tool must be one of codex|kiro|agy' before any process starts, so an unknown tool can never reach ACCEPTED. resolveSliceTool returns null when AGENT_TOOLS lacks the id or resolveExecutable misses the binary; the slice then returns TOOL_UNAVAILABLE with reason NOT_INSTALLED. A mismatched recovery handle throws RecoveryError HANDLE_INVALID before resume/QA/dispose; a non-40-hex acceptance yields QA_FAILED with INVALID_ACCEPTED_SHA. Missing-binary and invalid-acceptance paths never fabricate ACCEPTED. The planned replacement is a no-spawn capability probe (buildInvocation over the exact deliver request shape for resume null and resume {sessionRef}, plus the parseResult tuple check); validateDeliverSlice will accept exactly the AGENT_TOOLS ids whose probe succeeds."
+      "finding": "DELIVERED_TRUTH: const SLICE_TOOLS = Object.freeze([\"codex\", \"kiro\", \"agy\"]); validateDeliverSlice throws TypeError 'tool must be one of codex|kiro|agy'. resolveSliceTool looks up AGENT_TOOLS[toolId] then resolveExecutable; missing binary returns null and runDeliverSlice maps that to TOOL_UNAVAILABLE/NOT_INSTALLED."
+    },
+    {
+      "ref": "packages/agent-tools/src/tool-adapters.js",
+      "finding": "DELIVERED_TRUTH: AGENT_TOOLS freezes codex, kiro, agy, grok, opencode. grokTool and opencodeTool implement buildInvocation resume flags and parseResult {claimedSuccess, finalMessage, sessionRef}."
     },
     {
       "ref": "docs/blackboard/evidence/BB-128/discovery.json",
-      "finding": "Executed local probe (baselineSha 29935fa2, providerCalls 0): facts grokRegistered=true, grokRejectedByDeliverManifest=true, openCodeInput='PLANNED_CONTRACT BB-122'. BB-122 is now DONE/DELIVERED, so both adapters are delivered truth; only the deliver whitelist excludes them."
+      "finding": "Executed probe providerCalls 0: grokRegistered true, grokRejectedByDeliverManifest true, openCodeInput PLANNED_CONTRACT BB-122. BB-122 is now DONE; only the deliver whitelist excludes both."
     },
     {
-      "ref": "packages/agent-tools/bin/exharness-agent.mjs",
-      "finding": "DELIVERED_TRUTH: exharness-agent run and smoke already accept --tool <codex|kiro|agy|grok|opencode>; deliver delegates tool gating to validateDeliverSlice, which is the single exclusion point for grok|opencode."
-    },
-    {
-      "ref": "packages/agent-tools/src/supervisor.js",
-      "finding": "DELIVERED_TRUTH: resumeSupervisedTask verifies the on-disk handle digest, then throws RecoveryError TOOL_MISMATCH when tool.id !== handle.toolId, before reopening any workspace or spawning any process. A deliver resume that switches tools (e.g. a codex handle resumed under a grok manifest) therefore fails closed instead of passing one tool's sessionRef to another tool's --resume/--session/--continue flags."
+      "ref": "docs/living/system/agent-tools/operator.md",
+      "finding": "DELIVERED_TRUTH: '`tool` is `codex`, `kiro` or `agy`.' This sentence is the D6 replacement target."
     }
   ],
   "dependencyResolution": {
@@ -231,45 +221,34 @@
       "BB-104",
       "BB-122"
     ],
-    "workerStart": "Re-run the reconciliation probe: confirm AGENT_TOOLS still frozen {codex,kiro,agy,grok,opencode} at the contract baseline, validateDeliverSlice still rejects grok|opencode with the pre-spawn TypeError, the supervisor invocation request still carries promptFile+cwd, and exharness-agent run/smoke still list grok|opencode. Pin AGENT_TOOL_ADAPTER_VERSION and the delivered adapter command versions at Worker start.",
+    "workerStart": "Confirm SLICE_TOOLS is still [codex,kiro,agy] and AGENT_TOOLS still includes grok and opencode. Confirm fake-grok.mjs and fake-opencode.mjs still exist. BB-104 and BB-122 remain DONE.",
     "sourceClassification": {
       "DELIVERED_TRUTH": [
-        "AGENT_TOOLS",
-        "grokTool",
-        "opencodeTool",
-        "defineAgentTool",
-        "assertInvocationRequest",
+        "AGENT_TOOLS grokTool opencodeTool",
+        "SLICE_TOOLS whitelist",
         "validateDeliverSlice",
-        "SLICE_TOOLS",
-        "resolveExecutable to TOOL_UNAVAILABLE/NOT_INSTALLED",
-        "runSupervisedTask",
-        "resumeSupervisedTask",
-        "HANDLE_INVALID identity gate",
-        "exharness-agent run/smoke --tool",
-        "executed no-spawn adapter probe (research, 2026-10-01)"
+        "resolveSliceTool to TOOL_UNAVAILABLE/NOT_INSTALLED",
+        "resumeSupervisedTask TOOL_MISMATCH",
+        "fake-grok.mjs fake-opencode.mjs",
+        "runDeliverSlice fake-adapter override"
       ],
       "PLANNED_CONTRACT": [],
       "RESEARCH_DESIRED_STATE": [
-        "capability-advertising deliver whitelist for grok|opencode",
-        "packages/agent-tools/test/deliver-tool-parity.test.js",
-        "P1 grok manifest fixture",
-        "P2 opencode manifest fixture",
-        "N1 unknown-adapter rejection",
-        "N2 missing-binary NOT_INSTALLED"
+        "SLICE_TOOLS derived from AGENT_TOOLS so grok|opencode deliver"
       ]
     },
-    "contradiction": "None. BB-104 and BB-122 are DONE with phase DELIVERED; every BB-128 input is delivered truth. The executed no-spawn probe shows grok|opencode satisfy the same adapter contract as the deliver-admitted tools; only the SLICE_TOOLS whitelist excludes them."
+    "contradiction": "None. BB-104 owns the deliver slice; BB-122 owns the opencode adapter. This task only opens the existing adapters through the operator whitelist. Discovery openCodeInput is stale labelling; the adapter is delivered."
   },
   "deliveryContract": {
-    "precondition": "BB-104 DONE and BB-122 DONE; work-graph phase DELIVERED for both.",
-    "completion": "CAPABILITY_PARITY + FAIL_CLOSED criterion runs + test:agent-tools + test:agentic + verify:current-docs + Living docs state/observation parity rows + independent Worker Jev judgment.",
-    "forbidden": "No provider or model calls inside fixtures; no live grok/opencode in npm test; no fabricated ACCEPTED; no credential or config-file reads."
+    "precondition": "BB-104 DONE, BB-122 DONE.",
+    "completion": "focused + deliver-slice.test.js + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No live grok/opencode in npm test, no fabricated ACCEPTED, no tool-adapters.js edits."
   },
   "ciContract": {
     "checks": [
       "focused",
+      "deliver-regression",
       "agent-tools-regression",
-      "agentic-regression",
       "docs",
       "repository"
     ],
@@ -277,39 +256,32 @@
   },
   "migrationContract": {
     "preserve": [
-      "codexTool",
-      "kiroTool",
-      "agyTool",
-      "defineAgentTool",
-      "validateDeliverSlice manifest contract for codex|kiro|agy",
-      "DeliverSliceStatus",
-      "TOOL_UNAVAILABLE reason mapping",
-      "runSupervisedTask default options"
+      "codex|kiro|agy deliver eligibility",
+      "DeliverSliceStatus and NOT_INSTALLED mapping",
+      "resumeSupervisedTask TOOL_MISMATCH",
+      "grokTool and opencodeTool argv"
     ],
     "add": [
-      "grok|opencode deliver eligibility behind the capability contract",
-      "deliver-tool-parity.test.js with P1/P2/N1/N2",
-      "Living docs parity rows",
-      "README deliver tool row"
+      "grok|opencode deliver eligibility via AGENT_TOOLS keys",
+      "deliver-tool-parity tests"
     ],
-    "rollback": "Revert the deliver eligibility change to [codex,kiro,agy]; delete deliver-tool-parity.test.js; revert Living/README parity sentences."
+    "rollback": "Restore SLICE_TOOLS [codex,kiro,agy]; delete deliver-tool-parity.test.js; revert Living/README sentences."
   },
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-128 objective + executed BB-128 discovery probe + delivered agent-tools sources at contract baseline",
+      "input": "BB-128 objective + discovery.json + delivered deliver-slice and AGENT_TOOLS",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + fresh Jev SATISFIED",
       "forbidden": [
         "product implementation",
-        "planned dependency as delivered truth",
         "self-issued readiness"
       ]
     },
     {
       "lane": "WORKER",
-      "input": "exact READY plan + DONE BB-104, BB-122",
+      "input": "exact READY plan + DONE BB-104 + DONE BB-122",
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash + candidate/evidence + Jev",
       "convergence": "criterion runs + no forbidden writes + docs",
@@ -319,6 +291,12 @@
       ]
     }
   ],
+  "valueHypothesis": {
+    "expectedValue": "Let operators use the already-delivered Grok and OpenCode adapters on the local deliver path.",
+    "measurement": "One fake-adapter Backend-then-QA ACCEPTED fixture per grok and opencode; unknown/missing/mismatch never ACCEPTED.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
+  },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
     {
@@ -328,11 +306,11 @@
       ],
       "planElements": [
         "S1",
-        "S2",
-        "S3"
+        "S2"
       ],
       "verificationIds": [
         "focused",
+        "deliver-regression",
         "agent-tools-regression"
       ],
       "decisionIndexes": [
@@ -341,35 +319,31 @@
         2
       ],
       "sourceRefs": [
-        "packages/agent-tools/src/tool-adapters.js",
         "packages/agent-tools/src/deliver-slice.js",
-        "packages/agent-tools/src/supervisor.js",
-        "packages/agent-tools/bin/exharness-agent.mjs"
+        "packages/agent-tools/src/tool-adapters.js",
+        "docs/blackboard/evidence/BB-128/discovery.json"
       ],
       "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "const SLICE_TOOLS = Object.freeze([\"codex\", \"kiro\", \"agy\"]);"
+        },
         {
           "ref": "packages/agent-tools/src/tool-adapters.js",
           "match": "export const AGENT_TOOLS = Object.freeze({ codex: codexTool, kiro: kiroTool, agy: agyTool, grok: grokTool, opencode: opencodeTool });"
         },
         {
           "ref": "packages/agent-tools/src/tool-adapters.js",
-          "match": "export const opencodeTool = defineAgentTool({"
+          "match": "export const grokTool = defineAgentTool({"
         },
         {
-          "ref": "packages/agent-tools/src/supervisor.js",
-          "match": "const request = { prompt: action.prompt, resume: action.resume, model, permissionProfile, logFile, promptFile, cwd: root };"
-        },
-        {
-          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
-          "match": "run   --tool <codex|kiro|agy|grok|opencode> --task"
+          "ref": "docs/blackboard/evidence/BB-128/discovery.json",
+          "match": "\"grokRejectedByDeliverManifest\": true"
         }
       ],
       "supportingPlanFields": [
         "architectureDecisions",
-        "sourceSeams",
-        "sourceScope",
-        "researchEvidence",
-        "dependencyResolution"
+        "researchEvidence"
       ]
     },
     {
@@ -378,20 +352,18 @@
         "FAIL_CLOSED"
       ],
       "planElements": [
-        "S1",
         "S2"
       ],
       "verificationIds": [
-        "focused"
+        "focused",
+        "deliver-regression"
       ],
       "decisionIndexes": [
-        0,
-        2
+        3
       ],
       "sourceRefs": [
         "packages/agent-tools/src/deliver-slice.js",
         "packages/agent-tools/src/supervisor.js",
-        "packages/agent-tools/src/tool-adapters.js",
         "docs/blackboard/evidence/BB-128/discovery.json"
       ],
       "sourceAnchors": [
@@ -400,29 +372,28 @@
           "match": "invalid(\"tool must be one of codex|kiro|agy\")"
         },
         {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "const launch = resolveExecutable(command ?? base.command);"
+        },
+        {
           "ref": "packages/agent-tools/src/supervisor.js",
           "match": "throw new RecoveryError(\"TOOL_MISMATCH\""
         },
         {
-          "ref": "packages/agent-tools/src/tool-adapters.js",
-          "match": "? [\"--session\", resume.sessionRef] : [\"--continue\"]"
-        },
-        {
           "ref": "docs/blackboard/evidence/BB-128/discovery.json",
-          "match": "\"grokRejectedByDeliverManifest\": true"
+          "match": "\"grokRegistered\": true"
         }
       ],
       "supportingPlanFields": [
-        "negativeVerificationCases",
-        "negativeCaseBindings",
-        "architectureDecisions",
-        "researchEvidence",
-        "dependencyResolution"
+        "negativeCaseBindings"
       ]
     },
     {
       "objectiveCriterion": "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.",
-      "criterionIds": [],
+      "criterionIds": [
+        "CAPABILITY_PARITY",
+        "FAIL_CLOSED"
+      ],
       "planElements": [
         "S1",
         "S2",
@@ -430,34 +401,40 @@
       ],
       "verificationIds": [
         "focused",
-        "agent-tools-regression",
-        "agentic-regression",
         "docs"
       ],
-      "decisionIndexes": [],
+      "decisionIndexes": [
+        4,
+        5,
+        6
+      ],
       "sourceRefs": [
-        "docs/blackboard/process/delivery-value-improvement-research.md",
-        "docs/blackboard/evidence/BB-128/discovery.json"
+        "docs/living/system/agent-tools/operator.md",
+        "docs/blackboard/evidence/BB-128/discovery.json",
+        "packages/agent-tools/src/deliver-slice.js"
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/process/delivery-value-improvement-research.md",
-          "match": "**Tool parity:** use registered delivered capability rather than another static whitelist."
+          "ref": "docs/living/system/agent-tools/operator.md",
+          "match": "`tool` is `codex`, `kiro` or `agy`."
         },
         {
           "ref": "docs/blackboard/evidence/BB-128/discovery.json",
           "match": "\"openCodeInput\": \"PLANNED_CONTRACT BB-122\""
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "export function validateDeliverSlice(slice)"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "export async function runDeliverSlice(sliceInput, options = {})"
         }
       ],
       "supportingPlanFields": [
-        "implementationSlices",
         "verificationPlan",
-        "negativeVerificationCases",
-        "negativeCaseBindings",
-        "objectiveCoverage",
-        "jevEvidenceRouting"
+        "implementationSlices"
       ]
     }
-  ],
-  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-128.readiness-jev-evaluation.json"
+  ]
 }
