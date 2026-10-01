@@ -12,23 +12,28 @@
     "agent-tools.operator.run-recovery"
   ],
   "outOfScope": [
-    "Changing delivered recovery handle schema or resume contract owned by BB-101/BB-125.",
-    "Sandbox, SCM push, MCP promote, or a second lineage format."
+    "Changing delivered recovery handle schema, resume contract, CONTRACT_DRIFT, or LEGACY_HANDLE owned by BB-101/BB-125.",
+    "Extracting a shared helper from deliver-slice.js or rewriting deliver's --recovery-dir path.",
+    "Sandbox, SCM push, MCP promote, a second lineage format, or auto-dispose of a durable run directory."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse the delivered BB-101 recovery handle, resumeSupervisedTask and disposeRecoverableRun. Do not invent a second lineage or change default run disposal when recoveryDir is omitted.",
-    "BB-125 owns resume task/config binding. This task may consume that contract when present and must not rewrite it.",
-    "No sandbox, SCM push, MCP promote, or live-value claim."
+    "Product edits are packages/agent-tools/bin/exharness-agent.mjs plus the named test and Living docs in sourceScope.write. supervisor.js, recovery.js and deliver-slice.js are read-only.",
+    "Reuse delivered BB-101 recovery handle, resumeSupervisedTask, readAgentToolRunHandle and disposeRecoverableRun. Default run without recoveryDir stays mkdtemp-plus-finally-dispose.",
+    "BB-125 owns resume task/config binding. This CLI forwards the original --task JSON unchanged and must not implement CONTRACT_DRIFT or rewrite handle fields.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
-    "Omitting recoveryDir keeps the delivered dispose-in-finally run path.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "exharness-agent run --recovery-dir persists handle.json on first run and a second invocation against a RUNNING handle resumes the same worktree, Core session, tool session and candidate; source HEAD, branch refs and working tree stay unchanged.",
+    "Omitting --recovery-dir keeps the delivered dispose-in-finally path. A second first-run against handle.json fails closed with HANDLE_CURRENT; a mismatched task fails closed with HANDLE_INVALID before resume; a completed handle fails closed with HANDLE_COMPLETE; none mint a second lineage."
   ],
   "architectureDecisions": [
-    "Forward --recovery-dir from exharness-agent run into runSupervisedTask.recoveryDir. Resume uses resumeSupervisedTask when handle.json is RUNNING.",
-    "Keep default run without recoveryDir on the unique mkdtemp worktree disposed in finally. Do not change deliver's existing --recovery-dir path except by shared helper extraction if research selects it."
+    "D1 — Flag is --recovery-dir, matching deliver. Add [--recovery-dir <dir>] to the run USAGE line. parseOptions already stores hyphenated flags. commandRun reads recoveryDir = options[\"recovery-dir\"] ?? null. When null, the current runSupervisedTask call (no recoveryDir key) is unchanged, including --trace-dir observation. DELIVERED_TRUTH: run USAGE has no --recovery-dir while deliver USAGE and commandDeliverCli already map options[\"recovery-dir\"]; commandRun's runSupervisedTask call never passes recoveryDir. Audit at 5386e2ad: runCliPassesRecoveryDir false, supervisorAcceptsRecoveryDir true.",
+    "D2 — Resume detection in the bin only, same handle.json protocol as deliver minus QA. Import resumeSupervisedTask, RecoveryError and readAgentToolRunHandle. After resolveTool and observation: if recoveryDir is null, runSupervisedTask(launch). Else try readAgentToolRunHandle(recoveryDir); RecoveryError => existing=null. existing===null => runSupervisedTask({...launch, recoveryDir}). Else identity gate: task.id, resolve(task.repositoryRoot), task.baseRevision must equal handle.taskId/repositoryRoot/baseRevision else throw RecoveryError HANDLE_INVALID (same comparison as deliver assertSliceHandleIdentity) before resume or spawn. If status is ACCEPTED, EXHAUSTED or TOOL_UNAVAILABLE throw RecoveryError HANDLE_COMPLETE before resumeSupervisedTask. RUNNING => resumeSupervisedTask(existing, launch) with the same tool, original task JSON, model, maxAttempts, timeoutMs, permissionProfile and observation hooks. main() maps RecoveryError to stderr `${error.code}: ${error.message}` and exit 1; UsageError stays 64. CLI never calls disposeRecoverableRun. Do not extract a shared helper; do not write supervisor.js, recovery.js or deliver-slice.js.",
+    "D3 — Crash/resume fixture. packages/agent-tools/test/run-cli-recovery.test.js spawns delivered crash-supervised.mjs (CRASH_RECOVERY_DIR, CRASH_PHASE ACT_COMPLETED, fake-agent.mjs, exit 97) so handle.json is RUNNING, then spawns BIN `exharness-agent run --tool codex --command <fake-agent.mjs> --task <same.json> --recovery-dir <same>`. Assert resume status ACCEPTED, handle.worktreeRoot and coreSessionId unchanged, source repositorySnapshot (HEAD, symbolic-ref, refs/heads, porcelain, worktree count) equal before/after. P2: empty recovery dir, spawn BIN first-run with FAKE_AGENT_SCENARIO=FIX_FIRST, handle.json appears, status ACCEPTED, source snapshot unchanged. Hermetic fake CLI; no network, no credentials, no real agent CLIs.",
+    "D4 — Fail-closed bindings. N1: runSupervisedTask twice with the same recoveryDir; second throw RecoveryError HANDLE_CURRENT (`a current handle already exists`) before a second worktree add. N2: runSupervisedTask without recoveryDir still disposes the mkdtemp scratch (source worktree count unchanged, no handle.json). N3: RUNNING handle plus a task whose id differs; CLI identity gate and resumeSupervisedTask throw HANDLE_INVALID `resume task identity does not match the handle`; handle.json digest unchanged. N4: ACCEPTED handle plus `exharness-agent run --recovery-dir` / resumeSupervisedTask throw HANDLE_COMPLETE; no child spawn. Tests titled 'BB-135 N1'...'BB-135 N4' in run-cli-recovery.test.js must invoke the bound subjectSymbol.",
+    "D5 — BB-125 non-interference. Pass the original parsed --task object into runSupervisedTask and resumeSupervisedTask. Do not compute digests, persist BOUND, or throw CONTRACT_DRIFT. Worker start: commandRun still omits recoveryDir; AGENT_TOOL_RUN_HANDLE_V1 and HANDLE_CURRENT/HANDLE_COMPLETE/HANDLE_INVALID remain as delivered. Existing recovery.test.js RC1–RC5 stay green.",
+    "D6 — Living docs. docs/living/system/agent-tools/operator.md currently documents only deliver --recovery-dir; add an `exharness-agent run` section: --recovery-dir persists handle.json; missing handle starts a recoverable run; RUNNING resumes the same attempt; terminal ACCEPTED/EXHAUSTED/TOOL_UNAVAILABLE refuses HANDLE_COMPLETE; mismatched task identity refuses HANDLE_INVALID; omitting the flag keeps mkdtemp dispose; the CLI does not auto-dispose. docs/living/system/agent-tools/recovery.md states that operator run --recovery-dir composes the delivered handle/resume APIs and still contains AGENT_TOOL_RUN_HANDLE_V1. No Blackboard ids.",
+    "D7 — Evidence (discovery.json + cli-composition-audit.json at 5386e2ad, providerCalls 0): runCliPassesRecoveryDir false, supervisorAcceptsRecoveryDir true. Source: commandRun runSupervisedTask object has no recoveryDir; deliver maps options[\"recovery-dir\"]; runRecoverableTask throws HANDLE_CURRENT when handle.json exists; resumeSupervisedTask throws HANDLE_COMPLETE for terminal status and HANDLE_INVALID on identity mismatch."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -36,6 +41,7 @@
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/recovery.js",
       "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "docs/blackboard/evidence/BB-135/discovery.json",
       "docs/blackboard/process/operator-cli-composition.md"
     ],
     "expectedNew": [
@@ -48,52 +54,56 @@
   "sourceScope": {
     "read": [
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/supervisor.js",
-      "packages/agent-tools/src/recovery.js",
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-composition.md",
-      "docs/blackboard/evidence/BB-135/cli-composition-audit.json"
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "docs/blackboard/evidence/BB-135/discovery.json",
+      "docs/living/system/agent-tools/**"
     ],
     "write": [
       "packages/agent-tools/bin/exharness-agent.mjs",
-      "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/test/run-cli-recovery.test.js",
       "docs/living/system/agent-tools/recovery.md",
       "docs/living/system/agent-tools/operator.md"
     ],
     "forbiddenWrite": [
+      "packages/agent-tools/src/**",
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/benchmark/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin the run CLI recovery flag/resume mapping and execute a crash/resume fixture in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, wire only --recovery-dir on run and the focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — CLI flag and handle detection [RUN_RECOVERS]: implement D1–D2 in exharness-agent.mjs. USAGE --recovery-dir; missing handle first-run; RUNNING resume; identity gate; terminal HANDLE_COMPLETE; RecoveryError exit 1.",
+    "S2 — Crash/resume and fail-closed fixtures [FAIL_CLOSED_LINEAGE]: implement D3–D4 in run-cli-recovery.test.js. P1 crash-supervised.mjs then BIN resume; P2 first-run persist; N1 HANDLE_CURRENT; N2 omit recoveryDir disposes; N3 HANDLE_INVALID; N4 HANDLE_COMPLETE. recovery.test.js RC1–RC5 stay green.",
+    "S3 — Living operator/recovery docs [RUN_RECOVERS]: implement D6. operator.md run --recovery-dir section; recovery.md operator composition sentence; keep AGENT_TOOL_RUN_HANDLE_V1; no Blackboard ids."
   ],
   "acceptanceCriteria": [
     {
       "id": "RUN_RECOVERS",
       "statement": "exharness-agent run with a recovery directory persists the handle and resumes the same attempt after a simulated crash; source HEAD, branches and working tree stay unchanged.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "recovery-regression",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+        "P1 crash-supervised.mjs then BIN --recovery-dir resume ACCEPTED with unchanged worktreeRoot/coreSessionId and source snapshot; P2 first-run persist handle.json."
       ]
     },
     {
       "id": "FAIL_CLOSED_LINEAGE",
       "statement": "A run without a recovery directory still disposes the temporary worktree. A second first-run against a current handle, a mismatched task, or a completed handle fails closed before spawning a new lineage.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "recovery-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+        "BB-135 N1 runSupervisedTask HANDLE_CURRENT; N2 omit recoveryDir disposes; N3 resumeSupervisedTask HANDLE_INVALID; N4 HANDLE_COMPLETE; handle.json not forked."
       ]
     }
   ],
@@ -103,39 +113,41 @@
       "command": "node --test packages/agent-tools/test/run-cli-recovery.test.js"
     },
     {
+      "id": "recovery-regression",
+      "command": "node --test packages/agent-tools/test/recovery.test.js"
+    },
+    {
       "id": "agent-tools-regression",
       "command": "npm run test:agent-tools"
     },
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "A current recovery handle identifies exactly one semantic attempt; a second first-run cannot fork it.",
+      "invariant": "exharness-agent run --recovery-dir persists handle.json on first run and a second invocation against a RUNNING handle resumes the same worktree, Core session, tool session and candidate; source HEAD, branch refs and working tree stay unchanged.",
       "criterionIds": [
-        "RUN_RECOVERS",
-        "FAIL_CLOSED_LINEAGE"
+        "RUN_RECOVERS"
       ]
     },
     {
-      "invariant": "Omitting recoveryDir keeps the delivered dispose-in-finally run path.",
+      "invariant": "Omitting --recovery-dir keeps the delivered dispose-in-finally path. A second first-run against handle.json fails closed with HANDLE_CURRENT; a mismatched task fails closed with HANDLE_INVALID before resume; a completed handle fails closed with HANDLE_COMPLETE; none mint a second lineage.",
       "criterionIds": [
-        "FAIL_CLOSED_LINEAGE"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "RUN_RECOVERS",
         "FAIL_CLOSED_LINEAGE"
       ]
     }
   ],
   "negativeVerificationCases": [
     "Second first-run against a current handle must fail closed",
-    "Run without recoveryDir must still dispose the temporary worktree"
+    "Run without recoveryDir must still dispose the temporary worktree",
+    "Mismatched task against a current handle must fail closed",
+    "Completed handle must fail closed before spawning a new lineage"
   ],
   "negativeCaseBindings": [
     {
@@ -155,25 +167,275 @@
       "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
       "testTitle": "BB-135 N2 Run without recoveryDir must still dispose the temporary worktree",
       "subjectSymbol": "runSupervisedTask"
+    },
+    {
+      "id": "NEG_135_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N3 Mismatched task against a current handle must fail closed",
+      "subjectSymbol": "resumeSupervisedTask"
+    },
+    {
+      "id": "NEG_135_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "FAIL_CLOSED_LINEAGE",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/run-cli-recovery.test.js",
+      "testTitle": "BB-135 N4 Completed handle must fail closed before spawning a new lineage",
+      "subjectSymbol": "resumeSupervisedTask"
     }
   ],
-  "researchGaps": [
-    "Ratify exact CLI flag versus resume-from-handle detection, crash-injection fixture, and interaction with BB-125 contract binding before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/recovery.md",
       "docs/living/system/agent-tools/operator.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living docs state that exharness-agent run --recovery-dir persists and resumes one supervised attempt through the delivered handle.json protocol, that omitting the flag keeps dispose-in-finally, and that current, mismatched and completed handles fail closed. Living docs contain no Blackboard ids and still name AGENT_TOOL_RUN_HANDLE_V1."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "finding": "DELIVERED_TRUTH at 5386e2ad: runCliPassesRecoveryDir false, supervisorAcceptsRecoveryDir true, runCliPassesTraceDir true, providerCalls 0."
+    },
+    {
+      "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+      "finding": "DELIVERED_TRUTH: commandRun calls runSupervisedTask with tool/task/model/maxAttempts/timeoutMs/permissionProfile and optional observation; it never passes recoveryDir. Run USAGE omits --recovery-dir; deliver USAGE includes it; commandDeliverCli maps options[\"recovery-dir\"]."
+    },
+    {
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "finding": "DELIVERED_TRUTH: recoveryDir null uses mkdtemp plus finally dispose; non-null calls runRecoverableTask which throws HANDLE_CURRENT when handle.json exists. resumeSupervisedTask throws HANDLE_COMPLETE for terminal status and HANDLE_INVALID when task id/repo/base do not match."
+    },
+    {
+      "ref": "docs/blackboard/evidence/BB-135/discovery.json",
+      "finding": "SOURCE_INSPECTION facts.runCliPassesRecoveryDir false and facts.supervisorAcceptsRecoveryDir true; auditRef points at cli-composition-audit.json."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-101"
+    ],
+    "workerStart": "Confirm origin/main commandRun still omits recoveryDir, deliver still maps --recovery-dir, and HANDLE_CURRENT/HANDLE_COMPLETE/HANDLE_INVALID still throw as quoted. Re-read cli-composition-audit.json. recovery.test.js RC1–RC5 must stay green. Do not wait for BB-125.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "runSupervisedTask recoveryDir",
+        "resumeSupervisedTask",
+        "readAgentToolRunHandle",
+        "HANDLE_CURRENT HANDLE_COMPLETE HANDLE_INVALID",
+        "deliver --recovery-dir",
+        "crash-supervised.mjs",
+        "fake-agent.mjs"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "run --recovery-dir first-run persist and RUNNING resume",
+        "CLI identity gate and HANDLE_COMPLETE before resume",
+        "omit flag keeps dispose"
+      ]
+    },
+    "contradiction": "None. BB-101 remains the durable worktree/session seam; this task only composes it onto commandRun. BB-125 may later add CONTRACT_DRIFT inside resumeSupervisedTask; the CLI still forwards the original task."
+  },
+  "deliveryContract": {
+    "precondition": "BB-101 DONE.",
+    "completion": "focused + recovery.test.js RC1–RC5 + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No supervisor/recovery/deliver-slice edits, no CONTRACT_DRIFT implementation, no auto-dispose of recoveryDir, no sandbox/SCM/MCP promote."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "recovery-regression",
+      "agent-tools-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "run without --recovery-dir mkdtemp dispose",
+      "deliver --recovery-dir mapping",
+      "HANDLE_CURRENT HANDLE_COMPLETE HANDLE_INVALID",
+      "crash-supervised.mjs",
+      "RC1–RC5"
+    ],
+    "add": [
+      "run --recovery-dir persist/resume/identity/complete handling in the bin",
+      "run-cli-recovery tests"
+    ],
+    "rollback": "Remove --recovery-dir from run USAGE and commandRun; delete run-cli-recovery.test.js; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-135 objective + cli-composition-audit.json + delivered commandRun/supervisor/recovery",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-101",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "No supervisor/recovery schema rewrite, no BB-125 CONTRACT_DRIFT, no auto-dispose."
+      ]
+    }
+  ],
   "valueHypothesis": {
     "expectedValue": "The primary operator run path can survive process death using the recovery API that already exists.",
-    "measurement": "Crash/resume fixture on fake CLI; source repository unchanged; no second lineage.",
+    "measurement": "Crash/resume fixture on fake CLI; source repository unchanged; HANDLE_CURRENT/HANDLE_INVALID/HANDLE_COMPLETE fail closed.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-101 for recovery semantics; BB-074 for end-to-end delivery value"
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "exharness-agent run with a recovery directory persists the handle and resumes the same attempt after a simulated crash; source HEAD, branches and working tree stay unchanged.",
+      "criterionIds": [
+        "RUN_RECOVERS"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "recovery-regression",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "packages/agent-tools/src/supervisor.js",
+        "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+        "docs/blackboard/process/operator-cli-composition.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+          "match": "\"runCliPassesRecoveryDir\": false"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "    ...(observation === null ? {} : { invocationObserver: observation.invocationObserver, eventSinks: observation.eventSinks, tracer: observation.tracer })"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "if (recoveryDir !== null) {\n    return runRecoverableTask("
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "A run without a recovery directory still disposes the temporary worktree. A second first-run against a current handle, a mismatched task, or a completed handle fails closed before spawning a new lineage.",
+      "criterionIds": [
+        "FAIL_CLOSED_LINEAGE"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "focused",
+        "recovery-regression"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/supervisor.js",
+        "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+        "docs/living/system/agent-tools/recovery.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "Without recoveryDir the run still uses a unique mkdtemp scratch worktree that is disposed"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "throw new RecoveryError(\"HANDLE_CURRENT\", `a current handle already exists in ${root}`);"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "throw new RecoveryError(\"HANDLE_COMPLETE\", `handle is already ${handle.status}`);"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "throw new RecoveryError(\"HANDLE_INVALID\", \"resume task identity does not match the handle\");"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "RUN_RECOVERS",
+        "FAIL_CLOSED_LINEAGE"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/operator-cli-composition.md",
+        "docs/blackboard/evidence/BB-135/discovery.json",
+        "docs/living/system/agent-tools/operator.md",
+        "packages/agent-tools/bin/exharness-agent.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/operator-cli-composition.md",
+          "match": "`exharness-agent run` never passes `recoveryDir` or `mcpVerify`."
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-135/discovery.json",
+          "match": "\"runCliPassesRecoveryDir\": false"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/operator.md",
+          "match": "`exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]`"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "usage: exharness-agent run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]"
+        }
+      ],
+      "supportingPlanFields": [
+        "implementationSlices",
+        "verificationPlan"
+      ]
+    }
+  ]
 }
