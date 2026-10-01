@@ -33,7 +33,7 @@
     "D2 Create a private named ref only in a temporary bare exporter whose alternates read source objects. Bundle that ref excluding base. Never update source refs/config; published objects must survive exporter/source deletion.",
     "D3 Normalize independently pinned BB-127 acceptance as PLANNED_CONTRACT. Bind all subject/evaluator/config/result/log bytes; omit prompt/env/transcripts/backend objects. Existing QA output is bounded summary only, with original-stream digests labelled separately.",
     "D4 Opt in with reviewOutputDir/--review-out. Write private sibling staging under external output root, validate and sync all bytes, rename to manifest digest, sync parent, then clean QA/recovery. Use exclusive publisher lock and fail rather than overwrite corrupt existing output.",
-    "D5 Reviewer supplies clean complete base checkout and external manifest/evaluator/config pins. Verify before import, fetch only declared transport ref, detach exact candidate and assert tree, then explicitly rerun trusted standalone evaluator. Exported PASS is historical; replay makes a fresh candidate-bound record.",
+    "D5 Reviewer supplies clean complete base checkout and external manifest/evaluator/config pins. Verify before import, fetch only declared transport ref, detach exact candidate and assert tree, then explicitly rerun trusted standalone evaluator. Exported PASS is historical; replay makes a fresh candidate-bound record. Reconstruct portable config from verified args/timeout and explicit Node24 prerequisite; hash separately from original protected manifest, retain provenance. Root argument stays last. Fresh runtime identity is recorded separately; original root-dependent objective hash is historical, not recomputed at clone path.",
     "D6 Stream binary outputs with quotas/timeouts and argument arrays/shell:false. Export retained bounded acceptance summary with complete:false and independent original stdout/stderr digests from protected verification; do not invent unavailable raw log bytes. Fresh explicit replay captures its own bounded logs plus full-stream digests and generates a new result. Transport objects, patch and evaluator bytes are never silently truncated.",
     "D7 Refactor the private fresh-QA helper with an optional before-dispose export callback, shared by fresh and ACCEPTED-handle routes. Requested export runs inside checkout try after protected PASS; helper finally disposes QA even on error. Only successful export permits recovery disposal; requested failure returns REVIEW_EXPORT_FAILED and retains recovery. Without request preserve old status/result/cleanup behavior.",
     "D8 Same commit as base uses BASE_ONLY/empty patch/no bundle; same tree with different commit still bundles. Reject nonancestor/shallow/missing base, gitlinks/LFS pointers, non-UTF8 filenames, unsafe output and unsupported object format. Parse UTF-8 path records with NUL delimiters.",
@@ -98,8 +98,8 @@
   },
   "implementationSlices": [
     "S1 — packages/agent-tools/src/review-bundle.js; REVIEW_ARTIFACT/SOURCE_ISOLATION. exportReviewBundle({repositoryRoot,sliceId,baseSha,candidateSha,candidateTree,outputRoot,acceptancePacket,qaRecords,limits?}) -> {version,directory,manifestSha256,candidateSha,candidateTree,status:EXPORTED}; ReviewBundleError on failure. validateReviewEvidence(packet,subject) rehashes bytes and returns immutable normalized evidence. Optional reviewOutputDir option overrides slice field; commandDeliver accepts reviewOutputDir/review-out. Sorted-key UTF-8 JSON + newline; manifestSha256 hashes exact bytes, final directory named by digest. Bind version,sliceId,baseSha/baseTree,candidateSha/candidateTree,objectFormat:sha1,transportMode:INCREMENTAL|BASE_ONLY,transportRef|null,prerequisites,changedPaths:[{status,path}],evaluator/config/protectedManifest hashes, acceptanceStatus:PASS and records, including acceptance summary completeness:false and original full-stream digests. Artifact entries {path,role,bytes,sha256,complete,originalStreamSha256?}; no self-hash, timestamp, absolute host path, prompt/env/handle/transcript. Fixed regular filenames only: manifest.json,candidate.patch,candidate.bundle (incremental only),evaluator.mjs,evaluator-config.json,acceptance-result.json,acceptance-summary.log,qa-records.json,qa-summary.log. List/hash every artifact except manifest exactly once; reject extra/missing/duplicate/unknown/traversal/symlink entries. Git steps: [\"Resolve commits/trees; SHA-1 format, ancestor check, full nonshallow base required. Detect unsupported tree modes/LFS pointers. Temporary bare exporter uses source rev-parse --path-format=absolute --git-path objects, private alternates and update-ref refs/heads/review-candidate candidateSha.\", \"bundle create --version=2 <stage>/candidate.bundle refs/heads/review-candidate ^<baseSha>. Require exactly candidate/ref from list-heads; parse prerequisite IDs, require each prerequisite ancestor of base and complete in base-only verifier. Record actual frontier, never infer only one from baseSha.\", \"diff --binary --full-index --no-ext-diff --no-textconv --no-renames baseSha candidateSha -- streamed to patch. diff --name-status -z --no-renames parsed status/path records.\", \"Before publication verify/import bundle in independent temporary base-only repo with complete base objects and no source/export alternates, fsck and compare commit/tree. BASE_ONLY skips bundle and requires empty patch; different commit/equal tree still bundles.\"] Publication: Validate nonempty outputRoot before agent spawn; realpath existing parents, require private POSIX local output outside source worktree/Git common dir/recovery/Backend/QA scratch, reject containment in either direction and symlink components. Exclusive .review-export.lock serializes publishers; existing lock means OUTPUT_BUSY/manual stale-lock recovery. Own random .stage-* mode0700/files0600 with exclusive creation. Await write+file sync+stage sync and byte verification; under lock rename to digest directory without overwrite, sync parent before returning EXPORTED. Existing exact output must fully revalidate to reuse; corrupt collision fails unchanged. Post-rename sync failure returns failure while retaining complete final artifact. Remove only own lock/staging/exporter. Limits: {\"bundleBytes\": 134217728, \"patchBytes\": 33554432, \"manifestBytes\": 1048576, \"evidenceAggregateBytes\": 4194304, \"totalBytes\": 173015040, \"gitTimeoutMs\": 120000, \"policy\": \"Positive integer overrides may lower caps only; no CLI tuning in this task. Stream bytes/hash/count, shell:false; kill process group and await close on overflow/timeout, clean partial stages. Never advertise incomplete external acceptance logs as complete.\"}",
-    "S2 — deliver-slice.js; ATOMIC_LIFECYCLE. Add optional private onAcceptedBeforeDispose callback to runQaOnFreshCheckout, preserving existing callers. Invoke it inside that helper try after ordinary plus BB-127 protected QA PASS, while its exact candidate checkout still exists, before finally disposes workspace. Both fresh finishBackend and ACCEPTED-handle paths pass the same export callback. The callback builds normalized pinned packet and awaits exportReviewBundle; attach returned bundle metadata to QA result. finishBackend disposes matching recovery only after successful requested export; export error maps REVIEW_EXPORT_FAILED/reason/backendSha/sanitizedQA/reviewBundle:null, retains recovery, and helper finally still removes QA. Failed QA exports nothing; no request preserves old lifecycle. Validate reviewOutputDir and self-contained evaluator profile before Backend. Packet schema is deliveryContract.reviewBundle.dependencyAdapter.packet: canonical protected result and evaluator/config bytes, bounded summary complete:false plus original full-stream digests. Rehash retained bytes and subject pins. No full-stream capture API or local-command-verifier source edit is assumed.",
-    "S3 — review-bundle.js and bin/exharness-agent.mjs; FRESH_REPLAY/COMPATIBILITY. replayReviewBundle({bundleDirectory,repositoryRoot,expectedManifestSha256,expectedEvaluatorSha256,expectedConfigSha256,executeEvaluator=false}). Six fixed steps: (1) require clean complete exact base, SHA1 and caller pins; validate strict manifest/file set/caps and byte hashes before effects; (2) verify bundle/list-heads/prerequisite frontier or exact BASE_ONLY/no bundle/empty patch; (3) fetch declared ref --no-tags to refs/heads/review/<manifestSha256>, refusing different existing target; (4) detach exact candidate without force/reset, disable hooks/filters and assert HEAD/tree/NUL changed paths; (5) explicit true rehashes and executes trusted standalone evaluator with process.execPath/candidate-root/pinned config args, shell:false/timeout/bounded logs; false returns NOT_EVALUATED after import; (6) true requires exit0/unchanged HEAD-tree-status, emits fresh subject-bound PASS or REPLAY_FAILED plus stream digests. Historic PASS never transfers. CLI deliver --review-out forwards reviewOutputDir; review --bundle --repository --manifest-sha256 --evaluator-sha256 --config-sha256 requires all pins and explicit true. Exit0 PASS,64 malformed,1 failure. Existing routing compatible.",
+    "S2 — deliver-slice.js; ATOMIC_LIFECYCLE. Add optional private onAcceptedBeforeDispose callback to runQaOnFreshCheckout, preserving existing callers. Invoke it inside that helper try after ordinary plus BB-127 protected QA PASS, while its exact candidate checkout still exists, before finally disposes workspace. Both fresh finishBackend and ACCEPTED-handle paths pass the same export callback. The callback builds normalized pinned packet and awaits exportReviewBundle; attach returned bundle metadata to QA result. finishBackend disposes matching recovery only after successful requested export; export error maps REVIEW_EXPORT_FAILED/reason/backendSha/sanitizedQA/reviewBundle:null, retains recovery, and helper finally still removes QA. Failed QA exports nothing; no request preserves old lifecycle. Validate reviewOutputDir and self-contained evaluator profile before Backend. Packet schema is deliveryContract.reviewBundle.dependencyAdapter.packet: canonical protected result and evaluator/config bytes, bounded summary complete:false plus original full-stream digests. Rehash retained bytes and subject pins. No full-stream capture API or local-command-verifier source edit is assumed. Portable config conversion is the explicit dependencyAdapter.portableConfig rule; raw BB-127 manifest/config is never relabelled as identical portable bytes.",
+    "S3 — review-bundle.js and bin/exharness-agent.mjs; FRESH_REPLAY/COMPATIBILITY. replayReviewBundle({bundleDirectory,repositoryRoot,expectedManifestSha256,expectedEvaluatorSha256,expectedConfigSha256,executeEvaluator=false}). Six fixed steps: (1) require clean complete exact base, SHA1 and caller pins; validate strict manifest/file set/caps and byte hashes before effects; (2) verify bundle/list-heads/prerequisite frontier or exact BASE_ONLY/no bundle/empty patch; (3) fetch declared ref --no-tags to refs/heads/review/<manifestSha256>, refusing different existing target; (4) detach exact candidate without force/reset, disable hooks/filters and assert HEAD/tree/NUL changed paths; (5) explicit true rehashes and executes trusted standalone evaluator with process.execPath with argv [evaluator,...config.args,candidateRoot] (root last), after checking supplied Node major24, shell:false/timeout/bounded logs; false returns NOT_EVALUATED after import; (6) true requires exit0/unchanged HEAD-tree-status, emits fresh subject-bound PASS or REPLAY_FAILED plus stream digests. Historic PASS never transfers. CLI deliver --review-out forwards reviewOutputDir; review --bundle --repository --manifest-sha256 --evaluator-sha256 --config-sha256 requires all pins and explicit true. Exit0 PASS,64 malformed,1 failure. Existing routing compatible.",
     "S4 — review-bundle.test.js: deterministic temp Git repositories and existing fake-tool fixtures; each named negative directly calls its bound subject. Delete source/exporter before replay; assert exact commit/tree/binary/modes/deletion/special paths. Snapshot source and instrument cleanup order, CLI, retry/limits/collisions.",
     "S5 — README plus livingDocs refs: document six replay steps, pins, supplied prerequisites, quotas, BASE_ONLY and failures, bounded summaries and local claim boundary. Run focused/existing regressions and bind exact Worker command/log/negative body hashes after READY."
   ],
@@ -172,63 +172,7 @@
     {
       "id": "focused",
       "command": "node --test packages/agent-tools/test/review-bundle.test.js",
-      "negativeCases": [
-        {
-          "title": "BB-129 N1 Corrupted bundle must fail digest verification before import",
-          "subject": "replayReviewBundle",
-          "criterionId": "FRESH_REPLAY"
-        },
-        {
-          "title": "BB-129 N2 A different base cannot be silently used for exact candidate replay",
-          "subject": "replayReviewBundle",
-          "criterionId": "FRESH_REPLAY"
-        },
-        {
-          "title": "BB-129 N3 Missing acceptance log bytes cannot grant portable acceptance",
-          "subject": "exportReviewBundle",
-          "criterionId": "REVIEW_ARTIFACT"
-        },
-        {
-          "title": "BB-129 N4 Changed evaluator or config cannot replay as pinned acceptance",
-          "subject": "replayReviewBundle",
-          "criterionId": "FRESH_REPLAY"
-        },
-        {
-          "title": "BB-129 N5 Wrong slice candidate or tree receipt cannot be exported",
-          "subject": "exportReviewBundle",
-          "criterionId": "REVIEW_ARTIFACT"
-        },
-        {
-          "title": "BB-129 N6 Quota overflow removes owned staging and never returns EXPORTED",
-          "subject": "exportReviewBundle",
-          "criterionId": "ATOMIC_LIFECYCLE"
-        },
-        {
-          "title": "BB-129 N7 Write or rename failure cannot dispose matching recovery before publication",
-          "subject": "runDeliverSlice",
-          "criterionId": "ATOMIC_LIFECYCLE"
-        },
-        {
-          "title": "BB-129 N8 Missing base prerequisites fail before bundle import",
-          "subject": "replayReviewBundle",
-          "criterionId": "FRESH_REPLAY"
-        },
-        {
-          "title": "BB-129 N9 Corrupt existing output cannot be overwritten or treated as success",
-          "subject": "exportReviewBundle",
-          "criterionId": "ATOMIC_LIFECYCLE"
-        },
-        {
-          "title": "BB-129 N10 Unsafe output root nonancestor or unsupported Git payload is refused",
-          "subject": "exportReviewBundle",
-          "criterionId": "COMPATIBILITY"
-        },
-        {
-          "title": "BB-129 N11 Evaluator failure or tree mutation cannot produce replay PASS",
-          "subject": "replayReviewBundle",
-          "criterionId": "FRESH_REPLAY"
-        }
-      ],
+      "negativeCases": "Execute exact distinct bindings NEG_129_1, NEG_129_2, NEG_129_3, NEG_129_4, NEG_129_5, NEG_129_6, NEG_129_7, NEG_129_8, NEG_129_9, NEG_129_10, NEG_129_11; titles, subjects and criteria are in negativeCaseBindings. Every failure asserts no ACCEPT/EXPORTED and preserves declared resources.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
@@ -672,7 +616,8 @@
         "classification": "PLANNED_CONTRACT",
         "producer": "BB-127 external acceptance; its DRAFT has no delivered return API. deliver-slice.js maps actual upstream return shape, never invents an existing symbol. Contradiction requires research/rejudgment before Worker.",
         "packet": "{sliceId,baseSha,candidateSha,candidateTree,evaluator:{bytes,sha256},config:{bytes,sha256},result:{bytes,sha256},summary:{bytes,sha256,complete:false,originalStdoutSha256,originalStderrSha256},protectedManifestSha256}. Result is canonical externally pinned PASS for same candidate/evaluator/config and binds original full-stream hashes from the verifier record. Summary bytes are the bounded delivered verifier summary, not full streams. Rehash all retained bytes and compare result pins. Missing summary/result/raw-stream hashes or any mismatch rejects EVIDENCE_MISSING/EVIDENCE_MISMATCH. No complete raw stream bytes are assumed available.",
-        "profile": "One self-contained pinned .mjs evaluator plus canonical config {args:string[],timeoutMs:positiveInteger,runtimePrerequisites:string[]}. Reject multi-file evaluator/dependency profile before Backend when review requested. Map BB-127 manifest entryPoint/files/runtime/args/timeout and result verification explicitly; reread delivered API before Worker only to confirm compatibility, not choose a new schema. Reviewer supplies declared runtime; manifest does not transport the runtime executable. Retained bounded summary is complete:false; raw stdout/stderr hashes remain distinct metadata, not hashes of summary bytes."
+        "profile": "Self-contained pinned .mjs and separately hashed canonical portable config; conversion, authority and runtime rules are in portableConfig. Reject unsupported multi-file/external-path profiles before dispatch. Summary complete:false retains original stream hashes.",
+        "portableConfig": "The exported config is a NEW explicit replay profile, not raw BB-127 manifest bytes: sorted-key JSON {args,timeoutMs,runtimePrerequisites:[\"node-major:24\"]}. Derive args/timeout from the already operator-pinned BB-127 manifest, reject absolute-path/credential-dependent args and non-self-contained evaluator before dispatch. Hash exported bytes separately and bind sourceProtectedManifestSha256 in result/manifest. Do not equate this hash with the original acceptance-manifest hash. Retain original goal/contract/runtime identities as historical opaque pins; never recompute original repositoryRoot-based goal digest from reviewer clone path. Fresh replay records its actual supplied Node version/binary hash and fresh environment, not an identical historical host."
       },
       "manifest": "Exact selected contract is specified inline in implementationSlices S1; this field refers to that same schema, not a second variant.",
       "files": "Exact selected contract is specified inline in implementationSlices S1; this field refers to that same schema, not a second variant.",
@@ -684,7 +629,7 @@
     "replay": {
       "api": "replayReviewBundle({bundleDirectory,repositoryRoot,expectedManifestSha256,expectedEvaluatorSha256,expectedConfigSha256,executeEvaluator:false|true}). Default validates/imports, returns NOT_EVALUATED; explicit true (review CLI) executes and returns fresh subject-bound PASS/REPLAY_FAILED with stdout/stderr digests.",
       "sixSteps": [
-        "Exact six replay steps are specified inline in implementationSlices S3; no alternate path."
+        "The exact six-step algorithm is specified in S3, with root-last argv and explicit executeEvaluator=true; no alternate replay path."
       ],
       "trust": "Expected digests come from operator result/independent review, never the same untrusted manifest. Integrity is not signature/authorship. Standalone evaluator/config profile only; caller supplies declared runtime dependencies. Artifact symlinks refused; Git candidate symlinks preserved as objects and never followed during export.",
       "errors": [
@@ -704,7 +649,8 @@
         "OUTPUT_COLLISION",
         "REPLAY_FAILED"
       ],
-      "support": "POSIX local filesystem, complete ancestor base, native SHA-1, UTF-8 names including tabs/newlines, binary files/modes/deletion/safe candidate symlinks. Reject gitlinks (ls-tree -r -z mode160000), LFS pointer blobs (standard version prefix), shallow graph/nonancestor and unsupported object format; no claim of LFS/submodule runtime replay."
+      "support": "POSIX local filesystem, complete ancestor base, native SHA-1, UTF-8 names including tabs/newlines, binary files/modes/deletion/safe candidate symlinks. Reject gitlinks (ls-tree -r -z mode160000), LFS pointer blobs (standard version prefix), shallow graph/nonancestor and unsupported object format; no claim of LFS/submodule runtime replay.",
+      "argumentOrder": "Exact execution argv is [absoluteEvaluatorPath,...config.args,realpath(candidateCheckout)] with candidate root LAST, matching BB-127. Require supplied Node major24; no automatic install or runtime-binary transport. Runtime differs explicitly in the fresh replay receipt. Exported config/evaluator hashes remain exact caller pins."
     }
   },
   "researchEvidenceSummary": {
