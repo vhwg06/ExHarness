@@ -157,28 +157,99 @@
     {
       "id": "focused",
       "command": "node --test packages/agentic-system/test/api-state-verifier.test.js",
-      "negativeCases": "focused must fail closed on all 13 negativeVerificationCases: deleted seeded rows, weakened schema, added required input, removed required response, corrupted old records, state reset on restart, changed evaluator digest, deleted assertions/no-op oracle, missing/wrong preview identity, migration failure, timeout/malformed response, foreign fixture disposal, unknown/unexecuted criterion.",
-      "setup": "Run using operator-provisioned Node24 with built-in node:sqlite on Linux x64; verify sqlite availability before tests. Missing runtime/profile fails command, never skips. Do not treat generic Node22 CI regression as this focused profile validation."
+      "negativeCases": [
+        {
+          "title": "BB-133 N1 Deleted seeded old rows cannot PASS preserved-state criteria",
+          "subject": "createApiStateVerifier",
+          "criterionId": "PERSISTED_STATE"
+        },
+        {
+          "title": "BB-133 N2 Weakening candidate schema cannot replace pinned prior-client assertions",
+          "subject": "createApiStateVerifier",
+          "criterionId": "API_COMPATIBILITY"
+        },
+        {
+          "title": "BB-133 N3 Adding a required input field breaks the previous client",
+          "subject": "createApiStateVerifier",
+          "criterionId": "API_COMPATIBILITY"
+        },
+        {
+          "title": "BB-133 N4 Removing a required response field cannot PASS",
+          "subject": "createApiStateVerifier",
+          "criterionId": "API_COMPATIBILITY"
+        },
+        {
+          "title": "BB-133 N5 Corrupting old record values cannot PASS",
+          "subject": "createApiStateVerifier",
+          "criterionId": "PERSISTED_STATE"
+        },
+        {
+          "title": "BB-133 N6 Resetting state on restart cannot PASS",
+          "subject": "createApiStateVerifier",
+          "criterionId": "PERSISTED_STATE"
+        },
+        {
+          "title": "BB-133 N7 Changed evaluator digest cannot grant acceptance",
+          "subject": "createApiStateVerifier",
+          "criterionId": "EVIDENCE_IDENTITY"
+        },
+        {
+          "title": "BB-133 N8 Deleting mandatory assertions or using a no-op oracle cannot grant acceptance",
+          "subject": "createApiStateVerifier",
+          "criterionId": "FAIL_CLOSED"
+        },
+        {
+          "title": "BB-133 N9 Missing or wrong preview identity cannot grant acceptance",
+          "subject": "createApiStateVerifier",
+          "criterionId": "EVIDENCE_IDENTITY"
+        },
+        {
+          "title": "BB-133 N10 Migration failure or unavailable runtime is INCONCLUSIVE",
+          "subject": "createApiStateVerifier",
+          "criterionId": "FAIL_CLOSED"
+        },
+        {
+          "title": "BB-133 N11 Timeout or malformed response is INCONCLUSIVE",
+          "subject": "createApiStateVerifier",
+          "criterionId": "FAIL_CLOSED"
+        },
+        {
+          "title": "BB-133 N12 Foreign fixture roots and service handles cannot be reset or disposed",
+          "subject": "createApiStateVerifier",
+          "criterionId": "OWNED_RESOURCES"
+        },
+        {
+          "title": "BB-133 N13 Unknown or unexecuted criterion cannot PASS",
+          "subject": "createApiStateVerifier",
+          "criterionId": "FAIL_CLOSED"
+        }
+      ],
+      "setup": "Run using operator-provisioned Node24 with built-in node:sqlite on Linux x64; verify sqlite availability before tests. Missing runtime/profile fails command, never skips. Do not treat generic Node22 CI regression as this focused profile validation.",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "qa-authority",
       "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/product-qa-race.test.js",
-      "negativeCases": "Existing Product QA regressions establish runtime/snapshot/release authority. Adapter-specific evaluator/assertion/preview corruption is exercised by focused api-state-verifier.test.js through actual createApiStateVerifier injection, not claimed as coverage by generic Product QA tests."
+      "negativeCases": "Existing Product QA regressions establish runtime/snapshot/release authority. Adapter-specific evaluator/assertion/preview corruption is exercised by focused api-state-verifier.test.js through actual createApiStateVerifier injection, not claimed as coverage by generic Product QA tests.",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agent-tools-regression",
       "command": "npm run test:agent-tools",
-      "negativeCases": "regression must stay green; no silent behavior change."
+      "negativeCases": "regression must stay green; no silent behavior change.",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agentic-regression",
       "command": "npm run test:agentic",
-      "negativeCases": "regression must stay green; no silent behavior change."
+      "negativeCases": "regression must stay green; no silent behavior change.",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "docs",
       "command": "npm run verify:current-docs",
-      "negativeCases": "docs must keep Living limits reconciled; no Blackboard ids in Living docs."
+      "negativeCases": "docs must keep Living limits reconciled; no Blackboard ids in Living docs.",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     }
   ],
   "invariantCoverage": [
@@ -647,7 +718,9 @@
           "match": "every pinned acceptance criterion must PASS"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "profileContract"
+      ]
     },
     {
       "objectiveCriterion": "Breaking required-field/response changes, deleted old rows, state reset, weakened schemas/assertions and setup failures cannot PASS; reset affects only owned fixtures and a minimized request/data reproducer is retained.",
@@ -736,7 +809,9 @@
           "match": "every pinned acceptance criterion must PASS"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
     }
   ],
   "researchResolution": {
@@ -750,5 +825,80 @@
     "reproducer": "For an observed HTTP/assertion mismatch retain exactly the failing finite request method/path/body, expected/actual status/body projection and the single seed row involved, plus candidate/config/evaluator/preview/store/schema identities. This deterministic reduction of the fixed fixture is the minimized reproducer; unrelated requests/rows are excluded. Setup failures retain minimal setup diagnostics, not an invented HTTP mismatch. Retain before cleanup, within profile budgets.",
     "composition": "Focused suite injects actual createApiStateVerifier into createProductQaExecutionStrategy with existing parseable snapshot/component/order fixtures and independent runtimeObserver. Demonstrate adapter FAIL/INCONCLUSIVE cannot publish QualityAcceptance, and release drift is rejected independently. Existing qa-authority run supplies generic regression coverage; focused owns new adapter-specific corruption cases.",
     "prototypeBoundary": "The 13-case executed prototype uses synthetic candidate hashes/proposed shims and has non-minimized first-failure examples; it proves HTTP/SQLite discriminating feasibility only. Product-level exact Git/QA identities, durable evidenceStore and deterministic reduction are mandatory new focused tests, not existing generic QA coverage."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "researchEvidenceSummary": {
+    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
+    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed.",
+    "results": [
+      {
+        "mode": "correct",
+        "verdict": "PASS",
+        "requests": 11
+      },
+      {
+        "mode": "required-input",
+        "verdict": "FAIL",
+        "requests": 5
+      },
+      {
+        "mode": "response-break",
+        "verdict": "FAIL",
+        "requests": 4
+      },
+      {
+        "mode": "data-loss",
+        "verdict": "FAIL",
+        "requests": 4
+      },
+      {
+        "mode": "record-corruption",
+        "verdict": "FAIL",
+        "requests": 4
+      },
+      {
+        "mode": "reset-on-restart",
+        "verdict": "FAIL",
+        "requests": 10
+      },
+      {
+        "mode": "weakened-schema",
+        "verdict": "FAIL",
+        "requests": 6
+      },
+      {
+        "mode": "evaluator-drift",
+        "verdict": "FAIL",
+        "requests": 0
+      },
+      {
+        "mode": "assertion-deletion",
+        "verdict": "FAIL",
+        "requests": 0
+      },
+      {
+        "mode": "missing-identity",
+        "verdict": "FAIL",
+        "requests": 0
+      },
+      {
+        "mode": "wrong-preview",
+        "verdict": "FAIL",
+        "requests": 3
+      },
+      {
+        "mode": "setup-failure",
+        "verdict": "INCONCLUSIVE",
+        "requests": 2
+      },
+      {
+        "mode": "malformed-response",
+        "verdict": "INCONCLUSIVE",
+        "requests": 4
+      }
+    ],
+    "resultsDigest": "7a8890a2c49f5af37d16848611736b735923c3c3df1ababfd2eb12f8fc919b93",
+    "sourceSha256": "b6d610eb2e4b9a0c902cf287a4c486ea2741b9e44450f3aa8b3a9b79b8eed233",
+    "limits": "Synthetic SHA-256 candidateDigest, not Git/deployment identity. Separate service processes and real SQLite. Proposed shims, no delivered BB-127/131 invocation. Small required-field descriptor, no OpenAPI engine. No external CLI/Docker/provider/production trial."
   }
 }
