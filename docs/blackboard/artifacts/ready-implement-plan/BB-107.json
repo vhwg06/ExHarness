@@ -176,15 +176,18 @@
   "verificationPlan": [
     {
       "id": "rp1-fit",
-      "command": "node --test --test-name-pattern=\"^RP1 \" packages/oracle/test/retrieval-planner.test.js"
+      "command": "node --test --test-name-pattern=\"^RP1 \" packages/oracle/test/retrieval-planner.test.js",
+      "description": "Executes bound title 'RP1 9000-byte file under 40000 budget is COMPLETE' (NC-RP-fit/RP1/createRetrievalPlanner) via pattern ^RP1; the title pass/fail IS the rp1-fit result."
     },
     {
       "id": "rp2-oversize",
-      "command": "node --test --test-name-pattern=\"^RP2 \" packages/oracle/test/retrieval-planner.test.js"
+      "command": "node --test --test-name-pattern=\"^RP2 \" packages/oracle/test/retrieval-planner.test.js",
+      "description": "Executes 3 bound titles via pattern ^RP2: 'RP2 oversize file is BUDGET_EXHAUSTED without truncation' (NC-RP-truncate), 'RP2 LOOKUP_SYMBOL and SEARCH_LEXICAL both reserve' (NC-RP-lexical), 'RP2 execute failures keep reason and detail only' (NC-RP-shape); each invokes createRetrievalPlanner, criterion RP2."
     },
     {
       "id": "rp3-docs",
-      "command": "node --test --test-name-pattern=\"^RP3 \" packages/oracle/test/retrieval-planner.test.js"
+      "command": "node --test --test-name-pattern=\"^RP3 \" packages/oracle/test/retrieval-planner.test.js",
+      "description": "Executes bound title 'RP3 Living docs omit the 8192-byte per-item cap' (NC-RP-docs/RP3/createRetrievalPlanner) via pattern ^RP3; the title pass/fail IS the rp3-docs result."
     },
     {
       "id": "rp4-graph",
@@ -263,7 +266,7 @@
     },
     {
       "ref": "packages/oracle/test/retrieval-planner.test.js",
-      "finding": "DELIVERED_TRUTH: no RP1\u2013RP4 tests yet; existing tests do not pin reservedBudget.materializedBytes. After D2, two itemRefs under 4/4/20000 get 10000 then 10000. tooSmall remainingBudget maxItems:1 still abandons the evidence."
+      "finding": "DELIVERED_TRUTH baseline: existing tests do not pin reservedBudget.materializedBytes; the bound RP1-RP4 titles ARE the tests the rp1-fit/rp2-oversize/rp3-docs/rp4-graph commands execute (^RP1 /^RP2 /^RP3 /^RP4). Under corrected D2 two itemRefs under 4/4/20000 get 10000 then 10000. tooSmall remainingBudget maxItems:1 still abandons the evidence."
     }
   ],
   "dependencyResolution": {
@@ -554,11 +557,11 @@
     }
   ],
   "negativeVerificationCases": [
-    "A 9000-byte file under 40000 bytes remaining that is still BUDGET_EXHAUSTED from an 8192 reservation fails RP1.",
-    "Truncating a 9000-byte file to fit a 100-byte budget fails RP2.",
-    "LOOKUP_SYMBOL reserving all remaining items so SEARCH_LEXICAL is unreserved when maxItems is 2 fails RP2.",
-    "execute() failure objects gaining a code field or dropping detail fail RP2.",
-    "Living docs that still state a 8192-byte per-item cap fail RP3."
+    "Executed RP1 assertion: a 9000-byte EXACT file under 40000 bytes remaining resolves COMPLETE with reservedBudget.materializedBytes>8192; BUDGET_EXHAUSTED from an 8192 cap fails the bound RP1 test.",
+    "Executed RP2 assertion: a 9000-byte file under a 100-byte budget is UNSATISFIED BUDGET_EXHAUSTED with byte-identical content; any truncation fails the bound RP2 oversize test.",
+    "Executed RP2 assertion: with maxItems 2 both LOOKUP_SYMBOL and SEARCH_LEXICAL reserve items 1 each; SEARCH_LEXICAL unreserved fails the bound RP2 lexical test.",
+    "Executed RP2 assertion: execute() failures are exactly {evidenceId,providerId,reason,detail}; a code field or dropped detail fails the bound RP2 shape test.",
+    "Executed RP3 assertion: workflow.md and context-graph.md contain no 8192-byte per-item cap; cap text present fails the bound RP3 test that reads both docs."
   ],
   "negativeCaseBindings": [
     {
