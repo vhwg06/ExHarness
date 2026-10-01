@@ -95,8 +95,8 @@
     ]
   },
   "implementationSlices": [
-    "S1 — local-acceptance.js implements strict manifest pins, protected tuples, snapshots and runLocalAcceptance (D1-D6).",
-    "S2 — deliver-slice.js carries validated acceptance, invokes bindSliceAcceptance before all handle paths, integrates external gate within fresh QA and returns provenance (D5-D9); bin help/usage routing only.",
+    "S1 — local-acceptance.js implements strict manifest pins, protected tuples, snapshots and runLocalAcceptance (D1-D6). Implement pinLocalAcceptance with strict own-key/type validation, raw SHA256 file/runtime checks and external realpath containment; return frozen snapshot identity. Implement runLocalAcceptance using the existing verifier and compare protected tuples plus pre/post HEAD/tree/status and all pinned bytes. Neither copied candidate tests nor zero-exit candidate QA can replace external assertions.",
+    "S2 — deliver-slice.js carries validated acceptance, invokes bindSliceAcceptance before all handle paths, integrates external gate within fresh QA and returns provenance (D5-D9); bin help/usage routing only. Persist deliver-owned sidecar and stable snapshot location before first dispatch. Existing handle always requires matching sidecar; validate before ACCEPTED replay too. Every fresh or resumed QA run executes the pinned evaluator again. Sidecar validation failure leaves all recovery bytes untouched; terminal cleanup runs only after final evaluation.",
     "S3 — local-protected-acceptance.test.js adds distinct product-invoking negative/positive/replay/resume/CLI fixtures (D10); collect candidate-bound exact logs and update declared Living docs (D12) before independent Worker judgment."
   ],
   "acceptanceCriteria": [
@@ -504,7 +504,12 @@
         "sha256": "1bd0c4bf94e74b9a92ef5c1b49b62bb4be10234fe1dc97a06dac220dfa17f301",
         "classification": "CURRENT_SOURCE_AT_RESEARCH_HEAD_NOT_PRESENT_AT_CANONICAL_BASELINE"
       }
-    ]
+    ],
+    "baselineResolution": {
+      "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "status": "RESOLVED",
+      "proof": "Canonical materialize now resolves every objective source and plan anchor. Historical sourceHead/currentInputPins findings describe the original discovery checkout; they do not override this exact baseline."
+    }
   },
   "dependencyResolution": {
     "direct": [
@@ -536,7 +541,7 @@
     "workerStart": "All dependencies DONE; recheck exact delivered APIs and objective/ref/hash/baseline; contradictions return to research."
   },
   "deliveryContract": {
-    "precondition": "All direct dependencies DONE plus fresh exact-plan Jev SATISFIED; DRAFT has no Worker authority. Canonical graph baseline must first be explicitly reconciled to include required current evidence; see readinessBlockers.",
+    "precondition": "Fresh exact-plan Jev SATISFIED grants READY. Worker execution additionally requires every direct dependency DONE and exact delivered API reconciliation; a contradiction invalidates READY and returns to research. Graph and plan now bind the same source-complete research baseline.",
     "completion": "All mapped commands pass, exact negative-title/source evidence and candidate provenance, declared Living docs, independent Worker Jev and exact merge identity.",
     "forbidden": "No cached PASS, candidate-selected evaluator, adjacent task mutation or self-issued readiness."
   },
@@ -712,19 +717,5 @@
       ]
     }
   ],
-  "readinessBlockers": [
-    {
-      "kind": "CANONICAL_BASELINE_PREDATES_REQUIRED_INPUTS",
-      "baselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
-      "observedHeadSha": "a53a28e5272c829cfb05fc399d324bf02fa60127",
-      "missingRefs": [
-        "docs/blackboard/process/delivery-value-improvement-research.md",
-        "docs/blackboard/evidence/BB-127/discovery.json",
-        "docs/blackboard/artifacts/ready-implement-plan/BB-125.json",
-        "docs/blackboard/artifacts/ready-implement-plan/BB-130.json"
-      ],
-      "observedFailure": "BLACKBOARD_DELIVERY_INVALID: source missing or not regular file: docs/blackboard/evidence/BB-127/discovery.json",
-      "resolution": "Authorized readiness publisher must explicitly reconcile canonical task.contract.researchBaselineSha and plan.researchBaselineSha to a commit containing all required inputs, then rematerialize and obtain fresh Jev SATISFIED. This plan-only research branch preserves graph and baseline; no READY or materialization success is claimed."
-    }
-  ]
+  "readinessBlockers": []
 }
