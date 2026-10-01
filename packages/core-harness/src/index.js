@@ -284,6 +284,7 @@ export {
   AsyncResultDeliveryMode,
   defineModelAdapter,
   modelAdapterView,
+  modelAsyncResultDelivery,
   normalizeAsyncResultDelivery
 } from "./model.js";
 export {

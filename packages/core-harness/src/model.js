@@ -25,10 +25,28 @@ export function defineModelAdapter({ name = "model", version = null, generate, a
   });
 }
 
+// The serialized view stays byte-compatible with the pre-existing
+// { name, version } shape whenever the adapter uses the default synchronous
+// delivery: existing synchronous adapters preserve current behavior exactly,
+// including route/usage/history bytes. A declared native/handle capability is
+// carried explicitly; missing metadata always queries as SYNCHRONOUS.
 export function modelAdapterView(model) {
-  return Object.freeze({
-    name: model.name,
-    version: model.version,
-    asyncResultDelivery: normalizeAsyncResultDelivery(model.asyncResultDelivery ?? null, "model view asyncResultDelivery")
-  });
+  const name = model.name;
+  const version = model.version;
+  const delivery = normalizeAsyncResultDelivery(
+    model.asyncResultDelivery ?? null,
+    "model view asyncResultDelivery"
+  );
+  if (delivery === AsyncResultDeliveryMode.SYNCHRONOUS) {
+    return Object.freeze({ name, version });
+  }
+  return Object.freeze({ name, version, asyncResultDelivery: delivery });
+}
+
+export function modelAsyncResultDelivery(modelOrView) {
+  if (modelOrView == null) return AsyncResultDeliveryMode.SYNCHRONOUS;
+  return normalizeAsyncResultDelivery(
+    modelOrView.asyncResultDelivery ?? null,
+    "model asyncResultDelivery"
+  );
 }

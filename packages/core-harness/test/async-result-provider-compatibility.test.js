@@ -9,7 +9,7 @@ import {
   stageAsyncResultTransitions,
   translateAsyncResultForProvider
 } from "../src/async-result-context.js";
-import { AsyncResultDeliveryMode, defineModelAdapter, modelAdapterView } from "../src/model.js";
+import { AsyncResultDeliveryMode, defineModelAdapter, modelAdapterView, modelAsyncResultDelivery } from "../src/model.js";
 import { createModelRegistry, resolveModelRoute, selectModelRoute } from "../src/model-routing.js";
 
 function runningItem() {
@@ -51,16 +51,35 @@ test("adapter normalization declares all three delivery modes", () => {
   for (const mode of Object.values(AsyncResultDeliveryMode)) {
     const adapter = defineModelAdapter({ name: "m", generate: async () => ({}), asyncResultDelivery: mode });
     assert.equal(adapter.asyncResultDelivery, mode);
-    assert.equal(modelAdapterView(adapter).asyncResultDelivery, mode);
+    assert.equal(modelAsyncResultDelivery(adapter), mode);
+    assert.equal(modelAsyncResultDelivery(modelAdapterView(adapter)), mode);
   }
+  const nativeView = modelAdapterView(
+    defineModelAdapter({ name: "m", version: "1", generate: async () => ({}), asyncResultDelivery: "NATIVE_PENDING_CALL" })
+  );
+  assert.equal(nativeView.asyncResultDelivery, "NATIVE_PENDING_CALL");
+  const handleView = modelAdapterView(
+    defineModelAdapter({ name: "m", version: "1", generate: async () => ({}), asyncResultDelivery: "HANDLE_THEN_EVENT" })
+  );
+  assert.equal(handleView.asyncResultDelivery, "HANDLE_THEN_EVENT");
 });
 
 test("legacy adapters without capability metadata default to SYNCHRONOUS", () => {
   const adapter = defineModelAdapter({ name: "legacy", generate: async () => ({}) });
   assert.equal(adapter.asyncResultDelivery, "SYNCHRONOUS");
-  assert.equal(modelAdapterView(adapter).asyncResultDelivery, "SYNCHRONOUS");
+  assert.equal(modelAsyncResultDelivery(adapter), "SYNCHRONOUS");
+  assert.equal(modelAsyncResultDelivery(modelAdapterView(adapter)), "SYNCHRONOUS");
+  assert.equal(modelAsyncResultDelivery(null), "SYNCHRONOUS");
+  assert.equal(modelAsyncResultDelivery({}), "SYNCHRONOUS");
   const rewrapped = defineModelAdapter(adapter);
   assert.equal(rewrapped.asyncResultDelivery, "SYNCHRONOUS");
+});
+
+test("legacy serialized route/usage views stay byte-compatible with the pre-existing shape", () => {
+  const adapter = defineModelAdapter({ name: "legacy", version: "reference-v1", generate: async () => ({}) });
+  assert.deepEqual(modelAdapterView(adapter), { name: "legacy", version: "reference-v1" });
+  assert.deepEqual(JSON.parse(JSON.stringify(modelAdapterView(adapter))), { name: "legacy", version: "reference-v1" });
+  assert.doesNotMatch(JSON.stringify(modelAdapterView(adapter)), /asyncResultDelivery/);
 });
 
 test("invalid capability metadata fails closed at the adapter boundary", () => {
@@ -77,13 +96,23 @@ test("model routing preserves the declared capability exactly", async () => {
     });
     const route = await resolveModelRoute(registry, selectModelRoute({ invocation: "routed" }));
     assert.equal(route.adapter.asyncResultDelivery, mode);
-    assert.equal(route.provenance.adapter.asyncResultDelivery, mode);
+    assert.equal(modelAsyncResultDelivery(route.adapter), mode);
+    assert.equal(modelAsyncResultDelivery(route.provenance.adapter), mode);
+    if (mode === "SYNCHRONOUS") {
+      assert.deepEqual(route.provenance.adapter, { name: "routed", version: "1" });
+    } else {
+      assert.equal(route.provenance.adapter.asyncResultDelivery, mode);
+    }
+    assert.equal(modelAsyncResultDelivery(route.usage().adapter), mode);
   }
   const legacy = createModelRegistry({
     models: [{ name: "legacy", generate: async () => ({}) }]
   });
   const legacyRoute = await resolveModelRoute(legacy, selectModelRoute({ invocation: "legacy" }));
   assert.equal(legacyRoute.adapter.asyncResultDelivery, "SYNCHRONOUS");
+  assert.equal(modelAsyncResultDelivery(legacyRoute.provenance.adapter), "SYNCHRONOUS");
+  assert.deepEqual(legacyRoute.provenance.adapter, { name: "legacy", version: null });
+  assert.doesNotMatch(JSON.stringify(legacyRoute.usage()), /asyncResultDelivery/);
 });
 
 test("native fulfilled call rejects a second terminal result even with a different transition id", () => {
