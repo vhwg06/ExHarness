@@ -23,16 +23,19 @@
     "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "runSupervisedBackendWork with a recovery directory persists the delivered handle during Application execute; source HEAD, branches and working tree stay unchanged.",
-    "Omitting recoveryDir still disposes the temporary worktree. A second first-run against a current handle fails closed before spawning a new lineage. recover/resume stays the BB-121 factory owner."
+    "Application execute forwards recoveryDir into its first runSupervisedTask call and retains a subject-verified handle and candidate worktree after return.",
+    "Both retained and omitted recovery paths leave source HEAD, all branch refs and source working-tree status unchanged.",
+    "Omitted recoveryDir disposes the captured temporary invocation cwd after completion.",
+    "Second first-run with a current handle rejects HANDLE_CURRENT before dispatch and preserves exact handle bytes.",
+    "Adapter adds no resume path; Board factory remains the owner of recover/resume."
   ],
   "architectureDecisions": [
-    "D1 — Accept optional recoveryDir on runSupervisedBackendWork, default null, and pass it through to runSupervisedTask.recoveryDir. Empty string or non-string non-null is TypeError before spawn (supervisor contract: recoveryDir must be null or a non-empty string). The adapter does not call resumeSupervisedTask. DELIVERED_TRUTH: adapterMentionsRecoveryDir false, adapterCallsRunSupervisedTask true, supervisorAcceptsRecoveryDir true.",
-    "D2 — Omitting recoveryDir keeps the current first-run path: supervisor uses a unique mkdtemp worktree and disposes it. After ACCEPTED the adapter still re-grounds in a separate scratch worktree; source repository HEAD, branch refs and working tree stay unchanged. persist is execute-only.",
-    "D3 — A second first-run against a current handle fails HANDLE_CURRENT from runSupervisedTask before spawning a new lineage. recover/resume stays BB-121. Do not edit supervisor.js, recovery.js, createBackendWorker or backend-worker.js.",
-    "D4 — Distinct focused tests implement testContract: P1 asserts a persisted verified handle and exact unchanged source HEAD/branch refs/status; N1 invokes the adapter twice and proves HANDLE_CURRENT before a second dispatch; N2 captures invocation cwd and proves its disposal on omitted recoveryDir. Returned success or absence of handle alone is not cleanup evidence. Fixtures reuse delivered Backend order/context and clean only owned matching handles.",
-    "D5 — Living docs. agentic-application/state.md opt-in adapter paragraph names optional recoveryDir persist, omitted dispose, HANDLE_CURRENT second first-run, recover stays Board factory. capabilities.md A3 failure/recovery sentence names the same. No Blackboard ids.",
-    "D6 — Evidence at 5386e2ad: runSupervisedBackendWork already forwards model, maxAttempts, timeoutMs, permissionProfile, env, eventSinks, tracer, invocationObserver and does not mention recoveryDir."
+    "D1 \u2014 Accept optional recoveryDir on runSupervisedBackendWork, default null, and pass it through to runSupervisedTask.recoveryDir. Empty string or non-string non-null is TypeError before spawn (supervisor contract: recoveryDir must be null or a non-empty string). The adapter does not call resumeSupervisedTask. DELIVERED_TRUTH: adapterMentionsRecoveryDir false, adapterCallsRunSupervisedTask true, supervisorAcceptsRecoveryDir true.",
+    "D2 \u2014 Omitting recoveryDir keeps the current first-run path: supervisor uses a unique mkdtemp worktree and disposes it. After ACCEPTED the adapter still re-grounds in a separate scratch worktree; source repository HEAD, branch refs and working tree stay unchanged. persist is execute-only.",
+    "D3 \u2014 A second first-run against a current handle fails HANDLE_CURRENT from runSupervisedTask before spawning a new lineage. recover/resume stays BB-121. Do not edit supervisor.js, recovery.js, createBackendWorker or backend-worker.js.",
+    "D4 \u2014 Distinct focused tests implement testContract: P1 asserts a persisted verified handle and exact unchanged source HEAD/branch refs/status; N1 invokes the adapter twice and proves HANDLE_CURRENT before a second dispatch; N2 captures invocation cwd and proves its disposal on omitted recoveryDir. Returned success or absence of handle alone is not cleanup evidence. Fixtures reuse delivered Backend order/context and clean only owned matching handles.",
+    "D5 \u2014 Living docs. agentic-application/state.md opt-in adapter paragraph names optional recoveryDir persist, omitted dispose, HANDLE_CURRENT second first-run, recover stays Board factory. capabilities.md A3 failure/recovery sentence names the same. No Blackboard ids.",
+    "D6 \u2014 Evidence at 5386e2ad: runSupervisedBackendWork already forwards model, maxAttempts, timeoutMs, permissionProfile, env, eventSinks, tracer, invocationObserver and does not mention recoveryDir."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -79,9 +82,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 — packages/agentic-system/src/supervised-backend.js; ADAPTER_RECOVERY_PERSISTED. Add recoveryDir=null in the runSupervisedBackendWork destructured options, then pass recoveryDir unchanged as sibling of tool/task in the runSupervisedTask call. Let delivered supervisor reject empty/non-string paths before dispatch. Leave subsequent acceptedSha validation, isolated re-ground verification, evidence/publication and finally disposal unchanged. No resume call or supervisor/recovery/worker edits. With opt-in the supervisor handle/worktree remains available to the caller even after adapter re-ground; without opt-in its owned run worktree is disposed. A repeated first-run on that same handle fails HANDLE_CURRENT before dispatch; adapter preserves handle bytes. Source-copy prototype demonstrates actual phases RUNNING at ACT_COMPLETED, ACCEPTED at ATTEMPT_COMPLETED, retained worktree and source preservation.",
-    "S2 — Fail-closed fixtures [ADAPTER_RECOVERY_FAIL_CLOSED]: implement D3–D4. N1 HANDLE_CURRENT second first-run; N2 omitted dispose. recover/resume stays BB-121.",
-    "S3 — Living docs [ADAPTER_RECOVERY_PERSISTED]: implement D5. Application state.md and capabilities.md name recoveryDir persist, omitted dispose, HANDLE_CURRENT. No Blackboard ids."
+    "S1 \u2014 packages/agentic-system/src/supervised-backend.js; ADAPTER_RECOVERY_PERSISTED. Add recoveryDir=null in the runSupervisedBackendWork destructured options, then pass recoveryDir unchanged as sibling of tool/task in the runSupervisedTask call. Let delivered supervisor reject empty/non-string paths before dispatch. Leave subsequent acceptedSha validation, isolated re-ground verification, evidence/publication and finally disposal unchanged. No resume call or supervisor/recovery/worker edits. With opt-in the supervisor handle/worktree remains available to the caller even after adapter re-ground; without opt-in its owned run worktree is disposed. A repeated first-run on that same handle fails HANDLE_CURRENT before dispatch; adapter preserves handle bytes. Source-copy prototype demonstrates actual phases RUNNING at ACT_COMPLETED, ACCEPTED at ATTEMPT_COMPLETED, retained worktree and source preservation.",
+    "S2 \u2014 Fail-closed fixtures [ADAPTER_RECOVERY_FAIL_CLOSED]: implement D3\u2013D4. N1 HANDLE_CURRENT second first-run; N2 omitted dispose. recover/resume stays BB-121.",
+    "S3 \u2014 Living docs [ADAPTER_RECOVERY_PERSISTED]: implement D5. Application state.md and capabilities.md name recoveryDir persist, omitted dispose, HANDLE_CURRENT. No Blackboard ids."
   ],
   "acceptanceCriteria": [
     {
@@ -102,7 +105,8 @@
         "focused"
       ],
       "evidenceRequired": [
-        "BB-142 N1 second first-run HANDLE_CURRENT before spawn; N2 omitted recoveryDir disposes the worktree."
+        "BB-142 N1 second first-run HANDLE_CURRENT before spawn; N2 omitted recoveryDir disposes the worktree.",
+        "N1 and N2 both compare source HEAD/branch refs/porcelain snapshots. Static adapter call graph has first-run forwarding only, with no resumeSupervisedTask import/call; the existing Board factory recovery regression remains green."
       ]
     }
   ],
@@ -122,7 +126,12 @@
           "criterionId": "ADAPTER_RECOVERY_FAIL_CLOSED"
         }
       ],
-      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution.",
+      "criterionIds": [
+        "ADAPTER_RECOVERY_PERSISTED",
+        "ADAPTER_RECOVERY_FAIL_CLOSED"
+      ],
+      "requiredTests": "All named positive controls and every exact negativeCaseBindings title; zero skips/cancellations. Record actual subject invocation and effects; generic regressions do not replace these assertions."
     },
     {
       "id": "agentic-regression",
@@ -142,13 +151,31 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "runSupervisedBackendWork with a recovery directory persists the delivered handle during Application execute; source HEAD, branches and working tree stay unchanged.",
+      "invariant": "Application execute forwards recoveryDir into its first runSupervisedTask call and retains a subject-verified handle and candidate worktree after return.",
       "criterionIds": [
         "ADAPTER_RECOVERY_PERSISTED"
       ]
     },
     {
-      "invariant": "Omitting recoveryDir still disposes the temporary worktree. A second first-run against a current handle fails closed before spawning a new lineage. recover/resume stays the BB-121 factory owner.",
+      "invariant": "Both retained and omitted recovery paths leave source HEAD, all branch refs and source working-tree status unchanged.",
+      "criterionIds": [
+        "ADAPTER_RECOVERY_PERSISTED"
+      ]
+    },
+    {
+      "invariant": "Omitted recoveryDir disposes the captured temporary invocation cwd after completion.",
+      "criterionIds": [
+        "ADAPTER_RECOVERY_FAIL_CLOSED"
+      ]
+    },
+    {
+      "invariant": "Second first-run with a current handle rejects HANDLE_CURRENT before dispatch and preserves exact handle bytes.",
+      "criterionIds": [
+        "ADAPTER_RECOVERY_FAIL_CLOSED"
+      ]
+    },
+    {
+      "invariant": "Adapter adds no resume path; Board factory remains the owner of recover/resume.",
       "criterionIds": [
         "ADAPTER_RECOVERY_FAIL_CLOSED"
       ]
