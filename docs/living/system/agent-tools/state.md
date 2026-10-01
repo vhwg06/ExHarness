@@ -59,11 +59,11 @@ The tool process and the candidate commit both run inside Core ACT, so the Core 
 
 `packages/agent-tools/bin/exharness-agent.mjs`:
 
-- `run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M]` prints `AGENT_SUPERVISED_RESULT_V1`; exit 0 only for `ACCEPTED`.
-  With `--trace-dir <dir> [--arm <label>]` it also appends one `AGENT_TOOL_RUN_TRACE_V1` line per attempt (see `observation.md`).
+- `run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--env KEY=VALUE]` prints `AGENT_SUPERVISED_RESULT_V1`; exit 0 only for `ACCEPTED`.
+  With `--trace-dir <dir> [--arm <label>]` it also appends one `AGENT_TOOL_RUN_TRACE_V1` line per attempt (see `observation.md`). `--env` is repeatable; entries join the `FAKE_AGENT_*` overlay forwarded into the supervised child.
 - `report <trace-dir>` verifies the trace digest chain and prints the DESCRIPTIVE `AGENT_TOOL_RUN_REPORT_V1`; a broken chain exits 1.
 - `probe` prints whether each tool is installed and its version.
-- `smoke --tool <t> [--command <path>]` creates a temporary repository with one failing test and runs the supervised loop. It prints `SKIPPED` with `NOT_INSTALLED` when the executable is missing, or `TOOL_FAILED_BEFORE_EDIT` when the tool exits non-zero without an edit on attempt 1 (how a missing login or credential surfaces).
+- `smoke --tool <t> [--command <path>] [--timeout-ms T] [--env KEY=VALUE]` creates a temporary repository with one failing test and runs the supervised loop. It prints `SKIPPED` with `NOT_INSTALLED` when the executable is missing, or `TOOL_FAILED_BEFORE_EDIT` when the tool exits non-zero without an edit on attempt 1 (how a missing login or credential surfaces).
 
 Root scripts: `npm run test:agent-tools` runs the package tests with a deterministic fake CLI and temporary git repositories, and is part of `npm test`. `npm run smoke:agent-tools` is the opt-in live check against an installed, authenticated CLI; it is not part of `npm test` or `npm run verify`.
 
@@ -129,3 +129,5 @@ still leaves the run exhausted without mutating the candidate.
 ## Trust boundary
 
 The adapters are not a sandbox. A live run executes the agent with the user's CLI permissions and credentials under the user account, with cwd at a temporary git worktree only. The CLI can still read or write paths outside that worktree. ExHarness's own git operations preserve the source repository's HEAD, branch refs and working tree; they do not constrain what the agent process itself does. Sandbox, network and credential isolation is not provided by this package; it is separate open work on the Blackboard.
+
+Child processes inherit an explicit environment allowlist (`AGENT_CHILD_INHERITED_ENV`: PATH, HOME, locale, temp-directory and platform shell variables), never a copy of the host `process.env`. On top of the allowlist, each tool adapter may declare frozen `authEnvNames` for declared per-tool auth passthrough: those host values are passed through for that tool only. The caller overlay is applied last and wins. The overlay is the `env` passed to `runAgentInvocation`/`runSupervisedTask`, or — through the bin — the `FAKE_AGENT_*` variables of the bin process plus repeated `--env KEY=VALUE` flags. Host secrets that are neither allowlisted, declared for the tool, nor in the overlay never reach the child, and `NODE_TEST_CONTEXT` is always stripped, even from the overlay. The package is still not a sandbox.
