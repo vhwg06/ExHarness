@@ -1,0 +1,210 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-078-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-078",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-078.json",
+      "hash": "7455c8c7e2bb8849150121db91b57e73aa412b60ff7f4e18b785d5465a9c3c03"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-078.json",
+      "hash": "9ff08432c8ad14b363dc9c2040a9f0583ee28dc4fb932c9fd1612e9c3d079143"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-078.implementation-result.json",
+      "hash": "9ce533f5b0abbcef46dbe55a4c9d18c3260bfbbf8f98e29ea3903b3088743d4a"
+    },
+    "candidateSha": "5669ba5dfedd1639d9017bd0c3bf146d21831e6f",
+    "candidateTree": "993a9ca12b3c5b4c38290d1289abe4071bda9211",
+    "baselineSha": "4bb649d9b846242c635cb1df444efc3ba1487d32"
+  },
+  "stateHash": "8487c613a05f44b621155bd1a933da06ba2e754a2a00fe1b6ce55b61a058ebf4",
+  "specHash": "1fe2913c66908dace8500433380b1fe8c11bf5d370f1b5e72baf3b81ddd7a227",
+  "cacheKey": "85595d07fcdd31080442aa014856ce1789501e159636d46ff93cca0bee6f93a1",
+  "model": "jev-1.13.0",
+  "answers": {
+    "DETACH": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.91,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.06,
+        "SATISFIED": 0.93,
+        "IMPLEMENTATION_DEFECT": 0
+      }
+    },
+    "RECOVERY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.95,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.96,
+        "INSUFFICIENT_EVIDENCE": 0.04
+      }
+    },
+    "CANCEL": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.84,
+      "probabilities": {
+        "SATISFIED": 0.88,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.11
+      }
+    },
+    "EVENTS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.96,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.97,
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.03
+      }
+    },
+    "FALLBACK": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.58,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.3,
+        "SATISFIED": 0.6799999999999999
+      }
+    },
+    "INV-1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.9,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.93,
+        "INSUFFICIENT_EVIDENCE": 0.07,
+        "IMPLEMENTATION_DEFECT": 0
+      }
+    },
+    "INV-2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.89,
+      "probabilities": {
+        "SATISFIED": 0.92,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.08
+      }
+    },
+    "INV-3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.5,
+      "probabilities": {
+        "SATISFIED": 0.62,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.36,
+        "IMPLEMENTATION_DEFECT": 0.01
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.42,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.17,
+        "SATISFIED": 0.5599999999999999,
+        "IMPLEMENTATION_DEFECT": 0.24,
+        "PLAN_INPUT_CONTRADICTION": 0.03
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 131314,
+    "output_tokens": 640
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 9,
+    "latencyMs": 2004.686117,
+    "payloadBytes": 259698,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V4",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "DETACH",
+          "payloadHash": "af14347f2f0acaf2c9aa172370aba13b8cdf06c04c4d9bfd8450981d38476866",
+          "payloadBytes": 47324
+        },
+        {
+          "id": "RECOVERY",
+          "payloadHash": "8d83c904330ca0f6eb5cffe99711017077c65a089d80eb68093be5f50564e107",
+          "payloadBytes": 55528,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-078/core-regression.txt"
+          ]
+        },
+        {
+          "id": "CANCEL",
+          "payloadHash": "602ef535565a40d8fa1c87397d0f7d3cc4babf3d6388f696df1730e0703558a7",
+          "payloadBytes": 47231
+        },
+        {
+          "id": "EVENTS",
+          "payloadHash": "c8df680e208f2b0bfed338c6af68a23bf5dec0e5abd036861fb2df4cea0faede",
+          "payloadBytes": 50613
+        },
+        {
+          "id": "FALLBACK",
+          "payloadHash": "86b5e3323ec8173b526e3d07e2360bd1ce1231542c644e0fae713f77ef7a106c",
+          "payloadBytes": 51700,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-078/core-regression.txt"
+          ]
+        },
+        {
+          "id": "INV-1",
+          "payloadHash": "935849e2c7e5f0df6c55b3884183c4facaabb13d3acbdba3c1d89ad800375732",
+          "payloadBytes": 55077,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-078/core-regression.txt"
+          ]
+        },
+        {
+          "id": "INV-2",
+          "payloadHash": "3f96028a278d9107880c9598383d2f439c67ed6865ca4c5aa718df2d6cace1b2",
+          "payloadBytes": 46738
+        },
+        {
+          "id": "INV-3",
+          "payloadHash": "6c402c8fb8743ee810c33d64bb4e897c0930d852493438adf1e21d0637919d70",
+          "payloadBytes": 51165,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-078/core-regression.txt"
+          ]
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "1a1e048bda5e2a419bc953dc3f81205fee12210d80212b65bb10de032c0b8278",
+          "payloadBytes": 41540
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
