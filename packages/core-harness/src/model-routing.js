@@ -1,6 +1,6 @@
 import { invariant, requireText } from "./contracts.js";
 import { ModelRouteError } from "./errors.js";
-import { defineModelAdapter, modelAdapterView } from "./model.js";
+import { defineModelAdapter, modelAdapterView, modelGenerationCancellation } from "./model.js";
 
 export const ModelRouteScope = Object.freeze({
   INVOCATION: "INVOCATION",
@@ -140,9 +140,10 @@ export async function resolveModelRoute(registry, route) {
     name: resolvedAdapter.name,
     version: resolvedAdapter.version,
     asyncResultDelivery: resolvedAdapter.asyncResultDelivery,
-    async generate(request) {
+    generationCancellation: modelGenerationCancellation(resolvedAdapter),
+    async generate(request, options) {
       generateCalls += 1;
-      return resolvedAdapter.generate(request);
+      return resolvedAdapter.generate(request, options);
     }
   });
   const provenance = Object.freeze({

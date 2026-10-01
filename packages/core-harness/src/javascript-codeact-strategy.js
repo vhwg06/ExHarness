@@ -6,7 +6,7 @@ import {
   ExecutionError,
   ExHarnessErrorCode
 } from "./errors.js";
-import { defineModelAdapter, modelAdapterView } from "./model.js";
+import { defineModelAdapter, modelAdapterView, modelGenerationCancellation, ModelGenerationCancellationMode } from "./model.js";
 import { TraceSpanKind } from "./tracing.js";
 import { CapabilityBudgetExceededError } from "./variation.js";
 
@@ -277,7 +277,9 @@ export function createJavaScriptCodeActStrategy({
       trace = null,
       model: routedModel = null,
       modelRoute = null,
-      callId = null
+      callId = null,
+      modelSignal = null,
+      signal = null
     }) {
       invariant(typeof invoke === "function", "javascript codeact requires runtime invoke()");
       invariant(typeof describeLiveObject === "function", "javascript codeact requires runtime describeLiveObject()");
@@ -490,11 +492,20 @@ export function createJavaScriptCodeActStrategy({
             lastValidationError
           });
 
+          const runSignal = modelSignal ?? signal ?? null;
+          if (runSignal != null) {
+            invariant(typeof runSignal === "object" && typeof runSignal.aborted === "boolean", "javascript codeact model signal must be an AbortSignal");
+          }
+          const cancellation = modelGenerationCancellation(activeModel);
           const raw = await traced(
             trace,
             TraceSpanKind.MODEL,
             activeModel.name ?? "model",
-            () => withinTime("model", () => activeModel.generate(request)),
+            () => withinTime("model", () => (
+              cancellation === ModelGenerationCancellationMode.ABORT_SIGNAL && runSignal != null
+                ? activeModel.generate(request, { signal: runSignal })
+                : activeModel.generate(request)
+            )),
             {
               attributes: {
                 mode: "JAVASCRIPT_CODEACT",
@@ -504,6 +515,13 @@ export function createJavaScriptCodeActStrategy({
               }
             }
           );
+          if (runSignal?.aborted === true && cancellation === ModelGenerationCancellationMode.ABORT_SIGNAL) {
+            throw boundary(
+              ExHarnessErrorCode.CODEACT_PROTOCOL_ERROR,
+              "javascript codeact model generation was fenced before action dispatch",
+              { turn, fenced: true }
+            );
+          }
           recordAgentEvent?.(AgentEventKind.MODEL_OUTPUT, {
             turn,
             output: safeClone(raw),

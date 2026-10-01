@@ -15,21 +15,37 @@ export function normalizeAsyncResultDelivery(value, label = "model.asyncResultDe
   return value;
 }
 
-export function defineModelAdapter({ name = "model", version = null, generate, asyncResultDelivery = null }) {
+export const ModelGenerationCancellationMode = Object.freeze({
+  ABORT_SIGNAL: "ABORT_SIGNAL",
+  FENCE_ONLY: "FENCE_ONLY"
+});
+
+export function normalizeGenerationCancellation(value, label = "model.generationCancellation") {
+  if (value == null) return ModelGenerationCancellationMode.FENCE_ONLY;
+  invariant(
+    Object.values(ModelGenerationCancellationMode).includes(value),
+    `${label} must be one of ${Object.values(ModelGenerationCancellationMode).join("|")}`
+  );
+  return value;
+}
+
+export function defineModelAdapter({ name = "model", version = null, generate, asyncResultDelivery = null, generationCancellation = null }) {
   invariant(typeof generate === "function", "model adapter requires generate()");
   return Object.freeze({
     name: requireText(name, "model.name"),
     version: version == null ? null : requireText(version, "model.version"),
     asyncResultDelivery: normalizeAsyncResultDelivery(asyncResultDelivery),
+    generationCancellation: normalizeGenerationCancellation(generationCancellation),
     generate
   });
 }
 
 // The serialized view stays byte-compatible with the pre-existing
 // { name, version } shape whenever the adapter uses the default synchronous
-// delivery: existing synchronous adapters preserve current behavior exactly,
-// including route/usage/history bytes. A declared native/handle capability is
-// carried explicitly; missing metadata always queries as SYNCHRONOUS.
+// delivery and fence-only cancellation: existing synchronous adapters preserve
+// current behavior exactly, including route/usage/history bytes. A declared
+// native/handle capability or abort-signal capability is carried explicitly;
+// missing metadata always queries as SYNCHRONOUS / FENCE_ONLY.
 export function modelAdapterView(model) {
   const name = model.name;
   const version = model.version;
@@ -37,10 +53,17 @@ export function modelAdapterView(model) {
     model.asyncResultDelivery ?? null,
     "model view asyncResultDelivery"
   );
-  if (delivery === AsyncResultDeliveryMode.SYNCHRONOUS) {
+  const cancellation = normalizeGenerationCancellation(
+    model.generationCancellation ?? null,
+    "model view generationCancellation"
+  );
+  if (delivery === AsyncResultDeliveryMode.SYNCHRONOUS && cancellation === ModelGenerationCancellationMode.FENCE_ONLY) {
     return Object.freeze({ name, version });
   }
-  return Object.freeze({ name, version, asyncResultDelivery: delivery });
+  const view = { name, version };
+  if (delivery !== AsyncResultDeliveryMode.SYNCHRONOUS) view.asyncResultDelivery = delivery;
+  if (cancellation !== ModelGenerationCancellationMode.FENCE_ONLY) view.generationCancellation = cancellation;
+  return Object.freeze(view);
 }
 
 export function modelAsyncResultDelivery(modelOrView) {
@@ -48,5 +71,13 @@ export function modelAsyncResultDelivery(modelOrView) {
   return normalizeAsyncResultDelivery(
     modelOrView.asyncResultDelivery ?? null,
     "model asyncResultDelivery"
+  );
+}
+
+export function modelGenerationCancellation(modelOrView) {
+  if (modelOrView == null) return ModelGenerationCancellationMode.FENCE_ONLY;
+  return normalizeGenerationCancellation(
+    modelOrView.generationCancellation ?? null,
+    "model generationCancellation"
   );
 }
