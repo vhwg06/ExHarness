@@ -282,10 +282,13 @@ export {
 export { defineJudgment } from "./judgment.js";
 export {
   AsyncResultDeliveryMode,
+  ModelGenerationCancellationMode,
   defineModelAdapter,
   modelAdapterView,
   modelAsyncResultDelivery,
-  normalizeAsyncResultDelivery
+  modelGenerationCancellation,
+  normalizeAsyncResultDelivery,
+  normalizeGenerationCancellation
 } from "./model.js";
 export {
   ModelRouteScope,
@@ -373,3 +376,21 @@ export {
   createEffectAwareHarness as createHarness
 } from "./effect-aware-harness.js";
 export { defineContextRequirementBlock, resolveContextRequirementBlocks } from './context-resolution.js';
+export {
+  ASYNC_AGENT_COORDINATOR_STATE_KIND,
+  ASYNC_AGENT_INGRESS_KIND,
+  ASYNC_COORDINATOR_DEFAULT_PROFILE,
+  ASYNC_COORDINATOR_SCHEMA_VERSION,
+  AsyncAgentIngressKind,
+  AsyncCoordinatorAuthorityError,
+  AsyncCoordinatorBindingError,
+  AsyncCoordinatorDependencyContradictionError,
+  AsyncCoordinatorStopFencedError,
+  assertDependencyContract as assertAsyncCoordinatorDependencyContract,
+  createAsyncAgentCoordinator,
+  getAsyncCoordinatorDependencyManifest,
+  resolveCoordinatorEffectConfirmation,
+  resolveCoordinatorProductAcceptance,
+  resolveEffectConfirmationFromCoordinator,
+  resolveProductAcceptanceFromCoordinator
+} from "./async-agent-coordinator.js";
