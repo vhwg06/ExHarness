@@ -16,6 +16,7 @@ import {
   ClaimReleaseStatus,
   claimReleaseSubjectKey,
   createApplicationOrchestrator,
+  createCommittedPublicationReader,
   createDomainExecutionArtifactRegistry,
   createDomainExecutionController,
   createDomainExecutionPolicyPublisher,
@@ -47,6 +48,12 @@ import { createProductLineageStore, productRevision } from "../../src/product-li
 
 export const NOW = "2026-09-30T12:00:00.000Z";
 export const hex = (seed) => createHash("sha256").update(String(seed)).digest("hex");
+
+// Each opened cell is a distinct simulated process: its stub runtime stamps a
+// cell-unique invocation id, so a fresh recovery never reproduces the crashed
+// run's attestation bytes. Convergence must therefore come from committed
+// publication/terminal reuse, never from byte-identical replay.
+let cellSequence = 0;
 
 export function deferred() {
   let resolve;
@@ -108,6 +115,7 @@ export const EXEC_DOMAIN = "BUSINESS_ANALYSIS";
 export const EXEC_WORKLOAD = "requirements-analysis";
 
 export async function openExecutionCell(dir, seed, { kill = {}, hooks = {} } = {}) {
+  const runtimeNonce = `cell-process-${++cellSequence}`;
   const killState = {
     beforePublicationCommits: kill.beforePublicationCommits ?? 0,
     terminalCommits: kill.terminalCommits ?? false,
@@ -264,7 +272,7 @@ export async function openExecutionCell(dir, seed, { kill = {}, hooks = {} } = {
       if (hooks.beforeRuntime) await hooks.beforeRuntime(input);
       const result = {
         status: "SUCCEEDED",
-        runtimeInvocationId: `invocation:${input.runtimeInvocationKey}`,
+        runtimeInvocationId: `invocation:${runtimeNonce}:${input.runtimeInvocationKey}`,
         startedAt: NOW,
         finishedAt: NOW,
         effectRefs: [],
@@ -282,7 +290,7 @@ export async function openExecutionCell(dir, seed, { kill = {}, hooks = {} } = {
       if (hooks.beforeRuntime) await hooks.beforeRuntime(input);
       const result = {
         status: "SUCCEEDED",
-        runtimeInvocationId: `invocation:${input.runtimeInvocationKey}`,
+        runtimeInvocationId: `invocation:${runtimeNonce}:${input.runtimeInvocationKey}`,
         startedAt: NOW,
         finishedAt: NOW,
         effectRefs: [],
@@ -359,6 +367,7 @@ export async function openExecutionCell(dir, seed, { kill = {}, hooks = {} } = {
       return attemptRaw.compareAndSwap(key, expected, next);
     },
   };
+  const committedPublications = createCommittedPublicationReader({ lineage, artifactRegistry: domain });
   const controller = createDomainExecutionController({
     claimController,
     claimReleaseStore: releaseStore,
@@ -369,6 +378,7 @@ export async function openExecutionCell(dir, seed, { kill = {}, hooks = {} } = {
     runtimeAdapter,
     completionEvaluator,
     publicationGate,
+    committedPublications,
   });
 
   return {
@@ -380,6 +390,7 @@ export async function openExecutionCell(dir, seed, { kill = {}, hooks = {} } = {
     domain,
     lineage,
     gate: publicationGate,
+    committedPublications,
     controller,
     claimController,
     counts,

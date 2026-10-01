@@ -53,7 +53,7 @@ async function transition(reg,{workId,id,from,to,reason,decisionRef,observedHead
 // Runtime adapters receive {binding,contract,input,runtimeInvocationKey}: contract is the exact
 // released-claim WorkContract. Only this controller resolves policy/strategy, binds the attempt,
 // revalidates the release and attests the runtime; callers (including activation) cannot supply HOW.
-export function createDomainExecutionController({claimController,claimReleaseStore,organizationArtifactRegistry,artifactRegistry,executionPolicyStore,executionAttemptStore,runtimeAdapter,completionEvaluator,publicationGate}){
+export function createDomainExecutionController({claimController,claimReleaseStore,organizationArtifactRegistry,artifactRegistry,executionPolicyStore,executionAttemptStore,runtimeAdapter,completionEvaluator,publicationGate,committedPublications=null}){
   const attemptCas=executionAttemptStore.compareAndSwap.bind(executionAttemptStore);
   executionAttemptStore={...executionAttemptStore,async compareAndSwap(...args){
     for(let attempt=0;;attempt++){
@@ -104,10 +104,10 @@ export function createDomainExecutionController({claimController,claimReleaseSto
   // Committed-publication reuse (crash after publication, duplicate recovery):
   // resolve the exact committed receipt chain for one stable publication key and
   // verify it still binds this contract/binding. Returns null when nothing
-  // committed yet, or when the gate predates the recovery resolver.
+  // committed yet, or when no committed-publication reader is injected.
   async function loadCommittedChain({publicationKey,contract,binding,bindingRef}){
-    if(typeof publicationGate.resolveCommittedPublication!=="function")return null;
-    const committed=await publicationGate.resolveCommittedPublication({publicationKey});
+    if(typeof committedPublications?.resolveCommittedPublication!=="function")return null;
+    const committed=await committedPublications.resolveCommittedPublication({publicationKey});
     if(committed==null)return null;
     inv(committed.publicationKey===publicationKey,"committed publication key mismatch");
     const publicationRef=txt(committed.receiptRef,"committed publication receiptRef");

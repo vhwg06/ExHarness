@@ -30,7 +30,7 @@ test("crash after publication before continuation reuses the committed publicati
   assert.equal(fresh.counts.dispatch, 0);
   const publicationsAfterRecovery = Object.keys((await fresh.lineage.snapshot()).publications);
   assert.deepEqual(publicationsAfterRecovery, publicationsAfterCrash, "restart reuses the publication, not a duplicate");
-  const committed = await fresh.gate.resolveCommittedPublication({ publicationKey: publicationsAfterCrash[0] });
+  const committed = await fresh.committedPublications.resolveCommittedPublication({ publicationKey: publicationsAfterCrash[0] });
   assert.equal(committed.receiptRef, recovered.publicationReceiptRef, "terminal commit reuses the committed receipt");
   const packet = await fresh.resolveBundle(recovered);
   assert.equal(packet.publicationReceipt.publicationKey, publicationsAfterCrash[0]);
@@ -105,7 +105,7 @@ test("restarted continuation stays idempotent: one lineage record set, no duplic
     const worker = await reopenExecutionCell(dir, "w1");
     const result = await worker.controller.execute(args);
     assert.equal(result.state, ExecutionAttemptStatus.TERMINAL);
-    assert.equal(result.publicationReceiptRef, (await worker.gate.resolveCommittedPublication({
+    assert.equal(result.publicationReceiptRef, (await worker.committedPublications.resolveCommittedPublication({
       publicationKey: Object.keys((await worker.lineage.snapshot()).publications)[0],
     })).receiptRef);
   }
