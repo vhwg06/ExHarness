@@ -28,10 +28,12 @@
     "No process started by local-command-verifier.js implicitly inherits parent keys outside the published allowlist; NODE_TEST_CONTEXT cannot be restored by an overlay.",
     "Caller env is an explicit command-only grant, copied at factory construction; it cannot override verifier-owned Git identity checks or Windows termination utilities.",
     "Argument arrays, shell:false, bounded output/digests and timeout status/process-tree termination retain the delivered BB-096 semantics.",
-    "Research supplies implementability evidence only. Worker needs DONE direct dependencies, exact fresh Jev READY authority, candidate-bound verification and independent acceptance."
+    "Research supplies implementability evidence only. Worker needs DONE direct dependencies, exact fresh Jev READY authority, candidate-bound verification and independent acceptance.",
+    "All verifier-owned child processes, including Git integrity and platform cleanup helpers, use the filtered environment. Parent secrets never flow without a deliberate command overlay grant; explicit overlay still cannot grant NODE_TEST_CONTEXT.",
+    "The 28-name allowlist is the exact previously declared environment contract; validate own data properties and copy overlays before later caller mutation. Filtering does not weaken requireUnchangedTree or fresh-revision checks."
   ],
   "architectureDecisions": [
-    "D1 — Export frozen LOCAL_VERIFIER_INHERITED_ENV and buildLocalVerifierEnvironment({parentEnv=process.env, env={}, platform=process.platform}={}) from local-command-verifier.js and index.js. Use environmentContract's exact 30 names. Copy BB-120 policy locally: no reverse agentic-system -> agent-tools import, shared package or migration. Existing agent-tools consumers import agentic-system; a reverse import creates a cycle.",
+    "D1 — Export frozen LOCAL_VERIFIER_INHERITED_ENV and buildLocalVerifierEnvironment({parentEnv=process.env, env={}, platform=process.platform}={}) from local-command-verifier.js and index.js. Use environmentContract's exact 28 names. Copy BB-120 policy locally: no reverse agentic-system -> agent-tools import, shared package or migration. Existing agent-tools consumers import agentic-system; a reverse import creates a cycle.",
     "D2 — Produce a fresh null-prototype map from own enumerable string-valued allowlisted parent keys, lexically sorted. Windows uppercases before membership/deduplication; first inherited variant wins. POSIX matches exact case. Apply own operator entries last; Windows normalizes them and later case variants win. Remove NODE_TEST_CONTEXT after merging (all Windows case variants). Omit missing names; never synthesize PATH/HOME or read credential/config files.",
     "D3 — Add factory env={}; require a plain or null-prototype record. Reject null, arrays, non-plain objects, empty/'='/NUL keys, non-string values and NUL values with TypeError before verify/spawn. Validate even stripped NODE_TEST_CONTEXT entries. Copy/freeze own entries at construction. Explicit non-allowlisted grants and empty strings are valid; no coercion, null deletion or vendor auth inference.",
     "D4 — Sample one filtered parent base per verify. Thread it into before/after gitState and win32 killTree/taskkill; force Git GIT_CONFIG_NOSYSTEM=1 last. Only executeProcess gets the frozen command overlay, built from that same base. Eliminate ambient process.env spreads and implicit child env defaults in this module. Command GIT_DIR/GIT_CONFIG_COUNT grants cannot redirect verifier identity checks or termination helpers.",
@@ -40,7 +42,7 @@
     "D7 — Overlay is the local verifier factory API only. Existing Backend/QA, supervisor, deliver, MCP and re-grounding callers inherit restricted defaults automatically. Their agent env options are not verifier grants. Do not add CLI/task-schema forwarding here; callers constructing verifiers can supply env. Missing auth/proxy/build config requires a separately authorized grant, never restored ambient inheritance.",
     "D8 — Use exact distinct literal negativeCaseBindings/testContract titles. Each negative test directly invokes its bound subject and asserts behavior, without skip/todo, env dumps or helper-only subject calls. Isolate or serialize synthetic planted variables and restore in finally; never inspect actual credentials.",
     "D9 — Living docs document list/exports, command-only grants, precedence, channel stripping, casing and helper isolation, retaining trusted-command limits. BB-120 policy is delivered only when DONE. No Blackboard ids/research/value claims. Logs route by criterion/run to exact candidate and independent Jev.",
-    "D10 — Retain graph researchBaselineSha 29935fa23cb19af278a6fa8db68b9448bc6b1a0e. Verifier hash matches checkout; source anchors exist at graph baseline. Objective research refs postdate it (validationLimitations); readiness needs authorized graph baseline reconciliation. BB-120 remains PLANNED_CONTRACT until DONE."
+    "D10 — Graph and plan researchBaselineSha are both 5386e2adee15a3175a5b6635b63a54f6e24128cb. Objective sources and source anchors materialize successfully at this baseline. Keep historical prototype source pins as historical evidence; no product implementation or upstream DONE claims are added."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -93,7 +95,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — In local-command-verifier.js publish the frozen 30-name allowlist and pure environment builder with explicit POSIX/Windows rules; validate/copy the optional factory env overlay. Export list/builder through index.js. No new package or cross-package import.",
+    "S1 — In local-command-verifier.js publish the frozen 28-name allowlist and pure environment builder with explicit POSIX/Windows rules; validate/copy the optional factory env overlay. Export list/builder through index.js. No new package or cross-package import.",
     "S2 — Thread one filtered parent snapshot per verify into gitState, executeProcess and killTree. Only executeProcess gets the frozen command overlay. Force Git's GIT_CONFIG_NOSYSTEM=1 after the filtered base. Preserve revision/tree, shell:false, bounded evidence and lifecycle semantics.",
     "S3 — Add local-verifier-environment.test.js with distinct tests defined in testContract/negativeCaseBindings, invoking real verifiers against synthetic temporary Git repos plus pure injected-parent platform cases. Run BB-096 Backend/QA regression and both package suites after BB-120 delivery.",
     "S4 — Document exact inherited names, explicit factory overlay, no CLI forwarding and remaining home/network/filesystem trust in the two Living state files; run docs/export verification. Collect exact-candidate logs and criterion-specific evidence, then obtain independent Worker judgment under existing delivery controls."
@@ -132,7 +134,7 @@
     },
     {
       "id": "PLATFORM",
-      "statement": "The published 30-name policy preserves supplied PATH/HOME and platform/config variables with deterministic Windows casing and POSIX case sensitivity, and never invents missing values.",
+      "statement": "The published 28-name policy preserves supplied PATH/HOME and platform/config variables with deterministic Windows casing and POSIX case sensitivity, and never invents missing values.",
       "verificationIds": [
         "platform"
       ],
@@ -254,6 +256,24 @@
       "criterionIds": [
         "EXPORTS_DOCS"
       ]
+    },
+    {
+      "invariant": "All verifier-owned child processes, including Git integrity and platform cleanup helpers, use the filtered environment. Parent secrets never flow without a deliberate command overlay grant; explicit overlay still cannot grant NODE_TEST_CONTEXT.",
+      "criterionIds": [
+        "ENV_BOUNDARY",
+        "OVERLAY",
+        "INTERNAL_ENV",
+        "TEST_CHANNEL"
+      ]
+    },
+    {
+      "invariant": "The 28-name allowlist is the exact previously declared environment contract; validate own data properties and copy overlays before later caller mutation. Filtering does not weaken requireUnchangedTree or fresh-revision checks.",
+      "criterionIds": [
+        "ENV_BOUNDARY",
+        "OVERLAY",
+        "INTERNAL_ENV",
+        "TEST_CHANNEL"
+      ]
     }
   ],
   "negativeVerificationCases": [
@@ -367,7 +387,9 @@
     "precedence": "allowlisted parent < validated copied command overlay < NODE_TEST_CONTEXT removal",
     "parentSampling": "Once per verify; command overlay copied at factory construction.",
     "platformCases": "win32 canonicalizes all emitted keys to uppercase and deduplicates case-insensitively. POSIX preserves exact casing.",
-    "compatibilityLimit": "Non-allowlisted config/auth/proxy values need an explicit factory env grant; no CLI forwarding."
+    "compatibilityLimit": "Non-allowlisted config/auth/proxy values need an explicit factory env grant; no CLI forwarding.",
+    "validation": "Builder requires parentEnv/env to be plain own-property objects with Object.prototype or null prototype; inspect own property descriptors and reject accessors/non-string values. Reject keys with NUL or =, value NUL, and keys empty; copy env at factory creation into a null-prototype frozen map. Parent non-allowlisted names are never read into output; do not evaluate inherited getters. Win32 fold keys before duplicate/forbidden filtering, inherited first wins and explicit overlay wins. NODE_TEST_CONTEXT is removed after overlay irrespective of case on win32.",
+    "processCoverage": "The primary verification child gets allowlisted base+explicit copied overlay. Git HEAD/tree/status integrity helpers and process-group cleanup get only filtered base, with Git forced GIT_CONFIG_NOSYSTEM=1. taskkill gets filtered base without command overlay. No process launched by this verifier receives raw process.env."
   },
   "testContract": [
     {
@@ -441,7 +463,7 @@
         }
       }
     ],
-    "decision": "The shared-versus-local gap is resolved without waiting for delivery: use the exact BB-120 published 30-name policy locally, independently pin Windows case normalization and command-only overlays. No BB-120 delivery is claimed.",
+    "decision": "The shared-versus-local gap is resolved without waiting for delivery: use the exact BB-120 published 28-name policy locally, independently pin Windows case normalization and command-only overlays. No BB-120 delivery is claimed.",
     "workerStart": "Require both dependencies DONE and fresh exact Jev READY after baseline reconciliation; recheck BB-120 delivered list against planned binding. Policy drift returns to research."
   },
   "laneContracts": [
@@ -689,5 +711,5 @@
     "Wrong 40-hex candidate: FAIL/REVISION_MISMATCH, actual revision and empty-stream digest; absent command sentinel.",
     "Exit-zero append to fixture.txt: FAIL/TREE_MUTATED with before-revision evidence."
   ],
-  "validationLimitations": "Canonical materialize is blocked: graph researchBaselineSha predates objective.currentSourceRefs docs/blackboard/process/delivery-value-improvement-research.md and docs/blackboard/evidence/BB-130/discovery.json. Both exist at checkout SHA. Only-plan authorization forbids fixing graph/objective; authorized baseline reconciliation is required before Jev readiness. No unresolved environment design gap is implied."
+  "validationLimitations": "Canonical materialization succeeds after source-complete baseline reconciliation. Prototype proves only the declared pure environment builder and delivered verifier seam; Worker must implement the exported helper/factory composition and execute focused child-process tests at the candidate. Trusted process execution is not OS confinement."
 }
