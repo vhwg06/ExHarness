@@ -233,3 +233,19 @@ Evidence: `deployable-provenance.test.js`, `deployment-release.test.js`, `accept
 **Does not imply:** a change to the default CodeAct Backend path, durable workflow wiring, sandbox or SCM-push delivery, or OpenHands domain-runtime execution, which remains a separate seam under the domain execution controller.
 
 Evidence: `supervised-backend-delivery.test.js`.
+
+## A22 — Integration G: canonical product history, deterministic projection and currentness-fenced closure
+
+Integration G adds product-level completeness above the Integration E/F release and quality authorities.
+
+Product readiness and closure are evaluated only from one canonical complete current product-history subject plus canonical acceptance-policy authority.
+
+**Outcome:** callers cannot manufacture `ELIGIBLE_FOR_CLOSURE` by omitting blocking claims, obligations, stale subjects or newer product transitions.
+
+**Guarantees:** `ProductHistoryHead` is the canonical completeness cursor per product (`CAS {generation, commitRef, historyDigest}` over immutable `ProductHistoryCommit` records that bind predecessor generation/digest plus exact authority-head observations, written through `createProductHistoryController`); history carries only accepted closure-relevant transitions (semantic claim/obligation currentness, release/quality currentness, accepted product revisions, acceptance-policy/waiver revisions), never execution policy/strategy/attempt changes; the product acceptance authority (`createProductAcceptanceAuthority`) pins one immutable policy revision plus the complete sorted/deduplicated applicable waiver set (no caller waiver subset); `ProductStateProjection` is a deterministic disposable fold of the validated history chain from genesis to the pinned head (each commit's `transitionRefs` resolve to immutable content; later commits supersede earlier ones per identity key) built by `createProductStateProjectionBuilder` from `{productId, rootIntentRef}` only, pinning exact history generation/digest plus policy ref/revision/waiverSetDigest, with a pinned `rebuild({subject})` that stays byte-identical even when unrelated live state changes; projection reads run inside one held guard scope (history then acceptance) covering head read, chain fold, artifact resolution and the acceptance read, and `createProductClosureController`'s `close({projectionRef})` holds both guards across freshness re-read, outcome write and outcome-head CAS; `currentOutcome({productId})` returns `CURRENT` only while the pinned subject still equals current history/policy state and a pinned rebuild stays eligible, otherwise `HISTORICAL`; authority/history drift after a crash is `RECOVERY_REQUIRED`/`NOT_READY` until deterministic reconciliation appends the exact missing transition; strategy-only changes leave the history head and closure currentness unmoved.
+
+**Failure semantics:** omitted rejected claims or blocking obligations still block; an `Hn` projection cannot close after an `Hn+1` transition or policy/waiver drift; historical claim, obligation, history-commit and outcome bytes are immutable and correct only through new transitions.
+
+**Does not imply:** organization scheduling, execution logging, Merkle inclusion proofs (v1 uses durable generation/digest CAS plus recovery under the trusted-store model), or reopening of terminal delivery records.
+
+Evidence: `product-history.test.js`, `product-history-recovery.test.js`, `product-state-projection.test.js`, `product-closure.test.js`, `product-closure-race.test.js`, `product-revalidation.test.js`, `product-completeness-chain.test.js`.

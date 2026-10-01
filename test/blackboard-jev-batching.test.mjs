@@ -139,6 +139,32 @@ test('part answers aggregate conservatively', () => {
   assert.throws(() => aggregateBatchAnswers([]), /requires answers/);
 });
 
+test('Living Docs split parts aggregate per-part: unrelated parts do not fail the question but contradictions do', () => {
+  const answer = (choice, confidence) => ({ type: 'choice', choice, confidence, probabilities: { [choice]: 1 } });
+  const living = parts => aggregateBatchAnswers(parts, { livingDocs: true });
+  // BB-055: three parts holding only unrelated regression logs answer
+  // INSUFFICIENT_EVIDENCE while the claim-proving part is SATISFIED.
+  assert.deepEqual(
+    living([answer('INSUFFICIENT_EVIDENCE', 0.8), answer('INSUFFICIENT_EVIDENCE', 0.7), answer('INSUFFICIENT_EVIDENCE', 0.6), answer('SATISFIED', 0.9)]),
+    answer('SATISFIED', 0.9));
+  assert.deepEqual(
+    living([answer('SATISFIED', 0.9), answer('SATISFIED', 0.6)]),
+    answer('SATISFIED', 0.6), 'least confident satisfied part is kept');
+  assert.equal(
+    living([answer('INSUFFICIENT_EVIDENCE', 0.8), answer('IMPLEMENTATION_DEFECT', 0.5), answer('INSUFFICIENT_EVIDENCE', 0.6), answer('SATISFIED', 0.9)]).choice,
+    'IMPLEMENTATION_DEFECT', 'a real doc contradiction is never outvoted by unrelated parts');
+  assert.equal(
+    living([answer('PLAN_INPUT_CONTRADICTION', 0.4), answer('SATISFIED', 0.9)]).choice,
+    'PLAN_INPUT_CONTRADICTION', 'most severe contradiction wins');
+  assert.equal(
+    living([answer('INSUFFICIENT_EVIDENCE', 0.8), answer('INSUFFICIENT_EVIDENCE', 0.7), answer('INSUFFICIENT_EVIDENCE', 0.6), answer('INSUFFICIENT_EVIDENCE', 0.5)]).choice,
+    'INSUFFICIENT_EVIDENCE', 'no satisfied part means no satisfied question');
+  // Ordinary criteria keep all-parts-must-pass: the same layouts fail.
+  assert.equal(aggregateBatchAnswers([answer('INSUFFICIENT_EVIDENCE', 0.8), answer('SATISFIED', 0.9)]).choice, 'INSUFFICIENT_EVIDENCE');
+  assert.equal(aggregateBatchAnswers([answer('INSUFFICIENT_EVIDENCE', 0.8), answer('INSUFFICIENT_EVIDENCE', 0.7), answer('INSUFFICIENT_EVIDENCE', 0.6), answer('SATISFIED', 0.9)]).choice, 'INSUFFICIENT_EVIDENCE');
+  assert.throws(() => aggregateBatchAnswers([], { livingDocs: true }), /requires answers/);
+});
+
 test('split evaluation calls each part once, propagates any unsatisfied part and binds the manifest', async t => {
   const root = mkdtempSync(join(tmpdir(), 'blackboard-jev-bounded-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
