@@ -41,7 +41,7 @@ NONE
 ## Schedulable tasks
 
 - BB-059 [WORKER/EXECUTION] — Research evidence-gated HOW evolution and Jev evaluation pipeline
-- BB-080 [WORKER/EXECUTION] — Integrate async steering, wakeup and recovery
+- BB-081 [WORKER/EXECUTION] — Research held-out harness profile acceptance and fault-ablation protocol
 - BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
@@ -100,8 +100,8 @@ BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
 BB-077 [DONE] <- BB-065
 BB-078 [DONE] <- BB-077
 BB-079 [DONE] <- BB-077, BB-078
-BB-080 [WORKER_SCHEDULABLE] <- BB-078, BB-079
-BB-081 [BLOCKED_BY BB-080] <- BB-077, BB-078, BB-079, BB-080
+BB-080 [DONE] <- BB-078, BB-079
+BB-081 [WORKER_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
 BB-083 [BLOCKED_BY BB-059] <- BB-059, BB-064, BB-065
 BB-084 [DONE] <- BB-058, BB-064

@@ -1,0 +1,73 @@
+TAP version 13
+# Subtest: RECOVERY: scheduled-before-dispatch crash reuses exact identity without duplicate effects
+ok 1 - RECOVERY: scheduled-before-dispatch crash reuses exact identity without duplicate effects
+  ---
+  duration_ms: 10.453651
+  type: 'test'
+  ...
+# Subtest: RECOVERY: dispatched-before-terminal crash reconciles without duplicating NON_RECONCILABLE effects
+ok 2 - RECOVERY: dispatched-before-terminal crash reconciles without duplicating NON_RECONCILABLE effects
+  ---
+  duration_ms: 20.062932
+  type: 'test'
+  ...
+# Subtest: RECOVERY: model-in-flight crash fences the generation and schedules one replacement
+ok 3 - RECOVERY: model-in-flight crash fences the generation and schedules one replacement
+  ---
+  duration_ms: 2.571431
+  type: 'test'
+  ...
+# Subtest: STOP fence survives restart and blocks dispatch after crash-before-abort
+ok 4 - STOP fence survives restart and blocks dispatch after crash-before-abort
+  ---
+  duration_ms: 2.287329
+  type: 'test'
+  ...
+# Subtest: restart during completion grace converges without duplicate wakes
+ok 5 - restart during completion grace converges without duplicate wakes
+  ---
+  duration_ms: 2.590318
+  type: 'test'
+  ...
+# Subtest: duplicate transition delivery across restart does not duplicate context or wakes
+ok 6 - duplicate transition delivery across restart does not duplicate context or wakes
+  ---
+  duration_ms: 0.947844
+  type: 'test'
+  ...
+# Subtest: recovery binding corruption fails closed and unresolved effects stay UNKNOWN
+ok 7 - recovery binding corruption fails closed and unresolved effects stay UNKNOWN
+  ---
+  duration_ms: 2.887303
+  type: 'test'
+  ...
+# Subtest: coordinator recovery never uses an active resumable snapshot as operation truth
+ok 8 - coordinator recovery never uses an active resumable snapshot as operation truth
+  ---
+  duration_ms: 5.870936
+  type: 'test'
+  ...
+# Subtest: dependency|PLAN_INPUT_CONTRADICTION: recovery requires exact DONE BB-077/078/079
+ok 9 - dependency|PLAN_INPUT_CONTRADICTION: recovery requires exact DONE BB-077/078/079
+  ---
+  duration_ms: 1.472285
+  type: 'test'
+  ...
+# Subtest: concurrent recover calls do not dispatch duplicate effects
+ok 10 - concurrent recover calls do not dispatch duplicate effects
+  ---
+  duration_ms: 3.490331
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 135.897083
+
+
+exitCode=0

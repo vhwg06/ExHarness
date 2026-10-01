@@ -1,0 +1,132 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-080-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-080.json",
+    "hash": "86289fcabd754f2c770199f3a4249687e36c09dd16bcd354e90fcb538ece9f9b"
+  },
+  "candidateSha": "644601bd116bfdf826eeca6bdab143d87032a588",
+  "baselineSha": "5237548fd58c034806e38f20f21b75e8a6df2dc8",
+  "candidateTree": "f2f533237195deff76c70be0384630afe692d322",
+  "verificationRuns": [
+    {
+      "id": "coordinator-contract",
+      "command": "node --test packages/core-harness/test/async-agent-coordinator.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "644601bd116bfdf826eeca6bdab143d87032a588",
+      "logRef": "docs/blackboard/evidence/BB-080/coordinator-contract.txt",
+      "logHash": "bacd42f45bea443b953754e65b243707accc6533283d112fa208b3fc0889f416"
+    },
+    {
+      "id": "recovery-contract",
+      "command": "node --test packages/core-harness/test/async-agent-coordinator-recovery.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "644601bd116bfdf826eeca6bdab143d87032a588",
+      "logRef": "docs/blackboard/evidence/BB-080/recovery-contract.txt",
+      "logHash": "397c7e672ba893bd97b636727da316fab896b02cab1479c6b88d5fea488d5fd4"
+    },
+    {
+      "id": "dependency-contract",
+      "command": "node --test packages/core-harness/test/async-agent-coordinator-recovery.test.js --test-name-pattern='dependency|PLAN_INPUT_CONTRADICTION'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "644601bd116bfdf826eeca6bdab143d87032a588",
+      "logRef": "docs/blackboard/evidence/BB-080/dependency-contract.txt",
+      "logHash": "93c9b21ec03686e2b3d21a84db4cbc9cc52b003ff382c40ccf4124879a8c105c"
+    },
+    {
+      "id": "async-profile",
+      "command": "node --test benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "644601bd116bfdf826eeca6bdab143d87032a588",
+      "logRef": "docs/blackboard/evidence/BB-080/async-profile.txt",
+      "logHash": "e75c65c07cffd1e980844274222faced68e77333368dcf42b8da43d5a64add2d"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "644601bd116bfdf826eeca6bdab143d87032a588",
+      "logRef": "docs/blackboard/evidence/BB-080/core-regression.txt",
+      "logHash": "ed8682faf584f52b30d20e32e11249ca0e7242dcde68967e77ee17649ff75c23"
+    }
+  ],
+  "claims": [
+    {
+      "id": "STEERING",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/coordinator-contract.txt",
+        "docs/blackboard/evidence/BB-080/async-profile.txt"
+      ]
+    },
+    {
+      "id": "STALE_MODEL",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/coordinator-contract.txt",
+        "docs/blackboard/evidence/BB-080/core-regression.txt"
+      ]
+    },
+    {
+      "id": "COALESCE",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/coordinator-contract.txt",
+        "docs/blackboard/evidence/BB-080/async-profile.txt"
+      ]
+    },
+    {
+      "id": "STOP",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/coordinator-contract.txt",
+        "docs/blackboard/evidence/BB-080/recovery-contract.txt",
+        "docs/blackboard/evidence/BB-080/core-regression.txt"
+      ]
+    },
+    {
+      "id": "RECOVERY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/recovery-contract.txt",
+        "docs/blackboard/evidence/BB-080/async-profile.txt"
+      ]
+    },
+    {
+      "id": "NO_HEARTBEAT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/coordinator-contract.txt",
+        "docs/blackboard/evidence/BB-080/async-profile.txt"
+      ]
+    },
+    {
+      "id": "DEPENDENCY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/dependency-contract.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/coordinator-contract.txt",
+        "docs/blackboard/evidence/BB-080/core-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/recovery-contract.txt",
+        "docs/blackboard/evidence/BB-080/core-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-080/dependency-contract.txt",
+        "docs/blackboard/evidence/BB-080/async-profile.txt"
+      ]
+    }
+  ]
+}
