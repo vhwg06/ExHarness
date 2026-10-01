@@ -1,0 +1,95 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-078-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-078.json",
+    "hash": "7455c8c7e2bb8849150121db91b57e73aa412b60ff7f4e18b785d5465a9c3c03"
+  },
+  "candidateSha": "5669ba5dfedd1639d9017bd0c3bf146d21831e6f",
+  "baselineSha": "4bb649d9b846242c635cb1df444efc3ba1487d32",
+  "candidateTree": "993a9ca12b3c5b4c38290d1289abe4071bda9211",
+  "verificationRuns": [
+    {
+      "id": "detached-core",
+      "command": "node --test packages/core-harness/test/detached-operation.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5669ba5dfedd1639d9017bd0c3bf146d21831e6f",
+      "logRef": "docs/blackboard/evidence/BB-078/detached-core.txt",
+      "logHash": "ccae3a99d6eb885ebe981e386a06800d231ee3be852d07ed0e416c0acb9eac46"
+    },
+    {
+      "id": "detached-recovery",
+      "command": "node --test packages/core-harness/test/detached-operation-recovery.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5669ba5dfedd1639d9017bd0c3bf146d21831e6f",
+      "logRef": "docs/blackboard/evidence/BB-078/detached-recovery.txt",
+      "logHash": "b4a26f259a5bb3e5a1e6945a3a6171ee372ae41cca73bd2f4fc4bd68232fc96c"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "5669ba5dfedd1639d9017bd0c3bf146d21831e6f",
+      "logRef": "docs/blackboard/evidence/BB-078/core-regression.txt",
+      "logHash": "1c2697a719e0c6484cc95d4e1df0838560214b42c7c37f13f18b5497a3c57238"
+    }
+  ],
+  "claims": [
+    {
+      "id": "DETACH",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-078/detached-core.txt"
+      ]
+    },
+    {
+      "id": "RECOVERY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-078/detached-recovery.txt",
+        "docs/blackboard/evidence/BB-078/core-regression.txt"
+      ]
+    },
+    {
+      "id": "CANCEL",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-078/detached-recovery.txt"
+      ]
+    },
+    {
+      "id": "EVENTS",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-078/detached-core.txt",
+        "docs/blackboard/evidence/BB-078/detached-recovery.txt"
+      ]
+    },
+    {
+      "id": "FALLBACK",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-078/core-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-078/detached-core.txt",
+        "docs/blackboard/evidence/BB-078/core-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-078/detached-recovery.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-078/core-regression.txt"
+      ]
+    }
+  ]
+}
