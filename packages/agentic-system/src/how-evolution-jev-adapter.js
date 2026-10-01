@@ -1,3 +1,4 @@
+// Delivery rebuild 2026-10-01: re-validated on current main.
 import { createHash } from "node:crypto";
 
 import {
