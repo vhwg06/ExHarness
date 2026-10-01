@@ -1,0 +1,3063 @@
+TAP version 13
+# Subtest: the same current release and policy yield the same complete AcceptanceSnapshot
+ok 1 - the same current release and policy yield the same complete AcceptanceSnapshot
+  ---
+  duration_ms: 130.989446
+  type: 'test'
+  ...
+# Subtest: the snapshot builder derives mandatory components and rejects a caller-selected component subset
+ok 2 - the snapshot builder derives mandatory components and rejects a caller-selected component subset
+  ---
+  duration_ms: 186.612332
+  type: 'test'
+  ...
+# Subtest: an omitted or mixed-release snapshot is rejected on build and on resolution
+ok 3 - an omitted or mixed-release snapshot is rejected on build and on resolution
+  ---
+  duration_ms: 301.796903
+  type: 'test'
+  ...
+# Subtest: an old snapshot stays reconstructable after a newer release becomes current
+ok 4 - an old snapshot stays reconstructable after a newer release becomes current
+  ---
+  duration_ms: 344.869791
+  type: 'test'
+  ...
+# Subtest: INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+ok 5 - INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+  ---
+  duration_ms: 29.369623
+  type: 'test'
+  ...
+# Subtest: AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+ok 6 - AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+  ---
+  duration_ms: 261.257855
+  type: 'test'
+  ...
+# Subtest: INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+ok 7 - INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+  ---
+  duration_ms: 121.507041
+  type: 'test'
+  ...
+# Subtest: AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+ok 8 - AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+  ---
+  duration_ms: 116.327373
+  type: 'test'
+  ...
+# Subtest: AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+ok 9 - AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+  ---
+  duration_ms: 75.940235
+  type: 'test'
+  ...
+# Subtest: INV-5 activation and its currentness reader hold no obligation write capability
+ok 10 - INV-5 activation and its currentness reader hold no obligation write capability
+  ---
+  duration_ms: 10.907345
+  type: 'test'
+  ...
+# Subtest: AC-1/INV-2 persisted READY work is rediscovered by a fresh host after restart with no hint
+ok 11 - AC-1/INV-2 persisted READY work is rediscovered by a fresh host after restart with no hint
+  ---
+  duration_ms: 124.399596
+  type: 'test'
+  ...
+# Subtest: AC-7 periodic scans progress work persisted after start without any event or dispatcher
+ok 12 - AC-7 periodic scans progress work persisted after start without any event or dispatcher
+  ---
+  duration_ms: 190.674921
+  type: 'test'
+  ...
+# Subtest: AC-2 repeated restarts and duplicate scans replay without a second attempt
+ok 13 - AC-2 repeated restarts and duplicate scans replay without a second attempt
+  ---
+  duration_ms: 123.61009
+  type: 'test'
+  ...
+# Subtest: AC-8/INV-8 stale hint for non-actionable work cannot resurrect it while unrelated work executes
+ok 14 - AC-8/INV-8 stale hint for non-actionable work cannot resurrect it while unrelated work executes
+  ---
+  duration_ms: 167.311507
+  type: 'test'
+  ...
+# Subtest: INV-2 stop drains only in-flight work; hint/timer state is discarded and a new host rediscovers the rest
+ok 15 - INV-2 stop drains only in-flight work; hint/timer state is discarded and a new host rediscovers the rest
+  ---
+  duration_ms: 359.259622
+  type: 'test'
+  ...
+# Subtest: semantic input drift during execution blocks stale publication while the sibling stays current
+ok 16 - semantic input drift during execution blocks stale publication while the sibling stays current
+  ---
+  duration_ms: 111.030991
+  type: 'test'
+  ...
+# Subtest: invalidation is reverse-dependent and bounded: only the affected closure goes stale
+ok 17 - invalidation is reverse-dependent and bounded: only the affected closure goes stale
+  ---
+  duration_ms: 63.23269
+  type: 'test'
+  ...
+# Subtest: a publication racing supersession lands STALE instead of silently accepted
+ok 18 - a publication racing supersession lands STALE instead of silently accepted
+  ---
+  duration_ms: 102.031246
+  type: 'test'
+  ...
+# Subtest: a superseded historical revision cannot authorize a new mutation
+ok 19 - a superseded historical revision cannot authorize a new mutation
+  ---
+  duration_ms: 54.069074
+  type: 'test'
+  ...
+# Subtest: crash after domain output before publication reuses the same semantic attempt and binding and publishes at most once
+ok 20 - crash after domain output before publication reuses the same semantic attempt and binding and publishes at most once
+  ---
+  duration_ms: 85.345273
+  type: 'test'
+  ...
+# Subtest: recover and repair of the same semantic work cannot mint a second semantic attempt
+ok 21 - recover and repair of the same semantic work cannot mint a second semantic attempt
+  ---
+  duration_ms: 92.317816
+  type: 'test'
+  ...
+# Subtest: duplicate recovery workers converge on one attempt publication and continuation
+ok 22 - duplicate recovery workers converge on one attempt publication and continuation
+  ---
+  duration_ms: 140.259778
+  type: 'test'
+  ...
+# Subtest: stale claim generation cannot dispatch or publish after takeover
+ok 23 - stale claim generation cannot dispatch or publish after takeover
+  ---
+  duration_ms: 145.486758
+  type: 'test'
+  ...
+# Subtest: authority ahead of ProductHistoryHead is NOT_READY until deterministic reconciliation
+ok 24 - authority ahead of ProductHistoryHead is NOT_READY until deterministic reconciliation
+  ---
+  duration_ms: 83.130971
+  type: 'test'
+  ...
+# Subtest: a fresh process reconstructs NOT_READY from durable refs alone
+ok 25 - a fresh process reconstructs NOT_READY from durable refs alone
+  ---
+  duration_ms: 28.614908
+  type: 'test'
+  ...
+# Subtest: reconciliation converges when already current and historical bytes never change
+ok 26 - reconciliation converges when already current and historical bytes never change
+  ---
+  duration_ms: 24.710486
+  type: 'test'
+  ...
+# Subtest: crash after publication before continuation reuses the committed publication without rerunning accepted work
+ok 27 - crash after publication before continuation reuses the committed publication without rerunning accepted work
+  ---
+  duration_ms: 121.852897
+  type: 'test'
+  ...
+# Subtest: duplicate recoverers after a committed publication converge on the same receipt
+ok 28 - duplicate recoverers after a committed publication converge on the same receipt
+  ---
+  duration_ms: 168.989281
+  type: 'test'
+  ...
+# Subtest: a late duplicate recovery reuses the committed terminal head without a second transition
+ok 29 - a late duplicate recovery reuses the committed terminal head without a second transition
+  ---
+  duration_ms: 73.972372
+  type: 'test'
+  ...
+# Subtest: restarted continuation stays idempotent: one lineage record set, no duplicate downstream effects
+ok 30 - restarted continuation stays idempotent: one lineage record set, no duplicate downstream effects
+  ---
+  duration_ms: 88.242601
+  type: 'test'
+  ...
+# Subtest: deployment drift during QA blocks current QualityAcceptance from the old snapshot while historical evidence stays immutable
+ok 31 - deployment drift during QA blocks current QualityAcceptance from the old snapshot while historical evidence stays immutable
+  ---
+  duration_ms: 618.835777
+  type: 'test'
+  ...
+# Subtest: a QA run started after release drift blocks before any observation or effect
+ok 32 - a QA run started after release drift blocks before any observation or effect
+  ---
+  duration_ms: 408.648242
+  type: 'test'
+  ...
+# Subtest: closure racing upstream supersession never leaves a stale outcome current
+ok 33 - closure racing upstream supersession never leaves a stale outcome current
+  ---
+  duration_ms: 83.957145
+  type: 'test'
+  ...
+# Subtest: recovery matrix stays local: failures recover, unaffected work continues, fresh processes rebuild the same truth
+ok 34 - recovery matrix stays local: failures recover, unaffected work continues, fresh processes rebuild the same truth
+  ---
+  duration_ms: 536.437554
+  type: 'test'
+  ...
+# Subtest: INV-8 harness pauses production boundaries without adding serialization
+ok 35 - INV-8 harness pauses production boundaries without adding serialization
+  ---
+  duration_ms: 87.15447
+  type: 'test'
+  ...
+# INV-8: concurrent arrivals at paused boundary=2 before release
+# INV-8: winner=workerB loser rejected by production guard: terminal CAS conflict converges via committed head
+# INV-8: loser shares winner bundle via production idempotent reuse
+# INV-8: workerA wrapper delegations=3 production calls=3 ok=2 production-contention-retries=1
+# INV-8: workerB wrapper delegations=2 production calls=2 ok=2 production-contention-retries=0
+# Subtest: WHAT obligation rejects all dispatch fields and normalizes stable identity
+ok 36 - WHAT obligation rejects all dispatch fields and normalizes stable identity
+  ---
+  duration_ms: 2.231655
+  type: 'test'
+  ...
+# Subtest: accepted publication enforces semantic kind, target domain, issuer and principal authority
+ok 37 - accepted publication enforces semantic kind, target domain, issuer and principal authority
+  ---
+  duration_ms: 86.236477
+  type: 'test'
+  ...
+# Subtest: identical obligation replay converges and semantic change preserves immutable historical bytes
+ok 38 - identical obligation replay converges and semantic change preserves immutable historical bytes
+  ---
+  duration_ms: 68.471878
+  type: 'test'
+  ...
+# Subtest: raw runtime proposals do not publish authoritative revisions or edges
+ok 39 - raw runtime proposals do not publish authoritative revisions or edges
+  ---
+  duration_ms: 8.286223
+  type: 'test'
+  ...
+# Subtest: BA obligation deterministically materializes SA work and SA policy alone chooses execution
+ok 40 - BA obligation deterministically materializes SA work and SA policy alone chooses execution
+  ---
+  duration_ms: 266.551764
+  type: 'test'
+  ...
+# Subtest: semantic invalidation fences exact claimed obligation work and preserves unrelated work
+ok 41 - semantic invalidation fences exact claimed obligation work and preserves unrelated work
+  ---
+  duration_ms: 257.782635
+  type: 'test'
+  ...
+# Subtest: STALE, REVOKED and SUPERSEDED obligations cannot create new Board work
+ok 42 - STALE, REVOKED and SUPERSEDED obligations cannot create new Board work
+  ---
+  duration_ms: 286.188464
+  type: 'test'
+  ...
+# Subtest: product lineage changes do not create Board dependencies, and Board dependencies are not semantic edges
+ok 43 - product lineage changes do not create Board dependencies, and Board dependencies are not semantic edges
+  ---
+  duration_ms: 177.369221
+  type: 'test'
+  ...
+# Subtest: Backend durable recovery store publishes only one successor for concurrent writers from the same revision
+ok 44 - Backend durable recovery store publishes only one successor for concurrent writers from the same revision
+  ---
+  duration_ms: 9.463181
+  type: 'test'
+  ...
+# Subtest: Backend durable recovery store rejects a stale writer after a newer revision is committed
+ok 45 - Backend durable recovery store rejects a stale writer after a newer revision is committed
+  ---
+  duration_ms: 6.072322
+  type: 'test'
+  ...
+# Subtest: BB-019 accepted findings require existing reconciliation before DONE
+ok 46 - BB-019 accepted findings require existing reconciliation before DONE
+  ---
+  duration_ms: 62.564882
+  type: 'test'
+  ...
+# Subtest: BB-019 reaches DONE only after trusted project acceptance survives fresh-session reconstruction
+ok 47 - BB-019 reaches DONE only after trusted project acceptance survives fresh-session reconstruction
+  ---
+  duration_ms: 278.110056
+  type: 'test'
+  ...
+# Subtest: BB-019 fails closed before review dispatch when a declared application artifact is unavailable
+ok 48 - BB-019 fails closed before review dispatch when a declared application artifact is unavailable
+  ---
+  duration_ms: 59.205197
+  type: 'test'
+  ...
+# Subtest: BB-019 trusted rejection reopens the same item and resumes Backend remediation before a later acceptance
+ok 49 - BB-019 trusted rejection reopens the same item and resumes Backend remediation before a later acceptance
+  ---
+  duration_ms: 467.832504
+  type: 'test'
+  ...
+# Subtest: BB-019 review interruption remains REVIEWING and a fresh session recovers with a new fenced review generation
+ok 50 - BB-019 review interruption remains REVIEWING and a fresh session recovers with a new fenced review generation
+  ---
+  duration_ms: 144.85286
+  type: 'test'
+  ...
+# Subtest: BB-019 trust persistence failure cannot publish a decision ref into Blackboard
+ok 51 - BB-019 trust persistence failure cannot publish a decision ref into Blackboard
+  ---
+  duration_ms: 33.249539
+  type: 'test'
+  ...
+# bb020-pm-sa-research:{"experiment":"BB-020 bounded PM/SA coordination research probe","evidenceClass":"DETERMINISTIC_REFERENCE","productionEvidence":false,"scenarioCount":4,"baseline":{"obligationCoverage":0.7272727272727273,"matchedObligations":8,"expectedObligations":11,"falseObligations":0},"bounded":{"obligationCoverage":1,"matchedObligations":11,"expectedObligations":11,"falseObligations":0,"saAssessments":1,"pmReplans":3,"authorityFenceRejections":4},"context":{"separatedChars":4464,"universalChars":7743,"reduction":0.42347927160015497},"authority":{"pmMayRewriteIntent":false,"pmMayIssueArchitectureVerdict":false,"saMayOwnDependenciesOrPriority":false,"rolesMayMutateBoardDirectly":false,"orchestratorValidationRequired":true},"runs":[{"scenario":"simple","expectedObligations":["BACKEND","QA"],"baselineObligations":["BACKEND","QA"],"boundedObligations":["BACKEND","QA"],"baselineCoverage":1,"boundedCoverage":1,"saAssessmentRef":null,"pmReviewRequirementRefs":[],"separatedContextChars":1076,"universalContextChars":1922},{"scenario":"migration","expectedObligations":["BACKEND","MIGRATION","QA"],"baselineObligations":["BACKEND","QA"],"boundedObligations":["BACKEND","MIGRATION","QA"],"baselineCoverage":0.6666666666666666,"boundedCoverage":1,"saAssessmentRef":null,"pmReviewRequirementRefs":[],"separatedContextChars":1075,"universalContextChars":1921},{"scenario":"architecture-boundary","expectedObligations":["BACKEND","QA","ARCH_REVIEW"],"baselineObligations":["BACKEND","QA"],"boundedObligations":["BACKEND","QA","ARCH_REVIEW"],"baselineCoverage":0.6666666666666666,"boundedCoverage":1,"saAssessmentRef":"artifact:sa-assessment:delivery","pmReviewRequirementRefs":["artifact:sa-assessment:delivery"],"separatedContextChars":1211,"universalContextChars":1952},{"scenario":"artifact-blocker","expectedObligations":["BACKEND","QA","ARTIFACT_RECOVERY_LINK"],"baselineObligations":["BACKEND","QA"],"boundedObligations":["BACKEND","QA","ARTIFACT_RECOVERY_LINK"],"baselineCoverage":0.6666666666666666,"boundedCoverage":1,"saAssessmentRef":null,"pmReviewRequirementRefs":[],"separatedContextChars":1102,"universalContextChars":1948}],"conclusion":{"direction":"NARROW","reason":"Separate bounded PM coordination and SA architecture judgment can cover scenario-specific coordination obligations without widening either role into Blackboard lifecycle authority. Deterministic fixture evidence does not justify a generic role framework or production default.","runtimeDefaultAuthorized":false,"genericRoleFrameworkJustified":false}}
+# Subtest: BB-020 separates PM coordination from SA architecture judgment and preserves Orchestrator authority
+ok 52 - BB-020 separates PM coordination from SA architecture judgment and preserves Orchestrator authority
+  ---
+  duration_ms: 6.333463
+  type: 'test'
+  ...
+# Subtest: BB-021 carries an evidence-bound SA assessment into PM-required review and reaches DONE across fresh sessions
+ok 53 - BB-021 carries an evidence-bound SA assessment into PM-required review and reaches DONE across fresh sessions
+  ---
+  duration_ms: 97.911849
+  type: 'test'
+  ...
+# Subtest: BB-021 applies migration prerequisite work atomically and retries the same proposal through its canonical proposal ref
+ok 54 - BB-021 applies migration prerequisite work atomically and retries the same proposal through its canonical proposal ref
+  ---
+  duration_ms: 22.196309
+  type: 'test'
+  ...
+# Subtest: BB-021 atomically links blocker and architecture review, then replays the exact proposal after status changes
+ok 55 - BB-021 atomically links blocker and architecture review, then replays the exact proposal after status changes
+  ---
+  duration_ms: 29.689668
+  type: 'test'
+  ...
+# Subtest: BB-021 links an existing recovery item and blocks the affected work instead of inventing replacement work
+ok 56 - BB-021 links an existing recovery item and blocks the affected work instead of inventing replacement work
+  ---
+  duration_ms: 43.96945
+  type: 'test'
+  ...
+# Subtest: BB-021 rejects an SA assessment from different work when building PM context
+ok 57 - BB-021 rejects an SA assessment from different work when building PM context
+  ---
+  duration_ms: 33.980933
+  type: 'test'
+  ...
+# Subtest: BB-021 fails closed on authority violations, stale state and stale evidence, while an empty proposal falls back without mutation
+ok 58 - BB-021 fails closed on authority violations, stale state and stale evidence, while an empty proposal falls back without mutation
+  ---
+  duration_ms: 58.617908
+  type: 'test'
+  ...
+# Subtest: BB-021 does not treat a checkpoint-linked proposal ref as proof that proposal effects committed
+ok 59 - BB-021 does not treat a checkpoint-linked proposal ref as proof that proposal effects committed
+  ---
+  duration_ms: 45.550613
+  type: 'test'
+  ...
+# Subtest: BB-021 ignores submission-only coordination refs for replay and fresh-session recovery
+ok 60 - BB-021 ignores submission-only coordination refs for replay and fresh-session recovery
+  ---
+  duration_ms: 28.210209
+  type: 'test'
+  ...
+# Subtest: BB-021 work graph extension is additive, atomic and idempotent for the same proposal
+ok 61 - BB-021 work graph extension is additive, atomic and idempotent for the same proposal
+  ---
+  duration_ms: 39.58903
+  type: 'test'
+  ...
+# Subtest: BB-021 work graph extension rejects unrelated dependency rewrites and preserves prior state
+ok 62 - BB-021 work graph extension rejects unrelated dependency rewrites and preserves prior state
+  ---
+  duration_ms: 34.43905
+  type: 'test'
+  ...
+# Subtest: BB-021 work graph extension rejects cycles and conflicting duplicate work without partial publication
+ok 63 - BB-021 work graph extension rejects cycles and conflicting duplicate work without partial publication
+  ---
+  duration_ms: 115.881802
+  type: 'test'
+  ...
+# Subtest: BB-021 work graph extension fences a target that changed after proposal validation
+ok 64 - BB-021 work graph extension fences a target that changed after proposal validation
+  ---
+  duration_ms: 14.603019
+  type: 'test'
+  ...
+# Subtest: BB-021 work graph extension commits blockers and PM review requirements in one transaction
+ok 65 - BB-021 work graph extension commits blockers and PM review requirements in one transaction
+  ---
+  duration_ms: 10.513718
+  type: 'test'
+  ...
+# Subtest: BB-021 PM review requirement cannot silently unblock an already blocked submitted item
+ok 66 - BB-021 PM review requirement cannot silently unblock an already blocked submitted item
+  ---
+  duration_ms: 14.25591
+  type: 'test'
+  ...
+# Subtest: BB-021 fresh work cannot carry forged lifecycle history
+ok 67 - BB-021 fresh work cannot carry forged lifecycle history
+  ---
+  duration_ms: 15.806379
+  type: 'test'
+  ...
+# Subtest: BB-021 work graph extension cannot mutate claimed or superseded targets
+ok 68 - BB-021 work graph extension cannot mutate claimed or superseded targets
+  ---
+  duration_ms: 25.986736
+  type: 'test'
+  ...
+# Subtest: BB-024 keeps SUPERSEDED terminal when delayed finding reconciliation arrives
+ok 69 - BB-024 keeps SUPERSEDED terminal when delayed finding reconciliation arrives
+  ---
+  duration_ms: 54.154992
+  type: 'test'
+  ...
+# Subtest: BB-026 research continuation proof matches checked evidence and measures restart-safe selection
+ok 70 - BB-026 research continuation proof matches checked evidence and measures restart-safe selection
+  ---
+  duration_ms: 293.395108
+  type: 'test'
+  ...
+# Subtest: BB-027 commits proposal and PM review obligation in one Blackboard transaction
+ok 71 - BB-027 commits proposal and PM review obligation in one Blackboard transaction
+  ---
+  duration_ms: 69.193287
+  type: 'test'
+  ...
+# Subtest: BB-027 exposes the research continuation consumer through the package subpath
+ok 72 - BB-027 exposes the research continuation consumer through the package subpath
+  ---
+  duration_ms: 0.722673
+  type: 'test'
+  ...
+# Subtest: BB-027 resume rejects manifest refs hidden from the Blackboard reference projection
+ok 73 - BB-027 resume rejects manifest refs hidden from the Blackboard reference projection
+  ---
+  duration_ms: 51.110293
+  type: 'test'
+  ...
+# Subtest: BB-027 revision mismatch requires an explicit changed-scope comparison before evidence can remain current
+ok 74 - BB-027 revision mismatch requires an explicit changed-scope comparison before evidence can remain current
+  ---
+  duration_ms: 1.093907
+  type: 'test'
+  ...
+# Subtest: BB-027 proposal rejects a stale manifest revision even after explicit scope comparison says evidence remains current
+ok 75 - BB-027 proposal rejects a stale manifest revision even after explicit scope comparison says evidence remains current
+  ---
+  duration_ms: 38.366336
+  type: 'test'
+  ...
+# Subtest: BB-027 validates manifest, experiment and evidence-ledger authority-bearing state
+ok 76 - BB-027 validates manifest, experiment and evidence-ledger authority-bearing state
+  ---
+  duration_ms: 1.718117
+  type: 'test'
+  ...
+# Subtest: BB-027 scope-aware freshness does not invalidate evidence for unrelated revision changes
+ok 77 - BB-027 scope-aware freshness does not invalidate evidence for unrelated revision changes
+  ---
+  duration_ms: 1.131711
+  type: 'test'
+  ...
+# Subtest: BB-027 fresh-session resume skips completed E1 and exposes exactly interrupted E2
+ok 78 - BB-027 fresh-session resume skips completed E1 and exposes exactly interrupted E2
+  ---
+  duration_ms: 38.619916
+  type: 'test'
+  ...
+# Subtest: BB-027 fails closed when checkpoint cursor does not match incomplete experiment state
+ok 79 - BB-027 fails closed when checkpoint cursor does not match incomplete experiment state
+  ---
+  duration_ms: 28.583473
+  type: 'test'
+  ...
+# Subtest: BB-027 persists revised continuation and a later fresh session retains stale and contradictory evidence
+ok 80 - BB-027 persists revised continuation and a later fresh session retains stale and contradictory evidence
+  ---
+  duration_ms: 63.168839
+  type: 'test'
+  ...
+# Subtest: BB-027 proposal submission remains PENDING_REVIEW and cannot self-promote acceptance
+ok 81 - BB-027 proposal submission remains PENDING_REVIEW and cannot self-promote acceptance
+  ---
+  duration_ms: 215.084883
+  type: 'test'
+  ...
+# Subtest: BB-027 blocks proposal submission while an experiment or freshness reassessment remains unresolved
+ok 82 - BB-027 blocks proposal submission while an experiment or freshness reassessment remains unresolved
+  ---
+  duration_ms: 104.986975
+  type: 'test'
+  ...
+# Subtest: BB-028 exact artifact identity controls fail closed even when resolver slots are hard-coded
+ok 83 - BB-028 exact artifact identity controls fail closed even when resolver slots are hard-coded
+  ---
+  duration_ms: 47.448511
+  type: 'test'
+  ...
+# Subtest: BB-029 materializes a ref-only decision/outcome summary before QA submission and fresh sessions verify exact source pins
+ok 84 - BB-029 materializes a ref-only decision/outcome summary before QA submission and fresh sessions verify exact source pins
+  ---
+  duration_ms: 66.40691
+  type: 'test'
+  ...
+# Subtest: BB-029 fresh-session summary verification fails closed when an underlying exact ref changes or disappears
+ok 85 - BB-029 fresh-session summary verification fails closed when an underlying exact ref changes or disappears
+  ---
+  duration_ms: 30.850395
+  type: 'test'
+  ...
+# Subtest: BB-029 invalid decision chains block the Board before submission instead of leaving an ambiguous CLAIMED item
+ok 86 - BB-029 invalid decision chains block the Board before submission instead of leaving an ambiguous CLAIMED item
+  ---
+  duration_ms: 16.520341
+  type: 'test'
+  ...
+# Subtest: BB-029 exact relation checks reject omitted or changed authoritative revisions
+ok 87 - BB-029 exact relation checks reject omitted or changed authoritative revisions
+  ---
+  duration_ms: 63.784152
+  type: 'test'
+  ...
+# Subtest: BB-031 freshness accepts only the same Board plus current scheduling inputs
+ok 88 - BB-031 freshness accepts only the same Board plus current scheduling inputs
+  ---
+  duration_ms: 12.093438
+  type: 'test'
+  ...
+# Subtest: BB-031 freshness fails when measurement or evidence input changes while Board is unchanged
+ok 89 - BB-031 freshness fails when measurement or evidence input changes while Board is unchanged
+  ---
+  duration_ms: 3.822796
+  type: 'test'
+  ...
+# Subtest: BB-031 freshness fails when budget changes while Board is unchanged
+ok 90 - BB-031 freshness fails when budget changes while Board is unchanged
+  ---
+  duration_ms: 3.73363
+  type: 'test'
+  ...
+# Subtest: BB-031 freshness fails when selector policy/config changes while Board and measurements are unchanged
+ok 91 - BB-031 freshness fails when selector policy/config changes while Board and measurements are unchanged
+  ---
+  duration_ms: 3.967229
+  type: 'test'
+  ...
+# Subtest: selector ranks only current eligible work and persists provenance without mutating Blackboard
+ok 92 - selector ranks only current eligible work and persists provenance without mutating Blackboard
+  ---
+  duration_ms: 95.997336
+  type: 'test'
+  ...
+# Subtest: missing measurements remain explicit and are never coerced into a score
+ok 93 - missing measurements remain explicit and are never coerced into a score
+  ---
+  duration_ms: 9.345698
+  type: 'test'
+  ...
+# Subtest: mandatory missing measurement or budget conflict escalates instead of selecting cheaper optional work
+ok 94 - mandatory missing measurement or budget conflict escalates instead of selecting cheaper optional work
+  ---
+  duration_ms: 20.662299
+  type: 'test'
+  ...
+# Subtest: starvation fence precedes ordinary scoring among non-mandatory eligible work
+ok 95 - starvation fence precedes ordinary scoring among non-mandatory eligible work
+  ---
+  duration_ms: 19.704893
+  type: 'test'
+  ...
+# Subtest: continuation policy preserves optional stop versus mandatory escalation
+ok 96 - continuation policy preserves optional stop versus mandatory escalation
+  ---
+  duration_ms: 0.585946
+  type: 'test'
+  ...
+# Subtest: freshness validation fails closed after Board changes and ordinary claim still re-checks eligibility
+ok 97 - freshness validation fails closed after Board changes and ordinary claim still re-checks eligibility
+  ---
+  duration_ms: 21.894986
+  type: 'test'
+  ...
+# Subtest: decision artifacts survive a fresh decision-store instance
+ok 98 - decision artifacts survive a fresh decision-store instance
+  ---
+  duration_ms: 8.35795
+  type: 'test'
+  ...
+# Subtest: actual selector replays the bounded reference comparison at equal budget without production claims
+ok 99 - actual selector replays the bounded reference comparison at equal budget without production claims
+  ---
+  duration_ms: 5.634265
+  type: 'test'
+  ...
+# Subtest: BB-033 persists normal Backend preflight failure as resumable BLOCKED before Worker execution
+ok 100 - BB-033 persists normal Backend preflight failure as resumable BLOCKED before Worker execution
+  ---
+  duration_ms: 63.765479
+  type: 'test'
+  ...
+# Subtest: BB-033 preserves recovery-required mode when Oracle is unavailable after interrupted takeover
+ok 101 - BB-033 preserves recovery-required mode when Oracle is unavailable after interrupted takeover
+  ---
+  duration_ms: 69.826895
+  type: 'test'
+  ...
+# Subtest: BB-035 PASS survives fresh sessions and can only become a reviewable proposal
+ok 102 - BB-035 PASS survives fresh sessions and can only become a reviewable proposal
+  ---
+  duration_ms: 226.600194
+  type: 'test'
+  ...
+# Subtest: BB-035 FAIL keeps the accepted baseline and preserves reviewable evidence
+ok 103 - BB-035 FAIL keeps the accepted baseline and preserves reviewable evidence
+  ---
+  duration_ms: 126.455212
+  type: 'test'
+  ...
+# Subtest: BB-035 INCONCLUSIVE keeps the accepted baseline and preserves reviewable evidence
+ok 104 - BB-035 INCONCLUSIVE keeps the accepted baseline and preserves reviewable evidence
+  ---
+  duration_ms: 185.346767
+  type: 'test'
+  ...
+# Subtest: BB-035 fails closed on candidate tamper, evaluator laundering and widened experiment budget
+ok 105 - BB-035 fails closed on candidate tamper, evaluator laundering and widened experiment budget
+  ---
+  duration_ms: 74.692549
+  type: 'test'
+  ...
+# Subtest: BB-035 stale source/policy revisions cannot be evaluated or submitted without continuation reconciliation
+ok 106 - BB-035 stale source/policy revisions cannot be evaluated or submitted without continuation reconciliation
+  ---
+  duration_ms: 49.91772
+  type: 'test'
+  ...
+# Subtest: BB-035 concurrent evaluation on the same claim executes the evaluator at most once
+ok 107 - BB-035 concurrent evaluation on the same claim executes the evaluator at most once
+  ---
+  duration_ms: 126.811292
+  type: 'test'
+  ...
+# Subtest: BB-035 interrupted evaluation recovers explicitly within the fixed attempt budget
+ok 108 - BB-035 interrupted evaluation recovers explicitly within the fixed attempt budget
+  ---
+  duration_ms: 126.593985
+  type: 'test'
+  ...
+# Subtest: BB-035 recovery fails closed after the evaluation-attempt budget is exhausted
+ok 109 - BB-035 recovery fails closed after the evaluation-attempt budget is exhausted
+  ---
+  duration_ms: 104.076476
+  type: 'test'
+  ...
+# Subtest: BB-035 binds protocol to the durable user intent and fixed review requirement
+ok 110 - BB-035 binds protocol to the durable user intent and fixed review requirement
+  ---
+  duration_ms: 22.883592
+  type: 'test'
+  ...
+# Subtest: BB-035 immutable artifact store rejects lossy hidden content before persistence
+ok 111 - BB-035 immutable artifact store rejects lossy hidden content before persistence
+  ---
+  duration_ms: 1.041347
+  type: 'test'
+  ...
+# Subtest: BB-041 seed rejects hidden origin data before item normalization can erase it
+ok 112 - BB-041 seed rejects hidden origin data before item normalization can erase it
+  ---
+  duration_ms: 17.955684
+  type: 'test'
+  ...
+# Subtest: BB-041 submit rejects hidden submission data while preserving the active claim
+ok 113 - BB-041 submit rejects hidden submission data while preserving the active claim
+  ---
+  duration_ms: 23.363853
+  type: 'test'
+  ...
+# Subtest: BB-041 extendWorkGraph rejects hidden child origin before BB-021 normalization can erase it
+ok 114 - BB-041 extendWorkGraph rejects hidden child origin before BB-021 normalization can erase it
+  ---
+  duration_ms: 10.365172
+  type: 'test'
+  ...
+# Subtest: BB-041 resolveBlockedCheckpoint rejects hidden replacement data before clone and preserves the blocked state
+ok 115 - BB-041 resolveBlockedCheckpoint rejects hidden replacement data before clone and preserves the blocked state
+  ---
+  duration_ms: 40.545765
+  type: 'test'
+  ...
+# Subtest: BB-042 persists REQUEST_CONTEXT across sessions and refuses unchanged redispatch until application resolution
+ok 116 - BB-042 persists REQUEST_CONTEXT across sessions and refuses unchanged redispatch until application resolution
+  ---
+  duration_ms: 104.172562
+  type: 'test'
+  ...
+# Subtest: BB-042 blocked-checkpoint resolution is atomic and rejects stale checkpoint state
+ok 117 - BB-042 blocked-checkpoint resolution is atomic and rejects stale checkpoint state
+  ---
+  duration_ms: 61.343937
+  type: 'test'
+  ...
+# Subtest: BB-042 persists ESCALATE and requires explicit resolution before another Backend attempt
+ok 118 - BB-042 persists ESCALATE and requires explicit resolution before another Backend attempt
+  ---
+  duration_ms: 142.447576
+  type: 'test'
+  ...
+# Subtest: BB-042 keeps RETRY as eligible retry without fabricating a coordination requirement
+ok 119 - BB-042 keeps RETRY as eligible retry without fabricating a coordination requirement
+  ---
+  duration_ms: 99.358181
+  type: 'test'
+  ...
+# Subtest: BB-042 preserves deterministic CONTINUE when no Advisor is configured
+ok 120 - BB-042 preserves deterministic CONTINUE when no Advisor is configured
+  ---
+  duration_ms: 87.317754
+  type: 'test'
+  ...
+# Subtest: BB-042 ordinary accepted Backend completion still advances directly to QA_PENDING
+ok 121 - BB-042 ordinary accepted Backend completion still advances directly to QA_PENDING
+  ---
+  duration_ms: 51.365436
+  type: 'test'
+  ...
+# Subtest: BB-043 producer capture binds accepted artifacts without persisting payload bodies
+ok 122 - BB-043 producer capture binds accepted artifacts without persisting payload bodies
+  ---
+  duration_ms: 3.028317
+  type: 'test'
+  ...
+# Subtest: BB-043 producer capture requires exact accepted artifact coverage and ACCEPT completion
+ok 123 - BB-043 producer capture requires exact accepted artifact coverage and ACCEPT completion
+  ---
+  duration_ms: 0.54457
+  type: 'test'
+  ...
+# Subtest: BB-043 fresh reader reconstructs a valid manifest and preserves existing QA context shape
+ok 124 - BB-043 fresh reader reconstructs a valid manifest and preserves existing QA context shape
+  ---
+  duration_ms: 26.996716
+  type: 'test'
+  ...
+# Subtest: BB-043 changed bytes behind a stable ref fail before QA receives context
+ok 125 - BB-043 changed bytes behind a stable ref fail before QA receives context
+  ---
+  duration_ms: 5.539856
+  type: 'test'
+  ...
+# Subtest: BB-043 missing payload is distinct from manifest/provenance failure and preserves source cause
+ok 126 - BB-043 missing payload is distinct from manifest/provenance failure and preserves source cause
+  ---
+  duration_ms: 4.330983
+  type: 'test'
+  ...
+# Subtest: BB-043 missing manifest fails closed without falling back to the underlying reader
+ok 127 - BB-043 missing manifest fails closed without falling back to the underlying reader
+  ---
+  duration_ms: 1.657584
+  type: 'test'
+  ...
+# Subtest: BB-043 producer work-order, revision and acceptance-decision mismatches remain distinct failures
+ok 128 - BB-043 producer work-order, revision and acceptance-decision mismatches remain distinct failures
+  ---
+  duration_ms: 6.894409
+  type: 'test'
+  ...
+# Subtest: BB-043 stored revision and explicit unavailable metadata fail closed before the underlying read
+ok 129 - BB-043 stored revision and explicit unavailable metadata fail closed before the underlying read
+  ---
+  duration_ms: 6.956188
+  type: 'test'
+  ...
+# Subtest: BB-043 partial manifest rejects the missing artifact instead of accepting an unvalidated read
+ok 130 - BB-043 partial manifest rejects the missing artifact instead of accepting an unvalidated read
+  ---
+  duration_ms: 7.522555
+  type: 'test'
+  ...
+# Subtest: BB-043 conflicting manifests for one exact provenance fail closed
+ok 131 - BB-043 conflicting manifests for one exact provenance fail closed
+  ---
+  duration_ms: 6.247746
+  type: 'test'
+  ...
+# Subtest: BB-044 reproduces QA_PENDING visibility before any producer manifest exists
+ok 132 - BB-044 reproduces QA_PENDING visibility before any producer manifest exists
+  ---
+  duration_ms: 103.247361
+  type: 'test'
+  ...
+# Subtest: BB-044 fresh QA blocks on missing manifest only after QA_PENDING was already durable
+ok 133 - BB-044 fresh QA blocks on missing manifest only after QA_PENDING was already durable
+  ---
+  duration_ms: 129.080067
+  type: 'test'
+  ...
+# Subtest: BB-044 producer publication can unblock QA, but current workflow cannot prove it happened before QA_PENDING
+ok 134 - BB-044 producer publication can unblock QA, but current workflow cannot prove it happened before QA_PENDING
+  ---
+  duration_ms: 123.218611
+  type: 'test'
+  ...
+# Subtest: BB-045 concurrent identical publication is idempotent with one atomic publication slot
+ok 135 - BB-045 concurrent identical publication is idempotent with one atomic publication slot
+  ---
+  duration_ms: 11.275706
+  type: 'test'
+  ...
+# Subtest: BB-045 concurrent timestamp-only acceptance regeneration converges on one durable receipt
+ok 136 - BB-045 concurrent timestamp-only acceptance regeneration converges on one durable receipt
+  ---
+  duration_ms: 3.935774
+  type: 'test'
+  ...
+# Subtest: BB-045 concurrent conflicting publication has exactly one winner and one fail-closed conflict
+ok 137 - BB-045 concurrent conflicting publication has exactly one winner and one fail-closed conflict
+  ---
+  duration_ms: 8.060212
+  type: 'test'
+  ...
+# Subtest: BB-045 legacy content-addressed manifest files remain readable and retain publication identity
+ok 138 - BB-045 legacy content-addressed manifest files remain readable and retain publication identity
+  ---
+  duration_ms: 5.684374
+  type: 'test'
+  ...
+# Subtest: BB-045 keeps direct-reader mode compatible
+ok 139 - BB-045 keeps direct-reader mode compatible
+  ---
+  duration_ms: 126.124186
+  type: 'test'
+  ...
+# Subtest: BB-045 persists exact manifest ref before protected QA_PENDING
+ok 140 - BB-045 persists exact manifest ref before protected QA_PENDING
+  ---
+  duration_ms: 76.104726
+  type: 'test'
+  ...
+# Subtest: BB-045 fresh protected QA uses manifest-aware reader and submits exact manifest ref
+ok 141 - BB-045 fresh protected QA uses manifest-aware reader and submits exact manifest ref
+  ---
+  duration_ms: 110.193458
+  type: 'test'
+  ...
+# Subtest: BB-045 protected checkpoint blocks if fresh workflow loses manifest-aware reader
+ok 142 - BB-045 protected checkpoint blocks if fresh workflow loses manifest-aware reader
+  ---
+  duration_ms: 137.847249
+  type: 'test'
+  ...
+# Subtest: BB-045 publication failure blocks in recovery-required mode and resume does not execute Backend again
+ok 143 - BB-045 publication failure blocks in recovery-required mode and resume does not execute Backend again
+  ---
+  duration_ms: 129.772473
+  type: 'test'
+  ...
+# Subtest: BB-045 orphan manifest is idempotently recovered after Board checkpoint interruption
+ok 144 - BB-045 orphan manifest is idempotently recovered after Board checkpoint interruption
+  ---
+  duration_ms: 134.866563
+  type: 'test'
+  ...
+# Subtest: BB-045 changed payload after QA_PENDING blocks QA without reopening Backend execution
+ok 145 - BB-045 changed payload after QA_PENDING blocks QA without reopening Backend execution
+  ---
+  duration_ms: 135.083298
+  type: 'test'
+  ...
+# Subtest: BB-045 receipt-first recovery tolerates timestamp-only decision drift but rejects semantic acceptance drift
+ok 146 - BB-045 receipt-first recovery tolerates timestamp-only decision drift but rejects semantic acceptance drift
+  ---
+  duration_ms: 14.081198
+  type: 'test'
+  ...
+# Subtest: BB-045 accepted publication reuses the durable receipt before later producer reads
+ok 147 - BB-045 accepted publication reuses the durable receipt before later producer reads
+  ---
+  duration_ms: 8.955924
+  type: 'test'
+  ...
+# Subtest: durable CAS authority heads survive restart and stale writers fail closed
+ok 148 - durable CAS authority heads survive restart and stale writers fail closed
+  ---
+  duration_ms: 17.325638
+  type: 'test'
+  ...
+# Subtest: materialization is exact-scope, deterministic, and duplicate retries converge
+ok 149 - materialization is exact-scope, deterministic, and duplicate retries converge
+  ---
+  duration_ms: 37.329641
+  type: 'test'
+  ...
+# Subtest: domain authorization precedes claim and CLAIMED stays provisional until durable release
+ok 150 - domain authorization precedes claim and CLAIMED stays provisional until durable release
+  ---
+  duration_ms: 88.187022
+  type: 'test'
+  ...
+# Subtest: real Blackboard mutation fence prevents lifecycle invalidation from committing through publication
+ok 151 - real Blackboard mutation fence prevents lifecycle invalidation from committing through publication
+  ---
+  duration_ms: 106.354525
+  type: 'test'
+  ...
+# Subtest: claim recovery advances generation and fences the prior released capability
+ok 152 - claim recovery advances generation and fences the prior released capability
+  ---
+  duration_ms: 64.103178
+  type: 'test'
+  ...
+# Subtest: execution-entry policy revocation reopens Board work before fencing the historical release
+ok 153 - execution-entry policy revocation reopens Board work before fencing the historical release
+  ---
+  duration_ms: 82.258476
+  type: 'test'
+  ...
+# Subtest: execution-entry work authorization revocation blocks Board work before fencing release
+ok 154 - execution-entry work authorization revocation blocks Board work before fencing release
+  ---
+  duration_ms: 63.312607
+  type: 'test'
+  ...
+# Subtest: canonical Board invalidation commits before release fencing, so fence failure remains safe
+ok 155 - canonical Board invalidation commits before release fencing, so fence failure remains safe
+  ---
+  duration_ms: 63.830788
+  type: 'test'
+  ...
+# Subtest: work-authorization invalidation blocks canonical work without incrementing generation
+ok 156 - work-authorization invalidation blocks canonical work without incrementing generation
+  ---
+  duration_ms: 50.163169
+  type: 'test'
+  ...
+# Subtest: fresh process resolves work contract from durable ref and rejects untrusted authority publisher
+ok 157 - fresh process resolves work contract from durable ref and rejects untrusted authority publisher
+  ---
+  duration_ms: 25.349443
+  type: 'test'
+  ...
+# Subtest: same invalidation replay reconciles a prior Board-first fence crash
+ok 158 - same invalidation replay reconciles a prior Board-first fence crash
+  ---
+  duration_ms: 136.598819
+  type: 'test'
+  ...
+# Subtest: raw CAS self-grant cannot authorize because head must resolve a verified immutable artifact
+ok 159 - raw CAS self-grant cannot authorize because head must resolve a verified immutable artifact
+  ---
+  duration_ms: 37.974021
+  type: 'test'
+  ...
+# Subtest: ACTIVE to ACTIVE policy drift across claim invalidates the provisional claim
+ok 160 - ACTIVE to ACTIVE policy drift across claim invalidates the provisional claim
+  ---
+  duration_ms: 60.114549
+  type: 'test'
+  ...
+# Subtest: materialization authority loss across claim blocks work instead of reopening it
+ok 161 - materialization authority loss across claim blocks work instead of reopening it
+  ---
+  duration_ms: 75.353369
+  type: 'test'
+  ...
+# Subtest: post-release stale policy commits Board invalidation before release fencing
+ok 162 - post-release stale policy commits Board invalidation before release fencing
+  ---
+  duration_ms: 57.445835
+  type: 'test'
+  ...
+# Subtest: caller context cannot impersonate a policy-authorized execution principal
+ok 163 - caller context cannot impersonate a policy-authorized execution principal
+  ---
+  duration_ms: 24.847576
+  type: 'test'
+  ...
+# Subtest: claim release head is project-scoped and ref-only while receipt is immutable
+ok 164 - claim release head is project-scoped and ref-only while receipt is immutable
+  ---
+  duration_ms: 42.906239
+  type: 'test'
+  ...
+# Subtest: organization invalidation persists exact immutable provenance and reuses it on replay
+ok 165 - organization invalidation persists exact immutable provenance and reuses it on replay
+  ---
+  duration_ms: 60.176229
+  type: 'test'
+  ...
+# Subtest: materialization authorization drift after Board publication blocks the new work
+ok 166 - materialization authorization drift after Board publication blocks the new work
+  ---
+  duration_ms: 64.51184
+  type: 'test'
+  ...
+# Subtest: caller cannot substitute a different materialization grant for the grant that created the Board item
+ok 167 - caller cannot substitute a different materialization grant for the grant that created the Board item
+  ---
+  duration_ms: 104.379842
+  type: 'test'
+  ...
+# Subtest: fresh process reconciliation completes and reconstructs release for the same claim generation
+ok 168 - fresh process reconciliation completes and reconstructs release for the same claim generation
+  ---
+  duration_ms: 75.251347
+  type: 'test'
+  ...
+# Subtest: reauthorization cannot create a second live Board item for the same logical obligation
+ok 169 - reauthorization cannot create a second live Board item for the same logical obligation
+  ---
+  duration_ms: 52.780172
+  type: 'test'
+  ...
+# Subtest: immutable authority artifacts persist canonical verified publisher provenance
+ok 170 - immutable authority artifacts persist canonical verified publisher provenance
+  ---
+  duration_ms: 44.532019
+  type: 'test'
+  ...
+# Subtest: concurrent identical materializations converge on one Board item and one receipt
+ok 171 - concurrent identical materializations converge on one Board item and one receipt
+  ---
+  duration_ms: 37.48801
+  type: 'test'
+  ...
+# Subtest: organization discovery is read-only and filters eligible work by owning domain
+ok 172 - organization discovery is read-only and filters eligible work by owning domain
+  ---
+  duration_ms: 31.274927
+  type: 'test'
+  ...
+# Subtest: organization discovery excludes work whose declared dependency is not DONE
+ok 173 - organization discovery excludes work whose declared dependency is not DONE
+  ---
+  duration_ms: 19.838968
+  type: 'test'
+  ...
+# Subtest: released receipt records pinned authority-policy revisions and canonical principal ref
+ok 174 - released receipt records pinned authority-policy revisions and canonical principal ref
+  ---
+  duration_ms: 55.184836
+  type: 'test'
+  ...
+# Subtest: ACTIVE execution policy with a different pinned authority revision cannot authorize the work
+ok 175 - ACTIVE execution policy with a different pinned authority revision cannot authorize the work
+  ---
+  duration_ms: 34.055753
+  type: 'test'
+  ...
+# Subtest: execution entry invalidates and fences when current policy artifact is missing
+ok 176 - execution entry invalidates and fences when current policy artifact is missing
+  ---
+  duration_ms: 67.900239
+  type: 'test'
+  ...
+# Subtest: fresh reconciliation blocks work when materialization authority artifact is missing
+ok 177 - fresh reconciliation blocks work when materialization authority artifact is missing
+  ---
+  duration_ms: 50.7825
+  type: 'test'
+  ...
+# Subtest: release fences its old capability when Board generation drifts after release publication
+ok 178 - release fences its old capability when Board generation drifts after release publication
+  ---
+  duration_ms: 58.211681
+  type: 'test'
+  ...
+# Subtest: execution entry final Board re-read rejects concurrent claim recovery and fences old release
+ok 179 - execution entry final Board re-read rejects concurrent claim recovery and fences old release
+  ---
+  duration_ms: 47.98675
+  type: 'test'
+  ...
+# Subtest: reconciliation final Board re-read returns stale claim and fences release after concurrent recovery
+ok 180 - reconciliation final Board re-read returns stale claim and fences release after concurrent recovery
+  ---
+  duration_ms: 61.638289
+  type: 'test'
+  ...
+# Subtest: raw ExecutionPolicy head storage is not exposed on the application package surface
+ok 181 - raw ExecutionPolicy head storage is not exposed on the application package surface
+  ---
+  duration_ms: 1.056061
+  type: 'test'
+  ...
+# Subtest: policy promotion cannot pass the final guard before first-attempt CAS commits
+ok 182 - policy promotion cannot pass the final guard before first-attempt CAS commits
+  ---
+  duration_ms: 124.285581
+  type: 'test'
+  ...
+# Subtest: BB-048 emits a resolvable judgment chain and keeps runtime result separate from acceptance/publication
+ok 183 - BB-048 emits a resolvable judgment chain and keeps runtime result separate from acceptance/publication
+  ---
+  duration_ms: 86.457746
+  type: 'test'
+  ...
+# Subtest: recovery reuses the exact binding and ignores a later policy promotion
+ok 184 - recovery reuses the exact binding and ignores a later policy promotion
+  ---
+  duration_ms: 51.73216
+  type: 'test'
+  ...
+# Subtest: claim-generation takeover recovers the same semantic attempt while recording the current release
+ok 185 - claim-generation takeover recovers the same semantic attempt while recording the current release
+  ---
+  duration_ms: 51.73149
+  type: 'test'
+  ...
+# Subtest: publication commit fences lifecycle and writer authority until canonical publish completes
+ok 186 - publication commit fences lifecycle and writer authority until canonical publish completes
+  ---
+  duration_ms: 50.725529
+  type: 'test'
+  ...
+# Subtest: concurrent recovery converges on one idempotent canonical publication
+ok 187 - concurrent recovery converges on one idempotent canonical publication
+  ---
+  duration_ms: 57.352463
+  type: 'test'
+  ...
+# Subtest: stale released claim fails before policy resolution or runtime dispatch
+ok 188 - stale released claim fails before policy resolution or runtime dispatch
+  ---
+  duration_ms: 10.978849
+  type: 'test'
+  ...
+# Subtest: strategy descriptor refuses a cross-domain dispatcher kind
+ok 189 - strategy descriptor refuses a cross-domain dispatcher kind
+  ---
+  duration_ms: 0.545318
+  type: 'test'
+  ...
+# Subtest: strategy success cannot self-authorize domain ACCEPT or publication
+ok 190 - strategy success cannot self-authorize domain ACCEPT or publication
+  ---
+  duration_ms: 25.81244
+  type: 'test'
+  ...
+# Subtest: RB1 commits declared edits in an isolated worktree and leaves the source repository unchanged
+ok 191 - RB1 commits declared edits in an isolated worktree and leaves the source repository unchanged
+  ---
+  duration_ms: 140.494418
+  type: 'test'
+  ...
+# Subtest: RB1 an edit that changes nothing reports mutated:false without a commit
+ok 192 - RB1 an edit that changes nothing reports mutated:false without a commit
+  ---
+  duration_ms: 54.450286
+  type: 'test'
+  ...
+# Subtest: RB1 rejects every unsafe path class before writing anything
+ok 193 - RB1 rejects every unsafe path class before writing anything
+  ---
+  duration_ms: 95.003221
+  type: 'test'
+  ...
+# Subtest: RB1 rejects a candidate revision that differs from the worktree HEAD
+ok 194 - RB1 rejects a candidate revision that differs from the worktree HEAD
+  ---
+  duration_ms: 65.063127
+  type: 'test'
+  ...
+# Subtest: RB2 maps exit 0 to PASS and non-zero exit to FAIL with revision-bound evidence
+ok 195 - RB2 maps exit 0 to PASS and non-zero exit to FAIL with revision-bound evidence
+  ---
+  duration_ms: 126.494936
+  type: 'test'
+  ...
+# Subtest: RB2 a revision mismatch fails without spawning the command
+ok 196 - RB2 a revision mismatch fails without spawning the command
+  ---
+  duration_ms: 76.122818
+  type: 'test'
+  ...
+# Subtest: RB2 a command that mutates the checkout is TREE_MUTATED
+ok 197 - RB2 a command that mutates the checkout is TREE_MUTATED
+  ---
+  duration_ms: 88.856072
+  type: 'test'
+  ...
+# Subtest: RB2 a timeout kills the whole process tree and is INCONCLUSIVE
+ok 198 - RB2 a timeout kills the whole process tree and is INCONCLUSIVE
+  ---
+  duration_ms: 381.680428
+  type: 'test'
+  ...
+# Subtest: RB2 arguments are passed literally without a shell
+ok 199 - RB2 arguments are passed literally without a shell
+  ---
+  duration_ms: 131.28916
+  type: 'test'
+  ...
+# Subtest: RB3 the correct edit ACCEPTs with evidence bound to the committed worktree HEAD
+ok 200 - RB3 the correct edit ACCEPTs with evidence bound to the committed worktree HEAD
+  ---
+  duration_ms: 324.813019
+  type: 'test'
+  ...
+# Subtest: RB3 the probe shape with no edit never ACCEPTs
+ok 201 - RB3 the probe shape with no edit never ACCEPTs
+  ---
+  duration_ms: 248.629657
+  type: 'test'
+  ...
+# Subtest: RB3 the probe shape with an unrelated edit never ACCEPTs
+ok 202 - RB3 the probe shape with an unrelated edit never ACCEPTs
+  ---
+  duration_ms: 298.354302
+  type: 'test'
+  ...
+# Subtest: RB4 QA ACCEPTs on the accepted sha with both QA records PASS at that revision
+ok 203 - RB4 QA ACCEPTs on the accepted sha with both QA records PASS at that revision
+  ---
+  duration_ms: 553.368141
+  type: 'test'
+  ...
+# Subtest: RB4 a mutating QA command is TREE_MUTATED and QA does not ACCEPT
+ok 204 - RB4 a mutating QA command is TREE_MUTATED and QA does not ACCEPT
+  ---
+  duration_ms: 448.435464
+  type: 'test'
+  ...
+# Subtest: RB4 a checkout at the base sha instead of the accepted sha is REVISION_MISMATCH
+ok 205 - RB4 a checkout at the base sha instead of the accepted sha is REVISION_MISMATCH
+  ---
+  duration_ms: 327.627378
+  type: 'test'
+  ...
+# Subtest: RB5 the package exports both local adapter factories
+ok 206 - RB5 the package exports both local adapter factories
+  ---
+  duration_ms: 0.201397
+  type: 'test'
+  ...
+# Subtest: RB5 README and Living agentic docs describe the delivered adapters and their limits
+ok 207 - RB5 README and Living agentic docs describe the delivered adapters and their limits
+  ---
+  duration_ms: 5.050745
+  type: 'test'
+  ...
+# Subtest: RB5 reports agentic diff paths outside the declared write scope as a diagnostic
+ok 208 - RB5 reports agentic diff paths outside the declared write scope as a diagnostic
+  ---
+  duration_ms: 15.603458
+  type: 'test'
+  ...
+# no forbidden paths changed
+# Subtest: BB-025 rejects dangling, self and cyclic dependencies with item/edge diagnostics
+ok 209 - BB-025 rejects dangling, self and cyclic dependencies with item/edge diagnostics
+  ---
+  duration_ms: 4.0253
+  type: 'test'
+  ...
+# Subtest: BB-025 accepts unordered DAGs and durable intent-root dependencies
+ok 210 - BB-025 accepts unordered DAGs and durable intent-root dependencies
+  ---
+  duration_ms: 0.546411
+  type: 'test'
+  ...
+# Subtest: BB-025 rejects an invalid transactional mutation before fenced persistence
+ok 211 - BB-025 rejects an invalid transactional mutation before fenced persistence
+  ---
+  duration_ms: 13.418863
+  type: 'test'
+  ...
+# Subtest: BB-025 diagnoses and explicitly repairs a legacy invalid snapshot before normal use
+ok 212 - BB-025 diagnoses and explicitly repairs a legacy invalid snapshot before normal use
+  ---
+  duration_ms: 8.89402
+  type: 'test'
+  ...
+# Subtest: BB-025 validates NEW_WORK reconciliation against the resulting complete graph
+ok 213 - BB-025 validates NEW_WORK reconciliation against the resulting complete graph
+  ---
+  duration_ms: 12.256568
+  type: 'test'
+  ...
+# Subtest: BB-041 rejects lossy checkpoint payloads before releasing ownership or changing durable state
+    # Subtest: Map
+    ok 1 - Map
+      ---
+      duration_ms: 29.271365
+      type: 'test'
+      ...
+    # Subtest: Set
+    ok 2 - Set
+      ---
+      duration_ms: 22.085261
+      type: 'test'
+      ...
+    # Subtest: Date
+    ok 3 - Date
+      ---
+      duration_ms: 16.078419
+      type: 'test'
+      ...
+    # Subtest: undefined
+    ok 4 - undefined
+      ---
+      duration_ms: 8.913984
+      type: 'test'
+      ...
+    # Subtest: NaN
+    ok 5 - NaN
+      ---
+      duration_ms: 13.189263
+      type: 'test'
+      ...
+    # Subtest: Infinity
+    ok 6 - Infinity
+      ---
+      duration_ms: 63.23376
+      type: 'test'
+      ...
+    # Subtest: negative Infinity
+    ok 7 - negative Infinity
+      ---
+      duration_ms: 14.67503
+      type: 'test'
+      ...
+    # Subtest: negative zero
+    ok 8 - negative zero
+      ---
+      duration_ms: 13.946499
+      type: 'test'
+      ...
+    # Subtest: BigInt
+    ok 9 - BigInt
+      ---
+      duration_ms: 21.306152
+      type: 'test'
+      ...
+    # Subtest: cycle
+    ok 10 - cycle
+      ---
+      duration_ms: 15.559841
+      type: 'test'
+      ...
+    # Subtest: non-enumerable object property
+    ok 11 - non-enumerable object property
+      ---
+      duration_ms: 15.866815
+      type: 'test'
+      ...
+    # Subtest: non-enumerable array property
+    ok 12 - non-enumerable array property
+      ---
+      duration_ms: 18.830676
+      type: 'test'
+      ...
+    1..12
+ok 214 - BB-041 rejects lossy checkpoint payloads before releasing ownership or changing durable state
+  ---
+  duration_ms: 256.69932
+  type: 'test'
+  ...
+# Subtest: BB-041 rejects accessor properties without invoking persisted-payload getters
+ok 215 - BB-041 rejects accessor properties without invoking persisted-payload getters
+  ---
+  duration_ms: 0.384766
+  type: 'test'
+  ...
+# Subtest: BB-041 round-trips acknowledged nested JSON checkpoint state across a new store instance
+ok 216 - BB-041 round-trips acknowledged nested JSON checkpoint state across a new store instance
+  ---
+  duration_ms: 27.809277
+  type: 'test'
+  ...
+# Subtest: BB-041 applies the same persisted-value contract to checkpoint, submission and origin payloads
+ok 217 - BB-041 applies the same persisted-value contract to checkpoint, submission and origin payloads
+  ---
+  duration_ms: 0.574235
+  type: 'test'
+  ...
+# Subtest: BB-041 rejects invalid seed and generic transaction payloads without changing the prior snapshot
+ok 218 - BB-041 rejects invalid seed and generic transaction payloads without changing the prior snapshot
+  ---
+  duration_ms: 11.193802
+  type: 'test'
+  ...
+# Subtest: BB-041 rejects sparse arrays and shared object identity that JSON cannot preserve
+ok 219 - BB-041 rejects sparse arrays and shared object identity that JSON cannot preserve
+  ---
+  duration_ms: 0.46896
+  type: 'test'
+  ...
+# Subtest: BB-041 preserves BB-025 graph diagnostics and repair surface through the JSON wrapper
+ok 220 - BB-041 preserves BB-025 graph diagnostics and repair surface through the JSON wrapper
+  ---
+  duration_ms: 0.863385
+  type: 'test'
+  ...
+# Subtest: paused stale writer cannot overwrite a newer committed successor
+ok 221 - paused stale writer cannot overwrite a newer committed successor
+  ---
+  duration_ms: 29.919621
+  type: 'test'
+  ...
+# Subtest: competing recovery attempts from one base produce one winner and one explicit conflict
+ok 222 - competing recovery attempts from one base produce one winner and one explicit conflict
+  ---
+  duration_ms: 47.235553
+  type: 'test'
+  ...
+# Subtest: legacy abandoned or replacement lock files are neither trusted nor deleted
+ok 223 - legacy abandoned or replacement lock files are neither trusted nor deleted
+  ---
+  duration_ms: 12.896664
+  type: 'test'
+  ...
+# Subtest: failed commit publication cleans its temp file and leaves prior state unchanged
+ok 224 - failed commit publication cleans its temp file and leaves prior state unchanged
+  ---
+  duration_ms: 4.070631
+  type: 'test'
+  ...
+# Subtest: compatibility JSON projection exposes the latest committed snapshot without becoming authority
+ok 225 - compatibility JSON projection exposes the latest committed snapshot without becoming authority
+  ---
+  duration_ms: 15.059838
+  type: 'test'
+  ...
+# Subtest: committed successor survives compatibility projection failure
+ok 226 - committed successor survives compatibility projection failure
+  ---
+  duration_ms: 10.688673
+  type: 'test'
+  ...
+# Subtest: revision identity remains valid when a later snapshot repeats an earlier value
+ok 227 - revision identity remains valid when a later snapshot repeats an earlier value
+  ---
+  duration_ms: 36.885342
+  type: 'test'
+  ...
+# Subtest: For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+ok 228 - For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+  ---
+  duration_ms: 138.04233
+  type: 'test'
+  ...
+# Subtest: Observer fabricates nothing: a tampered projection binding is rejected, not explained
+ok 229 - Observer fabricates nothing: a tampered projection binding is rejected, not explained
+  ---
+  duration_ms: 43.101834
+  type: 'test'
+  ...
+# Subtest: Caller-selected subsets cannot hide a blocker or change the result
+ok 230 - Caller-selected subsets cannot hide a blocker or change the result
+  ---
+  duration_ms: 56.373586
+  type: 'test'
+  ...
+# Subtest: Same pinned subject reconstructs identical facts
+ok 231 - Same pinned subject reconstructs identical facts
+  ---
+  duration_ms: 43.6386
+  type: 'test'
+  ...
+# Subtest: For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+ok 232 - For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+  ---
+  duration_ms: 97.764535
+  type: 'test'
+  ...
+# Subtest: Observer fabricates nothing: a tampered projection binding is rejected, not explained
+ok 233 - Observer fabricates nothing: a tampered projection binding is rejected, not explained
+  ---
+  duration_ms: 39.364968
+  type: 'test'
+  ...
+# Subtest: Caller-selected subsets cannot hide a blocker or change the result
+ok 234 - Caller-selected subsets cannot hide a blocker or change the result
+  ---
+  duration_ms: 61.124023
+  type: 'test'
+  ...
+# Subtest: Same pinned subject reconstructs identical facts
+ok 235 - Same pinned subject reconstructs identical facts
+  ---
+  duration_ms: 54.845322
+  type: 'test'
+  ...
+# Subtest: Waiting and executing durations come from durable boundary timestamps
+ok 236 - Waiting and executing durations come from durable boundary timestamps
+  ---
+  duration_ms: 20.306874
+  type: 'test'
+  ...
+# Subtest: A missing waiting boundary is MISSING_PROVENANCE, never an estimate
+ok 237 - A missing waiting boundary is MISSING_PROVENANCE, never an estimate
+  ---
+  duration_ms: 21.456595
+  type: 'test'
+  ...
+# Subtest: An attestation that breaks the binding relation throws instead of degrading to MISSING
+ok 238 - An attestation that breaks the binding relation throws instead of degrading to MISSING
+  ---
+  duration_ms: 24.677882
+  type: 'test'
+  ...
+# Subtest: A MATERIALIZED boundary later than first runtime start is INCONSISTENT, not negative
+ok 239 - A MATERIALIZED boundary later than first runtime start is INCONSISTENT, not negative
+  ---
+  duration_ms: 75.010805
+  type: 'test'
+  ...
+# Subtest: WHAT obligation rejects all dispatch fields and normalizes stable identity
+ok 240 - WHAT obligation rejects all dispatch fields and normalizes stable identity
+  ---
+  duration_ms: 3.746634
+  type: 'test'
+  ...
+# Subtest: accepted publication enforces semantic kind, target domain, issuer and principal authority
+ok 241 - accepted publication enforces semantic kind, target domain, issuer and principal authority
+  ---
+  duration_ms: 101.049905
+  type: 'test'
+  ...
+# Subtest: identical obligation replay converges and semantic change preserves immutable historical bytes
+ok 242 - identical obligation replay converges and semantic change preserves immutable historical bytes
+  ---
+  duration_ms: 62.499276
+  type: 'test'
+  ...
+# Subtest: raw runtime proposals do not publish authoritative revisions or edges
+ok 243 - raw runtime proposals do not publish authoritative revisions or edges
+  ---
+  duration_ms: 7.189997
+  type: 'test'
+  ...
+# Subtest: WHAT obligation rejects all dispatch fields and normalizes stable identity
+ok 244 - WHAT obligation rejects all dispatch fields and normalizes stable identity
+  ---
+  duration_ms: 4.35363
+  type: 'test'
+  ...
+# Subtest: accepted publication enforces semantic kind, target domain, issuer and principal authority
+ok 245 - accepted publication enforces semantic kind, target domain, issuer and principal authority
+  ---
+  duration_ms: 98.588776
+  type: 'test'
+  ...
+# Subtest: identical obligation replay converges and semantic change preserves immutable historical bytes
+ok 246 - identical obligation replay converges and semantic change preserves immutable historical bytes
+  ---
+  duration_ms: 51.064474
+  type: 'test'
+  ...
+# Subtest: raw runtime proposals do not publish authoritative revisions or edges
+ok 247 - raw runtime proposals do not publish authoritative revisions or edges
+  ---
+  duration_ms: 6.710977
+  type: 'test'
+  ...
+# Subtest: exact reverse-transitive invalidation leaves unrelated sibling current and preserves history
+ok 248 - exact reverse-transitive invalidation leaves unrelated sibling current and preserves history
+  ---
+  duration_ms: 221.467133
+  type: 'test'
+  ...
+# Subtest: commit-only build provenance without an immutable artifact digest is rejected
+ok 249 - commit-only build provenance without an immutable artifact digest is rejected
+  ---
+  duration_ms: 53.76366
+  type: 'test'
+  ...
+# Subtest: tag-only deployable identity is rejected; tags and URIs stay metadata
+ok 250 - tag-only deployable identity is rejected; tags and URIs stay metadata
+  ---
+  duration_ms: 57.916848
+  type: 'test'
+  ...
+# Subtest: build provenance requires an accepted source delivery of the same component domain
+ok 251 - build provenance requires an accepted source delivery of the same component domain
+  ---
+  duration_ms: 71.242685
+  type: 'test'
+  ...
+# Subtest: exact Frontend and Backend deployables reconstruct their build provenance and accepted source delivery
+ok 252 - exact Frontend and Backend deployables reconstruct their build provenance and accepted source delivery
+  ---
+  duration_ms: 104.580646
+  type: 'test'
+  ...
+# Subtest: a fresh process traces QualityAcceptance back to accepted source delivery through exact provenance links
+ok 253 - a fresh process traces QualityAcceptance back to accepted source delivery through exact provenance links
+  ---
+  duration_ms: 495.617011
+  type: 'test'
+  ...
+# Subtest: after release and acceptance heads advance, prior immutable release, snapshot and acceptance still resolve unchanged
+ok 254 - after release and acceptance heads advance, prior immutable release, snapshot and acceptance still resolve unchanged
+  ---
+  duration_ms: 748.928392
+  type: 'test'
+  ...
+# Subtest: an ACCEPT DevOps completion publishes one immutable DeploymentRelease and CAS-advances the environment head
+ok 255 - an ACCEPT DevOps completion publishes one immutable DeploymentRelease and CAS-advances the environment head
+  ---
+  duration_ms: 287.69502
+  type: 'test'
+  ...
+# Subtest: DevOps strategy success without an ACCEPT completion cannot publish a DeploymentRelease
+ok 256 - DevOps strategy success without an ACCEPT completion cannot publish a DeploymentRelease
+  ---
+  duration_ms: 151.572861
+  type: 'test'
+  ...
+# Subtest: a failed rollout publishes no deployment evidence and cannot become a release
+ok 257 - a failed rollout publishes no deployment evidence and cannot become a release
+  ---
+  duration_ms: 166.652226
+  type: 'test'
+  ...
+# Subtest: only DevOps can advance DeploymentReleaseHead; a Product QA judgment cannot publish a release
+ok 258 - only DevOps can advance DeploymentReleaseHead; a Product QA judgment cannot publish a release
+  ---
+  duration_ms: 38.42518
+  type: 'test'
+  ...
+# Subtest: a newer release becomes current while the previous release stays resolvable unchanged
+ok 259 - a newer release becomes current while the previous release stays resolvable unchanged
+  ---
+  duration_ms: 351.16811
+  type: 'test'
+  ...
+# Subtest: the release-head guard rejects a stale release and holds back release publication while held
+ok 260 - the release-head guard rejects a stale release and holds back release publication while held
+  ---
+  duration_ms: 296.049401
+  type: 'test'
+  ...
+# Subtest: INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+ok 261 - INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+  ---
+  duration_ms: 34.430261
+  type: 'test'
+  ...
+# Subtest: AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+ok 262 - AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+  ---
+  duration_ms: 123.942646
+  type: 'test'
+  ...
+# Subtest: INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+ok 263 - INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+  ---
+  duration_ms: 127.727145
+  type: 'test'
+  ...
+# Subtest: AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+ok 264 - AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+  ---
+  duration_ms: 120.354205
+  type: 'test'
+  ...
+# Subtest: AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+ok 265 - AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+  ---
+  duration_ms: 51.125565
+  type: 'test'
+  ...
+# Subtest: INV-5 activation and its currentness reader hold no obligation write capability
+ok 266 - INV-5 activation and its currentness reader hold no obligation write capability
+  ---
+  duration_ms: 12.903914
+  type: 'test'
+  ...
+# Subtest: INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+ok 267 - INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+  ---
+  duration_ms: 26.022578
+  type: 'test'
+  ...
+# Subtest: AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+ok 268 - AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+  ---
+  duration_ms: 159.425396
+  type: 'test'
+  ...
+# Subtest: INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+ok 269 - INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+  ---
+  duration_ms: 135.116609
+  type: 'test'
+  ...
+# Subtest: AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+ok 270 - AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+  ---
+  duration_ms: 128.502996
+  type: 'test'
+  ...
+# Subtest: AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+ok 271 - AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+  ---
+  duration_ms: 69.794515
+  type: 'test'
+  ...
+# Subtest: INV-5 activation and its currentness reader hold no obligation write capability
+ok 272 - INV-5 activation and its currentness reader hold no obligation write capability
+  ---
+  duration_ms: 15.652733
+  type: 'test'
+  ...
+# Subtest: AC-1/AC-7 host start is idempotent and runs an immediate then periodic canonical scan
+ok 273 - AC-1/AC-7 host start is idempotent and runs an immediate then periodic canonical scan
+  ---
+  duration_ms: 265.860823
+  type: 'test'
+  ...
+# Subtest: notify accepts only a same-domain exact key and never executes other-domain work
+ok 274 - notify accepts only a same-domain exact key and never executes other-domain work
+  ---
+  duration_ms: 28.507791
+  type: 'test'
+  ...
+# Subtest: stop cancels and drains only its own host; the sibling host keeps scanning
+ok 275 - stop cancels and drains only its own host; the sibling host keeps scanning
+  ---
+  duration_ms: 126.940073
+  type: 'test'
+  ...
+# Subtest: INV-7 a failing Frontend host start does not gate Backend startup or progress
+ok 276 - INV-7 a failing Frontend host start does not gate Backend startup or progress
+  ---
+  duration_ms: 115.047829
+  type: 'test'
+  ...
+# Subtest: composition requires separate hosts bound to their own domains and exposes no ordering API
+ok 277 - composition requires separate hosts bound to their own domains and exposes no ordering API
+  ---
+  duration_ms: 9.248055
+  type: 'test'
+  ...
+# Subtest: BB-004 persists accepted Backend provenance so a fresh session can continue QA
+ok 278 - BB-004 persists accepted Backend provenance so a fresh session can continue QA
+  ---
+  duration_ms: 178.706087
+  type: 'test'
+  ...
+# Subtest: BB-004 sends QA issues back to Backend remediation using the accepted revision as the new base
+ok 279 - BB-004 sends QA issues back to Backend remediation using the accepted revision as the new base
+  ---
+  duration_ms: 265.513075
+  type: 'test'
+  ...
+# Subtest: BB-004 blocks on artifact lookup failure, then resumes the same QA checkpoint after source recovery
+ok 280 - BB-004 blocks on artifact lookup failure, then resumes the same QA checkpoint after source recovery
+  ---
+  duration_ms: 208.115766
+  type: 'test'
+  ...
+# Subtest: BB-004 cancel supersedes unfinished workflow and prevents later execution
+ok 281 - BB-004 cancel supersedes unfinished workflow and prevents later execution
+  ---
+  duration_ms: 35.057513
+  type: 'test'
+  ...
+# Subtest: BB-004 refuses to overwrite an existing durable workflow checkpoint
+ok 282 - BB-004 refuses to overwrite an existing durable workflow checkpoint
+  ---
+  duration_ms: 45.090091
+  type: 'test'
+  ...
+# Subtest: For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+ok 283 - For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+  ---
+  duration_ms: 82.723247
+  type: 'test'
+  ...
+# Subtest: Observer fabricates nothing: a tampered projection binding is rejected, not explained
+ok 284 - Observer fabricates nothing: a tampered projection binding is rejected, not explained
+  ---
+  duration_ms: 54.714399
+  type: 'test'
+  ...
+# Subtest: Caller-selected subsets cannot hide a blocker or change the result
+ok 285 - Caller-selected subsets cannot hide a blocker or change the result
+  ---
+  duration_ms: 59.691205
+  type: 'test'
+  ...
+# Subtest: Same pinned subject reconstructs identical facts
+ok 286 - Same pinned subject reconstructs identical facts
+  ---
+  duration_ms: 62.787811
+  type: 'test'
+  ...
+# Subtest: Each accepted product/quality claim carries its exact supporting refs
+ok 287 - Each accepted product/quality claim carries its exact supporting refs
+  ---
+  duration_ms: 74.279508
+  type: 'test'
+  ...
+# Subtest: CURRENT chainEvidence excludes another product's lineage publications
+ok 288 - CURRENT chainEvidence excludes another product's lineage publications
+  ---
+  duration_ms: 72.25452
+  type: 'test'
+  ...
+# Subtest: An injected closure clock appears verbatim as the ACCEPTED boundary timestamp
+ok 289 - An injected closure clock appears verbatim as the ACCEPTED boundary timestamp
+  ---
+  duration_ms: 23.107941
+  type: 'test'
+  ...
+# Subtest: Evidence follows the pinned subject, not newer live state
+ok 290 - Evidence follows the pinned subject, not newer live state
+  ---
+  duration_ms: 90.284307
+  type: 'test'
+  ...
+# Subtest: For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+ok 291 - For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+  ---
+  duration_ms: 75.603813
+  type: 'test'
+  ...
+# Subtest: Observer fabricates nothing: a tampered projection binding is rejected, not explained
+ok 292 - Observer fabricates nothing: a tampered projection binding is rejected, not explained
+  ---
+  duration_ms: 37.848118
+  type: 'test'
+  ...
+# Subtest: Caller-selected subsets cannot hide a blocker or change the result
+ok 293 - Caller-selected subsets cannot hide a blocker or change the result
+  ---
+  duration_ms: 48.99365
+  type: 'test'
+  ...
+# Subtest: Same pinned subject reconstructs identical facts
+ok 294 - Same pinned subject reconstructs identical facts
+  ---
+  duration_ms: 68.558896
+  type: 'test'
+  ...
+# Subtest: Executed work resolves exact pinned policy, strategy, config and attempt/runtime identity
+ok 295 - Executed work resolves exact pinned policy, strategy, config and attempt/runtime identity
+  ---
+  duration_ms: 35.388506
+  type: 'test'
+  ...
+# Subtest: A newer current policy head is never substituted for the pinned attempt binding
+ok 296 - A newer current policy head is never substituted for the pinned attempt binding
+  ---
+  duration_ms: 32.666966
+  type: 'test'
+  ...
+# Subtest: Recovery re-invocations list every runtime invocation of the pinned attempt
+ok 297 - Recovery re-invocations list every runtime invocation of the pinned attempt
+  ---
+  duration_ms: 18.327006
+  type: 'test'
+  ...
+# Subtest: INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+ok 298 - INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+  ---
+  duration_ms: 26.370381
+  type: 'test'
+  ...
+# Subtest: AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+ok 299 - AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+  ---
+  duration_ms: 171.534585
+  type: 'test'
+  ...
+# Subtest: INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+ok 300 - INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+  ---
+  duration_ms: 94.976286
+  type: 'test'
+  ...
+# Subtest: AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+ok 301 - AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+  ---
+  duration_ms: 107.186854
+  type: 'test'
+  ...
+# Subtest: AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+ok 302 - AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+  ---
+  duration_ms: 53.59715
+  type: 'test'
+  ...
+# Subtest: INV-5 activation and its currentness reader hold no obligation write capability
+ok 303 - INV-5 activation and its currentness reader hold no obligation write capability
+  ---
+  duration_ms: 13.141087
+  type: 'test'
+  ...
+# Subtest: AC-5/INV-6 distinct FE/BE contracts, policies and adapters both dispatch before either completes
+ok 304 - AC-5/INV-6 distinct FE/BE contracts, policies and adapters both dispatch before either completes
+  ---
+  duration_ms: 244.456514
+  type: 'test'
+  ...
+# Subtest: AC-6/INV-7 a Frontend outage after both dispatches start stays host-local; Backend reaches terminal
+ok 305 - AC-6/INV-7 a Frontend outage after both dispatches start stays host-local; Backend reaches terminal
+  ---
+  duration_ms: 224.689256
+  type: 'test'
+  ...
+# Subtest: AC-6 reverse outage: a Backend failure cannot gate Frontend progress
+ok 306 - AC-6 reverse outage: a Backend failure cannot gate Frontend progress
+  ---
+  duration_ms: 231.714293
+  type: 'test'
+  ...
+# Subtest: INV-6 Frontend modules import no Backend stage/session/completion; Backend strategy never calls Backend->QA
+ok 307 - INV-6 Frontend modules import no Backend stage/session/completion; Backend strategy never calls Backend->QA
+  ---
+  duration_ms: 4.15125
+  type: 'test'
+  ...
+# Subtest: Fresh-process rebuild from the same pinned subject yields identical causal facts
+ok 308 - Fresh-process rebuild from the same pinned subject yields identical causal facts
+  ---
+  duration_ms: 165.90181
+  type: 'test'
+  ...
+# Subtest: INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+ok 309 - INV-3 activation exposes only exact-key reconcile and domain scan; no ranking, next-role or stage API
+  ---
+  duration_ms: 42.203732
+  type: 'test'
+  ...
+# Subtest: AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+ok 310 - AC-3 wrong host, key or contract domain cannot claim, attempt or dispatch
+  ---
+  duration_ms: 202.732752
+  type: 'test'
+  ...
+# Subtest: INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+ok 311 - INV-1/INV-4 spoofed hint authority is inert: host principal, controller policy/strategy and adapter decide
+  ---
+  duration_ms: 120.093536
+  type: 'test'
+  ...
+# Subtest: AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+ok 312 - AC-2 concurrent duplicate scan/notify/reconcile hints converge to one claim, attempt and dispatch
+  ---
+  duration_ms: 91.071712
+  type: 'test'
+  ...
+# Subtest: AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+ok 313 - AC-4 obligation drift between release and execute yields NOOP with no attempt or dispatch
+  ---
+  duration_ms: 57.977982
+  type: 'test'
+  ...
+# Subtest: INV-5 activation and its currentness reader hold no obligation write capability
+ok 314 - INV-5 activation and its currentness reader hold no obligation write capability
+  ---
+  duration_ms: 24.256173
+  type: 'test'
+  ...
+# Subtest: Frontend completion requires frontend.mutation, frontend.typecheck and frontend.tests evidence
+ok 315 - Frontend completion requires frontend.mutation, frontend.typecheck and frontend.tests evidence
+  ---
+  duration_ms: 2.387265
+  type: 'test'
+  ...
+# Subtest: Frontend application prepares, runs and recovers on its own worker and session store
+ok 316 - Frontend application prepares, runs and recovers on its own worker and session store
+  ---
+  duration_ms: 2.194475
+  type: 'test'
+  ...
+# Subtest: DomainExecutionInput is content addressed and rejects authority/HOW fields
+ok 317 - DomainExecutionInput is content addressed and rejects authority/HOW fields
+  ---
+  duration_ms: 0.594699
+  type: 'test'
+  ...
+# Subtest: AC-5 Frontend strategy executes exact FRONTEND WorkContract + input through DomainExecutionController
+ok 318 - AC-5 Frontend strategy executes exact FRONTEND WorkContract + input through DomainExecutionController
+  ---
+  duration_ms: 80.101068
+  type: 'test'
+  ...
+# Subtest: zero, multiple or mismatched DomainExecutionInputs fail before any Frontend worker call
+ok 319 - zero, multiple or mismatched DomainExecutionInputs fail before any Frontend worker call
+  ---
+  duration_ms: 194.526776
+  type: 'test'
+  ...
+# Subtest: For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+ok 320 - For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+  ---
+  duration_ms: 109.909613
+  type: 'test'
+  ...
+# Subtest: Observer fabricates nothing: a tampered projection binding is rejected, not explained
+ok 321 - Observer fabricates nothing: a tampered projection binding is rejected, not explained
+  ---
+  duration_ms: 35.662438
+  type: 'test'
+  ...
+# Subtest: Caller-selected subsets cannot hide a blocker or change the result
+ok 322 - Caller-selected subsets cannot hide a blocker or change the result
+  ---
+  duration_ms: 40.412459
+  type: 'test'
+  ...
+# Subtest: Same pinned subject reconstructs identical facts
+ok 323 - Same pinned subject reconstructs identical facts
+  ---
+  duration_ms: 85.144793
+  type: 'test'
+  ...
+# Subtest: HISTORICAL queries exclude newer board, lineage and outcome state
+ok 324 - HISTORICAL queries exclude newer board, lineage and outcome state
+  ---
+  duration_ms: 231.227475
+  type: 'test'
+  ...
+# Subtest: A CURRENT subject used after the history head advanced is rejected
+ok 325 - A CURRENT subject used after the history head advanced is rejected
+  ---
+  duration_ms: 72.639995
+  type: 'test'
+  ...
+# Subtest: Historical queries stay pinned while current queries advance
+ok 326 - Historical queries stay pinned while current queries advance
+  ---
+  duration_ms: 89.977744
+  type: 'test'
+  ...
+# Subtest: Historical and current subjects cannot be silently mixed
+ok 327 - Historical and current subjects cannot be silently mixed
+  ---
+  duration_ms: 99.833927
+  type: 'test'
+  ...
+# Subtest: BB-017 empty non-durable Backend recovery state blocks instead of pretending no effect happened
+ok 328 - BB-017 empty non-durable Backend recovery state blocks instead of pretending no effect happened
+  ---
+  duration_ms: 3.136701
+  type: 'test'
+  ...
+# Subtest: BB-017 durable workflow consumes a confirmed Backend effect after crash without external redispatch
+ok 329 - BB-017 durable workflow consumes a confirmed Backend effect after crash without external redispatch
+  ---
+  duration_ms: 268.800523
+  type: 'test'
+  ...
+# Subtest: BB-017 idempotent Backend ambiguity retries with the same action key before normal completion
+ok 330 - BB-017 idempotent Backend ambiguity retries with the same action key before normal completion
+  ---
+  duration_ms: 156.520701
+  type: 'test'
+  ...
+# Subtest: BB-017 non-reconcilable Backend ambiguity blocks without blind retry
+ok 331 - BB-017 non-reconcilable Backend ambiguity blocks without blind retry
+  ---
+  duration_ms: 31.168654
+  type: 'test'
+  ...
+# Subtest: WHAT obligation rejects all dispatch fields and normalizes stable identity
+ok 332 - WHAT obligation rejects all dispatch fields and normalizes stable identity
+  ---
+  duration_ms: 1.950167
+  type: 'test'
+  ...
+# Subtest: accepted publication enforces semantic kind, target domain, issuer and principal authority
+ok 333 - accepted publication enforces semantic kind, target domain, issuer and principal authority
+  ---
+  duration_ms: 146.8823
+  type: 'test'
+  ...
+# Subtest: identical obligation replay converges and semantic change preserves immutable historical bytes
+ok 334 - identical obligation replay converges and semantic change preserves immutable historical bytes
+  ---
+  duration_ms: 89.01056
+  type: 'test'
+  ...
+# Subtest: raw runtime proposals do not publish authoritative revisions or edges
+ok 335 - raw runtime proposals do not publish authoritative revisions or edges
+  ---
+  duration_ms: 9.30591
+  type: 'test'
+  ...
+# Subtest: A failed or non-current obligation traces issuer, revision, downstream work and invalidation
+ok 336 - A failed or non-current obligation traces issuer, revision, downstream work and invalidation
+  ---
+  duration_ms: 133.561049
+  type: 'test'
+  ...
+# Subtest: Tracing by subject key follows the current revision while history stays pinned
+ok 337 - Tracing by subject key follows the current revision while history stays pinned
+  ---
+  duration_ms: 124.242706
+  type: 'test'
+  ...
+# Subtest: WHAT obligation rejects all dispatch fields and normalizes stable identity
+ok 338 - WHAT obligation rejects all dispatch fields and normalizes stable identity
+  ---
+  duration_ms: 3.832582
+  type: 'test'
+  ...
+# Subtest: accepted publication enforces semantic kind, target domain, issuer and principal authority
+ok 339 - accepted publication enforces semantic kind, target domain, issuer and principal authority
+  ---
+  duration_ms: 90.658127
+  type: 'test'
+  ...
+# Subtest: identical obligation replay converges and semantic change preserves immutable historical bytes
+ok 340 - identical obligation replay converges and semantic change preserves immutable historical bytes
+  ---
+  duration_ms: 102.279579
+  type: 'test'
+  ...
+# Subtest: raw runtime proposals do not publish authoritative revisions or edges
+ok 341 - raw runtime proposals do not publish authoritative revisions or edges
+  ---
+  duration_ms: 11.560681
+  type: 'test'
+  ...
+# Subtest: supersession between consumed-head observation and receipt commit leaves dependent stale
+ok 342 - supersession between consumed-head observation and receipt commit leaves dependent stale
+  ---
+  duration_ms: 58.018402
+  type: 'test'
+  ...
+# Subtest: For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+ok 343 - For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+  ---
+  duration_ms: 81.877914
+  type: 'test'
+  ...
+# Subtest: Observer fabricates nothing: a tampered projection binding is rejected, not explained
+ok 344 - Observer fabricates nothing: a tampered projection binding is rejected, not explained
+  ---
+  duration_ms: 35.781146
+  type: 'test'
+  ...
+# Subtest: Caller-selected subsets cannot hide a blocker or change the result
+ok 345 - Caller-selected subsets cannot hide a blocker or change the result
+  ---
+  duration_ms: 50.596238
+  type: 'test'
+  ...
+# Subtest: Same pinned subject reconstructs identical facts
+ok 346 - Same pinned subject reconstructs identical facts
+  ---
+  duration_ms: 51.57571
+  type: 'test'
+  ...
+# Subtest: Unknown work has no estimated timing: both segments are MISSING_PROVENANCE
+ok 347 - Unknown work has no estimated timing: both segments are MISSING_PROVENANCE
+  ---
+  duration_ms: 16.671295
+  type: 'test'
+  ...
+# Subtest: Lifecycle evidence rejects non-timestamp observations instead of backfilling
+ok 348 - Lifecycle evidence rejects non-timestamp observations instead of backfilling
+  ---
+  duration_ms: 1.763986
+  type: 'test'
+  ...
+# Subtest: Remaining work without a lineage reader reports UNKNOWN instead of inferring currentness
+ok 349 - Remaining work without a lineage reader reports UNKNOWN instead of inferring currentness
+  ---
+  duration_ms: 48.895711
+  type: 'test'
+  ...
+# Subtest: Evidence chain marks an unreachable outcome as MISSING_PROVENANCE
+ok 350 - Evidence chain marks an unreachable outcome as MISSING_PROVENANCE
+  ---
+  duration_ms: 74.802643
+  type: 'test'
+  ...
+# Subtest: For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+ok 351 - For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+  ---
+  duration_ms: 94.904182
+  type: 'test'
+  ...
+# Subtest: Observer fabricates nothing: a tampered projection binding is rejected, not explained
+ok 352 - Observer fabricates nothing: a tampered projection binding is rejected, not explained
+  ---
+  duration_ms: 58.798877
+  type: 'test'
+  ...
+# Subtest: Caller-selected subsets cannot hide a blocker or change the result
+ok 353 - Caller-selected subsets cannot hide a blocker or change the result
+  ---
+  duration_ms: 43.600251
+  type: 'test'
+  ...
+# Subtest: Same pinned subject reconstructs identical facts
+ok 354 - Same pinned subject reconstructs identical facts
+  ---
+  duration_ms: 64.111377
+  type: 'test'
+  ...
+# Subtest: Observer exposes exactly the query surface and no authority handle
+ok 355 - Observer exposes exactly the query surface and no authority handle
+  ---
+  duration_ms: 1.629747
+  type: 'test'
+  ...
+# Subtest: Observation cannot mutate acceptance, currentness, board or product heads
+ok 356 - Observation cannot mutate acceptance, currentness, board or product heads
+  ---
+  duration_ms: 125.422248
+  type: 'test'
+  ...
+# Subtest: Observation paths reject dispatch, recovery and next-domain authority
+ok 357 - Observation paths reject dispatch, recovery and next-domain authority
+  ---
+  duration_ms: 31.295102
+  type: 'test'
+  ...
+# Subtest: A1 Backend requirement maps declared files in order to REQUIRED EXACT REPOSITORY evidence
+ok 358 - A1 Backend requirement maps declared files in order to REQUIRED EXACT REPOSITORY evidence
+  ---
+  duration_ms: 3.41979
+  type: 'test'
+  ...
+# Subtest: A1 QA requirement maps declared path-bearing artifacts with producer/revision/acceptance provenance
+ok 359 - A1 QA requirement maps declared path-bearing artifacts with producer/revision/acceptance provenance
+  ---
+  duration_ms: 1.047697
+  type: 'test'
+  ...
+# Subtest: A1 missing, zero, negative or fractional maxMaterializedBytes is rejected before any read
+ok 360 - A1 missing, zero, negative or fractional maxMaterializedBytes is rejected before any read
+  ---
+  duration_ms: 1.53182
+  type: 'test'
+  ...
+# Subtest: A1 a pathless QA artifact is rejected with a typed error on the Oracle path but resolves on the compatibility path
+ok 361 - A1 a pathless QA artifact is rejected with a typed error on the Oracle path but resolves on the compatibility path
+  ---
+  duration_ms: 0.886075
+  type: 'test'
+  ...
+# Subtest: A2 COMPLETE Backend resolution projects to a BackendContextSchema-valid context with original sourceRef
+ok 362 - A2 COMPLETE Backend resolution projects to a BackendContextSchema-valid context with original sourceRef
+  ---
+  duration_ms: 9.091736
+  type: 'test'
+  ...
+# Subtest: A2 COMPLETE QA resolution projects to a QaContextSchema-valid context with acceptance provenance
+ok 363 - A2 COMPLETE QA resolution projects to a QaContextSchema-valid context with acceptance provenance
+  ---
+  duration_ms: 4.57879
+  type: 'test'
+  ...
+# Subtest: A2 a repository reader failure blocks with SOURCE_FAILURE and detail before any Worker call
+ok 364 - A2 a repository reader failure blocks with SOURCE_FAILURE and detail before any Worker call
+  ---
+  duration_ms: 3.633328
+  type: 'test'
+  ...
+# Subtest: A2 a QA artifact reader failure blocks with SOURCE_FAILURE, keeps the reader error code, and never calls the Worker
+ok 365 - A2 a QA artifact reader failure blocks with SOURCE_FAILURE, keeps the reader error code, and never calls the Worker
+  ---
+  duration_ms: 3.45559
+  type: 'test'
+  ...
+# Subtest: A2 declared context larger than maxMaterializedBytes is BUDGET_EXHAUSTED and blocks without truncation
+ok 366 - A2 declared context larger than maxMaterializedBytes is BUDGET_EXHAUSTED and blocks without truncation
+  ---
+  duration_ms: 4.839465
+  type: 'test'
+  ...
+# Subtest: A2 delivered planner reservation: one declared item larger than 8,192 materialized bytes blocks even under a large budget
+ok 367 - A2 delivered planner reservation: one declared item larger than 8,192 materialized bytes blocks even under a large budget
+  ---
+  duration_ms: 3.774947
+  type: 'test'
+  ...
+# Subtest: A2 projection rejects any non-COMPLETE or incomplete resolution defensively
+ok 368 - A2 projection rejects any non-COMPLETE or incomplete resolution defensively
+  ---
+  duration_ms: 0.397981
+  type: 'test'
+  ...
+# Subtest: A2 end-to-end: runBackendObjective, prepareBackendObjective, recoverBackendObjective and runQaObjective deliver the Oracle-projected context
+ok 369 - A2 end-to-end: runBackendObjective, prepareBackendObjective, recoverBackendObjective and runQaObjective deliver the Oracle-projected context
+  ---
+  duration_ms: 24.114475
+  type: 'test'
+  ...
+# Subtest: A3 Backend contexts are deepEqual across the compatibility and Oracle paths and equal the golden fixture
+ok 370 - A3 Backend contexts are deepEqual across the compatibility and Oracle paths and equal the golden fixture
+  ---
+  duration_ms: 16.259828
+  type: 'test'
+  ...
+# Subtest: A3 QA contexts are deepEqual across paths for the direct reader and the manifest-validating reader
+ok 371 - A3 QA contexts are deepEqual across paths for the direct reader and the manifest-validating reader
+  ---
+  duration_ms: 43.55797
+  type: 'test'
+  ...
+# Subtest: A3 changed bytes behind a stable ref block on both paths before QA; the Oracle error carries ARTIFACT_CONTENT_MISMATCH
+ok 372 - A3 changed bytes behind a stable ref block on both paths before QA; the Oracle error carries ARTIFACT_CONTENT_MISMATCH
+  ---
+  duration_ms: 12.833426
+  type: 'test'
+  ...
+# Subtest: A3 a provenance mismatch (wrong acceptance decision) blocks on both paths
+ok 373 - A3 a provenance mismatch (wrong acceptance decision) blocks on both paths
+  ---
+  duration_ms: 11.1073
+  type: 'test'
+  ...
+# Subtest: A3 the default path constructs no Oracle catalog, planner or resolver (module spy in a fresh process)
+ok 374 - A3 the default path constructs no Oracle catalog, planner or resolver (module spy in a fresh process)
+  ---
+  duration_ms: 140.569853
+  type: 'test'
+  ...
+# Subtest: Backend compatibility adapter parses order, reads in order and validates context
+ok 375 - Backend compatibility adapter parses order, reads in order and validates context
+  ---
+  duration_ms: 1.976634
+  type: 'test'
+  ...
+# Subtest: QA compatibility adapter preserves application artifact provenance
+ok 376 - QA compatibility adapter preserves application artifact provenance
+  ---
+  duration_ms: 1.104249
+  type: 'test'
+  ...
+# Subtest: For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+ok 377 - For a NOT_READY product a fresh observer identifies the exact blocker reason and evidence refs
+  ---
+  duration_ms: 111.761901
+  type: 'test'
+  ...
+# Subtest: Observer fabricates nothing: a tampered projection binding is rejected, not explained
+ok 378 - Observer fabricates nothing: a tampered projection binding is rejected, not explained
+  ---
+  duration_ms: 51.334295
+  type: 'test'
+  ...
+# Subtest: Caller-selected subsets cannot hide a blocker or change the result
+ok 379 - Caller-selected subsets cannot hide a blocker or change the result
+  ---
+  duration_ms: 35.902532
+  type: 'test'
+  ...
+# Subtest: Same pinned subject reconstructs identical facts
+ok 380 - Same pinned subject reconstructs identical facts
+  ---
+  duration_ms: 72.021971
+  type: 'test'
+  ...
+# Subtest: Each remaining work item maps to its exact owning domain and lifecycle/claim state
+ok 381 - Each remaining work item maps to its exact owning domain and lifecycle/claim state
+  ---
+  duration_ms: 65.348443
+  type: 'test'
+  ...
+# Subtest: Ownership is evidence from the canonical contract, never a routing decision
+ok 382 - Ownership is evidence from the canonical contract, never a routing decision
+  ---
+  duration_ms: 59.798952
+  type: 'test'
+  ...
+# Subtest: A caller-selected domain subset cannot change the remaining-work result
+ok 383 - A caller-selected domain subset cannot change the remaining-work result
+  ---
+  duration_ms: 37.923837
+  type: 'test'
+  ...
+# Subtest: WHAT obligation rejects all dispatch fields and normalizes stable identity
+ok 384 - WHAT obligation rejects all dispatch fields and normalizes stable identity
+  ---
+  duration_ms: 2.315775
+  type: 'test'
+  ...
+# Subtest: accepted publication enforces semantic kind, target domain, issuer and principal authority
+ok 385 - accepted publication enforces semantic kind, target domain, issuer and principal authority
+  ---
+  duration_ms: 97.504264
+  type: 'test'
+  ...
+# Subtest: identical obligation replay converges and semantic change preserves immutable historical bytes
+ok 386 - identical obligation replay converges and semantic change preserves immutable historical bytes
+  ---
+  duration_ms: 67.97037
+  type: 'test'
+  ...
+# Subtest: raw runtime proposals do not publish authoritative revisions or edges
+ok 387 - raw runtime proposals do not publish authoritative revisions or edges
+  ---
+  duration_ms: 5.322075
+  type: 'test'
+  ...
+# Subtest: BA obligation deterministically materializes SA work and SA policy alone chooses execution
+ok 388 - BA obligation deterministically materializes SA work and SA policy alone chooses execution
+  ---
+  duration_ms: 251.815021
+  type: 'test'
+  ...
+# Subtest: semantic invalidation fences exact claimed obligation work and preserves unrelated work
+ok 389 - semantic invalidation fences exact claimed obligation work and preserves unrelated work
+  ---
+  duration_ms: 309.337325
+  type: 'test'
+  ...
+# Subtest: STALE, REVOKED and SUPERSEDED obligations cannot create new Board work
+ok 390 - STALE, REVOKED and SUPERSEDED obligations cannot create new Board work
+  ---
+  duration_ms: 184.365905
+  type: 'test'
+  ...
+# Subtest: product lineage changes do not create Board dependencies, and Board dependencies are not semantic edges
+ok 391 - product lineage changes do not create Board dependencies, and Board dependencies are not semantic edges
+  ---
+  duration_ms: 115.231053
+  type: 'test'
+  ...
+# Subtest: AC-4 supersession after release fences execution through the post-release recheck; sibling executes
+ok 392 - AC-4 supersession after release fences execution through the post-release recheck; sibling executes
+  ---
+  duration_ms: 332.745332
+  type: 'test'
+  ...
+# Subtest: AC-8/INV-8 partial upstream invalidation suppresses only A; stale hints stay inert; next scan executes B
+ok 393 - AC-8/INV-8 partial upstream invalidation suppresses only A; stale hints stay inert; next scan executes B
+  ---
+  duration_ms: 186.365973
+  type: 'test'
+  ...
+# Subtest: INV-5 forged obligation hint data is inert and activation never writes product lineage
+ok 394 - INV-5 forged obligation hint data is inert and activation never writes product lineage
+  ---
+  duration_ms: 151.568786
+  type: 'test'
+  ...
+# Subtest: Hn projection cannot close after Hn+1.
+ok 395 - Hn projection cannot close after Hn+1.
+  ---
+  duration_ms: 52.928056
+  type: 'test'
+  ...
+# Subtest: close first holds the guard: Hn+1 waits, lands after the outcome, outcome turns HISTORICAL
+ok 396 - close first holds the guard: Hn+1 waits, lands after the outcome, outcome turns HISTORICAL
+  ---
+  duration_ms: 121.215233
+  type: 'test'
+  ...
+# Subtest: a writer that bypasses the guard leaves NOT_READY until reconcile
+ok 397 - a writer that bypasses the guard leaves NOT_READY until reconcile
+  ---
+  duration_ms: 47.862261
+  type: 'test'
+  ...
+# Subtest: eligible projection closes and becomes CURRENT
+ok 398 - eligible projection closes and becomes CURRENT
+  ---
+  duration_ms: 54.784597
+  type: 'test'
+  ...
+# Subtest: NOT_READY projection cannot close
+ok 399 - NOT_READY projection cannot close
+  ---
+  duration_ms: 28.408036
+  type: 'test'
+  ...
+# Subtest: Hn projection cannot close after Hn+1.
+ok 400 - Hn projection cannot close after Hn+1.
+  ---
+  duration_ms: 38.794083
+  type: 'test'
+  ...
+# Subtest: a newer outcome head rejects a superseded close without blind retry
+ok 401 - a newer outcome head rejects a superseded close without blind retry
+  ---
+  duration_ms: 59.100779
+  type: 'test'
+  ...
+# Subtest: canonical completeness chain closes, revalidates and rejects in-place mutation
+ok 402 - canonical completeness chain closes, revalidates and rejects in-place mutation
+  ---
+  duration_ms: 98.715347
+  type: 'test'
+  ...
+# Subtest: Crash authority/history drift is NOT_READY until reconciliation.
+ok 403 - Crash authority/history drift is NOT_READY until reconciliation.
+  ---
+  duration_ms: 46.521464
+  type: 'test'
+  ...
+# Subtest: fresh process reconstructs the same current subject from durable refs
+ok 404 - fresh process reconstructs the same current subject from durable refs
+  ---
+  duration_ms: 50.521304
+  type: 'test'
+  ...
+# Subtest: monotonic CAS chain is immutable and ordered
+ok 405 - monotonic CAS chain is immutable and ordered
+  ---
+  duration_ms: 23.901907
+  type: 'test'
+  ...
+# Subtest: Historical artifact overwrite is rejected.
+ok 406 - Historical artifact overwrite is rejected.
+  ---
+  duration_ms: 17.000083
+  type: 'test'
+  ...
+# Subtest: Strategy-only change does not advance product history.
+ok 407 - Strategy-only change does not advance product history.
+  ---
+  duration_ms: 12.756169
+  type: 'test'
+  ...
+# Subtest: history exposes no scheduling or dispatch authority
+ok 408 - history exposes no scheduling or dispatch authority
+  ---
+  duration_ms: 1.918793
+  type: 'test'
+  ...
+# Subtest: a deployment change before QA starts invalidates the verification target and publishes no acceptance
+ok 409 - a deployment change before QA starts invalidates the verification target and publishes no acceptance
+  ---
+  duration_ms: 518.043764
+  type: 'test'
+  ...
+# Subtest: a deployment change during QA prevents current QualityAcceptance for the changed release
+ok 410 - a deployment change during QA prevents current QualityAcceptance for the changed release
+  ---
+  duration_ms: 393.928236
+  type: 'test'
+  ...
+# Subtest: final QualityAcceptance commit holds the release guard so a concurrent release cannot become accepted
+ok 411 - final QualityAcceptance commit holds the release guard so a concurrent release cannot become accepted
+  ---
+  duration_ms: 327.383307
+  type: 'test'
+  ...
+# Subtest: matching independent observation, passing criteria and an ACCEPT QA completion publish one QualityAcceptance
+ok 412 - matching independent observation, passing criteria and an ACCEPT QA completion publish one QualityAcceptance
+  ---
+  duration_ms: 220.302469
+  type: 'test'
+  ...
+# Subtest: an independent observer mismatch yields no QualityAcceptance
+ok 413 - an independent observer mismatch yields no QualityAcceptance
+  ---
+  duration_ms: 307.057407
+  type: 'test'
+  ...
+# Subtest: a mixed old/new rollout is not accepted by default
+ok 414 - a mixed old/new rollout is not accepted by default
+  ---
+  duration_ms: 251.162375
+  type: 'test'
+  ...
+# Subtest: a matching runtime observation without an ACCEPT completion and publication creates no QualityAcceptance
+ok 415 - a matching runtime observation without an ACCEPT completion and publication creates no QualityAcceptance
+  ---
+  duration_ms: 174.147275
+  type: 'test'
+  ...
+# Subtest: QA strategy SUCCEEDED with a non-ACCEPT completion creates no QualityAcceptance
+ok 416 - QA strategy SUCCEEDED with a non-ACCEPT completion creates no QualityAcceptance
+  ---
+  duration_ms: 145.721195
+  type: 'test'
+  ...
+# Subtest: DevOps cannot issue a QA verdict and a QA judgment for another snapshot cannot accept this one
+ok 417 - DevOps cannot issue a QA verdict and a QA judgment for another snapshot cannot accept this one
+  ---
+  duration_ms: 131.597036
+  type: 'test'
+  ...
+# Subtest: Old outcome stays historical but non-current after product drift.
+ok 418 - Old outcome stays historical but non-current after product drift.
+  ---
+  duration_ms: 87.935687
+  type: 'test'
+  ...
+# Subtest: Policy/waiver drift invalidates old projection.
+ok 419 - Policy/waiver drift invalidates old projection.
+  ---
+  duration_ms: 28.667009
+  type: 'test'
+  ...
+# Subtest: Strategy-only change does not advance product history.
+ok 420 - Strategy-only change does not advance product history.
+  ---
+  duration_ms: 37.0537
+  type: 'test'
+  ...
+# Subtest: Historical artifact overwrite is rejected.
+ok 421 - Historical artifact overwrite is rejected.
+  ---
+  duration_ms: 35.178975
+  type: 'test'
+  ...
+# Subtest: Omitted rejected claim still blocks.
+ok 422 - Omitted rejected claim still blocks.
+  ---
+  duration_ms: 38.436909
+  type: 'test'
+  ...
+# Subtest: Omitted blocking obligation still blocks.
+ok 423 - Omitted blocking obligation still blocks.
+  ---
+  duration_ms: 36.293804
+  type: 'test'
+  ...
+# Subtest: Policy/waiver drift invalidates old projection.
+ok 424 - Policy/waiver drift invalidates old projection.
+  ---
+  duration_ms: 31.080334
+  type: 'test'
+  ...
+# Subtest: rebuilding from the same pinned subject yields identical readiness and blockers
+ok 425 - rebuilding from the same pinned subject yields identical readiness and blockers
+  ---
+  duration_ms: 23.231712
+  type: 'test'
+  ...
+# Subtest: uncommitted store artifacts do not affect a pinned rebuild
+ok 426 - uncommitted store artifacts do not affect a pinned rebuild
+  ---
+  duration_ms: 33.933103
+  type: 'test'
+  ...
+# Subtest: later history commits supersede earlier state per kind
+ok 427 - later history commits supersede earlier state per kind
+  ---
+  duration_ms: 80.045635
+  type: 'test'
+  ...
+# Subtest: projection accepts no caller-selected completeness refs and no enumerating resolvers
+ok 428 - projection accepts no caller-selected completeness refs and no enumerating resolvers
+  ---
+  duration_ms: 26.713297
+  type: 'test'
+  ...
+# Subtest: an Hn+1 append during build waits for the guard and the projection pins Hn
+ok 429 - an Hn+1 append during build waits for the guard and the projection pins Hn
+  ---
+  duration_ms: 83.300261
+  type: 'test'
+  ...
+# Subtest: project-bound session handoff persists and exposes explicit project identity
+ok 430 - project-bound session handoff persists and exposes explicit project identity
+  ---
+  duration_ms: 20.390245
+  type: 'test'
+  ...
+# Subtest: fresh session bound to the same project resumes the same Board
+ok 431 - fresh session bound to the same project resumes the same Board
+  ---
+  duration_ms: 10.378424
+  type: 'test'
+  ...
+# Subtest: fresh session fails closed when it expects another project
+ok 432 - fresh session fails closed when it expects another project
+  ---
+  duration_ms: 9.889766
+  type: 'test'
+  ...
+# Subtest: unbound legacy reader cannot silently open a project-bound Board
+ok 433 - unbound legacy reader cannot silently open a project-bound Board
+  ---
+  duration_ms: 7.04428
+  type: 'test'
+  ...
+# Subtest: project-bound reader rejects a legacy Board with no project identity
+ok 434 - project-bound reader rejects a legacy Board with no project identity
+  ---
+  duration_ms: 10.671328
+  type: 'test'
+  ...
+# Subtest: independent observation of exactly the expected digests is MATCH and acceptable
+ok 435 - independent observation of exactly the expected digests is MATCH and acceptable
+  ---
+  duration_ms: 136.154216
+  type: 'test'
+  ...
+# Subtest: a served identity that differs from the release is MISMATCH and not acceptable
+ok 436 - a served identity that differs from the release is MISMATCH and not acceptable
+  ---
+  duration_ms: 99.48173
+  type: 'test'
+  ...
+# Subtest: a mixed old/new rollout is MIXED and non-accepted by default
+ok 437 - a mixed old/new rollout is MIXED and non-accepted by default
+  ---
+  duration_ms: 172.533374
+  type: 'test'
+  ...
+# Subtest: a mixed rollout is acceptable only for the bounded digest set the pinned policy permits
+ok 438 - a mixed rollout is acceptable only for the bounded digest set the pinned policy permits
+  ---
+  duration_ms: 118.533985
+  type: 'test'
+  ...
+# Subtest: a DeploymentRelease or application self-report cannot be runtime observation evidence
+ok 439 - a DeploymentRelease or application self-report cannot be runtime observation evidence
+  ---
+  duration_ms: 105.527118
+  type: 'test'
+  ...
+# Subtest: user intent contract keeps user as the only semantic source
+ok 440 - user intent contract keeps user as the only semantic source
+  ---
+  duration_ms: 2.609237
+  type: 'test'
+  ...
+# Subtest: session handoff initializes durable user intent and exposes only runnable work as eligible
+ok 441 - session handoff initializes durable user intent and exposes only runnable work as eligible
+  ---
+  duration_ms: 32.40952
+  type: 'test'
+  ...
+# Subtest: a fresh process/session resumes pending work and artifact refs from Blackboard without conversation state
+ok 442 - a fresh process/session resumes pending work and artifact refs from Blackboard without conversation state
+  ---
+  duration_ms: 37.26687
+  type: 'test'
+  ...
+# Subtest: session handoff fails closed for a legacy Board that has no durable user-intent root
+ok 443 - session handoff fails closed for a legacy Board that has no durable user-intent root
+  ---
+  duration_ms: 10.522234
+  type: 'test'
+  ...
+# Subtest: session handoff rejects work that cannot trace to the durable user intent
+ok 444 - session handoff rejects work that cannot trace to the durable user intent
+  ---
+  duration_ms: 9.138473
+  type: 'test'
+  ...
+# Subtest: SB1 maps BackendWorkOrder and BackendContext to AGENT_TASK_V1
+ok 445 - SB1 maps BackendWorkOrder and BackendContext to AGENT_TASK_V1
+  ---
+  duration_ms: 43.011277
+  type: 'test'
+  ...
+# Subtest: SB1 invalid mappings throw TypeError
+ok 446 - SB1 invalid mappings throw TypeError
+  ---
+  duration_ms: 35.735542
+  type: 'test'
+  ...
+# Subtest: SB1 default BackendWorker path does not import agent-tools
+ok 447 - SB1 default BackendWorker path does not import agent-tools
+  ---
+  duration_ms: 349.272644
+  type: 'test'
+  ...
+# Subtest: SB1 public indexes expose the adapter without a load-time cycle
+ok 448 - SB1 public indexes expose the adapter without a load-time cycle
+  ---
+  duration_ms: 31.685693
+  type: 'test'
+  ...
+# Subtest: SB2 FIX_FIRST applies after verifier PASS at acceptedSha
+ok 449 - SB2 FIX_FIRST applies after verifier PASS at acceptedSha
+  ---
+  duration_ms: 695.489554
+  type: 'test'
+  ...
+# Subtest: SB2 FIX_AFTER_FEEDBACK applies only after the retry
+ok 450 - SB2 FIX_AFTER_FEEDBACK applies only after the retry
+  ---
+  duration_ms: 927.858171
+  type: 'test'
+  ...
+# Subtest: SB2 NEVER_FIX is not APPLIED
+ok 451 - SB2 NEVER_FIX is not APPLIED
+  ---
+  duration_ms: 689.652205
+  type: 'test'
+  ...
+# Subtest: SB2 missing executable is not APPLIED
+ok 452 - SB2 missing executable is not APPLIED
+  ---
+  duration_ms: 76.794759
+  type: 'test'
+  ...
+# Subtest: SB2 NO_CHANGE is not APPLIED
+ok 453 - SB2 NO_CHANGE is not APPLIED
+  ---
+  duration_ms: 670.168272
+  type: 'test'
+  ...
+# Subtest: SB2 AUTH_FAIL is not APPLIED
+ok 454 - SB2 AUTH_FAIL is not APPLIED
+  ---
+  duration_ms: 376.249692
+  type: 'test'
+  ...
+# Subtest: SB3 CLAIM_SUCCESS_NO_EDIT does not apply
+ok 455 - SB3 CLAIM_SUCCESS_NO_EDIT does not apply
+  ---
+  duration_ms: 659.369907
+  type: 'test'
+  ...
+# Subtest: SB3 agent claimedSuccess is telemetry only
+ok 456 - SB3 agent claimedSuccess is telemetry only
+  ---
+  duration_ms: 671.351595
+  type: 'test'
+  ...
+# Subtest: SB3 source repository HEAD is unchanged
+ok 457 - SB3 source repository HEAD is unchanged
+  ---
+  duration_ms: 648.768935
+  type: 'test'
+  ...
+# Subtest: SB4 APPLIED carries grounded mutation typecheck tests evidence
+ok 458 - SB4 APPLIED carries grounded mutation typecheck tests evidence
+  ---
+  duration_ms: 643.582055
+  type: 'test'
+  ...
+# Subtest: SB4 failed runs do not claim PASS evidence
+ok 459 - SB4 failed runs do not claim PASS evidence
+  ---
+  duration_ms: 457.335101
+  type: 'test'
+  ...
+# Subtest: SB5 living docs distinguish the supervised backend path
+ok 460 - SB5 living docs distinguish the supervised backend path
+  ---
+  duration_ms: 1.345578
+  type: 'test'
+  ...
+# Subtest: SB6 write scope excludes backend-worker and agent-tools
+ok 461 - SB6 write scope excludes backend-worker and agent-tools
+  ---
+  duration_ms: 379.442903
+  type: 'test'
+  ...
+# Subtest: trust artifact publication interruption cannot leave a poisoned final digest path
+ok 462 - trust artifact publication interruption cannot leave a poisoned final digest path
+  ---
+  duration_ms: 17.053704
+  type: 'test'
+  ...
+# Subtest: trust artifact store makes competing identical publications deterministic and idempotent
+ok 463 - trust artifact store makes competing identical publications deterministic and idempotent
+  ---
+  duration_ms: 6.287553
+  type: 'test'
+  ...
+# Subtest: S2 resolves only the Backend files declared by the concrete order
+ok 464 - S2 resolves only the Backend files declared by the concrete order
+  ---
+  duration_ms: 1.809966
+  type: 'test'
+  ...
+# Subtest: S2 resolution failure names the declared file and source boundary
+ok 465 - S2 resolution failure names the declared file and source boundary
+  ---
+  duration_ms: 0.637455
+  type: 'test'
+  ...
+# Subtest: S3 rejects context that does not exactly satisfy the concrete order
+ok 466 - S3 rejects context that does not exactly satisfy the concrete order
+  ---
+  duration_ms: 0.500819
+  type: 'test'
+  ...
+# Subtest: S3 BackendWorker executes the concrete work through ExHarness and requires promotion for APPLIED
+ok 467 - S3 BackendWorker executes the concrete work through ExHarness and requires promotion for APPLIED
+  ---
+  duration_ms: 16.875976
+  type: 'test'
+  ...
+# Subtest: S3 rejects an APPLIED result that did not advance ExHarness lineage
+ok 468 - S3 rejects an APPLIED result that did not advance ExHarness lineage
+  ---
+  duration_ms: 5.143184
+  type: 'test'
+  ...
+# Subtest: S4 runs one Backend objective end-to-end while Wave-B completion refuses unsupported acceptance
+ok 469 - S4 runs one Backend objective end-to-end while Wave-B completion refuses unsupported acceptance
+  ---
+  duration_ms: 10.063383
+  type: 'test'
+  ...
+# Subtest: S5 accepts only grounded Backend mutation + typecheck + tests evidence
+ok 470 - S5 accepts only grounded Backend mutation + typecheck + tests evidence
+  ---
+  duration_ms: 50.723582
+  type: 'test'
+  ...
+# Subtest: S5 missing required evidence deterministically CONTINUEs without pretending success
+ok 471 - S5 missing required evidence deterministically CONTINUEs without pretending success
+  ---
+  duration_ms: 17.441882
+  type: 'test'
+  ...
+# Subtest: S5 failed Backend verification is a deterministic FAIL
+ok 472 - S5 failed Backend verification is a deterministic FAIL
+  ---
+  duration_ms: 0.848282
+  type: 'test'
+  ...
+# Subtest: S5 unresolved semantic gaps remain CONTINUE after all objective Backend checks pass
+ok 473 - S5 unresolved semantic gaps remain CONTINUE after all objective Backend checks pass
+  ---
+  duration_ms: 1.457318
+  type: 'test'
+  ...
+# Subtest: S6 invokes BackendAdvisor only for the observed unresolved-gap judgment boundary
+ok 474 - S6 invokes BackendAdvisor only for the observed unresolved-gap judgment boundary
+  ---
+  duration_ms: 10.40025
+  type: 'test'
+  ...
+# Subtest: S6 rejects Advisor proposals that escape the bounded gap set
+ok 475 - S6 rejects Advisor proposals that escape the bounded gap set
+  ---
+  duration_ms: 13.778259
+  type: 'test'
+  ...
+# Subtest: S7 adds a real non-mutating QA role with role-specific evidence semantics
+ok 476 - S7 adds a real non-mutating QA role with role-specific evidence semantics
+  ---
+  duration_ms: 32.663599
+  type: 'test'
+  ...
+# Subtest: S7 keeps QA non-mutating instead of forcing Backend Worker semantics into a generic Worker
+ok 477 - S7 keeps QA non-mutating instead of forcing Backend Worker semantics into a generic Worker
+  ---
+  duration_ms: 6.34176
+  type: 'test'
+  ...
+# Subtest: S7 keeps QA issue handling role-specific and deterministic
+ok 478 - S7 keeps QA issue handling role-specific and deterministic
+  ---
+  duration_ms: 10.169222
+  type: 'test'
+  ...
+# Subtest: S8 Backend -> QA handoff stores artifact refs and acceptance provenance, not artifact payloads
+ok 479 - S8 Backend -> QA handoff stores artifact refs and acceptance provenance, not artifact payloads
+  ---
+  duration_ms: 0.327444
+  type: 'test'
+  ...
+# Subtest: S8 Oracle dereferences only declared internal application artifacts and preserves provenance
+ok 480 - S8 Oracle dereferences only declared internal application artifacts and preserves provenance
+  ---
+  duration_ms: 0.477351
+  type: 'test'
+  ...
+# Subtest: S8 reports the internal artifact source boundary on dereference failure
+ok 481 - S8 reports the internal artifact source boundary on dereference failure
+  ---
+  duration_ms: 0.399739
+  type: 'test'
+  ...
+# Subtest: Wave C composes accepted Backend work into QA through ref-only artifact handoff
+ok 482 - Wave C composes accepted Backend work into QA through ref-only artifact handoff
+  ---
+  duration_ms: 23.495083
+  type: 'test'
+  ...
+# Subtest: Wave C does not dispatch QA when Backend completion is not accepted
+ok 483 - Wave C does not dispatch QA when Backend completion is not accepted
+  ---
+  duration_ms: 10.086083
+  type: 'test'
+  ...
+# Subtest: S8 rejects a QA semantic need when the accepted Backend handoff lacks its required artifact
+ok 484 - S8 rejects a QA semantic need when the accepted Backend handoff lacks its required artifact
+  ---
+  duration_ms: 0.457872
+  type: 'test'
+  ...
+# Subtest: Wave D prevents a worker submission from self-authorizing DONE
+ok 485 - Wave D prevents a worker submission from self-authorizing DONE
+  ---
+  duration_ms: 30.383175
+  type: 'test'
+  ...
+# Subtest: Wave D derives DONE only from a trusted assessment bound to the exact review target
+ok 486 - Wave D derives DONE only from a trusted assessment bound to the exact review target
+  ---
+  duration_ms: 36.826898
+  type: 'test'
+  ...
+# Subtest: Wave D rejects fabricated, stale or unauthorized review authority
+ok 487 - Wave D rejects fabricated, stale or unauthorized review authority
+  ---
+  duration_ms: 31.500539
+  type: 'test'
+  ...
+# Subtest: Wave D keeps Worker review request and PM review requirement as separate authority paths
+ok 488 - Wave D keeps Worker review request and PM review requirement as separate authority paths
+  ---
+  duration_ms: 36.420783
+  type: 'test'
+  ...
+# Subtest: Wave D serializes concurrent claims so two sessions cannot own the same Board item
+ok 489 - Wave D serializes concurrent claims so two sessions cannot own the same Board item
+  ---
+  duration_ms: 36.739965
+  type: 'test'
+  ...
+# Subtest: Wave D persists PENDING_REVIEW across orchestrator restart
+ok 490 - Wave D persists PENDING_REVIEW across orchestrator restart
+  ---
+  duration_ms: 17.996635
+  type: 'test'
+  ...
+# Subtest: Wave D rejected review reopens the same work from trusted unresolved blockers and accepted resubmission can close it
+ok 491 - Wave D rejected review reopens the same work from trusted unresolved blockers and accepted resubmission can close it
+  ---
+  duration_ms: 59.064898
+  type: 'test'
+  ...
+# Subtest: Wave D accepted review reopens instead of deadlocking when unrelated current work remains
+ok 492 - Wave D accepted review reopens instead of deadlocking when unrelated current work remains
+  ---
+  duration_ms: 20.972529
+  type: 'test'
+  ...
+# Subtest: Wave D follow-up generation reconciles only findings grounded by a trusted review assessment
+ok 493 - Wave D follow-up generation reconciles only findings grounded by a trusted review assessment
+  ---
+  duration_ms: 70.333703
+  type: 'test'
+  ...
+# Subtest: Wave D claim recovery fences a stale executor even when takeover reuses the same owner identity
+ok 494 - Wave D claim recovery fences a stale executor even when takeover reuses the same owner identity
+  ---
+  duration_ms: 15.479017
+  type: 'test'
+  ...
+# Subtest: Wave D review recovery changes the exact review subject and rejects the abandoned generation
+ok 495 - Wave D review recovery changes the exact review subject and rejects the abandoned generation
+  ---
+  duration_ms: 28.87563
+  type: 'test'
+  ...
+1..495
+# tests 507
+# suites 0
+# pass 507
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13983.819072
+
+
+exitCode=0

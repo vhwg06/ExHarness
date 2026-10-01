@@ -40,8 +40,9 @@ NONE
 
 ## Schedulable tasks
 
-- BB-057 [WORKER/EXECUTION] — Prove adversarial recovery across the end-to-end organization
+- BB-059 [WORKER/EXECUTION] — Research evidence-gated HOW evolution and Jev evaluation pipeline
 - BB-079 [WORKER/EXECUTION] — Implement cache-stable async result context
+- BB-084 [WORKER/EXECUTION] — Implement grounded observation and context binding
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [RESEARCH_SA/RESEARCH] — Allowlist agent-tools child environment
@@ -64,9 +65,9 @@ BB-053 [DONE] <- BB-052
 BB-054 [DONE] <- BB-053
 BB-055 [DONE] <- BB-054
 BB-056 [DONE] <- ROOT
-BB-057 [WORKER_SCHEDULABLE] <- BB-055
-BB-058 [BLOCKED_BY BB-057] <- BB-057
-BB-059 [BLOCKED_BY BB-058] <- BB-058
+BB-057 [DONE] <- BB-055
+BB-058 [DONE] <- BB-057
+BB-059 [WORKER_SCHEDULABLE] <- BB-058
 BB-060 [DONE] <- ROOT
 BB-061 [DONE] <- BB-060
 BB-062 [DONE] <- BB-061
@@ -78,8 +79,8 @@ BB-067 [BLOCKED_BY BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
 BB-069 [BLOCKED_BY BB-068] <- BB-068, BB-064
 BB-070 [BLOCKED_BY BB-069] <- BB-069, BB-055
-BB-071 [BLOCKED_BY BB-070,BB-057] <- BB-070, BB-057
-BB-072 [BLOCKED_BY BB-068,BB-058] <- BB-068, BB-058
+BB-071 [BLOCKED_BY BB-070] <- BB-070, BB-057
+BB-072 [BLOCKED_BY BB-068] <- BB-068, BB-058
 BB-073 [BLOCKED_BY BB-070,BB-072] <- BB-070, BB-072
 BB-074 [BLOCKED_BY BB-071,BB-073,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [BLOCKED_BY BB-074,BB-059] <- BB-074, BB-059
@@ -91,7 +92,7 @@ BB-080 [BLOCKED_BY BB-079] <- BB-078, BB-079
 BB-081 [BLOCKED_BY BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
 BB-083 [BLOCKED_BY BB-059] <- BB-059, BB-064, BB-065
-BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
+BB-084 [WORKER_SCHEDULABLE] <- BB-058, BB-064
 BB-085 [BLOCKED_BY BB-084] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059] <- BB-085, BB-059, BB-065
 BB-087 [DONE] <- BB-064

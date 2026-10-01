@@ -191,7 +191,7 @@ export {
   resolveExecutionJudgmentBundle
 } from "./domain-execution-control.js";
 export {defineCrossDomainObligation,crossDomainObligationSubjectKey,crossDomainObligationRevisionRef} from "./cross-domain-obligation.js";
-export {createProductLineageStore,defineSemanticClaim,semanticClaimRevisionRef,semanticClaimSubjectKey,reverseSemanticClosure} from "./product-lineage.js";
+export {createProductLineageStore,createCommittedPublicationReader,defineSemanticClaim,semanticClaimRevisionRef,semanticClaimSubjectKey,reverseSemanticClosure} from "./product-lineage.js";
 export {createDomainWriteAuthority,defineDomainWriteAuthorityPolicy,domainWriteAuthoritySubjectKey,createDomainPublicationGate} from "./domain-write-authority.js";
 export {createDependencyInvalidationController} from "./dependency-invalidation.js";
 export {
@@ -257,3 +257,22 @@ export {createProductMutationGuard,createProductHistoryController,defineProductH
 export {createProductAcceptanceAuthority,defineProductAcceptancePolicy,defineProductAcceptanceWaiver,productAcceptanceSubjectKey,waiverSetDigestFor} from "./product-acceptance-policy.js";
 export {createProductStateProjectionBuilder} from "./product-state-projection.js";
 export {createProductClosureController,defineProductOutcomeClaim,productOutcomeSubjectKey,ProductClosureStaleError,ProductClosureNotReadyError,ProductClosureConflictError} from "./product-closure.js";
+export {
+  CAUSAL_LIFECYCLE_EVENT_KINDS,
+  INCONSISTENT_PROVENANCE,
+  MISSING_PROVENANCE,
+  UNKNOWN_PROVENANCE,
+  defineCausalLifecycleEvidence,
+  createCausalLifecycleEvidenceSink,
+  listCausalLifecycleEvidence,
+  causalLifecycleListKey
+} from "./causal-provenance.js";
+export {
+  NOT_RECONSTRUCTABLE_FROM_PINNED_SUBJECT,
+  defineCausalObservationSubject,
+  createCausalReconstruction
+} from "./causal-reconstruction.js";
+export {
+  createOrganizationObserver,
+  ORGANIZATION_OBSERVER_QUERY_SURFACE
+} from "./organization-observer.js";

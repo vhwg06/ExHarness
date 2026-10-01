@@ -1,0 +1,30 @@
+TAP version 13
+# Subtest: recovery matrix stays local: failures recover, unaffected work continues, fresh processes rebuild the same truth
+ok 1 - recovery matrix stays local: failures recover, unaffected work continues, fresh processes rebuild the same truth
+  ---
+  duration_ms: 221.920441
+  type: 'test'
+  ...
+# Subtest: INV-8 harness pauses production boundaries without adding serialization
+ok 2 - INV-8 harness pauses production boundaries without adding serialization
+  ---
+  duration_ms: 53.45721
+  type: 'test'
+  ...
+# INV-8: concurrent arrivals at paused boundary=2 before release
+# INV-8: winner=workerA loser rejected by production guard: terminal CAS conflict converges via committed head
+# INV-8: loser shares winner bundle via production idempotent reuse
+# INV-8: workerA wrapper delegations=2 production calls=2 ok=2 production-contention-retries=0
+# INV-8: workerB wrapper delegations=3 production calls=3 ok=2 production-contention-retries=1
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 395.807932
+
+
+exitCode=0

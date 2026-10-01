@@ -50,7 +50,7 @@ export function defineDeploymentRelease(raw) {
   return frozenCopy(raw);
 }
 
-export function createDeploymentReleaseController({ artifactRegistry, releaseHeadStore, domainArtifactRegistry, organizationArtifactRegistry, mutationGuard = createDeploymentMutationGuard(), projectGuard = null, projectIdForEnvironment = null }) {
+export function createDeploymentReleaseController({ artifactRegistry, releaseHeadStore, domainArtifactRegistry, organizationArtifactRegistry, mutationGuard = createDeploymentMutationGuard(), projectGuard = null, projectIdForEnvironment = null, causalSink = null, causalNow = () => new Date().toISOString() }) {
   invariant(artifactRegistry && typeof artifactRegistry.putDeploymentRelease === "function", "release controller requires the deployment artifact registry");
   invariant(releaseHeadStore && typeof releaseHeadStore.current === "function" && typeof releaseHeadStore.compareAndSwap === "function", "release controller requires a CAS head store");
   invariant(domainArtifactRegistry && typeof domainArtifactRegistry.resolveExecutionJudgmentBundle === "function", "release controller requires the domain execution artifact registry");
@@ -121,6 +121,10 @@ export function createDeploymentReleaseController({ artifactRegistry, releaseHea
       const releaseRef = await artifactRegistry.putDeploymentRelease(release);
       const generation = (head?.value?.generation ?? 0) + 1;
       invariant(await releaseHeadStore.compareAndSwap(subjectKey, head?.revision ?? null, { releaseRef, generation }), "DeploymentReleaseHead CAS conflict");
+      if (causalSink) {
+        // Observational evidence only: sink failure never gates the release.
+        try { await causalSink.record({ kind: "CAUSAL_LIFECYCLE_EVIDENCE", version: 1, workId: `deployment-release:${environmentRef}`, eventKind: "PUBLISHED", observedAt: causalNow(), boundaryRef: releaseRef }); } catch {}
+      }
       return deepFreeze({ releaseRef, release, head: await current(environmentRef), replayed: false });
     }));
   }

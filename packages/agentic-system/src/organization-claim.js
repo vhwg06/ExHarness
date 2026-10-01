@@ -212,7 +212,7 @@ export function createOrganizationWorkClaimController({
   executionPrincipalProvider,
   executionAuthorityPolicyId,
   lineage
-}){
+,causalSink=null,causalNow=()=>new Date().toISOString()}){
   const policyId=requireText(executionAuthorityPolicyId,"executionAuthorityPolicyId");
   invariant(orchestrator&&typeof orchestrator.readBlackboard==="function"&&typeof orchestrator.claim==="function","claim controller requires ApplicationOrchestrator");
   invariant(typeof orchestrator.withOrganizationClaimGuard==="function","claim controller requires organization claim mutation guard");
@@ -499,6 +499,10 @@ export function createOrganizationWorkClaimController({
         throw error;
       }
 
+      if(causalSink){
+        // Observational evidence only: sink failure never gates the claim.
+        try{await causalSink.record({kind:"CAUSAL_LIFECYCLE_EVIDENCE",version:1,workId:itemId,eventKind:"CLAIMED",observedAt:causalNow(),projectId:contract.projectId,workContractRef:contract.contractRef,claimGeneration:claimed.result.claimGeneration,boundaryRef:contract.contractRef});}catch{}
+      }
       return freeze({
         item:claimed.result,
         contract,
@@ -560,6 +564,10 @@ export function createOrganizationWorkClaimController({
         throw new TypeError("Board claim tuple changed across release");
       }
 
+      if(causalSink){
+        // Observational evidence only: sink failure never gates the release.
+        try{await causalSink.record({kind:"CAUSAL_LIFECYCLE_EVIDENCE",version:1,workId:itemId,eventKind:"RELEASED",observedAt:causalNow(),projectId:contract.projectId,workContractRef:contract.contractRef,claimGeneration,boundaryRef:released.receiptRef});}catch{}
+      }
       return released;
     },
 
