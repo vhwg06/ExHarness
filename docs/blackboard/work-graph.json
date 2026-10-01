@@ -4579,7 +4579,7 @@
     {
       "id": "BB-121",
       "featureId": "FEATURE-AGENT-TOOL-DURABLE-BOARD",
-      "title": "Compose supervised agent-tools as durable Backend\u2192QA execution",
+      "title": "Compose supervised agent-tools as durable Backend→QA execution",
       "kind": "RESEARCH",
       "status": "PLANNED",
       "complexity": "L",
@@ -5476,10 +5476,53 @@
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-134",
+      "featureId": null,
+      "title": "Carry every executed verification log through trusted Jev CI bundles",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "outer/blackboard"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-056",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-134.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-134.json"
+        ],
+        "outputRefs": [],
+        "consolidatedRefs": [
+          "docs/living/system/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "Every verificationRuns.logRef and every claims.evidenceRefs body is retained exactly once with its existing bytes and bindings through collection, upload, download and evaluation.",
+        "A separated collect/evaluate fixture with an unclaimed passing verification run materializes successfully; missing/corrupt/unsafe evidence fails closed without provider calls.",
+        "Focused regression coverage and Living Docs describe the actual trusted bundle behavior; full repository checks and real independent gates complete delivery."
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-134.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-134.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-134",
+    "nextWorkId": "BB-135",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

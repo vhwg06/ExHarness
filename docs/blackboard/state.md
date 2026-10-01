@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-134
+next-work-id: BB-135
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -57,6 +57,7 @@ NONE
 - BB-131 [RESEARCH_SA/RESEARCH] — Prepare a reproducible repository preview for local feature delivery
 - BB-132 [RESEARCH_SA/RESEARCH] — Verify local web feature journeys through an independently pinned browser evaluator
 - BB-133 [RESEARCH_SA/RESEARCH] — Verify API compatibility and persisted state for local feature changes
+- BB-134 [RESEARCH_SA/RESEARCH] — Carry every executed verification log through trusted Jev CI bundles
 
 ## Dependency graph
 
@@ -133,6 +134,7 @@ BB-130 [RESEARCH_SCHEDULABLE] <- BB-096, BB-120
 BB-131 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130
 BB-132 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
 BB-133 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
+BB-134 [RESEARCH_SCHEDULABLE] <- BB-056
 ```
 
 ## Context semantics

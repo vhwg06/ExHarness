@@ -1,0 +1,109 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-134",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-134.json",
+    "hash": "6510f7092b6c9a798a7be5636ea6627e67be39e2f63b260fbf14b7b5a6e2b56b"
+  },
+  "scope": [
+    "outer-blackboard.ci-evidence-completeness"
+  ],
+  "outOfScope": [
+    "Existing worker product code and plans",
+    "Provider API or semantic evaluation policy changes"
+  ],
+  "constraints": [
+    "Preserve objectives and READY plans of existing worker tasks; this is a separate controller repair with its own readiness and delivery gates.",
+    "Do not relax evidence digest/currentness/schema/credential separation gates, alter provider requests, reroll retained findings, or fabricate receipts.",
+    "Keep collection credential-free and evaluation data-only; product source of existing worker tasks stays unchanged."
+  ],
+  "invariants": [
+    "Exact candidate, plan and evidence bindings remain authoritative; complete log transport cannot grant acceptance."
+  ],
+  "architectureDecisions": [
+    "RESEARCH REQUIRED: inspect the precise CI bundle seam and finalize minimal completeness repair before independent readiness."
+  ],
+  "sourceScope": {
+    "read": [
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-jev.mjs",
+      "test/blackboard-jev.test.mjs",
+      "docs/blackboard/jev.md",
+      "docs/living/system/state.md"
+    ],
+    "write": [
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-verification-bundle.mjs",
+      "test/blackboard-verification-bundle.test.mjs",
+      "docs/living/system/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/**",
+      ".github/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-jev.mjs",
+      "test/blackboard-jev.test.mjs",
+      "docs/blackboard/jev.md",
+      "docs/living/system/state.md"
+    ],
+    "expectedNew": [
+      "scripts/blackboard-verification-bundle.mjs",
+      "test/blackboard-verification-bundle.test.mjs"
+    ],
+    "expectedTests": [
+      "test/blackboard-verification-bundle.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "Finalize exact helper/API, discriminating fixtures and negative bindings; no source implementation during research."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "COMPLETE",
+      "statement": "Every verificationRuns.logRef and every claims.evidenceRefs body is retained exactly once with its existing bytes and bindings through collection, upload, download and evaluation.",
+      "verificationIds": [
+        "bundle"
+      ],
+      "evidenceRequired": [
+        "Real separated bundle completeness regression evidence."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "bundle",
+      "command": "node --test test/blackboard-verification-bundle.test.mjs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Exact candidate, plan and evidence bindings remain authoritative; complete log transport cannot grant acceptance.",
+      "criterionIds": [
+        "COMPLETE"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Missing or corrupt log cannot be supplied to Jev."
+  ],
+  "researchGaps": [
+    "Finalize source-grounded exact repair, independent fixture and all negative-case bindings before readiness."
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "living-docs",
+    "statement": "Trusted CI retains all verification logs and claim observations without changing judgment authority."
+  }
+}
