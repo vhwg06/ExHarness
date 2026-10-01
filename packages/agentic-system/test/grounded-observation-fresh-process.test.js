@@ -110,6 +110,7 @@ const observer = {
 await store.put("quality-acceptance", fixture.qa);
 await store.put(fixture.bindingKind, fixture.binding);
 await store.put(fixture.attestationKind, { ...fixture.attestation, bindingRef: fixture.attestation.bindingRef ?? fixture.bindingRef });
+await store.put("context-resolution-receipt", fixture.receipt);
 const projector = createGroundedObservationProjector({ observer, artifactRegistry: registries, artifactStore: store });
 const { observation, observationRef } = await projector.projectObservation({
   subject: fixture.subject,
@@ -212,7 +213,7 @@ test("fresh process rebuild from the same pinned subject yields identical identi
   const req = requirement();
   const res = resolution(req);
   const rec = receipt(req, res);
-  const recRef = `context-resolution-receipt:sha256:${rec.receiptId}`;
+  const recRef = await store.put("context-resolution-receipt", structuredClone(rec));
   const binder = createObservationContextBinder({
     artifactStore: store,
     receiptCurrentness: async () => ({ status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:static-currentness" }),

@@ -52,6 +52,16 @@ function freeze(value) {
   }
   return value;
 }
+// The delivered coordinator result shape carries its locator as a receiptRef
+// envelope key; tolerate exactly that envelope, never any other extra content.
+function stripReceiptEnvelope(receipt, locator) {
+  const body = structuredClone(receipt);
+  if (Object.hasOwn(body, "receiptRef")) {
+    if (body.receiptRef !== locator) fail("supplied receipt envelope ref does not match receiptRef");
+    delete body.receiptRef;
+  }
+  return body;
+}
 function canonicalString(value) {
   if (Array.isArray(value)) return `[${value.map(canonicalString).join(",")}]`;
   if (value && typeof value === "object") {
@@ -189,6 +199,15 @@ function normalizeCurrentness(raw, fallbackIdentity) {
 // or contradictory required proof is UNRESOLVED: the checks below are
 // unconditional, never gated on another proof being present.
 export function classifyGrounding({ observation = null, binding = null, requirement = null, resolution = null } = {}) {
+  try {
+    return classifyGroundingInner({ observation, binding, requirement, resolution });
+  } catch {
+    // Malformed inputs that escape structural checks never ground.
+    return freeze({ status: "UNRESOLVED", reasons: freeze(["MISSING_CONTEXT", "CURRENTNESS_UNVERIFIABLE"]) });
+  }
+}
+
+function classifyGroundingInner({ observation = null, binding = null, requirement = null, resolution = null } = {}) {
   const reasons = new Set();
   const add = (r) => {
     if (!UNRESOLVED_REASONS.includes(r)) fail(`unknown grounding reason ${r}`);
@@ -196,12 +215,39 @@ export function classifyGrounding({ observation = null, binding = null, requirem
   };
 
   // Mandatory observation proof: absent or malformed facts can never ground.
-  const facts = observation && typeof observation === "object" ? observation.facts : null;
+  // Every PROVENANCED fact must bind exact evidence pins; unknown provenance
+  // or missing pins are unprovenanced, never grounded.
+  const facts = observation && typeof observation === "object" && !Array.isArray(observation) ? observation.facts : null;
   if (!Array.isArray(facts)) {
     add("MISSING_PROVENANCE");
   } else {
     for (const fact of facts) {
-      if (fact?.provenance === "MISSING_PROVENANCE") {
+      const provenance = fact?.provenance;
+      if (provenance === "MISSING_PROVENANCE") {
+        add("MISSING_PROVENANCE");
+        break;
+      }
+      if (provenance !== "PROVENANCED") {
+        add("MISSING_PROVENANCE");
+        break;
+      }
+      const refs = fact?.evidenceRefs;
+      if (!Array.isArray(refs) || refs.length === 0) {
+        add("MISSING_PROVENANCE");
+        break;
+      }
+      let pinsOk = true;
+      for (const p of refs) {
+        if (
+          !p || typeof p !== "object" ||
+          typeof p.ref !== "string" || typeof p.digest !== "string" ||
+          !HEX64.test(p.digest) || !p.ref.endsWith(`:sha256:${p.digest}`)
+        ) {
+          pinsOk = false;
+          break;
+        }
+      }
+      if (!pinsOk) {
         add("MISSING_PROVENANCE");
         break;
       }
@@ -220,6 +266,10 @@ export function classifyGrounding({ observation = null, binding = null, requirem
       add("MISSING_CONTEXT");
     } else {
       for (const u of unresolved) {
+        if (typeof u?.evidenceId !== "string" || u.evidenceId.trim().length === 0) {
+          add("MISSING_CONTEXT");
+          continue;
+        }
         const necessity = u?.necessity;
         if (necessity !== "OPTIONAL") {
           const reason = String(u?.reason ?? "MISSING").toUpperCase();
@@ -275,10 +325,16 @@ export function classifyGrounding({ observation = null, binding = null, requirem
   return freeze({ status: "UNRESOLVED", reasons: freeze(ordered) });
 }
 
-export function createObservationContextBinder({ artifactStore, receiptCurrentness } = {}) {
+export function createObservationContextBinder({ artifactStore, receiptCurrentness, receiptReader = null } = {}) {
   if (!artifactStore || typeof artifactStore !== "object") fail("binder requires an artifactStore port");
   if (typeof receiptCurrentness !== "function") fail("binder requires an injected receiptCurrentness function");
   rejectWriteCapablePort(artifactStore, "artifactStore");
+  // Optional delivered Oracle receipt reader (e.g. the createResolutionStore
+  // instance). Only its readReceipt query is ever used; the binder never
+  // resolves context and never writes receipts.
+  if (receiptReader !== null && receiptReader !== undefined) {
+    if (typeof receiptReader.readReceipt !== "function") fail("receiptReader must expose readReceipt");
+  }
   // The injected function itself must not be a lifecycle/authority port.
   rejectWriteCapablePort({ ...(receiptCurrentness.port ?? {}) }, "receiptCurrentness.port");
   for (const name of ["put", "resolve"]) {
@@ -345,8 +401,6 @@ export function createObservationContextBinder({ artifactStore, receiptCurrentne
     } else {
       if (finalReceiptRef === null) fail("binding a receipt requires its receiptRef");
       reqText(finalReceiptRef, "receiptRef");
-      const refMatch = finalReceiptRef.match(/:sha256:([a-f0-9]{64})$/);
-      if (!refMatch) fail("receiptRef must be a content-addressed artifact ref");
       if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)) fail("binding receipt required");
       // Semantic identity: the receipt must bind this requirement and this
       // resolution. A receipt for another requirement, another resolution, or
@@ -362,23 +416,52 @@ export function createObservationContextBinder({ artifactStore, receiptCurrentne
       }
       receiptDigest = typeof receipt.receiptId === "string" && HEX64.test(receipt.receiptId) ? receipt.receiptId : null;
       if (receiptDigest === null) fail("receipt digest is unavailable (receipt.receiptId must be sha256 hex)");
-      // Exact-bytes verification when the receipt bytes are available in the
-      // immutable store: the supplied receipt must equal the stored bytes.
-      // The receiptId semantic digest and the store blob digest use different
-      // schemes, so both the ref locator and the semantic identity are
-      // verified rather than compared against each other.
-      let storedReceipt = null;
-      try {
-        storedReceipt = await artifactStore.resolve(finalReceiptRef);
-      } catch {
-        storedReceipt = null;
-      }
-      if (storedReceipt !== null && canonicalString(storedReceipt) !== canonicalString(structuredClone(receipt))) {
-        fail("receipt bytes do not match the exact stored receipt for receiptRef");
+      const nativeMatch = finalReceiptRef.match(/^receipt:\/\/([a-f0-9]{64})$/);
+      const blobMatch = finalReceiptRef.match(/:sha256:([a-f0-9]{64})$/);
+      let verifiedReceipt;
+      if (nativeMatch) {
+        // Native delivered locator: the locator digest IS the owner-computed
+        // semantic digest, so it must equal the receipt's own receiptId.
+        if (nativeMatch[1] !== receiptDigest) {
+          fail("native receipt locator does not equal the receipt semantic digest");
+        }
+        if (receiptReader === null || receiptReader === undefined) {
+          fail("bindObservationContext requires a receiptReader port to verify native receipt:// locators");
+        }
+        let stored;
+        try {
+          stored = await receiptReader.readReceipt(finalReceiptRef);
+        } catch (error) {
+          fail(`native receipt locator is missing or corrupt: ${error?.message ?? error}`);
+        }
+        if (canonicalString(stored) !== canonicalString(stripReceiptEnvelope(receipt, finalReceiptRef))) {
+          fail("supplied receipt does not match the exact stored receipt bytes");
+        }
+        verifiedReceipt = stored;
+      } else if (blobMatch) {
+        // Generic immutable-blob locator: the exact stored bytes are required
+        // and their blob digest must match the locator. A missing or fake
+        // locator with only a caller receipt can never ground.
+        let stored = null;
+        try {
+          stored = await artifactStore.resolve(finalReceiptRef);
+        } catch {
+          stored = null;
+        }
+        if (stored === null) fail("receipt bytes are missing for the receipt locator");
+        if (sha256Hex(JSON.stringify(stored)) !== blobMatch[1]) {
+          fail("stored receipt bytes do not match the locator blob digest");
+        }
+        if (canonicalString(stored) !== canonicalString(stripReceiptEnvelope(receipt, finalReceiptRef))) {
+          fail("receipt bytes do not match the exact stored receipt for receiptRef");
+        }
+        verifiedReceipt = stored;
+      } else {
+        fail("receiptRef must be a native receipt:// locator or a content-addressed artifact ref");
       }
       let raw;
       try {
-        raw = await receiptCurrentness(structuredClone(receipt));
+        raw = await receiptCurrentness(structuredClone(verifiedReceipt));
       } catch {
         raw = { status: "CURRENTNESS_UNVERIFIABLE", changedEvidenceIds: [], evaluatorIdentity: "binder:injector-threw" };
       }

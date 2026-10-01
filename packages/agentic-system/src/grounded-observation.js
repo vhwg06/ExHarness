@@ -582,7 +582,7 @@ export async function buildGroundedFindingInput(
 
 export async function assertGroundedFindingInputCurrent(
   input,
-  { receiptCurrentness = null, artifactStore = null, receipt = null } = {},
+  { receiptCurrentness = null, artifactStore = null, receipt = null, receiptReader = null } = {},
 ) {
   const parsed = defineGroundedFindingInput({ ...structuredClone(input), inputId: input?.inputId });
   if (!artifactStore || typeof artifactStore.resolve !== "function") {
@@ -620,30 +620,124 @@ export async function assertGroundedFindingInputCurrent(
       detail: "binding carries no receipt so consumption currentness is unverifiable",
     });
   }
-  let liveReceipt = receipt;
-  if (liveReceipt === null) {
-    try {
-      liveReceipt = await artifactStore.resolve(binding.receiptRef);
-    } catch {
-      liveReceipt = null;
-    }
+  if (receiptReader !== null && receiptReader !== undefined && typeof receiptReader.readReceipt !== "function") {
+    fail("receiptReader must expose readReceipt");
   }
-  // Missing receipt bytes are typed UNRESOLVED before trusting currentness:
-  // the injector is never called with a fabricated receipt placeholder.
-  if (liveReceipt === null) {
+  // Durable receipt bytes are mandatory: a caller-supplied receipt never
+  // bypasses the store lookup. Native receipt:// locators resolve through the
+  // delivered receipt reader (which recomputes the semantic digest);
+  // generic blob locators resolve through the immutable store with blob
+  // digest verification. Missing or unverifiable bytes are typed UNRESOLVED
+  // before currentness is ever trusted.
+  const nativeLocator = String(binding.receiptRef).match(/^receipt:\/\/([a-f0-9]{64})$/);
+  const blobLocator = String(binding.receiptRef).match(/:sha256:([a-f0-9]{64})$/);
+  let durableReceipt = null;
+  if (nativeLocator) {
+    if (receiptReader === null || receiptReader === undefined) {
+      return freeze({
+        status: "UNRESOLVED",
+        reasons: freeze(["CURRENTNESS_UNVERIFIABLE"]),
+        detail: "native receipt locator requires a receiptReader at consumption time",
+      });
+    }
+    try {
+      durableReceipt = await receiptReader.readReceipt(binding.receiptRef);
+    } catch {
+      durableReceipt = null;
+    }
+    if (durableReceipt === null) {
+      return freeze({
+        status: "UNRESOLVED",
+        reasons: freeze(["CURRENTNESS_UNVERIFIABLE"]),
+        detail: "native receipt bytes are missing or corrupt at consumption time",
+      });
+    }
+    if (durableReceipt.receiptId !== nativeLocator[1] || durableReceipt.receiptId !== binding.receiptDigest) {
+      return freeze({
+        status: "UNRESOLVED",
+        reasons: freeze(["SUBJECT_MISMATCH"]),
+        detail: "native receipt digest does not match the locator and binding pin",
+      });
+    }
+  } else if (blobLocator) {
+    try {
+      durableReceipt = await artifactStore.resolve(binding.receiptRef);
+    } catch {
+      durableReceipt = null;
+    }
+    if (durableReceipt === null) {
+      return freeze({
+        status: "UNRESOLVED",
+        reasons: freeze(["CURRENTNESS_UNVERIFIABLE"]),
+        detail: "receipt bytes are unavailable at consumption time",
+      });
+    }
+    let blobDigest = null;
+    try {
+      blobDigest = sha256Hex(JSON.stringify(durableReceipt));
+    } catch {
+      blobDigest = null;
+    }
+    if (blobDigest !== blobLocator[1]) {
+      return freeze({
+        status: "UNRESOLVED",
+        reasons: freeze(["SUBJECT_MISMATCH"]),
+        detail: "stored receipt bytes do not match the locator blob digest",
+      });
+    }
+    if (durableReceipt?.receiptId !== binding.receiptDigest) {
+      return freeze({
+        status: "UNRESOLVED",
+        reasons: freeze(["SUBJECT_MISMATCH"]),
+        detail: "receipt digest does not match the binding receipt pin",
+      });
+    }
+  } else {
     return freeze({
       status: "UNRESOLVED",
       reasons: freeze(["CURRENTNESS_UNVERIFIABLE"]),
-      detail: "receipt bytes are unavailable at consumption time",
+      detail: "binding receipt locator is not a verifiable receipt ref",
     });
   }
-  // The receipt's semantic digest must match the binding pin.
-  if (liveReceipt?.receiptId !== binding.receiptDigest) {
+  // The durable receipt must answer this binding's requirement/resolution: a
+  // receipt from another requirement or resolution — even one retaining a
+  // plausible receiptId — is rejected before currentness.
+  if (durableReceipt.requirementId !== binding.requirementId || durableReceipt.resolutionId !== binding.resolutionId) {
     return freeze({
       status: "UNRESOLVED",
       reasons: freeze(["SUBJECT_MISMATCH"]),
-      detail: "receipt digest does not match the binding receipt pin",
+      detail: "durable receipt answers a different requirement or resolution",
     });
+  }
+  // A caller-supplied receipt is cross-checked against the durable bytes and
+  // never trusted alone: any difference (including a tampered body retaining
+  // the receiptId) is rejected. The delivered coordinator envelope
+  // (receiptRef key equal to the binding locator) is tolerated exactly.
+  if (receipt !== null && receipt !== undefined) {
+    let supplied;
+    try {
+      const body = structuredClone(receipt);
+      if (Object.hasOwn(body, "receiptRef")) {
+        if (body.receiptRef !== binding.receiptRef) {
+          return freeze({
+            status: "UNRESOLVED",
+            reasons: freeze(["SUBJECT_MISMATCH"]),
+            detail: "supplied receipt envelope ref does not match the binding locator",
+          });
+        }
+        delete body.receiptRef;
+      }
+      supplied = canonicalString(body);
+    } catch {
+      supplied = null;
+    }
+    if (supplied === null || supplied !== canonicalString(durableReceipt)) {
+      return freeze({
+        status: "UNRESOLVED",
+        reasons: freeze(["SUBJECT_MISMATCH"]),
+        detail: "supplied receipt does not match the durable receipt bytes",
+      });
+    }
   }
   if (typeof receiptCurrentness !== "function") {
     return freeze({
@@ -654,7 +748,7 @@ export async function assertGroundedFindingInputCurrent(
   }
   let currentness;
   try {
-    currentness = await receiptCurrentness(structuredClone(liveReceipt));
+    currentness = await receiptCurrentness(structuredClone(durableReceipt));
   } catch {
     return freeze({
       status: "UNRESOLVED",

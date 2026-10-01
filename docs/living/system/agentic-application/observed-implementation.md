@@ -3,13 +3,13 @@
 This file describes the delivered observed-implementation contracts as implemented
 today in `packages/agentic-system/src/grounded-observation.js` and
 `packages/agentic-system/src/observation-context-binding.js`. It covers only
-delivered behavior; planned BB-085 feedback and BB-086 self-improve semantics do
-not belong here.
+delivered behavior; planned feedback finding/disposition and cross-episode
+self-improvement semantics do not belong here.
 
 ## Contracts
 
-`GROUNDED_OBSERVATION_V1` normalizes BB-058 causal facts and delivered execution
-identity for one pinned `CAUSAL_OBSERVATION_SUBJECT`:
+`GROUNDED_OBSERVATION_V1` normalizes causal-reconstruction facts and delivered
+execution identity for one pinned `CAUSAL_OBSERVATION_SUBJECT`:
 
 - `subject` carries the pin mode (`HISTORICAL` or `CURRENT`), the immutable
   subject ref and the canonical subject digest. Historical and current subjects
@@ -31,8 +31,10 @@ identity for one pinned `CAUSAL_OBSERVATION_SUBJECT`:
   to the pinned invocation id; an arbitrary event id with the correct binding
   ref is rejected and never becomes a grounded attribute.
 - Every fact carries evidence refs or `MISSING_PROVENANCE`. Provenance from
-  BB-058 passes through unchanged: narrative text cannot clear a
-  `MISSING_PROVENANCE` fact or add a `PROVENANCED` fact.
+  causal reconstruction passes through unchanged: narrative text cannot clear a
+  `MISSING_PROVENANCE` fact or add a `PROVENANCED` fact. Classification
+  additionally requires every `PROVENANCED` fact to bind exact evidence pins;
+  unknown provenance or missing pins are unprovenanced.
 - `narrative` is retained only as `UNTRUSTED_NARRATIVE` and is excluded from
   `observationId`, facts and classification.
 - Unmeasured values are `null` with a typed reason; a zero default for a
@@ -41,21 +43,22 @@ identity for one pinned `CAUSAL_OBSERVATION_SUBJECT`:
   Boundary timestamps come only from durable attestation facts; materialization
   time is operational and excluded.
 
-`OBSERVATION_CONTEXT_BINDING_V1` binds an already-produced BB-064
+`OBSERVATION_CONTEXT_BINDING_V1` binds an already-produced Oracle
 `ContextResolution` without resolving anything: `observationRef+digest`,
 `requirementId`, `resolutionId`, `resolutionStatus`, unresolved evidence with
 `REQUIRED`/`OPTIONAL` necessity, `receiptRef+digest` (or explicit nulls) and a
 `currentness` snapshot produced by the injected `receiptCurrentness` function
-wired to the delivered BB-063 `evaluateReceiptCurrentness`. The binder never
+wired to the delivered receipt-currentness evaluator. The binder never
 calls a resolver, planner, provider or retriever. At bind time the binder
 verifies semantic identity: the resolution must answer the declared
 requirement, and the receipt must carry that requirement id, that resolution
-id and its own `receiptId` digest under a content-addressed `receiptRef`. When
-the receipt bytes are available in the immutable store they must equal the
-supplied receipt exactly; a wrong ref, a foreign resolution or a tampered
-receipt is rejected. The store blob digest and the semantic `receiptId` use
-different schemes, so both the ref locator and the semantic identity are
-verified rather than equated.
+id and its own `receiptId` digest. Two locator schemes are supported with
+their distinct digests: native `receipt://` locators equal the owner-computed
+semantic digest and are verified through the delivered receipt reader (which
+recomputes that digest); generic immutable-blob locators require exact stored
+bytes whose blob digest matches the locator. A wrong locator, missing bytes,
+a foreign resolution or a tampered receipt is rejected — a missing or fake
+locator with only a caller receipt can never ground.
 
 Grounding classification is a pure total function. `GROUNDED` holds only when
 the observation proof is present with every required fact `PROVENANCED`, the
@@ -79,11 +82,14 @@ unresolved reasons and uncertainty
 `principal` at any depth is rejected. `assertGroundedFindingInputCurrent`
 re-resolves the binding and re-evaluates currentness at consumption time: the
 resolved binding bytes must match the pinned binding digest (store blob
-scheme), the receipt bytes must be resolvable, and the receipt's semantic
-digest must match the binding pin before the injector is ever called. Missing
-or tampered binding/receipt bytes, a receipt digest mismatch, a `STALE` result
-or an unverifiable result each return an `UNRESOLVED` consumption result for
-that consumer without rewriting the immutable input.
+scheme); the durable receipt bytes must resolve through the same locator
+scheme (native locators need the receipt reader, blob locators need exact
+digest-matching bytes) and answer this binding's requirement and resolution;
+a caller-supplied receipt is cross-checked against those durable bytes and
+never trusted alone. Missing or tampered binding/receipt bytes, a digest or
+identity mismatch, a `STALE` result or an unverifiable result each return an
+`UNRESOLVED` consumption result for that consumer without rewriting the
+immutable input.
 
 ## Authority limits
 
@@ -97,15 +103,17 @@ telemetry backend or tracing platform is persisted.
 
 ## Dependency seam
 
-The Worker binds only DONE BB-058 and BB-064 delivered package-root exports
-through the `test/observed-implementation-dependency-contract.test.mjs`
-preflight: the query-only `OrganizationObserver` surface, the domain execution
-artifact registry (`ExecutionAttemptBinding`, `RuntimeExecutionAttestation`),
-`createOracleContextResolver`, the `ContextResolution` validator and
-`evaluateReceiptCurrentness`. BB-058/BB-064 owner files, BB-083 planned
-`feedback-*.js` paths, `packages/oracle/**` and `docs/blackboard/**` are never
-modified. A missing delivery, changed ownership, deep-import requirement or
-incompatible public contract is `PLAN_INPUT_CONTRADICTION`.
+The Worker binds only delivered causal-observation and Oracle-context
+package-root exports through the
+`test/observed-implementation-dependency-contract.test.mjs` preflight: the
+query-only `OrganizationObserver` surface, the domain execution artifact
+registry (`ExecutionAttemptBinding`, `RuntimeExecutionAttestation`), the Oracle
+context resolver factory, the `ContextResolution` validator, the resolution
+receipt reader and the receipt-currentness evaluator. Causal-reconstruction,
+Oracle and planned feedback owner files, `packages/oracle/**` and
+`docs/blackboard/**` are never modified. A missing delivery, changed
+ownership, deep-import requirement or incompatible public contract is
+`PLAN_INPUT_CONTRADICTION`.
 
 ## Unsupported cases
 

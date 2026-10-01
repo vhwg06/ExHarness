@@ -427,3 +427,161 @@ test("tampered binding or receipt pins return UNRESOLVED; stored input is unchan
   bad.contextBindingDigest = "0".repeat(64);
   assert.throws(() => defineGroundedFindingInput(bad), /contextBindingRef\/digest mismatch/);
 });
+
+test("native receipt:// consumption verifies locator, identity and bytes before currentness", async (t) => {
+  const { mkdtemp, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const {
+    defineContextRequirement: defineReq,
+    defineContextResolution: defineRes,
+    defineContextResolutionReceipt: defineReceipt,
+    reuseKey: oracleReuseKey,
+    createResolutionStore: makeOracleStore,
+  } = await import("../../oracle/src/index.js");
+  const { createObservationContextBinder: makeBinder } = await import("../src/observation-context-binding.js");
+  const dir = await mkdtemp(join(tmpdir(), "exharness-bb084-consume-"));
+  t.after(() => rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 20 }));
+  const w = await groundedInputWorld();
+  const oracleStore = makeOracleStore({ path: join(dir, "oracle") });
+  const req = defineReq({
+    consumerRef: "worker",
+    semanticNeed: "Understand code",
+    evidence: [{ id: "code", necessity: "REQUIRED", need: "Read exact file", source: { kind: "REPOSITORY", ref: "repo", snapshot: { mode: "EXACT", ref: "rev-1" }, itemRefs: ["src/a.js"] } }],
+    budget: { maxItems: 4, maxMaterializedBytes: 4096, maxProviderCalls: 4, maxResolutionSteps: 3 },
+  });
+  const res = defineRes(
+    {
+      requirementId: req.requirementId,
+      step: { index: 0, previousResolutionId: null },
+      status: "COMPLETE",
+      items: [
+        {
+          evidenceId: "code", rank: 0,
+          source: { kind: "REPOSITORY", ref: "repo", snapshotRef: "rev-1", itemRef: "src/a.js" },
+          currentness: { validators: [{ kind: "REVISION", value: "rev-1", strength: "STRONG" }] },
+          provenance: [], content: "hello",
+        },
+      ],
+      unresolved: [],
+      consumed: { items: 1, materializedBytes: 4096, providerCalls: 1, resolutionSteps: 1 },
+    },
+    req,
+  );
+  const observations = [
+    {
+      evidenceId: "code",
+      source: { kind: "repo", ref: "r", snapshot: { mode: "EXACT", ref: "s" } },
+      observed: { state: "PRESENT", snapshotRef: "s1" },
+    },
+  ];
+  const configDigest = "b".repeat(64);
+  const receipt = defineReceipt({
+    reuseKey: oracleReuseKey({ requirementId: req.requirementId, resolverConfigDigest: configDigest, sourceObservations: observations }),
+    requirementId: req.requirementId,
+    resolutionId: res.resolutionId,
+    materializationId: "materialization-1",
+    resolutionArtifactRef: "artifact:1",
+    resolverConfigDigest: configDigest,
+    sourceObservations: observations,
+    itemLineage: [{ itemDigest: "e".repeat(64), sourceObservationIds: ["code"], provenanceRefs: [] }],
+  });
+  const receiptRef = await oracleStore.putReceipt(structuredClone(receipt));
+  assert.match(receiptRef, /^receipt:\/\/[a-f0-9]{64}$/);
+  const binder = makeBinder({
+    artifactStore: w.store,
+    receiptCurrentness: async () => ({ status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:static" }),
+    receiptReader: oracleStore,
+  });
+  const { binding, bindingRef: contextBindingRef } = await binder.bindObservationContext({
+    observation: w.observation, observationRef: w.observationRef,
+    requirement: req, resolution: res, receipt, receiptRef,
+  });
+  const observationPin = { ref: w.observationRef, digest: w.observationRef.match(/:sha256:([a-f0-9]{64})$/)[1] };
+  const { input, inputRef } = await buildGroundedFindingInput(
+    {
+      observationRefs: [observationPin],
+      contextBindingRef,
+      groundingStatus: "GROUNDED",
+      unresolvedReasons: [],
+      uncertainty: { missingProvenanceFactIds: [], unresolvedEvidenceIds: [], optionalUnresolvedEvidenceIds: [] },
+    },
+    { artifactStore: w.store },
+  );
+  const before = await w.store.resolve(inputRef);
+  let injectorCalls = 0;
+  const currentInjector = async () => {
+    injectorCalls += 1;
+    return { status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:static" };
+  };
+  // Happy path through the delivered reader preserves GROUNDED.
+  const fresh = await assertGroundedFindingInputCurrent(input, {
+    artifactStore: w.store, receiptCurrentness: currentInjector, receiptReader: oracleStore,
+  });
+  assert.equal(fresh.status, "GROUNDED");
+  assert.equal(injectorCalls, 1);
+
+  // Without the reader the native locator is unverifiable: UNRESOLVED, and
+  // the would-be CURRENT injector is never called.
+  const noReader = await assertGroundedFindingInputCurrent(input, {
+    artifactStore: w.store, receiptCurrentness: currentInjector,
+  });
+  assert.equal(noReader.status, "UNRESOLVED");
+  assert.ok(noReader.reasons.includes("CURRENTNESS_UNVERIFIABLE"));
+  assert.equal(injectorCalls, 1);
+
+  // A caller-supplied tampered body retaining the receiptId is rejected
+  // against the durable bytes.
+  const tampered = { ...structuredClone(receipt), materializationId: "tampered" };
+  const tamperedVerdict = await assertGroundedFindingInputCurrent(input, {
+    artifactStore: w.store, receiptCurrentness: currentInjector, receiptReader: oracleStore, receipt: tampered,
+  });
+  assert.equal(tamperedVerdict.status, "UNRESOLVED");
+  assert.ok(tamperedVerdict.reasons.includes("SUBJECT_MISMATCH"));
+  assert.equal(injectorCalls, 1);
+
+  // A caller-supplied receipt from another requirement/resolution is rejected
+  // even though it is owner-valid on its own terms.
+  const otherReq = defineReq({
+    consumerRef: "worker",
+    semanticNeed: "Other need",
+    evidence: [{ id: "code", necessity: "REQUIRED", need: "Read exact file", source: { kind: "REPOSITORY", ref: "repo", snapshot: { mode: "EXACT", ref: "rev-1" }, itemRefs: ["src/a.js"] } }],
+    budget: { maxItems: 4, maxMaterializedBytes: 4096, maxProviderCalls: 4, maxResolutionSteps: 3 },
+  });
+  const otherRes = defineRes(
+    {
+      requirementId: otherReq.requirementId,
+      step: { index: 0, previousResolutionId: null },
+      status: "COMPLETE",
+      items: [
+        {
+          evidenceId: "code", rank: 0,
+          source: { kind: "REPOSITORY", ref: "repo", snapshotRef: "rev-1", itemRef: "src/a.js" },
+          currentness: { validators: [{ kind: "REVISION", value: "rev-1", strength: "STRONG" }] },
+          provenance: [], content: "hello",
+        },
+      ],
+      unresolved: [],
+      consumed: { items: 1, materializedBytes: 4096, providerCalls: 1, resolutionSteps: 1 },
+    },
+    otherReq,
+  );
+  const foreign = defineReceipt({
+    reuseKey: oracleReuseKey({ requirementId: otherReq.requirementId, resolverConfigDigest: configDigest, sourceObservations: observations }),
+    requirementId: otherReq.requirementId,
+    resolutionId: otherRes.resolutionId,
+    materializationId: "materialization-1",
+    resolutionArtifactRef: "artifact:1",
+    resolverConfigDigest: configDigest,
+    sourceObservations: observations,
+    itemLineage: [{ itemDigest: "e".repeat(64), sourceObservationIds: ["code"], provenanceRefs: [] }],
+  });
+  const foreignVerdict = await assertGroundedFindingInputCurrent(input, {
+    artifactStore: w.store, receiptCurrentness: currentInjector, receiptReader: oracleStore, receipt: foreign,
+  });
+  assert.equal(foreignVerdict.status, "UNRESOLVED");
+  assert.ok(foreignVerdict.reasons.includes("SUBJECT_MISMATCH"));
+  assert.equal(injectorCalls, 1);
+
+  assert.deepEqual(await w.store.resolve(inputRef), before);
+});
