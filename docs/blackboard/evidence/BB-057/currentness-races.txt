@@ -1,0 +1,37 @@
+TAP version 13
+# Subtest: semantic input drift during execution blocks stale publication while the sibling stays current
+ok 1 - semantic input drift during execution blocks stale publication while the sibling stays current
+  ---
+  duration_ms: 51.372312
+  type: 'test'
+  ...
+# Subtest: invalidation is reverse-dependent and bounded: only the affected closure goes stale
+ok 2 - invalidation is reverse-dependent and bounded: only the affected closure goes stale
+  ---
+  duration_ms: 39.470752
+  type: 'test'
+  ...
+# Subtest: a publication racing supersession lands STALE instead of silently accepted
+ok 3 - a publication racing supersession lands STALE instead of silently accepted
+  ---
+  duration_ms: 22.027426
+  type: 'test'
+  ...
+# Subtest: a superseded historical revision cannot authorize a new mutation
+ok 4 - a superseded historical revision cannot authorize a new mutation
+  ---
+  duration_ms: 16.437936
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 244.616153
+
+
+exitCode=0
