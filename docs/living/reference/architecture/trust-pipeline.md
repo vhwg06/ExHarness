@@ -68,6 +68,10 @@ artifact says producer=unit-runner
 
 If authority constraints are declared but their verification callbacks are absent or fail, boundary trust fails closed.
 
+## HOW-evolution Jev boundary
+
+The HOW-evolution Jev adapter (`packages/agentic-system/src/how-evolution-jev-adapter.js`) is an evaluate-only `Evaluator.evaluate(protocol, evidence)` port over this pipeline. It pins its adapter identity/revision, the provider endpoint class, the Jev model snapshot, the semantic policy/rubric ref and digest, the canonical request hash, the typed question ids, the response model/id/hash, the typed per-question outcomes and the evidence refs/digests, then calls `evaluateTrustBoundary()` to verify evaluator and evidence-producer authority before combining semantic and deterministic evidence. Transport errors, malformed responses, unexpected model/policy identities, missing atomic outcomes and authority failures all fail closed to `INCONCLUSIVE`/`KEEP_BASELINE`; the adapter exposes no repository, product, policy-publisher, promotion or rollback method, so evaluation evidence can never become promotion or product-acceptance authority by itself.
+
 ## TrustPolicy
 
 A trust policy belongs to the consumer boundary. It decides whether an attestation may be relied on *here*.
