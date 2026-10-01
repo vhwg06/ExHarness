@@ -21,7 +21,7 @@ next-work-id: BB-131
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-106
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-106
-task: Wire delivered Oracle and supersession regression tests into npm test and verify
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-106/current.json
-components: outer/blackboard, oracle/infrastructure
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -120,7 +113,7 @@ BB-102 [DONE] <- BB-097
 BB-103 [DONE] <- BB-097
 BB-104 [DONE] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
-BB-106 [ACTIVE] <- BB-082, BB-087, BB-088
+BB-106 [PLANNED] <- BB-082, BB-087, BB-088
 BB-107 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [DONE] <- BB-087, BB-088
 BB-120 [RESEARCH_SCHEDULABLE] <- BB-097

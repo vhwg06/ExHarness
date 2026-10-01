@@ -1,0 +1,204 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-106-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-106",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-106.json",
+      "hash": "0b8467eca3d0572efac36e35e813e9b6c8c61452d39f68cbdd4342d107c7e0cd"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-106.json",
+      "hash": "5f480f862415b632f2c59750b9ff7b1f9480e3b05136846709f8d7bd5c93a537"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-106.implementation-result.json",
+      "hash": "5c132c3b7d63ef44ae7517f1b926c7ab162cdf7a712228d4fbb13726a45dcb07"
+    },
+    "candidateSha": "e758e8634545a77dd4a4577840cbc5c2493c3075",
+    "candidateTree": "5f78d802d8e07b0abecd598993dc516f7959d2e8",
+    "baselineSha": "8c30a157f60d5e20baf4b478dfa3cf795b73f0d5"
+  },
+  "stateHash": "cf3a4e187ebce18f1e15949e3f3ee3bc1d2e573156bc762d27795990f964fb9c",
+  "specHash": "d0f9d2b58a103ab1a993890e677b51f3830be58815164c822b69531f82c32a78",
+  "cacheKey": "9a11e3a4dc327ae4cd7dece06cb7b40dc82614010d6fb263e9c4d0b080e1380b",
+  "model": "jev-1.13.0",
+  "answers": {
+    "TW1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.47,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.02,
+        "IMPLEMENTATION_DEFECT": 0.04,
+        "INSUFFICIENT_EVIDENCE": 0.34,
+        "SATISFIED": 0.6
+      }
+    },
+    "TW2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.78,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "INSUFFICIENT_EVIDENCE": 0.15,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.84
+      }
+    },
+    "TW3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.72,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0.04,
+        "IMPLEMENTATION_DEFECT": 0.15,
+        "SATISFIED": 0.79,
+        "INSUFFICIENT_EVIDENCE": 0.02
+      }
+    },
+    "NC-TW-oracle": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.69,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.07,
+        "INSUFFICIENT_EVIDENCE": 0.15,
+        "SATISFIED": 0.77,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "NC-TW-supersession": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.85,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "INSUFFICIENT_EVIDENCE": 0.09,
+        "SATISFIED": 0.88,
+        "PLAN_INPUT_CONTRADICTION": 0.01
+      }
+    },
+    "NC-TW-delivery": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.75,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.06,
+        "PLAN_INPUT_CONTRADICTION": 0.01,
+        "SATISFIED": 0.81,
+        "INSUFFICIENT_EVIDENCE": 0.12
+      }
+    },
+    "NC-TW-smoke": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.24,
+      "probabilities": {
+        "SATISFIED": 0.43,
+        "IMPLEMENTATION_DEFECT": 0.24,
+        "INSUFFICIENT_EVIDENCE": 0.2,
+        "PLAN_INPUT_CONTRADICTION": 0.13
+      }
+    },
+    "NC-TW-bbid": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.59,
+      "probabilities": {
+        "SATISFIED": 0.69,
+        "IMPLEMENTATION_DEFECT": 0.12,
+        "INSUFFICIENT_EVIDENCE": 0.17,
+        "PLAN_INPUT_CONTRADICTION": 0.02
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.97,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.98,
+        "INSUFFICIENT_EVIDENCE": 0.01
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 96045,
+    "output_tokens": 651
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 9,
+    "latencyMs": 2011.334275,
+    "payloadBytes": 378088,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V4",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "TW1",
+          "payloadHash": "f957ca89f01b13f352584b8f7acf3b2544a9fadddc9745ca5e8a4ddc39b822ff",
+          "payloadBytes": 39980,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-106/oracle.txt"
+          ]
+        },
+        {
+          "id": "TW2",
+          "payloadHash": "796379bb2eb428052f33f83baa74a058400a4403d8a735a0a13e57d2b3515b28",
+          "payloadBytes": 38359
+        },
+        {
+          "id": "TW3",
+          "payloadHash": "ef7e1be06e6dbe04719bd62ef58659cb5299b33c7792497aca45c30ef6fe309b",
+          "payloadBytes": 39982,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-106/repository.txt"
+          ]
+        },
+        {
+          "id": "NC-TW-oracle",
+          "payloadHash": "efc4dd7f24d0271818c247f432c695c7e4f020e7b5e98eb89305a4ae3d2acafb",
+          "payloadBytes": 37185
+        },
+        {
+          "id": "NC-TW-supersession",
+          "payloadHash": "af0015efe9dd036b9c7b8fcc880b2325264740486b746e5aa2ca754d9a98e53a",
+          "payloadBytes": 36553
+        },
+        {
+          "id": "NC-TW-delivery",
+          "payloadHash": "e2fbe0c32016c425c1b5e2fdab4bac57971a0505c4d0cd0f8e43685162c92335",
+          "payloadBytes": 31868
+        },
+        {
+          "id": "NC-TW-smoke",
+          "payloadHash": "13a482fa2b7436976856f129eb5298140852262e94fecd3ac9dd855b06e87c2e",
+          "payloadBytes": 32039
+        },
+        {
+          "id": "NC-TW-bbid",
+          "payloadHash": "7eed38578cf3d0827cc367a0633e2f06702363a394c812de345969e62d4d3e3f",
+          "payloadBytes": 32084
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "e30016eca56e9915857355361fd91726872cbd2cf3f6cf264bc803d1e77d2c55",
+          "payloadBytes": 36955
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
