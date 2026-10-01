@@ -29,6 +29,25 @@ const FORBIDDEN_PORT_METHODS = Object.freeze([
   "compareAndSwap",
 ]);
 
+// The receipt reader seam is query-only: only readReceipt may be exposed.
+// Lifecycle/write capability (generic ports and Oracle store writers) is
+// rejected. The immutable artifactStore.put remains the single explicit
+// write exception; receiptReader has no such exception.
+const FORBIDDEN_RECEIPT_READER_METHODS = Object.freeze([
+  ...FORBIDDEN_PORT_METHODS,
+  "putReceipt",
+  "putResolution",
+  "publishReuseSlot",
+]);
+
+function rejectWriteCapableReader(dep, label) {
+  if (!dep || typeof dep !== "object") fail(`${label} port required`);
+  if (typeof dep.readReceipt !== "function") fail(`${label} must expose readReceipt`);
+  for (const name of FORBIDDEN_RECEIPT_READER_METHODS) {
+    if (typeof dep[name] === "function") fail(`${label} exposes forbidden write-capable method ${name}`);
+  }
+}
+
 function fail(message) {
   throw new TypeError(message);
 }
@@ -329,11 +348,12 @@ export function createObservationContextBinder({ artifactStore, receiptCurrentne
   if (!artifactStore || typeof artifactStore !== "object") fail("binder requires an artifactStore port");
   if (typeof receiptCurrentness !== "function") fail("binder requires an injected receiptCurrentness function");
   rejectWriteCapablePort(artifactStore, "artifactStore");
-  // Optional delivered Oracle receipt reader (e.g. the createResolutionStore
-  // instance). Only its readReceipt query is ever used; the binder never
-  // resolves context and never writes receipts.
+  // Optional delivered Oracle receipt reader. Only its readReceipt query is
+  // ever used; the binder never resolves context and never writes receipts.
+  // Write/lifecycle-capable readers are rejected at construction, before any
+  // bind, reader or injector call.
   if (receiptReader !== null && receiptReader !== undefined) {
-    if (typeof receiptReader.readReceipt !== "function") fail("receiptReader must expose readReceipt");
+    rejectWriteCapableReader(receiptReader, "receiptReader");
   }
   // The injected function itself must not be a lifecycle/authority port.
   rejectWriteCapablePort({ ...(receiptCurrentness.port ?? {}) }, "receiptCurrentness.port");

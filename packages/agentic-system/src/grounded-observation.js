@@ -17,6 +17,24 @@ const FORBIDDEN_PORT_METHODS = Object.freeze([
   "compareAndSwap",
 ]);
 
+// The receipt reader seam is query-only: only readReceipt may be exposed.
+// Lifecycle/write capability (generic ports and Oracle store writers) is
+// rejected before any store, reader or injector call.
+const FORBIDDEN_RECEIPT_READER_METHODS = Object.freeze([
+  ...FORBIDDEN_PORT_METHODS,
+  "putReceipt",
+  "putResolution",
+  "publishReuseSlot",
+]);
+
+function rejectWriteCapableReader(dep, label) {
+  if (!dep || typeof dep !== "object") fail(`${label} port required`);
+  if (typeof dep.readReceipt !== "function") fail(`${label} must expose readReceipt`);
+  for (const name of FORBIDDEN_RECEIPT_READER_METHODS) {
+    if (typeof dep[name] === "function") fail(`${label} exposes forbidden write-capable method ${name}`);
+  }
+}
+
 const FORBIDDEN_FINDING_KEYS = Object.freeze([
   "finding",
   "impact",
@@ -589,6 +607,11 @@ export async function assertGroundedFindingInputCurrent(
     fail("consumption check requires an artifactStore port");
   }
   rejectWriteCapablePort(artifactStore, "artifactStore");
+  // Query-only receipt reader enforcement happens before any store
+  // resolution, reader or injector call.
+  if (receiptReader !== null && receiptReader !== undefined) {
+    rejectWriteCapableReader(receiptReader, "receiptReader");
+  }
   const binding = await artifactStore.resolve(parsed.contextBindingRef);
   if (!binding) {
     return freeze({
@@ -619,9 +642,6 @@ export async function assertGroundedFindingInputCurrent(
       reasons: freeze(["CURRENTNESS_UNVERIFIABLE"]),
       detail: "binding carries no receipt so consumption currentness is unverifiable",
     });
-  }
-  if (receiptReader !== null && receiptReader !== undefined && typeof receiptReader.readReceipt !== "function") {
-    fail("receiptReader must expose readReceipt");
   }
   // Durable receipt bytes are mandatory: a caller-supplied receipt never
   // bypasses the store lookup. Native receipt:// locators resolve through the

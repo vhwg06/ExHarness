@@ -488,10 +488,13 @@ test("native receipt:// consumption verifies locator, identity and bytes before 
   });
   const receiptRef = await oracleStore.putReceipt(structuredClone(receipt));
   assert.match(receiptRef, /^receipt:\/\/[a-f0-9]{64}$/);
+  // Minimal immutable query-only wrapper: the tests never pass the full
+  // writer-capable store instance as a receiptReader.
+  const readOnlyReader = Object.freeze({ readReceipt: (ref) => oracleStore.readReceipt(ref) });
   const binder = makeBinder({
     artifactStore: w.store,
     receiptCurrentness: async () => ({ status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:static" }),
-    receiptReader: oracleStore,
+    receiptReader: readOnlyReader,
   });
   const { binding, bindingRef: contextBindingRef } = await binder.bindObservationContext({
     observation: w.observation, observationRef: w.observationRef,
@@ -516,7 +519,7 @@ test("native receipt:// consumption verifies locator, identity and bytes before 
   };
   // Happy path through the delivered reader preserves GROUNDED.
   const fresh = await assertGroundedFindingInputCurrent(input, {
-    artifactStore: w.store, receiptCurrentness: currentInjector, receiptReader: oracleStore,
+    artifactStore: w.store, receiptCurrentness: currentInjector, receiptReader: readOnlyReader,
   });
   assert.equal(fresh.status, "GROUNDED");
   assert.equal(injectorCalls, 1);
@@ -534,7 +537,7 @@ test("native receipt:// consumption verifies locator, identity and bytes before 
   // against the durable bytes.
   const tampered = { ...structuredClone(receipt), materializationId: "tampered" };
   const tamperedVerdict = await assertGroundedFindingInputCurrent(input, {
-    artifactStore: w.store, receiptCurrentness: currentInjector, receiptReader: oracleStore, receipt: tampered,
+    artifactStore: w.store, receiptCurrentness: currentInjector, receiptReader: readOnlyReader, receipt: tampered,
   });
   assert.equal(tamperedVerdict.status, "UNRESOLVED");
   assert.ok(tamperedVerdict.reasons.includes("SUBJECT_MISMATCH"));
@@ -577,11 +580,76 @@ test("native receipt:// consumption verifies locator, identity and bytes before 
     itemLineage: [{ itemDigest: "e".repeat(64), sourceObservationIds: ["code"], provenanceRefs: [] }],
   });
   const foreignVerdict = await assertGroundedFindingInputCurrent(input, {
-    artifactStore: w.store, receiptCurrentness: currentInjector, receiptReader: oracleStore, receipt: foreign,
+    artifactStore: w.store, receiptCurrentness: currentInjector, receiptReader: readOnlyReader, receipt: foreign,
   });
   assert.equal(foreignVerdict.status, "UNRESOLVED");
   assert.ok(foreignVerdict.reasons.includes("SUBJECT_MISMATCH"));
   assert.equal(injectorCalls, 1);
 
+  assert.deepEqual(await w.store.resolve(inputRef), before);
+});
+
+test("consumption rejects write/lifecycle-capable receipt readers before any reader or injector call", async (t) => {
+  const { mkdtemp, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { createResolutionStore: makeStore } = await import("../../oracle/src/index.js");
+  const dir = await mkdtemp(join(tmpdir(), "exharness-bb084-creader-"));
+  t.after(() => rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 20 }));
+  const w = await groundedInputWorld();
+  const observationPin = { ref: w.observationRef, digest: w.observationRef.match(/:sha256:([a-f0-9]{64})$/)[1] };
+  const { input, inputRef } = await buildGroundedFindingInput(
+    {
+      observationRefs: [observationPin],
+      contextBindingRef: w.contextBindingRef,
+      groundingStatus: "GROUNDED",
+      unresolvedReasons: [],
+      uncertainty: { missingProvenanceFactIds: [], unresolvedEvidenceIds: [], optionalUnresolvedEvidenceIds: [] },
+    },
+    { artifactStore: w.store },
+  );
+  const before = await w.store.resolve(inputRef);
+  let readerCalls = 0;
+  let injectorCalls = 0;
+  // The actual full delivered writer-capable Oracle store instance must be
+  // rejected even though its readReceipt would succeed.
+  const writerStore = makeStore({ path: join(dir, "oracle") });
+  assert.equal(typeof writerStore.putReceipt, "function");
+  await assert.rejects(
+    assertGroundedFindingInputCurrent(input, {
+      artifactStore: w.store,
+      receiptCurrentness: async () => {
+        injectorCalls += 1;
+        return { status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:must-not-run" };
+      },
+      receiptReader: writerStore,
+    }),
+    /forbidden write-capable method putReceipt/,
+  );
+  // A lifecycle authority port is likewise rejected before any call.
+  const lifecyclePort = Object.freeze({
+    readReceipt: async () => {
+      readerCalls += 1;
+      return null;
+    },
+    dispatch: async () => {},
+    accept: async () => {},
+    recover: async () => {},
+    compareAndSwap: async () => {},
+    publish: async () => {},
+  });
+  await assert.rejects(
+    assertGroundedFindingInputCurrent(input, {
+      artifactStore: w.store,
+      receiptCurrentness: async () => {
+        injectorCalls += 1;
+        return { status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:must-not-run" };
+      },
+      receiptReader: lifecyclePort,
+    }),
+    /forbidden write-capable method/,
+  );
+  assert.equal(readerCalls, 0);
+  assert.equal(injectorCalls, 0);
   assert.deepEqual(await w.store.resolve(inputRef), before);
 });

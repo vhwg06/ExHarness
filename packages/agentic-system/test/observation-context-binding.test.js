@@ -634,12 +634,18 @@ test("end-to-end compatibility with the delivered Oracle store, receipt scheme a
   assert.equal(reread.receiptId, first.receipt.receiptId);
 
   const w = await groundedWorld();
+  // Minimal immutable query-only wrapper of the real delivered Oracle
+  // store: only readReceipt is exposed, never the writer instance with
+  // putReceipt/putResolution/publishReuseSlot.
+  const readOnlyReader = (store) => Object.freeze({
+    readReceipt: (ref) => store.readReceipt(ref),
+  });
   // Real currentness composition: the delivered evaluator over the
   // coordinator's own pre-observations is CURRENT.
   const binder = createObservationContextBinder({
     artifactStore: w.store,
     receiptCurrentness: async (receipt) => evaluateReceiptCurrentness(receipt, first.preObservations),
-    receiptReader: oracleStore,
+    receiptReader: readOnlyReader(oracleStore),
   });
   const { binding, bindingRef } = await binder.bindObservationContext({
     observation: w.observation,
@@ -662,7 +668,7 @@ test("end-to-end compatibility with the delivered Oracle store, receipt scheme a
   const staleBinder = createObservationContextBinder({
     artifactStore: w.store,
     receiptCurrentness: async (receipt) => evaluateReceiptCurrentness(receipt, drifted),
-    receiptReader: oracleStore,
+    receiptReader: readOnlyReader(oracleStore),
   });
   const stale = await staleBinder.bindObservationContext({
     observation: w.observation,
@@ -691,7 +697,7 @@ test("end-to-end compatibility with the delivered Oracle store, receipt scheme a
   const emptyBinder = createObservationContextBinder({
     artifactStore: w.store,
     receiptCurrentness: async () => ({ status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:lying" }),
-    receiptReader: emptyStore,
+    receiptReader: readOnlyReader(emptyStore),
   });
   await assert.rejects(
     () => emptyBinder.bindObservationContext({
@@ -713,4 +719,48 @@ test("end-to-end compatibility with the delivered Oracle store, receipt scheme a
     }),
     /exact stored receipt bytes/,
   );
+});
+
+test("binder rejects write/lifecycle-capable receipt readers before any reader or injector call", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "exharness-bb084-reader-"));
+  t.after(() => rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 20 }));
+  const w = await groundedWorld();
+  let injectorCalls = 0;
+  const injector = async () => {
+    injectorCalls += 1;
+    return { status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:must-not-run" };
+  };
+  // The actual full delivered writer-capable Oracle store instance exposes
+  // putReceipt/putResolution/publishReuseSlot: it must be rejected as a
+  // receiptReader even though readReceipt would succeed.
+  const writerStore = createResolutionStore({ path: join(dir, "oracle") });
+  assert.equal(typeof writerStore.putReceipt, "function");
+  assert.equal(typeof writerStore.publishReuseSlot, "function");
+  assert.throws(
+    () => createObservationContextBinder({ artifactStore: w.store, receiptCurrentness: injector, receiptReader: writerStore }),
+    /forbidden write-capable method putReceipt/,
+  );
+  // A lifecycle authority port exposing dispatch/accept/recover/
+  // compareAndSwap/publish alongside readReceipt is likewise rejected.
+  let readerCalls = 0;
+  const lifecyclePort = Object.freeze({
+    readReceipt: async () => {
+      readerCalls += 1;
+      return null;
+    },
+    dispatch: async () => {},
+    accept: async () => {},
+    recover: async () => {},
+    compareAndSwap: async () => {},
+    publish: async () => {},
+    claim: async () => {},
+  });
+  assert.throws(
+    () => createObservationContextBinder({ artifactStore: w.store, receiptCurrentness: injector, receiptReader: lifecyclePort }),
+    /forbidden write-capable method/,
+  );
+  // Rejection happens at construction: neither the reader nor the injector
+  // was ever invoked.
+  assert.equal(readerCalls, 0);
+  assert.equal(injectorCalls, 0);
 });

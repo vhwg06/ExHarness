@@ -98,8 +98,13 @@ grant no lifecycle, acceptance, promotion, finding, disposition or remediation
 authority. Both the projector and the binder receive only read/query ports and
 an immutable artifact store; constructor validation rejects any argument
 exposing `publish`, `claim`, `dispatch`, `accept`, `recover` or
-`compareAndSwap` methods. No mutable observation head, index, warehouse,
-telemetry backend or tracing platform is persisted.
+`compareAndSwap` methods. The optional receipt reader seam is query-only as
+well: only `readReceipt` may be exposed, and writer or lifecycle capability
+(`putReceipt`, `putResolution`, `publishReuseSlot` and the generic
+lifecycle methods) is rejected before any bind, reader or currentness call.
+The immutable artifact-store `put` remains the single explicit write
+exception. No mutable observation head, index, warehouse, telemetry backend
+or tracing platform is persisted.
 
 ## Dependency seam
 
