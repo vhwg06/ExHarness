@@ -186,47 +186,98 @@
   "verificationPlan": [
     {
       "id": "env-boundary",
-      "command": "node --test --test-name-pattern='^BB-130 (N1|E1) ' packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test --test-name-pattern='^BB-130 (N1|E1) ' packages/agentic-system/test/local-verifier-environment.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-130 N1 parent-only synthetic secrets are absent",
+          "subject": "createLocalCommandVerifier",
+          "criterionId": "ENV_BOUNDARY"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "overlay",
-      "command": "node --test --test-name-pattern='^BB-130 (E2|E3|N3) ' packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test --test-name-pattern='^BB-130 (E2|E3|N3) ' packages/agentic-system/test/local-verifier-environment.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-130 N3 malformed overlay is rejected before verification",
+          "subject": "createLocalCommandVerifier",
+          "criterionId": "OVERLAY"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "test-channel",
-      "command": "node --test --test-name-pattern='^BB-130 (N2|E4) ' packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test --test-name-pattern='^BB-130 (N2|E4) ' packages/agentic-system/test/local-verifier-environment.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-130 N2 NODE_TEST_CONTEXT overlay cannot revive the parent channel",
+          "subject": "createLocalCommandVerifier",
+          "criterionId": "TEST_CHANNEL"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "platform",
-      "command": "node --test --test-name-pattern='^BB-130 E5 ' packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test --test-name-pattern='^BB-130 E5 ' packages/agentic-system/test/local-verifier-environment.test.js",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "integrity",
-      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js packages/agentic-system/test/bb096-real-backend-qa.test.js"
+      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js packages/agentic-system/test/bb096-real-backend-qa.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-130 N5 revision mismatch fails before command side effects",
+          "subject": "createLocalCommandVerifier",
+          "criterionId": "INTEGRITY"
+        },
+        {
+          "title": "BB-130 N6 mutating verifier remains TREE_MUTATED FAIL",
+          "subject": "createLocalCommandVerifier",
+          "criterionId": "INTEGRITY"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "internal-env",
-      "command": "node --test --test-name-pattern='^BB-130 (N4|E6) ' packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test --test-name-pattern='^BB-130 (N4|E6) ' packages/agentic-system/test/local-verifier-environment.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-130 N4 command overlay cannot redirect Git identity checks",
+          "subject": "createLocalCommandVerifier",
+          "criterionId": "INTERNAL_ENV"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "exports",
-      "command": "node --test --test-name-pattern='^BB-130 E7 ' packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test --test-name-pattern='^BB-130 E7 ' packages/agentic-system/test/local-verifier-environment.test.js",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "focused",
-      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js"
+      "command": "node --test packages/agentic-system/test/local-verifier-environment.test.js",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     }
   ],
   "invariantCoverage": [
@@ -519,7 +570,7 @@
         "TEST_CHANNEL"
       ],
       "planElements": [
-        "S1 environment API and grants"
+        "S1"
       ],
       "verificationIds": [
         "env-boundary",
@@ -547,7 +598,9 @@
           "match": "env: childEnvironment()"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "environmentContract"
+      ]
     },
     {
       "objectiveCriterion": "Required PATH/platform variables remain available and Backend/QA verification results preserve revision/tree bindings.",
@@ -557,7 +610,7 @@
         "INTERNAL_ENV"
       ],
       "planElements": [
-        "S2 scoped subprocess environments"
+        "S2"
       ],
       "verificationIds": [
         "platform",
@@ -595,8 +648,8 @@
         "INTEGRITY"
       ],
       "planElements": [
-        "S3 named tests and regressions",
-        "S4 evidence routing and Living docs"
+        "S3",
+        "S4"
       ],
       "verificationIds": [
         "exports",
@@ -624,7 +677,9 @@
           "match": "} from \"./local-command-verifier.js\";"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
     }
   ],
   "researchEvidence": {
@@ -706,5 +761,15 @@
     "Wrong 40-hex candidate: FAIL/REVISION_MISMATCH, actual revision and empty-stream digest; absent command sentinel.",
     "Exit-zero append to fixture.txt: FAIL/TREE_MUTATED with before-revision evidence."
   ],
-  "validationLimitations": "Canonical materialization succeeds after source-complete baseline reconciliation. Prototype proves only the declared pure environment builder and delivered verifier seam; Worker must implement the exported helper/factory composition and execute focused child-process tests at the candidate. Trusted process execution is not OS confinement."
+  "validationLimitations": "Canonical materialization succeeds after source-complete baseline reconciliation. Prototype proves only the declared pure environment builder and delivered verifier seam; Worker must implement the exported helper/factory composition and execute focused child-process tests at the candidate. Trusted process execution is not OS confinement.",
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "researchEvidenceSummary": {
+    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
+    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed.",
+    "limits": [
+      "In-memory prototype only; no product source edit, Jev readiness or implementation acceptance.",
+      "Windows casing is simulated. Native Windows launch/taskkill, final per-verify snapshot and post-BB-120 suites remain Worker obligations.",
+      "HOME/config access and trusted command filesystem/network privileges remain; stdout is not guaranteed redacted."
+    ]
+  }
 }
