@@ -346,11 +346,11 @@ export {
   assertProviderToolResultAllowed,
   commitAsyncResultContext,
   createAsyncResultContextState,
-  getAsyncResultContextDependencyManifest,
-  isAsyncTerminalStatus,
+  getAsyncResultContextDependencyManifest,  isAsyncTerminalStatus,
   projectAsyncResultRequest,
   resolveEffectConfirmationFromProjection,
   resolveProductAcceptanceFromProjection,
+  restoreAsyncResultContextState,
   stageAsyncResultTransitions,
   translateAsyncResultForProvider
 } from "./async-result-context.js";

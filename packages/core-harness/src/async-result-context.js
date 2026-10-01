@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { invariant, requireText } from "./contracts.js";
+import { deriveDetachedTransitionId } from "./detached-operation-store.js";
 import { AsyncResultDeliveryMode, normalizeAsyncResultDelivery } from "./model.js";
 
 export const ASYNC_RESULT_CONTEXT_SCHEMA_VERSION = 1;
@@ -80,6 +81,13 @@ function clone(value) {
   return value == null ? value : structuredClone(value);
 }
 
+function deepFreeze(value, seen = new Set()) {
+  if (value == null || typeof value !== "object" || seen.has(value)) return value;
+  seen.add(value);
+  for (const key of Object.keys(value)) deepFreeze(value[key], seen);
+  return Object.freeze(value);
+}
+
 function stableStringify(value) {
   if (value === null || value === undefined) return "null";
   const kind = typeof value;
@@ -134,6 +142,13 @@ function normalizeTransitionInput(transition) {
     );
   }
   requireText(effectOperationId, "async-result transition effectOperationId");
+  const expectedTransitionId = deriveDetachedTransitionId({ operationId, generation, sequence, status });
+  if (transitionId !== expectedTransitionId) {
+    throw new AsyncResultContextBindingError(
+      `async-result transitionId ${transitionId} does not derive from its operationId/generation/sequence/status envelope (expected ${expectedTransitionId}): forged or corrupted identity fails closed`,
+      { operationId, transitionId }
+    );
+  }
   return Object.freeze({
     operationId,
     transitionId,
@@ -188,11 +203,83 @@ function projectionBytes(items) {
 function refreshDigests(state) {
   const committedText = projectionBytes(state.committedItems);
   const stagedText = projectionBytes(state.stagedItems);
+  state.committedPrefixText = committedText;
   state.committedPrefixBytes = Buffer.byteLength(committedText, "utf8");
   state.committedPrefixDigest = digestOfBytes(committedText);
   state.stagedSuffixBytes = Buffer.byteLength(stagedText, "utf8");
   state.stagedSuffixDigest = digestOfBytes(stagedText);
-  state.committedPrefixText = committedText;
+}
+
+function requireCheckpointShape(state) {
+  invariant(state && typeof state === "object", "async-result context state is required");
+  invariant(state.schemaVersion === ASYNC_RESULT_CONTEXT_SCHEMA_VERSION, "async-result context checkpoint schema is unsupported");
+  invariant(Array.isArray(state.committedItems) && Array.isArray(state.stagedItems), "async-result context state has invalid checkpoint shape");
+  invariant(state.seenTransitionBindings && typeof state.seenTransitionBindings === "object", "async-result context state has invalid transition registry");
+  return state;
+}
+
+// Committed items are the trust anchor: recompute their canonical digest on
+// every entry and fail closed when the recorded digest no longer matches, so
+// a mutated JSON checkpoint or a rewritten committed payload cannot silently
+// pass as the submitted prefix.
+function verifyCommittedIntegrity(state) {
+  requireCheckpointShape(state);
+  const text = projectionBytes(state.committedItems);
+  const digest = digestOfBytes(text);
+  if (digest !== state.committedPrefixDigest) {
+    throw new AsyncResultContextPrefixError(
+      "committed async-result checkpoint failed integrity verification: recorded prefix digest does not match the committed items",
+      { expectedDigest: state.committedPrefixDigest ?? null, actualDigest: digest }
+    );
+  }
+  return text;
+}
+
+function operationBindingOf(item) {
+  return stableStringify({ callId: item.callId ?? null, effectOperationId: item.effectOperationId });
+}
+
+// Registries are derived from accepted items, never trusted from a restored
+// checkpoint blindly: conflicting operation bindings across items fail closed.
+function rebuildRegistries(state) {
+  const seenTransitionBindings = {};
+  const seenOperationBindings = {};
+  const maxGenerationByOperation = {};
+  const lastSequenceByOperation = {};
+  for (const item of [...state.committedItems, ...state.stagedItems]) {
+    invariant(item && typeof item === "object", "async-result checkpoint item is required");
+    invariant(item.kind === ASYNC_OPERATION_UPDATE_KIND, "async-result checkpoint item must be an ASYNC_OPERATION_UPDATE/v1 projection");
+    requireText(item.transitionId, "async-result checkpoint item transitionId");
+    requireText(item.operationId, "async-result checkpoint item operationId");
+    seenTransitionBindings[item.transitionId] = bindingKey({
+      operationId: item.operationId,
+      callId: item.callId ?? null,
+      effectOperationId: item.effectOperationId,
+      generation: item.generation,
+      sequence: item.sequence,
+      status: item.status
+    });
+    const binding = operationBindingOf(item);
+    const known = seenOperationBindings[item.operationId];
+    if (known != null && known !== binding) {
+      throw new AsyncResultContextBindingError(
+        `async-result checkpoint holds conflicting bindings for operation ${item.operationId}: call/effect identity changed without failure`,
+        { operationId: item.operationId, transitionId: item.transitionId }
+      );
+    }
+    seenOperationBindings[item.operationId] = binding;
+    if (Number.isInteger(item.generation) && (maxGenerationByOperation[item.operationId] ?? 0) < item.generation) {
+      maxGenerationByOperation[item.operationId] = item.generation;
+    }
+    if (Number.isInteger(item.sequence) && (lastSequenceByOperation[item.operationId] ?? 0) < item.sequence) {
+      lastSequenceByOperation[item.operationId] = item.sequence;
+    }
+  }
+  state.seenTransitionBindings = seenTransitionBindings;
+  state.seenOperationBindings = seenOperationBindings;
+  state.maxGenerationByOperation = maxGenerationByOperation;
+  state.lastSequenceByOperation = lastSequenceByOperation;
+  return state;
 }
 
 export function createAsyncResultContextState({ profile = null } = {}) {
@@ -202,6 +289,8 @@ export function createAsyncResultContextState({ profile = null } = {}) {
     committedItems: [],
     stagedItems: [],
     seenTransitionBindings: {},
+    seenOperationBindings: {},
+    maxGenerationByOperation: {},
     lastSequenceByOperation: {},
     committedPrefixDigest: digestOfBytes(""),
     committedPrefixBytes: 0,
@@ -214,9 +303,49 @@ export function createAsyncResultContextState({ profile = null } = {}) {
   return state;
 }
 
+export function restoreAsyncResultContextState(checkpoint) {
+  invariant(checkpoint && typeof checkpoint === "object", "async-result checkpoint is required");
+  invariant(
+    checkpoint.schemaVersion === ASYNC_RESULT_CONTEXT_SCHEMA_VERSION,
+    "async-result checkpoint schema is unsupported"
+  );
+  invariant(Array.isArray(checkpoint.committedItems), "async-result checkpoint committedItems must be an array");
+  invariant(Array.isArray(checkpoint.stagedItems), "async-result checkpoint stagedItems must be an array");
+  const state = {
+    schemaVersion: ASYNC_RESULT_CONTEXT_SCHEMA_VERSION,
+    profile: clone(checkpoint.profile ?? null),
+    committedItems: clone(checkpoint.committedItems),
+    stagedItems: clone(checkpoint.stagedItems),
+    seenTransitionBindings: {},
+    seenOperationBindings: {},
+    maxGenerationByOperation: {},
+    lastSequenceByOperation: {},
+    committedPrefixDigest: checkpoint.committedPrefixDigest ?? null,
+    committedPrefixBytes: checkpoint.committedPrefixBytes ?? 0,
+    stagedSuffixDigest: checkpoint.stagedSuffixDigest ?? null,
+    stagedSuffixBytes: checkpoint.stagedSuffixBytes ?? 0,
+    committedPrefixText: "",
+    submissionCount: checkpoint.submissionCount ?? 0,
+    lastSubmissionId: checkpoint.lastSubmissionId ?? null
+  };
+  rebuildRegistries(state);
+  verifyCommittedIntegrity(state);
+  const stagedText = projectionBytes(state.stagedItems);
+  if (state.stagedSuffixDigest != null && digestOfBytes(stagedText) !== state.stagedSuffixDigest) {
+    throw new AsyncResultContextPrefixError(
+      "restored async-result checkpoint failed staged integrity verification: recorded suffix digest does not match the staged items",
+      { expectedDigest: state.stagedSuffixDigest, actualDigest: digestOfBytes(stagedText) }
+    );
+  }
+  // Freeze every item deeply so in-memory nested mutation fails loudly; the
+  // container arrays stay mutable because stage/commit append through them.
+  for (const item of [...state.committedItems, ...state.stagedItems]) deepFreeze(item);
+  refreshDigests(state);
+  return state;
+}
+
 export function stageAsyncResultTransitions({ state, transitions, profile = null } = {}) {
-  invariant(state && typeof state === "object", "async-result context state is required");
-  invariant(Array.isArray(state.committedItems) && Array.isArray(state.stagedItems), "async-result context state has invalid checkpoint shape");
+  verifyCommittedIntegrity(state);
   invariant(Array.isArray(transitions), "async-result transitions must be an array");
   if (profile != null) {
     invariant(typeof profile === "object", "async-result context profile must be an object");
@@ -236,8 +365,25 @@ export function stageAsyncResultTransitions({ state, transitions, profile = null
       skippedDuplicateIds.push(normalized.transitionId);
       continue;
     }
+    // Operation identity is delivered truth, not prompt text: the first staged
+    // transition for an operationId fixes its call/effect binding and every
+    // later transitionId for the same operation must carry the identical
+    // binding. Generation may advance lawfully (BB-078 takeover/recovery) and
+    // stale generations may redeliver at-least-once, so generation motion is
+    // recorded, never a corruption signal by itself.
+    const knownOperation = state.seenOperationBindings[normalized.operationId];
+    const operationBinding = stableStringify({
+      callId: normalized.callId,
+      effectOperationId: normalized.effectOperationId
+    });
+    if (knownOperation != null && knownOperation !== operationBinding) {
+      throw new AsyncResultContextBindingError(
+        `async-result operation ${normalized.operationId} changed call/effect binding on a new transitionId ${normalized.transitionId}: corrupted operation identity fails closed`,
+        { operationId: normalized.operationId, transitionId: normalized.transitionId }
+      );
+    }
     const terminal = isAsyncTerminalStatus(normalized.status);
-    const item = Object.freeze({
+    const item = deepFreeze({
       kind: ASYNC_OPERATION_UPDATE_KIND,
       schemaVersion: ASYNC_RESULT_CONTEXT_SCHEMA_VERSION,
       itemId: `async-result:${normalized.transitionId}`,
@@ -254,6 +400,10 @@ export function stageAsyncResultTransitions({ state, transitions, profile = null
       authority: "projection-only; not effect truth"
     });
     state.seenTransitionBindings[normalized.transitionId] = bindingKey(normalized);
+    state.seenOperationBindings[normalized.operationId] = operationBinding;
+    if ((state.maxGenerationByOperation[normalized.operationId] ?? 0) < normalized.generation) {
+      state.maxGenerationByOperation[normalized.operationId] = normalized.generation;
+    }
     const previous = state.lastSequenceByOperation[normalized.operationId] ?? 0;
     if (normalized.sequence > previous) {
       state.lastSequenceByOperation[normalized.operationId] = normalized.sequence;
@@ -273,18 +423,27 @@ export function stageAsyncResultTransitions({ state, transitions, profile = null
 }
 
 export function commitAsyncResultContext({ state, stagedItemIds, submissionId } = {}) {
-  invariant(state && typeof state === "object", "async-result context state is required");
-  invariant(Array.isArray(state.committedItems) && Array.isArray(state.stagedItems), "async-result context state has invalid checkpoint shape");
+  verifyCommittedIntegrity(state);
   invariant(Array.isArray(stagedItemIds) && stagedItemIds.length > 0, "commit requires at least one staged item id");
   requireText(submissionId, "async-result commit submissionId");
+  for (const itemId of stagedItemIds) requireText(itemId, "async-result commit staged item id");
   const stagedById = new Map(state.stagedItems.map((item) => [item.itemId, item]));
-  const ordered = [];
   for (const itemId of stagedItemIds) {
-    requireText(itemId, "async-result commit staged item id");
-    const item = stagedById.get(itemId);
-    invariant(item, `async-result commit references unknown or already-committed staged item: ${itemId}`);
-    ordered.push(item);
+    invariant(stagedById.has(itemId), `async-result commit references unknown or already-committed staged item: ${itemId}`);
   }
+  invariant(
+    new Set(stagedItemIds).size === stagedItemIds.length,
+    "commit staged item ids must be unique: duplicate commit of one staged item is rejected"
+  );
+  // Commits follow the submitted projection order from the front: the caller
+  // may commit a leading prefix of the staged suffix, but never reorder or
+  // skip staged items, so the committed prefix stays an exact byte prefix.
+  const expectedPrefix = state.stagedItems.slice(0, stagedItemIds.length).map((item) => item.itemId);
+  invariant(
+    JSON.stringify(expectedPrefix) === JSON.stringify(stagedItemIds),
+    "commit must follow staged projection order from the front without reordering or skipping staged items"
+  );
+  const ordered = stagedItemIds.map((itemId) => stagedById.get(itemId));
   const committedIds = new Set(ordered.map((item) => item.itemId));
   state.stagedItems = state.stagedItems.filter((item) => !committedIds.has(item.itemId));
   for (const item of ordered) {
@@ -305,8 +464,7 @@ export function commitAsyncResultContext({ state, stagedItemIds, submissionId } 
 }
 
 export function projectAsyncResultRequest({ state, providerTelemetry = null } = {}) {
-  invariant(state && typeof state === "object", "async-result context state is required");
-  invariant(Array.isArray(state.committedItems) && Array.isArray(state.stagedItems), "async-result context state has invalid checkpoint shape");
+  const committedText = verifyCommittedIntegrity(state);
   refreshDigests(state);
   let providerCachedTokens = null;
   let providerCacheWriteTokens = null;
@@ -345,9 +503,8 @@ export function projectAsyncResultRequest({ state, providerTelemetry = null } = 
 
 export function assertCommittedPrefixStable({ previousCommittedBytes, state } = {}) {
   invariant(typeof previousCommittedBytes === "string", "previous committed bytes are required");
-  invariant(state && typeof state === "object", "async-result context state is required");
+  const current = verifyCommittedIntegrity(state);
   refreshDigests(state);
-  const current = state.committedPrefixText;
   if (!current.startsWith(previousCommittedBytes)) {
     throw new AsyncResultContextPrefixError(
       "committed async-result prefix is not byte-stable: prior committed bytes are not an exact prefix of the current request projection",
@@ -365,16 +522,28 @@ export function translateAsyncResultForProvider({
   mode,
   item,
   providerCallId,
-  fulfilledProviderCallIds = []
+  fulfilledProviderCallIds = [],
+  deliveredTerminalTransitionIds = []
 } = {}) {
   requireText(providerCallId, "async-result provider providerCallId");
   invariant(Array.isArray(fulfilledProviderCallIds), "fulfilled provider call ids must be an array");
+  invariant(Array.isArray(deliveredTerminalTransitionIds), "delivered terminal transition ids must be an array");
   invariant(item && typeof item === "object", "async-result item is required");
   invariant(item.kind === ASYNC_OPERATION_UPDATE_KIND, "async-result item must be an ASYNC_OPERATION_UPDATE/v1 projection");
   const resolvedMode = Object.values(AsyncResultDeliveryMode).includes(mode)
     ? mode
     : AsyncResultDeliveryMode.SYNCHRONOUS;
   const alreadyFulfilled = fulfilledProviderCallIds.includes(providerCallId);
+  // Late terminal output is delivered once on the original call id: repeating
+  // the same terminal transition is a pairing violation in every mode.
+  const terminalAlreadyDelivered = item.terminal === true
+    && deliveredTerminalTransitionIds.includes(item.transitionId);
+  if (terminalAlreadyDelivered) {
+    throw new AsyncResultContextPairingError(
+      `terminal output for transition ${item.transitionId} was already delivered on ${providerCallId}; repeating it would corrupt one-call pairing`,
+      { providerCallId, mode: resolvedMode }
+    );
+  }
   if (resolvedMode === AsyncResultDeliveryMode.NATIVE_PENDING_CALL) {
     if (!item.terminal) {
       return Object.freeze({
@@ -419,12 +588,25 @@ export function translateAsyncResultForProvider({
         waiting: false
       });
     }
+    if (alreadyFulfilled) {
+      return Object.freeze({
+        mode: resolvedMode,
+        providerCallId,
+        pendingCall: false,
+        toolResult: null,
+        asyncEvent: item,
+        waiting: false
+      });
+    }
+    // Pairing-safe terminal without a prior RUNNING handle: the original
+    // strict call was never satisfied, so the terminal output itself becomes
+    // the single tool result for that call rather than a second result later.
     return Object.freeze({
       mode: resolvedMode,
       providerCallId,
       pendingCall: false,
-      toolResult: null,
-      asyncEvent: item,
+      toolResult: Object.freeze({ providerCallId, output: clone(item.result), error: clone(item.error) }),
+      asyncEvent: null,
       waiting: false
     });
   }

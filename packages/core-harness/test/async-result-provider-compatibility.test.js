@@ -86,6 +86,25 @@ test("model routing preserves the declared capability exactly", async () => {
   assert.equal(legacyRoute.adapter.asyncResultDelivery, "SYNCHRONOUS");
 });
 
+test("native terminal output is delivered once; repeats are rejected", () => {
+  const first = translateAsyncResultForProvider({
+    mode: "NATIVE_PENDING_CALL",
+    item: terminalItem(),
+    providerCallId: "provider-call-1"
+  });
+  assert.deepEqual(first.toolResult.output, { text: "done" });
+  assert.throws(
+    () => translateAsyncResultForProvider({
+      mode: "NATIVE_PENDING_CALL",
+      item: terminalItem(),
+      providerCallId: "provider-call-1",
+      deliveredTerminalTransitionIds: ["detached:op-provider:g1:s2:SUCCEEDED"]
+    }),
+    (error) => error instanceof AsyncResultContextPairingError
+      && error.code === "ASYNC_RESULT_CONTEXT_PAIRING_VIOLATION"
+  );
+});
+
 test("native pending-call keeps the original call pending with no interim tool result", () => {
   const pending = translateAsyncResultForProvider({
     mode: "NATIVE_PENDING_CALL",
@@ -124,6 +143,26 @@ test("handle-then-event emits one RUNNING handle then terminal state only as an 
   });
   assert.equal(terminal.toolResult, null);
   assert.equal(terminal.asyncEvent.transitionId, "detached:op-provider:g1:s2:SUCCEEDED");
+});
+
+test("handle terminal without a prior fulfilled handle becomes the single pairing-safe tool result", () => {
+  const terminal = translateAsyncResultForProvider({
+    mode: "HANDLE_THEN_EVENT",
+    item: terminalItem(),
+    providerCallId: "provider-call-7"
+  });
+  assert.deepEqual(terminal.toolResult.output, { text: "done" });
+  assert.equal(terminal.asyncEvent, null);
+  assert.throws(
+    () => translateAsyncResultForProvider({
+      mode: "HANDLE_THEN_EVENT",
+      item: terminalItem(),
+      providerCallId: "provider-call-7",
+      fulfilledProviderCallIds: ["provider-call-7"],
+      deliveredTerminalTransitionIds: ["detached:op-provider:g1:s2:SUCCEEDED"]
+    }),
+    AsyncResultContextPairingError
+  );
 });
 
 test("a second tool result for an already-fulfilled strict call is rejected", () => {

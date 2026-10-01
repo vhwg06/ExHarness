@@ -244,9 +244,12 @@ delivered transition envelope (BB-078 truth, at-least-once)
        SUCCEEDED/FAILED/CANCELLED/UNKNOWN        -> immutable terminal item with delivered result/error
   -> staged suffix appended behind the committed prefix
   -> commitAsyncResultContext({ stagedItemIds, submissionId })
+       leading prefix of the staged suffix, in order (no duplicates/reorder/skips)
        committed bytes stay byte-identical and in order
        next request projection starts with the exact prior committed bytes
 ```
+
+Every stage/commit/projection entry re-verifies the recorded committed-prefix digest against the committed items, staged payloads are deeply frozen, and a restored JSON checkpoint is revalidated (digests plus operation-binding consistency) before use — so a mutated checkpoint or rewritten payload fails closed instead of silently becoming the prefix.
 
 Prefix/cache accounting per turn:
 
@@ -262,9 +265,10 @@ Provider delivery at the model-adapter boundary (`asyncResultDelivery`, default 
 
 ```text
 NATIVE_PENDING_CALL: RUNNING -> pending call, no tool result
-                     terminal -> one tool output on the original provider call id
+                     terminal -> one tool output on the original provider call id (repeats rejected)
 HANDLE_THEN_EVENT:  RUNNING -> exactly one paired RUNNING tool result
-                     terminal -> ordinary async event, never a second tool result
+                     terminal with fulfilled handle -> ordinary async event, never a second tool result
+                     terminal with no prior handle  -> the terminal output itself as the single tool result
                      second tool result for a fulfilled call -> rejected
 SYNCHRONOUS:        RUNNING -> wait (no progressive context)
                      terminal -> one ordinary terminal tool result
