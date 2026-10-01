@@ -1,0 +1,230 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactId": "BB-079-worker",
+  "artifactType": "JEV_EVALUATION",
+  "lane": "WORKER",
+  "subject": {
+    "workId": "BB-079",
+    "plan": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-079.json",
+      "hash": "695f253b1302bf2e07adae3a09ce62442034b9a2de618e184dbd48a3f3c0b941"
+    },
+    "objective": {
+      "ref": "docs/blackboard/artifacts/objective/BB-079.json",
+      "hash": "554975be16f9e57a9e4043c7aa9790353be94d0dcaa9782a89e209a5581b33b8"
+    },
+    "evidence": {
+      "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-079.implementation-result.json",
+      "hash": "33a253f787b690d2d30863ed0ba1dba0e11a4dc5a213860f62093c713ff3cd27"
+    },
+    "candidateSha": "507f6c722cc58a101a09be2948c26c384ee2d0ee",
+    "candidateTree": "7372de02ce367475f251ce2f5ebf9d55a4db9982",
+    "baselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+  },
+  "stateHash": "2f931f301c5c3f286f89d5ff2ec700aafcea2842eaa10bba2dae88f2ce7304a0",
+  "specHash": "493c9b6415ec0a589e25f5c47998cbe0fd7d5c19c0a85e538e23aef4cdf662d7",
+  "cacheKey": "a86758b6724c37254ce11369b8774605f11939c02d30b1304583bfe2c70fe539",
+  "model": "jev-1.13.0",
+  "answers": {
+    "APPEND_ONLY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.97,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.02,
+        "SATISFIED": 0.98,
+        "PLAN_INPUT_CONTRADICTION": 0
+      }
+    },
+    "BINDING": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.98,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.01,
+        "SATISFIED": 0.99,
+        "IMPLEMENTATION_DEFECT": 0
+      }
+    },
+    "PROVIDER": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.99,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.99,
+        "IMPLEMENTATION_DEFECT": 0
+      }
+    },
+    "PAIRING": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.97,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0,
+        "INSUFFICIENT_EVIDENCE": 0.02,
+        "SATISFIED": 0.98
+      }
+    },
+    "PREFIX": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.95,
+      "probabilities": {
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "IMPLEMENTATION_DEFECT": 0.02,
+        "INSUFFICIENT_EVIDENCE": 0.02,
+        "SATISFIED": 0.96
+      }
+    },
+    "DEPENDENCY": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.95,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.03,
+        "SATISFIED": 0.96
+      }
+    },
+    "INV-1": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.98,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0,
+        "SATISFIED": 0.99,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "INSUFFICIENT_EVIDENCE": 0.01
+      }
+    },
+    "INV-2": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.94,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.04,
+        "IMPLEMENTATION_DEFECT": 0.01,
+        "PLAN_INPUT_CONTRADICTION": 0,
+        "SATISFIED": 0.95
+      }
+    },
+    "INV-3": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.29,
+      "probabilities": {
+        "INSUFFICIENT_EVIDENCE": 0.35,
+        "SATISFIED": 0.47,
+        "IMPLEMENTATION_DEFECT": 0.04,
+        "PLAN_INPUT_CONTRADICTION": 0.14
+      }
+    },
+    "LIVING_DOCS": {
+      "type": "choice",
+      "choice": "SATISFIED",
+      "confidence": 0.55,
+      "probabilities": {
+        "IMPLEMENTATION_DEFECT": 0.13,
+        "SATISFIED": 0.66,
+        "INSUFFICIENT_EVIDENCE": 0.19,
+        "PLAN_INPUT_CONTRADICTION": 0.02
+      }
+    }
+  },
+  "verdict": "SATISFIED",
+  "usage": {
+    "input_tokens": 153823,
+    "output_tokens": 710
+  },
+  "metrics": {
+    "cacheHit": false,
+    "attempts": 10,
+    "latencyMs": 2434.149329,
+    "payloadBytes": 244129,
+    "estimatedCost": null,
+    "unreportedRetryUsage": false,
+    "pricing": null,
+    "batching": {
+      "strategy": "WORKER_BOUNDED_EVIDENCE_V2",
+      "livingExcerptStrategy": "LIVING_DELIVERY_EVIDENCE_V4",
+      "criterionSourceStrategy": "CRITERION_CHANGE_SET_V4",
+      "manifest": [
+        {
+          "id": "APPEND_ONLY",
+          "payloadHash": "58aa87268a6b286955b14f8259ff8373a0e94c77b9c4c51dd468765ae2337d5f",
+          "payloadBytes": 50167
+        },
+        {
+          "id": "BINDING",
+          "payloadHash": "fe8adb9163ca295afe2435913dc458535b2284651d8610178eec91123c7596a6",
+          "payloadBytes": 57564,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-079/core-regression.txt"
+          ]
+        },
+        {
+          "id": "PROVIDER",
+          "payloadHash": "767ba2d3e9ba2147cc85b2ed3f597be834704ac4e7515363e5ebbb350cadf168",
+          "payloadBytes": 56257,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-079/core-regression.txt"
+          ]
+        },
+        {
+          "id": "PAIRING",
+          "payloadHash": "f549049f0ae7abf5397b14cb11a71b9b37fa983609d1f3eb18fdd94b2760c286",
+          "payloadBytes": 47210
+        },
+        {
+          "id": "PREFIX",
+          "payloadHash": "8781d941f1276a6bc2be647e8cedf59dab9375d7358a8c185d5d7909ca62ab58",
+          "payloadBytes": 53874
+        },
+        {
+          "id": "DEPENDENCY",
+          "payloadHash": "c728961d8e56da267e178172769e1573d1efcaed6535c17d3bf3ee396d3135c0",
+          "payloadBytes": 48338
+        },
+        {
+          "id": "INV-1",
+          "payloadHash": "83408e1f122ccaee0e748c214866e15e9864e06b1e02a028b2096ea3496d8309",
+          "payloadBytes": 58484,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-079/core-regression.txt"
+          ]
+        },
+        {
+          "id": "INV-2",
+          "payloadHash": "ac2ed96332ee316d77489660bc1ab95d4b25240a2bebac51882bac6a1f6a6131",
+          "payloadBytes": 58331,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-079/core-regression.txt"
+          ]
+        },
+        {
+          "id": "INV-3",
+          "payloadHash": "03aebb185fd430fe4c99d5e2a038a524f0971715552f5f7d216ff49d4d5783c8",
+          "payloadBytes": 54181,
+          "excerpted": [
+            "docs/blackboard/evidence/BB-079/core-regression.txt",
+            "docs/blackboard/evidence/BB-079/dependency-contract.txt"
+          ]
+        },
+        {
+          "id": "LIVING_DOCS",
+          "payloadHash": "f7951e3e8c9f9590ecd3b8fe17e6c4c8100971ca795c693aa4077f98f2c8fa14",
+          "payloadBytes": 47549
+        }
+      ],
+      "cacheHits": 0
+    }
+  },
+  "policy": "atomic-claims-1"
+}
