@@ -3,6 +3,7 @@ import path from 'node:path';
 import { read, write, fail, localPath, planHash } from './blackboard-delivery-contract.mjs';
 import { git, materialize, evaluate, validateEvaluation } from './blackboard-jev.mjs';
 import { collectEvidence } from './blackboard-delivery.mjs';
+import { buildBundle, installBundle } from './blackboard-verification-bundle.mjs';
 import { detectSupersessions, supersessionFence, assertObjectivesUnchanged, verifySupersession } from './blackboard-objective-supersession.mjs';
 
 const [command]=process.argv.slice(2);
@@ -156,20 +157,14 @@ if(command==='select') {
   if(command==='collect') {
     if(task.lane==='WORKER') {
       const result=collectEvidence(root,id);
-      const refs=[...new Set(result.evidence.claims.flatMap(c=>c.evidenceRefs))];
-      const files=refs.map(ref=>({ref,body:fs.readFileSync(path.join(root,ref),'utf8')}));
-      write(root,`artifacts/blackboard-verification/${id}/bundle.json`,{result:result.evidence,files});
+      const bundle=buildBundle(result.evidence,ref=>fs.readFileSync(path.join(root,ref),'utf8'));
+      write(root,`artifacts/blackboard-verification/${id}/bundle.json`,bundle);
     }
     else write(root,`artifacts/blackboard-verification/${id}/research.json`,{workId:id,lane:task.lane});
   } else if(command==='evaluate') {
     if(task.lane==='WORKER') {
       const bundle=read(root,`artifacts/blackboard-verification/${id}/bundle.json`);
-      for(const file of bundle.files) {
-        if(!file.ref.startsWith(`docs/blackboard/evidence/${id}/`)||!/^[-A-Za-z0-9._]+\.txt$/.test(path.basename(file.ref)))fail('invalid bundled evidence ref');
-        const destination=localPath(root,file.ref);
-        if(path.dirname(destination)!==path.join(root,'docs/blackboard/evidence',id))fail('bundled evidence escapes task');
-        fs.mkdirSync(path.dirname(destination),{recursive:true});fs.writeFileSync(destination,file.body);
-      }
+      installBundle(root,id,bundle);
       write(root,task.contract.evidenceRef,bundle.result);
     }
     // This process only reads candidate data. It never imports or executes candidate modules.
