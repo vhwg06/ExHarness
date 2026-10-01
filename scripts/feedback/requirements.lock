@@ -1,0 +1,17 @@
+# BB-083 S6 - pinned Python dependencies for scripts/feedback/gepa_adapter.py
+#
+# Install with:  pip install -r scripts/feedback/requirements.lock
+# (or: python3 -m venv .venv && .venv/bin/pip install -r scripts/feedback/requirements.lock)
+#
+# The standalone `gepa` PyPI package (0.1.4) ships as a ~290 KB wheel with
+# ZERO mandatory dependencies: every entry in its requires_dist is behind
+# an optional extra. The adapter only needs the base package (it imports
+# `gepa` for its version string and degrades gracefully to "stub" when the
+# import fails), so no base dependencies are pinned here.
+#
+# Explicitly EXCLUDED per plan: gepa[full], dspy, langchain, langmem.
+# The adapter must stay stdlib + pinned gepa only.
+#
+# Python floor/ceiling: >=3.10 (gepa requirement), <3.15.
+
+gepa==0.1.4

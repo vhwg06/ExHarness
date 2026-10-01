@@ -40,10 +40,11 @@ NONE
 
 ## Schedulable tasks
 
-- BB-081 [WORKER/EXECUTION] — Research held-out harness profile acceptance and fault-ablation protocol
+- BB-066 [WORKER/EXECUTION] — Integrate a real coding-agent execution strategy
 - BB-083 [WORKER/EXECUTION] — Research feedback lifecycle and cross-episode learning
 - BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
-- BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
+- BB-094 [WORKER/EXECUTION] — Verify Oracle on supported Core execution profiles
+- BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
 - BB-123 [WORKER/EXECUTION] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
@@ -86,7 +87,7 @@ BB-062 [DONE] <- BB-061
 BB-063 [DONE] <- BB-062
 BB-064 [DONE] <- BB-060, BB-061, BB-062, BB-063
 BB-065 [DONE] <- ROOT
-BB-066 [BLOCKED_BY BB-081] <- BB-065, BB-048, BB-081
+BB-066 [WORKER_SCHEDULABLE] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
 BB-069 [BLOCKED_BY BB-068] <- BB-068, BB-064
@@ -94,14 +95,14 @@ BB-070 [BLOCKED_BY BB-069] <- BB-069, BB-055
 BB-071 [BLOCKED_BY BB-070] <- BB-070, BB-057
 BB-072 [BLOCKED_BY BB-068] <- BB-068, BB-058
 BB-073 [BLOCKED_BY BB-070,BB-072] <- BB-070, BB-072
-BB-074 [BLOCKED_BY BB-071,BB-073,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
+BB-074 [BLOCKED_BY BB-071,BB-073] <- BB-065, BB-071, BB-073, BB-077, BB-081
 BB-075 [BLOCKED_BY BB-074] <- BB-074, BB-059
 BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
 BB-077 [DONE] <- BB-065
 BB-078 [DONE] <- BB-077
 BB-079 [DONE] <- BB-077, BB-078
 BB-080 [DONE] <- BB-078, BB-079
-BB-081 [WORKER_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080
+BB-081 [DONE] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
 BB-083 [WORKER_SCHEDULABLE] <- BB-059, BB-064, BB-065
 BB-084 [DONE] <- BB-058, BB-064
@@ -114,7 +115,7 @@ BB-090 [DONE] <- BB-056
 BB-091 [DONE] <- BB-088
 BB-092 [DONE] <- BB-091
 BB-093 [DONE] <- BB-092
-BB-094 [BLOCKED_BY BB-081] <- BB-093, BB-081
+BB-094 [WORKER_SCHEDULABLE] <- BB-093, BB-081
 BB-095 [BLOCKED_BY BB-094] <- BB-094, BB-065
 BB-096 [DONE] <- ROOT
 BB-097 [DONE] <- BB-096
@@ -127,7 +128,7 @@ BB-103 [DONE] <- BB-097
 BB-104 [DONE] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
 BB-106 [DONE] <- BB-082, BB-087, BB-088
-BB-107 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088, BB-089
+BB-107 [WORKER_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [DONE] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097
 BB-121 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-120

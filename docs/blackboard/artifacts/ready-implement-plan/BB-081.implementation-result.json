@@ -1,0 +1,194 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-081-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-081.json",
+    "hash": "ae1058f93a6fcd5f1571dfdcbb7d04b1dada4edf5694b071b0fa1349a7b63b24"
+  },
+  "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+  "baselineSha": "297119fe6efb9d0c12bad28ade71779087783bc7",
+  "candidateTree": "6432d7ff50820b5d4eac8ea94d7add1d23205917",
+  "verificationRuns": [
+    {
+      "id": "dependency-contract",
+      "command": "node --test benchmarks/harness_efficiency/bb081/test/dependency-binding.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+      "logRef": "docs/blackboard/evidence/BB-081/dependency-contract.txt",
+      "logHash": "03ddd9e5da30b265191f8f4266c27ff3330a787dd39bd39f6609a9b0ca90ce81"
+    },
+    {
+      "id": "profile-capabilities",
+      "command": "node --test benchmarks/harness_efficiency/bb081/test/profile-capabilities.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+      "logRef": "docs/blackboard/evidence/BB-081/profile-capabilities.txt",
+      "logHash": "3311b94c73ce2fcaf3f197d31ce59f45dfd6d76ea9ae2803b335234b669713b1"
+    },
+    {
+      "id": "ablation-contract",
+      "command": "node --test benchmarks/harness_efficiency/bb081/test/ablation-contract.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+      "logRef": "docs/blackboard/evidence/BB-081/ablation-contract.txt",
+      "logHash": "da11b03be50799234a0fc7ec037b427816893549206d49d0f4d69796f2632dbc"
+    },
+    {
+      "id": "report-contract",
+      "command": "node --test benchmarks/harness_efficiency/bb081/test/report.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+      "logRef": "docs/blackboard/evidence/BB-081/report-contract.txt",
+      "logHash": "5346febeca65e2af086454254c050c29125f1df1d00ac18bf365f27cc115f6b8"
+    },
+    {
+      "id": "fault-matrix",
+      "command": "node --test benchmarks/harness_efficiency/bb081/test/fault-matrix.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+      "logRef": "docs/blackboard/evidence/BB-081/fault-matrix.txt",
+      "logHash": "724a623301a277312ea41926891ec98dc4c9ab2e49e494d49f747c8d84da4811"
+    },
+    {
+      "id": "decision-contract",
+      "command": "node --test benchmarks/harness_efficiency/bb081/test/decision.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+      "logRef": "docs/blackboard/evidence/BB-081/decision-contract.txt",
+      "logHash": "c8e4dcad3f19625d5655e853d3129ca66d5c90397b16e94e62ecd6b6688aa0c4"
+    },
+    {
+      "id": "profile-contract",
+      "command": "node --test packages/core-harness/test/execution-profile.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+      "logRef": "docs/blackboard/evidence/BB-081/profile-contract.txt",
+      "logHash": "3520392457ae7cb2f6057a423b87436eb5b93d3f3fe0e063c82ac2ff7c5d3339"
+    },
+    {
+      "id": "live-heldout",
+      "command": "node benchmarks/harness_efficiency/bb081/run.mjs --mode heldout --profile benchmarks/harness_efficiency/bb081/heldout-profile.json",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+      "logRef": "docs/blackboard/evidence/BB-081/live-heldout.txt",
+      "logHash": "117eab86b09c52d05738b7933037894ac4bf80c6368490f310e197fc34962fa1"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "f839e85227b1b2161f5fc01ccbc9eeb539509198",
+      "logRef": "docs/blackboard/evidence/BB-081/core-regression.txt",
+      "logHash": "b21db8684620c3fd2cc32596b1d241b4583edb7f3c11e34993972ae0650b216b"
+    }
+  ],
+  "claims": [
+    {
+      "id": "DEPENDENCY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/dependency-contract.txt",
+        "docs/blackboard/evidence/BB-081/ablation-contract.txt"
+      ]
+    },
+    {
+      "id": "COHORT",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/ablation-contract.txt",
+        "docs/blackboard/evidence/BB-081/live-heldout.txt"
+      ]
+    },
+    {
+      "id": "ACCOUNTING",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/ablation-contract.txt",
+        "docs/blackboard/evidence/BB-081/decision-contract.txt",
+        "docs/blackboard/evidence/BB-081/live-heldout.txt",
+        "docs/blackboard/evidence/BB-081/ACCOUNTING-observation-0.txt"
+      ]
+    },
+    {
+      "id": "ATTRIBUTION",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/ablation-contract.txt",
+        "docs/blackboard/evidence/BB-081/decision-contract.txt",
+        "docs/blackboard/evidence/BB-081/ATTRIBUTION-observation-0.txt"
+      ]
+    },
+    {
+      "id": "ROBUSTNESS",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/fault-matrix.txt"
+      ]
+    },
+    {
+      "id": "SAFETY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/fault-matrix.txt",
+        "docs/blackboard/evidence/BB-081/decision-contract.txt",
+        "docs/blackboard/evidence/BB-081/core-regression.txt"
+      ]
+    },
+    {
+      "id": "QUALITY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/decision-contract.txt",
+        "docs/blackboard/evidence/BB-081/live-heldout.txt"
+      ]
+    },
+    {
+      "id": "EFFICIENCY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/decision-contract.txt",
+        "docs/blackboard/evidence/BB-081/live-heldout.txt",
+        "docs/blackboard/evidence/BB-081/EFFICIENCY-observation-0.txt"
+      ]
+    },
+    {
+      "id": "DECISION",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/decision-contract.txt"
+      ]
+    },
+    {
+      "id": "PROFILE",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/profile-contract.txt",
+        "docs/blackboard/evidence/BB-081/core-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/fault-matrix.txt",
+        "docs/blackboard/evidence/BB-081/decision-contract.txt",
+        "docs/blackboard/evidence/BB-081/core-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/fault-matrix.txt",
+        "docs/blackboard/evidence/BB-081/core-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-081/dependency-contract.txt",
+        "docs/blackboard/evidence/BB-081/ablation-contract.txt",
+        "docs/blackboard/evidence/BB-081/decision-contract.txt"
+      ]
+    }
+  ]
+}

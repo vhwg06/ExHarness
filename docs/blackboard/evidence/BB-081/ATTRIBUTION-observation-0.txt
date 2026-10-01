@@ -1,0 +1,78 @@
+BB-081 ATTRIBUTION: per-unit report rows (all reportContract fields) + D/A pairs + A->B/B->C/C->D marginals
+cohort=BB081-HELD-OUT-V1 units=32 dataKind=OFFLINE_SCRIPTED_FIXTURE
+PER-UNIT ROWS. cols: unit|arm|diag|quality|in|out|cache|provCost|turns|tools|uops|uopsPerTurn|elapsed|recovery|fingerprint|acct
+UNK=null/UNKNOWN: missing token/cost/timing values stay UNKNOWN, never zero-filled (unknownRule).
+git-leak-recovery--A--r0|A|f|ACCEPTED|1629|301|UNK|UNK|5|4|3|0.60|12041|NOT_APPLICABLE|none|PARTIAL
+git-leak-recovery--B--r0|B|T|ACCEPTED|1208|248|UNK|UNK|5|4|4|0.80|15602|NOT_APPLICABLE|none|PARTIAL
+git-leak-recovery--C--r0|C|T|ACCEPTED|1847|288|UNK|UNK|5|3|3|0.60|15683|NOT_APPLICABLE|none|PARTIAL
+git-leak-recovery--D--r0|D|f|ACCEPTED|1409|242|UNK|UNK|4|3|3|0.75|14195|NOT_APPLICABLE|none|PARTIAL
+git-leak-recovery--A--r1|A|f|ACCEPTED|1224|262|UNK|UNK|4|4|3|0.75|12443|NOT_APPLICABLE|none|PARTIAL
+git-leak-recovery--B--r1|B|T|ACCEPTED|1896|313|UNK|UNK|4|4|4|1.00|19001|NOT_APPLICABLE|none|PARTIAL
+git-leak-recovery--C--r1|C|T|ACCEPTED|1575|349|UNK|UNK|4|3|3|0.75|13834|NOT_APPLICABLE|none|PARTIAL
+git-leak-recovery--D--r1|D|f|ACCEPTED|1780|225|UNK|UNK|3|3|3|1.00|13066|NOT_APPLICABLE|none|PARTIAL
+pypi-server--A--r0|A|f|ACCEPTED|1758|281|UNK|UNK|4|4|3|0.75|19425|NOT_APPLICABLE|none|PARTIAL
+pypi-server--B--r0|B|T|ACCEPTED|1461|344|UNK|UNK|4|4|4|1.00|17566|NOT_APPLICABLE|none|PARTIAL
+pypi-server--C--r0|C|T|ACCEPTED|UNK|UNK|UNK|UNK|4|3|3|0.75|14303|NOT_APPLICABLE|none|UNKNOWN
+pypi-server--D--r0|D|f|ACCEPTED|1499|263|UNK|UNK|3|3|3|1.00|18796|NOT_APPLICABLE|none|PARTIAL
+pypi-server--A--r1|A|f|NOT_EVALUATED|UNK|UNK|UNK|UNK|5|5|4|0.80|14663|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|UNKNOWN
+pypi-server--B--r1|B|T|NOT_EVALUATED|1302|280|UNK|UNK|5|5|5|1.00|16617|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|PARTIAL
+pypi-server--C--r1|C|T|NOT_EVALUATED|1270|243|UNK|UNK|5|4|4|0.80|18421|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|PARTIAL
+pypi-server--D--r1|D|f|NOT_EVALUATED|UNK|UNK|UNK|UNK|4|4|4|1.00|14535|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|UNKNOWN
+kv-store-grpc--A--r0|A|f|ACCEPTED|1488|370|UNK|UNK|5|4|3|0.60|14873|NOT_APPLICABLE|none|PARTIAL
+kv-store-grpc--B--r0|B|T|ACCEPTED|UNK|UNK|UNK|UNK|5|4|4|0.80|19383|NOT_APPLICABLE|none|UNKNOWN
+kv-store-grpc--C--r0|C|T|ACCEPTED|1871|248|UNK|UNK|5|3|3|0.60|13725|NOT_APPLICABLE|none|PARTIAL
+kv-store-grpc--D--r0|D|f|ACCEPTED|1144|252|UNK|UNK|4|3|3|0.75|14190|NOT_APPLICABLE|none|PARTIAL
+kv-store-grpc--A--r1|A|f|NOT_EVALUATED|1765|360|UNK|UNK|4|5|4|1.00|12404|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|PARTIAL
+kv-store-grpc--B--r1|B|T|NOT_EVALUATED|1738|308|UNK|UNK|4|5|5|1.25|12882|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|PARTIAL
+kv-store-grpc--C--r1|C|T|NOT_EVALUATED|UNK|UNK|UNK|UNK|4|4|4|1.00|17111|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|UNKNOWN
+kv-store-grpc--D--r1|D|f|NOT_EVALUATED|1382|258|UNK|UNK|3|4|4|1.33|13930|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|PARTIAL
+sanitize-git-repo--A--r0|A|f|NOT_EVALUATED|1405|332|UNK|UNK|4|5|4|1.00|16539|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|PARTIAL
+sanitize-git-repo--B--r0|B|T|NOT_EVALUATED|1382|314|UNK|UNK|4|5|5|1.25|16293|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|PARTIAL
+sanitize-git-repo--C--r0|C|T|NOT_EVALUATED|1789|315|UNK|UNK|4|4|4|1.00|16164|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|PARTIAL
+sanitize-git-repo--D--r0|D|f|NOT_EVALUATED|1564|324|UNK|UNK|3|4|4|1.33|15820|NOT_APPLICABLE|PROVIDER_TIMEOUT:NO_ARTIFACT|PARTIAL
+sanitize-git-repo--A--r1|A|f|REJECTED|1389|353|UNK|UNK|5|5|4|0.80|15492|NOT_APPLICABLE|VERIFIER_REJECTED|PARTIAL
+sanitize-git-repo--B--r1|B|T|REJECTED|1891|310|UNK|UNK|5|5|5|1.00|17252|NOT_APPLICABLE|VERIFIER_REJECTED|PARTIAL
+sanitize-git-repo--C--r1|C|T|REJECTED|1254|239|UNK|UNK|5|4|4|0.80|13436|NOT_APPLICABLE|VERIFIER_REJECTED|PARTIAL
+sanitize-git-repo--D--r1|D|f|REJECTED|1130|331|UNK|UNK|4|4|4|1.00|13377|NOT_APPLICABLE|VERIFIER_REJECTED|PARTIAL
+
+D/A PRIMARY PAIRS (8 matched task-repeat units, same verifier):
+  git-leak-recovery#r0: D=ACCEPTED A=ACCEPTED cost=UNK input=0.865 turns=0.800 elapsed=1.179
+  git-leak-recovery#r1: D=ACCEPTED A=ACCEPTED cost=UNK input=1.454 turns=0.750 elapsed=1.050
+  kv-store-grpc#r0: D=ACCEPTED A=ACCEPTED cost=UNK input=0.769 turns=0.800 elapsed=0.954
+  kv-store-grpc#r1: D=NOT_EVALUATED A=NOT_EVALUATED cost=UNK input=0.783 turns=0.750 elapsed=1.123
+  pypi-server#r0: D=ACCEPTED A=ACCEPTED cost=UNK input=0.853 turns=0.750 elapsed=0.968
+  pypi-server#r1: D=NOT_EVALUATED A=NOT_EVALUATED cost=UNK input=UNK turns=0.800 elapsed=0.991
+  sanitize-git-repo#r0: D=NOT_EVALUATED A=NOT_EVALUATED cost=UNK input=1.113 turns=0.750 elapsed=0.957
+  sanitize-git-repo#r1: D=REJECTED A=REJECTED cost=UNK input=0.814 turns=0.800 elapsed=0.863
+DIAGNOSTIC MARGINALS (A->B/B->C/C->D; D/A is primary):
+  A->B git-leak-recovery#r0: ACCEPTED->ACCEPTED cost=UNK input=0.742 turns=1.000 elapsed=1.296
+  A->B git-leak-recovery#r1: ACCEPTED->ACCEPTED cost=UNK input=1.549 turns=1.000 elapsed=1.527
+  A->B kv-store-grpc#r0: ACCEPTED->ACCEPTED cost=UNK input=UNK turns=1.000 elapsed=1.303
+  A->B kv-store-grpc#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNK input=0.985 turns=1.000 elapsed=1.039
+  A->B pypi-server#r0: ACCEPTED->ACCEPTED cost=UNK input=0.831 turns=1.000 elapsed=0.904
+  A->B pypi-server#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNK input=UNK turns=1.000 elapsed=1.133
+  A->B sanitize-git-repo#r0: NOT_EVALUATED->NOT_EVALUATED cost=UNK input=0.984 turns=1.000 elapsed=0.985
+  A->B sanitize-git-repo#r1: REJECTED->REJECTED cost=UNK input=1.361 turns=1.000 elapsed=1.114
+  B->C git-leak-recovery#r0: ACCEPTED->ACCEPTED cost=UNK input=1.529 turns=1.000 elapsed=1.005
+  B->C git-leak-recovery#r1: ACCEPTED->ACCEPTED cost=UNK input=0.831 turns=1.000 elapsed=0.728
+  B->C kv-store-grpc#r0: ACCEPTED->ACCEPTED cost=UNK input=UNK turns=1.000 elapsed=0.708
+  B->C kv-store-grpc#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNK input=UNK turns=1.000 elapsed=1.328
+  B->C pypi-server#r0: ACCEPTED->ACCEPTED cost=UNK input=UNK turns=1.000 elapsed=0.814
+  B->C pypi-server#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNK input=0.975 turns=1.000 elapsed=1.109
+  B->C sanitize-git-repo#r0: NOT_EVALUATED->NOT_EVALUATED cost=UNK input=1.295 turns=1.000 elapsed=0.992
+  B->C sanitize-git-repo#r1: REJECTED->REJECTED cost=UNK input=0.663 turns=1.000 elapsed=0.779
+  C->D git-leak-recovery#r0: ACCEPTED->ACCEPTED cost=UNK input=0.763 turns=0.800 elapsed=0.905
+  C->D git-leak-recovery#r1: ACCEPTED->ACCEPTED cost=UNK input=1.130 turns=0.750 elapsed=0.944
+  C->D kv-store-grpc#r0: ACCEPTED->ACCEPTED cost=UNK input=0.611 turns=0.800 elapsed=1.034
+  C->D kv-store-grpc#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNK input=UNK turns=0.750 elapsed=0.814
+  C->D pypi-server#r0: ACCEPTED->ACCEPTED cost=UNK input=UNK turns=0.750 elapsed=1.314
+  C->D pypi-server#r1: NOT_EVALUATED->NOT_EVALUATED cost=UNK input=UNK turns=0.800 elapsed=0.789
+  C->D sanitize-git-repo#r0: NOT_EVALUATED->NOT_EVALUATED cost=UNK input=0.874 turns=0.750 elapsed=0.979
+  C->D sanitize-git-repo#r1: REJECTED->REJECTED cost=UNK input=0.901 turns=0.800 elapsed=0.996
+B/C DIAGNOSTIC-ONLY MARKER: arms B and C are diagnostic (diag=T above); they never publish as supported profiles (assertProfilePublishable throws PUBLISH for B/C).
+
+REPEAT CONSISTENCY (accepted/total per task x arm):
+  terminal-bench/git-leak-recovery: A=2/2 B=2/2 C=2/2 D=2/2
+  terminal-bench/kv-store-grpc: A=1/2 B=1/2 C=1/2 D=1/2
+  terminal-bench/pypi-server: A=1/2 B=1/2 C=1/2 D=1/2
+  terminal-bench/sanitize-git-repo: A=0/2 B=0/2 C=0/2 D=0/2
