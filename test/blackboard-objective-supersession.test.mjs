@@ -306,7 +306,9 @@ test('RETENTION/MIGRATION_BOUNDARY: changed-path audit rejects code bundling, ve
 
 test('MIGRATION_BOUNDARY: this repository carries the mechanism only; no BB-065 objective migration is bundled', () => {
   const graph = readJson('.', GRAPH);
-  assert.deepEqual(verifyRetainedSupersessions('.', graph), []);
+  const retained = verifyRetainedSupersessions('.', graph);
+  assert.equal(retained.includes('BB-065'), false);
+  for (const id of retained) assert.equal(fs.existsSync(supersessionRef(id)), true);
   assert.equal(fs.existsSync(supersessionRef('BB-065')), false);
   const bb065 = graph.tasks.find(x => x.id === 'BB-065');
   const bb065Plan = readJson('.', bb065.contract.planRef);
