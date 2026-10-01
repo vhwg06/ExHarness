@@ -53,6 +53,13 @@ Guarantee: explicit trust payloads/refs instead of reviewer prose.
 Limit: Core does not decide project review requirement, scheduling, lifecycle transition or final `DONE`.
 Details: `../agentic-application/project-acceptance.md`.
 
+## H9 — Held-out harness execution profiles
+Outcome: execution profile gating for the held-out harness benchmark — `CORE_SYNC` stays the default supported profile; `CORE_ASYNC_FIRST_V1` publishes only after a `PROMOTE_ASYNC` decision with exact evidence binding and quiescent rollback. B/C arms remain diagnostic.
+Guarantee: evidence binding covers decision + ablation/fault protocol + evaluated source + prior dependency delivery digests + provider/model profile; later mutation invalidates the claim (`assertEvidenceFresh` throws `STALE`); async publication requires the exact binding (`assertProfilePublishable`).
+Failure: `INCONCLUSIVE` decision publishes no async claim; drifted evidence binding throws instead of silently publishing.
+Limit: profiles are benchmark-publication gating only; they do not change Core runtime execution semantics. Runtime defaults unchanged.
+Details: `packages/core-harness/src/execution-profile.js`, `benchmarks/harness_efficiency/bb081/`.
+
 ## Integration rule
 
 ```text

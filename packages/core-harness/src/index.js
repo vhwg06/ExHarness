@@ -394,3 +394,20 @@ export {
   resolveEffectConfirmationFromCoordinator,
   resolveProductAcceptanceFromCoordinator
 } from "./async-agent-coordinator.js";
+export {
+  CORE_ASYNC_FIRST_V1,
+  CORE_SYNC,
+  DIAGNOSTIC_ARMS,
+  EVIDENCE_BINDING_FIELDS,
+  EXECUTION_PROFILE_VERSION,
+  ExecutionProfileError,
+  assertEvidenceFresh,
+  assertProfilePublishable,
+  createEvidenceBinding,
+  defaultProfile,
+  executionProfileManifest,
+  getSupportedProfiles,
+  isDiagnosticArm,
+  isSupported,
+  rollbackToSync
+} from "./execution-profile.js";
