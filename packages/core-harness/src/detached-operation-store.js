@@ -230,6 +230,11 @@ export function createSessionDetachedOperationStore({ sessionStore, scopeId, clo
     return state;
   }
 
+  // Every operation of one scope shares a single manager state document, so a
+  // STORE_CONFLICT may be caused by a foreign write to a different operation.
+  // An onConflict handler therefore answers with either the final value or
+  // `{ retry: true }` to re-run the mutation against the fresh document.
+  // Retries stay bounded; an exhausted budget rethrows the conflict loudly.
   async function withDocument(mutator, { retries = 3 } = {}) {
     let attempts = 0;
     // eslint-disable-next-line no-constant-condition
@@ -245,9 +250,10 @@ export function createSessionDetachedOperationStore({ sessionStore, scopeId, clo
         await saveDocument(state);
       } catch (error) {
         if (error?.code === "STORE_CONFLICT" && attempts <= retries) {
-          const current = await loadDocument();
           if (outcome?.onConflict != null) {
-            return outcome.onConflict(current);
+            const resolution = outcome.onConflict(await loadDocument());
+            if (resolution?.retry === true) continue;
+            return resolution;
           }
           continue;
         }
@@ -321,7 +327,7 @@ export function createSessionDetachedOperationStore({ sessionStore, scopeId, clo
           value: Object.freeze({ record: clone(record), transition: envelope }),
           onConflict: (current) => {
             const winner = current?.persistentMemory?.operations?.[normalized.operationId] ?? null;
-            if (winner == null) throw new Error(`detached operation creation conflicted without a stored record: ${normalized.operationId}`);
+            if (winner == null) return { retry: true };
             assertBindingMatches(winner, normalized);
             return Object.freeze({ record: clone(winner), transition: null, attached: true });
           }
@@ -374,19 +380,23 @@ export function createSessionDetachedOperationStore({ sessionStore, scopeId, clo
           (ALLOWED_TRANSITIONS[record.status] ?? []).includes(to),
           `detached operation cannot transition from ${record.status} to ${to}`
         );
+        const fromStatus = record.status;
         const envelope = appendTransition(state, record, { to, result, error, evidence, reason });
         return {
           value: Object.freeze({ applied: true, record: clone(record), transition: envelope }),
           onConflict: (current) => {
             const latest = current?.persistentMemory?.operations?.[operationId] ?? null;
-            if (latest == null) throw new Error(`detached operation missing after conflict: ${operationId}`);
+            if (latest == null) return { retry: true };
             if (isDetachedTerminalStatus(latest.status)) {
               return Object.freeze({ applied: false, reason: "TERMINAL_IMMUTABLE", current: clone(latest) });
             }
-            if (latest.generation !== generation || latest.status !== record.status) {
+            if (latest.generation !== generation || latest.status !== fromStatus) {
               return Object.freeze({ applied: false, reason: "CONCURRENT_TAKEOVER", current: clone(latest) });
             }
-            throw new Error(`detached operation transition conflicted without observable change: ${operationId}`);
+            // The conflict came from a foreign write: this record is
+            // observably unchanged, so retry the mutation against the fresh
+            // document instead of reporting a spurious conflict.
+            return { retry: true };
           }
         };
       });
@@ -394,38 +404,30 @@ export function createSessionDetachedOperationStore({ sessionStore, scopeId, clo
 
     async takeover(operationId) {
       requireText(operationId, "detached operation operationId");
-      async function takeoverOnce() {
-        return withDocument((state) => {
-          const record = state.persistentMemory.operations[operationId] ?? null;
-          invariant(record, `detached operation not found: ${operationId}`);
-          if (isDetachedTerminalStatus(record.status)) {
-            return { value: Object.freeze({ record: clone(record), tookOver: false }) };
+      return withDocument((state) => {
+        const record = state.persistentMemory.operations[operationId] ?? null;
+        invariant(record, `detached operation not found: ${operationId}`);
+        if (isDetachedTerminalStatus(record.status)) {
+          return { value: Object.freeze({ record: clone(record), tookOver: false }) };
+        }
+        const fromGeneration = record.generation;
+        record.generation += 1;
+        record.updatedAt = now();
+        return {
+          value: Object.freeze({ record: clone(record), tookOver: true }),
+          onConflict: (current) => {
+            const latest = current?.persistentMemory?.operations?.[operationId] ?? null;
+            if (latest == null) return { retry: true };
+            // Report tookOver:false only when this operation observably moved
+            // (generation advanced or terminal reached); a foreign write to a
+            // different operation retries instead of stealing ownership.
+            if (isDetachedTerminalStatus(latest.status) || latest.generation !== fromGeneration) {
+              return Object.freeze({ record: clone(latest), tookOver: false });
+            }
+            return { retry: true };
           }
-          record.generation += 1;
-          record.updatedAt = now();
-          return { value: Object.freeze({ record: clone(record), tookOver: true }) };
-        }, { retries: 0 });
-      }
-
-    async function readCurrent() {
-      const state = await loadDocument();
-      const record = state?.persistentMemory?.operations?.[operationId] ?? null;
-      return record == null ? null : clone(record);
-    }
-
-    try {
-      return await takeoverOnce();
-    } catch (error) {
-      if (error?.code === "STORE_CONFLICT") {
-        // A concurrent recover already moved the generation; adopt its
-        // outcome instead of incrementing again so concurrent takeovers yield
-        // exactly one current generation.
-        const latest = await readCurrent();
-        if (latest == null) throw new Error(`detached operation missing after conflict: ${operationId}`);
-        return Object.freeze({ record: latest, tookOver: false });
-      }
-      throw error;
-    }
+        };
+      });
     },
 
     async noteDiagnostic(operationId, note) {
@@ -441,7 +443,9 @@ export function createSessionDetachedOperationStore({ sessionStore, scopeId, clo
         record.updatedAt = now();
         return {
           value: clone(record),
-          onConflict: (current) => clone(current?.persistentMemory?.operations?.[operationId] ?? record)
+          // Always retry: the note lives only in the failed save, so
+          // re-running against the fresh document appends it exactly once.
+          onConflict: () => ({ retry: true })
         };
       });
     }

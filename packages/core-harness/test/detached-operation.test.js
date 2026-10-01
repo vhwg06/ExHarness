@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   createInMemoryDetachedOperationStore,
+  createSessionDetachedOperationStore,
   deriveDetachedOperationId,
   DetachedOperationBindingError,
   DetachedOperationStatus,
@@ -15,6 +16,7 @@ import {
   createInMemoryEffectJournal,
   defineEffectCapability
 } from "../src/effect-reconciliation.js";
+import { createInMemorySessionStore } from "../src/store.js";
 import { createAgentRuntime, defineCapability } from "../src/agent-runtime.js";
 
 function deferred() {
@@ -212,8 +214,7 @@ test("stale generation completion cannot overwrite current terminal state", asyn
   assert.equal(authoritative.length, 1);
 });
 
-test("concurrent store creation attaches instead of duplicating the operation", async () => {
-  const store = createInMemoryDetachedOperationStore({ scopeId: "detach-cas" });
+test("concurrent store creation attaches instead of duplicating the operation", async () => {  const store = createInMemoryDetachedOperationStore({ scopeId: "detach-cas" });
   const binding = {
     operationId: "op-cas",
     scopeId: "detach-cas",
@@ -301,6 +302,34 @@ test("scheduler success cannot synthesize effect confirmation", async () => {
   assert.deepEqual(terminal.result, confirmed.result);
 });
 
+test("successful raw return without journal confirmation converges unknown", async () => {
+  // A hand-built capability whose execute resolves but never confirms the
+  // journal must not mint a scheduler SUCCEEDED: the run fails closed to
+  // UNKNOWN and the journal stays unconfirmed.
+  const journal = createInMemoryEffectJournal();
+  const capability = {
+    name: "raw.task",
+    effect: {
+      replayPolicy: EffectReplayPolicy.PURE,
+      operationKey: ({ input }) => `raw:${input.id}`
+    },
+    async execute(value) {
+      return { raw: true, id: value.id };
+    }
+  };
+  const store = createInMemoryDetachedOperationStore({ scopeId: "detach-no-confirm" });
+  const manager = createManager({ store, effectBindings: { "raw.task": { capability, journal } } });
+  const handle = await manager.capability("raw.task").execute({ id: "a" }, { callId: "call-1" });
+  const terminal = await Promise.race([
+    handle.done,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("handle.done never resolved")), 2000))
+  ]);
+  assert.equal(terminal.status, DetachedOperationStatus.UNKNOWN);
+  assert.equal(terminal.result, null);
+  assert.equal(terminal.evidence?.escalation, "success-without-confirm");
+  assert.equal(await journal.get("raw:a").then((record) => record?.status ?? "ABSENT"), "ABSENT");
+});
+
 test("scheduler failure leaves the effect journal unconfirmed", async () => {
   const inner = createInMemoryEffectJournal();
   await inner.intend({ operationId: "fail:1", capability: "fail.task", replayPolicy: EffectReplayPolicy.PURE, input: { id: 1 } });
@@ -385,4 +414,168 @@ test("unwrapped synchronous capabilities coexist unchanged with detached wrapper
     capabilities: [fast]
   });
   assert.deepEqual(await plain.run(), { sum: 5 });
+});
+
+// A session store wrapper that forces genuine STORE_CONFLICTs: before the
+// next `shots` saves it persists a shape-preserving foreign touch to the same
+// document first, so the caller's save hits a real revision conflict caused
+// by another writer rather than by its own operation.
+function foreignConflictSessionStore() {
+  const base = createInMemorySessionStore();
+  let remaining = 0;
+  return {
+    supportsRevisions: true,
+    arm(shots = 1) {
+      remaining += shots;
+    },
+    load: (sessionId) => base.load(sessionId),
+    async save(session, options) {
+      if (remaining > 0) {
+        remaining -= 1;
+        const current = await base.load(session.id);
+        const foreign = current == null
+          ? {
+              schemaVersion: 2,
+              revision: 0,
+              id: session.id,
+              work: { kind: "FOREIGN_WRITER" },
+              persistentMemory: {},
+              trajectory: [],
+              supervision: {
+                inspections: 0,
+                skipped: 0,
+                interventions: [],
+                lastInspectedEventId: null,
+                lastDecision: null
+              },
+              createdAt: "2026-01-01T00:00:00.000Z",
+              updatedAt: "2026-01-01T00:00:00.000Z"
+            }
+          : structuredClone(current);
+        foreign.updatedAt = "2026-01-02T00:00:00.000Z";
+        await base.save(foreign, { expectedRevision: foreign.revision ?? 0 });
+      }
+      return base.save(session, options);
+    }
+  };
+}
+
+function casBinding(operationId, scopeId) {
+  return {
+    operationId,
+    scopeId,
+    capability: "slow.task",
+    inputDigest: `digest-${operationId}`,
+    input: { id: operationId },
+    effectOperationId: `slow:${operationId}`,
+    replayPolicy: EffectReplayPolicy.PURE,
+    callId: "call-1",
+    protocolVersion: 1
+  };
+}
+
+test("store transition survives a conflict caused by another operation write", async () => {
+  const sessionStore = foreignConflictSessionStore();
+  const store = createSessionDetachedOperationStore({ sessionStore, scopeId: "cas-transition" });
+  await store.create(casBinding("op-t", "cas-transition"));
+  sessionStore.arm(1);
+  const outcome = await store.transition("op-t", {
+    to: DetachedOperationStatus.SUCCEEDED,
+    generation: 1,
+    result: { ok: true }
+  });
+  assert.equal(outcome.applied, true);
+  const current = await store.read("op-t");
+  assert.equal(current.status, DetachedOperationStatus.SUCCEEDED);
+  assert.deepEqual(current.result, { ok: true });
+});
+
+test("store creation survives a conflict caused by another operation write", async () => {
+  const sessionStore = foreignConflictSessionStore();
+  const store = createSessionDetachedOperationStore({ sessionStore, scopeId: "cas-create" });
+  sessionStore.arm(1);
+  const created = await store.create(casBinding("op-c", "cas-create"));
+  assert.equal(created.record.status, DetachedOperationStatus.RUNNING);
+  assert.equal(created.attached, false);
+  assert.ok(created.transition != null);
+  assert.equal((await store.read("op-c")).status, DetachedOperationStatus.RUNNING);
+});
+
+test("store diagnostic survives a conflict caused by another operation write", async () => {
+  const sessionStore = foreignConflictSessionStore();
+  const store = createSessionDetachedOperationStore({ sessionStore, scopeId: "cas-diag" });
+  await store.create(casBinding("op-d", "cas-diag"));
+  sessionStore.arm(1);
+  const record = await store.noteDiagnostic("op-d", { kind: "probe-note" });
+  assert.equal(record.diagnostics.length, 1);
+  assert.deepEqual(record.diagnostics[0].note, { kind: "probe-note" });
+  assert.equal((await store.read("op-d")).diagnostics.length, 1);
+});
+
+test("store takeover survives a conflict caused by another operation write", async () => {
+  const sessionStore = foreignConflictSessionStore();
+  const store = createSessionDetachedOperationStore({ sessionStore, scopeId: "cas-takeover" });
+  await store.create(casBinding("op-k", "cas-takeover"));
+  sessionStore.arm(1);
+  const takeover = await store.takeover("op-k");
+  assert.equal(takeover.tookOver, true);
+  assert.equal(takeover.record.generation, 2);
+  assert.equal((await store.read("op-k")).generation, 2);
+});
+
+test("exhausted conflict retries fail loudly instead of silently winning", async () => {
+  const base = createInMemorySessionStore();
+  const alwaysConflict = {
+    supportsRevisions: true,
+    load: (sessionId) => base.load(sessionId),
+    async save(session, options) {
+      const current = await base.load(session.id);
+      if (current != null) {
+        const foreign = structuredClone(current);
+        await base.save(foreign, { expectedRevision: options?.expectedRevision ?? foreign.revision ?? 0 });
+      }
+      return base.save(session, options);
+    }
+  };
+  const store = createSessionDetachedOperationStore({ sessionStore: alwaysConflict, scopeId: "cas-loud" });
+  await store.create(casBinding("op-l", "cas-loud"));
+  await assert.rejects(
+    () => store.transition("op-l", { to: DetachedOperationStatus.SUCCEEDED, generation: 1 }),
+    (error) => error?.code === "STORE_CONFLICT"
+  );
+});
+
+test("two operations in one scope run and terminate concurrently", async () => {
+  const sessionStore = foreignConflictSessionStore();
+  const store = createSessionDetachedOperationStore({ sessionStore, scopeId: "cas-two-ops" });
+  const journal = createInMemoryEffectJournal();
+  function capabilityFor(name) {
+    return defineEffectCapability({
+      name,
+      effect: {
+        replayPolicy: EffectReplayPolicy.PURE,
+        operationKey: ({ input }) => `${name}:${input.id}`
+      },
+      async execute(value) {
+        await flush(3);
+        return { done: `${name}:${value.id}` };
+      }
+    }, { journal });
+  }
+  const one = capabilityFor("one.task");
+  const two = capabilityFor("two.task");
+  const manager = createManager({ store, effectBindings: { "one.task": { capability: one, journal }, "two.task": { capability: two, journal } } });
+  sessionStore.arm(4);
+  const [first, second] = await Promise.all([
+    manager.capability("one.task").execute({ id: "1" }, { callId: "call-1" }),
+    manager.capability("two.task").execute({ id: "2" }, { callId: "call-2" })
+  ]);
+  assert.notEqual(first.operationId, second.operationId);
+  const [terminalOne, terminalTwo] = await Promise.all([first.done, second.done]);
+  assert.equal(terminalOne.status, DetachedOperationStatus.SUCCEEDED);
+  assert.deepEqual(terminalOne.result, { done: "one.task:1" });
+  assert.equal(terminalTwo.status, DetachedOperationStatus.SUCCEEDED);
+  assert.deepEqual(terminalTwo.result, { done: "two.task:2" });
+  assert.equal((await journal.get("one.task:1")).status, EffectOperationStatus.CONFIRMED);
+  assert.equal((await journal.get("two.task:2")).status, EffectOperationStatus.CONFIRMED);
 });

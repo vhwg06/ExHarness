@@ -190,7 +190,7 @@ export function createDetachedOperationManager({ store, effectBindings, clock = 
     return record?.status === DetachedOperationStatus.CANCEL_REQUESTED;
   }
 
-  async function commitSuccess(operationId, generation, result) {
+  async function commitSuccess(operationId, generation, result, { reason = "attempt-success" } = {}) {
     const record = await store.read(operationId);
     if (record == null) return null;
     if (record.generation !== generation) {
@@ -421,16 +421,55 @@ export function createDetachedOperationManager({ store, effectBindings, clock = 
     trackAttempt(operationId, generation, raw);
     try {
       const result = await raw;
-      return commitSuccess(operationId, generation, result);
+      return await commitSuccess(operationId, generation, result);
     } catch (error) {
       if (error instanceof EffectRecoveryRequiredError) {
-        return settleFromJournal(operationId, generation, { reason: "recovery-required", error });
+        return await settleFromJournal(operationId, generation, { reason: "recovery-required", error });
       }
-      return settleFromError(operationId, generation, error);
+      return await settleFromError(operationId, generation, error);
     }
   }
 
   async function runDetached(operationId, generation) {
+    try {
+      return await runDetachedInner(operationId, generation);
+    } catch (error) {
+      // Fail closed: an unexpected internal error must never leave a
+      // current-generation record silently RUNNING with a hung handle.
+      try {
+        const record = await store.read(operationId);
+        if (record == null || record.generation !== generation) {
+          if (record != null) {
+            await store.noteDiagnostic(operationId, {
+              kind: "DETACHED_RUN_UNEXPECTED_ERROR",
+              error: errorView(error)
+            });
+          }
+          return record;
+        }
+        if (isDetachedTerminalStatus(record.status)) return record;
+        if (isCancelFenced(record)) {
+          return await settleCancellation(operationId, generation, { reason: "detached-run-failure", error });
+        }
+        const outcome = await applyTransition(operationId, generation, {
+          to: DetachedOperationStatus.UNKNOWN,
+          error: errorView(error),
+          evidence: { escalation: "detached-run-failure", reason: "unexpected-error" },
+          reason: "detached-run-failure"
+        });
+        if (outcome?.applied === true) return outcome.record;
+        return outcome?.current ?? record;
+      } catch {
+        try {
+          return await store.read(operationId);
+        } catch {
+          return null;
+        }
+      }
+    }
+  }
+
+  async function runDetachedInner(operationId, generation) {
     const record = await store.read(operationId);
     if (record == null || record.generation !== generation) return record;
     if (isDetachedTerminalStatus(record.status)) return record;
@@ -594,7 +633,13 @@ export function createDetachedOperationManager({ store, effectBindings, clock = 
     }
     if (policy === EffectReplayPolicy.IDEMPOTENT) {
       // Idempotence permits safe replay during recovery; it never proves
-      // that cancellation succeeded, so post-dispatch ambiguity is UNKNOWN.
+      // that cancellation succeeded. While the current generation's local
+      // attempt is still capable of committing, stay CANCEL_REQUESTED: a
+      // CONFIRMED journal at settle time still wins as SUCCEEDED, otherwise
+      // post-dispatch ambiguity converges UNKNOWN.
+      const tracked = attemptFor(operationId);
+      const settled = tracked == null || tracked.generation !== generation || tracked.settled === true;
+      if (!settled) return record;
       const outcome = await applyTransition(operationId, generation, {
         to: DetachedOperationStatus.UNKNOWN,
         error: error == null ? null : errorView(error),
@@ -641,6 +686,13 @@ export function createDetachedOperationManager({ store, effectBindings, clock = 
       });
       return outcome?.current ?? outcome?.record ?? record;
     }
+    // NON_RECONCILABLE (and any unknown future policy): never guess
+    // cancellation success after dispatch. A still-capable in-flight attempt
+    // keeps CANCEL_REQUESTED; a CONFIRMED journal at settle time wins as
+    // SUCCEEDED, otherwise converge UNKNOWN/ESCALATE.
+    const pending = attemptFor(operationId);
+    const attemptSettled = pending == null || pending.generation !== generation || pending.settled === true;
+    if (!attemptSettled) return record;
     const outcome = await applyTransition(operationId, generation, {
       to: DetachedOperationStatus.UNKNOWN,
       error: error == null ? null : errorView(error),

@@ -363,32 +363,91 @@ test("non-cooperating abort keeps cancel requested and confirmed work still wins
   assert.ok(!transitions.includes(DetachedOperationStatus.CANCELLED));
 });
 
-test("idempotent cancellation after dispatch stays unknown unless confirmed", async () => {
-  const gate = deferred();
-  const fixture = managerFixture({
-    scopeId: "cancel-idempotent",
-    replayPolicy: EffectReplayPolicy.IDEMPOTENT,
-    execute: async (value) => {
-      await gate.promise;
-      return { done: value.id };
-    }
-  });
-  const handle = await fixture.manager.capability("w.task").execute({ id: "i" }, { callId: "call-1" });
-  await pollFor("journal dispatched", async () =>
-    (await fixture.journal.get(fixture.effectOperationId("i")))?.status === EffectOperationStatus.DISPATCHED);
-  const cancelled = await fixture.manager.cancel(handle.operationId, { reason: "stop" });
-  // Idempotence permits safe replay; it never proves cancellation succeeded.
-  assert.equal(cancelled.status, DetachedOperationStatus.UNKNOWN);
-  gate.resolve();
-  await flush(10);
-  const current = await fixture.manager.read(handle.operationId);
-  assert.equal(current.status, DetachedOperationStatus.UNKNOWN);
-  assert.equal(current.result, null);
-  assert.equal((await fixture.journal.get(fixture.effectOperationId("i"))).status, EffectOperationStatus.CONFIRMED);
-  assert.equal(fixture.dispatches(), 1);
-  const [recovered] = await fixture.manager.recover();
-  assert.equal(recovered.status, DetachedOperationStatus.UNKNOWN);
-  assert.equal(fixture.dispatches(), 1);
+test("idempotent cancellation after dispatch waits for the in-flight attempt", async () => {
+  // (a) Cancel while in flight keeps CANCEL_REQUESTED; the confirmed attempt
+  // then wins as SUCCEEDED with exactly one dispatch.
+  {
+    const gate = deferred();
+    const fixture = managerFixture({
+      scopeId: "cancel-idem-race",
+      replayPolicy: EffectReplayPolicy.IDEMPOTENT,
+      execute: async (value) => {
+        await gate.promise;
+        return { done: value.id };
+      }
+    });
+    const handle = await fixture.manager.capability("w.task").execute({ id: "a" }, { callId: "call-1" });
+    await pollFor("journal dispatched", async () =>
+      (await fixture.journal.get(fixture.effectOperationId("a")))?.status === EffectOperationStatus.DISPATCHED);
+    const cancelling = await fixture.manager.cancel(handle.operationId, { reason: "stop" });
+    assert.equal(cancelling.status, DetachedOperationStatus.CANCEL_REQUESTED);
+    gate.resolve();
+    const terminal = await handle.done;
+    assert.equal(terminal.status, DetachedOperationStatus.SUCCEEDED);
+    assert.deepEqual(terminal.result, { done: "a" });
+    assert.equal((await fixture.journal.get(fixture.effectOperationId("a"))).status, EffectOperationStatus.CONFIRMED);
+    assert.equal(fixture.dispatches(), 1);
+  }
+
+  // (b) Cancel while in flight; the attempt then fails without confirming, so
+  // the operation converges UNKNOWN rather than guessing cancellation.
+  {
+    const gate = deferred();
+    const fixture = managerFixture({
+      scopeId: "cancel-idem-fail",
+      replayPolicy: EffectReplayPolicy.IDEMPOTENT,
+      execute: async () => {
+        await gate.promise;
+        throw new Error("response lost after dispatch");
+      }
+    });
+    const handle = await fixture.manager.capability("w.task").execute({ id: "b" }, { callId: "call-1" });
+    await pollFor("journal dispatched", async () =>
+      (await fixture.journal.get(fixture.effectOperationId("b")))?.status === EffectOperationStatus.DISPATCHED);
+    const cancelling = await fixture.manager.cancel(handle.operationId, { reason: "stop" });
+    assert.equal(cancelling.status, DetachedOperationStatus.CANCEL_REQUESTED);
+    gate.resolve();
+    const terminal = await handle.done;
+    assert.equal(terminal.status, DetachedOperationStatus.UNKNOWN);
+    assert.equal(terminal.result, null);
+    assert.notEqual((await fixture.journal.get(fixture.effectOperationId("b"))).status, EffectOperationStatus.CONFIRMED);
+    assert.equal(fixture.dispatches(), 1);
+  }
+
+  // (c) Cancel with journal DISPATCHED and no live attempt (fresh manager on
+  // the same store/journal, as after a restart) converges UNKNOWN at once.
+  {
+    const fixture = managerFixture({
+      scopeId: "cancel-idem-restart",
+      replayPolicy: EffectReplayPolicy.IDEMPOTENT,
+      execute: async () => { throw new Error("must not dispatch"); }
+    });
+    const input = { id: "c" };
+    await seedJournal(fixture.journal, {
+      capability: "w.task",
+      replayPolicy: EffectReplayPolicy.IDEMPOTENT,
+      input,
+      effectOperationId: fixture.effectOperationId("c"),
+      state: "DISPATCHED"
+    });
+    const binding = craftBinding({
+      scopeId: "cancel-idem-restart",
+      capability: "w.task",
+      input,
+      effectOperationId: fixture.effectOperationId("c"),
+      replayPolicy: EffectReplayPolicy.IDEMPOTENT
+    });
+    await fixture.store.create(binding);
+    const restarted = createDetachedOperationManager({
+      store: fixture.store,
+      effectBindings: { "w.task": { capability: fixture.capability, journal: fixture.journal } }
+    });
+    const cancelled = await restarted.cancel(binding.operationId, { reason: "stop" });
+    assert.equal(cancelled.status, DetachedOperationStatus.UNKNOWN);
+    assert.equal(cancelled.result, null);
+    assert.equal(fixture.dispatches(), 0);
+    assert.notEqual((await fixture.journal.get(fixture.effectOperationId("c"))).status, EffectOperationStatus.CONFIRMED);
+  }
 });
 
 test("non-reconcilable cancellation after dispatch escalates unknown", async () => {
@@ -416,6 +475,54 @@ test("non-reconcilable cancellation after dispatch escalates unknown", async () 
   const cancelled = await fixture.manager.cancel(binding.operationId, { reason: "stop" });
   assert.equal(cancelled.status, DetachedOperationStatus.UNKNOWN);
   assert.equal(fixture.dispatches(), 0);
+});
+
+test("non-reconcilable cancellation waits for the in-flight attempt, then escalates or confirms", async () => {
+  // Cancel while in flight keeps CANCEL_REQUESTED; a confirming attempt still
+  // wins as SUCCEEDED because confirmation outranks cancellation.
+  {
+    const gate = deferred();
+    const fixture = managerFixture({
+      scopeId: "cancel-nr-race",
+      replayPolicy: EffectReplayPolicy.NON_RECONCILABLE,
+      execute: async (value) => {
+        await gate.promise;
+        return { done: value.id };
+      }
+    });
+    const handle = await fixture.manager.capability("w.task").execute({ id: "r" }, { callId: "call-1" });
+    await pollFor("journal dispatched", async () =>
+      (await fixture.journal.get(fixture.effectOperationId("r")))?.status === EffectOperationStatus.DISPATCHED);
+    const cancelling = await fixture.manager.cancel(handle.operationId, { reason: "stop" });
+    assert.equal(cancelling.status, DetachedOperationStatus.CANCEL_REQUESTED);
+    gate.resolve();
+    const terminal = await handle.done;
+    assert.equal(terminal.status, DetachedOperationStatus.SUCCEEDED);
+    assert.deepEqual(terminal.result, { done: "r" });
+    assert.equal(fixture.dispatches(), 1);
+  }
+
+  // A failing in-flight attempt escalates UNKNOWN without a second dispatch.
+  {
+    const gate = deferred();
+    const fixture = managerFixture({
+      scopeId: "cancel-nr-fail",
+      replayPolicy: EffectReplayPolicy.NON_RECONCILABLE,
+      execute: async () => {
+        await gate.promise;
+        throw new Error("ambiguous external outcome");
+      }
+    });
+    const handle = await fixture.manager.capability("w.task").execute({ id: "f" }, { callId: "call-1" });
+    await pollFor("journal dispatched", async () =>
+      (await fixture.journal.get(fixture.effectOperationId("f")))?.status === EffectOperationStatus.DISPATCHED);
+    const cancelling = await fixture.manager.cancel(handle.operationId, { reason: "stop" });
+    assert.equal(cancelling.status, DetachedOperationStatus.CANCEL_REQUESTED);
+    gate.resolve();
+    const terminal = await handle.done;
+    assert.equal(terminal.status, DetachedOperationStatus.UNKNOWN);
+    assert.equal(fixture.dispatches(), 1);
+  }
 });
 
 test("observable cancellation resolves only from settled plus observed truth", async () => {
@@ -657,28 +764,44 @@ test("recovery with changed replay policy or effect binding fails closed", async
 });
 
 test("scheduler terminal never marks the effect operation confirmed", async () => {
-  const gate = deferred();
+  // A scheduler terminal reached without effect confirmation carries no
+  // effect authority: when the effect layer later confirms through its own
+  // journal, the scheduler does not adopt or rewrite that truth.
   const fixture = managerFixture({
     scopeId: "inv-terminal-truth",
     replayPolicy: EffectReplayPolicy.IDEMPOTENT,
-    execute: async (value) => {
-      await gate.promise;
-      return { done: value.id };
-    }
+    execute: async () => { throw new Error("must not dispatch"); }
   });
-  const handle = await fixture.manager.capability("w.task").execute({ id: "z" }, { callId: "call-1" });
-  await pollFor("journal dispatched", async () =>
-    (await fixture.journal.get(fixture.effectOperationId("z")))?.status === EffectOperationStatus.DISPATCHED);
-  const cancelled = await fixture.manager.cancel(handle.operationId, { reason: "stop" });
+  const input = { id: "z" };
+  await seedJournal(fixture.journal, {
+    capability: "w.task",
+    replayPolicy: EffectReplayPolicy.IDEMPOTENT,
+    input,
+    effectOperationId: fixture.effectOperationId("z"),
+    state: "DISPATCHED"
+  });
+  const binding = craftBinding({
+    scopeId: "inv-terminal-truth",
+    capability: "w.task",
+    input,
+    effectOperationId: fixture.effectOperationId("z"),
+    replayPolicy: EffectReplayPolicy.IDEMPOTENT
+  });
+  await fixture.store.create(binding);
+  const restarted = createDetachedOperationManager({
+    store: fixture.store,
+    effectBindings: { "w.task": { capability: fixture.capability, journal: fixture.journal } }
+  });
+  const cancelled = await restarted.cancel(binding.operationId, { reason: "stop" });
   assert.equal(cancelled.status, DetachedOperationStatus.UNKNOWN);
   assert.equal(cancelled.result, null);
-  // The scheduler terminal carries no effect authority: only the effect
-  // journal records confirmation, and it arrives through the effect layer.
   assert.equal((await fixture.journal.get(fixture.effectOperationId("z"))).status, EffectOperationStatus.DISPATCHED);
-  gate.resolve();
-  await pollFor("journal confirmed", async () =>
-    (await fixture.journal.get(fixture.effectOperationId("z")))?.status === EffectOperationStatus.CONFIRMED);
-  const current = await fixture.manager.read(handle.operationId);
+
+  // The effect layer confirms later through its own authority only.
+  await fixture.journal.markConfirmed(fixture.effectOperationId("z"), { result: { done: "z" } });
+  assert.equal((await fixture.journal.get(fixture.effectOperationId("z"))).status, EffectOperationStatus.CONFIRMED);
+  const current = await fixture.manager.read(binding.operationId);
   assert.equal(current.status, DetachedOperationStatus.UNKNOWN);
   assert.equal(current.result, null);
+  assert.equal(fixture.dispatches(), 0);
 });

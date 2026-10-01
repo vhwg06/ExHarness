@@ -213,15 +213,20 @@ manager.recover()
 
 manager.cancel(operationId)
   -> CAS RUNNING -> CANCEL_REQUESTED (fences dispatch/retry) + cooperative abort
-  -> CONFIRMED at settle time -> SUCCEEDED (confirmation wins the race)
+  -> CONFIRMED at settle time -> SUCCEEDED for every policy
   -> pre-dispatch  -> CANCELLED (all policies)
-  -> post-dispatch -> PURE: CANCELLED once settled
-                      IDEMPOTENT: UNKNOWN unless confirmed
-                      OBSERVABLE: SUCCEEDED if observed satisfied,
-                                  CANCELLED if settled and observed absent,
-                                  UNKNOWN on observer failure or unsettled attempt
-                      NON_RECONCILABLE: UNKNOWN
+  -> post-dispatch with the local attempt still capable of committing
+     -> stay CANCEL_REQUESTED (all policies) until it settles
+  -> post-dispatch once settled (or with no live attempt, e.g. after restart)
+     -> PURE: CANCELLED once settled
+        IDEMPOTENT: UNKNOWN unless confirmed
+        OBSERVABLE: SUCCEEDED if observed satisfied,
+                    CANCELLED if settled and observed absent,
+                    UNKNOWN on observer failure or unsettled attempt
+        NON_RECONCILABLE: UNKNOWN
 ```
+
+A raw success that never confirms the journal converges `UNKNOWN`, never `SUCCEEDED`. An unexpected internal run error fails closed to `UNKNOWN` with evidence instead of leaving the record silently `RUNNING`. All operations of one scope share a single persisted document, so a revision conflict caused by a different operation's write retries the mutation against the fresh document (bounded, loud on exhaustion); only an observable move of the same operation short-circuits.
 
 Consumers observe transitions with monotonic sequence and deterministic transition ids and must deduplicate by transition id; repeated delivery never creates a second semantic completion, and stale generations cannot publish authoritative terminal transitions. Synchronous capabilities keep working unchanged alongside detached wrappers. Wakeup/steering integration and cache-stable context projection over these updates are explicitly out of scope here.
 
