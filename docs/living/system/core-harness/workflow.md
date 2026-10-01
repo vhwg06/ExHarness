@@ -228,14 +228,14 @@ manager.cancel(operationId)
 
 A raw success that never confirms the journal converges `UNKNOWN`, never `SUCCEEDED`. An unexpected internal run error fails closed to `UNKNOWN` with evidence instead of leaving the record silently `RUNNING`. All operations of one scope share a single persisted document, so a revision conflict caused by a different operation's write retries the mutation against the fresh document (bounded, loud on exhaustion); only an observable move of the same operation short-circuits.
 
-Consumers observe transitions with monotonic sequence and deterministic transition ids and must deduplicate by transition id; repeated delivery never creates a second semantic completion, and stale generations cannot publish authoritative terminal transitions. Synchronous capabilities keep working unchanged alongside detached wrappers. Wakeup/steering integration over these updates belongs to BB-080; cache-stable context projection over these updates is delivered below.
+Consumers observe transitions with monotonic sequence and deterministic transition ids and must deduplicate by transition id; repeated delivery never creates a second semantic completion, and stale generations cannot publish authoritative terminal transitions. Synchronous capabilities keep working unchanged alongside detached wrappers. Wakeup/steering integration over these updates belongs to future steering/wakeup work; cache-stable context projection over these updates is delivered below.
 
 ## CACHE-STABLE ASYNC RESULT PROJECTION
 
 The async-result projector turns delivered detached-operation transitions into append-only model-visible context without touching committed history or effect truth:
 
 ```text
-delivered transition envelope (BB-078 truth, at-least-once)
+delivered transition envelope (detached-operation scheduling truth, at-least-once)
   -> stageAsyncResultTransitions()
        duplicate transitionId, identical binding -> ignored
        conflicting transitionId reuse            -> fail closed
@@ -274,7 +274,7 @@ SYNCHRONOUS:        RUNNING -> wait (no progressive context)
                      terminal -> one ordinary terminal tool result
 ```
 
-This projection cannot confirm effects, accept products, or authorize external work, and it publishes no efficiency verdict. It is checkpoint state only; BB-080 owns persisting it with model-turn state, waking the model, and recovery-loop scheduling.
+This projection cannot confirm effects, accept products, or authorize external work, and it publishes no efficiency verdict. It is checkpoint state only; persisting it with model-turn state, waking the model, and recovery-loop scheduling belong to future steering/wakeup integration and are explicitly out of scope here.
 
 ## CURRENT ABSTRACTION BOUNDARY
 
