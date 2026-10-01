@@ -21,7 +21,7 @@ next-work-id: BB-131
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-078
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-078
-task: Implement durable detached operation scheduling
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-078/current.json
-components: core/async-runtime-efficiency
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -91,7 +84,7 @@ BB-074 [BLOCKED_BY BB-071,BB-073,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-0
 BB-075 [BLOCKED_BY BB-074,BB-059] <- BB-074, BB-059
 BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
 BB-077 [DONE] <- BB-065
-BB-078 [ACTIVE] <- BB-077
+BB-078 [PLANNED] <- BB-077
 BB-079 [BLOCKED_BY BB-078] <- BB-077, BB-078
 BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
 BB-081 [BLOCKED_BY BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
