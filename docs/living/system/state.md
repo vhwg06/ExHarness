@@ -38,7 +38,7 @@ Objective replacement has its own authority. Research and Worker candidates cann
 - declares every direct dependent: DONE work stays unchanged, unfinished WORKER work returns to research with the same plan content, and research work stays research;
 - changes only Board data at stable paths, without version siblings, history rewrites or bundled code.
 
-Repository verification keeps retained receipts bound to the current objective. Migrating a specific task's objective is a separate later publication.
+Repository verification keeps retained receipts bound to the current objective. Migrating a specific task's objective is a separate later publication. The objective-supersession unit tests run from the `test:blackboard-work-graph` standing script.
 
 Worker exit also has a documentation gate: each ready worker plan declares the Living Docs refs that describe its implementation. The candidate must update those docs within the authorized scope, Jev receives their full contents (or, in a batched evaluation, every section the candidate changed plus the verification runs, evidence excerpts and changed-source excerpts) and judges a dedicated implementation-description claim, and delivery requires that claim to be `SATISFIED` plus the refs to be consolidated and preserved on `main`.
 
