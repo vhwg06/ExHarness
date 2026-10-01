@@ -277,6 +277,40 @@ export {
   ORGANIZATION_OBSERVER_QUERY_SURFACE
 } from "./organization-observer.js";
 export {
+  HOW_EVOLUTION_DECISION_KIND,
+  HOW_EVOLUTION_FINDING_KIND,
+  HOW_EVOLUTION_JEV_QUESTION_IDS,
+  HOW_EVOLUTION_PROPOSAL_KIND,
+  HOW_EVOLUTION_PROTOCOL_KIND,
+  HOW_EVOLUTION_PROTOCOL_VERSION,
+  HOW_EVOLUTION_RESULT_KIND,
+  HOW_EVOLUTION_ROLLBACK_KIND,
+  HOW_EVOLUTION_RUN_KIND,
+  HowEvolutionCasePartition,
+  HowEvolutionDisposition,
+  HowEvolutionRunSide,
+  HowEvolutionVerdict,
+  assertHowEvolutionPromotionCurrentness,
+  createHowEvolutionPromotionProposal,
+  createInMemoryHowEvolutionArtifactStore,
+  createJsonHowEvolutionArtifactStore,
+  defineHowEvolutionEvaluationProtocol,
+  defineHowEvolutionEvaluationRun,
+  defineHowEvolutionFinding,
+  evaluateHowEvolution,
+  publishHowEvolutionPromotion,
+  publishHowEvolutionRollback,
+  resolveHowEvolutionProvenance
+} from "./how-evolution.js";
+export {
+  HOW_EVOLUTION_JEV_ADAPTER_IDENTITY,
+  HOW_EVOLUTION_JEV_ADAPTER_REVISION,
+  HOW_EVOLUTION_JEV_MODEL_SNAPSHOT,
+  HOW_EVOLUTION_JEV_PROVIDER_ENDPOINT_CLASS,
+  HOW_EVOLUTION_JEV_PROVIDER_URL,
+  createHowEvolutionJevEvaluator
+} from "./how-evolution-jev-adapter.js";
+export {
   GROUNDED_OBSERVATION_KIND,
   GROUNDED_OBSERVATION_VERSION,
   GROUNDED_FINDING_INPUT_KIND,
@@ -299,3 +333,35 @@ export {
   classifyGrounding,
   contextBindingIdFor
 } from "./observation-context-binding.js";
+export {
+  FEEDBACK_EPISODE_KIND,
+  FEEDBACK_EPISODE_VERSION,
+  FEEDBACK_RESPONSE_KIND,
+  FEEDBACK_RESPONSE_VERSION,
+  FEEDBACK_OUTCOME_POLICY_KIND,
+  FEEDBACK_OUTCOME_POLICY_VERSION,
+  FEEDBACK_OUTCOME_KIND,
+  FEEDBACK_OUTCOME_VERSION,
+  FEEDBACK_RESOLUTION_KIND,
+  FEEDBACK_RESOLUTION_VERSION,
+  FEEDBACK_DISPOSITIONS,
+  FEEDBACK_OUTCOMES,
+  FEEDBACK_RESOLUTIONS,
+  FEEDBACK_IMPACT_BASES,
+  FEEDBACK_PRODUCER_KINDS,
+  FEEDBACK_POLICY_DIRECTIONS,
+  FEEDBACK_REVISIT_KINDS,
+  defineFeedbackEpisode,
+  episodeIdFor,
+  defineFeedbackOutcomePolicy,
+  outcomePolicyDigestFor,
+  defineFeedbackResponse,
+  defineFeedbackOutcome,
+  defineFeedbackResolution
+} from "./feedback-lifecycle-contracts.js";
+export { classifyFeedbackOutcome } from "./feedback-outcome.js";
+export {
+  createFeedbackLifecycleController,
+  createJsonFeedbackEpisodeHeadStore,
+  feedbackEpisodeHeadKeyFor
+} from "./feedback-lifecycle-controller.js";
