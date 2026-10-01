@@ -494,99 +494,11 @@
   },
   "prototypeEvidence": {
     "result": {
-      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_PROTOTYPE_NOT_PRODUCT_DELIVERY",
+      "classification": "EXECUTED_SINGLE_TASK_RESEARCH_SOURCE_COPY_NOT_PRODUCT_DELIVERY",
+      "mode": "smoke",
       "runtime": "v24.19.0",
-      "sourceSha256": "2c13ee83f64b08c36fba60fd7b2648ef8299dc7c162f690d51d7d039bc005660",
-      "originalSource": "/workspace/research-delivery/packages/agent-tools/bin/exharness-agent.mjs",
-      "scope": "Ephemeral research copy rewires only eval factors and smoke options/observation; imports delivered modules. Tracked product source is unchanged.",
-      "eval": {
-        "protocolHash": "sha256:2c1d0c47322855cabeb4c48c3080e2baa60a4f9e535e8dd2ec637ac1344c49c3",
-        "arms": [
-          {
-            "id": "bug-sum.DIRECT_SINGLE.r0",
-            "wallMs": 5000,
-            "toolCalls": 1,
-            "quality": "ACCEPTED"
-          },
-          {
-            "id": "bug-sum.DIRECT_RETRY.r0",
-            "wallMs": 15000,
-            "toolCalls": 3,
-            "quality": "ACCEPTED"
-          },
-          {
-            "id": "bug-sum.EXHARNESS_SUPERVISED.r0",
-            "wallMs": 15000,
-            "toolCalls": 3,
-            "quality": "ACCEPTED"
-          }
-        ],
-        "negatives": [
-          {
-            "flags": [
-              "--permission",
-              "NOPE"
-            ],
-            "exit": 64,
-            "dispatches": 0,
-            "registration": false
-          },
-          {
-            "flags": [
-              "--timeout-ms",
-              "0"
-            ],
-            "exit": 64,
-            "dispatches": 0,
-            "registration": false
-          },
-          {
-            "flags": [
-              "--timeout-ms",
-              "-1"
-            ],
-            "exit": 64,
-            "dispatches": 0,
-            "registration": false
-          },
-          {
-            "flags": [
-              "--timeout-ms",
-              "NaN"
-            ],
-            "exit": 64,
-            "dispatches": 0,
-            "registration": false
-          },
-          {
-            "flags": [
-              "--timeout-ms",
-              "1.5"
-            ],
-            "exit": 64,
-            "dispatches": 0,
-            "registration": false
-          },
-          {
-            "flags": [
-              "--unknown",
-              "x"
-            ],
-            "exit": 64,
-            "dispatches": 0,
-            "registration": false
-          },
-          {
-            "flags": [
-              "--permission"
-            ],
-            "exit": 64,
-            "dispatches": 0,
-            "registration": false
-          }
-        ]
-      },
-      "smoke": {
+      "sourceSha256": "3e551fc9c063e1bdd086e6ebfd4abc2cd8fe57726bcc2e086e46a21762ed7f4c",
+      "observed": {
         "status": "ACCEPTED",
         "argv": [
           "exec",
@@ -595,18 +507,19 @@
           "--sandbox",
           "danger-full-access",
           "--model",
-          "prototype-model",
+          "isolated-model",
           "-"
         ],
-        "arm": "SMOKE",
+        "traceArm": "SMOKE",
         "reportExit": 0,
         "corruptReportExit": 1,
         "invalidFlagsExit": 64,
         "invalidDispatches": 0
-      }
+      },
+      "limits": "Scratch copy changes only this task CLI wiring; other CLI features remain baseline. Delivered modules/fake agent used; no tracked product edits or readiness authority."
     },
-    "replay": "/workspace/research-plans/cli-prototype-check.mjs",
-    "method": "Actual scratch source-copy prototype executes delivered modules with deterministic fake agent and real Git; every assertion was executed. Exact generated source hash is retained. This is feasibility evidence and does not grant Worker authority or claim tracked product delivery.",
-    "patch": "--- packages/agent-tools/bin/exharness-agent.mjs\n+++ scratch/prototype-cli.mjs\n@@ -33,6 +33,6 @@\n   runProcess,\n   runSupervisedTask\n-} from \"../src/index.js\";\n-import { EvalUsageError, runAgentToolsEval } from \"../src/experiment/index.js\";\n+} from \"/workspace/research-delivery/packages/agent-tools/src/index.js\";\n+import { EvalUsageError, runAgentToolsEval } from \"/workspace/research-delivery/packages/agent-tools/src/experiment/index.js\";\n \n const USAGE = \"usage: exharness-agent run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\\n       exharness-agent eval --tool <id> --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N] [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]\\n       exharness-agent report <trace-dir>\\n       exharness-agent probe\\n       exharness-agent smoke --tool <codex|kiro|agy|grok|opencode> [--command <path>] [--timeout-ms T]\";\n@@ -152,4 +152,7 @@\n \n async function commandSmoke(options) {\n+  const permissionProfile=options.permission ?? PermissionProfile.WORKSPACE_EDIT;\n+  if(!Object.values(PermissionProfile).includes(permissionProfile))throw new UsageError(\"invalid permission\");\n+  if(options.arm!==undefined && options[\"trace-dir\"]===undefined)throw new UsageError(\"--arm requires --trace-dir\");\n   const toolId = options.tool;\n   baseTool(toolId);\n@@ -162,6 +165,8 @@\n   try {\n     const { baseRevision } = await createSmokeRepository(root);\n+    const observation=options[\"trace-dir\"]===undefined?null:createSupervisedObservation({tool,arm:options.arm??\"SMOKE\",taskId:`smoke-${toolId}`,writer:createRunTraceWriter({dir:options[\"trace-dir\"]})});\n     const result = await runSupervisedTask({\n-      tool,\n+      tool,model:options.model??null,permissionProfile,\n+      ...(observation===null?{}:{invocationObserver:observation.invocationObserver,eventSinks:observation.eventSinks,tracer:observation.tracer}),\n       task: {\n         id: `smoke-${toolId}`,\n@@ -174,4 +179,5 @@\n       timeoutMs: positiveInteger(options[\"timeout-ms\"], \"--timeout-ms\", 600000)\n     });\n+    if(observation!==null)await observation.finalize(result);\n     if (result.status === AgentTaskStatus.TOOL_UNAVAILABLE) {\n       print({ smoke: \"SKIPPED\", tool: toolId, reason: \"NOT_INSTALLED\", result });\n@@ -191,8 +197,11 @@\n }\n \n-const EVAL_FLAGS = Object.freeze([\"tool\", \"out\", \"command\", \"model\", \"tasks\", \"repeats\", \"max-invocations\", \"max-usd\", \"fake-scenario\", \"seed\"]);\n+const EVAL_FLAGS = Object.freeze([\"tool\", \"out\", \"command\", \"model\", \"tasks\", \"repeats\", \"max-invocations\", \"max-usd\", \"fake-scenario\", \"seed\", \"permission\", \"timeout-ms\"]);\n \n /** Runs the pre-registered evaluation; exit 0 when the report is written, whatever the verdicts. */\n async function commandEval(options) {\n+  const permissionProfile=options.permission ?? PermissionProfile.WORKSPACE_EDIT;\n+  if(!Object.values(PermissionProfile).includes(permissionProfile))throw new UsageError(\"invalid permission\");\n+  const timeoutMs=positiveInteger(options[\"timeout-ms\"],\"--timeout-ms\",600000);\n   for (const flag of Object.keys(options)) if (!EVAL_FLAGS.includes(flag)) throw new UsageError(`unknown eval flag --${flag}`);\n   if (!options.tool) throw new UsageError(\"eval requires --tool\");\n@@ -205,4 +214,5 @@\n   try {\n     const { report, out } = await runAgentToolsEval({\n+      factors: {permissionProfile,timeoutMs},\n       tools: options.tool.split(\",\").map((id) => id.trim()).filter(Boolean),\n       out: options.out,\n"
+    "patch": "--- packages/agent-tools/bin/exharness-agent.mjs\n+++ scratch/single-task-smoke.mjs\n@@ -33,6 +33,6 @@\n   runProcess,\n   runSupervisedTask\n-} from \"../src/index.js\";\n-import { EvalUsageError, runAgentToolsEval } from \"../src/experiment/index.js\";\n+} from \"/workspace/research-delivery/packages/agent-tools/src/index.js\";\n+import { EvalUsageError, runAgentToolsEval } from \"/workspace/research-delivery/packages/agent-tools/src/experiment/index.js\";\n \n const USAGE = \"usage: exharness-agent run --tool <codex|kiro|agy|grok|opencode> --task <task.json> [--command <path>] [--max-attempts N] [--timeout-ms T] [--permission WORKSPACE_EDIT|FULL_AUTO] [--model M] [--trace-dir <dir> [--arm <label>]]\\n       exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]\\n       exharness-agent eval --tool <id> --out <dir> [--command <path>] [--model M] [--tasks a,b] [--repeats N] [--max-invocations N] [--max-usd X] [--fake-scenario S] [--seed S]\\n       exharness-agent report <trace-dir>\\n       exharness-agent probe\\n       exharness-agent smoke --tool <codex|kiro|agy|grok|opencode> [--command <path>] [--timeout-ms T]\";\n@@ -152,4 +152,7 @@\n \n async function commandSmoke(options) {\n+  const permissionProfile=options.permission ?? PermissionProfile.WORKSPACE_EDIT;\n+  if(!Object.values(PermissionProfile).includes(permissionProfile))throw new UsageError(\"invalid permission\");\n+  if(options.arm!==undefined && options[\"trace-dir\"]===undefined)throw new UsageError(\"--arm requires --trace-dir\");\n   const toolId = options.tool;\n   baseTool(toolId);\n@@ -162,6 +165,8 @@\n   try {\n     const { baseRevision } = await createSmokeRepository(root);\n+    const observation=options[\"trace-dir\"]===undefined?null:createSupervisedObservation({tool,arm:options.arm??\"SMOKE\",taskId:`smoke-${toolId}`,writer:createRunTraceWriter({dir:options[\"trace-dir\"]})});\n     const result = await runSupervisedTask({\n-      tool,\n+      tool,model:options.model??null,permissionProfile,\n+      ...(observation===null?{}:{invocationObserver:observation.invocationObserver,eventSinks:observation.eventSinks,tracer:observation.tracer}),\n       task: {\n         id: `smoke-${toolId}`,\n@@ -174,4 +179,5 @@\n       timeoutMs: positiveInteger(options[\"timeout-ms\"], \"--timeout-ms\", 600000)\n     });\n+    if(observation!==null)await observation.finalize(result);\n     if (result.status === AgentTaskStatus.TOOL_UNAVAILABLE) {\n       print({ smoke: \"SKIPPED\", tool: toolId, reason: \"NOT_INSTALLED\", result });\n",
+    "replay": "/workspace/research-plans/isolated-cli-prototype-check.mjs",
+    "method": "Executed task-specific source copy changes only this CLI command; imports delivered modules, uses real Git and fake agent. Other commands are baseline. Worker still implements source and executes the bound focused tests after exact READY."
   }
 }
