@@ -40,7 +40,7 @@
     "AD6: Seed generated data outside checkout. reset disposes the old generation, revalidates source/seed identities and returns a new handle/receipt/token; stale handles fail. Mutation followed by reset must reproduce seed-only data and clean Git state.",
     "AD7: Use literal minimal service/supervisor env, no process.env spread or NODE_OPTIONS; reject credential-bearing profile values/internal overrides. BB-130 PLANNED_CONTRACT supplies explicit verifier env overlay with NODE_TEST_CONTEXT stripped. QA receives only a protected PREVIEW_RECEIPT_PATH; receipt omits raw env/token.",
     "AD8: Use OBSERVED_READY/FAILED/UNRESOLVED/DISPOSED and typed causes; retain first specific cause, clean partial starts, report CLEANUP_INCOMPLETE on uncertain shutdown. Missing runtime/unsupported profile/timeout/interrupt do not grant readiness or QA acceptance.",
-    "AD9: Defer Dev Container CLI/Testcontainers. Pinned implementation/tests were inspected, not executed. Docker is absent; container setup time is unknown. Controller SIGKILL cleanup requires a surviving supervisor. Host loss, supervisor death and escaped daemons are excluded; no speedup, broad compatibility or value claim.",
+    "AD9: Defer Dev Container CLI/Testcontainers. Pinned implementation/tests were inspected, not executed. The historical probe lacked Docker; current replay observed Docker available. No container setup comparison was executed, so container setup time remains unknown. Controller SIGKILL cleanup requires a surviving supervisor. Host loss, supervisor death and escaped daemons are excluded; no speedup, broad compatibility or value claim.",
     "AD10: The explicit service wire protocol is localPreviewContract.wireProtocol. Node fork uses operator runtime execPath; strict IPC LISTENING identifies the OS-assigned loopback port and health echoes the protected token/bindings. Seed copy is outside checkout. No shell/runtime wrapper or project-specific guessed health schema is introduced."
   ],
   "sourceSeams": {
@@ -102,8 +102,8 @@
     ]
   },
   "implementationSlices": [
-    "S1 — After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview.",
-    "S2 — Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup.",
+    "S1 — After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview. Public startLocalPreview({workspaceRoot,candidate:{id,version,tree},profile,evaluator:{id,digest,criterionIds},signal}) returns typed status/reason/receipt/optional live handle. NODE_HTTP_V1 only: operator-pinned absolute Node24/Linuxx64; services unique ids/tracked JS entries/literal argv/env, protected configInputs and seed regular-file hashes. Require clean HEAD/tree and all pins before effects; reject symlink/traversal/unsupported shapes. Runtime probes and config/seed/service bytes rechecked before observe/reset and after QA. Receipt binds candidate/tree/profile/config/input/runtime/evaluator/services/dataset and has image:null for Node processes.",
+    "S2 — Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup. Use child_process.fork(entry,args,{execPath:runtime.path,cwd,env:minimalEnv,detached:true,stdio:[ignore,pipe,pipe,ipc]}). Verify LISTENING IPC sender, serviceId/runToken/127.0.0.1/port and all-service HTTP health exact candidateVersion/tree/config/seed. Startup default30s/max120s, response16KiB, output64KiB, shutdown5s/max30s. Process creation alone never OBSERVED_READY. Live lease supervisor reaps only groups it spawned, TERM then KILL, including leader-exited groups; ambiguous cleanup UNRESOLVED/CLEANUP_INCOMPLETE. reset disposes old generation and seeds new external owned data; old handle stale, dispose idempotent. No persisted PID adoption/kill-by-port, inherited env, wrappers or Docker. Keep first cause and bounded redacted diagnostics.",
     "S3 — Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace. Add opt-in composition cases to deliver-slice.test.js itself: fake Backend yields exact candidate; protected preview receipt reaches QA command env; readiness never grants ACCEPTED when QA fails; preview dispose occurs before QA workspace disposal on success, verifier failure, thrown verifier and interruption. Test no-preview path without invoking preview. Existing generic tests alone do not cover these new assertions. Inner composition retains public runSliceQa as the bound subject for N11/N12, while outer runDeliverSlice tests verify option forwarding and fresh-worktree teardown. Do not replace the two bound inner subject tests with only outer generic regression.",
     "S4 — Run focused/composition/regression/docs checks, bind candidate-specific Worker evidence and update Living refs with implemented behavior/limits. Independent Jev alone judges readiness/delivery; research receipt has neither authority."
   ],
@@ -660,7 +660,9 @@
           "match": "env: childEnvironment()"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "localPreviewContract"
+      ]
     },
     {
       "objectiveCriterion": "Complete the discriminating prototype, finalize API/file scope and exact negative-case/criterion evidence, then obtain fresh independent Jev readiness.",
