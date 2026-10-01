@@ -1,0 +1,37 @@
+TAP version 13
+# Subtest: crash after publication before continuation reuses the committed publication without rerunning accepted work
+ok 1 - crash after publication before continuation reuses the committed publication without rerunning accepted work
+  ---
+  duration_ms: 63.112324
+  type: 'test'
+  ...
+# Subtest: duplicate recoverers after a committed publication converge on the same receipt
+ok 2 - duplicate recoverers after a committed publication converge on the same receipt
+  ---
+  duration_ms: 43.769823
+  type: 'test'
+  ...
+# Subtest: a late duplicate recovery reuses the committed terminal head without a second transition
+ok 3 - a late duplicate recovery reuses the committed terminal head without a second transition
+  ---
+  duration_ms: 36.251387
+  type: 'test'
+  ...
+# Subtest: restarted continuation stays idempotent: one lineage record set, no duplicate downstream effects
+ok 4 - restarted continuation stays idempotent: one lineage record set, no duplicate downstream effects
+  ---
+  duration_ms: 39.740475
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 306.074807
+
+
+exitCode=0
