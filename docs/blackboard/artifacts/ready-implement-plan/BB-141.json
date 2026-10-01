@@ -77,7 +77,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Smoke option forward [SMOKE_OPTIONS_FORWARDED]: implement D1–D3. --model/--permission/--trace-dir reach runSupervisedTask; default arm SMOKE; --arm requires --trace-dir.",
+    "S1 — packages/agent-tools/bin/exharness-agent.mjs; SMOKE_OPTIONS_FORWARDED. At commandSmoke preflight validate permission=options.permission??WORKSPACE_EDIT and reject arm without trace-dir before tool resolution or mkdtemp. After resolving tool and constructing task.id=smoke-${toolId}, create observation only when trace-dir supplied: createSupervisedObservation({tool,arm:options.arm??SMOKE,taskId:task.id,writer:createRunTraceWriter({dir})}). Pass model:options.model??null,permissionProfile:permission and conditional invocationObserver/eventSinks/tracer into existing runSupervisedTask call, preserving maxAttempts2/current timeout. Await observation.finalize(result) immediately after supervised result and before SKIPPED/result print; existing finally removes only smoke scratch, not caller trace dir. Add USAGE flags. Focused fake argv proves model/sandbox; readTraces/verifyTraceFile and actual report prove digest chain/default SMOKE arm, with corrupted trace rejected. No supervisor/observation source change.",
     "S2 — Fail-closed fixtures [SMOKE_FAIL_CLOSED]: implement D4. N1 unknown permission; N2 omitted defaults and SKIPPED reasons. Existing smoke behavior stays.",
     "S3 — Living docs [SMOKE_OPTIONS_FORWARDED]: implement D5. state.md and observation.md name the flags, SMOKE arm, SKIPPED reasons. No Blackboard ids."
   ],
@@ -302,19 +302,15 @@
       "sourceAnchors": [
         {
           "ref": "packages/agent-tools/bin/exharness-agent.mjs",
-          "match": "id: `smoke-${toolId}`"
-        },
-        {
-          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
-          "match": "\"smokePassesModel\": false"
-        },
-        {
-          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
-          "match": "\"smokePassesTraceDir\": false"
+          "match": "const observation = options[\"trace-dir\"] === undefined"
         },
         {
           "ref": "packages/agent-tools/bin/exharness-agent.mjs",
           "match": "      maxAttempts: 2,"
+        },
+        {
+          "ref": "packages/agent-tools/src/observation.js",
+          "match": "  async function finalize(result) {"
         }
       ],
       "supportingPlanFields": [
