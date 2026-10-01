@@ -18,7 +18,7 @@
     "Claiming schema-valid responses imply business correctness or product acceptance"
   ],
   "constraints": [
-    "RESEARCH_SA discovery only. The plan is DRAFT; product source changes require an exact independently READY plan and delivered direct dependencies.",
+    "This document specifies future Worker implementation. Current RESEARCH_SA edits only plan/routing and runs labelled prototypes; exact independent READY plus all direct dependencies DONE are mandatory before Worker source changes.",
     "Generic command checks and injected verifiers already exist. Package the named local profile without replacing product authority or claiming generic checks are incapable of browser/API testing.",
     "Repository metadata and primary reports motivate prototypes; no benchmark score, saved effort or new capability is claimed from a source survey.",
     "Public OSS examples require at least 1000 GitHub stars at lookup. Pin release/source, inspect relevant implementation/tests and reproduce the seam before adoption.",
@@ -157,73 +157,7 @@
     {
       "id": "focused",
       "command": "node --test packages/agentic-system/test/api-state-verifier.test.js",
-      "negativeCases": [
-        {
-          "title": "BB-133 N1 Deleted seeded old rows cannot PASS preserved-state criteria",
-          "subject": "createApiStateVerifier",
-          "criterionId": "PERSISTED_STATE"
-        },
-        {
-          "title": "BB-133 N2 Weakening candidate schema cannot replace pinned prior-client assertions",
-          "subject": "createApiStateVerifier",
-          "criterionId": "API_COMPATIBILITY"
-        },
-        {
-          "title": "BB-133 N3 Adding a required input field breaks the previous client",
-          "subject": "createApiStateVerifier",
-          "criterionId": "API_COMPATIBILITY"
-        },
-        {
-          "title": "BB-133 N4 Removing a required response field cannot PASS",
-          "subject": "createApiStateVerifier",
-          "criterionId": "API_COMPATIBILITY"
-        },
-        {
-          "title": "BB-133 N5 Corrupting old record values cannot PASS",
-          "subject": "createApiStateVerifier",
-          "criterionId": "PERSISTED_STATE"
-        },
-        {
-          "title": "BB-133 N6 Resetting state on restart cannot PASS",
-          "subject": "createApiStateVerifier",
-          "criterionId": "PERSISTED_STATE"
-        },
-        {
-          "title": "BB-133 N7 Changed evaluator digest cannot grant acceptance",
-          "subject": "createApiStateVerifier",
-          "criterionId": "EVIDENCE_IDENTITY"
-        },
-        {
-          "title": "BB-133 N8 Deleting mandatory assertions or using a no-op oracle cannot grant acceptance",
-          "subject": "createApiStateVerifier",
-          "criterionId": "FAIL_CLOSED"
-        },
-        {
-          "title": "BB-133 N9 Missing or wrong preview identity cannot grant acceptance",
-          "subject": "createApiStateVerifier",
-          "criterionId": "EVIDENCE_IDENTITY"
-        },
-        {
-          "title": "BB-133 N10 Migration failure or unavailable runtime is INCONCLUSIVE",
-          "subject": "createApiStateVerifier",
-          "criterionId": "FAIL_CLOSED"
-        },
-        {
-          "title": "BB-133 N11 Timeout or malformed response is INCONCLUSIVE",
-          "subject": "createApiStateVerifier",
-          "criterionId": "FAIL_CLOSED"
-        },
-        {
-          "title": "BB-133 N12 Foreign fixture roots and service handles cannot be reset or disposed",
-          "subject": "createApiStateVerifier",
-          "criterionId": "OWNED_RESOURCES"
-        },
-        {
-          "title": "BB-133 N13 Unknown or unexecuted criterion cannot PASS",
-          "subject": "createApiStateVerifier",
-          "criterionId": "FAIL_CLOSED"
-        }
-      ],
+      "negativeCases": "Execute distinct bound tests NEG_133_1, NEG_133_2, NEG_133_3, NEG_133_4, NEG_133_5, NEG_133_6, NEG_133_7, NEG_133_8, NEG_133_9, NEG_133_10, NEG_133_11, NEG_133_12, NEG_133_13. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
       "setup": "Run using operator-provisioned Node24 with built-in node:sqlite on Linux x64; verify sqlite availability before tests. Missing runtime/profile fails command, never skips. Do not treat generic Node22 CI regression as this focused profile validation.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
