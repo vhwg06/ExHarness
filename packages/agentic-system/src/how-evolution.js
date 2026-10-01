@@ -35,6 +35,15 @@ export const HowEvolutionCasePartition = Object.freeze({
   HOLDOUT: "holdout"
 });
 
+// Fixed semantic rubric: the Jev adapter must answer exactly these typed
+// questions, no more and no fewer. Defined here so both the adapter and the
+// evaluation gate pin the same set without a module cycle.
+export const HOW_EVOLUTION_JEV_QUESTION_IDS = Object.freeze([
+  "semantic-preservation",
+  "how-improvement",
+  "evidence-sufficiency"
+]);
+
 const inv = (condition, message) => {
   if (!condition) throw new TypeError(message);
 };
@@ -114,7 +123,7 @@ function normalizeEvaluator(raw) {
     policyRef: txt(raw.policyRef, "evaluator.policyRef"),
     policyRevision: txt(raw.policyRevision, "evaluator.policyRevision"),
     policyDigest: txt(raw.policyDigest, "evaluator.policyDigest"),
-    modelSnapshot: raw.modelSnapshot == null ? null : txt(raw.modelSnapshot, "evaluator.modelSnapshot")
+    modelSnapshot: txt(raw.modelSnapshot, "evaluator.modelSnapshot")
   };
   inv(/^sha256:[0-9a-f]{64}$/.test(evaluator.policyDigest), "evaluator.policyDigest must be sha256:<64hex>");
   return Object.freeze(evaluator);
@@ -140,6 +149,12 @@ function normalizeScenarioSet(raw) {
 
 function normalizeMetricPolicy(raw) {
   inv(raw && typeof raw === "object", "protocol metricPolicy required");
+  const maxCost = raw.maxCostRegression == null ? null : num(raw.maxCostRegression, "metricPolicy.maxCostRegression");
+  const maxTokens = raw.maxTokenRegression == null ? null : num(raw.maxTokenRegression, "metricPolicy.maxTokenRegression");
+  const maxLatency = raw.maxLatencyRegressionMs == null ? null : num(raw.maxLatencyRegressionMs, "metricPolicy.maxLatencyRegressionMs");
+  inv(maxCost == null || maxCost >= 0, "metricPolicy.maxCostRegression must be non-negative");
+  inv(maxTokens == null || maxTokens >= 0, "metricPolicy.maxTokenRegression must be non-negative");
+  inv(maxLatency == null || maxLatency >= 0, "metricPolicy.maxLatencyRegressionMs must be non-negative");
   return Object.freeze({
     ref: txt(raw.ref, "metricPolicy.ref"),
     digest: txt(raw.digest, "metricPolicy.digest"),
@@ -147,7 +162,9 @@ function normalizeMetricPolicy(raw) {
     primaryMetric: txt(raw.primaryMetric ?? "primary-score", "metricPolicy.primaryMetric"),
     criticalCaseIds: uniqueStrings(raw.criticalCaseIds ?? [], "metricPolicy.criticalCaseIds"),
     recoveryCaseIds: uniqueStrings(raw.recoveryCaseIds ?? [], "metricPolicy.recoveryCaseIds"),
-    maxCostRegression: raw.maxCostRegression == null ? null : num(raw.maxCostRegression, "metricPolicy.maxCostRegression")
+    maxCostRegression: maxCost,
+    maxTokenRegression: maxTokens,
+    maxLatencyRegressionMs: maxLatency
   });
 }
 
@@ -265,7 +282,23 @@ function casePartitionOf(protocol, caseId) {
   return null;
 }
 
+function triStateObservation(value, name) {
+  if (value == null) return null;
+  inv(typeof value === "boolean", `${name} must be a boolean when present`);
+  return value;
+}
+
+function finiteOrNull(value, name) {
+  if (value == null) return null;
+  return num(value, name);
+}
+
 // Paired per-case run receipts. Baseline and candidate execute identical pinned cases.
+// Hard-gate observations are tri-state: an explicit true/false is evidence; an
+// absent observation is unknown and forces INCONCLUSIVE, never a pass.
+// Stochastic protocols (replay.repeatCount > 1) must carry the actual paired
+// repeats per case: `repeats` must contain exactly repeatCount finite samples
+// whose mean equals the reported primaryMetric.
 export function defineHowEvolutionEvaluationRun(raw, protocol) {
   const resolvedProtocol = defineHowEvolutionEvaluationProtocol(protocol);
   inv(raw && typeof raw === "object" && !Array.isArray(raw), "HOW_EVOLUTION_EVALUATION_RUN required");
@@ -281,6 +314,7 @@ export function defineHowEvolutionEvaluationRun(raw, protocol) {
     `evaluation run strategy must equal the pinned ${raw.side} strategy`
   );
   inv(Array.isArray(raw.caseResults) && raw.caseResults.length > 0, "evaluation run caseResults must be a non-empty array");
+  const repeatCount = resolvedProtocol.replay.repeatCount;
   const seen = new Set();
   const results = raw.caseResults.map((entry, index) => {
     inv(entry && typeof entry === "object", `evaluation run caseResults[${index}] must be an object`);
@@ -293,16 +327,32 @@ export function defineHowEvolutionEvaluationRun(raw, protocol) {
     inv(entry.primaryMetric == null || (typeof entry.primaryMetric === "number" && Number.isFinite(entry.primaryMetric)),
       `evaluation run caseResults[${index}].primaryMetric must be a finite number when present`);
     const measurement = entry.primaryMetric == null ? null : entry.primaryMetric;
+    if (repeatCount > 1) {
+      inv(
+        Array.isArray(entry.repeats) && entry.repeats.length === repeatCount &&
+          entry.repeats.every((sample) => typeof sample === "number" && Number.isFinite(sample)),
+        `evaluation run caseResults[${index}].repeats must contain exactly ${repeatCount} finite paired samples`
+      );
+      const mean = entry.repeats.reduce((sum, sample) => sum + sample, 0) / entry.repeats.length;
+      inv(
+        measurement != null && Math.abs(measurement - mean) <= 1e-9,
+        `evaluation run caseResults[${index}].primaryMetric must equal the mean of its paired repeats`
+      );
+    } else {
+      inv(entry.repeats == null, `evaluation run caseResults[${index}].repeats requires a stochastic replay budget`);
+    }
     return Object.freeze({
       caseId,
       partition,
       status: entry.status,
       primaryMetric: measurement,
-      policyCompliant: entry.policyCompliant !== false,
-      evidenceComplete: entry.evidenceComplete !== false,
-      recoveryOk: entry.recoveryOk !== false,
-      tokens: entry.tokens == null ? null : num(entry.tokens, `evaluation run caseResults[${index}].tokens`),
-      cost: entry.cost == null ? null : num(entry.cost, `evaluation run caseResults[${index}].cost`),
+      repeats: entry.repeats == null ? null : Object.freeze([...entry.repeats]),
+      policyCompliant: triStateObservation(entry.policyCompliant, `evaluation run caseResults[${index}].policyCompliant`),
+      evidenceComplete: triStateObservation(entry.evidenceComplete, `evaluation run caseResults[${index}].evidenceComplete`),
+      recoveryOk: triStateObservation(entry.recoveryOk, `evaluation run caseResults[${index}].recoveryOk`),
+      tokens: finiteOrNull(entry.tokens, `evaluation run caseResults[${index}].tokens`),
+      cost: finiteOrNull(entry.cost, `evaluation run caseResults[${index}].cost`),
+      latencyMs: finiteOrNull(entry.latencyMs, `evaluation run caseResults[${index}].latencyMs`),
       evidenceRefs: uniqueStrings(entry.evidenceRefs ?? [], `evaluation run caseResults[${index}].evidenceRefs`, { min: 1 })
     });
   });
@@ -313,9 +363,8 @@ export function defineHowEvolutionEvaluationRun(raw, protocol) {
   ].sort();
   const actual = [...seen].sort();
   inv(canonicalize(actual) === canonicalize(expected), "evaluation run case membership changed from fixed protocol");
-  if (resolvedProtocol.replay.deterministic) {
-    inv(results.every((entry) => entry.primaryMetric != null), "deterministic evaluation runs require a primary metric per case");
-  }
+  // A missing primaryMetric is not rejected here: the evaluation gate types it
+  // INCONCLUSIVE per the incomplete rule instead of coercing or throwing.
   return fr({
     kind: HOW_EVOLUTION_RUN_KIND,
     version: 1,
@@ -339,15 +388,30 @@ function normalizeJevReceipt(raw, protocol) {
   inv(raw.evaluatorRevision === protocol.evaluator.revision, "Jev receipt evaluator revision mismatch");
   inv(raw.evaluatorPolicyRef === protocol.evaluator.policyRef, "Jev receipt evaluator policy ref mismatch");
   inv(raw.evaluatorPolicyDigest === protocol.evaluator.policyDigest, "Jev receipt evaluator policy digest mismatch");
+  inv(raw.modelSnapshot === protocol.evaluator.modelSnapshot, "Jev receipt model snapshot mismatch");
   inv(Object.values(HowEvolutionVerdict).includes(raw.semanticVerdict), "Jev receipt semantic verdict is invalid");
   inv(typeof raw.requestHash === "string" && raw.requestHash.length > 0, "Jev receipt request hash required");
   inv(typeof raw.responseHash === "string" && raw.responseHash.length > 0, "Jev receipt response hash required");
-  inv(Array.isArray(raw.questionOutcomes) && raw.questionOutcomes.length > 0, "Jev receipt question outcomes required");
+  inv(Array.isArray(raw.questionOutcomes), "Jev receipt question outcomes required");
+  inv(
+    raw.questionOutcomes.length === HOW_EVOLUTION_JEV_QUESTION_IDS.length,
+    "Jev receipt must cover the complete pinned semantic question set"
+  );
+  const seenQuestions = new Set();
   for (const [index, outcome] of raw.questionOutcomes.entries()) {
     inv(outcome && typeof outcome === "object", `Jev receipt questionOutcomes[${index}] must be an object`);
-    txt(outcome.questionId, `Jev receipt questionOutcomes[${index}].questionId`);
+    const questionId = txt(outcome.questionId, `Jev receipt questionOutcomes[${index}].questionId`);
+    inv(HOW_EVOLUTION_JEV_QUESTION_IDS.includes(questionId), `Jev receipt question is outside the pinned set: ${questionId}`);
+    inv(!seenQuestions.has(questionId), `Jev receipt question duplicated: ${questionId}`);
+    seenQuestions.add(questionId);
     inv(Object.values(HowEvolutionVerdict).includes(outcome.outcome), `Jev receipt questionOutcomes[${index}].outcome is invalid`);
   }
+  const receiptEvidence = uniqueStrings(raw.evidenceRefs ?? [], "Jev receipt.evidenceRefs", { min: 1 });
+  const expectedEvidence = [...protocol.evidenceSnapshot.evidenceRefs].sort();
+  inv(
+    canonicalize([...receiptEvidence].sort()) === canonicalize(expectedEvidence),
+    "Jev receipt evidence identity must equal the pinned evidence snapshot"
+  );
   return fr({
     kind: "HOW_EVOLUTION_JEV_RECEIPT",
     version: 1,
@@ -356,12 +420,12 @@ function normalizeJevReceipt(raw, protocol) {
     evaluatorRevision: raw.evaluatorRevision,
     evaluatorPolicyRef: raw.evaluatorPolicyRef,
     evaluatorPolicyDigest: raw.evaluatorPolicyDigest,
-    modelSnapshot: raw.modelSnapshot ?? null,
+    modelSnapshot: raw.modelSnapshot,
     semanticVerdict: raw.semanticVerdict,
     requestHash: raw.requestHash,
     responseHash: raw.responseHash,
     questionOutcomes: raw.questionOutcomes,
-    evidenceRefs: uniqueStrings(raw.evidenceRefs ?? [], "Jev receipt.evidenceRefs", { min: 1 })
+    evidenceRefs: receiptEvidence
   });
 }
 
@@ -392,12 +456,26 @@ export function evaluateHowEvolution({ protocol: rawProtocol, baselineRun: rawBa
     reasons.push(code);
     if (verdict === HowEvolutionVerdict.PASS) verdict = HowEvolutionVerdict.INCONCLUSIVE;
   };
+  const enforceOperationalRegression = (maximum, baselineValue, candidateValue, caseId, metric) => {
+    if (maximum == null) return;
+    if (baselineValue == null || candidateValue == null) {
+      markInconclusive(`INCONCLUSIVE:${metric}-unknown:${caseId}`);
+    } else if (candidateValue - baselineValue > maximum) {
+      markFail(`FAIL:${metric}-regression:${caseId}`);
+    }
+  };
 
   for (const caseId of [...baselineByCase.keys()].sort()) {
     const baseline = baselineByCase.get(caseId);
     const candidate = candidateByCase.get(caseId);
     inv(candidate != null, `candidate run is missing pinned case: ${caseId}`);
     inv(baseline.partition === candidate.partition, `case partition changed between runs: ${caseId}`);
+    if (
+      baseline.status === HowEvolutionVerdict.INCONCLUSIVE ||
+      candidate.status === HowEvolutionVerdict.INCONCLUSIVE
+    ) {
+      markInconclusive(`INCONCLUSIVE:case-status:${caseId}`);
+    }
     if (candidate.primaryMetric == null || baseline.primaryMetric == null) {
       markInconclusive(`INCONCLUSIVE:missing-measurement:${caseId}`);
     } else {
@@ -409,12 +487,24 @@ export function evaluateHowEvolution({ protocol: rawProtocol, baselineRun: rawBa
         delta: candidate.primaryMetric - baseline.primaryMetric
       }));
     }
-    if (!candidate.evidenceComplete || !baseline.evidenceComplete) {
-      markInconclusive(`INCONCLUSIVE:evidence-incomplete:${caseId}`);
-    }
-    if (!candidate.policyCompliant) {
+    // Unknown hard-gate observations stay unknown: they force INCONCLUSIVE,
+    // never a pass. Explicit non-compliance fails.
+    if (candidate.policyCompliant == null || baseline.policyCompliant == null) {
+      markInconclusive(`INCONCLUSIVE:policy-unknown:${caseId}`);
+    } else if (!candidate.policyCompliant) {
       markFail(`FAIL:policy-noncompliant:${caseId}`);
     }
+    if (candidate.evidenceComplete == null || baseline.evidenceComplete == null) {
+      markInconclusive(`INCONCLUSIVE:evidence-incomplete:${caseId}`);
+    } else if (!candidate.evidenceComplete || !baseline.evidenceComplete) {
+      markInconclusive(`INCONCLUSIVE:evidence-incomplete:${caseId}`);
+    }
+    // Predeclared operational regression constraints bind both sides: a
+    // missing observation while the constraint is declared is INCONCLUSIVE,
+    // and a breach beyond the declared maximum is FAIL.
+    enforceOperationalRegression(protocol.metricPolicy.maxCostRegression, baseline.cost, candidate.cost, caseId, "cost");
+    enforceOperationalRegression(protocol.metricPolicy.maxTokenRegression, baseline.tokens, candidate.tokens, caseId, "tokens");
+    enforceOperationalRegression(protocol.metricPolicy.maxLatencyRegressionMs, baseline.latencyMs, candidate.latencyMs, caseId, "latencyMs");
   }
 
   // Hard gates: no new critical failure, 100% policy/evidence completeness,
@@ -430,8 +520,12 @@ export function evaluateHowEvolution({ protocol: rawProtocol, baselineRun: rawBa
   for (const caseId of protocol.metricPolicy.recoveryCaseIds) {
     const baseline = baselineByCase.get(caseId);
     const candidate = candidateByCase.get(caseId);
-    if (baseline && candidate && !candidate.recoveryOk) {
-      markFail(`FAIL:recovery-regression:${caseId}`);
+    if (baseline && candidate) {
+      if (candidate.recoveryOk == null || baseline.recoveryOk == null) {
+        markInconclusive(`INCONCLUSIVE:recovery-unknown:${caseId}`);
+      } else if (!candidate.recoveryOk) {
+        markFail(`FAIL:recovery-regression:${caseId}`);
+      }
     }
     void baseline;
   }
@@ -511,18 +605,27 @@ function headEquals(a, b) {
 }
 
 // Freshness over semantic subject, evaluator policy, cases, evidence and expected head.
-// Any drift fails closed and requires a fresh evaluation.
+// All four currentness readers are required: promotion with only a head check
+// is refused. Any drift fails closed and requires a fresh evaluation.
 export async function assertHowEvolutionPromotionCurrentness({
   protocol: rawProtocol,
   evaluation,
   proposal,
   executionPolicyStore,
-  resolveCurrentSemantic = null,
-  resolveCurrentEvaluator = null,
-  resolveCurrentScenarioSet = null,
-  resolveCurrentEvidence = null
+  resolveCurrentSemantic,
+  resolveCurrentEvaluator,
+  resolveCurrentScenarioSet,
+  resolveCurrentEvidence
 }) {
   const protocol = defineHowEvolutionEvaluationProtocol(rawProtocol);
+  for (const [name, reader] of [
+    ["semantic subject", resolveCurrentSemantic],
+    ["evaluator policy", resolveCurrentEvaluator],
+    ["scenario set", resolveCurrentScenarioSet],
+    ["evidence snapshot", resolveCurrentEvidence]
+  ]) {
+    inv(typeof reader === "function", `promotion requires a ${name} freshness proof; refusing without it`);
+  }
   inv(evaluation?.protocolDigest === digestValue(protocol), "promotion currentness protocol digest mismatch");
   inv(proposal?.protocolDigest === digestValue(protocol), "promotion proposal protocol digest mismatch");
   inv(proposal?.evaluationDigest === digestValue(evaluation), "promotion proposal evaluation digest mismatch");
@@ -541,28 +644,18 @@ export async function assertHowEvolutionPromotionCurrentness({
   };
   inv(headEquals(currentHead, proposal.expectedPolicyHead), "execution policy head changed since evaluation; re-evaluate before promotion");
 
-  if (typeof resolveCurrentSemantic === "function") {
-    const current = await resolveCurrentSemantic();
-    inv(current?.workContractDigest === protocol.workContract.digest, "semantic subject changed since evaluation; re-evaluate before promotion");
-    const currentAcceptance = [...(current?.acceptanceDigests ?? [])].sort();
-    const pinnedAcceptance = protocol.acceptanceRefs.map((entry) => entry.digest).sort();
-    inv(canonicalize(currentAcceptance) === canonicalize(pinnedAcceptance), "acceptance policy changed since evaluation; re-evaluate before promotion");
-  }
-  if (typeof resolveCurrentEvaluator === "function") {
-    const current = await resolveCurrentEvaluator();
-    inv(current?.policyDigest === protocol.evaluator.policyDigest, "evaluator policy changed since evaluation; re-evaluate before promotion");
-    if (protocol.evaluator.modelSnapshot != null) {
-      inv(current?.modelSnapshot === protocol.evaluator.modelSnapshot, "evaluator model changed since evaluation; re-evaluate before promotion");
-    }
-  }
-  if (typeof resolveCurrentScenarioSet === "function") {
-    const current = await resolveCurrentScenarioSet();
-    inv(current?.digest === protocol.scenarioSet.digest, "scenario set changed since evaluation; re-evaluate before promotion");
-  }
-  if (typeof resolveCurrentEvidence === "function") {
-    const current = await resolveCurrentEvidence();
-    inv(current?.digest === protocol.evidenceSnapshot.digest, "evidence snapshot changed since evaluation; re-evaluate before promotion");
-  }
+  const currentSemantic = await resolveCurrentSemantic();
+  inv(currentSemantic?.workContractDigest === protocol.workContract.digest, "semantic subject changed since evaluation; re-evaluate before promotion");
+  const currentAcceptance = [...(currentSemantic?.acceptanceDigests ?? [])].sort();
+  const pinnedAcceptance = protocol.acceptanceRefs.map((entry) => entry.digest).sort();
+  inv(canonicalize(currentAcceptance) === canonicalize(pinnedAcceptance), "acceptance policy changed since evaluation; re-evaluate before promotion");
+  const currentEvaluator = await resolveCurrentEvaluator();
+  inv(currentEvaluator?.policyDigest === protocol.evaluator.policyDigest, "evaluator policy changed since evaluation; re-evaluate before promotion");
+  inv(currentEvaluator?.modelSnapshot === protocol.evaluator.modelSnapshot, "evaluator model changed since evaluation; re-evaluate before promotion");
+  const currentScenarioSet = await resolveCurrentScenarioSet();
+  inv(currentScenarioSet?.digest === protocol.scenarioSet.digest, "scenario set changed since evaluation; re-evaluate before promotion");
+  const currentEvidence = await resolveCurrentEvidence();
+  inv(currentEvidence?.digest === protocol.evidenceSnapshot.digest, "evidence snapshot changed since evaluation; re-evaluate before promotion");
   return fr({ head, currentHead: fr(currentHead) });
 }
 
@@ -626,13 +719,18 @@ export async function publishHowEvolutionPromotion({
 
 // J5 — Rollback: an independent fenced successor generation selecting an exact
 // prior accepted strategy and linking the reversed promotion/evaluation.
-// History is never rewritten.
+// The rollback publisher must be the protocol promotion authority, independent
+// from both the candidate producer and the evaluator. The reversed promotion
+// must bind the reversed evaluation, the exact evaluated protocol and its own
+// resulting head; the live current head must still equal that promotion head,
+// otherwise the rollback is refused as a current-head mismatch. History is
+// never rewritten.
 export async function publishHowEvolutionRollback({
   protocol: rawProtocol,
   targetStrategyRef,
   targetStrategyDigest,
   reversedPromotion,
-  reversedEvaluationDigest = null,
+  reversedEvaluation,
   reasonEvidenceRefs,
   publisher,
   policyPublisher,
@@ -642,7 +740,9 @@ export async function publishHowEvolutionRollback({
 }) {
   const protocol = defineHowEvolutionEvaluationProtocol(rawProtocol);
   inv(publisher && typeof publisher.identity === "string" && publisher.identity.length > 0, "rollback requires a publisher identity");
+  inv(publisher.identity === protocol.promotionAuthority, "rollback requires the protocol promotion authority");
   inv(protocol.candidateProducer !== publisher.identity, "candidate producer cannot roll back its own candidate");
+  inv(protocol.evaluator.identity !== publisher.identity, "evaluator cannot roll back the candidate it judged");
   inv(artifactRegistry && typeof artifactRegistry.resolveExecutionStrategyDescriptor === "function", "rollback requires the domain execution artifact registry");
   inv(policyPublisher && typeof policyPublisher.publish === "function", "rollback requires the domain execution policy publisher");
   inv(executionPolicyStore && typeof executionPolicyStore.current === "function", "rollback requires the execution policy head reader");
@@ -658,6 +758,19 @@ export async function publishHowEvolutionRollback({
   inv(embeddedTargetDigest === targetDigest, "rollback target strategy digest mismatch");
   inv(reversedPromotion && typeof reversedPromotion === "object", "rollback requires the reversed promotion decision");
   inv(reversedPromotion.kind === HOW_EVOLUTION_DECISION_KIND, "rollback reversed promotion kind mismatch");
+  inv(reversedPromotion.protocolDigest === digestValue(protocol), "rollback reversed promotion protocol mismatch");
+  inv(reversedPromotion.authority === protocol.promotionAuthority, "rollback reversed promotion authority mismatch");
+  inv(reversedEvaluation && typeof reversedEvaluation === "object", "rollback requires the reversed evaluation result");
+  inv(reversedEvaluation.kind === HOW_EVOLUTION_RESULT_KIND, "rollback reversed evaluation kind mismatch");
+  inv(reversedEvaluation.protocolDigest === digestValue(protocol), "rollback reversed evaluation protocol mismatch");
+  inv(
+    reversedEvaluation.disposition === HowEvolutionDisposition.PROPOSE_FOR_PROMOTION,
+    "rollback requires a reversed evaluation that proposed promotion"
+  );
+  inv(
+    reversedPromotion.evaluationDigest === digestValue(reversedEvaluation),
+    "rollback reversed promotion does not bind the reversed evaluation"
+  );
   const evidenceRefs = uniqueStrings(reasonEvidenceRefs, "rollback.reasonEvidenceRefs", { min: 1 });
 
   const head = currentHead ?? await executionPolicyStore.current(protocol.expectedPolicyHead.subjectKey);
@@ -669,6 +782,10 @@ export async function publishHowEvolutionRollback({
     policyRef: head.value?.policyRef
   };
   inv(Number.isInteger(fromHead.generation) && fromHead.generation > 0, "execution policy head generation invalid");
+  inv(
+    fromHead.policyRef === reversedPromotion.toPolicyRef && fromHead.generation === reversedPromotion.toGeneration,
+    "rollback current head does not match the reversed promotion head; re-resolve the promotion lineage before rollback"
+  );
 
   const published = await policyPublisher.publish({
     publisher: fr({ identity: publisher.identity }),
@@ -688,7 +805,7 @@ export async function publishHowEvolutionRollback({
     targetStrategyRef: targetRef,
     targetStrategyDigest: targetDigest,
     reversedPromotionDigest: digestValue(reversedPromotion),
-    reversedEvaluationDigest,
+    reversedEvaluationDigest: digestValue(reversedEvaluation),
     fromHead: fr(fromHead),
     toPolicyRef: published.policyRef,
     toGeneration: published.policy.generation,
@@ -782,6 +899,8 @@ export function createJsonHowEvolutionArtifactStore({ path, fs = nodeFs }) {
       throw error;
     }
     inv(raw.ref === ref, "how-evolution artifact ref mismatch");
+    const recomputed = digestValue({ artifactKind: txt(raw.artifactKind, "artifact kind"), content: raw.content });
+    inv(`how-evolution-${raw.artifactKind}:${recomputed}` === ref, "how-evolution artifact digest mismatch");
     return fr(raw.content);
   }
   return Object.freeze({ put, resolve });
@@ -804,8 +923,11 @@ export async function resolveHowEvolutionProvenance({
   txt(policySubjectKey, "provenance policySubjectKey");
   txt(protocolRef, "provenance protocolRef");
   const protocol = defineHowEvolutionEvaluationProtocol(await artifactStore.resolve(protocolRef));
-  inv(digestValue(protocol) === (await artifactStore.resolveEnvelope?.(protocolRef).then((envelope) => envelope.digest).catch(() => digestValue(protocol))) ||
-    true, "protocol digest check requires envelope support");
+  if (typeof artifactStore.resolveEnvelope === "function") {
+    const envelope = await artifactStore.resolveEnvelope(protocolRef);
+    inv(envelope.ref === protocolRef, "protocol envelope ref mismatch");
+    inv(digestValue(envelope.content) === digestValue(protocol), "protocol envelope content mismatch");
+  }
   const head = executionPolicyStore && typeof executionPolicyStore.current === "function"
     ? await executionPolicyStore.current(policySubjectKey)
     : null;
