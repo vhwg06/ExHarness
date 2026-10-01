@@ -21,7 +21,7 @@ next-work-id: BB-131
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 1
+current-active-debt: 0
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,12 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: BB-058
+  active: NONE
 ```
 
 ## Active work
 
-
-BB-058
-task: Implement causal reconstruction and read-only observation
-lane: WORKER
-phase: JUDGMENT
-current-context: docs/blackboard/context/BB-058/current.json
-components: agentic/organization-work, agentic/domain-execution-control, agentic/product-lineage, agentic/product-qa, agentic/product-closure, agentic/causal-observation
-worker: grok-bot
+NONE
 
 ## Schedulable tasks
 
@@ -71,7 +64,7 @@ BB-054 [DONE] <- BB-053
 BB-055 [DONE] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [DONE] <- BB-055
-BB-058 [ACTIVE] <- BB-057
+BB-058 [PLANNED] <- BB-057
 BB-059 [BLOCKED_BY BB-058] <- BB-058
 BB-060 [DONE] <- ROOT
 BB-061 [DONE] <- BB-060
