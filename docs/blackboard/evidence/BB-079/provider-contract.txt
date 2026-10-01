@@ -1,0 +1,103 @@
+TAP version 13
+# Subtest: adapter normalization declares all three delivery modes
+ok 1 - adapter normalization declares all three delivery modes
+  ---
+  duration_ms: 1.33366
+  type: 'test'
+  ...
+# Subtest: legacy adapters without capability metadata default to SYNCHRONOUS
+ok 2 - legacy adapters without capability metadata default to SYNCHRONOUS
+  ---
+  duration_ms: 0.236084
+  type: 'test'
+  ...
+# Subtest: legacy serialized route/usage views stay byte-compatible with the pre-existing shape
+ok 3 - legacy serialized route/usage views stay byte-compatible with the pre-existing shape
+  ---
+  duration_ms: 0.781512
+  type: 'test'
+  ...
+# Subtest: invalid capability metadata fails closed at the adapter boundary
+ok 4 - invalid capability metadata fails closed at the adapter boundary
+  ---
+  duration_ms: 0.408735
+  type: 'test'
+  ...
+# Subtest: model routing preserves the declared capability exactly
+ok 5 - model routing preserves the declared capability exactly
+  ---
+  duration_ms: 1.082682
+  type: 'test'
+  ...
+# Subtest: native fulfilled call rejects a second terminal result even with a different transition id
+ok 6 - native fulfilled call rejects a second terminal result even with a different transition id
+  ---
+  duration_ms: 1.87369
+  type: 'test'
+  ...
+# Subtest: native terminal output is delivered once; repeats are rejected
+ok 7 - native terminal output is delivered once; repeats are rejected
+  ---
+  duration_ms: 0.549544
+  type: 'test'
+  ...
+# Subtest: native pending-call keeps the original call pending with no interim tool result
+ok 8 - native pending-call keeps the original call pending with no interim tool result
+  ---
+  duration_ms: 0.517202
+  type: 'test'
+  ...
+# Subtest: handle-then-event emits one RUNNING handle then terminal state only as an async event
+ok 9 - handle-then-event emits one RUNNING handle then terminal state only as an async event
+  ---
+  duration_ms: 0.548704
+  type: 'test'
+  ...
+# Subtest: handle terminal without a prior fulfilled handle becomes the single pairing-safe tool result
+ok 10 - handle terminal without a prior fulfilled handle becomes the single pairing-safe tool result
+  ---
+  duration_ms: 0.85445
+  type: 'test'
+  ...
+# Subtest: a second tool result for an already-fulfilled strict call is rejected
+ok 11 - a second tool result for an already-fulfilled strict call is rejected
+  ---
+  duration_ms: 0.533378
+  type: 'test'
+  ...
+# Subtest: synchronous fallback waits for terminal truth and preserves one-call/one-result pairing
+ok 12 - synchronous fallback waits for terminal truth and preserves one-call/one-result pairing
+  ---
+  duration_ms: 0.374299
+  type: 'test'
+  ...
+# Subtest: unknown provider mode fails closed to synchronous semantics
+ok 13 - unknown provider mode fails closed to synchronous semantics
+  ---
+  duration_ms: 0.16611
+  type: 'test'
+  ...
+# Subtest: omitted capability metadata never attempts progressive delivery
+ok 14 - omitted capability metadata never attempts progressive delivery
+  ---
+  duration_ms: 0.183819
+  type: 'test'
+  ...
+# Subtest: prefix digests are structural evidence only and missing telemetry stays null
+ok 15 - prefix digests are structural evidence only and missing telemetry stays null
+  ---
+  duration_ms: 0.865579
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 88.502129
+
+
+exitCode=0

@@ -1,0 +1,113 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-079-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-079.json",
+    "hash": "695f253b1302bf2e07adae3a09ce62442034b9a2de618e184dbd48a3f3c0b941"
+  },
+  "candidateSha": "507f6c722cc58a101a09be2948c26c384ee2d0ee",
+  "baselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "candidateTree": "7372de02ce367475f251ce2f5ebf9d55a4db9982",
+  "verificationRuns": [
+    {
+      "id": "context-contract",
+      "command": "node --test packages/core-harness/test/async-result-context.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "507f6c722cc58a101a09be2948c26c384ee2d0ee",
+      "logRef": "docs/blackboard/evidence/BB-079/context-contract.txt",
+      "logHash": "0cdaa596cb2302880690c4291e1800d6a036ce0cbae83d968e98a64c80b27174"
+    },
+    {
+      "id": "provider-contract",
+      "command": "node --test packages/core-harness/test/async-result-provider-compatibility.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "507f6c722cc58a101a09be2948c26c384ee2d0ee",
+      "logRef": "docs/blackboard/evidence/BB-079/provider-contract.txt",
+      "logHash": "85c04917ad097a54ba4fea2e29273e27a3905ed51b17f6e5851a59f9d6cbc784"
+    },
+    {
+      "id": "dependency-contract",
+      "command": "node --test packages/core-harness/test/async-result-context.test.js --test-name-pattern='dependency|PLAN_INPUT_CONTRADICTION'",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "507f6c722cc58a101a09be2948c26c384ee2d0ee",
+      "logRef": "docs/blackboard/evidence/BB-079/dependency-contract.txt",
+      "logHash": "ea1f0f44137e2ca6671c95d924a66ccd7f96cf7be5fd46d49eb3c5f80ec4c00c"
+    },
+    {
+      "id": "core-regression",
+      "command": "npm run test:core",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "507f6c722cc58a101a09be2948c26c384ee2d0ee",
+      "logRef": "docs/blackboard/evidence/BB-079/core-regression.txt",
+      "logHash": "7f5631f82d3e81ce39828dee000a27153b4562bba98c6127fa163e64ea9bcac0"
+    }
+  ],
+  "claims": [
+    {
+      "id": "APPEND_ONLY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-079/context-contract.txt"
+      ]
+    },
+    {
+      "id": "BINDING",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-079/context-contract.txt",
+        "docs/blackboard/evidence/BB-079/core-regression.txt"
+      ]
+    },
+    {
+      "id": "PROVIDER",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-079/provider-contract.txt",
+        "docs/blackboard/evidence/BB-079/core-regression.txt"
+      ]
+    },
+    {
+      "id": "PAIRING",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-079/provider-contract.txt"
+      ]
+    },
+    {
+      "id": "PREFIX",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-079/context-contract.txt",
+        "docs/blackboard/evidence/BB-079/provider-contract.txt"
+      ]
+    },
+    {
+      "id": "DEPENDENCY",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-079/dependency-contract.txt"
+      ]
+    },
+    {
+      "id": "INV-1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-079/context-contract.txt",
+        "docs/blackboard/evidence/BB-079/core-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-079/context-contract.txt",
+        "docs/blackboard/evidence/BB-079/core-regression.txt"
+      ]
+    },
+    {
+      "id": "INV-3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-079/dependency-contract.txt",
+        "docs/blackboard/evidence/BB-079/core-regression.txt"
+      ]
+    }
+  ]
+}
