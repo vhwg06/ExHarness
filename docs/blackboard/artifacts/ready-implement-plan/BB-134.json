@@ -1,0 +1,443 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-134",
+  "status": "READY",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-134.json",
+    "hash": "6510f7092b6c9a798a7be5636ea6627e67be39e2f63b260fbf14b7b5a6e2b56b"
+  },
+  "scope": [
+    "outer-blackboard.ci-evidence-completeness"
+  ],
+  "outOfScope": [
+    "Existing worker product code and plans",
+    "Provider API or semantic evaluation policy changes",
+    "Redefining acceptance, objectives, readiness or delivery receipts"
+  ],
+  "constraints": [
+    "Preserve objectives and READY plans of existing worker tasks; this is a separate controller repair with its own readiness and delivery gates.",
+    "Do not relax evidence digest/currentness/schema/credential separation gates, alter provider requests, reroll retained findings, or fabricate receipts.",
+    "Keep collection credential-free and evaluation data-only; product source of existing worker tasks stays unchanged."
+  ],
+  "invariants": [
+    "Exact candidate, plan and evidence bindings remain authoritative; complete log transport cannot grant acceptance.",
+    "Bundle collection stays credential-free and evaluation stays data-only; an invalid bundle fails before any provider call and writes no partial evidence.",
+    "Existing worker objectives, READY plans and their verification mappings are unchanged; the repair is additive controller scope only."
+  ],
+  "architectureDecisions": [
+    "D1 — Union helper seam: add pure scripts/blackboard-verification-bundle.mjs exporting bundleRefs(result), buildBundle(result, loadBody) and installBundle(root, id, bundle). bundleRefs returns the deterministically sorted dedupe of verificationRuns.logRef plus claims.evidenceRefs (negativeCases logRefs are already run refs); buildBundle pairs each ref with its exact body bytes in that order; installBundle validates safe refs and digests before any write or provider call. No I/O inside bundleRefs; loadBody and filesystem access are injected by callers.",
+    "D2 — CI collect seam: replace the claim-only enumeration in scripts/blackboard-jev-ci.mjs collect with bundleRefs/buildBundle. The uploaded bundle keeps the exact {result, files} shape with files in bundleRefs order and byte-identical bodies. No new bundle fields, no provider key in the collect job, and no change to any worker verification mapping.",
+    "D3 — CI evaluate seam only: evaluate restores files through installBundle, then writes bundle.result to the evidence ref and calls materialize, so a missing log fails fail-closed before any provider call. scripts/blackboard-delivery.mjs is explicitly unchanged (outside write scope); its importEvaluationEvidence union enumeration is the frozen compatibility reference the new helper must match byte-for-byte. BB-059/079/084 mappings are preserved and never edited.",
+    "D4 — Fail-closed rules: a missing entry for a union ref, a body whose hash differs from its bound run.logHash, a ref outside docs/blackboard/evidence/<WORK_ID>/ or with an unsafe basename, or an empty body for a non-empty bound hash all throw before any provider call and before writing partial evidence. Duplicate refs are deduped to one file; order is normalized to bundleRefs sort so bytes and digests are deterministic.",
+    "D5 — Separation regression fixtures: new test/blackboard-context-verification-bundle.test.mjs synthetically reproduces the BB-059 CI36805700271 shape (eight verificationRuns including one passing run referenced by no claim, seven claim-linked files, one retained observation log; no local bundle path dependency) through separated build/install/materialize steps. The positive path calls installBundle then materialize and asserts the WORKER input contains every union run; each invalid bundle asserts installBundle throws before materialize and before any fetch call (mock fetch counts zero calls). No test asserts source text and no test self-issues acceptance.",
+    "D6 — Wiring and binding policy: the new test file is the only expectedTest; no package.json standing-script or workflow edit is required, so existing worker plans keep their mappings. The file is named test/blackboard-context-verification-bundle.test.mjs precisely so the actual standing glob test/blackboard-context-*.test.mjs discovers it: the fixed prefix test/blackboard-context- plus the fixed suffix .test.mjs both match character-for-character, so npm run test:blackboard-context (hence verify:blackboard-context and npm run verify) executes it with no broader write authority. negativeCaseBindings are mandatory (BB-134 is above the jev-policy.json negativeCaseBindingsFromWorkId BB-100 threshold) with one distinct BUNDLE-FAILCLOSED test title per negativeVerificationCases index invoking installBundle or buildBundle with a real assertion.",
+    "D7 — Delivery and rollback boundary: worker writes are limited to scripts/blackboard-jev-ci.mjs, scripts/blackboard-verification-bundle.mjs, test/blackboard-context-verification-bundle.test.mjs and docs/living/system/state.md. Graph, state, contexts, objectives, readiness, receipts and CI workflows are untouched; rollback reverts only those four paths. Readiness judges implementable future coverage: this repair's producer evidence, independent Worker judgment, merge-tree verification and receipt all happen AFTER readiness to complete delivery, never as pre-existing worker output. Safe bootstrap: the current trusted controller judges this plan because every verification command is claim-mapped and offline-checkable; BB-059 is retried only AFTER the accepted merged controller exists."
+  ],
+  "sourceScope": {
+    "read": [
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-jev.mjs",
+      "test/blackboard-jev.test.mjs",
+      "docs/blackboard/jev.md",
+      "docs/living/system/state.md",
+      "package.json",
+      ".github/workflows/blackboard-jev.yml"
+    ],
+    "write": [
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-verification-bundle.mjs",
+      "test/blackboard-context-verification-bundle.test.mjs",
+      "docs/living/system/state.md"
+    ],
+    "forbiddenWrite": [
+      "packages/**",
+      ".github/**",
+      "docs/blackboard/**"
+    ]
+  },
+  "sourceSeams": {
+    "requiredExisting": [
+      "scripts/blackboard-jev-ci.mjs",
+      "scripts/blackboard-delivery.mjs",
+      "scripts/blackboard-jev.mjs",
+      "test/blackboard-jev.test.mjs",
+      "docs/blackboard/jev.md",
+      "docs/living/system/state.md",
+      "package.json",
+      ".github/workflows/blackboard-jev.yml"
+    ],
+    "expectedNew": [
+      "scripts/blackboard-verification-bundle.mjs",
+      "test/blackboard-context-verification-bundle.test.mjs"
+    ],
+    "expectedTests": [
+      "test/blackboard-context-verification-bundle.test.mjs"
+    ]
+  },
+  "implementationSlices": [
+    "B1 — Union helper plus CI collect/evaluate seams [COMPLETE, FAILCLOSED]: implement bundleRefs/buildBundle/installBundle per D1, rewire collect per D2 and evaluate per D3, keeping the {result, files} shape and credential separation. Tests titled BUNDLE-UNION prove exact bytes, deterministic order, duplicate dedupe and digest equality against the BB-059 eight-run shape.",
+    "B2 — Separation regression [SEPARATION]: implement the BUNDLE-SEPARATION fixture per D5 with one passing verification run referenced by no acceptance claim plus a retained observation log; prove separated build/install/materialize succeeds, all union logs are present, and transport alone grants no acceptance (bindings and verdict rules unchanged).",
+    "B3 — Fail-closed negatives plus bindings [FAILCLOSED]: implement the four BUNDLE-FAILCLOSED cases per D4, each bound to a distinct test title invoking installBundle or buildBundle with a non-vacuous assertion; invalid input throws before any provider call (mock fetch asserts zero calls) and writes no partial evidence.",
+    "B4 — Living Docs plus full verification [DOCS]: document the trusted bundle behavior in docs/living/system/state.md without changing judgment authority, then run bundle-union, bundle-separation, bundle-failclosed, verify:blackboard-context and full npm run verify; actual Jev judgment and merge receipt remain delivery preconditions, not acceptance evidence."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "COMPLETE",
+      "statement": "Every verificationRuns.logRef and every claims.evidenceRefs body is retained exactly once with its existing bytes and bindings through collection, upload, download and evaluation; duplicates dedupe and order is deterministic with exact digests.",
+      "verificationIds": [
+        "bundle-union",
+        "blackboard-regression"
+      ],
+      "evidenceRequired": [
+        "BUNDLE-UNION regression output over the BB-059 eight-run shape showing byte-identical round-trip, sorted-dedupe order and logHash equality."
+      ]
+    },
+    {
+      "id": "SEPARATION",
+      "statement": "A separated collect/evaluate fixture with an unclaimed passing verification run materializes successfully, retained observation logs are carried, and complete transport alone grants no acceptance.",
+      "verificationIds": [
+        "bundle-separation",
+        "blackboard-regression"
+      ],
+      "evidenceRequired": [
+        "BUNDLE-SEPARATION regression output showing the unclaimed run present through build/install/materialize with unchanged binding and verdict rules."
+      ]
+    },
+    {
+      "id": "FAILCLOSED",
+      "statement": "Missing, corrupt, unsafe or empty evidence fails closed before any provider call with no partial writes, while collection stays credential-free and evaluation stays data-only.",
+      "verificationIds": [
+        "bundle-failclosed",
+        "blackboard-regression"
+      ],
+      "evidenceRequired": [
+        "BUNDLE-FAILCLOSED regression output for all four negative cases with mock transport proving zero provider calls."
+      ]
+    },
+    {
+      "id": "DOCS",
+      "statement": "Focused regression coverage and Living Docs accurately describe the trusted bundle behavior, and full offline repository checks confirm the credential-free collection and data-only evaluation boundaries are preserved.",
+      "verificationIds": [
+        "blackboard-regression",
+        "repository"
+      ],
+      "evidenceRequired": [
+        "Living Docs diff for docs/living/system/state.md, bundle regression logs and full npm run verify log showing credential/data-only boundaries intact."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "bundle-union",
+      "command": "node --test --test-name-pattern=\"^BUNDLE-UNION \" test/blackboard-context-verification-bundle.test.mjs"
+    },
+    {
+      "id": "bundle-separation",
+      "command": "node --test --test-name-pattern=\"^BUNDLE-SEPARATION \" test/blackboard-context-verification-bundle.test.mjs"
+    },
+    {
+      "id": "bundle-failclosed",
+      "command": "node --test --test-name-pattern=\"^BUNDLE-FAILCLOSED \" test/blackboard-context-verification-bundle.test.mjs"
+    },
+    {
+      "id": "blackboard-regression",
+      "command": "npm run verify:blackboard-context"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Exact candidate, plan and evidence bindings remain authoritative; complete log transport cannot grant acceptance.",
+      "criterionIds": [
+        "COMPLETE",
+        "SEPARATION"
+      ]
+    },
+    {
+      "invariant": "Bundle collection stays credential-free and evaluation stays data-only; an invalid bundle fails before any provider call and writes no partial evidence.",
+      "criterionIds": [
+        "FAILCLOSED"
+      ]
+    },
+    {
+      "invariant": "Existing worker objectives, READY plans and their verification mappings are unchanged; the repair is additive controller scope only.",
+      "criterionIds": [
+        "COMPLETE",
+        "DOCS"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "A bundle that omits a union verification log (a run referenced by no acceptance claim) fails closed before any provider call.",
+    "A bundled log body whose bytes differ from its bound run.logHash fails closed without a provider call.",
+    "A bundled ref outside docs/blackboard/evidence/<WORK_ID>/ or with an unsafe basename is rejected before any write or provider call.",
+    "A bundle entry with an empty body for a bound non-empty log hash fails closed without a provider call."
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NC-BUNDLE-missing",
+      "negativeCaseIndex": 0,
+      "criterionId": "FAILCLOSED",
+      "verificationId": "bundle-failclosed",
+      "testRef": "test/blackboard-context-verification-bundle.test.mjs",
+      "testTitle": "BUNDLE-FAILCLOSED missing union log fails closed without provider call",
+      "subjectSymbol": "installBundle"
+    },
+    {
+      "id": "NC-BUNDLE-digest",
+      "negativeCaseIndex": 1,
+      "criterionId": "FAILCLOSED",
+      "verificationId": "bundle-failclosed",
+      "testRef": "test/blackboard-context-verification-bundle.test.mjs",
+      "testTitle": "BUNDLE-FAILCLOSED corrupt digest fails closed without provider call",
+      "subjectSymbol": "installBundle"
+    },
+    {
+      "id": "NC-BUNDLE-unsafe",
+      "negativeCaseIndex": 2,
+      "criterionId": "FAILCLOSED",
+      "verificationId": "bundle-failclosed",
+      "testRef": "test/blackboard-context-verification-bundle.test.mjs",
+      "testTitle": "BUNDLE-FAILCLOSED unsafe ref fails closed without provider call",
+      "subjectSymbol": "installBundle"
+    },
+    {
+      "id": "NC-BUNDLE-empty",
+      "negativeCaseIndex": 3,
+      "criterionId": "FAILCLOSED",
+      "verificationId": "bundle-failclosed",
+      "testRef": "test/blackboard-context-verification-bundle.test.mjs",
+      "testTitle": "BUNDLE-FAILCLOSED empty body fails closed without provider call",
+      "subjectSymbol": "buildBundle"
+    }
+  ],
+  "researchGaps": [],
+  "researchEvidence": [
+    {
+      "ref": "BB-059 trusted Jev CI run 36805700271 bundle artifact (eight-run shape)",
+      "finding": "Observed CI run 36805700271: result holds eight verificationRuns while files holds only seven claim-linked logs; the missing file is exactly docs/blackboard/evidence/BB-059/repository-verify.txt (one unclaimed passing run), which reproduces the ENOENT before API. The authorized BUNDLE-SEPARATION fixture rebuilds this eight-run/seven-file shape synthetically inside the new test with no local-path dependency."
+    },
+    {
+      "ref": "scripts/blackboard-jev-ci.mjs",
+      "finding": "collect enumerates claims.evidenceRefs only, while materialize validates every verification run; evaluate restores only bundled files."
+    },
+    {
+      "ref": "scripts/blackboard-delivery.mjs",
+      "finding": "importEvaluationEvidence already enumerates the union of verificationRuns.logRef and claims.evidenceRefs with digest checks; the CI collect path must match it."
+    }
+  ],
+  "deliveryContract": {
+    "precondition": "BB-056 DONE; BB-059/079/084 objectives and READY plans stay unchanged.",
+    "completion": "Bundle union/separation/failclosed checks plus verify:blackboard-context plus full npm run verify plus Living state doc plus independent Worker Jev judgment.",
+    "forbidden": "No relaxation of digest/currentness/schema/credential gates, no provider request change, no rerolled findings, no fabricated receipts, no product source edits outside the four write paths."
+  },
+  "ciContract": {
+    "checks": [
+      "bundle-union",
+      "bundle-separation",
+      "bundle-failclosed",
+      "blackboard-regression",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "BB-059/079/084 objectives, READY plans and verification mappings",
+      "verdict rules and confidence-as-telemetry",
+      "credential-free collection and data-only evaluation"
+    ],
+    "add": [
+      "verification-bundle helper",
+      "bundle regression test",
+      "CI union wiring",
+      "Living state note"
+    ],
+    "rollback": "Revert scripts/blackboard-jev-ci.mjs, delete scripts/blackboard-verification-bundle.mjs and test/blackboard-context-verification-bundle.test.mjs, revert docs/living/system/state.md."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-134 objective plus trusted CI bundle seams and the real BB-059 bundle shape",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash plus researchBaselineSha",
+      "convergence": "researchGaps=[] plus fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan plus DONE BB-056",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash plus candidate plus evidence plus Jev",
+      "convergence": "union transport plus separation plus fail-closed plus docs under independent judgment; merge receipt remains a delivery precondition",
+      "forbidden": [
+        "modify existing worker objectives or READY plans",
+        "relax evidence or credential gates",
+        "self-acceptance"
+      ]
+    }
+  ],
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/state.md"
+    ],
+    "questionId": "living-docs",
+    "statement": "Trusted CI retains all verification logs and claim observations without changing judgment authority."
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Every verificationRuns.logRef and every claims.evidenceRefs body is retained exactly once with its existing bytes and bindings through collection, upload, download and evaluation.",
+      "criterionIds": [
+        "COMPLETE"
+      ],
+      "planElements": [
+        "B1"
+      ],
+      "verificationIds": [
+        "bundle-union",
+        "blackboard-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        3
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-jev-ci.mjs",
+        "scripts/blackboard-delivery.mjs",
+        "scripts/blackboard-jev.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-jev-ci.mjs",
+          "match": "const refs=[...new Set(result.evidence.claims.flatMap(c=>c.evidenceRefs))]"
+        },
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "result.verificationRuns.map(v=>v.logRef)"
+        },
+        {
+          "ref": "scripts/blackboard-jev.mjs",
+          "match": "const log = checkedFile(root, run.logRef);"
+        }
+      ],
+      "supportingPlanFields": [
+        "deliveryContract",
+        "migrationContract"
+      ]
+    },
+    {
+      "objectiveCriterion": "A separated collect/evaluate fixture with an unclaimed passing verification run materializes successfully; missing/corrupt/unsafe evidence fails closed without provider calls.",
+      "criterionIds": [
+        "SEPARATION",
+        "FAILCLOSED"
+      ],
+      "planElements": [
+        "B2",
+        "B3"
+      ],
+      "verificationIds": [
+        "bundle-separation",
+        "bundle-failclosed",
+        "blackboard-regression"
+      ],
+      "decisionIndexes": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "scripts/blackboard-jev-ci.mjs",
+        "scripts/blackboard-jev.mjs",
+        "test/blackboard-jev.test.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "scripts/blackboard-jev.mjs",
+          "match": "check(plan.verificationPlan.every(v => runIds.has(v.id)), 'missing verification runs')"
+        },
+        {
+          "ref": "scripts/blackboard-jev.mjs",
+          "match": "check(!runIds.has(run.id), 'duplicate verification run')"
+        },
+        {
+          "ref": "test/blackboard-jev.test.mjs",
+          "match": "CI bundle restores exact canonical evidence before publication and rejects tampered logs"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeVerificationCases",
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Focused regression coverage and Living Docs describe the actual trusted bundle behavior; full repository checks and real independent gates complete delivery.",
+      "criterionIds": [
+        "COMPLETE",
+        "SEPARATION",
+        "FAILCLOSED",
+        "DOCS"
+      ],
+      "planElements": [
+        "B1",
+        "B2",
+        "B3",
+        "B4"
+      ],
+      "verificationIds": [
+        "bundle-union",
+        "bundle-separation",
+        "bundle-failclosed",
+        "blackboard-regression",
+        "repository"
+      ],
+      "decisionIndexes": [
+        4,
+        5,
+        6
+      ],
+      "sourceRefs": [
+        "docs/living/system/state.md",
+        "package.json",
+        ".github/workflows/blackboard-jev.yml",
+        "scripts/blackboard-delivery.mjs"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "package.json",
+          "match": "node --test test/blackboard-context-*.test.mjs"
+        },
+        {
+          "ref": "package.json",
+          "match": "\"verify\": \"npm test && npm run example"
+        },
+        {
+          "ref": ".github/workflows/blackboard-jev.yml",
+          "match": "Collect evidence without provider credentials"
+        },
+        {
+          "ref": "scripts/blackboard-delivery.mjs",
+          "match": "git(root, 'merge-base', '--is-ancestor', candidateSha, mergeSha);\n  git(root, 'merge-base', '--is-ancestor', mergeSha, observedMainSha);\n  if (git(root, 'rev-parse', `${mergeSha}^{tree}`) !== candidateTree) fail('merged tree differs from evaluated candidate')"
+        }
+      ],
+      "supportingPlanFields": [
+        "sourceScope",
+        "sourceSeams",
+        "verificationPlan",
+        "deliveryContract"
+      ]
+    }
+  ],
+  "readinessRef": "docs/blackboard/artifacts/ready-implement-plan/BB-134.readiness-jev-evaluation.json"
+}
