@@ -40,7 +40,7 @@ NONE
 
 ## Schedulable tasks
 
-- BB-055 [WORKER/EXECUTION] — Implement product completeness and closure currentness
+- BB-057 [WORKER/EXECUTION] — Prove adversarial recovery across the end-to-end organization
 - BB-078 [WORKER/EXECUTION] — Implement durable detached operation scheduling
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
@@ -62,9 +62,9 @@ BB-048 [DONE] <- ROOT
 BB-052 [DONE] <- BB-048
 BB-053 [DONE] <- BB-052
 BB-054 [DONE] <- BB-053
-BB-055 [WORKER_SCHEDULABLE] <- BB-054
+BB-055 [DONE] <- BB-054
 BB-056 [DONE] <- ROOT
-BB-057 [BLOCKED_BY BB-055] <- BB-055
+BB-057 [WORKER_SCHEDULABLE] <- BB-055
 BB-058 [BLOCKED_BY BB-057] <- BB-057
 BB-059 [BLOCKED_BY BB-058] <- BB-058
 BB-060 [DONE] <- ROOT
@@ -77,7 +77,7 @@ BB-066 [BLOCKED_BY BB-081] <- BB-065, BB-048, BB-081
 BB-067 [BLOCKED_BY BB-066] <- BB-065, BB-066
 BB-068 [BLOCKED_BY BB-066,BB-067] <- BB-066, BB-067
 BB-069 [BLOCKED_BY BB-068] <- BB-068, BB-064
-BB-070 [BLOCKED_BY BB-069,BB-055] <- BB-069, BB-055
+BB-070 [BLOCKED_BY BB-069] <- BB-069, BB-055
 BB-071 [BLOCKED_BY BB-070,BB-057] <- BB-070, BB-057
 BB-072 [BLOCKED_BY BB-068,BB-058] <- BB-068, BB-058
 BB-073 [BLOCKED_BY BB-070,BB-072] <- BB-070, BB-072
