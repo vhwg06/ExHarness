@@ -16,19 +16,22 @@
     "Changing SKIPPED reasons for missing tools or pre-edit failures."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered runSupervisedTask, PermissionProfile and createSupervisedObservation. Do not change SKIPPED reasons for missing tools or pre-edit failures.",
-    "Unknown permission values fail closed before spawn. --arm requires --trace-dir. Omitted flags keep current smoke defaults.",
-    "No sandbox, SCM push, durable recovery on the ephemeral smoke repo, or live-value claim."
+    "Product edits are packages/agent-tools/bin/exharness-agent.mjs plus the named test and Living docs in sourceScope.write. supervisor.js and observation.js are read-only.",
+    "Reuse delivered runSupervisedTask, PermissionProfile and createSupervisedObservation. Unknown permission fails before spawn. --arm requires --trace-dir. Default arm label is SMOKE.",
+    "Omitted flags keep current smoke defaults (no model, default permission, no traces, timeout 600000, maxAttempts 2). Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "Smoke model, permission and trace-dir reach the same runSupervisedTask options as run.",
-    "Unknown permission never spawns. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
+    "Unknown permission fails as a usage error before spawn. Omitted flags keep current smoke defaults. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED."
   ],
   "architectureDecisions": [
-    "Forward --model, --permission and --trace-dir from commandSmoke into runSupervisedTask, reusing run's observation construction when a trace directory is set.",
-    "Keep the ephemeral smoke repository and SKIPPED reasons. Do not add --recovery-dir on smoke."
+    "D1 — commandSmoke forwards --model, --permission and --trace-dir into runSupervisedTask, copying commandRun's observation construction. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError before mkdtemp. model = options.model ?? null. If options[\"trace-dir\"] is set, createSupervisedObservation({ tool, arm: options.arm ?? \"SMOKE\", taskId: `smoke-${toolId}`, writer: createRunTraceWriter({ dir }) }) and pass invocationObserver/eventSinks/tracer; finalize after the run. --arm requires --trace-dir (same UsageError as commandRun). Default arm SMOKE so report can distinguish from EXHARNESS_SUPERVISED. DELIVERED_TRUTH: smokePassesModel false, smokePassesPermission false, smokePassesTraceDir false, smokeCallsRunSupervisedTask true.",
+    "D2 — Keep current smoke defaults when flags are omitted: no model, WORKSPACE_EDIT, no traces, maxAttempts 2, timeoutMs positiveInteger(--timeout-ms, 600000). Keep SKIPPED NOT_INSTALLED and TOOL_FAILED_BEFORE_EDIT print paths. No --recovery-dir on smoke. Do not write supervisor.js or observation.js.",
+    "D3 — USAGE smoke line gains [--model M] [--permission WORKSPACE_EDIT|FULL_AUTO] [--trace-dir <dir> [--arm <label>]]. Header comment matches.",
+    "D4 — Tests in packages/agent-tools/test/smoke-cli-options.test.js. P1: spawn BIN smoke --model x --permission FULL_AUTO --trace-dir T --command fake FIX_FIRST; traces.jsonl is digest-chained and report reads it; arm label SMOKE. P2: --trace-dir without --arm still writes SMOKE. N1: --permission NOPE UsageError before spawn (no mkdtemp). N2: omitted flags keep no model, WORKSPACE_EDIT, no traces; missing-tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED. --arm without --trace-dir UsageError. Hermetic fake CLI.",
+    "D5 — Living docs. state.md smoke sentence names --model/--permission/--trace-dir, default arm SMOKE, --arm requires --trace-dir, SKIPPED reasons unchanged. observation.md CLI sentence adds smoke --trace-dir. No Blackboard ids.",
+    "D6 — Evidence at 5386e2ad: commandSmoke currently passes only maxAttempts 2 and timeoutMs."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -53,7 +56,8 @@
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-factor-parity.md",
-      "docs/blackboard/evidence/BB-139/cli-factor-audit.json"
+      "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+      "docs/living/system/agent-tools/**"
     ],
     "write": [
       "packages/agent-tools/bin/exharness-agent.mjs",
@@ -62,27 +66,31 @@
       "docs/living/system/agent-tools/observation.md"
     ],
     "forbiddenWrite": [
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agent-tools/src/observation.js",
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/benchmark/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin smoke flag mapping and --arm-requires-trace-dir in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward only --model, --permission and --trace-dir on smoke and the focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — Smoke option forward [SMOKE_OPTIONS_FORWARDED]: implement D1–D3. --model/--permission/--trace-dir reach runSupervisedTask; default arm SMOKE; --arm requires --trace-dir.",
+    "S2 — Fail-closed fixtures [SMOKE_FAIL_CLOSED]: implement D4. N1 unknown permission; N2 omitted defaults and SKIPPED reasons. Existing smoke behavior stays.",
+    "S3 — Living docs [SMOKE_OPTIONS_FORWARDED]: implement D5. state.md and observation.md name the flags, SMOKE arm, SKIPPED reasons. No Blackboard ids."
   ],
   "acceptanceCriteria": [
     {
       "id": "SMOKE_OPTIONS_FORWARDED",
       "statement": "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the factor audit is motivation only."
+        "P1 BIN smoke model/permission/trace-dir writes digest-chained traces with arm SMOKE; P2 omitted --arm still SMOKE."
       ]
     },
     {
@@ -92,7 +100,7 @@
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the factor audit is motivation only."
+        "BB-141 N1 unknown --permission UsageError before spawn; N2 omitted defaults; SKIPPED NOT_INSTALLED and TOOL_FAILED_BEFORE_EDIT unchanged."
       ]
     }
   ],
@@ -108,25 +116,22 @@
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Smoke model, permission and trace-dir reach the same runSupervisedTask options as run.",
+      "invariant": "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
       "criterionIds": [
         "SMOKE_OPTIONS_FORWARDED"
       ]
     },
     {
-      "invariant": "Unknown permission never spawns. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+      "invariant": "Unknown permission fails as a usage error before spawn. Omitted flags keep current smoke defaults. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
       "criterionIds": [
-        "SMOKE_FAIL_CLOSED"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "SMOKE_OPTIONS_FORWARDED",
         "SMOKE_FAIL_CLOSED"
       ]
     }
@@ -155,23 +160,238 @@
       "subjectSymbol": "runSupervisedTask"
     }
   ],
-  "researchGaps": [
-    "Ratify --arm requiring --trace-dir on smoke and whether smoke traces use arm label SMOKE, before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/state.md",
       "docs/living/system/agent-tools/observation.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living docs state that smoke accepts --model, --permission and --trace-dir, that --arm requires --trace-dir, that the default arm label is SMOKE, that omitted flags keep current smoke defaults, and that missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED. Living docs contain no Blackboard ids."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+      "finding": "DELIVERED_TRUTH at 5386e2ad: smokePassesModel false, smokePassesPermission false, smokePassesTraceDir false, smokeCallsRunSupervisedTask true."
+    },
+    {
+      "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+      "finding": "DELIVERED_TRUTH: commandSmoke passes only maxAttempts 2 and timeoutMs; SKIPPED NOT_INSTALLED and TOOL_FAILED_BEFORE_EDIT print paths exist; commandRun already maps model/permission/trace-dir and --arm requires --trace-dir."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-097",
+      "BB-098"
+    ],
+    "workerStart": "Confirm commandSmoke still omits model/permission/trace-dir, SKIPPED reasons still print, and commandRun still maps those flags. BB-097 and BB-098 DONE.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "commandSmoke runSupervisedTask",
+        "SKIPPED NOT_INSTALLED/TOOL_FAILED_BEFORE_EDIT",
+        "commandRun observation construction",
+        "createRunTraceWriter digest chain"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "smoke --model/--permission/--trace-dir",
+        "default arm SMOKE",
+        "--arm requires --trace-dir"
+      ]
+    },
+    "contradiction": "None. Default arm is SMOKE rather than EXHARNESS_SUPERVISED so report can distinguish smoke traces from run traces. --arm requires --trace-dir, same as run."
+  },
+  "deliveryContract": {
+    "precondition": "BB-097 DONE and BB-098 DONE.",
+    "completion": "focused + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No supervisor.js/observation.js edits, no smoke --recovery-dir, no SKIPPED-reason change."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "agent-tools-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "smoke maxAttempts 2",
+      "SKIPPED NOT_INSTALLED",
+      "SKIPPED TOOL_FAILED_BEFORE_EDIT",
+      "ephemeral smoke repo"
+    ],
+    "add": [
+      "smoke --model/--permission/--trace-dir",
+      "default arm SMOKE",
+      "smoke-cli-options tests"
+    ],
+    "rollback": "Remove the three flags from commandSmoke and smoke USAGE; delete smoke-cli-options.test.js; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-141 objective + cli-factor-audit.json + delivered commandSmoke/commandRun observation",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-097 + DONE BB-098",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "supervisor.js/observation.js edits, smoke recovery, SKIPPED-reason change."
+      ]
+    }
+  ],
   "valueHypothesis": {
-    "expectedValue": "Live smoke can pin the same run contract the operator already declares on run, including traces.",
-    "measurement": "Fake-CLI smoke fixture forwards FULL_AUTO, a model string and a trace directory; unknown permission fails before spawn.",
+    "expectedValue": "Smoke can pin the same model, permission and traces the operator already uses on run.",
+    "measurement": "Fake-CLI smoke fixture writes digest-chained traces with arm SMOKE; unknown permission fails before spawn.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-097 for smoke; BB-074 for end-to-end value"
-  }
+    "valueOwner": "BB-097 for smoke; BB-098 for traces"
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
+      "criterionIds": [
+        "SMOKE_OPTIONS_FORWARDED"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+        "packages/agent-tools/src/observation.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "id: `smoke-${toolId}`"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+          "match": "\"smokePassesModel\": false"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+          "match": "\"smokePassesTraceDir\": false"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+          "match": "\"smokeCallsRunSupervisedTask\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Unknown permission fails as a usage error before spawn. Omitted flags keep current smoke defaults. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+      "criterionIds": [
+        "SMOKE_FAIL_CLOSED"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "docs/blackboard/evidence/BB-139/cli-factor-audit.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "print({ smoke: \"SKIPPED\", tool: toolId, reason: \"TOOL_FAILED_BEFORE_EDIT\", result });"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "print({ smoke: \"SKIPPED\", tool: toolId, reason: \"NOT_INSTALLED\" });"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+          "match": "\"smokePassesPermission\": false"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "async function commandSmoke(options) {"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "SMOKE_OPTIONS_FORWARDED",
+        "SMOKE_FAIL_CLOSED"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/operator-cli-factor-parity.md",
+        "docs/living/system/agent-tools/state.md",
+        "docs/living/system/agent-tools/observation.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/operator-cli-factor-parity.md",
+          "match": "| Smoke model / permission / traces"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/state.md",
+          "match": "smoke --tool"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "`createRunTraceWriter({ dir })` appends lines one at a time."
+        },
+        {
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "## Digest chain"
+        }
+      ],
+      "supportingPlanFields": [
+        "implementationSlices",
+        "verificationPlan"
+      ]
+    }
+  ]
 }
