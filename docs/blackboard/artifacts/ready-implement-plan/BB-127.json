@@ -154,39 +154,121 @@
   "verificationPlan": [
     {
       "id": "pinning",
-      "command": "node --test --test-name-pattern=\"^BB-127 PIN \" packages/agent-tools/test/local-protected-acceptance.test.js"
+      "command": "node --test --test-name-pattern=\"^BB-127 PIN \" packages/agent-tools/test/local-protected-acceptance.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-127 PIN N2 Missing or changed external evaluator digest cannot grant acceptance",
+          "subject": "runDeliverSlice",
+          "criterionId": "PROTECTED_ACCEPTANCE"
+        },
+        {
+          "title": "BB-127 PIN N5 Manifest runtime config and objective drift fail before dispatch",
+          "subject": "runDeliverSlice",
+          "criterionId": "PROTECTED_ACCEPTANCE"
+        },
+        {
+          "title": "BB-127 PIN N6 Evaluator symlink or in-worktree location is rejected",
+          "subject": "runDeliverSlice",
+          "criterionId": "PROTECTED_ACCEPTANCE"
+        },
+        {
+          "title": "BB-127 PIN N7 Candidate mismatch dirty checkout and QA mutation fail",
+          "subject": "runLocalAcceptance",
+          "criterionId": "PROTECTED_ACCEPTANCE"
+        },
+        {
+          "title": "BB-127 PIN N8 Post-evaluation evaluator or runtime digest drift fails",
+          "subject": "runLocalAcceptance",
+          "criterionId": "PROTECTED_ACCEPTANCE"
+        },
+        {
+          "title": "BB-127 PIN N12 External timeout spawn failure and nonzero exit never accept",
+          "subject": "runLocalAcceptance",
+          "criterionId": "PROTECTED_ACCEPTANCE"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "quality",
-      "command": "node --test --test-name-pattern=\"^BB-127 QUALITY \" packages/agent-tools/test/local-protected-acceptance.test.js"
+      "command": "node --test --test-name-pattern=\"^BB-127 QUALITY \" packages/agent-tools/test/local-protected-acceptance.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-127 QUALITY N1 Deleting repository assertions cannot pass the pinned external evaluator",
+          "subject": "runDeliverSlice",
+          "criterionId": "QUALITY_BOUNDARY"
+        },
+        {
+          "title": "BB-127 QUALITY N3 No-op repository QA cannot accept a subtracting implementation",
+          "subject": "runDeliverSlice",
+          "criterionId": "QUALITY_BOUNDARY"
+        },
+        {
+          "title": "BB-127 QUALITY N4 Protected deletion rename mode and type changes fail",
+          "subject": "runDeliverSlice",
+          "criterionId": "QUALITY_BOUNDARY"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "recovery",
-      "command": "node --test --test-name-pattern=\"^BB-127 RESUME \" packages/agent-tools/test/local-protected-acceptance.test.js"
+      "command": "node --test --test-name-pattern=\"^BB-127 RESUME \" packages/agent-tools/test/local-protected-acceptance.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-127 RESUME N9 Changed added or removed acceptance cannot resume",
+          "subject": "runDeliverSlice",
+          "criterionId": "RESUME_BINDING"
+        },
+        {
+          "title": "BB-127 RESUME N10 Missing corrupt or foreign sidecar fails without disposal",
+          "subject": "runDeliverSlice",
+          "criterionId": "RESUME_BINDING"
+        },
+        {
+          "title": "BB-127 RESUME N11 Accepted handle cannot reuse stale external PASS",
+          "subject": "runDeliverSlice",
+          "criterionId": "RESUME_BINDING"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "compatibility",
-      "command": "node --test --test-name-pattern=\"^BB-127 COMPAT \" packages/agent-tools/test/local-protected-acceptance.test.js"
+      "command": "node --test --test-name-pattern=\"^BB-127 COMPAT \" packages/agent-tools/test/local-protected-acceptance.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-127 COMPAT N13 Malformed opt-in cannot downgrade to legacy",
+          "subject": "runDeliverSlice",
+          "criterionId": "COMPATIBILITY_DOCS"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/local-protected-acceptance.test.js"
+      "command": "node --test packages/agent-tools/test/local-protected-acceptance.test.js",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "legacy-deliver",
-      "command": "node --test packages/agent-tools/test/deliver-slice.test.js"
+      "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     }
   ],
   "invariantCoverage": [
@@ -629,7 +711,9 @@
           "match": "requireUnchangedTree = true"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "deliveryContract"
+      ]
     },
     {
       "objectiveCriterion": "Test deletion/no-op verifier fixtures cannot satisfy the protected outcome; genuine implementation fixes pass. Trusted local process execution remains an explicit support boundary.",
@@ -704,8 +788,20 @@
           "match": "\"classification\": \"EXECUTED_LOCAL_PROBE\""
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
     }
   ],
-  "readinessBlockers": []
+  "readinessBlockers": [],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "researchEvidenceSummary": {
+    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
+    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed.",
+    "findings": [
+      "DELIVERED_TRUTH: fresh QA checks revision/tree after prior edits; validateDeliverSlice ignores unrecognized fields. acceptance must be carried explicitly through fresh and complete-handle paths.",
+      "DELIVERED_TRUTH: verifier uses shell:false and output digests, but only strips NODE_TEST_CONTEXT from inherited env. BB-130 allowlist and BB-125 execution binding remain planned.",
+      "CLI differs from canonical research baseline; preserve graph baseline and use matching source anchors; reconcile then-current operator changes at Worker start."
+    ]
+  }
 }
