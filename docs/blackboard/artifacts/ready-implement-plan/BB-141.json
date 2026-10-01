@@ -319,7 +319,7 @@
       ],
       "supportingPlanFields": [
         "testContract",
-        "researchObservedResult"
+        "prototypeEvidence"
       ]
     },
     {
@@ -491,5 +491,121 @@
       "EXHARNESS_SUPERVISED"
     ],
     "limits": "Direct delivered mapBackendOrderToAgentTask/runSupervisedTask/eval/observation seams. Does not execute the future deliver manifest, CLI eval/smoke or Application recovery forwarding; Worker focused tests must call those public subjects."
+  },
+  "prototypeEvidence": {
+    "result": {
+      "classification": "EXECUTED_RESEARCH_SOURCE_COPY_PROTOTYPE_NOT_PRODUCT_DELIVERY",
+      "runtime": "v24.19.0",
+      "sourceSha256": "2c13ee83f64b08c36fba60fd7b2648ef8299dc7c162f690d51d7d039bc005660",
+      "originalSource": "/workspace/research-delivery/packages/agent-tools/bin/exharness-agent.mjs",
+      "scope": "Ephemeral research copy rewires only eval factors and smoke options/observation; imports delivered modules. Tracked product source is unchanged.",
+      "eval": {
+        "protocolHash": "sha256:2c1d0c47322855cabeb4c48c3080e2baa60a4f9e535e8dd2ec637ac1344c49c3",
+        "arms": [
+          {
+            "id": "bug-sum.DIRECT_SINGLE.r0",
+            "wallMs": 5000,
+            "toolCalls": 1,
+            "quality": "ACCEPTED"
+          },
+          {
+            "id": "bug-sum.DIRECT_RETRY.r0",
+            "wallMs": 15000,
+            "toolCalls": 3,
+            "quality": "ACCEPTED"
+          },
+          {
+            "id": "bug-sum.EXHARNESS_SUPERVISED.r0",
+            "wallMs": 15000,
+            "toolCalls": 3,
+            "quality": "ACCEPTED"
+          }
+        ],
+        "negatives": [
+          {
+            "flags": [
+              "--permission",
+              "NOPE"
+            ],
+            "exit": 64,
+            "dispatches": 0,
+            "registration": false
+          },
+          {
+            "flags": [
+              "--timeout-ms",
+              "0"
+            ],
+            "exit": 64,
+            "dispatches": 0,
+            "registration": false
+          },
+          {
+            "flags": [
+              "--timeout-ms",
+              "-1"
+            ],
+            "exit": 64,
+            "dispatches": 0,
+            "registration": false
+          },
+          {
+            "flags": [
+              "--timeout-ms",
+              "NaN"
+            ],
+            "exit": 64,
+            "dispatches": 0,
+            "registration": false
+          },
+          {
+            "flags": [
+              "--timeout-ms",
+              "1.5"
+            ],
+            "exit": 64,
+            "dispatches": 0,
+            "registration": false
+          },
+          {
+            "flags": [
+              "--unknown",
+              "x"
+            ],
+            "exit": 64,
+            "dispatches": 0,
+            "registration": false
+          },
+          {
+            "flags": [
+              "--permission"
+            ],
+            "exit": 64,
+            "dispatches": 0,
+            "registration": false
+          }
+        ]
+      },
+      "smoke": {
+        "status": "ACCEPTED",
+        "argv": [
+          "exec",
+          "--json",
+          "--skip-git-repo-check",
+          "--sandbox",
+          "danger-full-access",
+          "--model",
+          "prototype-model",
+          "-"
+        ],
+        "arm": "SMOKE",
+        "reportExit": 0,
+        "corruptReportExit": 1,
+        "invalidFlagsExit": 64,
+        "invalidDispatches": 0
+      }
+    },
+    "replay": "/workspace/research-plans/cli-prototype-check.mjs",
+    "method": "Actual scratch source-copy prototype executes delivered modules with deterministic fake agent and real Git; every assertion was executed. Exact generated source hash is retained. This is feasibility evidence and does not grant Worker authority or claim tracked product delivery."
   }
 }
