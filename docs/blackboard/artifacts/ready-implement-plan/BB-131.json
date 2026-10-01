@@ -23,7 +23,7 @@
     "Preserve existing generic command/injected verifier authority; no survey-based score, effort or capability claim. Product/runtime and development Blackboard remain distinct.",
     "Public OSS requires >=1000 stars at lookup, pinned relevant implementation/tests and live seam proof before adoption. Neither container library is adopted.",
     "BB-104 is DONE; BB-130 env API is PLANNED_CONTRACT pending DONE. Initial support is explicit Node 24/Linux x64.",
-    "Keep graph baseline; readinessBlocker records absent objective sources. Preserve later additive index exports."
+    "Graph/plan use the same source-complete research baseline; objective sources and anchors resolve. Preserve later additive index exports."
   ],
   "invariants": [
     "Every observation binds independent candidate/tree, profile, seed, runtime and evaluator identities; drift or missing evidence cannot grant readiness.",
@@ -101,9 +101,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 — After BB-130 DONE, routing-baseline repair and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview.",
+    "S1 — After BB-130 DONE and fresh exact READY, add strict API/profile/receipt validation, canonical digests and platform/runtime gates in local-preview.js; preserve existing exports and add startLocalPreview.",
     "S2 — Implement IPC supervisor, all-service health, bounded streams/HTTP/lifecycle, typed failures, owned reset/dispose and disconnect cleanup. Adapt embedded prototype into focused fixtures with strict validation/bounds and crash data cleanup.",
-    "S3 — Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace.",
+    "S3 — Normalize optional slice.preview; compose it only in existing fresh QA checkout; supply protected receipt through BB-130 env overlay. Keep independent checks authoritative and no-preview behavior compatible; dispose preview before workspace. Add opt-in composition cases to deliver-slice.test.js itself: fake Backend yields exact candidate; protected preview receipt reaches QA command env; readiness never grants ACCEPTED when QA fails; preview dispose occurs before QA workspace disposal on success, verifier failure, thrown verifier and interruption. Test no-preview path without invoking preview. Existing generic tests alone do not cover these new assertions.",
     "S4 — Run focused/composition/regression/docs checks, bind candidate-specific Worker evidence and update Living refs with implemented behavior/limits. Independent Jev alone judges readiness/delivery; research receipt has neither authority."
   ],
   "acceptanceCriteria": [
@@ -175,7 +175,8 @@
     },
     {
       "id": "composition",
-      "command": "node --test packages/agent-tools/test/deliver-slice.test.js"
+      "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
+      "requiredTests": "New actual runDeliverSlice opt-in preview cases in this file must assert receipt binding, environment delivery, independent QA failure and cleanup order. Existing tests are regressions only."
     },
     {
       "id": "agent-tools-regression",
@@ -360,7 +361,7 @@
     "expectedValue": "Candidate-bound running preview and repeatable service state from an explicit supported profile.",
     "measurement": "Three synthetic Node fixture runs/negatives in researchBrief; future Worker tests cover final strict contract. Broader quality/effort belongs to BB-074/099.",
     "evidenceClass": "EXECUTED_LOCAL_RESEARCH_FEASIBILITY_NOT_IMPLEMENTATION_OR_VALUE",
-    "goNoGo": "NARROW_PROFILE_GO only; DRAFT pending BB-130, graph baseline repair and fresh independent Jev. No container/framework promotion."
+    "goNoGo": "Narrow NODE_HTTP_V1 research GO based on bounded executed synthetic fixtures. DRAFT until fresh exact Jev SATISFIED. Worker additionally requires BB-130 DONE. Containers and framework inference excluded; no measured effort/speedup claim."
   },
   "localPreviewContract": {
     "version": "LOCAL_PREVIEW_V1",
@@ -421,7 +422,9 @@
       "DISPOSED": "Only after supervisor has reaped owned groups and removed owned data; retain immutable diagnostics outside the candidate checkout."
     },
     "cleanup": "Only live ChildProcess groups created by the supervisor; never persisted PIDs. On error/disconnect TERM then bounded KILL, including groups whose leader exited; await close/signalCode/spawn-error handling and verify owner before removing generated data. Uncertain cleanup is UNRESOLVED. No detached daemon escape or simultaneous supervisor/controller/host-loss guarantee.",
-    "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority."
+    "composition": "Normalize/freeze optional slice.preview. Existing commandDeliver manifest forwards it. Fresh QA checkout binds acceptedSha/tree; start preview, write immutable sanitized receipt outside checkout, give QA explicit PREVIEW_RECEIPT_PATH, run existing verifications. Failed setup returns passed:false and no fabricated QA PASS. Nested finally disposes preview before workspace. Attach receipt only when opted in; no new flags/scheduler/acceptance authority.",
+    "authorityAndLifecycle": "The receipt contains candidate/tree/profile/config/input/runtime/evaluator/service/seed bindings, not Product QA verdicts or deployment/runtime authority. snapshot/environment/release identity comes independently from Product QA. reset disposes old generation then starts a new generation with original protected seed; it does not preserve a live DB. A caller requiring migration/restart persistence must implement and own that distinct fixture lifecycle. Supervisor process group membership is live owner state, never reconstructed from a persisted PID.",
+    "platformSupport": "NODE_HTTP_V1 is the sole initial profile on Linux x64 with operator-pinned Node24. No Docker binary, devcontainer hook or installer is invoked. Reject container descriptors as unsupported before effects. Runtime/profile digest binds actual executable bytes and version; arbitrary service code is trusted local execution within declared fixture, not sandboxed."
   },
   "researchBrief": {
     "classification": "EXECUTED_LOCAL_CAPABILITY_PROTOTYPE_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
@@ -439,7 +442,7 @@
         "status": "PLANNED",
         "inputClassification": "PLANNED_CONTRACT",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-130.json",
-        "workerGate": "Must be DONE; recheck explicit env option and strip-NODE_TEST_CONTEXT semantics before fresh readiness."
+        "workerGate": "Must be DONE and exact delivered env API compatible before Worker executes. Research can obtain READY against the explicitly planned contract; drift requires rejudgment."
       }
     ],
     "selection": "NARROW_PROFILE_GO: three synthetic separate repositories using one opt-in Node protocol. Runtime/lifecycle feasibility only; no real-consumer/framework/container acceptance.",
@@ -571,9 +574,9 @@
     "prototypeEncoding": "gzip+base64 UTF-8; decode, verify prototypeSourceSha256, then run the scratch .mjs with the worktree root argument.",
     "prototypeSourceGzipBase64": "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",
     "readinessBlocker": {
-      "classification": "UPSTREAM_BASELINE_BINDING",
-      "observed": "materialize(BB-131) fails: objective refs discovery.json, delivery-capability-discovery.md and delivery-capability-sources.json are absent at graph baseline e9007f861fd95c678c0c4048bb3d82626855bda1, introduced at 4291a4a7900ea3c943a2533581c6abc210b1145f. Plan-only edits cannot repair upstream objective binding.",
-      "resolution": "Routing owner must explicitly advance graph/plan baseline to a reviewed SHA containing objective sources and recheck anchors/digests before fresh Jev. This single-plan branch retains binding and claims no materialization success."
+      "classification": "RESOLVED_BASELINE_BINDING",
+      "baselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "observed": "Graph and plan were reconciled to a reviewed source-complete SHA; canonical materialize resolves objective sources and anchors. Historical prototype baseline remains historical."
     }
   },
   "objectiveCoverage": [
