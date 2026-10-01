@@ -53,7 +53,7 @@
     "D11: Independent QA feeds verifier-produced behavior/regression evidence into the existing non-mutating `QaWorker`/`QaCompletion` boundary (or its exact delivered successor). QA must bind the candidate revision + PREVIEW_RELEASE_RECEIPT and cannot use producer prose, runtime status or PR checks as behavior evidence.",
     "D12: Calibrate QA sensitivity with a separate trusted seeded-defect control derived from the accepted candidate after the producer has already emitted success. The transform has a frozen digest and intentionally reintroduces one NORM-01 defect in a verifier-only copy; QA must reject it. The negative control never replaces/mutates the real candidate or its review.",
     "D13: Execute four live evidence runs: three clean reset runs from the same frozen base/protocol and one interruption run. Each gets a fresh worktree, database volume, execution claim/attempt and review identity; reset means no source, DB, conversation or preview state is reused across runs.",
-    "D14: In the interruption run, kill the coding runtime only after durable OpenHands activity is observed. Fresh process recovery must reuse the exact semantic attempt/runtime binding/conversation required by BB-066 and continue through SCM candidate, preview and QA without a second semantic attempt/provider session.",
+    "D14: In the interruption run, kill the coding runtime only after durable coding-runtime activity is observed. Fresh process recovery must reuse the exact semantic attempt/runtime binding/conversation required by BB-066 and continue through SCM candidate, preview and QA without a second semantic attempt/provider session.",
     "D15: Each run has the same predeclared budget ceilings. Evidence includes wall time, model calls/tokens/API cost when known, tool/process limits, SCM operations, preview runtime and verifier duration. Missing cost/usage remains UNKNOWN and prevents a complete-feasibility claim for that run; it is never zero-filled.",
     "D16: Report `FEASIBLE | NOT_FEASIBLE | INCONCLUSIVE` only. FEASIBLE requires all three clean runs plus kill/resume to produce independently accepted real candidates/previews within protocol and the seeded-defect control to be rejected. Comparative productivity/value fields are explicitly `NOT_EVALUATED` and deferred to BB-074."
   ],
@@ -76,7 +76,7 @@
     "expectedFromDependencies": [
       "packages/oracle/** from BB-060..064 delivery",
       "scripts/delivery/baseline/** from BB-065 delivery",
-      "packages/agentic-system/src/openhands-runtime-adapter.js from BB-066 delivery",
+      "packages/agentic-system/src/opencode-runtime-adapter.js from BB-066 delivery",
       "packages/agentic-system/src/gvisor-sandbox-launcher.js and execution-capability-gateway.js from BB-067 delivery",
       "packages/agentic-system/src/scm-review-delivery.js and github-scm-provider.js from BB-068 delivery",
       "BB-064 and BB-068 implementation-result + ACCEPT judgment artifacts"
@@ -138,7 +138,7 @@
   },
   "implementationSlices": [
     "S1 — Dependency/protocol gate: require BB-064 and BB-068 DONE, load exact delivered evidence/Living refs, resolve delivered request-tracker/runtime/SCM/browser identities, and materialize immutable FIRST_SLICE_PROTOCOL/v1. Exit: contract tests reject any dependency/profile/fixture drift or missing live prerequisite.",
-    "S2 — Oracle→agent→SCM path: from a reset controlled repository resolve exact Backend inputs through Oracle, execute NORM-01 through delivered DomainExecutionController/OpenHands/gVisor capability, and create the BB-068 review candidate without merge. Exit: one content-addressed run record binds Oracle sourceRefs → execution attempt/runtime → resulting tree → commit/tree/review/check identities.",
+    "S2 — Oracle→agent→SCM path: from a reset controlled repository resolve exact Backend inputs through Oracle, execute NORM-01 through delivered DomainExecutionController/opencode/gVisor capability, and create the BB-068 review candidate without merge. Exit: one content-addressed run record binds Oracle sourceRefs → execution attempt/runtime → resulting tree → commit/tree/review/check identities.",
     "S3 — Isolated preview: start the exact candidate in a separate runsc preview using read-only source and fresh SQLite volume, wait on GET /requests readiness, and emit PREVIEW_RELEASE_RECEIPT + instance receipt. Exit: drift/credential/socket/extra-mount/startup negatives fail before QA.",
     "S4 — Independent QA + defect control: run verifier-owned API/persistence checks and Playwright browser checks, feed grounded evidence through existing QA completion, restart preview against the same run volume for persistence, then run a separate frozen seeded-defect variant and prove QA rejects it despite a producer-success claim. Exit: real candidate accepted and negative control rejected with distinct identities.",
     "S5 — Repetition/recovery: perform three fully reset clean live runs plus one kill/resume run after durable agent activity. Fresh-process recovery must reuse exact semantic runtime binding and still reach candidate/preview/QA; every run records budgets/failures and no state leaks across reset boundaries.",

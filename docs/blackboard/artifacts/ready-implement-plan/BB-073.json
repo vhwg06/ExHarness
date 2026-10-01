@@ -35,7 +35,7 @@
     "D6 — Clean install is self-contained: the release bundle must include delivery-image.tar, digest-pinned release/config/reference-seed manifests and the runbook. Installation verifies the archive hash, loads the image, verifies the loaded image content ID, and runs Compose with pull disabled. A registry may later mirror the same image but is not part of BB-073 acceptance and cannot be a hidden prerequisite.",
     "D7 — Upgrade procedure is allowed only after CLI upgrade-check validates state-schema compatibility and either no ACTIVE/RECOVERY_REQUIRED attempt exists or the exact delivered compatibility contract permits continuation. The procedure then creates/validates backup evidence, loads/verifies the target local bundle/image, switches the operator release directory, and requires doctor/status before use. Otherwise it fails closed; no best-effort migration from unknown state.",
     "D8 — Rollback procedure uses the exact prior release bundle and imageContentId. It switches back only after identity verification and restores the pre-upgrade backup when current persisted state is not downgrade-compatible; doctor/status must succeed against the restored/current canonical state before the rollback is considered complete.",
-    "D9 — OpenHands software-agent-sdk v1.49.6 is not repackaged as a second product; the distribution consumes the exact BB-070/BB-069 delivered runtime profile. Langfuse v4.46.0 remains optional observability infrastructure from BB-072 and is not required for install/health.",
+    "D9 — opencode is not repackaged as a second product; the distribution consumes the exact BB-070/BB-069 delivered runtime profile. Langfuse v4.46.0 remains optional observability infrastructure from BB-072 and is not required for install/health.",
     "D10 — Worker preflight requires BB-070 and BB-072 DONE and binds their exact lifecycle/operator/config/state compatibility outputs. Any mismatch in control commands, canonical data roots or compatibility semantics is PLAN_INPUT_CONTRADICTION."
   ],
   "sourceSeams": {
@@ -309,7 +309,7 @@
       "finding": "Current kernel CI uses Node 24; the supported distribution profile pins Node 24 inside the container rather than requiring operator-host Node."
     },
     {
-      "source": "OpenHands software-agent-sdk v1.49.6",
+      "source": "opencode",
       "checked": "2026-09-28",
       "finding": "The runtime remains a delivered upstream dependency/profile, not a separately repackaged lifecycle product inside BB-073."
     },
