@@ -1,0 +1,79 @@
+TAP version 13
+# Subtest: execution coordinates are mandatory; the observer default path needs declared identity
+ok 1 - execution coordinates are mandatory; the observer default path needs declared identity
+  ---
+  duration_ms: 2.854952
+  type: 'test'
+  ...
+# Subtest: cross-attempt and cross-invocation pin substitution is rejected
+ok 2 - cross-attempt and cross-invocation pin substitution is rejected
+  ---
+  duration_ms: 2.964327
+  type: 'test'
+  ...
+# Subtest: projector binds exact subject, attempt, invocation and attestation identity
+ok 3 - projector binds exact subject, attempt, invocation and attestation identity
+  ---
+  duration_ms: 2.399542
+  type: 'test'
+  ...
+# Subtest: missing or mismatched subject, binding or attestation digests are rejected
+ok 4 - missing or mismatched subject, binding or attestation digests are rejected
+  ---
+  duration_ms: 1.634573
+  type: 'test'
+  ...
+# Subtest: forged or unbound provider events are rejected; provider ids never establish identity
+ok 5 - forged or unbound provider events are rejected; provider ids never establish identity
+  ---
+  duration_ms: 1.704203
+  type: 'test'
+  ...
+# Subtest: MISSING_PROVENANCE facts pass through; narrative cannot clear or add facts
+ok 6 - MISSING_PROVENANCE facts pass through; narrative cannot clear or add facts
+  ---
+  duration_ms: 0.99048
+  type: 'test'
+  ...
+# Subtest: narrative is excluded from observationId; facts, digests and subject pin are included
+ok 7 - narrative is excluded from observationId; facts, digests and subject pin are included
+  ---
+  duration_ms: 1.571735
+  type: 'test'
+  ...
+# Subtest: unmeasured values are null with a reason; zero defaults are rejected
+ok 8 - unmeasured values are null with a reason; zero defaults are rejected
+  ---
+  duration_ms: 0.912705
+  type: 'test'
+  ...
+# Subtest: write-capable ports are rejected at construction
+ok 9 - write-capable ports are rejected at construction
+  ---
+  duration_ms: 0.7333
+  type: 'test'
+  ...
+# Subtest: historical and current subjects never mix
+ok 10 - historical and current subjects never mix
+  ---
+  duration_ms: 1.232722
+  type: 'test'
+  ...
+# Subtest: default projection integrates with the real delivered observer, registry and attempt head
+ok 11 - default projection integrates with the real delivered observer, registry and attempt head
+  ---
+  duration_ms: 113.619112
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 206.819125
+
+
+exitCode=0

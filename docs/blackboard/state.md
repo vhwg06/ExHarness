@@ -42,7 +42,7 @@ NONE
 
 - BB-059 [WORKER/EXECUTION] — Research evidence-gated HOW evolution and Jev evaluation pipeline
 - BB-080 [WORKER/EXECUTION] — Integrate async steering, wakeup and recovery
-- BB-084 [WORKER/EXECUTION] — Implement grounded observation and context binding
+- BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [RESEARCH_SA/RESEARCH] — Allowlist agent-tools child environment
 - BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
@@ -94,8 +94,8 @@ BB-080 [WORKER_SCHEDULABLE] <- BB-078, BB-079
 BB-081 [BLOCKED_BY BB-080] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
 BB-083 [BLOCKED_BY BB-059] <- BB-059, BB-064, BB-065
-BB-084 [WORKER_SCHEDULABLE] <- BB-058, BB-064
-BB-085 [BLOCKED_BY BB-084] <- BB-084
+BB-084 [DONE] <- BB-058, BB-064
+BB-085 [WORKER_SCHEDULABLE] <- BB-084
 BB-086 [BLOCKED_BY BB-085,BB-059] <- BB-085, BB-059, BB-065
 BB-087 [DONE] <- BB-064
 BB-088 [DONE] <- BB-087

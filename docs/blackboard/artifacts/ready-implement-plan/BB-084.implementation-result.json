@@ -1,0 +1,114 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "IMPLEMENTATION_RESULT",
+  "artifactId": "BB-084-evidence",
+  "plan": {
+    "ref": "docs/blackboard/artifacts/ready-implement-plan/BB-084.json",
+    "hash": "c6a3d7a9b3a7fa0ff272835dfb75ac0319d6d94ea10c16669332596a58907338"
+  },
+  "candidateSha": "0e152c955a8441f88de0526fa901856eac8958bc",
+  "baselineSha": "55fd3384a0959087098677badc3413d92eae6879",
+  "candidateTree": "e0bd6c9c421610ec52e4159c2e698e9255b594de",
+  "verificationRuns": [
+    {
+      "id": "dependency",
+      "command": "node --test test/observed-implementation-dependency-contract.test.mjs",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0e152c955a8441f88de0526fa901856eac8958bc",
+      "logRef": "docs/blackboard/evidence/BB-084/dependency.txt",
+      "logHash": "dc4b5f69dbf1644e9f65630f2de1e9f0b26f3537d2c7ec0daaa194102d21d2a3"
+    },
+    {
+      "id": "observation",
+      "command": "node --test packages/agentic-system/test/grounded-observation.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0e152c955a8441f88de0526fa901856eac8958bc",
+      "logRef": "docs/blackboard/evidence/BB-084/observation.txt",
+      "logHash": "3041f17a0914bb530cb7c43de0f3fedc744347d53a7cbae59bab439b66e37bee"
+    },
+    {
+      "id": "context-binding",
+      "command": "node --test packages/agentic-system/test/observation-context-binding.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0e152c955a8441f88de0526fa901856eac8958bc",
+      "logRef": "docs/blackboard/evidence/BB-084/context-binding.txt",
+      "logHash": "344ee37490cb71b2f2825e017978c8cde4e7e392eaa86f0140608f3da37f6186"
+    },
+    {
+      "id": "finding-input",
+      "command": "node --test packages/agentic-system/test/grounded-finding-input.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0e152c955a8441f88de0526fa901856eac8958bc",
+      "logRef": "docs/blackboard/evidence/BB-084/finding-input.txt",
+      "logHash": "bfe9829d229fb00cd5630c4b0082617123d4bf3fb96d67f9688790d65fc0ff97"
+    },
+    {
+      "id": "fresh-process",
+      "command": "node --test packages/agentic-system/test/grounded-observation-fresh-process.test.js",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0e152c955a8441f88de0526fa901856eac8958bc",
+      "logRef": "docs/blackboard/evidence/BB-084/fresh-process.txt",
+      "logHash": "e1d1583f0ce071ccdebbe67a00de116420f1f789c8265d8df8e6bff658a5f920"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0e152c955a8441f88de0526fa901856eac8958bc",
+      "logRef": "docs/blackboard/evidence/BB-084/agentic-regression.txt",
+      "logHash": "4d289574501068a2b0b513541f40b30f83f6af9276730324baa43521c1daac49"
+    },
+    {
+      "id": "repository",
+      "command": "npm run verify",
+      "status": "PASSED",
+      "exitCode": 0,
+      "candidateSha": "0e152c955a8441f88de0526fa901856eac8958bc",
+      "logRef": "docs/blackboard/evidence/BB-084/repository.txt",
+      "logHash": "a43e347c11403c1a4ae353e2a5953a728ed64fd79ce0f83e44656980ceb09325"
+    }
+  ],
+  "claims": [
+    {
+      "id": "OB1",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-084/observation.txt",
+        "docs/blackboard/evidence/BB-084/fresh-process.txt"
+      ]
+    },
+    {
+      "id": "OB2",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-084/context-binding.txt"
+      ]
+    },
+    {
+      "id": "OB3",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-084/finding-input.txt"
+      ]
+    },
+    {
+      "id": "OB4",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-084/observation.txt",
+        "docs/blackboard/evidence/BB-084/fresh-process.txt",
+        "docs/blackboard/evidence/BB-084/agentic-regression.txt"
+      ]
+    },
+    {
+      "id": "OB5",
+      "evidenceRefs": [
+        "docs/blackboard/evidence/BB-084/dependency.txt",
+        "docs/blackboard/evidence/BB-084/repository.txt"
+      ]
+    }
+  ]
+}
