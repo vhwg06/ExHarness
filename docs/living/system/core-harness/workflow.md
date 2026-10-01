@@ -286,9 +286,9 @@ ingest (one CAS domain: enqueue + dedupe + wake claim)
                            ── exactly one replacement wake (covers input high-water)
                            ── detached operations keep RUNNING
   STOP { inputId }       ── persist stopFence FIRST ── fence generation ── abort (after commit)
-                           ── request BB-078 cancels ── no new wake/dispatch/retry
+                           ── request operation cancels ── no new wake/dispatch/retry
                            ── fence survives restart until terminal/reconcilable
-  OPERATION_TRANSITION   ── dedupe by transitionId ── stage via BB-079 (fail closed)
+  OPERATION_TRANSITION   ── dedupe by transitionId ── stage via the async-result checkpoint (fail closed)
                            ── if model ACTIVE: hold for next turn (never preempt)
                            ── if idle: accumulate burst until 1ms quiet or 100 max
                                 then one wake (USER_INPUT/STOP bypass immediately)
@@ -302,7 +302,7 @@ Model-generation fencing and cancellation:
 takeNextModelTurn() -> { submissionId, generation, coveredIngressSeq, signal, projection }
   STOP fenced or ACTIVE present -> reject (one active model only)
   no wake and no staged work  -> empty (no heartbeat)
-  else commit staged BB-079 items for this submission
+  else commit staged async-result items for this submission
 
 model.generate(request[, { signal }])   (ABORT_SIGNAL routes get the signal; FENCE_ONLY ignores it)
   -> dispatchModelResponse(submissionId, response)
@@ -321,12 +321,12 @@ load coordinator CAS state
        absent/INTENDED -> execute exact identity once
        DISPATCHED/UNKNOWN -> reconcileEffectOperation (CONTINUE/RETRY same id/ESCALATE->UNKNOWN)
        CONFIRMED -> SUCCEEDED with confirmed result (no second effect)
-  -> stage unseen BB-078 transitions through BB-079 once (dedupe by transitionId)
+  -> stage unseen operation transitions through the async-result checkpoint once (dedupe by transitionId)
   -> mark crash-time ACTIVE submission ABANDONED, increment generation
   -> if durable pending work and no STOP: at most one replacement wake
 ```
 
-Development probes (`benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs`) run DEV-only matched sync/async fixtures over the same task semantics and record turns, steering latency, coalesced counts, abort/fence outcomes, replacement/recovery turns, duplicate effects and unknown provider usage. They execute no `HOLD-*` tasks and publish no `PROMOTE_ASYNC`/`KEEP_SYNC` verdict; held-out acceptance stays BB-081 owned.
+Development probes (`benchmarks/harness-efficiency/test/bb-080-async-profile.test.mjs`) run DEV-only matched sync/async fixtures over the same task semantics and record turns, steering latency, coalesced counts, abort/fence outcomes, replacement/recovery turns, duplicate effects and unknown provider usage. They execute no `HOLD-*` tasks and publish no `PROMOTE_ASYNC`/`KEEP_SYNC` verdict; held-out acceptance remains held-out future work.
 
 ## CURRENT ABSTRACTION BOUNDARY
 
