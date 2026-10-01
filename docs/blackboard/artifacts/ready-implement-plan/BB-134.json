@@ -29,9 +29,9 @@
   "architectureDecisions": [
     "D1 — Union helper seam: add pure scripts/blackboard-verification-bundle.mjs exporting bundleRefs(result), buildBundle(result, loadBody) and installBundle(root, id, bundle). bundleRefs returns the deterministically sorted dedupe of verificationRuns.logRef plus claims.evidenceRefs (negativeCases logRefs are already run refs); buildBundle pairs each ref with its exact body bytes in that order; installBundle validates safe refs and digests before any write or provider call. No I/O inside bundleRefs; loadBody and filesystem access are injected by callers.",
     "D2 — CI collect seam: replace the claim-only enumeration in scripts/blackboard-jev-ci.mjs collect with bundleRefs/buildBundle. The uploaded bundle keeps the exact {result, files} shape with files in bundleRefs order and byte-identical bodies. No new bundle fields, no provider key in the collect job, and no change to any worker verification mapping.",
-    "D3 — CI evaluate and delivery import seam: evaluate restores files through installBundle, then writes bundle.result to the evidence ref and calls materialize, so a missing log fails as ENOENT-free fail-closed before any provider call. importEvaluationEvidence delegates its union enumeration to bundleRefs with byte-identical behavior; BB-059/079/084 mappings are preserved and never edited.",
+    "D3 — CI evaluate seam only: evaluate restores files through installBundle, then writes bundle.result to the evidence ref and calls materialize, so a missing log fails fail-closed before any provider call. scripts/blackboard-delivery.mjs is explicitly unchanged (outside write scope); its importEvaluationEvidence union enumeration is the frozen compatibility reference the new helper must match byte-for-byte. BB-059/079/084 mappings are preserved and never edited.",
     "D4 — Fail-closed rules: a missing entry for a union ref, a body whose hash differs from its bound run.logHash, a ref outside docs/blackboard/evidence/<WORK_ID>/ or with an unsafe basename, or an empty body for a non-empty bound hash all throw before any provider call and before writing partial evidence. Duplicate refs are deduped to one file; order is normalized to bundleRefs sort so bytes and digests are deterministic.",
-    "D5 — Separation regression fixtures: new test/blackboard-verification-bundle.test.mjs replays the real BB-059 CI36805700271 shape (eight verificationRuns including one passing run referenced by no claim, seven claim-linked files, one retained observation log) through separated build/install/materialize steps with mock transport asserting zero provider calls on invalid input.",
+    "D5 — Separation regression fixtures: new test/blackboard-verification-bundle.test.mjs synthetically reproduces the BB-059 CI36805700271 shape (eight verificationRuns including one passing run referenced by no claim, seven claim-linked files, one retained observation log; no local bundle path dependency) through separated build/install/materialize steps with mock transport asserting zero provider calls on invalid input.",
     "D6 — Wiring and binding policy: the new test file is the only expectedTest; no package.json standing-script or workflow edit is required, so existing worker plans keep their mappings. negativeCaseBindings are mandatory (BB-134 is above the jev-policy.json negativeCaseBindingsFromWorkId BB-100 threshold) with one distinct BUNDLE-FAILCLOSED test title per negativeVerificationCases index invoking installBundle or buildBundle with a real assertion.",
     "D7 — Delivery and rollback boundary: worker writes are limited to scripts/blackboard-jev-ci.mjs, scripts/blackboard-verification-bundle.mjs, test/blackboard-verification-bundle.test.mjs and docs/living/system/state.md. Graph, state, contexts, objectives, readiness, receipts and CI workflows are untouched; rollback reverts only those four paths."
   ],
@@ -77,7 +77,7 @@
     "B1 — Union helper plus CI collect/evaluate seams [COMPLETE, FAILCLOSED]: implement bundleRefs/buildBundle/installBundle per D1, rewire collect per D2 and evaluate per D3, keeping the {result, files} shape and credential separation. Tests titled BUNDLE-UNION prove exact bytes, deterministic order, duplicate dedupe and digest equality against the BB-059 eight-run shape.",
     "B2 — Separation regression [SEPARATION]: implement the BUNDLE-SEPARATION fixture per D5 with one passing verification run referenced by no acceptance claim plus a retained observation log; prove separated build/install/materialize succeeds, all union logs are present, and transport alone grants no acceptance (bindings and verdict rules unchanged).",
     "B3 — Fail-closed negatives plus bindings [FAILCLOSED]: implement the four BUNDLE-FAILCLOSED cases per D4, each bound to a distinct test title invoking installBundle or buildBundle with a non-vacuous assertion; invalid input throws before any provider call (mock fetch asserts zero calls) and writes no partial evidence.",
-    "B4 — Living Docs plus full verification [DOCS]: document the trusted bundle behavior in docs/living/system/state.md without changing judgment authority, then run bundle-union, bundle-separation, bundle-failclosed, verify:blackboard-context and full npm run verify; real independent readiness/candidate gates complete delivery outside this plan."
+    "B4 — Living Docs plus full verification [DOCS]: document the trusted bundle behavior in docs/living/system/state.md without changing judgment authority, then run bundle-union, bundle-separation, bundle-failclosed, verify:blackboard-context and full npm run verify; actual Jev judgment and merge receipt remain delivery preconditions, not acceptance evidence."
   ],
   "acceptanceCriteria": [
     {
@@ -115,13 +115,13 @@
     },
     {
       "id": "DOCS",
-      "statement": "Focused regression coverage and Living Docs describe the actual trusted bundle behavior, and full repository checks plus real independent gates complete delivery.",
+      "statement": "Focused regression coverage and Living Docs accurately describe the trusted bundle behavior, and full offline repository checks confirm the credential-free collection and data-only evaluation boundaries are preserved.",
       "verificationIds": [
         "blackboard-regression",
         "repository"
       ],
       "evidenceRequired": [
-        "Living Docs diff for docs/living/system/state.md, bundle regression logs and full npm run verify log."
+        "Living Docs diff for docs/living/system/state.md, bundle regression logs and full npm run verify log showing credential/data-only boundaries intact."
       ]
     }
   ],
@@ -216,8 +216,8 @@
   "researchGaps": [],
   "researchEvidence": [
     {
-      "ref": "/workspace/scratch/opencode-orchestration-20261001/bb-059-ci-input/BB-059/bundle.json",
-      "finding": "Read-only inspection: result holds eight verificationRuns including repository-verify, while files holds only the seven claim-linked logs; the union gap reproduces the ENOENT before API."
+      "ref": "BB-059 trusted Jev CI run 36805700271 bundle artifact (eight-run shape)",
+      "finding": "Observed CI run 36805700271: result holds eight verificationRuns while files holds only seven claim-linked logs; the missing file is exactly docs/blackboard/evidence/BB-059/repository-verify.txt (one unclaimed passing run), which reproduces the ENOENT before API. The authorized BUNDLE-SEPARATION fixture rebuilds this eight-run/seven-file shape synthetically inside the new test with no local-path dependency."
     },
     {
       "ref": "scripts/blackboard-jev-ci.mjs",
@@ -274,7 +274,7 @@
       "input": "exact READY plan plus DONE BB-056",
       "output": "DELIVERED_FEATURE",
       "binding": "plan hash plus candidate plus evidence plus Jev",
-      "convergence": "union transport plus separation plus fail-closed plus docs plus merged candidate",
+      "convergence": "union transport plus separation plus fail-closed plus docs under independent judgment; merge receipt remains a delivery precondition",
       "forbidden": [
         "modify existing worker objectives or READY plans",
         "relax evidence or credential gates",
@@ -420,7 +420,8 @@
       "supportingPlanFields": [
         "sourceScope",
         "sourceSeams",
-        "verificationPlan"
+        "verificationPlan",
+        "deliveryContract"
       ]
     }
   ]
