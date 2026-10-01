@@ -27,7 +27,9 @@
   "invariants": [
     "The independently pinned candidate, environment, evaluator and criterion identities bind each observation; missing or drifted evidence never grants acceptance.",
     "Adapters return observations and criterion facts through existing QA authority; startup, traces and model claims cannot self-publish product acceptance.",
-    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects."
+    "Only owned test resources may be reset or disposed; untrusted configuration cannot silently grant commands, credentials or production effects.",
+    "Restart preserves the same owned store and generation without invoking preview reset/reseed; prior-client expectations and seeded rows remain external protected inputs.",
+    "Full mandatory assertion ledger and independently bound identities are required for PASS; an unavailable runtime, missing observation, cleanup/evidence failure or setup timeout returns INCONCLUSIVE."
   ],
   "architectureDecisions": [
     "D1: Select NODE_HTTP_SQLITE_LOCAL_V1: trusted local loopback HTTP service, Node 24.20.0/Linux x64 and an owned file-backed SQLite fixture. A finite externally pinned previous-client request/assertion manifest plus independent row assertions verifies one explicit forward migration and a fresh process restart; no inferred migration or generic OpenAPI compatibility claim.",
@@ -83,9 +85,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 — After dependencies DONE/fresh READY, implement factory, config/digest/criterion validation and snapshot-to-protected-profile resolver. Bind preview and ownership before effects.",
-    "S2 — Verify baseline client/seed, execute candidate forward migration, old-client/new-feature assertions and restart a fresh process on the same store. Record old/new row/schema facts, enforce budgets and dispose only owned resources.",
-    "S3 — Emit content-addressed criterion observations/reproducers with all identities through existing Product QA. Test actual factory injection, every named negative and complete positive flow. Adapter cannot publish acceptance.",
+    "S1 — After dependencies DONE/fresh READY, implement factory, config/digest/criterion validation and snapshot-to-protected-profile resolver. Bind preview and ownership before effects. Validate exact own-key schemas and immutable byte hashes from profileContract; implement the plan-owned previewLifecycle adapter rather than assuming new exports from BB-131. Separate preview readiness from independent Product QA identities. Capture store realpath/ownership token once and reject foreign or symlink roots before migration/disposal.",
+    "S2 — Verify baseline client/seed, execute candidate forward migration, old-client/new-feature assertions and restart a fresh process on the same store. Record old/new row/schema facts, enforce budgets and dispose only owned resources. Fixed oracle: seed row1 legacy/open, schema v1; forward migration adds non-null priority default0 v2 without dropping old fields/rows; prior client creates/reads row2; new client row3 priority2 updates title. Stop and reap candidate, restart on identical owned DB without reset/reseed, then reread rows and required schema. Protected prior client/business assertions determine expected values, never candidate schema. Record each mandatory assertion id and exact bounded request/response.",
+    "S3 — Emit content-addressed criterion observations/reproducers with all identities through existing Product QA. Test actual factory injection, every named negative and complete positive flow. Adapter cannot publish acceptance. Implement deterministic first-failure reproducer reduction: keep only declared fixed seed row and one failing request/expected/actual, with pinned migration/client/evaluator refs; replay it in fresh owned fixture and require the same violation before retaining its digest. If reproduction/setup fails, retain full bounded case with explicit NOT_MINIMIZED; never claim successful reduction. Focused tests verify reduced data-loss and schema cases plus actual factory injection into Product QA with independent runtimeObserver.",
     "S4 — Run focused/QA/regression/docs checks, reconcile Living limits and provide bound Worker logs/source evidence. Rebind to BB-131/127 delivered contracts when DONE; otherwise keep the plan-owned shims from D3."
   ],
   "acceptanceCriteria": [
@@ -155,7 +157,8 @@
     {
       "id": "focused",
       "command": "node --test packages/agentic-system/test/api-state-verifier.test.js",
-      "negativeCases": "focused must fail closed on all 13 negativeVerificationCases: deleted seeded rows, weakened schema, added required input, removed required response, corrupted old records, state reset on restart, changed evaluator digest, deleted assertions/no-op oracle, missing/wrong preview identity, migration failure, timeout/malformed response, foreign fixture disposal, unknown/unexecuted criterion."
+      "negativeCases": "focused must fail closed on all 13 negativeVerificationCases: deleted seeded rows, weakened schema, added required input, removed required response, corrupted old records, state reset on restart, changed evaluator digest, deleted assertions/no-op oracle, missing/wrong preview identity, migration failure, timeout/malformed response, foreign fixture disposal, unknown/unexecuted criterion.",
+      "setup": "Run using operator-provisioned Node24 with built-in node:sqlite on Linux x64; verify sqlite availability before tests. Missing runtime/profile fails command, never skips. Do not treat generic Node22 CI regression as this focused profile validation."
     },
     {
       "id": "qa-authority",
@@ -198,6 +201,24 @@
       "criterionIds": [
         "OWNED_RESOURCES",
         "FAIL_CLOSED"
+      ]
+    },
+    {
+      "invariant": "Restart preserves the same owned store and generation without invoking preview reset/reseed; prior-client expectations and seeded rows remain external protected inputs.",
+      "criterionIds": [
+        "PERSISTED_STATE",
+        "EVIDENCE_IDENTITY",
+        "FAIL_CLOSED",
+        "OWNED_RESOURCES"
+      ]
+    },
+    {
+      "invariant": "Full mandatory assertion ledger and independently bound identities are required for PASS; an unavailable runtime, missing observation, cleanup/evidence failure or setup timeout returns INCONCLUSIVE.",
+      "criterionIds": [
+        "PERSISTED_STATE",
+        "EVIDENCE_IDENTITY",
+        "FAIL_CLOSED",
+        "OWNED_RESOURCES"
       ]
     }
   ],
@@ -561,21 +582,17 @@
       "docs/blackboard/artifacts/ready-implement-plan/BB-127.json"
     ],
     "workerGate": "Every direct dependency must be DONE. Proposed preview and external evaluator shims are assumptions for research, not implementation authority. Reconcile with their delivered identities/APIs and obtain fresh exact READY before Worker.",
-    "researchBaseSha": "e9007f861fd95c678c0c4048bb3d82626855bda1",
+    "researchBaseSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
     "checkoutBaseSha": "fe5d6db971b4c4015a4d860fa7b079973d4e80e2",
-    "readinessBlocker": "The graph researchBaselineSha e9007f861fd95c678c0c4048bb3d82626855bda1 predates some objective sourceRefs. Jev materialization fails on missing docs/blackboard/evidence/BB-133/discovery.json. Coordinator must rebind graph and plan to a source-complete baseline and rerun independent readiness; this plan-only lane cannot edit the graph.",
-    "baselineMissingRefs": [
-      "docs/blackboard/process/delivery-capability-discovery.md",
-      "docs/blackboard/process/delivery-capability-sources.json",
-      "docs/blackboard/evidence/BB-133/discovery.json"
-    ]
+    "readinessBlocker": "RESOLVED: graph and plan bind a source-complete SHA; canonical materialize resolves every required objective source and source anchor.",
+    "baselineMissingRefs": []
   },
   "profileContract": {
     "kind": "API_STATE_PROFILE_V1",
     "support": "Trusted local Node 24.20.0/Linux x64; experimental node:sqlite (observed 3.53.4); loopback HTTP, one owned DB file/forward migration. Unsupported stack is INCONCLUSIVE. No external/production DB, inferred commands, generic schema-diff engine or confinement claim.",
     "factory": "createApiStateVerifier({ resolvePinnedInput, previewLifecycle, evidenceStore, now }) => { verify({ snapshotRef, environmentRef, components, criterionRef, verifierPolicyRef }) => Promise<{ verdict, evidenceRefs }> }",
     "resolver": "resolvePinnedInput receives the QA verify request and returns immutable protected profileRef/hash, 40-hex Git candidateSha, checkout tree/config digest, previewReceiptRef/hash, environment/snapshot/release, evaluator/priorClient/businessAssertions/seed/migration refs+hashes, schema versions, criterionBindings and bounded commands. Hash actual bytes/canonical config. Criterion must belong to snapshot and every mandatory assertion must execute.",
-    "previewShim": "Proposed BB-131 shim: prepareOwned({candidateSha,seedRef,runId}) yields ownershipToken/storeRoot/service handle/receipt; startBaseline, migrateOnce, startCandidate, restartCandidate retain one store; observeStore returns row/schema facts; dispose accepts matching owned handles/token only. Commands are operator-declared with delivered child-env policy. Reject foreign realpaths/symlinks and remote endpoints before effects.",
+    "previewShim": "Plan-owned fixture lifecycle implemented in api-state-verifier.js using injected previewLifecycle; not an existing BB-131 export. Implement prepareOwned/startBaseline/migrateOnce/startCandidate/restartCandidate/observeStore/dispose over tracked fixture scripts and a single privately owned store root. BB-131 startLocalPreview supplies owned service startup/readiness/receipt/dispose only. Its reset creates a new seeded generation, so never call reset between migration and restart. Restart must stop/reap owned candidate process then start again against exactly the same DB path, seed generation and protected migration history. Every fixture service receipt binds candidate/tree/runtime/config; QA snapshot/environment/release stay independent. Resolve scripts/runtime/env from operator-pinned profile before effects; no inferred commands.",
     "protectedInputs": "BB-127 pins external evaluator/client/business assertions outside candidate write scope; resolve by snapshot/policy. Candidate schema is diagnostic only. Rehash inputs/preview before effects, after migration/restart and before final evidence. Digest drift/missing identity fails closed. Trusted local commands are unsandboxed.",
     "fixture": "Version 1 tasks(id INTEGER PRIMARY KEY,title/status required TEXT), seed id1/legacy/open. Migration adds priority INTEGER NOT NULL DEFAULT 0, version 2. Assert old row/priority0; prior client creates id2; new client id3/priority2 updates title, rejects missing title and persists after restart. Seed digest binds inputs, not unchanged whole DB bytes.",
     "budgets": "Default maximum 20 requests, 1000ms per HTTP request, 2000ms startup/readiness/migration/stop, 30000ms total run, 8192 bytes each response/diagnostic, 65536 bytes total evidence. Finite request sequence and fixed seed, no randomized generation. Abort/kill only owned children, close connections before reset, return INCONCLUSIVE on exhaustion with mandatory observations absent. Retain content-addressed sanitized evidence before cleanup.",
@@ -739,11 +756,12 @@
     "profile": "Finite HTTP/SQLite profile selected; previous-client and business assertions pinned independently. Prototype remains bounded; no split needed.",
     "tooling": "Eight pinned source/test files inspected. Built-in Node selected; non-selected Python/container tools not adopted or cost-benchmarked.",
     "experiment": "13 cases: correct PASS; ten violations FAIL; setup/malformed output INCONCLUSIVE. Weakened candidate schema passes its own check but fails prior oracle. Replay, hashes and reproducers embedded.",
-    "readiness": "DRAFT, no Jev verdict. Empty gaps records resolved choices. Source-complete baseline rebinding, dependency DONE and fresh exact READY still required. Historical discovery.json is unchanged."
+    "readiness": "All research choices are explicit, source-complete baseline bound and historical discovery retained. DRAFT awaits fresh exact independent Jev. Dependencies DONE gate Worker execution, not source materialization; incompatible delivered APIs require rejudgment."
   },
   "testContract": {
     "matrix": "For each N1-N13 construct the actual factory, call verify with pinned external profile and use fresh owned SQLite/store/service fixtures. N1 deleted rows, N2 weakened candidate schema, N3 required-input addition, N4 response removal, N5 corruption, N6 restart reset => FAIL with observed first differing assertion. N7 digest drift/N8 missing/no-op mandatory assertions/N9 identity missing => INCONCLUSIVE before effects or acceptance; N10 migration/setup and N11 timeout/parse => INCONCLUSIVE with bounded diagnostics. N12 foreign resources survive; N13 unknown/skipped criteria cannot PASS. Positive control must execute every mandatory old/new/migration/restart assertion and PASS.",
     "reproducer": "For an observed HTTP/assertion mismatch retain exactly the failing finite request method/path/body, expected/actual status/body projection and the single seed row involved, plus candidate/config/evaluator/preview/store/schema identities. This deterministic reduction of the fixed fixture is the minimized reproducer; unrelated requests/rows are excluded. Setup failures retain minimal setup diagnostics, not an invented HTTP mismatch. Retain before cleanup, within profile budgets.",
-    "composition": "Focused suite injects actual createApiStateVerifier into createProductQaExecutionStrategy with existing parseable snapshot/component/order fixtures and independent runtimeObserver. Demonstrate adapter FAIL/INCONCLUSIVE cannot publish QualityAcceptance, and release drift is rejected independently. Existing qa-authority run supplies generic regression coverage; focused owns new adapter-specific corruption cases."
+    "composition": "Focused suite injects actual createApiStateVerifier into createProductQaExecutionStrategy with existing parseable snapshot/component/order fixtures and independent runtimeObserver. Demonstrate adapter FAIL/INCONCLUSIVE cannot publish QualityAcceptance, and release drift is rejected independently. Existing qa-authority run supplies generic regression coverage; focused owns new adapter-specific corruption cases.",
+    "prototypeBoundary": "The 13-case executed prototype uses synthetic candidate hashes/proposed shims and has non-minimized first-failure examples; it proves HTTP/SQLite discriminating feasibility only. Product-level exact Git/QA identities, durable evidenceStore and deterministic reduction are mandatory new focused tests, not existing generic QA coverage."
   }
 }
