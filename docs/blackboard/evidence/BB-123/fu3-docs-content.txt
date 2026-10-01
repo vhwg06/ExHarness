@@ -1,0 +1,17 @@
+FU3 Living Docs Content Verification for BB-123
+==============================================
+
+1. Observed-only cost statement (docs/living/system/agent-tools/observation.md):
+   | `grok` | `{ num_turns, stopReason, invalidJson }` from the `--output-format json` object | integer `usage` tokens; `totalCostUsd` is observed only for a finite `total_cost_usd` number >= 0, else null, never zero-filled; cached/reasoning fields only when reported as integers | `GROK_USAGE_NOT_REPORTED`, or `GROK_JSON_TRUNCATED` when a truncated stream had none |
+
+   Contains 'observed only': True
+   Blackboard ids found: none
+
+2. Worktree-local exclusion (docs/living/system/agent-tools/context.md):
+   - after the worktree exists, the full bytes of each file are written to `.exharness/context/<path>` and a worktree-local `.exharness/.gitignore` containing `*` is written, so the copies never dirty `git status` and never enter the candidate commit. The exclusion is worktree-local and the source repository is never written.
+
+   Contains 'worktree-local': True
+   Blackboard ids found: none
+
+3. Write-scope: candidate 42e54e9b modifies exactly the 5 sourceScope.write paths (see fu3-scope.txt)
+
