@@ -22,10 +22,10 @@
     "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
   ],
   "invariants": [
-    "Exact goal, candidate, evaluator and QA contract bind protected acceptance/resume; missing evidence never accepts.",
-    "Agent output, telemetry and research feasibility never authorize publication or prove delivery value.",
-    "Opt-in never silently downgrades; legacy is explicit and trusted local processes are not confined.",
-    "RESEARCH_SA does not implement/claim READY; Worker requires all direct dependencies DONE and exact independent READY."
+    "Exact goal, candidate, evaluator and QA contract bind protected acceptance/resume; missing evidence never accepts. Acceptance coverage: PROTECTED_ACCEPTANCE, RESUME_BINDING.",
+    "Agent output, telemetry and research feasibility never authorize publication or prove delivery value. Acceptance coverage: QUALITY_BOUNDARY, COMPATIBILITY_DOCS.",
+    "Opt-in never silently downgrades; legacy is explicit and trusted local processes are not confined. Acceptance coverage: PROTECTED_ACCEPTANCE, COMPATIBILITY_DOCS.",
+    "RESEARCH_SA does not implement/claim READY; Worker requires all direct dependencies DONE and exact independent READY. Acceptance coverage: COMPATIBILITY_DOCS."
   ],
   "architectureDecisions": [
     "D1 — Additive DELIVER_SLICE_V1 optional acceptance={version:\"LOCAL_ACCEPTANCE_V1\",manifestPath:absolutePath,manifestSha256:64-lowercase-hex}. Omission preserves legacy behavior and claim boundary, adding acceptance:null; protected results use assurance EXTERNALLY_PINNED_TRUSTED_LOCAL. Presence requires strict validation; null/unknown keys/version/missing digest is TypeError DELIVER_SLICE_V1 invalid (CLI usage 64), never silent downgrade. Operator supplies expected digest before dispatch; agent output cannot choose/recompute authority.",
@@ -191,28 +191,28 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "Exact goal, candidate, evaluator and QA contract bind protected acceptance/resume; missing evidence never accepts.",
+      "invariant": "Exact goal, candidate, evaluator and QA contract bind protected acceptance/resume; missing evidence never accepts. Acceptance coverage: PROTECTED_ACCEPTANCE, RESUME_BINDING.",
       "criterionIds": [
         "PROTECTED_ACCEPTANCE",
         "RESUME_BINDING"
       ]
     },
     {
-      "invariant": "Agent output, telemetry and research feasibility never authorize publication or prove delivery value.",
+      "invariant": "Agent output, telemetry and research feasibility never authorize publication or prove delivery value. Acceptance coverage: QUALITY_BOUNDARY, COMPATIBILITY_DOCS.",
       "criterionIds": [
         "QUALITY_BOUNDARY",
         "COMPATIBILITY_DOCS"
       ]
     },
     {
-      "invariant": "Opt-in never silently downgrades; legacy is explicit and trusted local processes are not confined.",
+      "invariant": "Opt-in never silently downgrades; legacy is explicit and trusted local processes are not confined. Acceptance coverage: PROTECTED_ACCEPTANCE, COMPATIBILITY_DOCS.",
       "criterionIds": [
         "PROTECTED_ACCEPTANCE",
         "COMPATIBILITY_DOCS"
       ]
     },
     {
-      "invariant": "RESEARCH_SA does not implement/claim READY; Worker requires all direct dependencies DONE and exact independent READY.",
+      "invariant": "RESEARCH_SA does not implement/claim READY; Worker requires all direct dependencies DONE and exact independent READY. Acceptance coverage: COMPATIBILITY_DOCS.",
       "criterionIds": [
         "COMPATIBILITY_DOCS"
       ]
@@ -629,10 +629,7 @@
           "match": "requireUnchangedTree = true"
         }
       ],
-      "supportingPlanFields": [
-        "dependencyResolution",
-        "migrationContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Test deletion/no-op verifier fixtures cannot satisfy the protected outcome; genuine implementation fixes pass. Trusted local process execution remains an explicit support boundary.",
@@ -671,9 +668,7 @@
           "match": "External files are not inaccessible to an unsandboxed process"
         }
       ],
-      "supportingPlanFields": [
-        "livingDocs"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.",
@@ -709,12 +704,7 @@
           "match": "\"classification\": \"EXECUTED_LOCAL_PROBE\""
         }
       ],
-      "supportingPlanFields": [
-        "researchEvidence",
-        "sourceScope",
-        "negativeCaseBindings",
-        "readinessBlockers"
-      ]
+      "supportingPlanFields": []
     }
   ],
   "readinessBlockers": []
