@@ -1,0 +1,29 @@
+BB-081 EFFICIENCY evidence
+cohort=BB081-HELD-OUT-V1 model=anthropic/claude-sonnet-4.6 provider=Anthropic transport=OpenRouter
+
+[1] 8 paired ratios (D/A primary, task-repeat matched, same verifier): pair|task#repeat|dQuality/aQuality|cost|input|turns|elapsed
+pair1|git-leak-recovery#r0|ACCEPTED/ACCEPTED|UNK|0.865|0.800|1.179
+pair2|git-leak-recovery#r1|ACCEPTED/ACCEPTED|UNK|1.454|0.750|1.050
+pair3|kv-store-grpc#r0|ACCEPTED/ACCEPTED|UNK|0.769|0.800|0.954
+pair4|kv-store-grpc#r1|NOT_EVALUATED/NOT_EVALUATED|UNK|0.783|0.750|1.123
+pair5|pypi-server#r0|ACCEPTED/ACCEPTED|UNK|0.853|0.750|0.968
+pair6|pypi-server#r1|NOT_EVALUATED/NOT_EVALUATED|UNK|UNK|0.800|0.991
+pair7|sanitize-git-repo#r0|NOT_EVALUATED/NOT_EVALUATED|UNK|1.113|0.750|0.957
+pair8|sanitize-git-repo#r1|REJECTED/REJECTED|UNK|0.814|0.800|0.863
+
+[2] medians (D/A ratio < 1.0 means D used less):
+cost median=null (threshold<=0.85): NOT COMPUTABLE - all cost ratios UNKNOWN
+input median=null (threshold<=0.9): NOT COMPUTABLE
+turns median=null (threshold<=1): NOT COMPUTABLE
+elapsed median=null (threshold<=1.1): NOT COMPUTABLE
+The frozen reducer requires all four medians over complete known data; cost is UNKNOWN, so it correctly yields INCONCLUSIVE rather than promoting on partial data.
+reducer reason: unknown primary accounting in 8/8 D/A pairs; missing values stay UNKNOWN
+
+[3] all-gates reducer:
+frozen thresholds: cost<=0.85 input<=0.9 turns<=1 elapsed<=1.1
+gates: not evaluated (incomplete primary accounting)
+The gates are not evaluated on UNKNOWN data (correctly skipped, not faked).
+frozen decision: INCONCLUSIVE
+
+[4] profile/pricing binding:
+profile=anthropic/claude-sonnet-4.6 via Anthropic (OpenRouter); thresholds are D/A ratios bound to this profile. Offline fixture mode performs no paid calls, so no provider pricing applies.
