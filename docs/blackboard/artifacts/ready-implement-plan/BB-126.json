@@ -17,7 +17,7 @@
     "Default enablement, CLI/Application option forwarding, provider retry/backoff, verifier caching, sandboxing and semantic quality scoring. Existing BB-099 benchmark and BB-075 contracts stay unchanged."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "This document specifies future Worker implementation. Current RESEARCH_SA edits only plan/routing and runs labelled prototypes; exact independent READY plus all direct dependencies DONE are mandatory before Worker source changes.",
     "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
     "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
     "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
@@ -161,73 +161,7 @@
     {
       "id": "focused",
       "command": "node --test packages/agent-tools/test/retry-progress-policy.test.js",
-      "negativeCases": [
-        {
-          "title": "BB-126 N1 Commit SHA churn with identical tree must repeat",
-          "subject": "createSupervisedAgentStrategy",
-          "criterionId": "PROGRESS_POLICY"
-        },
-        {
-          "title": "BB-126 N2 One unchanged attempt must allow delayed fix two",
-          "subject": "runSupervisedTask",
-          "criterionId": "BOUNDED_VALUE"
-        },
-        {
-          "title": "BB-126 N3 Two failures must allow grace fix three",
-          "subject": "runSupervisedTask",
-          "criterionId": "BOUNDED_VALUE"
-        },
-        {
-          "title": "BB-126 N4 Changed diagnostics must reset repetition",
-          "subject": "createSupervisedAgentStrategy",
-          "criterionId": "PROGRESS_POLICY"
-        },
-        {
-          "title": "BB-126 N5 Missing digests cannot fabricate progress evidence",
-          "subject": "createSupervisedAgentStrategy",
-          "criterionId": "PROGRESS_POLICY"
-        },
-        {
-          "title": "BB-126 N6 Timeout or auth prose cannot imply unrecoverable setup",
-          "subject": "runSupervisedTask",
-          "criterionId": "FAILURE_TAXONOMY"
-        },
-        {
-          "title": "BB-126 N7 Candidate-local missing verifier must remain repairable",
-          "subject": "runSupervisedTask",
-          "criterionId": "FAILURE_TAXONOMY"
-        },
-        {
-          "title": "BB-126 N8 Secrets and excess output must stay bounded",
-          "subject": "runSupervisedTask",
-          "criterionId": "EVIDENCE_FEEDBACK"
-        },
-        {
-          "title": "BB-126 N9 ACT_COMPLETED replay cannot double-count grace",
-          "subject": "resumeSupervisedTask",
-          "criterionId": "DURABLE_POLICY"
-        },
-        {
-          "title": "BB-126 N10 ATTEMPT_COMPLETED resume cannot reset streak",
-          "subject": "resumeSupervisedTask",
-          "criterionId": "DURABLE_POLICY"
-        },
-        {
-          "title": "BB-126 N11 Stopped handles must reject repair dispatch",
-          "subject": "resumeSupervisedTask",
-          "criterionId": "DURABLE_POLICY"
-        },
-        {
-          "title": "BB-126 N12 Missing corrupt or drifting policy must reject",
-          "subject": "resumeSupervisedTask",
-          "criterionId": "DURABLE_POLICY"
-        },
-        {
-          "title": "BB-126 N13 Passing unchanged base cannot bypass mutation gate",
-          "subject": "runSupervisedTask",
-          "criterionId": "PROGRESS_POLICY"
-        }
-      ],
+      "negativeCases": "Execute distinct bound tests NEG_126_1, NEG_126_2, NEG_126_3, NEG_126_4, NEG_126_5, NEG_126_6, NEG_126_7, NEG_126_8, NEG_126_9, NEG_126_10, NEG_126_11, NEG_126_12, NEG_126_13. Each directly calls its bound subject and asserts the declared fail-closed verdict/effects; exact titles/criteria are in negativeCaseBindings.",
       "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
