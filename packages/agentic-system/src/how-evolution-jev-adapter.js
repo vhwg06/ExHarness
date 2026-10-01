@@ -51,12 +51,11 @@ function probabilitySumTolerance(count) {
   return count * 0.5 * 10 ** -PROBABILITY_REPORTED_DECIMALS + 1e-9;
 }
 
-// One narrow typed Choice judgment per pinned semantic question. Question IDs
-// are for code; the complete meaning is carried in instructions + criteria and
-// answered against `state`.
-const JEV_QUESTIONS = Object.freeze([
-  Object.freeze({
-    id: "semantic-preservation",
+// One narrow typed Choice judgment per pinned semantic question, keyed by
+// question ID exactly like the owner controller wire schema
+// (`questions: {[id]: {type: 'choice', instructions, criteria}}`).
+const JEV_QUESTIONS = Object.freeze({
+  "semantic-preservation": Object.freeze({
     type: "choice",
     instructions:
       "Judge only this atomic claim: the candidate HOW preserves the pinned work-contract semantics and acceptance requirements. " +
@@ -68,8 +67,7 @@ const JEV_QUESTIONS = Object.freeze([
       INCONCLUSIVE: "The evidence cannot establish whether semantics were preserved."
     })
   }),
-  Object.freeze({
-    id: "how-improvement",
+  "how-improvement": Object.freeze({
     type: "choice",
     instructions:
       "Judge only this atomic claim: the candidate HOW improves on the baseline HOW for the pinned metric policy. " +
@@ -81,8 +79,7 @@ const JEV_QUESTIONS = Object.freeze([
       INCONCLUSIVE: "The evidence cannot establish whether the HOW improved."
     })
   }),
-  Object.freeze({
-    id: "evidence-sufficiency",
+  "evidence-sufficiency": Object.freeze({
     type: "choice",
     instructions:
       "Judge only this atomic claim: the pinned evidence is sufficient and current for this evaluation. " +
@@ -94,10 +91,10 @@ const JEV_QUESTIONS = Object.freeze([
       INCONCLUSIVE: "The evidence is insufficient to judge."
     })
   })
-]);
+});
 
 inv(
-  canonicalize([...JEV_QUESTIONS.map((entry) => entry.id)].sort()) ===
+  canonicalize(Object.keys(JEV_QUESTIONS).sort()) ===
     canonicalize([...HOW_EVOLUTION_JEV_QUESTION_IDS].sort()),
   "adapter questions must equal the pinned semantic question set"
 );
@@ -240,25 +237,26 @@ function requestFor({ protocol, records }) {
 function validateJevResponse(response, { model, questions }) {
   inv(response && typeof response === "object" && !Array.isArray(response), "Jev response must be an object");
   inv(response.model === model, "Jev response model mismatch");
-  const expectedIds = questions.map((entry) => entry.id).sort();
+  inv(questions && typeof questions === "object" && !Array.isArray(questions), "Jev questions must be keyed by question ID");
+  const expectedIds = Object.keys(questions).sort();
   const actualIds = response.answers && typeof response.answers === "object" ? Object.keys(response.answers).sort() : null;
   inv(actualIds != null && canonicalize(actualIds) === canonicalize(expectedIds), "Jev response question IDs mismatch");
-  for (const question of questions) {
-    const answer = response.answers[question.id];
-    inv(answer?.type === question.type && Object.hasOwn(question.criteria, answer.choice), `Jev invalid typed choice: ${question.id}`);
-    inv(Number.isFinite(answer.confidence) && answer.confidence >= 0 && answer.confidence <= 1, `Jev invalid confidence: ${question.id}`);
+  for (const [questionId, question] of Object.entries(questions)) {
+    const answer = response.answers[questionId];
+    inv(answer?.type === question.type && Object.hasOwn(question.criteria, answer.choice), `Jev invalid typed choice: ${questionId}`);
+    inv(Number.isFinite(answer.confidence) && answer.confidence >= 0 && answer.confidence <= 1, `Jev invalid confidence: ${questionId}`);
     inv(
       answer.probabilities && canonicalize(Object.keys(answer.probabilities).sort()) === canonicalize(Object.keys(question.criteria).sort()),
-      `Jev probability options mismatch: ${question.id}`
+      `Jev probability options mismatch: ${questionId}`
     );
     const values = Object.values(answer.probabilities);
     const validRange = values.every((value) => Number.isFinite(value) && value >= 0 && value <= 1);
     const sum = validRange ? values.reduce((left, right) => left + right, 0) : null;
     inv(
       validRange && Math.abs(sum - 1) <= probabilitySumTolerance(values.length),
-      `Jev invalid probabilities: ${question.id}`
+      `Jev invalid probabilities: ${questionId}`
     );
-    inv(answer.probabilities[answer.choice] >= Math.max(...values) - 1e-8, `Jev choice is not maximum probability: ${question.id}`);
+    inv(answer.probabilities[answer.choice] >= Math.max(...values) - 1e-8, `Jev choice is not maximum probability: ${questionId}`);
   }
   for (const key of ["input_tokens", "output_tokens"]) {
     inv(Number.isInteger(response.usage?.[key]) && response.usage[key] >= 0, "Jev invalid usage");
