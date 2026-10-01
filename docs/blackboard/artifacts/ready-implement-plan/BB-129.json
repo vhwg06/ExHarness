@@ -34,7 +34,7 @@
     "D3 Normalize independently pinned BB-127 acceptance as PLANNED_CONTRACT. Bind all subject/evaluator/config/result/log bytes; omit prompt/env/transcripts/backend objects. Existing QA output is bounded summary only, with original-stream digests labelled separately.",
     "D4 Opt in with reviewOutputDir/--review-out. Write private sibling staging under external output root, validate and sync all bytes, rename to manifest digest, sync parent, then clean QA/recovery. Use exclusive publisher lock and fail rather than overwrite corrupt existing output.",
     "D5 Reviewer supplies clean complete base checkout and external manifest/evaluator/config pins. Verify before import, fetch only declared transport ref, detach exact candidate and assert tree, then explicitly rerun trusted standalone evaluator. Exported PASS is historical; replay makes a fresh candidate-bound record.",
-    "D6 Stream binary outputs with bounded quotas/timeouts. Fail on overflow, no object/patch/evaluator truncation. Use arg arrays and shell:false. Complete external acceptance logs required; existing QA summary is never substituted for full logs.",
+    "D6 Stream binary outputs with quotas/timeouts and argument arrays/shell:false. Export retained bounded acceptance summary with complete:false and independent original stdout/stderr digests from protected verification; do not invent unavailable raw log bytes. Fresh explicit replay captures its own bounded logs plus full-stream digests and generates a new result. Transport objects, patch and evaluator bytes are never silently truncated.",
     "D7 Common fresh/resumed finalizer exports during QA checkout lifetime. On requested export failure return REVIEW_EXPORT_FAILED/nonzero/no bundle; clean owned stages and retain matching recovery. Without recovery no retry retention promised. Unrequested legacy status/result stays compatible.",
     "D8 Same commit as base uses BASE_ONLY/empty patch/no bundle; same tree with different commit still bundles. Reject nonancestor/shallow/missing base, gitlinks/LFS pointers, non-UTF8 filenames, unsafe output and unsupported object format. Parse UTF-8 path records with NUL delimiters.",
     "D9 Artifact export is local review handoff, no SCM/value/release authority. Hashes provide integrity against operator pins, not signatures. Exact objects can include committed sensitive bytes; no redaction while claiming unchanged identity. Evaluators are trusted local processes."
@@ -97,8 +97,8 @@
     ]
   },
   "implementationSlices": [
-    "S1 — packages/agent-tools/src/review-bundle.js; REVIEW_ARTIFACT/SOURCE_ISOLATION. exportReviewBundle({repositoryRoot,sliceId,baseSha,candidateSha,candidateTree,outputRoot,acceptancePacket,qaRecords,limits?}) -> {version,directory,manifestSha256,candidateSha,candidateTree,status:EXPORTED}; ReviewBundleError on failure. validateReviewEvidence(packet,subject) rehashes bytes and returns immutable normalized evidence. Optional reviewOutputDir option overrides slice field; commandDeliver accepts reviewOutputDir/review-out. Sorted-key UTF-8 JSON + newline; manifestSha256 hashes exact bytes, final directory named by digest. Bind version,sliceId,baseSha/baseTree,candidateSha/candidateTree,objectFormat:sha1,transportMode:INCREMENTAL|BASE_ONLY,transportRef|null,prerequisites,changedPaths:[{status,path}],evaluator/config/protectedManifest hashes, acceptanceStatus:PASS and records. Artifact entries {path,role,bytes,sha256,complete,originalStreamSha256?}; no self-hash, timestamp, absolute host path, prompt/env/handle/transcript. Fixed regular filenames only: manifest.json,candidate.patch,candidate.bundle (incremental only),evaluator.mjs,evaluator-config.json,acceptance-result.json,acceptance-stdout.log,acceptance-stderr.log,qa-records.json,qa-summary.log. List/hash every artifact except manifest exactly once; reject extra/missing/duplicate/unknown/traversal/symlink entries. Git steps: [\"Resolve commits/trees; SHA-1 format, ancestor check, full nonshallow base required. Detect unsupported tree modes/LFS pointers. Temporary bare exporter uses source rev-parse --path-format=absolute --git-path objects, private alternates and update-ref refs/heads/review-candidate candidateSha.\", \"bundle create --version=2 <stage>/candidate.bundle refs/heads/review-candidate ^<baseSha>. Require exactly candidate/ref from list-heads; parse prerequisite IDs, require each prerequisite ancestor of base and complete in base-only verifier. Record actual frontier, never infer only one from baseSha.\", \"diff --binary --full-index --no-ext-diff --no-textconv --no-renames baseSha candidateSha -- streamed to patch. diff --name-status -z --no-renames parsed status/path records.\", \"Before publication verify/import bundle in independent temporary base-only repo with complete base objects and no source/export alternates, fsck and compare commit/tree. BASE_ONLY skips bundle and requires empty patch; different commit/equal tree still bundles.\"] Publication: Validate nonempty outputRoot before agent spawn; realpath existing parents, require private POSIX local output outside source worktree/Git common dir/recovery/Backend/QA scratch, reject containment in either direction and symlink components. Exclusive .review-export.lock serializes publishers; existing lock means OUTPUT_BUSY/manual stale-lock recovery. Own random .stage-* mode0700/files0600 with exclusive creation. Await write+file sync+stage sync and byte verification; under lock rename to digest directory without overwrite, sync parent before returning EXPORTED. Existing exact output must fully revalidate to reuse; corrupt collision fails unchanged. Post-rename sync failure returns failure while retaining complete final artifact. Remove only own lock/staging/exporter. Limits: {\"bundleBytes\": 134217728, \"patchBytes\": 33554432, \"manifestBytes\": 1048576, \"evidenceAggregateBytes\": 4194304, \"totalBytes\": 173015040, \"gitTimeoutMs\": 120000, \"policy\": \"Positive integer overrides may lower caps only; no CLI tuning in this task. Stream bytes/hash/count, shell:false; kill process group and await close on overflow/timeout, clean partial stages. Never advertise incomplete external acceptance logs as complete.\"}",
-    "S2 — deliver-slice.js; ATOMIC_LIFECYCLE. Fresh and ACCEPTED-handle finalizers export after QA/protected PASS inside QA try before finally disposal. Success adds reviewBundle {version,directory,manifestSha256,status:EXPORTED} only if requested, then disposes matching recovery. Failure returns REVIEW_EXPORT_FAILED/reason/code/backendSha/sanitized QA/reviewBundle:null; retain matching recovery. Always remove owned QA scratch; without recovery no retry retention promised. Failed QA/exhausted/unavailable exports nothing. Keep local claimBoundary. {sliceId,baseSha,candidateSha,candidateTree,evaluator:{bytes,sha256},config:{bytes,sha256},result:{bytes,sha256},logs:[{name:stdout|stderr,bytes,sha256,complete}],protectedManifestSha256}. Result decodes to PASS for the same subjects/evaluator/config. Snapshot operator-owned evaluator/config before Backend through BB-127; rehash at export. Missing/incomplete logs, opaque digest-only receipt or changed subjects/bytes fail EVIDENCE_MISSING/EVIDENCE_MISMATCH. The selected portable profile is one self-contained external .mjs plus canonical config. Reject a multi-file/dependency evaluator with EVIDENCE_MISSING instead of silently dropping files. Read raw complete streams through bounded capture before summary truncation; never use truncated verifier summaries as full logs. Map BB-127 fields candidateSha/tree, runtime, evaluatorFiles/entryPoint, verification and persisted pinned config; retain stream bytes in the finalizer before cleanup. No existing upstream export is assumed. Delivered API contradiction invalidates the plan; no Worker choice remains.",
+    "S1 — packages/agent-tools/src/review-bundle.js; REVIEW_ARTIFACT/SOURCE_ISOLATION. exportReviewBundle({repositoryRoot,sliceId,baseSha,candidateSha,candidateTree,outputRoot,acceptancePacket,qaRecords,limits?}) -> {version,directory,manifestSha256,candidateSha,candidateTree,status:EXPORTED}; ReviewBundleError on failure. validateReviewEvidence(packet,subject) rehashes bytes and returns immutable normalized evidence. Optional reviewOutputDir option overrides slice field; commandDeliver accepts reviewOutputDir/review-out. Sorted-key UTF-8 JSON + newline; manifestSha256 hashes exact bytes, final directory named by digest. Bind version,sliceId,baseSha/baseTree,candidateSha/candidateTree,objectFormat:sha1,transportMode:INCREMENTAL|BASE_ONLY,transportRef|null,prerequisites,changedPaths:[{status,path}],evaluator/config/protectedManifest hashes, acceptanceStatus:PASS and records, including acceptance summary completeness:false and original full-stream digests. Artifact entries {path,role,bytes,sha256,complete,originalStreamSha256?}; no self-hash, timestamp, absolute host path, prompt/env/handle/transcript. Fixed regular filenames only: manifest.json,candidate.patch,candidate.bundle (incremental only),evaluator.mjs,evaluator-config.json,acceptance-result.json,acceptance-summary.log,qa-records.json,qa-summary.log. List/hash every artifact except manifest exactly once; reject extra/missing/duplicate/unknown/traversal/symlink entries. Git steps: [\"Resolve commits/trees; SHA-1 format, ancestor check, full nonshallow base required. Detect unsupported tree modes/LFS pointers. Temporary bare exporter uses source rev-parse --path-format=absolute --git-path objects, private alternates and update-ref refs/heads/review-candidate candidateSha.\", \"bundle create --version=2 <stage>/candidate.bundle refs/heads/review-candidate ^<baseSha>. Require exactly candidate/ref from list-heads; parse prerequisite IDs, require each prerequisite ancestor of base and complete in base-only verifier. Record actual frontier, never infer only one from baseSha.\", \"diff --binary --full-index --no-ext-diff --no-textconv --no-renames baseSha candidateSha -- streamed to patch. diff --name-status -z --no-renames parsed status/path records.\", \"Before publication verify/import bundle in independent temporary base-only repo with complete base objects and no source/export alternates, fsck and compare commit/tree. BASE_ONLY skips bundle and requires empty patch; different commit/equal tree still bundles.\"] Publication: Validate nonempty outputRoot before agent spawn; realpath existing parents, require private POSIX local output outside source worktree/Git common dir/recovery/Backend/QA scratch, reject containment in either direction and symlink components. Exclusive .review-export.lock serializes publishers; existing lock means OUTPUT_BUSY/manual stale-lock recovery. Own random .stage-* mode0700/files0600 with exclusive creation. Await write+file sync+stage sync and byte verification; under lock rename to digest directory without overwrite, sync parent before returning EXPORTED. Existing exact output must fully revalidate to reuse; corrupt collision fails unchanged. Post-rename sync failure returns failure while retaining complete final artifact. Remove only own lock/staging/exporter. Limits: {\"bundleBytes\": 134217728, \"patchBytes\": 33554432, \"manifestBytes\": 1048576, \"evidenceAggregateBytes\": 4194304, \"totalBytes\": 173015040, \"gitTimeoutMs\": 120000, \"policy\": \"Positive integer overrides may lower caps only; no CLI tuning in this task. Stream bytes/hash/count, shell:false; kill process group and await close on overflow/timeout, clean partial stages. Never advertise incomplete external acceptance logs as complete.\"}",
+    "S2 — packages/agent-tools/src/deliver-slice.js; ATOMIC_LIFECYCLE. Validate requested reviewOutputDir and self-contained protected evaluator profile before Backend. Fresh and ACCEPTED-handle finalizers call exportReviewBundle after protected QA PASS and before QA disposal; success adds reviewBundle then disposes matching recovery. Failure returns REVIEW_EXPORT_FAILED with backendSha/QA/reason, no accepted handoff, and retains matching recovery. Normalize packet: {sliceId,baseSha,candidateSha,candidateTree,evaluator:{bytes,sha256},config:{bytes,sha256},result:{bytes,sha256},summary:{bytes,sha256,complete:false,originalStdoutSha256,originalStderrSha256},protectedManifestSha256}. Result is canonical externally pinned PASS for same candidate/evaluator/config and binds original full-stream hashes from the verifier record. Summary bytes are the bounded delivered verifier summary, not full streams. Rehash all retained bytes and compare result pins. Missing summary/result/raw-stream hashes or any mismatch rejects EVIDENCE_MISSING/EVIDENCE_MISMATCH. No complete raw stream bytes are assumed available. Read the already persisted pinned manifest/snapshot and canonical result; preserve raw stream hashes from the delivered verifier record while retaining its bounded summary as complete:false. No new raw-stream sink, local-command-verifier edit or invented upstream export is required. Cleanup owned staging/exporter/QA in finally; failed QA exports nothing.",
     "S3 — review-bundle.js and bin/exharness-agent.mjs; FRESH_REPLAY/COMPATIBILITY. replayReviewBundle({bundleDirectory,repositoryRoot,expectedManifestSha256,expectedEvaluatorSha256,expectedConfigSha256,executeEvaluator:false|true}). Default validates/imports, returns NOT_EVALUATED; explicit true (review CLI) executes and returns fresh subject-bound PASS/REPLAY_FAILED with stdout/stderr digests. [\"1. Fresh reviewer clone at exact base with caller-supplied dependencies: require clean index/worktree, full prerequisites, SHA-1. Check externally supplied pins, manifest schema/quotas and all file byte hashes before import/spawn.\", \"2. Inspect patch/paths/historical results. bundle verify/list-heads and prerequisite frontier must match manifest. BASE_ONLY requires same commit/tree and empty patch/no bundle.\", \"3. Fetch declared ref with --no-tags into refs/heads/review/<manifestSha256>; refuse existing different target ref, reuse exact only. No source access or agent conversation.\", \"4. Detach at candidateSha without force/reset of edits; disable hooks/external checkout filters. Assert HEAD, tree and NUL changed-path records against manifest.\", \"5. Rehash evaluator/config; use process.execPath, explicit evaluator/candidate root plus pinned config args, shell:false/timeout and bounded complete logs. Explicit trusted local execution only, no sandbox or automatic installation.\", \"6. Require exit0, unchanged HEAD/tree/status and receipt subject; write separate replay record. Timeout/nonzero/missing prerequisite/mutation/overflow never inherits historical PASS. Patch-only comparison may prove tree, not commit.\"] CLI deliver --review-out forwards reviewOutputDir; review --bundle --repository --manifest-sha256 --evaluator-sha256 --config-sha256 requires independent pins and calls replay with executeEvaluator:true. Exit0 PASS,64 malformed,1 replay failure. Existing CLI status routing stays intact.",
     "S4 — review-bundle.test.js: deterministic temp Git repositories and existing fake-tool fixtures; each named negative directly calls its bound subject. Delete source/exporter before replay; assert exact commit/tree/binary/modes/deletion/special paths. Snapshot source and instrument cleanup order, CLI, retry/limits/collisions.",
     "S5 — README plus livingDocs refs: document six replay steps, pins, supplied prerequisites, quotas, BASE_ONLY and failures, bounded summaries and local claim boundary. Run focused/existing regressions and bind exact Worker command/log/negative body hashes after READY."
@@ -106,12 +106,12 @@
   "acceptanceCriteria": [
     {
       "id": "REVIEW_ARTIFACT",
-      "statement": "A requested protected PASS candidate produces a self-contained incremental Git bundle, binary patch and manifest binding the exact slice/base/commit/tree, changed paths and independently pinned evaluator/config/result/log bytes.",
+      "statement": "A requested protected PASS produces portable Git objects/binary patch and a manifest binding exact subject/evaluator/config/result bytes, retained bounded acceptance summary bytes and original full-stream digests with truthful incomplete-log labels.",
       "verificationIds": [
         "focused"
       ],
       "evidenceRequired": [
-        "P1 exact portable commit/tree and P2 binary/special paths/modes/deletion; verify manifest/receipt/log hashes and truthful QA-summary completeness."
+        "Portable exact SHA/tree and binary/modes/deletion/special paths; rehash every file, compare result/summary pins, require summary complete:false and distinct original stdout/stderr digests. No assertion that unavailable full stream bytes are retained."
       ]
     },
     {
@@ -171,23 +171,85 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/review-bundle.test.js"
+      "command": "node --test packages/agent-tools/test/review-bundle.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-129 N1 Corrupted bundle must fail digest verification before import",
+          "subject": "replayReviewBundle",
+          "criterionId": "FRESH_REPLAY"
+        },
+        {
+          "title": "BB-129 N2 A different base cannot be silently used for exact candidate replay",
+          "subject": "replayReviewBundle",
+          "criterionId": "FRESH_REPLAY"
+        },
+        {
+          "title": "BB-129 N3 Missing acceptance log bytes cannot grant portable acceptance",
+          "subject": "exportReviewBundle",
+          "criterionId": "REVIEW_ARTIFACT"
+        },
+        {
+          "title": "BB-129 N4 Changed evaluator or config cannot replay as pinned acceptance",
+          "subject": "replayReviewBundle",
+          "criterionId": "FRESH_REPLAY"
+        },
+        {
+          "title": "BB-129 N5 Wrong slice candidate or tree receipt cannot be exported",
+          "subject": "exportReviewBundle",
+          "criterionId": "REVIEW_ARTIFACT"
+        },
+        {
+          "title": "BB-129 N6 Quota overflow removes owned staging and never returns EXPORTED",
+          "subject": "exportReviewBundle",
+          "criterionId": "ATOMIC_LIFECYCLE"
+        },
+        {
+          "title": "BB-129 N7 Write or rename failure cannot dispose matching recovery before publication",
+          "subject": "runDeliverSlice",
+          "criterionId": "ATOMIC_LIFECYCLE"
+        },
+        {
+          "title": "BB-129 N8 Missing base prerequisites fail before bundle import",
+          "subject": "replayReviewBundle",
+          "criterionId": "FRESH_REPLAY"
+        },
+        {
+          "title": "BB-129 N9 Corrupt existing output cannot be overwritten or treated as success",
+          "subject": "exportReviewBundle",
+          "criterionId": "ATOMIC_LIFECYCLE"
+        },
+        {
+          "title": "BB-129 N10 Unsafe output root nonancestor or unsupported Git payload is refused",
+          "subject": "exportReviewBundle",
+          "criterionId": "COMPATIBILITY"
+        },
+        {
+          "title": "BB-129 N11 Evaluator failure or tree mutation cannot produce replay PASS",
+          "subject": "replayReviewBundle",
+          "criterionId": "FRESH_REPLAY"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "delivery-regression",
-      "command": "node --test packages/agent-tools/test/deliver-slice.test.js"
+      "command": "node --test packages/agent-tools/test/deliver-slice.test.js",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     }
   ],
   "invariantCoverage": [
@@ -369,7 +431,7 @@
       "missingAtCanonicalBaseline": [],
       "status": "RESOLVED_BY_CANONICAL_MATERIALIZATION"
     },
-    "upstream": "BB-127 must be DONE before Worker. Its actual external evaluator/receipt/log shape must satisfy dependencyAdapter; reconcile and rejudge plan on contradiction.",
+    "upstream": "BB-127 must be DONE before Worker and expose its specified pinned evaluator/config/result/summary/full-stream digests. This plan does not require a full-stream byte API. Incompatible delivered pins invalidate READY rather than selecting another design.",
     "researchGapDisposition": "Baseline binding is resolved. Direct dependency delivery is a Worker execution gate, while research uses the explicitly typed planned packet. Incompatible delivered API requires fresh research judgment."
   },
   "researchEvidence": {
@@ -519,7 +581,9 @@
           "match": "summary: `${name} ${reason}"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "deliveryContract"
+      ]
     },
     {
       "objectiveCriterion": "A fresh clone at the declared base imports/reconstructs the exact candidate and reruns the pinned evaluator; mismatched base, corrupted bundle and missing evidence fail explicitly.",
@@ -607,8 +671,8 @@
       "dependencyAdapter": {
         "classification": "PLANNED_CONTRACT",
         "producer": "BB-127 external acceptance; its DRAFT has no delivered return API. deliver-slice.js maps actual upstream return shape, never invents an existing symbol. Contradiction requires research/rejudgment before Worker.",
-        "packet": "{sliceId,baseSha,candidateSha,candidateTree,evaluator:{bytes,sha256},config:{bytes,sha256},result:{bytes,sha256},logs:[{name:stdout|stderr,bytes,sha256,complete}],protectedManifestSha256}. Result decodes to PASS for the same subjects/evaluator/config. Snapshot operator-owned evaluator/config before Backend through BB-127; rehash at export. Missing/incomplete logs, opaque digest-only receipt or changed subjects/bytes fail EVIDENCE_MISSING/EVIDENCE_MISMATCH.",
-        "profile": "Standalone .mjs plus canonical JSON config {args:string[],timeoutMs:positiveInteger,runtimePrerequisites:string[]}; execution uses reviewer Node plus evaluator path, candidate-root arg and pinned args. No arbitrary embedded command or installation. Existing QA summaries retain only claim/status/revision/exit/reason and summary bytes; fullStreamsRetained:false with original stream digests explicitly distinct."
+        "packet": "{sliceId,baseSha,candidateSha,candidateTree,evaluator:{bytes,sha256},config:{bytes,sha256},result:{bytes,sha256},summary:{bytes,sha256,complete:false,originalStdoutSha256,originalStderrSha256},protectedManifestSha256}. Result is canonical externally pinned PASS for same candidate/evaluator/config and binds original full-stream hashes from the verifier record. Summary bytes are the bounded delivered verifier summary, not full streams. Rehash all retained bytes and compare result pins. Missing summary/result/raw-stream hashes or any mismatch rejects EVIDENCE_MISSING/EVIDENCE_MISMATCH. No complete raw stream bytes are assumed available.",
+        "profile": "One self-contained pinned .mjs evaluator plus canonical config {args:string[],timeoutMs:positiveInteger,runtimePrerequisites:string[]}. Reject multi-file evaluator/dependency profile before Backend when review requested. Map BB-127 manifest entryPoint/files/runtime/args/timeout and result verification explicitly; reread delivered API before Worker only to confirm compatibility, not choose a new schema. Reviewer supplies declared runtime; manifest does not transport the runtime executable. Retained bounded summary is complete:false; raw stdout/stderr hashes remain distinct metadata, not hashes of summary bytes."
       },
       "manifest": "Exact selected contract is specified inline in implementationSlices S1; this field refers to that same schema, not a second variant.",
       "files": "Exact selected contract is specified inline in implementationSlices S1; this field refers to that same schema, not a second variant.",
@@ -642,5 +706,9 @@
       ],
       "support": "POSIX local filesystem, complete ancestor base, native SHA-1, UTF-8 names including tabs/newlines, binary files/modes/deletion/safe candidate symlinks. Reject gitlinks (ls-tree -r -z mode160000), LFS pointer blobs (standard version prefix), shallow graph/nonancestor and unsupported object format; no claim of LFS/submodule runtime replay."
     }
+  },
+  "researchEvidenceSummary": {
+    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
+    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed."
   }
 }
