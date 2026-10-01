@@ -160,23 +160,95 @@
   "verificationPlan": [
     {
       "id": "focused",
-      "command": "node --test packages/agent-tools/test/retry-progress-policy.test.js"
+      "command": "node --test packages/agent-tools/test/retry-progress-policy.test.js",
+      "negativeCases": [
+        {
+          "title": "BB-126 N1 Commit SHA churn with identical tree must repeat",
+          "subject": "createSupervisedAgentStrategy",
+          "criterionId": "PROGRESS_POLICY"
+        },
+        {
+          "title": "BB-126 N2 One unchanged attempt must allow delayed fix two",
+          "subject": "runSupervisedTask",
+          "criterionId": "BOUNDED_VALUE"
+        },
+        {
+          "title": "BB-126 N3 Two failures must allow grace fix three",
+          "subject": "runSupervisedTask",
+          "criterionId": "BOUNDED_VALUE"
+        },
+        {
+          "title": "BB-126 N4 Changed diagnostics must reset repetition",
+          "subject": "createSupervisedAgentStrategy",
+          "criterionId": "PROGRESS_POLICY"
+        },
+        {
+          "title": "BB-126 N5 Missing digests cannot fabricate progress evidence",
+          "subject": "createSupervisedAgentStrategy",
+          "criterionId": "PROGRESS_POLICY"
+        },
+        {
+          "title": "BB-126 N6 Timeout or auth prose cannot imply unrecoverable setup",
+          "subject": "runSupervisedTask",
+          "criterionId": "FAILURE_TAXONOMY"
+        },
+        {
+          "title": "BB-126 N7 Candidate-local missing verifier must remain repairable",
+          "subject": "runSupervisedTask",
+          "criterionId": "FAILURE_TAXONOMY"
+        },
+        {
+          "title": "BB-126 N8 Secrets and excess output must stay bounded",
+          "subject": "runSupervisedTask",
+          "criterionId": "EVIDENCE_FEEDBACK"
+        },
+        {
+          "title": "BB-126 N9 ACT_COMPLETED replay cannot double-count grace",
+          "subject": "resumeSupervisedTask",
+          "criterionId": "DURABLE_POLICY"
+        },
+        {
+          "title": "BB-126 N10 ATTEMPT_COMPLETED resume cannot reset streak",
+          "subject": "resumeSupervisedTask",
+          "criterionId": "DURABLE_POLICY"
+        },
+        {
+          "title": "BB-126 N11 Stopped handles must reject repair dispatch",
+          "subject": "resumeSupervisedTask",
+          "criterionId": "DURABLE_POLICY"
+        },
+        {
+          "title": "BB-126 N12 Missing corrupt or drifting policy must reject",
+          "subject": "resumeSupervisedTask",
+          "criterionId": "DURABLE_POLICY"
+        },
+        {
+          "title": "BB-126 N13 Passing unchanged base cannot bypass mutation gate",
+          "subject": "runSupervisedTask",
+          "criterionId": "PROGRESS_POLICY"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "supervisor-recovery-regression",
-      "command": "node --test packages/agent-tools/test/agent-tools.test.js packages/agent-tools/test/recovery.test.js"
+      "command": "node --test packages/agent-tools/test/agent-tools.test.js packages/agent-tools/test/recovery.test.js",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     }
   ],
   "invariantCoverage": [
@@ -810,7 +882,9 @@
           "match": "export function createAgentToolRunHandle"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "progressPolicyContract"
+      ]
     },
     {
       "objectiveCriterion": "Frozen repeated-failure fixtures dispatch fewer calls; delayed-fix and legitimate multi-step fixtures retain accepted quality; stop reasons and saved work are recorded without asserting model-level gains.",
@@ -890,7 +964,267 @@
           "match": "export function canonicalJson"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
     }
-  ]
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "researchEvidenceSummary": {
+    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
+    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed.",
+    "results": [
+      [
+        "repeat",
+        "fixed",
+        5,
+        5,
+        5,
+        false,
+        null,
+        0,
+        1409
+      ],
+      [
+        "repeat",
+        "repeat2",
+        5,
+        2,
+        2,
+        false,
+        "NO_PROGRESS",
+        0,
+        772
+      ],
+      [
+        "repeat",
+        "grace",
+        5,
+        3,
+        3,
+        false,
+        "NO_PROGRESS",
+        1,
+        705
+      ],
+      [
+        "delayed2",
+        "fixed",
+        5,
+        2,
+        2,
+        true,
+        null,
+        0,
+        664
+      ],
+      [
+        "delayed2",
+        "repeat2",
+        5,
+        2,
+        2,
+        true,
+        null,
+        0,
+        481
+      ],
+      [
+        "delayed2",
+        "grace",
+        5,
+        2,
+        2,
+        true,
+        null,
+        0,
+        419
+      ],
+      [
+        "delayed3",
+        "fixed",
+        5,
+        3,
+        3,
+        true,
+        null,
+        0,
+        956
+      ],
+      [
+        "delayed3",
+        "repeat2",
+        5,
+        2,
+        2,
+        false,
+        "NO_PROGRESS",
+        0,
+        724
+      ],
+      [
+        "delayed3",
+        "grace",
+        5,
+        3,
+        3,
+        true,
+        null,
+        1,
+        838
+      ],
+      [
+        "delayed4",
+        "fixed",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1530
+      ],
+      [
+        "delayed4",
+        "repeat2",
+        5,
+        2,
+        2,
+        false,
+        "NO_PROGRESS",
+        0,
+        628
+      ],
+      [
+        "delayed4",
+        "grace",
+        5,
+        3,
+        3,
+        false,
+        "NO_PROGRESS",
+        1,
+        855
+      ],
+      [
+        "multistep",
+        "fixed",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1037
+      ],
+      [
+        "multistep",
+        "repeat2",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1221
+      ],
+      [
+        "multistep",
+        "grace",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1392
+      ],
+      [
+        "diagnostics",
+        "fixed",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1295
+      ],
+      [
+        "diagnostics",
+        "repeat2",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1671
+      ],
+      [
+        "diagnostics",
+        "grace",
+        5,
+        4,
+        4,
+        true,
+        null,
+        0,
+        1329
+      ],
+      [
+        "spawn",
+        "fixed",
+        5,
+        5,
+        5,
+        false,
+        null,
+        0,
+        748
+      ],
+      [
+        "spawn",
+        "repeat2",
+        5,
+        1,
+        1,
+        false,
+        "SETUP_UNRECOVERABLE",
+        0,
+        301
+      ],
+      [
+        "spawn",
+        "grace",
+        5,
+        1,
+        1,
+        false,
+        "SETUP_UNRECOVERABLE",
+        0,
+        614
+      ],
+      [
+        "repeat",
+        "grace",
+        3,
+        3,
+        3,
+        false,
+        "NO_PROGRESS",
+        1,
+        868
+      ]
+    ],
+    "findings": [
+      "At ceiling 5: fixed repeat 5/5 ACT/verifiers; repeat2 2/2; grace 3/3. Grace saves two observed calls of each kind on this fixture.",
+      "At ceiling 3: fixed/grace repeat both 3/3; no repeat saving. Pinned setup fixture stops 1/1.",
+      "Repeat2 loses delayed3; grace preserves delayed2/3 and changed-tree/diagnostics delayed4.",
+      "Grace loses identical-prefix delayed4; no finite stop can predict that future repair. Retain adverse control and keep default disabled.",
+      "Three distinct commits share one tree/failure digest; commit churn did not reset.",
+      "Single local elapsed times are telemetry only, with warmup/variance; no latency/model cost/productivity inference."
+    ],
+    "limits": "No feature, durable integration, enhanced prompt/redaction, MCP or live/accepted benchmark measured. Scripted controls discriminate policy only. Temporary repos were cleaned. Future subject-invoking tests supply implementation evidence."
+  }
 }
