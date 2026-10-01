@@ -30,7 +30,7 @@
     "D1 — Accept optional recoveryDir on runSupervisedBackendWork, default null, and pass it through to runSupervisedTask.recoveryDir. Empty string or non-string non-null is TypeError before spawn (supervisor contract: recoveryDir must be null or a non-empty string). The adapter does not call resumeSupervisedTask. DELIVERED_TRUTH: adapterMentionsRecoveryDir false, adapterCallsRunSupervisedTask true, supervisorAcceptsRecoveryDir true.",
     "D2 — Omitting recoveryDir keeps the current first-run path: supervisor uses a unique mkdtemp worktree and disposes it. After ACCEPTED the adapter still re-grounds in a separate scratch worktree; source repository HEAD, branch refs and working tree stay unchanged. persist is execute-only.",
     "D3 — A second first-run against a current handle fails HANDLE_CURRENT from runSupervisedTask before spawning a new lineage. recover/resume stays BB-121. Do not edit supervisor.js, recovery.js, createBackendWorker or backend-worker.js.",
-    "D4 — Tests in packages/agentic-system/test/bb142-adapter-recovery.test.js. P1: runSupervisedBackendWork({ recoveryDir, fake FIX_FIRST }) writes handle.json during execute; source HEAD unchanged. N1: a second runSupervisedBackendWork against that current handle throws HANDLE_CURRENT before spawn. N2: omitting recoveryDir disposes the temporary worktree (no leftover handle). Empty-string recoveryDir TypeError before spawn. Hermetic fake CLI.",
+    "D4 — Distinct focused tests implement testContract: P1 asserts a persisted verified handle and exact unchanged source HEAD/branch refs/status; N1 invokes the adapter twice and proves HANDLE_CURRENT before a second dispatch; N2 captures invocation cwd and proves its disposal on omitted recoveryDir. Returned success or absence of handle alone is not cleanup evidence. Fixtures reuse delivered Backend order/context and clean only owned matching handles.",
     "D5 — Living docs. agentic-application/state.md opt-in adapter paragraph names optional recoveryDir persist, omitted dispose, HANDLE_CURRENT second first-run, recover stays Board factory. capabilities.md A3 failure/recovery sentence names the same. No Blackboard ids.",
     "D6 — Evidence at 5386e2ad: runSupervisedBackendWork already forwards model, maxAttempts, timeoutMs, permissionProfile, env, eventSinks, tracer, invocationObserver and does not mention recoveryDir."
   ],
@@ -92,7 +92,7 @@
         "agentic-regression"
       ],
       "evidenceRequired": [
-        "P1 runSupervisedBackendWork({ recoveryDir }) writes handle.json; source HEAD unchanged."
+        "Verified handle during/after execute; independent source HEAD, for-each-ref and porcelain status snapshots; handle candidate identity and actual retained worktree."
       ]
     },
     {
@@ -307,6 +307,7 @@
         }
       ],
       "supportingPlanFields": [
+        "testContract",
         "researchEvidence"
       ]
     },
@@ -345,7 +346,8 @@
         }
       ],
       "supportingPlanFields": [
-        "negativeCaseBindings"
+        "testContract",
+        "researchEvidence"
       ]
     },
     {
@@ -391,5 +393,10 @@
         "verificationPlan"
       ]
     }
-  ]
+  ],
+  "testContract": {
+    "persist": "Directly invoke runSupervisedBackendWork using existing BB-100 order/context fixtures, fake FIX_FIRST tool and an explicit empty owned recoveryDir. Assert handle.json exists during invocationObserver callback and remains after return; verify with readAgentToolRunHandle/verifyAgentToolRunHandle and compare candidateSha against returned work result evidence. Snapshot source HEAD, refs via for-each-ref and status --porcelain before and after; compare all three exactly. Check retained worktree matches handle identity. Observations are future Worker test requirements, not executed research results.",
+    "secondRun": "After first execute leaves a current handle, snapshot handle bytes/source refs/worktree status and dispatch count. A second direct runSupervisedBackendWork using that recoveryDir rejects RecoveryError HANDLE_CURRENT before a new fake dispatch or worktree; count and bytes remain unchanged. Dispose the matching handle only in test cleanup.",
+    "omitted": "Register invocationObserver to retain the fake invocation cwd; invoke runSupervisedBackendWork with recoveryDir omitted and check cwd removed after completion. No handle artifact in source; compare source HEAD/refs/status. Empty/non-string directory rejects before fake dispatch. Adapter adds only first-execute forwarding; Board-owned recover/resume contract is unchanged."
+  }
 }
