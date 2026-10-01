@@ -27,15 +27,18 @@
     "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
   ],
   "architectureDecisions": [
-    "Bind canonical normalized original task, verifications and declared context identity separately from materialized prompt; bind authority-bearing model/permission/tool launch fields and declared limits before spawning. Never hash or store credential values.",
-    "Reject drift before reopening side effects; no same-id fallback. Treat supported credential rotation as an explicit out-of-band operational policy, not permission or model drift.",
-    "Do not retrofit terminal BB-101 artifacts. Define a fail-closed compatibility boundary for existing handle files and test unchanged recovery with the delivered crash fixture."
+    "Digest spec (sha256 over canonicalJson from packages/agent-tools/src/run-trace.js: canonical key sort, undefined dropped): taskDigest = sha256(canonicalJson({id, repositoryRoot: resolve(repositoryRoot), baseRevision, prompt, verifications: [{name, command, args, timeoutMs}], requiredFiles: requiredFiles ?? []})) \u2014 the ORIGINAL canonical task exactly as validateAgentTask (packages/agent-tools/src/supervisor.js) returns it; declaredContextDigest = sha256(canonicalJson({taskId, baseRevision, requiredFiles: requiredFiles ?? [], maxMaterializedBytes})); materializedContextDigest = sha256(canonicalJson({items: items.map(({path, sourceRef, snapshotRef, contentSha256: sha256(content)})), promptPrefixDigest: sha256(promptPrefix)})) from resolveAgentTaskContext (packages/agent-tools/src/task-context.js) \u2014 used:false maps to {items: [], promptPrefixDigest: sha256('')}; executionDigest = sha256(canonicalJson({model: model ?? null, permissionProfile, maxAttempts, maxFeedbackChars, timeoutMs, toolVersion})). Never hash or persist credential values: env is excluded from every digest and from the handle body.",
+    "Versioned handle compatibility: packages/agent-tools/src/recovery.js exports AGENT_TOOL_RUN_HANDLE_V2; the handle body gains taskDigest, declaredContextDigest, materializedContextDigest, executionDigest and binds them inside handleDigest. runRecoverableTask persists the V2 binding before first dispatch via persistRecoverableHandle. resumeSupervisedTask recomputes all four digests from the resupplied task, agentContext and launch params and rejects any mismatch with RecoveryError CONTRACT_DRIFT before reopening the worktree or spawning a process; no same-id fallback. Model and permissionProfile are launch fields carried in the tool invocation request (agentToolEnvironment in packages/agent-tools/src/tool-adapters.js) and are bound in executionDigest, so changed model/permission is drift, not an upgrade. Tool version is re-probed at resume (probeToolVersion) and must equal handle.toolVersion.",
+    "Configurable-limit policy and migration: resume launch params must equal the persisted binding \u2014 model, permissionProfile, maxAttempts, maxFeedbackChars, timeoutMs and toolVersion byte-match the V2 executionDigest inputs; resolvedMaxAttempts may not exceed handle.maxAttempts. Legacy AGENT_TOOL_RUN_HANDLE_V1 handles fail closed with RecoveryError LEGACY_HANDLE carrying the migration instruction: 'AGENT_TOOL_RUN_HANDLE_V1 predates exact contract binding: dispose the legacy handle (disposeRecoverableRun) and re-dispatch via runSupervisedTask to mint a V2 binding; never backfill binding fields onto a legacy handle.' Unchanged bindings retain worktreeRoot, coreSessionId and toolSessionRef (initialSessionRef continues the same tool session, one semantic attempt); deliver-slice maps LEGACY_HANDLE to a quiet dispose plus slice reason LEGACY_HANDLE without resuming."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agent-tools/src/recovery.js",
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/deliver-slice.js",
+      "packages/agent-tools/src/task-context.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/tool-adapters.js",
       "docs/blackboard/evidence/BB-125/discovery.json",
       "docs/blackboard/process/delivery-value-improvement-research.md"
     ],
@@ -75,29 +78,31 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist.",
-    "S2 — After fresh READY, implement only the declared seam and focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 \u2014 Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist. Executed unchanged/drift probes (node /tmp/probe-bb125.mjs, all PASS, see researchProbes): P1 unchanged write->read->verify roundtrip retains digest; P2 tampered body -> DIGEST_MISMATCH; P3 same-id changed prompt/verifier passes today's resume identity check (drift accepted \u2014 the documented gap, since the check compares only id/repositoryRoot/baseRevision); P4 current handle body carries no prompt/verifier/model/permissionProfile binding; P5 declared-context vs materialized-context digests are distinct stable 64-hex sha256; P6 model/permission change alters the composite execution digest. Binding schema: taskDigest/declaredContextDigest/materializedContextDigest/executionDigest over canonicalJson.",
+    "S2 \u2014 After fresh READY, implement only the declared seam and focused positive/negative fixtures: add the four digest fields plus AGENT_TOOL_RUN_HANDLE_V2 to packages/agent-tools/src/recovery.js (createAgentToolRunHandle/assertHandleBody/handleDigest), persist them in runRecoverableTask and revalidate them in resumeSupervisedTask (packages/agent-tools/src/supervisor.js), map LEGACY_HANDLE in packages/agent-tools/src/deliver-slice.js.",
+    "S3 \u2014 Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
   ],
   "acceptanceCriteria": [
     {
       "id": "EXACT_RESUME",
       "statement": "Canonical task and execution bindings are persisted before first dispatch and revalidated before resume; changed prompt/verifier/model/permission/launch identity is rejected.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "Drift-rejection fixtures in packages/agent-tools/test/recovery-contract-binding.test.js invoking resumeSupervisedTask with changed prompt, changed verifier, changed model and changed permissionProfile \u2014 each fails closed with CONTRACT_DRIFT before any spawn; candidate-bound resume logs showing persisted taskDigest/executionDigest equality; discovery.json (EXECUTED_LOCAL_PROBE) is motivation only, not implementation evidence."
       ]
     },
     {
       "id": "LEGACY_AND_RECOVERY",
       "statement": "Unchanged bindings retain same worktree/Core/tool session; legacy handles without binding fail closed with an explicit migration or restart instruction, without manufacturing identity.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; discovery.json is motivation only, not implementation evidence."
+        "Unchanged-binding fixture: the delivered crash fixture (packages/agent-tools/test/fixtures/crash-supervised.mjs) interrupts a run and resumeSupervisedTask retains the same worktreeRoot, coreSessionId and toolSessionRef as one semantic attempt; legacy V1 handle fixture fails closed with LEGACY_HANDLE carrying the exact migration instruction; no test manufactures identity by backfilling bindings onto a legacy handle."
       ]
     }
   ],
@@ -176,10 +181,7 @@
       "subjectSymbol": "resumeSupervisedTask"
     }
   ],
-  "researchGaps": [
-    "Specify the original-versus-materialized context digest, versioned handle compatibility, configurable-limit policy and migration instruction; execute unchanged and drift probes before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
+  "researchGaps": [],
   "researchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
   "livingDocs": {
     "refs": [
@@ -194,5 +196,173 @@
     "measurement": "All contract drift cases stop before spawn/verifier; unchanged crash-resume retains one semantic attempt and candidate identity.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-099 for agent-tool comparison; BB-074 for end-to-end delivery value"
-  }
+  },
+  "researchProbes": [
+    {
+      "id": "P1",
+      "command": "node /tmp/probe-bb125.mjs",
+      "outcome": "PASS: unchanged handle write->read->verify roundtrip retains digest; handleDigest deterministic for identical body"
+    },
+    {
+      "id": "P2",
+      "command": "node /tmp/probe-bb125.mjs",
+      "outcome": "PASS: tampered handle body (candidateSha flipped) fails closed with RecoveryError DIGEST_MISMATCH"
+    },
+    {
+      "id": "P3",
+      "command": "node /tmp/probe-bb125.mjs",
+      "outcome": "PASS: same-id changed prompt AND changed verifier both pass the current resumeSupervisedTask identity check (id/repositoryRoot/baseRevision only) \u2014 drift is accepted today, confirming the gap"
+    },
+    {
+      "id": "P4",
+      "command": "node /tmp/probe-bb125.mjs",
+      "outcome": "PASS: AGENT_TOOL_RUN_HANDLE_V1 body carries no prompt/verifications/taskDigest/model/permissionProfile/contextDigest binding"
+    },
+    {
+      "id": "P5",
+      "command": "node /tmp/probe-bb125.mjs",
+      "outcome": "PASS: declared-context digest (a4292ff4...) != materialized-context digest (2d6a90fb...); both stable 64-hex sha256 over canonicalJson"
+    },
+    {
+      "id": "P6",
+      "command": "node /tmp/probe-bb125.mjs",
+      "outcome": "PASS: changing permissionProfile WORKSPACE_EDIT->FULL_AUTO alters the composite execution digest; unchanged inputs keep it stable"
+    }
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "Canonical task and execution bindings are persisted before first dispatch and revalidated before resume; changed prompt/verifier/model/permission/launch identity is rejected.",
+      "criterionIds": [
+        "EXACT_RESUME"
+      ],
+      "planElements": [
+        "EXACT_RESUME",
+        "S1",
+        "S2"
+      ],
+      "verificationIds": [
+        "focused",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/recovery.js",
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/run-trace.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export const AGENT_TOOL_RUN_HANDLE_VERSION = \"AGENT_TOOL_RUN_HANDLE_V1\""
+        },
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export function verifyAgentToolRunHandle(handle)"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "export async function resumeSupervisedTask("
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "resume task identity does not match the handle"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions",
+        "researchProbes",
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Unchanged bindings retain same worktree/Core/tool session; legacy handles without binding fail closed with an explicit migration or restart instruction, without manufacturing identity.",
+      "criterionIds": [
+        "LEGACY_AND_RECOVERY"
+      ],
+      "planElements": [
+        "LEGACY_AND_RECOVERY",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        2
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/recovery.js",
+        "packages/agent-tools/src/supervisor.js",
+        "packages/agent-tools/src/deliver-slice.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export const AGENT_TOOL_RUN_HANDLE_VERSION = \"AGENT_TOOL_RUN_HANDLE_V1\""
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "initialSessionRef: handle.toolSessionRef"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "HANDLE_COMPLETE: never resumeSupervisedTask an accepted handle"
+        }
+      ],
+      "supportingPlanFields": [
+        "architectureDecisions",
+        "researchProbes",
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests, discriminating experiments and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "EXACT_RESUME",
+        "LEGACY_AND_RECOVERY"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "docs/blackboard/evidence/BB-125/discovery.json",
+        "packages/agent-tools/src/recovery.js",
+        "packages/agent-tools/src/supervisor.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-125/discovery.json",
+          "match": "sameIdChangedPromptAndVerifierAccepted"
+        },
+        {
+          "ref": "packages/agent-tools/src/recovery.js",
+          "match": "export function verifyAgentToolRunHandle(handle)"
+        },
+        {
+          "ref": "packages/agent-tools/src/supervisor.js",
+          "match": "const request = { prompt: action.prompt, resume: action.resume, model, permissionProfile"
+        }
+      ],
+      "supportingPlanFields": [
+        "acceptanceCriteria",
+        "verificationPlan",
+        "negativeCaseBindings"
+      ]
+    }
+  ]
 }
