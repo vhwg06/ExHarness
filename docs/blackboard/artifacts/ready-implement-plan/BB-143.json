@@ -14,22 +14,26 @@
   "outOfScope": [
     "Adding promote, accept, merge or credential MCP tools.",
     "Writing user CLI configuration or changing adapter argv.",
-    "Operator CLI MCP opt-in owned by BB-137."
+    "Operator CLI MCP opt-in owned by BB-137.",
+    "Editing createBackendWorker or backend-worker.js."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse the delivered MCP server. Default remains off. Promote, accept, merge and credential tools stay forbidden.",
-    "Do not edit createBackendWorker or backend-worker.js. Operator CLI MCP opt-in stays BB-137.",
-    "No sandbox, SCM push, or live-value claim. MCP remains a query transport, not acceptance authority."
+    "Product edits are packages/agentic-system/src/supervised-backend.js plus the named test and Living application docs in sourceScope.write. mcp-server.js, supervisor.js, createBackendWorker and backend-worker.js are read-only.",
+    "Reuse the delivered MCP server. Accept the same three mcpVerify values as runSupervisedTask: false / true / {stdin,stdout}. Default false. Promote, accept, merge and credential tools stay forbidden.",
+    "MCP remains a query transport, not acceptance authority. Supervisor still owns PassThrough+stop().",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "Default adapter invocations never construct the MCP server.",
-    "MCP tools cannot promote, accept, merge or mint credentials.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "An explicit mcpVerify opt-in starts the delivered verify/status server for that Application execute and stops it before worktree disposal.",
+    "Default adapter invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config."
   ],
   "architectureDecisions": [
-    "Accept optional mcpVerify on runSupervisedBackendWork and forward it to runSupervisedTask.mcpVerify. Default false/omitted keeps current construction-free behavior.",
-    "Keep the delivered verify/status tool set and planted-promote rejection. Do not add an MCP SDK dependency."
+    "D1 — Accept optional mcpVerify on runSupervisedBackendWork, default false, and forward it to runSupervisedTask.mcpVerify. Same three values as the supervisor: false / true / {stdin,stdout}. true lets the supervisor allocate the internal PassThrough pair; never pass process.stdin/stdout from the adapter. stop() already runs in supervisor finally before worktree disposal. DELIVERED_TRUTH: adapterMentionsMcpVerify false, supervisorAcceptsMcpVerify true, adapterCallsRunSupervisedTask true.",
+    "D2 — Default false/omitted never constructs the server. Missing opt-in cannot change adapter argv or write user CLI config (.codex/.kiro/.gemini). Do not edit mcp-server.js or supervisor.js. Operator CLI MCP opt-in stays BB-137.",
+    "D3 — Keep the delivered tool set. createExharnessMcpVerifyServer already rejects planted promote/accept/merge names with MCP_FORBIDDEN_TOOL via FORBIDDEN_PATTERN and ALLOWED_TOOLS. No MCP SDK.",
+    "D4 — Tests in packages/agentic-system/test/bb143-adapter-mcp.test.js. P1: runSupervisedBackendWork({ mcpVerify: true, fake FIX_FIRST }) ACCEPTED; server started and stop happened before disposal. N1: default runSupervisedBackendWork never constructs the server. N2: createExharnessMcpVerifyServer({ tools: [\"exharness_verify\", \"exharness_promote\"] }) throws TypeError code MCP_FORBIDDEN_TOOL. N3: default run does not write user CLI config and adapter argv equals the no-mcp control. Hermetic fake CLI; mcp-server.test.js MCP1–MCP3 stay green.",
+    "D5 — Living docs. agentic-application/state.md opt-in adapter paragraph names mcpVerify false/true/{stdin,stdout}, default off, supervisor-owned stdio, stop before dispose. capabilities.md A3 sentence names the same opt-in. No Blackboard ids. mcp.md already describes the server; do not duplicate Blackboard ids.",
+    "D6 — Evidence at 5386e2ad: adapter never mentions mcpVerify; supervisor already accepts it."
   ],
   "sourceSeams": {
     "requiredExisting": [
@@ -55,7 +59,9 @@
       "packages/agentic-system/test/**",
       "packages/agent-tools/test/fixtures/fake-agent.mjs",
       "docs/blackboard/process/application-adapter-composition.md",
-      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json"
+      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+      "docs/living/system/agentic-application/**",
+      "docs/living/system/agent-tools/mcp.md"
     ],
     "write": [
       "packages/agentic-system/src/supervised-backend.js",
@@ -74,19 +80,20 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Pin the adapter mcpVerify opt-in, default-off behavior and planted-promote rejection in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, forward mcpVerify only when opted in on runSupervisedBackendWork.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — Adapter opt-in [ADAPTER_MCP_OPT_IN]: implement D1. mcpVerify false/true/{stdin,stdout} on runSupervisedBackendWork forwards to runSupervisedTask; supervisor owns PassThrough+stop().",
+    "S2 — Default-off fixtures [ADAPTER_MCP_DEFAULT_OFF]: implement D2–D4. N1 default never constructs; N2 MCP_FORBIDDEN_TOOL; N3 no argv/config mutation.",
+    "S3 — Living docs [ADAPTER_MCP_OPT_IN]: implement D5. Application state.md and capabilities.md name mcpVerify, default off, supervisor-owned stdio. No Blackboard ids."
   ],
   "acceptanceCriteria": [
     {
       "id": "ADAPTER_MCP_OPT_IN",
       "statement": "An explicit mcpVerify opt-in starts the delivered verify/status server for that Application execute and stops it before worktree disposal.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "agentic-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+        "P1 runSupervisedBackendWork({ mcpVerify: true }) ACCEPTED with server start and stop before disposal."
       ]
     },
     {
@@ -96,7 +103,7 @@
         "focused"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+        "BB-143 N1 default runSupervisedBackendWork never constructs; N2 planted promote MCP_FORBIDDEN_TOOL; N3 no argv/config writes."
       ]
     }
   ],
@@ -112,32 +119,30 @@
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Default adapter invocations never construct the MCP server.",
+      "invariant": "An explicit mcpVerify opt-in starts the delivered verify/status server for that Application execute and stops it before worktree disposal.",
       "criterionIds": [
-        "ADAPTER_MCP_DEFAULT_OFF"
+        "ADAPTER_MCP_OPT_IN"
       ]
     },
     {
-      "invariant": "MCP tools cannot promote, accept, merge or mint credentials.",
+      "invariant": "Default adapter invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
       "criterionIds": [
-        "ADAPTER_MCP_DEFAULT_OFF"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "ADAPTER_MCP_OPT_IN",
         "ADAPTER_MCP_DEFAULT_OFF"
       ]
     }
   ],
   "negativeVerificationCases": [
     "Default runSupervisedBackendWork must not construct the MCP server",
-    "Planted promote tool names must be rejected"
+    "Planted promote tool names must be rejected",
+    "Missing opt-in must not change adapter argv or write user CLI config"
   ],
   "negativeCaseBindings": [
     {
@@ -156,26 +161,249 @@
       "verificationId": "focused",
       "testRef": "packages/agentic-system/test/bb143-adapter-mcp.test.js",
       "testTitle": "BB-143 N2 Planted promote tool names must be rejected",
+      "subjectSymbol": "createExharnessMcpVerifyServer"
+    },
+    {
+      "id": "NEG_143_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "ADAPTER_MCP_DEFAULT_OFF",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/bb143-adapter-mcp.test.js",
+      "testTitle": "BB-143 N3 Missing opt-in must not change adapter argv or write user CLI config",
       "subjectSymbol": "runSupervisedBackendWork"
     }
   ],
-  "researchGaps": [
-    "Ratify whether mcpVerify true versus { stdin, stdout } is the Application contract, and whether Living Application docs name the opt-in field, before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agentic-application/state.md",
       "docs/living/system/agentic-application/capabilities.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living Application docs state that runSupervisedBackendWork accepts mcpVerify false/true/{stdin,stdout}, that default is off and never constructs the server, that an explicit true starts the delivered verify/status server on supervisor-owned stdio and stop() runs before disposal, and that planted promote names are rejected. Living docs contain no Blackboard ids."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+      "finding": "DELIVERED_TRUTH at 5386e2ad: adapterMentionsMcpVerify false, supervisorAcceptsMcpVerify true, adapterCallsRunSupervisedTask true."
+    },
+    {
+      "ref": "packages/agent-tools/src/mcp-server.js",
+      "finding": "DELIVERED_TRUTH: EXHARNESS_MCP_TOOLS is verify+status; FORBIDDEN_PATTERN /promote|accept|merge/i plus ALLOWED_TOOLS rejects planted names with MCP_FORBIDDEN_TOOL."
+    },
+    {
+      "ref": "packages/agent-tools/src/supervisor.js",
+      "finding": "DELIVERED_TRUTH: mcpVerify default false; true uses PassThrough stdio; createExharnessMcpVerifyServer is inside if (mcpVerify); stop() in finally."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-103",
+      "BB-102"
+    ],
+    "workerStart": "Confirm the adapter still omits mcpVerify, runSupervisedTask still accepts false/true/{stdin,stdout}, and planted promote still throws MCP_FORBIDDEN_TOOL. BB-103 and BB-102 DONE. Do not wait on BB-137 CLI opt-in.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "runSupervisedTask.mcpVerify",
+        "PassThrough when true",
+        "MCP_FORBIDDEN_TOOL",
+        "stop() before dispose"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "adapter mcpVerify opt-in",
+        "default off",
+        "no argv/config mutation"
+      ]
+    },
+    "contradiction": "None. BB-103 owns the server; this task only forwards mcpVerify from the Application adapter. Operator CLI MCP stays BB-137."
+  },
+  "deliveryContract": {
+    "precondition": "BB-103 DONE and BB-102 DONE.",
+    "completion": "focused + test:agentic + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No mcp-server.js/supervisor.js/backend-worker.js edits, no promote tools, no process.stdio, no user CLI config writes."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "agentic-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "mcpVerify default false",
+      "verify+status tool set",
+      "MCP_FORBIDDEN_TOOL",
+      "createBackendWorker path"
+    ],
+    "add": [
+      "runSupervisedBackendWork mcpVerify",
+      "bb143-adapter-mcp tests"
+    ],
+    "rollback": "Remove mcpVerify from runSupervisedBackendWork; delete bb143-adapter-mcp.test.js; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-143 objective + adapter-composition-audit.json + delivered adapter/supervisor MCP",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-103 + DONE BB-102",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "mcp-server/supervisor/backend-worker edits, promote tools."
+      ]
+    }
+  ],
   "valueHypothesis": {
-    "expectedValue": "Application execute can opt into the same verify/status MCP transport the supervisor already starts for operator run.",
-    "measurement": "Fake-CLI adapter fixture with mcpVerify true exposes verify/status and rejects a planted promote tool; default construct count stays zero.",
+    "expectedValue": "Application execute can opt into the delivered MCP verify/status server without changing default adapter behavior.",
+    "measurement": "Fake-CLI adapter fixture with mcpVerify true starts and stops the server; default never constructs; planted promote throws MCP_FORBIDDEN_TOOL.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
-    "valueOwner": "BB-100 for the adapter; BB-103 for MCP; BB-074 for end-to-end value"
-  }
+    "valueOwner": "BB-103 for the server; BB-102 for the adapter"
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "An explicit mcpVerify opt-in starts the delivered verify/status server for that Application execute and stops it before worktree disposal.",
+      "criterionIds": [
+        "ADAPTER_MCP_OPT_IN"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "agentic-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1
+      ],
+      "sourceRefs": [
+        "packages/agentic-system/src/supervised-backend.js",
+        "packages/agent-tools/src/supervisor.js",
+        "docs/blackboard/evidence/BB-142/adapter-composition-audit.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agentic-system/src/supervised-backend.js",
+          "match": "export async function runSupervisedBackendWork({"
+        },
+        {
+          "ref": "packages/agentic-system/src/supervised-backend.js",
+          "match": "const supervised = await runSupervisedTask({"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+          "match": "\"adapterMentionsMcpVerify\": false"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+          "match": "\"supervisorAcceptsMcpVerify\": true"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "Default adapter invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
+      "criterionIds": [
+        "ADAPTER_MCP_DEFAULT_OFF"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "focused"
+      ],
+      "decisionIndexes": [
+        2,
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/mcp-server.js",
+        "docs/living/system/agent-tools/mcp.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/mcp-server.js",
+          "match": "export const MCP_FORBIDDEN_TOOL = \"MCP_FORBIDDEN_TOOL\";"
+        },
+        {
+          "ref": "packages/agent-tools/src/mcp-server.js",
+          "match": "const FORBIDDEN_PATTERN = /promote|accept|merge/i;"
+        },
+        {
+          "ref": "packages/agent-tools/src/mcp-server.js",
+          "match": "export function createExharnessMcpVerifyServer({ worktreeRoot, verifiers, status = null, tools = null } = {}) {"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/mcp.md",
+          "match": "a planted promote tool name is rejected at construction."
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "ADAPTER_MCP_OPT_IN",
+        "ADAPTER_MCP_DEFAULT_OFF"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/application-adapter-composition.md",
+        "docs/living/system/agentic-application/state.md",
+        "docs/living/system/agent-tools/mcp.md"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/application-adapter-composition.md",
+          "match": "| BB-143 | `runSupervisedBackendWork({ mcpVerify })` starts"
+        },
+        {
+          "ref": "docs/living/system/agentic-application/state.md",
+          "match": "## Opt-in supervised Backend adapter"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/mcp.md",
+          "match": "`false` (also `null` or `undefined`): the server is never constructed and the"
+        }
+      ],
+      "supportingPlanFields": [
+        "implementationSlices",
+        "verificationPlan"
+      ]
+    }
+  ]
 }
