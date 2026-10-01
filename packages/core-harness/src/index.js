@@ -280,7 +280,12 @@ export {
   liveObjectSurfaceView
 } from "./live-object.js";
 export { defineJudgment } from "./judgment.js";
-export { defineModelAdapter, modelAdapterView } from "./model.js";
+export {
+  AsyncResultDeliveryMode,
+  defineModelAdapter,
+  modelAdapterView,
+  normalizeAsyncResultDelivery
+} from "./model.js";
 export {
   ModelRouteScope,
   createModelRegistry,
@@ -326,6 +331,29 @@ export {
   isDetachedTerminalStatus
 } from "./detached-operation-store.js";
 export { createDetachedOperationManager } from "./detached-operation.js";
+export {
+  ASYNC_OPERATION_UPDATE_KIND,
+  ASYNC_RESULT_CONTEXT_NON_AUTHORITY,
+  ASYNC_RESULT_CONTEXT_SCHEMA_VERSION,
+  AsyncResultContextAuthorityError,
+  AsyncResultContextBindingError,
+  AsyncResultContextPairingError,
+  AsyncResultContextPrefixError,
+  AsyncResultDependencyContradictionError,
+  AsyncResultOperationStatus,
+  assertCommittedPrefixStable,
+  assertDependencyContract,
+  assertProviderToolResultAllowed,
+  commitAsyncResultContext,
+  createAsyncResultContextState,
+  getAsyncResultContextDependencyManifest,
+  isAsyncTerminalStatus,
+  projectAsyncResultRequest,
+  resolveEffectConfirmationFromProjection,
+  resolveProductAcceptanceFromProjection,
+  stageAsyncResultTransitions,
+  translateAsyncResultForProvider
+} from "./async-result-context.js";
 export {
   Agent,
   ObjectAgent,
