@@ -1,0 +1,2227 @@
+TAP version 13
+# Subtest: confirmed effect completes action intent with exact effect operation ref
+ok 1 - confirmed effect completes action intent with exact effect operation ref
+  ---
+  duration_ms: 4.542734
+  type: 'test'
+  ...
+# Subtest: ambiguous idempotent effect keeps action intent authorized until reconcile and retry confirm
+ok 2 - ambiguous idempotent effect keeps action intent authorized until reconcile and retry confirm
+  ---
+  duration_ms: 2.244935
+  type: 'test'
+  ...
+# Subtest: observable effect can complete action intent by reconciliation without replay
+ok 3 - observable effect can complete action intent by reconciliation without replay
+  ---
+  duration_ms: 1.002292
+  type: 'test'
+  ...
+# Subtest: non-reconcilable ambiguity escalates without falsely failing or completing intent
+ok 4 - non-reconcilable ambiguity escalates without falsely failing or completing intent
+  ---
+  duration_ms: 0.911092
+  type: 'test'
+  ...
+# Subtest: agent self-reported progress does not become a grounded range sample
+ok 5 - agent self-reported progress does not become a grounded range sample
+  ---
+  duration_ms: 14.0271
+  type: 'test'
+  ...
+# Subtest: diminishing grounded improvement stops the next variation without changing correctness
+ok 6 - diminishing grounded improvement stops the next variation without changing correctness
+  ---
+  duration_ms: 23.575657
+  type: 'test'
+  ...
+# Subtest: new grounded artifacts stale the range decision until objective evaluation is refreshed
+ok 7 - new grounded artifacts stale the range decision until objective evaluation is refreshed
+  ---
+  duration_ms: 10.221082
+  type: 'test'
+  ...
+# Subtest: anomalously large positive movement escalates instead of self-certifying
+ok 8 - anomalously large positive movement escalates instead of self-certifying
+  ---
+  duration_ms: 20.172161
+  type: 'test'
+  ...
+# Subtest: missing quality metrics remain explicit insufficient data rather than invented progress
+ok 9 - missing quality metrics remain explicit insufficient data rather than invented progress
+  ---
+  duration_ms: 15.207855
+  type: 'test'
+  ...
+# Subtest: recovery requirement has precedence over a previous range STOP
+ok 10 - recovery requirement has precedence over a previous range STOP
+  ---
+  duration_ms: 1.953585
+  type: 'test'
+  ...
+# Subtest: hard capability ceiling remains authoritative when useful-range policy says CONTINUE
+ok 11 - hard capability ceiling remains authoritative when useful-range policy says CONTINUE
+  ---
+  duration_ms: 3.275269
+  type: 'test'
+  ...
+# Subtest: Predict records chronological working history separately from telemetry
+ok 12 - Predict records chronological working history separately from telemetry
+  ---
+  duration_ms: 5.951335
+  type: 'test'
+  ...
+# Subtest: provider failure records ERROR and never fabricates RESULT
+ok 13 - provider failure records ERROR and never fabricates RESULT
+  ---
+  duration_ms: 1.339675
+  type: 'test'
+  ...
+# Subtest: typed output failure outside Predict records ERROR instead of a false RESULT
+ok 14 - typed output failure outside Predict records ERROR instead of a false RESULT
+  ---
+  duration_ms: 0.845474
+  type: 'test'
+  ...
+# Subtest: each invocation receives a distinct call ID while history remains chronological
+ok 15 - each invocation receives a distinct call ID while history remains chronological
+  ---
+  duration_ms: 1.261077
+  type: 'test'
+  ...
+# Subtest: strategy working-event API cannot fabricate terminal RESULT authority
+ok 16 - strategy working-event API cannot fabricate terminal RESULT authority
+  ---
+  duration_ms: 0.685244
+  type: 'test'
+  ...
+# Subtest: telemetry sink failure does not erase or mutate AgentEvent history
+ok 17 - telemetry sink failure does not erase or mutate AgentEvent history
+  ---
+  duration_ms: 2.046432
+  type: 'test'
+  ...
+# Subtest: BB-006 reuses a durably confirmed AVO action result after core-state persistence crashes
+ok 18 - BB-006 reuses a durably confirmed AVO action result after core-state persistence crashes
+  ---
+  duration_ms: 10.658595
+  type: 'test'
+  ...
+# Subtest: BB-006 fails closed on ambiguous built-in AVO effects by default
+ok 19 - BB-006 fails closed on ambiguous built-in AVO effects by default
+  ---
+  duration_ms: 3.436781
+  type: 'test'
+  ...
+# Subtest: BB-006 retries only when the adapter explicitly declares IDEMPOTENT effect semantics
+ok 20 - BB-006 retries only when the adapter explicitly declares IDEMPOTENT effect semantics
+  ---
+  duration_ms: 2.24712
+  type: 'test'
+  ...
+# Subtest: NOOA-style runtime exposes typed capability boundaries to a strategy
+ok 21 - NOOA-style runtime exposes typed capability boundaries to a strategy
+  ---
+  duration_ms: 4.545183
+  type: 'test'
+  ...
+# Subtest: AVO variation is an autonomous agent run over session-scoped capabilities
+ok 22 - AVO variation is an autonomous agent run over session-scoped capabilities
+  ---
+  duration_ms: 11.378849
+  type: 'test'
+  ...
+# Subtest: AVO facade keeps core promotion authority outside the agent strategy
+ok 23 - AVO facade keeps core promotion authority outside the agent strategy
+  ---
+  duration_ms: 2.860588
+  type: 'test'
+  ...
+# Subtest: production harness preserves NOOA dynamic prompt context across AVO variations
+ok 24 - production harness preserves NOOA dynamic prompt context across AVO variations
+  ---
+  duration_ms: 7.821178
+  type: 'test'
+  ...
+# Subtest: AVO variations enforce NOOA prompt-context bounds
+ok 25 - AVO variations enforce NOOA prompt-context bounds
+  ---
+  duration_ms: 2.359065
+  type: 'test'
+  ...
+# Subtest: working ancestry and committed lineage ancestry remain distinct
+ok 26 - working ancestry and committed lineage ancestry remain distinct
+  ---
+  duration_ms: 3.45408
+  type: 'test'
+  ...
+# Subtest: promotion commits P_t -> P_t+1 while preserving the local repair parent
+ok 27 - promotion commits P_t -> P_t+1 while preserving the local repair parent
+  ---
+  duration_ms: 2.34165
+  type: 'test'
+  ...
+# Subtest: a new search branch uses the latest committed candidate as its lineage base
+ok 28 - a new search branch uses the latest committed candidate as its lineage base
+  ---
+  duration_ms: 2.197819
+  type: 'test'
+  ...
+# Subtest: candidateHistory is the semantic API while implementationHistory remains compatible
+ok 29 - candidateHistory is the semantic API while implementationHistory remains compatible
+  ---
+  duration_ms: 0.830297
+  type: 'test'
+  ...
+# Subtest: CodeAct observation replay fails closed before oversized action output reaches another model turn
+ok 30 - CodeAct observation replay fails closed before oversized action output reaches another model turn
+  ---
+  duration_ms: 6.524349
+  type: 'test'
+  ...
+# Subtest: CodeAct maxDurationMs bounds a non-returning model call at the orchestration boundary
+ok 31 - CodeAct maxDurationMs bounds a non-returning model call at the orchestration boundary
+  ---
+  duration_ms: 27.593478
+  type: 'test'
+  ...
+# Subtest: CodeAct maxDurationMs also bounds a non-returning capability action
+ok 32 - CodeAct maxDurationMs also bounds a non-returning capability action
+  ---
+  duration_ms: 26.181357
+  type: 'test'
+  ...
+# Subtest: CodeAct executes, observes, then returns a terminal result
+ok 33 - CodeAct executes, observes, then returns a terminal result
+  ---
+  duration_ms: 7.22462
+  type: 'test'
+  ...
+# Subtest: CodeAct can invoke declared capabilities through runtime authority
+ok 34 - CodeAct can invoke declared capabilities through runtime authority
+  ---
+  duration_ms: 1.613147
+  type: 'test'
+  ...
+# Subtest: CodeAct resource access stays behind opaque ResourceRef operations
+ok 35 - CodeAct resource access stays behind opaque ResourceRef operations
+  ---
+  duration_ms: 3.936055
+  type: 'test'
+  ...
+# Subtest: invalid typed terminal output re-enters bounded correction
+ok 36 - invalid typed terminal output re-enters bounded correction
+  ---
+  duration_ms: 1.77083
+  type: 'test'
+  ...
+# Subtest: plain text follows configured RETRY recovery
+ok 37 - plain text follows configured RETRY recovery
+  ---
+  duration_ms: 1.055311
+  type: 'test'
+  ...
+# Subtest: plain text can fail closed instead of being silently accepted
+ok 38 - plain text can fail closed instead of being silently accepted
+  ---
+  duration_ms: 0.873085
+  type: 'test'
+  ...
+# Subtest: malformed model actions stay bounded and exhaust turns
+ok 39 - malformed model actions stay bounded and exhaust turns
+  ---
+  duration_ms: 0.883241
+  type: 'test'
+  ...
+# Subtest: action budget is owned outside the model loop
+ok 40 - action budget is owned outside the model loop
+  ---
+  duration_ms: 1.221048
+  type: 'test'
+  ...
+# Subtest: runtime capability budget cannot be caught and hidden by CodeAct
+ok 41 - runtime capability budget cannot be caught and hidden by CodeAct
+  ---
+  duration_ms: 1.840005
+  type: 'test'
+  ...
+# Subtest: terminal return closes later model and executor activity
+ok 42 - terminal return closes later model and executor activity
+  ---
+  duration_ms: 0.882531
+  type: 'test'
+  ...
+# Subtest: executor failures become model-visible action errors without becoming model failures
+ok 43 - executor failures become model-visible action errors without becoming model failures
+  ---
+  duration_ms: 1.689873
+  type: 'test'
+  ...
+# Subtest: model/provider failure remains distinct from executor/action failure
+ok 44 - model/provider failure remains distinct from executor/action failure
+  ---
+  duration_ms: 0.697265
+  type: 'test'
+  ...
+# Subtest: CodeAct rejects live/non-JSON action outputs before returning them to the model
+ok 45 - CodeAct rejects live/non-JSON action outputs before returning them to the model
+  ---
+  duration_ms: 2.339546
+  type: 'test'
+  ...
+# Subtest: context, recall and evolution compose into one causal trace tree
+ok 46 - context, recall and evolution compose into one causal trace tree
+  ---
+  duration_ms: 11.077375
+  type: 'test'
+  ...
+# Subtest: memory tracing emits identity metadata without leaking memory content
+ok 47 - memory tracing emits identity metadata without leaking memory content
+  ---
+  duration_ms: 1.304375
+  type: 'test'
+  ...
+# Subtest: retrieval query tracing is bounded and reports original size
+ok 48 - retrieval query tracing is bounded and reports original size
+  ---
+  duration_ms: 0.757513
+  type: 'test'
+  ...
+# Subtest: partial evolution keeps the engineering failure visible on the cognition span
+ok 49 - partial evolution keeps the engineering failure visible on the cognition span
+  ---
+  duration_ms: 3.758061
+  type: 'test'
+  ...
+# Subtest: graph relation remains semantic structure while tracing only references resulting IDs
+ok 50 - graph relation remains semantic structure while tracing only references resulting IDs
+  ---
+  duration_ms: 1.324342
+  type: 'test'
+  ...
+# Subtest: invocation data cannot shadow or promote itself into trusted context blocks
+ok 51 - invocation data cannot shadow or promote itself into trusted context blocks
+  ---
+  duration_ms: 6.163917
+  type: 'test'
+  ...
+# Subtest: dynamic context blocks are resolved at call time without receiving invocation input
+ok 52 - dynamic context blocks are resolved at call time without receiving invocation input
+  ---
+  duration_ms: 1.225483
+  type: 'test'
+  ...
+# Subtest: history selector and reducer operate on clones and cannot rewrite canonical AgentEvent history
+ok 53 - history selector and reducer operate on clones and cannot rewrite canonical AgentEvent history
+  ---
+  duration_ms: 1.471078
+  type: 'test'
+  ...
+# Subtest: history selectors may choose canonical events but cannot fabricate provenance
+ok 54 - history selectors may choose canonical events but cannot fabricate provenance
+  ---
+  duration_ms: 1.468416
+  type: 'test'
+  ...
+# Subtest: history selector cannot reorder the canonical chronology
+ok 55 - history selector cannot reorder the canonical chronology
+  ---
+  duration_ms: 2.680348
+  type: 'test'
+  ...
+# Subtest: working history is not dumped into a judgment unless that judgment explicitly selects it
+ok 56 - working history is not dumped into a judgment unless that judgment explicitly selects it
+  ---
+  duration_ms: 0.855805
+  type: 'test'
+  ...
+# Subtest: bounded history can deterministically truncate oldest events
+ok 57 - bounded history can deterministically truncate oldest events
+  ---
+  duration_ms: 0.931095
+  type: 'test'
+  ...
+# Subtest: zero history dose really projects zero prior events
+ok 58 - zero history dose really projects zero prior events
+  ---
+  duration_ms: 0.647556
+  type: 'test'
+  ...
+# Subtest: history overflow can fail closed with a stable operational error
+ok 59 - history overflow can fail closed with a stable operational error
+  ---
+  duration_ms: 1.18687
+  type: 'test'
+  ...
+# Subtest: trusted blocks are never silently truncated to fit the serialized context bound
+ok 60 - trusted blocks are never silently truncated to fit the serialized context bound
+  ---
+  duration_ms: 0.744305
+  type: 'test'
+  ...
+# Subtest: prompt-visible context rejects structured-cloneable values that are not stable JSON prompt data
+ok 61 - prompt-visible context rejects structured-cloneable values that are not stable JSON prompt data
+  ---
+  duration_ms: 0.337886
+  type: 'test'
+  ...
+# Subtest: Predict receives only the selected prompt context and selected history surface
+ok 62 - Predict receives only the selected prompt context and selected history surface
+  ---
+  duration_ms: 1.444464
+  type: 'test'
+  ...
+# Subtest: observability instrumentation preserves context introspection APIs
+ok 63 - observability instrumentation preserves context introspection APIs
+  ---
+  duration_ms: 0.460318
+  type: 'test'
+  ...
+# Subtest: selected requirement is projected to a fixed context block once per call
+ok 64 - selected requirement is projected to a fixed context block once per call
+  ---
+  duration_ms: 7.635832
+  type: 'test'
+  ...
+# Subtest: judgment selection and failure stop before strategy/model/action
+ok 65 - judgment selection and failure stop before strategy/model/action
+  ---
+  duration_ms: 1.738519
+  type: 'test'
+  ...
+# Subtest: opaque JSON-safe values and duplicate names are enforced
+ok 66 - opaque JSON-safe values and duplicate names are enforced
+  ---
+  duration_ms: 0.502611
+  type: 'test'
+  ...
+# Subtest: persistent work state is first-class while default context stays selective
+ok 67 - persistent work state is first-class while default context stays selective
+  ---
+  duration_ms: 5.348125
+  type: 'test'
+  ...
+# Subtest: every mutated implementation persists across the search, not only promoted lineage
+ok 68 - every mutated implementation persists across the search, not only promoted lineage
+  ---
+  duration_ms: 2.540147
+  type: 'test'
+  ...
+# Subtest: prior compiler/profiler style observations remain persistent but are not blindly injected as current evidence
+ok 69 - prior compiler/profiler style observations remain persistent but are not blindly injected as current evidence
+  ---
+  duration_ms: 2.387835
+  type: 'test'
+  ...
+# Subtest: explicit accumulated engineering knowledge persists without becoming raw conversation history
+ok 70 - explicit accumulated engineering knowledge persists without becoming raw conversation history
+  ---
+  duration_ms: 0.989103
+  type: 'test'
+  ...
+# Subtest: context dosage is explicit and context-sensitive
+ok 71 - context dosage is explicit and context-sensitive
+  ---
+  duration_ms: 0.848036
+  type: 'test'
+  ...
+# Subtest: disabled context projection does not spend context dose
+ok 72 - disabled context projection does not spend context dose
+  ---
+  duration_ms: 0.417397
+  type: 'test'
+  ...
+# Subtest: enabled practices must declare an explicit dose
+ok 73 - enabled practices must declare an explicit dose
+  ---
+  duration_ms: 0.675778
+  type: 'test'
+  ...
+# Subtest: supervision dosage prevents inspect-every-step behavior
+ok 74 - supervision dosage prevents inspect-every-step behavior
+  ---
+  duration_ms: 1.005734
+  type: 'test'
+  ...
+# Subtest: dosage policy receives control summary, not raw persistent memory
+ok 75 - dosage policy receives control summary, not raw persistent memory
+  ---
+  duration_ms: 0.805515
+  type: 'test'
+  ...
+# Subtest: supervisor can redirect search but cannot become correctness reviewer or mutator
+ok 76 - supervisor can redirect search but cannot become correctness reviewer or mutator
+  ---
+  duration_ms: 1.012537
+  type: 'test'
+  ...
+# Subtest: only evaluator correctness can authorize promotion
+ok 77 - only evaluator correctness can authorize promotion
+  ---
+  duration_ms: 1.195585
+  type: 'test'
+  ...
+# Subtest: a pass for an older implementation cannot promote a newer implementation
+ok 78 - a pass for an older implementation cannot promote a newer implementation
+  ---
+  duration_ms: 2.389715
+  type: 'test'
+  ...
+# Subtest: resume restores persistent engineering progress without reconstructing conversation history
+ok 79 - resume restores persistent engineering progress without reconstructing conversation history
+  ---
+  duration_ms: 1.48671
+  type: 'test'
+  ...
+# Subtest: sessions keep persistent engineering state isolated
+ok 80 - sessions keep persistent engineering state isolated
+  ---
+  duration_ms: 0.673854
+  type: 'test'
+  ...
+# Subtest: CodeAct links AgentEvent -> Observation -> capability TraceSpan without collapsing authority planes
+ok 81 - CodeAct links AgentEvent -> Observation -> capability TraceSpan without collapsing authority planes
+  ---
+  duration_ms: 11.282089
+  type: 'test'
+  ...
+# Subtest: AgentEventStore rejects cross-call artifact laundering in ACTION_OUTPUT correlation
+ok 82 - AgentEventStore rejects cross-call artifact laundering in ACTION_OUTPUT correlation
+  ---
+  duration_ms: 0.560216
+  type: 'test'
+  ...
+# Subtest: deliberation creates bounded semantic step and separate action intent
+ok 83 - deliberation creates bounded semantic step and separate action intent
+  ---
+  duration_ms: 2.305057
+  type: 'test'
+  ...
+# Subtest: action intent policy rejects before execution
+ok 84 - action intent policy rejects before execution
+  ---
+  duration_ms: 1.34051
+  type: 'test'
+  ...
+# Subtest: authorized execution records exact outcome artifact ref
+ok 85 - authorized execution records exact outcome artifact ref
+  ---
+  duration_ms: 0.730823
+  type: 'test'
+  ...
+# Subtest: deliberation store enforces serialized bounds
+ok 86 - deliberation store enforces serialized bounds
+  ---
+  duration_ms: 0.299224
+  type: 'test'
+  ...
+# Subtest: recovery reuses confirmed work without redispatch
+ok 87 - recovery reuses confirmed work without redispatch
+  ---
+  duration_ms: 7.339367
+  type: 'test'
+  ...
+# Subtest: recovery executes the exact operation for absent and intended journal states
+ok 88 - recovery executes the exact operation for absent and intended journal states
+  ---
+  duration_ms: 3.714482
+  type: 'test'
+  ...
+# Subtest: recovery reconciles dispatched and unknown idempotent work with one retry
+ok 89 - recovery reconciles dispatched and unknown idempotent work with one retry
+  ---
+  duration_ms: 4.938956
+  type: 'test'
+  ...
+# Subtest: recovery escalates ambiguous non-reconcilable work to unknown without dispatch
+ok 90 - recovery escalates ambiguous non-reconcilable work to unknown without dispatch
+  ---
+  duration_ms: 2.454504
+  type: 'test'
+  ...
+# Subtest: concurrent recovery dispatches one semantic effect and keeps one terminal
+ok 91 - concurrent recovery dispatches one semantic effect and keeps one terminal
+  ---
+  duration_ms: 15.681645
+  type: 'test'
+  ...
+# Subtest: cancellation before dispatch converges cancelled and fences every later dispatch
+ok 92 - cancellation before dispatch converges cancelled and fences every later dispatch
+  ---
+  duration_ms: 11.72352
+  type: 'test'
+  ...
+# Subtest: pure cooperative cancellation converges cancelled once the attempt settles
+ok 93 - pure cooperative cancellation converges cancelled once the attempt settles
+  ---
+  duration_ms: 6.228498
+  type: 'test'
+  ...
+# Subtest: non-cooperating abort keeps cancel requested and confirmed work still wins
+ok 94 - non-cooperating abort keeps cancel requested and confirmed work still wins
+  ---
+  duration_ms: 18.131498
+  type: 'test'
+  ...
+# Subtest: idempotent cancellation after dispatch waits for the in-flight attempt
+ok 95 - idempotent cancellation after dispatch waits for the in-flight attempt
+  ---
+  duration_ms: 6.068121
+  type: 'test'
+  ...
+# Subtest: non-reconcilable cancellation after dispatch escalates unknown
+ok 96 - non-reconcilable cancellation after dispatch escalates unknown
+  ---
+  duration_ms: 1.311606
+  type: 'test'
+  ...
+# Subtest: non-reconcilable cancellation waits for the in-flight attempt, then escalates or confirms
+ok 97 - non-reconcilable cancellation waits for the in-flight attempt, then escalates or confirms
+  ---
+  duration_ms: 14.250665
+  type: 'test'
+  ...
+# Subtest: observable cancellation resolves only from settled plus observed truth
+ok 98 - observable cancellation resolves only from settled plus observed truth
+  ---
+  duration_ms: 16.542757
+  type: 'test'
+  ...
+# Subtest: confirmed effect wins a racing cancel as succeeded
+ok 99 - confirmed effect wins a racing cancel as succeeded
+  ---
+  duration_ms: 1.621937
+  type: 'test'
+  ...
+# Subtest: recovery with changed replay policy or effect binding fails closed
+ok 100 - recovery with changed replay policy or effect binding fails closed
+  ---
+  duration_ms: 2.772067
+  type: 'test'
+  ...
+# Subtest: scheduler terminal never marks the effect operation confirmed
+ok 101 - scheduler terminal never marks the effect operation confirmed
+  ---
+  duration_ms: 0.802295
+  type: 'test'
+  ...
+# Subtest: detached handle returns before effect completion and unrelated work proceeds
+ok 102 - detached handle returns before effect completion and unrelated work proceeds
+  ---
+  duration_ms: 8.11093
+  type: 'test'
+  ...
+# Subtest: transition envelopes are monotonic with deterministic transition ids
+ok 103 - transition envelopes are monotonic with deterministic transition ids
+  ---
+  duration_ms: 2.305853
+  type: 'test'
+  ...
+# Subtest: repeated operation-update delivery deduplicates by transition id
+ok 104 - repeated operation-update delivery deduplicates by transition id
+  ---
+  duration_ms: 9.679793
+  type: 'test'
+  ...
+# Subtest: stale generation completion cannot overwrite current terminal state
+ok 105 - stale generation completion cannot overwrite current terminal state
+  ---
+  duration_ms: 1.290733
+  type: 'test'
+  ...
+# Subtest: concurrent store creation attaches instead of duplicating the operation
+ok 106 - concurrent store creation attaches instead of duplicating the operation
+  ---
+  duration_ms: 0.734148
+  type: 'test'
+  ...
+# Subtest: operation id reuses fail closed on binding mismatch
+ok 107 - operation id reuses fail closed on binding mismatch
+  ---
+  duration_ms: 1.361801
+  type: 'test'
+  ...
+# Subtest: derived operation ids bind exact call identity
+ok 108 - derived operation ids bind exact call identity
+  ---
+  duration_ms: 0.219557
+  type: 'test'
+  ...
+# Subtest: scheduler success cannot synthesize effect confirmation
+ok 109 - scheduler success cannot synthesize effect confirmation
+  ---
+  duration_ms: 1.065186
+  type: 'test'
+  ...
+# Subtest: successful raw return without journal confirmation converges unknown
+ok 110 - successful raw return without journal confirmation converges unknown
+  ---
+  duration_ms: 1.228765
+  type: 'test'
+  ...
+# Subtest: scheduler failure leaves the effect journal unconfirmed
+ok 111 - scheduler failure leaves the effect journal unconfirmed
+  ---
+  duration_ms: 1.396296
+  type: 'test'
+  ...
+# Subtest: unwrapped synchronous capabilities coexist unchanged with detached wrappers
+ok 112 - unwrapped synchronous capabilities coexist unchanged with detached wrappers
+  ---
+  duration_ms: 22.412011
+  type: 'test'
+  ...
+# Subtest: store transition survives a conflict caused by another operation write
+ok 113 - store transition survives a conflict caused by another operation write
+  ---
+  duration_ms: 0.83051
+  type: 'test'
+  ...
+# Subtest: store creation survives a conflict caused by another operation write
+ok 114 - store creation survives a conflict caused by another operation write
+  ---
+  duration_ms: 0.410389
+  type: 'test'
+  ...
+# Subtest: store diagnostic survives a conflict caused by another operation write
+ok 115 - store diagnostic survives a conflict caused by another operation write
+  ---
+  duration_ms: 0.661607
+  type: 'test'
+  ...
+# Subtest: store takeover survives a conflict caused by another operation write
+ok 116 - store takeover survives a conflict caused by another operation write
+  ---
+  duration_ms: 0.677637
+  type: 'test'
+  ...
+# Subtest: exhausted conflict retries fail loudly instead of silently winning
+ok 117 - exhausted conflict retries fail loudly instead of silently winning
+  ---
+  duration_ms: 3.619488
+  type: 'test'
+  ...
+# Subtest: two operations in one scope run and terminate concurrently
+ok 118 - two operations in one scope run and terminate concurrently
+  ---
+  duration_ms: 15.814105
+  type: 'test'
+  ...
+# Subtest: object-agent judgments automatically receive a bounded concise self document
+ok 119 - object-agent judgments automatically receive a bounded concise self document
+  ---
+  duration_ms: 13.245041
+  type: 'test'
+  ...
+# Subtest: doc(self) supports concise/full progressive rendering without exposing hidden members
+ok 120 - doc(self) supports concise/full progressive rendering without exposing hidden members
+  ---
+  duration_ms: 1.040176
+  type: 'test'
+  ...
+# Subtest: discovery bounds deterministically truncate members and descriptions
+ok 121 - discovery bounds deterministically truncate members and descriptions
+  ---
+  duration_ms: 0.453195
+  type: 'test'
+  ...
+# Subtest: doc(handle) respects describe authorization and does not grant invoke authority
+ok 122 - doc(handle) respects describe authorization and does not grant invoke authority
+  ---
+  duration_ms: 1.726443
+  type: 'test'
+  ...
+# Subtest: progressive discovery materially reduces initial disclosure for a broad surface
+ok 123 - progressive discovery materially reduces initial disclosure for a broad surface
+  ---
+  duration_ms: 4.576205
+  type: 'test'
+  ...
+# Subtest: runtime remains available for explicit live-object doc composition
+ok 124 - runtime remains available for explicit live-object doc composition
+  ---
+  duration_ms: 0.480664
+  type: 'test'
+  ...
+# Subtest: effect intent is journaled before dispatch and successful result is replayed
+ok 125 - effect intent is journaled before dispatch and successful result is replayed
+  ---
+  duration_ms: 3.333366
+  type: 'test'
+  ...
+# Subtest: ambiguous dispatch fails closed until explicit idempotent reconciliation prepares retry
+ok 126 - ambiguous dispatch fails closed until explicit idempotent reconciliation prepares retry
+  ---
+  duration_ms: 1.368384
+  type: 'test'
+  ...
+# Subtest: observable effect reconciles against actual state without replaying the side effect
+ok 127 - observable effect reconciles against actual state without replaying the side effect
+  ---
+  duration_ms: 0.762037
+  type: 'test'
+  ...
+# Subtest: non-reconcilable effect escalates instead of guessing
+ok 128 - non-reconcilable effect escalates instead of guessing
+  ---
+  duration_ms: 0.382172
+  type: 'test'
+  ...
+# Subtest: new observation invalidates a previous PASS before promotion
+ok 129 - new observation invalidates a previous PASS before promotion
+  ---
+  duration_ms: 14.145475
+  type: 'test'
+  ...
+# Subtest: reflection grounding contract requires a fresh persisted evaluation
+ok 130 - reflection grounding contract requires a fresh persisted evaluation
+  ---
+  duration_ms: 6.288005
+  type: 'test'
+  ...
+# Subtest: grounded intent and post-evaluation reflection produce semantic divergence signal
+ok 131 - grounded intent and post-evaluation reflection produce semantic divergence signal
+  ---
+  duration_ms: 4.093512
+  type: 'test'
+  ...
+# Subtest: rejected semantic derivation never enters memory
+ok 132 - rejected semantic derivation never enters memory
+  ---
+  duration_ms: 0.780753
+  type: 'test'
+  ...
+# Subtest: JavaScript CodeAct keeps one persistent session and terminates only through in-session return_result
+ok 133 - JavaScript CodeAct keeps one persistent session and terminates only through in-session return_result
+  ---
+  duration_ms: 16.044516
+  type: 'test'
+  ...
+# Subtest: typed terminal validation feeds correction back into the bounded JavaScript loop
+ok 134 - typed terminal validation feeds correction back into the bounded JavaScript loop
+  ---
+  duration_ms: 2.220556
+  type: 'test'
+  ...
+# Subtest: direct model terminal actions are protocol errors and never bypass the JavaScript session
+ok 135 - direct model terminal actions are protocol errors and never bypass the JavaScript session
+  ---
+  duration_ms: 2.774477
+  type: 'test'
+  ...
+# Subtest: strong terminal semantics fail closed when the injected session cannot abort a cell
+ok 136 - strong terminal semantics fail closed when the injected session cannot abort a cell
+  ---
+  duration_ms: 0.862815
+  type: 'test'
+  ...
+# Subtest: host bridge preserves live-object authority and lets execution recover from forbidden calls
+ok 137 - host bridge preserves live-object authority and lets execution recover from forbidden calls
+  ---
+  duration_ms: 3.281643
+  type: 'test'
+  ...
+# Subtest: stdout is deterministically bounded before becoming a model-visible observation
+ok 138 - stdout is deterministically bounded before becoming a model-visible observation
+  ---
+  duration_ms: 2.124811
+  type: 'test'
+  ...
+# Subtest: recoverable JavaScript execution errors remain observations while sandbox infrastructure failures propagate
+ok 139 - recoverable JavaScript execution errors remain observations while sandbox infrastructure failures propagate
+  ---
+  duration_ms: 3.126618
+  type: 'test'
+  ...
+# Subtest: host-call budget is kernel-owned and return_result stops the rest of the cell
+ok 140 - host-call budget is kernel-owned and return_result stops the rest of the cell
+  ---
+  duration_ms: 4.275376
+  type: 'test'
+  ...
+# Subtest: session execution participates in the existing causal trace tree
+ok 141 - session execution participates in the existing causal trace tree
+  ---
+  duration_ms: 2.585122
+  type: 'test'
+  ...
+# Subtest: production facade composes AVO + NOOA and emits observable lifecycle
+ok 142 - production facade composes AVO + NOOA and emits observable lifecycle
+  ---
+  duration_ms: 14.674706
+  type: 'test'
+  ...
+# Subtest: interrupted RUNNING variation requires explicit recovery and remains inspectable
+ok 143 - interrupted RUNNING variation requires explicit recovery and remains inspectable
+  ---
+  duration_ms: 2.254657
+  type: 'test'
+  ...
+# Subtest: search health grounds plateau signals in persisted variation history
+ok 144 - search health grounds plateau signals in persisted variation history
+  ---
+  duration_ms: 10.052966
+  type: 'test'
+  ...
+# Subtest: completed no-op variation can trigger a persisted supervisor redirect
+ok 145 - completed no-op variation can trigger a persisted supervisor redirect
+  ---
+  duration_ms: 2.687438
+  type: 'test'
+  ...
+# Subtest: supervision signal builder does not label a candidate change as a no-change plateau
+ok 146 - supervision signal builder does not label a candidate change as a no-change plateau
+  ---
+  duration_ms: 0.232409
+  type: 'test'
+  ...
+# Subtest: in-memory persistence and executor implementations satisfy public contract kits
+ok 147 - in-memory persistence and executor implementations satisfy public contract kits
+  ---
+  duration_ms: 0.569278
+  type: 'test'
+  ...
+# Subtest: execution boundary times out without trusting executor cooperation
+ok 148 - execution boundary times out without trusting executor cooperation
+  ---
+  duration_ms: 4.777186
+  type: 'test'
+  ...
+# Subtest: validated store rejects a future schema before it enters kernel state
+ok 149 - validated store rejects a future schema before it enters kernel state
+  ---
+  duration_ms: 0.669417
+  type: 'test'
+  ...
+# Subtest: legacy knowledge without explicit scope remains candidate-scoped
+ok 150 - legacy knowledge without explicit scope remains candidate-scoped
+  ---
+  duration_ms: 1.957136
+  type: 'test'
+  ...
+# Subtest: opaque live refs cannot escape through ordinary transport results
+ok 151 - opaque live refs cannot escape through ordinary transport results
+  ---
+  duration_ms: 2.845532
+  type: 'test'
+  ...
+# Subtest: revoked authority becomes a stale tombstone while the same object can receive fresh authority
+ok 152 - revoked authority becomes a stale tombstone while the same object can receive fresh authority
+  ---
+  duration_ms: 0.945055
+  type: 'test'
+  ...
+# Subtest: observability instrumentation preserves live object roots and authority APIs
+ok 153 - observability instrumentation preserves live object roots and authority APIs
+  ---
+  duration_ms: 5.610934
+  type: 'test'
+  ...
+# Subtest: same live object and authority surface reuse one stable handle
+ok 154 - same live object and authority surface reuse one stable handle
+  ---
+  duration_ms: 1.978717
+  type: 'test'
+  ...
+# Subtest: same object under a different authority surface receives a different handle
+ok 155 - same object under a different authority surface receives a different handle
+  ---
+  duration_ms: 0.62445
+  type: 'test'
+  ...
+# Subtest: live mutation is visible through later reads without serialization
+ok 156 - live mutation is visible through later reads without serialization
+  ---
+  duration_ms: 0.94336
+  type: 'test'
+  ...
+# Subtest: nested live results preserve cycles and object identity
+ok 157 - nested live results preserve cycles and object identity
+  ---
+  duration_ms: 0.522767
+  type: 'test'
+  ...
+# Subtest: undeclared members are never reflected into authority
+ok 158 - undeclared members are never reflected into authority
+  ---
+  duration_ms: 0.767188
+  type: 'test'
+  ...
+# Subtest: method binding does not execute accessors and late monkeypatch cannot replace authority
+ok 159 - method binding does not execute accessors and late monkeypatch cannot replace authority
+  ---
+  duration_ms: 0.682807
+  type: 'test'
+  ...
+# Subtest: live refs cannot become method arguments without explicit member opt-in
+ok 160 - live refs cannot become method arguments without explicit member opt-in
+  ---
+  duration_ms: 0.403811
+  type: 'test'
+  ...
+# Subtest: cross-registry, revoked and expired live refs fail deterministically
+ok 161 - cross-registry, revoked and expired live refs fail deterministically
+  ---
+  duration_ms: 0.604365
+  type: 'test'
+  ...
+# Subtest: surface identifiers cannot silently alias different authority definitions
+ok 162 - surface identifiers cannot silently alias different authority definitions
+  ---
+  duration_ms: 0.460994
+  type: 'test'
+  ...
+# Subtest: live object discovery metadata is bounded by policy before handle creation
+ok 163 - live object discovery metadata is bounded by policy before handle creation
+  ---
+  duration_ms: 0.934599
+  type: 'test'
+  ...
+# Subtest: non-transport object results require an explicit nested live surface
+ok 164 - non-transport object results require an explicit nested live surface
+  ---
+  duration_ms: 0.303691
+  type: 'test'
+  ...
+# Subtest: runtime exposes named roots and nested live host calls inside one causal trace
+ok 165 - runtime exposes named roots and nested live host calls inside one causal trace
+  ---
+  duration_ms: 5.20363
+  type: 'test'
+  ...
+# Subtest: call-scoped runtime roots and nested handles expire when the invocation closes
+ok 166 - call-scoped runtime roots and nested handles expire when the invocation closes
+  ---
+  duration_ms: 0.696324
+  type: 'test'
+  ...
+# Subtest: authorization callback can deny describe/read/invoke independently
+ok 167 - authorization callback can deny describe/read/invoke independently
+  ---
+  duration_ms: 0.431364
+  type: 'test'
+  ...
+# Subtest: unknown scoped model route fails as a stable ModelRouteError contract violation
+ok 168 - unknown scoped model route fails as a stable ModelRouteError contract violation
+  ---
+  duration_ms: 5.624473
+  type: 'test'
+  ...
+# Subtest: custom registry cannot launder a different adapter identity through a requested route
+ok 169 - custom registry cannot launder a different adapter identity through a requested route
+  ---
+  duration_ms: 4.0322
+  type: 'test'
+  ...
+# Subtest: failed lazy model load is not cached as a permanent failure
+ok 170 - failed lazy model load is not cached as a permanent failure
+  ---
+  duration_ms: 0.579081
+  type: 'test'
+  ...
+# Subtest: model routing precedence is invocation > judgment > runtime and leaves defaults unchanged
+ok 171 - model routing precedence is invocation > judgment > runtime and leaves defaults unchanged
+  ---
+  duration_ms: 7.348544
+  type: 'test'
+  ...
+# Subtest: same Predict strategy can run against different routed models
+ok 172 - same Predict strategy can run against different routed models
+  ---
+  duration_ms: 1.363193
+  type: 'test'
+  ...
+# Subtest: same CodeAct strategy consumes runtime-routed model
+ok 173 - same CodeAct strategy consumes runtime-routed model
+  ---
+  duration_ms: 3.117489
+  type: 'test'
+  ...
+# Subtest: legacy constructor-bound strategy model remains a fallback with route provenance but no runtime-owned usage proof
+ok 174 - legacy constructor-bound strategy model remains a fallback with route provenance but no runtime-owned usage proof
+  ---
+  duration_ms: 0.553814
+  type: 'test'
+  ...
+# Subtest: unused lazy adapters are not instantiated and concurrent resolution loads once
+ok 175 - unused lazy adapters are not instantiated and concurrent resolution loads once
+  ---
+  duration_ms: 0.33723
+  type: 'test'
+  ...
+# Subtest: routing cannot be silently ignored by a strategy that does not opt in
+ok 176 - routing cannot be silently ignored by a strategy that does not opt in
+  ---
+  duration_ms: 0.696822
+  type: 'test'
+  ...
+# Subtest: model-aware custom strategy can resolve a route without using the model, and usage stays zero
+ok 177 - model-aware custom strategy can resolve a route without using the model, and usage stays zero
+  ---
+  duration_ms: 0.787308
+  type: 'test'
+  ...
+# Subtest: model resolution failure is journaled as TASK then ERROR
+ok 178 - model resolution failure is journaled as TASK then ERROR
+  ---
+  duration_ms: 0.52601
+  type: 'test'
+  ...
+# Subtest: production createHarness composes routed model provenance through a variation
+ok 179 - production createHarness composes routed model provenance through a variation
+  ---
+  duration_ms: 6.144209
+  type: 'test'
+  ...
+# Subtest: N7 preserves the pre-existing direct ResourceRef describe API shape
+ok 180 - N7 preserves the pre-existing direct ResourceRef describe API shape
+  ---
+  duration_ms: 2.543027
+  type: 'test'
+  ...
+# Subtest: default runtime does not retain hidden trace history when tracing is not configured
+ok 181 - default runtime does not retain hidden trace history when tracing is not configured
+  ---
+  duration_ms: 2.617039
+  type: 'test'
+  ...
+# Subtest: strict trace sink failure never replaces an already-existing engineering error
+ok 182 - strict trace sink failure never replaces an already-existing engineering error
+  ---
+  duration_ms: 1.82066
+  type: 'test'
+  ...
+# Subtest: production facade composes an injected tracer and exposes causal runtime spans
+ok 183 - production facade composes an injected tracer and exposes causal runtime spans
+  ---
+  duration_ms: 7.447102
+  type: 'test'
+  ...
+# Subtest: production facade refuses to silently ignore tracer when a custom agent owns runtime observability
+ok 184 - production facade refuses to silently ignore tracer when a custom agent owns runtime observability
+  ---
+  duration_ms: 0.256271
+  type: 'test'
+  ...
+# Subtest: Predict judgment produces one causal trace tree correlated to the AgentEvent call
+ok 185 - Predict judgment produces one causal trace tree correlated to the AgentEvent call
+  ---
+  duration_ms: 5.513233
+  type: 'test'
+  ...
+# Subtest: CodeAct nests execution, capability and resource spans under action authority
+ok 186 - CodeAct nests execution, capability and resource spans under action authority
+  ---
+  duration_ms: 5.253223
+  type: 'test'
+  ...
+# Subtest: concurrent runtime calls keep distinct trace roots and correlation IDs
+ok 187 - concurrent runtime calls keep distinct trace roots and correlation IDs
+  ---
+  duration_ms: 9.316904
+  type: 'test'
+  ...
+# Subtest: a recoverable capability failure remains an error child span while the CodeAct root can succeed
+ok 188 - a recoverable capability failure remains an error child span while the CodeAct root can succeed
+  ---
+  duration_ms: 2.548143
+  type: 'test'
+  ...
+# Subtest: non-strict trace sink failure is observable without changing runtime result
+ok 189 - non-strict trace sink failure is observable without changing runtime result
+  ---
+  duration_ms: 1.254911
+  type: 'test'
+  ...
+# Subtest: strict trace sink failure propagates and cannot be repaired by CodeAct
+ok 190 - strict trace sink failure propagates and cannot be repaired by CodeAct
+  ---
+  duration_ms: 2.260671
+  type: 'test'
+  ...
+# Subtest: judgment parse failure marks the judgment root ERROR instead of leaving a false successful trace
+ok 191 - judgment parse failure marks the judgment root ERROR instead of leaving a false successful trace
+  ---
+  duration_ms: 1.091571
+  type: 'test'
+  ...
+# Subtest: flat observability instrumentation preserves the independent trace surface
+ok 192 - flat observability instrumentation preserves the independent trace surface
+  ---
+  duration_ms: 2.129013
+  type: 'test'
+  ...
+# Subtest: NOOA retrieval configuration preserves explicit scoring weights
+ok 193 - NOOA retrieval configuration preserves explicit scoring weights
+  ---
+  duration_ms: 1.693456
+  type: 'test'
+  ...
+# Subtest: empty candidate pools return no memories
+ok 194 - empty candidate pools return no memories
+  ---
+  duration_ms: 1.51072
+  type: 'test'
+  ...
+# Subtest: equal ranking channels contribute zero after NOOA min-max normalization
+ok 195 - equal ranking channels contribute zero after NOOA min-max normalization
+  ---
+  duration_ms: 2.207871
+  type: 'test'
+  ...
+# Subtest: NOOA retrieval exposes its public adapter surface
+ok 196 - NOOA retrieval exposes its public adapter surface
+  ---
+  duration_ms: 0.680268
+  type: 'test'
+  ...
+# Subtest: candidate present in dense and sparse pools is marked both
+ok 197 - candidate present in dense and sparse pools is marked both
+  ---
+  duration_ms: 2.470439
+  type: 'test'
+  ...
+# Subtest: NOOA retriever composes behind ExHarness authority boundary
+ok 198 - NOOA retriever composes behind ExHarness authority boundary
+  ---
+  duration_ms: 2.538382
+  type: 'test'
+  ...
+# Subtest: existing retrieval port remains an authority boundary rather than ranking authority
+ok 199 - existing retrieval port remains an authority boundary rather than ranking authority
+  ---
+  duration_ms: 0.843655
+  type: 'test'
+  ...
+# Subtest: ACT-R base level ignores injected observations
+ok 200 - ACT-R base level ignores injected observations
+  ---
+  duration_ms: 0.654898
+  type: 'test'
+  ...
+# Subtest: NOOA recall combines hybrid candidates and associative graph spread
+ok 201 - NOOA recall combines hybrid candidates and associative graph spread
+  ---
+  duration_ms: 2.935769
+  type: 'test'
+  ...
+# Subtest: NOOA search disables graph hop
+ok 202 - NOOA search disables graph hop
+  ---
+  duration_ms: 0.942468
+  type: 'test'
+  ...
+# Subtest: recent and important memories participate in NOOA base ranking
+ok 203 - recent and important memories participate in NOOA base ranking
+  ---
+  duration_ms: 0.400369
+  type: 'test'
+  ...
+# Subtest: selected retrievals record recalled access without self-reinforcing injection
+ok 204 - selected retrievals record recalled access without self-reinforcing injection
+  ---
+  duration_ms: 3.06533
+  type: 'test'
+  ...
+# Subtest: object-agent discovery never executes getters or accessors
+ok 205 - object-agent discovery never executes getters or accessors
+  ---
+  duration_ms: 4.503523
+  type: 'test'
+  ...
+# Subtest: non-function subclass shadowing cannot reveal a same-named base capability
+ok 206 - non-function subclass shadowing cannot reveal a same-named base capability
+  ---
+  duration_ms: 0.823038
+  type: 'test'
+  ...
+# Subtest: objectMethodCall preserves a true zero-argument invocation
+ok 207 - objectMethodCall preserves a true zero-argument invocation
+  ---
+  duration_ms: 11.136523
+  type: 'test'
+  ...
+# Subtest: capability implementation is bound at attach time and cannot be laundered by monkeypatching
+ok 208 - capability implementation is bound at attach time and cannot be laundered by monkeypatching
+  ---
+  duration_ms: 1.308287
+  type: 'test'
+  ...
+# Subtest: agentic marker replacement failure is rejected before partially attaching the runtime
+ok 209 - agentic marker replacement failure is rejected before partially attaching the runtime
+  ---
+  duration_ms: 0.539429
+  type: 'test'
+  ...
+# Subtest: object agent preserves identity while ordinary methods become runtime capabilities
+ok 210 - object agent preserves identity while ordinary methods become runtime capabilities
+  ---
+  duration_ms: 13.714137
+  type: 'test'
+  ...
+# Subtest: object method capability supports explicit multi-argument calls without confusing one array argument
+ok 211 - object method capability supports explicit multi-argument calls without confusing one array argument
+  ---
+  duration_ms: 1.203118
+  type: 'test'
+  ...
+# Subtest: subclass dispatch and inherited agent methods use the real object implementation
+ok 212 - subclass dispatch and inherited agent methods use the real object implementation
+  ---
+  duration_ms: 1.116878
+  type: 'test'
+  ...
+# Subtest: stateful tools remain isolated per object instance
+ok 213 - stateful tools remain isolated per object instance
+  ---
+  duration_ms: 2.597485
+  type: 'test'
+  ...
+# Subtest: hidden/private methods never become automatic capabilities but remain ordinary caller methods
+ok 214 - hidden/private methods never become automatic capabilities but remain ordinary caller methods
+  ---
+  duration_ms: 1.214738
+  type: 'test'
+  ...
+# Subtest: arbitrary class wrapping does not expose inherited library prototype APIs by default
+ok 215 - arbitrary class wrapping does not expose inherited library prototype APIs by default
+  ---
+  duration_ms: 0.671662
+  type: 'test'
+  ...
+# Subtest: agentic ordinary method preserves typed judgment, context, routing and tracing semantics
+ok 216 - agentic ordinary method preserves typed judgment, context, routing and tracing semantics
+  ---
+  duration_ms: 5.472298
+  type: 'test'
+  ...
+# Subtest: deterministic method can call an agentic sibling through normal this dispatch
+ok 217 - deterministic method can call an agentic sibling through normal this dispatch
+  ---
+  duration_ms: 1.106816
+  type: 'test'
+  ...
+# Subtest: public then method is rejected unless explicitly hidden
+ok 218 - public then method is rejected unless explicitly hidden
+  ---
+  duration_ms: 0.789874
+  type: 'test'
+  ...
+# Subtest: surface distinguishes deterministic and agentic members without exposing function bodies
+ok 219 - surface distinguishes deterministic and agentic members without exposing function bodies
+  ---
+  duration_ms: 0.694995
+  type: 'test'
+  ...
+# Subtest: manual vigilance can be codified as a candidate-bound verification artifact
+ok 220 - manual vigilance can be codified as a candidate-bound verification artifact
+  ---
+  duration_ms: 8.917723
+  type: 'test'
+  ...
+# Subtest: codified verification can be automated as a NOOA-visible harness capability
+ok 221 - codified verification can be automated as a NOOA-visible harness capability
+  ---
+  duration_ms: 12.644741
+  type: 'test'
+  ...
+# Subtest: direct observations remain compatible while gaining durable artifact identity
+ok 222 - direct observations remain compatible while gaining durable artifact identity
+  ---
+  duration_ms: 6.77055
+  type: 'test'
+  ...
+# Subtest: capability-triggered observations use runtime-owned call and turn provenance
+ok 223 - capability-triggered observations use runtime-owned call and turn provenance
+  ---
+  duration_ms: 10.099479
+  type: 'test'
+  ...
+# Subtest: feedback is a grounded projection and candidate filtering excludes stale feedback
+ok 224 - feedback is a grounded projection and candidate filtering excludes stale feedback
+  ---
+  duration_ms: 15.496917
+  type: 'test'
+  ...
+# Subtest: candidate-scoped knowledge expires from the active view while session knowledge persists
+ok 225 - candidate-scoped knowledge expires from the active view while session knowledge persists
+  ---
+  duration_ms: 4.425566
+  type: 'test'
+  ...
+# Subtest: lineage knowledge can be corrected after a commit without erasing history
+ok 226 - lineage knowledge can be corrected after a commit without erasing history
+  ---
+  duration_ms: 3.346103
+  type: 'test'
+  ...
+# Subtest: ungrounded assertions cannot supersede active knowledge
+ok 227 - ungrounded assertions cannot supersede active knowledge
+  ---
+  duration_ms: 1.1947
+  type: 'test'
+  ...
+# Subtest: contradictory active knowledge is surfaced instead of choosing a winner
+ok 228 - contradictory active knowledge is surfaced instead of choosing a winner
+  ---
+  duration_ms: 1.172976
+  type: 'test'
+  ...
+# Subtest: knowledge provenance cannot reference feedback that does not exist
+ok 229 - knowledge provenance cannot reference feedback that does not exist
+  ---
+  duration_ms: 0.518391
+  type: 'test'
+  ...
+# Subtest: agent queries K and feedback through model-callable APIs instead of receiving the raw stores
+ok 230 - agent queries K and feedback through model-callable APIs instead of receiving the raw stores
+  ---
+  duration_ms: 5.597246
+  type: 'test'
+  ...
+# Subtest: Predict retries validation failures and feeds the failure back to the model adapter
+ok 231 - Predict retries validation failures and feeds the failure back to the model adapter
+  ---
+  duration_ms: 6.3932
+  type: 'test'
+  ...
+# Subtest: Predict fails with a stable operational error after the bounded validation budget
+ok 232 - Predict fails with a stable operational error after the bounded validation budget
+  ---
+  duration_ms: 1.846067
+  type: 'test'
+  ...
+# Subtest: Predict does not retry model/provider failures as if they were validation failures
+ok 233 - Predict does not retry model/provider failures as if they were validation failures
+  ---
+  duration_ms: 0.895974
+  type: 'test'
+  ...
+# Subtest: Predict model request contains structured call data but no capability invocation surface
+ok 234 - Predict model request contains structured call data but no capability invocation surface
+  ---
+  duration_ms: 1.118918
+  type: 'test'
+  ...
+# Subtest: Predict without a typed output boundary performs one focused model attempt
+ok 235 - Predict without a typed output boundary performs one focused model attempt
+  ---
+  duration_ms: 2.06446
+  type: 'test'
+  ...
+# Subtest: changing an agent instruction makes a previous process attestation stale
+ok 236 - changing an agent instruction makes a previous process attestation stale
+  ---
+  duration_ms: 17.298883
+  type: 'test'
+  ...
+# Subtest: three agents sharing one poisoned instruction remain one instruction fault domain
+ok 237 - three agents sharing one poisoned instruction remain one instruction fault domain
+  ---
+  duration_ms: 3.639377
+  type: 'test'
+  ...
+# Subtest: independence policy can require distinct instructions, evidence sources and execution environments
+ok 238 - independence policy can require distinct instructions, evidence sources and execution environments
+  ---
+  duration_ms: 2.740162
+  type: 'test'
+  ...
+# Subtest: declared control-input authority is not trusted without independent authority verification
+ok 239 - declared control-input authority is not trusted without independent authority verification
+  ---
+  duration_ms: 2.372727
+  type: 'test'
+  ...
+# Subtest: process attestation cannot elevate an untrusted base attestation
+ok 240 - process attestation cannot elevate an untrusted base attestation
+  ---
+  duration_ms: 3.286919
+  type: 'test'
+  ...
+# Subtest: semantic action key is stable across object key order and changes with candidate/action
+ok 241 - semantic action key is stable across object key order and changes with candidate/action
+  ---
+  duration_ms: 1.452945
+  type: 'test'
+  ...
+# Subtest: idempotent environment gives retries the same actionKey
+ok 242 - idempotent environment gives retries the same actionKey
+  ---
+  duration_ms: 0.341191
+  type: 'test'
+  ...
+# Subtest: createHarness passes deterministic actionKey to consumer environment
+ok 243 - createHarness passes deterministic actionKey to consumer environment
+  ---
+  duration_ms: 11.758465
+  type: 'test'
+  ...
+# Subtest: concurrent stale writes conflict instead of silently losing observations
+ok 244 - concurrent stale writes conflict instead of silently losing observations
+  ---
+  duration_ms: 1.605125
+  type: 'test'
+  ...
+# Subtest: revision-aware store cannot claim compatibility while omitting persisted revision
+ok 245 - revision-aware store cannot claim compatibility while omitting persisted revision
+  ---
+  duration_ms: 0.537514
+  type: 'test'
+  ...
+# Subtest: state migration contract requires every sequential version and preserves explicit result version
+ok 246 - state migration contract requires every sequential version and preserves explicit result version
+  ---
+  duration_ms: 0.268518
+  type: 'test'
+  ...
+# Subtest: non-strict observability failure is recorded without changing harness correctness
+ok 247 - non-strict observability failure is recorded without changing harness correctness
+  ---
+  duration_ms: 0.726664
+  type: 'test'
+  ...
+# Subtest: strict event bus makes telemetry loss explicit
+ok 248 - strict event bus makes telemetry loss explicit
+  ---
+  duration_ms: 0.218404
+  type: 'test'
+  ...
+# Subtest: non-stale interrupted work cannot be recovered implicitly
+ok 249 - non-stale interrupted work cannot be recovered implicitly
+  ---
+  duration_ms: 1.973618
+  type: 'test'
+  ...
+# Subtest: BB-007 restores runtime authority, applies confirmed effect truth, restores evidence, closes interruption, then explicitly resumes
+ok 250 - BB-007 restores runtime authority, applies confirmed effect truth, restores evidence, closes interruption, then explicitly resumes
+  ---
+  duration_ms: 23.732927
+  type: 'test'
+  ...
+# Subtest: BB-007 leaves the interrupted variation unresolved when effect ambiguity is NON_RECONCILABLE
+ok 251 - BB-007 leaves the interrupted variation unresolved when effect ambiguity is NON_RECONCILABLE
+  ---
+  duration_ms: 4.67447
+  type: 'test'
+  ...
+# Subtest: BB-007 machine-first IDEMPOTENT reconciliation retries before interrupted-variation closure
+ok 252 - BB-007 machine-first IDEMPOTENT reconciliation retries before interrupted-variation closure
+  ---
+  duration_ms: 9.832067
+  type: 'test'
+  ...
+# Subtest: ResourceRef progressively exposes declared metadata without serializing the live object
+ok 253 - ResourceRef progressively exposes declared metadata without serializing the live object
+  ---
+  duration_ms: 5.023182
+  type: 'test'
+  ...
+# Subtest: only declared resource operations are invokable; live methods are never reflected
+ok 254 - only declared resource operations are invokable; live methods are never reflected
+  ---
+  duration_ms: 1.495003
+  type: 'test'
+  ...
+# Subtest: CALL resources expire deterministically after the owning invocation
+ok 255 - CALL resources expire deterministically after the owning invocation
+  ---
+  duration_ms: 0.817359
+  type: 'test'
+  ...
+# Subtest: revoked AGENT resources fail deterministically
+ok 256 - revoked AGENT resources fail deterministically
+  ---
+  duration_ms: 0.506795
+  type: 'test'
+  ...
+# Subtest: a ref from another runtime cannot cross-resolve even when names match
+ok 257 - a ref from another runtime cannot cross-resolve even when names match
+  ---
+  duration_ms: 0.60176
+  type: 'test'
+  ...
+# Subtest: concurrent CALL scopes may use the same resource name without cross-resolution
+ok 258 - concurrent CALL scopes may use the same resource name without cross-resolution
+  ---
+  duration_ms: 5.943733
+  type: 'test'
+  ...
+# Subtest: CALL resources cannot shadow an AGENT resource name
+ok 259 - CALL resources cannot shadow an AGENT resource name
+  ---
+  duration_ms: 0.809692
+  type: 'test'
+  ...
+# Subtest: consumer authorization policy can deny a declared resource operation
+ok 260 - consumer authorization policy can deny a declared resource operation
+  ---
+  duration_ms: 0.875904
+  type: 'test'
+  ...
+# Subtest: resource-visible metadata and descriptions are bounded by policy
+ok 261 - resource-visible metadata and descriptions are bounded by policy
+  ---
+  duration_ms: 0.52801
+  type: 'test'
+  ...
+# Subtest: resource outputs must cross a stable JSON transport boundary
+ok 262 - resource outputs must cross a stable JSON transport boundary
+  ---
+  duration_ms: 0.897433
+  type: 'test'
+  ...
+# Subtest: Predict does not automatically forward ResourceRef or resource invocation authority to the model
+ok 263 - Predict does not automatically forward ResourceRef or resource invocation authority to the model
+  ---
+  duration_ms: 1.72745
+  type: 'test'
+  ...
+# Subtest: observability instrumentation preserves resource APIs without exposing live values
+ok 264 - observability instrumentation preserves resource APIs without exposing live values
+  ---
+  duration_ms: 0.680937
+  type: 'test'
+  ...
+# Subtest: resumable runtime requires an explicit compatibility tag
+ok 265 - resumable runtime requires an explicit compatibility tag
+  ---
+  duration_ms: 1.827392
+  type: 'test'
+  ...
+# Subtest: runtime snapshot preserves event chronology while omitting payloads by default
+ok 266 - runtime snapshot preserves event chronology while omitting payloads by default
+  ---
+  duration_ms: 9.899906
+  type: 'test'
+  ...
+# Subtest: SANITIZE payload mode never exposes raw ResourceRef authority to the sanitizer
+ok 267 - SANITIZE payload mode never exposes raw ResourceRef authority to the sanitizer
+  ---
+  duration_ms: 4.472688
+  type: 'test'
+  ...
+# Subtest: SANITIZE payload mode never exposes raw LIVE_OBJECT_REF authority to the sanitizer
+ok 268 - SANITIZE payload mode never exposes raw LIVE_OBJECT_REF authority to the sanitizer
+  ---
+  duration_ms: 3.351513
+  type: 'test'
+  ...
+# Subtest: snapshot refuses active agent, resource and live-object operations
+ok 269 - snapshot refuses active agent, resource and live-object operations
+  ---
+  duration_ms: 3.592258
+  type: 'test'
+  ...
+# Subtest: future schema, tampered digest, and incompatible configuration fail closed
+ok 270 - future schema, tampered digest, and incompatible configuration fail closed
+  ---
+  duration_ms: 2.468536
+  type: 'test'
+  ...
+# Subtest: active resources require explicit rebinding and restore with fresh authority refs
+ok 271 - active resources require explicit rebinding and restore with fresh authority refs
+  ---
+  duration_ms: 3.48621
+  type: 'test'
+  ...
+# Subtest: active live objects require explicit rebinding and restore with fresh authority refs
+ok 272 - active live objects require explicit rebinding and restore with fresh authority refs
+  ---
+  duration_ms: 5.479189
+  type: 'test'
+  ...
+# Subtest: live object authority surface changes invalidate snapshot compatibility
+ok 273 - live object authority surface changes invalidate snapshot compatibility
+  ---
+  duration_ms: 1.640591
+  type: 'test'
+  ...
+# Subtest: revoked resources stay revoked after restore and do not require rebinding
+ok 274 - revoked resources stay revoked after restore and do not require rebinding
+  ---
+  duration_ms: 1.550274
+  type: 'test'
+  ...
+# Subtest: revoked live objects stay revoked after restore and do not require rebinding
+ok 275 - revoked live objects stay revoked after restore and do not require rebinding
+  ---
+  duration_ms: 1.694545
+  type: 'test'
+  ...
+# Subtest: policy revision change invalidates an otherwise artifact-fresh search decision
+ok 276 - policy revision change invalidates an otherwise artifact-fresh search decision
+  ---
+  duration_ms: 15.100746
+  type: 'test'
+  ...
+# Subtest: validation is read-only and stale validated proposals fail before mutation
+ok 277 - validation is read-only and stale validated proposals fail before mutation
+  ---
+  duration_ms: 11.584671
+  type: 'test'
+  ...
+# Subtest: ABSTRACT creates a REFLECTION linked by DERIVED_FROM while preserving source memories
+ok 278 - ABSTRACT creates a REFLECTION linked by DERIVED_FROM while preserving source memories
+  ---
+  duration_ms: 2.177542
+  type: 'test'
+  ...
+# Subtest: RECONCILE creates an explicit replacement and archives contradictory sources
+ok 279 - RECONCILE creates an explicit replacement and archives contradictory sources
+  ---
+  duration_ms: 2.739559
+  type: 'test'
+  ...
+# Subtest: REINFORCE only revisions importance/confidence and cannot rewrite memory content
+ok 280 - REINFORCE only revisions importance/confidence and cannot rewrite memory content
+  ---
+  duration_ms: 0.786155
+  type: 'test'
+  ...
+# Subtest: FORGET archives rather than physically deleting memory
+ok 281 - FORGET archives rather than physically deleting memory
+  ---
+  duration_ms: 0.585906
+  type: 'test'
+  ...
+# Subtest: multi-step infrastructure failure is surfaced as explicit partial commit with applied steps
+ok 282 - multi-step infrastructure failure is surfaced as explicit partial commit with applied steps
+  ---
+  duration_ms: 1.144194
+  type: 'test'
+  ...
+# Subtest: proposal shape encodes operation semantics instead of accepting arbitrary reflection writes
+ok 283 - proposal shape encodes operation semantics instead of accepting arbitrary reflection writes
+  ---
+  duration_ms: 0.487077
+  type: 'test'
+  ...
+# Subtest: memory graph stores typed directed relations outside memory record revisions
+ok 284 - memory graph stores typed directed relations outside memory record revisions
+  ---
+  duration_ms: 2.547642
+  type: 'test'
+  ...
+# Subtest: graph queries preserve direction and type semantics without doing multi-hop retrieval
+ok 285 - graph queries preserve direction and type semantics without doing multi-hop retrieval
+  ---
+  duration_ms: 1.881578
+  type: 'test'
+  ...
+# Subtest: active relation identity is unique but archived history remains inspectable and may be replaced by a fresh edge
+ok 286 - active relation identity is unique but archived history remains inspectable and may be replaced by a fresh edge
+  ---
+  duration_ms: 8.485121
+  type: 'test'
+  ...
+# Subtest: stale relation archive fails with a relation-specific CAS conflict
+ok 287 - stale relation archive fails with a relation-specific CAS conflict
+  ---
+  duration_ms: 1.96596
+  type: 'test'
+  ...
+# Subtest: graph creation fails closed for self edges and unknown endpoints
+ok 288 - graph creation fails closed for self edges and unknown endpoints
+  ---
+  duration_ms: 0.532444
+  type: 'test'
+  ...
+# Subtest: archiving a memory does not erase graph provenance or silently deactivate relations
+ok 289 - archiving a memory does not erase graph provenance or silently deactivate relations
+  ---
+  duration_ms: 0.76142
+  type: 'test'
+  ...
+# Subtest: intelligence reranks authoritative retrieval candidates with explicit relevance-only signal fusion
+ok 290 - intelligence reranks authoritative retrieval candidates with explicit relevance-only signal fusion
+  ---
+  duration_ms: 4.437962
+  type: 'test'
+  ...
+# Subtest: bounded graph expansion can surface related active memory without pretending it was provider-retrieved
+ok 291 - bounded graph expansion can surface related active memory without pretending it was provider-retrieved
+  ---
+  duration_ms: 1.62231
+  type: 'test'
+  ...
+# Subtest: graph expansion cannot traverse through archived memory to resurrect downstream memory
+ok 292 - graph expansion cannot traverse through archived memory to resurrect downstream memory
+  ---
+  duration_ms: 2.515011
+  type: 'test'
+  ...
+# Subtest: graph-expanded candidates must satisfy the same tags, kinds and temporal admission filters
+ok 293 - graph-expanded candidates must satisfy the same tags, kinds and temporal admission filters
+  ---
+  duration_ms: 9.094196
+  type: 'test'
+  ...
+# Subtest: serialized result budget is kernel-owned after fusion
+ok 294 - serialized result budget is kernel-owned after fusion
+  ---
+  duration_ms: 1.053689
+  type: 'test'
+  ...
+# Subtest: unknown memory kind filter fails closed instead of silently producing no matches
+ok 295 - unknown memory kind filter fails closed instead of silently producing no matches
+  ---
+  duration_ms: 0.548835
+  type: 'test'
+  ...
+# Subtest: recall materializes authoritative memory records and preserves ranking provenance
+ok 296 - recall materializes authoritative memory records and preserves ranking provenance
+  ---
+  duration_ms: 2.927036
+  type: 'test'
+  ...
+# Subtest: search uses the same bounded contract with an explicit provider mode
+ok 297 - search uses the same bounded contract with an explicit provider mode
+  ---
+  duration_ms: 0.56107
+  type: 'test'
+  ...
+# Subtest: archived and tag-mismatched memories cannot leak through a stale retrieval index
+ok 298 - archived and tag-mismatched memories cannot leak through a stale retrieval index
+  ---
+  duration_ms: 1.066183
+  type: 'test'
+  ...
+# Subtest: retriever cannot fabricate memory IDs or duplicate ranking provenance
+ok 299 - retriever cannot fabricate memory IDs or duplicate ranking provenance
+  ---
+  duration_ms: 0.994625
+  type: 'test'
+  ...
+# Subtest: kernel-owned item and serialized-character budgets bound recall output
+ok 300 - kernel-owned item and serialized-character budgets bound recall output
+  ---
+  duration_ms: 0.672513
+  type: 'test'
+  ...
+# Subtest: retrieval results are detached views and never become truth or correctness evidence
+ok 301 - retrieval results are detached views and never become truth or correctness evidence
+  ---
+  duration_ms: 0.408262
+  type: 'test'
+  ...
+# Subtest: semantic memory is a separate lifecycle store with explicit creation provenance
+ok 302 - semantic memory is a separate lifecycle store with explicit creation provenance
+  ---
+  duration_ms: 2.147694
+  type: 'test'
+  ...
+# Subtest: rich memory semantics distinguish cognition roles without granting authority
+ok 303 - rich memory semantics distinguish cognition roles without granting authority
+  ---
+  duration_ms: 0.581021
+  type: 'test'
+  ...
+# Subtest: updates append provenance instead of rewriting origin
+ok 304 - updates append provenance instead of rewriting origin
+  ---
+  duration_ms: 0.829921
+  type: 'test'
+  ...
+# Subtest: memory kind and source origin are immutable across revision updates
+ok 305 - memory kind and source origin are immutable across revision updates
+  ---
+  duration_ms: 0.915871
+  type: 'test'
+  ...
+# Subtest: archive is a lifecycle state change rather than silent physical deletion
+ok 306 - archive is a lifecycle state change rather than silent physical deletion
+  ---
+  duration_ms: 1.304635
+  type: 'test'
+  ...
+# Subtest: compare-and-swap revision conflicts fail closed without overwriting stored memory
+ok 307 - compare-and-swap revision conflicts fail closed without overwriting stored memory
+  ---
+  duration_ms: 0.789153
+  type: 'test'
+  ...
+# Subtest: provider copies prevent callers from mutating persisted memory out of band
+ok 308 - provider copies prevent callers from mutating persisted memory out of band
+  ---
+  duration_ms: 0.383278
+  type: 'test'
+  ...
+# Subtest: metadata listing supports typed kind and temporal filters without pretending to be recall
+ok 309 - metadata listing supports typed kind and temporal filters without pretending to be recall
+  ---
+  duration_ms: 2.697984
+  type: 'test'
+  ...
+# Subtest: legacy stored records normalize into the rich model without inventing confidence or source lineage
+ok 310 - legacy stored records normalize into the rich model without inventing confidence or source lineage
+  ---
+  duration_ms: 0.669108
+  type: 'test'
+  ...
+# Subtest: rich semantic fields fail closed on invalid confidence, temporal interval, and duplicate source identity
+ok 311 - rich semantic fields fail closed on invalid confidence, temporal interval, and duplicate source identity
+  ---
+  duration_ms: 0.800627
+  type: 'test'
+  ...
+# Subtest: semantic-memory provenance rejects invalid turn identity
+ok 312 - semantic-memory provenance rejects invalid turn identity
+  ---
+  duration_ms: 0.244216
+  type: 'test'
+  ...
+# Subtest: SELF_GATED recalls again only when the derived query changes across model turns
+ok 313 - SELF_GATED recalls again only when the derived query changes across model turns
+  ---
+  duration_ms: 8.677946
+  type: 'test'
+  ...
+# Subtest: SELF_GATED reuses recall when the derived query remains stable
+ok 314 - SELF_GATED reuses recall when the derived query remains stable
+  ---
+  duration_ms: 2.765683
+  type: 'test'
+  ...
+# Subtest: PER_TASK recalls once per invocation even when the query source changes
+ok 315 - PER_TASK recalls once per invocation even when the query source changes
+  ---
+  duration_ms: 1.954826
+  type: 'test'
+  ...
+# Subtest: EVERY_TURN recalls on every model turn even when the query is unchanged
+ok 316 - EVERY_TURN recalls on every model turn even when the query is unchanged
+  ---
+  duration_ms: 1.820481
+  type: 'test'
+  ...
+# Subtest: available semantic memory is not visible unless the judgment explicitly selects the block
+ok 317 - available semantic memory is not visible unless the judgment explicitly selects the block
+  ---
+  duration_ms: 2.146735
+  type: 'test'
+  ...
+# Subtest: recalled memory stays under existing context serialized bounds and fails before model generation
+ok 318 - recalled memory stays under existing context serialized bounds and fails before model generation
+  ---
+  duration_ms: 2.023517
+  type: 'test'
+  ...
+# Subtest: declared trusted identities are insufficient without independent authority verification
+ok 319 - declared trusted identities are insufficient without independent authority verification
+  ---
+  duration_ms: 3.735049
+  type: 'test'
+  ...
+# Subtest: full authority chain is trusted only when issuer, evaluator and evidence authority verify independently
+ok 320 - full authority chain is trusted only when issuer, evaluator and evidence authority verify independently
+  ---
+  duration_ms: 1.41344
+  type: 'test'
+  ...
+# Subtest: trusted attestor cannot launder an untrusted evaluator
+ok 321 - trusted attestor cannot launder an untrusted evaluator
+  ---
+  duration_ms: 1.450304
+  type: 'test'
+  ...
+# Subtest: trusted attestor and evaluator cannot launder an untrusted evidence producer or environment
+ok 322 - trusted attestor and evaluator cannot launder an untrusted evidence producer or environment
+  ---
+  duration_ms: 0.631399
+  type: 'test'
+  ...
+# Subtest: evidence independence fails closed when verifier is the subject producer
+ok 323 - evidence independence fails closed when verifier is the subject producer
+  ---
+  duration_ms: 0.746967
+  type: 'test'
+  ...
+# Subtest: attestCurrentEvaluation resolves provenance environment independently for each verifier
+ok 324 - attestCurrentEvaluation resolves provenance environment independently for each verifier
+  ---
+  duration_ms: 14.646635
+  type: 'test'
+  ...
+# Subtest: attestation refuses to package an evaluation after its verification snapshot becomes stale
+ok 325 - attestation refuses to package an evaluation after its verification snapshot becomes stale
+  ---
+  duration_ms: 7.487878
+  type: 'test'
+  ...
+# Subtest: coordination trust fails when upstream verification attestation is only referenced but not trusted
+ok 326 - coordination trust fails when upstream verification attestation is only referenced but not trusted
+  ---
+  duration_ms: 4.017983
+  type: 'test'
+  ...
+# Subtest: coordination trust accepts exact upstream ref only after upstream verification boundary trust passes
+ok 327 - coordination trust accepts exact upstream ref only after upstream verification boundary trust passes
+  ---
+  duration_ms: 1.242698
+  type: 'test'
+  ...
+# Subtest: signed verification attestation is trusted only for exact subject, policy, environment, claims and issuer authority
+ok 328 - signed verification attestation is trusted only for exact subject, policy, environment, claims and issuer authority
+  ---
+  duration_ms: 20.009169
+  type: 'test'
+  ...
+# Subtest: subject or policy change makes an otherwise valid attestation stale
+ok 329 - subject or policy change makes an otherwise valid attestation stale
+  ---
+  duration_ms: 1.885861
+  type: 'test'
+  ...
+# Subtest: forged signature and missing required claim are independently visible trust failures
+ok 330 - forged signature and missing required claim are independently visible trust failures
+  ---
+  duration_ms: 2.818976
+  type: 'test'
+  ...
+# Subtest: tampered evidence body cannot pass by retaining the original digest field
+ok 331 - tampered evidence body cannot pass by retaining the original digest field
+  ---
+  duration_ms: 1.778057
+  type: 'test'
+  ...
+# Subtest: independent-issuer policy fails closed when subject producer authority is unknown or identical
+ok 332 - independent-issuer policy fails closed when subject producer authority is unknown or identical
+  ---
+  duration_ms: 4.128072
+  type: 'test'
+  ...
+# Subtest: attestation lineage can bind a coordination decision to upstream verification attestations
+ok 333 - attestation lineage can bind a coordination decision to upstream verification attestations
+  ---
+  duration_ms: 1.482079
+  type: 'test'
+  ...
+# Subtest: production facade materializes and persists verification evidence, decision and attestation
+ok 334 - production facade materializes and persists verification evidence, decision and attestation
+  ---
+  duration_ms: 13.412958
+  type: 'test'
+  ...
+# Subtest: built-in persistence migration upgrades v1 sessions to trust-capable v2 state
+ok 335 - built-in persistence migration upgrades v1 sessions to trust-capable v2 state
+  ---
+  duration_ms: 0.416051
+  type: 'test'
+  ...
+# Subtest: Predict resolves dynamic context once per model turn and receives runtime turn identity
+ok 336 - Predict resolves dynamic context once per model turn and receives runtime turn identity
+  ---
+  duration_ms: 7.978752
+  type: 'test'
+  ...
+# Subtest: CodeAct next turn observes trusted state changed by the previous turn action
+ok 337 - CodeAct next turn observes trusted state changed by the previous turn action
+  ---
+  duration_ms: 4.09372
+  type: 'test'
+  ...
+# Subtest: JavaScript CodeAct consumes a fresh prompt projection for every generated cell turn
+ok 338 - JavaScript CodeAct consumes a fresh prompt projection for every generated cell turn
+  ---
+  duration_ms: 5.909978
+  type: 'test'
+  ...
+# Subtest: turn-two context overflow fails before a second model generation and closes the prepared turn
+ok 339 - turn-two context overflow fails before a second model generation and closes the prepared turn
+  ---
+  duration_ms: 1.997915
+  type: 'test'
+  ...
+# Subtest: single-turn Predict does not pay an extra eager dynamic-context resolution
+ok 340 - single-turn Predict does not pay an extra eager dynamic-context resolution
+  ---
+  duration_ms: 1.219588
+  type: 'test'
+  ...
+# Subtest: CodeAct turn two sees completed turn-one model/action events but not the current TASK
+ok 341 - CodeAct turn two sees completed turn-one model/action events but not the current TASK
+  ---
+  duration_ms: 6.678839
+  type: 'test'
+  ...
+# Subtest: Predict retry history includes the previous model output and validation failure
+ok 342 - Predict retry history includes the previous model output and validation failure
+  ---
+  duration_ms: 1.80992
+  type: 'test'
+  ...
+# Subtest: per-turn reduction evolves from canonical events without rewriting them
+ok 343 - per-turn reduction evolves from canonical events without rewriting them
+  ---
+  duration_ms: 2.244002
+  type: 'test'
+  ...
+# Subtest: turn-aware selector cannot fabricate history provenance
+ok 344 - turn-aware selector cannot fabricate history provenance
+  ---
+  duration_ms: 1.320532
+  type: 'test'
+  ...
+# Subtest: history event bounds are re-applied to the evolved turn projection
+ok 345 - history event bounds are re-applied to the evolved turn projection
+  ---
+  duration_ms: 1.536941
+  type: 'test'
+  ...
+# Subtest: Predict emits exact runtime-only turn lifecycle across validation retry
+ok 346 - Predict emits exact runtime-only turn lifecycle across validation retry
+  ---
+  duration_ms: 6.033381
+  type: 'test'
+  ...
+# Subtest: CodeAct closes a turn only after its action phase before opening the next model turn
+ok 347 - CodeAct closes a turn only after its action phase before opening the next model turn
+  ---
+  duration_ms: 2.796442
+  type: 'test'
+  ...
+# Subtest: model failure closes the active turn exactly once as terminal ERROR
+ok 348 - model failure closes the active turn exactly once as terminal ERROR
+  ---
+  duration_ms: 1.019543
+  type: 'test'
+  ...
+# Subtest: typed judgment validates input before strategy execution
+ok 349 - typed judgment validates input before strategy execution
+  ---
+  duration_ms: 10.038261
+  type: 'test'
+  ...
+# Subtest: typed judgment rejects invalid output before it reaches the caller
+ok 350 - typed judgment rejects invalid output before it reaches the caller
+  ---
+  duration_ms: 1.107719
+  type: 'test'
+  ...
+# Subtest: judgment-local strategy overrides only that judgment
+ok 351 - judgment-local strategy overrides only that judgment
+  ---
+  duration_ms: 4.091545
+  type: 'test'
+  ...
+# Subtest: runtime exposes judgment metadata without exposing parser or strategy functions
+ok 352 - runtime exposes judgment metadata without exposing parser or strategy functions
+  ---
+  duration_ms: 0.389294
+  type: 'test'
+  ...
+# Subtest: duplicate judgment names fail fast
+ok 353 - duplicate judgment names fail fast
+  ---
+  duration_ms: 0.292834
+  type: 'test'
+  ...
+# Subtest: judgment report preserves generic run usage semantics
+ok 354 - judgment report preserves generic run usage semantics
+  ---
+  duration_ms: 0.777388
+  type: 'test'
+  ...
+# Subtest: observability instrumentation preserves the typed judgment surface
+ok 355 - observability instrumentation preserves the typed judgment surface
+  ---
+  duration_ms: 0.768547
+  type: 'test'
+  ...
+# Subtest: variation exposes P_t -> P_t+1 when the agent commits a candidate
+ok 356 - variation exposes P_t -> P_t+1 when the agent commits a candidate
+  ---
+  duration_ms: 11.990846
+  type: 'test'
+  ...
+# Subtest: variation can search without advancing committed lineage
+ok 357 - variation can search without advancing committed lineage
+  ---
+  duration_ms: 3.76265
+  type: 'test'
+  ...
+# Subtest: agent-reported progress cannot fake grounded variation activity
+ok 358 - agent-reported progress cannot fake grounded variation activity
+  ---
+  duration_ms: 7.162206
+  type: 'test'
+  ...
+# Subtest: candidate mutation is visible without pretending committed lineage advanced
+ok 359 - candidate mutation is visible without pretending committed lineage advanced
+  ---
+  duration_ms: 4.875185
+  type: 'test'
+  ...
+# Subtest: capability budget stops an unbounded harness-mediated loop and persists the exhausted run
+ok 360 - capability budget stops an unbounded harness-mediated loop and persists the exhausted run
+  ---
+  duration_ms: 2.401168
+  type: 'test'
+  ...
+# Subtest: strategy cannot hide budget exhaustion by catching the budget error
+ok 361 - strategy cannot hide budget exhaustion by catching the budget error
+  ---
+  duration_ms: 1.606757
+  type: 'test'
+  ...
+# Subtest: commit is terminal even when strategy catches the post-commit violation
+ok 362 - commit is terminal even when strategy catches the post-commit violation
+  ---
+  duration_ms: 3.782735
+  type: 'test'
+  ...
+# Subtest: failed directions remain grounded search state rather than being mislabeled as candidate progress
+ok 363 - failed directions remain grounded search state rather than being mislabeled as candidate progress
+  ---
+  duration_ms: 3.695019
+  type: 'test'
+  ...
+# Subtest: a started variation is persistent and blocks overlapping variation until recovery or completion
+ok 364 - a started variation is persistent and blocks overlapping variation until recovery or completion
+  ---
+  duration_ms: 4.128611
+  type: 'test'
+  ...
+# Subtest: repeating one verifier does not satisfy independent-source requirements
+ok 365 - repeating one verifier does not satisfy independent-source requirements
+  ---
+  duration_ms: 1.514811
+  type: 'test'
+  ...
+# Subtest: conflicting verification artifacts remain visible and block readiness
+ok 366 - conflicting verification artifacts remain visible and block readiness
+  ---
+  duration_ms: 0.261643
+  type: 'test'
+  ...
+# Subtest: AVO objective cannot pass before declared verification requirements are ready
+ok 367 - AVO objective cannot pass before declared verification requirements are ready
+  ---
+  duration_ms: 10.640404
+  type: 'test'
+  ...
+# Subtest: independent sources satisfy policy and objective receives the assessment
+ok 368 - independent sources satisfy policy and objective receives the assessment
+  ---
+  duration_ms: 3.842499
+  type: 'test'
+  ...
+# Subtest: new verification evidence invalidates a previous PASS before promotion
+ok 369 - new verification evidence invalidates a previous PASS before promotion
+  ---
+  duration_ms: 9.48336
+  type: 'test'
+  ...
+1..369
+# tests 369
+# suites 0
+# pass 369
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2354.728264
+
+
+exitCode=0

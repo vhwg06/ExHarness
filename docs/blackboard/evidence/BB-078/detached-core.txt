@@ -1,0 +1,115 @@
+TAP version 13
+# Subtest: detached handle returns before effect completion and unrelated work proceeds
+ok 1 - detached handle returns before effect completion and unrelated work proceeds
+  ---
+  duration_ms: 7.679043
+  type: 'test'
+  ...
+# Subtest: transition envelopes are monotonic with deterministic transition ids
+ok 2 - transition envelopes are monotonic with deterministic transition ids
+  ---
+  duration_ms: 2.408911
+  type: 'test'
+  ...
+# Subtest: repeated operation-update delivery deduplicates by transition id
+ok 3 - repeated operation-update delivery deduplicates by transition id
+  ---
+  duration_ms: 10.227275
+  type: 'test'
+  ...
+# Subtest: stale generation completion cannot overwrite current terminal state
+ok 4 - stale generation completion cannot overwrite current terminal state
+  ---
+  duration_ms: 1.247725
+  type: 'test'
+  ...
+# Subtest: concurrent store creation attaches instead of duplicating the operation
+ok 5 - concurrent store creation attaches instead of duplicating the operation
+  ---
+  duration_ms: 0.714293
+  type: 'test'
+  ...
+# Subtest: operation id reuses fail closed on binding mismatch
+ok 6 - operation id reuses fail closed on binding mismatch
+  ---
+  duration_ms: 1.338033
+  type: 'test'
+  ...
+# Subtest: derived operation ids bind exact call identity
+ok 7 - derived operation ids bind exact call identity
+  ---
+  duration_ms: 0.233054
+  type: 'test'
+  ...
+# Subtest: scheduler success cannot synthesize effect confirmation
+ok 8 - scheduler success cannot synthesize effect confirmation
+  ---
+  duration_ms: 1.018668
+  type: 'test'
+  ...
+# Subtest: successful raw return without journal confirmation converges unknown
+ok 9 - successful raw return without journal confirmation converges unknown
+  ---
+  duration_ms: 1.368761
+  type: 'test'
+  ...
+# Subtest: scheduler failure leaves the effect journal unconfirmed
+ok 10 - scheduler failure leaves the effect journal unconfirmed
+  ---
+  duration_ms: 1.386172
+  type: 'test'
+  ...
+# Subtest: unwrapped synchronous capabilities coexist unchanged with detached wrappers
+ok 11 - unwrapped synchronous capabilities coexist unchanged with detached wrappers
+  ---
+  duration_ms: 17.295564
+  type: 'test'
+  ...
+# Subtest: store transition survives a conflict caused by another operation write
+ok 12 - store transition survives a conflict caused by another operation write
+  ---
+  duration_ms: 0.754462
+  type: 'test'
+  ...
+# Subtest: store creation survives a conflict caused by another operation write
+ok 13 - store creation survives a conflict caused by another operation write
+  ---
+  duration_ms: 0.353484
+  type: 'test'
+  ...
+# Subtest: store diagnostic survives a conflict caused by another operation write
+ok 14 - store diagnostic survives a conflict caused by another operation write
+  ---
+  duration_ms: 0.556516
+  type: 'test'
+  ...
+# Subtest: store takeover survives a conflict caused by another operation write
+ok 15 - store takeover survives a conflict caused by another operation write
+  ---
+  duration_ms: 0.483988
+  type: 'test'
+  ...
+# Subtest: exhausted conflict retries fail loudly instead of silently winning
+ok 16 - exhausted conflict retries fail loudly instead of silently winning
+  ---
+  duration_ms: 0.843089
+  type: 'test'
+  ...
+# Subtest: two operations in one scope run and terminate concurrently
+ok 17 - two operations in one scope run and terminate concurrently
+  ---
+  duration_ms: 6.594606
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2098.678984
+
+
+exitCode=0

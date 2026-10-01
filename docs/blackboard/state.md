@@ -41,7 +41,7 @@ NONE
 ## Schedulable tasks
 
 - BB-057 [WORKER/EXECUTION] — Prove adversarial recovery across the end-to-end organization
-- BB-078 [WORKER/EXECUTION] — Implement durable detached operation scheduling
+- BB-079 [WORKER/EXECUTION] — Implement cache-stable async result context
 - BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [RESEARCH_SA/RESEARCH] — Allowlist agent-tools child environment
@@ -85,10 +85,10 @@ BB-074 [BLOCKED_BY BB-071,BB-073,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-0
 BB-075 [BLOCKED_BY BB-074,BB-059] <- BB-074, BB-059
 BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
 BB-077 [DONE] <- BB-065
-BB-078 [WORKER_SCHEDULABLE] <- BB-077
-BB-079 [BLOCKED_BY BB-078] <- BB-077, BB-078
-BB-080 [BLOCKED_BY BB-078,BB-079] <- BB-078, BB-079
-BB-081 [BLOCKED_BY BB-078,BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
+BB-078 [DONE] <- BB-077
+BB-079 [WORKER_SCHEDULABLE] <- BB-077, BB-078
+BB-080 [BLOCKED_BY BB-079] <- BB-078, BB-079
+BB-081 [BLOCKED_BY BB-079,BB-080] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
 BB-083 [BLOCKED_BY BB-059] <- BB-059, BB-064, BB-065
 BB-084 [BLOCKED_BY BB-058] <- BB-058, BB-064
