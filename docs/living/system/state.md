@@ -169,7 +169,7 @@ Execution facts remain split from judgment and publication: RuntimeExecutionAtte
 
 This slice proves one BUSINESS_ANALYSIS-owned domain execution path. It does not select Blackboard work, dispatch another organizational domain, change ApplicationOrchestrator lifecycle semantics, widen Oracle/Core authority, or implement Integration C-J.
 
-## Real coding-agent execution strategy (BB-066)
+## Real coding-agent execution strategy
 
 The controller now supports a real coding-agent execution strategy kind, `coding-agent-sdk`, backed by the opencode CLI (`packages/agentic-system/src/opencode-runtime-adapter.js`, driver `scripts/delivery/runtime/opencode_driver.mjs`). Strategy `opencode-local-v1` (opencode 1.18.34) binds one `runtimeInvocationKey` to exactly one durable opencode session: exclusive manifest creation, one `session-created` marker, bounded driver lifecycle (SIGTERM, 5s grace, SIGKILL), AbortSignal cancellation out-of-band, and recover that never resends the task prompt. Driver envelopes are validated (no `accepted`/`published`/verdict/mutation fields, changed paths inside allowed globs) and all evidence is content-addressed with secrets redacted before hashing. The adapter never accepts delivery or mutates Blackboard/Oracle authority; driver output is only a runtime result candidate.
 
