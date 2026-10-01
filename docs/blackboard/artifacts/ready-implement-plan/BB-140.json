@@ -27,7 +27,7 @@
   ],
   "architectureDecisions": [
     "D1 — EVAL_FLAGS add \"permission\" and \"timeout-ms\" only. Do not add K or max-attempts. commandEval overlays factors { permissionProfile, timeoutMs } into runAgentToolsEval, which already accepts factors = {} and spreads { ...factors, model }. K stays DEFAULT_FACTORS.K = 3. DELIVERED_TRUTH: evalFlagsHasPermission false, evalFlagsHasTimeoutMs false, evalFlagsHasK false, evalApiAcceptsFactors true, defaultFactorsHasPermission true, defaultFactorsHasTimeoutMs true.",
-    "D2 — Validation before registration. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError like commandRun. timeoutMs = positiveInteger(options[\"timeout-ms\"], \"--timeout-ms\", 600000). Unknown eval flags already throw UsageError via if (!EVAL_FLAGS.includes(flag)). USAGE eval line gains [--permission WORKSPACE_EDIT|FULL_AUTO] [--timeout-ms T].",
+    "D2 — Validation before registration. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError like commandRun. timeoutMs = positiveInteger(options[\"timeout-ms\"], \"--timeout-ms\", 600000). Unknown eval flags already throw UsageError via if (!EVAL_FLAGS.includes(flag)). USAGE eval line gains [--permission WORKSPACE_EDIT|FULL_AUTO] [--timeout-ms T]. Reject a missing CLI value (parser boolean true) unless timeout-ms is a string before calling positiveInteger; missing/boolean permission and timeout are UsageError exit64.",
     "D3 — Do not write experiment/index.js or arms.js. FACTOR_MISMATCH still aborts mismatched arms. Suite, arms, reduceAttempts and claim boundary stay BB-099. Passing explicit WORKSPACE_EDIT/600000 when omitted is identical to DEFAULT_FACTORS.",
     "D4 — Focused tests implement testContract: P1 actual registered factors in every arm, P2 explicit permission with omitted timeout, N1 invalid permission, N2 omitted defaults, distinct N3 non-positive/non-integer timeout and N4 unknown flag cases. Every usage failure exits 64 as existing main() does and has no registration/dispatch side effects.",
     "D5 — Living docs. evaluation.md USAGE and the fixed-factors list name optional CLI --permission/--timeout-ms, omitted WORKSPACE_EDIT/600000, K stays 3, unknown permission/non-positive timeout/unknown flags fail before registration. state.md eval sentence names the same flags. No Blackboard ids.",
@@ -139,7 +139,9 @@
   ],
   "negativeVerificationCases": [
     "Unknown --permission must fail before registration",
-    "Omitted --permission and --timeout-ms must keep DEFAULT_FACTORS"
+    "Omitted --permission and --timeout-ms must keep DEFAULT_FACTORS",
+    "Non-positive or malformed timeout fails before registration",
+    "Unknown eval flag fails before registration"
   ],
   "negativeCaseBindings": [
     {
@@ -158,6 +160,24 @@
       "verificationId": "focused",
       "testRef": "packages/agent-tools/test/eval-cli-factors.test.js",
       "testTitle": "BB-140 N2 Omitted --permission and --timeout-ms must keep DEFAULT_FACTORS",
+      "subjectSymbol": "runAgentToolsEval"
+    },
+    {
+      "id": "NEG_140_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "UNKNOWN_FACTORS_FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/eval-cli-factors.test.js",
+      "testTitle": "BB-140 N3 Non-positive or malformed timeout fails before registration",
+      "subjectSymbol": "runAgentToolsEval"
+    },
+    {
+      "id": "NEG_140_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "UNKNOWN_FACTORS_FAIL_CLOSED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/eval-cli-factors.test.js",
+      "testTitle": "BB-140 N4 Unknown eval flag fails before registration",
       "subjectSymbol": "runAgentToolsEval"
     }
   ],
@@ -266,7 +286,6 @@
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-099 for the protocol; BB-074 for end-to-end value"
   },
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
     {
       "objectiveCriterion": "exharness-agent eval --permission and --timeout-ms appear in the registered factors for every arm of that tool.",
