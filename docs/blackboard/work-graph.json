@@ -219,11 +219,24 @@
         "BUG-SUPERVISED-RESUME-BINDING",
         "FEATURE-LOCAL-PROTECTED-ACCEPTANCE",
         "FEATURE-OPERATOR-TOOL-PARITY",
-        "FEATURE-LOCAL-REVIEW-BUNDLE"
+        "FEATURE-LOCAL-REVIEW-BUNDLE",
+        "FEATURE-OPERATOR-RUN-RECOVERY",
+        "FEATURE-OPERATOR-DELIVER-OBSERVATION",
+        "FEATURE-OPERATOR-MCP-OPT-IN",
+        "FEATURE-OPERATOR-DELIVER-RUN-OPTIONS",
+        "FEATURE-OPERATOR-DELIVER-LIMITS",
+        "FEATURE-OPERATOR-EVAL-FACTORS",
+        "FEATURE-OPERATOR-SMOKE-OPTIONS",
+        "FEATURE-ADAPTER-EXECUTE-RECOVERY",
+        "FEATURE-ADAPTER-MCP-OPT-IN",
+        "FEATURE-OPERATOR-DELIVER-TOOL"
       ],
       "artifactRefs": [
         "docs/blackboard/process/agent-tool-productization.md",
-        "docs/blackboard/evidence/BB-100/productization-probe-result.json"
+        "docs/blackboard/evidence/BB-100/productization-probe-result.json",
+        "docs/blackboard/process/operator-cli-composition.md",
+        "docs/blackboard/process/operator-cli-factor-parity.md",
+        "docs/blackboard/process/application-adapter-composition.md"
       ]
     },
     {
@@ -1205,6 +1218,146 @@
         "docs/blackboard/process/delivery-capability-discovery.md"
       ],
       "acceptanceTaskId": "BB-133"
+    },
+    {
+      "id": "FEATURE-OPERATOR-RUN-RECOVERY",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Expose durable recovery on the operator run command",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-135"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/operator-cli-composition.md"
+      ],
+      "acceptanceTaskId": "BB-135"
+    },
+    {
+      "id": "FEATURE-OPERATOR-DELIVER-OBSERVATION",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Wire observation traces through the local deliver slice",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-136"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/operator-cli-composition.md"
+      ],
+      "acceptanceTaskId": "BB-136"
+    },
+    {
+      "id": "FEATURE-OPERATOR-MCP-OPT-IN",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Opt in delivered MCP verify/status from operator CLI",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-137"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/operator-cli-composition.md"
+      ],
+      "acceptanceTaskId": "BB-137"
+    },
+    {
+      "id": "FEATURE-OPERATOR-DELIVER-RUN-OPTIONS",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Forward run permission and model options through deliver",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-138"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/operator-cli-composition.md"
+      ],
+      "acceptanceTaskId": "BB-138"
+    },
+    {
+      "id": "FEATURE-OPERATOR-DELIVER-LIMITS",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Expose deliver CLI max-attempts and timeout-ms",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-139"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/operator-cli-factor-parity.md"
+      ],
+      "acceptanceTaskId": "BB-139"
+    },
+    {
+      "id": "FEATURE-OPERATOR-EVAL-FACTORS",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Pin eval permission and timeout factors from the operator CLI",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-140"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/operator-cli-factor-parity.md"
+      ],
+      "acceptanceTaskId": "BB-140"
+    },
+    {
+      "id": "FEATURE-OPERATOR-SMOKE-OPTIONS",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Forward run model, permission and traces through smoke",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-141"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/operator-cli-factor-parity.md"
+      ],
+      "acceptanceTaskId": "BB-141"
+    },
+    {
+      "id": "FEATURE-ADAPTER-EXECUTE-RECOVERY",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Persist durable recovery through the Application supervised Backend adapter",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-142"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/application-adapter-composition.md"
+      ],
+      "acceptanceTaskId": "BB-142"
+    },
+    {
+      "id": "FEATURE-ADAPTER-MCP-OPT-IN",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Opt in delivered MCP verify/status from the Application adapter",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-143"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/application-adapter-composition.md"
+      ],
+      "acceptanceTaskId": "BB-143"
+    },
+    {
+      "id": "FEATURE-OPERATOR-DELIVER-TOOL",
+      "topicId": "TOPIC-AGENT-TOOL-PRODUCTIZATION",
+      "kind": "FEATURE",
+      "title": "Expose deliver CLI tool override",
+      "status": "PLANNED",
+      "taskIds": [
+        "BB-144"
+      ],
+      "artifactRefs": [
+        "docs/blackboard/process/application-adapter-composition.md"
+      ],
+      "acceptanceTaskId": "BB-144"
     }
   ],
   "tasks": [
@@ -4588,7 +4741,7 @@
     {
       "id": "BB-121",
       "featureId": "FEATURE-AGENT-TOOL-DURABLE-BOARD",
-      "title": "Compose supervised agent-tools as durable Backend\u2192QA execution",
+      "title": "Compose supervised agent-tools as durable Backend→QA execution",
       "kind": "RESEARCH",
       "status": "PLANNED",
       "complexity": "L",
@@ -5531,10 +5684,688 @@
       },
       "lane": "WORKER",
       "phase": "EXECUTION"
+    },
+    {
+      "id": "BB-135",
+      "featureId": "FEATURE-OPERATOR-RUN-RECOVERY",
+      "title": "Expose durable recovery on the operator run command",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-101",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-135.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-135.json",
+          "docs/blackboard/process/operator-cli-composition.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-135/cli-composition-audit.mjs",
+          "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+          "docs/blackboard/evidence/BB-135/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/recovery.md",
+          "docs/living/system/agent-tools/operator.md"
+        ]
+      },
+      "expectedOutputs": [
+        "exharness-agent run with a recovery directory persists the handle and resumes the same attempt after a simulated crash; source HEAD, branches and working tree stay unchanged.",
+        "A run without a recovery directory still disposes the temporary worktree. A second first-run against a current handle, a mismatched task, or a completed handle fails closed before spawning a new lineage.",
+        "Fresh exact Jev readiness; local CLI recovery is not first-slice or live-value evidence."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-135-CHECK-1",
+          "title": "Ratify exact CLI/manifest mapping on delivered seams",
+          "schedulable": false
+        },
+        {
+          "id": "BB-135-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-135-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-135.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-135.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-136",
+      "featureId": "FEATURE-OPERATOR-DELIVER-OBSERVATION",
+      "title": "Wire observation traces through the local deliver slice",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-098",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-104",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-136.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-136.json",
+          "docs/blackboard/process/operator-cli-composition.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-136/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/observation.md",
+          "docs/living/system/agent-tools/operator.md"
+        ]
+      },
+      "expectedOutputs": [
+        "deliver with a trace directory writes one digest-chained trace per Backend attempt; report verifies the chain and prints descriptive counts.",
+        "deliver without a trace directory remains unchanged. A broken chain still fails report. QA-only or TOOL_UNAVAILABLE slices never fabricate a successful Backend trace.",
+        "Fresh exact Jev readiness; traces remain evidence only."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-136-CHECK-1",
+          "title": "Ratify exact CLI/manifest mapping on delivered seams",
+          "schedulable": false
+        },
+        {
+          "id": "BB-136-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-136-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-136.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-136.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-137",
+      "featureId": "FEATURE-OPERATOR-MCP-OPT-IN",
+      "title": "Opt in delivered MCP verify/status from operator CLI",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-103",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-104",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-137.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-137.json",
+          "docs/blackboard/process/operator-cli-composition.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-137/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/mcp.md",
+          "docs/living/system/agent-tools/operator.md"
+        ]
+      },
+      "expectedOutputs": [
+        "An explicit opt-in starts the delivered verify/status server for that run or deliver Backend stage and stops it before worktree disposal.",
+        "Default CLI invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
+        "Fresh exact Jev readiness; MCP remains a query transport."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-137-CHECK-1",
+          "title": "Ratify exact CLI/manifest mapping on delivered seams",
+          "schedulable": false
+        },
+        {
+          "id": "BB-137-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-137-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-137.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-137.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-138",
+      "featureId": "FEATURE-OPERATOR-DELIVER-RUN-OPTIONS",
+      "title": "Forward run permission and model options through deliver",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-104",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-138.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-138.json",
+          "docs/blackboard/process/operator-cli-composition.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-138/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/operator.md"
+        ]
+      },
+      "expectedOutputs": [
+        "A deliver manifest or CLI override can set permission and model; the Backend supervised run receives those values.",
+        "Unknown permission values, non-string models and extra unknown option types fail closed before any agent process starts. Omitted fields keep the delivered run defaults.",
+        "Fresh exact Jev readiness; this is run-option parity, not tool-id parity."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-138-CHECK-1",
+          "title": "Ratify exact CLI/manifest mapping on delivered seams",
+          "schedulable": false
+        },
+        {
+          "id": "BB-138-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-138-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-138.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-138.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-139",
+      "featureId": "FEATURE-OPERATOR-DELIVER-LIMITS",
+      "title": "Expose deliver CLI max-attempts and timeout-ms",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-104",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-139.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-139.json",
+          "docs/blackboard/process/operator-cli-factor-parity.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-139/cli-factor-audit.mjs",
+          "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
+          "docs/blackboard/evidence/BB-139/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/operator.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "exharness-agent deliver --max-attempts and --timeout-ms reach the Backend supervised run; CLI values override the manifest the same way --recovery-dir already does.",
+        "Omitted flags keep manifest or default limits. Non-positive or non-integer values fail as usage errors before spawn.",
+        "Fresh exact Jev readiness; local CLI limits are not first-slice or live-value evidence."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-139-CHECK-1",
+          "title": "Ratify exact CLI/manifest mapping on delivered seams",
+          "schedulable": false
+        },
+        {
+          "id": "BB-139-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-139-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-139.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-139.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-140",
+      "featureId": "FEATURE-OPERATOR-EVAL-FACTORS",
+      "title": "Pin eval permission and timeout factors from the operator CLI",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-099",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-140.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-140.json",
+          "docs/blackboard/process/operator-cli-factor-parity.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-140/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/evaluation.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "exharness-agent eval --permission and --timeout-ms appear in the registered factors for every arm of that tool.",
+        "Unknown permission, non-positive timeout and unknown eval flags fail as usage errors before any attempt starts. Omitted flags keep WORKSPACE_EDIT and 600000.",
+        "Fresh exact Jev readiness; eval factors are not a live-value claim."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-140-CHECK-1",
+          "title": "Ratify exact CLI/manifest mapping on delivered seams",
+          "schedulable": false
+        },
+        {
+          "id": "BB-140-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-140-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-140.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-140.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-141",
+      "featureId": "FEATURE-OPERATOR-SMOKE-OPTIONS",
+      "title": "Forward run model, permission and traces through smoke",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-097",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-098",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-141.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-141.json",
+          "docs/blackboard/process/operator-cli-factor-parity.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-141/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/state.md",
+          "docs/living/system/agent-tools/observation.md"
+        ]
+      },
+      "expectedOutputs": [
+        "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
+        "Unknown permission fails as a usage error before spawn. Omitted flags keep current smoke defaults. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+        "Fresh exact Jev readiness; smoke options are not a live-value claim."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-141-CHECK-1",
+          "title": "Ratify exact CLI/manifest mapping on delivered seams",
+          "schedulable": false
+        },
+        {
+          "id": "BB-141-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-141-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-141.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-141.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-142",
+      "featureId": "FEATURE-ADAPTER-EXECUTE-RECOVERY",
+      "title": "Persist durable recovery through the Application supervised Backend adapter",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "agentic/backend-qa-execution",
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-100",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-101",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-142.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-142.json",
+          "docs/blackboard/process/application-adapter-composition.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-142/adapter-composition-audit.mjs",
+          "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+          "docs/blackboard/evidence/BB-142/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/state.md",
+          "docs/living/system/agentic-application/capabilities.md"
+        ]
+      },
+      "expectedOutputs": [
+        "runSupervisedBackendWork with a recovery directory persists the delivered handle during Application execute; source HEAD, branches and working tree stay unchanged.",
+        "Omitting recoveryDir still disposes the temporary worktree. A second first-run against a current handle fails closed before spawning a new lineage. recover/resume stays the BB-121 factory owner.",
+        "Fresh exact Jev readiness; adapter persist is not first-slice or live-value evidence."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-142-CHECK-1",
+          "title": "Ratify exact recoveryDir persist-only mapping on the delivered adapter",
+          "schedulable": false
+        },
+        {
+          "id": "BB-142-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-142-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-142.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-142.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-143",
+      "featureId": "FEATURE-ADAPTER-MCP-OPT-IN",
+      "title": "Opt in delivered MCP verify/status from the Application adapter",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "agentic/backend-qa-execution",
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-100",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        },
+        {
+          "taskId": "BB-103",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-143.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-143.json",
+          "docs/blackboard/process/application-adapter-composition.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-143/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agentic-application/state.md",
+          "docs/living/system/agentic-application/capabilities.md"
+        ]
+      },
+      "expectedOutputs": [
+        "An explicit mcpVerify opt-in starts the delivered verify/status server for that Application execute and stops it before worktree disposal.",
+        "Default adapter invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
+        "Fresh exact Jev readiness; adapter MCP is not a live-value claim."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-143-CHECK-1",
+          "title": "Ratify exact mcpVerify opt-in mapping on the delivered adapter",
+          "schedulable": false
+        },
+        {
+          "id": "BB-143-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-143-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-143.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-143.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
+    },
+    {
+      "id": "BB-144",
+      "featureId": "FEATURE-OPERATOR-DELIVER-TOOL",
+      "title": "Expose deliver CLI tool override",
+      "kind": "RESEARCH",
+      "status": "PLANNED",
+      "complexity": "S",
+      "components": [
+        "integration/agent-tools"
+      ],
+      "dependencies": [
+        {
+          "taskId": "BB-104",
+          "requires": [
+            "TASK_OUTPUT"
+          ]
+        }
+      ],
+      "artifacts": {
+        "inputRefs": [
+          "docs/blackboard/artifacts/objective/BB-144.json",
+          "docs/blackboard/artifacts/ready-implement-plan/BB-144.json",
+          "docs/blackboard/process/application-adapter-composition.md"
+        ],
+        "outputRefs": [
+          "docs/blackboard/evidence/BB-144/discovery.json"
+        ],
+        "consolidatedRefs": [
+          "docs/living/system/agent-tools/operator.md",
+          "docs/living/system/agent-tools/state.md"
+        ]
+      },
+      "expectedOutputs": [
+        "exharness-agent deliver --tool reaches commandDeliver and overrides the manifest the same way --recovery-dir already does.",
+        "Omitted --tool keeps the manifest tool. Unknown tool ids fail as usage errors before spawn.",
+        "Fresh exact Jev readiness; deliver CLI tool override is not a live-value claim."
+      ],
+      "subtasks": [
+        {
+          "id": "BB-144-CHECK-1",
+          "title": "Ratify exact CLI/manifest tool mapping on delivered seams",
+          "schedulable": false
+        },
+        {
+          "id": "BB-144-CHECK-2",
+          "title": "Run discriminating fake-CLI positive/negative fixture",
+          "schedulable": false
+        },
+        {
+          "id": "BB-144-CHECK-3",
+          "title": "Finalize exact plan and independent Jev readiness",
+          "schedulable": false
+        }
+      ],
+      "currentContextRef": null,
+      "claim": null,
+      "contract": {
+        "objectiveRef": "docs/blackboard/artifacts/objective/BB-144.json",
+        "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-144.json",
+        "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f"
+      },
+      "lane": "RESEARCH_SA",
+      "phase": "RESEARCH"
     }
   ],
   "allocation": {
-    "nextWorkId": "BB-135",
+    "nextWorkId": "BB-145",
     "executionUnit": "TASK",
     "contextRoutingUnit": "COMPONENT",
     "workerOwnership": "ONE_TASK_PER_CLAIM"

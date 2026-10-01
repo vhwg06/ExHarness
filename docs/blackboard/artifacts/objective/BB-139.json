@@ -1,0 +1,30 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-139",
+  "outcome": "An operator can override the local deliver Backend attempt limit and invocation timeout from the CLI using the options `commandDeliver` already accepts.",
+  "currentProblem": "commandDeliver already reads maxAttempts and timeoutMs and runDeliverSlice already applies them. commandDeliverCli never forwards --max-attempts or --timeout-ms, so deliver CLI always uses the manifest or the 3/600000 defaults.",
+  "scope": [
+    "agent-tools.operator.deliver-limits"
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse delivered commandDeliver and runDeliverSlice option handling. Do not change permission/model ownership of BB-138 or the tool whitelist of BB-128.",
+    "Omitted CLI flags keep the manifest value, then the delivered 3/600000 defaults. Invalid integers fail closed before any agent process starts.",
+    "No sandbox, SCM push, MCP promote, or live-value claim."
+  ],
+  "successCriteria": [
+    "exharness-agent deliver --max-attempts and --timeout-ms reach the Backend supervised run; CLI values override the manifest the same way --recovery-dir already does.",
+    "Omitted flags keep manifest or default limits. Non-positive or non-integer values fail as usage errors before spawn.",
+    "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/operator-cli-factor-parity.md",
+    "docs/blackboard/evidence/BB-139/cli-factor-audit.mjs",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "packages/agent-tools/src/deliver-slice.js",
+    "docs/living/system/agent-tools/operator.md",
+    "docs/living/system/agent-tools/state.md"
+  ]
+}

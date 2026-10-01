@@ -1,0 +1,181 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "READY_IMPLEMENT_PLAN",
+  "artifactId": "BB-143",
+  "status": "DRAFT",
+  "objective": {
+    "ref": "docs/blackboard/artifacts/objective/BB-143.json",
+    "hash": "db6caf5a7632efe2101e738eb2c6939666e439c79cc4251fdbdd2f33cbadf34d"
+  },
+  "scope": [
+    "agentic.backend-qa-execution.adapter-mcp"
+  ],
+  "outOfScope": [
+    "Adding promote, accept, merge or credential MCP tools.",
+    "Writing user CLI configuration or changing adapter argv.",
+    "Operator CLI MCP opt-in owned by BB-137."
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse the delivered MCP server. Default remains off. Promote, accept, merge and credential tools stay forbidden.",
+    "Do not edit createBackendWorker or backend-worker.js. Operator CLI MCP opt-in stays BB-137.",
+    "No sandbox, SCM push, or live-value claim. MCP remains a query transport, not acceptance authority."
+  ],
+  "invariants": [
+    "Default adapter invocations never construct the MCP server.",
+    "MCP tools cannot promote, accept, merge or mint credentials.",
+    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+  ],
+  "architectureDecisions": [
+    "Accept optional mcpVerify on runSupervisedBackendWork and forward it to runSupervisedTask.mcpVerify. Default false/omitted keeps current construction-free behavior.",
+    "Keep the delivered verify/status tool set and planted-promote rejection. Do not add an MCP SDK dependency."
+  ],
+  "sourceSeams": {
+    "requiredExisting": [
+      "packages/agentic-system/src/supervised-backend.js",
+      "packages/agent-tools/src/mcp-server.js",
+      "packages/agent-tools/src/supervisor.js",
+      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json",
+      "docs/blackboard/process/application-adapter-composition.md"
+    ],
+    "expectedNew": [
+      "packages/agentic-system/test/bb143-adapter-mcp.test.js"
+    ],
+    "expectedTests": [
+      "packages/agentic-system/test/bb143-adapter-mcp.test.js"
+    ]
+  },
+  "sourceScope": {
+    "read": [
+      "packages/agentic-system/src/supervised-backend.js",
+      "packages/agent-tools/src/mcp-server.js",
+      "packages/agent-tools/src/supervisor.js",
+      "packages/agentic-system/src/**",
+      "packages/agentic-system/test/**",
+      "packages/agent-tools/test/fixtures/fake-agent.mjs",
+      "docs/blackboard/process/application-adapter-composition.md",
+      "docs/blackboard/evidence/BB-142/adapter-composition-audit.json"
+    ],
+    "write": [
+      "packages/agentic-system/src/supervised-backend.js",
+      "packages/agentic-system/test/bb143-adapter-mcp.test.js",
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "forbiddenWrite": [
+      "packages/core-harness/**",
+      "packages/oracle/**",
+      "packages/agent-tools/**",
+      "packages/agentic-system/src/backend-worker.js",
+      "packages/benchmark/**",
+      "docs/blackboard/**",
+      ".github/**"
+    ]
+  },
+  "implementationSlices": [
+    "S1 — Pin the adapter mcpVerify opt-in, default-off behavior and planted-promote rejection in research; proposed test files are not claimed to exist.",
+    "S2 — After fresh READY, forward mcpVerify only when opted in on runSupervisedBackendWork.",
+    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "ADAPTER_MCP_OPT_IN",
+      "statement": "An explicit mcpVerify opt-in starts the delivered verify/status server for that Application execute and stops it before worktree disposal.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+      ]
+    },
+    {
+      "id": "ADAPTER_MCP_DEFAULT_OFF",
+      "statement": "Default adapter invocations never construct the server. Unknown or planted promote tool names are rejected. Missing opt-in cannot change adapter argv or write user CLI config.",
+      "verificationIds": [
+        "focused"
+      ],
+      "evidenceRequired": [
+        "Named subject-invoking fixture tests and exact candidate-bound logs; the adapter audit is motivation only."
+      ]
+    }
+  ],
+  "verificationPlan": [
+    {
+      "id": "focused",
+      "command": "node --test packages/agentic-system/test/bb143-adapter-mcp.test.js"
+    },
+    {
+      "id": "agentic-regression",
+      "command": "npm run test:agentic"
+    },
+    {
+      "id": "docs",
+      "command": "npm run verify:current-docs"
+    }
+  ],
+  "invariantCoverage": [
+    {
+      "invariant": "Default adapter invocations never construct the MCP server.",
+      "criterionIds": [
+        "ADAPTER_MCP_DEFAULT_OFF"
+      ]
+    },
+    {
+      "invariant": "MCP tools cannot promote, accept, merge or mint credentials.",
+      "criterionIds": [
+        "ADAPTER_MCP_DEFAULT_OFF"
+      ]
+    },
+    {
+      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
+      "criterionIds": [
+        "ADAPTER_MCP_OPT_IN",
+        "ADAPTER_MCP_DEFAULT_OFF"
+      ]
+    }
+  ],
+  "negativeVerificationCases": [
+    "Default runSupervisedBackendWork must not construct the MCP server",
+    "Planted promote tool names must be rejected"
+  ],
+  "negativeCaseBindings": [
+    {
+      "id": "NEG_143_1",
+      "negativeCaseIndex": 0,
+      "criterionId": "ADAPTER_MCP_DEFAULT_OFF",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/bb143-adapter-mcp.test.js",
+      "testTitle": "BB-143 N1 Default runSupervisedBackendWork must not construct the MCP server",
+      "subjectSymbol": "runSupervisedBackendWork"
+    },
+    {
+      "id": "NEG_143_2",
+      "negativeCaseIndex": 1,
+      "criterionId": "ADAPTER_MCP_DEFAULT_OFF",
+      "verificationId": "focused",
+      "testRef": "packages/agentic-system/test/bb143-adapter-mcp.test.js",
+      "testTitle": "BB-143 N2 Planted promote tool names must be rejected",
+      "subjectSymbol": "runSupervisedBackendWork"
+    }
+  ],
+  "researchGaps": [
+    "Ratify whether mcpVerify true versus { stdin, stdout } is the Application contract, and whether Living Application docs name the opt-in field, before Jev.",
+    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
+  ],
+  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "livingDocs": {
+    "refs": [
+      "docs/living/system/agentic-application/state.md",
+      "docs/living/system/agentic-application/capabilities.md"
+    ],
+    "questionId": "LIVING_DOCS",
+    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+  },
+  "valueHypothesis": {
+    "expectedValue": "Application execute can opt into the same verify/status MCP transport the supervisor already starts for operator run.",
+    "measurement": "Fake-CLI adapter fixture with mcpVerify true exposes verify/status and rejects a planted promote tool; default construct count stays zero.",
+    "evidenceClass": "RESEARCH_DESIRED_STATE",
+    "valueOwner": "BB-100 for the adapter; BB-103 for MCP; BB-074 for end-to-end value"
+  }
+}

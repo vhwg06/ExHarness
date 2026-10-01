@@ -1,6 +1,7 @@
 # Delivery value and improvement discovery
 
 Checked: 2026-09-30. Source baseline: `29935fa23cb19af278a6fa8db68b9448bc6b1a0e`. Routing refreshed at `939a5893f418d2adbbf498744bb53b593c9a8642` (BB-104 is now DONE). Status: **RESEARCH DISCOVERY; BB-124..130 DRAFT, not READY or delivered**.
+2026-10-01 delivery evaluation (see [research roadmap](research-roadmap.md)): BB-124/125/127/128/129/130 can enter implementation after research READY (and their listed dependencies). BB-126 stays a deferred optimization until baseline, target, and independent quality controls exist. BB-122 OpenCode is now DONE, so BB-128's worker dependencies are delivered.
 
 User direction: improve what is weak, and research capabilities that can ship with a large effect on delivery value. The scope here is the delivered local agent-tool path. No previous objective, plan or Jev judgment is rewritten.
 
@@ -64,7 +65,7 @@ Primary source ledger: `docs/blackboard/evidence/BB-130/research-sources.json`. 
 | 128 | Expose delivered Grok and OpenCode adapters through operator delivery | BB-104, BB-122 | One manifest-to-Backend-to-QA fixture per supported adapter; optional live smoke separately labelled feasibility, not value. |
 | 129 | Export a durable review bundle for the exact local candidate | BB-127 | Exact candidate tree reconstructed in a fresh clone with no source worktree/conversation; timed reviewer steps and replay coverage. |
 
-Task ids are BB-124..130; each task has a distinct Feature/Bug, exact objective, DRAFT plan, explicit components, proposed file scope, named negative tests and one discovery artifact. Embedded subtasks are checklists, not scheduling units. Allocation advances to BB-131.
+Task ids are BB-124..130; each task has a distinct Feature/Bug, exact objective, DRAFT plan, explicit components, proposed file scope, named negative tests and one discovery artifact. Embedded subtasks are checklists, not scheduling units. This wave's original allocation advanced to BB-131. Operator CLI composition of already-delivered supervisor APIs is a later registered wave (BB-135..137); remaining command factor parity is BB-139..140; Application adapter composition is BB-142..143. See [operator-cli-composition.md](operator-cli-composition.md), [operator-cli-factor-parity.md](operator-cli-factor-parity.md) and [application-adapter-composition.md](application-adapter-composition.md). Current next allocation is BB-145.
 
 ## Delivery order
 

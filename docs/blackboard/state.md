@@ -17,7 +17,7 @@ integration-roadmap-ref: docs/living/knowledge/integration-phase-research-to-imp
 
 ```text
 phase: INTEGRATION
-next-work-id: BB-135
+next-work-id: BB-145
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
@@ -58,6 +58,16 @@ NONE
 - BB-132 [RESEARCH_SA/RESEARCH] — Verify local web feature journeys through an independently pinned browser evaluator
 - BB-133 [RESEARCH_SA/RESEARCH] — Verify API compatibility and persisted state for local feature changes
 - BB-134 [WORKER/EXECUTION] — Carry every executed verification log through trusted Jev CI bundles
+- BB-135 [RESEARCH_SA/RESEARCH] — Expose durable recovery on the operator run command
+- BB-136 [RESEARCH_SA/RESEARCH] — Wire observation traces through the local deliver slice
+- BB-137 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from operator CLI
+- BB-138 [RESEARCH_SA/RESEARCH] — Forward run permission and model options through deliver
+- BB-139 [RESEARCH_SA/RESEARCH] — Expose deliver CLI max-attempts and timeout-ms
+- BB-140 [RESEARCH_SA/RESEARCH] — Pin eval permission and timeout factors from the operator CLI
+- BB-141 [RESEARCH_SA/RESEARCH] — Forward run model, permission and traces through smoke
+- BB-142 [RESEARCH_SA/RESEARCH] — Persist durable recovery through the Application supervised Backend adapter
+- BB-143 [RESEARCH_SA/RESEARCH] — Opt in delivered MCP verify/status from the Application adapter
+- BB-144 [RESEARCH_SA/RESEARCH] — Expose deliver CLI tool override
 
 ## Dependency graph
 
@@ -135,6 +145,16 @@ BB-131 [RESEARCH_SCHEDULABLE] <- BB-104, BB-130
 BB-132 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
 BB-133 [RESEARCH_SCHEDULABLE] <- BB-054, BB-131, BB-127
 BB-134 [WORKER_SCHEDULABLE] <- BB-056
+BB-135 [RESEARCH_SCHEDULABLE] <- BB-101
+BB-136 [RESEARCH_SCHEDULABLE] <- BB-098, BB-104
+BB-137 [RESEARCH_SCHEDULABLE] <- BB-103, BB-104
+BB-138 [RESEARCH_SCHEDULABLE] <- BB-104
+BB-139 [RESEARCH_SCHEDULABLE] <- BB-104
+BB-140 [RESEARCH_SCHEDULABLE] <- BB-099
+BB-141 [RESEARCH_SCHEDULABLE] <- BB-097, BB-098
+BB-142 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101
+BB-143 [RESEARCH_SCHEDULABLE] <- BB-100, BB-103
+BB-144 [RESEARCH_SCHEDULABLE] <- BB-104
 ```
 
 ## Context semantics

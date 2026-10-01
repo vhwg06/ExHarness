@@ -1,0 +1,31 @@
+{
+  "kind": "BLACKBOARD_ARTIFACT",
+  "version": 1,
+  "artifactType": "OBJECTIVE",
+  "artifactId": "BB-141",
+  "outcome": "An operator can pin smoke model, permission and trace-dir options that `run` already forwards into runSupervisedTask.",
+  "currentProblem": "commandSmoke already calls runSupervisedTask and accepts --timeout-ms. It never forwards model, permission or trace-dir, so live smoke cannot pin those run options or write traces.",
+  "scope": [
+    "agent-tools.operator.smoke-options"
+  ],
+  "constraints": [
+    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
+    "Reuse delivered runSupervisedTask, PermissionProfile and createSupervisedObservation. Do not change SKIPPED reasons for missing tools or pre-edit failures.",
+    "Unknown permission values fail closed before spawn. --arm requires --trace-dir. Omitted flags keep current smoke defaults.",
+    "No sandbox, SCM push, durable recovery on the ephemeral smoke repo, or live-value claim."
+  ],
+  "successCriteria": [
+    "exharness-agent smoke --model, --permission and --trace-dir reach runSupervisedTask; a trace directory writes digest-chained traces the report command can read.",
+    "Unknown permission fails as a usage error before spawn. Omitted flags keep current smoke defaults. Missing tool and TOOL_FAILED_BEFORE_EDIT still print SKIPPED.",
+    "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness."
+  ],
+  "currentSourceRefs": [
+    "docs/blackboard/process/operator-cli-factor-parity.md",
+    "docs/blackboard/evidence/BB-139/cli-factor-audit.mjs",
+    "packages/agent-tools/bin/exharness-agent.mjs",
+    "packages/agent-tools/src/supervisor.js",
+    "packages/agent-tools/src/observation.js",
+    "docs/living/system/agent-tools/state.md",
+    "docs/living/system/agent-tools/observation.md"
+  ]
+}
