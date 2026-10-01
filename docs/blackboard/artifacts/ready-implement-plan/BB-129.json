@@ -520,9 +520,7 @@
           "match": "summary: `${name} ${reason}"
         }
       ],
-      "supportingPlanFields": [
-        "deliveryContract"
-      ]
+      "supportingPlanFields": []
     },
     {
       "objectiveCriterion": "A fresh clone at the declared base imports/reconstructs the exact candidate and reruns the pinned evaluator; mismatched base, corrupted bundle and missing evidence fail explicitly.",
@@ -536,7 +534,9 @@
         "S4"
       ],
       "verificationIds": [
-        "focused"
+        "focused",
+        "delivery-regression",
+        "agent-tools-regression"
       ],
       "decisionIndexes": [
         0,
@@ -579,7 +579,9 @@
       ],
       "verificationIds": [
         "focused",
-        "docs"
+        "docs",
+        "delivery-regression",
+        "agent-tools-regression"
       ],
       "decisionIndexes": [
         5,
@@ -600,7 +602,9 @@
           "match": "if (existing.status === \"ACCEPTED\")"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
     }
   ],
   "deliveryContract": {
@@ -640,12 +644,87 @@
         "OUTPUT_COLLISION",
         "REPLAY_FAILED"
       ],
-      "support": "POSIX local filesystem, complete ancestor base, native SHA-1, UTF-8 names including tabs/newlines, binary files/modes/deletion/safe candidate symlinks. Reject gitlinks (ls-tree -r -z mode160000), LFS pointer blobs (standard version prefix), shallow graph/nonancestor and unsupported object format; no claim of LFS/submodule runtime replay. Safe candidate symlinks mean relative UTF-8 targets resolved inside the candidate tree and outside .git; inspect blob targets without following them. Reject escaping/absolute targets before checkout.",
+      "support": "POSIX local filesystem, complete ancestor base, native SHA-1, UTF-8 names including tabs/newlines, binary files/modes/deletion/safe candidate symlinks. Reject gitlinks (ls-tree -r -z mode160000), LFS pointer blobs (standard version prefix), shallow graph/nonancestor and unsupported object format; no claim of LFS/submodule runtime replay. Safe candidate symlinks mean relative UTF-8 targets resolved inside the candidate tree and outside .git; inspect blob targets without following them. Reject escaping/absolute targets before checkout. Reject candidate .gitattributes eol/working-tree-encoding conversion declarations before checkout; no claim of byte-identical replay under those checkout transforms. System/global attributes are excluded (GIT_ATTR_NOSYSTEM=1 and private empty core.attributesFile).",
       "argumentOrder": "Exact execution argv is [absoluteEvaluatorPath,...config.args,realpath(candidateCheckout)] with candidate root LAST, matching BB-127. Require supplied Node major24; no automatic install or runtime-binary transport. Runtime differs explicitly in the fresh replay receipt. Exported config/evaluator hashes remain exact caller pins."
     }
   },
   "researchEvidenceSummary": {
-    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
-    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed."
-  }
+    "language": "python3 standard library plus git and node",
+    "recipe": "Executed Python3 stdlib script (SHA-256 below), using git2.43 and node24.20. Reproduce the discriminating commands below in OS temporary directories; actual Worker tests must invoke product subjects. The original script is not a product file and is not needed for artifact replay.",
+    "recipeSha256": "f05a43c559c6168f0fe9b0acebe817a1c9acf79e12842de99e256de7cd3e30be",
+    "observed": {
+      "classification": "EXECUTED_GIT_FILESYSTEM_PROTOTYPE_NOT_PRODUCT_IMPLEMENTATION",
+      "providerCalls": 0,
+      "gitVersion": "git version 2.43.0",
+      "nodeVersion": "v24.20.0",
+      "baseSha": "11f97bc97bcc58a240898168496074eedf782c10",
+      "candidateSha": "0361f42e259c10c8eaf66fdd8ea31d681a4a4df5",
+      "candidateTree": "47dc8511fc7758ee83ed5738c27c424393660388",
+      "binaryBytes": 1048576,
+      "bundleBytes": 1049441,
+      "patchBytes": 1352429,
+      "manifestBytes": 1395,
+      "bundleSha256": "d96cc58953726ffff5b7907ea57c2828203ee4576c17501f80a0296b2a398636",
+      "patchSha256": "97f9a087977284fbf5f5b59862048dd5b65a7adfe047fd24d12ac65690a57021",
+      "manifestSha256": "09180cbaf1eafa19e0a5e9282988eb49e581e5f198c077672acfdc705be29412",
+      "header": "# v2 git bundle\n-11f97bc97bcc58a240898168496074eedf782c10 base\n0361f42e259c10c8eaf66fdd8ea31d681a4a4df5 refs/heads/review-candidate",
+      "changedPaths": [
+        {
+          "status": "A",
+          "path": "binary.dat"
+        },
+        {
+          "status": "M",
+          "path": "mode.sh"
+        },
+        {
+          "status": "D",
+          "path": "removed.txt"
+        },
+        {
+          "status": "A",
+          "path": "space\ttab\nnewline.txt"
+        },
+        {
+          "status": "M",
+          "path": "sum.mjs"
+        }
+      ],
+      "sourceSnapshotUnchanged": true,
+      "rawShaBundleRejected": 128,
+      "patchTreeMatches": true,
+      "candidateAbsentFromFreshCloneBeforeFetch": true,
+      "sourceAndExportDeletedBeforeReplay": true,
+      "replayExit": 0,
+      "replayStdout": "PASS exact candidate fixture\n",
+      "sixReviewerStepsMs": 132.592,
+      "negativeResults": {
+        "corrupt": "FILE_DIGEST_MISMATCH",
+        "missing": "EVIDENCE_MISSING",
+        "base": "BASE_MISMATCH",
+        "tamper": "FILE_DIGEST_MISMATCH",
+        "missingPrerequisiteExit": 1
+      },
+      "failureCleanup": {
+        "size": "OUTPUT_LIMIT",
+        "rename": "OSError"
+      },
+      "noOpDecision": "base-only manifest; empty-range bundle intentionally skipped",
+      "limitations": [
+        "Size and rename tests exercise filesystem policy only, not future product exporter.",
+        "One synthetic local run; no reviewer time or delivery-value conclusion.",
+        "No GC was needed: source repository was deleted before replay."
+      ]
+    },
+    "reproductionSteps": [
+      "Create temp source git init -b main; fixed probe@example.invalid author/committer and 2026-10-01T00:00:00Z dates. Commit sum.mjs exporting (a,b)=>a-b, removed.txt and mode.sh. Record base/HEAD/refs/status.",
+      "git worktree add --detach candidate base. Change sum to addition, delete removed.txt, chmod mode.sh 0755, add binary.dat=random.Random(129).randbytes(1048576), add path with tab/newline. Commit; record candidate/tree. Snapshot source unchanged.",
+      "Init bare export.git; write objects/info/alternates to source absolute objects path. update-ref refs/heads/review-candidate candidate. bundle create --version=2 candidate.bundle refs/heads/review-candidate ^base. Raw candidate SHA without named ref must fail. Check header contains base prerequisite and only candidate ref.",
+      "git diff --binary --full-index --no-ext-diff --no-textconv --no-renames base candidate -- to candidate.patch. Parse diff --name-status -z. Pin standalone Node evaluator bytes checking sum(2,3)==5 and binary SHA, config, result and stdout/stderr with sha256. Manifest contains artifact bytes/hashes and exact subjects.",
+      "Sync staged artifact files and rename to manifest digest directory. git clone --no-local source reviewer and patch-reviewer: candidate must be absent. git apply --index candidate.patch then write-tree must equal candidateTree. Remove source worktree and delete source/export repositories.",
+      "Time six steps: validate pins/base, bundle verify/list-heads, fetch ref, checkout --detach candidate, assert commit/tree, run pinned evaluator. Repeat negative gates with flipped bundle byte, removed log, changed evaluator, wrong HEAD and empty repository missing prerequisite. Test actual empty-range bundle at an existing named base ref returns empty-bundle error.",
+      "Filesystem probes: 17-byte staged file over 16-byte test quota and rename into nonempty target both fail; remove owned failed stages and validate original artifact. These are policy probes, not future exporter tests. All synthetic repositories cleaned; providerCalls=0."
+    ]
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1"
 }
