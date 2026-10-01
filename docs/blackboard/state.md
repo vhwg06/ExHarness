@@ -40,7 +40,6 @@ NONE
 
 ## Schedulable tasks
 
-- BB-081 [WORKER/EXECUTION] — Research held-out harness profile acceptance and fault-ablation protocol
 - BB-083 [WORKER/EXECUTION] — Research feedback lifecycle and cross-episode learning
 - BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
 - BB-107 [WORKER/EXECUTION] — Reserve planner work from remaining budget so files that fit the requirement materialize
@@ -101,7 +100,7 @@ BB-077 [DONE] <- BB-065
 BB-078 [DONE] <- BB-077
 BB-079 [DONE] <- BB-077, BB-078
 BB-080 [DONE] <- BB-078, BB-079
-BB-081 [WORKER_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080
+BB-081 [PLANNED] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
 BB-083 [WORKER_SCHEDULABLE] <- BB-059, BB-064, BB-065
 BB-084 [DONE] <- BB-058, BB-064

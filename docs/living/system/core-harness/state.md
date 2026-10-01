@@ -68,6 +68,18 @@ Both arms really execute the shared strategy against a benchmark-owned offline s
 
 The committed report (`manifests/report.example.json`, `manifests/comparison.json`) is an offline scripted fixture proving the pipeline — kernel registration, shared-ledger settling of 36 paired attempts plus one retry, 37/37 PASS on reopened evidence — and NOT a measurement: no quality, cost or latency claim follows from it, provider cost/token/cache stay null/UNKNOWN, and the six-task cohort supports no significance claim. The live synchronous baseline on the frozen route has not been executed yet; it is pending an authorized paid run (`run.mjs --live` refuses without credentials and substrate). The four-task held-out set is reserved and never executes here; async scheduling, cache-stable context and steering/recovery capabilities are out of scope, as is any promotion decision. A versioned comparison manifest, held-out manifest and preregistered quality/safety/economics/context/interaction/latency gate are frozen for the future held-out decision before any async result exists.
 
+## Held-out execution-profile state semantics
+
+Held-out execution profiles publish only the independently verified supported Core profile decision. `CORE_SYNC` is the currently supported profile; `CORE_ASYNC_FIRST_V1` is not currently published and becomes publishable only after a future `PROMOTE_ASYNC` decision with the exact evidence binding. B/C arms are diagnostic-only and are never published as supported profiles.
+
+Actual decision over the executed cohort: the deterministic offline fixture cohort (`HELD-OUT-V1`, 32/32 units settled) carries UNKNOWN primary accounting by construction, so the frozen reducer yields `INCONCLUSIVE`; the live paid cohort has not been executed. `CORE_ASYNC_FIRST_V1` is therefore NOT published and `CORE_SYNC` remains the only supported profile.
+
+Evidence-binding state (`packages/core-harness/src/execution-profile.js`): `createEvidenceBinding({ decision, ablationProtocolHash, faultProtocolVersion, evaluatedSourceSha, dependencyDigest, providerProfile })` creates a frozen binding only for `decision === 'PROMOTE_ASYNC'` and throws `BINDING` otherwise — an `INCONCLUSIVE` decision publishes no async claim and creates no binding. The binding covers exactly the plan's binding fields: decision, ablation/fault protocol, evaluated source, upstream dependency deliveries, provider/model profile; it carries `bindingDigest` (sha256 of the binding). Later mutation invalidates the claim: `assertEvidenceFresh({ binding, current })` compares `ablationProtocolHash`, `evaluatedSourceSha` and `dependencyDigest` against the current context and recomputes the digest, throwing `STALE` on any drift.
+
+Quiescent rollback state semantics: `rollbackToSync({ session })` refuses mid-flight rollback — `inFlightAsyncOperations`/`inFlight`, `unresolvedEffects` and `pendingModelTurns` must all be zero or it throws `ROLLBACK` — and requires a new/quiescent session boundary. Rollback therefore means `CORE_SYNC` at a new/quiescent session after async operations/effects are terminal or reconciled, never a mid-flight profile switch.
+
+Profiles are benchmark-publication gating only: `defaultProfile()` returns `CORE_SYNC` and held-out profiles change no Core runtime execution semantics. Async publication additionally requires `assertProfilePublishable` to authorize the exact bound profile.
+
 ## Current authority boundary
 
 ```text
