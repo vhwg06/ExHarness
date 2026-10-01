@@ -93,7 +93,7 @@
     "S1 — Reservation [RP1]: implement corrected D2; RP1 fails on current main then passes. Direct test body for each NC-RP-* invokes its own bound subject; tests cannot satisfy the binding by invoking only a wrapper or asserting documents.",
     "S2 — Fail-closed oversize [RP2]: RP2 plus graph-boundary CG3 item-count update (D5).",
     "S3 — Docs [RP3]: D6 Living docs plus the RP3 test that calls createRetrievalPlanner({catalog}).plan(...) then asserts workflow.md and context-graph.md omit the 8192-byte per-item cap.",
-    "S4 — Graph headroom [RP4]: corrected D2 REPOSITORY byte shares leave GRAPH expansion valid; RP4 fails under the superseded split then passes, and pinned planning-strategies tests stay green."
+    "S4 — Graph headroom [RP4]: corrected D2 REPOSITORY byte shares leave GRAPH expansion valid; RP4 fails under the superseded split then passes, and pinned planning-strategies tests stay green. Independently assert base reserved bytes 6666+6667, free budget 1/1/6667, actual EXPANDED two candidates; tight 2/2/20000 has zero calls/items and SKIPPED BUDGET_EXHAUSTED. Graph-boundary CG3 directly verifies both importer paths/no truncation and 64-byte oversize rejection after TRAVERSE receives remaining items/bytes."
   ],
   "acceptanceCriteria": [
     {
@@ -132,10 +132,11 @@
     },
     {
       "id": "RP4",
-      "statement": "A REPOSITORY requirement with budget 3/3/20000 plans LOOKUP_SYMBOL and SEARCH_LEXICAL items 1 each, bytes 6666/6667, free 1/1/6667 so GRAPH_EXPANDED_V1 EXPANDs (pinned tests keep 2 candidates / EXPANDED); tight budget 2/2/20000 still SKIPs BUDGET_EXHAUSTED.",
+      "statement": "A REPOSITORY requirement with budget 3/3/20000 plans LOOKUP_SYMBOL and SEARCH_LEXICAL items 1 each, bytes 6666/6667, free 1/1/6667 so GRAPH_EXPANDED_V1 EXPANDs (pinned tests keep 2 candidates / EXPANDED); tight budget 2/2/20000 still SKIPs BUDGET_EXHAUSTED. CONTEXT_GRAPH TRAVERSE reserves every remaining item/byte; the CG3 importer fixture retains both src/a.js and src/c.js without truncation.",
       "verificationIds": [
         "rp4-graph",
-        "oracle"
+        "oracle",
+        "graph-boundary"
       ],
       "evidenceRequired": [
         "RP4 test output, test:oracle output with pinned GRAPH tests green."
@@ -198,6 +199,10 @@
     {
       "id": "oracle",
       "command": "npm run test:oracle"
+    },
+    {
+      "id": "graph-boundary",
+      "command": "node --test test/oracle-context-graph-boundary.test.mjs"
     },
     {
       "id": "docs",
@@ -353,7 +358,6 @@
     "questionId": "LIVING_DOCS",
     "statement": "Living docs state that RetrievalPlanner reserves items and materialized bytes from remaining requirement budget with no 8192-byte per-work cap, that a file fitting remaining bytes materializes, that oversize content is BUDGET_EXHAUSTED without truncation, and that the base REPOSITORY plan leaves unreserved budget for GRAPH expansion when the requirement has headroom. No Blackboard ids."
   },
-  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
     {
       "objectiveCriterion": "Specify per-work reservedBudget.items and reservedBudget.materializedBytes derived from remaining requirement budget without a hard 8192-byte cap and without forcing items to 1 when remaining.maxItems allows more, except REPOSITORY LOOKUP_SYMBOL/SEARCH_LEXICAL/STRUCTURAL_MAP keep items=1 so both operations still reserve and one item/call share remains for GRAPH expansion.",
@@ -446,7 +450,10 @@
         "oracle"
       ],
       "decisionIndexes": [
-        1
+        1,
+        2,
+        4,
+        6
       ],
       "sourceRefs": [
         "docs/blackboard/evidence/BB-107/plan-defect-probe-result.json",
