@@ -12,30 +12,36 @@
     "agent-tools.operator.deliver-observation"
   ],
   "outOfScope": [
-    "A second review-bundle format (BB-129) or a change to acceptance authority.",
-    "Inventing Kiro/agy usage schemas or treating traces as product acceptance."
+    "A second review-bundle format (BB-129) or changing acceptance authority.",
+    "Writing QA command records as AGENT_TOOL_RUN_TRACE_V1.",
+    "Inventing Kiro/agy usage schemas, mutating run-trace.js/observation.js/report.js, or treating traces as product acceptance."
   ],
   "constraints": [
-    "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
-    "Reuse delivered createSupervisedObservation, createRunTraceWriter and report. Do not change acceptance authority; traces remain evidence only.",
-    "BB-129 owns portable review/replay export. This task may produce traces that a later bundle can reference and must not invent a second bundle format.",
-    "No sandbox, SCM push, or live-value claim."
+    "Product edits are packages/agent-tools/src/deliver-slice.js and bin/exharness-agent.mjs plus the named test and Living docs in sourceScope.write. observation.js, run-trace.js and report.js are read-only.",
+    "Reuse delivered createSupervisedObservation, createRunTraceWriter, readTraces, summarizeTraces and report. Traces remain evidence only and cannot authorize ACCEPTED.",
+    "BB-129 owns portable review/replay export. This task only produces traces that a later bundle may reference.",
+    "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "Traces are evidence only; they cannot authorize ACCEPTED or product publication.",
-    "Omitting a trace directory leaves deliver behavior unchanged.",
-    "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan."
+    "deliver --trace-dir writes one digest-chained AGENT_TOOL_RUN_TRACE_V1 record per Backend attempt; report verifies the chain; traces never change slice ACCEPTED/QA_FAILED/TOOL_UNAVAILABLE.",
+    "Omitting --trace-dir leaves invocationObserver null and writes no TRACE_FILE. A broken chain still fails report. A TOOL_UNAVAILABLE slice or an ACCEPTED-handle QA-only slice never fabricates a successful Backend trace."
   ],
   "architectureDecisions": [
-    "Pass createSupervisedObservation into runDeliverSlice / resume instead of invocationObserver: null when a trace directory is set.",
-    "Reuse the delivered digest chain and report command. Do not write traces into the source repository or the candidate commit."
+    "D1 — Flag is --trace-dir on deliver, matching run. Add [--trace-dir <dir> [--arm <label>]] to the deliver USAGE line. --arm without --trace-dir is UsageError as on run. commandDeliverCli maps traceDir: options[\"trace-dir\"] ?? null and arm: options.arm ?? \"EXHARNESS_SUPERVISED\". Do not add traceDir to DELIVER_SLICE_V1 / validateDeliverSlice. DELIVERED_TRUTH: run already constructs createSupervisedObservation + createRunTraceWriter; deliver USAGE has no --trace-dir; commandDeliver does not forward observation; runDeliverSlice hardcodes invocationObserver: null at three Backend call sites. Audit deliverObserverNullCount 3, runCliPassesTraceDir true.",
+    "D2 — Backend attempts only, never QA. runDeliverSlice options gain traceDir=null and arm=\"EXHARNESS_SUPERVISED\". When traceDir is a non-empty string, construct observation = createSupervisedObservation({ tool: resolved tool when known, arm, taskId: slice.id, writer: createRunTraceWriter({ dir: traceDir }) }) and pass invocationObserver/eventSinks/tracer into every runSupervisedTask and resumeSupervisedTask call instead of null. After a Backend result object exists, await observation.finalize(backend) before QA. QA stays runQaOnFreshCheckout with no writer. Missing-tool TOOL_UNAVAILABLE (backend null, no spawn) must not construct a writer or call finalize. ACCEPTED-handle QA-only skip must not call finalize or append a success trace. Omit traceDir: keep invocationObserver: null at all three sites; behavior byte-identical besides the new unused options.",
+    "D3 — Resume appends to the existing chain. createRunTraceWriter already verifyTraceFile then sequence=existing.length+1, prevDigest=last.digest. A crash/resume with the same --trace-dir therefore continues the file. Do not rotate, truncate, or write a second TRACE_FILE. Do not write traces into the source repository or the candidate commit.",
+    "D4 — Tests in packages/agent-tools/test/deliver-observation.test.js. P1: runDeliverSlice(slice, { tool: defineAgentTool(codexTool, fake-agent.mjs), env: {FAKE_AGENT_SCENARIO:\"FIX_FIRST\"}, traceDir }) returns ACCEPTED; traces.jsonl has one SUPERVISED record per backend.attempts; verifyTraceFile/readTraces succeed; summarizeTraces prints descriptive counts; slice status is unchanged versus the same slice without traceDir. P2: spawn BIN `deliver --slice --trace-dir` then `report <dir>` exit 0. P3: crash/resume Backend with the same traceDir; sequence continues and prevDigest links. N1: omit traceDir, TRACE_FILE absent, runDeliverSlice still ACCEPTED. N2: missing binary with traceDir set returns TOOL_UNAVAILABLE and does not write a COMPLETED/ACCEPTED Backend trace. N3: mutate a digest in traces.jsonl; readTraces/report throw TRACE_CHAIN_BROKEN (exit 1). N4: plant an ACCEPTED handle and runDeliverSlice with traceDir; QA runs and no new successful Backend trace is appended. Hermetic fake CLI; no network, no credentials.",
+    "D5 — Living docs. observation.md currently documents only `exharness-agent run … --trace-dir`; add that deliver --trace-dir writes the same SUPERVISED Backend traces, resume appends, QA is not traced, omit flag is unchanged, traces remain evidence only. operator.md deliver USAGE gains --trace-dir/--arm and the Backend-only rule. No Blackboard ids.",
+    "D6 — Evidence at 5386e2ad, providerCalls 0: discovery.json facts.deliverObserverNullCount 3, facts.runCliPassesTraceDir true. Source: three invocationObserver: null sites; run CLI already wires createSupervisedObservation; writer verifies before append."
   ],
   "sourceSeams": {
     "requiredExisting": [
       "packages/agent-tools/src/deliver-slice.js",
       "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/run-trace.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
       "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "docs/blackboard/evidence/BB-136/discovery.json",
       "docs/blackboard/process/operator-cli-composition.md"
     ],
     "expectedNew": [
@@ -49,11 +55,15 @@
     "read": [
       "packages/agent-tools/src/deliver-slice.js",
       "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/report.js",
       "packages/agent-tools/bin/exharness-agent.mjs",
       "packages/agent-tools/src/**",
       "packages/agent-tools/test/**",
       "docs/blackboard/process/operator-cli-composition.md",
-      "docs/blackboard/evidence/BB-135/cli-composition-audit.json"
+      "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "docs/blackboard/evidence/BB-136/discovery.json",
+      "docs/living/system/agent-tools/**"
     ],
     "write": [
       "packages/agent-tools/src/deliver-slice.js",
@@ -63,37 +73,44 @@
       "docs/living/system/agent-tools/operator.md"
     ],
     "forbiddenWrite": [
+      "packages/agent-tools/src/observation.js",
+      "packages/agent-tools/src/run-trace.js",
+      "packages/agent-tools/src/report.js",
       "packages/core-harness/**",
       "packages/oracle/**",
       "packages/benchmark/**",
+      "packages/agentic-system/**",
       "docs/blackboard/**",
       ".github/**"
     ]
   },
   "implementationSlices": [
-    "S1 — Pin the deliver --trace-dir / resume observer mapping and a fake-CLI fixture in research; proposed test files are not claimed to exist.",
-    "S2 — After fresh READY, wire observation only on the deliver Backend path and the focused positive/negative fixtures.",
-    "S3 — Run focused regressions, bind independent evidence and reconcile Living descriptions before Worker judgment."
+    "S1 — CLI flag and Backend observer wiring [DELIVER_TRACES]: implement D1–D3. deliver --trace-dir/--arm; runDeliverSlice observation on all three Backend sites; finalize before QA; resume appends; QA-only and missing-tool skip finalize.",
+    "S2 — Fixtures [NO_TRACE_UNCHANGED]: implement D4. P1–P3 positive chain/report/resume; N1 omit writer; N2 TOOL_UNAVAILABLE; N3 TRACE_CHAIN_BROKEN; N4 QA-only no fabricated Backend trace. Existing deliver-slice.test.js stays green.",
+    "S3 — Living docs [DELIVER_TRACES]: implement D5. observation.md and operator.md describe deliver --trace-dir Backend-only traces, resume append, omit unchanged, evidence-only. No Blackboard ids."
   ],
   "acceptanceCriteria": [
     {
       "id": "DELIVER_TRACES",
       "statement": "deliver with a trace directory writes one digest-chained trace per Backend attempt; report verifies the chain and prints descriptive counts.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "deliver-regression",
+        "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+        "P1 runDeliverSlice+fake FIX_FIRST writes one SUPERVISED trace per backend.attempts; verifyTraceFile/readTraces/summarizeTraces succeed; P2 BIN deliver then report exit 0; P3 resume appends the chain."
       ]
     },
     {
       "id": "NO_TRACE_UNCHANGED",
       "statement": "deliver without a trace directory remains unchanged. A broken chain still fails report. QA-only or TOOL_UNAVAILABLE slices never fabricate a successful Backend trace.",
       "verificationIds": [
-        "focused"
+        "focused",
+        "deliver-regression"
       ],
       "evidenceRequired": [
-        "Named subject-invoking fixture tests and exact candidate-bound logs; the composition audit is motivation only."
+        "BB-136 N1 omit traceDir no TRACE_FILE; N2 TOOL_UNAVAILABLE no success trace; N3 readTraces TRACE_CHAIN_BROKEN; N4 ACCEPTED-handle QA-only no new Backend success trace."
       ]
     }
   ],
@@ -103,39 +120,41 @@
       "command": "node --test packages/agent-tools/test/deliver-observation.test.js"
     },
     {
+      "id": "deliver-regression",
+      "command": "node --test packages/agent-tools/test/deliver-slice.test.js"
+    },
+    {
       "id": "agent-tools-regression",
       "command": "npm run test:agent-tools"
     },
     {
       "id": "docs",
       "command": "npm run verify:current-docs"
+    },
+    {
+      "id": "repository",
+      "command": "npm test"
     }
   ],
   "invariantCoverage": [
     {
-      "invariant": "Traces are evidence only; they cannot authorize ACCEPTED or product publication.",
+      "invariant": "deliver --trace-dir writes one digest-chained AGENT_TOOL_RUN_TRACE_V1 record per Backend attempt; report verifies the chain; traces never change slice ACCEPTED/QA_FAILED/TOOL_UNAVAILABLE.",
       "criterionIds": [
-        "DELIVER_TRACES",
-        "NO_TRACE_UNCHANGED"
+        "DELIVER_TRACES"
       ]
     },
     {
-      "invariant": "Omitting a trace directory leaves deliver behavior unchanged.",
+      "invariant": "Omitting --trace-dir leaves invocationObserver null and writes no TRACE_FILE. A broken chain still fails report. A TOOL_UNAVAILABLE slice or an ACCEPTED-handle QA-only slice never fabricates a successful Backend trace.",
       "criterionIds": [
-        "NO_TRACE_UNCHANGED"
-      ]
-    },
-    {
-      "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
-      "criterionIds": [
-        "DELIVER_TRACES",
         "NO_TRACE_UNCHANGED"
       ]
     }
   ],
   "negativeVerificationCases": [
     "Deliver without trace-dir must not construct an observation writer",
-    "TOOL_UNAVAILABLE deliver must not fabricate a successful Backend trace"
+    "TOOL_UNAVAILABLE deliver must not fabricate a successful Backend trace",
+    "Broken trace chain must fail report",
+    "QA-only ACCEPTED handle must not fabricate a successful Backend trace"
   ],
   "negativeCaseBindings": [
     {
@@ -155,25 +174,276 @@
       "testRef": "packages/agent-tools/test/deliver-observation.test.js",
       "testTitle": "BB-136 N2 TOOL_UNAVAILABLE deliver must not fabricate a successful Backend trace",
       "subjectSymbol": "runDeliverSlice"
+    },
+    {
+      "id": "NEG_136_3",
+      "negativeCaseIndex": 2,
+      "criterionId": "NO_TRACE_UNCHANGED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/deliver-observation.test.js",
+      "testTitle": "BB-136 N3 Broken trace chain must fail report",
+      "subjectSymbol": "readTraces"
+    },
+    {
+      "id": "NEG_136_4",
+      "negativeCaseIndex": 3,
+      "criterionId": "NO_TRACE_UNCHANGED",
+      "verificationId": "focused",
+      "testRef": "packages/agent-tools/test/deliver-observation.test.js",
+      "testTitle": "BB-136 N4 QA-only ACCEPTED handle must not fabricate a successful Backend trace",
+      "subjectSymbol": "runDeliverSlice"
     }
   ],
-  "researchGaps": [
-    "Ratify whether traces cover only Backend attempts or also QA command records, and how resume appends to an existing chain, before Jev.",
-    "Finalize objectiveCoverage/source anchors and criterion-specific evidence routing; no READY before fresh Jev SATISFIED."
-  ],
-  "researchBaselineSha": "4291a4a7900ea3c943a2533581c6abc210b1145f",
+  "researchGaps": [],
+  "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
   "livingDocs": {
     "refs": [
       "docs/living/system/agent-tools/observation.md",
       "docs/living/system/agent-tools/operator.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs describe only the implemented contract, scope and limitations after Worker delivery, without research statuses or Blackboard ids."
+    "statement": "Living docs state that exharness-agent deliver --trace-dir writes digest-chained SUPERVISED traces for Backend attempts only, that resume appends to the same file, that omitting the flag leaves deliver unchanged, and that traces are evidence only. Living docs contain no Blackboard ids."
   },
+  "researchEvidence": [
+    {
+      "ref": "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+      "finding": "DELIVERED_TRUTH at 5386e2ad: deliverObserverNullCount 3, runCliPassesTraceDir true, providerCalls 0."
+    },
+    {
+      "ref": "packages/agent-tools/src/deliver-slice.js",
+      "finding": "DELIVERED_TRUTH: runBackendFresh, the recoveryDir===null runSupervisedTask, and resumeSupervisedTask all pass invocationObserver: null. ACCEPTED handle skips Backend and runs QA only."
+    },
+    {
+      "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+      "finding": "DELIVERED_TRUTH: commandRun wires createSupervisedObservation from --trace-dir; commandDeliverCli maps only slice/command/recovery-dir."
+    },
+    {
+      "ref": "packages/agent-tools/src/run-trace.js",
+      "finding": "DELIVERED_TRUTH: createRunTraceWriter verifies the existing file then appends sequence+1 / prevDigest, so resume with the same dir continues the chain."
+    }
+  ],
+  "dependencyResolution": {
+    "direct": [
+      "BB-098",
+      "BB-104"
+    ],
+    "workerStart": "Confirm the three invocationObserver: null sites, run --trace-dir observation wiring, and createRunTraceWriter append-after-verify still match. BB-098 and BB-104 remain DONE. deliver-slice.test.js stays green.",
+    "sourceClassification": {
+      "DELIVERED_TRUTH": [
+        "createSupervisedObservation finalize",
+        "createRunTraceWriter append chain",
+        "readTraces TRACE_CHAIN_BROKEN",
+        "run --trace-dir",
+        "runDeliverSlice three null observers",
+        "ACCEPTED handle QA-only skip"
+      ],
+      "PLANNED_CONTRACT": [],
+      "RESEARCH_DESIRED_STATE": [
+        "deliver --trace-dir Backend traces",
+        "resume append",
+        "omit unchanged",
+        "no fabricated success traces"
+      ]
+    },
+    "contradiction": "None. BB-098 owns the trace/report APIs; BB-104 owns the slice. This task only composes the existing observer onto Backend calls. QA remains independent and untraced."
+  },
+  "deliveryContract": {
+    "precondition": "BB-098 DONE, BB-104 DONE.",
+    "completion": "focused + deliver-slice.test.js + test:agent-tools + verify:current-docs + npm test + Living docs + independent Worker Jev judgment.",
+    "forbidden": "No observation.js/run-trace.js/report.js edits, no QA traces, no acceptance-from-trace, no review-bundle format."
+  },
+  "ciContract": {
+    "checks": [
+      "focused",
+      "deliver-regression",
+      "agent-tools-regression",
+      "docs",
+      "repository"
+    ],
+    "liveJev": "Readiness/Worker Jev uses TYPESAFE_API_KEY only; transport failure is INCONCLUSIVE and never fabricated."
+  },
+  "migrationContract": {
+    "preserve": [
+      "run --trace-dir observation",
+      "invocationObserver null when traceDir omitted",
+      "QA independent checkout",
+      "TRACE_CHAIN_BROKEN",
+      "deliver-slice.test.js"
+    ],
+    "add": [
+      "deliver --trace-dir Backend observer + finalize",
+      "deliver-observation tests"
+    ],
+    "rollback": "Restore three invocationObserver: null sites; remove deliver --trace-dir from USAGE/commandDeliver; delete deliver-observation.test.js; revert Living sentences."
+  },
+  "laneContracts": [
+    {
+      "lane": "RESEARCH_SA",
+      "input": "BB-136 objective + cli-composition-audit.json + delivered deliver-slice/observation/run CLI",
+      "output": "READY_IMPLEMENT_PLAN",
+      "binding": "objective hash + researchBaselineSha",
+      "convergence": "researchGaps=[] + fresh Jev SATISFIED",
+      "forbidden": [
+        "product implementation",
+        "self-issued readiness"
+      ]
+    },
+    {
+      "lane": "WORKER",
+      "input": "exact READY plan + DONE BB-098 + DONE BB-104",
+      "output": "DELIVERED_FEATURE",
+      "binding": "plan hash + candidate/evidence + Jev",
+      "convergence": "criterion runs + no forbidden writes + docs",
+      "forbidden": [
+        "QA traces, observation.js edits, acceptance-from-trace."
+      ]
+    }
+  ],
   "valueHypothesis": {
     "expectedValue": "An operator can inspect a deliver slice with the same trace/report tools already used for run.",
-    "measurement": "Fake-CLI deliver fixture writes a verifiable chain; report exit 0 on intact traces and 1 on a broken chain.",
+    "measurement": "Fake-CLI deliver fixture writes a verifiable chain; report exit 0 on intact traces and 1 on a broken chain; omit/unavailable/QA-only never fabricate success.",
     "evidenceClass": "RESEARCH_DESIRED_STATE",
     "valueOwner": "BB-098 for observation; BB-129 for later bundle inclusion; BB-074 for end-to-end value"
-  }
+  },
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "objectiveCoverage": [
+    {
+      "objectiveCriterion": "deliver with a trace directory writes one digest-chained trace per Backend attempt; report verifies the chain and prints descriptive counts.",
+      "criterionIds": [
+        "DELIVER_TRACES"
+      ],
+      "planElements": [
+        "S1",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "deliver-regression",
+        "agent-tools-regression"
+      ],
+      "decisionIndexes": [
+        0,
+        1,
+        2
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/deliver-slice.js",
+        "packages/agent-tools/bin/exharness-agent.mjs",
+        "packages/agent-tools/src/observation.js",
+        "docs/blackboard/evidence/BB-135/cli-composition-audit.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/evidence/BB-135/cli-composition-audit.json",
+          "match": "\"deliverObserverNullCount\": 3"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "    onHandleWrite,\n    invocationObserver: null"
+        },
+        {
+          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
+          "match": "createSupervisedObservation({ tool, arm: options.arm ?? \"EXHARNESS_SUPERVISED\", taskId: task.id, writer: createRunTraceWriter({ dir: options[\"trace-dir\"] }) })"
+        },
+        {
+          "ref": "packages/agent-tools/src/observation.js",
+          "match": "then call finalize(result) to append one trace per attempt"
+        }
+      ],
+      "supportingPlanFields": [
+        "researchEvidence"
+      ]
+    },
+    {
+      "objectiveCriterion": "deliver without a trace directory remains unchanged. A broken chain still fails report. QA-only or TOOL_UNAVAILABLE slices never fabricate a successful Backend trace.",
+      "criterionIds": [
+        "NO_TRACE_UNCHANGED"
+      ],
+      "planElements": [
+        "S2"
+      ],
+      "verificationIds": [
+        "focused",
+        "deliver-regression"
+      ],
+      "decisionIndexes": [
+        3
+      ],
+      "sourceRefs": [
+        "packages/agent-tools/src/deliver-slice.js",
+        "packages/agent-tools/src/run-trace.js",
+        "docs/living/system/agent-tools/observation.md",
+        "docs/blackboard/evidence/BB-136/discovery.json"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "an ACCEPTED handle skips Backend (HANDLE_COMPLETE)"
+        },
+        {
+          "ref": "packages/agent-tools/src/run-trace.js",
+          "match": "const existing = existsSync(path) ? verifyTraceFile(path) : [];"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "TRACE_CHAIN_BROKEN"
+        },
+        {
+          "ref": "docs/blackboard/evidence/BB-136/discovery.json",
+          "match": "\"deliverObserverNullCount\": 3"
+        }
+      ],
+      "supportingPlanFields": [
+        "negativeCaseBindings"
+      ]
+    },
+    {
+      "objectiveCriterion": "Produce a narrow file-level plan, named negative tests and exact evidence routing for fresh independent Jev readiness.",
+      "criterionIds": [
+        "DELIVER_TRACES",
+        "NO_TRACE_UNCHANGED"
+      ],
+      "planElements": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "verificationIds": [
+        "focused",
+        "docs"
+      ],
+      "decisionIndexes": [
+        4,
+        5
+      ],
+      "sourceRefs": [
+        "docs/blackboard/process/operator-cli-composition.md",
+        "docs/living/system/agent-tools/observation.md",
+        "docs/living/system/agent-tools/operator.md",
+        "packages/agent-tools/src/deliver-slice.js"
+      ],
+      "sourceAnchors": [
+        {
+          "ref": "docs/blackboard/process/operator-cli-composition.md",
+          "match": "| Observation traces on `deliver`"
+        },
+        {
+          "ref": "docs/living/system/agent-tools/observation.md",
+          "match": "CLI: `exharness-agent run … --trace-dir <dir> [--arm <label>]` writes supervised traces."
+        },
+        {
+          "ref": "docs/living/system/agent-tools/operator.md",
+          "match": "`exharness-agent deliver --slice <manifest.json> [--command <path>] [--recovery-dir <dir>]`"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "export async function runDeliverSlice(sliceInput, options = {}) {"
+        }
+      ],
+      "supportingPlanFields": [
+        "implementationSlices",
+        "verificationPlan"
+      ]
+    }
+  ]
 }
