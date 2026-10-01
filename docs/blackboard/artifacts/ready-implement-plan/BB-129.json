@@ -20,7 +20,7 @@
     "RESEARCH_SA only: this DRAFT has no implementation authority or readiness judgment. Existing READY/DONE task bodies and contracts remain unchanged.",
     "Research can run ahead using labelled PLANNED_CONTRACT inputs; Worker requires every direct dependency DONE and a fresh Jev-satisfied exact plan.",
     "Provider/live results, observed accounting and quality acceptance remain separate; no provider calls or inferred costs are evidence for this discovery.",
-    "Only this plan changes; retain DRAFT. The canonical baseline predates two research refs; trusted controller must repin it before Jev. Worker waits for BB-127 DONE and rejudges any incompatible delivered adapter contract.",
+    "Research source refs and anchors are bound to the same source-complete graph/plan baseline. Only task plan/baseline routing changes; product implementation waits for READY and direct dependencies DONE.",
     "Public repository examples require at least 1000 stars at the evidence date; inspect and pin relevant primary source before adoption."
   ],
   "invariants": [
@@ -97,9 +97,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 — review-bundle.js: implement leaf validateReviewEvidence/exportReviewBundle/replayReviewBundle exactly as deliveryContract. Add typed failures, streaming caps, private exporter ref, binary patch/NUL paths, manifests, BASE_ONLY and synced atomic publication.",
-    "S2 — deliver-slice.js: validate external reviewOutputDir before spawn; normalize BB-127 packet. Common QA/export finalizer serves fresh finishBackend and ACCEPTED-handle resume. Export before QA dispose; recovery dispose only after success. Return REVIEW_EXPORT_FAILED on requested failure; commandDeliver forwards option; unrequested behavior unchanged.",
-    "S3 — exharness-agent.mjs: forward deliver --review-out and add review --bundle --repository --manifest-sha256 --evaluator-sha256 --config-sha256 via direct leaf import. Require all pins; review explicitly executes evaluator. JSON output; exit0 PASS, 64 malformed arguments, 1 replay/export failure. No agent/provider/push.",
+    "S1 — review-bundle.js: implement leaf validateReviewEvidence/exportReviewBundle/replayReviewBundle exactly as deliveryContract. Add typed failures, streaming caps, private exporter ref, binary patch/NUL paths, manifests, BASE_ONLY and synced atomic publication. Implement the specified packet/file/manifest validators and all 15 typed failure codes; stream Git output through hash/count caps, kill and reap on timeout/overflow. Use complete-base-only verification without alternates to prove transport independence. Same commit selects BASE_ONLY; different commit/equal tree still transports exact commit.",
+    "S2 — deliver-slice.js: validate external reviewOutputDir before spawn; normalize BB-127 packet. Common QA/export finalizer serves fresh finishBackend and ACCEPTED-handle resume. Export before QA dispose; recovery dispose only after success. Return REVIEW_EXPORT_FAILED on requested failure; commandDeliver forwards option; unrequested behavior unchanged. Review evidence requires complete stdout/stderr bytes from the protected evaluator, not createLocalCommandVerifier summaries. BB-127 integration must retain streams via its verifier sink before truncation and compare raw stream digests; this task includes that bounded sink normalization in deliver-slice.js. If delivered upstream cannot expose complete streams within declared caps, return EVIDENCE_MISSING; do not synthesize logs from summaries.",
+    "S3 — exharness-agent.mjs: forward deliver --review-out and add review --bundle --repository --manifest-sha256 --evaluator-sha256 --config-sha256 via direct leaf import. Require all pins; review explicitly executes evaluator. JSON output; exit0 PASS, 64 malformed arguments, 1 replay/export failure. No agent/provider/push. replayReviewBundle validates caller pins and exact file set before Git import, verifies prerequisites/list-heads, detaches only a clean base, then optionally runs evaluator. Return NOT_EVALUATED without execution. External pins are mandatory for CLI; historic PASS never authorizes fresh replay PASS.",
     "S4 — review-bundle.test.js: deterministic temp Git repositories and existing fake-tool fixtures; each named negative directly calls its bound subject. Delete source/exporter before replay; assert exact commit/tree/binary/modes/deletion/special paths. Snapshot source and instrument cleanup order, CLI, retry/limits/collisions.",
     "S5 — README plus livingDocs refs: document six replay steps, pins, supplied prerequisites, quotas, BASE_ONLY and failures, bounded summaries and local claim boundary. Run focused/existing regressions and bind exact Worker command/log/negative body hashes after READY."
   ],
@@ -364,16 +364,13 @@
   "readinessPrerequisites": {
     "status": "DRAFT_ONLY",
     "baselineBinding": {
-      "canonicalGraphSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
-      "planResearchBaselineSha": "29935fa23cb19af278a6fa8db68b9448bc6b1a0e",
-      "observedSourceCommit": "a53a28e5272c829cfb05fc399d324bf02fa60127",
-      "missingAtCanonicalBaseline": [
-        "docs/blackboard/process/delivery-value-improvement-research.md",
-        "docs/blackboard/evidence/BB-129/discovery.json"
-      ]
+      "canonicalGraphSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "planResearchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb",
+      "missingAtCanonicalBaseline": [],
+      "status": "RESOLVED_BY_CANONICAL_MATERIALIZATION"
     },
     "upstream": "BB-127 must be DONE before Worker. Its actual external evaluator/receipt/log shape must satisfy dependencyAdapter; reconcile and rejudge plan on contradiction.",
-    "researchGapDisposition": "Design gaps resolved. Stale controller baseline and non-DONE upstream remain readiness/execution prerequisites."
+    "researchGapDisposition": "Baseline binding is resolved. Direct dependency delivery is a Worker execution gate, while research uses the explicitly typed planned packet. Incompatible delivered API requires fresh research judgment."
   },
   "researchEvidence": {
     "classification": "RESEARCH_ONLY",
