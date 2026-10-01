@@ -82,8 +82,8 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Manifest + CLI + Backend forward [OPTIONS_FORWARDED]: implement D1–D3. validateDeliverSlice optional permissionProfile/model; CLI --permission/--model with CLI-wins; forward into runSupervisedTask/resumeSupervisedTask.",
-    "S2 — Fail-closed fixtures [UNKNOWN_FAILS_CLOSED]: implement D4. N1 unknown permission; N2 omitted defaults; N3 non-string model. deliver-slice.test.js stays green.",
+    "S1 — deliver-slice.js/bin CLI; OPTIONS_FORWARDED. validateDeliverSlice accepts optional permissionProfile and nonempty string model, defaults only on omission to WORKSPACE_EDIT/null, and returns normalized fields. runDeliverSlice validates supplied option values, selects options > slice > defaults, then adds permissionProfile/model to all three runSupervisedTask/resumeSupervisedTask call objects (durable fresh closure, no-recovery fresh path, interrupted resume). QA remains unchanged. commandDeliver accepts permission/permissionProfile and model, mapping them to normalized runDeliverSlice options; commandDeliverCli forwards options.permission/options.model instead of dropping them. Update DELIVER_FLAGS and USAGE. Preserve existing durable execution checks; an ACCEPTED-handle path runs QA without new Backend dispatch. Resume tests capture normalized buildInvocation request even when tool resume argv omits model/sandbox by delivered adapter design.",
+    "S2 — fail-closed fixtures; UNKNOWN_FAILS_CLOSED. Use exact allowlists per API: manifest id/repositoryRoot/baseRevision/prompt/tool/backendVerifications/qaVerifications/requiredFiles/recoveryDir/maxAttempts/timeoutMs/permissionProfile/model plus independently validated delivered additions; runDeliverSlice options tool/command/recoveryDir/maxAttempts/timeoutMs/env/onHandleWrite/permissionProfile/model; commandDeliver additionally slice, recovery-dir/max-attempts/timeout-ms/permission aliases. Reject unknown keys before manifest read/tool lookup/process dispatch at the appropriate boundary. Reject supplied null/empty/non-string model and permission outside exact enum; only undefined means omitted. Bound N1/N3 invoke validateDeliverSlice; N2 invokes runDeliverSlice omission, N4 unknown option cases exercise each API and actual CLI. Verify no dispatch/handle write on errors, option precedence, and real fresh/resume request fields. Current tool-id whitelist, verifier shapes and QA remain unchanged.",
     "S3 — Living docs [OPTIONS_FORWARDED]: implement D5. operator.md and state.md name permission/model, CLI-wins, WORKSPACE_EDIT default, fail-before-spawn. No Blackboard ids."
   ],
   "acceptanceCriteria": [
@@ -355,20 +355,20 @@
       ],
       "sourceAnchors": [
         {
-          "ref": "docs/blackboard/evidence/BB-138/discovery.json",
-          "match": "\"deliverMentionsPermissionProfile\": false"
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "  const runBackendFresh = () => runSupervisedTask({"
+        },
+        {
+          "ref": "packages/agent-tools/src/deliver-slice.js",
+          "match": "  const resumed = await resumeSupervisedTask(existing, {"
         },
         {
           "ref": "packages/agent-tools/bin/exharness-agent.mjs",
-          "match": "const permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT;"
+          "match": "async function commandDeliverCli(options)"
         },
         {
           "ref": "packages/agent-tools/src/tool-adapters.js",
           "match": "export const PermissionProfile = Object.freeze({"
-        },
-        {
-          "ref": "packages/agent-tools/src/deliver-slice.js",
-          "match": "/** Validates DELIVER_SLICE_V1 before any process starts; extra fields are ignored. */"
         }
       ],
       "supportingPlanFields": [
@@ -389,6 +389,8 @@
         "deliver-regression"
       ],
       "decisionIndexes": [
+        0,
+        1,
         3
       ],
       "sourceRefs": [
