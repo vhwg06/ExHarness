@@ -34,10 +34,10 @@ export async function newObserverWorld(t, tag) {
   const sink = createCausalLifecycleEvidenceSink({ artifactStore, evidenceHeadStore });
   const board = { items: [] };
   const boardReader = { async readBlackboard() { return structuredClone({ items: board.items }); } };
-  const deps = { productHistory, acceptanceAuthority, projectionBuilder, artifactStore, lineage, boardReader, organizationArtifactRegistry, domainArtifactRegistry, executionAttemptStore, evidenceHeadStore, closureController };
+  const deps = { productHistory, acceptanceAuthority, projectionBuilder, artifactStore, lineage, boardReader, organizationArtifactRegistry, domainArtifactRegistry, executionAttemptStore, evidenceHeadStore, closureController, outcomeHeadStore };
   const observer = createOrganizationObserver(deps);
   const reconstruction = createCausalReconstruction(deps);
-  return { dir, artifactStore, guard, productHistory, acceptanceAuthority, projectionBuilder, closureController, lineage, organizationArtifactRegistry, domainArtifactRegistry, executionAttemptStore, evidenceHeadStore, sink, board, boardReader, observer, reconstruction };
+  return { dir, artifactStore, guard, productHistory, acceptanceAuthority, projectionBuilder, closureController, outcomeHeadStore, lineage, organizationArtifactRegistry, domainArtifactRegistry, executionAttemptStore, evidenceHeadStore, sink, board, boardReader, observer, reconstruction };
 }
 
 export async function seedEligibleProduct(w, productId = "product-1") {

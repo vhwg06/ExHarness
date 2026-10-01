@@ -17,16 +17,17 @@ async function lineageWorld(t) {
   const productHistory = createProductHistoryController({ artifactStore: f.artifactStore, headStore: createJsonCasHeadStore({ path: `${f.dir}/history-heads.json` }), mutationGuard: guard });
   const acceptanceAuthority = createProductAcceptanceAuthority({ artifactStore: f.artifactStore, headStore: createJsonCasHeadStore({ path: `${f.dir}/policy-heads.json` }), mutationGuard: guard });
   const projectionBuilder = createProductStateProjectionBuilder({ productHistory, acceptanceAuthority, artifactStore: f.artifactStore, mutationGuard: guard });
-  const closureController = createProductClosureController({ projectionBuilder, productHistory, acceptanceAuthority, artifactStore: f.artifactStore, outcomeHeadStore: createJsonCasHeadStore({ path: `${f.dir}/outcomes.json` }), mutationGuard: guard });
   const board = { items: [] };
   const boardReader = { async readBlackboard() { return structuredClone({ items: board.items }); } };
+  const outcomeHeadStore = createJsonCasHeadStore({ path: `${f.dir}/outcomes.json` });
+  const closureController = createProductClosureController({ projectionBuilder, productHistory, acceptanceAuthority, artifactStore: f.artifactStore, outcomeHeadStore, mutationGuard: guard });
   const observer = createOrganizationObserver({
     productHistory, acceptanceAuthority, projectionBuilder, artifactStore: f.artifactStore, lineage: f.lineage, boardReader,
     organizationArtifactRegistry: f.org, domainArtifactRegistry: createDomainExecutionArtifactRegistry({ store: f.artifactStore }),
     executionAttemptStore: createJsonExecutionAttemptStore({ path: `${f.dir}/attempts.json` }),
-    evidenceHeadStore: createJsonCasHeadStore({ path: `${f.dir}/causal-heads.json` }), closureController,
+    evidenceHeadStore: createJsonCasHeadStore({ path: `${f.dir}/causal-heads.json` }), closureController, outcomeHeadStore,
   });
-  return { ...f, guard, productHistory, acceptanceAuthority, projectionBuilder, closureController, board, boardReader, observer };
+  return { ...f, guard, productHistory, acceptanceAuthority, projectionBuilder, closureController, outcomeHeadStore, board, boardReader, observer };
 }
 
 async function seedProduct(w) {

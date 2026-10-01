@@ -29,6 +29,7 @@ export const CAUSAL_LIFECYCLE_EVENT_KINDS = Object.freeze([
 
 export const MISSING_PROVENANCE = "MISSING_PROVENANCE";
 export const UNKNOWN_PROVENANCE = "UNKNOWN";
+export const INCONSISTENT_PROVENANCE = "INCONSISTENT_PROVENANCE";
 
 function requireObservedAt(value) {
   requireText(value, "CausalLifecycleEvidence.observedAt");

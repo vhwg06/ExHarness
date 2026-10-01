@@ -259,6 +259,7 @@ export {createProductStateProjectionBuilder} from "./product-state-projection.js
 export {createProductClosureController,defineProductOutcomeClaim,productOutcomeSubjectKey,ProductClosureStaleError,ProductClosureNotReadyError,ProductClosureConflictError} from "./product-closure.js";
 export {
   CAUSAL_LIFECYCLE_EVENT_KINDS,
+  INCONSISTENT_PROVENANCE,
   MISSING_PROVENANCE,
   UNKNOWN_PROVENANCE,
   defineCausalLifecycleEvidence,
@@ -267,6 +268,7 @@ export {
   causalLifecycleListKey
 } from "./causal-provenance.js";
 export {
+  NOT_RECONSTRUCTABLE_FROM_PINNED_SUBJECT,
   defineCausalObservationSubject,
   createCausalReconstruction
 } from "./causal-reconstruction.js";

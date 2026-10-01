@@ -112,7 +112,7 @@ export function defineQualityAcceptance(raw) {
   return frozenCopy(raw);
 }
 
-export function createQualityAcceptancePublisher({ domainArtifactRegistry, organizationArtifactRegistry, deploymentReleaseController, artifactRegistry, qualityAcceptanceHeadStore, snapshotResolver, acceptanceAuthorityRef, projectGuard = null, projectIdForEnvironment = null, causalSink = null }) {
+export function createQualityAcceptancePublisher({ domainArtifactRegistry, organizationArtifactRegistry, deploymentReleaseController, artifactRegistry, qualityAcceptanceHeadStore, snapshotResolver, acceptanceAuthorityRef, projectGuard = null, projectIdForEnvironment = null, causalSink = null, causalNow = () => new Date().toISOString() }) {
   invariant(domainArtifactRegistry && typeof domainArtifactRegistry.resolveExecutionJudgmentBundle === "function", "QualityAcceptance publisher requires the domain execution artifact registry");
   invariant(organizationArtifactRegistry && typeof organizationArtifactRegistry.resolveDomainExecutionInput === "function", "QualityAcceptance publisher requires the organization artifact registry");
   invariant(deploymentReleaseController && typeof deploymentReleaseController.withCurrentReleaseGuard === "function", "QualityAcceptance publisher requires the release-head guard");
@@ -169,7 +169,7 @@ export function createQualityAcceptancePublisher({ domainArtifactRegistry, organ
       invariant(await qualityAcceptanceHeadStore.compareAndSwap(subjectKey, head?.revision ?? null, { acceptanceRef, releaseRef: snapshot.releaseRef }), "QualityAcceptance head CAS conflict");
       if (causalSink) {
         // Observational evidence only: sink failure never gates acceptance.
-        try { await causalSink.record({ kind: "CAUSAL_LIFECYCLE_EVIDENCE", version: 1, workId: `quality-acceptance:${snapshot.environmentRef}`, eventKind: "ACCEPTED", observedAt: new Date().toISOString(), boundaryRef: acceptanceRef }); } catch {}
+        try { await causalSink.record({ kind: "CAUSAL_LIFECYCLE_EVIDENCE", version: 1, workId: `quality-acceptance:${snapshot.environmentRef}`, eventKind: "ACCEPTED", observedAt: causalNow(), boundaryRef: acceptanceRef }); } catch {}
       }
       return deepFreeze({ acceptanceRef, acceptance });
     }));

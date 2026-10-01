@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { defineExecutionStrategyDescriptor, executionAttemptSubjectKey, executionPolicySubjectKey } from "../src/domain-execution-control.js";
 import { defineOrganizationWorkContract } from "../src/organization-work.js";
-import { MISSING_PROVENANCE } from "../src/causal-provenance.js";
+import { INCONSISTENT_PROVENANCE, MISSING_PROVENANCE } from "../src/causal-provenance.js";
 import { newObserverWorld, seedEligibleProduct } from "./causal-reconstruction.test.js";
 
 const T0 = "2026-09-01T09:00:00.000Z";
@@ -72,7 +72,7 @@ async function seedTimedAttempt(w, attestations) {
     status: "ACTIVE", executionAttemptId, bindingRef, transitionRefs: [], outcomeRef,
     completionDecisionRef: null, publicationReceiptRef: null, judgmentBundleRef: null,
   }), true);
-  return { contract };
+  return { contract, bindingRef, attestationRefs, outcomeRef };
 }
 
 test("Waiting and executing durations come from durable boundary timestamps", async (t) => {
@@ -89,6 +89,7 @@ test("Waiting and executing durations come from durable boundary timestamps", as
   assert.equal(timing.executing.durationMs, (Date.parse(T2) - Date.parse(T1)) + (Date.parse(T4) - Date.parse(T3)));
   assert.equal(timing.executing.invocationCount, 2);
   assert.equal(timing.runtimeIntervals.length, 2);
+  assert.ok(timing.evidenceRefs.includes(timing.waiting.fromBoundaryRef));
 });
 
 test("A missing waiting boundary is MISSING_PROVENANCE, never an estimate", async (t) => {
@@ -106,4 +107,50 @@ test("A missing waiting boundary is MISSING_PROVENANCE, never an estimate", asyn
   // wall-clock value leaked into either duration.
   assert.equal(timing.executing.durationMs, Date.parse(T2) - Date.parse(T1));
   assert.ok(![before, after].includes(timing.executing.durationMs));
+});
+
+test("An attestation that breaks the binding relation throws instead of degrading to MISSING", async (t) => {
+  const w = await newObserverWorld(t, "timing-integrity");
+  await seedEligibleProduct(w);
+  const { contract, bindingRef } = await seedTimedAttempt(w, [[T1, T2]]);
+  // A foreign attestation (bound to another binding) is linked from an
+  // outcome that this attempt head points at. That integrity failure must
+  // throw, never degrade to MISSING_PROVENANCE.
+  const foreignRef = await w.domainArtifactRegistry.putRuntimeExecutionAttestation({
+    kind: "RUNTIME_EXECUTION_ATTESTATION", version: 1, executionAttemptId: "execution-attempt-id:timed-1",
+    bindingRef: "execution-attempt-binding:sha256:" + "f".repeat(64),
+    runtimeInvocationId: "runtime-invocation-foreign", runtimeKind: "local-process",
+    runtimeDeploymentRef: "git:runtime-sha-1", adapterRef: "adapter:sa-core@1", startedAt: T3, finishedAt: T4,
+    effectRefs: [], traceRefs: [],
+    dispatchAuthoritySnapshot: {}, producerAuthorityRef: "authority:runtime",
+  });
+  const tamperedOutcomeRef = await w.domainArtifactRegistry.putExecutionAttemptOutcome({
+    kind: "EXECUTION_ATTEMPT_OUTCOME", version: 1, executionAttemptId: "execution-attempt-id:timed-1", bindingRef, status: "SUCCEEDED",
+    runtimeAttestationRefs: [foreignRef], outputArtifactRefs: [], effectRefs: [],
+    verificationCandidateRefs: [], counterevidenceRefs: [], startedAt: T3, finishedAt: T4, proposedDerivationEdges: [],
+  });
+  const tamperedKey = executionAttemptSubjectKey({ projectId: "project-1", itemId: "WORK-SA-2", workContractRef: contract.contractRef });
+  assert.equal(await w.executionAttemptStore.compareAndSwap(tamperedKey, null, {
+    status: "ACTIVE", executionAttemptId: "execution-attempt-id:timed-1", bindingRef, transitionRefs: [], outcomeRef: tamperedOutcomeRef,
+    completionDecisionRef: null, publicationReceiptRef: null, judgmentBundleRef: null,
+  }), true);
+  await assert.rejects(
+    w.observer.measureTiming({ workId: "WORK-SA-2", workContractRef: contract.contractRef, projectId: "project-1" }),
+    /runtime attestation\/binding relation mismatch/,
+  );
+});
+
+test("A MATERIALIZED boundary later than first runtime start is INCONSISTENT, not negative", async (t) => {
+  const w = await newObserverWorld(t, "timing-inconsistent");
+  await seedEligibleProduct(w);
+  const { contract } = await seedTimedAttempt(w, [[T1, T2]]);
+  // The owner-recorded MATERIALIZED boundary contradicts durable order: it is
+  // later than the attested runtime start.
+  const { evidenceRef } = await w.sink.record({ kind: "CAUSAL_LIFECYCLE_EVIDENCE", version: 1, workId: "WORK-SA-1", eventKind: "MATERIALIZED", observedAt: T3, projectId: "project-1", workContractRef: contract.contractRef, boundaryRef: contract.contractRef });
+  const timing = await w.observer.measureTiming({ workId: "WORK-SA-1", workContractRef: contract.contractRef, projectId: "project-1" });
+  assert.equal(timing.waiting.status, INCONSISTENT_PROVENANCE);
+  assert.equal(timing.waiting.durationMs, null);
+  assert.equal(timing.waiting.fromBoundaryRef, evidenceRef);
+  assert.equal(timing.waiting.fromBoundaryAt, T3);
+  assert.ok(Date.parse(timing.waiting.fromBoundaryAt) > Date.parse(T1));
 });

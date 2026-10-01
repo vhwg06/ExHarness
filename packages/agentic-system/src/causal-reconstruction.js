@@ -1,9 +1,12 @@
 import { createHash } from "node:crypto";
 import { executionAttemptSubjectKey } from "./domain-execution-control.js";
 import { productRevision, reverseSemanticClosure } from "./product-lineage.js";
-import { MISSING_PROVENANCE, UNKNOWN_PROVENANCE, listCausalLifecycleEvidence } from "./causal-provenance.js";
+import { productOutcomeSubjectKey } from "./product-closure.js";
+import { INCONSISTENT_PROVENANCE, MISSING_PROVENANCE, UNKNOWN_PROVENANCE, listCausalLifecycleEvidence } from "./causal-provenance.js";
 
-export { MISSING_PROVENANCE, UNKNOWN_PROVENANCE };
+export { INCONSISTENT_PROVENANCE, MISSING_PROVENANCE, UNKNOWN_PROVENANCE };
+
+export const NOT_RECONSTRUCTABLE_FROM_PINNED_SUBJECT = "NOT_RECONSTRUCTABLE_FROM_PINNED_SUBJECT";
 
 function invariant(condition, message) {
   if (!condition) throw new TypeError(message);
@@ -91,8 +94,47 @@ export function createCausalReconstruction({
   executionAttemptStore = null,
   evidenceHeadStore = null,
   closureController = null,
+  outcomeHeadStore = null,
 } = {}) {
   invariant(artifactStore && typeof artifactStore.resolve === "function", "reconstruction requires an immutable artifact store");
+
+  // A CURRENT subject may only be used while it still equals the canonical
+  // heads. Any advancement rejects: live board/lineage reads must never be
+  // mixed with an older pin.
+  async function assertSubjectCurrent(subject) {
+    invariant(productHistory && typeof productHistory.current === "function", "currentness check requires the product history controller");
+    invariant(acceptanceAuthority && typeof acceptanceAuthority.resolveCurrent === "function", "currentness check requires the acceptance authority");
+    const history = await productHistory.current({ productId: subject.productId });
+    const acceptance = await acceptanceAuthority.resolveCurrent({ productId: subject.productId });
+    const current =
+      history != null &&
+      history.generation === subject.historyGeneration &&
+      history.historyDigest === subject.historyDigest &&
+      history.commitRef === subject.historyCommitRef &&
+      acceptance.policyRef === subject.policyRef &&
+      acceptance.policyRevision === subject.policyRevision &&
+      acceptance.waiverSetDigest === subject.waiverSetDigest;
+    invariant(current, "pinned observation subject is stale; a newer head requires a new subject");
+  }
+
+  // Refs reachable from the pinned subject: the history chain slice up to the
+  // pinned generation plus every ref named by the pinned projection. Lineage
+  // publications outside this set (including other products') are excluded.
+  async function pinnedReachableRefs(subject, projection) {
+    invariant(productHistory && typeof productHistory.readChain === "function", "pinned evidence scoping requires the product history controller");
+    const observed = await productHistory.readChain({ productId: subject.productId });
+    const index = observed.chain.findIndex((entry) => entry.ref === subject.historyCommitRef);
+    invariant(index >= 0, "pinned history commit is not in the canonical chain");
+    invariant(observed.chain[index].commit.generation === subject.historyGeneration, "pinned history generation mismatch during evidence scoping");
+    const refs = new Set();
+    for (const entry of observed.chain.slice(0, index + 1)) {
+      for (const ref of entry.commit.transitionRefs ?? []) refs.add(ref);
+    }
+    for (const ref of [...(projection.claimRefs ?? []), ...(projection.obligationRefs ?? []), ...(projection.releaseRefs ?? []), ...(projection.qualityAcceptanceRefs ?? [])]) {
+      refs.add(ref);
+    }
+    return refs;
+  }
 
   async function resolveCurrentSubject(args) {
     const input = args ?? {};
@@ -169,6 +211,17 @@ export function createCausalReconstruction({
     const input = args ?? {};
     rejectExtraKeys(input, ["subject"], "listRemainingWork");
     const { subject } = await reconstructPinned({ subject: input.subject });
+    // Board lifecycle and claim state are live mutable truth, not part of the
+    // pinned subject, so a HISTORICAL subject cannot reconstruct them. The
+    // gap is explicit, never filled from live state.
+    if (subject.mode === "HISTORICAL") {
+      return freeze({
+        status: NOT_RECONSTRUCTABLE_FROM_PINNED_SUBJECT,
+        reason: "remaining work derives from the live board and lineage heads, which are not part of the pinned subject; pin a CURRENT subject to list remaining work",
+        items: freeze([]),
+      });
+    }
+    await assertSubjectCurrent(subject);
     invariant(boardReader && typeof boardReader.readBlackboard === "function", "remaining-work reconstruction requires the canonical board reader");
     invariant(organizationArtifactRegistry && typeof organizationArtifactRegistry.resolveWorkContract === "function", "remaining-work reconstruction requires the organization artifact registry");
     const board = await boardReader.readBlackboard();
@@ -219,6 +272,10 @@ export function createCausalReconstruction({
     const input = args ?? {};
     rejectExtraKeys(input, ["subject", "obligationRef", "obligationSubjectKey"], "traceObligation");
     const subject = defineCausalObservationSubject(input.subject);
+    // Obligation status, downstream invalidation and affected work all depend
+    // on live lineage/board heads, which a HISTORICAL pin cannot capture.
+    invariant(subject.mode === "CURRENT", "historical obligation tracing requires a pinned lineage head; query with a CURRENT subject");
+    await assertSubjectCurrent(subject);
     invariant(lineage && typeof lineage.snapshot === "function", "obligation tracing requires the lineage snapshot reader");
     const hasRef = input.obligationRef != null;
     const hasKey = input.obligationSubjectKey != null;
@@ -372,10 +429,21 @@ export function createCausalReconstruction({
     invariant(policy && strategy, "pinned execution policy/strategy is unavailable");
     const attestations = await resolveAttestations(binding, bindingRef, head);
     const first = attestations[0] ?? null;
+    // Recovery can produce several runtime invocations for one pinned
+    // attempt; every attestation is reported. The singular
+    // runtimeInvocationId/runtimeAttestationRef fields name the first
+    // invocation for backward compatibility.
+    const runtimeInvocations = attestations.map(({ attestationRef, attestation }) => freeze({
+      runtimeInvocationId: requireText(attestation.runtimeInvocationId, "runtimeInvocationId"),
+      attestationRef,
+      startedAt: attestation.startedAt,
+      finishedAt: attestation.finishedAt ?? null,
+    }));
     return freeze({
       executionAttemptId: requireText(binding.executionAttemptId, "executionAttemptId"),
       runtimeInvocationId: first ? requireText(first.attestation.runtimeInvocationId, "runtimeInvocationId") : MISSING_PROVENANCE,
       runtimeAttestationRef: first ? first.attestationRef : null,
+      runtimeInvocations: freeze(runtimeInvocations),
       policyRef: requireText(binding.executionPolicyRef, "policyRef"),
       strategyRef: requireText(binding.executionStrategyRef, "strategyRef"),
       contextRefs: freeze([...(binding.contextRefs ?? [])]),
@@ -386,30 +454,51 @@ export function createCausalReconstruction({
       runtimeAdapterRef: requireText(binding.runtimeBinding?.adapterRef, "runtimeAdapterRef"),
       observedPolicyHead: freeze({ ...(binding.observedExecutionPolicyHead ?? {}) }),
       attestationCount: attestations.length,
-      evidenceRefs: freeze([bindingRef, binding.executionPolicyRef, binding.executionStrategyRef, ...(first ? [first.attestationRef] : []), ...(subject ? [subject.projectionRef] : [])]),
+      evidenceRefs: freeze([bindingRef, binding.executionPolicyRef, binding.executionStrategyRef, ...attestations.map((a) => a.attestationRef), ...(subject ? [subject.projectionRef] : [])]),
     });
   }
 
   async function measureTiming(args) {
     const input = args ?? {};
     rejectExtraKeys(input, ["subject", "workId", "workContractRef", "projectId", "attemptSubjectKey"], "measureTiming");
+    const subject = input.subject == null ? null : defineCausalObservationSubject(input.subject);
     const workId = requireText(input.workId, "workId");
+    // Only an absent attempt head becomes MISSING_PROVENANCE. Binding and
+    // attestation integrity failures throw instead of degrading silently.
+    invariant(executionAttemptStore && typeof executionAttemptStore.current === "function", "timing reconstruction requires the attempt head reader");
+    invariant(domainArtifactRegistry && typeof domainArtifactRegistry.resolveExecutionAttemptBinding === "function", "timing reconstruction requires the domain execution artifact registry");
+    let attemptKey = input.attemptSubjectKey ?? null;
+    if (!attemptKey) {
+      attemptKey = executionAttemptSubjectKey({
+        projectId: requireText(input.projectId, "projectId"),
+        itemId: workId,
+        workContractRef: requireText(input.workContractRef, "workContractRef"),
+      });
+    }
+    const head = await executionAttemptStore.current(attemptKey);
+    let binding = null;
+    let bindingRef = null;
+    let attestations = [];
+    if (head != null) {
+      bindingRef = requireText(head.value.bindingRef, "attempt bindingRef");
+      binding = await domainArtifactRegistry.resolveExecutionAttemptBinding(bindingRef);
+      invariant(binding, `ExecutionAttemptBinding is unavailable: ${bindingRef}`);
+      attestations = await resolveAttestations(binding, bindingRef, head);
+    }
+    // The MATERIALIZED boundary for the same work generation: the entry
+    // whose workContractRef matches the attempt's contract when known.
     let materializedAt = null;
     let materializedRef = null;
     if (evidenceHeadStore) {
       const entries = await listCausalLifecycleEvidence({ artifactStore, evidenceHeadStore }, { workId });
-      const first = entries.find((e) => e.evidence.eventKind === "MATERIALIZED") ?? null;
-      if (first) {
-        materializedAt = first.evidence.observedAt;
-        materializedRef = first.evidenceRef;
+      const materialized = entries.filter((e) => e.evidence.eventKind === "MATERIALIZED");
+      const picked = binding?.workContractRef
+        ? (materialized.find((e) => e.evidence.workContractRef === binding.workContractRef) ?? null)
+        : (materialized[0] ?? null);
+      if (picked) {
+        materializedAt = picked.evidence.observedAt;
+        materializedRef = picked.evidenceRef;
       }
-    }
-    let attestations = [];
-    try {
-      const resolved = await resolveAttempt(input);
-      attestations = await resolveAttestations(resolved.binding, resolved.bindingRef, resolved.head);
-    } catch {
-      attestations = [];
     }
     const intervals = attestations.map(({ attestationRef, attestation }) => {
       const start = Date.parse(attestation.startedAt);
@@ -425,7 +514,12 @@ export function createCausalReconstruction({
     const completeStarts = intervals.filter((i) => i.startedAt).map((i) => Date.parse(i.startedAt)).filter(Number.isFinite).sort((a, b) => a - b);
     let waiting = null;
     if (materializedAt != null && completeStarts.length > 0) {
-      waiting = freeze({ status: "AVAILABLE", durationMs: completeStarts[0] - Date.parse(materializedAt), fromBoundaryRef: materializedRef, fromBoundaryAt: materializedAt });
+      const durationMs = completeStarts[0] - Date.parse(materializedAt);
+      // A MATERIALIZED boundary later than first runtime start contradicts
+      // durable order; it is reported, never emitted as a negative duration.
+      waiting = durationMs < 0
+        ? freeze({ status: INCONSISTENT_PROVENANCE, durationMs: null, fromBoundaryRef: materializedRef, fromBoundaryAt: materializedAt, firstRuntimeStart: intervals.find((i) => Date.parse(i.startedAt) === completeStarts[0])?.startedAt ?? null })
+        : freeze({ status: "AVAILABLE", durationMs, fromBoundaryRef: materializedRef, fromBoundaryAt: materializedAt });
     } else {
       waiting = freeze({ status: MISSING_PROVENANCE, durationMs: null, fromBoundaryRef: materializedRef, fromBoundaryAt: materializedAt });
     }
@@ -433,13 +527,21 @@ export function createCausalReconstruction({
     const executing = completeDurations.length > 0
       ? freeze({ status: "AVAILABLE", durationMs: completeDurations.reduce((a, b) => a + b, 0), invocationCount: completeDurations.length })
       : freeze({ status: MISSING_PROVENANCE, durationMs: null, invocationCount: 0 });
-    return freeze({ workId, waiting, executing, runtimeIntervals: intervals });
+    return freeze({
+      workId,
+      waiting,
+      executing,
+      runtimeIntervals: intervals,
+      evidenceRefs: freeze([...(materializedRef ? [materializedRef] : []), ...intervals.map((i) => i.attestationRef), ...(subject ? [subject.projectionRef] : [])]),
+    });
   }
 
   async function chainEvidence(args) {
     const input = args ?? {};
     rejectExtraKeys(input, ["subject"], "chainEvidence");
     const { subject, projection } = await reconstructPinned({ subject: input.subject });
+    const historical = subject.mode === "HISTORICAL";
+    if (!historical) await assertSubjectCurrent(subject);
     const facts = [];
     for (const ref of [...(projection.releaseRefs ?? [])].sort()) {
       const raw = await artifactStore.resolve(ref);
@@ -457,7 +559,32 @@ export function createCausalReconstruction({
         evidenceRefs: freeze([ref, subject.historyCommitRef, subject.projectionRef]),
       }));
     }
-    if (closureController && typeof closureController.currentOutcome === "function") {
+    if (historical) {
+      // Never consult the live outcome head: the outcome counts only when it
+      // is bound to exactly this pinned subject.
+      let boundRef = null;
+      if (outcomeHeadStore && typeof outcomeHeadStore.current === "function") {
+        const head = await outcomeHeadStore.current(productOutcomeSubjectKey(subject.productId));
+        if (head?.value?.outcomeRef) {
+          const raw = await artifactStore.resolve(head.value.outcomeRef);
+          const pinnedOutcome = raw?.subject ?? null;
+          if (
+            pinnedOutcome &&
+            pinnedOutcome.historyGeneration === subject.historyGeneration &&
+            pinnedOutcome.historyDigest === subject.historyDigest &&
+            pinnedOutcome.historyCommitRef === subject.historyCommitRef &&
+            pinnedOutcome.policyRef === subject.policyRef &&
+            pinnedOutcome.policyRevision === subject.policyRevision &&
+            pinnedOutcome.waiverSetDigest === subject.waiverSetDigest
+          ) {
+            boundRef = head.value.outcomeRef;
+          }
+        }
+      }
+      facts.push(boundRef
+        ? freeze({ factKind: "PRODUCT_OUTCOME_CLAIM", ref: boundRef, status: "BOUND_TO_PINNED_SUBJECT", evidenceRefs: freeze([boundRef, subject.historyCommitRef, subject.policyRef]) })
+        : freeze({ factKind: "PRODUCT_OUTCOME_CLAIM", ref: null, status: MISSING_PROVENANCE, evidenceRefs: freeze([subject.historyCommitRef]) }));
+    } else if (closureController && typeof closureController.currentOutcome === "function") {
       try {
         const outcome = await closureController.currentOutcome({ productId: subject.productId });
         if (outcome?.outcomeRef) {
@@ -473,9 +600,13 @@ export function createCausalReconstruction({
       }
     }
     if (lineage && typeof lineage.snapshot === "function") {
+      const reachable = await pinnedReachableRefs(subject, projection);
       const snapshot = await lineage.snapshot();
       for (const publication of Object.values(snapshot.publications ?? {}).sort((a, b) => String(a.key).localeCompare(String(b.key)))) {
         for (const ref of [...(publication.recordRefs ?? [])].sort()) {
+          // Only records reachable from the pinned projection/history count;
+          // unrelated products' publications are never listed.
+          if (!reachable.has(ref)) continue;
           const raw = await artifactStore.resolve(ref).catch(() => null);
           facts.push(freeze({
             factKind: raw?.kind ?? UNKNOWN_PROVENANCE,

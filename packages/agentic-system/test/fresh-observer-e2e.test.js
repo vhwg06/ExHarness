@@ -29,14 +29,15 @@ function openStack(dir) {
   const productHistory = createProductHistoryController({ artifactStore, headStore: createJsonCasHeadStore({ path: join(dir, "history-heads.json") }), mutationGuard: guard });
   const acceptanceAuthority = createProductAcceptanceAuthority({ artifactStore, headStore: createJsonCasHeadStore({ path: join(dir, "policy-heads.json") }), mutationGuard: guard });
   const projectionBuilder = createProductStateProjectionBuilder({ productHistory, acceptanceAuthority, artifactStore, mutationGuard: guard });
-  const closureController = createProductClosureController({ projectionBuilder, productHistory, acceptanceAuthority, artifactStore, outcomeHeadStore: createJsonCasHeadStore({ path: join(dir, "outcomes.json") }), mutationGuard: guard });
+  const outcomeHeadStore = createJsonCasHeadStore({ path: join(dir, "outcomes.json") });
+  const closureController = createProductClosureController({ projectionBuilder, productHistory, acceptanceAuthority, artifactStore, outcomeHeadStore, mutationGuard: guard });
   const lineage = createProductLineageStore({ path: join(dir, "lineage.json"), artifactStore });
   const organizationArtifactRegistry = createOrganizationArtifactRegistry({ store: artifactStore });
   const domainArtifactRegistry = createDomainExecutionArtifactRegistry({ store: artifactStore });
   const executionAttemptStore = createJsonExecutionAttemptStore({ path: join(dir, "attempts.json") });
   const evidenceHeadStore = createJsonCasHeadStore({ path: join(dir, "causal-heads.json") });
   const sink = createCausalLifecycleEvidenceSink({ artifactStore, evidenceHeadStore });
-  return { artifactStore, guard, productHistory, acceptanceAuthority, projectionBuilder, closureController, lineage, organizationArtifactRegistry, domainArtifactRegistry, executionAttemptStore, evidenceHeadStore, sink };
+  return { artifactStore, guard, productHistory, acceptanceAuthority, projectionBuilder, closureController, outcomeHeadStore, lineage, organizationArtifactRegistry, domainArtifactRegistry, executionAttemptStore, evidenceHeadStore, sink };
 }
 
 test("Fresh-process rebuild from the same pinned subject yields identical causal facts", async (t) => {
@@ -170,7 +171,10 @@ test("Fresh-process rebuild from the same pinned subject yields identical causal
   assert.deepEqual(rebuilt.blockers, first.blockers);
   assert.deepEqual(rebuilt.evidenceRefs, first.evidenceRefs);
   const freshRemaining = await freshObserver.listRemainingWork({ subject: { ...first.subject, mode: "HISTORICAL" } });
-  assert.deepEqual(freshRemaining, remaining);
+  // Board lifecycle is live truth, not pinned: the historical marker is
+  // identical across processes instead of a silently mixed live list.
+  assert.equal(freshRemaining.status, "NOT_RECONSTRUCTABLE_FROM_PINNED_SUBJECT");
+  assert.deepEqual(freshRemaining.items, []);
   const freshExecution = await freshObserver.describeExecution({ subject: { ...first.subject, mode: "HISTORICAL" }, workId, workContractRef: materialized.contract.contractRef, projectId: "project-1" });
   assert.deepEqual(freshExecution, execution);
   const freshTiming = await freshObserver.measureTiming({ workId, workContractRef: materialized.contract.contractRef, projectId: "project-1" });
