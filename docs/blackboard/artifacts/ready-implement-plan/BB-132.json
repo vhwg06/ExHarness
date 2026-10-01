@@ -93,7 +93,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — After delivered dependencies/exact READY, validate BB-127/131 projections; implement factory/runner/reporter with pre/post identity, actual assertion events and report/evidence guards. Define exact policy and preview projection validators in browser-journey-verifier.js using browserContract. runner launches protected runner.js with fixed argv and explicit bounded JSON protocol; reporter.js records declared ASSERT ids only on completed awaited expect events and rejects duplicate/missing titles/ids. Rehash protected bytes, browser executable and preview bindings pre/post. Merge reporter ledger with exact single-project single-attempt Playwright JSON and retained trace hash; setup, unknown IDs, drift or evidenceStore failure return INCONCLUSIVE, actual assertion mismatch FAIL, all mandatory proofs PASS. runner.run({policy,preview,outputRoot,signal}) returns {exitCode,signal,timedOut,reportPath,tracePaths,ledgerPath,stdout,stderr}; factory validates all paths as owned regular files and caps before parsing. reporter onStepEnd accepts category expect only under exactly one declared ASSERT:<id> parent, error==null; onTestEnd requires one expectedStatus=passed/result status=passed/retry0. Capture assertion failure separately from runner/setup errors; no assertion event means INCONCLUSIVE. Runner explicitly sets trusted config testDir/protected journey, fullyParallel:false,workers:1,retries:0,timeout:policytimeout,expect.timeout:5000,use:{browserName:chromium,headless:true,serviceWorkers:block,trace:on,screenshot:off,video:off}; load reporter via protected module path. Seven ordered ids cover empty list, blank validation/no write, create/list, reload, update/reload. Verify exact ledger set and trace/report digests before cleanup.",
+    "S1 — After delivered dependencies/exact READY, validate BB-127/131 projections; implement factory/runner/reporter with pre/post identity, actual assertion events and report/evidence guards. Define exact policy and preview projection validators in browser-journey-verifier.js using browserContract. runner launches protected browser-journey-runner.cjs with fixed argv and explicit bounded JSON protocol; browser-journey-reporter.cjs records declared ASSERT ids only on completed awaited expect events and rejects duplicate/missing titles/ids. Rehash protected bytes, browser executable and preview bindings pre/post. Merge reporter ledger with exact single-project single-attempt Playwright JSON and retained trace hash; setup, unknown IDs, drift or evidenceStore failure return INCONCLUSIVE, actual assertion mismatch FAIL, all mandatory proofs PASS. runner.run({policy,preview,outputRoot,signal}) returns {exitCode,signal,timedOut,reportPath,tracePaths,ledgerPath,stdout,stderr}; factory validates all paths as owned regular files and caps before parsing. reporter onStepEnd accepts category expect only under exactly one declared ASSERT:<id> parent, error==null; onTestEnd requires one expectedStatus=passed/result status=passed/retry0. Capture assertion failure separately from runner/setup errors; no assertion event means INCONCLUSIVE. Runner explicitly sets trusted config testDir/protected journey, fullyParallel:false,workers:1,retries:0,timeout:policytimeout,expect.timeout:5000,use:{browserName:chromium,headless:true,serviceWorkers:block,trace:on,screenshot:off,video:off}; load reporter via protected module path. Seven ordered ids cover empty list, blank validation/no write, create/list, reload, update/reload. Verify exact ledger set and trace/report digests before cleanup.",
     "S2 — Port embedded matrix into real Chromium fixtures. Each N1-N12 directly constructs createBrowserJourneyVerifier and invokes verify. Inject boundary faults separately; compose new adapter with existing QA/completion/publisher. browser-journey-verifier.test.js also injects the actual factory into createProductQaExecutionStrategy with independent runtimeObserver and protected AcceptanceSnapshot. Assert failed/unknown criterion cannot publish; successful criteria require all QA identities. Generic QA tests remain regressions only. Real browser happy path is mandatory and missing provision fails the focused command with explicit setup error, never skip.",
     "S3 — Retain exact clean-candidate criterion evidence; run declared focused/regression/docs checks and update Living docs. Independent Worker judgment/publication follow; fixtures alone are not delivery."
   ],
@@ -177,24 +177,91 @@
       "command": "node --test packages/agentic-system/test/browser-journey-verifier.test.js",
       "environment": "EXHARNESS_BROWSER_RUNNER_ROOT=operator external @playwright/test@1.63.0; PLAYWRIGHT_BROWSERS_PATH=matching1243. Missing setup fails verification, never skips. Fixtures use owned tempdirs/ephemeral loopback ports; no candidate npm install.",
       "requiredTests": "Correctx3,N1-N12,0 skips/cancellations. Browser behavior cases real; contract faults may inject runner/observer while invoking adapter.",
-      "setup": "Before focused command, operator provisions exact external @playwright/test@1.63.0 and Chromium1243 with a pinned lockfile/SRI; use disk-backed TMPDIR during browser install. Export absolute EXHARNESS_BROWSER_RUNNER_ROOT and PLAYWRIGHT_BROWSERS_PATH. Verify packageLock/browser bytes against protected policy. This runtime is a separately declared test prerequisite, not candidate dependency installation. Node24/Linux x64 mandatory; run focused command under that runtime, not silently under CI Node22."
+      "setup": "Before focused command, operator provisions exact external @playwright/test@1.63.0 and Chromium1243 with a pinned lockfile/SRI; use disk-backed TMPDIR during browser install. Export absolute EXHARNESS_BROWSER_RUNNER_ROOT and PLAYWRIGHT_BROWSERS_PATH. Verify packageLock/browser bytes against protected policy. This runtime is a separately declared test prerequisite, not candidate dependency installation. Node24/Linux x64 mandatory; run focused command under that runtime, not silently under CI Node22.",
+      "negativeCases": [
+        {
+          "title": "BB-132 N1 inert submit",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "FAILURE_CLASSIFICATION"
+        },
+        {
+          "title": "BB-132 N2 stale list",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "FAILURE_CLASSIFICATION"
+        },
+        {
+          "title": "BB-132 N3 reload persistence",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "FAILURE_CLASSIFICATION"
+        },
+        {
+          "title": "BB-132 N4 validation",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "FAILURE_CLASSIFICATION"
+        },
+        {
+          "title": "BB-132 N5 skip or noop",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "INDEPENDENT_EVIDENCE"
+        },
+        {
+          "title": "BB-132 N6 empty assertion steps",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "INDEPENDENT_EVIDENCE"
+        },
+        {
+          "title": "BB-132 N7 missing coverage or retries",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "INDEPENDENT_EVIDENCE"
+        },
+        {
+          "title": "BB-132 N8 evaluator drift",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "IDENTITY_BINDING"
+        },
+        {
+          "title": "BB-132 N9 preview or runtime drift",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "IDENTITY_BINDING"
+        },
+        {
+          "title": "BB-132 N10 setup or timeout",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "FAILURE_CLASSIFICATION"
+        },
+        {
+          "title": "BB-132 N11 invalid artifacts",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "EVIDENCE_RETENTION"
+        },
+        {
+          "title": "BB-132 N12 cleanup and authority",
+          "subject": "createBrowserJourneyVerifier",
+          "criterionId": "OWNED_RESOURCES"
+        }
+      ],
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "qa-seam",
       "command": "node --test packages/agentic-system/test/product-qa.test.js packages/agentic-system/test/acceptance-snapshot.test.js",
-      "coverage": "Regression authority only; adapter integration/corrupt reporter/preview/evaluator cases belong to browser-focused and call actual createBrowserJourneyVerifier."
+      "coverage": "Regression authority only; adapter integration/corrupt reporter/preview/evaluator cases belong to browser-focused and call actual createBrowserJourneyVerifier.",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agent-tools-regression",
-      "command": "npm run test:agent-tools"
+      "command": "npm run test:agent-tools",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "agentic-regression",
-      "command": "npm run test:agentic"
+      "command": "npm run test:agentic",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     },
     {
       "id": "docs",
-      "command": "npm run verify:current-docs"
+      "command": "npm run verify:current-docs",
+      "scope": "Worker runs this command against the implemented exact candidate; new focused files are declared expectedTests. Research readiness does not assert future command execution."
     }
   ],
   "invariantCoverage": [
@@ -685,7 +752,9 @@
           "match": "criterionRefs: [...policy.criterionRefs]"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "browserContract"
+      ]
     },
     {
       "objectiveCriterion": "Missing observations, skipped assertions, changed evaluator, wrong release, browser setup failure or substituted screenshots cannot count as PASS; seeded inert-button and stale-list candidates are rejected with retained diagnostic evidence.",
@@ -749,7 +818,14 @@
           "match": "plannedExperiment"
         }
       ],
-      "supportingPlanFields": []
+      "supportingPlanFields": [
+        "researchEvidenceSummary"
+      ]
     }
-  ]
+  ],
+  "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
+  "researchEvidenceSummary": {
+    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
+    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed."
+  }
 }
