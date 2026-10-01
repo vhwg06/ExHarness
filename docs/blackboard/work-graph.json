@@ -4723,17 +4723,18 @@
       },
       "expectedOutputs": [
         "Specify an exported inherited-environment allowlist used by the process runner so spawn no longer copies process.env wholesale, while still dropping NODE_TEST_CONTEXT.",
-        "Specify that a secret present only on process.env and absent from the caller overlay is missing from the child, and that overlay keys are present even when they are not on the allowlist.",
+        "Specify that a secret present only on process.env and absent from the caller overlay and from every tool's declared auth list is missing from the child, and that overlay keys are present even when they are not on the allowlist.",
         "Specify that PATH and HOME remain inherited when set on the parent so CLI homedir authentication keeps working.",
-        "Specify named tests, Living trust-boundary text and index exports for the allowlist.",
-        "Ground the design in the executed env-allowlist probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
+        "Specify that the bin forwards FAKE_AGENT_* and --env KEY=VALUE explicitly into the supervisor overlay so the delivered AT4/GR3 bin-driven tests pass unmodified, and that a declared per-tool auth name set on the parent reaches the child.",
+        "Specify named tests, Living trust-boundary text and index exports for the allowlist and auth passthrough.",
+        "Ground the design in the executed env-allowlist probe and the plan-defect probe and produce an exact file-level plan, negative cases and executable verification for fresh Jev readiness."
       ],
       "currentContextRef": null,
       "claim": null,
       "contract": {
         "objectiveRef": "docs/blackboard/artifacts/objective/BB-120.json",
         "planRef": "docs/blackboard/artifacts/ready-implement-plan/BB-120.json",
-        "researchBaselineSha": "7bcbe9852cdb9c5e4ba89c7e05dbaf3775eb0368"
+        "researchBaselineSha": "5386e2adee15a3175a5b6635b63a54f6e24128cb"
       },
       "lane": "RESEARCH_SA",
       "phase": "RESEARCH"
