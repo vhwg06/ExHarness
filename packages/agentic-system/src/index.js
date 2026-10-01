@@ -190,6 +190,16 @@ export {
   executionPolicySubjectKey,
   resolveExecutionJudgmentBundle
 } from "./domain-execution-control.js";
+export {
+  OpencodeRecoveryRequiredError,
+  OPENCODE_ADAPTER_REF,
+  OPENCODE_RUNTIME_KIND,
+  OPENCODE_STRATEGY_ID,
+  OPENCODE_STRATEGY_VERSION,
+  createOpencodeRuntimeAdapter,
+  hashWorkspaceTree,
+  isPathAllowed
+} from "./opencode-runtime-adapter.js";
 export {defineCrossDomainObligation,crossDomainObligationSubjectKey,crossDomainObligationRevisionRef} from "./cross-domain-obligation.js";
 export {createProductLineageStore,createCommittedPublicationReader,defineSemanticClaim,semanticClaimRevisionRef,semanticClaimSubjectKey,reverseSemanticClosure} from "./product-lineage.js";
 export {createDomainWriteAuthority,defineDomainWriteAuthorityPolicy,domainWriteAuthoritySubjectKey,createDomainPublicationGate} from "./domain-write-authority.js";
