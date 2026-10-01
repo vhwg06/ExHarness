@@ -22,30 +22,30 @@
     "BB-099 experiment registration, BB-100 adapter, BB-105 grok, BB-122 opencode."
   ],
   "constraints": [
-    "Code lives in packages/agent-tools/src/process-runner.js, src/tool-adapters.js, src/index.js and bin/exharness-agent.mjs; tests in packages/agent-tools/test/child-env.test.js titled EN1..EN7 followed by a space with { timeout: 60000 }.",
+    "Code in packages/agent-tools/src/process-runner.js, src/tool-adapters.js, src/index.js and bin/exharness-agent.mjs; tests in packages/agent-tools/test/child-env.test.js titled EN1..EN7 followed by a space with { timeout: 60000 }.",
     "Delivered BB-097/BB-098 tests (AT4 x2, GR3) keep passing unmodified; the bin forwards FAKE_AGENT_* plus --env flags into the supervisor overlay.",
     "Delivered adapters declare empty authEnvNames; no vendor auth names are invented.",
     "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
   ],
   "invariants": [
-    "A secret present only on process.env, absent from the caller overlay and from every declared auth list, is missing from the child environment.",
-    "Caller env overlay keys are present in the child even when they are not on the allowlist, and the overlay wins over inherited and auth-passthrough values.",
+    "A secret present only on process.env, absent from caller overlay and every declared auth list, is missing from the child.",
+    "Caller overlay keys are present in the child even off the allowlist; overlay wins over inherited and auth-passthrough values.",
     "A declared per-tool auth name set on the parent reaches the child for that tool; undeclared ambient names do not.",
-    "FAKE_AGENT_* from the bin process plus --env KEY=VALUE flags reach the supervised child through the overlay, so delivered bin-driven tests pass unmodified.",
+    "FAKE_AGENT_* from the bin process plus --env KEY=VALUE reach the supervised child via overlay, so delivered bin-driven tests pass unmodified.",
     "PATH and HOME are inherited when set on the parent.",
     "NODE_TEST_CONTEXT is never present in the child.",
     "This package is still not a sandbox."
   ],
   "architectureDecisions": [
-    "D1 — Export AGENT_CHILD_INHERITED_ENV = Object.freeze(['PATH','HOME','USER','LOGNAME','SHELL','TMPDIR','TEMP','TMP','LANG','LC_ALL','LC_CTYPE','TERM','TERM_PROGRAM','COLORTERM','XDG_CONFIG_HOME','XDG_CACHE_HOME','XDG_DATA_HOME','XDG_RUNTIME_DIR','XDG_STATE_HOME','USERPROFILE','HOMEDRIVE','HOMEPATH','APPDATA','LOCALAPPDATA','PATHEXT','SYSTEMROOT','COMSPEC','WINDIR']) from process-runner.js and index.js. childEnvironment copies only those names from process.env when they are own properties with a string value.",
-    "D2 — childEnvironment(env, { tool } = {}) returns { ...inheritedAllowlist, ...authPassthrough(tool), ...overlay } where overlay is env or {}. authPassthrough copies the tool's frozen authEnvNames own-string values from process.env, skipping NODE_TEST_CONTEXT always. Delete NODE_TEST_CONTEXT from the result. Do not spread process.env. spawnBounded takes an optional tool and runAgentInvocation passes its tool; runProcess and version probes pass none, so they get no auth passthrough.",
-    "D3 — tool-adapters.js: every adapter carries a frozen authEnvNames string array. defineAgentTool validates it (array of strings, frozen; defaults to a frozen [] when absent) and preserves it. The delivered codex, kiro, agy and grok adapters declare []. No vendor auth names are added without verified vendor documentation; operators pass auth explicitly via the caller overlay or the bin --env flag.",
-    "D4 — Export binOverlayEnv(binProcessEnv, envFlags) from process-runner.js: picks FAKE_AGENT_* string entries from the bin process env, then applies parsed --env entries last. bin/exharness-agent.mjs run and smoke collect repeated --env KEY=VALUE flags (malformed entries are UsageError, exit 64) and pass binOverlayEnv(process.env, flags) as env to runSupervisedTask. probe, deliver and report paths are unchanged.",
-    "D5 — PATH and HOME stay on the allowlist so CLIs can resolve binaries and read homedir config. ExHarness still does not read ~/.codex or credentials.",
-    "D6 — Tests EN1–EN7 use runProcess(process.execPath, ['-e', dump]) and runAgentInvocation with defineAgentTool. Plant EXHARNESS_PLANTED_SECRET and AWS_SECRET_ACCESS_KEY on process.env. Assert absence unless passed in env overlay or declared in authEnvNames. Assert overlay FAKE_AGENT_SCENARIO present. EN6 additionally calls binOverlayEnv(...) and spawns the bin with FAKE_AGENT_SCENARIO and --env like the delivered AT4/GR3 tests and asserts the fake CLI observes them. Assert PATH/HOME present when parent has them. Restore planted keys in finally.",
-    "D7 — Living docs/living/system/agent-tools/state.md Trust boundary: child env is allowlisted plus declared per-tool auth passthrough plus caller overlay forwarded end-to-end through the bin; host secrets in process.env are not inherited; operator overlay still wins. No Blackboard ids.",
-    "D8 — Evidence: executed env-allowlist-probe-result.json (spread process.env, planted secrets inherited, PATH/HOME inherited, NODE_TEST_CONTEXT stripped, childEnvironment not exported) and plan-defect-probe-result.json (D2 drops FAKE_AGENT_SCENARIO/RECORD and representative auth with the supervisor default; bin passes no env; corrected rule forwards declared auth and bin overlay while dropping undeclared ambient secrets).",
-    "D9 — observation.js mergedEnv stays a full process.env scan for redaction only; it is not spawn env. Do not edit observation.js.",
+    "D1 — Export AGENT_CHILD_INHERITED_ENV = Object.freeze(['PATH','HOME','USER','LOGNAME','SHELL','TMPDIR','TEMP','TMP','LANG','LC_ALL','LC_CTYPE','TERM','TERM_PROGRAM','COLORTERM','XDG_CONFIG_HOME','XDG_CACHE_HOME','XDG_DATA_HOME','XDG_RUNTIME_DIR','XDG_STATE_HOME','USERPROFILE','HOMEDRIVE','HOMEPATH','APPDATA','LOCALAPPDATA','PATHEXT','SYSTEMROOT','COMSPEC','WINDIR']) from process-runner.js and index.js. childEnvironment copies only those names from process.env (own string properties).",
+    "D2 — childEnvironment(env, { tool } = {}) returns { ...inheritedAllowlist, ...authPassthrough(tool), ...overlay } (overlay = env || {}). authPassthrough copies the tool's frozen authEnvNames own-string values from process.env. Always skip/delete NODE_TEST_CONTEXT (including overlay). Never spread process.env. spawnBounded takes optional tool; runAgentInvocation passes it; runProcess and version probes pass none (no auth passthrough).",
+    "D3 — Every adapter has frozen authEnvNames. defineAgentTool validates it (frozen string array; default frozen []) and preserves it. Delivered codex, kiro, agy, grok adapters declare []. No vendor auth names without verified vendor docs; operators pass auth via overlay or bin --env.",
+    "D4 — Export binOverlayEnv(binProcessEnv, envFlags) from process-runner.js: pick FAKE_AGENT_* strings from binProcessEnv, then apply parsed --env last. bin run/smoke collect repeated --env KEY=VALUE (malformed -> UsageError, exit 64) and pass binOverlayEnv(process.env, flags) as env to runSupervisedTask. probe, deliver, report unchanged.",
+    "D5 — PATH and HOME stay on the allowlist so CLIs resolve binaries and homedir config. ExHarness does not read ~/.codex or credentials.",
+    "D6 — EN1–EN7 use runProcess(process.execPath, ['-e', dump]) and runAgentInvocation with defineAgentTool. Plant EXHARNESS_PLANTED_SECRET and AWS_SECRET_ACCESS_KEY on process.env; assert absent unless overlay or authEnvNames. Assert overlay FAKE_AGENT_SCENARIO and PATH/HOME when parent has them. EN6 also calls binOverlayEnv(...) and spawns the bin with FAKE_AGENT_SCENARIO and --env as AT4/GR3 so the fake CLI sees them. Restore planted keys in finally.",
+    "D7 — docs/living/system/agent-tools/state.md Trust boundary: child env is allowlist plus declared per-tool auth passthrough plus caller overlay forwarded through the bin; host process.env secrets are not inherited; operator overlay wins. No Blackboard ids.",
+    "D8 — Evidence: env-allowlist-probe-result.json (spreads process.env; planted secrets and PATH/HOME inherited; NODE_TEST_CONTEXT stripped; childEnvironment unexported) and plan-defect-probe-result.json (D2 + supervisor default drops FAKE_AGENT_SCENARIO/RECORD and auth names; bin passes no env; corrected rule forwards declared auth and bin overlay, drops undeclared ambient secrets).",
+    "D9 — observation.js mergedEnv remains a full process.env scan for redaction only, not spawn env. Do not edit observation.js.",
     "D10 — auditPaths against this plan rejects packages/core-harness/** and docs/blackboard/**."
   ],
   "sourceScope": {
@@ -105,7 +105,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — Allowlist [EN1]: implement D1 childEnvironment allowlist base. Tests assert AGENT_CHILD_INHERITED_ENV is frozen and spawn no longer copies process.env.",
+    "S1 — Allowlist [EN1]: D1 childEnvironment allowlist; AGENT_CHILD_INHERITED_ENV frozen; spawn no longer copies process.env.",
     "S2 — Secrets and overlay [EN2,EN3]: planted parent secrets absent unless overlay/declared; overlay keys present; NODE_TEST_CONTEXT absent.",
     "S3 — Auth passthrough [EN5]: adapter authEnvNames declared names forwarded, undeclared ambient dropped, overlay wins.",
     "S4 — Bin forwarding [EN6]: FAKE_AGENT_* plus --env reach the supervised child; delivered AT4/GR3 pass unmodified. PATH/HOME [EN4] covered with S1.",
@@ -125,7 +125,7 @@
     },
     {
       "id": "EN2",
-      "statement": "A secret present only on process.env, absent from the caller overlay and every declared auth list, is missing from the child; overlay keys are present even when they are not on the allowlist.",
+      "statement": "A secret present only on process.env, absent from caller overlay and every declared auth list, is missing from the child; overlay keys are present even off the allowlist.",
       "verificationIds": [
         "en2-secrets",
         "agent-tools"
@@ -136,7 +136,7 @@
     },
     {
       "id": "EN3",
-      "statement": "NODE_TEST_CONTEXT is never present in the child environment, even when set on the parent or passed in the overlay.",
+      "statement": "NODE_TEST_CONTEXT is never present in the child, even when set on the parent or passed in the overlay.",
       "verificationIds": [
         "en2-secrets",
         "agent-tools"
@@ -158,7 +158,7 @@
     },
     {
       "id": "EN5",
-      "statement": "A declared per-tool auth name set on the parent reaches the child for that tool, undeclared ambient names do not, and the caller overlay wins over the auth passthrough.",
+      "statement": "A declared per-tool auth name set on the parent reaches the child; undeclared ambient names do not; caller overlay wins over auth passthrough.",
       "verificationIds": [
         "en5-auth",
         "agent-tools"
@@ -169,7 +169,7 @@
     },
     {
       "id": "EN6",
-      "statement": "The bin forwards FAKE_AGENT_* and --env KEY=VALUE into the supervised child, and the delivered AT4/GR3 bin-driven tests pass unmodified.",
+      "statement": "The bin forwards FAKE_AGENT_* and --env KEY=VALUE into the supervised child; delivered AT4/GR3 bin-driven tests pass unmodified.",
       "verificationIds": [
         "en6-bin",
         "agent-tools",
@@ -181,7 +181,7 @@
     },
     {
       "id": "EN7",
-      "statement": "Living docs state the allowlisted child env plus declared auth passthrough plus bin-forwarded overlay and that the package is still not a sandbox, with no Blackboard ids, and the candidate writes only sourceScope.write paths.",
+      "statement": "Living docs state allowlisted child env plus declared auth passthrough plus bin-forwarded overlay; package is still not a sandbox; no Blackboard ids; candidate writes only sourceScope.write paths.",
       "verificationIds": [
         "en7-docs",
         "docs",
@@ -194,13 +194,13 @@
   ],
   "invariantCoverage": [
     {
-      "invariant": "A secret present only on process.env, absent from the caller overlay and from every declared auth list, is missing from the child environment.",
+      "invariant": "A secret present only on process.env, absent from caller overlay and every declared auth list, is missing from the child.",
       "criterionIds": [
         "EN2"
       ]
     },
     {
-      "invariant": "Caller env overlay keys are present in the child even when they are not on the allowlist, and the overlay wins over inherited and auth-passthrough values.",
+      "invariant": "Caller overlay keys are present in the child even off the allowlist; overlay wins over inherited and auth-passthrough values.",
       "criterionIds": [
         "EN2",
         "EN5"
@@ -213,7 +213,7 @@
       ]
     },
     {
-      "invariant": "FAKE_AGENT_* from the bin process plus --env KEY=VALUE flags reach the supervised child through the overlay, so delivered bin-driven tests pass unmodified.",
+      "invariant": "FAKE_AGENT_* from the bin process plus --env KEY=VALUE reach the supervised child via overlay, so delivered bin-driven tests pass unmodified.",
       "criterionIds": [
         "EN6"
       ]
@@ -363,7 +363,7 @@
   "laneContracts": [
     {
       "lane": "RESEARCH_SA",
-      "input": "BB-120 objective + executed env probe + plan-defect probe + delivered process-runner, adapters, bin and tests",
+      "input": "BB-120 objective + env probe + plan-defect probe + delivered process-runner, adapters, bin and tests",
       "output": "READY_IMPLEMENT_PLAN",
       "binding": "objective hash + researchBaselineSha",
       "convergence": "researchGaps=[] + fresh Jev SATISFIED",
@@ -389,7 +389,7 @@
       "docs/living/system/agent-tools/state.md"
     ],
     "questionId": "LIVING_DOCS",
-    "statement": "Living docs state that agent-tool child processes inherit an explicit environment allowlist plus declared per-tool auth passthrough plus the caller overlay forwarded end-to-end through the bin, that host secrets in process.env are not copied, and that the package is still not a sandbox. Living docs contain no Blackboard ids."
+    "statement": "Living docs state agent-tool children inherit an explicit env allowlist plus declared per-tool auth passthrough plus the caller overlay forwarded through the bin; host process.env secrets are not copied; the package is still not a sandbox. No Blackboard ids."
   },
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "objectiveCoverage": [
