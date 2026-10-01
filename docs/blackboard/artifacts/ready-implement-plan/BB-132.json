@@ -94,7 +94,7 @@
   },
   "implementationSlices": [
     "S1 — After delivered dependencies/exact READY, validate BB-127/131 projections; implement factory/runner/reporter with pre/post identity, actual assertion events and report/evidence guards. Define exact policy and preview projection validators in browser-journey-verifier.js using browserContract. runner launches protected browser-journey-runner.cjs with fixed argv and explicit bounded JSON protocol; browser-journey-reporter.cjs records declared ASSERT ids only on completed awaited expect events and rejects duplicate/missing titles/ids. Rehash protected bytes, browser executable and preview bindings pre/post. Merge reporter ledger with exact single-project single-attempt Playwright JSON and retained trace hash; setup, unknown IDs, drift or evidenceStore failure return INCONCLUSIVE, actual assertion mismatch FAIL, all mandatory proofs PASS. runner.run({policy,preview,outputRoot,signal}) returns {exitCode,signal,timedOut,reportPath,tracePaths,ledgerPath,stdout,stderr}; factory validates all paths as owned regular files and caps before parsing. reporter onStepEnd accepts category expect only under exactly one declared ASSERT:<id> parent, error==null; onTestEnd requires one expectedStatus=passed/result status=passed/retry0. Capture assertion failure separately from runner/setup errors; no assertion event means INCONCLUSIVE. Runner explicitly sets trusted config testDir/protected journey, fullyParallel:false,workers:1,retries:0,timeout:policytimeout,expect.timeout:5000,use:{browserName:chromium,headless:true,serviceWorkers:block,trace:on,screenshot:off,video:off}; load reporter via protected module path. Seven ordered ids cover empty list, blank validation/no write, create/list, reload, update/reload. Verify exact ledger set and trace/report digests before cleanup.",
-    "S2 — Port embedded matrix into real Chromium fixtures. Each N1-N12 directly constructs createBrowserJourneyVerifier and invokes verify. Inject boundary faults separately; compose new adapter with existing QA/completion/publisher. browser-journey-verifier.test.js also injects the actual factory into createProductQaExecutionStrategy with independent runtimeObserver and protected AcceptanceSnapshot. Assert failed/unknown criterion cannot publish; successful criteria require all QA identities. Generic QA tests remain regressions only. Real browser happy path is mandatory and missing provision fails the focused command with explicit setup error, never skip.",
+    "S2 — Port embedded matrix into real Chromium fixtures. Each N1-N12 directly constructs createBrowserJourneyVerifier and invokes verify. Inject boundary faults separately; compose new adapter with existing QA/completion/publisher. browser-journey-verifier.test.js also injects the actual factory into createProductQaExecutionStrategy with independent runtimeObserver and protected AcceptanceSnapshot. Assert failed/unknown criterion cannot publish; successful criteria require all QA identities. Generic QA tests remain regressions only. Real browser happy path is mandatory and missing provision fails the focused command with explicit setup error, never skip. Calibrated seven mandatory ASSERT ids and all11 native browser cases are enumerated in researchEvidence.calibration; reuse this resolved fixed workload. Adapter-specific validation/report/trace controls use injected failures in the actual factory. The source-copy calibration is not mistaken for candidate/QA publication evidence.",
     "S3 — Retain exact clean-candidate criterion evidence; run declared focused/regression/docs checks and update Living docs. Independent Worker judgment/publication follow; fixtures alone are not delivery."
   ],
   "acceptanceCriteria": [
@@ -825,7 +825,161 @@
   ],
   "jevEvidenceRouting": "OBJECTIVE_SCOPED_V1",
   "researchEvidenceSummary": {
-    "classification": "RESEARCH_FEASIBILITY_NOT_PRODUCT_IMPLEMENTATION",
-    "source": "Original pinned research evidence/prototype remains in the plan, with replay instructions and source hashes. Future Worker focused checks are not claimed executed."
+    "classification": "EXECUTED_ISOLATED_BROWSER_CALIBRATION_AND_PINNED_PRIMARY_SOURCE_INSPECTION",
+    "providerCalls": 0,
+    "calibration": {
+      "protocol": "Real Chromium -> owned HTTP tracker/JSON rows; fresh [] reset/server/port/preview per run; fixed validation/create/list/reload/update/reload without stubbing. Health-only comparison, no build/model/productivity trial.",
+      "assertionIds": [
+        "empty",
+        "invalid-message",
+        "invalid-no-write",
+        "create-visible",
+        "create-reload",
+        "update-visible",
+        "update-reload"
+      ],
+      "summary": "3 correct PASS, 4 behavioral seeds FAIL, 4 setup/coverage controls INCONCLUSIVE; 11 classifier controls INCONCLUSIVE. No observed false accepts in this fixed matrix; no statistical/live-value inference.",
+      "runs": [
+        [
+          1,
+          "correct",
+          "PASS",
+          "ALL_ASSERTIONS_OBSERVED",
+          7
+        ],
+        [
+          2,
+          "correct",
+          "PASS",
+          "ALL_ASSERTIONS_OBSERVED",
+          7
+        ],
+        [
+          3,
+          "correct",
+          "PASS",
+          "ALL_ASSERTIONS_OBSERVED",
+          7
+        ],
+        [
+          4,
+          "inert-submit",
+          "FAIL",
+          "ASSERT:create-visible",
+          3
+        ],
+        [
+          5,
+          "stale-list",
+          "FAIL",
+          "ASSERT:create-visible",
+          3
+        ],
+        [
+          6,
+          "missing-persistence",
+          "FAIL",
+          "ASSERT:create-reload",
+          4
+        ],
+        [
+          7,
+          "validation-broken",
+          "FAIL",
+          "ASSERT:invalid-message",
+          1
+        ],
+        [
+          8,
+          "skip",
+          "INCONCLUSIVE",
+          "SKIPPED_OR_RETRIED",
+          0
+        ],
+        [
+          9,
+          "noop",
+          "INCONCLUSIVE",
+          "ASSERTION_COVERAGE_MISSING",
+          0
+        ],
+        [
+          10,
+          "setup",
+          "INCONCLUSIVE",
+          "IDENTITY_MISSING",
+          0
+        ],
+        [
+          11,
+          "empty-steps",
+          "INCONCLUSIVE",
+          "ASSERTION_EVENTS_MISSING",
+          7
+        ]
+      ],
+      "reportControls": {
+        "count": 11,
+        "all": "INCONCLUSIVE",
+        "cases": [
+          "evaluatorDigest",
+          "candidateDigest",
+          "fixtureDigest",
+          "previewId",
+          "environmentId",
+          "browserVersion",
+          "screenshot-only",
+          "omitted-assertion",
+          "expected-failure",
+          "duplicate-retry",
+          "missing-trace"
+        ],
+        "method": "Clone/mutate positive report or expected binding; classifier controls, not browser runs."
+      },
+      "traceAudit": [
+        {
+          "run": 1,
+          "bytes": 11457,
+          "sha256": "68707b0c1fa391a94d76fa16d02d3240d6afb5bb9843cf8bab4a429520de8a49",
+          "domSnapshots": 35,
+          "networkBytes": 19595
+        },
+        {
+          "run": 4,
+          "bytes": 10170,
+          "sha256": "e07e1a514888fef5b4d131f6299d438f7d3d64b792174283c02df7470b59cf3e",
+          "domSnapshots": 19,
+          "networkBytes": 3880
+        }
+      ],
+      "limitations": "Laboratory source/config/fixture bindings and injected classifier identity controls do not establish deployed runtime identity or confinement. Pre/post lifecycle, Product QA integration and durable evidenceStore are Worker tests.",
+      "shared": "Health=200 all11; correct/skip/noop/empty-steps exit0, defects/setup exit1. Correct has7 successful expect events; empty-steps has7 wrappers/0 expect events.",
+      "traceCapture": "All11 archives:screen/source entries0. Correct:35 DOM snapshots/~19.5KiB network JSON. Seed failures retain diagnostics; submitted values remain.",
+      "runsColumns": [
+        "run",
+        "case",
+        "verdict",
+        "reason",
+        "successfulSteps"
+      ],
+      "reportSha256": {
+        "1": "ef5eb6ce48ce32f6eb6ba2bc30999783feb6b7f55c6500cb9659c68e9939cb70",
+        "4": "8469c24edcff70a7e5fb0f01abd2e46c6205125b4e638c045e8f9782e01673ed",
+        "5": "57a769a360e9ee78bd6e48e68d0f263443013239dfc142fb45f86ebfc4194852",
+        "6": "65f83099047ad7243151ba0d766e0bbfc69c26b78c7cb88787d9313e295bfc61",
+        "7": "32e1db651fd6f0a46d1eb32fae871535e70f4fcaace53ad69fb253452ea80a97"
+      },
+      "fullResultsSha256": "5c930bdc92de66e60dd4b5c74e87647fca9cb9ed11a7b54316b948083c569852"
+    },
+    "prototypeSourceSha256": "c74ee188dc47574f1100dd385a325781a0ec0878f84d36e02aa063d7a9b748ec",
+    "reproduction": "python3 - <absolute-plan-json> <owned-research-dir> <<'PY'\nimport sys,json,gzip,base64,pathlib,hashlib\nr=json.load(open(sys.argv[1]))[\"prototypeReproduction\"]; b=gzip.decompress(base64.b64decode(r[\"sourceGzipBase64\"])); assert hashlib.sha256(b).hexdigest()==r[\"sourceSha256\"]; d=pathlib.Path(sys.argv[2]); d.mkdir(parents=True,exist_ok=True); (d/\"prototype.cjs\").write_bytes(b)\nPY",
+    "upstreamPins": {
+      "sourceSha": "1b025d7e20a026371cd5f98ba0cdce48892737c8",
+      "release": "1.63.0",
+      "browserRevision": "1243",
+      "browserVersion": "153.0.8010.12",
+      "browserExecutableSha256": "ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e",
+      "packageLockSha256": "e1b439b9f7fced52fbfd04c850a244ee699d9bfbde6fe65a9baec9e68aa08b45"
+    }
   }
 }
