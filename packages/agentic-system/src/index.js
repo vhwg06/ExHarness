@@ -276,3 +276,26 @@ export {
   createOrganizationObserver,
   ORGANIZATION_OBSERVER_QUERY_SURFACE
 } from "./organization-observer.js";
+export {
+  GROUNDED_OBSERVATION_KIND,
+  GROUNDED_OBSERVATION_VERSION,
+  GROUNDED_FINDING_INPUT_KIND,
+  GROUNDED_FINDING_INPUT_VERSION,
+  UNTRUSTED_NARRATIVE,
+  defineGroundedObservation,
+  createGroundedObservationProjector,
+  observationIdFor,
+  defineGroundedFindingInput,
+  buildGroundedFindingInput,
+  assertGroundedFindingInputCurrent,
+  findingInputIdFor
+} from "./grounded-observation.js";
+export {
+  OBSERVATION_CONTEXT_BINDING_KIND,
+  OBSERVATION_CONTEXT_BINDING_VERSION,
+  UNRESOLVED_REASONS,
+  defineObservationContextBinding,
+  createObservationContextBinder,
+  classifyGrounding,
+  contextBindingIdFor
+} from "./observation-context-binding.js";
