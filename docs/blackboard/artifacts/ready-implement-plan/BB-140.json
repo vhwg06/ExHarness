@@ -27,7 +27,7 @@
   ],
   "architectureDecisions": [
     "D1 — EVAL_FLAGS add \"permission\" and \"timeout-ms\" only. Do not add K or max-attempts. commandEval overlays factors { permissionProfile, timeoutMs } into runAgentToolsEval, which already accepts factors = {} and spreads { ...factors, model }. K stays DEFAULT_FACTORS.K = 3. DELIVERED_TRUTH: evalFlagsHasPermission false, evalFlagsHasTimeoutMs false, evalFlagsHasK false, evalApiAcceptsFactors true, defaultFactorsHasPermission true, defaultFactorsHasTimeoutMs true.",
-    "D2 — Validation before registration. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError like commandRun. timeoutMs = positiveInteger(options[\"timeout-ms\"], \"--timeout-ms\", 600000). Unknown eval flags already throw UsageError via if (!EVAL_FLAGS.includes(flag)). USAGE eval line gains [--permission WORKSPACE_EDIT|FULL_AUTO] [--timeout-ms T]. Reject a missing CLI value (parser boolean true) unless timeout-ms is a string before calling positiveInteger; missing/boolean permission and timeout are UsageError exit64.",
+    "D2 — Validation before registration. permission = options.permission ?? PermissionProfile.WORKSPACE_EDIT; unknown values UsageError like commandRun. timeoutMs = positiveInteger(options[\"timeout-ms\"], \"--timeout-ms\", 600000). Unknown eval flags already throw UsageError via if (!EVAL_FLAGS.includes(flag)). USAGE eval line gains [--permission WORKSPACE_EDIT|FULL_AUTO] [--timeout-ms T]. The delivered parser throws UsageError for missing option values before commandEval. Validate timeout-ms is a string when supplied before calling positiveInteger; missing/boolean permission and timeout are UsageError exit64.",
     "D3 — Do not write experiment/index.js or arms.js. FACTOR_MISMATCH still aborts mismatched arms. Suite, arms, reduceAttempts and claim boundary stay BB-099. Passing explicit WORKSPACE_EDIT/600000 when omitted is identical to DEFAULT_FACTORS.",
     "D4 — Focused tests implement testContract: P1 actual registered factors in every arm, P2 explicit permission with omitted timeout, N1 invalid permission, N2 omitted defaults, distinct N3 non-positive/non-integer timeout and N4 unknown flag cases. Every usage failure exits 64 as existing main() does and has no registration/dispatch side effects.",
     "D5 — Living docs. evaluation.md USAGE and the fixed-factors list name optional CLI --permission/--timeout-ms, omitted WORKSPACE_EDIT/600000, K stays 3, unknown permission/non-positive timeout/unknown flags fail before registration. state.md eval sentence names the same flags. No Blackboard ids.",
@@ -78,7 +78,7 @@
     ]
   },
   "implementationSlices": [
-    "S1 — CLI flags and factors overlay [FACTORS_PINNED]: implement D1–D3. EVAL_FLAGS gain permission and timeout-ms; commandEval overlays those factors; K stays 3.",
+    "S1 — packages/agent-tools/bin/exharness-agent.mjs; FACTORS_PINNED. Append permission and timeout-ms to EVAL_FLAGS and eval USAGE. At commandEval preflight validate permission against PermissionProfile, parse timeout with positiveInteger; omitted WORKSPACE_EDIT/600000. Pass factors:{permissionProfile,timeoutMs} as a sibling of tools/out to runAgentToolsEval. Existing index forwards {...factors,model} into runToolExperiment; its matched factors are used for every arm, registration protocol/producer/budget hashes and arm requests. K remains3. No experiment/arms source changes. Focused CLI tests recompute protocol hash and inspect every arm budget plus fake argv; explicit, permission-only and omitted controls detect a dropped flag.",
     "S2 — Fail-closed fixtures [UNKNOWN_FACTORS_FAIL_CLOSED]: implement D4. N1 unknown permission; N2 omitted keeps WORKSPACE_EDIT/600000. Unknown flags and non-positive timeout fail before registration.",
     "S3 — Living docs [FACTORS_PINNED]: implement D5. evaluation.md and state.md name the flags, defaults, and fail-before-registration. No Blackboard ids."
   ],
@@ -340,19 +340,15 @@
       "sourceAnchors": [
         {
           "ref": "packages/agent-tools/bin/exharness-agent.mjs",
-          "match": "const EVAL_FLAGS = Object.freeze([\"tool\", \"out\", \"command\", \"model\", \"tasks\", \"repeats\", \"max-invocations\", \"max-usd\", \"fake-scenario\", \"seed\"]);"
+          "match": "const EVAL_FLAGS = Object.freeze("
+        },
+        {
+          "ref": "packages/agent-tools/src/experiment/index.js",
+          "match": "factors: { ...factors, model }"
         },
         {
           "ref": "packages/agent-tools/src/experiment/arms.js",
-          "match": "{ K: 3, timeoutMs: 600000, permissionProfile: PermissionProfile.WORKSPACE_EDIT, model: null }"
-        },
-        {
-          "ref": "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
-          "match": "\"evalFlagsHasPermission\": false"
-        },
-        {
-          "ref": "packages/agent-tools/bin/exharness-agent.mjs",
-          "match": "for (const flag of Object.keys(options)) if (!EVAL_FLAGS.includes(flag)) throw new UsageError(`unknown eval flag --${flag}`);"
+          "match": "export const DEFAULT_FACTORS = Object.freeze("
         }
       ],
       "supportingPlanFields": [
