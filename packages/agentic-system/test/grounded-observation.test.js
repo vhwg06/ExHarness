@@ -1,11 +1,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   defineGroundedObservation,
   createGroundedObservationProjector,
   observationIdFor,
 } from "../src/grounded-observation.js";
+import { createJsonImmutableArtifactStore, createOrganizationArtifactRegistry } from "../src/organization-artifact-store.js";
+import { createJsonCasHeadStore } from "../src/organization-authority-store.js";
+import { createProductMutationGuard, createProductHistoryController } from "../src/product-history.js";
+import { createProductAcceptanceAuthority } from "../src/product-acceptance-policy.js";
+import { createProductStateProjectionBuilder } from "../src/product-state-projection.js";
+import { createProductClosureController } from "../src/product-closure.js";
+import { createProductLineageStore } from "../src/product-lineage.js";
+import { createDomainExecutionArtifactRegistry, createJsonExecutionAttemptStore } from "../src/domain-execution-store.js";
+import { createOrganizationObserver } from "../src/organization-observer.js";
+import { executionAttemptSubjectKey } from "../src/domain-execution-control.js";
 
 const digestOf = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
@@ -79,7 +92,9 @@ const ATTESTATION = Object.freeze({
   traceRefs: [],
 });
 
-function fakeObserver({ factEntries, attestationRef }) {
+const WORK = Object.freeze({ workId: "work-1", workContractRef: "contract:1", projectId: "product-1" });
+
+function fakeObserver({ factEntries, attestationRef, executionAttemptId }) {
   const chain = factEntries;
   return Object.freeze({
     async queryHistorical() {
@@ -91,8 +106,11 @@ function fakeObserver({ factEntries, attestationRef }) {
     async chainEvidence() {
       return structuredClone(chain);
     },
-    async describeExecution() {
-      return { runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
+    async describeExecution(args) {
+      if (!args || typeof args.workId !== "string" || typeof args.workContractRef !== "string" || typeof args.projectId !== "string") {
+        throw new TypeError("describeExecution requires workId+workContractRef+projectId");
+      }
+      return { executionAttemptId, runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
     },
     async explainWhyNotDone() {
       return { readiness: "NOT_READY", blockers: [], evidenceRefs: [] };
@@ -131,9 +149,103 @@ async function world({ facts = null } = {}) {
       return store.resolve(ref);
     },
   };
-  const observer = fakeObserver({ factEntries: chain, attestationRef });
+  const observer = fakeObserver({ factEntries: chain, attestationRef, executionAttemptId: BINDING.executionAttemptId });
   return { store, registries, observer, bindingRef, attestationRef, qaRef };
 }
+
+test("execution coordinates are mandatory; the observer default path needs declared identity", async () => {
+  const w = await world();
+  const projector = createGroundedObservationProjector({
+    observer: w.observer,
+    artifactRegistry: w.registries,
+    artifactStore: w.store,
+  });
+  await assert.rejects(
+    () =>
+      projector.projectObservation({
+        subject: SUBJECT,
+        bindingRef: w.bindingRef,
+        attestationRefs: [w.attestationRef],
+      }),
+    /execution coordinates/,
+  );
+});
+
+test("cross-attempt and cross-invocation pin substitution is rejected", async () => {
+  const w = await world();
+  // A second, fully valid attempt for other work lives in the same store.
+  const otherBindingRef = await w.store.put("ExecutionAttemptBinding", {
+    ...BINDING,
+    executionAttemptId: "execution-attempt-id:other-work",
+    workId: "work-9",
+  });
+  const otherAttestationRef = await w.store.put("RuntimeExecutionAttestation", {
+    ...ATTESTATION,
+    bindingRef: otherBindingRef,
+    executionAttemptId: "execution-attempt-id:other-work",
+    runtimeInvocationId: "runtime-invocation-other",
+  });
+  // A second invocation of the same attempt (recovery) also lives in the store.
+  const secondInvocationRef = await w.store.put("RuntimeExecutionAttestation", {
+    ...ATTESTATION,
+    bindingRef: w.bindingRef,
+    runtimeInvocationId: "runtime-invocation-2",
+  });
+  const projector = createGroundedObservationProjector({
+    observer: w.observer,
+    artifactRegistry: w.registries,
+    artifactStore: w.store,
+  });
+  // The declared WORK coordinates describe attempt A: pins for attempt B are
+  // valid refs but belong to other work, so they are rejected, never mixed.
+  await assert.rejects(
+    () =>
+      projector.projectObservation({ ...WORK,
+        subject: SUBJECT,
+        bindingRef: otherBindingRef,
+        attestationRefs: [otherAttestationRef],
+      }),
+    /does not match the observer attempt/,
+  );
+  await assert.rejects(
+    () =>
+      projector.projectObservation({ ...WORK,
+        subject: SUBJECT,
+        bindingRef: w.bindingRef,
+        attestationRefs: [otherAttestationRef],
+      }),
+    /not part of the observer attempt|relation mismatch/,
+  );
+  // Mixing two invocations of one attempt is rejected instead of silently
+  // recording only the first.
+  const mixedObserver = fakeObserver({
+    factEntries: [
+      { factKind: "QUALITY_ACCEPTANCE", ref: w.qaRef, evidenceRefs: [w.qaRef, SUBJECT.projectionRef] },
+    ],
+    attestationRef: w.attestationRef,
+    executionAttemptId: BINDING.executionAttemptId,
+  });
+  const mixedProjector = createGroundedObservationProjector({
+    observer: {
+      ...mixedObserver,
+      async describeExecution(args) {
+        const base = await mixedObserver.describeExecution(args);
+        return { ...base, runtimeInvocations: [{ attestationRef: w.attestationRef }, { attestationRef: secondInvocationRef }] };
+      },
+    },
+    artifactRegistry: w.registries,
+    artifactStore: w.store,
+  });
+  await assert.rejects(
+    () =>
+      mixedProjector.projectObservation({ ...WORK,
+        subject: SUBJECT,
+        bindingRef: w.bindingRef,
+        attestationRefs: [w.attestationRef, secondInvocationRef],
+      }),
+    /mix several runtime invocations/,
+  );
+});
 
 test("projector binds exact subject, attempt, invocation and attestation identity", async () => {
   const w = await world();
@@ -142,12 +254,12 @@ test("projector binds exact subject, attempt, invocation and attestation identit
     artifactRegistry: w.registries,
     artifactStore: w.store,
   });
-  const { observation, observationRef } = await projector.projectObservation({
+  const { observation, observationRef } = await projector.projectObservation({ ...WORK,
     subject: SUBJECT,
     bindingRef: w.bindingRef,
     attestationRefs: [w.attestationRef],
     providerEvents: [
-      { provider: "test-adapter", eventKind: "RUNTIME_STARTED", eventId: "evt-1", attemptBindingRef: w.bindingRef },
+      { provider: "test-adapter", eventKind: "RUNTIME_STARTED", eventId: "runtime-invocation-1", attemptBindingRef: w.bindingRef },
     ],
     narrative: [{ text: "the run looked fine", trust: "UNTRUSTED_NARRATIVE" }],
     measurements: [{ key: "durationMs", value: 60000, unit: "ms", evidenceRef: w.attestationRef, reason: null }],
@@ -173,7 +285,7 @@ test("missing or mismatched subject, binding or attestation digests are rejected
   });
   await assert.rejects(
     () =>
-      projector.projectObservation({
+      projector.projectObservation({ ...WORK,
         subject: SUBJECT,
         subjectDigest: "0".repeat(64),
         bindingRef: w.bindingRef,
@@ -183,7 +295,7 @@ test("missing or mismatched subject, binding or attestation digests are rejected
   );
   await assert.rejects(
     () =>
-      projector.projectObservation({
+      projector.projectObservation({ ...WORK,
         subject: SUBJECT,
         bindingRef: "ExecutionAttemptBinding:sha256:" + "f".repeat(64),
         attestationRefs: [w.attestationRef],
@@ -192,14 +304,14 @@ test("missing or mismatched subject, binding or attestation digests are rejected
   );
   await assert.rejects(
     () =>
-      projector.projectObservation({
+      projector.projectObservation({ ...WORK,
         subject: SUBJECT,
         bindingRef: w.bindingRef,
         attestationRefs: [`RuntimeExecutionAttestation:sha256:${"e".repeat(64)}`],
       }),
-    /unavailable/,
+    /not part of the observer attempt|unavailable/,
   );
-  const { observation } = await projector.projectObservation({
+  const { observation } = await projector.projectObservation({ ...WORK,
     subject: SUBJECT,
     bindingRef: w.bindingRef,
     attestationRefs: [w.attestationRef],
@@ -221,7 +333,7 @@ test("forged or unbound provider events are rejected; provider ids never establi
   });
   await assert.rejects(
     () =>
-      projector.projectObservation({
+      projector.projectObservation({ ...WORK,
         subject: SUBJECT,
         bindingRef: w.bindingRef,
         attestationRefs: [w.attestationRef],
@@ -229,9 +341,9 @@ test("forged or unbound provider events are rejected; provider ids never establi
           { provider: "evil", eventKind: "RUNTIME_STARTED", eventId: "execution-attempt-id:abc123", attemptBindingRef: "ExecutionAttemptBinding:sha256:" + "d".repeat(64) },
         ],
       }),
-    /not bound to the observation execution binding/,
+    /not bound to the observation execution binding|not attributed to the pinned runtime invocation/,
   );
-  const { observation } = await projector.projectObservation({
+  const { observation } = await projector.projectObservation({ ...WORK,
     subject: SUBJECT,
     bindingRef: w.bindingRef,
     attestationRefs: [w.attestationRef],
@@ -239,15 +351,32 @@ test("forged or unbound provider events are rejected; provider ids never establi
   // A provider event id alone cannot substitute for attempt identity.
   assert.notEqual(observation.execution.executionAttemptId, "evt-1");
   assert.ok(observation.execution.executionAttemptId.startsWith("execution-attempt-id:"));
-  const forged = structuredClone(observation);
-  forged.providerEvents = [
-    { provider: "evil", eventKind: "RUNTIME_STARTED", eventId: "evt-9", attemptBindingRef: w.bindingRef },
+  // An arbitrary event id with the correct bindingRef is rejected: events
+  // must be attributed to the pinned runtime invocation.
+  await assert.rejects(
+    () =>
+      projector.projectObservation({ ...WORK,
+        subject: SUBJECT,
+        bindingRef: w.bindingRef,
+        attestationRefs: [w.attestationRef],
+        providerEvents: [
+          { provider: "evil", eventKind: "RUNTIME_STARTED", eventId: "evt-9", attemptBindingRef: w.bindingRef },
+        ],
+      }),
+    /not attributed to the pinned runtime invocation/,
+  );
+  const attributed = structuredClone(observation);
+  attributed.providerEvents = [
+    { provider: "test-adapter", eventKind: "RUNTIME_STARTED", eventId: "runtime-invocation-1", attemptBindingRef: w.bindingRef },
   ];
-  // Same binding ref is fine; a different one is forged.
-  delete forged.observationId;
-  defineGroundedObservation(forged);
-  forged.providerEvents[0].attemptBindingRef = `ExecutionAttemptBinding:sha256:${"9".repeat(64)}`;
-  assert.throws(() => defineGroundedObservation(forged), /not bound/);
+  // Same binding ref and pinned invocation is fine; a different binding is forged.
+  delete attributed.observationId;
+  defineGroundedObservation(attributed);
+  attributed.providerEvents[0].attemptBindingRef = `ExecutionAttemptBinding:sha256:${"9".repeat(64)}`;
+  assert.throws(() => defineGroundedObservation(attributed), /not bound/);
+  attributed.providerEvents[0].attemptBindingRef = w.bindingRef;
+  attributed.providerEvents[0].eventId = "evt-9";
+  assert.throws(() => defineGroundedObservation(attributed), /not attributed/);
 });
 
 test("MISSING_PROVENANCE facts pass through; narrative cannot clear or add facts", async () => {
@@ -257,7 +386,7 @@ test("MISSING_PROVENANCE facts pass through; narrative cannot clear or add facts
     artifactRegistry: w.registries,
     artifactStore: w.store,
   });
-  const { observation } = await projector.projectObservation({
+  const { observation } = await projector.projectObservation({ ...WORK,
     subject: SUBJECT,
     bindingRef: w.bindingRef,
     attestationRefs: [w.attestationRef],
@@ -292,13 +421,13 @@ test("narrative is excluded from observationId; facts, digests and subject pin a
     artifactRegistry: w.registries,
     artifactStore: w.store,
   });
-  const first = await projector.projectObservation({
+  const first = await projector.projectObservation({ ...WORK,
     subject: SUBJECT,
     bindingRef: w.bindingRef,
     attestationRefs: [w.attestationRef],
     narrative: [{ text: "first story", trust: "UNTRUSTED_NARRATIVE" }],
   });
-  const second = await projector.projectObservation({
+  const second = await projector.projectObservation({ ...WORK,
     subject: SUBJECT,
     bindingRef: w.bindingRef,
     attestationRefs: [w.attestationRef],
@@ -322,7 +451,7 @@ test("unmeasured values are null with a reason; zero defaults are rejected", asy
     artifactRegistry: w.registries,
     artifactStore: w.store,
   });
-  const { observation } = await projector.projectObservation({
+  const { observation } = await projector.projectObservation({ ...WORK,
     subject: SUBJECT,
     bindingRef: w.bindingRef,
     attestationRefs: [w.attestationRef],
@@ -365,12 +494,12 @@ test("historical and current subjects never mix", async () => {
     artifactRegistry: w.registries,
     artifactStore: w.store,
   });
-  const historical = await projector.projectObservation({
+  const historical = await projector.projectObservation({ ...WORK,
     subject: SUBJECT,
     bindingRef: w.bindingRef,
     attestationRefs: [w.attestationRef],
   });
-  const current = await projector.projectObservation({
+  const current = await projector.projectObservation({ ...WORK,
     subject: { ...SUBJECT, mode: "CURRENT" },
     bindingRef: w.bindingRef,
     attestationRefs: [w.attestationRef],
@@ -378,4 +507,112 @@ test("historical and current subjects never mix", async () => {
   assert.notEqual(historical.observation.observationId, current.observation.observationId);
   assert.equal(historical.observation.subject.mode, "HISTORICAL");
   assert.equal(current.observation.subject.mode, "CURRENT");
+});
+
+test("default projection integrates with the real delivered observer, registry and attempt head", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "exharness-bb084-real-"));
+  t.after(() => rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 20 }));
+  const artifactStore = createJsonImmutableArtifactStore({ path: join(dir, "artifacts.json") });
+  const guard = createProductMutationGuard();
+  const productHistory = createProductHistoryController({ artifactStore, headStore: createJsonCasHeadStore({ path: join(dir, "history-heads.json") }), mutationGuard: guard });
+  const acceptanceAuthority = createProductAcceptanceAuthority({ artifactStore, headStore: createJsonCasHeadStore({ path: join(dir, "policy-heads.json") }), mutationGuard: guard });
+  const projectionBuilder = createProductStateProjectionBuilder({ productHistory, acceptanceAuthority, artifactStore, mutationGuard: guard });
+  const outcomeHeadStore = createJsonCasHeadStore({ path: join(dir, "outcomes.json") });
+  const closureController = createProductClosureController({ projectionBuilder, productHistory, acceptanceAuthority, artifactStore, outcomeHeadStore, mutationGuard: guard });
+  const lineage = createProductLineageStore({ path: join(dir, "lineage.json"), artifactStore });
+  const organizationArtifactRegistry = createOrganizationArtifactRegistry({ store: artifactStore });
+  const domainArtifactRegistry = createDomainExecutionArtifactRegistry({ store: artifactStore });
+  const executionAttemptStore = createJsonExecutionAttemptStore({ path: join(dir, "attempts.json") });
+  const evidenceHeadStore = createJsonCasHeadStore({ path: join(dir, "causal-heads.json") });
+  const boardReader = { async readBlackboard() { return structuredClone({ items: [] }); } };
+  const observer = createOrganizationObserver({ productHistory, acceptanceAuthority, projectionBuilder, artifactStore, lineage, boardReader, organizationArtifactRegistry, domainArtifactRegistry, executionAttemptStore, evidenceHeadStore, closureController, outcomeHeadStore });
+
+  await acceptanceAuthority.publishPolicy({ productId: "product-1", policy: { policyId: "policy-1", criterionRefs: ["criterion:login"] } });
+  const relRef = await artifactStore.put("deployment-release", { kind: "DEPLOYMENT_RELEASE", version: 1, environmentRef: "env-1" });
+  await productHistory.appendTransition({ productId: "product-1", transitionKind: "RELEASE_PUBLICATION", transitionRefs: [relRef], authorityHeads: {} });
+  const qaRef = await artifactStore.put("quality-acceptance", { kind: "QUALITY_ACCEPTANCE", version: 1, environmentRef: "env-1", releaseRef: relRef });
+  await productHistory.appendTransition({ productId: "product-1", transitionKind: "QUALITY_ACCEPTANCE", transitionRefs: [qaRef], authorityHeads: {} });
+  const current = await observer.queryCurrent({ productId: "product-1", rootIntentRef: "intent:root-1" });
+  assert.equal(current.mode, "CURRENT");
+
+  // The previous incompatible default call fails against the delivered BB-058
+  // observer: describeExecution requires declared work identity, never a
+  // bare subject.
+  await assert.rejects(() => observer.describeExecution({ subject: current.subject }), /workId|projectId|workContractRef|attempt/);
+
+  const policyRef = await domainArtifactRegistry.putExecutionPolicy({ kind: "EXECUTION_POLICY", version: 1 });
+  const strategyRef = await domainArtifactRegistry.putExecutionStrategyDescriptor({ kind: "EXECUTION_STRATEGY_DESCRIPTOR", version: 1 });
+  const bindingRef = await domainArtifactRegistry.putExecutionAttemptBinding({
+    kind: "EXECUTION_ATTEMPT_BINDING", version: 1,
+    executionAttemptId: "execution-attempt-id:real-1", workId: "work-1",
+    executionPolicyRef: policyRef, executionStrategyRef: strategyRef,
+    runtimeBinding: { adapterRef: "adapter:1", expectedRuntimeCodeRef: "runtime:1" },
+  });
+  const attestationRef = await domainArtifactRegistry.putRuntimeExecutionAttestation({
+    kind: "RUNTIME_EXECUTION_ATTESTATION", version: 1,
+    executionAttemptId: "execution-attempt-id:real-1", bindingRef,
+    runtimeInvocationId: "runtime-invocation-real-1",
+    startedAt: "2026-01-01T00:00:00.000Z", finishedAt: "2026-01-01T00:01:00.000Z",
+  });
+  const outcomeRef = await domainArtifactRegistry.putExecutionAttemptOutcome({
+    kind: "EXECUTION_ATTEMPT_OUTCOME", version: 1, runtimeAttestationRefs: [attestationRef],
+  });
+  const attemptKey = executionAttemptSubjectKey({ projectId: "product-1", itemId: "work-1", workContractRef: "contract:1" });
+  assert.equal(await executionAttemptStore.compareAndSwap(attemptKey, null, {
+    status: "ACTIVE", executionAttemptId: "execution-attempt-id:real-1",
+    bindingRef, transitionRefs: [], outcomeRef,
+    completionDecisionRef: null, publicationReceiptRef: null, judgmentBundleRef: null,
+  }), true);
+
+  const projector = createGroundedObservationProjector({ observer, artifactRegistry: domainArtifactRegistry, artifactStore });
+  // Default path: no caller pins; identity resolves through the delivered
+  // observer + registry contracts for the declared work coordinates.
+  const { observation, observationRef } = await projector.projectObservation({
+    subject: current.subject,
+    workId: "work-1",
+    workContractRef: "contract:1",
+    projectId: "product-1",
+  });
+  assert.equal(observation.execution.executionAttemptId, "execution-attempt-id:real-1");
+  assert.equal(observation.execution.runtimeInvocationId, "runtime-invocation-real-1");
+  assert.equal(observation.execution.binding.ref, bindingRef);
+  assert.equal(observation.execution.attestations[0].ref, attestationRef);
+  assert.equal(observation.subject.mode, "CURRENT");
+  assert.equal(observation.observationId, observationIdFor(observation));
+  assert.ok(observation.facts.length > 0);
+  for (const fact of observation.facts) {
+    assert.ok(fact.provenance === "PROVENANCED" || fact.provenance === "MISSING_PROVENANCE");
+  }
+  // Missing BB-058 provenance stays typed through the real chain: facts are
+  // never inferred, and any unprovenanced outcome is MISSING_PROVENANCE.
+  for (const fact of observation.facts) {
+    if (fact.provenance === "MISSING_PROVENANCE") continue;
+    assert.ok(fact.evidenceRefs.length > 0, "PROVENANCED facts carry evidence refs");
+  }
+  const outcome = observation.facts.find((f) => f.kind === "PRODUCT_OUTCOME_CLAIM");
+  if (outcome) assert.equal(outcome.provenance, "MISSING_PROVENANCE");
+  const stored = await artifactStore.resolve(observationRef);
+  assert.equal(stored.observationId, observation.observationId);
+
+  // A valid binding for other work is rejected against these coordinates.
+  const otherBindingRef = await domainArtifactRegistry.putExecutionAttemptBinding({
+    kind: "EXECUTION_ATTEMPT_BINDING", version: 1,
+    executionAttemptId: "execution-attempt-id:real-2", workId: "work-2",
+    executionPolicyRef: policyRef, executionStrategyRef: strategyRef,
+    runtimeBinding: { adapterRef: "adapter:1", expectedRuntimeCodeRef: "runtime:1" },
+  });
+  const otherAttestationRef = await domainArtifactRegistry.putRuntimeExecutionAttestation({
+    kind: "RUNTIME_EXECUTION_ATTESTATION", version: 1,
+    executionAttemptId: "execution-attempt-id:real-2", bindingRef: otherBindingRef,
+    runtimeInvocationId: "runtime-invocation-real-2",
+    startedAt: "2026-01-01T00:00:00.000Z", finishedAt: "2026-01-01T00:01:00.000Z",
+  });
+  await assert.rejects(
+    () => projector.projectObservation({
+      subject: current.subject,
+      workId: "work-1", workContractRef: "contract:1", projectId: "product-1",
+      bindingRef: otherBindingRef, attestationRefs: [otherAttestationRef],
+    }),
+    /does not match the observer attempt/,
+  );
 });

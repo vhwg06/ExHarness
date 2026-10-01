@@ -66,8 +66,9 @@ async function groundedInputWorld({ status = "CURRENT" } = {}) {
     async chainEvidence() {
       return [{ factKind: "QUALITY_ACCEPTANCE", ref: qaRef, evidenceRefs: [qaRef, SUBJECT.projectionRef] }];
     },
-    async describeExecution() {
-      return { runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
+    async describeExecution(args) {
+      if (!args || typeof args.workId !== "string") throw new TypeError("describeExecution requires work coordinates");
+      return { executionAttemptId: "execution-attempt-id:finding-1", runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
     },
     async explainWhyNotDone() {
       return {};
@@ -93,6 +94,9 @@ async function groundedInputWorld({ status = "CURRENT" } = {}) {
   const projector = createGroundedObservationProjector({ observer, artifactRegistry: registries, artifactStore: store });
   const { observation, observationRef } = await projector.projectObservation({
     subject: SUBJECT,
+    workId: "work-1",
+    workContractRef: "contract:1",
+    projectId: "product-1",
     bindingRef,
     attestationRefs: [attestationRef],
   });
@@ -131,16 +135,18 @@ async function groundedInputWorld({ status = "CURRENT" } = {}) {
     },
   ];
   const receipt = defineContextResolutionReceipt({
-    reuseKey: reuseKey({ requirementId: "a".repeat(64), resolverConfigDigest: configDigest, sourceObservations }),
-    requirementId: "a".repeat(64),
-    resolutionId: "c".repeat(64),
+    reuseKey: reuseKey({ requirementId: req.requirementId, resolverConfigDigest: configDigest, sourceObservations }),
+    requirementId: req.requirementId,
+    resolutionId: res.resolutionId,
     materializationId: "materialization-1",
     resolutionArtifactRef: "artifact:1",
     resolverConfigDigest: configDigest,
     sourceObservations,
     itemLineage: [{ itemDigest: "e".repeat(64), sourceObservationIds: ["code"], provenanceRefs: [] }],
   });
-  const receiptRef = `context-resolution-receipt:sha256:${receipt.receiptId}`;
+  // The receipt bytes live in the immutable store so consumption-time
+  // verification can resolve and pin them.
+  const receiptRef = await store.put("context-resolution-receipt", structuredClone(receipt));
   const binder = createObservationContextBinder({
     artifactStore: store,
     receiptCurrentness: async () => ({ status, changedEvidenceIds: [], evaluatorIdentity: "test:static" }),
@@ -153,7 +159,7 @@ async function groundedInputWorld({ status = "CURRENT" } = {}) {
     receipt,
     receiptRef,
   });
-  return { store, observation, observationRef, binding, contextBindingRef };
+  return { store, observation, observationRef, binding, contextBindingRef, receipt, receiptRef };
 }
 
 test("finding input is the only feedback-facing output and round-trips through the store", async () => {
@@ -312,4 +318,112 @@ test("consumption with CURRENT preserves GROUNDED; missing receipt is unverifiab
   delete raw.inputId;
   raw.uncertainty.verdict = "ACCEPT";
   assert.throws(() => defineGroundedFindingInput(raw), /forbidden authority key/);
+});
+
+test("missing receipt bytes return UNRESOLVED before trusting currentness", async () => {
+  const w = await groundedInputWorld();
+  const observationPin = { ref: w.observationRef, digest: w.observationRef.match(/:sha256:([a-f0-9]{64})$/)[1] };
+  // Reuse the world's binding but check consumption against a store view
+  // where the receipt bytes are absent.
+  const { input, inputRef } = await buildGroundedFindingInput(
+    {
+      observationRefs: [observationPin],
+      contextBindingRef: w.contextBindingRef,
+      groundingStatus: "GROUNDED",
+      unresolvedReasons: [],
+      uncertainty: { missingProvenanceFactIds: [], unresolvedEvidenceIds: [], optionalUnresolvedEvidenceIds: [] },
+    },
+    { artifactStore: w.store },
+  );
+  const before = await w.store.resolve(inputRef);
+  // A store view that hides the receipt bytes: resolution fails, so the
+  // injector must never be consulted, even though it would return CURRENT.
+  let injectorCalls = 0;
+  const hidingStore = {
+    async put(...args) {
+      return w.store.put(...args);
+    },
+    async resolve(ref) {
+      if (ref === w.receiptRef) return null;
+      return w.store.resolve(ref);
+    },
+  };
+  const verdict = await assertGroundedFindingInputCurrent(input, {
+    artifactStore: hidingStore,
+    receiptCurrentness: async () => {
+      injectorCalls += 1;
+      return { status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:lying" };
+    },
+  });
+  assert.equal(verdict.status, "UNRESOLVED");
+  assert.ok(verdict.reasons.includes("CURRENTNESS_UNVERIFIABLE"));
+  assert.equal(injectorCalls, 0);
+  assert.deepEqual(await w.store.resolve(inputRef), before);
+});
+
+test("tampered binding or receipt pins return UNRESOLVED; stored input is unchanged", async () => {
+  const w = await groundedInputWorld();
+  const observationPin = { ref: w.observationRef, digest: w.observationRef.match(/:sha256:([a-f0-9]{64})$/)[1] };
+  const { input, inputRef } = await buildGroundedFindingInput(
+    {
+      observationRefs: [observationPin],
+      contextBindingRef: w.contextBindingRef,
+      groundingStatus: "GROUNDED",
+      unresolvedReasons: [],
+      uncertainty: { missingProvenanceFactIds: [], unresolvedEvidenceIds: [], optionalUnresolvedEvidenceIds: [] },
+    },
+    { artifactStore: w.store },
+  );
+  const before = await w.store.resolve(inputRef);
+  let injectorCalls = 0;
+  const currentInjector = async () => {
+    injectorCalls += 1;
+    return { status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:static" };
+  };
+  // Tampered binding bytes behind the pinned ref.
+  const tamperedBinding = { ...structuredClone(w.binding), resolutionStatus: "COMPLETE", requirementId: "tampered" };
+  const tamperedStore = {
+    async put(...args) {
+      return w.store.put(...args);
+    },
+    async resolve(ref) {
+      if (ref === w.contextBindingRef) return structuredClone(tamperedBinding);
+      return w.store.resolve(ref);
+    },
+  };
+  const tamperedVerdict = await assertGroundedFindingInputCurrent(input, {
+    artifactStore: tamperedStore,
+    receiptCurrentness: currentInjector,
+  });
+  assert.equal(tamperedVerdict.status, "UNRESOLVED");
+  assert.ok(tamperedVerdict.reasons.includes("SUBJECT_MISMATCH"));
+  assert.equal(injectorCalls, 0);
+
+  // Receipt bytes whose semantic digest does not match the binding pin.
+  const foreignReceipt = { ...structuredClone(w.receipt), receiptId: "f".repeat(64) };
+  const foreignStore = {
+    async put(...args) {
+      return w.store.put(...args);
+    },
+    async resolve(ref) {
+      if (ref === w.receiptRef) return structuredClone(foreignReceipt);
+      return w.store.resolve(ref);
+    },
+  };
+  const foreignVerdict = await assertGroundedFindingInputCurrent(input, {
+    artifactStore: foreignStore,
+    receiptCurrentness: currentInjector,
+  });
+  assert.equal(foreignVerdict.status, "UNRESOLVED");
+  assert.ok(foreignVerdict.reasons.includes("SUBJECT_MISMATCH"));
+  assert.equal(injectorCalls, 0);
+
+  // The stored immutable input is unchanged by every failed consumption.
+  assert.deepEqual(await w.store.resolve(inputRef), before);
+
+  // A ref/digest mismatch is already rejected at input validation time.
+  const bad = structuredClone(input);
+  delete bad.inputId;
+  bad.contextBindingDigest = "0".repeat(64);
+  assert.throws(() => defineGroundedFindingInput(bad), /contextBindingRef\/digest mismatch/);
 });

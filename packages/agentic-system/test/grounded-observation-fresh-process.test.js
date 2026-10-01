@@ -62,7 +62,7 @@ function resolution(req) {
     req,
   );
 }
-function receipt() {
+function receipt(req, res) {
   const configDigest = "b".repeat(64);
   const sourceObservations = [
     {
@@ -72,9 +72,9 @@ function receipt() {
     },
   ];
   return defineContextResolutionReceipt({
-    reuseKey: reuseKey({ requirementId: "a".repeat(64), resolverConfigDigest: configDigest, sourceObservations }),
-    requirementId: "a".repeat(64),
-    resolutionId: "c".repeat(64),
+    reuseKey: reuseKey({ requirementId: req.requirementId, resolverConfigDigest: configDigest, sourceObservations }),
+    requirementId: req.requirementId,
+    resolutionId: res.resolutionId,
     materializationId: "materialization-1",
     resolutionArtifactRef: "artifact:1",
     resolverConfigDigest: configDigest,
@@ -86,21 +86,22 @@ function receipt() {
 const CHILD_SCRIPT = `
 import { readFile } from "node:fs/promises";
 import { createJsonImmutableArtifactStore } from "__STORE_SPEC__";
+import { createDomainExecutionArtifactRegistry } from "__DOMAIN_SPEC__";
 import { createGroundedObservationProjector, buildGroundedFindingInput } from "__GROUNDED_SPEC__";
 import { createObservationContextBinder } from "__BINDING_SPEC__";
 
 const [fixturePath, storePath] = process.argv.slice(2);
 const fixture = JSON.parse(await readFile(fixturePath, "utf8"));
 const store = createJsonImmutableArtifactStore({ path: storePath });
-const registries = {
-  async resolveExecutionAttemptBinding(ref) { return store.resolve(ref); },
-  async resolveRuntimeExecutionAttestation(ref) { return store.resolve(ref); },
-};
+const registries = createDomainExecutionArtifactRegistry({ store });
 const observer = {
   async queryHistorical() { return { mode: "HISTORICAL", subject: fixture.subject }; },
   async queryCurrent() { return { mode: "CURRENT", subject: fixture.subject }; },
   async chainEvidence() { return fixture.chain; },
-  async describeExecution() { return { runtimeAttestationRef: fixture.attestationRef, runtimeInvocations: [{ attestationRef: fixture.attestationRef }] }; },
+  async describeExecution(args) {
+    if (!args || typeof args.workId !== "string") throw new TypeError("describeExecution requires work coordinates");
+    return { executionAttemptId: fixture.executionAttemptId, runtimeAttestationRef: fixture.attestationRef, runtimeInvocations: [{ attestationRef: fixture.attestationRef }] };
+  },
   async explainWhyNotDone() { return {}; },
   async listRemainingWork() { return []; },
   async traceObligation() { return {}; },
@@ -112,6 +113,9 @@ await store.put(fixture.attestationKind, { ...fixture.attestation, bindingRef: f
 const projector = createGroundedObservationProjector({ observer, artifactRegistry: registries, artifactStore: store });
 const { observation, observationRef } = await projector.projectObservation({
   subject: fixture.subject,
+  workId: fixture.workId,
+  workContractRef: fixture.workContractRef,
+  projectId: fixture.projectId,
   bindingRef: fixture.bindingRef,
   attestationRefs: [fixture.attestationRef],
 });
@@ -179,8 +183,9 @@ test("fresh process rebuild from the same pinned subject yields identical identi
     async chainEvidence() {
       return structuredClone(chain);
     },
-    async describeExecution() {
-      return { runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
+    async describeExecution(args) {
+      if (!args || typeof args.workId !== "string") throw new TypeError("describeExecution requires work coordinates");
+      return { executionAttemptId: "execution-attempt-id:fresh-1", runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
     },
     async explainWhyNotDone() {
       return {};
@@ -198,12 +203,15 @@ test("fresh process rebuild from the same pinned subject yields identical identi
   const projector = createGroundedObservationProjector({ observer, artifactRegistry: registries, artifactStore: store });
   const { observation, observationRef } = await projector.projectObservation({
     subject,
+    workId: "work-1",
+    workContractRef: "contract:1",
+    projectId: "product-1",
     bindingRef,
     attestationRefs: [attestationRef],
   });
   const req = requirement();
   const res = resolution(req);
-  const rec = receipt();
+  const rec = receipt(req, res);
   const recRef = `context-resolution-receipt:sha256:${rec.receiptId}`;
   const binder = createObservationContextBinder({
     artifactStore: store,
@@ -234,11 +242,12 @@ test("fresh process rebuild from the same pinned subject yields identical identi
   const fixturePath = join(dir, "fixture.json");
   await writeFile(
     fixturePath,
-    JSON.stringify({ subject, chain, qa, bindingKind: "execution-attempt-binding", binding: bindingValue, bindingRef, attestationKind: "runtime-execution-attestation", attestation: attestationValue, attestationRef, requirement: req, resolution: res, receipt: rec, receiptRef: recRef }),
+    JSON.stringify({ subject, chain, qa, workId: "work-1", workContractRef: "contract:1", projectId: "product-1", executionAttemptId: "execution-attempt-id:fresh-1", bindingKind: "execution-attempt-binding", binding: bindingValue, bindingRef, attestationKind: "runtime-execution-attestation", attestation: attestationValue, attestationRef, requirement: req, resolution: res, receipt: rec, receiptRef: recRef }),
   );
   const childPath = join(dir, "rebuild-child.mjs");
   const root = new URL("../../..", import.meta.url).pathname;
   const childScript = CHILD_SCRIPT.replaceAll("__STORE_SPEC__", `${root}/packages/agentic-system/src/organization-artifact-store.js`)
+    .replaceAll("__DOMAIN_SPEC__", `${root}/packages/agentic-system/src/domain-execution-store.js`)
     .replaceAll("__GROUNDED_SPEC__", `${root}/packages/agentic-system/src/grounded-observation.js`)
     .replaceAll("__BINDING_SPEC__", `${root}/packages/agentic-system/src/observation-context-binding.js`);
   await writeFile(childPath, childScript);
@@ -290,8 +299,9 @@ test("historical rebuild after newer heads keeps original ids; CURRENT head yiel
     async chainEvidence({ subject }) {
       return structuredClone(factsByGeneration[subject.historyGeneration] ?? []);
     },
-    async describeExecution() {
-      return { runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
+    async describeExecution(args) {
+      if (!args || typeof args.workId !== "string") throw new TypeError("describeExecution requires work coordinates");
+      return { executionAttemptId: "execution-attempt-id:gen-1", runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
     },
     async explainWhyNotDone() {
       return {};
@@ -307,13 +317,14 @@ test("historical rebuild after newer heads keeps original ids; CURRENT head yiel
     },
   });
   const projector = createGroundedObservationProjector({ observer: observerFor(), artifactRegistry: registries, artifactStore: store });
-  const first = await projector.projectObservation({ subject: historicalSubject, bindingRef, attestationRefs: [attestationRef] });
+  const coords = { workId: "work-1", workContractRef: "contract:1", projectId: "product-1" };
+  const first = await projector.projectObservation({ ...coords, subject: historicalSubject, bindingRef, attestationRefs: [attestationRef] });
   // Newer canonical heads arrive; rebuild the historical pin verbatim.
-  const rebuilt = await projector.projectObservation({ subject: historicalSubject, bindingRef, attestationRefs: [attestationRef] });
+  const rebuilt = await projector.projectObservation({ ...coords, subject: historicalSubject, bindingRef, attestationRefs: [attestationRef] });
   assert.equal(rebuilt.observation.observationId, first.observation.observationId);
   assert.equal(rebuilt.observationRef, first.observationRef);
   // A CURRENT query after the transition pins a new subject and never mixes facts.
-  const current = await projector.projectObservation({ subject: currentSubject, bindingRef, attestationRefs: [attestationRef] });
+  const current = await projector.projectObservation({ ...coords, subject: currentSubject, bindingRef, attestationRefs: [attestationRef] });
   assert.notEqual(current.observation.observationId, first.observation.observationId);
   assert.equal(current.observation.facts.length, 2);
   assert.equal(first.observation.facts.length, 1);

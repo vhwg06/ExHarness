@@ -197,7 +197,7 @@ function defineMeasurements(raw) {
   );
 }
 
-function defineProviderEvents(raw, executionBindingRef) {
+function defineProviderEvents(raw, executionBindingRef, runtimeInvocationId) {
   return freeze(
     reqArray(raw, "providerEvents").map((e, i) => {
       if (!e || typeof e !== "object") fail(`providerEvents[${i}] required`);
@@ -205,10 +205,14 @@ function defineProviderEvents(raw, executionBindingRef) {
       if (attemptBindingRef !== executionBindingRef) {
         fail(`providerEvents[${i}] is not bound to the observation execution binding`);
       }
+      const eventId = reqText(e.eventId, `providerEvents[${i}].eventId`);
+      if (eventId !== runtimeInvocationId) {
+        fail(`providerEvents[${i}] is not attributed to the pinned runtime invocation`);
+      }
       return freeze({
         provider: reqText(e.provider, `providerEvents[${i}].provider`),
         eventKind: reqText(e.eventKind, `providerEvents[${i}].eventKind`),
-        eventId: reqText(e.eventId, `providerEvents[${i}].eventId`),
+        eventId,
         attemptBindingRef,
       });
     }),
@@ -248,7 +252,7 @@ export function defineGroundedObservation(raw) {
   const execution = defineExecution(raw.execution);
   const facts = defineFacts(raw.facts);
   const measurements = defineMeasurements(raw.measurements);
-  const providerEvents = defineProviderEvents(raw.providerEvents, execution.binding.ref);
+  const providerEvents = defineProviderEvents(raw.providerEvents, execution.binding.ref, execution.runtimeInvocationId);
   const narrative = defineNarrative(raw.narrative);
   const observedAtBoundaries = defineBoundaries(raw.observedAtBoundaries);
   const body = { kind: GROUNDED_OBSERVATION_KIND, version: 1, subject, execution, facts, measurements, providerEvents, narrative, observedAtBoundaries };
@@ -316,7 +320,11 @@ export function createGroundedObservationProjector({ observer, artifactRegistry,
     subject,
     subjectRef = null,
     subjectDigest = null,
-    bindingRef,
+    workId = null,
+    workContractRef = null,
+    projectId = null,
+    attemptSubjectKey = null,
+    bindingRef = null,
     attestationRefs = null,
     providerEvents = [],
     narrative = [],
@@ -334,34 +342,84 @@ export function createGroundedObservationProjector({ observer, artifactRegistry,
       pinnedRef = await artifactStore.put("causal-observation-subject", structuredClone(subject));
     }
     reqText(pinnedRef, "subjectRef");
-    const boundRef = reqText(bindingRef, "bindingRef");
+    // Execution coordinates are mandatory: the delivered BB-058
+    // describeExecution requires workId/workContractRef/projectId or
+    // attemptSubjectKey, and the observer-derived attempt is the linkage that
+    // binds caller-supplied pins to this pinned subject's relevant work.
+    const hasAttemptKey = attemptSubjectKey !== null && attemptSubjectKey !== undefined;
+    const hasWorkCoords = workId !== null && workContractRef !== null && projectId !== null;
+    if (!hasAttemptKey && !hasWorkCoords) {
+      fail("projectObservation requires execution coordinates: attemptSubjectKey or workId+workContractRef+projectId");
+    }
+    const describeArgs = { subject };
+    if (workId !== null) describeArgs.workId = reqText(workId, "workId");
+    if (workContractRef !== null) describeArgs.workContractRef = reqText(workContractRef, "workContractRef");
+    if (projectId !== null) describeArgs.projectId = reqText(projectId, "projectId");
+    if (hasAttemptKey) describeArgs.attemptSubjectKey = reqText(attemptSubjectKey, "attemptSubjectKey");
+    const described = await observer.describeExecution(describeArgs);
+    const describedAttemptId = reqText(described?.executionAttemptId, "observer executionAttemptId");
+    if (!describedAttemptId.startsWith("execution-attempt-id:")) {
+      fail("observer executionAttemptId must be an ExHarness attempt id");
+    }
+    const describedInvocations = Array.isArray(described?.runtimeInvocations) ? described.runtimeInvocations : [];
+    const describedAttestationRefs = new Set(
+      describedInvocations.map((r) => (r && typeof r.attestationRef === "string" ? r.attestationRef : null)).filter(Boolean),
+    );
+    let boundRef = bindingRef;
+    let attRefs = attestationRefs;
+    if (boundRef === null || attRefs === null) {
+      // Default path: derive identity from the delivered observer result.
+      const inferred = described?.runtimeAttestationRef ?? null;
+      const derived = describedAttestationRefs.size > 0 ? [...describedAttestationRefs] : inferred == null ? [] : [inferred];
+      if (attRefs === null) attRefs = derived;
+      if (boundRef === null) {
+        if (attRefs.length === 0) fail("execution identity requires at least one runtime attestation");
+        const first = await artifactRegistry.resolveRuntimeExecutionAttestation(reqText(attRefs[0], "attestationRef"));
+        if (!first) fail(`RuntimeExecutionAttestation is unavailable: ${attRefs[0]}`);
+        boundRef = reqText(first.bindingRef, "attestation.bindingRef");
+      }
+    }
     const binding = await artifactRegistry.resolveExecutionAttemptBinding(boundRef);
     if (!binding) fail(`ExecutionAttemptBinding is unavailable: ${boundRef}`);
     const executionAttemptId = reqText(binding.executionAttemptId, "binding.executionAttemptId");
     if (!executionAttemptId.startsWith("execution-attempt-id:")) {
       fail("binding executionAttemptId must be an ExHarness attempt id");
     }
-    let attRefs = attestationRefs;
-    if (attRefs === null) {
-      const described = await observer.describeExecution({ subject });
-      const inferred = described?.runtimeAttestationRef ?? null;
-      attRefs = inferred == null ? [] : [inferred];
-      if (Array.isArray(described?.runtimeInvocations) && described.runtimeInvocations.length > 0) {
-        attRefs = described.runtimeInvocations.map((r) => reqText(r.attestationRef, "observer attestationRef"));
-      }
+    // Caller pins must match the observer-derived attempt for the declared
+    // work: a valid binding for another attempt/work is rejected here, never
+    // mixed into this subject's observation.
+    if (executionAttemptId !== describedAttemptId) {
+      fail("caller binding does not match the observer attempt for the declared work coordinates");
     }
     reqArray(attRefs, "attestationRefs");
     if (attRefs.length === 0) fail("execution identity requires at least one runtime attestation");
     const attestations = [];
     for (const ref of attRefs) {
       const text = reqText(ref, "attestationRef");
+      if (describedAttestationRefs.size > 0 && !describedAttestationRefs.has(text)) {
+        fail("caller attestation is not part of the observer attempt for the declared work coordinates");
+      }
       const att = await artifactRegistry.resolveRuntimeExecutionAttestation(text);
       if (!att) fail(`RuntimeExecutionAttestation is unavailable: ${text}`);
       if (att.bindingRef !== boundRef) fail("runtime attestation/binding relation mismatch");
       if (att.executionAttemptId !== executionAttemptId) fail("runtime attestation/attempt relation mismatch");
       attestations.push({ attestationRef: text, attestation: att });
     }
-    const runtimeInvocationId = reqText(attestations[0].attestation.runtimeInvocationId, "runtimeInvocationId");
+    // One observation records one invocation identity: mixing attestations
+    // from several runtime invocations is rejected rather than silently
+    // reporting only the first.
+    const invocationIds = [...new Set(attestations.map(({ attestation }) => reqText(attestation.runtimeInvocationId, "runtimeInvocationId")))];
+    if (invocationIds.length !== 1) fail("attestations mix several runtime invocations; one observation records one invocation");
+    const runtimeInvocationId = invocationIds[0];
+    // Provider events are attributes only when attributed to the pinned
+    // invocation: an arbitrary event id with the correct bindingRef is
+    // rejected and never becomes a grounded attribute.
+    for (const [index, event] of reqArray(providerEvents, "providerEvents").entries()) {
+      if (!event || typeof event !== "object") fail(`providerEvents[${index}] required`);
+      if (event.eventId !== runtimeInvocationId) {
+        fail(`providerEvents[${index}] is not attributed to the pinned runtime invocation`);
+      }
+    }
     const chain = await observer.chainEvidence({ subject });
     const facts = normalizeObserverFacts(chain);
     const narrativeInput = reqArray(narrative, "narrative").map((n, i) => {
@@ -539,19 +597,52 @@ export async function assertGroundedFindingInputCurrent(
       detail: "context binding is unavailable at consumption time",
     });
   }
-  let liveReceipt = receipt;
-  if (liveReceipt === null && binding.receiptRef != null) {
-    try {
-      liveReceipt = await artifactStore.resolve(binding.receiptRef);
-    } catch {
-      liveReceipt = null;
-    }
+  // The resolved binding bytes must match the pinned digest using the
+  // immutable store's blob digest scheme (sha256 over the stored JSON bytes).
+  // A tampered binding never reaches currentness evaluation.
+  let bindingDigest = null;
+  try {
+    bindingDigest = sha256Hex(JSON.stringify(binding));
+  } catch {
+    bindingDigest = null;
+  }
+  if (bindingDigest !== parsed.contextBindingDigest) {
+    return freeze({
+      status: "UNRESOLVED",
+      reasons: freeze(["SUBJECT_MISMATCH"]),
+      detail: "resolved binding bytes do not match the pinned binding digest",
+    });
   }
   if (binding.receiptRef == null) {
     return freeze({
       status: "UNRESOLVED",
       reasons: freeze(["CURRENTNESS_UNVERIFIABLE"]),
       detail: "binding carries no receipt so consumption currentness is unverifiable",
+    });
+  }
+  let liveReceipt = receipt;
+  if (liveReceipt === null) {
+    try {
+      liveReceipt = await artifactStore.resolve(binding.receiptRef);
+    } catch {
+      liveReceipt = null;
+    }
+  }
+  // Missing receipt bytes are typed UNRESOLVED before trusting currentness:
+  // the injector is never called with a fabricated receipt placeholder.
+  if (liveReceipt === null) {
+    return freeze({
+      status: "UNRESOLVED",
+      reasons: freeze(["CURRENTNESS_UNVERIFIABLE"]),
+      detail: "receipt bytes are unavailable at consumption time",
+    });
+  }
+  // The receipt's semantic digest must match the binding pin.
+  if (liveReceipt?.receiptId !== binding.receiptDigest) {
+    return freeze({
+      status: "UNRESOLVED",
+      reasons: freeze(["SUBJECT_MISMATCH"]),
+      detail: "receipt digest does not match the binding receipt pin",
     });
   }
   if (typeof receiptCurrentness !== "function") {
@@ -563,7 +654,7 @@ export async function assertGroundedFindingInputCurrent(
   }
   let currentness;
   try {
-    currentness = await receiptCurrentness(liveReceipt ?? { receiptRef: binding.receiptRef });
+    currentness = await receiptCurrentness(structuredClone(liveReceipt));
   } catch {
     return freeze({
       status: "UNRESOLVED",

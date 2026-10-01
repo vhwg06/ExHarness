@@ -19,10 +19,17 @@ identity for one pinned `CAUSAL_OBSERVATION_SUBJECT`:
 - `execution` binds `executionAttemptId`, `runtimeInvocationId`, the attempt
   binding ref+digest and the runtime attestation refs+digests resolved through
   the delivered `resolveExecutionAttemptBinding` /
-  `resolveRuntimeExecutionAttestation` path. Provider events are attributes
-  (`provider`, `eventKind`, `eventId`, `attemptBindingRef`) bound to the same
-  execution binding; a provider event id alone never establishes attempt
-  identity.
+  `resolveRuntimeExecutionAttestation` path. Projection requires declared
+  execution coordinates (`workId`+`workContractRef`+`projectId` or
+  `attemptSubjectKey`) and always consults the delivered
+  `OrganizationObserver.describeExecution` for those coordinates: caller pins
+  must equal the observer-derived attempt, and every attestation must belong
+  to that attempt's invocation set. Mixing attestations from several runtime
+  invocations is rejected; one observation records one invocation. Provider
+  events are attributes (`provider`, `eventKind`, `eventId`,
+  `attemptBindingRef`) bound to the same execution binding **and** attributed
+  to the pinned invocation id; an arbitrary event id with the correct binding
+  ref is rejected and never becomes a grounded attribute.
 - Every fact carries evidence refs or `MISSING_PROVENANCE`. Provenance from
   BB-058 passes through unchanged: narrative text cannot clear a
   `MISSING_PROVENANCE` fact or add a `PROVENANCED` fact.
@@ -40,13 +47,25 @@ identity for one pinned `CAUSAL_OBSERVATION_SUBJECT`:
 `REQUIRED`/`OPTIONAL` necessity, `receiptRef+digest` (or explicit nulls) and a
 `currentness` snapshot produced by the injected `receiptCurrentness` function
 wired to the delivered BB-063 `evaluateReceiptCurrentness`. The binder never
-calls a resolver, planner, provider or retriever.
+calls a resolver, planner, provider or retriever. At bind time the binder
+verifies semantic identity: the resolution must answer the declared
+requirement, and the receipt must carry that requirement id, that resolution
+id and its own `receiptId` digest under a content-addressed `receiptRef`. When
+the receipt bytes are available in the immutable store they must equal the
+supplied receipt exactly; a wrong ref, a foreign resolution or a tampered
+receipt is rejected. The store blob digest and the semantic `receiptId` use
+different schemes, so both the ref locator and the semantic identity are
+verified rather than equated.
 
 Grounding classification is a pure total function. `GROUNDED` holds only when
-every required fact is `PROVENANCED`, the resolution is `COMPLETE` or `PARTIAL`
-with only `OPTIONAL` unresolved evidence, a receipt is present and currentness
-is `CURRENT`. Every other path is `UNRESOLVED` with typed reasons from exactly
-`MISSING_PROVENANCE`, `MISSING_CONTEXT`, `UNSATISFIED_CONTEXT`, `STALE_CONTEXT`,
+the observation proof is present with every required fact `PROVENANCED`, the
+resolution proof is a supported status that is `COMPLETE` or `PARTIAL` with
+only `OPTIONAL` unresolved evidence, a receipt is present and currentness is
+`CURRENT`. Missing, malformed, unsupported or contradictory required proof —
+absent observation or binding, unknown status or currentness, any `REQUIRED`
+unresolved item even under a `COMPLETE` claim, malformed necessity — is
+`UNRESOLVED` with typed reasons from exactly `MISSING_PROVENANCE`,
+`MISSING_CONTEXT`, `UNSATISFIED_CONTEXT`, `STALE_CONTEXT`,
 `AMBIGUOUS_CONTEXT`, `CURRENTNESS_UNVERIFIABLE` or `SUBJECT_MISMATCH`. No
 receipt means `CURRENTNESS_UNVERIFIABLE`; the binder never self-certifies
 `CURRENT`.
@@ -58,8 +77,12 @@ unresolved reasons and uncertainty
 `optionalUnresolvedEvidenceIds`). Any key named `finding`, `impact`,
 `disposition`, `response`, `verdict`, `accepted`, `promoted`, `remediation` or
 `principal` at any depth is rejected. `assertGroundedFindingInputCurrent`
-re-resolves the binding and re-evaluates currentness at consumption time: a
-`STALE` or unverifiable receipt returns an `UNRESOLVED` consumption result for
+re-resolves the binding and re-evaluates currentness at consumption time: the
+resolved binding bytes must match the pinned binding digest (store blob
+scheme), the receipt bytes must be resolvable, and the receipt's semantic
+digest must match the binding pin before the injector is ever called. Missing
+or tampered binding/receipt bytes, a receipt digest mismatch, a `STALE` result
+or an unverifiable result each return an `UNRESOLVED` consumption result for
 that consumer without rewriting the immutable input.
 
 ## Authority limits
@@ -87,8 +110,11 @@ incompatible public contract is `PLAN_INPUT_CONTRADICTION`.
 ## Unsupported cases
 
 - Inferring causal truth from model or provider narrative.
-- Substituting provider event ids for ExHarness attempt identity.
+- Substituting provider event ids for ExHarness attempt identity, or
+  attributing provider events to any invocation but the pinned one.
 - Grounding on missing, unsatisfied, stale, ambiguous or unverifiable context.
-- Mixing historical observations with newer canonical heads.
+- Mixing historical observations with newer canonical heads, or mixing
+  attestations from several runtime invocations into one observation (recovery
+  multi-invocation attempts need one observation per invocation).
 - Consuming a grounded finding input without re-checking currentness at
   consumption time.

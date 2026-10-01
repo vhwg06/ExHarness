@@ -89,10 +89,12 @@ function receiptFor(req, res) {
       observed: { state: "PRESENT", snapshotRef: "s1" },
     },
   ];
+  // A delivered receipt binds its requirement and resolution identities, so
+  // the fixture receipt carries the real semantic ids under test.
   return defineContextResolutionReceipt({
-    reuseKey: reuseKey({ requirementId: "a".repeat(64), resolverConfigDigest: configDigest, sourceObservations }),
-    requirementId: "a".repeat(64),
-    resolutionId: "c".repeat(64),
+    reuseKey: reuseKey({ requirementId: req.requirementId, resolverConfigDigest: configDigest, sourceObservations }),
+    requirementId: req.requirementId,
+    resolutionId: res.resolutionId,
     materializationId: "materialization-1",
     resolutionArtifactRef: "artifact:1",
     resolverConfigDigest: configDigest,
@@ -129,6 +131,8 @@ const ATTESTATION_ARTIFACT = Object.freeze({
   finishedAt: "2026-01-01T00:01:00.000Z",
 });
 
+const WORK = Object.freeze({ workId: "work-1", workContractRef: "contract:1", projectId: "product-1" });
+
 const currentnessOf = (status, changed = []) => async () => ({
   status,
   changedEvidenceIds: changed,
@@ -159,8 +163,9 @@ async function groundedWorld() {
     async chainEvidence() {
       return structuredClone(chain);
     },
-    async describeExecution() {
-      return { runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
+    async describeExecution(args) {
+      if (!args || typeof args.workId !== "string") throw new TypeError("describeExecution requires work coordinates");
+      return { executionAttemptId: BINDING_ARTIFACT.executionAttemptId, runtimeAttestationRef: attestationRef, runtimeInvocations: [{ attestationRef }] };
     },
     async explainWhyNotDone() {
       return {};
@@ -177,6 +182,7 @@ async function groundedWorld() {
   });
   const projector = createGroundedObservationProjector({ observer, artifactRegistry: registries, artifactStore: store });
   const { observation, observationRef } = await projector.projectObservation({
+    ...WORK,
     subject: SUBJECT,
     bindingRef,
     attestationRefs: [attestationRef],
@@ -222,7 +228,9 @@ test("PARTIAL with only OPTIONAL unresolved stays GROUNDED; REQUIRED unresolved 
   });
   const requiredPartial = resolutionFor(req, [item("docs")], [{ evidenceId: "code", reason: "MISSING" }]);
   assert.equal(requiredPartial.status, "UNSATISFIED");
-  const blocked = await bind({ ...w, req, res: requiredPartial, receipt, receiptRef });
+  const blockedReceipt = receiptFor(req, requiredPartial);
+  const blockedRef = `context-resolution-receipt:sha256:${blockedReceipt.receiptId}`;
+  const blocked = await bind({ ...w, req, res: requiredPartial, receipt: blockedReceipt, receiptRef: blockedRef });
   const verdict = classifyGrounding({ observation: w.observation, binding: blocked.binding });
   assert.equal(verdict.status, "UNRESOLVED");
   assert.ok(verdict.reasons.includes("UNSATISFIED_CONTEXT"));
@@ -403,4 +411,147 @@ test("binding validator rejects unknown status and mismatched ids", async () => 
     () => defineObservationContextBinding({ ...structuredClone(binding), bindingId: "0".repeat(64) }),
     /bindingId does not match/,
   );
+});
+
+test("binder rejects wrong-ref, wrong-resolution and tampered receipts", async (t) => {
+  const w = await groundedWorld();
+  const req = requirement();
+  const res = resolutionFor(req, [item()], []);
+  const receipt = receiptFor(req, res);
+  const newBinder = () => createObservationContextBinder({ artifactStore: w.store, receiptCurrentness: currentnessOf("CURRENT") });
+
+  // Wrong resolution: the receipt binds another resolution id.
+  const otherRes = resolutionFor(req, [item("code", { content: "other" })], []);
+  assert.notEqual(otherRes.resolutionId, res.resolutionId);
+  await assert.rejects(
+    () => newBinder().bindObservationContext({
+      observation: w.observation, observationRef: w.observationRef,
+      requirement: req, resolution: otherRes,
+      receipt, receiptRef: `context-resolution-receipt:sha256:${receipt.receiptId}`,
+    }),
+    /different resolution/,
+  );
+
+  // Resolution answering another requirement is rejected at bind time.
+  const otherReq = requirement([{ ...requiredEvidence, need: "Different need" }]);
+  assert.notEqual(otherReq.requirementId, req.requirementId);
+  const otherReqRes = resolutionFor(otherReq, [item()], []);
+  await assert.rejects(
+    () => newBinder().bindObservationContext({
+      observation: w.observation, observationRef: w.observationRef,
+      requirement: req, resolution: otherReqRes,
+      receipt, receiptRef: `context-resolution-receipt:sha256:${receipt.receiptId}`,
+    }),
+    /different requirement/,
+  );
+
+  // Receipt answering another requirement is rejected.
+  const foreignReceipt = receiptFor(otherReq, otherReqRes);
+  await assert.rejects(
+    () => newBinder().bindObservationContext({
+      observation: w.observation,
+      observationRef: w.observationRef,
+      requirement: req,
+      resolution: res,
+      receipt: foreignReceipt,
+      receiptRef: `context-resolution-receipt:sha256:${foreignReceipt.receiptId}`,
+    }),
+    /different requirement/,
+  );
+
+  // Wrong ref: exact stored bytes differ from the supplied receipt.
+  const storedRef = await w.store.put("context-resolution-receipt", structuredClone(receipt));
+  const tampered = structuredClone(receipt);
+  tampered.materializationId = "tampered-materialization";
+  await assert.rejects(
+    () => newBinder().bindObservationContext({
+      observation: w.observation, observationRef: w.observationRef,
+      requirement: req, resolution: res, receipt: tampered, receiptRef: storedRef,
+    }),
+    /do not match the exact stored receipt/,
+  );
+
+  // Tampered semantic identity is rejected even when no stored bytes exist.
+  const tamperedId = structuredClone(receipt);
+  tamperedId.resolutionId = "0".repeat(64);
+  await assert.rejects(
+    () => newBinder().bindObservationContext({
+      observation: w.observation, observationRef: w.observationRef,
+      requirement: req, resolution: res,
+      receipt: tamperedId, receiptRef: `context-resolution-receipt:sha256:${"1".repeat(64)}`,
+    }),
+    /different resolution/,
+  );
+
+  // A non-content-addressed receiptRef is rejected.
+  await assert.rejects(
+    () => newBinder().bindObservationContext({
+      observation: w.observation, observationRef: w.observationRef,
+      requirement: req, resolution: res, receipt, receiptRef: "receipt:latest",
+    }),
+    /content-addressed/,
+  );
+});
+
+test("classification is total and fail-closed on missing, invalid or contradictory proof", async (t) => {
+  const w = await groundedWorld();
+  const req = requirement();
+  const res = resolutionFor(req, [item()], []);
+  const receipt = receiptFor(req, res);
+  const receiptRef = `context-resolution-receipt:sha256:${receipt.receiptId}`;
+  const { binding } = await bind({ ...w, req, res, receipt, receiptRef });
+
+  // Missing observation proof never grounds.
+  let verdict = classifyGrounding({ observation: null, binding });
+  assert.equal(verdict.status, "UNRESOLVED");
+  assert.ok(verdict.reasons.includes("MISSING_PROVENANCE"));
+
+  // Missing binding proof never grounds.
+  verdict = classifyGrounding({ observation: w.observation, binding: null });
+  assert.equal(verdict.status, "UNRESOLVED");
+  assert.ok(verdict.reasons.includes("MISSING_CONTEXT"));
+
+  // Unsupported resolution status never grounds.
+  verdict = classifyGrounding({ observation: w.observation, binding: { ...structuredClone(binding), resolutionStatus: "STALE" } });
+  assert.equal(verdict.status, "UNRESOLVED");
+  assert.ok(verdict.reasons.includes("MISSING_CONTEXT"));
+
+  // COMPLETE with REQUIRED unresolved evidence is contradictory and never grounds.
+  const contradictory = await (async () => {
+    const crafted = (await import("../src/observation-context-binding.js")).defineObservationContextBinding({
+      kind: "OBSERVATION_CONTEXT_BINDING_V1", version: 1,
+      observationRef: w.observationRef, observationDigest: w.observation.observationId,
+      requirementId: req.requirementId, resolutionId: res.resolutionId,
+      resolutionStatus: "COMPLETE",
+      unresolvedEvidence: [{ evidenceId: "code", necessity: "REQUIRED", reason: "MISSING" }],
+      receiptRef, receiptDigest: receipt.receiptId,
+      currentness: { status: "CURRENT", changedEvidenceIds: [], evaluatorIdentity: "test:crafted" },
+    });
+    return crafted;
+  })();
+  verdict = classifyGrounding({ observation: w.observation, binding: contradictory });
+  assert.equal(verdict.status, "UNRESOLVED");
+  assert.ok(verdict.reasons.includes("MISSING_CONTEXT"));
+
+  // Unsupported currentness never grounds.
+  verdict = classifyGrounding({
+    observation: w.observation,
+    binding: { ...structuredClone(binding), currentness: { status: "UNKNOWN", changedEvidenceIds: [], evaluatorIdentity: "test:x" } },
+  });
+  assert.equal(verdict.status, "UNRESOLVED");
+  assert.ok(verdict.reasons.includes("CURRENTNESS_UNVERIFIABLE"));
+
+  // Malformed necessity fails closed as REQUIRED.
+  verdict = classifyGrounding({
+    observation: w.observation,
+    binding: { ...structuredClone(binding), resolutionStatus: "PARTIAL", unresolvedEvidence: [{ evidenceId: "code", necessity: "WHATEVER", reason: "MISSING" }] },
+  });
+  assert.equal(verdict.status, "UNRESOLVED");
+  assert.ok(verdict.reasons.includes("MISSING_CONTEXT"));
+
+  // Malformed binding and observation shapes never ground and never throw.
+  verdict = classifyGrounding({ observation: { facts: "not-an-array" }, binding });
+  assert.equal(verdict.status, "UNRESOLVED");
+  verdict = classifyGrounding({ observation: w.observation, binding: "not-an-object" });
+  assert.equal(verdict.status, "UNRESOLVED");
 });

@@ -182,11 +182,12 @@ function normalizeCurrentness(raw, fallbackIdentity) {
   });
 }
 
-// Pure total classification function (D8). GROUNDED iff every required fact
-// is PROVENANCED, resolution is COMPLETE or PARTIAL with only OPTIONAL
-// unresolved evidence, receipt is present and currentness is CURRENT.
-// Every other path returns UNRESOLVED with typed reasons from exactly
-// UNRESOLVED_REASONS. No receipt => CURRENTNESS_UNVERIFIABLE.
+// Pure total classification function (D8). GROUNDED iff the observation proof
+// is present with every required fact PROVENANCED, the resolution proof is a
+// supported status that is COMPLETE or PARTIAL with only OPTIONAL unresolved
+// evidence, a receipt is present and currentness is CURRENT. Missing, invalid
+// or contradictory required proof is UNRESOLVED: the checks below are
+// unconditional, never gated on another proof being present.
 export function classifyGrounding({ observation = null, binding = null, requirement = null, resolution = null } = {}) {
   const reasons = new Set();
   const add = (r) => {
@@ -194,8 +195,12 @@ export function classifyGrounding({ observation = null, binding = null, requirem
     reasons.add(r);
   };
 
-  if (observation) {
-    for (const fact of observation.facts ?? []) {
+  // Mandatory observation proof: absent or malformed facts can never ground.
+  const facts = observation && typeof observation === "object" ? observation.facts : null;
+  if (!Array.isArray(facts)) {
+    add("MISSING_PROVENANCE");
+  } else {
+    for (const fact of facts) {
       if (fact?.provenance === "MISSING_PROVENANCE") {
         add("MISSING_PROVENANCE");
         break;
@@ -203,26 +208,33 @@ export function classifyGrounding({ observation = null, binding = null, requirem
     }
   }
 
-  if (binding) {
+  if (binding === null || binding === undefined || typeof binding !== "object" || Array.isArray(binding)) {
+    add("MISSING_CONTEXT");
+    add("CURRENTNESS_UNVERIFIABLE");
+  } else {
+    // Mandatory resolution proof: any REQUIRED unresolved evidence blocks,
+    // whatever the status claims — including a contradictory COMPLETE with
+    // REQUIRED unresolved items. Malformed necessity fails closed as REQUIRED.
+    const unresolved = Array.isArray(binding.unresolvedEvidence) ? binding.unresolvedEvidence : null;
+    if (unresolved === null) {
+      add("MISSING_CONTEXT");
+    } else {
+      for (const u of unresolved) {
+        const necessity = u?.necessity;
+        if (necessity !== "OPTIONAL") {
+          const reason = String(u?.reason ?? "MISSING").toUpperCase();
+          add("MISSING_CONTEXT");
+          if (reason === "STALE") add("STALE_CONTEXT");
+          else if (reason === "AMBIGUOUS") add("AMBIGUOUS_CONTEXT");
+          else if (reason === "CURRENTNESS_UNVERIFIABLE") add("CURRENTNESS_UNVERIFIABLE");
+        }
+      }
+    }
     if (binding.resolutionStatus === "UNSATISFIED") {
       add("UNSATISFIED_CONTEXT");
-      for (const u of binding.unresolvedEvidence ?? []) {
-        if (u.necessity !== "REQUIRED") continue;
-        const reason = String(u.reason ?? "MISSING").toUpperCase();
-        if (reason === "STALE") add("STALE_CONTEXT");
-        else if (reason === "AMBIGUOUS") add("AMBIGUOUS_CONTEXT");
-        else if (reason === "CURRENTNESS_UNVERIFIABLE") add("CURRENTNESS_UNVERIFIABLE");
-        else add("MISSING_CONTEXT");
-      }
-    } else if (binding.resolutionStatus === "PARTIAL") {
-      for (const u of binding.unresolvedEvidence ?? []) {
-        if (u.necessity !== "REQUIRED") continue;
-        const reason = String(u.reason ?? "MISSING").toUpperCase();
-        add("MISSING_CONTEXT");
-        if (reason === "STALE") add("STALE_CONTEXT");
-        else if (reason === "AMBIGUOUS") add("AMBIGUOUS_CONTEXT");
-        else if (reason === "CURRENTNESS_UNVERIFIABLE") add("CURRENTNESS_UNVERIFIABLE");
-      }
+    } else if (binding.resolutionStatus !== "COMPLETE" && binding.resolutionStatus !== "PARTIAL") {
+      // Unsupported status (missing, mistyped or contradictory) never grounds.
+      add("MISSING_CONTEXT");
     }
 
     // Fail-closed on unresolved reasons even when the status alone allows
@@ -232,8 +244,15 @@ export function classifyGrounding({ observation = null, binding = null, requirem
       add("CURRENTNESS_UNVERIFIABLE");
     }
     const currentness = binding.currentness?.status ?? "CURRENTNESS_UNVERIFIABLE";
-    if (currentness === "STALE") add("STALE_CONTEXT");
-    else if (currentness === "CURRENTNESS_UNVERIFIABLE") add("CURRENTNESS_UNVERIFIABLE");
+    if (currentness === "CURRENT") {
+      void currentness;
+    } else if (currentness === "STALE") {
+      add("STALE_CONTEXT");
+    } else {
+      // Unsupported or missing currentness (including
+      // CURRENTNESS_UNVERIFIABLE) never grounds.
+      add("CURRENTNESS_UNVERIFIABLE");
+    }
 
     if (observation && binding.observationDigest !== observation.observationId) {
       add("SUBJECT_MISMATCH");
@@ -249,8 +268,6 @@ export function classifyGrounding({ observation = null, binding = null, requirem
     if (requirement && resolution && resolution.requirementId !== requirement.requirementId) {
       add("SUBJECT_MISMATCH");
     }
-  } else {
-    add("MISSING_CONTEXT");
   }
 
   const ordered = REASON_ORDER.filter((r) => reasons.has(r));
@@ -296,7 +313,11 @@ export function createObservationContextBinder({ artifactStore, receiptCurrentne
     if (!resolution || typeof resolution !== "object") fail("bindObservationContext requires a ContextResolution");
     const resolutionId = reqText(resolution.resolutionId, "resolution.resolutionId");
     const resolutionRequirementId = reqText(resolution.requirementId, "resolution.requirementId");
-    void resolutionRequirementId;
+    // The resolution must answer this requirement: an unrelated resolution is
+    // rejected at bind time, never classified later.
+    if (resolutionRequirementId !== requirementId) {
+      fail("resolution answers a different requirement than the declared ContextRequirement");
+    }
     const resolutionStatus = reqText(resolution.status, "resolution.status");
     if (!RESOLUTION_STATUSES.includes(resolutionStatus)) fail("resolution.status invalid");
     const necessityById = new Map();
@@ -324,10 +345,37 @@ export function createObservationContextBinder({ artifactStore, receiptCurrentne
     } else {
       if (finalReceiptRef === null) fail("binding a receipt requires its receiptRef");
       reqText(finalReceiptRef, "receiptRef");
-      receiptDigest = typeof receipt.receiptId === "string" && HEX64.test(receipt.receiptId) ? receipt.receiptId : null;
       const refMatch = finalReceiptRef.match(/:sha256:([a-f0-9]{64})$/);
-      if (receiptDigest === null && refMatch) receiptDigest = refMatch[1];
-      if (receiptDigest === null) fail("receipt digest is unavailable (receiptId or content-addressed receiptRef required)");
+      if (!refMatch) fail("receiptRef must be a content-addressed artifact ref");
+      if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)) fail("binding receipt required");
+      // Semantic identity: the receipt must bind this requirement and this
+      // resolution. A receipt for another requirement, another resolution, or
+      // with a missing semantic digest is rejected — currentness of a
+      // different receipt can never ground this context.
+      const receiptRequirementId = reqText(receipt.requirementId, "receipt.requirementId");
+      if (receiptRequirementId !== requirementId) {
+        fail("receipt answers a different requirement than the declared ContextRequirement");
+      }
+      const receiptResolutionId = reqText(receipt.resolutionId, "resolution.resolutionId");
+      if (receiptResolutionId !== resolutionId) {
+        fail("receipt binds a different resolution than the declared ContextResolution");
+      }
+      receiptDigest = typeof receipt.receiptId === "string" && HEX64.test(receipt.receiptId) ? receipt.receiptId : null;
+      if (receiptDigest === null) fail("receipt digest is unavailable (receipt.receiptId must be sha256 hex)");
+      // Exact-bytes verification when the receipt bytes are available in the
+      // immutable store: the supplied receipt must equal the stored bytes.
+      // The receiptId semantic digest and the store blob digest use different
+      // schemes, so both the ref locator and the semantic identity are
+      // verified rather than compared against each other.
+      let storedReceipt = null;
+      try {
+        storedReceipt = await artifactStore.resolve(finalReceiptRef);
+      } catch {
+        storedReceipt = null;
+      }
+      if (storedReceipt !== null && canonicalString(storedReceipt) !== canonicalString(structuredClone(receipt))) {
+        fail("receipt bytes do not match the exact stored receipt for receiptRef");
+      }
       let raw;
       try {
         raw = await receiptCurrentness(structuredClone(receipt));
