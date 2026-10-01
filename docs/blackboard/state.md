@@ -40,8 +40,8 @@ NONE
 
 ## Schedulable tasks
 
-- BB-059 [WORKER/EXECUTION] — Research evidence-gated HOW evolution and Jev evaluation pipeline
 - BB-081 [WORKER/EXECUTION] — Research held-out harness profile acceptance and fault-ablation protocol
+- BB-083 [WORKER/EXECUTION] — Research feedback lifecycle and cross-episode learning
 - BB-085 [WORKER/EXECUTION] — Implement application-owned feedback episode lifecycle
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
@@ -79,7 +79,7 @@ BB-055 [DONE] <- BB-054
 BB-056 [DONE] <- ROOT
 BB-057 [DONE] <- BB-055
 BB-058 [DONE] <- BB-057
-BB-059 [WORKER_SCHEDULABLE] <- BB-058
+BB-059 [DONE] <- BB-058
 BB-060 [DONE] <- ROOT
 BB-061 [DONE] <- BB-060
 BB-062 [DONE] <- BB-061
@@ -95,7 +95,7 @@ BB-071 [BLOCKED_BY BB-070] <- BB-070, BB-057
 BB-072 [BLOCKED_BY BB-068] <- BB-068, BB-058
 BB-073 [BLOCKED_BY BB-070,BB-072] <- BB-070, BB-072
 BB-074 [BLOCKED_BY BB-071,BB-073,BB-081] <- BB-065, BB-071, BB-073, BB-077, BB-081
-BB-075 [BLOCKED_BY BB-074,BB-059] <- BB-074, BB-059
+BB-075 [BLOCKED_BY BB-074] <- BB-074, BB-059
 BB-076 [BLOCKED_BY BB-074,BB-075] <- BB-074, BB-075
 BB-077 [DONE] <- BB-065
 BB-078 [DONE] <- BB-077
@@ -103,10 +103,10 @@ BB-079 [DONE] <- BB-077, BB-078
 BB-080 [DONE] <- BB-078, BB-079
 BB-081 [WORKER_SCHEDULABLE] <- BB-077, BB-078, BB-079, BB-080
 BB-082 [DONE] <- ROOT
-BB-083 [BLOCKED_BY BB-059] <- BB-059, BB-064, BB-065
+BB-083 [WORKER_SCHEDULABLE] <- BB-059, BB-064, BB-065
 BB-084 [DONE] <- BB-058, BB-064
 BB-085 [WORKER_SCHEDULABLE] <- BB-084
-BB-086 [BLOCKED_BY BB-085,BB-059] <- BB-085, BB-059, BB-065
+BB-086 [BLOCKED_BY BB-085] <- BB-085, BB-059, BB-065
 BB-087 [DONE] <- BB-064
 BB-088 [DONE] <- BB-087
 BB-089 [DONE] <- BB-087
