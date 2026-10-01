@@ -1,0 +1,85 @@
+TAP version 13
+# Subtest: GROUNDED requires COMPLETE resolution, receipt and CURRENT currentness
+ok 1 - GROUNDED requires COMPLETE resolution, receipt and CURRENT currentness
+  ---
+  duration_ms: 10.217193
+  type: 'test'
+  ...
+# Subtest: PARTIAL with only OPTIONAL unresolved stays GROUNDED; REQUIRED unresolved blocks
+ok 2 - PARTIAL with only OPTIONAL unresolved stays GROUNDED; REQUIRED unresolved blocks
+  ---
+  duration_ms: 3.290856
+  type: 'test'
+  ...
+# Subtest: table-driven classification covers every typed reason
+ok 3 - table-driven classification covers every typed reason
+  ---
+  duration_ms: 9.441434
+  type: 'test'
+  ...
+# Subtest: binding without a receipt classifies CURRENTNESS_UNVERIFIABLE; binder never self-certifies
+ok 4 - binding without a receipt classifies CURRENTNESS_UNVERIFIABLE; binder never self-certifies
+  ---
+  duration_ms: 1.187408
+  type: 'test'
+  ...
+# Subtest: STALE at binding time classifies STALE_CONTEXT
+ok 5 - STALE at binding time classifies STALE_CONTEXT
+  ---
+  duration_ms: 2.097107
+  type: 'test'
+  ...
+# Subtest: observation bound to another requirement or subject classifies SUBJECT_MISMATCH
+ok 6 - observation bound to another requirement or subject classifies SUBJECT_MISMATCH
+  ---
+  duration_ms: 1.337047
+  type: 'test'
+  ...
+# Subtest: binder rejects write-capable ports and never resolves context
+ok 7 - binder rejects write-capable ports and never resolves context
+  ---
+  duration_ms: 1.004666
+  type: 'test'
+  ...
+# Subtest: binding validator rejects unknown status and mismatched ids
+ok 8 - binding validator rejects unknown status and mismatched ids
+  ---
+  duration_ms: 1.519408
+  type: 'test'
+  ...
+# Subtest: binder rejects wrong-ref, wrong-resolution and tampered receipts
+ok 9 - binder rejects wrong-ref, wrong-resolution and tampered receipts
+  ---
+  duration_ms: 3.275318
+  type: 'test'
+  ...
+# Subtest: classification is total and fail-closed on missing, invalid or contradictory proof
+ok 10 - classification is total and fail-closed on missing, invalid or contradictory proof
+  ---
+  duration_ms: 2.319842
+  type: 'test'
+  ...
+# Subtest: end-to-end compatibility with the delivered Oracle store, receipt scheme and currentness
+ok 11 - end-to-end compatibility with the delivered Oracle store, receipt scheme and currentness
+  ---
+  duration_ms: 29.507044
+  type: 'test'
+  ...
+# Subtest: binder rejects write/lifecycle-capable receipt readers before any reader or injector call
+ok 12 - binder rejects write/lifecycle-capable receipt readers before any reader or injector call
+  ---
+  duration_ms: 1.590411
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 140.384355
+
+
+exitCode=0
