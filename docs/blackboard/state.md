@@ -46,7 +46,7 @@ NONE
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [WORKER/EXECUTION] — Allowlist agent-tools child environment
 - BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
-- BB-123 [RESEARCH_SA/RESEARCH] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
+- BB-123 [WORKER/EXECUTION] — Agent-tools correctness follow-ups: observed-only grok cost and worktree-local grounded-context exclusion
 - BB-124 [RESEARCH_SA/RESEARCH] — Preserve truthful partial usage and per-field accounting coverage
 - BB-125 [RESEARCH_SA/RESEARCH] — Bind supervised resume to the exact task and execution contract
 - BB-126 [RESEARCH_SA/RESEARCH] — Stop repeated no-progress retries with evidence-bound feedback
@@ -132,7 +132,7 @@ BB-108 [DONE] <- BB-087, BB-088
 BB-120 [WORKER_SCHEDULABLE] <- BB-097
 BB-121 [RESEARCH_SCHEDULABLE] <- BB-100, BB-101, BB-120
 BB-122 [DONE] <- BB-097, BB-098
-BB-123 [RESEARCH_SCHEDULABLE] <- BB-105, BB-102
+BB-123 [WORKER_SCHEDULABLE] <- BB-105, BB-102
 BB-124 [RESEARCH_SCHEDULABLE] <- BB-098, BB-105, BB-123
 BB-125 [RESEARCH_SCHEDULABLE] <- BB-101
 BB-126 [RESEARCH_SCHEDULABLE] <- BB-125
