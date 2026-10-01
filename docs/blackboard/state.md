@@ -21,7 +21,7 @@ next-work-id: BB-131
 execution-unit: TASK
 context-routing-unit: COMPONENT
 worker-ownership: ONE_TASK_PER_CLAIM
-current-active-debt: 0
+current-active-debt: 1
 ```
 
 ## Pipeline lanes
@@ -31,19 +31,25 @@ RESEARCH_SA
   active: NONE
 
 WORKER
-  active: NONE
+  active: BB-106
 ```
 
 ## Active work
 
-NONE
+
+BB-106
+task: Wire delivered Oracle and supersession regression tests into npm test and verify
+lane: WORKER
+phase: JUDGMENT
+current-context: docs/blackboard/context/BB-106/current.json
+components: outer/blackboard, oracle/infrastructure
+worker: grok-bot
 
 ## Schedulable tasks
 
 - BB-059 [WORKER/EXECUTION] — Research evidence-gated HOW evolution and Jev evaluation pipeline
 - BB-079 [WORKER/EXECUTION] — Implement cache-stable async result context
 - BB-084 [WORKER/EXECUTION] — Implement grounded observation and context binding
-- BB-106 [WORKER/EXECUTION] — Wire delivered Oracle and supersession regression tests into npm test and verify
 - BB-107 [RESEARCH_SA/RESEARCH] — Reserve planner work from remaining budget so files that fit the requirement materialize
 - BB-120 [RESEARCH_SA/RESEARCH] — Allowlist agent-tools child environment
 - BB-121 [RESEARCH_SA/RESEARCH] — Compose supervised agent-tools as durable Backend→QA execution
@@ -114,7 +120,7 @@ BB-102 [DONE] <- BB-097
 BB-103 [DONE] <- BB-097
 BB-104 [DONE] <- BB-100, BB-101, BB-102
 BB-105 [DONE] <- BB-097, BB-098
-BB-106 [WORKER_SCHEDULABLE] <- BB-082, BB-087, BB-088
+BB-106 [ACTIVE] <- BB-082, BB-087, BB-088
 BB-107 [RESEARCH_SCHEDULABLE] <- BB-087, BB-088, BB-089
 BB-108 [DONE] <- BB-087, BB-088
 BB-120 [RESEARCH_SCHEDULABLE] <- BB-097
