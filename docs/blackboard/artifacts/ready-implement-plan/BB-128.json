@@ -17,7 +17,7 @@
     "Live grok/opencode smoke inside npm test."
   ],
   "constraints": [
-    "Product edit is packages/agent-tools/src/deliver-slice.js SLICE_TOOLS plus tests and Living/README named in sourceScope.write. tool-adapters.js is read-only.",
+    "Worker edit scope (researcher makes no product edits; this DRAFT only describes the authorized scope): packages/agent-tools/src/deliver-slice.js SLICE_TOOLS plus tests and Living/README named in sourceScope.write. tool-adapters.js is read-only for the worker.",
     "Fixtures use delivered fake-grok.mjs / fake-opencode.mjs via defineAgentTool(base, {command: process.execPath, prefixArgs: [fake]}); no provider calls, no credentials, no real grok/opencode binaries required.",
     "Existing deliver-slice.test.js BB-104 tests stay green (codex|kiro|agy path unchanged).",
     "Research only in this lane: no product source edits, no self-issued readiness or fabricated Jev judgment."
@@ -205,7 +205,7 @@
     },
     {
       "ref": "packages/agent-tools/src/tool-adapters.js",
-      "finding": "DELIVERED_TRUTH: AGENT_TOOLS freezes codex, kiro, agy, grok, opencode. grokTool and opencodeTool implement buildInvocation resume flags and parseResult {claimedSuccess, finalMessage, sessionRef}."
+      "finding": "DELIVERED_TRUTH: AGENT_TOOLS freezes codex, kiro, agy, grok, opencode. grokTool and opencodeTool implement the headless/edit/resume contract via buildInvocation resume flags (--resume/--continue for grok, --session/--continue for opencode) and parseResult {claimedSuccess, finalMessage, sessionRef}. Verified: grokTool buildInvocation uses --prompt-file, --cwd, --permission-mode acceptEdits/--always-approve; opencode uses run --format json, --dir, --auto with positional prompt after --."
     },
     {
       "ref": "docs/blackboard/evidence/BB-128/discovery.json",
