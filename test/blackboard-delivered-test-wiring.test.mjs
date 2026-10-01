@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createOracleContextResolver } from '../packages/oracle/src/index.js';
 import { verifySupersession } from '../scripts/blackboard-objective-supersession.mjs';
 
@@ -56,7 +56,7 @@ function assertWorkGraphWiring(scripts) {
   assert.deepEqual(workGraphScriptCoverage(script), []);
 }
 
-test('TW1 test:oracle includes the oracle test glob', () => {
+test('TW1 test:oracle includes the oracle test glob', (t) => {
   const scripts = readPackageScripts();
   const files = listOracleTestFiles();
   assertOracleWiring(scripts, files);
@@ -112,19 +112,31 @@ test('TW1 test:oracle includes the oracle test glob', () => {
         String(childOutput).includes('test/oracle-*.test.mjs'),
         `mutated TW1 child output must mention the missing path: ${String(childOutput).slice(0, 2000)}`
       );
-      const controlOutput = execFileSync(process.execPath, childArgs, {
+      const tw1FailureLine = String(childOutput)
+        .split(/\r?\n/)
+        .find((line) => line.includes('must include') || line.includes('test/oracle-*.test.mjs'));
+      const tw1FailureMessage = String(tw1FailureLine ?? '').trim().slice(0, 200);
+      assert.ok(tw1FailureMessage.length > 0, `mutated TW1 child must expose a failure message: ${String(childOutput).slice(0, 2000)}`);
+      let tw1ControlStatus = -1;
+      const tw1ControlResult = spawnSync(process.execPath, childArgs, {
         cwd: root,
         encoding: 'utf8',
         env: controlEnv,
       });
-      assert.ok(String(controlOutput).includes('ok'), 'control TW1 child must pass');
+      tw1ControlStatus = tw1ControlResult.status;
+      const controlOutput = String(tw1ControlResult.stdout ?? '') + String(tw1ControlResult.stderr ?? '');
+      assert.equal(tw1ControlResult.error, undefined, 'control TW1 child must spawn without error');
+      assert.equal(tw1ControlStatus, 0, `control TW1 child must exit 0: ${String(controlOutput).slice(0, 2000)}`);
+      assert.ok(String(controlOutput).includes('# fail 0'), 'control TW1 child must report # fail 0');
+      t.diagnostic(`NC-TW-oracle: mutated test:oracle without test/oracle-*.test.mjs -> child TW1 exit=${childStatus}, failed with: ${tw1FailureMessage}`);
+      t.diagnostic(`NC-TW-oracle control: real package.json -> child TW1 exit=${tw1ControlStatus}`);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   }
 });
 
-test('TW2 test:blackboard-work-graph includes supersession tests', () => {
+test('TW2 test:blackboard-work-graph includes supersession tests', (t) => {
   const scripts = readPackageScripts();
   assertWorkGraphWiring(scripts);
   const script = scripts['test:blackboard-work-graph'];
@@ -177,12 +189,27 @@ test('TW2 test:blackboard-work-graph includes supersession tests', () => {
         String(childOutput).includes('test/blackboard-objective-supersession.test.mjs'),
         `mutated TW2 child output must mention the missing path: ${String(childOutput).slice(0, 2000)}`
       );
-      const controlOutput = execFileSync(process.execPath, childArgs, {
+      const tw2FailureLine = String(childOutput)
+        .split(/\r?\n/)
+        .find(
+          (line) =>
+            line.includes('must include') || line.includes('test/blackboard-objective-supersession.test.mjs')
+        );
+      const tw2FailureMessage = String(tw2FailureLine ?? '').trim().slice(0, 200);
+      assert.ok(tw2FailureMessage.length > 0, `mutated TW2 child must expose a failure message: ${String(childOutput).slice(0, 2000)}`);
+      let tw2ControlStatus = -1;
+      const tw2ControlResult = spawnSync(process.execPath, childArgs, {
         cwd: root,
         encoding: 'utf8',
         env: controlEnv,
       });
-      assert.ok(String(controlOutput).includes('ok'), 'control TW2 child must pass');
+      tw2ControlStatus = tw2ControlResult.status;
+      const controlOutput = String(tw2ControlResult.stdout ?? '') + String(tw2ControlResult.stderr ?? '');
+      assert.equal(tw2ControlResult.error, undefined, 'control TW2 child must spawn without error');
+      assert.equal(tw2ControlStatus, 0, `control TW2 child must exit 0: ${String(controlOutput).slice(0, 2000)}`);
+      assert.ok(String(controlOutput).includes('# fail 0'), 'control TW2 child must report # fail 0');
+      t.diagnostic(`NC-TW-supersession: mutated test:blackboard-work-graph without test/blackboard-objective-supersession.test.mjs -> child TW2 exit=${childStatus}, failed with: ${tw2FailureMessage}`);
+      t.diagnostic(`NC-TW-supersession control: real package.json -> child TW2 exit=${tw2ControlStatus}`);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
