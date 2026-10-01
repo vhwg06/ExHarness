@@ -39,7 +39,8 @@
       "packages/agent-tools/src/supervisor.js",
       "packages/agent-tools/src/observation.js",
       "docs/blackboard/evidence/BB-139/cli-factor-audit.json",
-      "docs/blackboard/process/operator-cli-factor-parity.md"
+      "docs/blackboard/process/operator-cli-factor-parity.md",
+      "packages/agent-tools/src/run-trace.js"
     ],
     "expectedNew": [
       "packages/agent-tools/test/smoke-cli-options.test.js"
@@ -90,7 +91,7 @@
         "agent-tools-regression"
       ],
       "evidenceRequired": [
-        "P1 BIN smoke model/permission/trace-dir writes digest-chained traces with arm SMOKE; P2 omitted --arm still SMOKE."
+        "Future P1 executes actual smoke CLI with fake launcher and model-x/FULL_AUTO/trace-dir: fake argv contains model-x and danger-full-access; readTraces/verifyTraceFile validate traces.jsonl chain and exactly one SMOKE/tool/task-bound trace per observed attempt, argvRedacted matches forwarding. Execute actual report CLI exit0; mutate one chained trace then report exit1. P2 explicit arm overrides SMOKE; omitted arm remains SMOKE. Omitted trace-dir constructs no writer and leaves no trace artifacts. Preserve smoke scratch cleanup separately from caller-owned trace directory."
       ]
     },
     {
