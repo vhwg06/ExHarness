@@ -129,22 +129,38 @@ test("EN1 AGENT_CHILD_INHERITED_ENV is exported and the child copies only those 
   }
 });
 
-test("EN2 planted parent secrets are absent unless the overlay provides them", T, async () => {
-  const restore = plantEnv({ EXHARNESS_PLANTED_SECRET: "en2-secret", AWS_SECRET_ACCESS_KEY: "en2-aws" });
+test("EN2 planted EXHARNESS_PLANTED_SECRET is not inherited", T, async () => {
+  const restore = plantEnv({ EXHARNESS_PLANTED_SECRET: "en2-secret" });
   try {
     const bare = await childEnvViaRunProcess({});
     assert.equal(bare.planted, null);
-    assert.equal(bare.aws, null);
-    const overlaid = await childEnvViaRunProcess({ EXHARNESS_OVERLAY_PROBE: "yes", EXHARNESS_PLANTED_SECRET: "via-overlay" });
-    assert.equal(overlaid.overlayProbe, "yes");
-    assert.equal(overlaid.planted, "via-overlay", "overlay keys present even off the allowlist");
-    assert.equal(overlaid.aws, null);
   } finally {
     restore();
   }
 });
 
-test("EN3 NODE_TEST_CONTEXT never reaches the child", T, async () => {
+test("EN2 planted AWS_SECRET_ACCESS_KEY is not inherited", T, async () => {
+  const restore = plantEnv({ AWS_SECRET_ACCESS_KEY: "en2-aws" });
+  try {
+    const bare = await childEnvViaRunProcess({});
+    assert.equal(bare.aws, null);
+  } finally {
+    restore();
+  }
+});
+
+test("EN2 overlay key not on allowlist is present", T, async () => {
+  const restore = plantEnv({ EXHARNESS_PLANTED_SECRET: "en2-secret" });
+  try {
+    const overlaid = await childEnvViaRunProcess({ EXHARNESS_OVERLAY_PROBE: "yes", EXHARNESS_PLANTED_SECRET: "via-overlay" });
+    assert.equal(overlaid.overlayProbe, "yes");
+    assert.equal(overlaid.planted, "via-overlay", "overlay keys present even off the allowlist");
+  } finally {
+    restore();
+  }
+});
+
+test("EN3 NODE_TEST_CONTEXT is absent from the child", T, async () => {
   const restore = plantEnv({ NODE_TEST_CONTEXT: "parent-context" });
   try {
     const bare = await childEnvViaRunProcess({});
@@ -162,7 +178,7 @@ test("EN4 PATH and HOME are inherited when set on the parent", T, async () => {
   if (process.env.HOME !== undefined) assert.equal(child.home, process.env.HOME);
 });
 
-test("EN5 declared per-tool auth names reach the child, undeclared ambient names do not, overlay wins", T, async () => {
+test("EN5 declared auth name is forwarded but undeclared ambient auth is not", T, async () => {
   const restore = plantEnv({ EXHARNESS_AUTH_PROBE: "auth-value", EXHARNESS_UNDECLARED: "ambient-value" });
   try {
     const tool = probeTool(["EXHARNESS_AUTH_PROBE"]);
@@ -188,7 +204,7 @@ test("EN5 delivered adapters declare empty authEnvNames", T, () => {
   }
 });
 
-test("EN6 bin forwards FAKE_AGENT_* and --env into the supervised child", T, async () => {
+test("EN6 bin forwards FAKE_AGENT_SCENARIO and --env into the supervised child", T, async () => {
   const overlay = binOverlayEnv(
     { FAKE_AGENT_SCENARIO: "from-bin", OTHER: "dropped", FAKE_AGENT_RECORD: "/tmp/r" },
     [{ name: "EN6_EXTRA", value: "yes" }, { name: "FAKE_AGENT_SCENARIO", value: "from-flag" }]
@@ -240,7 +256,7 @@ test("EN6 bin forwards FAKE_AGENT_* and --env into the supervised child", T, asy
   }
 });
 
-test("EN7 living docs state the trust boundary and auditPaths rejects core-harness writes", T, () => {
+test("EN7 write scope excludes core-harness", T, () => {
   const doc = readFileSync(join(REPO_ROOT, "docs", "living", "system", "agent-tools", "state.md"), "utf8");
   assert.match(doc, /allowlist/i);
   assert.match(doc, /auth passthrough/i);
