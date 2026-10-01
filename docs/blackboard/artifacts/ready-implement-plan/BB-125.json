@@ -78,9 +78,9 @@
     ]
   },
   "implementationSlices": [
-    "S1 \u2014 Pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist. Executed unchanged/drift probes (node /tmp/probe-bb125.mjs, all PASS, see researchProbes): P1 unchanged write->read->verify roundtrip retains digest; P2 tampered body -> DIGEST_MISMATCH; P3 same-id changed prompt/verifier passes today's resume identity check (drift accepted \u2014 the documented gap, since the check compares only id/repositoryRoot/baseRevision); P4 current handle body carries no prompt/verifier/model/permissionProfile binding; P5 declared-context vs materialized-context digests are distinct stable 64-hex sha256; P6 model/permission change alters the composite execution digest. Binding schema pinned: taskDigest/declaredContextDigest/materializedContextDigest/executionDigest over canonicalJson (run-trace.js), persisted in AGENT_TOOL_RUN_HANDLE_V2.",
-    "S2 \u2014 After fresh READY, implement only the declared seam, with no remaining design decisions: (a) recovery.js: export AGENT_TOOL_RUN_HANDLE_V2, extend createAgentToolRunHandle/assertHandleBody with the four 64-hex digest fields, keep handleDigest covering them; (b) supervisor.js runRecoverableTask: compute the four digests at dispatch and persist the V2 binding via persistRecoverableHandle before harness.vary; (c) supervisor.js resumeSupervisedTask: recompute and compare the four digests in the exact validation order, throwing CONTRACT_DRIFT/LEGACY_HANDLE; (d) deliver-slice.js: map LEGACY_HANDLE to quiet dispose + slice reason LEGACY_HANDLE; (e) fixtures: positive unchanged-resume fixture on the crash fixture, negative fixtures N1/N2/N3 plus legacy-handle fail-closed, all in packages/agent-tools/test/recovery-contract-binding.test.js.",
-    "S3 \u2014 Run focused regressions (agent-tools-regression, agentic-regression), bind independent criterion evidence per acceptanceCriteria evidenceRequired, and reconcile Living descriptions (docs/living/system/agent-tools/state.md, observation.md) before Worker judgment."
+    "S1 \u2014 Binding schema and discriminating probes [EXACT_RESUME, LEGACY_AND_RECOVERY]: pin contract/API and execute the discriminating prototype in the research brief; proposed future implementation files are not claimed to exist. Executed unchanged/drift probes (node /tmp/probe-bb125.mjs, all PASS, see researchProbes): P1 unchanged write->read->verify roundtrip retains digest; P2 tampered body -> DIGEST_MISMATCH; P3 same-id changed prompt/verifier passes today's resume identity check (drift accepted \u2014 the documented gap, since the check compares only id/repositoryRoot/baseRevision); P4 current handle body carries no prompt/verifier/model/permissionProfile binding; P5 declared-context vs materialized-context digests are distinct stable 64-hex sha256; P6 model/permission change alters the composite execution digest. Binding schema pinned: taskDigest/declaredContextDigest/materializedContextDigest/executionDigest over canonicalJson (run-trace.js), persisted in AGENT_TOOL_RUN_HANDLE_V2.",
+    "S2 \u2014 Implement the V2 seam [EXACT_RESUME, LEGACY_AND_RECOVERY]: after fresh READY, with no remaining design decisions: (a) recovery.js: export AGENT_TOOL_RUN_HANDLE_V2, extend createAgentToolRunHandle/assertHandleBody with the four 64-hex digest fields, keep handleDigest covering them; (b) supervisor.js runRecoverableTask: compute the four digests at dispatch and persist the V2 binding via persistRecoverableHandle before harness.vary; (c) supervisor.js resumeSupervisedTask: recompute and compare the four digests in the exact validation order, throwing CONTRACT_DRIFT/LEGACY_HANDLE before any spawn; (d) deliver-slice.js: map LEGACY_HANDLE to quiet dispose + slice reason LEGACY_HANDLE; (e) fixtures: positive unchanged-resume fixture on the crash fixture, negative fixtures N1/N2/N3 plus legacy-handle fail-closed, all in packages/agent-tools/test/recovery-contract-binding.test.js.",
+    "S3 \u2014 Regressions and evidence binding [EXACT_RESUME, LEGACY_AND_RECOVERY]: run focused regressions (agent-tools-regression, agentic-regression), bind independent criterion evidence per acceptanceCriteria evidenceRequired, and reconcile Living descriptions (docs/living/system/agent-tools/state.md, observation.md) before Worker judgment."
   ],
   "acceptanceCriteria": [
     {
@@ -135,14 +135,12 @@
     {
       "invariant": "Agent output, telemetry and local feasibility probes cannot authorize product publication or prove delivery value.",
       "criterionIds": [
-        "EXACT_RESUME",
-        "LEGACY_AND_RECOVERY"
+        "EXACT_RESUME"
       ]
     },
     {
       "invariant": "Research does not mutate product source or retrofit terminal work; Worker executes only an exact independently READY plan.",
       "criterionIds": [
-        "EXACT_RESUME",
         "LEGACY_AND_RECOVERY"
       ]
     }
@@ -275,7 +273,9 @@
       "supportingPlanFields": [
         "architectureDecisions",
         "researchProbes",
-        "negativeCaseBindings"
+        "negativeCaseBindings",
+        "verificationPlan",
+        "implementationSlices"
       ]
     },
     {
@@ -317,7 +317,9 @@
       "supportingPlanFields": [
         "architectureDecisions",
         "researchProbes",
-        "negativeCaseBindings"
+        "negativeCaseBindings",
+        "verificationPlan",
+        "implementationSlices"
       ]
     },
     {
